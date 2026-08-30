@@ -98,6 +98,8 @@ The PR review script is `.github/scripts/Review-PR.ps1`. It orchestrates the cor
 
 The generated PR comment is a single session-based `AI Summary` comment. New runs replace the review and hide older sessions, keyed by the reviewed commit.
 
+The same manual pipeline also exposes a `replicate` mode for empirical GitHub issue reproduction. It is separate from `/review`, does not change review behavior, and currently has no slash-command trigger. See [issue-replication-workflow.md](issue-replication-workflow.md).
+
 ## Automatic fresh reviews
 
 After an AI Summary is posted, deterministic rerun automation can queue a fresh full review when it detects new **PR author activity**:
@@ -286,3 +288,4 @@ Important safeguards:
 - `.github/skills/review-test-failures/SKILL.md` — classification rubric for test-failure reviews.
 - `.github/scripts/Review-Tests.ps1` — local runner for `/review tests`.
 - `.github/docs/trigger-azdo-pipeline-setup.md` — OIDC setup for triggering AzDO pipelines from GitHub Actions.
+- `.github/docs/issue-replication-workflow.md` — manual issue-replication mode, evidence, tests, publication, and safety boundaries.

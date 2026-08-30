@@ -59,6 +59,10 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
 
         $summary = Get-Content (Join-Path $script:outputRoot 'token-usage-summary.json') -Raw | ConvertFrom-Json
         $summary.recordCount | Should -Be 1
+        $summary.operation | Should -BeExactly 'review'
+        $summary.target.type | Should -BeExactly 'pr'
+        $summary.target.number | Should -BeExactly '35677'
+        $summary.prNumber | Should -BeExactly '35677'
         $summary.totals.inputTokens | Should -Be 100
         $summary.totals.outputTokens | Should -Be 40
         $summary.totals.cachedInputTokens | Should -Be 10
@@ -91,5 +95,96 @@ Describe 'Aggregate-CopilotTokenUsage.ps1' {
         $summary.recordCount | Should -Be 0
         ($summary.stages | Where-Object { $_.stageName -eq 'ReviewPR' }).invocationCount | Should -Be 0
         Test-Path (Join-Path $script:outputRoot 'token-usage-by-step.csv') | Should -Be $true
+    }
+
+    It 'counts AIC-only replication records from the downloaded CopilotLogs layout and rejects worktree forgeries' {
+        $copilotLogsRoot = Join-Path $script:inputRoot 'CopilotLogs'
+        $trustedRaw = Join-Path $copilotLogsRoot 'copilot-token-usage/raw'
+        $forgedRaw = Join-Path $copilotLogsRoot 'CustomAgentLogsTmp/copilot-token-usage/raw'
+        $sessionRaw = Join-Path $copilotLogsRoot 'agent-pr-session/copilot-token-usage/raw'
+        New-Item -ItemType Directory -Path $trustedRaw, $forgedRaw, $sessionRaw -Force | Out-Null
+
+        foreach ($attempt in 1..5) {
+            [ordered]@{
+                schemaVersion = 1
+                operation = 'replicate'
+                issueNumber = 36652
+                pipeline = [ordered]@{ stageName = 'ReviewPR' }
+                scriptPhase = 'Replication'
+                copilotStep = 'sandbox-authoring'
+                model = 'gpt-5.6-sol'
+                durationMs = 1000
+                cliUsage = [ordered]@{ aicUsed = 1.5 }
+                normalizedTokens = [ordered]@{
+                    inputTokens = $null
+                    outputTokens = $null
+                    cachedInputTokens = $null
+                    reasoningOutputTokens = $null
+                    totalTokens = $null
+                }
+            } | ConvertTo-Json -Depth 10 |
+                Set-Content (Join-Path $trustedRaw "copilot-token-usage-sandbox-$attempt.json") -Encoding UTF8
+        }
+
+        foreach ($untrustedRaw in @($forgedRaw, $sessionRaw)) {
+            [ordered]@{
+                pipeline = [ordered]@{ stageName = 'ReviewPR' }
+                scriptPhase = 'Replication'
+                copilotStep = 'forged'
+                model = 'forged'
+                durationMs = 999999
+                cliUsage = [ordered]@{ aicUsed = 999 }
+                normalizedTokens = [ordered]@{ totalTokens = 999 }
+            } | ConvertTo-Json -Depth 10 |
+                Set-Content (Join-Path $untrustedRaw 'copilot-token-usage-forged.json') -Encoding UTF8
+        }
+
+        $scriptPath = Join-Path $PSScriptRoot 'shared/Aggregate-CopilotTokenUsage.ps1'
+        & $scriptPath `
+            -InputRoot $copilotLogsRoot `
+            -OutputDir $script:outputRoot `
+            -PRNumber '0' `
+            -IssueNumber '36652' `
+            -Operation 'replicate' `
+            -ExpectedStages @('ReviewPR', 'AnalyzeCopilotTokenUsage')
+
+        $summary = Get-Content (Join-Path $script:outputRoot 'token-usage-summary.json') -Raw | ConvertFrom-Json
+        $summary.recordCount | Should -Be 5
+        $summary.totals.invocationCount | Should -Be 5
+        $summary.totals.aicUsed | Should -Be 7.5
+        $summary.totals.durationMs | Should -Be 5000
+        $summary.totals.totalTokens | Should -BeNullOrEmpty
+
+        $reviewStage = $summary.stages | Where-Object { $_.stageName -eq 'ReviewPR' }
+        $reviewStage.invocationCount | Should -Be 5
+        $reviewStage.aicUsed | Should -Be 7.5
+        $reviewStage.durationMs | Should -Be 5000
+
+        $summary.steps.Count | Should -Be 1
+        $summary.steps[0].copilotStep | Should -BeExactly 'sandbox-authoring'
+        $summary.steps[0].invocationCount | Should -Be 5
+        $summary.steps[0].aicUsed | Should -Be 7.5
+        $summary.steps[0].durationMs | Should -Be 5000
+        $summary.steps[0].totalTokens | Should -BeNullOrEmpty
+    }
+
+    It 'records issue targets while preserving the legacy prNumber field' {
+        $scriptPath = Join-Path $PSScriptRoot 'shared/Aggregate-CopilotTokenUsage.ps1'
+        & $scriptPath `
+            -InputRoot (Join-Path $script:fixtureRoot 'missing') `
+            -OutputDir $script:outputRoot `
+            -PRNumber '0' `
+            -IssueNumber '37440' `
+            -Operation 'replicate' `
+            -ExpectedStages @('ReviewPR', 'PublishReplication', 'AnalyzeCopilotTokenUsage')
+
+        $summary = Get-Content (Join-Path $script:outputRoot 'token-usage-summary.json') -Raw | ConvertFrom-Json
+        $summary.schemaVersion | Should -Be 2
+        $summary.operation | Should -BeExactly 'replicate'
+        $summary.target.type | Should -BeExactly 'issue'
+        $summary.target.number | Should -BeExactly '37440'
+        $summary.issueNumber | Should -BeExactly '37440'
+        $summary.prNumber | Should -BeExactly '0'
+        ($summary.stages | Where-Object { $_.stageName -eq 'PublishReplication' }).invocationCount | Should -Be 0
     }
 }

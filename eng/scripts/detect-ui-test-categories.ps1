@@ -2,6 +2,10 @@
 param(
     [string]$TargetBranch,
     [string]$PrNumber,
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$BaseCommit = '',
     [string]$Platform,
     [string]$Categories,
     [string]$AiCategories,
@@ -166,10 +170,8 @@ $prNumberForLookup = $env:SYSTEM_PULLREQUEST_PULLREQUESTNUMBER
 if ([string]::IsNullOrWhiteSpace($prNumberForLookup) -and $isManualPrTest) {
     $prNumberForLookup = $PrNumber
 }
-$repoName = $env:BUILD_REPOSITORY_NAME
-if ([string]::IsNullOrWhiteSpace($repoName)) {
-    $repoName = 'dotnet/maui'
-}
+$repoName = $Repository
+$baseSha = $null
 
 # Helper: build authenticated GitHub API headers.
 function Get-GitHubHeaders {
@@ -220,7 +222,9 @@ if ($isManualPrTest) {
         $headSha = $pr.head.sha
         $baseRepoCloneUrl = $pr.base.repo.clone_url
         $headRepoCloneUrl = $pr.head.repo.clone_url
-        if ([string]::IsNullOrWhiteSpace($headSha) -or [string]::IsNullOrWhiteSpace($headRepoCloneUrl) -or [string]::IsNullOrWhiteSpace($baseRepoCloneUrl)) {
+        if ($headSha -notmatch '^[0-9a-fA-F]{40}$' -or
+            [string]::IsNullOrWhiteSpace($headRepoCloneUrl) -or
+            [string]::IsNullOrWhiteSpace($baseRepoCloneUrl)) {
             Write-Host "##[warning]PR API response missing SHA or clone URL. Falling back to running ALL categories."
             Write-CategoryListOutput ''
             return
@@ -261,8 +265,21 @@ if ($isManualPrTest) {
             # Fetch base branch from the base repo (needed for merge-base regardless of path).
             git remote remove _detect_base 2>$null | Out-Null
             Invoke-Git remote add _detect_base $baseRepoCloneUrl
-            Invoke-Git fetch _detect_base "$TargetBranch" --no-tags --prune --depth=200
-            Invoke-Git update-ref refs/remotes/origin/$TargetBranch _detect_base/$TargetBranch
+            if ($BaseCommit) {
+                $baseSha = $BaseCommit.Trim().ToLowerInvariant()
+                Invoke-Git fetch _detect_base $baseSha --no-tags --depth=200
+                $fetchedBaseSha = ([string](& git rev-parse FETCH_HEAD 2>$null)).Trim()
+                if ($LASTEXITCODE -ne 0 -or $fetchedBaseSha -ne $baseSha) {
+                    throw "Fetched base $fetchedBaseSha does not match captured base $baseSha."
+                }
+            } else {
+                Invoke-Git fetch _detect_base "refs/heads/$TargetBranch" --no-tags --depth=200
+                $baseSha = ([string](& git rev-parse FETCH_HEAD 2>$null)).Trim()
+                if ($LASTEXITCODE -ne 0 -or $baseSha -notmatch '^[0-9a-fA-F]{40}$') {
+                    throw "Could not capture the current tip of '$TargetBranch' from '$baseRepoCloneUrl'."
+                }
+            }
+            Invoke-Git update-ref refs/remotes/origin/$TargetBranch $baseSha
 
             if ($alreadyOnPrWorktree) {
                 # HEAD already reflects the PR (squash-merged by Review-PR.ps1). Do NOT
@@ -325,7 +342,13 @@ $targetBranch = $TargetBranch -replace '^refs/heads/', ''
 
 Write-Host "Fetching target branch 'origin/${targetBranch}' for diff analysis..." -ForegroundColor Cyan
 try {
-    git fetch origin "${targetBranch}" --no-tags --prune --depth=200 | Out-Null
+    if ($isManualPrTest -and $baseSha -match '^[0-9a-fA-F]{40}$') {
+        # Manual review metadata already resolved an immutable base commit from
+        # the selected repository. Do not replace it with origin/<same-name>.
+        Invoke-Git update-ref "refs/remotes/origin/$targetBranch" $baseSha
+    } else {
+        Invoke-Git fetch origin "${targetBranch}" --no-tags --prune --depth=200
+    }
 } catch {
     Write-Host "##[warning]Failed to fetch origin/${targetBranch}: $($_.Exception.Message)"
     Write-Host "##[section]FALLBACK: All UI test categories will run for this PR."

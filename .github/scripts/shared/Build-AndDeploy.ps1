@@ -57,12 +57,43 @@ param(
     [string]$BundleId,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$EnforceNetworkIsolation,
+
+    [Parameter(Mandatory=$false)]
+    [string]$NetworkIsolationManifestPath,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$NoRestore
 )
 
 # Import shared utilities
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptDir "shared-utils.ps1")
+
+function Test-TransientAndroidDeployFailure {
+    param(
+        [AllowEmptyString()]
+        [string]$Output
+    )
+
+    foreach ($pattern in @(
+        '(?im)\bADB0010\b',
+        '(?im)\bInstallFailedException\b',
+        '(?im)\bbroken pipe\b',
+        '(?im)\bdevice offline\b',
+        '(?im)\bno devices?/emulators? found\b',
+        '(?im)\bconnection (?:reset|closed)\b'
+    )) {
+        if ($Output -match $pattern) {
+            return $true
+        }
+    }
+
+    return $false
+}
 
 # Verify project exists
 if (-not (Test-Path $ProjectPath)) {
@@ -112,6 +143,30 @@ if ($Platform -eq "android") {
     # APK makes it self-contained so any install/relaunch works — this is exactly what the
     # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
+    if ($EnforceNetworkIsolation) {
+        if ([string]::IsNullOrWhiteSpace($NetworkIsolationManifestPath)) {
+            throw 'Android replication requires a trusted network-isolation manifest path.'
+        }
+        $isolationManifest = [IO.Path]::GetFullPath($NetworkIsolationManifestPath)
+        if (-not (Test-Path -LiteralPath $isolationManifest -PathType Leaf)) {
+            throw 'Android replication network-isolation manifest is missing.'
+        }
+        $isolationManifestItem = Get-Item -LiteralPath $isolationManifest -Force
+        if ($isolationManifestItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Android replication network-isolation manifest must be a regular file.'
+        }
+        # Microsoft.Android resolves AndroidManifest relative to the project
+        # directory even when MSBuild receives an absolute path.
+        $relativeIsolationManifest = [IO.Path]::GetRelativePath(
+            (Split-Path -Parent $ProjectPath),
+            $isolationManifest
+        ).Replace('\', '/')
+        if ([IO.Path]::IsPathRooted($relativeIsolationManifest)) {
+            throw 'Android replication network-isolation manifest must be reachable relative to the project directory.'
+        }
+        $buildArgs += "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
+    }
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -165,22 +220,33 @@ if ($Platform -eq "android") {
             }
         }
         
-        & dotnet build @buildArgs
+        $buildOutput = $null
+        & dotnet build @buildArgs 2>&1 |
+            Tee-Object -Variable buildOutput
         $buildExitCode = $LASTEXITCODE
         
         if ($buildExitCode -eq 0) {
             break
         }
+
+        $buildText = ($buildOutput | ForEach-Object { [string]$_ }) -join "`n"
+        $isTransientAndroidDeployFailure =
+            Test-TransientAndroidDeployFailure -Output $buildText
+
+        if (-not $isTransientAndroidDeployFailure) {
+            Write-Error "Build/deploy failed with a deterministic build or configuration error; skipping ADB retries."
+            break
+        }
         
         if ($attempt -lt $maxAttempts) {
-            Write-Warn "Build/deploy failed (attempt $attempt). ADB0010/broken-pipe errors are transient on API 30 — will retry."
+            Write-Warn "Build/deploy failed with a recognized transient Android deployment error (attempt $attempt); will retry."
         }
     }
     
     $buildDuration = (Get-Date) - $buildStartTime
     
     if ($buildExitCode -ne 0) {
-        Write-Error "Build/deploy failed after $maxAttempts attempts with exit code $buildExitCode"
+        Write-Error "Build/deploy failed after $attempt attempt(s) with exit code $buildExitCode"
         exit $buildExitCode
     }
     
@@ -227,6 +293,7 @@ if ($Platform -eq "android") {
     # main pipeline never sets _MustTrim and does not hit MT0180 on the Tahoe pool,
     # so matching its recipe fixes the link failure without reintroducing MT0180.
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:BuildIpa=true", "-p:_UseNativeAot=false", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -360,6 +427,7 @@ if ($Platform -eq "android") {
     $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
     Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -381,8 +449,103 @@ if ($Platform -eq "android") {
     
     Write-Success "Build completed in $($buildDuration.TotalSeconds) seconds"
     
-    # MacCatalyst apps run directly on the Mac - no install step needed
-    # The test framework (Appium) will launch the app directly
+    # MacCatalyst apps run directly on the Mac, so there is no install step -
+    # but "no install" is not the same as "nothing to do". The Appium mac2
+    # driver (WebDriverAgentMac) resolves the app through LaunchServices via
+    # the bundleId capability, and a freshly built Catalyst .app has never been
+    # registered there. When the lookup fails, OneTimeSetUp fails for EVERY
+    # test in the run with "The app representing com.microsoft.maui.uitests
+    # could not be found", which reads like a harness outage rather than a
+    # missing registration. Setting MAC_APP_PATH / options.App alone is NOT
+    # sufficient, because the driver still resolves by bundleId first.
+    #
+    # BuildAndRunHostApp.ps1 already documents this and registers the bundle,
+    # but the replication verification path never calls it: across the 22
+    # cached runs that hit this error - every one of them catalyst, and every
+    # one blocked with nothing published - `lsregister` appears zero times.
+    # That is 14% of all cached catalyst runs lost to a missing one-line step.
+    # It is intermittent rather than universal because agents are reused, so a
+    # warm agent can still carry the registration from an earlier run.
+    #
+    # Registration failure is deliberately a warning and not a build failure:
+    # on an agent where the bundle is already registered the run still works,
+    # and turning that into a hard failure would break runs that pass today.
+    $catalystAppPath = $null
+    $searchPath = Split-Path -Parent $ProjectPath
+    $artifactsDir = $null
+    while ($searchPath -and -not $artifactsDir) {
+        $testPath = Join-Path $searchPath "artifacts"
+        if (Test-Path $testPath) { $artifactsDir = $testPath; break }
+        $parent = Split-Path -Parent $searchPath
+        if ($parent -eq $searchPath) { break }
+        $searchPath = $parent
+    }
+
+    if ($artifactsDir) {
+        $catalystAppPath = Get-ChildItem -Path $artifactsDir -Filter "*.app" -Recurse -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.FullName -match "$Configuration.*$macRid.*$projectName" -and
+                $_.FullName -notmatch "[\\/]obj[\\/]"
+            } |
+            Select-Object -First 1
+    }
+
+    if ($catalystAppPath) {
+        $env:MAC_APP_PATH = $catalystAppPath.FullName
+        Write-Info "MacCatalyst app bundle: $($catalystAppPath.FullName)"
+
+        # Probe both known lsregister locations so a differing framework
+        # symlink layout on any agent macOS version cannot silently skip
+        # registration.
+        $lsregisterCandidates = @(
+            "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+            "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"
+        )
+        $lsregister = $lsregisterCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if ($lsregister) {
+            & $lsregister -f $catalystAppPath.FullName 2>&1 | Out-Null
+            # Report the actual result. Claiming success unconditionally is how
+            # a failed registration turns into an unexplained Appium error four
+            # attempts later.
+            if ($LASTEXITCODE -eq 0) {
+                # lsregister exiting 0 only means *an* app was registered. The
+                # mac2 driver resolves by bundleId, so registering the wrong
+                # bundle looks exactly like success here and surfaces four
+                # attempts later as "The app representing <id> could not be
+                # found". Build 15090165 spent a full catalyst run that way with
+                # only Maui.Controls.Sample.Sandbox.app ever registered, and the
+                # console said "Registered MacCatalyst app with LaunchServices".
+                # Reading the identifier back turns that into one honest line.
+                $registeredBundleId = ''
+                $infoPlist = Join-Path $catalystAppPath.FullName 'Contents/Info.plist'
+                if (Test-Path -LiteralPath $infoPlist) {
+                    $registeredBundleId = (& /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' $infoPlist 2>$null)
+                    if ($LASTEXITCODE -ne 0) { $registeredBundleId = '' }
+                }
+                $registeredBundleId = ([string]$registeredBundleId).Trim()
+
+                if ($registeredBundleId) {
+                    Write-Success "Registered MacCatalyst app with LaunchServices: $registeredBundleId"
+                } else {
+                    Write-Success "Registered MacCatalyst app with LaunchServices"
+                    Write-Warn "Could not read CFBundleIdentifier from $infoPlist; the bundle the driver resolves is unverified"
+                }
+
+                if ($BundleId -and $registeredBundleId -and $registeredBundleId -ne $BundleId) {
+                    Write-Warn ("Registered '$registeredBundleId' but the test driver resolves '$BundleId'; " +
+                        "the Appium session will fail with 'The app representing $BundleId " +
+                        "could not be found' until the right bundle is registered.")
+                }
+            } else {
+                Write-Warn "lsregister exited $LASTEXITCODE; the mac2 driver may not resolve the bundle by id"
+            }
+        } else {
+            Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
+        }
+    } else {
+        Write-Warn "Could not locate the built MacCatalyst .app under $artifactsDir; skipping LaunchServices registration"
+    }
+
     Write-Success "MacCatalyst app ready (runs on host Mac)"
     
     #endregion
@@ -391,7 +554,21 @@ if ($Platform -eq "android") {
     
     Write-Step "Building $projectName for Windows..."
     
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration) + $hostAppBuildProps
+    # Hosted Windows agents do not reliably have the matching Windows App
+    # Runtime registered. Bundle it beside the unpackaged Sandbox executable
+    # so launch does not depend on machine-wide DeploymentManager activation.
+    # Do not pass WindowsAppSDKSelfContained on the command line because global
+    # properties propagate to library project references that have no Windows
+    # architecture. The Sandbox project scopes that property to its Windows app.
+    $buildArgs = @(
+        $ProjectPath,
+        "-f", $TargetFramework,
+        "-c", $Configuration,
+        "-p:RuntimeIdentifierOverride=win-x64",
+        "-p:WindowsPackageType=None",
+        "-p:_MauiReplicationUnpackaged=true"
+    ) + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

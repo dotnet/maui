@@ -85,6 +85,9 @@ param(
     [switch]$Rebuild,
 
     [Parameter(Mandatory = $false)]
+    [switch]$NoRestore,
+
+    [Parameter(Mandatory = $false)]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
@@ -112,6 +115,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$DeviceUdid,
+
+    [Parameter(Mandatory = $false)]
+    [string]$RepositoryRoot,
 
     [Parameter(Mandatory = $false)]
     [switch]$SkipXcodeVersionCheck
@@ -321,7 +327,7 @@ function Get-XHarnessTestResultSnapshot {
     }
 
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -like $ResultFileName })) {
         $snapshot[$file.FullName] = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
     }
 
@@ -341,7 +347,7 @@ function Get-FreshXHarnessTestResultFiles {
 
     $freshFiles = [System.Collections.Generic.List[string]]::new()
     foreach ($file in @(Get-ChildItem -Path $OutputDirectory -File -Recurse -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -ieq $ResultFileName })) {
+            Where-Object { $_.Name -like $ResultFileName })) {
         $fingerprint = "$($file.Length):$($file.LastWriteTimeUtc.Ticks)"
         if (-not $BeforeSnapshot.ContainsKey($file.FullName) -or $BeforeSnapshot[$file.FullName] -ne $fingerprint) {
             $freshFiles.Add($file.FullName)
@@ -1040,13 +1046,18 @@ $PlatformConfigs = @{
     }
 }
 
-# Find repository root
-$RepoRoot = $PSScriptRoot
-while ($RepoRoot -and -not (Test-Path (Join-Path $RepoRoot ".git"))) {
-    $RepoRoot = Split-Path $RepoRoot -Parent
+# Find repository root. Trusted pipeline copies can live outside the checkout,
+# so replication passes the already resolved source root explicitly.
+if (-not [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepositoryRoot).Path
+} else {
+    $RepoRoot = $PSScriptRoot
+    while ($RepoRoot -and -not (Test-Path (Join-Path $RepoRoot ".git"))) {
+        $RepoRoot = Split-Path $RepoRoot -Parent
+    }
 }
 
-if (-not $RepoRoot) {
+if (-not $RepoRoot -or -not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git'))) {
     Write-Error "Could not find repository root. Run this script from within the maui repository."
     exit 1
 }
@@ -1107,7 +1118,6 @@ try {
     # Derive artifact folder name from the project file name.
     $artifactName = [System.IO.Path]::GetFileNameWithoutExtension($projectPath)
     $IncludeClasses = ConvertTo-DeviceTestClassFilterValue -Value $IncludeClasses
-    
     Write-Host ""
     Write-Host "Project:       $Project" -ForegroundColor Yellow
     Write-Host "Project Path:  $projectPath" -ForegroundColor Yellow
@@ -1150,6 +1160,9 @@ try {
         "-f", $platformConfig.Tfm
         "/p:TreatWarningsAsErrors=false"
     )
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
 
     if ($Rebuild) {
         $buildArgs += "-t:Rebuild"
@@ -1380,7 +1393,11 @@ try {
     $script:XHarnessDeviceTestSummary = $null
     $script:XHarnessDeviceTestResultFiles = @()
     $testOutputDirectory = $OutputDirectory
-    $xharnessResultFileName = "testResults.xml"
+    $xharnessResultFileName = if ($Platform -in @("ios", "maccatalyst")) {
+        "xunit-test-*.xml"
+    } else {
+        "testResults.xml"
+    }
 
     if ($platformConfig.UsesXHarness) {
         # ═══════════════════════════════════════════════════════════

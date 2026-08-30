@@ -147,9 +147,15 @@ mutation MinimizeComment($subjectId: ID!, $classifier: ReportedContentClassifier
 }
 
 function Get-GitHubIssueComments {
-    param([Parameter(Mandatory = $true)][int]$PRNumber)
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
 
-    $raw = gh api "repos/dotnet/maui/issues/$PRNumber/comments?per_page=100" --paginate 2>$null
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui'
+    )
+
+    $raw = gh api "repos/$Repository/issues/$PRNumber/comments?per_page=100" --paginate 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($raw)) {
         return @()
     }
@@ -168,6 +174,9 @@ function Hide-StaleMauiBotIssueComments {
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
 
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui',
+
         [switch]$IncludeAISummary,
         [switch]$IncludeLegacyGate,
         [switch]$IncludeMergeConflict,
@@ -184,7 +193,7 @@ function Hide-StaleMauiBotIssueComments {
         [switch]$DryRun
     )
 
-    $comments = Get-GitHubIssueComments -PRNumber $PRNumber
+    $comments = Get-GitHubIssueComments -PRNumber $PRNumber -Repository $Repository
     if (-not $comments -or $comments.Count -eq 0) {
         return
     }
@@ -231,6 +240,9 @@ function Remove-StaleMauiBotIssueComments {
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
 
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui',
+
         [switch]$IncludeAISummary,
         [switch]$IncludeLegacyGate,
         [switch]$IncludeMergeConflict,
@@ -249,6 +261,7 @@ function Remove-StaleMauiBotIssueComments {
 
     Hide-StaleMauiBotIssueComments `
         -PRNumber $PRNumber `
+        -Repository $Repository `
         -IncludeAISummary:$IncludeAISummary `
         -IncludeLegacyGate:$IncludeLegacyGate `
         -IncludeMergeConflict:$IncludeMergeConflict `
@@ -262,9 +275,15 @@ function Remove-StaleMauiBotIssueComments {
 }
 
 function Get-GitHubPullRequestReviews {
-    param([Parameter(Mandatory = $true)][int]$PRNumber)
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PRNumber,
 
-    $raw = gh api "repos/dotnet/maui/pulls/$PRNumber/reviews?per_page=100" --paginate 2>$null
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui'
+    )
+
+    $raw = gh api "repos/$Repository/pulls/$PRNumber/reviews?per_page=100" --paginate 2>$null
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($raw)) {
         return @()
     }
@@ -282,6 +301,9 @@ function Dismiss-MauiBotPullRequestReview {
     param(
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
+
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui',
 
         [Parameter(Mandatory = $true)]
         [object]$Review,
@@ -302,7 +324,7 @@ function Dismiss-MauiBotPullRequestReview {
             Set-Content -LiteralPath $tmp -Encoding UTF8 -NoNewline
 
         Write-Host "  Dismissing stale review ID $($Review.id)..." -ForegroundColor Gray
-        $dismissOutput = gh api --method PUT "repos/dotnet/maui/pulls/$PRNumber/reviews/$($Review.id)/dismissals" --input $tmp.FullName 2>&1
+        $dismissOutput = gh api --method PUT "repos/$Repository/pulls/$PRNumber/reviews/$($Review.id)/dismissals" --input $tmp.FullName 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "dismissal failed (exit code $LASTEXITCODE): $dismissOutput"
         }
@@ -322,6 +344,9 @@ function Hide-StaleMauiBotPullRequestReviews {
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
 
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui',
+
         [switch]$IncludeAISummary,
         [switch]$IncludeTryFix,
 
@@ -337,7 +362,7 @@ function Hide-StaleMauiBotPullRequestReviews {
         [switch]$DryRun
     )
 
-    $reviews = Get-GitHubPullRequestReviews -PRNumber $PRNumber
+    $reviews = Get-GitHubPullRequestReviews -PRNumber $PRNumber -Repository $Repository
     if (-not $reviews -or $reviews.Count -eq 0) {
         return
     }
@@ -377,6 +402,7 @@ function Hide-StaleMauiBotPullRequestReviews {
         if ($shouldDismiss) {
             Dismiss-MauiBotPullRequestReview `
                 -PRNumber $PRNumber `
+                -Repository $Repository `
                 -Review $review `
                 -Reason 'Superseded by a newer MauiBot review run.' `
                 -DryRun:$DryRun | Out-Null
@@ -390,6 +416,9 @@ function Dismiss-StaleMauiBotTryFixReviews {
         [Parameter(Mandatory = $true)]
         [int]$PRNumber,
 
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+        [string]$Repository = 'dotnet/maui',
+
         [string[]]$PreserveNodeIds = @(),
         [string[]]$PreserveIds = @(),
 
@@ -399,6 +428,7 @@ function Dismiss-StaleMauiBotTryFixReviews {
 
     Hide-StaleMauiBotPullRequestReviews `
         -PRNumber $PRNumber `
+        -Repository $Repository `
         -IncludeTryFix `
         -PreserveNodeIds $PreserveNodeIds `
         -PreserveIds $PreserveIds `

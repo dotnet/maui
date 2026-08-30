@@ -1,0 +1,590 @@
+#!/usr/bin/env pwsh
+
+Set-StrictMode -Version Latest
+
+BeforeAll {
+    $script:ModulePath = Join-Path $PSScriptRoot '..' 'shared' 'Get-ReplicationCertification.ps1'
+    . $script:ModulePath
+
+    function New-Evidence {
+        param([hashtable]$Override = @{})
+
+        $evidence = @{
+            runtimeAvailable       = $true
+            baselineRuns           = 3
+            baselineFailures       = 3
+            stableFailureMessage   = $true
+            exactlyOneTestExecuted = $true
+            negativeControlRuns    = 0
+            negativeControlPasses  = 0
+            fixControlRuns         = 0
+            fixControlPasses       = 0
+            restorationRuns        = 0
+            restorationFailures    = 0
+        }
+        foreach ($key in $Override.Keys) { $evidence[$key] = $Override[$key] }
+        return $evidence
+    }
+}
+
+Describe 'Get-ReplicationCertificationRank' {
+    It 'orders levels by strength rather than alphabetically' {
+        $blocked = Get-ReplicationCertificationRank -Level 'runtime-blocked'
+        $candidate = Get-ReplicationCertificationRank -Level 'candidate-scenario'
+        $observed = Get-ReplicationCertificationRank -Level 'observed-reproduction'
+        $certified = Get-ReplicationCertificationRank -Level 'trigger-certified'
+
+        $blocked | Should -BeLessThan $candidate
+        $candidate | Should -BeLessThan $observed
+        $observed | Should -BeLessThan $certified
+    }
+
+    It 'ranks certified above candidate even though it sorts earlier as text' {
+        ('candidate-scenario' -lt 'trigger-certified') | Should -BeTrue
+        (Get-ReplicationCertificationRank -Level 'trigger-certified') |
+            Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'candidate-scenario')
+    }
+
+    It 'refuses an unknown level rather than defaulting it' {
+        { Get-ReplicationCertificationRank -Level 'totally-certified' } | Should -Throw
+    }
+}
+
+Describe 'Get-ReplicationCertification runtime availability' {
+    It 'reports runtime-blocked when nothing could be executed' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ runtimeAvailable = $false })
+
+        $result.Level | Should -Be 'runtime-blocked'
+    }
+
+    It 'never claims a reproduction when the runtime was unavailable' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ runtimeAvailable = $false })
+
+        $result.ClaimsReproduction | Should -BeFalse
+    }
+
+    It 'still publishes a blocked run as an explicitly marked draft' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ runtimeAvailable = $false })
+
+        $result.Publish | Should -BeTrue
+        $result.Reasons -join ' ' | Should -Match 'runtime was unavailable'
+    }
+
+    It 'ignores otherwise perfect evidence when the runtime was unavailable' {
+        $evidence = New-Evidence @{
+            runtimeAvailable      = $false
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+        }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'runtime-blocked'
+    }
+}
+
+Describe 'Get-ReplicationCertification baseline requirements' {
+    It 'withholds a scenario that failed fewer times than required' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ baselineFailures = 2 })
+
+        $result.Level | Should -Be 'candidate-scenario'
+        $result.Publish | Should -BeFalse
+    }
+
+    It 'withholds a scenario whose failure message drifted between runs' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ stableFailureMessage = $false })
+
+        $result.Level | Should -Be 'candidate-scenario'
+        $result.Reasons -join ' ' | Should -Match 'identical across runs'
+    }
+
+    It 'withholds a scenario that cannot prove exactly one test ran' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ exactlyOneTestExecuted = $false })
+
+        $result.Level | Should -Be 'candidate-scenario'
+        $result.Reasons -join ' ' | Should -Match 'exactly one test'
+    }
+
+    It 'treats a control that never ran as unattempted rather than passing' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{ baselineRuns = 0; baselineFailures = 0 })
+
+        $result.Level | Should -Be 'candidate-scenario'
+        $result.Controls.Baseline.Attempted | Should -BeFalse
+    }
+
+    It 'honours a stricter required run count' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence) -RequiredRuns 5
+
+        $result.Level | Should -Be 'candidate-scenario'
+    }
+}
+
+Describe 'Get-ReplicationCertification observed reproduction' {
+    It 'reaches observed-reproduction on a repeatable identical failure' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence)
+
+        $result.Level | Should -Be 'observed-reproduction'
+        $result.Publish | Should -BeTrue
+    }
+
+    It 'does not promote a repeatable failure that was never controlled' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence)
+
+        $result.Level | Should -Not -Be 'trigger-certified'
+        $result.Reasons -join ' ' | Should -Match 'No negative control'
+    }
+}
+
+Describe 'Get-ReplicationCertification causal controls' {
+    It 'certifies when removing the trigger makes the test pass' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'refuses to certify when the test stays red without the trigger' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 0 }
+        $result = Get-ReplicationCertification -Evidence $evidence
+
+        $result.Level | Should -Be 'observed-reproduction'
+        $result.Reasons -join ' ' | Should -Match 'unrelated to the report'
+    }
+
+    It 'refuses to certify when the negative control passed only intermittently' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 2 }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'observed-reproduction'
+    }
+
+    It 'certifies the full matrix when fix and restoration arms agree' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            fixControlRuns        = 3
+            fixControlPasses      = 3
+            restorationRuns       = 3
+            restorationFailures   = 3
+        }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'certified-oracle'
+    }
+
+    It 'stops at trigger-certified when no fix was authored' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 }
+
+        # Three arms is the honest ceiling without a fix: the failure is tied
+        # to the reported trigger, but nothing has shown a change repairs it.
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'stops at trigger-certified when the fix arm ran but the restoration arm did not' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            fixControlRuns        = 3
+            fixControlPasses      = 3
+        }
+
+        # Green with a fix applied is not attribution. Without the arm that
+        # takes the fix away again, a rebuild explains the result equally well.
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'stops at trigger-certified when the restoration arm ran but the fix arm did not' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            restorationRuns       = 3
+            restorationFailures   = 3
+        }
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'ranks a certified oracle above a trigger-certified reproduction' {
+        (Get-ReplicationCertificationRank -Level 'certified-oracle') |
+            Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'trigger-certified')
+    }
+
+    It 'treats a fix that does not turn the test green as decisive against the test' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            fixControlRuns        = 3
+            fixControlPasses      = 0
+        }
+        $result = Get-ReplicationCertification -Evidence $evidence
+
+        $result.Level | Should -Be 'observed-reproduction'
+        $result.Reasons -join ' ' | Should -Match 'not measuring the defect'
+    }
+
+    It 'treats a reverted fix that stays green as decisive against the test' {
+        $evidence = New-Evidence @{
+            negativeControlRuns   = 3
+            negativeControlPasses = 3
+            fixControlRuns        = 3
+            fixControlPasses      = 3
+            restorationRuns       = 3
+            restorationFailures   = 0
+        }
+        $result = Get-ReplicationCertification -Evidence $evidence
+
+        $result.Level | Should -Be 'observed-reproduction'
+        $result.Reasons -join ' ' | Should -Match 'not attributable to the defect'
+    }
+
+    It 'does not penalise a run that simply skipped the optional fix arms' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 }
+        $result = Get-ReplicationCertification -Evidence $evidence
+
+        $result.Reasons | Should -BeNullOrEmpty
+        $result.Controls.Fix.Attempted | Should -BeFalse
+    }
+}
+
+Describe 'Get-ReplicationCertification input shapes' {
+    It 'reads evidence supplied as a deserialised JSON object' {
+        $evidence = New-Evidence @{ negativeControlRuns = 3; negativeControlPasses = 3 } |
+            ConvertTo-Json | ConvertFrom-Json
+
+        (Get-ReplicationCertification -Evidence $evidence).Level | Should -Be 'trigger-certified'
+    }
+
+    It 'treats absent fields as absent evidence rather than as success' {
+        $result = Get-ReplicationCertification -Evidence ([pscustomobject]@{ runtimeAvailable = $true })
+
+        $result.Level | Should -Be 'candidate-scenario'
+    }
+}
+
+Describe 'Get-ReplicationCertificationSummary' {
+    It 'states the level it is reporting' {
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence)
+
+        Get-ReplicationCertificationSummary -Certification $certification |
+            Should -Match 'Evidence level: `observed-reproduction`'
+    }
+
+    It 'shows a skipped arm as not run rather than omitting it' {
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence)
+        $summary = Get-ReplicationCertificationSummary -Certification $certification
+
+        $summary | Should -Match 'Minimal product fix \| passes \| not run'
+    }
+
+    It 'reports every arm of the matrix' {
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence)
+        $summary = Get-ReplicationCertificationSummary -Certification $certification
+
+        foreach ($arm in @('Baseline', 'Trigger removed', 'Minimal product fix', 'Fix reverted')) {
+            $summary | Should -Match ([regex]::Escape($arm))
+        }
+    }
+
+    It 'marks a satisfied arm distinctly from a failed one' {
+        $passing = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 3
+            })
+        $failing = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 0
+            })
+
+        (Get-ReplicationCertificationSummary -Certification $passing) | Should -Match 'Trigger removed \| passes \| 3/3 ✅'
+        (Get-ReplicationCertificationSummary -Certification $failing) | Should -Match 'Trigger removed \| passes \| 0/3 ❌'
+    }
+
+    It 'surfaces the limitations that blocked certification' {
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 0
+            })
+
+        Get-ReplicationCertificationSummary -Certification $certification | Should -Match 'Limitations:'
+    }
+
+    It 'does not describe a blocked run as a reproduction' {
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence @{ runtimeAvailable = $false })
+        $summary = Get-ReplicationCertificationSummary -Certification $certification
+
+        $summary | Should -Match 'not a reproduction'
+    }
+}
+
+Describe 'Get-ReplicationCertification failure status' {
+    It 'names the unmet gate rather than leaving a reviewer to infer it' {
+        $cases = @(
+            @{ Status = 'RUNTIME UNAVAILABLE'     ; Evidence = @{ runtimeAvailable = $false } },
+            @{ Status = 'SOURCE CHANGES REQUIRED' ; Evidence = @{ baselineRuns = 0; baselineFailures = 0 } },
+            @{ Status = 'ZERO TESTS SELECTED'     ; Evidence = @{ exactlyOneTestExecuted = $false } },
+            @{ Status = 'WRONG ASSERTION REACHED' ; Evidence = @{ stableFailureMessage = $false } },
+            @{ Status = 'EVIDENCE INCOMPLETE'     ; Evidence = @{} },
+            @{ Status = 'CAUSAL CONTROL FAILED'   ; Evidence = @{ negativeControlRuns = 3; negativeControlPasses = 1 } },
+            @{ Status = 'CERTIFIED'               ; Evidence = @{ negativeControlRuns = 3; negativeControlPasses = 3 } }
+        )
+
+        foreach ($case in $cases) {
+            $result = Get-ReplicationCertification -Evidence (New-Evidence $case.Evidence)
+            $result.Status | Should -Be $case.Status
+        }
+    }
+
+    It 'reports the first unmet gate when several are unmet at once' {
+        # A run with no runtime also has no selection and no control, and it
+        # has to report the reason that made all the others unknowable.
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                runtimeAvailable       = $false
+                exactlyOneTestExecuted = $false
+                stableFailureMessage   = $false
+            })
+
+        $result.Status | Should -Be 'RUNTIME UNAVAILABLE'
+    }
+
+    It 'separates a missing control from a failed one' {
+        # Both are uncertified, but one was never asked and the other answered
+        # no, and a reviewer acts differently on each.
+        $missing = Get-ReplicationCertification -Evidence (New-Evidence @{})
+        $failed = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 0
+            })
+
+        $missing.Status | Should -Be 'EVIDENCE INCOMPLETE'
+        $failed.Status | Should -Be 'CAUSAL CONTROL FAILED'
+        $missing.Status | Should -Not -Be $failed.Status
+    }
+
+    It 'prints the status in the pull request body unless the run certified' {
+        $uncertified = Get-ReplicationCertification -Evidence (New-Evidence @{ exactlyOneTestExecuted = $false })
+        $certified = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns = 3; negativeControlPasses = 3
+                fixControlRuns = 3; fixControlPasses = 3
+                restorationRuns = 3; restorationFailures = 3
+            })
+
+        (Get-ReplicationCertificationSummary -Certification $uncertified) |
+            Should -Match 'Status:.*ZERO TESTS SELECTED'
+        (Get-ReplicationCertificationSummary -Certification $certified) |
+            Should -Not -Match 'Status:'
+    }
+
+    It 'uses only the agreed vocabulary so the phrase can be matched exactly' {
+        $allowed = @(
+            'RUNTIME UNAVAILABLE', 'SOURCE CHANGES REQUIRED', 'ZERO TESTS SELECTED',
+            'WRONG ASSERTION REACHED', 'CAUSAL CONTROL FAILED', 'EVIDENCE INCOMPLETE',
+            'CERTIFIED')
+
+        foreach ($runtime in @($true, $false)) {
+            foreach ($runs in @(0, 3)) {
+                foreach ($exact in @($true, $false)) {
+                    foreach ($stable in @($true, $false)) {
+                        foreach ($passes in @(0, 1, 3)) {
+                            $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                                    runtimeAvailable       = $runtime
+                                    baselineRuns           = $runs
+                                    baselineFailures       = $runs
+                                    exactlyOneTestExecuted = $exact
+                                    stableFailureMessage   = $stable
+                                    negativeControlRuns    = $passes
+                                    negativeControlPasses  = $passes
+                                })
+                            $allowed | Should -Contain $result.Status
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+Describe 'The top level claims only the arms that ran' {
+    # This rule was written when the fix and restoration arms never executed,
+    # so a level named 'certified-oracle' claimed causality no run had
+    # gathered. The fix phase now runs both arms, and the level is offered
+    # again - awarded only when all four arms agree.
+    #
+    # The old assertion survived that reversal because it piped the accessor,
+    # which wrapped its array so the pipeline yielded one Object[] rather than
+    # five strings. It compared a collection against a string and passed
+    # whatever the levels were.
+    It 'offers the level the fix arms exist to earn' {
+        @(Get-ReplicationCertificationLevels) | Should -Contain 'certified-oracle'
+    }
+
+    It 'ranks that level above every other, so nothing outranks a full matrix' {
+        $levels = @(Get-ReplicationCertificationLevels)
+        $top = Get-ReplicationCertificationRank -Level 'certified-oracle'
+        foreach ($level in ($levels | Where-Object { $_ -ne 'certified-oracle' })) {
+            $top | Should -BeGreaterThan (Get-ReplicationCertificationRank -Level $level)
+        }
+    }
+
+    It 'enumerates the levels rather than yielding one nested collection' {
+        # The nesting is what made the assertion above vacuous for as long as
+        # it disagreed with the design, so it is asserted directly.
+        $piped = @(Get-ReplicationCertificationLevels | ForEach-Object { $_ })
+        $piped.Count | Should -BeGreaterThan 1
+        foreach ($level in $piped) { $level | Should -BeOfType ([string]) }
+    }
+
+    It 'names the top level for the trigger it actually controlled' {
+        $result = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns   = 3
+                negativeControlPasses = 3
+            })
+        $result.Level | Should -Be 'trigger-certified'
+        $result.Status | Should -Be 'CERTIFIED'
+    }
+
+    It 'keeps the top level strongest so the rename did not reorder strength' {
+        (Get-ReplicationCertificationRank -Level 'trigger-certified') |
+            Should -BeGreaterThan (Get-ReplicationCertificationRank -Level 'observed-reproduction')
+    }
+
+    It 'says a skipped fix arm was out of scope, not merely absent' {
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 3
+                    negativeControlPasses = 3
+                }))
+        $text = $summary -join "`n"
+        $text | Should -Match 'Minimal product fix \| passes \| not run \(out of scope\)'
+        $text | Should -Match 'Fix reverted \| fails \| not run \(out of scope\)'
+    }
+
+    It 'still reports a genuinely missing baseline as plain "not run"' {
+        # Only the fix arms are skipped by policy. A baseline or negative
+        # control that did not run is a gap, and labelling it out of scope
+        # would excuse exactly the evidence this grader exists to demand.
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 0
+                    negativeControlPasses = 0
+                }))
+        $text = $summary -join "`n"
+        $text | Should -Match 'Trigger removed \| passes \| not run$|Trigger removed \| passes \| not run\s'
+        $text | Should -Not -Match 'Trigger removed \| passes \| not run \(out of scope\)'
+    }
+
+    It 'tells the reader in prose that this is not a full regression oracle' {
+        $summary = Get-ReplicationCertificationSummary -Certification (
+            Get-ReplicationCertification -Evidence (New-Evidence @{
+                    negativeControlRuns   = 3
+                    negativeControlPasses = 3
+                }))
+        ($summary -join "`n") | Should -Match 'not a full regression oracle'
+    }
+}
+
+Describe 'A certification level is bound to the inputs it was earned on' {
+    BeforeAll {
+        . (Join-Path $PSScriptRoot '..' 'shared' 'Assert-ReplicationCertificationBinding.ps1')
+    }
+
+    It 'still grades on exactly the four causal arms and nothing else' {
+        # The binding says what a grade was computed over. It must not become a
+        # fifth arm: a run that failed the negative control is not rescued by a
+        # matching digest, and one that passed all four is not promoted by it.
+        $levels = @(Get-ReplicationCertificationLevels)
+        $levels | Should -Be @(
+            'runtime-blocked',
+            'candidate-scenario',
+            'observed-reproduction',
+            'trigger-certified',
+            'certified-oracle')
+
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns   = 3
+                negativeControlPasses = 3
+                fixControlRuns        = 3
+                fixControlPasses      = 3
+                restorationRuns       = 3
+                restorationFailures   = 3
+            })
+        $certification.Level | Should -Be 'certified-oracle'
+        @($certification.Controls.Keys | Sort-Object) |
+            Should -Be @('Baseline', 'Fix', 'Negative', 'Restoration')
+
+        # No binding-specific field is consulted anywhere in the grader. The
+        # generic names ('platform', 'evidence', 'digest') are excluded because
+        # they are ordinary English in a file full of prose; the ones listed
+        # here are the ones that would mean the grader started reading the
+        # binding.
+        $source = Get-Content -LiteralPath $script:ModulePath -Raw
+        foreach ($name in @(
+            'trustedSourceVersion',
+            'trustedTreeHash',
+            'pipelineSha256',
+            'replicationBaseSha',
+            'executionHeadSha',
+            'testPatchSha256',
+            'fixPatchSha256',
+            'trustedScripts')) {
+            (Get-ReplicationBindingFields) | Should -Contain $name
+            $source | Should -Not -Match ([regex]::Escape($name))
+        }
+    }
+
+    It 'names every immutable input a published grade rests on' {
+        # A field silently dropped from this list is an input the publisher
+        # stops checking, and nothing else would notice.
+        @(Get-ReplicationBindingFields) | Should -Be @(
+            'schemaVersion',
+            'issueNumber',
+            'platform',
+            'trustedSourceVersion',
+            'trustedTreeHash',
+            'pipelineSha256',
+            'replicationBaseSha',
+            'executionHeadSha',
+            'testPatchSha256',
+            'fixPatchSha256',
+            'selector',
+            'trustedScripts',
+            'evidence',
+            'digest')
+    }
+
+    It 'covers every artifact a grade is read from' {
+        $evidenceNames = @(Get-ReplicationBindingEvidenceNames)
+        foreach ($required in @(
+            'candidate.json',
+            'test.patch',
+            'fix.patch',
+            'evidence/evidence.json',
+            'evidence/repro.mp4',
+            'verification/verification-result.json',
+            'reproduction-result.json')) {
+            $evidenceNames | Should -Contain $required
+        }
+    }
+
+    It 'refuses a grade whose evidence document was swapped underneath it' {
+        # The concrete attack: keep the certified manifest, replace the
+        # verification result the grade was derived from.
+        $root = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'verification') -Force | Out-Null
+        try {
+            Set-Content -LiteralPath (Join-Path $root 'candidate.json') `
+                -Value '{"status":"reproduced"}' -Encoding utf8NoBOM
+            Set-Content -LiteralPath (Join-Path $root 'verification/verification-result.json') `
+                -Value '{"baselineRuns":3,"baselineFailures":3}' -Encoding utf8NoBOM
+
+            $binding = New-ReplicationCertificationBinding `
+                -IssueNumber 12345 -Platform 'android' -ArtifactRoot $root `
+                -TrustedSourceVersion ('a' * 40) -TrustedTreeHash ('d' * 64) `
+                -PipelineSha256 ('e' * 64) -ReplicationBaseSha ('b' * 40) `
+                -ExecutionHeadSha ('c' * 40) `
+                -TrustedScripts ([ordered]@{ 'scripts/Replicate-Issue.ps1' = ('1' * 64) })
+
+            Set-Content -LiteralPath (Join-Path $root 'verification/verification-result.json') `
+                -Value '{"baselineRuns":3,"baselineFailures":3,"negativeControlPasses":3}' `
+                -Encoding utf8NoBOM
+
+            {
+                Assert-ReplicationCertificationBinding `
+                    -Binding $binding -ArtifactRoot $root `
+                    -TrustedSourceVersion ('a' * 40)
+            } | Should -Throw '*verification/verification-result.json*'
+        } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

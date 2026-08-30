@@ -41,6 +41,15 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$PRNumber,
 
+    # Repository holding the pull request, in `owner/name` form. Defaults to the
+    # upstream project so every existing caller keeps its behaviour. The bot's own
+    # fix pull requests live on the testing fork, and a summary that always posted
+    # to dotnet/maui would either 404 or, far worse, attach a review to whichever
+    # unrelated upstream pull request happens to carry the same number.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
@@ -923,7 +932,7 @@ function Invoke-PostPullRequestReview {
             ConvertTo-Json -Depth 10 |
             Set-Content -Path $tempFile -Encoding UTF8
 
-        $response = gh api --method POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tempFile 2>&1
+        $response = gh api --method POST "repos/$Repository/pulls/$PRNumber/reviews" --input $tempFile 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "POST review failed (exit code $LASTEXITCODE): $response"
         }
@@ -1091,7 +1100,7 @@ $reviewEvent = Get-AIReviewEventForRun -ReportContent $phaseContentByKey['report
 # ============================================================================
 
 try {
-    $prMetadata = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '{author: .user.login, head: .head.sha}' 2>$null | ConvertFrom-Json
+    $prMetadata = gh api "repos/$Repository/pulls/$PRNumber" --jq '{author: .user.login, head: .head.sha}' 2>$null | ConvertFrom-Json
 } catch {
     Write-Host "⚠️ Failed to fetch current PR metadata: $_" -ForegroundColor Yellow
     $prMetadata = $null
@@ -1099,7 +1108,7 @@ try {
 $currentHeadSha = if ($prMetadata) { [string]$prMetadata.head } else { '' }
 $commitFull = if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) { $ReviewedCommit } else { $currentHeadSha }
 $commitSha7 = if ($commitFull.Length -ge 7) { $commitFull.Substring(0, 7) } else { "unknown" }
-$commitUrl = if ($commitFull) { "https://github.com/dotnet/maui/commit/$commitFull" } else { "#" }
+$commitUrl = if ($commitFull) { "https://github.com/$Repository/commit/$commitFull" } else { "#" }
 $prAuthor = if ($prMetadata) { [string]$prMetadata.author } else { $null }
 
 $snapshotNotice = $null
@@ -1112,7 +1121,7 @@ if (-not [string]::IsNullOrWhiteSpace($ReviewedCommit)) {
 "@
     } elseif (-not $currentHeadSha.Equals($ReviewedCommit, [StringComparison]::OrdinalIgnoreCase)) {
         $currentHeadSha7 = $currentHeadSha.Substring(0, [Math]::Min(7, $currentHeadSha.Length))
-        $currentHeadUrl = "https://github.com/dotnet/maui/commit/$currentHeadSha"
+        $currentHeadUrl = "https://github.com/$Repository/commit/$currentHeadSha"
         $reviewEvent = 'COMMENT'
         $snapshotNotice = @"
 > [!WARNING]
@@ -1161,7 +1170,7 @@ $existingCommentIds = @()
 $existingReviewIds = @()
 $existingBodies = @()
 
-$existingRaw = gh api "repos/dotnet/maui/issues/$PRNumber/comments" --paginate 2>$null
+$existingRaw = gh api "repos/$Repository/issues/$PRNumber/comments" --paginate 2>$null
 if ($existingRaw) {
     try {
         $allComments = $existingRaw | ConvertFrom-Json
@@ -1375,6 +1384,7 @@ if ($reviewEvent -eq 'COMMENT') {
     if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotIssueComments `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeLegacyGate `
             -IncludeMergeConflict `
@@ -1384,14 +1394,14 @@ if ($reviewEvent -eq 'COMMENT') {
     }
     # Best-effort collapse of any stale AI-Summary REVIEWS (from before the issue-comment design).
     if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
-        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
+        Hide-StaleMauiBotPullRequestReviews -PRNumber $PRNumber -Repository $Repository -IncludeAISummary -IncludeTryFix -Reason "superseded by a newer AI Summary" -DismissFormalReviews
     }
 
     try {
         $bodyTmp = New-TemporaryFile
         @{ body = $commentBody } | ConvertTo-Json -Depth 6 | Set-Content $bodyTmp.FullName -Encoding UTF8
         Write-Host "Posting a new AI Summary issue comment (previous ones collapsed as outdated)..." -ForegroundColor Yellow
-        $cRaw = gh api --method POST "repos/dotnet/maui/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
+        $cRaw = gh api --method POST "repos/$Repository/issues/$PRNumber/comments" --input $bodyTmp.FullName 2>&1
         Remove-Item $bodyTmp.FullName -ErrorAction SilentlyContinue
         if ($LASTEXITCODE -eq 0) {
             $review = $cRaw | ConvertFrom-Json
@@ -1411,6 +1421,7 @@ if (-not $review) {
     if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotIssueComments `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeLegacyGate `
             -IncludeMergeConflict `
@@ -1422,6 +1433,7 @@ if (-not $review) {
     if (Get-Command Hide-StaleMauiBotPullRequestReviews -ErrorAction SilentlyContinue) {
         Hide-StaleMauiBotPullRequestReviews `
             -PRNumber $PRNumber `
+            -Repository $Repository `
             -IncludeAISummary `
             -IncludeTryFix `
             -Reason "stale generated PR review" `

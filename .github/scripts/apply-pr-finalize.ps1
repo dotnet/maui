@@ -66,6 +66,7 @@ param(
     [string]$WinnerFile,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
     [string]$Repo = "dotnet/maui",
 
     [Parameter(Mandatory = $false)]

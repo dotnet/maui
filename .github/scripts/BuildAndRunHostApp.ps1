@@ -64,7 +64,9 @@ param(
 
     [string]$DeviceUdid,
 
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [switch]$NoRestore
 )
 
 function Get-AndroidRetryClassification {
@@ -316,9 +318,13 @@ $buildDeployParams = @{
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
     Rebuild = $Rebuild
+    NoRestore = $NoRestore
 }
 
-if ($Platform -eq "ios") {
+if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
+    # Catalyst needs this as much as iOS does: the mac2 driver resolves the app
+    # by bundleId, so Build-AndDeploy can only tell whether it registered the
+    # bundle the tests will ask for if it is told which one that is.
     $buildDeployParams.BundleId = $AppBundleId
 }
 
@@ -614,6 +620,9 @@ try {
         "--logger", "console;verbosity=normal",
         "--results-directory", $trxResultsDir,
         "/p:VStestUseMSBuildOutput=false")
+    if ($NoRestore) {
+        $testArgs += '--no-restore'
+    }
     if ($effectiveFilter) {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }

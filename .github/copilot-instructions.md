@@ -244,10 +244,11 @@ The repository includes specialized custom agents and reusable skills for specif
    - **Trigger phrases**: "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX", "continue PR #XXXXX"
    - **Do NOT use for**: Just running tests manually → Use `sandbox-agent`
 
-2. **write-tests-agent** - Agent for writing tests. Determines test type (UI vs XAML) and invokes the appropriate skill (`write-ui-tests`, `write-xaml-tests`)
+2. **write-tests-agent** - Agent for writing tests. Selects the lightest type in this order: Unit/XAML, Device, then UI, and invokes the matching skill.
    - **Use when**: Creating new tests for issues or PRs
-   - **Capabilities**: Test type determination (UI and XAML), skill invocation, test verification
+   - **Capabilities**: Unit, XAML, device, and UI test selection; skill invocation; expected-failure verification
    - **Trigger phrases**: "write tests for #XXXXX", "create tests", "add test coverage"
+   - **Do NOT use for**: Empirical issue reproduction with device/video evidence → Use `replicate-issue`
 
 3. **sandbox-agent** - Specialized agent for working with the Sandbox app for testing, validation, and experimentation
    - **Use when**: User wants to manually test PR functionality or reproduce issues
@@ -327,18 +328,33 @@ Skills are modular capabilities that can be invoked directly or used by agents. 
    - **Trigger phrases**: "write XAML tests for #XXXXX", "test XamlC behavior", "reproduce XAML parsing bug"
    - **Output**: Test files for Controls.Xaml.UnitTests
 
-9. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
+8. **write-unit-tests** (`.github/skills/write-unit-tests/SKILL.md`)
+   - **Purpose**: Creates guarded, targeted unit tests for managed behavior that needs no native device context
+   - **Trigger phrases**: "write unit tests for #XXXXX", "add managed regression test"
+   - **Output**: Add-only unit test that fails with the exact issue guard enabled
+
+9. **write-device-tests** (`.github/skills/write-device-tests/SKILL.md`)
+   - **Purpose**: Creates guarded device tests for native handlers, platform APIs, rendering, or lifecycle
+   - **Trigger phrases**: "write device test for #XXXXX", "test native handler behavior"
+   - **Output**: Add-only device test verified on the selected platform
+
+10. **replicate-issue** (`.github/skills/replicate-issue/SKILL.md`)
+   - **Purpose**: Reconstructs a sanitized issue in Sandbox, captures on-device evidence, and produces the lightest guarded failing test
+   - **Use only with**: Trusted local issue context and runner-selected device metadata
+   - **Safety**: No network, shell, publication, external repository/archive downloads, or product fixes
+
+11. **verify-tests-fail-without-fix** (`.github/skills/verify-tests-fail-without-fix/SKILL.md`)
    - **Purpose**: Verifies tests catch the bug before fix and pass with fix. Auto-detects test type (UI, device, unit, XAML) and dispatches to the appropriate runner.
    - **Two modes**: Verify failure only (test creation) or full verification (test + fix)
    - **Used by**: After creating tests, before considering PR complete
 
-10. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
+12. **run-integration-tests** (`.github/skills/run-integration-tests/SKILL.md`)
    - **Purpose**: Build, pack, and run .NET MAUI integration tests locally
    - **Trigger phrases**: "run integration tests", "test templates locally", "run macOSTemplates tests", "run RunOniOS tests"
    - **Categories**: Build, WindowsTemplates, macOSTemplates, Blazor, MultiProject, Samples, AOT, RunOnAndroid, RunOniOS
    - **Note**: **ALWAYS use this skill** instead of manual `dotnet test` commands for integration tests
 
-11. **dependency-flow** (`.github/skills/dependency-flow/SKILL.md`)
+13. **dependency-flow** (`.github/skills/dependency-flow/SKILL.md`)
     - **Purpose**: MAUI-specific dependency flow rules, channel conventions, and feed lookup workflows
     - **Trigger phrases**: "feeds for .NET MAUI X.Y.Z", "where is MAUI build", "promote build to public feed", "what channels is MAUI on", "subscription health for MAUI"
     - **Wraps**: `maestro-cli` skill (from `dotnet-dnceng@dotnet-arcade-skills` plugin) and maestro MCP tools

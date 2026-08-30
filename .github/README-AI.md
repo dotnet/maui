@@ -205,7 +205,7 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 - **`pr-review/pr-gate.md`** - Phase 2: Test verification (phase doc, not a standalone skill)
 - **`pr-review/pr-report.md`** - Phase 4: Final recommendation (phase doc, not a standalone skill)
 - **`agents/sandbox-agent.agent.md`** - Sandbox agent for testing and experimentation
-- **`agents/write-tests-agent.agent.md`** - Test writing agent (dispatches to skills like write-ui-tests)
+- **`agents/write-tests-agent.agent.md`** - Test writing agent (selects unit/XAML, device, or UI skills)
 - **`agents/learn-from-pr.agent.md`** - Extracts lessons from PRs and applies improvements
 
 ### Agent Files
@@ -213,7 +213,7 @@ Agents work with **time budgets as estimates for planning**, not hard deadlines:
 Agent files in the `.github/agents/` directory:
 
 - **`agents/sandbox-agent.agent.md`** - Sandbox app testing and experimentation
-- **`agents/write-tests-agent.agent.md`** - Test writing (invokes skills like write-ui-tests)
+- **`agents/write-tests-agent.agent.md`** - Test writing (prefers unit/XAML, then device, then UI)
 - **`agents/learn-from-pr.agent.md`** - Extracts PR lessons and applies repo improvements
 
 ### Shared Instruction Files
@@ -252,6 +252,9 @@ Reusable skills in `.github/skills/` that agents can invoke:
 - **`verify-tests-fail-without-fix/`** - Verifies UI tests catch bugs (auto-detects mode based on git diff)
 - **`write-ui-tests/`** - Creates UI tests for issues following MAUI conventions
 - **`write-xaml-tests/`** - Creates XAML unit tests for parsing, XamlC, and source generation issues
+- **`write-unit-tests/`** - Creates guarded unit reproduction tests for managed behavior
+- **`write-device-tests/`** - Creates guarded native/device reproduction tests
+- **`replicate-issue/`** - Bounded Sandbox, device evidence, and failing-test issue replication workflow
 - **`azdo-build-investigator/`** - Investigates CI failures for PRs (build errors, Helix test logs, binlog analysis) via dotnet/arcade-skills plugin
 
 ### Recent Improvements (January 2026)
@@ -367,7 +370,7 @@ For issues or questions about the AI agent instructions:
 
 **Agent Files**:
 - 3 agent files (sandbox-agent.agent.md, write-tests-agent.agent.md, learn-from-pr.agent.md)
-- 15 skills (pr-review, try-fix, verify-tests-fail-without-fix, write-ui-tests, write-xaml-tests, azdo-build-investigator, code-review, evaluate-pr-tests, find-reviewable-pr, issue-triage, learn-from-pr, pr-finalize, run-device-tests, run-helix-tests, run-integration-tests) + 3 phase docs (pr-preflight, pr-gate, pr-report)
+- 18 skills, including pr-review, try-fix, replicate-issue, verify-tests-fail-without-fix, all four test-authoring paths, and the existing build/review/investigation skills, plus 3 phase docs (pr-preflight, pr-gate, pr-report)
 - All validated and consistent with consolidated structure
 
 **Automation**:

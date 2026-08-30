@@ -37,6 +37,25 @@
     Test filter to pass to dotnet test (e.g., "FullyQualifiedName~Issue12345").
     If not provided, auto-detects from test files in the git diff.
 
+.PARAMETER TestProject
+    Trusted project key for an explicitly targeted unit or device test.
+
+.PARAMETER TestProjectPath
+    Trusted repository-relative project path for an explicitly targeted unit test.
+
+.PARAMETER TestClass
+    Trusted fully-qualified class name used for exact test isolation.
+
+.PARAMETER TestMethod
+    Trusted method name used for exact test isolation.
+
+.PARAMETER MachineResultPath
+    Optional replication-only JSON output containing the exact targeted failure message.
+
+.PARAMETER DeviceTestScriptPath
+    Optional trusted device-test runner path. Replication supplies the runner captured
+    before the source worktree is restored to the reproduction baseline.
+
 .PARAMETER FixFiles
     (Optional) Array of file paths to revert. If not provided, auto-detects from git diff
     by excluding test directories. If no fix files are found, runs in verify failure only mode.
@@ -81,6 +100,24 @@ param(
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
+    [string]$TestProject,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestProjectPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestClass,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TestMethod,
+
+    [Parameter(Mandatory = $false)]
+    [string]$MachineResultPath,
+
+    [Parameter(Mandatory = $false)]
+    [string]$DeviceTestScriptPath,
+
+    [Parameter(Mandatory = $false)]
     [string[]]$FixFiles,
 
     [Parameter(Mandatory = $false)]
@@ -90,15 +127,52 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
+
+    [Parameter(Mandatory = $false)]
     [switch]$RequireFullVerification,
+
+    # What this run is being asked to prove. The mechanics are identical either
+    # way — run the test, report whether it failed — but the meaning of that
+    # result is inverted for a negative control, where a still-failing test is
+    # bad news. Only the console wording changes; exit codes and the machine
+    # report are deliberately untouched so every existing caller and validator
+    # keeps reading exactly what it reads today.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Reproduction", "NegativeControl")]
+    [string]$Purpose = "Reproduction",
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
-    [string]$TestType
+    [string]$TestType,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$NoRestore
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = git rev-parse --show-toplevel
+
+$resolvedDeviceTestScriptPath = if ([string]::IsNullOrWhiteSpace($DeviceTestScriptPath)) {
+    Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+} else {
+    [IO.Path]::GetFullPath($DeviceTestScriptPath)
+}
+if (-not (Test-Path -LiteralPath $resolvedDeviceTestScriptPath -PathType Leaf)) {
+    throw "Device-test runner was not found: $resolvedDeviceTestScriptPath"
+}
+
+if (-not [string]::IsNullOrWhiteSpace($MachineResultPath)) {
+    if (-not [IO.Path]::IsPathRooted($MachineResultPath)) {
+        $MachineResultPath = Join-Path $RepoRoot $MachineResultPath
+    }
+    $machineResultDirectory = Split-Path -Parent $MachineResultPath
+    if ($machineResultDirectory) {
+        New-Item -ItemType Directory -Path $machineResultDirectory -Force | Out-Null
+    }
+    Remove-Item -LiteralPath $MachineResultPath -Force -ErrorAction SilentlyContinue
+}
 
 # Normalize platform name (accept both "catalyst" and "maccatalyst")
 if ($Platform -eq "maccatalyst") {
@@ -217,22 +291,11 @@ if (-not $PRNumber) {
         Write-Host "✅ Auto-detected PR #$PRNumber from branch name" -ForegroundColor Green
     } else {
         $foundPR = $false
-        # Try gh cli - first try 'gh pr view' for current branch
-        try {
-            $prInfo = gh pr view --json number 2>$null | ConvertFrom-Json
-            if ($prInfo -and $prInfo.number) {
-                $PRNumber = $prInfo.number
-                $foundPR = $true
-                Write-Host "✅ Auto-detected PR #$PRNumber from gh cli (pr view)" -ForegroundColor Green
-            }
-        } catch {
-            # gh pr view failed, will try fallback
-        }
-        
-        # Fallback: search for PRs with this branch as head (works across forks)
-        if (-not $foundPR) {
+        # Search for PRs with this branch as head (works across forks).
+        # `gh pr view --repo` without an explicit selector is a hard error.
+        if (-not [string]::IsNullOrWhiteSpace($currentBranch)) {
             try {
-                $prList = gh pr list --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
+                $prList = gh pr list --repo $Repository --head $currentBranch --json number --limit 1 2>$null | ConvertFrom-Json
                 if ($prList -and $prList.Count -gt 0 -and $prList[0].number) {
                     $PRNumber = $prList[0].number
                     $foundPR = $true
@@ -491,6 +554,7 @@ function Invoke-TestRun {
                 Platform   = $Platform
                 TestFilter = $Filter
                 Rebuild    = $true
+                NoRestore  = $NoRestore
             }
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
@@ -502,7 +566,11 @@ function Invoke-TestRun {
         }
 
         "XamlUnitTest" {
-            $projectPath = Join-Path $RepoRoot "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+            $projectPath = if ($MachineResultPath -and $DetectedProjectPath) {
+                Join-Path $RepoRoot $DetectedProjectPath
+            } else {
+                Join-Path $RepoRoot "src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj"
+            }
             Write-Host "🧪 Running XAML unit tests: $projectPath" -ForegroundColor Cyan
             Write-Host "   Filter: $Filter" -ForegroundColor Gray
 
@@ -527,6 +595,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -569,6 +640,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -590,7 +664,7 @@ function Invoke-TestRun {
             }
             $deviceProject = if ($DetectedProject) { $DetectedProject } else { "Controls" }
 
-            $deviceTestScript = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+            $deviceTestScript = $resolvedDeviceTestScriptPath
             Write-Host "🧪 Running device tests: $deviceProject on $devicePlatform" -ForegroundColor Cyan
             Write-Host "   Filter: $Filter" -ForegroundColor Gray
 
@@ -604,6 +678,7 @@ function Invoke-TestRun {
             $deviceParams = @{
                 Project       = $deviceProject
                 Platform      = $devicePlatform
+                RepositoryRoot = $RepoRoot
                 # Preserve XHarness/ADB crash diagnostics with the Gate artifact. The default
                 # `artifacts/log` directory is not published by this pipeline and is shared
                 # across A/B retries, so persistent APP_CRASH runs previously told maintainers
@@ -617,6 +692,7 @@ function Invoke-TestRun {
                 # artifacts/obj tree. Always rebuild the full P2P graph so a dependency
                 # compiled for the baseline cannot be reused for the with-fix run.
                 Rebuild = $true
+                NoRestore = $NoRestore
             }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
@@ -1009,6 +1085,7 @@ function Invoke-TestRunWithRetry {
         # requested platform SDK pack. Return immediately so they flow to INCONCLUSIVE without
         # burning repeated full test runs.
         if (-not $result.EnvError -or $result.SnapshotBaselineMissing -or $result.UnsupportedWorkloadPackFailure) {
+            $result.ResultLogFile = $logFileAttempt
             return $result
         }
 
@@ -1047,6 +1124,7 @@ function Invoke-TestRunWithRetry {
             $result.RetriesExhausted = $true
             $result.WindowsDeviceNoResultAttemptCount = $windowsDeviceNoResultAttemptCount
             $result.WindowsDeviceTargetTimeoutAttemptCount = $windowsDeviceTargetTimeoutAttemptCount
+            $result.ResultLogFile = $logFileAttempt
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
         }
@@ -1120,6 +1198,279 @@ function Invoke-TestRunConfirmed {
 # ============================================================
 # Parse test results from output (supports all test types)
 # ============================================================
+function Get-TargetedTestFailureMessage {
+    param(
+        [Parameter(Mandatory = $true)][string]$LogFile,
+        [Parameter(Mandatory = $true)][string]$TargetClass,
+        [Parameter(Mandatory = $true)][string]$TargetMethod,
+        [string]$TargetTestType = '',
+        [string]$TargetFilter = ''
+    )
+
+    if (-not (Test-Path -LiteralPath $LogFile -PathType Leaf)) {
+        return ''
+    }
+
+    $content = Get-Content -LiteralPath $LogFile -Raw
+    $shortClass = ($TargetClass -split '\.')[-1]
+    $identities = @(
+        "$TargetClass.$TargetMethod",
+        "$shortClass.$TargetMethod",
+        $TargetMethod
+    ) | Sort-Object -Unique
+
+    $segments = [Collections.Generic.List[string]]::new()
+    foreach ($identity in $identities) {
+        $escapedIdentity = [regex]::Escape($identity)
+        $patterns = @(
+            "(?ms)^\s*Failed\s+$escapedIdentity(?=\s|\(|\[|$).*?(?=^\s*(?:Failed|Passed|Skipped)\s+\S|^\s*Total tests:|\z)",
+            "(?ms)^\s*\[xUnit\.net[^\r\n]*\]\s+$escapedIdentity(?=\s|\(|\[|$).*?(?=^\s*\[xUnit\.net[^\r\n]*\]\s+\S+.*\[(?:FAIL|PASS)\]\s*$|^\s*Failed\s+\S|^\s*Total tests:|\z)",
+            "(?ms)^\s*\[FAIL\]\s+$escapedIdentity(?=\s|\(|$).*?(?=^\s*\[(?:FAIL|PASS)\]\s+\S|\z)",
+            "(?ms)^\s*\[(?:UI|Unit|Device|XamlUnit)Test\]\s+$escapedIdentity(?=\s|\(|:|$).*?(?=^\s*\[(?:UI|Unit|Device|XamlUnit)Test\]\s+$escapedIdentity\s*:|\z)"
+        )
+        foreach ($pattern in $patterns) {
+            foreach ($match in [regex]::Matches($content, $pattern)) {
+                $segments.Add($match.Value)
+            }
+        }
+    }
+
+    $consoleFailureMessage = ''
+    foreach ($segment in $segments) {
+        $messageMatch = [regex]::Match(
+            $segment,
+            '(?ms)^\s*(?:\[xUnit\.net[^\r\n]*\]\s*)?Error Message:\s*\r?\n(?<message>.*?)(?=^\s*(?:\[xUnit\.net[^\r\n]*\]\s*)?(?:Stack Trace:|Standard Output Messages?:)|^\s*(?:Failed|Passed|Skipped)\s+\S|\z)'
+        )
+        if (-not $messageMatch.Success) {
+            continue
+        }
+
+        $messageLines = @(
+            $messageMatch.Groups['message'].Value -split '\r?\n' |
+                ForEach-Object {
+                    ($_ -replace '^\s*\[xUnit\.net[^\]]*\]\s*', '').TrimEnd()
+                } |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        )
+        if ($messageLines.Count -gt 0) {
+            $consoleFailureMessage = ($messageLines -join [Environment]::NewLine).Trim()
+            break
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($consoleFailureMessage) -and
+        $TargetTestType -notin @('UITest', 'DeviceTest')) {
+        return $consoleFailureMessage
+    }
+
+    $repoPath = [IO.Path]::GetFullPath($RepoRoot).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $pathComparison = if ($IsWindows) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+    $candidateResultPaths = [Collections.Generic.List[string]]::new()
+    if ($TargetTestType -ceq 'UITest' -and
+        -not [string]::IsNullOrWhiteSpace($TargetFilter)) {
+        $trxBaseName = $TargetFilter -replace '[^A-Za-z0-9._-]', '_'
+        $candidateResultPaths.Add((Join-Path `
+            $RepoRoot `
+            "CustomAgentLogsTmp/UITests/TestResults/$trxBaseName.trx"))
+    }
+    $deviceDiagnosticsPath = "$LogFile.diagnostics"
+    if ($TargetTestType -ceq 'DeviceTest' -and
+        (Test-Path -LiteralPath $deviceDiagnosticsPath -PathType Container)) {
+        foreach ($resultFile in @(Get-ChildItem `
+            -LiteralPath $deviceDiagnosticsPath `
+            -Filter '*.xml' `
+            -File `
+            -Recurse `
+            -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTimeUtc -Descending |
+                Select-Object -First 20)) {
+            $candidateResultPaths.Add($resultFile.FullName)
+        }
+    }
+
+    foreach ($candidatePath in @($candidateResultPaths)) {
+        if ([string]::IsNullOrWhiteSpace($candidatePath)) {
+            continue
+        }
+        try {
+            $fullPath = [IO.Path]::GetFullPath($candidatePath)
+        } catch {
+            continue
+        }
+        if (-not $fullPath.StartsWith(
+            "$repoPath$([IO.Path]::DirectorySeparatorChar)",
+            $pathComparison)) {
+            continue
+        }
+        $resultFile = Get-Item -LiteralPath $fullPath -ErrorAction SilentlyContinue
+        if (-not $resultFile -or $resultFile.Length -gt 10MB) {
+            continue
+        }
+
+        $xmlReader = $null
+        try {
+            $xmlSettings = [Xml.XmlReaderSettings]::new()
+            $xmlSettings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+            $xmlSettings.XmlResolver = $null
+            $xmlSettings.MaxCharactersInDocument = 10MB
+            $xmlReader = [Xml.XmlReader]::Create($fullPath, $xmlSettings)
+            $resultXml = [Xml.XmlDocument]::new()
+            $resultXml.XmlResolver = $null
+            $resultXml.Load($xmlReader)
+        } catch {
+            continue
+        } finally {
+            if ($xmlReader) {
+                $xmlReader.Dispose()
+            }
+        }
+        $messages = [Collections.Generic.List[string]]::new()
+        # The gate requires the runner's own document as proof the named test
+        # actually executed, so retain the first parseable one whether or not a
+        # failure message is extracted from it. Retaining only on extraction
+        # made the evidence conditional on where the message happened to come
+        # from, which would refuse a valid run whose message came from console
+        # output instead.
+        if ([string]::IsNullOrWhiteSpace($script:ReplicationAuthoritativeResultPath)) {
+            $script:ReplicationAuthoritativeResultPath = $fullPath
+        }
+        foreach ($testNode in @($resultXml.SelectNodes('//test'))) {
+            if (
+                $testNode.GetAttribute('type') -cne $TargetClass -or
+                $testNode.GetAttribute('method') -cne $TargetMethod -or
+                $testNode.GetAttribute('result') -cne 'Fail'
+            ) {
+                continue
+            }
+            $messageNode = $testNode.SelectSingleNode('failure/message')
+            $message = if ($messageNode) {
+                [string]$messageNode.InnerText
+            } else {
+                [string]$testNode.GetAttribute('message')
+            }
+            $message = $message.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($message) -and
+                -not $messages.Contains($message)) {
+                $messages.Add($message)
+            }
+        }
+        if ($messages.Count -gt 0) {
+            return ($messages -join [Environment]::NewLine)
+        }
+
+        foreach ($resultNode in @($resultXml.SelectNodes(
+            '//*[local-name()="UnitTestResult"]'
+        ))) {
+            if ($resultNode.GetAttribute('outcome') -cne 'Failed') {
+                continue
+            }
+            $resultName = [string]$resultNode.GetAttribute('testName')
+            $isTarget = $false
+            foreach ($identity in $identities) {
+                if ($resultName -ceq $identity -or
+                    $resultName.StartsWith(
+                        "$identity(",
+                        [StringComparison]::Ordinal)) {
+                    $isTarget = $true
+                    break
+                }
+            }
+            if (-not $isTarget) {
+                continue
+            }
+            $messageNode = $resultNode.SelectSingleNode(
+                './*[local-name()="Output"]/*[local-name()="ErrorInfo"]/*[local-name()="Message"]'
+            )
+            $message = if ($messageNode) {
+                [string]$messageNode.InnerText
+            } else {
+                ''
+            }
+            $message = $message.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($message) -and
+                -not $messages.Contains($message)) {
+                $messages.Add($message)
+            }
+        }
+        if ($messages.Count -gt 0) {
+            return ($messages -join [Environment]::NewLine)
+        }
+    }
+
+    return $consoleFailureMessage
+}
+
+function Write-ReplicationVerifierMachineResult {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$TestEntry,
+        [Parameter(Mandatory = $true)][hashtable]$TestResult,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ActualFailureMessage
+    )
+
+    if ([string]::IsNullOrWhiteSpace($MachineResultPath)) {
+        return
+    }
+
+    $executedTestCount = -1
+    foreach ($countName in @('Total', 'TotalCount')) {
+        if ($TestResult.ContainsKey($countName)) {
+            $countValue = $TestResult[$countName]
+            if ($null -ne $countValue -and [int]::TryParse([string]$countValue, [ref]$null)) {
+                $executedTestCount = [int]$countValue
+                break
+            }
+        }
+    }
+
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run kept only its own summary of the result file.
+    # Retain the authoritative document next to the machine result so the
+    # evidence is the runner's own output rather than this script's reading.
+    $retainedResultName = ''
+    $authoritativePath = $script:ReplicationAuthoritativeResultPath
+    if (-not [string]::IsNullOrWhiteSpace($authoritativePath) -and
+        (Test-Path -LiteralPath $authoritativePath -PathType Leaf)) {
+        try {
+            $resultDirectory = Split-Path -Parent $MachineResultPath
+            # The credential-free gate accepts exactly two extensions here, so
+            # the name is normalised to one of them at the point it is written.
+            # Deriving it from whatever the runner happened to produce is how a
+            # retained result would silently become an unexpected artifact and
+            # discard a finished device reproduction, as it did for builds
+            # 15032408 and 15032410.
+            $extension = if ([IO.Path]::GetExtension($authoritativePath) -ieq '.trx') { '.trx' } else { '.xml' }
+            $retainedResultName = "verification-test-result$extension"
+            Copy-Item -LiteralPath $authoritativePath `
+                -Destination (Join-Path $resultDirectory $retainedResultName) -Force
+        } catch {
+            Write-Host "Could not retain the authoritative test result: $($_.Exception.Message)"
+            $retainedResultName = ''
+        }
+    }
+
+    [ordered]@{
+        schemaVersion = 1
+        testType = [string]$TestEntry.Type
+        testFilter = [string]$TestEntry.Filter
+        testProject = [string]$TestEntry.Project
+        testProjectPath = [string]$TestEntry.ProjectPath
+        testClass = [string]$TestEntry.ClassFilter
+        testMethod = [string]($TestEntry.Methods | Select-Object -First 1)
+        failed = -not [bool]$TestResult.Passed
+        executedTestCount = $executedTestCount
+        actualFailureMessage = $ActualFailureMessage
+        resultFile = $retainedResultName
+    } |
+        ConvertTo-Json -Depth 10 |
+        Set-Content -LiteralPath $MachineResultPath -Encoding utf8NoBOM
+}
+
 function Get-TestResultFromOutput {
     <#
     .SYNOPSIS
@@ -1589,6 +1940,15 @@ function Get-TestResultFromOutput {
         $errMatch = [regex]::Match($content, '(?m)^.*\berror\s+[A-Z]{2,}\d+\b.*$')
         if ($errMatch.Success) {
             $excerpt = $errMatch.Value.Trim()
+            # An absolute agent path and the trailing project reference consume
+            # most of the budget, so the message itself is what gets cut.
+            # Catalyst build 15031426 reported "'TestDevice' could not be found
+            # (are you missing a u" because 120 characters went to a directory
+            # the reader already knows. Keep the file name and the position.
+            $excerpt = [regex]::Replace(
+                $excerpt, '(?<![\w.])(?:[A-Za-z]:[\\/]|/)[^\s(]*[\\/]([^\\/\s(]+)', '$1')
+            $excerpt = [regex]::Replace($excerpt, '\s*\[[^\]]*\]\s*$', '')
+            $excerpt = ([regex]::Replace($excerpt, '\s+', ' ')).Trim()
             if ($excerpt.Length -gt 200) { $excerpt = $excerpt.Substring(0, 200) + "..." }
             $buildErrorExcerpt = $excerpt
         }
@@ -1717,7 +2077,20 @@ function Get-TestResultFromOutput {
     if ($content -match "Failed:\s*(\d+)") {
         $failCount = [int]$matches[1]
         if ($failCount -gt 0) {
-            return @{ Passed = $false; FailCount = $failCount; Failed = $failCount; PassCount = 0; Total = $failCount; Skipped = 0 }
+            # A failing run still has to report how many tests the filter actually
+            # selected. A contains-style filter can match several tests, and
+            # "one of them failed" is not the same evidence as "the one targeted
+            # test failed", so keep the sibling counts instead of assuming zero.
+            $alsoPassed = if ($content -match "Passed:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            $alsoSkipped = if ($content -match "Skipped:\s*(\d+)") { [int]$matches[1] } else { 0 }
+            return @{
+                Passed = $false
+                FailCount = $failCount
+                Failed = $failCount
+                PassCount = $alsoPassed
+                Total = $failCount + $alsoPassed + $alsoSkipped
+                Skipped = $alsoSkipped
+            }
         }
     }
 
@@ -1832,6 +2205,7 @@ function Get-GateTestDetectionParameters {
     } elseif (-not [string]::IsNullOrWhiteSpace($PullRequestNumber)) {
         # Local/non-review callers may not have a usable committed snapshot.
         $params.PRNumber = $PullRequestNumber
+        $params.Repository = $Repository
     }
 
     return $params
@@ -1948,16 +2322,37 @@ Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 # flags files that exist on the real base as "new in PR", removing them and
 # breaking the WITHOUT-fix build (build 14670709, #36274: BooleanBoxes.cs removed
 # -> BooleanBoxesTests.cs CS0103 -> gate INCONCLUSIVE instead of a real verdict).
-# Passing the explicit PR number makes `gh pr view` reliable; force-fetch the
-# tracking ref so Find-MergeBase step 1 (origin/<base>) resolves it directly.
+# Passing the explicit PR number makes `gh pr view` reliable. Fetch the selected
+# repository's current target-branch tip once, bind origin/<base> to that frozen
+# commit, and let Find-MergeBase step 1 resolve it directly.
 if (-not $BaseBranch -and $PRNumber) {
-    $detectedBase = gh pr view $PRNumber --json baseRefName -q .baseRefName 2>$null
+    $prBaseJson = @(& gh pr view $PRNumber --repo $Repository --json baseRefName 2>$null) -join "`n"
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prBaseJson)) {
+        throw "Could not resolve the target branch for $Repository#$PRNumber."
+    }
+    try {
+        $prBase = $prBaseJson | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        throw "GitHub returned invalid target-branch metadata for $Repository#$PRNumber."
+    }
+    $detectedBase = [string]$prBase.baseRefName
     if ($detectedBase) {
-        git fetch origin "+$($detectedBase):refs/remotes/origin/$detectedBase" --no-tags 2>$null | Out-Null
+        git fetch "https://github.com/$Repository.git" "refs/heads/$detectedBase" --no-tags 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not fetch the current target branch '$detectedBase' for $Repository#$PRNumber."
+        }
+        $detectedBaseSha = ([string](git rev-parse FETCH_HEAD 2>$null)).Trim()
+        if ($LASTEXITCODE -ne 0 -or $detectedBaseSha -notmatch '^[0-9a-fA-F]{40}$') {
+            throw "Could not capture the immutable current tip of '$detectedBase' for $Repository#$PRNumber."
+        }
+        git update-ref "refs/remotes/origin/$detectedBase" $detectedBaseSha
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not bind origin/$detectedBase to immutable base $detectedBaseSha."
+        }
         $BaseBranch = $detectedBase
-        Write-Host "✅ Resolved PR #$PRNumber base branch: $BaseBranch (fetched origin/$BaseBranch)" -ForegroundColor Green
+        Write-Host "✅ Resolved PR #$PRNumber current base branch: $BaseBranch at $detectedBaseSha from $Repository" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Could not resolve base branch for PR #$PRNumber; falling back to auto-detect" -ForegroundColor Yellow
+        throw "GitHub returned no target branch for $Repository#$PRNumber."
     }
 }
 
@@ -2071,12 +2466,36 @@ if ($DetectedFixFiles.Count -eq 0) {
         }
     } else {
         $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+        if ($MachineResultPath -and (-not $TestClass -or -not $TestMethod)) {
+            throw 'Explicit test verification requires -TestClass and -TestMethod.'
+        }
+        if ($MachineResultPath -and
+            $effectiveType -in @('UnitTest', 'XamlUnitTest') -and
+            -not $TestProjectPath) {
+            throw "Explicit $effectiveType verification requires -TestProjectPath."
+        }
+        if ($MachineResultPath -and $effectiveType -eq 'UnitTest' -and -not $TestProject) {
+            throw 'Explicit UnitTest verification requires -TestProject.'
+        }
+        if ($MachineResultPath -and $effectiveType -eq 'DeviceTest' -and -not $TestProject) {
+            throw 'Explicit DeviceTest verification requires -TestProject.'
+        }
+        $effectiveFilter = if (
+            $MachineResultPath -and
+            $effectiveType -in @('UnitTest', 'XamlUnitTest')
+        ) {
+            "FullyQualifiedName=$TestClass.$TestMethod"
+        } else {
+            $TestFilter
+        }
         $AllDetectedTests = @(@{
             Type = $effectiveType
             TestName = $TestFilter
-            Filter = $TestFilter
-            Project = $null
-            ProjectPath = $null
+            Filter = $effectiveFilter
+            Project = if ($MachineResultPath) { $TestProject } else { $null }
+            ProjectPath = if ($MachineResultPath) { $TestProjectPath } else { $null }
+            ClassFilter = if ($MachineResultPath) { $TestClass } else { $null }
+            Methods = if ($MachineResultPath) { @($TestMethod) } else { @() }
         })
     }
 
@@ -2177,6 +2596,29 @@ if ($DetectedFixFiles.Count -eq 0) {
         $allResults += $testResult
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($MachineResultPath)) {
+        if ($AllDetectedTests.Count -ne 1 -or $allResults.Count -ne 1) {
+            throw 'Machine-readable verification requires exactly one targeted test entry.'
+        }
+        $targetEntry = $AllDetectedTests[0]
+        $targetResult = $allResults[0]
+        $actualFailureMessage = if (-not $targetResult.Passed) {
+            Get-TargetedTestFailureMessage `
+                -LogFile ([string]$targetResult.ResultLogFile) `
+                -TargetClass ([string]$targetEntry.ClassFilter) `
+                -TargetMethod ([string]($targetEntry.Methods | Select-Object -First 1)) `
+                -TargetTestType ([string]$targetEntry.Type) `
+                -TargetFilter ([string]$targetEntry.Filter)
+        } else {
+            ''
+        }
+        $targetResult.FailureMessage = $actualFailureMessage
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry $targetEntry `
+            -TestResult $targetResult `
+            -ActualFailureMessage $actualFailureMessage
+    }
+
     # Evaluate results
     Write-Host ""
     Write-Host "=========================================="
@@ -2184,7 +2626,7 @@ if ($DetectedFixFiles.Count -eq 0) {
     Write-Host "=========================================="
     Write-Host ""
 
-    $allFailed = ($allResults | Where-Object { $_.Passed }).Count -eq 0
+    $allFailed = @($allResults | Where-Object { $_.Passed }).Count -eq 0
     # Env/build/parse errors mean the gate could NOT verify the test's behaviour. Those
     # must surface as INCONCLUSIVE (exit 3), not FAILED, so infra/build flakes don't
     # masquerade as a broken test — mirroring the full-verification mode's classification.
@@ -2202,9 +2644,23 @@ if ($DetectedFixFiles.Count -eq 0) {
         } elseif ($r.Error) {
             Write-Host "  $icon [$($r.TestType)] $($r.TestName): ⚠️ ERROR — $($r.Error)" -ForegroundColor Yellow
         } elseif (-not $r.Passed) {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            if ($Purpose -eq 'NegativeControl') {
+                # A failing test is the expected result for the reproduction arm
+                # and the refutation for this one. Printing the reproduction's
+                # green "(expected)" here told a reader the exact opposite of
+                # what was measured, directly above the CONTROL DID NOT CLEAR
+                # banner that says so - the same mistake the banner below was
+                # already written to avoid.
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ❌ (control did not clear)" -ForegroundColor Red
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): FAILED ✅ (expected)" -ForegroundColor Green
+            }
         } else {
-            Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            if ($Purpose -eq 'NegativeControl') {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ✅ (expected with the trigger removed)" -ForegroundColor Green
+            } else {
+                Write-Host "  $icon [$($r.TestType)] $($r.TestName): PASSED ❌ (should fail!)" -ForegroundColor Red
+            }
         }
     }
     Write-Host ""
@@ -2222,22 +2678,43 @@ if ($DetectedFixFiles.Count -eq 0) {
     }
 
     if ($allFailed) {
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-        Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
-        Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
-        Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        if ($Purpose -eq 'NegativeControl') {
+            # The trigger was removed and the test failed anyway, so this run
+            # establishes nothing about attribution. Saying "PASSED" here would
+            # tell a reader the exact opposite of what was measured.
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              CONTROL DID NOT CLEAR ❌                     ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  All $($allResults.Count) test(s) FAILED with the trigger removed.        ║" -ForegroundColor Red
+            Write-Host "║  The failure is NOT attributable to the reported trigger. ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              VERIFICATION PASSED ✅                       ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  All $($allResults.Count) test(s) FAILED as expected!                      ║" -ForegroundColor Green
+            Write-Host "║  This proves the tests correctly reproduce the bug.       ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        }
         Write-FailureOnlyReport -ReportStatus "✅ PASSED" -Results $allResults
         exit 0
     } else {
-        $passedCount = ($allResults | Where-Object { $_.Passed }).Count
-        Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
-        Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
-        Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
-        Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
-        Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
-        Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        $passedCount = @($allResults | Where-Object { $_.Passed }).Count
+        if ($Purpose -eq 'NegativeControl') {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
+            Write-Host "║              CONTROL CLEARED ✅                           ║" -ForegroundColor Green
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Green
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED with the trigger removed.         ║" -ForegroundColor Green
+            Write-Host "║  The failure is attributable to the reported trigger.     ║" -ForegroundColor Green
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+        } else {
+            Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Red
+            Write-Host "║              VERIFICATION FAILED ❌                       ║" -ForegroundColor Red
+            Write-Host "╠═══════════════════════════════════════════════════════════╣" -ForegroundColor Red
+            Write-Host "║  $passedCount/$($allResults.Count) test(s) PASSED but should FAIL!                   ║" -ForegroundColor Red
+            Write-Host "║  Those tests don't reproduce the bug. Revise them!        ║" -ForegroundColor Red
+            Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Red
+        }
         Write-FailureOnlyReport -ReportStatus "❌ FAILED" -Results $allResults
         exit 1
     }
@@ -2289,12 +2766,36 @@ if (-not $TestFilter) {
 } else {
     # Explicit filter provided — use single test entry with given/detected type
     $effectiveType = if ($TestType) { $TestType } else { "UITest" }
+    if ($MachineResultPath -and (-not $TestClass -or -not $TestMethod)) {
+        throw 'Explicit test verification requires -TestClass and -TestMethod.'
+    }
+    if ($MachineResultPath -and
+        $effectiveType -in @('UnitTest', 'XamlUnitTest') -and
+        -not $TestProjectPath) {
+        throw "Explicit $effectiveType verification requires -TestProjectPath."
+    }
+    if ($MachineResultPath -and $effectiveType -eq 'UnitTest' -and -not $TestProject) {
+        throw 'Explicit UnitTest verification requires -TestProject.'
+    }
+    if ($MachineResultPath -and $effectiveType -eq 'DeviceTest' -and -not $TestProject) {
+        throw 'Explicit DeviceTest verification requires -TestProject.'
+    }
+    $effectiveFilter = if (
+        $MachineResultPath -and
+        $effectiveType -in @('UnitTest', 'XamlUnitTest')
+    ) {
+        "FullyQualifiedName=$TestClass.$TestMethod"
+    } else {
+        $TestFilter
+    }
     $AllDetectedTests = @(@{
         Type = $effectiveType
         TestName = $TestFilter
-        Filter = $TestFilter
-        Project = $null
-        ProjectPath = $null
+        Filter = $effectiveFilter
+        Project = if ($MachineResultPath) { $TestProject } else { $null }
+        ProjectPath = if ($MachineResultPath) { $TestProjectPath } else { $null }
+        ClassFilter = if ($MachineResultPath) { $TestClass } else { $null }
+        Methods = if ($MachineResultPath) { @($TestMethod) } else { @() }
         Runner = switch ($effectiveType) {
             "UITest" { "BuildAndRunHostApp" }
             "DeviceTest" { "Run-DeviceTests" }
@@ -2574,9 +3075,9 @@ function Write-MarkdownReport {
         $woStates = @($WithoutFixResultsList | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
         $wStates  = @($WithFixResultsList    | ForEach-Object { if ($_.EnvError) { "ENV" } elseif ($_.BuildError) { "BUILD" } elseif ($_.FilterMismatch) { "NOMATCH" } elseif ($_.Passed) { "PASS" } else { "FAIL" } })
 
-        $allWoPass   = ($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
-        $allWoFail   = ($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
-        $allWFail    = ($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWoPass   = @($woStates | Where-Object { $_ -ne "PASS" }).Count -eq 0
+        $allWoFail   = @($woStates | Where-Object { $_ -ne "FAIL" }).Count -eq 0
+        $allWFail    = @($wStates  | Where-Object { $_ -ne "FAIL" }).Count -eq 0
         $hasRegression = $false
         # Regression: at least one test fixes (FAIL→PASS) AND at least one regresses (FAIL→FAIL)
         for ($i = 0; $i -lt $woStates.Count -and $i -lt $wStates.Count; $i++) {
@@ -3561,7 +4062,7 @@ foreach ($testEntry in $AllDetectedTests) {
 
 # Combine into a single summary for backward compatibility
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
+    Passed = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq $withoutFixResults.Count
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3720,6 +4221,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         "-t:Rebuild",
         "-p:TreatWarningsAsErrors=false"
     ) + $hostOnlyTargetFrameworkArgs
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
     $buildOut = Invoke-WithoutGhTokens { & dotnet @buildArgs 2>&1 }
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
@@ -3730,6 +4234,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
             "--logger", "console;verbosity=normal",
             "-p:TreatWarningsAsErrors=false"
         ) + $hostOnlyTargetFrameworkArgs + @("--filter", $retryEntry.Filter)
+        if ($NoRestore) {
+            $testArgs += '--no-restore'
+        }
         $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }
@@ -3783,7 +4290,7 @@ foreach ($t in $AllDetectedTests) {
 
 # Combine into a single summary for backward compatibility
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3846,7 +4353,7 @@ foreach ($t in $AllDetectedTests) {
 # Refresh the aggregate objects after trusted Windows evidence conversion mutates the
 # per-test results. These aggregates feed the persisted Markdown report.
 $withoutFixResult = @{
-    Passed = ($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withoutFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withoutFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withoutFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withoutFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3854,7 +4361,7 @@ $withoutFixResult = @{
     Total = ($withoutFixResults | Measure-Object -Property Total -Sum).Sum
 }
 $withFixResult = @{
-    Passed = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+    Passed = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
     PassCount = ($withFixResults | Measure-Object -Property PassCount -Sum).Sum
     FailCount = ($withFixResults | Measure-Object -Property FailCount -Sum).Sum
     Failed = ($withFixResults | Measure-Object -Property Failed -Sum).Sum
@@ -3873,8 +4380,8 @@ Write-Log "VERIFICATION RESULTS"
 $verificationPassed = $false
 # "Without fix" should FAIL and "with fix" should PASS. These two aggregates are kept for the
 # report/summary text, but the PASS/FAIL DECISION now uses the relaxed per-test rule below.
-$failedWithoutFix = ($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
-$passedWithFix = ($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
+$failedWithoutFix = @($withoutFixResults | Where-Object { $_.Passed }).Count -eq 0
+$passedWithFix = @($withFixResults | Where-Object { -not $_.Passed }).Count -eq 0
 
 # Print a clear comparison table
 Write-Host ""

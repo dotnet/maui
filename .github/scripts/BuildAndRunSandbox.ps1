@@ -19,6 +19,9 @@
 .PARAMETER DeviceUdid
     Specific device UDID to target (optional - will auto-detect if not provided)
 
+.PARAMETER RepoRoot
+    Repository root to operate on. Defaults to the script's repository location.
+
 .EXAMPLE
     ./BuildAndRunSandbox.ps1 -Platform android
     
@@ -41,16 +44,68 @@ param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
 
-    [string]$DeviceUdid
+    [string]$DeviceUdid,
+
+    [string]$RepoRoot,
+
+    [switch]$PrepareOnly,
+
+    [switch]$SkipBuildDeploy,
+
+    [switch]$LaunchOnly,
+
+    [switch]$EnforceNetworkIsolation
 )
+
+if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
+    throw 'PrepareOnly cannot be combined with SkipBuildDeploy or LaunchOnly.'
+}
+if ($LaunchOnly -and -not $SkipBuildDeploy) {
+    throw 'LaunchOnly requires SkipBuildDeploy.'
+}
 
 # Script configuration
 $ErrorActionPreference = "Stop"
-$RepoRoot = Resolve-Path "$PSScriptRoot/../.."
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $RepoRoot = [IO.Path]::GetFullPath(
+        [string](Resolve-Path "$PSScriptRoot/../.."))
+} else {
+    $RepoRoot = [IO.Path]::GetFullPath($RepoRoot)
+}
+if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
+    throw "Repository root does not exist: $RepoRoot"
+}
 $SandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
 $SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"
 $AppiumPort = 4723
+
+function Resolve-CatalystSandboxAppPath {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$BuildConfiguration,
+        [Parameter(Mandatory = $true)][string]$Framework,
+        [Parameter(Mandatory = $true)][string]$RuntimeIdentifier
+    )
+
+    $outputDirectory = Join-Path $RepositoryRoot (
+        "artifacts/bin/Maui.Controls.Sample.Sandbox/" +
+        "$BuildConfiguration/$Framework/$RuntimeIdentifier")
+    $apps = @(
+        Get-ChildItem `
+            -LiteralPath $outputDirectory `
+            -Filter '*.app' `
+            -Directory `
+            -ErrorAction SilentlyContinue
+    )
+    if ($apps.Count -ne 1) {
+        throw "Expected exactly one MacCatalyst Sandbox app under '$outputDirectory'; found $($apps.Count)."
+    }
+    if ($apps[0].Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw "MacCatalyst Sandbox app must not be a symbolic link: $($apps[0].FullName)"
+    }
+    return $apps[0].FullName
+}
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
@@ -200,17 +255,77 @@ $buildDeployParams = @{
     TargetFramework = $TargetFramework
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
+    EnforceNetworkIsolation = $EnforceNetworkIsolation
+    NoRestore = $EnforceNetworkIsolation
+}
+if ($EnforceNetworkIsolation) {
+    $buildDeployParams.NetworkIsolationManifestPath = Join-Path (
+        Split-Path -Parent $PSScriptRoot
+    ) 'source-overrides/ReplicationNetworkIsolationManifest.xml'
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId
 }
 
-& "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
+if (-not $SkipBuildDeploy) {
+    & "$PSScriptRoot/shared/Build-AndDeploy.ps1" @buildDeployParams
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Build or deployment failed"
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Build or deployment failed"
+        exit 1
+    }
+} else {
+    Write-Info "Skipping Sandbox build/deploy; using the prepared app."
+}
+
+if ($PrepareOnly) {
+    Write-Success "Sandbox build and deployment preparation completed"
+    return
+}
+
+$windowsApp = $null
+if ($Platform -eq "windows") {
+    $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
+    $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
+        Get-ChildItem `
+            -LiteralPath $windowsBin `
+            -Filter "Maui.Controls.Sample.Sandbox.exe" `
+            -Recurse `
+            -File `
+            -ErrorAction SilentlyContinue |
+            Select-Object -First 1 -ExpandProperty FullName
+    }
+    if (-not $windowsApp) {
+        throw "Windows Sandbox executable was not found under '$windowsBin'."
+    }
+}
+
+if ($LaunchOnly) {
+    Write-Step "Launching the prepared Sandbox before evidence recording..."
+    switch ($Platform) {
+        "android" {
+            # `am start` on a running task resumes it, so the Sandbox would keep
+            # the state the previous run left behind -- including a result label
+            # already reading BUG REPRODUCED:. Force a cold start.
+            & adb -s $DeviceUdid shell am force-stop com.microsoft.maui.sandbox | Out-Null
+            & adb -s $DeviceUdid shell am start -W `
+                -n "com.microsoft.maui.sandbox/com.microsoft.maui.sandbox.MainActivity"
+            if ($LASTEXITCODE -ne 0) {
+                throw "Launching the prepared Android Sandbox failed."
+            }
+        }
+        "ios" {
+            & xcrun simctl launch --terminate-running-process `
+                $DeviceUdid $AppBundleId
+            if ($LASTEXITCODE -ne 0) {
+                throw "Launching the prepared iOS Sandbox failed."
+            }
+        }
+        "windows" {
+            Start-Process -FilePath $windowsApp -WorkingDirectory (Split-Path -Parent $windowsApp)
+        }
+    }
 }
 
 # For MacCatalyst, launch the app BEFORE Appium test (similar to BuildAndRunHostApp.ps1)
@@ -222,44 +337,43 @@ if ($Platform -eq "catalyst") {
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLower()
     $rid = if ($arch -eq "arm64") { "maccatalyst-arm64" } else { "maccatalyst-x64" }
     
-    # Build app path
-    $appPath = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework/$rid/Sandbox.app"
-    
-    if (Test-Path $appPath) {
-        Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
-        Write-Info "App path: $appPath"
+    $appPath = Resolve-CatalystSandboxAppPath `
+        -RepositoryRoot $RepoRoot `
+        -BuildConfiguration $Configuration `
+        -Framework $TargetFramework `
+        -RuntimeIdentifier $rid
+    Write-Info "Launching MacCatalyst Sandbox app with dotnet run..."
+    Write-Info "App path: $appPath"
         
-        # Make executable
-        $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
-        if (Test-Path $executablePath) {
-            & chmod +x $executablePath
-        }
+    # Make executable
+    $executablePath = Join-Path $appPath "Contents/MacOS/Maui.Controls.Sample.Sandbox"
+    if (Test-Path $executablePath) {
+        & chmod +x $executablePath
+    }
         
-        # Use dotnet run with StandardOutputPath/StandardErrorPath
-        # This launches the app via 'open' but captures stdout/stderr to files
-        # Console.WriteLine on MacCatalyst goes to stderr
-        $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
-        $stderrFile = "$deviceLogFile.stderr"
-        $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
+    # Use dotnet run with StandardOutputPath/StandardErrorPath
+    # This launches the app via 'open' but captures stdout/stderr to files
+    # Console.WriteLine on MacCatalyst goes to stderr
+    $deviceLogFile = Join-Path $SandboxAppiumDir "catalyst-device.log"
+    $stderrFile = "$deviceLogFile.stderr"
+    $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
         
+    $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $catalystAppProcess) {
         Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
         & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
             -p:StandardOutputPath=$deviceLogFile `
             -p:StandardErrorPath=$stderrFile 2>&1 | Out-Null
-        
-        # dotnet run exits immediately when using 'open', give app time to launch
         Start-Sleep -Seconds 3
-        
-        # Get app process ID for later cleanup
         $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($catalystAppProcess) {
-            Write-Success "MacCatalyst Sandbox app launched (PID: $($catalystAppProcess.Id))"
-        } else {
-            Write-Success "MacCatalyst Sandbox app launched with log capture"
-        }
-    } else {
-        Write-Warn "MacCatalyst Sandbox app not found at: $appPath"
     }
+    Write-Success "MacCatalyst Sandbox app is running$(if ($catalystAppProcess) { " (PID: $($catalystAppProcess.Id))" })."
+}
+
+if ($LaunchOnly) {
+    Start-Sleep -Seconds 5
+    Write-Success "Prepared Sandbox launch settled before evidence recording"
+    return
 }
 
 #endregion
@@ -279,17 +393,23 @@ $appiumWasRunning = $false
 $appiumJob = $null
 
 try {
-    $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -TimeoutSec 2 -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:$AppiumPort/status" -NoProxy -TimeoutSec 2 -ErrorAction Stop
     Write-Success "Appium is already running on port $AppiumPort"
     $appiumWasRunning = $true
 } catch {
     Write-Info "Appium not running, starting server on port $AppiumPort..."
-    
+
+    $appiumExecutable = (Get-Command appium -ErrorAction Stop).Source
+    $appiumPath = $env:PATH
+    $appiumHome = $env:APPIUM_HOME
+
     # Start Appium in background with logging (appiumLogFile already defined above)
     $appiumJob = Start-Job -ScriptBlock {
-        param($logFile)
-        appium --log-level info > $logFile 2>&1
-    } -ArgumentList $appiumLogFile
+        param($executable, $logFile, $pathValue, $homeValue)
+        $env:PATH = $pathValue
+        $env:APPIUM_HOME = $homeValue
+        & $executable --log-level info > $logFile 2>&1
+    } -ArgumentList $appiumExecutable, $appiumLogFile, $appiumPath, $appiumHome
     
     Write-Info "Appium logs → $appiumLogFile"
     
@@ -303,7 +423,7 @@ try {
         $waited++
         
         try {
-            $response = Invoke-WebRequest -Uri "http://localhost:$AppiumPort/status" -TimeoutSec 1 -ErrorAction Stop
+            $response = Invoke-WebRequest -Uri "http://127.0.0.1:$AppiumPort/status" -NoProxy -TimeoutSec 1 -ErrorAction Stop
             $ready = $true
         } catch {
             # Continue waiting
@@ -311,8 +431,20 @@ try {
     }
     
     if (-not $ready) {
-        Stop-Job $appiumJob
+        if ($appiumJob.State -eq 'Running') {
+            Stop-Job $appiumJob
+        }
+        if (Test-Path -LiteralPath $appiumLogFile -PathType Leaf) {
+            Write-Host "Appium startup log:"
+            Get-Content -LiteralPath $appiumLogFile -Tail 100 |
+                ForEach-Object { Write-Host $_ }
+        } else {
+            Receive-Job $appiumJob -Keep -ErrorAction SilentlyContinue |
+                Select-Object -Last 100 |
+                ForEach-Object { Write-Host $_ }
+        }
         Remove-Job $appiumJob
+        $appiumJob = $null
         Write-Error "Appium failed to start within $maxWait seconds"
         exit 1
     }
@@ -344,42 +476,56 @@ if ($Platform -eq "android") {
 Push-Location $SandboxAppiumDir
 
 try {
-    # Set DEVICE_UDID environment variable for the test script
+    # Set trusted adapter inputs for the Appium runner.
     $env:DEVICE_UDID = $DeviceUdid
+    $env:REPLICATION_PLATFORM = $Platform
+    if ($Platform -eq "windows") {
+        $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
+    }
     
-    Write-Info "Executing: dotnet run RunWithAppiumTest.cs"
+    Write-Info "Executing trusted file-based runner: dotnet run --file RunWithAppiumTest.cs"
     Write-Info "Test will connect to device: $DeviceUdid"
     Write-Host ""
     
-    # Run the Appium test and capture output to extract PID
-    # Suppress CA1307 (culture) and CS0162 (unreachable code due to const platform)
-    $appiumOutput = "" | & dotnet run RunWithAppiumTest.cs /p:NoWarn="CA1307;CS0162" 2>&1
+    # Force file-based mode so project files in the working directory cannot
+    # bypass the trusted runner's package and Windows App SDK properties.
+    $appiumRunArguments = @('run', '--file', $AppiumTestScript)
+    if ($EnforceNetworkIsolation) {
+        $appiumRunArguments += '--no-restore'
+    }
+    $appiumOutput = "" | & dotnet @appiumRunArguments 2>&1
     
     # Display appium test output
     $appiumOutput | ForEach-Object { Write-Host $_ }
     
     $testExitCode = $LASTEXITCODE
     
-    # Extract PID from Appium test output (Android)
+    # Resolve the Android app PID through trusted adb after the plan completes.
     $sandboxPid = $null
-    $pidLine = $appiumOutput | Select-String -Pattern "SANDBOX_APP_PID=(\d+)"
-    if ($pidLine -and $pidLine.Matches.Groups.Count -gt 1) {
-        $sandboxPid = $pidLine.Matches.Groups[1].Value
-        Write-Host ""
-        Write-Info "Captured Sandbox app PID from Appium test: $sandboxPid"
-        
-        # Dump logcat buffer for this PID to file (Android)
-        if ($Platform -eq "android" -and $sandboxPid) {
-            Write-Info "Dumping logcat buffer for PID $sandboxPid..."
-            & adb -s $DeviceUdid logcat -d --pid=$sandboxPid > $deviceLogFile
-            Write-Info "Logcat dumped to: $deviceLogFile"
+    if ($Platform -eq "android") {
+        $pidOutput = @(
+            & adb -s $DeviceUdid shell pidof -s com.microsoft.maui.sandbox 2>$null
+        )
+        if ($LASTEXITCODE -eq 0) {
+            $pidText = ($pidOutput -join '').Trim()
+            if ($pidText -match '^[1-9][0-9]*$') {
+                $sandboxPid = $pidText
+            }
         }
+    }
+    if ($sandboxPid) {
+        Write-Host ""
+        Write-Info "Resolved Sandbox app PID after Appium plan: $sandboxPid"
+        
+        Write-Info "Dumping logcat buffer for PID $sandboxPid..."
+        & adb -s $DeviceUdid logcat -d --pid=$sandboxPid > $deviceLogFile
+        Write-Info "Logcat dumped to: $deviceLogFile"
     }
     elseif ($Platform -eq "android") {
         # Fallback: If we couldn't get PID, dump entire logcat buffer (unfiltered)
         # This ensures we always have logs for the agent to analyze
         Write-Host ""
-        Write-Warn "Could not capture app PID from Appium test output"
+        Write-Warn "Could not resolve the Sandbox app PID after the Appium plan"
         Write-Info "Dumping entire logcat buffer (unfiltered)..."
         & adb -s $DeviceUdid logcat -d > $deviceLogFile
         Write-Info "Logcat dumped to: $deviceLogFile (UNFILTERED - contains all apps)"
@@ -423,7 +569,7 @@ try {
         if ($logFileSize -lt 100) {
             Write-Info "Console output was minimal, using os_log fallback..."
             $logStartTime = (Get-Date).AddMinutes(-2).ToString("yyyy-MM-dd HH:mm:ss")
-            $catalystLogCommand = "log show --level debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
+            $catalystLogCommand = "log show --debug --predicate 'process contains `"Maui.Controls.Sample.Sandbox`" OR processImagePath contains `"Maui.Controls.Sample.Sandbox`"' --start `"$logStartTime`" --style compact"
             Invoke-Expression "$catalystLogCommand > `"$deviceLogFile`" 2>&1"
         }
         

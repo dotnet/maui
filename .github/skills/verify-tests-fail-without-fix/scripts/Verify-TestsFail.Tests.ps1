@@ -16,6 +16,7 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'verify-tests-fail.ps1'
+    $script:VerifierSource = Get-Content -LiteralPath $scriptPath -Raw
     $script:verifyScriptText = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
@@ -24,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -105,6 +106,168 @@ Describe 'Gate test detection snapshot pinning' {
         $params.DiffBase | Should -Be '0123456789abcdef'
         @($params.ChangedFiles).Count | Should -Be 0
         $params.ContainsKey('PRNumber') | Should -BeFalse
+    }
+}
+
+Describe 'Targeted failure message extraction' {
+    It 'returns only the exact target assertion message, not names or sibling failures' {
+        $log = New-LogFile @'
+[UnitTest] Issue12345 FAILED
+  Failed Microsoft.Maui.Tests.Issue12345Tests.ReproducesIssue [12 ms]
+  Error Message:
+   Xunit.Sdk.EqualException: expected red but was blue
+  Stack Trace:
+     at Microsoft.Maui.Tests.Issue12345Tests.ReproducesIssue()
+  Failed Microsoft.Maui.Tests.OtherTests.Unrelated [8 ms]
+  Error Message:
+   Issue12345 appeared only in an unrelated sibling assertion
+  Stack Trace:
+     at Microsoft.Maui.Tests.OtherTests.Unrelated()
+Total tests: 2
+'@
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.Tests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' |
+            Should -BeExactly 'Xunit.Sdk.EqualException: expected red but was blue'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'uses trusted project and class/method metadata for replication-scoped entries' {
+        $script:VerifierSource |
+            Should -Match 'Project\s*=\s*if \(\$MachineResultPath\) \{ \$TestProject \}'
+        $script:VerifierSource |
+            Should -Match 'ProjectPath\s*=\s*if \(\$MachineResultPath\) \{ \$TestProjectPath \}'
+        $script:VerifierSource |
+            Should -Match 'ClassFilter\s*=\s*if \(\$MachineResultPath\) \{ \$TestClass \}'
+        $script:VerifierSource |
+            Should -Match 'Methods\s*=\s*if \(\$MachineResultPath\) \{ @\(\$TestMethod\) \}'
+        $script:VerifierSource |
+            Should -Match '"FullyQualifiedName=\$TestClass\.\$TestMethod"'
+        $script:VerifierSource |
+            Should -Match '\$deviceTestScript\s*=\s*\$resolvedDeviceTestScriptPath'
+        $script:VerifierSource |
+            Should -Match 'RepositoryRoot\s*=\s*\$RepoRoot'
+    }
+
+    It 'reads only the exact device target failure message from scoped xUnit XML' {
+        $RepoRoot = [IO.Path]::GetTempPath()
+        $log = New-LogFile '[DeviceTest] Issue12345 FAILED'
+        $diagnostics = "$log.diagnostics"
+        New-Item -ItemType Directory -Path $diagnostics | Out-Null
+        $resultFile = Join-Path $diagnostics 'device-target-results.xml'
+        @'
+<assemblies>
+  <assembly>
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.Issue12345Tests" method="ReproducesIssue" result="Fail">
+        <failure exception-type="Xunit.Sdk.EqualException">
+          <message><![CDATA[Expected red but was blue]]></message>
+          <stack-trace><![CDATA[at target]]></stack-trace>
+        </failure>
+      </test>
+      <test type="Microsoft.Maui.DeviceTests.OtherTests" method="Unrelated" result="Fail">
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[Issue12345 appeared only in a sibling failure]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content -LiteralPath $resultFile -Encoding utf8NoBOM
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.DeviceTests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected red but was blue'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $diagnostics -Recurse -Force
+    }
+
+    It 'prefers the newest device result when repair attempts share diagnostics' {
+        $RepoRoot = [IO.Path]::GetTempPath()
+        $log = New-LogFile '[DeviceTest] Issue12345 FAILED'
+        $diagnostics = "$log.diagnostics"
+        $oldDirectory = Join-Path $diagnostics 'xharness-run-old'
+        $newDirectory = Join-Path $diagnostics 'xharness-run-new'
+        New-Item -ItemType Directory -Path $oldDirectory, $newDirectory | Out-Null
+
+        $oldResult = Join-Path $oldDirectory 'xunit-test-old.xml'
+        $newResult = Join-Path $newDirectory 'xunit-test-new.xml'
+        foreach ($result in @(
+            @{ Path = $oldResult; Message = 'System.InvalidCastException : Specified cast is not valid.' },
+            @{ Path = $newResult; Message = 'Expected centered item index to remain 5 after orientation change, but was 4.' }
+        )) {
+            @"
+<assemblies>
+  <assembly>
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.Issue12345Tests" method="ReproducesIssue" result="Fail">
+        <failure><message>$($result.Message)</message></failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+"@ | Set-Content -LiteralPath $result.Path -Encoding utf8NoBOM
+        }
+        (Get-Item -LiteralPath $oldResult).LastWriteTimeUtc = [DateTime]::UtcNow.AddMinutes(-1)
+        (Get-Item -LiteralPath $newResult).LastWriteTimeUtc = [DateTime]::UtcNow
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.DeviceTests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected centered item index to remain 5 after orientation change, but was 4.'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $diagnostics -Recurse -Force
+    }
+
+    It 'reads the exact UI target exception message from the authoritative TRX' {
+        $RepoRoot = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
+        $trxPath = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests/TestResults/Issue12345.trx'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $trxPath) -Force |
+            Out-Null
+        @'
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Results>
+    <UnitTestResult testName="Microsoft.Maui.UITests.Issue12345Tests.ReproducesIssue" outcome="Failed">
+      <Output>
+        <ErrorInfo>
+          <Message>Expected red but was blue</Message>
+          <StackTrace>at target</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult testName="Microsoft.Maui.UITests.OtherTests.Unrelated" outcome="Failed">
+      <Output>
+        <ErrorInfo>
+          <Message>Issue12345 appeared only in a sibling failure</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+</TestRun>
+'@ | Set-Content -LiteralPath $trxPath -Encoding utf8NoBOM
+        $log = New-LogFile '[UITest] Issue12345 FAILED'
+
+        Get-TargetedTestFailureMessage `
+            -LogFile $log `
+            -TargetClass 'Microsoft.Maui.UITests.Issue12345Tests' `
+            -TargetMethod 'ReproducesIssue' `
+            -TargetTestType UITest `
+            -TargetFilter Issue12345 |
+            Should -BeExactly 'Expected red but was blue'
+
+        Remove-Item -LiteralPath $log -Force
+        Remove-Item -LiteralPath $RepoRoot -Recurse -Force
     }
 }
 
@@ -218,6 +381,24 @@ Build FAILED.
         $r.BuildError | Should -BeTrue
         $r.Passed | Should -BeFalse
         $r.Error | Should -Match 'MAUIX2017'
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'spends the excerpt budget on the message, not the agent directory' {
+        # Catalyst build 15031426 burned five attempts on the diagnosis
+        # "'TestDevice' could not be found (are you missing a u" because 120 of
+        # the 200 characters went to a path prefix the reader already knows.
+        $log = New-LogFile @"
+Build FAILED.
+/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue30163.cs(9,20): error CS0246: The type or namespace name 'TestDevice' could not be found (are you missing a using directive or an assembly reference?) [/Users/cloudtest/vss/_work/1/s/src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj]
+"@
+        $r = Get-TestResultFromOutput -LogFile $log
+
+        $r.BuildError | Should -BeTrue
+        $r.Error | Should -Match 'Issue30163\.cs\(9,20\)'
+        $r.Error | Should -Match 'are you missing a using directive or an assembly reference'
+        $r.Error | Should -Not -Match '_work'
+        $r.Error | Should -Not -Match 'csproj'
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -2057,5 +2238,107 @@ Describe 'Get-AutoDetectedTests — PR metadata fallback' {
         } finally {
             Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'The authoritative test result is kept as evidence' {
+    # The reviewer of PR 242 could not check the claim that the named test
+    # failed, because the run published only this script's summary of the
+    # runner's output and discarded the runner's own document.
+    It 'copies the result document next to the machine result and names it' {
+        $resultDir = Join-Path $TestDrive 'verification'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $sourceTrx = Join-Path $TestDrive 'Issue12345.trx'
+        '<TestRun><Results /></TestRun>' | Set-Content -LiteralPath $sourceTrx
+
+        $script:ReplicationAuthoritativeResultPath = $sourceTrx
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UITest'; Filter = 'FullyQualifiedName~Issue12345'
+                Project = 'Controls.TestCases.Shared.Tests'
+                ProjectPath = 'src/x.csproj'; ClassFilter = 'Issue12345'
+                Methods = @('Repro')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'expected red but was blue'
+
+        $written = Get-Content -LiteralPath $MachineResultPath -Raw | ConvertFrom-Json
+        $written.resultFile | Should -BeExactly 'verification-test-result.trx'
+        Test-Path -LiteralPath (Join-Path $resultDir 'verification-test-result.trx') |
+            Should -BeTrue
+
+        $script:ReplicationAuthoritativeResultPath = $null
+    }
+
+    It 'reports no retained document when none was authoritative' {
+        $resultDir = Join-Path $TestDrive 'verification-none'
+        New-Item -ItemType Directory -Path $resultDir -Force | Out-Null
+        $script:ReplicationAuthoritativeResultPath = $null
+        $MachineResultPath = Join-Path $resultDir 'machine-result.json'
+
+        Write-ReplicationVerifierMachineResult `
+            -TestEntry @{
+                Type = 'UnitTest'; Filter = 'FullyQualifiedName=A.B'
+                Project = 'P'; ProjectPath = 'p.csproj'; ClassFilter = 'A'
+                Methods = @('B')
+            } `
+            -TestResult @{ Passed = $false; Total = 1 } `
+            -ActualFailureMessage 'boom'
+
+        (Get-Content -LiteralPath $MachineResultPath -Raw |
+            ConvertFrom-Json).resultFile | Should -BeExactly ''
+    }
+}
+
+Describe 'The per-test line knows which control arm it is reporting' {
+    # The banner already refuses to say "PASSED" for a failing negative control,
+    # for the reason its own comment gives: it would tell a reader the exact
+    # opposite of what was measured. The per-test loop a few lines above it was
+    # not given the same treatment, so build 15085903 printed
+    #   [UITest] Issue31059: FAILED (expected)      <- green
+    #   CONTROL DID NOT CLEAR                       <- red
+    # one after the other, and only the second was true.
+    BeforeAll {
+        $script:PerTestBlock = $script:VerifierSource.Substring(
+            $script:VerifierSource.IndexOf('# Show per-test results'),
+            2200)
+    }
+
+    It 'reports a failing negative control as the refutation, not as the expectation' {
+        $script:PerTestBlock | Should -Match 'control did not clear'
+    }
+
+    It 'reports a passing negative control as the expected outcome' {
+        $script:PerTestBlock | Should -Match 'expected with the trigger removed'
+    }
+
+    It 'branches on Purpose for both the failing and the passing case' {
+        # Guarding both halves: a fix applied to only the failing branch leaves a
+        # passing control reported as "PASSED (should fail!)", which is the same
+        # inversion in the other direction.
+        ([regex]::Matches($script:PerTestBlock, "Purpose -eq 'NegativeControl'")).Count |
+            Should -BeGreaterOrEqual 2
+    }
+
+    It 'leaves the reproduction arm wording byte-identical' {
+        # Validate-ReplicationCandidate.Tests.ps1 builds a console fixture
+        # containing this exact string, and the report renderer is deliberately
+        # untouched so existing validators keep reading what they read today.
+        $script:PerTestBlock | Should -Match 'FAILED \u2705 \(expected\)'
+        $script:PerTestBlock | Should -Match 'PASSED \u274c \(should fail!\)'
+    }
+
+    It 'still classifies env and build errors before either verdict' {
+        # An infrastructure failure is neither arm's result, and it has to keep
+        # outranking both so a build break cannot be read as a cleared control.
+        $envAt   = $script:PerTestBlock.IndexOf('ENV ERROR')
+        $buildAt = $script:PerTestBlock.IndexOf('BUILD ERROR')
+        $verdict = $script:PerTestBlock.IndexOf("Purpose -eq 'NegativeControl'")
+        $envAt   | Should -BeGreaterThan 0
+        $buildAt | Should -BeGreaterThan 0
+        $envAt   | Should -BeLessThan $verdict
+        $buildAt | Should -BeLessThan $verdict
     }
 }

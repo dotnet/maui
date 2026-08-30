@@ -10,9 +10,43 @@ trigger: none  # Manual trigger only
 pr: none  # Not triggered by PRs
 
 parameters:
+  - name: Mode
+    displayName: 'Mode'
+    type: string
+    default: review
+    values:
+      - review
+      - replicate
+      - feedback
+
   - name: PRNumber
     displayName: 'Pull Request Number'
     type: number
+    default: 0
+
+  # Repository holding the pull request named by PRNumber. Defaults to the upstream
+  # project, so /review and every existing queued run behave exactly as before.
+  # Set this to the testing fork to review the bot's own fix pull requests, which
+  # live there and were previously unreachable by the review path.
+  - name: ReviewRepository
+    displayName: 'Repository holding the reviewed PR (owner/name)'
+    type: string
+    default: 'dotnet/maui'
+
+  - name: IssueNumber
+    displayName: 'Issue Number'
+    type: number
+    default: 0
+
+  - name: PublishIssueOutcome
+    displayName: 'Comment the not-reproduced outcome on the public issue'
+    type: boolean
+    default: false
+
+  - name: SupersedeExisting
+    displayName: 'Replace an existing fix pull request for this issue and platform'
+    type: boolean
+    default: false
 
   - name: Platform
     displayName: 'Target Platform'
@@ -71,7 +105,7 @@ variables:
   - name: Codeql.SkipTaskAutoInjection
     value: true
   - name: APPIUM_HOME
-    value: $(System.DefaultWorkingDirectory)/.appium/
+    value: $(Agent.TempDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
   - name: GateTaskTimeoutMinutes
@@ -79,10 +113,76 @@ variables:
 
 stages:
   - stage: ReviewPR
-    displayName: 'Review Pull Request'
+    displayName: 'Run Copilot Operation'
     jobs:
+      - job: ReplicationFeedback
+        displayName: 'Collect replication feedback'
+        # This job used to preflight the MauiBot publishing credential for every
+        # replicate run. It cost a separate agent and a full dotnet/maui checkout
+        # before any replication work started, and Publish-ReplicationPR re-checks
+        # the identity and the fork before opening a pull request -- so nothing
+        # could ever be published on a credential this job would have rejected.
+        # All that is left is the feedback snapshot, which is what it now does.
+        condition: eq('${{ parameters.Mode }}', 'feedback')
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 45
+        steps:
+          - bash: |
+              if [ "${PARAM_MODE}" = "feedback" ]; then
+                echo "##vso[build.updatebuildnumber]Feedback snapshot"
+              else
+                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
+              fi
+            displayName: 'Set Replication Pipeline Run Title'
+            env:
+              PARAM_MODE: ${{ parameters.Mode }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
+          - checkout: self
+            fetchDepth: 1
+            persistCredentials: false
+            sparseCheckoutDirectories: .github/scripts/shared
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
+              $feedbackRoot = Join-Path "$(Build.ArtifactStagingDirectory)" "ReplicationFeedback"
+              New-Item -ItemType Directory -Path $feedbackRoot -Force | Out-Null
+              & (Join-Path $sharedRoot "Move-ReplicationPRCommentsToTestingFork.ps1") `
+                -SourceOwner "dotnet" `
+                -SourceRepository "maui" `
+                -TargetOwner "kubaflo" `
+                -TargetRepository "maui" `
+                -OutputPath (Join-Path $feedbackRoot "migrated-pr-comments.json")
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Moving reproduction PR comments to the testing fork failed.'
+              }
+
+              & (Join-Path $sharedRoot "Export-ReplicationPRFeedback.ps1") `
+                -RepositoryOwner "kubaflo" `
+                -RepositoryName "maui" `
+                -OutputPath (Join-Path $feedbackRoot "feedback.json")
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Exporting reproduction PR feedback failed.'
+              }
+            displayName: 'Migrate comments and export replication feedback'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'feedback'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Feedback Snapshot'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'feedback'))
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/ReplicationFeedback'
+              artifact: 'ReplicationFeedback'
+              publishLocation: 'pipeline'
+
       - job: CopilotReview
-        displayName: 'Run Copilot PR Reviewer Agent'
+        displayName: 'Run Copilot ${{ parameters.Mode }} Agent'
+        condition: or(eq('${{ parameters.Mode }}', 'review'), eq('${{ parameters.Mode }}', 'replicate'))
         ${{ if eq(parameters.Platform, 'android') }}:
           pool: ${{ parameters.androidPool }}
         ${{ elseif eq(parameters.Platform, 'ios') }}:
@@ -95,6 +195,24 @@ stages:
           pool: ${{ parameters.androidPool }}  # fallback to android pool
         timeoutInMinutes: 360
         steps:
+          - pwsh: |
+              $startedAt = [DateTimeOffset]::UtcNow.ToString('o')
+              Write-Host "##vso[task.setvariable variable=replicationJobStartedAtUtc]$startedAt"
+              Write-Host "Replication job budget started at $startedAt"
+            displayName: 'Capture replication job budget'
+            condition: eq('${{ parameters.Mode }}', 'replicate')
+            timeoutInMinutes: 2
+
+          # The run title used to be set by the publisher validation job, which
+          # replicate runs no longer schedule.
+          - bash: |
+              echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
+            displayName: 'Set Replication Pipeline Run Title'
+            condition: eq('${{ parameters.Mode }}', 'replicate')
+            env:
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
           - checkout: self
             fetchDepth: 0
             persistCredentials: false
@@ -103,24 +221,109 @@ stages:
             # blast radius: Gate and CopilotReview tasks cannot push to the repo.
 
           # Validate Parameters
-          # PRNumber is received via env var to avoid compile-time shell injection.
+          # Target numbers are received via env vars to avoid compile-time shell injection.
           # Anyone triggering this pipeline directly (AzDO UI/REST) could pass arbitrary
           # strings — so we validate before any further use.
           - bash: |
-              echo "Validating PR Number parameter..."
+              echo "Validating pipeline parameters..."
+              MODE="${PARAM_MODE}"
               PR_NUM="${PARAM_PR_NUMBER}"
-              if [ -z "${PR_NUM}" ]; then
-                echo "##vso[task.logissue type=error]PRNumber parameter is required"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
+              ISSUE_NUM="${PARAM_ISSUE_NUMBER}"
+
+              if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then
+                echo "##vso[task.logissue type=error]ReviewRepository must use a valid owner/name form."
                 exit 1
               fi
-              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
-                echo "##vso[task.logissue type=error]PRNumber must be a positive integer, got: '${PR_NUM}'"
-                exit 1
-              fi
-              echo "PR Number: ${PR_NUM}"
+
+              case "${MODE}" in
+                review)
+                  if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]] || [ "${ISSUE_NUM}" != "0" ]; then
+                    echo "##vso[task.logissue type=error]Mode=review requires PRNumber > 0 and IssueNumber = 0."
+                    exit 1
+                  fi
+                  ;;
+                replicate)
+                  if ! [[ "${ISSUE_NUM}" =~ ^[1-9][0-9]*$ ]] || [ "${PR_NUM}" != "0" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate requires IssueNumber > 0 and PRNumber = 0."
+                    exit 1
+                  fi
+                  if [ "${PARAM_PLATFORM}" != "android" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate currently requires Platform=android because other lanes do not provide a verified process-tree and app egress boundary."
+                    exit 1
+                  fi
+                  ;;
+                *)
+                  echo "##vso[task.logissue type=error]Mode must be review or replicate, got: '${MODE}'"
+                  exit 1
+                  ;;
+              esac
+
+              echo "Mode=${MODE} PRNumber=${PR_NUM} ReviewRepository=${REVIEW_REPOSITORY} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM}"
             displayName: 'Validate Parameters'
             env:
+              PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+
+          # A replicate run cannot do anything without reading its issue, but it
+          # only tries to read it after capturing the trusted infrastructure,
+          # resolving the baseline, installing the recording tools and installing
+          # the GitHub CLI. A rejected credential therefore costs roughly fifteen
+          # minutes of a provisioned device before the run reports it. Ask GitHub
+          # who the token belongs to first; it needs no CLI and takes a second.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . "$(Build.SourcesDirectory)/.github/scripts/shared/Assert-ReplicationGitHubCredential.ps1"
+
+              $verdict = Get-ReplicationGitHubCredentialVerdict `
+                -Token $env:GH_TOKEN `
+                -TokenVariableName 'GH_COMMENT_TOKEN'
+              $decision = Get-ReplicationCredentialDecision -Kind $verdict.Kind
+
+              if ($decision.Tag) {
+                # Tag the run so a dead secret is visible on the pipeline
+                # summary. Every mode shares this credential, so when it dies
+                # the whole definition fills with runs whose cause is only
+                # readable by opening a log.
+                Write-Host "##vso[build.addbuildtag]$($decision.Tag)"
+              }
+
+              switch ($decision.Action) {
+                'continue' {
+                  Write-Host "GitHub credential accepted for '$($verdict.Login)'."
+                  Write-Host "##vso[task.setvariable variable=REPLICATION_EVIDENCE_ONLY]false"
+                  Write-Host "##vso[task.setvariable variable=replicationEvidenceOnly;isOutput=true]false"
+                }
+                'fail' {
+                  throw $verdict.Message
+                }
+                'degrade' {
+                  # dotnet/maui issues are public, so reproducing on a device,
+                  # recording the evidence, and authoring a failing test need no
+                  # credential at all. Only publishing does. Losing all of that
+                  # work to an expired publishing secret wastes the run and
+                  # hides whether the replication itself is sound, so continue
+                  # and refuse to publish instead.
+                  Write-Host "##vso[task.setvariable variable=REPLICATION_EVIDENCE_ONLY]true"
+                  Write-Host "##vso[task.setvariable variable=replicationEvidenceOnly;isOutput=true]true"
+                  Write-Host "##vso[build.addbuildtag]evidence-only"
+                  Write-Warning ($verdict.Message + ' This run will reproduce, record, and ' +
+                    'verify a failing test, but it will not publish a pull request.')
+                }
+                default {
+                  throw "Unhandled credential decision '$($decision.Action)'."
+                }
+              }
+            name: ReplicationCredentialCheck
+            displayName: 'Verify the GitHub credential before provisioning'
+            condition: >-
+              and(succeeded(),
+                  eq('${{ parameters.Mode }}', 'replicate'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           # Preserve the one helper needed by the final telemetry stage while
           # the worktree is still the immutable pipeline revision. Publish it
@@ -170,14 +373,13 @@ stages:
           - bash: |
               set -uo pipefail
               BASE_REF=""
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               if command -v gh >/dev/null 2>&1; then
-                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName 2>/dev/null || true)
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --repo "${REVIEW_REPOSITORY}" --json baseRefName -q .baseRefName 2>/dev/null || true)
               fi
               if [ -z "${BASE_REF}" ]; then
-                REPO=$(git config --get remote.origin.url 2>/dev/null | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
-                [ -z "${REPO}" ] && REPO="dotnet/maui"
                 BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
+                  "https://api.github.com/repos/${REVIEW_REPOSITORY}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
                   | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])" 2>/dev/null || true)
               fi
               if [ -z "${BASE_REF}" ]; then
@@ -189,37 +391,117 @@ stages:
                 echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main', a 'netN.0' branch, an 'inflight/*' branch, or a 'release/*' servicing branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
             displayName: 'Validate PR base branch (fast-fail unsupported)'
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
 
           - bash: |
-              echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
+              if [ "${PARAM_MODE}" = "review" ]; then
+                echo "##vso[build.updatebuildnumber]Review PR ${PARAM_PR_NUMBER} ${PARAM_PLATFORM}"
+              elif [ "${PARAM_MODE}" = "replicate" ]; then
+                echo "##vso[build.updatebuildnumber]Replicate issue ${PARAM_ISSUE_NUMBER} ${PARAM_PLATFORM}"
+              else
+                echo "##vso[build.updatebuildnumber]Feedback snapshot"
+              fi
             displayName: 'Set Pipeline Run Title'
             env:
+              PARAM_MODE: ${{ parameters.Mode }}
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # Capture trusted test infrastructure exactly once while the worktree
           # is still at $(Build.SourceVersion). Keep this outside the retried
           # branch-resolution task: a retry may begin after that task switched
           # to PR-controlled content.
           - bash: |
-              set -e
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              chmod -R u+w "$TRUSTED" 2>/dev/null || true
-              rm -rf "$TRUSTED" 2>/dev/null || true
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              mkdir -p "$TRUSTED/source-overrides"
-              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts and source overrides copied to $TRUSTED"
+             set -euo pipefail
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-source"
+             SOURCE_VERSION="$(Build.SourceVersion)"
+             if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
+               echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."
+               exit 1
+             fi
+             chmod -R u+w "$TRUSTED" 2>/dev/null || true
+             rm -rf "$TRUSTED" 2>/dev/null || true
+             rm -rf "$STAGED_SOURCE" 2>/dev/null || true
+             mkdir -p "$TRUSTED"
+             mkdir -p "$STAGED_SOURCE"
+             git archive "${SOURCE_VERSION}" \
+               .github/scripts \
+               .github/skills \
+               eng/scripts \
+               .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml \
+               eng/pipelines/ci-copilot.yml |
+               tar -xf - -C "$STAGED_SOURCE"
+             cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
+             cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
+             cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
+             mkdir -p "$TRUSTED/source-overrides"
+             cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             chmod -R a-w "$TRUSTED"
+             echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted test infrastructure'
             timeoutInMinutes: 5
+
+          # `chmod -R a-w` is a mode bit the same user can take back off, on a
+          # tree nothing ever re-reads. Attest it instead: every file by
+          # normalized path, mode, size and SHA-256, reduced to one deterministic
+          # tree hash bound to this pipeline revision. Every model invocation and
+          # every generated execution is bracketed by a re-verification, so a
+          # phase that rewrote a gate is caught by the gate's own hash rather
+          # than by the gate it rewrote. The document lives outside the tree it
+          # describes, because a file stored inside its own subject changes the
+          # hash it claims.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              . (Join-Path $trusted 'scripts/shared/Assert-TrustedTreeAttestation.ps1')
+
+              $sourceVersion = '$(Build.SourceVersion)'.ToLowerInvariant()
+              if ($sourceVersion -cnotmatch '^[0-9a-f]{40}$') {
+                throw "Build.SourceVersion is not a commit SHA: $sourceVersion"
+              }
+
+              $attestationRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-attestation'
+              Remove-Item -LiteralPath $attestationRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $attestationRoot -Force | Out-Null
+              $attestationPath = Join-Path $attestationRoot 'trusted-tree.json'
+
+              $attestation = New-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -SourceVersion $sourceVersion `
+                -PipelineDefinitionPath (Join-Path "$(Agent.TempDirectory)" 'trusted-source/eng/pipelines/ci-copilot.yml') `
+                -OutputPath $attestationPath
+              $null = Assert-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -Attestation $attestationPath `
+                -ExpectedSourceVersion $sourceVersion `
+                -Context 'trusted capture'
+
+              Write-Host "Trusted tree attested: $($attestation.fileCount) files, tree $($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_ATTESTATION_PATH]$attestationPath"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_HASH]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_PIPELINE_SHA256]$($attestation.pipelineSha256)"
+              Write-Host "##vso[task.setvariable variable=trustedTreeHash;isOutput=true]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=trustedPipelineSha256;isOutput=true]$($attestation.pipelineSha256)"
+            name: AttestTrustedTree
+            displayName: 'Attest trusted test infrastructure'
+            timeoutInMinutes: 10
 
           # ─────────────────────────────────────────────────────────
           #  Resolve the PR's target (base) branch and switch the
@@ -231,7 +513,7 @@ stages:
           #    1. Workloads / SDK band — build.ps1 --target=dotnet reads
           #       global.json + eng/Versions.props from the worktree.
           #    2. Merge base — Review-PR.ps1 -Phase Setup squash-merges
-          #       the PR onto the current HEAD in CI.
+          #       the PR onto the immutable target-branch tip captured here.
           #  Running on the wrong base ⇒ wrong workloads + cross-branch
           #  squash-merge conflicts. Switching to the PR's base fixes both,
           #  so ONE pipeline branch handles main- and net11-targeting PRs.
@@ -248,19 +530,23 @@ stages:
                 echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
                 exit 1
               fi
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
+              REVIEW_REPOSITORY_URL="https://github.com/${REVIEW_REPOSITORY}.git"
 
               # Detect the PR's base branch (GitHub-provided metadata). Prefer gh; fall back
               # to the GitHub REST API because gh is not pre-installed on macOS (catalyst/ios)
               # agents this early in the job.
               if command -v gh >/dev/null 2>&1; then
-                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+                PR_METADATA=$(gh pr view "${PARAM_PR_NUMBER}" --repo "${REVIEW_REPOSITORY}" --json baseRefName,headRefOid)
               else
-                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
-                [ -z "$REPO" ] && REPO="dotnet/maui"
                 BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
-                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
-                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+                  "https://api.github.com/repos/${REVIEW_REPOSITORY}/pulls/${PARAM_PR_NUMBER}")
               fi
+              if [ -z "${PR_METADATA:-}" ]; then
+                PR_METADATA="${BASE_REF}"
+              fi
+              BASE_REF=$(printf '%s' "${PR_METADATA}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('baseRefName') or d.get('base',{}).get('ref',''))")
+              HEAD_SHA=$(printf '%s' "${PR_METADATA}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('headRefOid') or d.get('head',{}).get('sha',''))")
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
@@ -268,21 +554,374 @@ stages:
                 echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+              if ! [[ "${HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]GitHub did not return an immutable head commit for ${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER}."
+                exit 1
+              fi
 
               # Always keep the worktree on the protected target branch while the
               # credential-bearing workload and build-task steps run. The trusted
               # Setup phase merges the immutable PR head later, after DOTNET_TOKEN is
               # out of scope, including for inflight/* targets.
-              git fetch origin "${BASE_REF}" --no-tags
-              git checkout --detach "origin/${BASE_REF}"
-              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
+              git fetch "${REVIEW_REPOSITORY_URL}" "refs/heads/${BASE_REF}" --no-tags
+              BASE_SHA=$(git rev-parse FETCH_HEAD)
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Could not capture the current ${REVIEW_REPOSITORY}:${BASE_REF} tip."
+                exit 1
+              fi
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} targets ${BASE_REF} at current tip ${BASE_SHA}; immutable head ${HEAD_SHA}."
+              git checkout --detach "${BASE_SHA}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (${REVIEW_REPOSITORY}:${BASE_REF}) for workloads + merge base"
+              echo "##vso[task.setvariable variable=resolvedBaseRef]${BASE_REF}"
+              echo "##vso[task.setvariable variable=resolvedBaseSha]${BASE_SHA}"
+              echo "##vso[task.setvariable variable=resolvedHeadSha]${HEAD_SHA}"
             name: ResolveBaseBranch
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
+
+          - bash: |
+              set -euo pipefail
+              # Reviewers verify a reproduction against the first parent of the
+              # published commit, so the baseline must be the commit the pull
+              # request will actually be parented on rather than whatever the
+              # upstream default branch happens to be at this moment.
+              git fetch --no-tags --depth=1 \
+                https://github.com/kubaflo/maui.git main
+              git checkout --detach FETCH_HEAD
+              BASE_SHA=$(git rev-parse HEAD)
+              git fetch --no-tags origin main
+              if ! git merge-base --is-ancestor "${BASE_SHA}" origin/main; then
+                echo "##vso[task.logissue type=error]The publication base is not an ancestor of dotnet/maui main."
+                exit 1
+              fi
+              echo "Replication baseline: ${BASE_SHA}"
+              echo "##vso[task.setvariable variable=REPLICATION_BASE_SHA]${BASE_SHA}"
+              echo "##vso[task.setvariable variable=replicationBaseSha;isOutput=true]${BASE_SHA}"
+            name: ResolveReplicationBase
+            displayName: 'Resolve issue replication baseline'
+            retryCountOnTaskFailure: 2
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ((Get-Command ffmpeg -ErrorAction SilentlyContinue) -and
+                  (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+                ffmpeg -version | Select-Object -First 1
+                exit 0
+              }
+
+              if ($IsMacOS) {
+                brew install ffmpeg
+              } elseif ($IsLinux) {
+                # Builds 15000542 and 15000902 sat here for the whole timeout
+                # and printed nothing, because -qq hides apt waiting on the
+                # dpkg lock that unattended-upgrades holds after boot. Stop
+                # that service, bound every apt call so a stuck one fails long
+                # before the step does, and let the task retry restart it.
+                $env:DEBIAN_FRONTEND = 'noninteractive'
+                sudo systemctl stop unattended-upgrades.service 2>&1 | Out-Host
+                sudo systemctl stop apt-daily.service apt-daily-upgrade.service 2>&1 | Out-Host
+
+                # Build 15001363 spent its whole update budget retrying
+                # azure.archive.ubuntu.com, which the agent could not reach,
+                # even though archive.ubuntu.com answered and the cache was
+                # usable. Refreshing the index is advisory: only the install
+                # decides whether the recorder can run, so a failed or timed
+                # out update is reported and stepped over rather than thrown.
+                sudo timeout 420 apt-get update -q -o DPkg::Lock::Timeout=120
+                if ($LASTEXITCODE -ne 0) {
+                  Write-Warning "apt-get update failed or timed out with exit code $LASTEXITCODE; installing from the existing package index."
+                }
+
+                sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
+                if ($LASTEXITCODE -ne 0) {
+                  throw "apt-get failed to install ffmpeg with exit code $LASTEXITCODE."
+                }
+              } elseif ($IsWindows) {
+                $installed = $false
+                for ($attempt = 1; $attempt -le 3; $attempt++) {
+                  choco install ffmpeg -y --no-progress
+                  if ($LASTEXITCODE -eq 0) {
+                    $installed = $true
+                    break
+                  }
+
+                  if ($attempt -lt 3) {
+                    Write-Warning "Chocolatey ffmpeg installation attempt $attempt failed; retrying."
+                    Start-Sleep -Seconds (15 * $attempt)
+                  }
+                }
+
+                if (-not $installed) {
+                  throw "Chocolatey failed to install ffmpeg after 3 attempts."
+                }
+
+                $chocolateyBin = Join-Path $env:ChocolateyInstall 'bin'
+                if ($env:PATH -notlike "*$chocolateyBin*") {
+                  $env:PATH = "$chocolateyBin;$env:PATH"
+                }
+              } else {
+                throw "Unsupported host OS for ffmpeg installation."
+              }
+
+              if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue) -or
+                  -not (Get-Command ffprobe -ErrorAction SilentlyContinue)) {
+                throw "ffmpeg/ffprobe installation completed but the tools are not on PATH."
+              }
+            displayName: 'Install reproduction recording tools'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 25
+            retryCountOnTaskFailure: 2
+
+          - bash: |
+              echo "Installing GitHub CLI..."
+              if command -v gh &> /dev/null; then
+                echo "GitHub CLI already installed: $(gh --version | head -1)"
+              elif command -v brew &> /dev/null; then
+                brew install gh
+              else
+                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
+                exit 1
+              fi
+              gh --version
+              echo "GitHub CLI ready"
+            displayName: 'Install GitHub CLI'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              $root = Join-Path "$(System.DefaultWorkingDirectory)" "CustomAgentLogsTmp/IssueReplication/Issue${{ parameters.IssueNumber }}"
+              $contextDir = Join-Path $root "context"
+              $privateContextDir = Join-Path "$(Build.ArtifactStagingDirectory)" "replication-private-context"
+              Remove-Item -LiteralPath $contextDir -Recurse -Force -ErrorAction SilentlyContinue
+              Remove-Item -LiteralPath $privateContextDir -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $contextDir -Force | Out-Null
+              New-Item -ItemType Directory -Path $privateContextDir -Force | Out-Null
+              New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -Force | Out-Null
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_ROOT]$root"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CONTEXT_PATH]$(Join-Path $privateContextDir 'issue-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_AGENT_CONTEXT_PATH]$(Join-Path $contextDir 'issue-agent-context.json')"
+              Write-Host "##vso[task.setvariable variable=REPLICATION_PRIVATE_CONTEXT_ROOT]$privateContextDir"
+              # Splatted as a hashtable: an array splat would pass these
+              # positionally and bind the literal '-IssueNumber' to -IssueNumber.
+              $contextArgs = @{
+                IssueNumber = ${{ parameters.IssueNumber }}
+                Platform = "${{ parameters.Platform }}"
+                OutputDir = $privateContextDir
+                Repository = 'dotnet/maui'
+                DownloadScreenshots = $true
+              }
+              if ($env:REPLICATION_EVIDENCE_ONLY -eq 'true') {
+                # The publishing credential is unavailable but the issue is public.
+                $contextArgs['AllowAnonymousFallback'] = $true
+              }
+
+              & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
+              # The reader can recover from a rejected gh credential by reading
+              # the public issue anonymously. PowerShell still retains gh's
+              # native exit code after that successful recovery, and the Azure
+              # task host otherwise exits 1 when this inline script completes.
+              $global:LASTEXITCODE = 0
+              Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.json") -Destination $contextDir -Force
+              Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.md") -Destination $contextDir -Force
+              $screenshots = Join-Path $privateContextDir "screenshots"
+              if (Test-Path -LiteralPath $screenshots -PathType Container) {
+                Copy-Item -LiteralPath $screenshots -Destination $contextDir -Recurse -Force
+              }
+            name: PrepareReplicationContext
+            displayName: 'Prepare sanitized issue context'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 10
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # Build 15001358 provisioned a simulator, reproduced issue 37407
+              # and authored a test over forty minutes, only for publication to
+              # refuse it because PR 152 already covers this issue and platform.
+              # The publisher is still the authority; asking the same public
+              # question first only stops the device work from being wasted.
+              # This runs in the untrusted agent job, so it reads the public
+              # fork with the ordinary comment token and never sees the
+              # publishing credential.
+              $marker = "<!-- MAUI_COPILOT_REPLICATION issue=${{ parameters.IssueNumber }} platform=${{ parameters.Platform }} -->"
+              $existing = $null
+              try {
+                $openPulls = & gh pr list `
+                  --repo "kubaflo/maui" `
+                  --state open `
+                  --limit 200 `
+                  --json 'body,url'
+                if ($LASTEXITCODE -eq 0) {
+                  $matchingPulls = @(@($openPulls | ConvertFrom-Json) |
+                    Where-Object { [string]$_.body -like "*$marker*" })
+                  $existing = @($matchingPulls |
+                    Where-Object { ([string]$_.body) -match '(?m)^## Proposed fix\s*$' }) |
+                    Select-Object -First 1
+                  if (-not $existing) {
+                    $existing = $matchingPulls | Select-Object -First 1
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not check for an existing fix pull request: $($_.Exception.Message)"
+              }
+
+              $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
+              $existingCarriesFix = $existing -and
+                ([string]$existing.body) -match '(?m)^## Proposed fix\s*$'
+              if ($existingCarriesFix -and -not $supersedeExisting) {
+                Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
+                Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
+                Write-Host "ISSUE FIX SKIPPED: an open fix pull request already covers this issue and platform: $($existing.url)"
+              } elseif ($existingCarriesFix) {
+                # Re-running an already-covered issue is the only way to test a
+                # pipeline change against the fixes that exercise it.
+                # The existing pull request is not touched here; the publisher
+                # retires it after its replacement is open.
+                Write-Host "An open fix pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
+              } elseif ($existing) {
+                Write-Host "An open reproduction-only pull request exists but does not block generation of a validated fix: $($existing.url)"
+              } else {
+                Write-Host "No open fix pull request covers this issue and platform yet."
+              }
+
+              # PR 199 reproduced dotnet/maui#37243 on a full device run and
+              # published a draft, and only the reviewer noticed the issue had
+              # already been closed as not_planned. A reproduction only means
+              # something while the report is open: closed as completed says the
+              # behaviour is fixed, so reproducing it is either a wrong test or
+              # a regression report, and neither may be filed as a reproduction
+              # of an open bug. Ask before spending the device.
+              try {
+                $issueState = & gh api "repos/dotnet/maui/issues/${{ parameters.IssueNumber }}" `
+                  --jq '[.state, (.state_reason // "none")] | @tsv'
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($issueState)) {
+                  # The eligibility question is the whole point of this step, and
+                  # dotnet/maui is public, so a dead publishing credential must
+                  # not turn "is this issue still open" into a shrug that spends
+                  # a device reproducing an already-closed report.
+                  $anon = Invoke-RestMethod -Method Get -MaximumRedirection 0 `
+                    -Uri "https://api.github.com/repos/dotnet/maui/issues/${{ parameters.IssueNumber }}" `
+                    -Headers @{
+                      'Accept'               = 'application/vnd.github+json'
+                      'X-GitHub-Api-Version' = '2022-11-28'
+                      'User-Agent'           = 'maui-copilot-replication'
+                    }
+                  $reason = if ($anon.state_reason) { $anon.state_reason } else { 'none' }
+                  $issueState = "$($anon.state)`t$reason"
+                  Write-Host "Read the issue state anonymously because the credential was rejected."
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace($issueState)) {
+                  $parts = ([string]$issueState).Trim() -split "`t"
+                  $state = $parts[0]
+                  $stateReason = if ($parts.Count -gt 1) { $parts[1] } else { 'none' }
+                  if ($state -ne 'open') {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: dotnet/maui#${{ parameters.IssueNumber }} is $state ($stateReason), so a reproduction of it cannot be filed against an open report."
+                  } else {
+                    Write-Host "Issue dotnet/maui#${{ parameters.IssueNumber }} is open."
+                  }
+                } else {
+                  Write-Host "##vso[task.logissue type=warning]Could not read the issue state; continuing."
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not read the issue state: $($_.Exception.Message)"
+              }
+
+              # A report that names its own platform cannot be answered on a
+              # different one. Runs 15015960 and 15015961 each provisioned a Mac
+              # and spent three device attempts before the agent correctly
+              # refused an Android-only defect. The title said so all along, so
+              # the refusal belongs here rather than forty minutes downstream.
+              try {
+                $contextPath = $env:REPLICATION_CONTEXT_PATH
+                if ([string]::IsNullOrWhiteSpace($contextPath) -or -not (Test-Path -LiteralPath $contextPath)) {
+                  # This gate read a path nothing ever wrote from its
+                  # introduction until build 15051047, so it silently approved
+                  # every run it was added to stop. A gate that cannot find its
+                  # evidence has to say so rather than quietly pass.
+                  Write-Host "##vso[task.logissue type=warning]The scope gate could not read the issue context at '$contextPath', so it approved this run without checking."
+                } else {
+                  $mismatch = [string](Get-Content -LiteralPath $contextPath -Raw |
+                    ConvertFrom-Json).platformMismatch
+                  if (-not [string]::IsNullOrWhiteSpace($mismatch)) {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: $mismatch"
+                  } else {
+                    Write-Host "Scope gate: the report does not name a platform or scope this run cannot answer."
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not read the declared platforms: $($_.Exception.Message)"
+              }
+
+              # dotnet/maui merges bug fixes to `inflight/current` and leaves
+              # the issue open until release, so issue state carries no
+              # information here: PR 451 and PR 449 both reproduced, certified
+              # and published a fix for an issue the project had already fixed
+              # nineteen days earlier, and a human reviewer had to find it both
+              # times. Measured over the complete keying population, 37 of 37
+              # issues whose HostApp test case exists upstream and not on the
+              # tree under test are genuinely fixed there.
+              #
+              # This refuses where the publisher's identical cross-reference
+              # only discloses, and the difference is what a refusal costs. Here
+              # nothing has been spent yet; downstream a refusal would destroy a
+              # device run, a reproduction and a video that are already paid for.
+              # The worktree has already been detached to the replication
+              # baseline by this point, and that commit carries the product tree
+              # rather than this pipeline's scripts. Reading the cross-reference
+              # from `$(Build.SourcesDirectory)` therefore finds nothing, warns,
+              # and approves every run it was added to stop - which is exactly
+              # how the platform gate above once failed. The trusted capture is
+              # taken before the checkout, so it is the only copy that survives.
+              try {
+                $upstreamScript = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Get-ReplicationUpstreamFix.ps1'
+                if (-not (Test-Path -LiteralPath $upstreamScript -PathType Leaf)) {
+                  Write-Host "##vso[task.logissue type=warning]The upstream cross-reference is missing at '$upstreamScript', so this run was approved without checking."
+                } else {
+                  . $upstreamScript
+                  # The worktree is the replication baseline, which is the exact
+                  # product tree this run will build, so it answers "do we
+                  # already have this test case" precisely and for free.
+                  $upstreamVerdict = Get-ReplicationUpstreamDuplicateVerdict `
+                    -IssueNumber '${{ parameters.IssueNumber }}' `
+                    -RepositoryRoot "$(Build.SourcesDirectory)"
+                  if ($upstreamVerdict.Verdict -eq 'duplicate') {
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible]true"
+                    Write-Host "##vso[task.setvariable variable=replicationIssueIneligible;isOutput=true]true"
+                    Write-Host "ISSUE REPLICATION SKIPPED: $($upstreamVerdict.Reason)"
+                  } elseif ($upstreamVerdict.Verdict -eq 'unknown') {
+                    # An absent measurement must never render as a finding, in
+                    # either direction: it may not refuse the run, and it may not
+                    # report the run as cleared either.
+                    Write-Host "##vso[task.logissue type=warning]Upstream cross-reference not measured: $($upstreamVerdict.Reason)"
+                  } else {
+                    Write-Host "Upstream cross-reference: $($upstreamVerdict.Reason)"
+                  }
+                }
+              } catch {
+                Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
+              }
+              # Every native gh failure above is either handled or replaced by a
+              # successful anonymous read. Prevent the task host from propagating
+              # that stale native exit code after all trusted postconditions pass.
+              $global:LASTEXITCODE = 0
+            name: ReplicationDuplicateCheck
+            displayName: 'Check for an existing fix pull request'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+            timeoutInMinutes: 5
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
           - ${{ if eq(parameters.Platform, 'android') }}:
@@ -355,7 +994,7 @@ stages:
               }
               Write-Host "RunDetect using script: $detect"
               $cats = ""
-              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" -Platform "$env:PARAM_PLATFORM" 2>&1
+              $out = & pwsh -NoProfile -File $detect -PrNumber "$env:PARAM_PR_NUMBER" -Repository "$env:PARAM_REVIEW_REPOSITORY" -BaseCommit "$env:PARAM_BASE_COMMIT" -Platform "$env:PARAM_PLATFORM" 2>&1
               $out | ForEach-Object { Write-Host "  $_" }
               foreach ($line in $out) {
                 if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') { $cats = $Matches[1] }
@@ -365,11 +1004,13 @@ stages:
               Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$catsForOutput"
             name: RunDetect
             displayName: 'Detect UI categories (early, infra-independent)'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             retryCountOnTaskFailure: 1
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
+              PARAM_BASE_COMMIT: $(resolvedBaseSha)
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
           # On Windows, common/provision.yml (above) installs the local .NET SDK
@@ -581,29 +1222,49 @@ stages:
                 # band-correctly before the gate runs.
                 New-Item -ItemType File -Force -Path (Join-Path "$(Build.ArtifactStagingDirectory)" 'dotnet-wiped-needs-workloads') | Out-Null
               }
+              # Read from the trusted capture, not the worktree. This job
+              # re-checkouts to another commit before this step runs, and that
+              # commit does not carry this resolver, so Build.SourcesDirectory
+              # does not have it by the time it is needed. The trusted copy was
+              # taken from $(Build.SourceVersion) and is immune to the switch.
+              #
+              # Fatal when it will not load. Build 15065790 dot-sourced this by a
+              # relative path, failed to find it, and the catch downgraded that
+              # to a warning. Invoke-BuildTasksWatchdog was then undefined, so the
+              # step built nothing and still exited clean — and five sandbox
+              # builds later failed with 'the required MSBuild tasks are not yet
+              # built'. A step that cannot build must say so rather than
+              # reporting success for work it never did.
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'bash'
-                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
-                $psi.UseShellExecute = $false
-                $proc = [System.Diagnostics.Process]::Start($psi)
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-                & bash -o pipefail -c $buildCommand
-                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $LASTEXITCODE }
-                exit $LASTEXITCODE
-              }
-              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
-                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
-                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
-                Start-Sleep -Seconds 3
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
                 New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 Set-BuildTasksFailed 1
                 exit 1
               }
-              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $proc.ExitCode }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
+              if ($buildShell) {
+                Write-Host "Build shell: $buildShell"
+              } else {
+                # On a Windows agent the bare name `bash` is the WSL launcher in
+                # System32, which exits 1 without building anything. Running the
+                # build directly is the only way this platform builds at all.
+                Write-Host "##[warning]No POSIX shell on this agent — running dotnet-buildtasks directly and filtering its output in process."
+              }
+              $exitCode = Invoke-BuildTasksWatchdog `
+                -ShellPath $buildShell `
+                -ShellCommand $buildCommand `
+                -DirectFileName 'pwsh' `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -TimeoutMinutes $timeoutMin
+              if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null; Set-BuildTasksFailed $exitCode }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue; Remove-Item $btFailMarker -Force -ErrorAction SilentlyContinue }
-              exit $proc.ExitCode
+              exit $exitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             # NON-BLOCKING for the review path. A failed buildtasks build is most often
@@ -1075,37 +1736,50 @@ stages:
             env:
               APPIUM_HOME: $(APPIUM_HOME)
 
-          - bash: |
-              echo "Installing GitHub CLI..."
-              # gh is pre-installed on Azure Pipelines hosted images (ubuntu, macOS, windows)
-              # Attempt upgrade if available, otherwise install
-              if command -v gh &> /dev/null; then
-                echo "GitHub CLI already installed: $(gh --version | head -1)"
-              elif command -v brew &> /dev/null; then
-                brew install gh
-              else
-                echo "##vso[task.logissue type=error]GitHub CLI not found and no package manager available"
-                exit 1
-              fi
-              gh --version
-              echo "GitHub CLI ready"
-            displayName: 'Install GitHub CLI'
-
           # NOTE: Removed `gh auth login` step. With the phased task design,
           # GH_TOKEN is passed as an env var only to Setup and Post tasks, and
           # `gh` uses GH_TOKEN directly without needing `gh auth login`. This
           # avoids persisting credentials in the agent's gh auth store where
           # Gate and CopilotReview tasks could access them.
 
-          - bash: |
-              echo "Installing GitHub Copilot CLI..."
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              Write-Host "Installing GitHub Copilot CLI..."
               npm install -g @github/copilot
-              # Ensure npm global bin is on PATH for subsequent steps (Linux UseNode installs to toolcache)
-              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
-              echo "Copilot binary at: $COPILOT_BIN_DIR/copilot"
-              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
-              copilot --version || true
-              echo "Copilot CLI installed successfully"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Installing GitHub Copilot CLI failed.'
+              }
+
+              if ($IsWindows) {
+                $npmRoot = (& npm root -g).Trim()
+                $architecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+                $packageName = if ($architecture -eq [Runtime.InteropServices.Architecture]::Arm64) {
+                  'copilot-win32-arm64'
+                } else {
+                  'copilot-win32-x64'
+                }
+                $copilot = @(
+                  (Join-Path $npmRoot "@github/$packageName/copilot.exe"),
+                  (Join-Path $npmRoot "@github/copilot/node_modules/@github/$packageName/copilot.exe")
+                ) | Where-Object {
+                  Test-Path -LiteralPath $_ -PathType Leaf
+                } | Select-Object -First 1
+                if (-not $copilot) {
+                  throw 'Copilot CLI native Windows executable was not installed.'
+                }
+              } else {
+                $copilot = Get-Command copilot -CommandType Application -ErrorAction Stop |
+                  Select-Object -ExpandProperty Source
+              }
+
+              $copilotBinDir = Split-Path -Parent $copilot
+              Write-Host "Copilot binary at: $copilot"
+              Write-Host "##vso[task.prependpath]$copilotBinDir"
+              & $copilot --version
+              if ($LASTEXITCODE -ne 0) {
+                throw 'GitHub Copilot CLI validation failed.'
+              }
+              Write-Host "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
 
           # Boot iOS Simulator (only for iOS platform)
@@ -1493,6 +2167,233 @@ stages:
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $baseSha = "$(REPLICATION_BASE_SHA)"
+              if ($baseSha -cnotmatch '^[0-9a-f]{40}$') {
+                throw 'Trusted replication baseline SHA is invalid.'
+              }
+              & git cat-file -e "$baseSha^{commit}"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Trusted replication baseline commit is unavailable.'
+              }
+              & git restore --source $baseSha --staged --worktree -- .
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to restore tracked files to the replication baseline.'
+              }
+              & git diff --quiet
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Tracked worktree changes remain after restoring the replication baseline.'
+              }
+              & git diff --cached --quiet
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Staged changes remain after restoring the replication baseline.'
+              }
+            displayName: 'Restore clean replication baseline'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              $artifactRoot = "$(REPLICATION_ARTIFACT_ROOT)"
+              $platform = "${{ parameters.Platform }}"
+              $deviceUdid = ([string]$env:DEVICE_UDID).Trim()
+              if ($deviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+                $deviceUdid = ''
+              }
+              if ($platform -in @('catalyst', 'windows')) {
+                $deviceUdid = ''
+              } elseif ([string]::IsNullOrWhiteSpace($deviceUdid)) {
+                throw "A resolved device UDID is required for $platform replication."
+              }
+
+              $overrideTemplate = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props.in"
+              $overridePath = Join-Path "$(Build.SourcesDirectory)" "Directory.Build.Override.props"
+              Copy-Item -LiteralPath $overrideTemplate -Destination $overridePath -Force
+              $override = Get-Content -LiteralPath $overridePath -Raw
+              $override = $override.Replace(
+                '</Project>',
+                "  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>$([Environment]::NewLine)</Project>")
+              $override | Set-Content -LiteralPath $overridePath -Encoding utf8NoBOM
+
+              $deviceName = switch ($platform) {
+                'android' {
+                  $value = (& adb -s $deviceUdid shell getprop ro.product.model 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'Android target' }
+                }
+                'ios' {
+                  try {
+                    $devices = (& xcrun simctl list devices --json | ConvertFrom-Json).devices
+                    $match = $devices.PSObject.Properties |
+                      ForEach-Object { $_.Value } |
+                      ForEach-Object { $_ } |
+                      Where-Object { $_.udid -eq $deviceUdid } |
+                      Select-Object -First 1
+                    if ($match) { [string]$match.name } else { 'iOS simulator' }
+                  } catch { 'iOS simulator' }
+                }
+                'catalyst' { 'Mac Catalyst host' }
+                'windows' { if ($env:COMPUTERNAME) { $env:COMPUTERNAME } else { 'Windows host' } }
+              }
+
+              $deviceOSVersion = switch ($platform) {
+                'android' {
+                  $value = (& adb -s $deviceUdid shell getprop ro.build.version.release 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'unknown' }
+                }
+                'ios' {
+                  try {
+                    $devices = (& xcrun simctl list devices --json | ConvertFrom-Json).devices
+                    $runtime = $devices.PSObject.Properties |
+                      Where-Object {
+                        @($_.Value | Where-Object { $_.udid -eq $deviceUdid }).Count -gt 0
+                      } |
+                      Select-Object -First 1 -ExpandProperty Name
+                    if ($runtime) {
+                      $runtime -replace '^com\.apple\.CoreSimulator\.SimRuntime\.iOS-', '' -replace '-', '.'
+                    } else { 'unknown' }
+                  } catch { 'unknown' }
+                }
+                'catalyst' {
+                  $value = (& sw_vers -productVersion 2>$null | Select-Object -First 1)
+                  if ($value) { ([string]$value).Trim() } else { 'unknown' }
+                }
+                'windows' { [Environment]::OSVersion.VersionString }
+              }
+
+              & (Join-Path $trusted "scripts/Replicate-Issue.ps1") `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform $platform `
+                -BaseSha "$(REPLICATION_BASE_SHA)" `
+                -ContextPath "$(REPLICATION_AGENT_CONTEXT_PATH)" `
+                -TrustedRoot $trusted `
+                -TrustedTreeAttestationPath "$(TRUSTED_TREE_ATTESTATION_PATH)" `
+                -TrustedSourceVersion "$(Build.SourceVersion)" `
+                -JobStartedAtUtc "$(replicationJobStartedAtUtc)" `
+                -DeviceUdid $deviceUdid `
+                -DeviceName $deviceName `
+                -DeviceOSVersion $deviceOSVersion `
+                -ArtifactRoot $artifactRoot `
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw"
+              if ($LASTEXITCODE -ne 0) {
+                throw "Issue replication orchestration failed."
+              }
+            name: RunReplication
+            displayName: 'Replicate issue and author failing test'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))
+            timeoutInMinutes: 180
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+              DEVICE_UDID: $(DEVICE_UDID)
+              APPIUM_HOME: $(APPIUM_HOME)
+              # The tracer. Deliberately not a secret: its value is derived from
+              # public build coordinates so any later job can recompute the
+              # prefix it scans for. It exists to be something that must never
+              # reach a generated child process, an artifact, a log, a patch, or
+              # a JSON document, and to fail the run if it does.
+              MAUI_REPLICATION_SECRET_CANARY: maui-replication-secret-canary-$(Build.BuildId)-$(System.JobAttempt)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $privateContextDir = $env:REPLICATION_PRIVATE_CONTEXT_ROOT
+              $artifactRoot = $env:REPLICATION_ARTIFACT_ROOT
+              if ([string]::IsNullOrWhiteSpace($privateContextDir) -or
+                  [string]::IsNullOrWhiteSpace($artifactRoot)) {
+                Write-Host "Sanitized issue context was never prepared, so there is nothing to stage."
+                exit 0
+              }
+              $contextDir = Join-Path $artifactRoot "context"
+              foreach ($name in @('issue-context.json', 'issue-context.md')) {
+                $source = Join-Path $privateContextDir $name
+                if (Test-Path -LiteralPath $source -PathType Leaf) {
+                  Copy-Item -LiteralPath $source -Destination (Join-Path $contextDir $name) -Force
+                } else {
+                  Write-Host "##vso[task.logissue type=warning]Trusted issue context file was not produced: $name"
+                }
+              }
+            displayName: 'Stage trusted issue context for publication'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # The attestation travels with the artifacts it covers, as bounded
+              # data. The credentialless validation job re-derives the same tree
+              # from its own clean checkout of the pinned commit and compares, so
+              # this is the device agent's statement of what it ran, not a
+              # statement anybody downstream takes on trust.
+              $artifactRoot = $env:REPLICATION_ARTIFACT_ROOT
+              $attestationPath = $env:TRUSTED_TREE_ATTESTATION_PATH
+              if ([string]::IsNullOrWhiteSpace($artifactRoot) -or
+                  -not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+                Write-Host "No replication artifact root, so there is no attestation to stage."
+                exit 0
+              }
+              if ([string]::IsNullOrWhiteSpace($attestationPath) -or
+                  -not (Test-Path -LiteralPath $attestationPath -PathType Leaf)) {
+                throw 'The trusted-tree attestation is missing, so this run cannot be validated.'
+              }
+              Copy-Item -LiteralPath $attestationPath `
+                -Destination (Join-Path $artifactRoot 'trusted-tree.json') -Force
+              Write-Host "Staged the trusted-tree attestation beside the replication artifacts."
+            displayName: 'Stage trusted tree attestation'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+            env:
+              REPLICATION_ARTIFACT_ROOT: $(REPLICATION_ARTIFACT_ROOT)
+              TRUSTED_TREE_ATTESTATION_PATH: $(TRUSTED_TREE_ATTESTATION_PATH)
+
+          - pwsh: |
+              # Publishing is gated on succeededOrFailed(), so it also runs when
+              # the context preparation that defines REPLICATION_ARTIFACT_ROOT
+              # never ran. Azure leaves an undefined $(macro) literal, and build
+              # 15001363 tried to publish a directory called
+              # "$(REPLICATION_ARTIFACT_ROOT)". Decide here, from the
+              # environment, whether there is anything to publish.
+              $root = $env:REPLICATION_ARTIFACT_ROOT
+              $present = -not [string]::IsNullOrWhiteSpace($root) -and
+                (Test-Path -LiteralPath $root -PathType Container)
+              Write-Host "##vso[task.setvariable variable=replicationArtifactRootPresent]$($present.ToString().ToLowerInvariant())"
+              Write-Host "Replication artifact root present: $present"
+            displayName: 'Detect replication artifact root'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Artifacts'
+            inputs:
+              targetPath: '$(REPLICATION_ARTIFACT_ROOT)'
+              artifact: 'ReplicationArtifacts'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq(variables['replicationArtifactRootPresent'], 'true'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
+              $target = Join-Path $logsDir "copilot-token-usage"
+
+              # The directory is created by the context preparation step, so an
+              # earlier failure leaves nothing to stage. Reporting that is
+              # correct; failing the job a second time for it is not, and it
+              # hides the real cause behind a copy error.
+              if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+                Write-Host "No Copilot telemetry was produced, so there is nothing to stage."
+                exit 0
+              }
+
+              New-Item -ItemType Directory -Path $logsDir -Force | Out-Null
+              Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction SilentlyContinue
+              Copy-Item -LiteralPath $source -Destination $target -Recurse -Force
+            displayName: 'Stage replication Copilot telemetry'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Copilot Logs'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
+              artifact: 'CopilotLogs'
+              publishLocation: 'pipeline'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+            continueOnError: true
+
           # Freeze the pre-merge buildtasks result before Setup introduces PR-controlled
           # code. Gate receives this output through its task environment, so merged PR
           # execution cannot forge a marker after a genuine test failure.
@@ -1566,6 +2467,9 @@ stages:
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
                 -PRNumber "${PARAM_PR_NUMBER}" \
+                -Repository "${{ parameters.ReviewRepository }}" \
+                -ResolvedBaseCommit "$(resolvedBaseSha)" \
+                -ResolvedBaseRef "$(resolvedBaseRef)" \
                 -Platform "${{ parameters.Platform }}" \
                 -Phase Setup \
                 -TrustedScriptsDir "$TRUSTED" \
@@ -1588,18 +2492,20 @@ stages:
               REVIEWED_PR_HEAD_SHA=""
               REVIEWED_BASE_SHA=""
               REVIEWED_BASE_REF=""
+              REVIEWED_REPOSITORY=""
               SNAPSHOT_FILE="$(Build.ArtifactStagingDirectory)/review-snapshot.json"
               if [ "$SETUP_RESULT" = "COMPLETED" ] && [ -f "$SNAPSHOT_FILE" ]; then
                 SNAPSHOT_VALUES=$(SNAPSHOT_FILE="$SNAPSHOT_FILE" pwsh -NoProfile -Command '
                   $snapshot = Get-Content -Raw -LiteralPath $env:SNAPSHOT_FILE | ConvertFrom-Json
-                  "{0}|{1}|{2}" -f $snapshot.prHeadSha, $snapshot.baseSha, $snapshot.baseRefName
+                  "{0}|{1}|{2}|{3}" -f $snapshot.prHeadSha, $snapshot.baseSha, $snapshot.baseRefName, $snapshot.repository
                 ' 2>/dev/null | tr -d '\r\n' || true)
-                IFS='|' read -r REVIEWED_PR_HEAD_SHA REVIEWED_BASE_SHA REVIEWED_BASE_REF <<< "$SNAPSHOT_VALUES"
+                IFS='|' read -r REVIEWED_PR_HEAD_SHA REVIEWED_BASE_SHA REVIEWED_BASE_REF REVIEWED_REPOSITORY <<< "$SNAPSHOT_VALUES"
               fi
               if [ "$SETUP_RESULT" = "COMPLETED" ] && {
                 ! [[ "$REVIEWED_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
                 ! [[ "$REVIEWED_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
-                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
+                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+                [ "$REVIEWED_REPOSITORY" != "${{ parameters.ReviewRepository }}" ];
               }; then
                 echo "##vso[task.logissue type=error]Setup completed without a valid immutable review snapshot."
                 SETUP_RESULT="FAILED"
@@ -1621,6 +2527,7 @@ stages:
               fi
             name: RunSetup
             displayName: 'Task 1: Setup (branch + merge)'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -1639,7 +2546,7 @@ stages:
               # exits SKIPPED (no emulator work), unit/XAML tests run without a device, and only
               # UI/device-test PRs use the emulator/simulator provisioned above. There is no
               # "skip the gate" toggle — every review verifies the fix (or reports SKIPPED).
-              GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              GATE_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -Phase Gate -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${GATE_ARGS[@]}"
@@ -1722,6 +2629,7 @@ stages:
             # cap gives the bounded A/B set headroom (each device test builds+runs TWICE)
             # while still catching true hangs ~3.5h earlier than the job cap.
             timeoutInMinutes: ${{ variables.GateTaskTimeoutMinutes }}
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
@@ -1755,7 +2663,7 @@ stages:
 
               echo "Review platform: ${{ parameters.Platform }}"
 
-              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
+              REVIEW_ARGS=(-PRNumber "${PARAM_PR_NUMBER}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -Phase CopilotReview -TrustedScriptsDir "$TRUSTED" -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md")
 
               set +e
               pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" "${REVIEW_ARGS[@]}"
@@ -1775,7 +2683,7 @@ stages:
             # usual" and the gate timeout is explained in the AI Summary's Gate section instead.
             # (A genuine test FAILURE exits 0 → Task 2 succeeds, so this does not change that
             # path. The Task 3 timeout itself is handled by continueOnError below.)
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             timeoutInMinutes: 180
             # An outer safety timeout is an incomplete optional expert review,
             # not a failed Gate. Preserve partial artifacts and let PostReview,
@@ -1825,7 +2733,7 @@ stages:
                 Write-Host "  $($_.FullName.Substring($logsDir.Length))"
               }
             displayName: 'Copy review artifacts to staging'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
 
           # Publish Copilot logs and session artifacts
           - task: PublishPipelineArtifact@1
@@ -1834,16 +2742,27 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
               artifact: 'CopilotLogs'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
 
           # Publish build logs if they exist
+          - pwsh: |
+              # A named log directory is not the same as an existing one. In
+              # replicate mode nothing writes it, and publishing a missing path
+              # failed several runs that had otherwise completed their work.
+              $present = -not [string]::IsNullOrWhiteSpace('$(LogDirectory)') -and
+                (Test-Path -LiteralPath '$(LogDirectory)' -PathType Container)
+              Write-Host "##vso[task.setvariable variable=logDirectoryPresent]$($present.ToString().ToLowerInvariant())"
+              Write-Host "Build log directory present: $present"
+            displayName: 'Detect build log directory'
+            condition: succeededOrFailed()
+
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Build Logs'
             inputs:
               targetPath: '$(LogDirectory)'
               artifact: 'BuildLogs'
               publishLocation: 'pipeline'
-            condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
+            condition: and(succeededOrFailed(), eq(variables['logDirectoryPresent'], 'true'))
 
           # Fail the pipeline if any phase failed.
           # NOTE: CopilotFailed / GateFailed are output variables set only on the
@@ -1879,7 +2798,7 @@ stages:
               fi
               exit $FAILED
             displayName: 'Check Review Result'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'review'))
             env:
               COPILOT_FAILED: $(CopilotFailed)
               GATE_FAILED: $(GateFailed)
@@ -1887,7 +2806,7 @@ stages:
       - job: PostReview
         displayName: 'Post review results'
         dependsOn: CopilotReview
-        condition: in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')
+        condition: and(eq('${{ parameters.Mode }}', 'review'), in(dependencies.CopilotReview.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'))
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -1985,6 +2904,7 @@ stages:
               $ErrorActionPreference = 'Stop'
               & pwsh -NoProfile -File ./.github/scripts/Review-PR.ps1 `
                 -PRNumber "${env:PARAM_PR_NUMBER}" `
+                -Repository "${{ parameters.ReviewRepository }}" `
                 -Platform "${{ parameters.Platform }}" `
                 -Phase Post `
                 -TrustedGateResult "$(effectiveTrustedGateResult)" `
@@ -2028,7 +2948,7 @@ stages:
               # posted below supersedes them. Reuses the tested shared cleanup logic
               # (matches the hidden marker AND the stable header text, MauiBot-authored
               # only). Best-effort: never let cleanup failure block the new notice.
-              pwsh -NoProfile -Command '. "$(System.DefaultWorkingDirectory)/.github/scripts/shared/Remove-StaleMauiBotComments.ps1"; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
+              pwsh -NoProfile -Command '. "$(System.DefaultWorkingDirectory)/.github/scripts/shared/Remove-StaleMauiBotComments.ps1"; Hide-StaleMauiBotIssueComments -PRNumber ([int]$env:PARAM_PR_NUMBER) -Repository $env:PARAM_REVIEW_REPOSITORY -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"' \
                 || echo "ℹ️ prior review-incomplete collapse best-effort failed (continuing)"
               BUILD_URL="https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=${BUILD_BUILDID}"
               BODY_FILE="$(mktemp)"
@@ -2043,7 +2963,7 @@ stages:
                 echo ">"
                 echo "> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline · <a href=\"${BUILD_URL}\">build log</a></sub>"
               } > "$BODY_FILE"
-              if gh pr comment "$PARAM_PR_NUMBER" --repo dotnet/maui --body-file "$BODY_FILE"; then
+              if gh pr comment "$PARAM_PR_NUMBER" --repo "$PARAM_REVIEW_REPOSITORY" --body-file "$BODY_FILE"; then
                 echo "Review-incomplete notice posted to PR #$PARAM_PR_NUMBER."
               else
                 echo "##vso[task.logissue type=warning]Failed to post review-incomplete notice to PR #$PARAM_PR_NUMBER."
@@ -2054,6 +2974,7 @@ stages:
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               BUILD_BUILDID: $(Build.BuildId)
 
           - task: PublishPipelineArtifact@1
@@ -2061,6 +2982,876 @@ stages:
             inputs:
               targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
               artifact: 'CopilotPostLogs'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: ValidateReplication
+  # ─────────────────────────────────────────────────────────────────────────────
+  # The credentialless half of publication, on its own fresh Microsoft-hosted
+  # agent. ReviewPR ran models and generated code for hours next to a device;
+  # PublishReplication holds the service-connection credential. Neither is a
+  # place to decide whether the result is publishable.
+  #
+  # This job holds no credential at all -- no GH_*, no COPILOT_*, no AZURE_*, no
+  # System.AccessToken, no service connection, no proxy or git credential -- and
+  # its checkout is `persistCredentials: false`, so there is nothing in
+  # .git/config to extract either. It stages the trusted validators from its own
+  # clean checkout of the immutable Build.SourceVersion, downloads the artifacts
+  # outside that checkout, re-derives the trusted tree the device agent claimed
+  # to have run, re-checks the certification binding against every artifact in
+  # hand, runs candidate/fix/test/media validation, and emits one bounded data
+  # artifact. It never executes generated code and never writes anywhere the
+  # publisher reads scripts from.
+  - stage: ValidateReplication
+    displayName: 'Validate issue fix without credentials'
+    dependsOn: ReviewPR
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    jobs:
+      - job: ValidateReplication
+        displayName: 'Validate fix candidate without credentials'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 45
+        workspace:
+          clean: all
+        variables:
+          replicationBaseSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['ResolveReplicationBase.replicationBaseSha'] ]
+          trustedTreeHash: $[ stageDependencies.ReviewPR.CopilotReview.outputs['AttestTrustedTree.trustedTreeHash'] ]
+          trustedPipelineSha256: $[ stageDependencies.ReviewPR.CopilotReview.outputs['AttestTrustedTree.trustedPipelineSha256'] ]
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            # No credential is persisted here, and none is granted by any task
+            # in this job. A job that cannot authenticate to anything cannot
+            # leak anything to the generated content it is judging.
+            persistCredentials: false
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # A validation job that quietly holds a credential is the same job
+              # as the publisher, which defeats the separation this stage exists
+              # for. Prove the absence rather than assume it.
+              $forbidden = @(
+                'GH_TOKEN', 'GITHUB_TOKEN', 'GH_COMMENT_TOKEN', 'GH_ENTERPRISE_TOKEN',
+                'COPILOT_GITHUB_TOKEN', 'COPILOT_TOKEN', 'SYSTEM_ACCESSTOKEN',
+                'AZURE_STORAGE_KEY', 'AZURE_STORAGE_SAS_TOKEN',
+                'VSS_NUGET_EXTERNAL_FEED_ENDPOINTS', 'GIT_ASKPASS',
+                'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY',
+                'http_proxy', 'https_proxy', 'all_proxy'
+              )
+              $present = @($forbidden | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
+              })
+              if ($present.Count -gt 0) {
+                throw "The credentialless validation job was given credentials: $($present -join ', ')"
+              }
+              $extraheaders = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'http\..*\.extraheader' 2>$null)
+              if ($extraheaders.Count -gt 0) {
+                throw 'The credentialless validation checkout persisted a credential.'
+              }
+              $helpers = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'credential\..*helper' 2>$null)
+              if ($helpers.Count -gt 0) {
+                throw 'The credentialless validation checkout configured a credential helper.'
+              }
+              Write-Host 'The validation job holds no GitHub, Copilot, Azure, feed, proxy, or git credential.'
+            displayName: 'Assert the validation job holds no credential'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # Pinned before anything is staged. A replicate run can spend an
+              # hour on a device, and a pipeline ref that moved in the meantime
+              # would have this job validate artifacts from one commit with
+              # scripts from another.
+              $pinned = '$(Build.SourceVersion)'
+              if ($pinned -notmatch '^[0-9a-f]{40}$') {
+                throw "Build.SourceVersion is not a commit SHA: $pinned"
+              }
+              git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to pin the validation checkout to $pinned."
+              }
+              $actual = (git -C "$(Build.SourcesDirectory)" rev-parse HEAD).Trim()
+              if ($actual -ne $pinned) {
+                throw "Validation checkout is at $actual but the run was queued at $pinned."
+              }
+
+              # Stage from canonical Git blob bytes, not checkout bytes. Windows
+              # checkouts may translate text files to CRLF while this Ubuntu job
+              # checks them out as LF; git archive makes both jobs attest the same
+              # immutable bytes regardless of checkout policy.
+              $referenceSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-source'
+              Remove-Item -LiteralPath $referenceSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $referenceSourceRoot -Force | Out-Null
+              $archivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-source.tar'
+              Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
+              & git -C "$(Build.SourcesDirectory)" archive `
+                --format=tar `
+                "--output=$archivePath" `
+                $pinned `
+                .github/scripts `
+                .github/skills `
+                eng/scripts `
+                .github/patches/catalyst-retina-screenshot.patch `
+                src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml `
+                eng/pipelines/ci-copilot.yml
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to materialize trusted validators from the pinned Git revision.'
+              }
+              & tar -xf $archivePath -C $referenceSourceRoot
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to extract trusted validators from the pinned Git revision.'
+              }
+
+              # Staged the same way ReviewPR staged its trusted tree, from this
+              # job's own materialization of the same commit, so the content hash
+              # computed below is an independent statement about the pinned
+              # revision rather than a copy of the device agent's claim.
+              $cleanValidatorRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-replication-validator'
+              Remove-Item -LiteralPath $cleanValidatorRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $cleanValidatorRoot -Force | Out-Null
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/scripts') `
+                -Destination (Join-Path $cleanValidatorRoot 'scripts') -Recurse -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/skills') `
+                -Destination (Join-Path $cleanValidatorRoot 'skills') -Recurse -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'eng/scripts') `
+                -Destination (Join-Path $cleanValidatorRoot 'eng-scripts') -Recurse -Force
+              New-Item -ItemType Directory -Path (Join-Path $cleanValidatorRoot 'source-overrides') -Force | Out-Null
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/patches/catalyst-retina-screenshot.patch') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+
+              # Every script this job runs, checked for existence up front so a
+              # missing validator is a named failure rather than a late one.
+              foreach ($relative in @(
+                'scripts/shared/Assert-TrustedTreeAttestation.ps1',
+                'scripts/shared/Assert-ReplicationCertificationBinding.ps1',
+                'scripts/shared/Assert-ReplicationExecutionEnvironment.ps1',
+                'scripts/shared/Assert-ReplicationTestGuard.ps1',
+                'scripts/shared/Get-ReplicationCertification.ps1',
+                'scripts/shared/Get-ReplicationSignatureMatch.ps1',
+                'scripts/shared/Validate-ReplicationCandidate.ps1'
+              )) {
+                $staged = Join-Path $cleanValidatorRoot $relative
+                if (-not (Test-Path -LiteralPath $staged -PathType Leaf)) {
+                  throw "Trusted validation script is missing from the pinned checkout: $relative"
+                }
+              }
+
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_VALIDATOR_ROOT]$cleanValidatorRoot"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_REFERENCE_ROOT]$referenceSourceRoot"
+              Write-Host "Trusted validators staged from the pinned checkout at $pinned"
+            displayName: 'Stage trusted validators from the pinned clean checkout'
+
+          # Downloaded outside $(Build.SourcesDirectory) on purpose: artifact
+          # content produced beside generated code may never land where this job
+          # reads scripts from.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Artifacts'
+            continueOnError: true
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationArtifacts'
+              targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $candidatePath = "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json"
+              $present = Test-Path -LiteralPath $candidatePath -PathType Leaf
+              if ($present) {
+                Write-Host "Replication artifacts are available for validation."
+              } else {
+                Write-Host "The run produced no replication candidate, so there is nothing to validate."
+              }
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_PRESENT]$($present.ToString().ToLowerInvariant())"
+            displayName: 'Check for replication artifacts'
+            condition: succeededOrFailed()
+
+          - bash: |
+              set -euo pipefail
+              if command -v ffprobe >/dev/null 2>&1; then
+                ffprobe -version | head -1
+                exit 0
+              fi
+              export DEBIAN_FRONTEND=noninteractive
+              sudo systemctl stop unattended-upgrades.service || true
+              sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true
+              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
+              sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
+              ffprobe -version | head -1
+            displayName: 'Install validation media validator'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            timeoutInMinutes: 25
+            retryCountOnTaskFailure: 2
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path "$(TRUSTED_REPLICATION_VALIDATOR_ROOT)" 'scripts/shared/Assert-TrustedTreeAttestation.ps1')
+
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $attestationPath = Join-Path $artifactRoot 'trusted-tree.json'
+              if (-not (Test-Path -LiteralPath $attestationPath -PathType Leaf)) {
+                throw 'The run published no trusted-tree attestation, so what it ran cannot be established.'
+              }
+
+              $reference = Assert-TrustedTreeMatchesReference `
+                -Attestation $attestationPath `
+                -ReferenceRoot "$(TRUSTED_REPLICATION_VALIDATOR_ROOT)" `
+                -ExpectedSourceVersion '$(Build.SourceVersion)' `
+                -ReferencePipelineDefinitionPath (Join-Path "$(TRUSTED_REPLICATION_REFERENCE_ROOT)" 'eng/pipelines/ci-copilot.yml') `
+                -Context 'clean validation checkout'
+
+              $attestation = Read-TrustedTreeAttestation -Path $attestationPath
+              $declaredTreeHash = "$(trustedTreeHash)"
+              if ($declaredTreeHash -match '^[0-9a-f]{64}$' -and
+                  $declaredTreeHash -cne [string]$attestation.treeHash) {
+                throw 'The published attestation does not match the tree hash the replicate job reported.'
+              }
+              $declaredPipelineSha = "$(trustedPipelineSha256)"
+              if ($declaredPipelineSha -match '^[0-9a-f]{64}$' -and
+                  $declaredPipelineSha -cne [string]$attestation.pipelineSha256) {
+                throw 'The published attestation does not match the pipeline definition the replicate job reported.'
+              }
+
+              Write-Host ("The trusted tree the run used matches the pinned pipeline revision: " +
+                "$($reference.FileCount) files, content $($reference.ContentHash).")
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_HASH]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_CONTENT_HASH]$($reference.ContentHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_PIPELINE_SHA256]$($attestation.pipelineSha256)"
+            displayName: 'Re-derive the trusted tree from the pinned revision'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+
+          - bash: |
+              set -euo pipefail
+              BASE_SHA="${REPLICATION_BASE_SHA}"
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Trusted replication baseline output is invalid."
+                exit 1
+              fi
+              git fetch --no-tags origin main
+              git cat-file -e "${BASE_SHA}^{commit}"
+              git merge-base --is-ancestor "${BASE_SHA}" origin/main
+              git checkout --detach "${BASE_SHA}"
+              test -z "$(git status --porcelain)"
+              echo "Validation checkout pinned to ${BASE_SHA}"
+            displayName: 'Pin clean replication baseline'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            env:
+              REPLICATION_BASE_SHA: $(replicationBaseSha)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              Remove-Item -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              $validatedPath = Join-Path $outputRoot 'validated-candidate.json'
+              $summaryPath = Join-Path $outputRoot 'validation-summary.json'
+
+              function Write-ValidationSummary {
+                param([string]$Status, [bool]$CandidateReady, [string]$BindingDigest = '')
+
+                [ordered]@{
+                  schemaVersion = 1
+                  status = $Status
+                  candidateReady = $CandidateReady
+                  bindingDigest = $BindingDigest
+                  trustedSourceVersion = '$(Build.SourceVersion)'
+                  # Read from the environment, not as $(MACRO): Azure leaves an
+                  # undefined macro as literal text, and PowerShell would then
+                  # evaluate it as a subexpression and fail the step. These are
+                  # set by a step this one can legitimately run without.
+                  trustedTreeHash = [string]$env:TRUSTED_TREE_HASH
+                  trustedTreeContentHash = [string]$env:TRUSTED_TREE_CONTENT_HASH
+                  replicationBaseSha = "$(replicationBaseSha)"
+                  issueNumber = ${{ parameters.IssueNumber }}
+                  platform = '${{ parameters.Platform }}'
+                } | ConvertTo-Json -Depth 6 |
+                  Set-Content -LiteralPath $summaryPath -Encoding utf8NoBOM
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]$($CandidateReady.ToString().ToLowerInvariant())"
+              }
+
+              $candidatePath = Join-Path $artifactRoot 'candidate.json'
+              if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'missing'
+                  validationPassed = $false
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'missing' -CandidateReady $false
+                Write-Host "No replication candidate manifest was produced; nothing to validate."
+                exit 0
+              }
+
+              $candidate = Get-Content -LiteralPath $candidatePath -Raw | ConvertFrom-Json -Depth 20
+              if ([string]$candidate.status -ne 'reproduced') {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'skipped'
+                  validationPassed = $false
+                  blocked = $candidate.blocked
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'skipped' -CandidateReady $false
+                Write-Host "Replication candidate is '$($candidate.status)'; reproduced-only validation is not applicable."
+                exit 0
+              }
+
+              $fixPatchPath = Join-Path $artifactRoot 'fix.patch'
+              $fixPatchArgument = @{}
+              $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
+              $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
+              $fixReadyForPublication = $fixPatchPresent -and $manifestFixFiles.Count -gt 0
+              if ($fixReadyForPublication) {
+                $fixPatchArgument['FixPatchPath'] = $fixPatchPath
+                Write-Host "The candidate carries a proposed fix; validating it alongside the test."
+              } elseif ($fixPatchPresent -or $manifestFixFiles.Count -gt 0) {
+                Write-Host "The fix phase did not finish with both a patch and named files; no pull request will be published."
+              } else {
+                Write-Host "No product fix was produced; keeping the reproduction in pipeline artifacts only."
+              }
+
+              # No-fix candidates remain pipeline artifacts; only complete fixes reach validation.
+              if (-not $fixReadyForPublication) {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'fix-not-available'
+                  validationPassed = $false
+                  issueNumber = $candidate.issueNumber
+                  platform = $candidate.platform
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'fix-not-available' -CandidateReady $false
+                exit 0
+              }
+
+              $validatorRoot = [string]$env:TRUSTED_REPLICATION_VALIDATOR_ROOT
+              if ([string]::IsNullOrWhiteSpace($validatorRoot) -or
+                  -not (Test-Path -LiteralPath $validatorRoot -PathType Container)) {
+                throw 'The trusted validators were never staged, so nothing may be validated.'
+              }
+              $validation = @(
+                & (Join-Path $validatorRoot 'scripts/shared/Validate-ReplicationCandidate.ps1') `
+                  -RepoRoot "$(Build.SourcesDirectory)" `
+                  -CandidateManifestPath $candidatePath `
+                  -PatchPath (Join-Path $artifactRoot 'test.patch') `
+                  -EvidenceDir $artifactRoot `
+                  -IssueNumber ${{ parameters.IssueNumber }} `
+                  -Platform "${{ parameters.Platform }}" `
+                  -OutputPath $validatedPath `
+                  -CertificationBindingPath (Join-Path $artifactRoot 'certification-binding.json') `
+                  -ArtifactRoot $artifactRoot `
+                  -TrustedSourceVersion '$(Build.SourceVersion)' `
+                  -TrustedTreeHash ([string]$env:TRUSTED_TREE_HASH) `
+                  -TrustedPipelineSha256 ([string]$env:TRUSTED_PIPELINE_SHA256) `
+                  -ReplicationBaseSha "$(replicationBaseSha)" `
+                  -RequireCertificationBinding `
+                  @fixPatchArgument
+              )
+              if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
+                throw "Replication candidate validation did not return one validated result."
+              }
+              $bindingDigest = [string]$validation[0].certificationBinding.digest
+              if ($bindingDigest -notmatch '^[0-9a-f]{64}$') {
+                throw 'Validation produced no certification binding digest, so nothing binds this result to its inputs.'
+              }
+              $fixFilesProperty = $validation[0].PSObject.Properties['fixFiles']
+              $validatedFixFiles = @($(if ($fixFilesProperty) { @($fixFilesProperty.Value) } else { @() }) | Where-Object {
+                  -not [string]::IsNullOrWhiteSpace([string]$_)
+                })
+              $candidateReady = $validatedFixFiles.Count -gt 0
+              $validationStatus = if ($candidateReady) { 'validated' } else { 'fix-withheld' }
+              Write-ValidationSummary `
+                -Status $validationStatus `
+                -CandidateReady $candidateReady `
+                -BindingDigest $bindingDigest
+              if ($candidateReady) {
+                Write-Host "Validated fix candidate is bound to $bindingDigest"
+              } else {
+                Write-Host 'Clean validation retained only reproduction evidence; publication remains withheld.'
+              }
+            displayName: 'Validate fix candidate without credentials'
+            condition: succeededOrFailed()
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # The only thing this stage hands on is bounded data, written
+              # outside the checkout, and it is exactly two documents. Anything
+              # else here would be a file the credentialed publisher downloads
+              # from a job that read generated content.
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              if (-not (Test-Path -LiteralPath $outputRoot -PathType Container)) {
+                New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              }
+              $allowed = @('validated-candidate.json', 'validation-summary.json')
+              foreach ($item in @(Get-ChildItem -LiteralPath $outputRoot -Recurse -Force)) {
+                if ($item.PSIsContainer -or
+                    $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                    $allowed -notcontains $item.Name -or
+                    $item.Length -gt 1MB) {
+                  throw "The validation artifact may contain only bounded result documents: $($item.Name)"
+                }
+              }
+              Write-Host "The validation artifact carries only bounded result documents."
+            displayName: 'Bound the validation artifact'
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Validation Result'
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/ReplicationValidation'
+              artifact: 'ReplicationValidation'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
+  # Replication publication reuses the trusted GitHub service-connection
+  # credential and the existing public review-tests-assets-v2 branch. The
+  # credential is exposed only after deterministic candidate validation, in a
+  # clean job that never executes generated code.
+  - stage: PublishReplication
+    displayName: 'Validate and publish issue fix'
+    dependsOn:
+      - ReviewPR
+      - ValidateReplication
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), in(dependencies.ValidateReplication.result, 'Succeeded', 'SucceededWithIssues'))
+    jobs:
+      - job: PublishReplication
+        displayName: 'Publish validated fix'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 45
+        variables:
+          replicationBaseSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['ResolveReplicationBase.replicationBaseSha'] ]
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            # Trusted-only publisher exception: reuse the existing checkout PAT
+            # for the public asset branch and fix branch. Generated
+            # code is validated but never executed in this credentialed job.
+            persistCredentials: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # A replicate run can spend an hour on a device before this job
+              # starts. When the pipeline ref moves in the meantime, the
+              # checkout lands on the newer tip and this job validates artifacts
+              # from one commit with scripts from another. A live run was
+              # rejected for a manifest field that did not exist in either
+              # script at the commit the run was queued from. Pin to the same
+              # commit the replicate stage captured its trusted scripts at.
+              $pinned = '$(Build.SourceVersion)'
+              if ($pinned -notmatch '^[0-9a-f]{40}$') {
+                  throw "Build.SourceVersion is not a commit SHA: $pinned"
+              }
+              git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned 2>$null
+              if ($LASTEXITCODE -ne 0) {
+                  git -C "$(Build.SourcesDirectory)" fetch --no-tags origin $pinned
+                  git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned
+              }
+              if ($LASTEXITCODE -ne 0) {
+                  throw "Unable to pin the publisher checkout to $pinned."
+              }
+              $actual = (git -C "$(Build.SourcesDirectory)" rev-parse HEAD).Trim()
+              if ($actual -ne $pinned) {
+                  throw "Publisher checkout is at $actual but the run was queued at $pinned."
+              }
+              Write-Host "Publisher pinned to $actual"
+
+              $publisherSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-publisher-source'
+              Remove-Item -LiteralPath $publisherSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $publisherSourceRoot -Force | Out-Null
+              $publisherArchivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-publisher-source.tar'
+              Remove-Item -LiteralPath $publisherArchivePath -Force -ErrorAction SilentlyContinue
+              & git -C "$(Build.SourcesDirectory)" archive `
+                --format=tar `
+                "--output=$publisherArchivePath" `
+                $pinned `
+                .github/scripts
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to materialize trusted publisher scripts from the pinned Git revision.'
+              }
+              & tar -xf $publisherArchivePath -C $publisherSourceRoot
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to extract trusted publisher scripts from the pinned Git revision.'
+              }
+
+              $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
+              Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
+              # Paths are relative to .github/scripts because not every trusted
+              # script lives in shared/. Find-RegressionRisks.ps1 sits one level
+              # up, was therefore never staged, and the PR body's regression
+              # cross-reference silently reported nothing from the day it landed.
+              foreach ($relative in @(
+                'shared/Assert-ReplicationTestGuard.ps1',
+                'shared/Get-ReplicationCertification.ps1',
+                'shared/Get-ReplicationSignatureMatch.ps1',
+                'shared/Get-ReplicationGitHubLogin.ps1',
+                'shared/Get-ReplicationUpstreamFix.ps1',
+                'shared/Assert-TrustedTreeAttestation.ps1',
+                'shared/Assert-ReplicationCertificationBinding.ps1',
+                'shared/Assert-ReplicationExecutionEnvironment.ps1',
+                'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1',
+                'shared/Validate-ReplicationCandidate.ps1',
+                'shared/Publish-ReplicationOutcome.ps1',
+                'shared/Publish-ReplicationEvidence.ps1',
+                'shared/Publish-ReplicationPR.ps1',
+                'Find-RegressionRisks.ps1'
+              )) {
+                $source = Join-Path $publisherSourceRoot ".github/scripts/$relative"
+                if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+                  throw "Trusted publisher script is missing: $source"
+                }
+                $name = Split-Path -Leaf $relative
+                Copy-Item -LiteralPath $source -Destination (Join-Path $trustedRoot $name) -Force
+              }
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_PUBLISHER_ROOT]$trustedRoot"
+            displayName: 'Stage trusted replication publisher'
+
+          # A run that stops before it can produce a candidate, such as one that
+          # fails the credential pre-flight, publishes no replication artifact.
+          # There is then nothing to publish, and every later step in this job
+          # already skips on its own. Failing the download as well would report
+          # the same stopped run as a second red job.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Artifacts'
+            continueOnError: true
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationArtifacts'
+              targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          # The result of the credentialless stage, downloaded outside the
+          # checkout like everything else. This job does not decide whether the
+          # candidate is publishable; it re-checks that the decision still
+          # describes the artifacts in hand.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Validation Result'
+            continueOnError: true
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationValidation'
+              targetPath: '$(Pipeline.Workspace)/ReplicationValidation'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $candidatePath = "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json"
+              $present = Test-Path -LiteralPath $candidatePath -PathType Leaf
+              if ($present) {
+                Write-Host "Replication artifacts are available for publication."
+              } else {
+                Write-Host "The run produced no replication candidate, so there is nothing to publish."
+              }
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_PRESENT]$($present.ToString().ToLowerInvariant())"
+            displayName: 'Check for replication artifacts'
+            condition: succeededOrFailed()
+
+          - bash: |
+              set -euo pipefail
+              BASE_SHA="${REPLICATION_BASE_SHA}"
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Trusted replication baseline output is invalid."
+                exit 1
+              fi
+              git fetch --no-tags origin main
+              git cat-file -e "${BASE_SHA}^{commit}"
+              git merge-base --is-ancestor "${BASE_SHA}" origin/main
+              git checkout --detach "${BASE_SHA}"
+              test -z "$(git status --porcelain)"
+              echo "Publisher checkout pinned to ${BASE_SHA}"
+            displayName: 'Pin clean replication baseline'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            env:
+              REPLICATION_BASE_SHA: $(replicationBaseSha)
+
+          # ── The recheck ───────────────────────────────────────────────
+          # First certification happened in the credentialless stage. This job
+          # holds the credential, so all it is allowed to establish is that the
+          # decision it was handed still describes the artifacts in front of it:
+          # the bundle digest is recomputed over the binding, every referenced
+          # artifact is re-hashed, the validated document is required to name
+          # that same digest, and the artifacts are re-scanned for the run's
+          # canary and for credential shapes. It runs before any credential is
+          # extracted, so an artifact mutated between the two jobs is caught
+          # while this job still has nothing to leak.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $publisherRoot = [string]$env:TRUSTED_REPLICATION_PUBLISHER_ROOT
+              if ([string]::IsNullOrWhiteSpace($publisherRoot) -or
+                  -not (Test-Path -LiteralPath $publisherRoot -PathType Container)) {
+                throw 'The trusted publisher scripts were never staged, so nothing may be published.'
+              }
+              . (Join-Path $publisherRoot 'Assert-ReplicationCertificationBinding.ps1')
+              . (Join-Path $publisherRoot 'Assert-ReplicationExecutionEnvironment.ps1')
+              . (Join-Path $publisherRoot 'Assert-ReplicationTestGuard.ps1')
+
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $validationRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
+              # Created whatever happened, because the publication artifact is
+              # uploaded on succeededOrFailed and a run that stopped early would
+              # otherwise be reported a second time as a failed upload.
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              $validatedSource = Join-Path $validationRoot 'validated-candidate.json'
+              $summaryPath = Join-Path $validationRoot 'validation-summary.json'
+              $validatedPath = Join-Path $outputRoot 'validated-candidate.json'
+
+              if ([string]$env:REPLICATION_ARTIFACT_PRESENT -ne 'true') {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'missing'
+                  validationPassed = $false
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-Host "The run produced no replication candidate, so there is nothing to recheck."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
+                exit 0
+              }
+
+              if (-not (Test-Path -LiteralPath $validatedSource -PathType Leaf) -or
+                  -not (Test-Path -LiteralPath $summaryPath -PathType Leaf)) {
+                throw 'The credentialless validation stage produced no result, so nothing may be published.'
+              }
+              foreach ($required in @($validatedSource, $summaryPath)) {
+                $item = Get-Item -LiteralPath $required -Force
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or $item.Length -gt 1MB) {
+                  throw "The validation result must be a bounded regular file: $($item.Name)"
+                }
+              }
+
+              $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json -Depth 8
+              $validated = Get-Content -LiteralPath $validatedSource -Raw | ConvertFrom-Json -Depth 20
+              Copy-Item -LiteralPath $validatedSource -Destination $validatedPath -Force
+
+              if ([string]$summary.trustedSourceVersion -cne '$(Build.SourceVersion)') {
+                throw 'The validation result was produced at a different pipeline revision.'
+              }
+              if (-not [bool]$summary.candidateReady -or [string]$summary.status -ne 'validated') {
+                Write-Host "No publishable candidate was validated (status '$($summary.status)')."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
+                exit 0
+              }
+              if ($validated.validationPassed -ne $true) {
+                throw 'The validation summary claims a validated candidate the validated document does not.'
+              }
+              $validatedFixFiles = @($validated.fixFiles | Where-Object {
+                  -not [string]::IsNullOrWhiteSpace([string]$_)
+                })
+              if ($validatedFixFiles.Count -eq 0) {
+                throw 'The validated candidate names no complete product fix to rescan.'
+              }
+              Assert-ReplicationFixSources `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -Paths $validatedFixFiles `
+                -PatchPath (Join-Path $artifactRoot 'fix.patch')
+
+              $bindingPath = Join-Path $artifactRoot 'certification-binding.json'
+              $recheck = Assert-ReplicationCertificationBinding `
+                -Binding $bindingPath `
+                -ArtifactRoot $artifactRoot `
+                -TrustedSourceVersion '$(Build.SourceVersion)' `
+                -ReplicationBaseSha "$(replicationBaseSha)" `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform '${{ parameters.Platform }}' `
+                -Context 'publisher recheck'
+              foreach ($declared in @([string]$summary.bindingDigest, [string]$validated.certificationBinding.digest)) {
+                if ($declared -cne [string]$recheck.Digest) {
+                  throw 'The replication artifacts changed after validation; their bundle digest no longer matches.'
+                }
+              }
+
+              $null = Assert-ReplicationNoSecretMarkers `
+                -Root $artifactRoot `
+                -Context 'publisher recheck'
+              $null = Assert-ReplicationNoSecretMarkers `
+                -Root $validationRoot `
+                -Context 'publisher recheck'
+
+              Write-Host "Rechecked bundle digest $($recheck.Digest) against every referenced artifact."
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]true"
+            displayName: 'Recheck validated bundle before credential use'
+            condition: succeededOrFailed()
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # Commenting on a public issue notifies its reporter, so it stays
+              # opt-in while the replicate flow is being hardened.
+              $publishIssueOutcome = [bool]::Parse('${{ parameters.PublishIssueOutcome }}')
+              if (-not $publishIssueOutcome) {
+                Write-Host "Issue outcome publication is disabled; running without writing to the issue."
+              }
+              try {
+                $outcome = & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationOutcome.ps1") `
+                  -CandidatePath "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json" `
+                  -IssueNumber ${{ parameters.IssueNumber }} `
+                  -Platform "${{ parameters.Platform }}" `
+                  -BuildId "$(Build.BuildId)" `
+                  -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
+                  -Repository "dotnet/maui" `
+                  -Label "s/try-latest-version" `
+                  -DryRun:(-not $publishIssueOutcome)
+                if ($outcome.handled) {
+                  Write-Host "MauiBot published a not-reproduced issue outcome."
+                } else {
+                  Write-Host "No not-reproduced issue outcome requires publication."
+                }
+              }
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+              }
+            displayName: 'Publish MauiBot non-reproduction outcome'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $checkoutToken = $null
+              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                if ($line -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') {
+                  $decoded = [Text.Encoding]::UTF8.GetString(
+                    [Convert]::FromBase64String($matches[1]))
+                  $checkoutToken = ($decoded -split ':', 2)[-1]
+                  break
+                }
+                if ($line -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') {
+                  $checkoutToken = $matches[1]
+                  break
+                }
+              }
+              if ([string]::IsNullOrWhiteSpace($checkoutToken)) {
+                throw 'Trusted checkout credential is unavailable for replication publication.'
+              }
+
+              try {
+                $env:GH_TOKEN = $checkoutToken
+                $attempt = if ($env:SYSTEM_JOBATTEMPT -match '^[1-9]\d*$') {
+                  $env:SYSTEM_JOBATTEMPT
+                } else {
+                  '1'
+                }
+                # The shared asset-only branch intentionally allows only pr-<n>
+                # top-level trees. Reuse the issue number as that bounded
+                # namespace and keep replication media in a distinct subtree.
+                $prefix = "pr-${{ parameters.IssueNumber }}/replication/${{ parameters.Platform }}/$(Build.BuildId)-$attempt"
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationEvidence.ps1") `
+                  -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                  -EvidenceDirectory "$(Pipeline.Workspace)/ReplicationArtifacts/evidence" `
+                  -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -Repository "$(Build.Repository.Name)" `
+                  -AssetBranch "review-tests-assets-v2" `
+                  -AssetPrefix $prefix `
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json"
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Publishing replication evidence failed."
+                }
+              }
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+                $checkoutToken = $null
+              }
+            displayName: 'Publish fix evidence'
+            condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
+            env:
+              BUILD_BUILDID: $(Build.BuildId)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
+                $key = ($line -split '\s+', 2)[0]
+                if ($key) {
+                  git config --unset-all $key 2>$null
+                }
+              }
+
+              try {
+                $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
+                $publishFixArgument = @{}
+                # The validator is the authority on what was validated. Probing the
+                # file here as well let the two consumers disagree: a patch the
+                # validator declined to look at would still be applied and
+                # published as a fix nobody checked. Both now read the same
+                # document. Filtering rather than counting, because a missing
+                # property is $null and @($null).Count is 1.
+                $validatedCandidate = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" -Raw |
+                  ConvertFrom-Json -Depth 20
+                $validatedFixFiles = @($validatedCandidate.fixFiles | Where-Object { $_ })
+                if ((Test-Path -LiteralPath $publishFixPatch -PathType Leaf) -and
+                    $validatedFixFiles.Count -gt 0) {
+                  $publishFixArgument['FixPatchPath'] = $publishFixPatch
+                }
+                if ([bool]::Parse('${{ parameters.SupersedeExisting }}')) {
+                  $publishFixArgument['SupersedeExisting'] = $true
+                }
+
+                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Publish-ReplicationPR.ps1") `
+                  -ValidatedCandidatePath "$(Pipeline.Workspace)/ReplicationPublication/validated-candidate.json" `
+                  -PublishedEvidencePath "$(Pipeline.Workspace)/ReplicationPublication/published-evidence.json" `
+                  -IssueContextPath "$(Pipeline.Workspace)/ReplicationArtifacts/context/issue-context.json" `
+                  -PatchPath "$(Pipeline.Workspace)/ReplicationArtifacts/test.patch" `
+                  -RepositoryRoot "$(Build.SourcesDirectory)" `
+                  -IssueOwner "dotnet" `
+                  -IssueRepository "maui" `
+                  -TargetOwner "kubaflo" `
+                  -TargetRepository "maui" `
+                  -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
+                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
+                  @publishFixArgument
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Publishing the fix pull request failed."
+                }
+
+                $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw |
+                  ConvertFrom-Json
+                if (-not [string]::IsNullOrWhiteSpace([string]$result.duplicateOf)) {
+                  Write-Host "This issue and platform are already covered by $($result.duplicateOf); nothing further to publish."
+                }
+                elseif (-not [string]::IsNullOrWhiteSpace([string]$result.withheldReason)) {
+                  # A reproduction without a fix is no longer published. The run did real
+                  # work and its evidence is in the artifacts, so this is a green outcome
+                  # with nothing to open - not a publisher that failed to return a URL.
+                  Write-Host "No pull request was opened ($($result.withheldReason)); only fixes are published."
+                }
+                elseif ([string]::IsNullOrWhiteSpace([string]$result.url)) {
+                  throw "Replication publisher did not return a pull request URL."
+                }
+                else {
+                  Write-Host "##vso[task.setvariable variable=replicationPrUrl;isOutput=true]$($result.url)"
+                }
+              }
+              finally {
+                Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+              }
+            name: PublishReplicationPR
+            displayName: 'Create MauiBot fix draft PR'
+            condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              BUILD_BUILDID: $(Build.BuildId)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Publication Result'
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/ReplicationPublication'
+              artifact: 'ReplicationPublication'
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
@@ -2101,6 +3892,7 @@ stages:
     # in-process results when no deep artifact exists).
     condition: >-
       and(
+        eq('${{ parameters.Mode }}', 'review'),
         not(canceled()),
         in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
         ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunDetect.detectedCategories']), ''),
@@ -2150,18 +3942,41 @@ stages:
           # resolution task below: a retry can start after that task checked out
           # the PR head, and recapturing here would bless PR-controlled scripts.
           - bash: |
-              set -e
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              chmod -R u+w "$TRUSTED" 2>/dev/null || true
-              rm -rf "$TRUSTED" 2>/dev/null || true
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              mkdir -p "$TRUSTED/source-overrides"
-              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts and source overrides copied from $(Build.SourceVersion) to $TRUSTED"
+             set -euo pipefail
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-deep-source"
+             SOURCE_VERSION="$(Build.SourceVersion)"
+             if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
+               echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."
+               exit 1
+             fi
+             chmod -R u+w "$TRUSTED" 2>/dev/null || true
+             rm -rf "$TRUSTED" 2>/dev/null || true
+             rm -rf "$STAGED_SOURCE" 2>/dev/null || true
+             mkdir -p "$TRUSTED"
+             mkdir -p "$STAGED_SOURCE"
+             git archive "${SOURCE_VERSION}" \
+               .github/scripts \
+               .github/skills \
+               eng/scripts \
+               .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml |
+               tar -xf - -C "$STAGED_SOURCE"
+             cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
+             cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
+             cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
+             mkdir -p "$TRUSTED/source-overrides"
+             cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             chmod -R a-w "$TRUSTED"
+             echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted scripts for deep UI tests'
             timeoutInMinutes: 5
 
@@ -2178,6 +3993,8 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
+              REVIEW_REPOSITORY_URL="https://github.com/${REVIEW_REPOSITORY}.git"
               if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain a valid PR base branch."
                 exit 1
@@ -2186,10 +4003,14 @@ stages:
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain valid immutable commit SHAs."
                 exit 1
               fi
-              echo "PR #${PARAM_PR_NUMBER} immutable snapshot: base ${BASE_REF}@${BASE_SHA:0:7}, head ${PR_HEAD_SHA:0:7}"
+              echo "${REVIEW_REPOSITORY}#${PARAM_PR_NUMBER} immutable snapshot: base ${BASE_REF}@${BASE_SHA:0:7}, head ${PR_HEAD_SHA:0:7}"
 
-              git fetch origin "${BASE_REF}" --no-tags
-              if git fetch origin "pull/${PARAM_PR_NUMBER}/head" --no-tags; then
+              git fetch "${REVIEW_REPOSITORY_URL}" "${BASE_SHA}" --no-tags
+              if [ "$(git rev-parse FETCH_HEAD)" != "${BASE_SHA}" ]; then
+                echo "##vso[task.logissue type=error]Fetched base does not match the immutable reviewed base ${BASE_SHA:0:7}."
+                exit 1
+              fi
+              if git fetch "${REVIEW_REPOSITORY_URL}" "pull/${PARAM_PR_NUMBER}/head" --no-tags; then
                 LIVE_PR_HEAD=$(git rev-parse FETCH_HEAD)
                 if [ "${LIVE_PR_HEAD}" != "${PR_HEAD_SHA}" ]; then
                   echo "##vso[task.logissue type=warning]PR head advanced after Setup; Deep UI will use the immutable reviewed commit ${PR_HEAD_SHA:0:7}, not live head ${LIVE_PR_HEAD:0:7}."
@@ -2200,7 +4021,7 @@ stages:
 
               for REQUIRED_SHA in "${BASE_SHA}" "${PR_HEAD_SHA}"; do
                 if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
-                  git fetch origin "${REQUIRED_SHA}" --no-tags
+                  git fetch "${REVIEW_REPOSITORY_URL}" "${REQUIRED_SHA}" --no-tags
                 fi
                 if ! git cat-file -e "${REQUIRED_SHA}^{commit}" 2>/dev/null; then
                   echo "##vso[task.logissue type=error]The immutable review snapshot commit ${REQUIRED_SHA:0:7} is no longer fetchable."
@@ -2213,6 +4034,7 @@ stages:
             retryCountOnTaskFailure: 2
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
               REVIEWED_BASE_SHA: $(reviewedBaseSha)
               REVIEWED_BASE_REF: $(reviewedBaseRef)
@@ -2755,28 +4577,39 @@ stages:
                   try { Remove-Item -Path $dotnetDir -Recurse -Force -ErrorAction Stop } catch { Start-Sleep -Seconds 2 }
                 }
               }
+              # Absolute, and fatal when it will not load; see the gate-stage
+              # copy of this step. A relative dot-source that quietly fails
+              # leaves the watchdog undefined and the step reports success for a
+              # build it never ran.
+              $resolverPath = Join-Path "$(Build.ArtifactStagingDirectory)" 'trusted-github/scripts/shared/Resolve-BuildShell.ps1'
               try {
-                $psi = New-Object System.Diagnostics.ProcessStartInfo
-                $psi.FileName = 'bash'
-                foreach ($a in @('-o','pipefail','-c',$buildCommand)) { [void]$psi.ArgumentList.Add($a) }
-                $psi.UseShellExecute = $false
-                $proc = [System.Diagnostics.Process]::Start($psi)
+                if (-not (Test-Path -LiteralPath $resolverPath)) {
+                  throw "the file does not exist (working directory is '$((Get-Location).Path)')"
+                }
+                . $resolverPath
               } catch {
-                Write-Host "Watchdog could not launch child bash ($($_.Exception.Message)); running the sanitized build directly (no wall-clock bound)."
-                & bash -o pipefail -c $buildCommand
-                if ($LASTEXITCODE -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
-                exit $LASTEXITCODE
-              }
-              if (-not $proc.WaitForExit($timeoutMin * 60 * 1000)) {
-                Write-Host "##[error]dotnet-buildtasks exceeded $timeoutMin min wall-clock — killing the process tree so the retry can start on a fresh agent."
-                try { $proc.Kill($true) } catch { try { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue } catch {} }
-                Start-Sleep -Seconds 3
+                Write-Host "##[error]Could not load the build shell resolver from '$resolverPath': $($_.Exception.Message)"
                 New-Item -ItemType File -Force -Path $wipeMarker | Out-Null
                 exit 1
               }
-              if ($proc.ExitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
+              $buildShell = Resolve-BuildShellPath -CandidatePath (Get-BuildShellCandidatePath -WindowsHost:([bool]$IsWindows))
+              if ($buildShell) {
+                Write-Host "Build shell: $buildShell"
+              } else {
+                # On a Windows agent the bare name `bash` is the WSL launcher in
+                # System32, which exits 1 without building anything. Running the
+                # build directly is the only way this platform builds at all.
+                Write-Host "##[warning]No POSIX shell on this agent — running dotnet-buildtasks directly and filtering its output in process."
+              }
+              $exitCode = Invoke-BuildTasksWatchdog `
+                -ShellPath $buildShell `
+                -ShellCommand $buildCommand `
+                -DirectFileName 'pwsh' `
+                -DirectArgument @('-NoProfile','-File',(Join-Path "$(Build.SourcesDirectory)" 'build.ps1'),'--target=dotnet-buildtasks','--configuration=Release','--verbosity=diagnostic') `
+                -TimeoutMinutes $timeoutMin
+              if ($exitCode -ne 0) { New-Item -ItemType File -Force -Path $wipeMarker | Out-Null }
               else { Remove-Item $wipeMarker -Force -ErrorAction SilentlyContinue }
-              exit $proc.ExitCode
+              exit $exitCode
             displayName: 'Build MSBuild Tasks'
             retryCountOnTaskFailure: 1
             # Wall-clock watchdog (see the gate-stage copy for the full rationale):
@@ -3437,7 +5270,7 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(always(), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')))
+    condition: and(always(), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')))
     jobs:
       # Prompt-influenced analysis is intentionally isolated from the posting
       # credentials in the next job. Microsoft-hosted jobs use fresh agents, so
@@ -3481,7 +5314,7 @@ stages:
               $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
               $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
               if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
             displayName: 'Prepare UI failure analysis input'
             continueOnError: true
             env:
@@ -3773,6 +5606,12 @@ stages:
                 "The deep job was canceled before normal publication (for example, by the outer 360-minute job cap); results may be incomplete and the deep run needs a rerun."
               } else { '' }
               $prNumber = "$env:PARAM_PR_NUMBER"
+              $reviewRepository = [string]$env:PARAM_REVIEW_REPOSITORY
+              if ($reviewRepository -notmatch '^(?<owner>[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))/(?<name>[A-Za-z0-9._-]+)$') {
+                throw "Review repository '$reviewRepository' is not a valid owner/name."
+              }
+              $reviewOwner = $Matches.owner
+              $reviewRepo = $Matches.name
               $reviewId = $env:AI_SUMMARY_REVIEW_ID
               if (-not [string]::IsNullOrWhiteSpace($reviewId) -and
                   $reviewId -ne 'DEFERRED' -and
@@ -3969,7 +5808,7 @@ stages:
                 # report that case as undetermined rather than blaming the base.
                 $bfClass = ''
                 $prFilesForClass = @()
-                try { $prFilesForClass = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
+                try { $prFilesForClass = @(gh api "repos/$reviewRepository/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
                 if ($buildFailedSampleFile -and $prFilesForClass.Count -gt 0) {
                   $hit = $prFilesForClass | Where-Object { $_ -and ($_ -eq $buildFailedSampleFile -or $buildFailedSampleFile.EndsWith("/$_") -or $_.EndsWith("/$buildFailedSampleFile")) } | Select-Object -First 1
                   if ($hit) {
@@ -4225,7 +6064,7 @@ stages:
                 if ($snapDiffTriples.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($ghTok)) {
                   $prStems = @()
                   try {
-                    $prStems = @(gh api "repos/dotnet/maui/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null |
+                    $prStems = @(gh api "repos/$reviewRepository/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null |
                       ForEach-Object { [System.IO.Path]::GetFileNameWithoutExtension($_) } |
                       Where-Object { $_ -and $_.Length -ge 4 } | Select-Object -Unique)
                   } catch { $prStems = @() }
@@ -4775,8 +6614,12 @@ stages:
                         "> ℹ️ The review agent did not produce a full summary on this run (an infrastructure issue on the CI agent), but the **deep UI tests completed** — their results are below. Re-comment ``/review`` for a fresh full review." +
                         [Environment]::NewLine + [Environment]::NewLine + $wrappedDeep
                       $doTmp = New-TemporaryFile
-                      @{ body = $doBody; event = 'COMMENT' } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
-                      gh api -X POST "repos/dotnet/maui/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
+                      @{
+                        body = $doBody
+                        event = 'COMMENT'
+                        commit_id = "$(reviewedPrHeadSha)"
+                      } | ConvertTo-Json -Depth 4 | Set-Content $doTmp.FullName -Encoding UTF8
+                      gh api -X POST "repos/$reviewRepository/pulls/$prNumber/reviews" --input $doTmp.FullName | Out-Null
                       if ($LASTEXITCODE -eq 0) {
                         Write-Host "✅ Standalone deep-results review posted"
                         # The Review stage already posted a bare 'review could not
@@ -4786,7 +6629,7 @@ stages:
                         # contradictory warning. Best-effort; never fatal.
                         try {
                           . ".github/scripts/shared/Remove-StaleMauiBotComments.ps1"
-                          Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -IncludeReviewIncomplete -Reason "superseded by standalone deep-results review"
+                          Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -Repository $reviewRepository -IncludeReviewIncomplete -Reason "superseded by standalone deep-results review"
                           Write-Host "Collapsed the earlier review-incomplete notice."
                         } catch { Write-Host "ℹ️ Could not collapse review-incomplete notice (non-fatal): $_" }
                       }
@@ -4808,7 +6651,7 @@ stages:
                     try {
                       try {
                         . ".github/scripts/shared/Remove-StaleMauiBotComments.ps1"
-                        Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"
+                        Hide-StaleMauiBotIssueComments -PRNumber ([int]$prNumber) -Repository $reviewRepository -IncludeReviewIncomplete -Reason "superseded by newer review-incomplete notice"
                       } catch { Write-Host "ℹ️ prior review-incomplete collapse best-effort failed (continuing): $_" }
                       $buildUrl = "https://dev.azure.com/devdiv/DevDiv/_build/results?buildId=$($env:BUILD_BUILDID)"
                       $riBody = @(
@@ -4826,7 +6669,7 @@ stages:
                       try {
                         $riBody | Set-Content $riTmp.FullName -Encoding UTF8
                         Invoke-GhCommandWithRetry `
-                          -Arguments @('pr', 'comment', $prNumber, '--repo', 'dotnet/maui', '--body-file', $riTmp.FullName) `
+                          -Arguments @('pr', 'comment', $prNumber, '--repo', $reviewRepository, '--body-file', $riTmp.FullName) `
                           -Description "post the review-incomplete notice for PR #$prNumber" | Out-Null
                         Write-Host "✅ Review-incomplete notice posted (Stage 3 fallback)"
                       } finally {
@@ -4908,7 +6751,7 @@ stages:
                   if ($shouldPostInline -and (Test-Path $inlineFindings) -and (Test-Path $inlineScript)) {
                     try {
                       Write-Host "Posting expert inline review (before the AI summary)..."
-                      & $inlineScript -PRNumber $prNumber -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
+                      & $inlineScript -PRNumber $prNumber -Repository "$env:PARAM_REVIEW_REPOSITORY" -FindingsFile $inlineFindings -ReviewedCommit "$(reviewedPrHeadSha)"
                       Write-Host "✅ Expert inline review posted"
                     } catch {
                       Write-Host "⚠️ Expert inline review posting failed (non-fatal): $_"
@@ -4938,7 +6781,7 @@ stages:
                     # so this only ever fires on the timeout/crash path.
                     if ([string]::IsNullOrWhiteSpace($trustedGate)) { $trustedGate = 'TIMEDOUT' }
                     Write-Host "Trusted gate verdict for veto: '$trustedGate'"
-                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
+                    $output = & $postScript -PRNumber $prNumber -Repository "$env:PARAM_REVIEW_REPOSITORY" -TrustedGateResult $trustedGate -Platform "$env:PARAM_PLATFORM" -ReviewedCommit "$(reviewedPrHeadSha)"
                     $output | ForEach-Object { Write-Host $_ }
                     Write-Host "✅ Full AI summary review posted with deep results"
                   }
@@ -4952,7 +6795,9 @@ stages:
                         -PRNumber $prNumber `
                         -RepoRoot (Get-Location).Path `
                         -TrustedGateResult $trustedGate `
-                        -ExpectedHeadSha "$(reviewedPrHeadSha)"
+                        -ExpectedHeadSha "$(reviewedPrHeadSha)" `
+                        -Owner $reviewOwner `
+                        -Repo $reviewRepo
                       Write-Host "✅ Labels applied"
                     } catch {
                       Write-Host "⚠️ Label application failed: $_"
@@ -4965,7 +6810,7 @@ stages:
                   Write-Host "No deep results and review already exists — nothing to patch"
                   exit 0
                 }
-                $existing = (gh api "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
+                $existing = (gh api "repos/$reviewRepository/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
                   Write-Host "Could not fetch review body — aborting"
                   exit 0
@@ -4993,7 +6838,7 @@ stages:
 
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-                gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
+                gh api -X PATCH "repos/$reviewRepository/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
                 Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed + $totalSkipped))"
               }
             displayName: 'Post AI summary review'
@@ -5009,6 +6854,7 @@ stages:
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               BUILD_BUILDID: $(Build.BuildId)
               DEEP_STAGE_RESULT: $(deepStageResult)
 
@@ -5027,6 +6873,7 @@ stages:
     jobs:
       - job: CleanupReviewLock
         displayName: 'Remove PR review in-progress label'
+        condition: eq('${{ parameters.Mode }}', 'review')
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -5045,8 +6892,13 @@ stages:
               set -euo pipefail
 
               PR_NUM="${PARAM_PR_NUMBER}"
+              REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
                 echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+              if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then
+                echo "##vso[task.logissue type=warning]Preserving review lock because repository identity is invalid."
                 exit 0
               fi
 
@@ -5077,10 +6929,12 @@ stages:
 
               if ! OTHER_ACTIVE=$(printf '%s' "${BUILDS_JSON}" | jq -r \
                 --arg pr "${PR_NUM}" \
+                --arg repository "${REVIEW_REPOSITORY}" \
                 --argjson current "${CURRENT_BUILD}" \
                 '.value[] |
                  select(.id != $current and .status != "completed") |
                  select(((.templateParameters.PRNumber // "") | tostring) == $pr) |
+                 select(((.templateParameters.ReviewRepository // "dotnet/maui") | tostring) == $repository) |
                  [.id, .status, .queueTime] | @tsv'); then
                 echo "##vso[task.logissue type=warning]Preserving review lock because the active-build response was invalid."
                 exit 0
@@ -5102,7 +6956,7 @@ stages:
                  [ "${UPDATE_SUMMARY_RESULT}" != "SucceededWithIssues" ]; then
                 EXPECTED_HEAD="${REVIEWED_PR_HEAD_SHA}"
                 if [[ "${EXPECTED_HEAD}" =~ ^[0-9a-fA-F]{40}$ ]]; then
-                  CURRENT_HEAD=$(gh api "repos/dotnet/maui/pulls/${PR_NUM}" --jq '.head.sha' 2>/dev/null || true)
+                  CURRENT_HEAD=$(gh api "repos/${REVIEW_REPOSITORY}/pulls/${PR_NUM}" --jq '.head.sha' 2>/dev/null || true)
                   if [ "${CURRENT_HEAD}" = "${EXPECTED_HEAD}" ]; then
                     echo "Final summary stage result was '${UPDATE_SUMMARY_RESULT:-unknown}'; marking the immutable reviewed head incomplete."
                     for LABEL in \
@@ -5113,11 +6967,11 @@ stages:
                       s%2Fagent-fix-win \
                       s%2Fagent-fix-pr-picked \
                       s%2Fagent-reviewed; do
-                      gh api --method DELETE "repos/dotnet/maui/issues/${PR_NUM}/labels/${LABEL}" >/dev/null 2>&1 || true
+                      gh api --method DELETE "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels/${LABEL}" >/dev/null 2>&1 || true
                     done
                     LABEL_PAYLOAD=$(mktemp)
                     printf '%s' '{"labels":["s/agent-review-incomplete","s/agent-reviewed"]}' > "${LABEL_PAYLOAD}"
-                    if ! gh api --method POST "repos/dotnet/maui/issues/${PR_NUM}/labels" --input "${LABEL_PAYLOAD}" >/dev/null; then
+                    if ! gh api --method POST "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels" --input "${LABEL_PAYLOAD}" >/dev/null; then
                       echo "##vso[task.logissue type=warning]Could not apply the review-incomplete fallback labels."
                     fi
                     rm -f "${LABEL_PAYLOAD}"
@@ -5132,7 +6986,7 @@ stages:
               echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
               gh api \
                 --method DELETE \
-                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+                "repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
             displayName: 'Remove in-progress label'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -5142,6 +6996,7 @@ stages:
               SYSTEM_DEFINITIONID: $(System.DefinitionId)
               BUILD_BUILDID: $(Build.BuildId)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               TRUSTED_SETUP_RESULT: $(cleanupSetupResult)
               REVIEWED_PR_HEAD_SHA: $(cleanupReviewedPrHeadSha)
               UPDATE_SUMMARY_RESULT: $(cleanupSummaryResult)
@@ -5150,11 +7005,13 @@ stages:
     displayName: 'Analyze Copilot token usage'
     dependsOn:
       - ReviewPR
+      - PublishReplication
       - RunDeepUITests
       - UpdateAISummaryComment
     condition: not(canceled())
     variables:
       reviewPrResult: $[ dependencies.ReviewPR.result ]
+      publishReplicationResult: $[ dependencies.PublishReplication.result ]
       runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
       updateAISummaryCommentResult: $[ dependencies.UpdateAISummaryComment.result ]
     jobs:
@@ -5211,8 +7068,11 @@ stages:
                 -InputRoot $inputRoot `
                 -OutputDir $outputDir `
                 -PRNumber "${{ parameters.PRNumber }}" `
+                -IssueNumber "${{ parameters.IssueNumber }}" `
+                -Operation "${{ parameters.Mode }}" `
                 -ExpectedStages @(
                   'ReviewPR',
+                  'PublishReplication',
                   'RunDeepUITests',
                   'UpdateAISummaryComment',
                   'AnalyzeCopilotTokenUsage'
@@ -5248,6 +7108,7 @@ stages:
               $summary = Get-Content -Path $summaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
               $stageResults = [ordered]@{
                 ReviewPR               = "${env:REVIEW_PR_RESULT}"
+                PublishReplication     = "${env:PUBLISH_REPLICATION_RESULT}"
                 RunDeepUITests         = "${env:RUN_DEEP_UI_TESTS_RESULT}"
                 UpdateAISummaryComment = "${env:UPDATE_AI_SUMMARY_COMMENT_RESULT}"
                 AnalyzeCopilotTokenUsage = "${env:AGENT_JOB_STATUS}"
@@ -5263,7 +7124,12 @@ stages:
               $payload = [ordered]@{
                 event_type = 'maui-copilot-token-usage'
                 client_payload = [ordered]@{
-                  schemaVersion = 1
+                  schemaVersion = 2
+                  operation = "${{ parameters.Mode }}"
+                  target = [ordered]@{
+                    type = if ("${{ parameters.Mode }}" -eq 'replicate') { 'issue' } else { 'pr' }
+                    number = if ("${{ parameters.Mode }}" -eq 'replicate') { "${{ parameters.IssueNumber }}" } else { "${{ parameters.PRNumber }}" }
+                  }
                   build = [ordered]@{
                     id            = "${env:BUILD_BUILD_ID}"
                     number        = "${env:BUILD_BUILD_NUMBER}"
@@ -5272,6 +7138,8 @@ stages:
                     sourceVersion = "${env:BUILD_SOURCE_VERSION}"
                     requestedFor  = "${env:BUILD_REQUESTED_FOR}"
                     prNumber      = "${{ parameters.PRNumber }}"
+                    issueNumber   = "${{ parameters.IssueNumber }}"
+                    operation     = "${{ parameters.Mode }}"
                     platform      = "${{ parameters.Platform }}"
                     result        = $pipelineResult
                     stageResults  = $stageResults
@@ -5304,6 +7172,7 @@ stages:
               # out of the string literal and execute in a step holding the dispatch token.
               BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
               REVIEW_PR_RESULT: $(reviewPrResult)
+              PUBLISH_REPLICATION_RESULT: $(publishReplicationResult)
               RUN_DEEP_UI_TESTS_RESULT: $(runDeepUITestsResult)
               UPDATE_AI_SUMMARY_COMMENT_RESULT: $(updateAISummaryCommentResult)
               AGENT_JOB_STATUS: $(Agent.JobStatus)

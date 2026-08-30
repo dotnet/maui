@@ -22,6 +22,13 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
+    [string]$IssueNumber,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('review', 'replicate')]
+    [string]$Operation = 'review',
+
+    [Parameter(Mandatory = $false)]
     [string[]]$ExpectedStages = @(
         'ReviewPR',
         'RunDeepUITests',
@@ -178,10 +185,10 @@ function Read-CopilotTokenUsageRecords {
         return @()
     }
 
-    # Security: the CopilotLogs artifact also bundles PR-worktree content (CustomAgentLogsTmp)
-    # where PR-controlled steps can drop forged copilot-token-usage-*.json. Only trust records
-    # under the pipeline-written 'copilot-token-usage/raw' subtree, and never those under
-    # CustomAgentLogsTmp, so a forged file can't be aggregated and dispatched as official usage.
+    # Security: review-mode CopilotLogs also bundles PR-worktree content (CustomAgentLogsTmp)
+    # where PR-controlled steps can drop forged copilot-token-usage-*.json. Both review and
+    # replication mode retain the pipeline-staged 'copilot-token-usage/raw' subtree. Only trust
+    # that subtree, and never matching files under CustomAgentLogsTmp or agent-pr-session.
     $files = Get-ChildItem -Path $Root -Recurse -File -Filter 'copilot-token-usage-*.json' -ErrorAction SilentlyContinue |
         Where-Object {
             $normalized = $_.FullName -replace '\\', '/'
@@ -297,16 +304,26 @@ function New-CopilotTokenUsageSummary {
     param(
         [object[]]$Records,
         [string[]]$ExpectedStages,
-        [string]$PRNumber
+        [string]$PRNumber,
+        [string]$IssueNumber,
+        [string]$Operation
     )
 
     $stageRows = @(New-StageSummaryRows -Records $Records -ExpectedStages $ExpectedStages)
     $stepRows = @(New-StepSummaryRows -Records $Records)
+    $targetType = if ($Operation -eq 'replicate') { 'issue' } else { 'pr' }
+    $targetNumber = if ($Operation -eq 'replicate') { $IssueNumber } else { $PRNumber }
 
     return [ordered]@{
-        schemaVersion         = 1
+        schemaVersion         = 2
         generatedAtUtc        = ([DateTimeOffset]::UtcNow).ToString('o')
+        operation             = $Operation
+        target                = [ordered]@{
+            type   = $targetType
+            number = $targetNumber
+        }
         prNumber              = $PRNumber
+        issueNumber           = $IssueNumber
         costEstimateAvailable = $false
         costEstimateNote      = 'Dollar cost not calculated; no trusted rate table configured.'
         recordCount           = @($Records).Count
@@ -347,6 +364,8 @@ function New-CopilotTokenUsageMarkdown {
     $lines = New-Object System.Collections.ArrayList
     [void]$lines.Add('# Copilot token usage')
     [void]$lines.Add('')
+    [void]$lines.Add("- Operation: $($Summary.operation)")
+    [void]$lines.Add("- Target: $($Summary.target.type) #$(if ($Summary.target.number) { $Summary.target.number } else { 'n/a' })")
     [void]$lines.Add("- PR: $(if ($Summary.prNumber) { $Summary.prNumber } else { 'n/a' })")
     [void]$lines.Add("- Records: $($Summary.recordCount)")
     [void]$lines.Add("- Cost estimate: not calculated (no trusted rate table configured)")
@@ -395,7 +414,12 @@ function New-CopilotTokenUsageMarkdown {
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
 
 $records = @(Read-CopilotTokenUsageRecords -Root $InputRoot)
-$summary = New-CopilotTokenUsageSummary -Records $records -ExpectedStages $ExpectedStages -PRNumber $PRNumber
+$summary = New-CopilotTokenUsageSummary `
+    -Records $records `
+    -ExpectedStages $ExpectedStages `
+    -PRNumber $PRNumber `
+    -IssueNumber $IssueNumber `
+    -Operation $Operation
 
 $rawJsonlPath = Join-Path $OutputDir 'token-usage-raw.jsonl'
 if ($records.Count -gt 0) {

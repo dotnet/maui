@@ -52,11 +52,24 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [int]$PRNumber,
 
+    # A replicate fix exists only as a patch in a fork at the moment it needs
+    # judging: there is no pull request to name it by, and `gh pr diff` cannot
+    # reach it. Supplying the diff directly makes every downstream step - the
+    # bug-fix history walk and the removed-line comparison - reusable unchanged,
+    # because they work from file paths and diff text, not from a PR.
     [Parameter(Mandatory = $false)]
+    [string]$DiffPath,
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
     [string]$Repo = "dotnet/maui",
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$HistoryRepo = "dotnet/maui",
 
     [Parameter(Mandatory = $false)]
     [string[]]$FilePaths,
@@ -69,6 +82,10 @@ param(
 
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch = 'main',
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$BaseCommit = '',
 
     [Parameter(Mandatory = $false)]
     [string]$OutputDir,
@@ -94,6 +111,28 @@ function ConvertTo-NormalizedLine {
     # so an indent change alone won't trigger a false REVERT.
     param([string]$Line)
     return ($Line -replace '\s+', ' ').Trim()
+}
+
+function Get-HistoryPullRequestLink {
+    param(
+        [int]$Number,
+        [string]$Repository
+    )
+    return "[#$Number](https://github.com/$Repository/pull/$Number)"
+}
+
+function ConvertTo-HistoryIssueLinks {
+    param(
+        [string]$IssueList,
+        [string]$Repository
+    )
+
+    return (@($IssueList -split ',\s*' | ForEach-Object {
+        if ($_ -match '^#(?<number>[1-9][0-9]*)$') {
+            return "[$_](https://github.com/$Repository/issues/$($Matches.number))"
+        }
+        return $_
+    }) -join ', ')
 }
 
 function Test-IsImplementationFile {
@@ -314,6 +353,27 @@ function Get-PRMetadataIfBugFix {
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
+# Load the supplied diff before anything reads it. An empty or missing file is
+# refused rather than treated as an empty diff, because an empty diff scores
+# CLEAN - and reporting "no regression risk" for a patch nobody managed to read
+# is the worst answer this script can give.
+$script:SuppliedDiff = $null
+if ($DiffPath) {
+    if (-not (Test-Path -LiteralPath $DiffPath)) {
+        Write-Host "❌ No diff at '$DiffPath'." -ForegroundColor Red
+        exit 2
+    }
+    $script:SuppliedDiff = Get-Content -LiteralPath $DiffPath -Raw
+    if ([string]::IsNullOrWhiteSpace($script:SuppliedDiff)) {
+        Write-Host "❌ The diff at '$DiffPath' is empty." -ForegroundColor Red
+        exit 2
+    }
+}
+elseif ($PRNumber -le 0) {
+    Write-Host "❌ Supply either -PRNumber or -DiffPath." -ForegroundColor Red
+    exit 2
+}
+
 # Validate gh authentication before making any API calls.
 # Silent auth failures would cause every PR lookup to return empty,
 # producing a false CLEAN result for risky PRs.
@@ -330,7 +390,14 @@ Write-Banner "Regression Cross-Reference — PR #$PRNumber"
 # Resolve files
 if (-not $FilePaths -or $FilePaths.Count -eq 0) {
     Write-Host "📂 Auto-detecting implementation files from PR #$PRNumber…" -ForegroundColor Yellow
-    $prFiles = gh pr diff $PRNumber --repo $Repo --name-only 2>$null
+    $prFiles = if ($script:SuppliedDiff) {
+        # `+++ b/<path>` is the unified-diff header the parser below already
+        # relies on, so reading paths from it cannot disagree with the hunks.
+        @([regex]::Matches($script:SuppliedDiff, '(?m)^\+\+\+ b/(.+)$') |
+            ForEach-Object { $_.Groups[1].Value.Trim() } | Sort-Object -Unique)
+    } else {
+        gh pr diff $PRNumber --repo $Repo --name-only 2>$null
+    }
     if (-not $prFiles) {
         Write-Host "❌ Could not get PR diff. Make sure gh is authenticated." -ForegroundColor Red
         exit 2
@@ -355,7 +422,16 @@ if ($FilePaths.Count -eq 0) {
 # Step 1: PR diff (lines removed)
 Write-Host ""
 Write-Host "📝 Reading current PR diff…" -ForegroundColor Yellow
-$prDiff = Get-PRDiffText -Number $PRNumber -Repo $Repo
+$prDiff = if ($script:SuppliedDiff) {
+    # Only here. Get-PRDiffText is also how each historical fix PR's diff is
+    # fetched, and answering with the patch under review there makes every one
+    # of them appear to have added nothing - so no line can ever match and the
+    # script reports CLEAN for a patch that reverts a shipped fix. A false CLEAN
+    # is the worst answer this script can give, and it is silent.
+    $script:SuppliedDiff
+} else {
+    Get-PRDiffText -Number $PRNumber -Repo $Repo
+}
 if (-not $prDiff) {
     Write-Host "❌ Empty PR diff." -ForegroundColor Red
     exit 2
@@ -380,35 +456,51 @@ foreach ($file in $prDiffByFile.Keys) {
     $addedNormByFile[$file] = $addedSet
 }
 
-# Resolve the base ref for git log scope. Try local refs first; if neither exists, fall
-# back to --all (with a warning) so the script still produces useful output.
+# Resolve the base for git log scope. Review callers supply the immutable base
+# commit captured during Setup; standalone callers retain the branch fallback.
 $gitLogRef = $null
-foreach ($candidate in @($BaseBranch, "origin/$BaseBranch", "upstream/$BaseBranch")) {
-    git rev-parse --verify --quiet $candidate 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        $gitLogRef = $candidate
-        break
+if (-not [string]::IsNullOrWhiteSpace($BaseCommit)) {
+    git cat-file -e "$BaseCommit^{commit}" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Immutable review base commit '$BaseCommit' is not present in the repository."
     }
-}
-if (-not $gitLogRef) {
-    Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
-}
-
-# Resolve the PR's base branch so we can verify that fix PRs were actually merged
-# into it. A fix merged to inflight/current won't be reachable from main.
-$prBaseRef = $null
-$prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
-if ($prBaseJson) {
-    foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
+    $gitLogRef = $BaseCommit
+} else {
+    foreach ($candidate in @($BaseBranch, "origin/$BaseBranch", "upstream/$BaseBranch")) {
         git rev-parse --verify --quiet $candidate 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
-            $prBaseRef = $candidate
+            $gitLogRef = $candidate
             break
+        }
+    }
+    if (-not $gitLogRef) {
+        Write-Host "  ⚠️  Base ref '$BaseBranch' not found locally — falling back to --all (may include unrelated history)." -ForegroundColor Yellow
+    }
+}
+
+# Use the same immutable base for ancestry checks. Falling back to a mutable
+# same-named local branch can silently answer about the pipeline repository
+# instead of the repository holding the reviewed PR.
+$prBaseRef = $null
+$prBaseDescription = $null
+if (-not [string]::IsNullOrWhiteSpace($BaseCommit)) {
+    $prBaseRef = $BaseCommit
+    $prBaseDescription = $BaseCommit
+} else {
+    $prBaseJson = gh pr view $PRNumber --repo $Repo --json baseRefName --jq '.baseRefName' 2>$null
+    if ($prBaseJson) {
+        foreach ($candidate in @($prBaseJson, "origin/$prBaseJson", "upstream/$prBaseJson")) {
+            git rev-parse --verify --quiet $candidate 2>$null | Out-Null
+            if ($LASTEXITCODE -eq 0) {
+                $prBaseRef = $candidate
+                $prBaseDescription = $prBaseJson
+                break
+            }
         }
     }
 }
 if ($prBaseRef) {
-    Write-Host "  📌 PR targets '$prBaseJson' — verifying fix PRs are reachable from $prBaseRef" -ForegroundColor Gray
+    Write-Host "  📌 Verifying fix PRs are reachable from reviewed base $prBaseDescription" -ForegroundColor Gray
 } else {
     Write-Host "  ⚠️ Could not resolve PR base branch — skipping ancestry verification" -ForegroundColor Yellow
 }
@@ -426,11 +518,27 @@ foreach ($filePath in $FilePaths) {
     # Step 2: recent PRs touching this file
     $sinceDate = (Get-Date).AddMonths(-$MonthsBack).ToString("yyyy-MM-dd")
     if ($gitLogRef) {
-        # `--follow` traces through renames so we don't lose history when a file moves.
-        # `--follow` is single-file only, which matches our per-file loop.
-        $commitLog = git log --oneline --follow --since="$sinceDate" $gitLogRef -- $filePath 2>$null
+        # Deliberately NOT `--follow`. It was here to trace renames, and what it
+        # actually does on this repository is return commits the path never saw:
+        # measured on `main`, `src/Core/src/Platform/iOS/ViewExtensions.cs` and
+        # `src/Core/src/Handlers/TimePicker/TimePickerHandler.MacCatalyst.cs` have
+        # exactly one commit each in a six-month window, and `--follow` reports
+        # the SAME eight for both - a SearchHandler fix, a BindableObject
+        # optimization, a Magick.NET version bump, a RadioButton feature.
+        #
+        # That is not a cosmetic listing problem. Every one of those PRs is then
+        # inspected for lines it ADDED TO THIS FILE, and compared against the
+        # lines the diff under review REMOVED FROM THIS FILE. Both sides must
+        # mean the same path or the comparison is between unrelated code: a
+        # coincidental match is a false REVERT posted as an inline finding, and
+        # the seven wrong PRs crowd out the real one under -MaxRecentPRsPerFile,
+        # which is a false CLEAN.
+        #
+        # The rest of this script keys on the path string throughout, so renamed
+        # history could never have matched except by that coincidence.
+        $commitLog = git log --oneline --since="$sinceDate" $gitLogRef -- $filePath 2>$null
     } else {
-        $commitLog = git log --oneline --follow --since="$sinceDate" --all -- $filePath 2>$null
+        $commitLog = git log --oneline --since="$sinceDate" --all -- $filePath 2>$null
     }
     if (-not $commitLog) {
         Write-Host "  ● No recent commits." -ForegroundColor Green
@@ -463,7 +571,7 @@ foreach ($filePath in $FilePaths) {
         if ($inspectedPRs.ContainsKey($recentPR)) {
             $meta = $inspectedPRs[$recentPR]
         } else {
-            $meta = Get-PRMetadataIfBugFix -Number $recentPR -Repo $Repo
+            $meta = Get-PRMetadataIfBugFix -Number $recentPR -Repo $HistoryRepo
             $inspectedPRs[$recentPR] = $meta
             # Single combined `gh pr view --json labels,title,body` + up to one `gh issue
             # view` per linked issue. Average ≈ 1-3 calls per fix-PR candidate.
@@ -492,7 +600,7 @@ foreach ($filePath in $FilePaths) {
         if ($fixDiffCache.ContainsKey($recentPR)) {
             $fixByFile = $fixDiffCache[$recentPR]
         } else {
-            $fixDiff = Get-PRDiffText -Number $recentPR -Repo $Repo
+            $fixDiff = Get-PRDiffText -Number $recentPR -Repo $HistoryRepo
             $ghCallCount++
             $fixByFile = if ($fixDiff) { Get-DiffLinesByFile -DiffText $fixDiff } else { @{} }
             $fixDiffCache[$recentPR] = $fixByFile
@@ -739,13 +847,18 @@ if ($OutputDir) {
             foreach ($r in $reverts) {
                 $sample = @($r.RevertedLines) | Select-Object -First 1 | ForEach-Object { $_.Text.Trim() }
                 $sampleEsc = ($sample -replace '\|', '\|')
-                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | ✗ REVERT | ``$sampleEsc`` |")
+                $prLink = Get-HistoryPullRequestLink -Number $r.RecentPR -Repository $HistoryRepo
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $r.FixedIssues -Repository $HistoryRepo
+                [void]$md.AppendLine("| ``$($r.File)`` | $prLink | $issueLinks | ✗ REVERT | ``$sampleEsc`` |")
             }
             $allIssues = @($reverts | ForEach-Object { $_.FixedIssues -split ',\s*' } |
                 Where-Object { $_ } | Select-Object -Unique | Sort-Object)
             if ($allIssues.Count -gt 0) {
+                $allIssueLinks = @($allIssues | ForEach-Object {
+                    ConvertTo-HistoryIssueLinks -IssueList $_ -Repository $HistoryRepo
+                })
                 [void]$md.AppendLine()
-                [void]$md.AppendLine("**Action required:** Verify that issues $($allIssues -join ', ') do not re-regress before merging.")
+                [void]$md.AppendLine("**Action required:** Verify that issues $($allIssueLinks -join ', ') do not re-regress before merging.")
             }
 
             # List regression tests that should be run
@@ -762,7 +875,8 @@ if ($OutputDir) {
                 [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
                 [void]$md.AppendLine("|---|---|---|---|")
                 foreach ($t in $allRegressionTests) {
-                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                    $prLink = Get-HistoryPullRequestLink -Number $t.FixPR -Repository $HistoryRepo
+                    [void]$md.AppendLine("| $prLink | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
                 }
             }
         }
@@ -772,7 +886,9 @@ if ($OutputDir) {
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) |")
             [void]$md.AppendLine("|---|---|---|")
             foreach ($o in $overlaps) {
-                [void]$md.AppendLine("| ``$($o.File)`` | #$($o.RecentPR) | $($o.FixedIssues) |")
+                $prLink = Get-HistoryPullRequestLink -Number $o.RecentPR -Repository $HistoryRepo
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $o.FixedIssues -Repository $HistoryRepo
+                [void]$md.AppendLine("| ``$($o.File)`` | $prLink | $issueLinks |")
             }
 
             # List regression tests from overlapping fix PRs
@@ -789,7 +905,8 @@ if ($OutputDir) {
                 [void]$md.AppendLine("| Fix PR | Type | Test | Filter |")
                 [void]$md.AppendLine("|---|---|---|---|")
                 foreach ($t in $overlapTests) {
-                    [void]$md.AppendLine("| #$($t.FixPR) | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
+                    $prLink = Get-HistoryPullRequestLink -Number $t.FixPR -Repository $HistoryRepo
+                    [void]$md.AppendLine("| $prLink | $($t.Type) | $($t.TestName) | ``$($t.Filter)`` |")
                 }
             }
         }
@@ -805,8 +922,9 @@ if ($OutputDir) {
         $inline = @()
         foreach ($r in $reverts) {
             foreach ($rl in @($r.RevertedLines)) {
-                $prUrl = "https://github.com/$Repo/pull/$($r.RecentPR)"
-                $body = "● **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $($r.FixedIssues). Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
+                $prUrl = "https://github.com/$HistoryRepo/pull/$($r.RecentPR)"
+                $issueLinks = ConvertTo-HistoryIssueLinks -IssueList $r.FixedIssues -Repository $HistoryRepo
+                $body = "● **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $issueLinks. Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
                 $inline += @{
                     path = $r.File
                     line = $rl.Line

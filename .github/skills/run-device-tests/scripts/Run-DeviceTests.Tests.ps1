@@ -171,6 +171,29 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         }
     }
 
+    It 'discovers fresh Apple XHarness xUnit result files' {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-apple-results-$([guid]::NewGuid())"
+        New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
+
+        try {
+            $pattern = 'xunit-test-*.xml'
+            $snapshot = Get-XHarnessTestResultSnapshot `
+                -OutputDirectory $tempRoot `
+                -ResultFileName $pattern
+            $resultFile = Join-Path $tempRoot 'xunit-test-ios-simulator-64_26.5.xml'
+            '<assemblies><assembly total="1" failed="1" /></assemblies>' |
+                Set-Content $resultFile -Encoding UTF8
+
+            @(Get-FreshXHarnessTestResultFiles `
+                -OutputDirectory $tempRoot `
+                -BeforeSnapshot $snapshot `
+                -ResultFileName $pattern) |
+                Should -Be @($resultFile)
+        } finally {
+            Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It 'isolates repeated class-filtered XHarness invocations under the diagnostics root' {
         $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xharness-run-root-$([guid]::NewGuid())"
         New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
@@ -224,6 +247,7 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         $content | Should -Match 'New-XHarnessRunOutputDirectory -OutputDirectory \$OutputDirectory'
         $content | Should -Match '"-o", \$testOutputDirectory'
         $content | Should -Match 'results-file-name=\$xharnessResultFileName'
+        $content | Should -Match '"xunit-test-\*\.xml"'
         $content | Should -Match '(?s)Get-XHarnessTestResultSnapshot\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-ResultFileName \$xharnessResultFileName'
         $content | Should -Match '(?s)Get-FreshXHarnessTestResultFiles\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-BeforeSnapshot \$xharnessResultSnapshot\s+`\s*-ResultFileName \$xharnessResultFileName'
     }

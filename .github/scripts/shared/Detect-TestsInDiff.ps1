@@ -13,6 +13,9 @@
 .PARAMETER PRNumber
     GitHub PR number to analyze. Uses `gh` CLI to fetch file list.
 
+.PARAMETER Repository
+    Repository holding the pull request, in owner/name form.
+
 .PARAMETER BaseBranch
     Base branch for git diff comparison. If omitted, auto-detected from PR or uses HEAD~1.
 
@@ -54,6 +57,10 @@
 param(
     [Parameter(Mandatory = $false)]
     [string]$PRNumber,
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
+    [string]$Repository = 'dotnet/maui',
 
     [Parameter(Mandatory = $false)]
     [string]$BaseBranch,
@@ -222,12 +229,12 @@ if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
     } elseif ($PRNumber) {
         # Fetch from GitHub
         # Use paginated API to handle PRs with >30 changed files
-        $prFiles = gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --jq '.[].filename' 2>$null
+        $prFiles = gh api "repos/$Repository/pulls/$PRNumber/files" --paginate --jq '.[].filename' 2>$null
         if ($LASTEXITCODE -ne 0 -or -not $prFiles) {
-            $prFiles = gh pr view $PRNumber --json files --jq '.files[].path' 2>$null
+            $prFiles = gh pr view $PRNumber --repo $Repository --json files --jq '.files[].path' 2>$null
         }
         if ($LASTEXITCODE -ne 0 -or -not $prFiles) {
-            $prFiles = gh pr diff $PRNumber --name-only 2>$null
+            $prFiles = gh pr diff $PRNumber --repo $Repository --name-only 2>$null
         }
         $ChangedFiles = $prFiles -split "`n" | Where-Object { $_ }
     } else {
@@ -240,13 +247,20 @@ if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
             }
         }
         if (-not $mergeBase) {
-            # Try to detect from PR metadata
-            try {
-                $prInfo = gh pr view --json baseRefName --jq '.baseRefName' 2>$null
-                if ($prInfo) {
-                    $mergeBase = git merge-base HEAD "origin/$prInfo" 2>$null
+            # Resolve the selected repository's PR for the current branch. `gh pr
+            # view --repo` without a selector is a hard error and must not be used.
+            $currentBranch = git branch --show-current 2>$null
+            if (-not [string]::IsNullOrWhiteSpace($currentBranch)) {
+                try {
+                    $prList = gh pr list --repo $Repository --head $currentBranch --json baseRefName --limit 1 2>$null |
+                        ConvertFrom-Json
+                    if ($prList -and $prList.Count -gt 0 -and $prList[0].baseRefName) {
+                        $mergeBase = git merge-base HEAD "origin/$($prList[0].baseRefName)" 2>$null
+                    }
+                } catch {
+                    Write-Verbose "Could not resolve a PR for branch '$currentBranch' in '$Repository': $($_.Exception.Message)"
                 }
-            } catch {}
+            }
         }
         if (-not $mergeBase) {
             $mergeBase = "HEAD~1"
@@ -1090,7 +1104,7 @@ foreach ($key in @($testGroups.Keys)) {
     if ($PRNumber -and -not $DiffBase -and -not $script:_prFilesFetchAttempted) {
         $script:_prFilesFetchAttempted = $true
         try {
-            $rawPRFiles = (gh api "repos/dotnet/maui/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
+            $rawPRFiles = (gh api "repos/$Repository/pulls/$PRNumber/files" --paginate --slurp 2>$null | Out-String).Trim()
             if ($rawPRFiles.StartsWith('[')) {
                 # --slurp wraps each page as one element ([[file,...],[file,...]]) — flatten a level.
                 $script:_cachedPRFiles = @(($rawPRFiles | ConvertFrom-Json) | ForEach-Object { $_ })
