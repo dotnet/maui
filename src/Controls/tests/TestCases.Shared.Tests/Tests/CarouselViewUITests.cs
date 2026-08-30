@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override bool ResetAfterEachTest => true;
 
+#if !IOS && !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewSetPosition()
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			CheckLabelValue("lblPosition", "3");
 		}
+#endif
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
@@ -65,8 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
-		// Catalyst doesn't support orientation changes
-#if !MACCATALYST
+#if !IOS && !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewKeepPositionChangingOrientation()

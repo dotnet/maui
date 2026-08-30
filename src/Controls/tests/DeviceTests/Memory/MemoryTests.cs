@@ -27,8 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 [Category(TestCategory.Memory)]
 public class MemoryTests : ControlsHandlerTestBase
 {
-	// Subclasses used to enable memory tests for CV2 handlers
-	public class CollectionView2 : CollectionView { }
+	// Subclass used to enable memory tests for the CV2 handler
 	public class CarouselView2 : CarouselView { }
 
 
@@ -50,7 +49,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #endif
 #if IOS || MACCATALYST
-				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
 				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
@@ -258,10 +256,10 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TableView))]
 #pragma warning restore CS0618 // Type or member is obsolete
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
-	[InlineData(typeof(CollectionView))]
 #if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
 	[InlineData(typeof(CarouselView2))]
+#else
+	[InlineData(typeof(CollectionView))]
 #endif
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
@@ -464,9 +462,6 @@ public class MemoryTests : ControlsHandlerTestBase
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
-#if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
-#endif
 	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();

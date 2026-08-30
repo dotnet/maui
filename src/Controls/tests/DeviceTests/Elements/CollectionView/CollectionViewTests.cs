@@ -324,6 +324,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			}
 		}
 
+#if !IOS && !MACCATALYST
 		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
@@ -427,6 +428,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			});
 		}
+#endif
 
 		[Theory]
 		[InlineData(true, false, false)]
@@ -567,6 +569,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			});
 		}
 
+#if !IOS && !MACCATALYST
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
 			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };
@@ -579,6 +582,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				yield return new object[] { new CollectionViewSizingTestCase(option, new LinearItemsLayout(ItemsLayoutOrientation.Vertical)) };
 			}
 		}
+#endif
 
 		static void GenerateItems(int count, ObservableCollection<string> data)
 		{
