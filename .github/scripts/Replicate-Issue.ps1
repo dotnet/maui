@@ -7709,7 +7709,7 @@ function Get-ReplicationPlannedRestoreTargets {
         }
         $targets.Add([pscustomobject]@{
             Path = Join-Path $repoRoot $relative
-            Arguments = @('-p:TargetFramework=net10.0-android')
+            Arguments = @('-p:TargetFrameworks=net10.0-android')
         })
         return @($targets)
     }
@@ -9200,7 +9200,7 @@ try {
     ).Replace('\', '/')
     Invoke-ReplicationTrustedRestore `
         -Target $sandboxProjectPath `
-        -AdditionalArguments @('-p:TargetFramework=net10.0-android')
+        -AdditionalArguments @('-p:TargetFrameworks=net10.0-android')
     Invoke-ReplicationTrustedRestore `
         -Target $sandboxProjectPath `
         -Verb build `

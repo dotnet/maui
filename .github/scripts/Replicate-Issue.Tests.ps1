@@ -2814,6 +2814,8 @@ InitializeComponent();
         $prewarm | Should -BeLessThan $isolation
         $script:Source | Should -Match 'Get-ReplicationPlannedRestoreTargets'
         $script:Source | Should -Match 'MauiBlazorWebView\.DeviceTests\.csproj'
+        $script:Source | Should -Match 'TargetFrameworks=net10\.0-android'
+        $script:Source | Should -Not -Match 'TargetFramework=net10\.0-android'
         $script:Source | Should -Match "-Verb build"
         $script:Source | Should -Match 'GRADLE_USER_HOME'
         $script:Source | Should -Match 'DOTNET_CLI_HOME'
