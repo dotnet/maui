@@ -152,11 +152,10 @@ stages:
 
           # ─────────────────────────────────────────────────────────
           #  Fast-fail (clear, actionable) when the PR targets a base
-          #  branch the reviewer cannot support (anything other than
-          #  'main' or 'netN.0'). Done HERE — before the trusted-scripts
-          #  copy, workload provisioning and emulator setup — so an
-          #  unsupported-base PR (e.g. base 'inflight/current') fails in
-          #  seconds with a clear message instead of the confusing
+          #  branch the reviewer cannot support. Done HERE — before the
+          #  trusted-scripts copy, workload provisioning and emulator setup —
+          #  so an unsupported-base PR fails in seconds with a clear message
+          #  instead of the confusing
           #  3x-retried "Refusing to switch" failure deep in setup that
           #  burns an agent slot.
           #
@@ -185,7 +184,7 @@ stages:
                 exit 0
               fi
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main', a 'netN.0' branch, an 'inflight/*' branch, or a 'release/*' servicing branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base."
                 exit 1
               fi
@@ -264,7 +263,7 @@ stages:
 
               # Allowlist: only ever switch to a known protected base branch.
               # Validate BEFORE echoing/using to avoid any injection via the ref.
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main, netN.0, inflight/*, or release/*). Refusing to switch."
                 exit 1
               fi
@@ -1599,7 +1598,7 @@ stages:
               if [ "$SETUP_RESULT" = "COMPLETED" ] && {
                 ! [[ "$REVIEWED_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
                 ! [[ "$REVIEWED_BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]] ||
-                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
+                ! [[ "$REVIEWED_BASE_REF" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]];
               }; then
                 echo "##vso[task.logissue type=error]Setup completed without a valid immutable review snapshot."
                 SETUP_RESULT="FAILED"
@@ -2178,7 +2177,7 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]]; then
                 echo "##vso[task.logissue type=error]Trusted Setup output did not contain a valid PR base branch."
                 exit 1
               fi
@@ -2824,7 +2823,7 @@ stages:
               BASE_REF="${REVIEWED_BASE_REF}"
               BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
                  ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
                  ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
                  ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null ||
