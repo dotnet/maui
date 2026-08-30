@@ -44,7 +44,7 @@ parameters:
     default: false
 
   - name: SupersedeExisting
-    displayName: 'Replace an existing reproduction pull request for this issue and platform'
+    displayName: 'Replace an existing fix pull request for this issue and platform'
     type: boolean
     default: false
 
@@ -108,6 +108,8 @@ variables:
     value: $(Agent.TempDirectory)/.appium/
   - name: LogDirectory
     value: $(Build.ArtifactStagingDirectory)/logs
+  - name: GateTaskTimeoutMinutes
+    value: 150
 
 stages:
   - stage: ReviewPR
@@ -143,25 +145,6 @@ stages:
             fetchDepth: 1
             persistCredentials: false
             sparseCheckoutDirectories: .github/scripts/shared
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
-              $feedbackRoot = Join-Path "$(Build.ArtifactStagingDirectory)" "ReplicationFeedback"
-              New-Item -ItemType Directory -Path $feedbackRoot -Force | Out-Null
-              & (Join-Path $sharedRoot "Move-ReplicationPRsToTestingFork.ps1") `
-                -SourceOwner "dotnet" `
-                -SourceRepository "maui" `
-                -TargetOwner "kubaflo" `
-                -TargetRepository "maui" `
-                -TargetBaseBranch "main" `
-                -OutputPath (Join-Path $feedbackRoot "migrated-prs.json")
-              if ($LASTEXITCODE -ne 0) {
-                throw 'Moving existing reproduction PRs to the testing fork failed.'
-              }
-            displayName: 'Move existing reproduction PRs to testing fork'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-
           - pwsh: |
               $ErrorActionPreference = 'Stop'
               $sharedRoot = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/shared"
@@ -212,6 +195,14 @@ stages:
           pool: ${{ parameters.androidPool }}  # fallback to android pool
         timeoutInMinutes: 360
         steps:
+          - pwsh: |
+              $startedAt = [DateTimeOffset]::UtcNow.ToString('o')
+              Write-Host "##vso[task.setvariable variable=replicationJobStartedAtUtc]$startedAt"
+              Write-Host "Replication job budget started at $startedAt"
+            displayName: 'Capture replication job budget'
+            condition: eq('${{ parameters.Mode }}', 'replicate')
+            timeoutInMinutes: 2
+
           # The run title used to be set by the publisher validation job, which
           # replicate runs no longer schedule.
           - bash: |
@@ -255,6 +246,10 @@ stages:
                 replicate)
                   if ! [[ "${ISSUE_NUM}" =~ ^[1-9][0-9]*$ ]] || [ "${PR_NUM}" != "0" ]; then
                     echo "##vso[task.logissue type=error]Mode=replicate requires IssueNumber > 0 and PRNumber = 0."
+                    exit 1
+                  fi
+                  if [ "${PARAM_PLATFORM}" != "android" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate currently requires Platform=android because other lanes do not provide a verified process-tree and app egress boundary."
                     exit 1
                   fi
                   ;;
@@ -424,20 +419,89 @@ stages:
           # branch-resolution task: a retry may begin after that task switched
           # to PR-controlled content.
           - bash: |
-              set -e
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              chmod -R u+w "$TRUSTED" 2>/dev/null || true
-              rm -rf "$TRUSTED" 2>/dev/null || true
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              mkdir -p "$TRUSTED/source-overrides"
-              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts and source overrides copied to $TRUSTED"
+             set -euo pipefail
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-source"
+             SOURCE_VERSION="$(Build.SourceVersion)"
+             if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
+               echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."
+               exit 1
+             fi
+             chmod -R u+w "$TRUSTED" 2>/dev/null || true
+             rm -rf "$TRUSTED" 2>/dev/null || true
+             rm -rf "$STAGED_SOURCE" 2>/dev/null || true
+             mkdir -p "$TRUSTED"
+             mkdir -p "$STAGED_SOURCE"
+             git archive "${SOURCE_VERSION}" \
+               .github/scripts \
+               .github/skills \
+               eng/scripts \
+               .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml \
+               eng/pipelines/ci-copilot.yml |
+               tar -xf - -C "$STAGED_SOURCE"
+             cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
+             cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
+             cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
+             mkdir -p "$TRUSTED/source-overrides"
+             cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             chmod -R a-w "$TRUSTED"
+             echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted test infrastructure'
             timeoutInMinutes: 5
+
+          # `chmod -R a-w` is a mode bit the same user can take back off, on a
+          # tree nothing ever re-reads. Attest it instead: every file by
+          # normalized path, mode, size and SHA-256, reduced to one deterministic
+          # tree hash bound to this pipeline revision. Every model invocation and
+          # every generated execution is bracketed by a re-verification, so a
+          # phase that rewrote a gate is caught by the gate's own hash rather
+          # than by the gate it rewrote. The document lives outside the tree it
+          # describes, because a file stored inside its own subject changes the
+          # hash it claims.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = "$(Build.ArtifactStagingDirectory)/trusted-github"
+              . (Join-Path $trusted 'scripts/shared/Assert-TrustedTreeAttestation.ps1')
+
+              $sourceVersion = '$(Build.SourceVersion)'.ToLowerInvariant()
+              if ($sourceVersion -cnotmatch '^[0-9a-f]{40}$') {
+                throw "Build.SourceVersion is not a commit SHA: $sourceVersion"
+              }
+
+              $attestationRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-attestation'
+              Remove-Item -LiteralPath $attestationRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $attestationRoot -Force | Out-Null
+              $attestationPath = Join-Path $attestationRoot 'trusted-tree.json'
+
+              $attestation = New-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -SourceVersion $sourceVersion `
+                -PipelineDefinitionPath (Join-Path "$(Agent.TempDirectory)" 'trusted-source/eng/pipelines/ci-copilot.yml') `
+                -OutputPath $attestationPath
+              $null = Assert-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -Attestation $attestationPath `
+                -ExpectedSourceVersion $sourceVersion `
+                -Context 'trusted capture'
+
+              Write-Host "Trusted tree attested: $($attestation.fileCount) files, tree $($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_ATTESTATION_PATH]$attestationPath"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_HASH]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_PIPELINE_SHA256]$($attestation.pipelineSha256)"
+              Write-Host "##vso[task.setvariable variable=trustedTreeHash;isOutput=true]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=trustedPipelineSha256;isOutput=true]$($attestation.pipelineSha256)"
+            name: AttestTrustedTree
+            displayName: 'Attest trusted test infrastructure'
+            timeoutInMinutes: 10
 
           # ─────────────────────────────────────────────────────────
           #  Resolve the PR's target (base) branch and switch the
@@ -658,9 +722,11 @@ stages:
               }
 
               & (Join-Path $trusted "scripts/shared/Get-ReplicationIssueContext.ps1") @contextArgs
-              if ($LASTEXITCODE -ne 0) {
-                throw "Preparing the sanitized issue context failed."
-              }
+              # The reader can recover from a rejected gh credential by reading
+              # the public issue anonymously. PowerShell still retains gh's
+              # native exit code after that successful recovery, and the Azure
+              # task host otherwise exits 1 when this inline script completes.
+              $global:LASTEXITCODE = 0
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.json") -Destination $contextDir -Force
               Copy-Item -LiteralPath (Join-Path $privateContextDir "issue-agent-context.md") -Destination $contextDir -Force
               $screenshots = Join-Path $privateContextDir "screenshots"
@@ -693,27 +759,36 @@ stages:
                   --limit 200 `
                   --json 'body,url'
                 if ($LASTEXITCODE -eq 0) {
-                  $existing = @($openPulls | ConvertFrom-Json) |
-                    Where-Object { [string]$_.body -like "*$marker*" } |
+                  $matchingPulls = @(@($openPulls | ConvertFrom-Json) |
+                    Where-Object { [string]$_.body -like "*$marker*" })
+                  $existing = @($matchingPulls |
+                    Where-Object { ([string]$_.body) -match '(?m)^## Proposed fix\s*$' }) |
                     Select-Object -First 1
+                  if (-not $existing) {
+                    $existing = $matchingPulls | Select-Object -First 1
+                  }
                 }
               } catch {
-                Write-Host "##vso[task.logissue type=warning]Could not check for an existing reproduction pull request: $($_.Exception.Message)"
+                Write-Host "##vso[task.logissue type=warning]Could not check for an existing fix pull request: $($_.Exception.Message)"
               }
 
               $supersedeExisting = [bool]::Parse('${{ parameters.SupersedeExisting }}')
-              if ($existing -and -not $supersedeExisting) {
+              $existingCarriesFix = $existing -and
+                ([string]$existing.body) -match '(?m)^## Proposed fix\s*$'
+              if ($existingCarriesFix -and -not $supersedeExisting) {
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished]true"
                 Write-Host "##vso[task.setvariable variable=replicationAlreadyPublished;isOutput=true]true"
-                Write-Host "ISSUE REPLICATION SKIPPED: an open reproduction pull request already covers this issue and platform: $($existing.url)"
-              } elseif ($existing) {
+                Write-Host "ISSUE FIX SKIPPED: an open fix pull request already covers this issue and platform: $($existing.url)"
+              } elseif ($existingCarriesFix) {
                 # Re-running an already-covered issue is the only way to test a
-                # pipeline change against the reproductions that exercise it.
+                # pipeline change against the fixes that exercise it.
                 # The existing pull request is not touched here; the publisher
                 # retires it after its replacement is open.
-                Write-Host "An open reproduction pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
+                Write-Host "An open fix pull request covers this issue and platform and will be superseded if this run publishes: $($existing.url)"
+              } elseif ($existing) {
+                Write-Host "An open reproduction-only pull request exists but does not block generation of a validated fix: $($existing.url)"
               } else {
-                Write-Host "No open reproduction pull request covers this issue and platform yet."
+                Write-Host "No open fix pull request covers this issue and platform yet."
               }
 
               # PR 199 reproduced dotnet/maui#37243 on a full device run and
@@ -837,8 +912,12 @@ stages:
               } catch {
                 Write-Host "##vso[task.logissue type=warning]Could not cross-reference the upstream branch: $($_.Exception.Message)"
               }
+              # Every native gh failure above is either handled or replaced by a
+              # successful anonymous read. Prevent the task host from propagating
+              # that stale native exit code after all trusted postconditions pass.
+              $global:LASTEXITCODE = 0
             name: ReplicationDuplicateCheck
-            displayName: 'Check for an existing reproduction pull request'
+            displayName: 'Check for an existing fix pull request'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
             timeoutInMinutes: 5
             env:
@@ -2188,6 +2267,9 @@ stages:
                 -BaseSha "$(REPLICATION_BASE_SHA)" `
                 -ContextPath "$(REPLICATION_AGENT_CONTEXT_PATH)" `
                 -TrustedRoot $trusted `
+                -TrustedTreeAttestationPath "$(TRUSTED_TREE_ATTESTATION_PATH)" `
+                -TrustedSourceVersion "$(Build.SourceVersion)" `
+                -JobStartedAtUtc "$(replicationJobStartedAtUtc)" `
                 -DeviceUdid $deviceUdid `
                 -DeviceName $deviceName `
                 -DeviceOSVersion $deviceOSVersion `
@@ -2199,11 +2281,17 @@ stages:
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))
-            timeoutInMinutes: 210
+            timeoutInMinutes: 180
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               APPIUM_HOME: $(APPIUM_HOME)
+              # The tracer. Deliberately not a secret: its value is derived from
+              # public build coordinates so any later job can recompute the
+              # prefix it scans for. It exists to be something that must never
+              # reach a generated child process, an artifact, a log, a patch, or
+              # a JSON document, and to fail the run if it does.
+              MAUI_REPLICATION_SECRET_CANARY: maui-replication-secret-canary-$(Build.BuildId)-$(System.JobAttempt)
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -2225,6 +2313,33 @@ stages:
               }
             displayName: 'Stage trusted issue context for publication'
             condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # The attestation travels with the artifacts it covers, as bounded
+              # data. The credentialless validation job re-derives the same tree
+              # from its own clean checkout of the pinned commit and compares, so
+              # this is the device agent's statement of what it ran, not a
+              # statement anybody downstream takes on trust.
+              $artifactRoot = $env:REPLICATION_ARTIFACT_ROOT
+              $attestationPath = $env:TRUSTED_TREE_ATTESTATION_PATH
+              if ([string]::IsNullOrWhiteSpace($artifactRoot) -or
+                  -not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+                Write-Host "No replication artifact root, so there is no attestation to stage."
+                exit 0
+              }
+              if ([string]::IsNullOrWhiteSpace($attestationPath) -or
+                  -not (Test-Path -LiteralPath $attestationPath -PathType Leaf)) {
+                throw 'The trusted-tree attestation is missing, so this run cannot be validated.'
+              }
+              Copy-Item -LiteralPath $attestationPath `
+                -Destination (Join-Path $artifactRoot 'trusted-tree.json') -Force
+              Write-Host "Staged the trusted-tree attestation beside the replication artifacts."
+            displayName: 'Stage trusted tree attestation'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'))
+            env:
+              REPLICATION_ARTIFACT_ROOT: $(REPLICATION_ARTIFACT_ROOT)
+              TRUSTED_TREE_ATTESTATION_PATH: $(TRUSTED_TREE_ATTESTATION_PATH)
 
           - pwsh: |
               # Publishing is gated on succeededOrFailed(), so it also runs when
@@ -2501,7 +2616,7 @@ stages:
             # killed-on-timeout case, turning it into a non-blocking succeededWithIssues so the
             # deep tests + expert review still deliver a summary (gate reported INCONCLUSIVE).
             continueOnError: true
-            # timeoutInMinutes: 150 — SAFETY NET. The gate runs UI tests via
+            # GateTaskTimeoutMinutes — SAFETY NET. The gate runs UI tests via
             # BuildAndRunHostApp.ps1 which has no internal overall timeout, and the
             # env-error retry loop only triggers when a run RETURNS an error — a run
             # that HANGS (emulator boot / Appium / dotnet test never returns) is
@@ -2510,15 +2625,16 @@ stages:
             # the number of expensive device/UI tests it verifies per run
             # (Limit-ExpensiveGateTests, default 2 device + 2 UI) so a PR touching
             # many device-test files can no longer explode into a 120-min timeout
-            # (observed: build 14676353 / PR #36109, 11 device tests). 150m gives
-            # the capped A/B set headroom (each device test builds+runs TWICE)
+            # (observed: build 14676353 / PR #36109, 11 device tests). The configured
+            # cap gives the bounded A/B set headroom (each device test builds+runs TWICE)
             # while still catching true hangs ~3.5h earlier than the job cap.
-            timeoutInMinutes: 150
+            timeoutInMinutes: ${{ variables.GateTaskTimeoutMinutes }}
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'review'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               BASE_BUILDTASKS_FAILED: $(FreezeBuildTasksState.baseBuildTasksFailed)
+              GATE_TASK_TIMEOUT_MINUTES: ${{ variables.GateTaskTimeoutMinutes }}
 
           # ─────────────────────────────────────────────────────────
           #  Task 3 — COPILOT REVIEW: expert review + try-fix.
@@ -2715,24 +2831,41 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $source = Join-Path "$(Pipeline.Workspace)/CopilotLogs" "CustomAgentLogsTmp"
+              $artifactRoot = Join-Path "$(Pipeline.Workspace)" "CopilotLogs"
               $target = Join-Path "$(System.DefaultWorkingDirectory)" "CustomAgentLogsTmp"
               if (Test-Path -LiteralPath $target) {
                 Remove-Item -LiteralPath $target -Recurse -Force
               }
 
-              if (Test-Path -LiteralPath $source -PathType Container) {
-                $linkedItems = @(
-                  Get-Item -LiteralPath $source -Force
-                  Get-ChildItem -LiteralPath $source -Recurse -Force
-                ) | Where-Object { $_.Attributes -band [IO.FileAttributes]::ReparsePoint }
-                if ($linkedItems.Count -gt 0) {
-                  throw "CopilotLogs contains unsupported linked items."
+              if (Test-Path -LiteralPath $artifactRoot -PathType Container) {
+                $boundedCopyScript = ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+                $expectedImportScript = ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
+                foreach ($requiredScript in @($boundedCopyScript, $expectedImportScript)) {
+                  if (-not (Test-Path -LiteralPath $requiredScript -PathType Leaf)) {
+                    throw "Bounded CopilotLogs import helper is missing."
+                  }
                 }
+                . $boundedCopyScript
+                . $expectedImportScript
 
-                Copy-Item -LiteralPath $source -Destination $target -Recurse
+                $maxImportedLogFiles = 2048
+                $maxImportedLogDirectories = 1024
+                $maxImportedLogFileBytes = 16MB
+                $maxImportedLogBytes = 128MB
+                $truncatedArtifactExtensions = @('.log', '.patch', '.diff')
+                $targetPRAgent = Join-Path $target "PRState/$env:PARAM_PR_NUMBER/PRAgent"
+                $importResult = Import-ExpectedPRAgentArtifact `
+                  -ArtifactRoot $artifactRoot `
+                  -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                  -DestinationDirectory $targetPRAgent `
+                  -MaxFileCount $maxImportedLogFiles `
+                  -MaxDirectoryCount $maxImportedLogDirectories `
+                  -MaxFileBytes $maxImportedLogFileBytes `
+                  -MaxTotalBytes $maxImportedLogBytes `
+                  -TruncateOversizedFileExtensions $truncatedArtifactExtensions
+                Write-Host "Imported canonical bounded PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes, $($importResult.TruncatedFiles) truncated diagnostic artifact(s)."
               } else {
-                Write-Host "##vso[task.logissue type=warning]CustomAgentLogsTmp was not found in CopilotLogs."
+                Write-Host "##vso[task.logissue type=warning]CopilotLogs artifact was not found."
                 New-Item -ItemType Directory -Force -Path $target | Out-Null
               }
 
@@ -2750,6 +2883,8 @@ stages:
               Set-Content -LiteralPath (Join-Path $gateDir "gate-result.txt") -Value $gateResult -Encoding utf8 -NoNewline
               New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/copilot-logs" | Out-Null
             displayName: 'Prepare review results'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -2850,17 +2985,448 @@ stages:
               publishLocation: 'pipeline'
             condition: succeededOrFailed()
 
+  # ─────────────────────────────────────────────────────────────────────────────
+  #  STAGE: ValidateReplication
+  # ─────────────────────────────────────────────────────────────────────────────
+  # The credentialless half of publication, on its own fresh Microsoft-hosted
+  # agent. ReviewPR ran models and generated code for hours next to a device;
+  # PublishReplication holds the service-connection credential. Neither is a
+  # place to decide whether the result is publishable.
+  #
+  # This job holds no credential at all -- no GH_*, no COPILOT_*, no AZURE_*, no
+  # System.AccessToken, no service connection, no proxy or git credential -- and
+  # its checkout is `persistCredentials: false`, so there is nothing in
+  # .git/config to extract either. It stages the trusted validators from its own
+  # clean checkout of the immutable Build.SourceVersion, downloads the artifacts
+  # outside that checkout, re-derives the trusted tree the device agent claimed
+  # to have run, re-checks the certification binding against every artifact in
+  # hand, runs candidate/fix/test/media validation, and emits one bounded data
+  # artifact. It never executes generated code and never writes anywhere the
+  # publisher reads scripts from.
+  - stage: ValidateReplication
+    displayName: 'Validate issue fix without credentials'
+    dependsOn: ReviewPR
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    jobs:
+      - job: ValidateReplication
+        displayName: 'Validate fix candidate without credentials'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 45
+        workspace:
+          clean: all
+        variables:
+          replicationBaseSha: $[ stageDependencies.ReviewPR.CopilotReview.outputs['ResolveReplicationBase.replicationBaseSha'] ]
+          trustedTreeHash: $[ stageDependencies.ReviewPR.CopilotReview.outputs['AttestTrustedTree.trustedTreeHash'] ]
+          trustedPipelineSha256: $[ stageDependencies.ReviewPR.CopilotReview.outputs['AttestTrustedTree.trustedPipelineSha256'] ]
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            # No credential is persisted here, and none is granted by any task
+            # in this job. A job that cannot authenticate to anything cannot
+            # leak anything to the generated content it is judging.
+            persistCredentials: false
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # A validation job that quietly holds a credential is the same job
+              # as the publisher, which defeats the separation this stage exists
+              # for. Prove the absence rather than assume it.
+              $forbidden = @(
+                'GH_TOKEN', 'GITHUB_TOKEN', 'GH_COMMENT_TOKEN', 'GH_ENTERPRISE_TOKEN',
+                'COPILOT_GITHUB_TOKEN', 'COPILOT_TOKEN', 'SYSTEM_ACCESSTOKEN',
+                'AZURE_STORAGE_KEY', 'AZURE_STORAGE_SAS_TOKEN',
+                'VSS_NUGET_EXTERNAL_FEED_ENDPOINTS', 'GIT_ASKPASS',
+                'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY',
+                'http_proxy', 'https_proxy', 'all_proxy'
+              )
+              $present = @($forbidden | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_))
+              })
+              if ($present.Count -gt 0) {
+                throw "The credentialless validation job was given credentials: $($present -join ', ')"
+              }
+              $extraheaders = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'http\..*\.extraheader' 2>$null)
+              if ($extraheaders.Count -gt 0) {
+                throw 'The credentialless validation checkout persisted a credential.'
+              }
+              $helpers = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'credential\..*helper' 2>$null)
+              if ($helpers.Count -gt 0) {
+                throw 'The credentialless validation checkout configured a credential helper.'
+              }
+              Write-Host 'The validation job holds no GitHub, Copilot, Azure, feed, proxy, or git credential.'
+            displayName: 'Assert the validation job holds no credential'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # Pinned before anything is staged. A replicate run can spend an
+              # hour on a device, and a pipeline ref that moved in the meantime
+              # would have this job validate artifacts from one commit with
+              # scripts from another.
+              $pinned = '$(Build.SourceVersion)'
+              if ($pinned -notmatch '^[0-9a-f]{40}$') {
+                throw "Build.SourceVersion is not a commit SHA: $pinned"
+              }
+              git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to pin the validation checkout to $pinned."
+              }
+              $actual = (git -C "$(Build.SourcesDirectory)" rev-parse HEAD).Trim()
+              if ($actual -ne $pinned) {
+                throw "Validation checkout is at $actual but the run was queued at $pinned."
+              }
+
+              # Stage from canonical Git blob bytes, not checkout bytes. Windows
+              # checkouts may translate text files to CRLF while this Ubuntu job
+              # checks them out as LF; git archive makes both jobs attest the same
+              # immutable bytes regardless of checkout policy.
+              $referenceSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-source'
+              Remove-Item -LiteralPath $referenceSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $referenceSourceRoot -Force | Out-Null
+              $archivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-source.tar'
+              Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
+              & git -C "$(Build.SourcesDirectory)" archive `
+                --format=tar `
+                "--output=$archivePath" `
+                $pinned `
+                .github/scripts `
+                .github/skills `
+                eng/scripts `
+                .github/patches/catalyst-retina-screenshot.patch `
+                src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml `
+                eng/pipelines/ci-copilot.yml
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to materialize trusted validators from the pinned Git revision.'
+              }
+              & tar -xf $archivePath -C $referenceSourceRoot
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to extract trusted validators from the pinned Git revision.'
+              }
+
+              # Staged the same way ReviewPR staged its trusted tree, from this
+              # job's own materialization of the same commit, so the content hash
+              # computed below is an independent statement about the pinned
+              # revision rather than a copy of the device agent's claim.
+              $cleanValidatorRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-replication-validator'
+              Remove-Item -LiteralPath $cleanValidatorRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $cleanValidatorRoot -Force | Out-Null
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/scripts') `
+                -Destination (Join-Path $cleanValidatorRoot 'scripts') -Recurse -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/skills') `
+                -Destination (Join-Path $cleanValidatorRoot 'skills') -Recurse -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'eng/scripts') `
+                -Destination (Join-Path $cleanValidatorRoot 'eng-scripts') -Recurse -Force
+              New-Item -ItemType Directory -Path (Join-Path $cleanValidatorRoot 'source-overrides') -Force | Out-Null
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot '.github/patches/catalyst-retina-screenshot.patch') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+
+              # Every script this job runs, checked for existence up front so a
+              # missing validator is a named failure rather than a late one.
+              foreach ($relative in @(
+                'scripts/shared/Assert-TrustedTreeAttestation.ps1',
+                'scripts/shared/Assert-ReplicationCertificationBinding.ps1',
+                'scripts/shared/Assert-ReplicationExecutionEnvironment.ps1',
+                'scripts/shared/Assert-ReplicationTestGuard.ps1',
+                'scripts/shared/Get-ReplicationCertification.ps1',
+                'scripts/shared/Get-ReplicationSignatureMatch.ps1',
+                'scripts/shared/Validate-ReplicationCandidate.ps1'
+              )) {
+                $staged = Join-Path $cleanValidatorRoot $relative
+                if (-not (Test-Path -LiteralPath $staged -PathType Leaf)) {
+                  throw "Trusted validation script is missing from the pinned checkout: $relative"
+                }
+              }
+
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_VALIDATOR_ROOT]$cleanValidatorRoot"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_REFERENCE_ROOT]$referenceSourceRoot"
+              Write-Host "Trusted validators staged from the pinned checkout at $pinned"
+            displayName: 'Stage trusted validators from the pinned clean checkout'
+
+          # Downloaded outside $(Build.SourcesDirectory) on purpose: artifact
+          # content produced beside generated code may never land where this job
+          # reads scripts from.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Artifacts'
+            continueOnError: true
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationArtifacts'
+              targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $candidatePath = "$(Pipeline.Workspace)/ReplicationArtifacts/candidate.json"
+              $present = Test-Path -LiteralPath $candidatePath -PathType Leaf
+              if ($present) {
+                Write-Host "Replication artifacts are available for validation."
+              } else {
+                Write-Host "The run produced no replication candidate, so there is nothing to validate."
+              }
+              Write-Host "##vso[task.setvariable variable=REPLICATION_ARTIFACT_PRESENT]$($present.ToString().ToLowerInvariant())"
+            displayName: 'Check for replication artifacts'
+            condition: succeededOrFailed()
+
+          - bash: |
+              set -euo pipefail
+              if command -v ffprobe >/dev/null 2>&1; then
+                ffprobe -version | head -1
+                exit 0
+              fi
+              export DEBIAN_FRONTEND=noninteractive
+              sudo systemctl stop unattended-upgrades.service || true
+              sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true
+              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
+              sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
+              ffprobe -version | head -1
+            displayName: 'Install validation media validator'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            timeoutInMinutes: 25
+            retryCountOnTaskFailure: 2
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path "$(TRUSTED_REPLICATION_VALIDATOR_ROOT)" 'scripts/shared/Assert-TrustedTreeAttestation.ps1')
+
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $attestationPath = Join-Path $artifactRoot 'trusted-tree.json'
+              if (-not (Test-Path -LiteralPath $attestationPath -PathType Leaf)) {
+                throw 'The run published no trusted-tree attestation, so what it ran cannot be established.'
+              }
+
+              $reference = Assert-TrustedTreeMatchesReference `
+                -Attestation $attestationPath `
+                -ReferenceRoot "$(TRUSTED_REPLICATION_VALIDATOR_ROOT)" `
+                -ExpectedSourceVersion '$(Build.SourceVersion)' `
+                -ReferencePipelineDefinitionPath (Join-Path "$(TRUSTED_REPLICATION_REFERENCE_ROOT)" 'eng/pipelines/ci-copilot.yml') `
+                -Context 'clean validation checkout'
+
+              $attestation = Read-TrustedTreeAttestation -Path $attestationPath
+              $declaredTreeHash = "$(trustedTreeHash)"
+              if ($declaredTreeHash -match '^[0-9a-f]{64}$' -and
+                  $declaredTreeHash -cne [string]$attestation.treeHash) {
+                throw 'The published attestation does not match the tree hash the replicate job reported.'
+              }
+              $declaredPipelineSha = "$(trustedPipelineSha256)"
+              if ($declaredPipelineSha -match '^[0-9a-f]{64}$' -and
+                  $declaredPipelineSha -cne [string]$attestation.pipelineSha256) {
+                throw 'The published attestation does not match the pipeline definition the replicate job reported.'
+              }
+
+              Write-Host ("The trusted tree the run used matches the pinned pipeline revision: " +
+                "$($reference.FileCount) files, content $($reference.ContentHash).")
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_HASH]$($attestation.treeHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_TREE_CONTENT_HASH]$($reference.ContentHash)"
+              Write-Host "##vso[task.setvariable variable=TRUSTED_PIPELINE_SHA256]$($attestation.pipelineSha256)"
+            displayName: 'Re-derive the trusted tree from the pinned revision'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+
+          - bash: |
+              set -euo pipefail
+              BASE_SHA="${REPLICATION_BASE_SHA}"
+              if ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+                echo "##vso[task.logissue type=error]Trusted replication baseline output is invalid."
+                exit 1
+              fi
+              git fetch --no-tags origin main
+              git cat-file -e "${BASE_SHA}^{commit}"
+              git merge-base --is-ancestor "${BASE_SHA}" origin/main
+              git checkout --detach "${BASE_SHA}"
+              test -z "$(git status --porcelain)"
+              echo "Validation checkout pinned to ${BASE_SHA}"
+            displayName: 'Pin clean replication baseline'
+            condition: >-
+              and(succeeded(),
+                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
+            env:
+              REPLICATION_BASE_SHA: $(replicationBaseSha)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              Remove-Item -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              $validatedPath = Join-Path $outputRoot 'validated-candidate.json'
+              $summaryPath = Join-Path $outputRoot 'validation-summary.json'
+
+              function Write-ValidationSummary {
+                param([string]$Status, [bool]$CandidateReady, [string]$BindingDigest = '')
+
+                [ordered]@{
+                  schemaVersion = 1
+                  status = $Status
+                  candidateReady = $CandidateReady
+                  bindingDigest = $BindingDigest
+                  trustedSourceVersion = '$(Build.SourceVersion)'
+                  # Read from the environment, not as $(MACRO): Azure leaves an
+                  # undefined macro as literal text, and PowerShell would then
+                  # evaluate it as a subexpression and fail the step. These are
+                  # set by a step this one can legitimately run without.
+                  trustedTreeHash = [string]$env:TRUSTED_TREE_HASH
+                  trustedTreeContentHash = [string]$env:TRUSTED_TREE_CONTENT_HASH
+                  replicationBaseSha = "$(replicationBaseSha)"
+                  issueNumber = ${{ parameters.IssueNumber }}
+                  platform = '${{ parameters.Platform }}'
+                } | ConvertTo-Json -Depth 6 |
+                  Set-Content -LiteralPath $summaryPath -Encoding utf8NoBOM
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]$($CandidateReady.ToString().ToLowerInvariant())"
+              }
+
+              $candidatePath = Join-Path $artifactRoot 'candidate.json'
+              if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'missing'
+                  validationPassed = $false
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'missing' -CandidateReady $false
+                Write-Host "No replication candidate manifest was produced; nothing to validate."
+                exit 0
+              }
+
+              $candidate = Get-Content -LiteralPath $candidatePath -Raw | ConvertFrom-Json -Depth 20
+              if ([string]$candidate.status -ne 'reproduced') {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'skipped'
+                  validationPassed = $false
+                  blocked = $candidate.blocked
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'skipped' -CandidateReady $false
+                Write-Host "Replication candidate is '$($candidate.status)'; reproduced-only validation is not applicable."
+                exit 0
+              }
+
+              $fixPatchPath = Join-Path $artifactRoot 'fix.patch'
+              $fixPatchArgument = @{}
+              $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
+              $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
+              $fixReadyForPublication = $fixPatchPresent -and $manifestFixFiles.Count -gt 0
+              if ($fixReadyForPublication) {
+                $fixPatchArgument['FixPatchPath'] = $fixPatchPath
+                Write-Host "The candidate carries a proposed fix; validating it alongside the test."
+              } elseif ($fixPatchPresent -or $manifestFixFiles.Count -gt 0) {
+                Write-Host "The fix phase did not finish with both a patch and named files; no pull request will be published."
+              } else {
+                Write-Host "No product fix was produced; keeping the reproduction in pipeline artifacts only."
+              }
+
+              # No-fix candidates remain pipeline artifacts; only complete fixes reach validation.
+              if (-not $fixReadyForPublication) {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'fix-not-available'
+                  validationPassed = $false
+                  issueNumber = $candidate.issueNumber
+                  platform = $candidate.platform
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-ValidationSummary -Status 'fix-not-available' -CandidateReady $false
+                exit 0
+              }
+
+              $validatorRoot = [string]$env:TRUSTED_REPLICATION_VALIDATOR_ROOT
+              if ([string]::IsNullOrWhiteSpace($validatorRoot) -or
+                  -not (Test-Path -LiteralPath $validatorRoot -PathType Container)) {
+                throw 'The trusted validators were never staged, so nothing may be validated.'
+              }
+              $validation = @(
+                & (Join-Path $validatorRoot 'scripts/shared/Validate-ReplicationCandidate.ps1') `
+                  -RepoRoot "$(Build.SourcesDirectory)" `
+                  -CandidateManifestPath $candidatePath `
+                  -PatchPath (Join-Path $artifactRoot 'test.patch') `
+                  -EvidenceDir $artifactRoot `
+                  -IssueNumber ${{ parameters.IssueNumber }} `
+                  -Platform "${{ parameters.Platform }}" `
+                  -OutputPath $validatedPath `
+                  -CertificationBindingPath (Join-Path $artifactRoot 'certification-binding.json') `
+                  -ArtifactRoot $artifactRoot `
+                  -TrustedSourceVersion '$(Build.SourceVersion)' `
+                  -TrustedTreeHash ([string]$env:TRUSTED_TREE_HASH) `
+                  -TrustedPipelineSha256 ([string]$env:TRUSTED_PIPELINE_SHA256) `
+                  -ReplicationBaseSha "$(replicationBaseSha)" `
+                  -RequireCertificationBinding `
+                  @fixPatchArgument
+              )
+              if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
+                throw "Replication candidate validation did not return one validated result."
+              }
+              $bindingDigest = [string]$validation[0].certificationBinding.digest
+              if ($bindingDigest -notmatch '^[0-9a-f]{64}$') {
+                throw 'Validation produced no certification binding digest, so nothing binds this result to its inputs.'
+              }
+              $fixFilesProperty = $validation[0].PSObject.Properties['fixFiles']
+              $validatedFixFiles = @($(if ($fixFilesProperty) { @($fixFilesProperty.Value) } else { @() }) | Where-Object {
+                  -not [string]::IsNullOrWhiteSpace([string]$_)
+                })
+              $candidateReady = $validatedFixFiles.Count -gt 0
+              $validationStatus = if ($candidateReady) { 'validated' } else { 'fix-withheld' }
+              Write-ValidationSummary `
+                -Status $validationStatus `
+                -CandidateReady $candidateReady `
+                -BindingDigest $bindingDigest
+              if ($candidateReady) {
+                Write-Host "Validated fix candidate is bound to $bindingDigest"
+              } else {
+                Write-Host 'Clean validation retained only reproduction evidence; publication remains withheld.'
+              }
+            displayName: 'Validate fix candidate without credentials'
+            condition: succeededOrFailed()
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              # The only thing this stage hands on is bounded data, written
+              # outside the checkout, and it is exactly two documents. Anything
+              # else here would be a file the credentialed publisher downloads
+              # from a job that read generated content.
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              if (-not (Test-Path -LiteralPath $outputRoot -PathType Container)) {
+                New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              }
+              $allowed = @('validated-candidate.json', 'validation-summary.json')
+              foreach ($item in @(Get-ChildItem -LiteralPath $outputRoot -Recurse -Force)) {
+                if ($item.PSIsContainer -or
+                    $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+                    $allowed -notcontains $item.Name -or
+                    $item.Length -gt 1MB) {
+                  throw "The validation artifact may contain only bounded result documents: $($item.Name)"
+                }
+              }
+              Write-Host "The validation artifact carries only bounded result documents."
+            displayName: 'Bound the validation artifact'
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish Replication Validation Result'
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/ReplicationValidation'
+              artifact: 'ReplicationValidation'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+
   # Replication publication reuses the trusted GitHub service-connection
   # credential and the existing public review-tests-assets-v2 branch. The
   # credential is exposed only after deterministic candidate validation, in a
   # clean job that never executes generated code.
   - stage: PublishReplication
-    displayName: 'Validate and publish issue replication'
-    dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    displayName: 'Validate and publish issue fix'
+    dependsOn:
+      - ReviewPR
+      - ValidateReplication
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), in(dependencies.ValidateReplication.result, 'Succeeded', 'SucceededWithIssues'))
     jobs:
       - job: PublishReplication
-        displayName: 'Publish validated reproduction'
+        displayName: 'Publish validated fix'
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -2872,7 +3438,7 @@ stages:
             clean: true
             fetchDepth: 0
             # Trusted-only publisher exception: reuse the existing checkout PAT
-            # for the public asset branch and reproduction branch. Generated
+            # for the public asset branch and fix branch. Generated
             # code is validated but never executed in this credentialed job.
             persistCredentials: true
 
@@ -2903,6 +3469,24 @@ stages:
               }
               Write-Host "Publisher pinned to $actual"
 
+              $publisherSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-publisher-source'
+              Remove-Item -LiteralPath $publisherSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $publisherSourceRoot -Force | Out-Null
+              $publisherArchivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-publisher-source.tar'
+              Remove-Item -LiteralPath $publisherArchivePath -Force -ErrorAction SilentlyContinue
+              & git -C "$(Build.SourcesDirectory)" archive `
+                --format=tar `
+                "--output=$publisherArchivePath" `
+                $pinned `
+                .github/scripts
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to materialize trusted publisher scripts from the pinned Git revision.'
+              }
+              & tar -xf $publisherArchivePath -C $publisherSourceRoot
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to extract trusted publisher scripts from the pinned Git revision.'
+              }
+
               $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
               Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
@@ -2916,14 +3500,17 @@ stages:
                 'shared/Get-ReplicationSignatureMatch.ps1',
                 'shared/Get-ReplicationGitHubLogin.ps1',
                 'shared/Get-ReplicationUpstreamFix.ps1',
+                'shared/Assert-TrustedTreeAttestation.ps1',
+                'shared/Assert-ReplicationCertificationBinding.ps1',
+                'shared/Assert-ReplicationExecutionEnvironment.ps1',
+                'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1',
                 'shared/Validate-ReplicationCandidate.ps1',
                 'shared/Publish-ReplicationOutcome.ps1',
                 'shared/Publish-ReplicationEvidence.ps1',
                 'shared/Publish-ReplicationPR.ps1',
-                'shared/Move-ReplicationPRsToTestingFork.ps1',
                 'Find-RegressionRisks.ps1'
               )) {
-                $source = Join-Path "$(Build.SourcesDirectory)" ".github/scripts/$relative"
+                $source = Join-Path $publisherSourceRoot ".github/scripts/$relative"
                 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
                   throw "Trusted publisher script is missing: $source"
                 }
@@ -2945,6 +3532,18 @@ stages:
               buildType: 'current'
               artifactName: 'ReplicationArtifacts'
               targetPath: '$(Pipeline.Workspace)/ReplicationArtifacts'
+
+          # The result of the credentialless stage, downloaded outside the
+          # checkout like everything else. This job does not decide whether the
+          # candidate is publishable; it re-checks that the decision still
+          # describes the artifacts in hand.
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download Replication Validation Result'
+            continueOnError: true
+            inputs:
+              buildType: 'current'
+              artifactName: 'ReplicationValidation'
+              targetPath: '$(Pipeline.Workspace)/ReplicationValidation'
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -2979,29 +3578,113 @@ stages:
             env:
               REPLICATION_BASE_SHA: $(replicationBaseSha)
 
-          - bash: |
-              set -euo pipefail
-              if command -v ffprobe >/dev/null 2>&1; then
-                ffprobe -version | head -1
+          # ── The recheck ───────────────────────────────────────────────
+          # First certification happened in the credentialless stage. This job
+          # holds the credential, so all it is allowed to establish is that the
+          # decision it was handed still describes the artifacts in front of it:
+          # the bundle digest is recomputed over the binding, every referenced
+          # artifact is re-hashed, the validated document is required to name
+          # that same digest, and the artifacts are re-scanned for the run's
+          # canary and for credential shapes. It runs before any credential is
+          # extracted, so an artifact mutated between the two jobs is caught
+          # while this job still has nothing to leak.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $publisherRoot = [string]$env:TRUSTED_REPLICATION_PUBLISHER_ROOT
+              if ([string]::IsNullOrWhiteSpace($publisherRoot) -or
+                  -not (Test-Path -LiteralPath $publisherRoot -PathType Container)) {
+                throw 'The trusted publisher scripts were never staged, so nothing may be published.'
+              }
+              . (Join-Path $publisherRoot 'Assert-ReplicationCertificationBinding.ps1')
+              . (Join-Path $publisherRoot 'Assert-ReplicationExecutionEnvironment.ps1')
+              . (Join-Path $publisherRoot 'Assert-ReplicationTestGuard.ps1')
+
+              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
+              $validationRoot = "$(Pipeline.Workspace)/ReplicationValidation"
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
+              # Created whatever happened, because the publication artifact is
+              # uploaded on succeededOrFailed and a run that stopped early would
+              # otherwise be reported a second time as a failed upload.
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              $validatedSource = Join-Path $validationRoot 'validated-candidate.json'
+              $summaryPath = Join-Path $validationRoot 'validation-summary.json'
+              $validatedPath = Join-Path $outputRoot 'validated-candidate.json'
+
+              if ([string]$env:REPLICATION_ARTIFACT_PRESENT -ne 'true') {
+                [ordered]@{
+                  schemaVersion = 1
+                  status = 'missing'
+                  validationPassed = $false
+                } | ConvertTo-Json -Depth 10 |
+                  Set-Content -LiteralPath $validatedPath -Encoding utf8NoBOM
+                Write-Host "The run produced no replication candidate, so there is nothing to recheck."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
                 exit 0
-              fi
-              export DEBIAN_FRONTEND=noninteractive
-              # Build 14999448 reached a publishable candidate and then lost it
-              # here: recommended packages add hundreds of megabytes the media
-              # checks never use, and a slow mirror exhausted the timeout.
-              # Bound every apt call so a held dpkg lock fails fast and the
-              # task retry gets a fresh start, rather than burning the timeout.
-              sudo systemctl stop unattended-upgrades.service || true
-              sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true
-              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
-              sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
-              ffprobe -version | head -1
-            displayName: 'Install publisher media validator'
-            condition: >-
-              and(succeeded(),
-                  eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
-            timeoutInMinutes: 25
-            retryCountOnTaskFailure: 2
+              }
+
+              if (-not (Test-Path -LiteralPath $validatedSource -PathType Leaf) -or
+                  -not (Test-Path -LiteralPath $summaryPath -PathType Leaf)) {
+                throw 'The credentialless validation stage produced no result, so nothing may be published.'
+              }
+              foreach ($required in @($validatedSource, $summaryPath)) {
+                $item = Get-Item -LiteralPath $required -Force
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or $item.Length -gt 1MB) {
+                  throw "The validation result must be a bounded regular file: $($item.Name)"
+                }
+              }
+
+              $summary = Get-Content -LiteralPath $summaryPath -Raw | ConvertFrom-Json -Depth 8
+              $validated = Get-Content -LiteralPath $validatedSource -Raw | ConvertFrom-Json -Depth 20
+              Copy-Item -LiteralPath $validatedSource -Destination $validatedPath -Force
+
+              if ([string]$summary.trustedSourceVersion -cne '$(Build.SourceVersion)') {
+                throw 'The validation result was produced at a different pipeline revision.'
+              }
+              if (-not [bool]$summary.candidateReady -or [string]$summary.status -ne 'validated') {
+                Write-Host "No publishable candidate was validated (status '$($summary.status)')."
+                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
+                exit 0
+              }
+              if ($validated.validationPassed -ne $true) {
+                throw 'The validation summary claims a validated candidate the validated document does not.'
+              }
+              $validatedFixFiles = @($validated.fixFiles | Where-Object {
+                  -not [string]::IsNullOrWhiteSpace([string]$_)
+                })
+              if ($validatedFixFiles.Count -eq 0) {
+                throw 'The validated candidate names no complete product fix to rescan.'
+              }
+              Assert-ReplicationFixSources `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -Paths $validatedFixFiles `
+                -PatchPath (Join-Path $artifactRoot 'fix.patch')
+
+              $bindingPath = Join-Path $artifactRoot 'certification-binding.json'
+              $recheck = Assert-ReplicationCertificationBinding `
+                -Binding $bindingPath `
+                -ArtifactRoot $artifactRoot `
+                -TrustedSourceVersion '$(Build.SourceVersion)' `
+                -ReplicationBaseSha "$(replicationBaseSha)" `
+                -IssueNumber ${{ parameters.IssueNumber }} `
+                -Platform '${{ parameters.Platform }}' `
+                -Context 'publisher recheck'
+              foreach ($declared in @([string]$summary.bindingDigest, [string]$validated.certificationBinding.digest)) {
+                if ($declared -cne [string]$recheck.Digest) {
+                  throw 'The replication artifacts changed after validation; their bundle digest no longer matches.'
+                }
+              }
+
+              $null = Assert-ReplicationNoSecretMarkers `
+                -Root $artifactRoot `
+                -Context 'publisher recheck'
+              $null = Assert-ReplicationNoSecretMarkers `
+                -Root $validationRoot `
+                -Context 'publisher recheck'
+
+              Write-Host "Rechecked bundle digest $($recheck.Digest) against every referenced artifact."
+              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]true"
+            displayName: 'Recheck validated bundle before credential use'
+            condition: succeededOrFailed()
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -3036,76 +3719,6 @@ stages:
                   eq(variables['REPLICATION_ARTIFACT_PRESENT'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
-
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $artifactRoot = "$(Pipeline.Workspace)/ReplicationArtifacts"
-              $outputRoot = "$(Pipeline.Workspace)/ReplicationPublication"
-              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-              $candidatePath = Join-Path $artifactRoot "candidate.json"
-              if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
-                [ordered]@{
-                  schemaVersion = 1
-                  status = 'missing'
-                  validationPassed = $false
-                } | ConvertTo-Json -Depth 10 |
-                  Set-Content -LiteralPath (Join-Path $outputRoot "validated-candidate.json") -Encoding utf8NoBOM
-                Write-Host "No replication candidate manifest was produced; nothing to validate."
-                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
-                exit 0
-              }
-              $candidate = Get-Content -LiteralPath $candidatePath -Raw |
-                ConvertFrom-Json -Depth 20
-              if ([string]$candidate.status -ne 'reproduced') {
-                [ordered]@{
-                  schemaVersion = 1
-                  status = 'skipped'
-                  validationPassed = $false
-                  blocked = $candidate.blocked
-                } | ConvertTo-Json -Depth 10 |
-                  Set-Content -LiteralPath (Join-Path $outputRoot "validated-candidate.json") -Encoding utf8NoBOM
-                Write-Host "Replication candidate is '$($candidate.status)'; reproduced-only validation is not applicable."
-                Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]false"
-                exit 0
-              }
-
-              $fixPatchPath = Join-Path $artifactRoot "fix.patch"
-              # A fix is optional, and the manifest is the authority on whether one
-              # was certified. A patch on disk the manifest does not name means the
-              # panel wrote it and the task was killed before the manifest could
-              # record it, so the fix phase never finished. That is an absent
-              # measurement, not a malformed candidate: the reproduction publishes
-              # on its own rather than being refused for a contradiction it did not
-              # cause. Build 15102442 lost a certified reproduction exactly that way.
-              $fixPatchArgument = @{}
-              $fixPatchPresent = Test-Path -LiteralPath $fixPatchPath -PathType Leaf
-              # Filtering rather than counting: a missing property is $null, and
-              # @($null).Count is 1, which would read as a named fix file.
-              $manifestFixFiles = @($candidate.fixFiles | Where-Object { $_ })
-              if ($fixPatchPresent -and $manifestFixFiles.Count -gt 0) {
-                $fixPatchArgument['FixPatchPath'] = $fixPatchPath
-                Write-Host "The candidate carries a proposed fix; validating it alongside the test."
-              } elseif ($fixPatchPresent) {
-                Write-Host "A fix patch is present but the manifest names no fix files, so the fix phase did not finish. Publishing the reproduction alone."
-              }
-
-              $validation = @(
-                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Validate-ReplicationCandidate.ps1") `
-                  -RepoRoot "$(Build.SourcesDirectory)" `
-                  -CandidateManifestPath $candidatePath `
-                  -PatchPath (Join-Path $artifactRoot "test.patch") `
-                  -EvidenceDir $artifactRoot `
-                  -IssueNumber ${{ parameters.IssueNumber }} `
-                  -Platform "${{ parameters.Platform }}" `
-                  -OutputPath (Join-Path $outputRoot "validated-candidate.json") `
-                  @fixPatchArgument
-              )
-              if ($validation.Count -ne 1 -or $validation[0].validationPassed -ne $true) {
-                throw "Replication candidate validation did not return one validated result."
-              }
-              Write-Host "##vso[task.setvariable variable=REPLICATION_CANDIDATE_READY]true"
-            displayName: 'Validate replication candidate without credentials'
-            condition: succeededOrFailed()
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -3153,7 +3766,7 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
                 $checkoutToken = $null
               }
-            displayName: 'Publish reproduction evidence'
+            displayName: 'Publish fix evidence'
             condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               BUILD_BUILDID: $(Build.BuildId)
@@ -3169,17 +3782,6 @@ stages:
               }
 
               try {
-                & (Join-Path "$(TRUSTED_REPLICATION_PUBLISHER_ROOT)" "Move-ReplicationPRsToTestingFork.ps1") `
-                  -SourceOwner "dotnet" `
-                  -SourceRepository "maui" `
-                  -TargetOwner "kubaflo" `
-                  -TargetRepository "maui" `
-                  -TargetBaseBranch "main" `
-                  -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/migrated-prs.json"
-                if ($LASTEXITCODE -ne 0) {
-                  throw "Migrating existing reproduction pull requests to the testing fork failed."
-                }
-
                 $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
                 $publishFixArgument = @{}
                 # The validator is the authority on what was validated. Probing the
@@ -3213,7 +3815,7 @@ stages:
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
                   @publishFixArgument
                 if ($LASTEXITCODE -ne 0) {
-                  throw "Publishing the replication pull request failed."
+                  throw "Publishing the fix pull request failed."
                 }
 
                 $result = Get-Content -LiteralPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" -Raw |
@@ -3238,7 +3840,7 @@ stages:
                 Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
               }
             name: PublishReplicationPR
-            displayName: 'Move existing PRs and create MauiBot testing draft PR'
+            displayName: 'Create MauiBot fix draft PR'
             condition: and(succeeded(), eq(variables['REPLICATION_CANDIDATE_READY'], 'true'))
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
@@ -3319,7 +3921,18 @@ stages:
         ${{ else }}:
           pool: ${{ parameters.windowsPool }}
         timeoutInMinutes: 360
+        cancelTimeoutInMinutes: 10
         steps:
+          # Capture the outer job budget before checkout/provisioning consumes it.
+          # The deep-test loop later derives its hard stop from this timestamp so
+          # it cannot accidentally start a fresh 300-minute budget late in the job.
+          - pwsh: |
+              $startedAt = [DateTimeOffset]::UtcNow.ToString('o')
+              Write-Host "##vso[task.setvariable variable=deepJobStartedAtUtc]$startedAt"
+              Write-Host "Deep UI job budget started at $startedAt"
+            displayName: 'Capture deep UI job budget'
+            timeoutInMinutes: 2
+
           - checkout: self
             fetchDepth: 0
             persistCredentials: false
@@ -3329,25 +3942,47 @@ stages:
           # resolution task below: a retry can start after that task checked out
           # the PR head, and recapturing here would bless PR-controlled scripts.
           - bash: |
-              set -e
-              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
-              chmod -R u+w "$TRUSTED" 2>/dev/null || true
-              rm -rf "$TRUSTED" 2>/dev/null || true
-              mkdir -p "$TRUSTED"
-              cp -r .github/scripts "$TRUSTED/scripts"
-              cp -r .github/skills  "$TRUSTED/skills"
-              cp -r eng/scripts     "$TRUSTED/eng-scripts"
-              mkdir -p "$TRUSTED/source-overrides"
-              cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"
-              chmod -R a-w "$TRUSTED"
-              echo "Trusted scripts and source overrides copied from $(Build.SourceVersion) to $TRUSTED"
+             set -euo pipefail
+             to_bash_path() {
+               if command -v cygpath >/dev/null 2>&1; then
+                 cygpath -u "$1"
+               else
+                 printf '%s\n' "$1"
+               fi
+             }
+             TRUSTED="$(to_bash_path "$(Build.ArtifactStagingDirectory)")/trusted-github"
+             STAGED_SOURCE="$(to_bash_path "$(Agent.TempDirectory)")/trusted-deep-source"
+             SOURCE_VERSION="$(Build.SourceVersion)"
+             if ! [[ "${SOURCE_VERSION}" =~ ^[0-9a-f]{40}$ ]]; then
+               echo "##vso[task.logissue type=error]Build.SourceVersion is not an immutable commit SHA."
+               exit 1
+             fi
+             chmod -R u+w "$TRUSTED" 2>/dev/null || true
+             rm -rf "$TRUSTED" 2>/dev/null || true
+             rm -rf "$STAGED_SOURCE" 2>/dev/null || true
+             mkdir -p "$TRUSTED"
+             mkdir -p "$STAGED_SOURCE"
+             git archive "${SOURCE_VERSION}" \
+               .github/scripts \
+               .github/skills \
+               eng/scripts \
+               .github/patches/catalyst-retina-screenshot.patch \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml |
+               tar -xf - -C "$STAGED_SOURCE"
+             cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
+             cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
+             cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"
+             mkdir -p "$TRUSTED/source-overrides"
+             cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             chmod -R a-w "$TRUSTED"
+             echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted scripts for deep UI tests'
             timeoutInMinutes: 5
 
-          # Switch the worktree to the PR's base branch before installing
-          # workloads and merging the PR for deep UI tests — same rationale as
-          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
-          # band + conflict-free squash-merge regardless of the pipeline branch).
+          # Switch the worktree to the immutable protected base before installing
+          # workloads and build tasks. The PR snapshot is merged only after every
+          # DOTNET_TOKEN-bearing step has completed, including for inflight/*.
           - bash: |
               set -e
               if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
@@ -3393,24 +4028,8 @@ stages:
                   exit 1
                 fi
               done
-              # inflight/* targets are reviewed on the PR head as-is (see the
-              # CopilotReview-stage ResolveBaseBranch for the rationale); build/resolve
-              # the PR head so the deep stage compiles the PR's actual code.
-              if [[ "${BASE_REF}" == inflight/* ]]; then
-                git checkout --detach "${PR_HEAD_SHA}"
-                # Reproduce the exact inflight base merge performed by trusted Setup.
-                if git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "${BASE_SHA}"; then
-                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
-                else
-                  echo "##vso[task.logissue type=error]Could not reproduce the trusted Setup merge for the immutable inflight snapshot."
-                  git merge --abort 2>/dev/null || true
-                  exit 1
-                fi
-                echo "Worktree now at $(git rev-parse --short HEAD) (PR #${PARAM_PR_NUMBER} head + ${BASE_REF})"
-              else
-                git checkout --detach "${BASE_SHA}"
-                echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} snapshot)"
-              fi
+              git checkout --detach "${BASE_SHA}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (${BASE_REF} protected snapshot)"
             displayName: 'Resolve PR base branch (workloads + merge base)'
             retryCountOnTaskFailure: 2
             env:
@@ -4035,27 +4654,42 @@ stages:
               git config core.autocrlf false
               git config core.eol lf
               git checkout -- . 2>/dev/null || true
+              BASE_REF="${REVIEWED_BASE_REF}"
+              BASE_SHA="${REVIEWED_BASE_SHA}"
               PR_HEAD_SHA="${REVIEWED_PR_HEAD_SHA}"
-              if ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$ ]] ||
+                 ! [[ "${BASE_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! [[ "${PR_HEAD_SHA}" =~ ^[0-9a-fA-F]{40}$ ]] ||
+                 ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null ||
                  ! git cat-file -e "${PR_HEAD_SHA}^{commit}" 2>/dev/null; then
-                echo "##vso[task.logissue type=error]Immutable reviewed PR head is unavailable."
+                echo "##vso[task.logissue type=error]Immutable reviewed base or PR head is unavailable."
                 exit 1
               fi
-              # Merge the immutable PR head commit so we run tests against the same
-              # tree the Copilot reviewer saw. Mirror Review-PR.ps1 STEP 1
-              # logic (squash-merge). Setup already proved that these exact base
-              # and PR commits merge cleanly; a conflict here means the immutable
-              # snapshot could not be reproduced and must fail closed.
-              git checkout -b deep-uitests-pr-${{ parameters.PRNumber }}
-              git merge --squash "${PR_HEAD_SHA}" || {
-                git reset --hard HEAD
-                echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
-                exit 1
-              }
-              git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              # Mirror trusted Setup's immutable snapshot semantics only after
+              # provisioning and build-task steps have released DOTNET_TOKEN.
+              if [[ "${BASE_REF}" == inflight/* ]]; then
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"
+                if git merge --no-edit "${BASE_SHA}"; then
+                  echo "Merged immutable ${BASE_REF}@${BASE_SHA:0:7} into reviewed PR head"
+                else
+                  git merge --abort 2>/dev/null || true
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable inflight Setup merge."
+                  exit 1
+                fi
+              else
+                git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${BASE_SHA}"
+                git merge --squash "${PR_HEAD_SHA}" || {
+                  git reset --hard HEAD
+                  echo "##vso[task.logissue type=error]Deep UI could not reproduce the immutable Setup merge."
+                  exit 1
+                }
+                git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
+              fi
             displayName: 'Merge PR for testing'
             env:
               REVIEWED_PR_HEAD_SHA: $(reviewedPrHeadSha)
+              REVIEWED_BASE_SHA: $(reviewedBaseSha)
+              REVIEWED_BASE_REF: $(reviewedBaseRef)
 
           # Run the deep-UI orchestration from the reviewed pipeline-branch infrastructure,
           # not the base+PR worktree copies. Restore self's scripts and the narrow Catalyst
@@ -4209,14 +4843,30 @@ stages:
               # Tunable via DEEP_UITEST_CATEGORY_IDLE_MIN.
               $perCatIdleMin = 25
               if ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -and ($env:DEEP_UITEST_CATEGORY_IDLE_MIN -as [int])) { $perCatIdleMin = [int]$env:DEEP_UITEST_CATEGORY_IDLE_MIN }
-              $loopStart    = Get-Date
-              $loopDeadline = $loopStart.AddMinutes($budgetMin)
-              $taskHardStop = $loopStart.AddMinutes($hardStopMin)
+              $loopStart = [DateTimeOffset]::UtcNow
+              $configuredLoopDeadline = $loopStart.AddMinutes($budgetMin)
+              $configuredTaskHardStop = $loopStart.AddMinutes($hardStopMin)
+
+              # The 360-minute job timeout starts before checkout, workload install,
+              # and provisioning. Bound this late-running loop by the actual remaining
+              # job budget and reserve 20 minutes for status/artifact publication.
+              $jobStartedAt = [DateTimeOffset]::MinValue
+              if (-not [DateTimeOffset]::TryParse($env:DEEP_JOB_STARTED_AT_UTC, [ref]$jobStartedAt)) {
+                Write-Host "##vso[task.logissue type=warning]Deep UI job start timestamp was unavailable; refusing to start long categories without a reliable outer-job budget."
+                $jobStartedAt = $loopStart.AddMinutes(-340)
+              }
+              $jobSafeStop = $jobStartedAt.AddMinutes(340)
+              $taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop) { $jobSafeStop } else { $configuredTaskHardStop }
+              $latestCategoryStart = $taskHardStop.AddMinutes(-3)
+              $loopDeadline = if ($latestCategoryStart -lt $configuredLoopDeadline) { $latestCategoryStart } else { $configuredLoopDeadline }
+              $jobBudgetConstrained = $jobSafeStop -lt $configuredTaskHardStop
+              $remainingJobBudgetMin = [int][math]::Floor(($jobSafeStop - $loopStart).TotalMinutes)
               Write-Host "Per-category loop budget: $budgetMin min (start-new-category deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
-              Write-Host "Hard stop: $hardStopMin min (every category must return by: $($taskHardStop.ToUniversalTime().ToString('u'))) · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
+              Write-Host "Effective hard stop: $($taskHardStop.ToUniversalTime().ToString('u')) ($remainingJobBudgetMin min of safe job budget remains; 20 min reserved to publish) · configured loop hard stop: $hardStopMin min · per-category ceiling: $perCatCapMin min · idle kill: $perCatIdleMin min"
               $skippedCats = @()
 
               $hadFailure = $false
+              $jobBudgetExhausted = $false
               $catIdx = 0
               $needDeviceReset = $false
               # Signatures that mean the just-finished category left the shared
@@ -4232,20 +4882,11 @@ stages:
               $crashSig = 'investigate as possible crash|was expected to be running still|keeps stopping|OneTimeSetUp: System\.TimeoutException|AndroidRuntime: Process: com\.microsoft\.maui\.uitests|Process com\.microsoft\.maui\.uitests.*has died|Killing [0-9]+:com\.microsoft\.maui\.uitests'
               foreach ($cat in $catList) {
                 $catIdx++
-                $catStart = Get-Date
+                $catStart = [DateTimeOffset]::UtcNow
                 if ($catStart -gt $loopDeadline) {
                   $skippedCats += $cat
-                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 320-min task timeout)."
-                  $hadFailure = $true
-                  continue
-                }
-                # Bound this category so it is tree-killed and returns before the
-                # loop hard stop — this is what actually prevents the task-level
-                # 320-min timeout when a build/run hangs.
-                $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
-                if ($remainToHardStopMin -lt 3) {
-                  $skippedCats += $cat
-                  Write-Host "##[warning]Only $remainToHardStopMin min left before the hard stop — not starting category '$cat' (avoids the 320-min task timeout)."
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Deep UI test time budget exhausted — not starting category '$cat' (preserves time for result publication before the outer job timeout)."
                   $hadFailure = $true
                   continue
                 }
@@ -4264,8 +4905,18 @@ stages:
                   if (Test-Path $resetScript) {
                     Write-Host "Prior category ended abnormally — resetting the shared $platform device before the next category…"
                     try { & $resetScript -Platform $platform -DeviceUdid $env:DEVICE_UDID } catch { Write-Host "(device reset failed: $_)" -ForegroundColor DarkGray }
-                    $catStart = Get-Date   # reboot consumed time; refresh the budget baseline
+                    $catStart = [DateTimeOffset]::UtcNow   # reboot consumed time; refresh the budget baseline
                   }
+                }
+                # Compute the category budget after any device reset so reset time
+                # cannot extend execution past the task hard stop.
+                $remainToHardStopMin = [int][math]::Floor(($taskHardStop - $catStart).TotalMinutes)
+                if ($remainToHardStopMin -lt 3) {
+                  $skippedCats += $cat
+                  if ($jobBudgetConstrained) { $jobBudgetExhausted = $true }
+                  Write-Host "##[warning]Only $remainToHardStopMin min left before the effective hard stop — not starting category '$cat' (preserves final result publication)."
+                  $hadFailure = $true
+                  continue
                 }
                 # Give each still-pending category a fair slice of the remaining
                 # budget so one large category cannot starve the rest, floored at
@@ -4521,6 +5172,10 @@ stages:
                         $captureResult.OversizedFiles -gt 0) {
                       Write-Host "Diagnostic bounding: $($captureResult.TruncatedTextFiles) text log(s) truncated, $($captureResult.DuplicateFiles) exact duplicate(s) represented by the manifest, $($captureResult.BudgetFiles) file(s) omitted by the aggregate cap, $($captureResult.OversizedFiles) oversized file(s) omitted."
                     }
+                    $hangDiagDir = Join-Path $uiDiagSrc 'hang-diagnostics'
+                    if (Test-Path -LiteralPath $hangDiagDir -PathType Container) {
+                      Remove-Item -LiteralPath $hangDiagDir -Recurse -Force -ErrorAction SilentlyContinue
+                    }
                   } catch {
                     Write-Host "Could not capture bounded UI-test diagnostics: $_" -ForegroundColor Yellow
                   }
@@ -4541,8 +5196,17 @@ stages:
                 }
               }
 
+              if ($jobBudgetExhausted) {
+                @(
+                  'Result=TIMEOUT'
+                  'Reason=OuterJobBudget'
+                  "SkippedCategories=$($skippedCats -join ',')"
+                  "JobSafeStopUtc=$($jobSafeStop.ToString('o'))"
+                ) | Set-Content -LiteralPath (Join-Path $outputRoot 'deep-run-status.txt') -Encoding UTF8
+              }
+
               if ($skippedCats.Count -gt 0) {
-                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
+                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started before the effective deadline: $($skippedCats -join ', ')"
               }
               if ($hadFailure) {
                 # Don't FAIL the stage — the AI summary review is the deliverable
@@ -4568,6 +5232,7 @@ stages:
               # with no length limit (mirrors the Post-AI-summary task's pattern).
               PARAM_PLATFORM: ${{ parameters.Platform }}
               DETECTED_CATEGORIES: $(detectedCategories)
+              DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)
 
           # Re-enable Notification Center after Catalyst tests (mirrors main CI cleanup)
           - ${{ if eq(parameters.Platform, 'catalyst') }}:
@@ -4589,7 +5254,7 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/deep-uitests'
               artifact: 'drop-deep-uitests'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: always()
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: PostAISummaryComment
@@ -4605,10 +5270,104 @@ stages:
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(always(), eq('${{ parameters.Mode }}', 'review'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunSetup.setupResult'], 'MERGE_CONFLICT'), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'), or(ne(dependencies.ReviewPR.outputs['PostReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled')))
     jobs:
+      # Prompt-influenced analysis is intentionally isolated from the posting
+      # credentials in the next job. Microsoft-hosted jobs use fresh agents, so
+      # local/global Git config, hooks, PowerShell profiles, and other filesystem
+      # mutations made by Copilot cannot cross this boundary.
+      - job: AnalyzeUIFailures
+        displayName: 'Analyze deep UI failures without posting credentials'
+        variables:
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            persistCredentials: false
+            clean: true
+            fetchDepth: 1
+            fetchTags: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download deep UI results for failure analysis'
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop-deep-uitests'
+              targetPath: '$(Pipeline.Workspace)/drop-deep-uitests'
+            condition: >-
+              and(
+                succeeded(),
+                ne(variables['detectedCategories'], ''),
+                ne(variables['detectedCategories'], 'NONE'),
+                ne(variables['detectedCategories'], 'ALL')
+              )
+            continueOnError: true
+
+          # Prep legitimately needs the comment token for read-only PR metadata.
+          # It completes before any prompt-influenced process starts.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
+              if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
+              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile -AgentTempDirectory "$(Agent.TempDirectory)"
+            displayName: 'Prepare UI failure analysis input'
+            continueOnError: true
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+          - bash: |
+              echo "Installing GitHub Copilot CLI for UI failure analysis..."
+              npm install -g @github/copilot
+              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
+              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
+              copilot --version || true
+            displayName: 'Install Copilot CLI (UI failure analysis)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+
+          # This task holds only the Copilot token. Its output is untrusted data
+          # that is published below and imported through a bounded regular-file
+          # copy on the separate posting agent.
+          - pwsh: |
+              $ErrorActionPreference = 'Continue'
+              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
+              $analysisDir = Join-Path "$(Agent.TempDirectory)" "uifail-analysis-artifact"
+              $analysisFile = Join-Path $analysisDir "uifail-analysis.md"
+              $analyzeScript = ".github/scripts/shared/Analyze-UITestFailures.ps1"
+              if (-not (Test-Path $analyzeScript)) { Write-Host "$analyzeScript missing — skipping"; exit 0 }
+              & $analyzeScript -InputFile $inputFile -OutputFile $analysisFile -PRNumber "${{ parameters.PRNumber }}"
+            displayName: 'Analyze UI test failures (Copilot)'
+            condition: eq(variables['hasUIFailures'], 'true')
+            continueOnError: true
+            env:
+              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
+
+          - pwsh: |
+              $analysisDir = Join-Path "$(Agent.TempDirectory)" "uifail-analysis-artifact"
+              New-Item -ItemType Directory -Force -Path $analysisDir | Out-Null
+              Set-Content -LiteralPath (Join-Path $analysisDir "artifact-version.txt") -Value "1" -Encoding UTF8
+            displayName: 'Seal UI failure analysis artifact'
+            condition: succeededOrFailed()
+            continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish UI failure analysis'
+            inputs:
+              targetPath: '$(Agent.TempDirectory)/uifail-analysis-artifact'
+              artifact: 'uifail-analysis'
+              publishLocation: 'pipeline'
+            condition: succeededOrFailed()
+            continueOnError: true
+
       - job: UpdateComment
         displayName: 'Post AI summary review with deep test results'
+        dependsOn: AnalyzeUIFailures
+        condition: always()
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
         # this just makes the value available as $(aiSummaryReviewId)
@@ -4638,6 +5397,7 @@ stages:
           # it is the exact signal the deep stage itself gates on — download when
           # (and only when) the deep stage actually ran and published an artifact.
           detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunDetect.detectedCategories']) ]
+          deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
@@ -4656,13 +5416,13 @@ stages:
           # the PR never got its deep-test summary. Mirrors the AnalyzeTokenUsage
           # (fetchDepth 1) + CleanupReviewLock (checkout: none) hardening below.
           - checkout: self
+            persistCredentials: false
+            clean: true
             fetchDepth: 1
             fetchTags: false
-            # Prompt-influenced Copilot analysis runs later in this checkout. Never
-            # persist the service-connection PAT while that agent can read .git/config.
-            # A second checkout introduces the publication credential only after the
-            # Copilot step has finished, immediately before the trusted post step.
-            persistCredentials: false
+            # This is a fresh Microsoft-hosted agent and no prompt-controlled
+            # process runs in this job. Asset publication uses an explicitly
+            # scoped task token, never the checkout service credential.
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -4713,74 +5473,106 @@ stages:
               )
             continueOnError: true
 
-          # ── AI analysis of deep UI test failures (PR-related vs unrelated) ──
-          # Only runs when there are REGULAR (non-setup) failures. Split across
-          # three tasks so the Copilot analysis task holds ONLY the Copilot
-          # token and NEVER GH_TOKEN (security rule 1): prep (GH_TOKEN) gathers
-          # the failing tests + PR diff, analysis (Copilot token) classifies
-          # them, and the existing post task (GH_TOKEN) folds the result into
-          # the review. All three are non-fatal — a failure here never blocks
-          # posting the summary review.
-          - pwsh: |
-              $ErrorActionPreference = 'Continue'
-              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
-              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
-              $prepScript = ".github/scripts/shared/Prepare-UITestFailureAnalysis.ps1"
-              if (-not (Test-Path $prepScript)) { Write-Host "$prepScript missing — skipping"; exit 0 }
-              & $prepScript -ArtifactDir $artDir -PRNumber "${{ parameters.PRNumber }}" -Repository "${{ parameters.ReviewRepository }}" -Platform "${{ parameters.Platform }}" -OutputFile $inputFile
-            displayName: 'Prepare UI failure analysis input'
-            continueOnError: true
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
-
-          - bash: |
-              echo "Installing GitHub Copilot CLI for UI failure analysis..."
-              npm install -g @github/copilot
-              COPILOT_BIN_DIR=$(dirname "$(which copilot)")
-              echo "##vso[task.prependpath]$COPILOT_BIN_DIR"
-              copilot --version || true
-            displayName: 'Install Copilot CLI (UI failure analysis)'
-            condition: eq(variables['hasUIFailures'], 'true')
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download UI failure analysis'
+            inputs:
+              buildType: 'current'
+              artifactName: 'uifail-analysis'
+              targetPath: '$(Pipeline.Workspace)/uifail-analysis'
             continueOnError: true
 
-          # env: COPILOT_GITHUB_TOKEN ONLY — no GH_TOKEN (security rule 1). The
-          # Copilot CLI reads the prep data file + worktree (pipeline branch,
-          # not the PR) and writes its classification to a temp file; it cannot
-          # post to GitHub.
-          - pwsh: |
-              $ErrorActionPreference = 'Continue'
-              $inputFile = Join-Path "$(Agent.TempDirectory)" "uifail-input.md"
-              $analysisFile = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
-              $analyzeScript = ".github/scripts/shared/Analyze-UITestFailures.ps1"
-              if (-not (Test-Path $analyzeScript)) { Write-Host "$analyzeScript missing — skipping"; exit 0 }
-              & $analyzeScript -InputFile $inputFile -OutputFile $analysisFile -PRNumber "${{ parameters.PRNumber }}"
-            displayName: 'Analyze UI test failures (Copilot)'
-            condition: eq(variables['hasUIFailures'], 'true')
-            continueOnError: true
-            env:
-              COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-
-          # Introduce the GitHub service-connection credential only AFTER all
-          # prompt-influenced Copilot execution has completed. The remaining step is
-          # trusted pipeline-branch PowerShell that publishes snapshot assets and posts
-          # the review; no agent or PR-controlled process runs after this checkout.
-          - checkout: self
-            displayName: 'Enable trusted snapshot asset publication credential'
-            fetchDepth: 1
-            fetchTags: false
-            # Discard any checkout mutation the prompt-influenced agent attempted
-            # before credentials appear. Its intended output lives in Agent.TempDirectory.
-            clean: true
-            persistCredentials: true
-
+          # Deep UI results are produced after PR code executes. Import the
+          # downloaded tree through the trusted bounded regular-file helper before
+          # the credentialed posting step parses, stages, or reads any snapshot.
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              $persistedHeaders = @(git config --get-regexp '^http\..*\.extraheader$' 2>$null)
-              if ($LASTEXITCODE -ne 0 -or $persistedHeaders.Count -eq 0) {
-                throw "Snapshot asset publication requires the persisted checkout credential, but no Git HTTP authorization header was configured."
+              $source = Join-Path "$(Pipeline.Workspace)" "drop-deep-uitests"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $source -PathType Container)) {
+                Write-Host "No deep UI test artifact was produced."
+                exit 0
               }
-              Write-Host "Trusted snapshot asset publication credential is configured."
-            displayName: 'Verify snapshot asset publication credential'
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              try {
+                $maxDeepResultFiles = 4096
+                $maxDeepResultDirectories = 2048
+                $maxDeepResultFileBytes = 16MB
+                $maxDeepResultBytes = 512MB
+                $importResult = Copy-BoundedRegularFileTree `
+                  -SourceDirectory $source `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount $maxDeepResultFiles `
+                  -MaxDirectoryCount $maxDeepResultDirectories `
+                  -MaxFileBytes $maxDeepResultFileBytes `
+                  -MaxTotalBytes $maxDeepResultBytes
+                Write-Host "Imported $($importResult.CopiedFiles) bounded deep UI result file(s) ($($importResult.CopiedBytes) bytes)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]Deep UI test artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import bounded deep UI test results'
+            continueOnError: true
+
+          # Import only the expected bounded regular file. The analysis artifact
+          # is prompt-controlled data and must never overwrite trusted scripts or
+          # introduce executable content into the checkout.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $source = Join-Path "$(Pipeline.Workspace)" "uifail-analysis/uifail-analysis.md"
+              $destination = Join-Path "$(Agent.TempDirectory)" "uifail-analysis.md"
+              Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $source)) {
+                Write-Host "No UI failure analysis artifact was produced."
+                exit 0
+              }
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              try {
+                $copyResult = Copy-BoundedDiagnosticFile -Source $source -Destination $destination -MaxBytes 256KB
+                Write-Host "Imported bounded UI failure analysis ($($copyResult.CopiedBytes) bytes)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]UI failure analysis artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import bounded UI failure analysis'
+            continueOnError: true
+
+          # CopilotLogs is prompt-influenced cross-job data. Resolve only the
+          # canonical PRAgent tree for this PR and import it through regular-file
+          # count/size bounds before the credentialed posting task starts.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $artifactRoot = Join-Path "$(Pipeline.Workspace)" "CopilotLogs"
+              $destination = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+              if (-not (Test-Path -LiteralPath $artifactRoot -PathType Container)) {
+                Write-Host "No CopilotLogs artifact was produced."
+                exit 0
+              }
+
+              . ".github/scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              . ".github/scripts/shared/Import-ExpectedPRAgentArtifact.ps1"
+              try {
+                $truncatedArtifactExtensions = @('.log', '.patch', '.diff')
+                $importResult = Import-ExpectedPRAgentArtifact `
+                  -ArtifactRoot $artifactRoot `
+                  -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                  -DestinationDirectory $destination `
+                  -MaxFileCount 2048 `
+                  -MaxDirectoryCount 1024 `
+                  -MaxFileBytes 16MB `
+                  -MaxTotalBytes 128MB `
+                  -TruncateOversizedFileExtensions $truncatedArtifactExtensions
+                Write-Host "Imported canonical PRAgent artifact: $($importResult.CopiedFiles) file(s), $($importResult.CopiedBytes) bytes, $($importResult.TruncatedFiles) truncated diagnostic artifact(s)."
+              } catch {
+                Remove-Item -LiteralPath $destination -Recurse -Force -ErrorAction SilentlyContinue
+                Write-Host "##[warning]PRAgent artifact was rejected: $($_.Exception.Message)"
+              }
+            displayName: 'Import canonical bounded PRAgent artifact'
+            continueOnError: true
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           - pwsh: |
               # DO NOT add AzDO compile-time template expressions (the double-curly
@@ -4797,8 +5589,22 @@ stages:
                 throw "Required GitHub retry helper not found: $ghRetryHelper"
               }
               . $ghRetryHelper
-              $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
-              $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
+              $artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"
+              $prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"
+              $deepStageResult = "$env:DEEP_STAGE_RESULT"
+              $deepRunStatusFile = Join-Path $artDir 'deep-run-status.txt'
+              $deepRunStatus = if (Test-Path -LiteralPath $deepRunStatusFile -PathType Leaf) {
+                Get-Content -LiteralPath $deepRunStatusFile -Raw -ErrorAction SilentlyContinue
+              } else { '' }
+              $deepJobBudgetTimedOut = $deepRunStatus -match '(?im)^Result=TIMEOUT\s*$' -and
+                $deepRunStatus -match '(?im)^Reason=OuterJobBudget\s*$'
+              $deepStageCanceled = $deepStageResult -eq 'Canceled'
+              $deepRunInterrupted = $deepJobBudgetTimedOut -or $deepStageCanceled
+              $deepInterruptionNote = if ($deepJobBudgetTimedOut) {
+                "The deep run reached the remaining outer-job budget and stopped before all categories could start; partial results were preserved and the omitted categories need a rerun."
+              } elseif ($deepStageCanceled) {
+                "The deep job was canceled before normal publication (for example, by the outer 360-minute job cap); results may be incomplete and the deep run needs a rerun."
+              } else { '' }
               $prNumber = "$env:PARAM_PR_NUMBER"
               $reviewRepository = [string]$env:PARAM_REVIEW_REPOSITORY
               if ($reviewRepository -notmatch '^(?<owner>[A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))/(?<name>[A-Za-z0-9._-]+)$') {
@@ -4818,8 +5624,9 @@ stages:
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
               Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
+              Write-Host "  deepStageResult: '$deepStageResult'"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
-              Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
+              Write-Host "  bounded PRAgent exists: $(Test-Path $prAgentImportDir)"
               if (Test-Path $artDir) {
                 $trxCount = @(Get-ChildItem -Path $artDir -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue).Count
                 Write-Host "  TRX files in artDir: $trxCount"
@@ -4832,7 +5639,7 @@ stages:
                 # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
                 # a degraded review with test results only.
-                if (Test-Path $artDir) {
+                if ((Test-Path $artDir) -or $deepRunInterrupted) {
                   Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
                   $reviewId = 'DEFERRED'
                   $isDeferred = $true
@@ -4841,38 +5648,6 @@ stages:
                   exit 0
                 }
               }
-
-              # ── One-time diagnostic: does the persisted checkout PAT (and every
-              # other pipeline credential) have Contents:write on the asset repo?
-              # Runs UNCONDITIONALLY (even when there are no snapshot diffs) so ANY
-              # build's Post log confirms the write-token matrix without needing a
-              # diff-producing run. Read-only (probes repos/{repo}.permissions.push);
-              # NEVER echoes a token value (rule 8) — only the candidate NAME + a
-              # boolean. Restores GH_TOKEN afterwards so review posting is unaffected.
-              try {
-                $diagReviewTok = $env:GH_TOKEN
-                $diagRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
-                $diagCheckout = $null
-                try {
-                  foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                    if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $diagCheckout = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
-                    elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $diagCheckout = $matches[1]; break }
-                  }
-                } catch { $diagCheckout = $null }
-                $diagCand = New-Object System.Collections.Generic.List[object]
-                if ($diagCheckout             -and $diagCheckout             -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $diagCheckout }) }
-                if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
-                if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
-                if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
-                if ($diagReviewTok            -and $diagReviewTok            -notmatch '^\$\(') { $diagCand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $diagReviewTok }) }
-                Write-Host ("[EMBED-DIAG] checkout PAT present={0}; probing {1} credential(s) for Contents:write on {2}" -f [bool]$diagCheckout, $diagCand.Count, $diagRepo)
-                foreach ($c in $diagCand) {
-                  $p = $false
-                  try { $env:GH_TOKEN = $c.t; $p = [bool]((gh api "repos/$diagRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $p = $false }
-                  Write-Host ("[EMBED-DIAG] · Contents:write probe {0}: push={1}" -f $c.n, $p)
-                }
-                $env:GH_TOKEN = $diagReviewTok
-              } catch { Write-Host "[EMBED-DIAG] probe failed: $($_.Exception.Message)" }
 
               # Aggregator returns @{ category -> @{ Total/Passed/Failed/.../Results } }
               # using the SAME shape the in-process STEP 3 renderer expects
@@ -4884,6 +5659,7 @@ stages:
               . .github/scripts/shared/Get-TrxResults.ps1
               . .github/scripts/shared/Get-CategoryFromArtifactName.ps1
               . .github/scripts/shared/Get-AggregatedTrxFromDirectory.ps1
+              . .github/scripts/shared/Get-EnvErrorPatterns.ps1
               $byCat = Get-AggregatedTrxFromDirectory -RootDir $artDir
 
               # Detect categories whose HostApp failed to COMPILE. A compile
@@ -4924,15 +5700,19 @@ stages:
                       #      (e.g. "did not recover after crash-recovery attempts"),
                       #      each attempt burned its whole slice, and the last one
                       #      hit the deadline — raising the budget just lets it spin
-                      #      longer. Distinguish via EnvErrorHistory: if ANY attempt
-                      #      failed with a non-'timeout' env error, it is crash-driven
-                      #      (observed on PR #36521's Brush: 2 crash-recovery failures
-                      #      then a final timeout, exit 124).
+                      #      longer. Distinguish via EnvErrorHistory, but only when a
+                      #      prior attempt matched a verified app-crash/startup signature.
+                      #      General infrastructure history (install, connectivity, etc.)
+                      #      followed by timeout remains a genuine timeout.
                       $histLine = ''
                       $hm = [regex]::Match($statusText, '(?im)^EnvErrorHistory=(.*)$')
                       if ($hm.Success) { $histLine = $hm.Groups[1].Value.Trim() }
-                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne 'timeout' })
-                      if ($histTokens.Count -gt 0) { $crashTimedOutCats += $cat } else { $timedOutCats += $cat }
+                      $histTokens = @($histLine -split '\s*\|\s*' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                      if (Test-EnvErrorHistoryHasVerifiedCrashStartup -EnvErrorHistory $histTokens) {
+                        $crashTimedOutCats += $cat
+                      } else {
+                        $timedOutCats += $cat
+                      }
                       continue
                     }
                   }
@@ -5022,12 +5802,10 @@ stages:
                 $bfList = '`' + ($buildFailedCats -join '`, `') + '`'
                 $bfCatText = if ($buildFailedCats.Count -eq 1) { "1 category ($bfList)" } else { "$($buildFailedCats.Count) categories ($bfList)" }
                 $bfErr = if ($buildFailedSampleError) { " The compiler reported: ``$buildFailedSampleError``." } else { '' }
-                # DEFINITIVELY classify the break instead of hedging with "this
-                # may be either". A PublicAPI/analyzer (RS####) or syntax (CS####)
-                # error fires in the file that declares it, which the PR modifies —
-                # so if the failing file is part of THIS PR's diff it is the PR's
-                # break; if it is not in the diff at all, the break is in base code
-                # this PR never touched. Show the file so the reasoning is visible.
+                # A diagnostic in a changed file is strong evidence of a PR break.
+                # The converse is not true: an API/signature change can surface the
+                # compiler error in an unchanged consumer. Without a base build,
+                # report that case as undetermined rather than blaming the base.
                 $bfClass = ''
                 $prFilesForClass = @()
                 try { $prFilesForClass = @(gh api "repos/$reviewRepository/pulls/$prNumber/files" --paginate --jq '.[].filename' 2>$null) } catch { $prFilesForClass = @() }
@@ -5036,7 +5814,7 @@ stages:
                   if ($hit) {
                     $bfClass = " This is a compile error **introduced by this PR** — ``$hit`` is one of the files this PR changes. Fix the build error, then re-comment ``/review`` to run the deep tests."
                   } else {
-                    $bfClass = " This is a **base-branch build break** — the failing file (``$buildFailedSampleFile``) is not part of this PR. Verify ``main`` builds green, then re-comment ``/review``."
+                    $bfClass = " The cause is **undetermined**: the diagnostic is reported in unchanged file ``$buildFailedSampleFile``, but a PR API/signature change can break an unchanged consumer. Compare the same build against the reviewed base before attributing it; inspect ``build-output.log``, then re-comment ``/review`` after the build issue is resolved."
                   }
                 }
                 if (-not $bfClass) {
@@ -5336,46 +6114,30 @@ stages:
                   if ($pngCount -gt 0 -and $renderRecs.Count -gt 0) {
                     # Git-object writes (blobs/trees/commits/refs) need Contents:write on
                     # the PUBLIC asset repo. GH_COMMENT_TOKEN (Contents:read) 404s and
-                    # COPILOT_TOKEN 403s. Rather than provision a NEW secret, probe every
-                    # credential the pipeline ALREADY exposes and use the first that can
-                    # actually write (repos/{repo}.permissions.push == true). The chosen
-                    # token only ever lives in $env:GH_TOKEN (gh reads it there) — never in
-                    # a URL/command line — and the review comment token is restored in the
-                    # finally so the review itself always posts as maui-bot. The
+                    # COPILOT_TOKEN 403s. Use the explicitly scoped SnapshotAssetToken;
+                    # the checkout service credential is never persisted or extracted.
+                    # The token only ever lives in $env:GH_TOKEN (gh reads it there) —
+                    # never in a URL/command line — and the review comment token is
+                    # restored before the review itself posts as maui-bot. The
                     # -notmatch '^\$\(' guard skips any unexpanded AzDO macro (a secret that
                     # was never provisioned) instead of authenticating with the literal.
                     $reviewTok = $env:GH_TOKEN
                     $assetRepo = if ($env:BUILD_REPOSITORY_NAME) { $env:BUILD_REPOSITORY_NAME } else { 'dotnet/maui' }
-                    # The BEST credential is the one the pipeline ALREADY has AND that
-                    # already has Contents:write: the GitHub service-connection PAT the
-                    # checkout persists into .git/config (persistCredentials:true on this
-                    # trusted-only job). Extract it so NO new token is needed. The probe
-                    # below still validates it (permissions.push) before use, so a config
-                    # format change just falls through to the next candidate — never a bad
-                    # auth. NEVER echo $checkoutTok or the raw extraheader line (rule 8).
-                    $checkoutTok = $null
-                    try {
-                      foreach ($ln in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                        if ($ln -match '(?i)AUTHORIZATION:\s*basic\s+(\S+)') { $checkoutTok = ([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($matches[1])) -split ':', 2)[-1]; break }
-                        elseif ($ln -match '(?i)AUTHORIZATION:\s*bearer\s+(\S+)') { $checkoutTok = $matches[1]; break }
-                      }
-                    } catch { $checkoutTok = $null }
-                    $cand = New-Object System.Collections.Generic.List[object]
-                    if ($checkoutTok              -and $checkoutTok              -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'CHECKOUT_PAT';      t = $checkoutTok }) }
-                    if ($env:ASSET_WRITE_TOKEN    -and $env:ASSET_WRITE_TOKEN    -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'ASSET_WRITE_TOKEN'; t = $env:ASSET_WRITE_TOKEN }) }
-                    if ($env:EMBED_TOKEN_DISPATCH -and $env:EMBED_TOKEN_DISPATCH -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'DISPATCH_TOKEN';    t = $env:EMBED_TOKEN_DISPATCH }) }
-                    if ($env:EMBED_TOKEN_COPILOT  -and $env:EMBED_TOKEN_COPILOT  -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'COPILOT_TOKEN';     t = $env:EMBED_TOKEN_COPILOT }) }
-                    if ($reviewTok                -and $reviewTok                -notmatch '^\$\(') { $cand.Add([pscustomobject]@{ n = 'GH_COMMENT_TOKEN';  t = $reviewTok }) }
-                    $writeTok = $null; $writeName = $null
-                    foreach ($c in $cand) {
+                    $writeTok = $null
+                    if ($env:ASSET_WRITE_TOKEN -and $env:ASSET_WRITE_TOKEN -notmatch '^\$\(') {
                       $push = $false
-                      try { $env:GH_TOKEN = $c.t; $push = [bool]((gh api "repos/$assetRepo" 2>$null | ConvertFrom-Json).permissions.push) } catch { $push = $false }
-                      Write-Host ("  · Contents:write probe {0}: push={1}" -f $c.n, $push)
-                      if ($push) { $writeTok = $c.t; $writeName = $c.n; break }
+                      try {
+                        $env:GH_TOKEN = $env:ASSET_WRITE_TOKEN
+                        $push = [bool]((gh api "repos/$assetRepo" 2>$null | ConvertFrom-Json).permissions.push)
+                      } catch {
+                        $push = $false
+                      } finally {
+                        $env:GH_TOKEN = $reviewTok
+                      }
+                      if ($push) { $writeTok = $env:ASSET_WRITE_TOKEN }
                     }
-                    $env:GH_TOKEN = $reviewTok
-                    if (-not $writeTok) { throw ("no pipeline credential has Contents:write on {0} (probed: {1})" -f $assetRepo, (($cand | ForEach-Object { $_.n }) -join ', ')) }
-                    Write-Host ("Hosting snapshot diffs on {0} using {1} (Contents:write confirmed)" -f $assetRepo, $writeName)
+                    if (-not $writeTok) { throw "No configured snapshot publication credential has Contents:write on $assetRepo." }
+                    Write-Host "Snapshot asset publication credential verified."
                     $env:GH_TOKEN = $writeTok
                     try {
                     # 1) resolve the shared asset repo + branch. Public repo =>
@@ -5786,13 +6548,16 @@ stages:
                 # crash note so a missing category is never silently dropped.
                 $headerLine = "$headerLine " + $crashedNote
               }
+              if ($deepRunInterrupted) {
+                $headerLine = "$headerLine $deepInterruptionNote"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
               $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + $sb.ToString() + "$endMarker"
               } # end if ($byCat.Count -gt 0)
 
-              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0)) {
+              if ((-not $byCat -or $byCat.Count -eq 0) -and ($buildFailedCats.Count -gt 0 -or $timedOutCats.Count -gt 0 -or $crashTimedOutCats.Count -gt 0 -or $crashedCats.Count -gt 0 -or $xcodeMismatchCats.Count -gt 0 -or $deepRunInterrupted)) {
                 # No TRX anywhere (nothing produced results), but we DID detect
                 # compile failures, timeouts, app-crash (built-OK-but-no-TRX)
                 # runs, and/or an MT0180 Xcode/SDK mismatch. Render an honest deep
@@ -5805,6 +6570,7 @@ stages:
                 if ($timedOutCats.Count -gt 0) { $noteParts += $timedOutNote }
                 if ($crashTimedOutCats.Count -gt 0) { $noteParts += $crashTimedOutNote }
                 if ($crashedCats.Count -gt 0) { $noteParts += $crashedNote }
+                if ($deepRunInterrupted) { $noteParts += $deepInterruptionNote }
                 $headerLine  = "⚠️ **Deep UI tests** — " + ($noteParts -join ' ')
                 $deepBlock   = "$beginMarker" + [Environment]::NewLine + "$headerLine" + [Environment]::NewLine + "$endMarker"
               }
@@ -5818,8 +6584,13 @@ stages:
 
               if ($isDeferred) {
                 # ── DEFERRED MODE (first run): Post full review ──
-                # Find the PRAgent content dir from CopilotLogs artifact
-                $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
+                # The prior tokenless import accepted only this PR's unique,
+                # canonical, bounded regular-file tree.
+                $prAgentDir = if (Test-Path -LiteralPath $prAgentImportDir -PathType Container) {
+                  Get-Item -LiteralPath $prAgentImportDir
+                } else {
+                  $null
+                }
                 if (-not $prAgentDir) {
                   # The gate/review agent left no PRAgent content on this run (e.g. the
                   # Review stage failed before the agent uploaded its logs), so there is
@@ -6081,16 +6852,11 @@ stages:
               # copilot-review-tests GHA workflow already uses to write that branch.
               # Until it exists this macro is unexpanded and the embed skips cleanly.
               ASSET_WRITE_TOKEN: $(SnapshotAssetToken)
-              # Extra existing-secret candidates the embed probes for Contents:write on
-              # the public asset repo — NO new token is provisioned; whichever pipeline
-              # secret already has push wins. VIGILANT_GUIDE_DISPATCH_TOKEN and
-              # COPILOT_TOKEN are the only other GitHub credentials this pipeline exposes.
-              EMBED_TOKEN_DISPATCH: $(VIGILANT_GUIDE_DISPATCH_TOKEN)
-              EMBED_TOKEN_COPILOT: $(COPILOT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
               BUILD_BUILDID: $(Build.BuildId)
+              DEEP_STAGE_RESULT: $(deepStageResult)
 
 
   - stage: CleanupReviewLock

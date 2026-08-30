@@ -472,3 +472,119 @@ Describe 'The top level claims only the arms that ran' {
         ($summary -join "`n") | Should -Match 'not a full regression oracle'
     }
 }
+
+Describe 'A certification level is bound to the inputs it was earned on' {
+    BeforeAll {
+        . (Join-Path $PSScriptRoot '..' 'shared' 'Assert-ReplicationCertificationBinding.ps1')
+    }
+
+    It 'still grades on exactly the four causal arms and nothing else' {
+        # The binding says what a grade was computed over. It must not become a
+        # fifth arm: a run that failed the negative control is not rescued by a
+        # matching digest, and one that passed all four is not promoted by it.
+        $levels = @(Get-ReplicationCertificationLevels)
+        $levels | Should -Be @(
+            'runtime-blocked',
+            'candidate-scenario',
+            'observed-reproduction',
+            'trigger-certified',
+            'certified-oracle')
+
+        $certification = Get-ReplicationCertification -Evidence (New-Evidence @{
+                negativeControlRuns   = 3
+                negativeControlPasses = 3
+                fixControlRuns        = 3
+                fixControlPasses      = 3
+                restorationRuns       = 3
+                restorationFailures   = 3
+            })
+        $certification.Level | Should -Be 'certified-oracle'
+        @($certification.Controls.Keys | Sort-Object) |
+            Should -Be @('Baseline', 'Fix', 'Negative', 'Restoration')
+
+        # No binding-specific field is consulted anywhere in the grader. The
+        # generic names ('platform', 'evidence', 'digest') are excluded because
+        # they are ordinary English in a file full of prose; the ones listed
+        # here are the ones that would mean the grader started reading the
+        # binding.
+        $source = Get-Content -LiteralPath $script:ModulePath -Raw
+        foreach ($name in @(
+            'trustedSourceVersion',
+            'trustedTreeHash',
+            'pipelineSha256',
+            'replicationBaseSha',
+            'executionHeadSha',
+            'testPatchSha256',
+            'fixPatchSha256',
+            'trustedScripts')) {
+            (Get-ReplicationBindingFields) | Should -Contain $name
+            $source | Should -Not -Match ([regex]::Escape($name))
+        }
+    }
+
+    It 'names every immutable input a published grade rests on' {
+        # A field silently dropped from this list is an input the publisher
+        # stops checking, and nothing else would notice.
+        @(Get-ReplicationBindingFields) | Should -Be @(
+            'schemaVersion',
+            'issueNumber',
+            'platform',
+            'trustedSourceVersion',
+            'trustedTreeHash',
+            'pipelineSha256',
+            'replicationBaseSha',
+            'executionHeadSha',
+            'testPatchSha256',
+            'fixPatchSha256',
+            'selector',
+            'trustedScripts',
+            'evidence',
+            'digest')
+    }
+
+    It 'covers every artifact a grade is read from' {
+        $evidenceNames = @(Get-ReplicationBindingEvidenceNames)
+        foreach ($required in @(
+            'candidate.json',
+            'test.patch',
+            'fix.patch',
+            'evidence/evidence.json',
+            'evidence/repro.mp4',
+            'verification/verification-result.json',
+            'reproduction-result.json')) {
+            $evidenceNames | Should -Contain $required
+        }
+    }
+
+    It 'refuses a grade whose evidence document was swapped underneath it' {
+        # The concrete attack: keep the certified manifest, replace the
+        # verification result the grade was derived from.
+        $root = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $root 'verification') -Force | Out-Null
+        try {
+            Set-Content -LiteralPath (Join-Path $root 'candidate.json') `
+                -Value '{"status":"reproduced"}' -Encoding utf8NoBOM
+            Set-Content -LiteralPath (Join-Path $root 'verification/verification-result.json') `
+                -Value '{"baselineRuns":3,"baselineFailures":3}' -Encoding utf8NoBOM
+
+            $binding = New-ReplicationCertificationBinding `
+                -IssueNumber 12345 -Platform 'android' -ArtifactRoot $root `
+                -TrustedSourceVersion ('a' * 40) -TrustedTreeHash ('d' * 64) `
+                -PipelineSha256 ('e' * 64) -ReplicationBaseSha ('b' * 40) `
+                -ExecutionHeadSha ('c' * 40) `
+                -TrustedScripts ([ordered]@{ 'scripts/Replicate-Issue.ps1' = ('1' * 64) })
+
+            Set-Content -LiteralPath (Join-Path $root 'verification/verification-result.json') `
+                -Value '{"baselineRuns":3,"baselineFailures":3,"negativeControlPasses":3}' `
+                -Encoding utf8NoBOM
+
+            {
+                Assert-ReplicationCertificationBinding `
+                    -Binding $binding -ArtifactRoot $root `
+                    -TrustedSourceVersion ('a' * 40)
+            } | Should -Throw '*verification/verification-result.json*'
+        } finally {
+            Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}

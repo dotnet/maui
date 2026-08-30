@@ -236,10 +236,8 @@ function Invoke-BuildTasksWatchdog {
         foreach ($argument in @($DirectArgument)) {
             [void]$psi.ArgumentList.Add($argument)
         }
-        # Only stdout is redirected. stderr keeps the inherited console handle, so
-        # there is no second pipe to drain and therefore no way to deadlock on a
-        # full buffer while this thread is blocked reading the first.
         $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
     } else {
         $psi.FileName = $ShellPath
         foreach ($argument in @('-o', 'pipefail', '-c', $ShellCommand)) {
@@ -251,8 +249,13 @@ function Invoke-BuildTasksWatchdog {
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
 
     if ($filterInProcess) {
-        $reader = $process.StandardOutput
-        while ($true) {
+        # Start both reads before waiting on either one. Reading the streams
+        # sequentially can deadlock when the child fills the other pipe.
+        $stdoutComplete = $false
+        $stderrComplete = $false
+        $stdoutRead = $process.StandardOutput.ReadLineAsync()
+        $stderrRead = $process.StandardError.ReadLineAsync()
+        while (-not ($stdoutComplete -and $stderrComplete)) {
             $remainingMs = [int][Math]::Max(0, [Math]::Min(
                     [int]::MaxValue,
                     ($deadline - [DateTime]::UtcNow).TotalMilliseconds))
@@ -260,16 +263,34 @@ function Invoke-BuildTasksWatchdog {
                 return (Stop-BuildTasksProcessTree -Process $process -TimeoutMinutes $TimeoutMinutes)
             }
 
-            $read = $reader.ReadLineAsync()
-            if (-not $read.Wait($remainingMs)) {
+            $activeReads = @()
+            if (-not $stdoutComplete) { $activeReads += [System.Threading.Tasks.Task]$stdoutRead }
+            if (-not $stderrComplete) { $activeReads += [System.Threading.Tasks.Task]$stderrRead }
+            $nextRead = [System.Threading.Tasks.Task]::WhenAny(
+                [System.Threading.Tasks.Task[]]$activeReads)
+            if (-not $nextRead.Wait($remainingMs)) {
                 return (Stop-BuildTasksProcessTree -Process $process -TimeoutMinutes $TimeoutMinutes)
             }
 
-            if ($null -eq $read.Result) {
-                break
+            if (-not $stdoutComplete -and $stdoutRead.IsCompleted) {
+                $line = $stdoutRead.GetAwaiter().GetResult()
+                if ($null -eq $line) {
+                    $stdoutComplete = $true
+                } else {
+                    Write-Host (Remove-VsoLoggingCommand -Line $line)
+                    $stdoutRead = $process.StandardOutput.ReadLineAsync()
+                }
             }
 
-            Write-Host (Remove-VsoLoggingCommand -Line $read.Result)
+            if (-not $stderrComplete -and $stderrRead.IsCompleted) {
+                $line = $stderrRead.GetAwaiter().GetResult()
+                if ($null -eq $line) {
+                    $stderrComplete = $true
+                } else {
+                    Write-Host (Remove-VsoLoggingCommand -Line $line)
+                    $stderrRead = $process.StandardError.ReadLineAsync()
+                }
+            }
         }
     }
 
@@ -307,4 +328,3 @@ function Stop-BuildTasksProcessTree {
     Start-Sleep -Seconds 3
     return 124
 }
-

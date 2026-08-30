@@ -7,40 +7,44 @@
 # from the flaky-retry set (retrying them wastes a full re-run and can exhaust
 # the deep category time budget on snapshot-heavy PRs).
 #
-# The retry logic is embedded in a large script rather than a callable function,
-# so these tests exercise the exact classification predicate used there.
-
-Describe 'Android flaky-retry new-baseline exclusion' {
-    BeforeAll {
-        $script:BaselineRegex = '(?i)Baseline snapshot not yet created'
-
-        # Mirrors the predicate in BuildAndRunHostApp.ps1: given TRX-style
-        # results ({ status; name; error }), return the names to retry
-        # (Failed and NOT a new-baseline failure).
-        function Get-RetryNames {
-            param([object[]]$Results)
-            $failed = @($Results | Where-Object { $_.status -eq 'Failed' })
-            @($failed |
-                Where-Object { ($_.error -as [string]) -notmatch $script:BaselineRegex } |
-                ForEach-Object { $_.name })
-        }
-
-        function Get-BaselineCount {
-            param([object[]]$Results)
-            @($Results | Where-Object {
-                $_.status -eq 'Failed' -and (($_.error -as [string]) -match $script:BaselineRegex)
-            }).Count
-        }
+BeforeAll {
+    $script:HostAppScriptPath = Join-Path $PSScriptRoot 'BuildAndRunHostApp.ps1'
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:HostAppScriptPath,
+        [ref]$tokens,
+        [ref]$parseErrors)
+    if ($parseErrors -and $parseErrors.Count -gt 0) {
+        throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
+    $classificationFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AndroidRetryClassification'
+    }, $true)
+    if (-not $classificationFunction) {
+        throw "Function 'Get-AndroidRetryClassification' not found"
+    }
+    Invoke-Expression $classificationFunction.Extent.Text
+}
+
+Describe 'Android flaky-retry new-baseline exclusion' {
     It 'excludes baseline-not-created failures from the retry set' {
         $results = @(
             [pscustomobject]@{ status='Failed'; name='SearchBar_Material3_A'; error='Baseline snapshot not yet created: /snapshots/android/SearchBar_A.png' }
             [pscustomobject]@{ status='Failed'; name='SearchBar_Material3_B'; error='Baseline snapshot not yet created: /snapshots/android/SearchBar_B.png' }
             [pscustomobject]@{ status='Passed'; name='Switch_C'; error='' }
         )
-        (Get-RetryNames -Results $results).Count | Should -Be 0
-        Get-BaselineCount -Results $results | Should -Be 2
+        $classification = Get-AndroidRetryClassification -TestRun ([pscustomobject]@{
+            Failed = 2
+            Passed = 1
+            Results = $results
+        })
+
+        $classification.IsMixedRun | Should -BeTrue
+        $classification.RetryNames.Count | Should -Be 0
+        $classification.BaselineFailures.Count | Should -Be 2
     }
 
     It 'keeps genuine (non-baseline) flaky failures in the retry set' {
@@ -49,26 +53,58 @@ Describe 'Android flaky-retry new-baseline exclusion' {
             [pscustomobject]@{ status='Failed'; name='New_Snapshot'; error='Baseline snapshot not yet created: /snapshots/android/New.png' }
             [pscustomobject]@{ status='Passed'; name='Ok_Test'; error='' }
         )
-        $retry = Get-RetryNames -Results $results
-        $retry | Should -Contain 'Flaky_Timeout'
-        $retry | Should -Not -Contain 'New_Snapshot'
-        $retry.Count | Should -Be 1
-        Get-BaselineCount -Results $results | Should -Be 1
+        $classification = Get-AndroidRetryClassification -TestRun ([pscustomobject]@{
+            Failed = 2
+            Passed = 1
+            Results = $results
+        })
+
+        $classification.RetryNames | Should -Contain 'Flaky_Timeout'
+        $classification.RetryNames | Should -Not -Contain 'New_Snapshot'
+        $classification.RetryNames.Count | Should -Be 1
+        $classification.BaselineFailures.Count | Should -Be 1
     }
 
     It 'is case-insensitive on the baseline signature' {
         $results = @(
             [pscustomobject]@{ status='Failed'; name='X'; error='BASELINE SNAPSHOT NOT YET CREATED: /p.png' }
         )
-        (Get-RetryNames -Results $results).Count | Should -Be 0
-        Get-BaselineCount -Results $results | Should -Be 1
+        $classification = Get-AndroidRetryClassification -TestRun ([pscustomobject]@{
+            Failed = 1
+            Passed = 1
+            Results = $results
+        })
+
+        $classification.RetryNames.Count | Should -Be 0
+        $classification.BaselineFailures.Count | Should -Be 1
     }
 
     It 'treats null/empty error as a retryable (non-baseline) failure' {
         $results = @(
             [pscustomobject]@{ status='Failed'; name='NoErrText'; error=$null }
         )
-        (Get-RetryNames -Results $results) | Should -Contain 'NoErrText'
+        $classification = Get-AndroidRetryClassification -TestRun ([pscustomobject]@{
+            Failed = 1
+            Passed = 1
+            Results = $results
+        })
+
+        $classification.RetryNames | Should -Contain 'NoErrText'
+    }
+
+    It 'does not retry when the first run has no passing tests' {
+        $results = @(
+            [pscustomobject]@{ status='Failed'; name='Flaky_Timeout'; error='System.TimeoutException' }
+        )
+        $classification = Get-AndroidRetryClassification -TestRun ([pscustomobject]@{
+            Failed = 1
+            Passed = 0
+            Results = $results
+        })
+
+        $classification.IsMixedRun | Should -BeFalse
+        $classification.RetryNames.Count | Should -Be 0
+        $classification.BaselineFailures.Count | Should -Be 0
     }
 }
 
@@ -111,6 +147,8 @@ Describe 'MacCatalyst Retina screenshot cropping' {
         $uiTestPath = Join-Path $PSScriptRoot '..' '..' 'src' 'Controls' 'tests' 'TestCases.Shared.Tests' 'UITest.cs'
         $script:UiTestContent = Get-Content $uiTestPath -Raw
         $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..' '..')).Path
+        $script:CatalystPatchPath = Join-Path $script:RepoRoot '.github/patches/catalyst-retina-screenshot.patch'
+        $script:CatalystPatchContent = Get-Content $script:CatalystPatchPath -Raw
     }
 
     It 'maps logical Appium window bounds to physical screenshot pixels' {
@@ -133,14 +171,22 @@ Describe 'MacCatalyst Retina screenshot cropping' {
     }
 
     It 'keeps the trusted post-merge source patch synchronized with the harness' {
-        $patchPath = Join-Path $script:RepoRoot '.github/patches/catalyst-retina-screenshot.patch'
         Push-Location $script:RepoRoot
         try {
-            git apply --reverse --check --whitespace=nowarn -- $patchPath
+            git apply --reverse --check --whitespace=nowarn -- $script:CatalystPatchPath
             $LASTEXITCODE | Should -Be 0
         } finally {
             Pop-Location
         }
+    }
+
+    It 'keeps guarded CoreGraphics fallback handling in the trusted patch' {
+        $script:CatalystPatchContent | Should -Match '(?s)\+#if MACUITEST\s+\+using System\.Runtime\.InteropServices;\s+\+#endif'
+        foreach ($exceptionType in @('DllNotFoundException', 'EntryPointNotFoundException', 'BadImageFormatException')) {
+            $script:UiTestContent | Should -Match "catch \($exceptionType ex\)"
+            $script:CatalystPatchContent | Should -Match "\+.*catch \($exceptionType ex\)"
+        }
+        $script:CatalystPatchContent | Should -Not -Match '\+\s*var displayBounds = CGDisplayBounds'
     }
 }
 

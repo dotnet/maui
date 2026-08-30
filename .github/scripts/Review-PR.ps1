@@ -172,6 +172,27 @@ function Test-PhaseRequiresReviewWorktree {
     return $PhaseName -in @('Gate', 'CopilotReview')
 }
 
+function Resolve-UITestCategoryRefresh {
+    param(
+        [string]$GateCategories,
+        [string]$RefreshedCategories
+    )
+
+    $gate = $GateCategories.Trim()
+    $refreshed = $RefreshedCategories.Trim()
+    if ($refreshed -eq 'NONE') {
+        return 'NONE'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($refreshed) -and $refreshed -ne 'ALL') {
+        return $refreshed
+    }
+    if (-not [string]::IsNullOrWhiteSpace($gate) -and $gate -notin @('ALL', 'NONE')) {
+        return $gate
+    }
+
+    return 'ALL'
+}
+
 function Get-GateReportRetryClass {
     param([string]$ReportContent)
 
@@ -197,6 +218,32 @@ function Test-GateReportIsRetryableEnvironmentError {
         return $false
     }
     return $ReportContent -match 'ENV ERROR'
+}
+
+function Get-GateRetryBudgetMinutes {
+    param(
+        [double]$TaskTimeoutMinutes,
+        [double]$CleanupMarginMinutes
+    )
+
+    if ($TaskTimeoutMinutes -le 0) {
+        throw 'Gate task timeout must be greater than zero.'
+    }
+    if ($CleanupMarginMinutes -lt 0) {
+        throw 'Gate retry cleanup margin cannot be negative.'
+    }
+
+    return [Math]::Max(0, $TaskTimeoutMinutes - $CleanupMarginMinutes)
+}
+
+function Test-GateRetryFitsBudget {
+    param(
+        [double]$ElapsedMinutes,
+        [double]$AverageAttemptMinutes,
+        [double]$RetryBudgetMinutes
+    )
+
+    return (($ElapsedMinutes + $AverageAttemptMinutes) -lt $RetryBudgetMinutes)
 }
 
 function Invoke-ReviewGitCommand {
@@ -2149,15 +2196,20 @@ $maxGateAttempts = 3
 $gateExitCode = 1
 $gateOutput = @()
 $gateLoopStart = Get-Date
-# Stop retrying env errors once another attempt would likely exceed this budget,
-# so a slow crashing gate emits a clean INCONCLUSIVE instead of being KILLED by
-# the RunGate task timeout (120m) mid-retry. A killed task never reaches the
-# `$gateExitCode = 3` assignment below, so the Post stage sees no gateResult (nor
-# the platform/category outputs) and renders Gate/Platform/Confidence as
-# "Unknown" (build 14664435, #35606: 3 outer retries of ~771s APP_CRASH device
-# tests, each with its own inner retries, blew past 120m -> task timed out ->
-# Unknown badges). Override via GATE_RETRY_BUDGET_MINUTES.
-$gateRetryBudgetMin = if ($env:GATE_RETRY_BUDGET_MINUTES) { [double]$env:GATE_RETRY_BUDGET_MINUTES } else { 95 }
+# The pipeline passes its actual RunGate task timeout from the SAME YAML variable
+# used by timeoutInMinutes. Derive the retry budget from that value while reserving
+# enough time for result serialization and task cleanup. A local run with no task
+# timeout stays bounded only by $maxGateAttempts. GATE_RETRY_BUDGET_MINUTES remains
+# an explicit override for diagnostics.
+$gateTaskTimeoutMin = if ($env:GATE_TASK_TIMEOUT_MINUTES) { [double]$env:GATE_TASK_TIMEOUT_MINUTES } else { 0 }
+$gateCleanupMarginMin = if ($env:GATE_RETRY_CLEANUP_MARGIN_MINUTES) { [double]$env:GATE_RETRY_CLEANUP_MARGIN_MINUTES } else { 10 }
+$gateRetryBudgetMin = if ($env:GATE_RETRY_BUDGET_MINUTES) {
+    [double]$env:GATE_RETRY_BUDGET_MINUTES
+} elseif ($gateTaskTimeoutMin -gt 0) {
+    Get-GateRetryBudgetMinutes -TaskTimeoutMinutes $gateTaskTimeoutMin -CleanupMarginMinutes $gateCleanupMarginMin
+} else {
+    [double]::PositiveInfinity
+}
 # Path is fixed across attempts — define once, then clear per-iteration so a stale
 # report from attempt N-1 can't be misclassified as the current attempt's output.
 $gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
@@ -2250,13 +2302,13 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # Wall-clock budget guard (see $gateRetryBudgetMin above). Each attempt can be
     # very slow when device tests crash — XHarness APP_CRASH is only detected after
     # the per-test timeout and the device-test runner retries internally — so 3 full
-    # outer retries can exceed the 120m RunGate timeout and get the task KILLED
-    # before it can report INCONCLUSIVE (-> Unknown badges). If another attempt at
-    # the observed average pace would reach the budget, stop now and report a clean
-    # INCONCLUSIVE ($isEnvError stays true -> $gateExitCode = 3 below).
+    # outer retries can exceed the configured RunGate task timeout and get the task
+    # KILLED before it can report INCONCLUSIVE (-> Unknown badges). If another attempt
+    # at the observed average pace would consume the cleanup margin, stop now and
+    # report a clean INCONCLUSIVE ($isEnvError stays true -> $gateExitCode = 3 below).
     $gateElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
     $gateAvgMin = $gateElapsedMin / $gateAttempt
-    if (($gateElapsedMin + $gateAvgMin) -ge $gateRetryBudgetMin) {
+    if (-not (Test-GateRetryFitsBudget -ElapsedMinutes $gateElapsedMin -AverageAttemptMinutes $gateAvgMin -RetryBudgetMinutes $gateRetryBudgetMin)) {
         Write-Host ("  ⏱️ Gate retry budget reached ({0:N0}m elapsed, ~{1:N0}m/attempt, budget {2}m) — stopping retries and reporting INCONCLUSIVE rather than risking a task-timeout kill (which would drop gateResult and render the badges Unknown)." -f $gateElapsedMin, $gateAvgMin, $gateRetryBudgetMin) -ForegroundColor Yellow
         break
     }
@@ -2998,11 +3050,9 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
             # last resort when the gate itself found no specific categories.
             # (Observed on PR #36448: gate detected 'Material3,ViewBaseTests' but the
             # blank AI refresh downgraded it to 'ALL' -> deep stage skipped -> warning.)
-            $refreshedForOutput =
-                if ($refreshedCategories -eq 'NONE') { 'NONE' }
-                elseif (-not [string]::IsNullOrWhiteSpace($refreshedCategories) -and $refreshedCategories -ne 'ALL') { $refreshedCategories }
-                elseif (-not [string]::IsNullOrWhiteSpace($uitestCategories) -and $uitestCategories -notin @('ALL', 'NONE')) { $uitestCategories }
-                else { 'ALL' }
+            $refreshedForOutput = Resolve-UITestCategoryRefresh `
+                -GateCategories $uitestCategories `
+                -RefreshedCategories $refreshedCategories
             # Always emit so RunReview.detectedCategories is authoritative (the stage
             # coalesce prefers RunReview over RunGate); never leave a downgrade in place.
             Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"

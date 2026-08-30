@@ -107,25 +107,38 @@ if (-not $RepoRoot) {
     if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
 }
 
+$sharedUtils = Join-Path $PSScriptRoot 'shared-utils.ps1'
+if (-not (Test-Path -LiteralPath $sharedUtils -PathType Leaf)) {
+    throw "Shared UI-test utilities not found at $sharedUtils"
+}
+. $sharedUtils
+
 # ── Hard-timeout helpers (only used when -TimeoutMinutes > 0) ──────────────
-# Recursively terminate a process and all of its descendants. A hung
-# `dotnet build` / gradle / adb / java child is reparented (not killed) if we
-# only stop the parent pwsh, so we must walk the tree explicitly.
-function Stop-ProcessTree {
-    param([int]$ProcessId)
-    if ($ProcessId -le 0) { return }
+function Invoke-AndroidDiagnosticCommand {
+    param(
+        [string[]]$SerialArguments,
+        [Parameter(Mandatory = $true)][string[]]$CommandArguments,
+        [int]$TimeoutSeconds = 15
+    )
+
     try {
-        if ($IsWindows) {
-            Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId" -ErrorAction SilentlyContinue |
-                ForEach-Object { Stop-ProcessTree -ProcessId ([int]$_.ProcessId) }
-        } else {
-            $kids = & pgrep -P $ProcessId 2>$null
-            foreach ($k in $kids) {
-                if ($k -and ($k -as [int])) { Stop-ProcessTree -ProcessId ([int]$k) }
-            }
+        $result = Invoke-ProcessWithTimeout `
+            -FilePath 'adb' `
+            -ArgumentList @($SerialArguments + $CommandArguments) `
+            -TimeoutSeconds $TimeoutSeconds
+        if ($result.TimedOut) {
+            Write-Host "  (adb $($CommandArguments -join ' ') exceeded ${TimeoutSeconds}s and was killed)"
         }
-    } catch { }
-    try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch { }
+        return $result
+    }
+    catch {
+        Write-Host "  (adb $($CommandArguments -join ' ') failed: $_)"
+        return [pscustomobject]@{
+            Output = @()
+            ExitCode = -1
+            TimedOut = $false
+        }
+    }
 }
 
 # Best-effort on-device diagnostics for a HUNG Android deep run. When the
@@ -140,34 +153,68 @@ function Stop-ProcessTree {
 # already ships in the drop-deep-uitests artifact (android-device.log, *.png,
 # *.xml).
 function Save-AndroidHangDiagnostics {
-    param([string]$RepoRoot)
+    param(
+        [string]$RepoRoot,
+        [int]$Attempt,
+        [int]$CommandTimeoutSeconds = 15
+    )
+
     try {
         if (-not (Get-Command adb -ErrorAction SilentlyContinue)) { return }
         $serial = @()
         if ($env:DEVICE_UDID) { $serial = @('-s', $env:DEVICE_UDID) }
         # Only proceed if a device is actually online (keeps this a no-op off Android).
-        $state = (& adb @serial get-state 2>$null)
-        if ($LASTEXITCODE -ne 0 -or "$state".Trim() -ne 'device') { return }
+        $state = Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('get-state') `
+            -TimeoutSeconds $CommandTimeoutSeconds
+        if ($state.ExitCode -ne 0 -or (($state.Output -join '').Trim() -ne 'device')) { return }
         if (-not $RepoRoot) { $RepoRoot = (Get-Location).Path }
-        $diagDir = Join-Path $RepoRoot 'CustomAgentLogsTmp/UITests'
+        $diagDir = Join-Path $RepoRoot "CustomAgentLogsTmp/UITests/hang-diagnostics/attempt-$Attempt"
         New-Item -ItemType Directory -Force -Path $diagDir | Out-Null
-        Write-Host "  Capturing Android hang diagnostics (logcat/screenshot/ui-hierarchy) before kill…"
+        Write-Host "  Capturing bounded Android hang diagnostics for attempt $Attempt after process-tree termination…"
         # 1) logcat tail — android-device.log is in the loop's copy allowlist.
-        try { & adb @serial logcat -d -v time -t 5000 2>$null | Out-File (Join-Path $diagDir 'android-device.log') -Encoding utf8 } catch { }
+        $logcat = Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('logcat', '-d', '-v', 'time', '-t', '5000') `
+            -TimeoutSeconds $CommandTimeoutSeconds
+        if ($logcat.Output.Count -gt 0) {
+            $logcat.Output | Out-File (Join-Path $diagDir 'android-device.log') -Encoding utf8
+        }
         # 2) screenshot of the stuck screen — screencap to device then pull
         #    (avoids corrupting binary PNG bytes over a text stdout pipe).
-        try {
-            & adb @serial shell screencap -p /sdcard/hang-screenshot.png 2>$null | Out-Null
-            & adb @serial pull /sdcard/hang-screenshot.png (Join-Path $diagDir 'hang-screenshot.png') 2>$null | Out-Null
-            & adb @serial shell rm -f /sdcard/hang-screenshot.png 2>$null | Out-Null
-        } catch { }
+        $remoteScreenshot = "/sdcard/maui-hang-$PID-$Attempt.png"
+        $screenshot = Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('shell', 'screencap', '-p', $remoteScreenshot) `
+            -TimeoutSeconds $CommandTimeoutSeconds
+        if ($screenshot.ExitCode -eq 0) {
+            [void](Invoke-AndroidDiagnosticCommand `
+                -SerialArguments $serial `
+                -CommandArguments @('pull', $remoteScreenshot, (Join-Path $diagDir 'hang-screenshot.png')) `
+                -TimeoutSeconds $CommandTimeoutSeconds)
+        }
+        [void](Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('shell', 'rm', '-f', $remoteScreenshot) `
+            -TimeoutSeconds $CommandTimeoutSeconds)
         # 3) UI hierarchy — reveals whether an ANR dialog or a blank page (no
         #    GoToTestButton) is on screen at the moment of the hang.
-        try {
-            & adb @serial shell uiautomator dump /sdcard/hang-window.xml 2>$null | Out-Null
-            & adb @serial pull /sdcard/hang-window.xml (Join-Path $diagDir 'hang-window.xml') 2>$null | Out-Null
-            & adb @serial shell rm -f /sdcard/hang-window.xml 2>$null | Out-Null
-        } catch { }
+        $remoteHierarchy = "/sdcard/maui-hang-$PID-$Attempt.xml"
+        $hierarchy = Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('shell', 'uiautomator', 'dump', $remoteHierarchy) `
+            -TimeoutSeconds $CommandTimeoutSeconds
+        if ($hierarchy.ExitCode -eq 0) {
+            [void](Invoke-AndroidDiagnosticCommand `
+                -SerialArguments $serial `
+                -CommandArguments @('pull', $remoteHierarchy, (Join-Path $diagDir 'hang-window.xml')) `
+                -TimeoutSeconds $CommandTimeoutSeconds)
+        }
+        [void](Invoke-AndroidDiagnosticCommand `
+            -SerialArguments $serial `
+            -CommandArguments @('shell', 'rm', '-f', $remoteHierarchy) `
+            -TimeoutSeconds $CommandTimeoutSeconds)
     } catch {
         Write-Host "  (Android hang-diagnostic capture failed: $_)"
     }
@@ -238,7 +285,8 @@ function Invoke-BuildScriptBounded {
         # that reboot actually run (attempt 1 no longer consumes the entire budget)
         # and frees the remaining time for the next category. A healthy run emits
         # ZERO of these, so any run reaching the threshold is unambiguously wedged.
-        [int]       $CrashLoopAbortThreshold = 0
+        [int]       $CrashLoopAbortThreshold = 0,
+        [int]       $Attempt = 1
     )
     $pwshExe = try { (Get-Process -Id $PID).Path } catch { $null }
     if (-not $pwshExe) { $pwshExe = 'pwsh' }
@@ -368,8 +416,8 @@ function Invoke-BuildScriptBounded {
             } else {
                 Write-Host "##[warning]Hard timeout ($([int]($TimeoutSeconds/60)) min) reached — killing BuildAndRunHostApp process tree (pid $($proc.Id))" -ForegroundColor Yellow
             }
-            Save-AndroidHangDiagnostics -RepoRoot $RepoRoot
             Stop-ProcessTree -ProcessId $proc.Id
+            Save-AndroidHangDiagnostics -RepoRoot $RepoRoot -Attempt $Attempt
             for ($i = 0; $i -lt 8 -and -not $proc.HasExited; $i++) { Start-Sleep -Seconds 2 }
             if ($killReason -eq 'crashloop') {
                 # Leave $timedOut = $false so the caller runs its env-error scan over
@@ -495,6 +543,7 @@ $livenessPaths = @($uiLogsDir, (Join-Path $uiLogsDir 'TestResults'))
 
 for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     $attempts = $attempt
+    $recoveryVerified = $false
     # Record the PREVIOUS attempt's env-error before it is reset below, so the
     # caller sees the full ORDERED history (e.g. two "did not recover after
     # crash-recovery attempts" app-crashes followed by a final 'timeout') and
@@ -516,38 +565,35 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     if ($attempt -gt 1) {
         Write-Host "↻ Attempt $attempt/$MaxAttempts after environment error '$envHit'" -ForegroundColor Yellow
 
-        # Same recovery as Gate's Invoke-TestRunWithRetry
-        if ($Platform -eq 'android') {
-            try {
-                Write-Host "🔄 adb reboot to recover" -ForegroundColor Yellow
-                if ($bootedUdid) {
-                    & adb -s $bootedUdid reboot 2>$null | Out-Null
-                    & adb -s $bootedUdid wait-for-device 2>$null | Out-Null
-                } else {
-                    & adb reboot 2>$null | Out-Null
-                    & adb wait-for-device 2>$null | Out-Null
-                }
-            } catch {
-                Write-Host "(adb reboot failed: $_)" -ForegroundColor DarkGray
+        $recoveryBudgetSeconds = 180
+        if ($overallDeadline) {
+            $remainingForRecovery = [int]($overallDeadline - (Get-Date)).TotalSeconds - [Math]::Max(0, $RetryDelaySeconds)
+            if ($remainingForRecovery -le 0) {
+                Write-Host "##[warning]Category time budget exhausted before device recovery for attempt $attempt." -ForegroundColor Yellow
+                $envHit = 'timeout'
+                if ($lastExit -eq -1) { $lastExit = 124 }
+                break
             }
-        } elseif ($Platform -in @('ios','catalyst','maccatalyst')) {
-            $sim = $bootedUdid
-            if (-not $sim) {
-                try {
-                    $boot = & xcrun simctl list devices booted 2>$null | Select-String -Pattern '\(([0-9A-F-]{36})\)' | Select-Object -First 1
-                    if ($boot) { $sim = $boot.Matches.Groups[1].Value }
-                } catch { }
+            $recoveryBudgetSeconds = [Math]::Min($recoveryBudgetSeconds, $remainingForRecovery)
+        }
+
+        $resetScript = Join-Path $PSScriptRoot 'Reset-DeviceState.ps1'
+        if (Test-Path -LiteralPath $resetScript -PathType Leaf) {
+            $resetOutput = @(& $resetScript `
+                -Platform $Platform `
+                -DeviceUdid $bootedUdid `
+                -BootTimeoutSeconds $recoveryBudgetSeconds `
+                -PassThruStatus)
+            $recoveryVerified = (
+                $resetOutput.Count -eq 1 -and
+                $resetOutput[0] -is [bool] -and
+                $resetOutput[0]
+            )
+            if (-not $recoveryVerified) {
+                Write-Host "##[warning]Device recovery was not verified; preserving the remaining retry budget." -ForegroundColor Yellow
             }
-            if ($sim) {
-                try {
-                    Write-Host "🔄 simctl shutdown/boot $sim" -ForegroundColor Yellow
-                    & xcrun simctl shutdown $sim 2>$null | Out-Null
-                    Start-Sleep -Seconds 5
-                    & xcrun simctl boot $sim 2>$null | Out-Null
-                } catch {
-                    Write-Host "(simctl reboot failed: $_)" -ForegroundColor DarkGray
-                }
-            }
+        } else {
+            Write-Host "##[warning]Device recovery script is missing: $resetScript" -ForegroundColor Yellow
         }
         Start-Sleep -Seconds $RetryDelaySeconds
     }
@@ -561,7 +607,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
             $envHit = 'timeout'; $lastExit = 124
             break
         }
-        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec -LivenessPaths $livenessPaths -CrashLoopAbortThreshold 10
+        $bounded = Invoke-BuildScriptBounded -ScriptPath $buildScript -Params $baseParams -TimeoutSeconds $remainingSec -IdleTimeoutSeconds $idleTimeoutSec -LivenessPaths $livenessPaths -CrashLoopAbortThreshold 10 -Attempt $attempt
         $lastOutput = $bounded.Output
         $lastExit = $bounded.ExitCode
         if ($bounded.TimedOut) {
@@ -602,7 +648,7 @@ for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
     # rebuild/reinstall) settles it: if the SAME signature survives that clean-device
     # recovery, it is reproducible and must be reported as a real failure instead of
     # consuming the remaining retry budget and landing as INCONCLUSIVE.
-    if ($envHit -and ($ambiguousStartupPatterns -contains $envHit) -and ($envErrorHistory -contains $envHit)) {
+    if ($recoveryVerified -and $envHit -and ($ambiguousStartupPatterns -contains $envHit) -and ($envErrorHistory -contains $envHit)) {
         Write-Host "⚠️ Ambiguous startup failure '$envHit' recurred after device recovery — treating as a deterministic (PR-caused) failure, not infrastructure." -ForegroundColor Yellow
         # Keep the signature in the ordered history (the deep classifier uses it to tell a
         # crash-driven run from a plain slow one), but clear EnvErrorHit so the caller

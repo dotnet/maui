@@ -10,6 +10,8 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'post-ai-summary-comment.ps1'
+    . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
     $script:ScriptSource = Get-Content -Raw -LiteralPath $scriptPath
     $tokens = $null
     $parseErrors = $null
@@ -187,18 +189,36 @@ Describe 'Add-MissingUITestResultsNote' {
         $result | Should -Match 'Detected UI test categories'
     }
 
-    It 'uses the trusted non-failed gate result for infrastructure guidance' -TestCases @(
-        @{ GateResult = 'PASSED' }
-        @{ GateResult = 'SKIPPED' }
-        @{ GateResult = 'INCONCLUSIVE' }
-    ) {
-        param($GateResult)
-
+    It 'uses passed-gate infrastructure guidance only when the build was verified' {
         $result = Add-MissingUITestResultsNote `
             -Content '**Detected UI test categories:** `Picker`' `
-            -TrustedGateResult $GateResult
+            -TrustedGateResult 'PASSED'
 
         $result | Should -Match 'interrupted on \*\*infrastructure\*\*'
+        $result | Should -Match 'PR build itself was'
+        $result | Should -Match 'fine'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+    }
+
+    It 'does not claim build health when the trusted gate was skipped' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'SKIPPED'
+
+        $result | Should -Match 'skipped before build/test verification'
+        $result | Should -Match 'does not prove that the PR build is healthy'
+        $result | Should -Not -Match 'PR build itself was\s+fine'
+        $result | Should -Not -Match 'Fix the build/gate issues'
+    }
+
+    It 'does not claim build health when the trusted gate was inconclusive' {
+        $result = Add-MissingUITestResultsNote `
+            -Content '**Detected UI test categories:** `Picker`' `
+            -TrustedGateResult 'INCONCLUSIVE'
+
+        $result | Should -Match 'did not establish whether the PR build was healthy'
+        $result | Should -Match 'build, environment, or infrastructure interruption'
+        $result | Should -Not -Match 'PR build itself was\s+fine'
         $result | Should -Not -Match 'Fix the build/gate issues'
     }
 
@@ -358,11 +378,51 @@ The fix does not pass the tests.
         $result | Should -Not -Match 'fix does not pass'
     }
 
-    It 'preserves completed Gate content for non-timeout verdicts' {
+    It 'preserves completed Gate content for the trusted passed verdict' {
         $content = '### Gate Result: ✅ PASSED'
 
         Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'PASSED' |
             Should -Be $content
+    }
+
+    It 'preserves detailed non-pass content only when it agrees with the trusted verdict' {
+        $content = "### Gate Result: ❌ FAILED`n`nTargeted regression test failed."
+
+        Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED' |
+            Should -Be $content
+    }
+
+    It 'replaces a forged passed display when the trusted verdict failed' {
+        $content = "### Gate Result: ✅ PASSED`n`nAll tests passed."
+        $result = Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED'
+
+        $result | Should -Match 'Gate Result: ❌ FAILED'
+        $result | Should -Match 'trusted \*\*test-verification gate\*\* reported a failure'
+        $result | Should -Not -Match 'Gate Result: ✅ PASSED'
+        Get-GateStatus -GateContent $result | Should -Be 'Failed'
+    }
+
+    It 'replaces contradictory markers for a trusted non-pass verdict' {
+        $content = "### Gate Result: ❌ FAILED`n`nGate Result: ✅ PASSED"
+        $result = Get-AuthoritativeGateContent -GateContent $content -TrustedGateResult 'FAILED'
+
+        ([regex]::Matches($result, 'Gate Result:')).Count | Should -Be 1
+        $result | Should -Not -Match 'PASSED'
+    }
+
+    It 'synthesizes honest skipped and inconclusive displays from trusted verdicts' {
+        $skipped = Get-AuthoritativeGateContent `
+            -GateContent '### Gate Result: ✅ PASSED' `
+            -TrustedGateResult 'SKIPPED'
+        $inconclusive = Get-AuthoritativeGateContent `
+            -GateContent '### Gate Result: ✅ PASSED' `
+            -TrustedGateResult 'INCONCLUSIVE'
+
+        Get-GateStatus -GateContent $skipped | Should -Be 'No Tests'
+        $skipped | Should -Match 'did not build'
+        $skipped | Should -Match 'or run the selected tests'
+        Get-GateStatus -GateContent $inconclusive | Should -Be 'Inconclusive'
+        $inconclusive | Should -Match 'could not produce a definitive pass/fail'
     }
 }
 
@@ -672,7 +732,7 @@ Describe 'New-FutureActionSection' {
         $section | Should -Match 'diff --git a/file.cs b/file.cs'
     }
 
-    It 'renders an explicit patch-required action when pr-plus-reviewer wins' {
+    It 'renders a public action without internal artifact instructions when pr-plus-reviewer wins' {
         @{
             winner = 'pr-plus-reviewer'
             isPRFix = $true
@@ -682,10 +742,30 @@ Describe 'New-FutureActionSection' {
 
         $section = New-FutureActionSection -PRAgentDir $script:testDir
 
-        $section | Should -Match 'reviewer patch required'
-        $section | Should -Match 'submitted PR still needs those changes'
-        $section | Should -Match 'PRAgent/pr-plus-reviewer/reviewer.patch'
+        $section | Should -Match 'reviewer changes required'
+        $section | Should -Match 'changes that are not yet in the submitted PR'
+        $section | Should -Match 'Address the actionable findings in this review before merging'
         $section | Should -Match 'The reviewer patch closes a correctness gap'
         $section | Should -Not -Match 'No alternative fix was selected'
+        $section | Should -Not -Match 'reviewer\.patch|CopilotLogs|Required submitted-PR change'
+    }
+
+    It 'keeps generated guidance inside details when the agent summary contains a closing tag' {
+        @{
+            winner = 'pr-plus-reviewer'
+            isPRFix = $true
+            summary = 'Readable rationale </details> & follow-up.'
+            candidateDiff = ''
+        } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $script:testDir 'winner.json') -Encoding UTF8
+
+        $section = New-FutureActionSection -PRAgentDir $script:testDir
+        $guidanceIndex = $section.IndexOf('Address the actionable findings in this review before merging.')
+        $closingIndex = $section.LastIndexOf('</details>')
+
+        $section | Should -Match ([regex]::Escape('Readable rationale &lt;/details&gt; &amp; follow-up.'))
+        ([regex]::Matches($section, '(?i)<details(?:\s|>)')).Count |
+            Should -Be ([regex]::Matches($section, '(?i)</details>')).Count
+        $guidanceIndex | Should -BeGreaterOrEqual 0
+        $guidanceIndex | Should -BeLessThan $closingIndex
     }
 }

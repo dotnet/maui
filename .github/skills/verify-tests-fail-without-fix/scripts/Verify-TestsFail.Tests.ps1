@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-GateHasDefinitiveFailure', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -271,6 +271,71 @@ Total tests: 2
     }
 }
 
+Describe 'Limit-ExpensiveGateTests coverage reporting' {
+    BeforeEach {
+        $script:oldMaxDeviceTests = $env:GATE_MAX_DEVICE_TESTS
+        $script:oldMaxUiTests = $env:GATE_MAX_UI_TESTS
+        $env:GATE_MAX_DEVICE_TESTS = '1'
+        $env:GATE_MAX_UI_TESTS = '1'
+    }
+
+    AfterEach {
+        $env:GATE_MAX_DEVICE_TESTS = $script:oldMaxDeviceTests
+        $env:GATE_MAX_UI_TESTS = $script:oldMaxUiTests
+        $script:GateCoverageLimitations = @()
+    }
+
+    It 'persists dropped device tests as uncovered while delegating only dropped UI tests to Deep UI' {
+        $tests = @(
+            @{ Type = 'DeviceTest'; TestName = 'NewDeviceTest'; Files = @('NewDeviceTests.cs') }
+            @{ Type = 'DeviceTest'; TestName = 'ExistingDeviceTest'; Files = @('ExistingDeviceTests.cs') }
+            @{ Type = 'UITest'; TestName = 'NewUiTest'; Files = @('NewUiTests.cs') }
+            @{ Type = 'UITest'; TestName = 'ExistingUiTest'; Files = @('ExistingUiTests.cs') }
+            @{ Type = 'UnitTest'; TestName = 'CheapUnitTest'; Files = @('CheapUnitTests.cs') }
+        )
+
+        $kept = @(Limit-ExpensiveGateTests `
+            -Tests $tests `
+            -AddedFiles @('NewDeviceTests.cs', 'NewUiTests.cs') 6>$null)
+
+        @($kept.TestName) | Should -Be @('CheapUnitTest', 'NewDeviceTest', 'NewUiTest')
+        @($script:GateCoverageLimitations).Count | Should -Be 2
+        $script:GateCoverageLimitations[0] | Should -Match 'ExistingDeviceTest'
+        $script:GateCoverageLimitations[0] | Should -Match 'does not execute DeviceTests'
+        $script:GateCoverageLimitations[1] | Should -Match 'ExistingUiTest'
+        $script:GateCoverageLimitations[1] | Should -Match 'exercised separately by the Deep UI Tests stage'
+    }
+
+    It 'writes the coverage limitation into the persisted Markdown report' {
+        $script:MarkdownReport = Join-Path $TestDrive 'gate-coverage.md'
+        $script:OutputPath = $TestDrive
+        $withoutFix = @(@{
+            TestName = 'TargetTest'; Passed = $false; BuildError = $false
+            EnvError = $false; FilterMismatch = $false
+        })
+        $withFix = @(@{
+            TestName = 'TargetTest'; Passed = $true; BuildError = $false
+            EnvError = $false; FilterMismatch = $false
+        })
+        $tests = @([pscustomobject]@{
+            Type = 'DeviceTest'; TestName = 'TargetTest'; Filter = 'TargetTest'
+        })
+
+        Write-MarkdownReport `
+            -VerificationPassed $true -CompileCoupledVerified $false `
+            -FailedWithoutFix $true -PassedWithFix $true `
+            -WithoutFixResult $withoutFix[0] -WithFixResult $withFix[0] `
+            -WithoutFixResultsList $withoutFix -WithFixResultsList $withFix `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @() -ReportNewFiles @() `
+            -CoverageLimitations @('DroppedDeviceTest was not executed by this gate.')
+
+        $report = Get-Content -LiteralPath $script:MarkdownReport -Raw
+        $report | Should -Match 'Gate coverage limitations'
+        $report | Should -Match 'DroppedDeviceTest was not executed by this gate'
+    }
+}
+
 Describe 'Invoke-TestRun — host-only target frameworks' {
     It 'applies the shared platform exclusions to unit and XAML unit tests' {
         ([regex]::Matches($script:invokeTestRunText, '\+\s*\$hostOnlyTargetFrameworkArgs')).Count | Should -Be 2
@@ -435,18 +500,76 @@ OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : An unknown server-side err
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'flags a fixture-wide OneTimeSetUp app-launch/crash-recovery timeout as env, even WITH failure counts (real #35640 build 14844563)' {
-        # The app crashed on launch and never recovered, so every test in the fixture failed at
-        # OneTimeSetUp before any assertion ran (Passed=0/Failed=N). This must be EnvError
-        # (INCONCLUSIVE), never a plain FAIL — the fix was never actually verified.
+    It 'retains a fixture-wide app-startup crash as failed until the sibling A/B leg is known' {
         $log = New-LogFile @'
+FATAL EXCEPTION: main
+java.lang.IllegalStateException: Failed to initialize startup service
+    at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:42)
+  Failed Material3CarouselViewFeatureTests.FirstCase [1 s]
+  Error Message:
+   OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+  Failed Material3CarouselViewFeatureTests.SecondCase [1 s]
+  Error Message:
+   OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+Total tests: 2
   Passed: 0
-  Failed: 17
-OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear (the app did not recover after crash-recovery attempts)
+  Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.SetupFailureIsAppCrash | Should -BeTrue
+        $r.AppCrashSignature | Should -Not -BeNullOrEmpty
+        $r.Passed   | Should -BeFalse
+        $r.Failed   | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps a later all-failing device result blocking despite earlier XHarness and incidental Appium markers' {
+        $log = New-LogFile @'
+XHarness exit code: 83
+  Passed: 0
+  Failed: 0
+Incidental diagnostics echoed: Call InitialSetup before accessing the App property
+[FAIL] RealDeviceRegression.First
+[FAIL] RealDeviceRegression.Second
+  Passed: 0
+  Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log
+        $r.EnvError | Should -Not -BeTrue
+        $r.Passed   | Should -BeFalse
+        $r.PassCount | Should -Be 0
+        $r.FailCount | Should -Be 2
+        $r.Failed   | Should -Be 2
+        $r.Total    | Should -Be 2
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps an all-failing Appium OneTimeSetUp result inconclusive when every failed case is setup-only' {
+        $log = New-LogFile @'
+  Failed Issue19752.First [1 s]
+  Error Message:
+   OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : The app representing com.microsoft.maui.uitests could not be found.
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+  Failed Issue19752.Second [1 s]
+  Error Message:
+   OneTimeSetUp: OpenQA.Selenium.UnknownErrorException : The app representing com.microsoft.maui.uitests could not be found.
+  Stack Trace:
+   at _GalleryUITest.FixtureSetup()
+Total tests: 2
+  Passed: 0
+  Failed: 2
 '@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
-        $r.Passed   | Should -BeFalse
+        $r.SetupOnlyFailure | Should -BeTrue
+        $r.Passed | Should -BeFalse
+        $r.Failed | Should -Be 0
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -460,6 +583,8 @@ Some later flake mentioned the app did not recover after crash-recovery attempts
 '@
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeFalse
+        $r.PassCount | Should -Be 5
+        $r.FailCount | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -516,6 +641,24 @@ Test Run Failed.
         $r = Get-TestResultFromOutput -LogFile $log
         $r.EnvError | Should -BeTrue
         $r.NativeLibLoadFailure | Should -BeTrue
+        Remove-Item -LiteralPath $log -Force
+    }
+
+    It 'keeps an all-failing native-load result environmental when every failed case is native' {
+        $log = New-LogFile @'
+[xUnit.net 00:00:01.43]     ResizetizeImagesTests.FirstImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+[xUnit.net 00:00:01.44]     ResizetizeImagesTests.SecondImage [FAIL]
+      System.DllNotFoundException: Unable to load shared library 'libSkiaSharp' or one of its dependencies.
+  Total tests: 2
+       Passed: 0
+       Failed: 2
+'@
+        $r = Get-TestResultFromOutput -LogFile $log -TestFilter 'ResizetizeImagesTests'
+        $r.EnvError | Should -BeTrue
+        $r.NativeLibLoadFailure | Should -BeTrue
+        $r.Passed | Should -BeFalse
+        $r.Failed | Should -Be 0
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -650,6 +793,159 @@ Assert.Equal() Failure: Expected 5, Actual 4
         $r.NativeLibLoadFailure | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Ambiguous startup-crash classification' {
+    It 'keeps a with-fix-only startup crash as a genuine failure' {
+        $without = @{ Passed = $true }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'downgrades only a symmetric A/B startup crash to environment' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'same-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'same-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeTrue
+        $without.EnvError | Should -BeTrue
+        $with.EnvError | Should -BeTrue
+        $without.Failed | Should -Be 0
+        $with.Failed | Should -Be 0
+    }
+
+    It 'does not downgrade boolean-only crashes without an identity' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'keeps distinct A/B startup crashes blocking' {
+        $without = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'baseline-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+        $with = @{
+            Passed = $false
+            SetupFailureIsAppCrash = $true
+            AppCrashSignature = 'with-fix-crash'
+            FailCount = 2
+            Failed = 2
+            Total = 2
+        }
+
+        (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $without -WithFixResult $with) |
+            Should -BeFalse
+        $without.EnvError | Should -Not -BeTrue
+        $with.EnvError | Should -Not -BeTrue
+        $with.Failed | Should -Be 2
+    }
+
+    It 'normalizes volatile process ids, addresses, and source lines in a crash identity' {
+        $first = @'
+08-22 10:20:30.123 1234 1234 F AndroidRuntime: FATAL EXCEPTION: main
+08-22 10:20:30.124 1234 1234 F libc: Fatal signal 6 (SIGABRT), code -1 in tid 1234, pid 1234
+E/AndroidRuntime(1234): java.lang.IllegalStateException: startup failed
+E/AndroidRuntime(1234):     at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:42)
+F/DEBUG(1234): #00 pc 0000000000123456 /data/app/libfoo.so (startup_abort+12)
+'@
+        $second = @'
+08-22 10:22:31.987 9876 9876 F AndroidRuntime: FATAL EXCEPTION: main
+08-22 10:22:31.988 9876 9876 F libc: Fatal signal 6 (SIGABRT), code -1 in tid 9876, pid 9876
+E/AndroidRuntime(9876): java.lang.IllegalStateException: startup failed
+E/AndroidRuntime(9876):     at com.microsoft.maui.MainActivity.onCreate(MainActivity.java:99)
+F/DEBUG(9876): #00 pc abcdef0123456789 /other/path/libfoo.so (startup_abort+12)
+'@
+
+        (Get-NormalizedAppCrashSignature -Content $first) |
+            Should -Be (Get-NormalizedAppCrashSignature -Content $second)
+    }
+
+    It 'rejects a generic crash classification without distinguishing evidence' {
+        Get-NormalizedAppCrashSignature -Content 'FATAL EXCEPTION: main' |
+            Should -BeNullOrEmpty
+        Get-NormalizedAppCrashSignature -Content 'Fatal signal 6 (SIGABRT)' |
+            Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Failure-only runner reporting' {
+    It 'converts a runner exception into an environment result that reaches the report writer' {
+        Mock Invoke-TestRunWithRetry { throw 'simulated non-Windows runner failure' }
+        $entry = @{ TestName = 'Issue12345'; Type = 'DeviceTest' }
+
+        $result = Invoke-FailureOnlyTestRun -TestEntry $entry -LogFile 'unused.log'
+
+        $result.EnvError | Should -BeTrue
+        $result.Error | Should -Match 'simulated non-Windows runner failure'
+        $result.TestName | Should -Be 'Issue12345'
+        $result.TestType | Should -Be 'DeviceTest'
+        $script:verifyScriptText | Should -Match ([regex]::Escape(
+            '$testResult = Invoke-FailureOnlyTestRun -TestEntry $testEntry -LogFile $TestLog'))
+    }
+
+    It 'keeps an unpaired startup crash inconclusive in failure-only mode' {
+        Mock Invoke-TestRunWithRetry {
+            @{
+                Passed = $false
+                SetupFailureIsAppCrash = $true
+                FailCount = 2
+                Failed = 2
+                Total = 2
+            }
+        }
+        $entry = @{ TestName = 'Issue12345'; Type = 'UITest' }
+
+        $result = Invoke-FailureOnlyTestRun -TestEntry $entry -LogFile 'unused.log'
+
+        $result.EnvError | Should -BeTrue
+        $result.Failed | Should -Be 0
+        $result.Error | Should -Match 'no with-fix leg'
     }
 }
 
@@ -895,6 +1191,67 @@ Describe 'Write-MarkdownReport — persisted APP_CRASH gets an honest (non-"just
     }
 }
 
+Describe 'Write-MarkdownReport — A/B environment error retry classification' {
+    BeforeAll {
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+
+        function New-EnvironmentErrorReport {
+            param(
+                [array]$WithoutFixResults,
+                [array]$WithFixResults
+            )
+
+            $script:MarkdownReport = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+            $tests = @([pscustomobject]@{ TestName = 'DeviceCase'; Type = 'DeviceTest'; Filter = 'DeviceCase' })
+            Write-MarkdownReport `
+                -VerificationPassed $false -CompileCoupledVerified:$false `
+                -FailedWithoutFix $false -PassedWithFix $false `
+                -WithoutFixResult $WithoutFixResults[0] -WithFixResult $WithFixResults[0] `
+                -WithoutFixResultsList $WithoutFixResults -WithFixResultsList $WithFixResults `
+                -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+                -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+            return Get-Content -LiteralPath $script:MarkdownReport -Raw
+        }
+    }
+
+    It 'skips whole-gate retries when the same test has an environment error on both sides' {
+        $withoutFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: app crashed without fix'
+        })
+        $withFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: app crashed with fix'
+        })
+
+        $report = New-EnvironmentErrorReport -WithoutFixResults $withoutFix -WithFixResults $withFix
+
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: skip-permanent -->'
+    }
+
+    It 'keeps a one-sided transient environment error retryable' {
+        $withoutFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $false
+            BuildError = $false; EnvError = $true; FilterMismatch = $false
+            Total = 0; Failed = 0; Error = 'ENV ERROR: emulator unavailable'
+        })
+        $withFix = @(@{
+            TestName = 'DeviceCase'; TestType = 'DeviceTest'; Passed = $true
+            BuildError = $false; EnvError = $false; FilterMismatch = $false
+            Total = 1; Failed = 0; Error = ''
+        })
+
+        $report = New-EnvironmentErrorReport -WithoutFixResults $withoutFix -WithFixResults $withFix
+
+        $report | Should -Match '### Gate Result: ⚠️ INCONCLUSIVE'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: retryable -->'
+    }
+}
+
 Describe 'Write-MarkdownReport — genuine failures outrank unrelated environment errors' {
     It 'persists FAILED and a definitive retry class for a confirmed with-fix target timeout' {
         $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
@@ -959,6 +1316,37 @@ Describe 'Write-MarkdownReport — genuine failures outrank unrelated environmen
         $report | Should -Match 'Fix introduces a regression'
         $report | Should -Not -Match 'PASS without fix, PASS with fix'
         $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
+    }
+
+    It 'reports FAILED when one test has a with-fix-only build error despite another baseline build error' {
+        $md = Join-Path ([System.IO.Path]::GetTempPath()) ("gate-" + [Guid]::NewGuid().ToString('N') + ".md")
+        $script:MarkdownReport = $md
+        $script:OutputPath = [System.IO.Path]::GetTempPath()
+        $wo = @(
+            @{ TestName = 'BaselineBrokenProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0001: unrelated baseline failure' },
+            @{ TestName = 'FixRegressionProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $false; EnvError = $false; FilterMismatch = $false; Total = 1; Failed = 1; Error = 'assertion failed without fix' }
+        )
+        $w = @(
+            @{ TestName = 'BaselineBrokenProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0001: unrelated baseline failure' },
+            @{ TestName = 'FixRegressionProject'; TestType = 'UnitTest'; Passed = $false; BuildError = $true; EnvError = $false; FilterMismatch = $false; Total = 0; Failed = 0; Error = 'error CS0002: fix introduced compile failure' }
+        )
+        $tests = @(
+            [pscustomobject]@{ TestName = 'BaselineBrokenProject'; Type = 'UnitTest'; Filter = 'BaselineBrokenProject' },
+            [pscustomobject]@{ TestName = 'FixRegressionProject'; Type = 'UnitTest'; Filter = 'FixRegressionProject' }
+        )
+
+        Write-MarkdownReport `
+            -VerificationPassed $false -CompileCoupledVerified:$false `
+            -FailedWithoutFix $true -PassedWithFix $false `
+            -WithoutFixResult $wo[0] -WithFixResult $w[0] `
+            -WithoutFixResultsList $wo -WithFixResultsList $w `
+            -Tests $tests -ReportMergeBase '0123456789abcdef' -ReportPlatform 'android' `
+            -ReportBaseBranch 'main' -ReportRevertableFiles @('src/Core/src/Test.cs') -ReportNewFiles @()
+
+        $report = Get-Content -LiteralPath $md -Raw
+        $report | Should -Match '### Gate Result: ❌ FAILED'
+        $report | Should -Match '<!-- GATE-RETRY-CLASS: definitive-failure -->'
+        $report | Should -Not -Match '### Gate Result: ⚠️ INCONCLUSIVE'
     }
 }
 
@@ -1178,8 +1566,7 @@ Describe 'Gate failure precedence' {
     It 'does not classify a mixed environment error and genuine with-fix failure as infrastructure-only' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 1 `
-            -WithFixBuildError:$false `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeTrue
     }
@@ -1187,10 +1574,55 @@ Describe 'Gate failure precedence' {
     It 'keeps an environment-only result non-definitive' {
         Test-GateHasDefinitiveFailure `
             -WithFixGenuineFailCount 0 `
-            -WithFixBuildError:$false `
-            -BaselineBuildError:$false `
+            -WithFixOnlyBuildError:$false `
             -PrTestBuildError:$false |
             Should -BeFalse
+    }
+
+    It 'treats a with-fix-only build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixOnlyBuildError:$true `
+            -PrTestBuildError:$false |
+            Should -BeTrue
+    }
+
+    It 'keeps a paired baseline and with-fix build error non-definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixOnlyBuildError:$false `
+            -PrTestBuildError:$false |
+            Should -BeFalse
+    }
+
+    It 'detects a with-fix build regression even when another test preserves a baseline build error' {
+        $withoutFix = @(
+            @{ TestName = 'BaselineBrokenProject'; BuildError = $true },
+            @{ TestName = 'FixRegressionProject'; BuildError = $false }
+        )
+        $withFix = @(
+            @{ TestName = 'BaselineBrokenProject'; BuildError = $true },
+            @{ TestName = 'FixRegressionProject'; BuildError = $true }
+        )
+
+        $withFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+            -WithoutFixResults $withoutFix `
+            -WithFixResults $withFix
+
+        $withFixOnlyBuildError | Should -BeTrue
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixOnlyBuildError $withFixOnlyBuildError `
+            -PrTestBuildError:$false |
+            Should -BeTrue
+    }
+
+    It 'treats a PR-test build error as definitive' {
+        Test-GateHasDefinitiveFailure `
+            -WithFixGenuineFailCount 0 `
+            -WithFixOnlyBuildError:$false `
+            -PrTestBuildError:$true |
+            Should -BeTrue
     }
 }
 
@@ -1442,7 +1874,7 @@ Total tests: 20
 }
 
 Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
-    It 'classifies a UITest snapshot SIZE mismatch as INCONCLUSIVE (env), not a failure (build 14850018 #37032)' {
+    It 'records a UITest snapshot size mismatch for later sibling A/B comparison' {
         $log = New-LogFile -Content @"
   [UITest] Issue36422 (filter: Issue36422)
   FixtureSetup for Issue36422(iOS)
@@ -1452,13 +1884,14 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
   [UITest] Issue36422: Passed=False Failed=1 [303s]
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 1
         $r.Error | Should -Match 'size'
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'classifies device-test size mismatches (Passed:/Failed: counts) as INCONCLUSIVE (env)' {
+    It 'records device-test size mismatches without prematurely downgrading them' {
         $log = New-LogFile -Content @"
   Passed: 3
   Failed: 2
@@ -1466,8 +1899,9 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
   Snapshot different than baseline: B.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
+        $r.Failed | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1509,16 +1943,16 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         Remove-Item -LiteralPath $log -Force
     }
 
-    It 'keeps a count-less run benign when every failure is a missing baseline or size mismatch' {
+    It 'retains a mixed missing-baseline and size-mismatch run until sibling comparison' {
         $log = New-LogFile -Content @"
   VisualTestFailedException : Baseline snapshot not yet created for NewSnapshot.png
   Snapshot different than baseline: DifferentDevice.png (size differs - baseline is 1206x2472 pixels, actual is 1124x2286 pixels)
   [UITest] MixedBenignSnapshots: Passed=False Failed=2 [40s]
 "@
         $r = Get-TestResultFromOutput -LogFile $log
-        $r.EnvError | Should -BeTrue
+        $r.EnvError | Should -Not -BeTrue
         $r.SnapshotSizeMismatch | Should -BeTrue
-        $r.Failed | Should -Be 0
+        $r.Failed | Should -Be 2
         Remove-Item -LiteralPath $log -Force
     }
 
@@ -1531,6 +1965,62 @@ Describe 'Get-TestResultFromOutput — snapshot size-mismatch classification' {
         $r.EnvError | Should -Not -BeTrue
         $r.Passed | Should -BeFalse
         Remove-Item -LiteralPath $log -Force
+    }
+}
+
+Describe 'Snapshot size-mismatch A/B pairing' {
+    BeforeEach {
+        $script:without = @{
+            Passed = $false
+            Failed = 1
+            FailCount = 1
+            SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1124x2286')
+        }
+        $script:with = @{
+            Passed = $false
+            Failed = 1
+            FailCount = 1
+            SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1124x2286')
+        }
+    }
+
+    It 'downgrades an exact mismatch repeated in both A/B legs' {
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeTrue
+
+        $script:without.EnvError | Should -BeTrue
+        $script:with.EnvError | Should -BeTrue
+        $script:without.Failed | Should -Be 0
+        $script:with.Failed | Should -Be 0
+    }
+
+    It 'does not downgrade a with-fix-only size mismatch' {
+        $script:without.SnapshotSizeMismatch = $false
+        $script:without.SnapshotSizeMismatchSignatures = @()
+
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeFalse
+
+        $script:with.EnvError | Should -Not -BeTrue
+        $script:with.Failed | Should -Be 1
+    }
+
+    It 'does not downgrade changed with-fix dimensions' {
+        $script:with.SnapshotSizeMismatchSignatures = @('sample.png|1206x2472|1200x2300')
+
+        Convert-SnapshotSizeMismatchPairToEnvironment `
+            -WithoutFixResult $script:without `
+            -WithFixResult $script:with |
+            Should -BeFalse
+
+        $script:with.EnvError | Should -Not -BeTrue
+        $script:with.Failed | Should -Be 1
     }
 }
 

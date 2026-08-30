@@ -145,7 +145,10 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateSet("UITest", "UnitTest", "XamlUnitTest", "DeviceTest")]
-    [string]$TestType
+    [string]$TestType,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$NoRestore
 )
 
 $ErrorActionPreference = "Stop"
@@ -551,6 +554,7 @@ function Invoke-TestRun {
                 Platform   = $Platform
                 TestFilter = $Filter
                 Rebuild    = $true
+                NoRestore  = $NoRestore
             }
             if ($script:BootedDeviceUdid -and $script:BootedDeviceUdid -ne "host") {
                 $uiParams.DeviceUdid = $script:BootedDeviceUdid
@@ -591,6 +595,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -633,6 +640,9 @@ function Invoke-TestRun {
                 "--logger", "console;verbosity=normal",
                 "-p:TreatWarningsAsErrors=false"
             ) + $hostOnlyTargetFrameworkArgs
+            if ($NoRestore) {
+                $testArgs += '--no-restore'
+            }
             if ($Filter) {
                 $testArgs += @("--filter", $Filter)
             }
@@ -682,6 +692,7 @@ function Invoke-TestRun {
                 # artifacts/obj tree. Always rebuild the full P2P graph so a dependency
                 # compiled for the baseline cannot be reused for the with-fix run.
                 Rebuild = $true
+                NoRestore = $NoRestore
             }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
@@ -834,19 +845,169 @@ function Convert-WindowsTargetTimeoutToFailure {
     return $true
 }
 
+function Test-HasWithFixOnlyBuildError {
+    param(
+        [array]$WithoutFixResults,
+        [array]$WithFixResults
+    )
+
+    foreach ($withFixResult in @($WithFixResults | Where-Object { $_.BuildError })) {
+        $withoutFixResult = $WithoutFixResults |
+            Where-Object { $_.TestName -eq $withFixResult.TestName } |
+            Select-Object -First 1
+        if ($null -ne $withoutFixResult -and -not [bool]$withoutFixResult.BuildError) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-GateHasDefinitiveFailure {
     param(
         [int]$WithFixGenuineFailCount,
-        [bool]$WithFixBuildError,
-        [bool]$BaselineBuildError,
+        [bool]$WithFixOnlyBuildError,
         [bool]$PrTestBuildError
     )
 
     return (
         $WithFixGenuineFailCount -gt 0 -or
-        ($WithFixBuildError -and -not $BaselineBuildError) -or
+        $WithFixOnlyBuildError -or
         $PrTestBuildError
     )
+}
+
+function Get-NormalizedAppCrashSignature {
+    param(
+        [AllowNull()]
+        [string]$Content
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Content)) {
+        return $null
+    }
+
+    $headerPattern = '(?i)(?:FATAL EXCEPTION:|Fatal signal\s+\d+\s+\(SIG[A-Z]+\)|Abort message:|Unhandled (?:managed )?exception|Exception Type:|Termination Reason:)'
+    $supportPattern = '(?i)^\s*(?:Caused by:\s*)?[\w.$+`]+(?:Exception|Error)(?::.*)?$|^\s*(?:at\s+[\w.$+`<>]+|#\d{2}\s+pc\s+).*$'
+    $headers = [System.Collections.Generic.List[string]]::new()
+    $supportingEvidence = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($line in ($Content -split '\r?\n')) {
+        $evidenceLine = [regex]::Replace(
+            $line,
+            '^\s*\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d+\s+\d+\s+\d+\s+[VDIWEF]\s+[^:]+:\s*',
+            '')
+        $evidenceLine = [regex]::Replace(
+            $evidenceLine,
+            '^\s*[VDIWEF]/[^\s(]+\(\s*\d+\):\s*',
+            '')
+        if ($evidenceLine -match $headerPattern) {
+            $headers.Add($evidenceLine.Trim())
+        } elseif ($supportingEvidence.Count -lt 12 -and $evidenceLine -match $supportPattern) {
+            $supportingEvidence.Add($evidenceLine.Trim())
+        }
+    }
+
+    # XHarness APP_CRASH and the recovery timeout are classifications, not identities.
+    # Without an actual crash header, two unrelated crashes cannot safely be called equal.
+    if ($headers.Count -eq 0) {
+        return $null
+    }
+
+    $hasDistinctHeader = @($headers | Where-Object {
+        $_ -match '(?i)(?:Abort message:|Unhandled (?:managed )?exception|Exception Type:|Termination Reason:).*\S'
+    }).Count -gt 0
+    if (-not $hasDistinctHeader -and $supportingEvidence.Count -eq 0) {
+        return $null
+    }
+
+    $normalized = (($headers + $supportingEvidence) -join "`n").ToLowerInvariant()
+    $normalized = [regex]::Replace($normalized, '(?m)^\s*\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}\.\d+\s+', '')
+    $normalized = [regex]::Replace($normalized, '\b(pid|tid)\s*[=:]?\s*\d+\b', '${1}=<id>')
+    $normalized = [regex]::Replace($normalized, '\bpc\s+[0-9a-f]+\b', 'pc <address>')
+    $normalized = [regex]::Replace($normalized, '\b0x[0-9a-f]+\b', '<address>')
+    $normalized = [regex]::Replace($normalized, '(?i)(\.cs|\.java|\.kt):\d+', '$1:<line>')
+    $normalized = [regex]::Replace($normalized, '(?i)(?:[a-z]:\\|/)(?:[^ \t\r\n:()]+[\\/])+', '<path>/')
+    $normalized = [regex]::Replace($normalized, '\s+', ' ').Trim()
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
+        $hash = $sha256.ComputeHash($bytes)
+        return ([System.BitConverter]::ToString($hash)).Replace('-', '').ToLowerInvariant()
+    } finally {
+        $sha256.Dispose()
+    }
+}
+
+function Convert-AmbiguousSetupFailurePairToEnvironment {
+    param(
+        [hashtable]$WithoutFixResult,
+        [hashtable]$WithFixResult
+    )
+
+    if (-not $WithoutFixResult.SetupFailureIsAppCrash -or
+        -not $WithFixResult.SetupFailureIsAppCrash) {
+        return $false
+    }
+
+    $withoutFixSignature = [string]$WithoutFixResult.AppCrashSignature
+    $withFixSignature = [string]$WithFixResult.AppCrashSignature
+    if ([string]::IsNullOrWhiteSpace($withoutFixSignature) -or
+        [string]::IsNullOrWhiteSpace($withFixSignature) -or
+        -not [string]::Equals($withoutFixSignature, $withFixSignature, [System.StringComparison]::Ordinal)) {
+        return $false
+    }
+
+    $message = "A matching app-startup crash signature prevented fixture setup in both A/B legs, so the gate cannot attribute it to the fix."
+    foreach ($result in @($WithoutFixResult, $WithFixResult)) {
+        $result.EnvError = $true
+        $result.PassCount = 0
+        $result.FailCount = 0
+        $result.Failed = 0
+        $result.Total = 0
+        $result.Error = $message
+    }
+
+    return $true
+}
+
+function Invoke-FailureOnlyTestRun {
+    param(
+        [hashtable]$TestEntry,
+        [string]$LogFile
+    )
+
+    try {
+        $result = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $LogFile
+    } catch {
+        $result = @{
+            Passed = $false
+            EnvError = $true
+            Error = "Test runner threw before producing a result: $($_.Exception.Message)"
+            PassCount = 0
+            FailCount = 0
+            Failed = 0
+            Total = 0
+            Skipped = 0
+        }
+    }
+
+    # Failure-only mode has no sibling leg with which to prove an ambiguous startup
+    # crash is symmetric. Keep it inconclusive instead of crediting it as the expected
+    # baseline failure. Full A/B mode performs the pairwise classification later.
+    if ($result.SetupFailureIsAppCrash) {
+        $result.EnvError = $true
+        $result.PassCount = 0
+        $result.FailCount = 0
+        $result.Failed = 0
+        $result.Total = 0
+        $result.Error = "An app-startup crash prevented fixture setup, and failure-only mode has no with-fix leg that can disambiguate infrastructure from a deterministic crash."
+    }
+
+    $result.TestName = $TestEntry.TestName
+    $result.TestType = $TestEntry.Type
+    return $result
 }
 
 function Invoke-TestRunWithRetry {
@@ -1347,6 +1508,42 @@ function Get-TestResultFromOutput {
     $hasNativeLibLoadFailure = ($content -match '(?i)Unable to load (?:shared library|DLL)' -or
                                 $content -match '(?is)DllNotFoundException.{0,120}Unable to load')
 
+    $envErrorPatterns = @(
+        @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
+        @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
+        @{ Pattern = "XHarness exit code:\s*80"; Message = "App crashed during test run (XHarness exit 80 APP_CRASH)" }
+        @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
+        @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
+        @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
+        @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
+        @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
+        @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start"; SetupFailure = $true }
+        @{ Pattern = "no such element.*could not be located"; Message = "Test element not found (app may not have loaded)" }
+        # Appium/NUnit fixture setup failures: when [OneTimeSetUp]/InitialSetup can't establish
+        # the Appium session or launch the app under test, EVERY test in the fixture fails before
+        # a single assertion runs — the harness then throws "Call InitialSetup before accessing the
+        # App property" in TearDown/SaveDeviceDiagnosticInfo. That is an infrastructure failure of
+        # the test agent (Appium/mac2/WebDriverAgent flakiness or the app bundle not registering),
+        # NOT a genuine product failure of the PR's fix. Without this the gate misreads a with-fix
+        # session-start flake as "fix does not pass the tests" and blocks the PR (false FAILED,
+        # e.g. MacCatalyst PR #27477 Issue19752: OneTimeSetUp UnknownErrorException "The app
+        # representing com.microsoft.maui.uitests could not be found"). Classify as env/INCONCLUSIVE
+        # so it is retried and, if persistent, surfaced as non-blocking.
+        @{ Pattern = "Call InitialSetup before accessing the App property"; Message = "Appium app/session did not initialize (InitialSetup/OneTimeSetup failed — test agent could not start the Appium session)"; SetupFailure = $true }
+        @{ Pattern = "The app representing .+ could not be found"; Message = "Appium could not find/launch the app under test (mac2/simulator driver could not resolve the app bundle)"; SetupFailure = $true }
+        @{ Pattern = "OneTimeSetUp:\s*OpenQA\.Selenium"; Message = "Appium/Selenium error during fixture OneTimeSetUp (session/app setup failed before any test ran)"; SetupFailure = $true }
+        # App CRASHED ON LAUNCH and the harness's crash-recovery relaunch attempts were exhausted:
+        # the fixture's [OneTimeSetUp] then times out waiting for the app's navigation UI (e.g.
+        # "Timed out waiting for Go To Test button to appear (the app did not recover after
+        # crash-recovery attempts)"), so EVERY test in the fixture fails at setup before a single
+        # assertion runs. The app under test never came up, so the gate verified NOTHING about the
+        # fix — reporting FAILED here is a FALSE FAILED (build 14844563 / #35640 android: all 17
+        # Material3CarouselViewFeatureTests failed identically at OneTimeSetUp on an agent that had
+        # also just flaked the emulator boot). Classify as env/INCONCLUSIVE only when the
+        # authoritative result's failed-case blocks independently confirm fixture setup failures.
+        @{ Pattern = "(?i)the app did not recover after crash-recovery attempts"; Message = "The test app crashed on launch and did not recover after the harness's crash-recovery relaunch attempts, so the fixture's OneTimeSetUp timed out and NO test could run."; SetupFailure = $true; SetupFailureIsAppCrash = $true }
+    )
+
     # ── First, check if tests actually ran and produced results ──
     # This must come BEFORE env error checks because xharness can report
     # exit code 83 (APP_LAUNCH_FAILURE) even when tests ran successfully
@@ -1355,7 +1552,7 @@ function Get-TestResultFromOutput {
     # Device test output: check Passed/Failed counts from Run-DeviceTests.ps1
     # Format: "  Passed: 57\n  Failed: 0"
     # Run-DeviceTests.ps1 may retry internally, producing multiple Passed:/Failed: blocks.
-    # Use the LAST block where tests actually ran (Passed > 0), so pass/fail counts
+    # Use the LAST block where tests actually ran (Passed > 0 or Failed > 0), so pass/fail counts
     # come from the same run. Taking MAX independently across blocks can mix results
     # from different runs (e.g., Run1: Passed=57,Failed=3 + Run2: Passed=60,Failed=0
     # would incorrectly yield Passed=60,Failed=3).
@@ -1366,22 +1563,54 @@ function Get-TestResultFromOutput {
         # Walk blocks in reverse to find the last one where tests actually ran
         $devicePassCount = 0
         $deviceFailCount = 0
+        $selectedResultIndex = -1
         for ($i = $allPassMatches.Count - 1; $i -ge 0; $i--) {
             $p = [int]$allPassMatches[$i].Groups[1].Value
             $f = if ($i -lt $allFailMatches.Count) { [int]$allFailMatches[$i].Groups[1].Value } else { 0 }
             if ($p -gt 0 -or $f -gt 0) {
                 $devicePassCount = $p
                 $deviceFailCount = $f
+                $selectedResultIndex = $i
                 break
             }
         }
         $deviceTotal = $devicePassCount + $deviceFailCount
+        $deviceResultScope = $null
+        if ($selectedResultIndex -ge 0) {
+            # Result details usually precede their Passed:/Failed: summary, but some runners
+            # append diagnostics after it. Scope evidence from the preceding summary through
+            # the selected attempt's trailing output, excluding stale earlier retry evidence.
+            $scopeStart = 0
+            if ($selectedResultIndex -gt 0) {
+                $previousPass = $allPassMatches[$selectedResultIndex - 1]
+                $scopeStart = $previousPass.Index + $previousPass.Length
+                if (($selectedResultIndex - 1) -lt $allFailMatches.Count) {
+                    $previousFail = $allFailMatches[$selectedResultIndex - 1]
+                    $scopeStart = [Math]::Max($scopeStart, $previousFail.Index + $previousFail.Length)
+                }
+            }
+
+            $selectedPass = $allPassMatches[$selectedResultIndex]
+            $scopeEnd = $selectedPass.Index + $selectedPass.Length
+            if ($selectedResultIndex -lt $allFailMatches.Count) {
+                $selectedFail = $allFailMatches[$selectedResultIndex]
+                $scopeEnd = [Math]::Max($scopeEnd, $selectedFail.Index + $selectedFail.Length)
+            }
+            if ($selectedResultIndex -eq ($allPassMatches.Count - 1)) {
+                $scopeEnd = $content.Length
+            }
+            $deviceResultScope = $content.Substring($scopeStart, $scopeEnd - $scopeStart)
+        }
 
         Write-Host "  📊 Parsed test results: Passed=$devicePassCount Failed=$deviceFailCount Total=$deviceTotal (from $($allPassMatches.Count) result blocks)" -ForegroundColor Gray
 
-        # If tests actually ran (passed > 0), trust the results over exit codes
-        if ($devicePassCount -gt 0) {
+        # A nonzero authoritative result block beats unscoped retry/teardown markers. This
+        # includes all-failing runs (Passed=0, Failed=N): they remain genuine failures unless
+        # every parsed failed-case block independently proves a fixture-setup environment error.
+        if ($deviceTotal -gt 0) {
             if ($deviceFailCount -gt 0) {
+                $resultEvidence = if ($deviceResultScope) { $deviceResultScope } else { $content }
+
                 # Some host-based MSBuild/XAML test classes exercise multiple target
                 # platforms in one run. On a Linux/Android gate agent, the Android cases
                 # can run while iOS/MacCatalyst cases fail before their assertions because
@@ -1399,10 +1628,58 @@ function Get-TestResultFromOutput {
                 # (build 14907252, PR #37176: the fix made the Android case pass, while the
                 # only two remaining failures were iOS/MacCatalyst NETSDK1178 on Linux.)
                 $xunitFailurePattern = '(?ms)^\s*\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?\n.*?(?=^\s*\[xUnit\.net[^\r\n]*\]\s+[^\r\n]+\[FAIL\]\s*\r?$|^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
-                $failedCaseBlocks = @([regex]::Matches($content, $xunitFailurePattern))
+                $failedCaseBlocks = @([regex]::Matches($resultEvidence, $xunitFailurePattern))
                 if ($failedCaseBlocks.Count -eq 0) {
                     $summaryFailurePattern = '(?ms)^\s*Failed\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?\n.*?(?=^\s*(?:Failed|Passed|Skipped)\s+[^\r\n]+?\[[^\]\r\n]*(?:ms|s|m|h)\]\s*\r?$|^\s*Total tests:\s*\d+|\z)'
-                    $failedCaseBlocks = @([regex]::Matches($content, $summaryFailurePattern))
+                    $failedCaseBlocks = @([regex]::Matches($resultEvidence, $summaryFailurePattern))
+                }
+
+                # Reuse the selected failed-case blocks and the shared env-marker table above:
+                # a Passed=0/Failed=N run is setup-only only when EVERY failed case carries
+                # both fixture-setup context and a known Appium/setup marker. A marker printed
+                # by an earlier retry or incidental test output cannot clear genuine failures.
+                $setupContextPattern = '(?im)^\s*OneTimeSetUp:|_GalleryUITest\.FixtureSetup|\bFixtureSetup\b|UITestBase\.(?:OneTimeSetup|TestSetup|UITestBaseTearDown)'
+                $setupEnvironmentFailureBlocks = [System.Collections.Generic.List[object]]::new()
+                $setupAppCrashFailureBlocks = [System.Collections.Generic.List[object]]::new()
+                $setupEnvironmentMessage = $null
+                foreach ($failedCaseBlock in $failedCaseBlocks) {
+                    if ($failedCaseBlock.Value -notmatch $setupContextPattern) { continue }
+                    foreach ($envErr in $envErrorPatterns) {
+                        if ($envErr.SetupFailure -and $failedCaseBlock.Value -match $envErr.Pattern) {
+                            $setupEnvironmentFailureBlocks.Add($failedCaseBlock)
+                            if ($envErr.SetupFailureIsAppCrash) {
+                                $setupAppCrashFailureBlocks.Add($failedCaseBlock)
+                            }
+                            if (-not $setupEnvironmentMessage) { $setupEnvironmentMessage = $envErr.Message }
+                            break
+                        }
+                    }
+                }
+                $allFailedCasesAreSetupEnvironment = (
+                    $devicePassCount -eq 0 -and
+                    $failedCaseBlocks.Count -eq $deviceFailCount -and
+                    $setupEnvironmentFailureBlocks.Count -eq $deviceFailCount
+                )
+                if ($allFailedCasesAreSetupEnvironment) {
+                    $allFailedCasesAreAppCrash = $setupAppCrashFailureBlocks.Count -eq $deviceFailCount
+                    if ($allFailedCasesAreAppCrash) {
+                        $appCrashSignature = Get-NormalizedAppCrashSignature -Content $resultEvidence
+                        Write-Host "  ⚠️  All $deviceFailCount failing test case(s) hit an app-startup crash during fixture setup — retaining FAILED until the sibling A/B leg proves the crash signature is symmetric." -ForegroundColor Yellow
+                        return @{
+                            Passed = $false; SetupOnlyFailure = $true; SetupFailureIsAppCrash = $true
+                            AppCrashSignature = $appCrashSignature
+                            Error = "All $deviceFailCount failing test case(s) hit an app-startup crash during fixture setup: $setupEnvironmentMessage"
+                            PassCount = 0; FailCount = $deviceFailCount; Failed = $deviceFailCount
+                            Total = $deviceTotal; Skipped = 0
+                        }
+                    }
+
+                    Write-Host "  ⚠️  All $deviceFailCount failing test case(s) failed during fixture/Appium setup — INCONCLUSIVE, not a fix failure" -ForegroundColor Yellow
+                    return @{
+                        Passed = $false; EnvError = $true; SetupOnlyFailure = $true
+                        Error = "All $deviceFailCount failing test case(s) failed during fixture/Appium setup before assertions ran: $setupEnvironmentMessage"
+                        PassCount = 0; FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+                    }
                 }
 
                 # A native-library marker is environmental only when every failed case is
@@ -1419,9 +1696,9 @@ function Get-TestResultFromOutput {
                 # native-library warning.
                 $nativeLibCascadePattern = '(?is)\bFile did not exist:\s*[^\r\n]+'
                 $nativeLibCascadeEligible = (
-                    $content -match '(?i)\blibSkiaSharp\b' -and
+                    $resultEvidence -match '(?i)\blibSkiaSharp\b' -and
                     ($TestFilter -match '(?i)(?:Resizetiz|GenerateSplash)' -or
-                     $content -match '(?i)(?:Resizetiz|GenerateSplash)')
+                     $resultEvidence -match '(?i)(?:Resizetiz|GenerateSplash)')
                 )
                 $nativeLibCascadeBlocks = @($failedCaseBlocks | Where-Object {
                     $nativeLibCascadeEligible -and
@@ -1439,10 +1716,19 @@ function Get-TestResultFromOutput {
                     $nativeLibFailureBlocks.Count
                 }
 
+                if ($devicePassCount -eq 0 -and $allFailedCasesAreNativeLib) {
+                    Write-Host "  ⚠️  All $deviceFailCount failing test case(s) failed to load a native shared library — INCONCLUSIVE, not a fix failure" -ForegroundColor Yellow
+                    return @{
+                        Passed = $false; EnvError = $true; NativeLibLoadFailure = $true
+                        Error = "All $deviceFailCount failing test case(s) could not load a required native shared library on the gate agent, so the fix is unverifiable here"
+                        PassCount = 0; FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+                    }
+                }
+
                 if ($failedCaseBlocks.Count -eq $deviceFailCount) {
                     $unsupportedWorkloadFailures = @($failedCaseBlocks | Where-Object { $_.Value -match '(?i)\bNETSDK1178\b' })
                     if ($unsupportedWorkloadFailures.Count -eq $deviceFailCount) {
-                        $unavailablePacks = @([regex]::Matches($content, '(?i)workload packs that do not exist[^:]*:\s*([^\[\r\n]+)') |
+                        $unavailablePacks = @([regex]::Matches($resultEvidence, '(?i)workload packs that do not exist[^:]*:\s*([^\[\r\n]+)') |
                             ForEach-Object { $_.Groups[1].Value.Trim() } |
                             Where-Object { $_ } |
                             Sort-Object -Unique)
@@ -1468,7 +1754,7 @@ function Get-TestResultFromOutput {
                 # against an EXISTING baseline prints "Snapshot different than baseline" (NOT
                 # "not yet created"), so baselineMissing < deviceFailCount and we correctly fall
                 # through to a genuine failure.
-                $baselineMissingCount = ([regex]::Matches($content, '(?i)Baseline snapshot not yet created')).Count
+                $baselineMissingCount = ([regex]::Matches($resultEvidence, '(?i)Baseline snapshot not yet created')).Count
                 if ($baselineMissingCount -ge $deviceFailCount) {
                     Write-Host "  ⚠️  All $deviceFailCount failing test(s) are new snapshots with no committed baseline — INCONCLUSIVE (gate cannot validate a brand-new VerifyScreenshot)" -ForegroundColor Yellow
                     return @{
@@ -1477,24 +1763,20 @@ function Get-TestResultFromOutput {
                         FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
                     }
                 }
-                # A snapshot "size differs" failure means the committed baseline PNG has DIFFERENT
-                # pixel DIMENSIONS than the gate simulator's screenshot — i.e. the baseline was
-                # captured on a different-sized device than the gate boots (e.g. an iPhone 16 Pro
-                # 1206x2472 baseline vs the gate's pinned iPhone 11 Pro 1124x2286). A PR *code* fix
-                # can never change screenshot dimensions, so this failure is environmental in BOTH
-                # the without-fix and with-fix runs and the gate cannot A/B verify the test. When
-                # every remaining failure is a size mismatch (alone or together with new-baseline
-                # tests), report INCONCLUSIVE, never FAILED. This is distinct from a real pixel
-                # DIFF ("N% difference"), which is a genuine visual regression and falls through.
-                # (build 14850018, PR #37032: ChangingItemSpacing... baseline 1206x2472 vs gate
-                # 1124x2286 — identical size mismatch in both legs, wrongly reported FAILED.)
-                $sizeMismatchCount = ([regex]::Matches($content, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+                # A size mismatch is environmental only when the exact same file + dimensions
+                # recur in BOTH A/B legs. Record it as a genuine failure for now; the paired
+                # result pass below downgrades identical signatures to INCONCLUSIVE. This keeps
+                # a with-fix-only window-size regression FAILED instead of hiding it as infra.
+                $sizeMismatchSignatures = @(Get-SnapshotSizeMismatchSignatures -Content $resultEvidence)
+                $sizeMismatchCount = $sizeMismatchSignatures.Count
                 if ($sizeMismatchCount -gt 0 -and ($sizeMismatchCount + $baselineMissingCount) -ge $deviceFailCount) {
-                    Write-Host "  ⚠️  All $deviceFailCount failing test(s) are snapshot SIZE mismatches (baseline captured on a different device size than the gate simulator) — INCONCLUSIVE (a code fix cannot change screenshot dimensions)" -ForegroundColor Yellow
+                    Write-Host "  📐 All $deviceFailCount failing test(s) are snapshot size mismatches — retaining FAILED until the sibling A/B leg proves the exact same mismatch." -ForegroundColor Yellow
                     return @{
-                        Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
-                        Error = "Snapshot size mismatch for $sizeMismatchCount test(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size (baseline captured on a different-sized device). A PR code fix cannot change screenshot dimensions, so the gate cannot A/B verify these tests — the baseline needs regenerating on the current device."
-                        FailCount = 0; Failed = 0; Total = $deviceTotal; Skipped = 0
+                        Passed = $false; SnapshotSizeMismatch = $true
+                        SnapshotSizeMismatchSignatures = $sizeMismatchSignatures
+                        Error = "Snapshot size mismatch for $sizeMismatchCount test(s); this remains a failure unless the exact same file and dimensions recur in the sibling A/B leg."
+                        PassCount = $devicePassCount; FailCount = $deviceFailCount
+                        Failed = $deviceFailCount; Total = $deviceTotal; Skipped = 0
                     }
                 }
                 return @{
@@ -1512,43 +1794,7 @@ function Get-TestResultFromOutput {
         }
     }
 
-    # ── Environment/infrastructure errors (only if no real test results above) ──
-    $envErrorPatterns = @(
-        @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
-        @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
-        @{ Pattern = "XHarness exit code:\s*80"; Message = "App crashed during test run (XHarness exit 80 APP_CRASH)" }
-        @{ Pattern = "XHarness exit code:\s*78"; Message = "Package installation failed (XHarness exit 78)" }
-        @{ Pattern = "PACKAGE_INSTALLATION_FAILURE"; Message = "Package installation failed (XHarness package installation failure)" }
-        @{ Pattern = "Waiting for command timed out: execution may be compromised"; Message = "Device package operation timed out" }
-        @{ Pattern = "Application test run crashed"; Message = "App crashed during test run" }
-        @{ Pattern = "SIGABRT.*load_aot_module"; Message = "App crashed during AOT loading" }
-        @{ Pattern = "AppiumServerHasNotBeenStartedLocally"; Message = "Appium server failed to start" }
-        @{ Pattern = "no such element.*could not be located"; Message = "Test element not found (app may not have loaded)" }
-        # Appium/NUnit fixture setup failures: when [OneTimeSetUp]/InitialSetup can't establish
-        # the Appium session or launch the app under test, EVERY test in the fixture fails before
-        # a single assertion runs — the harness then throws "Call InitialSetup before accessing the
-        # App property" in TearDown/SaveDeviceDiagnosticInfo. That is an infrastructure failure of
-        # the test agent (Appium/mac2/WebDriverAgent flakiness or the app bundle not registering),
-        # NOT a genuine product failure of the PR's fix. Without this the gate misreads a with-fix
-        # session-start flake as "fix does not pass the tests" and blocks the PR (false FAILED,
-        # e.g. MacCatalyst PR #27477 Issue19752: OneTimeSetUp UnknownErrorException "The app
-        # representing com.microsoft.maui.uitests could not be found"). Classify as env/INCONCLUSIVE
-        # so it is retried and, if persistent, surfaced as non-blocking.
-        @{ Pattern = "Call InitialSetup before accessing the App property"; Message = "Appium app/session did not initialize (InitialSetup/OneTimeSetup failed — test agent could not start the Appium session)" }
-        @{ Pattern = "The app representing .+ could not be found"; Message = "Appium could not find/launch the app under test (mac2/simulator driver could not resolve the app bundle)" }
-        @{ Pattern = "OneTimeSetUp:\s*OpenQA\.Selenium"; Message = "Appium/Selenium error during fixture OneTimeSetUp (session/app setup failed before any test ran)" }
-        # App CRASHED ON LAUNCH and the harness's crash-recovery relaunch attempts were exhausted:
-        # the fixture's [OneTimeSetUp] then times out waiting for the app's navigation UI (e.g.
-        # "Timed out waiting for Go To Test button to appear (the app did not recover after
-        # crash-recovery attempts)"), so EVERY test in the fixture fails at setup before a single
-        # assertion runs. The app under test never came up, so the gate verified NOTHING about the
-        # fix — reporting FAILED here is a FALSE FAILED (build 14844563 / #35640 android: all 17
-        # Material3CarouselViewFeatureTests failed identically at OneTimeSetUp on an agent that had
-        # also just flaked the emulator boot). This env-pattern is only reachable when NO test
-        # passed (Passed=0); if any test had launched+passed we would have trusted the counts above,
-        # so it cannot mask a partial real failure. Classify as env/INCONCLUSIVE (retryable).
-        @{ Pattern = "(?i)the app did not recover after crash-recovery attempts"; Message = "The test app crashed on launch and did not recover after the harness's crash-recovery relaunch attempts, so the fixture's OneTimeSetUp timed out and NO test could run (agent/app-launch infrastructure, not a fix problem). Retry on a fresh agent." }
-    )
+    # ── Environment/infrastructure errors (only if no authoritative nonzero result above) ──
     foreach ($envErr in $envErrorPatterns) {
         if ($content -match $envErr.Pattern) {
             return @{ Passed = $false; EnvError = $true; Error = $envErr.Message; FailCount = 0; Failed = 0; Total = 0; Skipped = 0 }
@@ -1609,26 +1855,21 @@ function Get-TestResultFromOutput {
         }
     }
 
-    # ── Snapshot SIZE mismatch (baseline captured on a different-sized device) ──
-    # "Snapshot different than baseline: X.png (size differs - baseline is WxH pixels, actual is
-    # WxH pixels)" means the committed baseline PNG has different DIMENSIONS than the gate
-    # simulator's screenshot — the baseline was captured on a different device size than the gate
-    # boots (e.g. an iPhone 16 Pro 1206x2472 baseline vs the pinned iPhone 11 Pro 1124x2286). A PR
-    # *code* fix can never change screenshot dimensions, so this failure is environmental in BOTH
-    # the without-fix and with-fix runs and the gate cannot A/B verify the test → INCONCLUSIVE,
-    # never FAILED. This is DISTINCT from a real pixel DIFF ("N% difference") against a same-size
-    # baseline, which is a genuine visual regression and is NOT matched here. Reachable on the
-    # UITest path (NUnit "Passed=False", no "Passed:/Failed:" counts). (build 14850018, PR #37032:
-    # ChangingItemSpacingDoesNotShiftFirstItemOutOfView.png baseline 1206x2472 vs gate 1124x2286 —
-    # identical size mismatch in both legs, wrongly reported FAILED.)
-    $sizeMismatchCount = ([regex]::Matches($content, '(?i)size differs\s*-\s*baseline is \d+x\d+ pixels?, actual is \d+x\d+ pixels?')).Count
+    # ── Snapshot SIZE mismatch (requires exact sibling A/B confirmation) ──
+    # Record the affected file and dimensions, but retain a genuine failure until the sibling
+    # leg reports the identical signature. The paired result pass later converts only exact
+    # A/B matches to INCONCLUSIVE; a one-sided with-fix window-size regression stays FAILED.
+    $sizeMismatchSignatures = @(Get-SnapshotSizeMismatchSignatures -Content $content)
+    $sizeMismatchCount = $sizeMismatchSignatures.Count
     if ($uiTestFailureCount -gt 0 -and
         $sizeMismatchCount -gt 0 -and
         ($sizeMismatchCount + $baselineMissingCount) -ge $uiTestFailureCount) {
         return @{
-            Passed = $false; EnvError = $true; SnapshotSizeMismatch = $true
-            Error = "Snapshot size mismatch for $sizeMismatchCount reported failure(s): the committed baseline PNG dimensions differ from the gate simulator's screenshot size — the baseline was captured on a different-sized device. Every count-less UITest failure was accounted for by a size mismatch or missing baseline, so the gate cannot A/B verify these tests; the baselines need regenerating on the current device."
-            FailCount = 0; Failed = 0; Total = 0; Skipped = 0
+            Passed = $false; SnapshotSizeMismatch = $true
+            SnapshotSizeMismatchSignatures = $sizeMismatchSignatures
+            Error = "Snapshot size mismatch for $sizeMismatchCount reported failure(s); this remains a failure unless the exact same file and dimensions recur in the sibling A/B leg."
+            PassCount = 0; FailCount = $uiTestFailureCount
+            Failed = $uiTestFailureCount; Total = $uiTestFailureCount; Skipped = 0
         }
     }
 
@@ -1886,15 +2127,18 @@ function Limit-ExpensiveGateTests {
         AzDO hard-kills the task → a "The task has timed out" FAILED verdict
         with no analysis (observed on build 14676353 / PR #36109: 11 device
         tests → 120-min timeout). This caps the expensive tests, prioritising
-        the PR's own newly-added (fix-authored) regression tests. The Deep UI
-        Tests stage still exercises the full category matrix. Cheap unit/XAML
-        tests are never capped (they are fast). Caps are env-overridable via
-        GATE_MAX_DEVICE_TESTS / GATE_MAX_UI_TESTS.
+        the PR's own newly-added (fix-authored) regression tests. Deep UI Tests
+        exercises the HostApp UI category matrix, but does not run DeviceTests;
+        any dropped device-test groups are persisted as an explicit coverage
+        limitation in the gate report. Cheap unit/XAML tests are never capped
+        (they are fast). Caps are env-overridable via GATE_MAX_DEVICE_TESTS /
+        GATE_MAX_UI_TESTS.
     #>
     param(
         [object[]]$Tests,
         [string[]]$AddedFiles = @()
     )
+    $script:GateCoverageLimitations = @()
     if (-not $Tests -or @($Tests).Count -le 1) { return $Tests }
 
     $maxDevice = if ($env:GATE_MAX_DEVICE_TESTS) { [int]$env:GATE_MAX_DEVICE_TESTS } else { 2 }
@@ -1920,10 +2164,24 @@ function Limit-ExpensiveGateTests {
 
     $keptDevice = @($device | Select-Object -First $maxDevice)
     $keptUi     = @($ui     | Select-Object -First $maxUi)
+    $droppedDevice = @($device | Select-Object -Skip $maxDevice)
+    $droppedUi     = @($ui     | Select-Object -Skip $maxUi)
 
-    $dropped = (@($device).Count - @($keptDevice).Count) + (@($ui).Count - @($keptUi).Count)
+    $dropped = $droppedDevice.Count + $droppedUi.Count
     if ($dropped -gt 0) {
-        Write-Host "⚠️  Gate work-cap: PR touches $(@($device).Count) device + $(@($ui).Count) UI test(s); the gate verifies the first $(@($keptDevice).Count) device + $(@($keptUi).Count) UI test(s) (fix-authored/newly-added tests prioritised) to stay within the task timeout. The remaining $dropped expensive test(s) are exercised by the Deep UI Tests stage." -ForegroundColor Yellow
+        Write-Host "⚠️  Gate work-cap: PR touches $(@($device).Count) device + $(@($ui).Count) UI test(s); the A/B gate verifies the first $(@($keptDevice).Count) device + $(@($keptUi).Count) UI test(s) (fix-authored/newly-added tests prioritised) to stay within the task timeout." -ForegroundColor Yellow
+    }
+    if ($droppedDevice.Count -gt 0) {
+        $droppedDeviceNames = @($droppedDevice | ForEach-Object { $_.TestName }) -join ', '
+        $deviceLimitation = "The A/B gate did not verify $($droppedDevice.Count) dropped DeviceTest group(s): $droppedDeviceNames. Deep UI Tests runs HostApp UI categories only and does not execute DeviceTests; separate device-test validation is required."
+        $script:GateCoverageLimitations += $deviceLimitation
+        Write-Host "⚠️  $deviceLimitation" -ForegroundColor Yellow
+    }
+    if ($droppedUi.Count -gt 0) {
+        $droppedUiNames = @($droppedUi | ForEach-Object { $_.TestName }) -join ', '
+        $uiLimitation = "The A/B gate did not verify $($droppedUi.Count) dropped UI test group(s): $droppedUiNames. Those UI categories are exercised separately by the Deep UI Tests stage, without the gate's before/after comparison."
+        $script:GateCoverageLimitations += $uiLimitation
+        Write-Host "⚠️  $uiLimitation" -ForegroundColor Yellow
     }
 
     # Cheap tests first (fast red/green signal), then the capped expensive set.
@@ -2334,9 +2592,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         if ($sanitizedName.Length -gt 60) { $sanitizedName = $sanitizedName.Substring(0, 60) }
         $TestLog = Join-Path $OutputPath "test-failure-$sanitizedName.log"
 
-        $testResult = Invoke-TestRunWithRetry -TestEntry $testEntry -LogFile $TestLog
-        $testResult.TestName = $testEntry.TestName
-        $testResult.TestType = $testEntry.Type
+        $testResult = Invoke-FailureOnlyTestRun -TestEntry $testEntry -LogFile $TestLog
         $allResults += $testResult
     }
 
@@ -2681,17 +2937,15 @@ function Write-MarkdownReport {
         [string]$ReportPlatform,
         [string]$ReportBaseBranch,
         [array]$ReportRevertableFiles,
-        [array]$ReportNewFiles
+        [array]$ReportNewFiles,
+        [string[]]$CoverageLimitations = @()
     )
     
     # Check for environment / build errors in results — a test that could not be built or
     # run never verified anything, so the gate is INCONCLUSIVE (not a genuine FAILED).
     $hasEnvError = ($WithoutFixResultsList | Where-Object { $_.EnvError }) -or ($WithFixResultsList | Where-Object { $_.EnvError })
-    # Only a BASELINE (without-fix) build error, or an env error, leaves the gate genuinely
-    # unable to verify → INCONCLUSIVE. A with-fix-ONLY build error (baseline compiles, the PR's
-    # own fix does not) is a definitive FAILED — mirror the exit-code split (see $gateInfraError)
-    # so the report headline and the Gate status chip don't frame a non-compiling fix as a
-    # non-blocking infra flake.
+    # A baseline build error only makes its paired test inconclusive. A separate test that
+    # compiles without the fix but fails to compile with it remains a definitive regression.
     $baselineBuildError = @($WithoutFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
 
     # A baseline (without-fix) build error located in the PR's OWN detected test file is only a
@@ -2717,11 +2971,12 @@ function Write-MarkdownReport {
         if ((-not $wGInc) -and (-not $wG.Passed)) { $reportWithFixGenuineFailCount++ }
     }
     $reportWithFixGenuineFail = $reportWithFixGenuineFailCount -gt 0
-    $reportWithFixBuildError = @($WithFixResultsList | Where-Object { $_.BuildError }).Count -gt 0
+    $reportWithFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+        -WithoutFixResults $WithoutFixResultsList `
+        -WithFixResults $WithFixResultsList
     $reportDefinitiveFailure = Test-GateHasDefinitiveFailure `
         -WithFixGenuineFailCount $reportWithFixGenuineFailCount `
-        -WithFixBuildError $reportWithFixBuildError `
-        -BaselineBuildError $baselineBuildError `
+        -WithFixOnlyBuildError $reportWithFixOnlyBuildError `
         -PrTestBuildError $prTestBuildError
 
     # Platform-affinity FALSE-FAILED guard (mirror of the exit-code $fixPlatformMismatch):
@@ -2942,6 +3197,13 @@ function Write-MarkdownReport {
     if ($failureClassification) {
         $lines += ""
         $lines += $failureClassification
+    }
+    if ($CoverageLimitations.Count -gt 0) {
+        $lines += ""
+        $lines += "#### ⚠️ Gate coverage limitations"
+        foreach ($limitation in $CoverageLimitations) {
+            $lines += "- $limitation"
+        }
     }
     $lines += ""
 
@@ -3579,6 +3841,60 @@ function Get-SnapshotDiffMap {
     return $map
 }
 
+function Get-SnapshotSizeMismatchSignatures {
+    param([string] $Content)
+    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
+
+    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
+    return @($rx.Matches($Content) |
+        ForEach-Object {
+            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
+        } |
+        Sort-Object -Unique)
+}
+
+function Test-SnapshotSizeMismatchPair {
+    param(
+        [object] $WithoutFixResult,
+        [object] $WithFixResult
+    )
+
+    if (-not $WithoutFixResult -or -not $WithFixResult) { return $false }
+    if (-not $WithoutFixResult.SnapshotSizeMismatch -or -not $WithFixResult.SnapshotSizeMismatch) {
+        return $false
+    }
+
+    $without = @($WithoutFixResult.SnapshotSizeMismatchSignatures | Where-Object { $_ } | Sort-Object -Unique)
+    $with = @($WithFixResult.SnapshotSizeMismatchSignatures | Where-Object { $_ } | Sort-Object -Unique)
+    if ($without.Count -eq 0 -or $without.Count -ne $with.Count) { return $false }
+    for ($i = 0; $i -lt $without.Count; $i++) {
+        if (-not [string]::Equals($without[$i], $with[$i], [System.StringComparison]::Ordinal)) {
+            return $false
+        }
+    }
+    return $true
+}
+
+function Convert-SnapshotSizeMismatchPairToEnvironment {
+    param(
+        [object] $WithoutFixResult,
+        [object] $WithFixResult
+    )
+
+    if (-not (Test-SnapshotSizeMismatchPair -WithoutFixResult $WithoutFixResult -WithFixResult $WithFixResult)) {
+        return $false
+    }
+
+    foreach ($result in @($WithoutFixResult, $WithFixResult)) {
+        $result.EnvError = $true
+        $result.SnapshotSizeMismatchPaired = $true
+        $result.Error = "The exact same snapshot file and dimensions mismatched in both A/B legs, so the gate cannot attribute the mismatch to the fix. Regenerate the baseline on the current device."
+        $result.FailCount = 0
+        $result.Failed = 0
+    }
+    return $true
+}
+
 function Get-LeakAssertCount {
     # Counts GC memory-leak assertion failures in a test log. The MAUI device/unit test helper
     # AssertionExtensions.WaitForGC emits exactly one "Expected all references to be collected,
@@ -3905,6 +4221,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         "-t:Rebuild",
         "-p:TreatWarningsAsErrors=false"
     ) + $hostOnlyTargetFrameworkArgs
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
     $buildOut = Invoke-WithoutGhTokens { & dotnet @buildArgs 2>&1 }
     $buildExit = $LASTEXITCODE
     $combined = @($buildOut)
@@ -3915,6 +4234,9 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
             "--logger", "console;verbosity=normal",
             "-p:TreatWarningsAsErrors=false"
         ) + $hostOnlyTargetFrameworkArgs + @("--filter", $retryEntry.Filter)
+        if ($NoRestore) {
+            $testArgs += '--no-restore'
+        }
         $testOut = Invoke-WithoutGhTokens { & dotnet @testArgs 2>&1 }
         $combined += @($testOut)
     }
@@ -3939,6 +4261,31 @@ for ($ri = 0; $ri -lt $withFixResults.Count; $ri++) {
         Write-Log "  [CleanRetry] $($retryEntry.TestName): compiled clean, tests failed — genuine failure"
     }
     $withFixResults[$ri] = $clean
+}
+
+# An app-startup crash during fixture setup is ambiguous in isolation. Downgrade it
+# only when both A/B legs carry the same normalized crash signature; a with-fix-only,
+# distinct, or unidentifiable crash remains a genuine regression and blocks the gate.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    if (Convert-AmbiguousSetupFailurePairToEnvironment -WithoutFixResult $wo -WithFixResult $w) {
+        Write-Host "  ⚠️ $($t.TestName): a matching app-startup crash signature occurred in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): matching A/B app-startup crash signature — INCONCLUSIVE"
+    }
+}
+
+# A snapshot dimension mismatch is environmental only when the exact same file,
+# baseline dimensions, and actual dimensions recur in both A/B legs.
+foreach ($t in $AllDetectedTests) {
+    $wo = $withoutFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    $w = $withFixResults | Where-Object { $_.TestName -eq $t.TestName } | Select-Object -First 1
+    if (-not $wo -or -not $w) { continue }
+    if (Convert-SnapshotSizeMismatchPairToEnvironment -WithoutFixResult $wo -WithFixResult $w) {
+        Write-Host "  📐 $($t.TestName): identical snapshot size mismatch in both A/B legs — reclassifying as INCONCLUSIVE." -ForegroundColor Yellow
+        Write-Log "  [$($t.Type)] $($t.TestName): identical A/B snapshot size mismatch — INCONCLUSIVE"
+    }
 }
 
 # Combine into a single summary for backward compatibility
@@ -4193,13 +4540,16 @@ foreach ($t in $AllDetectedTests) {
 $verificationPassed = ($reproducingCount -gt 0) -and ($withFixGenuineFailCount -eq 0)
 
 # A test that hit an ENVIRONMENT error, or a BASELINE (without-fix) BUILD error, never
-# established whether the bug reproduces, so the gate could not verify anything — treat that
-# as INCONCLUSIVE (exit 3) so build/infra flakes don't masquerade as a broken fix.
+# established whether the bug reproduces, so that paired result is inconclusive. It must not
+# mask a different test that compiles without the fix but fails to compile with it.
 #
 # A with-fix-ONLY build error is different: the baseline compiles but the PR's own fix does
 # NOT, which is a definitive FAILED (exit 1), not infra noise — so it must not be downgraded.
 $baselineBuildError = (@($withoutFixResults) | Where-Object { $_.BuildError }).Count -gt 0
 $withFixBuildError  = (@($withFixResults)    | Where-Object { $_.BuildError }).Count -gt 0
+$withFixOnlyBuildError = Test-HasWithFixOnlyBuildError `
+    -WithoutFixResults $withoutFixResults `
+    -WithFixResults $withFixResults
 $anyEnvError        = (@($withoutFixResults) + @($withFixResults) | Where-Object { $_.EnvError }).Count -gt 0
 # A FILTER MISMATCH (the -filter expression matched 0 test cases) means the deciding test
 # never ran, so the gate verified NOTHING about it. This happens when the PR's test is
@@ -4250,8 +4600,7 @@ $fixPlatformMismatch = ($withFixGenuineFailCount -eq 0) -and (Test-FixIrrelevant
 # detected test is an image/rasterization class that can't load libSkiaSharp on the gate agent.)
 $hasDefinitiveGateFailure = Test-GateHasDefinitiveFailure `
     -WithFixGenuineFailCount $withFixGenuineFailCount `
-    -WithFixBuildError $withFixBuildError `
-    -BaselineBuildError $baselineBuildError `
+    -WithFixOnlyBuildError $withFixOnlyBuildError `
     -PrTestBuildError $prTestBuildError
 $gateInfraError = (-not $hasDefinitiveGateFailure) -and (
     $anyEnvError -or
@@ -4281,7 +4630,8 @@ Write-MarkdownReport `
     -ReportPlatform $Platform `
     -ReportBaseBranch $BaseBranchName `
     -ReportRevertableFiles $RevertableFiles `
-    -ReportNewFiles $NewFiles
+    -ReportNewFiles $NewFiles `
+    -CoverageLimitations $script:GateCoverageLimitations
 
 if ($verificationPassed) {
     Write-Host ""
@@ -4335,9 +4685,9 @@ if ($verificationPassed) {
         Write-Host "║  Tests FAILED with fix (should pass)                      ║" -ForegroundColor Red
         Write-Host "║  - Fix doesn't resolve the issue or test is broken        ║" -ForegroundColor Red
     }
-    if ($withFixBuildError -and -not $baselineBuildError) {
-        Write-Host "║  - Fix does NOT compile (baseline builds fine) — this is  ║" -ForegroundColor Red
-        Write-Host "║    a definitive failure, not a build/infra flake.         ║" -ForegroundColor Red
+    if ($withFixOnlyBuildError) {
+        Write-Host "║  - Fix does NOT compile for a test whose baseline does.   ║" -ForegroundColor Red
+        Write-Host "║    This is a definitive failure, not an infra flake.      ║" -ForegroundColor Red
     }
     Write-Host "║                                                           ║" -ForegroundColor Red
     Write-Host "║  Possible causes:                                         ║" -ForegroundColor Red

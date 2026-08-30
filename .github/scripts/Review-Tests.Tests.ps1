@@ -3,6 +3,8 @@
 
 BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Review-Tests.ps1'
+    . (Join-Path $PSScriptRoot 'shared/Escape-Html.ps1')
+
     $tokens = $null
     $parseErrors = $null
     $ast = [System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
@@ -15,7 +17,6 @@ BeforeAll {
             'Get-EmbeddedTestFailureReport',
             'Get-EmbeddedTestFailureReportCandidate',
             'Get-MarkdownFenceState',
-            'Escape-Html',
             'Get-ReportVerdict',
             'Get-VerdictColor',
             'New-Badge',
@@ -89,6 +90,31 @@ Set-Content -LiteralPath $CommentBodyPath -Value "$tokenState|$context" -NoNewli
         finally {
             [Environment]::SetEnvironmentVariable('GH_TOKEN', $priorToken, 'Process')
         }
+    }
+}
+
+Describe 'HTML-safe badge rendering' {
+    It 'keeps model-derived quotes and closing tags inside the alt attribute' {
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            return '{"author":{"login":"author"},"headRefOid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}'
+        }
+
+        $payload = 'Not ready "quoted" </details><img alt="breakout">'
+        $body = New-TestFailureReviewBody `
+            -PRNumber 123 `
+            -Repository 'dotnet/maui' `
+            -ReportContent "**Overall verdict:** $payload" `
+            -ContextJsonPath (Join-Path $TestDrive 'missing.json')
+        $overallBadge = $body -split "`n" |
+            Where-Object { $_ -match '<img alt="Overall ' } |
+            Select-Object -First 1
+
+        $overallBadge | Should -Match '^  <img alt="[^"]*" src="[^"]+">$'
+        ([regex]::Matches($overallBadge, '"').Count) | Should -Be 4
+        $overallBadge | Should -Match ([regex]::Escape('alt="Overall Not ready &quot;quoted&quot; &lt;/details&gt;&lt;img alt=&quot;breakout&quot;&gt;"'))
+        $overallBadge | Should -Not -Match '</details>|<img alt="breakout">'
+        $overallBadge | Should -Not -Match '&amp;(?:quot|lt|gt);'
     }
 }
 

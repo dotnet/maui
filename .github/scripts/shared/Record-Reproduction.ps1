@@ -39,6 +39,10 @@ param(
     [ValidateNotNullOrEmpty()]
     [string]$ReproductionScriptPath,
 
+    [Parameter(Mandatory = $false, ParameterSetName = 'Path')]
+    [AllowEmptyString()]
+    [string]$ReproductionArgumentsPayload = '',
+
     [Parameter(Mandatory = $true, ParameterSetName = 'ScriptBlock')]
     [ValidateNotNull()]
     [scriptblock]$ReproductionScriptBlock,
@@ -64,6 +68,29 @@ param(
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 $scriptParameterSetName = $PSCmdlet.ParameterSetName
+$script:reproductionScriptArguments = @()
+if ($scriptParameterSetName -eq 'Path' -and
+    -not [string]::IsNullOrWhiteSpace($ReproductionArgumentsPayload)) {
+    if ($ReproductionArgumentsPayload.Length -gt 32768 -or
+        $ReproductionArgumentsPayload -notmatch '^[A-Za-z0-9+/]+={0,2}$') {
+        throw 'Reproduction script arguments are malformed or oversized.'
+    }
+    try {
+        $argumentJson = [Text.UTF8Encoding]::new($false, $true).GetString(
+            [Convert]::FromBase64String($ReproductionArgumentsPayload))
+        $decodedArguments = ConvertFrom-Json -InputObject $argumentJson -NoEnumerate
+        $script:reproductionScriptArguments = @(
+            $decodedArguments | ForEach-Object { [string]$_ })
+    } catch {
+        throw 'Reproduction script arguments are malformed or oversized.'
+    }
+    if ($script:reproductionScriptArguments.Count -gt 64 -or
+        @($script:reproductionScriptArguments | Where-Object {
+            $_.Length -gt 4096
+        }).Count -gt 0) {
+        throw 'Reproduction script arguments are malformed or oversized.'
+    }
+}
 
 $maxFrameRate = 15.0
 # Reviews of kubaflo/maui#181, #189, #193, and #194 rejected the submitted
@@ -1182,12 +1209,12 @@ function Invoke-TrustedReproduction {
         $pwshPath = (Get-Process -Id $PID -ErrorAction Stop).Path
         [void](Invoke-RequiredCommand `
             -FilePath $pwshPath `
-            -ArgumentList @(
+            -ArgumentList (@(
                 '-NoLogo',
                 '-NoProfile',
                 '-NonInteractive',
                 '-File', $scriptPath
-            ) `
+            ) + @($script:reproductionScriptArguments)) `
             -TimeoutSeconds $remainingSeconds `
             -Purpose 'Run trusted reproduction script')
     } else {

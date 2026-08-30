@@ -38,6 +38,10 @@
     Path to write the analysis input markdown. Must live under
     $(Agent.TempDirectory) (rule 6). Written only when regular failures exist.
 
+.PARAMETER AgentTempDirectory
+    Trusted root that must contain OutputFile. Defaults to the Azure Pipelines
+    AGENT_TEMPDIRECTORY environment variable.
+
 .PARAMETER MaxDiffLines
     Truncate the unified diff to this many lines (default 800) to bound prompt
     size. The complete changed-file list is always included regardless.
@@ -50,10 +54,46 @@ param(
     [string] $Repository = 'dotnet/maui',
     [Parameter(Mandatory = $true)] [string] $OutputFile,
     [string] $Platform,
+    [string] $AgentTempDirectory = $env:AGENT_TEMPDIRECTORY,
     [int] $MaxDiffLines = 800
 )
 
 $ErrorActionPreference = 'Continue'
+
+function Resolve-AgentTempOutputPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $OutputPath,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $TrustedTempRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TrustedTempRoot)) {
+        throw 'AgentTempDirectory is required to validate the analysis output path.'
+    }
+    if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+        throw 'OutputFile must not be empty.'
+    }
+
+    $tempRoot = [System.IO.Path]::TrimEndingDirectorySeparator(
+        [System.IO.Path]::GetFullPath($TrustedTempRoot))
+    $candidate = [System.IO.Path]::GetFullPath($OutputPath)
+    $relative = [System.IO.Path]::GetRelativePath($tempRoot, $candidate)
+    $parentPrefix = "..$([System.IO.Path]::DirectorySeparatorChar)"
+    $alternateParentPrefix = "..$([System.IO.Path]::AltDirectorySeparatorChar)"
+
+    if ($relative -eq '.' -or
+        $relative -eq '..' -or
+        [System.IO.Path]::IsPathRooted($relative) -or
+        $relative.StartsWith($parentPrefix, [System.StringComparison]::Ordinal) -or
+        $relative.StartsWith($alternateParentPrefix, [System.StringComparison]::Ordinal)) {
+        throw "OutputFile must be contained by AgentTempDirectory ('$tempRoot')."
+    }
+
+    return $candidate
+}
 
 function ConvertTo-UiFailureSafeConsoleText {
     param(
@@ -67,6 +107,10 @@ function ConvertTo-UiFailureSafeConsoleText {
 
     return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
 }
+
+$OutputFile = Resolve-AgentTempOutputPath `
+    -OutputPath $OutputFile `
+    -TrustedTempRoot $AgentTempDirectory
 
 if (-not (Test-Path $ArtifactDir)) {
     Write-Host "No artifact dir ($ArtifactDir) — nothing to analyze."

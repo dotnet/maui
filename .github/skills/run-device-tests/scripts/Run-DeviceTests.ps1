@@ -85,6 +85,9 @@ param(
     [switch]$Rebuild,
 
     [Parameter(Mandatory = $false)]
+    [switch]$NoRestore,
+
+    [Parameter(Mandatory = $false)]
     [string]$TestFilter,
 
     [Parameter(Mandatory = $false)]
@@ -171,6 +174,14 @@ $WindowsDeviceTestPackageIds = @{
 
 $WindowsDeviceNoResultsMarker = "WINDOWS_DEVICE_TEST_NO_RESULTS:"
 $WindowsDeviceTargetTimeoutMarker = "WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:"
+
+function ConvertTo-AzdoSafeConsole {
+    param([string]$Text)
+
+    # Test result XML is PR-controlled. Collapse line separators so an entity-decoded
+    # newline cannot create a column-zero command, then defang Azure command prefixes.
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
 
 function Get-CategoryFiltersFromTestFilter {
     param([string]$Filter)
@@ -686,6 +697,7 @@ function Get-DeviceTestResultSummary {
                             $m = $test.GetAttribute('method')
                             if (-not [string]::IsNullOrWhiteSpace($m)) { "$testType.$m" } else { $testType }
                         } elseif (-not [string]::IsNullOrWhiteSpace($testName)) { $testName } else { '(unnamed)' }
+                        $failId = ConvertTo-AzdoSafeConsole -Text $failId
                         if ($summary.FailedTests.Count -lt 20 -and -not $summary.FailedTests.Contains($failId)) {
                             $summary.FailedTests.Add($failId)
                         }
@@ -1148,6 +1160,9 @@ try {
         "-f", $platformConfig.Tfm
         "/p:TreatWarningsAsErrors=false"
     )
+    if ($NoRestore) {
+        $buildArgs += '--no-restore'
+    }
 
     if ($Rebuild) {
         $buildArgs += "-t:Rebuild"

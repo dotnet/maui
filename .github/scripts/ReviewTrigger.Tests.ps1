@@ -174,8 +174,31 @@ Describe 'review trigger hardening' {
         $script:MatchJob | Should -Match 'IssueComment\{isMinimized\}'
         $script:MatchJob | Should -Match 'already minimized by recovery; skipping delayed duplicate delivery'
         $script:MatchJob | Should -Match '(?m)^          for attempt in 1 2 3; do$'
-        $script:MatchJob | Should -Match 'Recovery source comment is still unacknowledged; proceeding with dispatch'
+        $script:MatchJob | Should -Match 'Recovery source comment is still unacknowledged; revalidating'
         $script:MatchJob | Should -Not -Match 'workflow_dispatch — skipping collaborator check'
+    }
+
+    It 'revalidates the source commenter current permission before recovery proceeds' {
+        $sourceReadIndex = $script:MatchJob.IndexOf('if ! SOURCE_COMMENT=')
+        $permissionIndex = $script:MatchJob.IndexOf('PERMISSION=""', $sourceReadIndex)
+
+        $sourceReadIndex | Should -BeGreaterThan -1
+        $permissionIndex | Should -BeGreaterThan $sourceReadIndex
+        $recoveryValidation = $script:MatchJob.Substring(
+            $sourceReadIndex,
+            $permissionIndex - $sourceReadIndex)
+
+        $recoveryValidation | Should -Match ([regex]::Escape(
+            'SOURCE_ACTOR=$(echo "${SOURCE_COMMENT}" | jq -r ''.user.login // ""'')'))
+        $recoveryValidation | Should -Match ([regex]::Escape(
+            'ACTOR="${SOURCE_ACTOR}"'))
+        $recoveryValidation | Should -Not -Match 'echo "proceed=true"'
+
+        $permissionBlock = $script:MatchJob.Substring($permissionIndex)
+        $permissionBlock | Should -Match ([regex]::Escape(
+            'collaborators/${ACTOR}/permission'))
+        $permissionBlock | Should -Match 'admin\|maintain\|write'
+        $permissionBlock | Should -Match 'echo "proceed=true"'
     }
 
     It 'rechecks recovery acknowledgement after job concurrency and before the review lock' {

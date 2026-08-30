@@ -100,6 +100,7 @@ function New-InlineReviewMarker {
 function Test-InlineReviewMarkerExists {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [string[]]$ReviewBodies,
 
         [Parameter(Mandatory = $true)]

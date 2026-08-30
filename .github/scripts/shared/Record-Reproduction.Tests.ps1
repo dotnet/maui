@@ -747,6 +747,31 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $reproduction.ArgumentList[-1] | Should -BeExactly $reproductionPath
     }
 
+    It 'passes bounded decoded arguments to the trusted reproduction script' {
+        $harness = New-RecordingHarness
+        $reproductionPath = Join-Path $TestDrive 'trusted-reproduction.ps1'
+        'exit 0' | Set-Content -LiteralPath $reproductionPath -Encoding UTF8
+        $evidenceDir = Join-Path $TestDrive 'path-arguments'
+        $arguments = @('-Platform', 'android', '-RepoRoot', '/home/vsts/work/1/s')
+        $payload = [Convert]::ToBase64String(
+            [Text.Encoding]::UTF8.GetBytes(
+                (ConvertTo-Json -InputObject $arguments -Compress)))
+
+        & $script:recordScript `
+            -Platform windows `
+            -EvidenceDir $evidenceDir `
+            -ReproductionScriptPath $reproductionPath `
+            -ReproductionArgumentsPayload $payload `
+            -MaxDurationSeconds 10 `
+            -MaxVideoBytes 4096 `
+            -CommandRunner $harness.CommandRunner `
+            -ProcessRunner $harness.ProcessRunner `
+            -MediaProbe $harness.MediaProbe | Out-Null
+
+        $reproduction = (Get-CommandRequest $harness 'Run trusted reproduction script')[0]
+        $reproduction.ArgumentList[-4..-1] | Should -Be $arguments
+    }
+
     It 'writes deterministic evidence metadata and hashes the retained MP4' {
         $harness = New-RecordingHarness
         $evidenceDir = Join-Path $TestDrive 'manifest'

@@ -1,11 +1,12 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Applies a validated reproduction patch and opens a draft pull request.
+    Applies validated reproduction and product-fix patches and opens a draft fix pull request.
 
 .DESCRIPTION
     Run only from a clean trusted checkout after candidate and evidence
-    validation. The GitHub token must be provided through GH_TOKEN.
+    validation. Reproduction-only candidates are refused. The GitHub token must
+    be provided through GH_TOKEN.
 #>
 
 [CmdletBinding()]
@@ -53,6 +54,28 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
+
+# Keep the validator's shared selector/quality helpers in one place.  Its
+# command-line parameters use names such as OutputPath and PatchPath, so save
+# this publisher's parameters while dot-sourcing the trusted definitions.
+$publisherValidatedCandidatePath = $ValidatedCandidatePath
+$publisherPublishedEvidencePath = $PublishedEvidencePath
+$publisherIssueContextPath = $IssueContextPath
+$publisherPatchPath = $PatchPath
+$publisherFixPatchPath = $FixPatchPath
+$publisherRepositoryRoot = $RepositoryRoot
+$publisherOutputPath = $OutputPath
+$qualitySelectorValidatorPath = Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1'
+if (Test-Path -LiteralPath $qualitySelectorValidatorPath -PathType Leaf) {
+    . $qualitySelectorValidatorPath
+}
+$ValidatedCandidatePath = $publisherValidatedCandidatePath
+$PublishedEvidencePath = $publisherPublishedEvidencePath
+$IssueContextPath = $publisherIssueContextPath
+$PatchPath = $publisherPatchPath
+$FixPatchPath = $publisherFixPatchPath
+$RepositoryRoot = $publisherRepositoryRoot
+$OutputPath = $publisherOutputPath
 
 . (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
 . (Join-Path $PSScriptRoot 'Get-ReplicationUpstreamFix.ps1')
@@ -152,7 +175,20 @@ function Get-ReplicationIndependentReviewBlock {
             if ([string]::IsNullOrWhiteSpace($detail)) { continue }
             $severity = ConvertTo-ReplicationSingleLine -Value ([string]$entry.severity) -MaximumLength 40
             if ([string]::IsNullOrWhiteSpace($severity)) { $severity = 'important' }
-            $findings += ('- **' + $severity + '.** ' + $detail)
+            $category = if ($entry.PSObject.Properties['category']) {
+                ConvertTo-ReplicationSingleLine -Value ([string]$entry.category) -MaximumLength 48
+            } else { 'unknown' }
+            $grounding = if ($entry.PSObject.Properties['grounding']) {
+                ConvertTo-ReplicationSingleLine -Value ([string]$entry.grounding) -MaximumLength 48
+            } else { 'unknown' }
+            $confidence = if ($entry.PSObject.Properties['confidence']) {
+                ConvertTo-ReplicationSingleLine -Value ([string]$entry.confidence) -MaximumLength 16
+            } else { 'unknown' }
+            $corroboration = if ($entry.PSObject.Properties['corroboration']) {
+                ConvertTo-ReplicationSingleLine -Value ([string]$entry.corroboration) -MaximumLength 24
+            } else { 'unknown' }
+            $findings += ('- **' + $severity + '.** ' + $detail +
+                " (``$category``; grounding ``$grounding``, confidence ``$confidence``, corroboration ``$corroboration``; advisory)")
             if ($findings.Count -ge 6) { break }
         }
     }
@@ -266,31 +302,253 @@ function Get-ReplicationCandidateText {
     return [string]$property.Value
 }
 
-function Test-ReplicationWeakerThanOpenPullRequest {
+function Get-ReplicationCandidateSelector {
+    <#
+    .SYNOPSIS
+        Reads the validator-produced selector disclosure without inventing one.
+
+    .DESCRIPTION
+        Selector grammar is owned by Validate-ReplicationCandidate.ps1.  The
+        publisher only renders the normalized result; if the field is absent or
+        malformed it renders an unknown disclosure instead of choosing a
+        different execution grammar.
+    #>
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $property = $Candidate.PSObject.Properties['selector']
+    if (-not $property -or $null -eq $property.Value) {
+        return [ordered]@{
+            variant = 'unknown'
+            raw = 'unknown'
+            project = 'unknown'
+            projectPath = 'unknown'
+            class = 'unknown'
+            method = 'unknown'
+            platform = 'unknown'
+            discoveredCount = 0
+            executedCount = 0
+            fixture = 'unknown'
+        }
+    }
+
+    try {
+        if (Get-Command Assert-ReplicationSelector -ErrorAction SilentlyContinue) {
+            $verificationType = Get-ReplicationCandidateText `
+                -Candidate $Candidate `
+                -Name 'verificationTestType'
+            if ([string]::IsNullOrWhiteSpace($verificationType)) {
+                $verificationType = switch ([string]$Candidate.testType) {
+                    'ui' { 'UITest' }
+                    'device' { 'DeviceTest' }
+                    'xaml' { 'XamlUnitTest' }
+                    default { 'UnitTest' }
+                }
+            }
+            return Assert-ReplicationSelector `
+                -Selector $property.Value `
+                -ExpectedTestType $verificationType `
+                -ExpectedPlatform ([string]$Candidate.platform) `
+                -ExpectedIssueNumber ([long]$Candidate.issueNumber) `
+                -TrustedDiscoveredCount ([int]$property.Value.discoveredCount) `
+                -TrustedExecutedCount ([int]$property.Value.executedCount)
+        }
+    } catch {
+        # A validated candidate should never reach this branch.  Rendering an
+        # unknown selector is safer than falling back to a model-selected
+        # filter if an older artifact or hand-authored fixture is encountered.
+    }
+
+    if (-not (Get-Command Assert-ReplicationSelector -ErrorAction SilentlyContinue)) {
+        # Unit tests and legacy body-only consumers may load this renderer
+        # without the validator.  Re-render the supplied disclosure verbatim;
+        # it still cannot authorize an execution or publication action.
+        $required = @('variant', 'raw', 'project', 'projectPath', 'class', 'method', 'platform', 'discoveredCount', 'executedCount')
+        $names = if ($property.Value -is [System.Collections.IDictionary]) {
+            @($property.Value.Keys | ForEach-Object { [string]$_ })
+        } else {
+            @($property.Value.PSObject.Properties.Name)
+        }
+        if (@($required | Where-Object { $_ -notin $names }).Count -eq 0) {
+            return $property.Value
+        }
+    }
+
+    return [ordered]@{
+        variant = 'unknown'
+        raw = 'unknown'
+        project = 'unknown'
+        projectPath = 'unknown'
+        class = 'unknown'
+        method = 'unknown'
+        platform = 'unknown'
+        discoveredCount = 0
+        executedCount = 0
+        fixture = 'unknown'
+    }
+}
+
+function Get-ReplicationQualityDisclosureBlock {
+    <#
+    .SYNOPSIS
+        Renders the bounded quality contract as disclosure-only PR prose.
+    #>
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $property = $Candidate.PSObject.Properties['qualityContract']
+    $contract = if ($property -and $null -ne $property.Value) {
+        try {
+            if (Get-Command ConvertTo-ReplicationQualityContract -ErrorAction SilentlyContinue) {
+                ConvertTo-ReplicationQualityContract -Value $property.Value
+            } else {
+                $property.Value
+            }
+        } catch {
+            $null
+        }
+    } else {
+        $null
+    }
+    if ($null -eq $contract) {
+        return "## Quality contract`n`nNot measured. Quality metadata is disclosure only and does not authorize execution or publication."
+    }
+    $getQualityNames = {
+        param($Object)
+        if ($Object -is [System.Collections.IDictionary]) {
+            return @($Object.Keys | ForEach-Object { [string]$_ })
+        }
+        return @($Object.PSObject.Properties.Name)
+    }
+    $requiredQualitySections = @('userVisible', 'oracle', 'scenario', 'risk', 'semanticBlastRadius', 'mediaAlignment', 'review')
+    if (@($requiredQualitySections | Where-Object {
+            $_ -notin (& $getQualityNames $contract)
+        }).Count -gt 0) {
+        return "## Quality contract`n`nNot measured. Quality metadata is disclosure only and does not authorize execution or publication."
+    }
+
+    $read = {
+        param($Object, [string]$Name, [int]$Limit)
+        if ($null -eq $Object) { return 'unknown' }
+        $value = $null
+        if ($Object -is [System.Collections.IDictionary] -and $Object.Contains($Name)) {
+            $value = $Object[$Name]
+        } else {
+            $entry = $Object.PSObject.Properties[$Name]
+            if ($entry) { $value = $entry.Value }
+        }
+        if ($null -eq $value) { return 'unknown' }
+        return ConvertTo-ReplicationSingleLine -Value ([string]$value) -MaximumLength $Limit
+    }
+    $getQualitySection = {
+        param($Object, [string]$Name)
+        if ($null -eq $Object) { return $null }
+        if ($Object -is [System.Collections.IDictionary] -and $Object.Contains($Name)) {
+            return $Object[$Name]
+        }
+        $property = $Object.PSObject.Properties[$Name]
+        if ($property) { return $property.Value }
+        return $null
+    }
+    $user = & $getQualitySection $contract 'userVisible'
+    $oracle = & $getQualitySection $contract 'oracle'
+    $scenario = & $getQualitySection $contract 'scenario'
+    $risk = & $getQualitySection $contract 'risk'
+    $blast = & $getQualitySection $contract 'semanticBlastRadius'
+    $mediaValue = & $getQualitySection $contract 'mediaAlignment'
+    $media = ConvertTo-ReplicationSingleLine -Value ([string]$mediaValue) -MaximumLength 32
+    if ($media -notin @('verified', 'partial', 'not-measured')) { $media = 'not-measured' }
+    $adjacentValues = if ($risk -is [System.Collections.IDictionary] -and $risk.Contains('adjacentStates')) {
+        @($risk['adjacentStates'])
+    } elseif ($null -ne $risk -and $risk.PSObject.Properties['adjacentStates']) {
+        @($risk.adjacentStates)
+    } else { @() }
+    $lifecycleValues = if ($risk -is [System.Collections.IDictionary] -and $risk.Contains('lifecycleStates')) {
+        @($risk['lifecycleStates'])
+    } elseif ($null -ne $risk -and $risk.PSObject.Properties['lifecycleStates']) {
+        @($risk.lifecycleStates)
+    } else { @() }
+    $consumerValues = if ($blast -is [System.Collections.IDictionary] -and $blast.Contains('sharedConsumers')) {
+        @($blast['sharedConsumers'])
+    } elseif ($null -ne $blast -and $blast.PSObject.Properties['sharedConsumers']) {
+        @($blast.sharedConsumers)
+    } else { @() }
+    $adjacent = @($adjacentValues | ForEach-Object {
+        ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
+    } | Where-Object { $_ } | Select-Object -First 8)
+    $lifecycle = @($lifecycleValues | ForEach-Object {
+        ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
+    } | Where-Object { $_ } | Select-Object -First 8)
+    $consumers = @($consumerValues | ForEach-Object {
+        ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 160
+    } | Where-Object { $_ } | Select-Object -First 8)
+    $findingLines = @()
+    $review = & $getQualitySection $contract 'review'
+    $reviewFindings = if ($review -is [System.Collections.IDictionary] -and $review.Contains('findings')) {
+        @($review['findings'])
+    } elseif ($null -ne $review -and $review.PSObject.Properties['findings']) {
+        @($review.findings)
+    } else { @() }
+    foreach ($finding in @($reviewFindings | Where-Object { $_ } | Select-Object -First 8)) {
+        $category = ConvertTo-ReplicationSingleLine -Value ([string]$finding.category) -MaximumLength 48
+        $grounding = ConvertTo-ReplicationSingleLine -Value ([string]$finding.grounding) -MaximumLength 48
+        $confidence = ConvertTo-ReplicationSingleLine -Value ([string]$finding.confidence) -MaximumLength 16
+        $corroboration = ConvertTo-ReplicationSingleLine -Value ([string]$finding.corroboration) -MaximumLength 24
+        $detail = ConvertTo-ReplicationSingleLine -Value ([string]$finding.detail) -MaximumLength 360
+        if ($detail) {
+            $findingLines += "- **$category** (``$grounding``, ``$confidence``, ``$corroboration``): $detail"
+        }
+    }
+
+    return @(
+        '## Quality contract'
+        ''
+        '> This is a bounded disclosure. It cannot authorize files, selectors, commands, counts, credentials, gate outcomes, or publication.'
+        ''
+        ('- User-visible contract: ' + (& $read $user 'contract' 500))
+        ('- User-visible trigger: ' + (& $read $user 'trigger' 500))
+        ('- Primary oracle: ' + (& $read $oracle 'primary' 500))
+        ('- Independent oracle: ' + (& $read $oracle 'independent' 500))
+        ('- Oracle independence: `' + (& $read $oracle 'independence' 32) + '` — ' + (& $read $oracle 'rationale' 500))
+        ('- Scenario: ' + (& $read $scenario 'name' 300))
+        ('- Precondition: ' + (& $read $scenario 'precondition' 500))
+        ('- Trigger: ' + (& $read $scenario 'trigger' 500))
+        ('- Transition: ' + (& $read $scenario 'transition' 500))
+        ('- Observable identity: ' + (& $read $scenario 'observableIdentity' 500))
+        ('- Affected control: ' + $(if (& $getQualitySection $scenario 'affectedControl') {
+            "$(& $read (& $getQualitySection $scenario 'affectedControl') 'id' 120) ($(& $read (& $getQualitySection $scenario 'affectedControl') 'type' 120))"
+        } else { 'not applicable' }))
+        ('- Risk adjacent states: ' + $(if ($adjacent.Count) { $adjacent -join '; ' } else { 'not measured' }))
+        ('- Risk lifecycle states: ' + $(if ($lifecycle.Count) { $lifecycle -join '; ' } else { 'not measured' }))
+        ('- Stateless applicability: `' + (& $read $risk 'statelessApplicability' 32) + '`')
+        ('- Blast radius affected type: ' + (& $read $blast 'affectedType' 240))
+        ('- Blast radius affected control: ' + (& $read $blast 'affectedControl' 240))
+        ('- Blast radius ownership: ' + (& $read $blast 'ownership' 240))
+        ('- Blast radius shared consumers: ' +
+            $(if ($consumers.Count) { $consumers -join '; ' } else { 'not measured' }))
+        ('- Blast radius unchanged behavior: ' + (& $read $blast 'unchangedBehavior' 500))
+        ('- Media alignment: `' + $media + '` (derived from trusted recording/test comparison)')
+        ''
+        $(if ($findingLines.Count) {
+            @('Review findings (advisory):', '') + $findingLines
+        } else {
+            @('Review findings (advisory): none measured.')
+        })
+    ) -join [Environment]::NewLine
+}
+
+function Test-ReplicationPullRequestCarriesFix {
     <#
         .SYNOPSIS
-            True when an incoming publication carries no fix while the open
-            pull request it would supersede does carry one.
-
-        .DESCRIPTION
-            Superseding exists so a re-run can refresh the evidence for an
-            issue after the pipeline changes. It is not licence for a weaker
-            publication to destroy a stronger one, which is what happened when
-            reproduction-only runs retired two pull requests that each carried
-            a four-arm certified fix.
+            True when a replication pull request body carries a proposed fix.
     #>
     param(
-        [AllowNull()][AllowEmptyString()][string]$DuplicateBody,
-        [bool]$IncomingCarriesFix
+        [AllowNull()][AllowEmptyString()][string]$Body
     )
 
-    if ($IncomingCarriesFix) { return $false }
-    if ([string]::IsNullOrWhiteSpace($DuplicateBody)) { return $false }
+    if ([string]::IsNullOrWhiteSpace($Body)) { return $false }
 
-    # The fix section is the only part of the body that a reproduction-only
-    # publication never writes, so it is the honest discriminator. Matching the
-    # title would trust a string the publisher does not control.
-    return [bool]($DuplicateBody -match '(?m)^## Proposed fix\s*$')
+    # The fix section is the publisher-controlled discriminator. Matching the
+    # title would trust a string that can be edited independently of the diff.
+    return [bool]($Body -match '(?m)^## Proposed fix\s*$')
 }
 
 function Get-ReplicationFixRegressionSignal {
@@ -621,6 +879,15 @@ function New-ReplicationPullRequestBody {
     # on exactly that, so these descriptive names are read defensively.
     $candidateTestClass = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testClassName'
     $candidateTestMethod = Get-ReplicationCandidateText -Candidate $Candidate -Name 'testMethodName'
+    $selector = Get-ReplicationCandidateSelector -Candidate $Candidate
+    $selectorVariant = ConvertTo-ReplicationSingleLine -Value ([string]$selector.variant) -MaximumLength 48
+    $selectorRaw = ConvertTo-ReplicationSingleLine -Value ([string]$selector.raw) -MaximumLength 512
+    $selectorProject = ConvertTo-ReplicationSingleLine -Value ([string]$selector.project) -MaximumLength 240
+    $selectorProjectPath = ConvertTo-ReplicationSingleLine -Value ([string]$selector.projectPath) -MaximumLength 400
+    $selectorClass = ConvertTo-ReplicationSingleLine -Value ([string]$selector.class) -MaximumLength 400
+    $selectorMethod = ConvertTo-ReplicationSingleLine -Value ([string]$selector.method) -MaximumLength 200
+    $selectorPlatform = ConvertTo-ReplicationSingleLine -Value ([string]$selector.platform) -MaximumLength 32
+    $selectorCounts = "$([int]$selector.discoveredCount) discovered / $([int]$selector.executedCount) executed"
 
     # Controls UI tests derive from the parameterised UITest fixture
     # (src/Controls/tests/TestCases.Shared.Tests/UITest.cs), so NUnit inserts
@@ -653,33 +920,25 @@ function New-ReplicationPullRequestBody {
         $testFilter
     }
 
-    # Parentheses are grouping operators in the VSTest filter grammar, so the
-    # fixture-qualified name above cannot be pasted into an equality filter
-    # unescaped. The issue-keyed class token is the form reviewers verified
-    # selects exactly this test on every UI lane.
-    $uiSelectorLine = if ($uiFixtureArgument -and $candidateTestClass -and $candidateTestMethod) {
-        '- UI runner selector: ``--filter "FullyQualifiedName~Issue{0}"`` — the exact name above carries the ``({1})`` fixture argument, so an equality filter on ``{2}.{3}`` selects no tests and an unescaped ``(`` is read as filter grouping; use this contains form' -f `
-            $issueNumber, $uiFixtureArgument, $candidateTestClass, $candidateTestMethod
+    # Selector grammar is rendered from the centralized typed union.  The
+    # fallback keeps legacy fixtures readable but never becomes an execution
+    # input: validated artifacts always carry a non-unknown selector.
+    $deviceSelectorLine = '- Device runner selector: ``TestFilter=Category=Issue{0}`` — this legacy rendering is informational only'
+    $selectorLines = if ($selectorVariant -ne 'unknown') {
+        @(
+            "- Selector variant: ``$selectorVariant``"
+            "- Raw runner selector: ``$selectorRaw``"
+            "- Normalized selector: project ``$selectorProject`` (``$selectorProjectPath``), class ``$selectorClass``, method ``$selectorMethod``, platform ``$selectorPlatform``"
+            "- Trusted selector counts: $selectorCounts"
+        ) -join [Environment]::NewLine
+    } elseif ($uiFixtureArgument -and $candidateTestClass -and $candidateTestMethod) {
+        '- UI runner selector: ``--filter "FullyQualifiedName~Issue{0}"`` — the exact name above carries the ``({1})`` fixture argument, so an equality filter on the parameterized name selects no tests and an unescaped parenthesis is read as filter grouping; this legacy rendering is informational only' -f `
+            $issueNumber, $uiFixtureArgument
+    } elseif ([string]$Candidate.testType -ceq 'device') {
+        $deviceSelectorLine -f $issueNumber
     } else {
         ''
     }
-
-    # The stock device-test runner honours only "Category=X" and
-    # "SkipCategories=X,Y" (DeviceTestSharedHelpers.GetExcludedTestCategories);
-    # every other filter value returns no exclusions, so a bare class token
-    # runs the whole suite. Reviewers measured exactly that on device --
-    # "538 of 538 declarations WOULD RUN" -- so a device reproduction publishes
-    # the selector the runner actually honours instead of one that looks exact.
-    $deviceSelectorLine = if ([string]$Candidate.testType -ceq 'device') {
-        '- Device runner selector: ``TestFilter=Category=Issue{0}`` — the stock device-test runner filters by category only, so use this form on device; the class token above selects nothing there' -f $issueNumber
-    } else {
-        ''
-    }
-
-    # Only one of these ever applies, and an empty placeholder left mid-list
-    # would split the surrounding Markdown bullets into two loose lists.
-    $selectorLines = (@($uiSelectorLine, $deviceSelectorLine) |
-        Where-Object { $_ }) -join [Environment]::NewLine
 
     # Reviewers rejected evidence that called a simulator or emulator run
     # "on-device". Name the surface that actually ran the reproduction.
@@ -703,6 +962,8 @@ function New-ReplicationPullRequestBody {
     # test ran on that surface. Unit and XAML tests execute on the build host, so
     # the recording is evidence of the issue rather than of the test.
     $testHostDescription = switch ([string]$Candidate.testType) {
+        'unit' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
+        'xaml' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
         'UnitTest' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
         'XamlUnitTest' { "the **build host**, not the $recordingSurface. The recording below is evidence of the reported issue, not of this test executing." }
         default { "the **$recordingSurface** used for the run above." }
@@ -737,7 +998,7 @@ function New-ReplicationPullRequestBody {
     # as a claim that the committed test ran on the recorded surface. A test in
     # a non-platform target framework would behave identically on a machine with
     # no platform SDK installed, so say which surface established which fact.
-    $platformNeutralTestTypes = @('UnitTest', 'XamlUnitTest')
+    $platformNeutralTestTypes = @('unit', 'xaml', 'UnitTest', 'XamlUnitTest')
     $reproductionClaim = if ($platformNeutralTestTypes -contains [string]$Candidate.testType) {
         "- A trusted runner reproduced the behavior on the $recordingSurface. The committed test is platform-neutral: it ran on the build host and failed in $verificationRunCount consecutive executions, so it corroborates the same defect in cross-platform code rather than proving the $recordingSurface behavior itself."
     } else {
@@ -792,6 +1053,8 @@ function New-ReplicationPullRequestBody {
         ''
     }
 
+    $qualityBlock = Get-ReplicationQualityDisclosureBlock -Candidate $Candidate
+
     $steps = @()
     foreach ($step in @($Candidate.reproductionSteps)) {
         $safeStep = ConvertTo-ReplicationSingleLine -Value ([string]$step) -MaximumLength 300
@@ -834,6 +1097,33 @@ function New-ReplicationPullRequestBody {
             $fixLines += ('**Root cause.** ' + (ConvertTo-ReplicationSingleLine -Value $fixRootCause -MaximumLength 600))
             $fixLines += ''
         }
+        $fixScopeDisclosures = @(
+            @{ Name = 'fixRootCausePath'; Label = 'Root-cause path'; Limit = 600 },
+            @{ Name = 'fixOwnership'; Label = 'Ownership'; Limit = 300 },
+            @{ Name = 'fixDynamicState'; Label = 'Dynamic state'; Limit = 600 },
+            @{ Name = 'fixThreading'; Label = 'Threading'; Limit = 600 },
+            @{ Name = 'fixTeardown'; Label = 'Teardown'; Limit = 600 },
+            @{ Name = 'fixUnchangedBehavior'; Label = 'Unchanged behavior'; Limit = 600 },
+            @{ Name = 'fixSemanticBlastRadius'; Label = 'Semantic blast radius'; Limit = 800 }
+        )
+        foreach ($disclosure in $fixScopeDisclosures) {
+            $value = Get-ReplicationCandidateText -Candidate $Candidate -Name $disclosure.Name
+            if ($value) {
+                $fixLines += ('**' + $disclosure.Label + '.** ' +
+                    (ConvertTo-ReplicationSingleLine -Value $value -MaximumLength $disclosure.Limit))
+                $fixLines += ''
+            }
+        }
+        $sharedConsumersProperty = $Candidate.PSObject.Properties['fixSharedConsumers']
+        if ($sharedConsumersProperty -and $null -ne $sharedConsumersProperty.Value) {
+            $sharedConsumers = @($sharedConsumersProperty.Value | ForEach-Object {
+                ConvertTo-ReplicationSingleLine -Value ([string]$_) -MaximumLength 240
+            } | Where-Object { $_ } | Select-Object -First 8)
+            if ($sharedConsumers.Count -gt 0) {
+                $fixLines += ('**Shared consumers.** ' + ($sharedConsumers -join '; '))
+                $fixLines += ''
+            }
+        }
         if ($fixRegressionLane) {
             $fixLines += ('**Regression lane.** The device tests beside this one declare `' +
                 (ConvertTo-ReplicationSingleLine -Value $fixRegressionLane -MaximumLength 120) +
@@ -871,6 +1161,19 @@ function New-ReplicationPullRequestBody {
             $fixLines += ''
             $fixLines += $rejected
         }
+        $repairAppliedProperty = $Candidate.PSObject.Properties['fixRepairApplied']
+        if ($repairAppliedProperty -and $repairAppliedProperty.Value -is [bool] -and
+            $repairAppliedProperty.Value) {
+            $fixLines += ''
+            $fixLines += '**Grounded repair pass.** A single bounded repair was driven by corroborated review evidence; the unchanged fix-green and restoration-red arms were rerun before publication.'
+            $repairFindingsProperty = $Candidate.PSObject.Properties['fixRepairFindings']
+            if ($repairFindingsProperty -and $null -ne $repairFindingsProperty.Value) {
+                foreach ($finding in @($repairFindingsProperty.Value | Select-Object -First 4)) {
+                    $safeFinding = ConvertTo-ReplicationSingleLine -Value ([string]$finding) -MaximumLength 400
+                    if ($safeFinding) { $fixLines += "- $safeFinding" }
+                }
+            }
+        }
         $fixLines -join [Environment]::NewLine
     } else {
         ''
@@ -899,6 +1202,8 @@ $marker
 $importantBanner
 
 $certificationBlock
+
+$qualityBlock
 
 ## Reproduced issue
 
@@ -1002,6 +1307,51 @@ function Test-ReplicationPublishableFix {
     $named = @(Get-ValidatedFixFiles -Candidate $Candidate |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
     return ($named.Count -gt 0)
+}
+
+function Test-ReplicationQualityPublicationAllowed {
+    <#
+    .SYNOPSIS
+        Refuses a fix when its trusted trigger-removed control is absent.
+
+    .DESCRIPTION
+        Quality metadata itself is disclosure-only.  The only positive gate here
+        is the trusted negative-control result written by orchestration; model
+        severity, review prose, and claimed media alignment never veto or
+        authorize a publication.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param([Parameter(Mandatory = $true)]$Candidate)
+
+    $controlProperty = $Candidate.PSObject.Properties['negativeControl']
+    if (-not $controlProperty -or $null -eq $controlProperty.Value) {
+        return $false
+    }
+    $control = $controlProperty.Value
+    $getControlValue = {
+        param([string]$Name)
+        if ($control -is [System.Collections.IDictionary] -and $control.Contains($Name)) {
+            return $control[$Name]
+        }
+        $property = $control.PSObject.Properties[$Name]
+        if ($property) { return $property.Value }
+        return $null
+    }
+    $runValue = & $getControlValue 'runCount'
+    $passValue = & $getControlValue 'passCount'
+    $resultValue = & $getControlValue 'result'
+    if ($null -eq $runValue -or $null -eq $passValue -or $null -eq $resultValue) {
+        return $false
+    }
+    $runs = 0
+    $passes = 0
+    if (-not [int]::TryParse([string]$runValue, [ref]$runs) -or
+        -not [int]::TryParse([string]$passValue, [ref]$passes)) {
+        return $false
+    }
+    return $runs -ge 2 -and $runs -le 3 -and $passes -eq $runs -and
+        [string]$resultValue -eq 'verification/negative-control-result.json'
 }
 
 function Remove-ReplicationPlatformTitlePrefix {
@@ -1233,12 +1583,14 @@ query {
     }
     $response = $responseJson | ConvertFrom-Json -Depth 20
     $expectedParent = "$ParentOwner/$ParentRepository"
-    $matches = @($response.data.viewer.repositories.nodes) |
-        Where-Object {
+    $matches = @(
+        @($response.data.viewer.repositories.nodes) |
+            Where-Object {
             $_.isFork -eq $true -and
             [string]$_.parent.nameWithOwner -eq $expectedParent -and
             [string]$_.viewerPermission -in @('WRITE', 'MAINTAIN', 'ADMIN')
         }
+    )
     if ($matches.Count -eq 0) {
         $createdForkJson = & gh api `
             -X POST `
@@ -1290,6 +1642,13 @@ if ($candidate.validationPassed -ne $true) {
     throw 'Candidate validation did not pass; a pull request will not be created.'
 }
 
+$validatedFixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
+$hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
+    (Test-Path -LiteralPath $FixPatchPath -PathType Leaf)
+if (-not $hasFixPatch -or $validatedFixFiles.Count -eq 0) {
+    throw 'A validated product fix is required; reproduction-only pull requests are not published.'
+}
+
 $evidence = Get-Content -LiteralPath $PublishedEvidencePath -Raw | ConvertFrom-Json -Depth 20
 $context = Get-Content -LiteralPath $IssueContextPath -Raw | ConvertFrom-Json -Depth 20
 $issueNumber = [int]$candidate.issueNumber
@@ -1314,7 +1673,7 @@ $prTitle = New-ReplicationPullRequestTitle `
     -IssueNumber $issueNumber `
     -Platform $platform `
     -IssueTitle $issueTitle `
-    -CarriesFix:(@(Get-ValidatedFixFiles -Candidate $candidate).Count -gt 0)
+    -CarriesFix
 # Computed here rather than inside the body builder, which stays free of child
 # processes and network so it can be tested directly. A null signal simply omits
 # the line: the check reports, it never withholds a fix.
@@ -1374,8 +1733,14 @@ $plan = [ordered]@{
     title = $prTitle
     body = $prBody
     marker = $marker
+    selector = Get-ReplicationCandidateSelector -Candidate $candidate
+    qualityContract = if ($Candidate.PSObject.Properties['qualityContract']) {
+        $Candidate.qualityContract
+    } else {
+        $null
+    }
     files = @(Get-ValidatedCandidateFiles -Candidate $candidate)
-    fixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
+    fixFiles = $validatedFixFiles
     url = $null
     duplicateOf = $null
     supersedes = $null
@@ -1393,8 +1758,14 @@ $plan = [ordered]@{
 # in the build artifacts. The manifest records the reason so the pipeline can tell
 # this apart from a publisher that crashed before returning a URL, and reports it
 # the same way it already reports standing aside for a duplicate.
-if (-not (Test-ReplicationPublishableFix -Candidate $candidate)) {
-    $plan.withheldReason = 'no-validated-fix'
+$publishableFix = Test-ReplicationPublishableFix -Candidate $candidate
+$qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed -Candidate $candidate
+if (-not $publishableFix -or -not $qualityPublicationAllowed) {
+    $plan.withheldReason = if (-not $qualityPublicationAllowed) {
+        'trusted-control-missing'
+    } else {
+        'no-validated-fix'
+    }
     Write-Host ('This run reproduced the issue but produced no validated fix, so no ' +
         'reproduction-only pull request will be opened.')
     Write-ReplicationPublicationManifest -Plan $plan
@@ -1403,7 +1774,7 @@ if (-not (Test-ReplicationPublishableFix -Candidate $candidate)) {
 
 if (-not $DryRun) {
     if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
-        throw 'GH_TOKEN is required to publish the reproduction pull request.'
+        throw 'GH_TOKEN is required to publish the fix pull request.'
     }
 
     $authenticatedLogin = Get-ReplicationGitHubLogin
@@ -1433,37 +1804,21 @@ if (-not $DryRun) {
             throw 'Unable to query existing reproduction pull requests.'
         }
 
-        $duplicate = @($openPullsJson | ConvertFrom-Json) | Where-Object {
+        $matchingPulls = @(@($openPullsJson | ConvertFrom-Json) | Where-Object {
             [string]$_.body -like "*$marker*"
-        } | Select-Object -First 1
-
-        # A reproduction is not a replacement for a fix. Builds 15075238 and
-        # 15076851 reproduced issues 36412 and 35624, found no fix, and retired
-        # pull requests 393 and 396 - which each carried a four-arm certified
-        # fix - replacing them with reproduction-only pull requests 398 and 403.
-        # Superseding exists so a re-run can refresh evidence, not so a weaker
-        # publication can destroy a stronger one, so an incoming run without a
-        # fix stands aside for an open pull request that has one.
-        $incomingCarriesFix = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
-            (Test-Path -LiteralPath $FixPatchPath)
-        $standsAside = $duplicate -and (Test-ReplicationWeakerThanOpenPullRequest `
-            -DuplicateBody ([string]$duplicate.body) -IncomingCarriesFix $incomingCarriesFix)
-        if ($standsAside) {
-            $plan.duplicateOf = [string]$duplicate.url
-            Write-Host ("An open pull request already carries a fix for this issue and platform, " +
-                "so this reproduction-only run stands aside: $($duplicate.url)")
-            Write-ReplicationPublicationManifest -Plan $plan
-            Pop-Location
-            exit 0
+        })
+        $duplicate = @($matchingPulls | Where-Object {
+            Test-ReplicationPullRequestCarriesFix -Body ([string]$_.body)
+        }) | Select-Object -First 1
+        if (-not $duplicate) {
+            $duplicate = $matchingPulls | Select-Object -First 1
         }
 
-        if ($duplicate -and -not $SupersedeExisting) {
-            # Build 15001510 reproduced issue 37151 and authored its test while
-            # an earlier run was publishing the same issue and platform. The
-            # second run is redundant, not broken, so it reports what already
-            # covers the issue instead of failing the build.
+        $duplicateCarriesFix = $duplicate -and
+            (Test-ReplicationPullRequestCarriesFix -Body ([string]$duplicate.body))
+        if ($duplicateCarriesFix -and -not $SupersedeExisting) {
             $plan.duplicateOf = [string]$duplicate.url
-            Write-Host ("An open reproduction pull request already covers this issue and platform: " +
+            Write-Host ("An open fix pull request already covers this issue and platform: " +
                 "$($duplicate.url)")
             Write-ReplicationPublicationManifest -Plan $plan
             Pop-Location
@@ -1471,13 +1826,13 @@ if (-not $DryRun) {
         }
 
         if ($duplicate) {
-            # Superseding is what lets an already-covered issue be re-run after
-            # the pipeline itself changes. The earlier pull request is retired
-            # only once its replacement exists, further down: a run that never
-            # gets that far leaves the existing evidence exactly where it was.
+            # A validated fix always replaces a reproduction-only pull request.
+            # SupersedeExisting additionally allows a refreshed fix to replace
+            # an older fix. The earlier pull request is retired only once its
+            # replacement exists.
             $supersededPull = $duplicate
             $plan.supersedes = [string]$duplicate.url
-            Write-Host ("This run supersedes an open reproduction pull request: " +
+            Write-Host ("This run supersedes an open replication pull request: " +
                 "$($duplicate.url)")
         }
 
@@ -1601,15 +1956,14 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                 --body-file $bodyPath `
                 --draft
             if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$prUrl)) {
-                throw 'Creating the draft reproduction pull request failed.'
+                throw 'Creating the draft fix pull request failed.'
             }
             $plan.url = ([string]$prUrl).Trim()
 
             if ($supersededPull) {
                 # Only now, with the replacement open, is retiring the earlier
-                # pull request safe. Closing it first would leave the issue with
-                # no open reproduction at all if anything above had failed, and
-                # a duplicate is a far smaller problem than lost evidence.
+                # pull request safe. Closing it first would discard the existing
+                # evidence if anything above failed.
                 try {
                     $supersededNumber = [string]$supersededPull.number
                     $supersedeNote = "Superseded by $($plan.url), published by build $buildId."

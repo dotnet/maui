@@ -196,7 +196,17 @@ function Copy-BoundedDiagnosticFileSet {
         }
 
         $fileLimit = [long][Math]::Min($MaxTextFileBytes, $remainingBytes)
-        $destination = Join-Path $destinationRoot $file.Name
+        $destinationName = $file.Name
+        $destination = Join-Path $destinationRoot $destinationName
+        $collision = 1
+        while (Test-Path -LiteralPath $destination) {
+            $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+            $extension = [System.IO.Path]::GetExtension($file.Name)
+            $destinationName = "$baseName-$collision$extension"
+            $destination = Join-Path $destinationRoot $destinationName
+            $collision++
+        }
+
         try {
             $copyResult = Copy-BoundedDiagnosticFile `
                 -Source $file.FullName `
@@ -289,5 +299,226 @@ function Copy-BoundedDiagnosticFileSet {
         UnsafeFiles        = $unsafeCount
         FailedFiles        = $failedFiles
         ManifestPath       = $manifestPath
+    }
+}
+
+function Copy-BoundedRegularFileTree {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDirectory,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationDirectory,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$MaxFileCount = 2048,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$MaxDirectoryCount = 1024,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [long]::MaxValue)]
+        [long]$MaxFileBytes = 16MB,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateRange(1, [long]::MaxValue)]
+        [long]$MaxTotalBytes = 128MB,
+
+        [Parameter(Mandatory = $false)]
+        [AllowEmptyCollection()]
+        [string[]]$TruncateOversizedFileExtensions = @()
+    )
+
+    $sourceItem = Get-Item -LiteralPath $SourceDirectory -Force -ErrorAction Stop
+    if (-not $sourceItem.PSIsContainer) {
+        throw "Bounded tree source must be a directory: '$SourceDirectory'."
+    }
+    if ($sourceItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+        throw "Bounded tree source must not be a reparse point: '$SourceDirectory'."
+    }
+
+    $sourceRoot = [System.IO.Path]::TrimEndingDirectorySeparator(
+        [System.IO.Path]::GetFullPath($sourceItem.FullName))
+    $destinationRoot = [System.IO.Path]::TrimEndingDirectorySeparator(
+        [System.IO.Path]::GetFullPath($DestinationDirectory))
+    if (Test-Path -LiteralPath $destinationRoot) {
+        throw "Bounded tree destination must not already exist: '$destinationRoot'."
+    }
+
+    $destinationRelativeToSource = [System.IO.Path]::GetRelativePath(
+        $sourceRoot,
+        $destinationRoot)
+    $parentPrefix = "..$([System.IO.Path]::DirectorySeparatorChar)"
+    $alternateParentPrefix = "..$([System.IO.Path]::AltDirectorySeparatorChar)"
+    $destinationIsInsideSource =
+        $destinationRelativeToSource -eq '.' -or
+        (-not [System.IO.Path]::IsPathRooted($destinationRelativeToSource) -and
+            $destinationRelativeToSource -ne '..' -and
+            -not $destinationRelativeToSource.StartsWith(
+                $parentPrefix,
+                [System.StringComparison]::Ordinal) -and
+            -not $destinationRelativeToSource.StartsWith(
+                $alternateParentPrefix,
+                [System.StringComparison]::Ordinal))
+    if ($destinationIsInsideSource) {
+        throw 'Bounded tree destination must not be contained by the source directory.'
+    }
+
+    $pendingDirectories = [System.Collections.Generic.Stack[string]]::new()
+    $pendingDirectories.Push($sourceRoot)
+    $files = [System.Collections.Generic.List[object]]::new()
+    $truncatableExtensions = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($extension in @($TruncateOversizedFileExtensions)) {
+        if ([string]::IsNullOrWhiteSpace($extension)) {
+            continue
+        }
+
+        $normalizedExtension = if ($extension.StartsWith('.')) {
+            $extension
+        } else {
+            ".$extension"
+        }
+        [void]$truncatableExtensions.Add($normalizedExtension)
+    }
+    $directoryCount = 0
+    $totalBytes = 0L
+
+    while ($pendingDirectories.Count -gt 0) {
+        $directoryPath = $pendingDirectories.Pop()
+        $directoryItem = Get-Item -LiteralPath $directoryPath -Force -ErrorAction Stop
+        if (-not $directoryItem.PSIsContainer -or
+            ($directoryItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+            throw "Bounded tree contains an unsupported reparse point: '$directoryPath'."
+        }
+
+        $directoryCount++
+        if ($directoryCount -gt $MaxDirectoryCount) {
+            throw "Bounded tree exceeded the $MaxDirectoryCount-directory limit."
+        }
+
+        foreach ($entryPath in [System.IO.Directory]::EnumerateFileSystemEntries($directoryPath)) {
+            $entry = Get-Item -LiteralPath $entryPath -Force -ErrorAction Stop
+            if ($entry.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+                throw "Bounded tree contains an unsupported reparse point: '$entryPath'."
+            }
+
+            $entryFullPath = [System.IO.Path]::GetFullPath($entry.FullName)
+            $relativePath = [System.IO.Path]::GetRelativePath($sourceRoot, $entryFullPath)
+            if ($relativePath -eq '.' -or
+                $relativePath -eq '..' -or
+                [System.IO.Path]::IsPathRooted($relativePath) -or
+                $relativePath.StartsWith($parentPrefix, [System.StringComparison]::Ordinal) -or
+                $relativePath.StartsWith($alternateParentPrefix, [System.StringComparison]::Ordinal)) {
+                throw "Bounded tree entry escaped the canonical source root: '$entryPath'."
+            }
+
+            if ($entry.PSIsContainer) {
+                $pendingDirectories.Push($entryFullPath)
+                continue
+            }
+            if ($entry -isnot [System.IO.FileInfo]) {
+                throw "Bounded tree entry is not a regular file: '$entryPath'."
+            }
+
+            if ($files.Count -ge $MaxFileCount) {
+                throw "Bounded tree exceeded the $MaxFileCount-file limit."
+            }
+
+            $copyLength = [long]$entry.Length
+            $truncate = $false
+            if ($entry.Length -gt $MaxFileBytes) {
+                $extension = [System.IO.Path]::GetExtension($entry.Name)
+                if (-not $truncatableExtensions.Contains($extension)) {
+                    throw "Bounded tree file '$relativePath' exceeded the $MaxFileBytes-byte per-file limit."
+                }
+                if ($MaxFileBytes -lt 256) {
+                    throw "Bounded tree cannot truncate '$relativePath' below 256 bytes."
+                }
+
+                $copyLength = $MaxFileBytes
+                $truncate = $true
+            }
+            if ($copyLength -gt ($MaxTotalBytes - $totalBytes)) {
+                throw "Bounded tree exceeded the $MaxTotalBytes-byte aggregate limit."
+            }
+
+            $totalBytes += $copyLength
+            [void]$files.Add([pscustomobject]@{
+                SourcePath   = $entryFullPath
+                RelativePath = $relativePath
+                SourceLength = [long]$entry.Length
+                CopyLength   = $copyLength
+                Truncated    = $truncate
+            })
+        }
+    }
+
+    $truncatedFiles = 0
+    try {
+        New-Item -ItemType Directory -Path $destinationRoot -Force -ErrorAction Stop | Out-Null
+        foreach ($file in @($files | Sort-Object RelativePath)) {
+            $current = Get-Item -LiteralPath $file.SourcePath -Force -ErrorAction Stop
+            if ($current.PSIsContainer -or
+                ($current.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -or
+                $current.Length -ne $file.SourceLength) {
+                throw "Bounded tree source changed during import: '$($file.RelativePath)'."
+            }
+
+            $destination = [System.IO.Path]::GetFullPath(
+                (Join-Path $destinationRoot $file.RelativePath))
+            $destinationRelative = [System.IO.Path]::GetRelativePath(
+                $destinationRoot,
+                $destination)
+            if ($destinationRelative -eq '.' -or
+                $destinationRelative -eq '..' -or
+                [System.IO.Path]::IsPathRooted($destinationRelative) -or
+                $destinationRelative.StartsWith($parentPrefix, [System.StringComparison]::Ordinal) -or
+                $destinationRelative.StartsWith(
+                    $alternateParentPrefix,
+                    [System.StringComparison]::Ordinal)) {
+                throw "Bounded tree destination escaped its canonical root: '$destination'."
+            }
+
+            $destinationParent = Split-Path -Parent $destination
+            if (-not (Test-Path -LiteralPath $destinationParent)) {
+                New-Item -ItemType Directory -Path $destinationParent -Force -ErrorAction Stop |
+                    Out-Null
+            }
+
+            if ($file.Truncated) {
+                $copyResult = Copy-BoundedDiagnosticFile `
+                    -Source $current.FullName `
+                    -Destination $destination `
+                    -MaxBytes $file.CopyLength
+                if ($copyResult.SourceBytes -ne $file.SourceLength -or
+                    $copyResult.CopiedBytes -ne $file.CopyLength -or
+                    -not $copyResult.Truncated) {
+                    throw "Bounded tree source changed during truncated import: '$($file.RelativePath)'."
+                }
+                $truncatedFiles++
+            } else {
+                Copy-Item `
+                    -LiteralPath $current.FullName `
+                    -Destination $destination `
+                    -Force `
+                    -ErrorAction Stop
+            }
+        }
+    } catch {
+        if (Test-Path -LiteralPath $destinationRoot) {
+            Remove-Item -LiteralPath $destinationRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        throw
+    }
+
+    return [pscustomobject]@{
+        CopiedFiles       = $files.Count
+        CopiedDirectories = $directoryCount
+        CopiedBytes       = $totalBytes
+        TruncatedFiles    = $truncatedFiles
     }
 }

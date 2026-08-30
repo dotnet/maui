@@ -27,6 +27,7 @@ BeforeAll {
     $content = Get-Content -Raw $reviewScript
     $pipelineContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml')
     $provisionContent = Get-Content -Raw (Join-Path $PSScriptRoot '../../eng/pipelines/common/provision.yml')
+    $buildShellContent = Get-Content -Raw (Join-Path $PSScriptRoot 'shared/Resolve-BuildShell.ps1')
 
     function Get-FunctionBody {
         param([string]$ScriptText, [string]$FunctionName)
@@ -57,8 +58,11 @@ BeforeAll {
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-CopilotOtelTokenMetrics')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'New-CopilotTokenUsageRecord')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-PhaseRequiresReviewWorktree')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Resolve-UITestCategoryRefresh')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateReportRetryClass')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateReportIsRetryableEnvironmentError')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-GateRetryBudgetMinutes')
+    Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Test-GateRetryFitsBudget')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Invoke-ReviewGitCommand')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Get-FetchedRepositoryBranchSha')
     Invoke-Expression (Get-FunctionBody -ScriptText $content -FunctionName 'Assert-ResolvedReviewBaseRef')
@@ -238,6 +242,53 @@ Describe 'Gate retry classification' {
     }
 }
 
+Describe 'Gate retry budget' {
+    It 'derives the default budget from the task timeout with a cleanup margin' {
+        Get-GateRetryBudgetMinutes -TaskTimeoutMinutes 150 -CleanupMarginMinutes 10 |
+            Should -Be 140
+    }
+
+    It 'allows a retry whose predicted completion remains just inside the task budget' {
+        Test-GateRetryFitsBudget `
+            -ElapsedMinutes 93.3 `
+            -AverageAttemptMinutes 46.6 `
+            -RetryBudgetMinutes 140 |
+            Should -BeTrue
+    }
+
+    It 'stops at the cleanup-margin boundary instead of risking task termination' {
+        Test-GateRetryFitsBudget `
+            -ElapsedMinutes 93.4 `
+            -AverageAttemptMinutes 46.6 `
+            -RetryBudgetMinutes 140 |
+            Should -BeFalse
+    }
+
+    It 'uses one pipeline timeout value for both the task and retry-budget derivation' {
+        $pipelineContent | Should -Match '(?s)- name: GateTaskTimeoutMinutes\s+value: 150'
+        $pipelineContent | Should -Match 'timeoutInMinutes: \$\{\{ variables\.GateTaskTimeoutMinutes \}\}'
+        $pipelineContent | Should -Match 'GATE_TASK_TIMEOUT_MINUTES: \$\{\{ variables\.GateTaskTimeoutMinutes \}\}'
+        $content | Should -Match 'Get-GateRetryBudgetMinutes -TaskTimeoutMinutes \$gateTaskTimeoutMin'
+        $content | Should -Not -Match 'else \{ 95 \}'
+    }
+}
+
+Describe 'Deep timeout history classification' {
+    It 'uses the verified crash/startup predicate instead of treating every env error as a crash' {
+        $pipelineContent | Should -Match ([regex]::Escape('. .github/scripts/shared/Get-EnvErrorPatterns.ps1'))
+        $pipelineContent | Should -Match 'Test-EnvErrorHistoryHasVerifiedCrashStartup -EnvErrorHistory \$histTokens'
+        $pipelineContent | Should -Not -Match '\$histTokens\.Count\s+-gt\s+0'
+    }
+}
+
+Describe 'Deep build-failure attribution' {
+    It 'does not infer a base break solely from an unchanged diagnostic file' {
+        $pipelineContent | Should -Match 'The cause is \*\*undetermined\*\*: the diagnostic is reported in unchanged file'
+        $pipelineContent | Should -Match 'a PR API/signature change can break an unchanged consumer'
+        $pipelineContent | Should -Not -Match 'This is a \*\*base-branch build break\*\* — the failing file'
+    }
+}
+
 Describe 'Gate trusted overlay failure classification' {
     It 'keeps a non-applicable Catalyst overlay after setup inconclusive' {
         $childScript = @"
@@ -394,42 +445,144 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CopilotLogs.*must never drive a credentialed PR title/body mutation'
     }
 
-    It 'runs prompt-influenced UI failure analysis before persisted publication credentials exist' {
+    It 'isolates prompt-influenced UI failure analysis from posting credentials on a fresh agent' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
         $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
         $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
         $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
 
-        $initialCheckout = $stageBlock.IndexOf('- checkout: self')
+        $analysisJob = $stageBlock.IndexOf('- job: AnalyzeUIFailures')
+        $postJob = $stageBlock.IndexOf('- job: UpdateComment')
         $analysis = $stageBlock.IndexOf("displayName: 'Analyze UI test failures (Copilot)'")
-        $credentialCheckout = $stageBlock.IndexOf("displayName: 'Enable trusted snapshot asset publication credential'")
-        $credentialCheck = $stageBlock.IndexOf("displayName: 'Verify snapshot asset publication credential'")
+        $import = $stageBlock.IndexOf("displayName: 'Import bounded UI failure analysis'")
         $post = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
 
-        $initialCheckout | Should -BeGreaterThan -1
-        $analysis | Should -BeGreaterThan $initialCheckout
-        $credentialCheckout | Should -BeGreaterThan $analysis
-        $credentialCheck | Should -BeGreaterThan $credentialCheckout
-        $post | Should -BeGreaterThan $credentialCheck
+        $analysisJob | Should -BeGreaterThan -1
+        $postJob | Should -BeGreaterThan $analysisJob
+        $analysis | Should -BeGreaterThan $analysisJob
+        $import | Should -BeGreaterThan $postJob
+        $post | Should -BeGreaterThan $import
 
-        $initialCheckoutBlock = $stageBlock.Substring($initialCheckout, $analysis - $initialCheckout)
-        $initialCheckoutBlock | Should -Match 'persistCredentials:\s*false'
-        $initialCheckoutBlock | Should -Not -Match 'persistCredentials:\s*true'
+        $analysisJobBlock = $stageBlock.Substring($analysisJob, $postJob - $analysisJob)
+        $postJobBlock = $stageBlock.Substring($postJob)
+        $copilotStepBlock = $analysisJobBlock.Substring(
+            $analysisJobBlock.IndexOf('# This task holds only the Copilot token'))
 
-        $analysisBlock = $stageBlock.Substring($analysis, $credentialCheckout - $analysis)
-        $analysisBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
-        $analysisBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
-        $analysisBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
+        $analysisJobBlock | Should -Match 'vmImage:\s*ubuntu-22\.04'
+        $analysisJobBlock | Should -Match 'clean:\s*true'
+        $analysisJobBlock | Should -Match 'persistCredentials:\s*false'
+        $analysisJobBlock | Should -Match 'artifact:\s*''uifail-analysis'''
+        $copilotStepBlock | Should -Match 'COPILOT_GITHUB_TOKEN:\s*\$\(COPILOT_TOKEN\)'
+        $copilotStepBlock | Should -Not -Match '(?m)^\s+GH_TOKEN:'
+        $copilotStepBlock | Should -Not -Match '(?m)^\s+ASSET_WRITE_TOKEN:'
 
-        $credentialBlock = $stageBlock.Substring($credentialCheckout, $post - $credentialCheckout)
-        $credentialBlock | Should -Match 'clean:\s*true'
-        $credentialBlock | Should -Match 'persistCredentials:\s*true'
-        $credentialBlock | Should -Match ([regex]::Escape(
-            "git config --get-regexp '^http\..*\.extraheader$'"))
-        $credentialBlock | Should -Match 'throw "Snapshot asset publication requires the persisted checkout credential'
+        $postJobBlock | Should -Match 'dependsOn:\s*AnalyzeUIFailures'
+        $postJobBlock | Should -Match 'vmImage:\s*ubuntu-22\.04'
+        $postJobBlock | Should -Match 'clean:\s*true'
+        $postJobBlock | Should -Match 'persistCredentials:\s*false'
+        $postJobBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedDiagnosticFile -Source $source -Destination $destination -MaxBytes 256KB'))
+        $postJobBlock | Should -Match 'ASSET_WRITE_TOKEN:\s*\$\(SnapshotAssetToken\)'
+        $postJobBlock | Should -Not -Match 'Analyze-UITestFailures\.ps1'
+        $postJobBlock | Should -Not -Match '\bcopilot\s+--allow-all\b'
+        $postJobBlock | Should -Not -Match '(?m)^\s+EMBED_TOKEN_'
+        $stageBlock | Should -Not -Match 'persistCredentials:\s*true'
+        $stageBlock | Should -Not -Match 'checkoutTok|extraheader'
 
-        $afterCredential = $stageBlock.Substring($credentialCheckout)
-        $afterCredential | Should -Not -Match 'Analyze-UITestFailures\.ps1'
-        $afterCredential | Should -Not -Match '\bcopilot\s+--allow-all\b'
+        # Reproduce the old trust-boundary failure deterministically: the same
+        # `git clean` + `git reset` sequence used by a clean checkout removes
+        # worktree changes but preserves local/global Git config and hooks.
+        $origin = Join-Path $TestDrive 'trusted-origin'
+        $analysisRepo = Join-Path $TestDrive 'analysis-workspace'
+        $postRepo = Join-Path $TestDrive 'posting-workspace'
+        git init -q $origin
+        git -C $origin config user.email tests@example.com
+        git -C $origin config user.name Tests
+        'trusted' | Set-Content -LiteralPath (Join-Path $origin 'trusted.txt') -Encoding UTF8
+        git -C $origin add trusted.txt
+        git -C $origin commit -q -m trusted
+        git clone -q $origin $analysisRepo
+
+        $analysisGitDir = Join-Path $analysisRepo ((git -C $analysisRepo rev-parse --git-dir).Trim())
+        $localHooks = Join-Path $analysisGitDir 'attacker-hooks'
+        New-Item -ItemType Directory -Force -Path $localHooks | Out-Null
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $localHooks 'post-checkout') -Encoding UTF8
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $analysisGitDir 'hooks/post-checkout') -Encoding UTF8
+        git -C $analysisRepo config core.hooksPath $localHooks
+        git -C $analysisRepo config credential.helper attacker-local-helper
+
+        $analysisHome = Join-Path $TestDrive 'analysis-home'
+        $analysisGlobalConfig = Join-Path $analysisHome '.gitconfig'
+        $globalHooks = Join-Path $analysisHome 'hooks'
+        New-Item -ItemType Directory -Force -Path $globalHooks | Out-Null
+        "#!/bin/sh`nexit 0" | Set-Content -LiteralPath (Join-Path $globalHooks 'post-checkout') -Encoding UTF8
+        git config --file $analysisGlobalConfig core.hooksPath $globalHooks
+        git config --file $analysisGlobalConfig credential.helper attacker-global-helper
+
+        'mutated' | Set-Content -LiteralPath (Join-Path $analysisRepo 'trusted.txt') -Encoding UTF8
+        'untracked' | Set-Content -LiteralPath (Join-Path $analysisRepo 'untracked.txt') -Encoding UTF8
+        git -C $analysisRepo clean -ffdx
+        git -C $analysisRepo reset --hard -q HEAD
+
+        (git -C $analysisRepo config --local --get core.hooksPath).Trim() | Should -Be $localHooks
+        (git -C $analysisRepo config --local --get credential.helper).Trim() | Should -Be 'attacker-local-helper'
+        Test-Path -LiteralPath (Join-Path $localHooks 'post-checkout') | Should -BeTrue
+        Test-Path -LiteralPath (Join-Path $analysisGitDir 'hooks/post-checkout') | Should -BeTrue
+        (git config --file $analysisGlobalConfig --get core.hooksPath).Trim() | Should -Be $globalHooks
+        (git config --file $analysisGlobalConfig --get credential.helper).Trim() | Should -Be 'attacker-global-helper'
+
+        # A separate Microsoft-hosted job starts with both a fresh repository
+        # metadata directory and a fresh home/global-config context.
+        git clone -q $origin $postRepo
+        $postGitDir = Join-Path $postRepo ((git -C $postRepo rev-parse --git-dir).Trim())
+        $postLocalHooks = git -C $postRepo config --local --get core.hooksPath 2>$null
+        $postLocalHelper = git -C $postRepo config --local --get credential.helper 2>$null
+        $postLocalHooks | Should -BeNullOrEmpty
+        $postLocalHelper | Should -BeNullOrEmpty
+        Test-Path -LiteralPath (Join-Path $postGitDir 'attacker-hooks') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $postGitDir 'hooks/post-checkout') | Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $TestDrive 'posting-home/.gitconfig') | Should -BeFalse
+    }
+
+    It 'imports deep UI snapshots through bounded regular-file validation before posting' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+        $postJobStart = $stageBlock.IndexOf('- job: UpdateComment')
+        $postJobBlock = $stageBlock.Substring($postJobStart)
+
+        $importIndex = $stageBlock.IndexOf("displayName: 'Import bounded deep UI test results'")
+        $postIndex = $stageBlock.IndexOf("displayName: 'Post AI summary review'")
+
+        $postJobStart | Should -BeGreaterThan -1
+        $importIndex | Should -BeGreaterThan -1
+        $postIndex | Should -BeGreaterThan $importIndex
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultFileBytes = 16MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$maxDeepResultBytes = 512MB'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            'Copy-BoundedRegularFileTree `'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxFileBytes $maxDeepResultFileBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '-MaxTotalBytes $maxDeepResultBytes'))
+        $stageBlock | Should -Match ([regex]::Escape(
+            '$artDir = Join-Path "$(Agent.TempDirectory)" "bounded-deep-uitests"'))
+        $postJobBlock | Should -Not -Match ([regex]::Escape(
+            '$artDir = "$(Pipeline.Workspace)/drop-deep-uitests"'))
+    }
+
+    It 'does not enumerate or log credential identities and capabilities in Stage 3' {
+        $stageStart = $pipelineContent.IndexOf('- stage: UpdateAISummaryComment')
+        $stageEnd = $pipelineContent.IndexOf('- stage: CleanupReviewLock', $stageStart)
+        $stageBlock = $pipelineContent.Substring($stageStart, $stageEnd - $stageStart)
+
+        $stageBlock | Should -Not -Match '\[EMBED-DIAG\]'
+        $stageBlock | Should -Not -Match 'CHECKOUT_PAT'
+        $stageBlock | Should -Not -Match 'Contents:write probe'
+        $stageBlock | Should -Not -Match 'push=\{[0-9]+\}'
+        $stageBlock | Should -Match ([regex]::Escape(
+            'Write-Host "Snapshot asset publication credential verified."'))
     }
 
     It 'pins Deep UI and all PR mutations to the immutable Setup snapshot' {
@@ -454,7 +607,7 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match '(?s)CURRENT_HEAD.*EXPECTED_HEAD.*s/agent-review-incomplete'
     }
 
-    It 'skips expensive downstream stages after cancellation but always cleans the review lock' {
+    It 'publishes an explicit deep cancellation result while always cleaning the review lock' {
         $postReviewJobStart = $pipelineContent.IndexOf("      - job: PostReview")
         $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
         $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
@@ -479,7 +632,12 @@ Describe 'Reviewer pipeline timeout containment' {
             "condition: and\(eq\('.+parameters\.Mode.+', 'review'\), in\(dependencies\.CopilotReview\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Canceled'\)\)")
         $deepBlock | Should -Match 'not\(canceled\(\)\)'
         $deepBlock | Should -Not -Match "'Canceled'"
-        $postBlock | Should -Match 'condition: and\(not\(canceled\(\)\)'
+        $postBlock | Should -Match "in\(dependencies\.RunDeepUITests\.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped', 'Canceled'\)"
+        $postBlock | Should -Match 'condition: and\(always\(\)'
+        $postBlock | Should -Match ([regex]::Escape('deepStageResult: $[ stageDependencies.RunDeepUITests.RunUITests.result ]'))
+        $postBlock | Should -Match ([regex]::Escape('$deepStageCanceled = $deepStageResult -eq ''Canceled'''))
+        $postBlock | Should -Match 'The deep job was canceled before normal publication'
+        $postBlock | Should -Match '(?s)- job: UpdateComment.*?condition: always\(\)'
         $cleanupBlock | Should -Match 'condition: always\(\)'
         $cleanupBlock | Should -Match 'SYSTEM_ACCESSTOKEN: \$\(System\.AccessToken\)'
         $cleanupBlock | Should -Match '--oauth2-bearer "\$\{SYSTEM_ACCESSTOKEN\}"'
@@ -490,6 +648,25 @@ Describe 'Reviewer pipeline timeout containment' {
         $cleanupBlock | Should -Match '\.templateParameters\.ReviewRepository'
         $cleanupBlock.IndexOf('OTHER_ACTIVE=') | Should -BeLessThan $cleanupBlock.IndexOf('repos/${REVIEW_REPOSITORY}/issues/${PR_NUM}/labels')
         $analyzeBlock | Should -Match 'condition: not\(canceled\(\)\)'
+    }
+
+    It 'bounds the deep loop by the actual remaining outer-job budget' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $postStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $deepBlock = $pipelineContent.Substring($deepStart, $postStart - $deepStart)
+
+        $captureIndex = $deepBlock.IndexOf("displayName: 'Capture deep UI job budget'")
+        $checkoutIndex = $deepBlock.IndexOf('- checkout: self')
+        $captureIndex | Should -BeGreaterThan -1
+        $checkoutIndex | Should -BeGreaterThan $captureIndex
+        $deepBlock | Should -Match ([regex]::Escape('variable=deepJobStartedAtUtc'))
+        $deepBlock | Should -Match ([regex]::Escape('DEEP_JOB_STARTED_AT_UTC: $(deepJobStartedAtUtc)'))
+        $deepBlock | Should -Match ([regex]::Escape('$jobSafeStop = $jobStartedAt.AddMinutes(340)'))
+        $deepBlock | Should -Match ([regex]::Escape('$taskHardStop = if ($jobSafeStop -lt $configuredTaskHardStop)'))
+        $deepBlock | Should -Match ([regex]::Escape("'Reason=OuterJobBudget'"))
+        $deepBlock | Should -Match ([regex]::Escape("Join-Path `$outputRoot 'deep-run-status.txt'"))
+        $deepBlock | Should -Match 'cancelTimeoutInMinutes: 10'
+        $deepBlock | Should -Match "(?s)displayName: 'Publish drop-deep-uitests'.*?condition: always\(\)"
     }
 
     It 'gives every Android emulator retry group enough time and keeps setup non-blocking' {
@@ -580,9 +757,11 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp -r eng/scripts     "$TRUSTED/eng-scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
@@ -600,8 +779,10 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('cp -r .github/scripts "$TRUSTED/scripts"'))
-        $captureBlock | Should -Match ([regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
@@ -643,11 +824,44 @@ Describe 'Reviewer pipeline timeout containment' {
         $setup | Should -BeGreaterThan $buildTasks
     }
 
+    It 'keeps inflight Deep UI setup on the protected base until credentials are released' {
+        $deepStart = $pipelineContent.IndexOf("- stage: RunDeepUITests")
+        $deepEnd = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment", $deepStart)
+        $deepBlock = $pipelineContent.Substring($deepStart, $deepEnd - $deepStart)
+        $resolveName = "displayName: 'Resolve PR base branch (workloads + merge base)'"
+        $resolveStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($resolveName))
+        $resolveEnd = $deepBlock.IndexOf("- template: common/provision.yml", $resolveStart)
+        $resolveBlock = $deepBlock.Substring($resolveStart, $resolveEnd - $resolveStart)
+        $installWorkloads = $deepBlock.IndexOf("displayName: 'Install .NET and workloads'", $resolveEnd)
+        $buildTasks = $deepBlock.IndexOf("displayName: 'Build MSBuild Tasks'", $installWorkloads)
+        $mergeName = "displayName: 'Merge PR for testing'"
+        $mergeStart = $deepBlock.LastIndexOf("- bash:", $deepBlock.IndexOf($mergeName))
+        $mergeEnd = $deepBlock.IndexOf($mergeName, $mergeStart)
+        $mergeBlock = $deepBlock.Substring($mergeStart, $mergeEnd - $mergeStart)
+
+        $resolveBlock | Should -Match ([regex]::Escape('git checkout --detach "${BASE_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git checkout --detach "${PR_HEAD_SHA}"'))
+        $resolveBlock | Should -Not -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $buildTasks | Should -BeGreaterThan $installWorkloads
+        $mergeStart | Should -BeGreaterThan $buildTasks
+        $mergeBlock | Should -Match ([regex]::Escape('if [[ "${BASE_REF}" == inflight/* ]]'))
+        $mergeBlock | Should -Match ([regex]::Escape(
+            'git checkout -b deep-uitests-pr-${{ parameters.PRNumber }} "${PR_HEAD_SHA}"'))
+        $mergeBlock | Should -Match ([regex]::Escape('git merge --no-edit "${BASE_SHA}"'))
+        $mergeBlock | Should -Not -Match 'DOTNET_TOKEN:'
+    }
+
     It 'reapplies the trusted Catalyst screenshot harness after PR branch switches' {
-        ([regex]::Matches(
-            $pipelineContent,
-            [regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"')
-        )).Count | Should -Be 2
+        $trustedOverrideCopies = @(
+            [regex]::Matches(
+                $pipelineContent,
+                [regex]::Escape('cp .github/patches/catalyst-retina-screenshot.patch "$TRUSTED/source-overrides/"'))
+            [regex]::Matches(
+                $pipelineContent,
+                [regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
+        )
+        $trustedOverrideCopies.Count | Should -Be 2
 
         $content | Should -Match ([regex]::Escape("source-overrides/catalyst-retina-screenshot.patch"))
         $content | Should -Match ([regex]::Escape('git apply --reverse --check --whitespace=nowarn'))
@@ -692,6 +906,90 @@ Describe 'Reviewer pipeline timeout containment' {
         $pipelineContent | Should -Match 'screen\.\?shot'
         $pipelineContent | Should -Match 'PageSource'
         $pipelineContent | Should -Match ([regex]::Escape("-not (`$_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)"))
+        $pipelineContent | Should -Match ([regex]::Escape("Join-Path `$uiDiagSrc 'hang-diagnostics'"))
+        $pipelineContent | Should -Match ([regex]::Escape('Remove-Item -LiteralPath $hangDiagDir -Recurse'))
+    }
+
+    It 'recomputes the category hard-stop budget after a device reset' {
+        $resetStart = $pipelineContent.IndexOf('if ($needDeviceReset)')
+        $resetEnd = $pipelineContent.IndexOf('# Give each still-pending category', $resetStart)
+        $resetBlock = $pipelineContent.Substring($resetStart, $resetEnd - $resetStart)
+        $refreshIndex = $resetBlock.IndexOf('$catStart = [DateTimeOffset]::UtcNow')
+        $remainingIndex = $resetBlock.IndexOf('$remainToHardStopMin =')
+
+        $refreshIndex | Should -BeGreaterThan -1
+        $remainingIndex | Should -BeGreaterThan $refreshIndex
+        $resetBlock | Should -Match ([regex]::Escape('if ($remainToHardStopMin -lt 3)'))
+    }
+
+    It 'imports only the canonical bounded PRAgent tree before the credentialed PostReview phase' {
+        $postReviewStart = $pipelineContent.IndexOf("      - job: PostReview")
+        $deepStageStart = $pipelineContent.IndexOf("- stage: RunDeepUITests", $postReviewStart)
+        $postReviewBlock = $pipelineContent.Substring(
+            $postReviewStart,
+            $deepStageStart - $postReviewStart)
+
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '. $boundedCopyScript'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '. $expectedImportScript'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogFiles = 2048'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogFileBytes = 16MB'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '$maxImportedLogBytes = 128MB'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            'Import-ExpectedPRAgentArtifact `'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-ArtifactRoot $artifactRoot'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-PRNumber ([int]$env:PARAM_PR_NUMBER)'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-DestinationDirectory $targetPRAgent'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxFileCount $maxImportedLogFiles'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxFileBytes $maxImportedLogFileBytes'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-MaxTotalBytes $maxImportedLogBytes'))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            "`$truncatedArtifactExtensions = @('.log', '.patch', '.diff')"))
+        $postReviewBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedArtifactExtensions'))
+        $postReviewBlock | Should -Not -Match ([regex]::Escape(
+            '-SourceDirectory $source'))
+        $postReviewBlock | Should -Not -Match (
+            'Copy-Item\s+-LiteralPath\s+\$source\s+-Destination\s+\$target\s+-Recurse')
+    }
+
+    It 'imports only the canonical bounded PRAgent tree before credentialed posting' {
+        $postStageStart = $pipelineContent.IndexOf("- stage: UpdateAISummaryComment")
+        $importName = "displayName: 'Import canonical bounded PRAgent artifact'"
+        $importStart = $pipelineContent.LastIndexOf("- pwsh:", $pipelineContent.IndexOf($importName, $postStageStart))
+        $importEnd = $pipelineContent.IndexOf($importName, $importStart)
+        $importBlock = $pipelineContent.Substring($importStart, $importEnd - $importStart)
+        $postTaskStart = $pipelineContent.IndexOf(
+            '# DO NOT add AzDO compile-time template expressions',
+            $importEnd)
+        $postTaskEnd = $pipelineContent.IndexOf(
+            "displayName: 'Post AI summary review'",
+            $postTaskStart)
+        $postTaskBlock = $pipelineContent.Substring($postTaskStart, $postTaskEnd - $postTaskStart)
+
+        $importStart | Should -BeGreaterThan $postStageStart
+        $postTaskStart | Should -BeGreaterThan $importEnd
+        $importBlock | Should -Match 'Import-ExpectedPRAgentArtifact'
+        $importBlock | Should -Match ([regex]::Escape(
+            '-DestinationDirectory $destination'))
+        $importBlock | Should -Match ([regex]::Escape(
+            "`$truncatedArtifactExtensions = @('.log', '.patch', '.diff')"))
+        $importBlock | Should -Match ([regex]::Escape(
+            '-TruncateOversizedFileExtensions $truncatedArtifactExtensions'))
+        $postTaskBlock | Should -Match ([regex]::Escape(
+            '$prAgentImportDir = Join-Path "$(Agent.TempDirectory)" "bounded-pr-agent"'))
+        $postTaskBlock | Should -Not -Match (
+            'Get-ChildItem\s+-Path\s+\$copilotLogsDir\s+-Recurse\s+-Directory\s+-Filter\s+"PRAgent"')
     }
 
     It 'passes the selected platform into every UI category detection pass' {
@@ -732,6 +1030,55 @@ Describe 'Snapshot diff asset publishing' {
         $assetBlock | Should -Match 'unique asset ref publish failed'
         $assetBlock | Should -Not -Match ([regex]::Escape("`$assetBranch = 'review-tests-assets'"))
         $assetBlock | Should -Not -Match 'heavy concurrency'
+    }
+}
+
+Describe 'Simulator runtime provisioning contract' {
+    It 'normalizes array and object-map JSON before counting Ready runtime images' -Skip:(-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+        $filterMatch = [regex]::Match(
+            $provisionContent,
+            "(?ms)^\s*runtime_image_counts_jq='(?<filter>.*?)^\s*'\s*$")
+
+        $filterMatch.Success | Should -BeTrue
+        $filter = $filterMatch.Groups['filter'].Value
+
+        foreach ($case in @(
+            @{
+                Json = '{"first":{"state":"Ready"},"second":{"state":"Deleting"}}'
+                Expected = "2`t1"
+            },
+            @{
+                Json = '[{"state":"Ready"},{"state":"Deleting"}]'
+                Expected = "2`t1"
+            }
+        )) {
+            $actual = $case.Json | & jq -er $filter
+
+            $LASTEXITCODE | Should -Be 0
+            $actual | Should -Be $case.Expected
+        }
+    }
+
+    It 'rejects wrapper, null, missing-state, and malformed runtime JSON' -Skip:(-not (Get-Command jq -ErrorAction SilentlyContinue)) {
+        $filterMatch = [regex]::Match(
+            $provisionContent,
+            "(?ms)^\s*runtime_image_counts_jq='(?<filter>.*?)^\s*'\s*$")
+        $filterMatch.Success | Should -BeTrue
+        $filter = $filterMatch.Groups['filter'].Value
+
+        foreach ($invalidJson in @(
+            '{"runtimes":[]}',
+            'null',
+            '{"runtime":{}}',
+            '{bad'
+        )) {
+            $null = $invalidJson | & jq -er $filter 2>$null
+
+            $LASTEXITCODE | Should -Not -Be 0
+        }
+
+        $provisionContent | Should -Match 'if ! RUNTIME_COUNTS=\$\(get_runtime_image_counts\); then'
+        $provisionContent | Should -Not -Match 'READY_COUNT=.*\|\| echo 0'
     }
 }
 
@@ -1121,10 +1468,12 @@ Describe 'Pipeline pre-trusted command safety' {
         $sanitizer = "2>&1 | tr -d '\r' | sed -E 's/##vso\[[^]]*\]//g'"
 
         ([regex]::Matches($pipelineContent, [regex]::Escape($sanitizer))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("`$psi.FileName = 'bash'"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape("foreach (`$a in @('-o','pipefail','-c',`$buildCommand))"))).Count | Should -Be 2
-        ([regex]::Matches($pipelineContent, [regex]::Escape('& bash -o pipefail -c $buildCommand'))).Count | Should -Be 2
-        $pipelineContent | Should -Not -Match ([regex]::Escape("`$psi.FileName = 'pwsh'"))
+        ([regex]::Matches($pipelineContent, 'Invoke-BuildTasksWatchdog\s+`')).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape('-ShellCommand $buildCommand'))).Count | Should -Be 2
+        ([regex]::Matches($pipelineContent, [regex]::Escape("-DirectFileName 'pwsh'"))).Count | Should -Be 2
+        $buildShellContent | Should -Match '\$psi\.RedirectStandardOutput = \$true'
+        $buildShellContent | Should -Match '\$psi\.RedirectStandardError = \$true'
+        $buildShellContent | Should -Match 'Remove-VsoLoggingCommand -Line \$line'
     }
 
     It 'uses non-interactive sudo for CoreSimulator recovery before falling back' {
@@ -1182,6 +1531,40 @@ Describe 'AI summary review ID handoff' {
 }
 
 Describe 'Detected UI category handoff' {
+    It 'honors an explicit NONE refresh' {
+        Resolve-UITestCategoryRefresh `
+            -GateCategories 'Material3,ViewBaseTests' `
+            -RefreshedCategories 'NONE' |
+            Should -Be 'NONE'
+    }
+
+    It 'uses a specific refreshed category list' {
+        Resolve-UITestCategoryRefresh `
+            -GateCategories 'Material3' `
+            -RefreshedCategories 'Button,Layout' |
+            Should -Be 'Button,Layout'
+    }
+
+    It 'preserves specific gate categories for blank or ALL refreshes' {
+        foreach ($refresh in @('', ' ', 'ALL')) {
+            Resolve-UITestCategoryRefresh `
+                -GateCategories 'Material3,ViewBaseTests' `
+                -RefreshedCategories $refresh |
+                Should -Be 'Material3,ViewBaseTests'
+        }
+    }
+
+    It 'falls back to ALL for blank or ALL refreshes without specific gate categories' {
+        foreach ($gate in @('', 'ALL', 'NONE')) {
+            foreach ($refresh in @('', 'ALL')) {
+                Resolve-UITestCategoryRefresh `
+                    -GateCategories $gate `
+                    -RefreshedCategories $refresh |
+                    Should -Be 'ALL'
+            }
+        }
+    }
+
     It 'passes detected categories as environment data instead of inline PowerShell source' {
         $pipelineContent | Should -Match ([regex]::Escape('$cats = $env:DETECTED_CATEGORIES'))
         $pipelineContent | Should -Match ([regex]::Escape('DETECTED_CATEGORIES: $(detectedCategories)'))

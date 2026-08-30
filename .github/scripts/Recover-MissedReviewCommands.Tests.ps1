@@ -271,6 +271,7 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
         $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
 
         $result.Recovered.Count | Should -Be 1
+        $result.Failed.Count | Should -Be 0
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
             $PRNumber -eq 37148 -and
             $Platform -eq 'android' -and
@@ -279,6 +280,25 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
             $CommentNodeId -eq 'IC_5209319531'
         }
         $result.Recovered[0].AcknowledgementPending | Should -BeTrue
+    }
+
+    It 'dispatches recovered platform aliases using canonical live-trigger values' -TestCases @(
+        @{ Command = '/review macos';           Expected = 'catalyst' }
+        @{ Command = '/review -p maccatalyst';  Expected = 'catalyst' }
+        @{ Command = '/review --platform=mac';  Expected = 'catalyst' }
+        @{ Command = '/review win';             Expected = 'windows' }
+    ) {
+        param($Command, $Expected)
+
+        $script:Comment.body = $Command
+
+        $result = Invoke-MissedReviewCommandRecovery -Now $script:Now
+
+        $result.Recovered.Count | Should -Be 1
+        $result.Recovered[0].Platform | Should -Be $Expected
+        Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
+            $Platform -eq $Expected
+        }
     }
 
     It 'does not dispatch minimized commands' {
@@ -359,9 +379,22 @@ Describe 'Invoke-MissedReviewCommandRecovery' {
 
         $result.Recovered.Count | Should -Be 1
         $result.Recovered[0].CommentId | Should -Be 5209319531
+        $result.Failed.Count | Should -Be 1
+        $result.Failed[0].CommentId | Should -Be 5209319530
+        $result.Failed[0].PRNumber | Should -Be 37148
+        $result.Failed[0].Error | Should -Be 'GraphQL node was deleted'
         Should -Invoke Invoke-ReviewWorkflowDispatch -Times 1 -Exactly -ParameterFilter {
             $CommentId -eq 5209319531
         }
+    }
+
+    It 'surfaces isolated failures in console, annotation, and step-summary output' {
+        $scriptText = Get-Content -Raw -LiteralPath $script:RecoverScriptPath
+
+        $scriptText | Should -Match 'failed=\$\(\$result\.Failed\.Count\)'
+        $scriptText | Should -Match '::warning title=Review trigger recovery failures::'
+        $scriptText | Should -Match 'Failed recoveries: \$\(\$result\.Failed\.Count\)'
+        $scriptText | Should -Match 'Failed candidates: \$failedSummary'
     }
 
     It 'does not acknowledge in the scanner before the serialized trigger workflow runs' {

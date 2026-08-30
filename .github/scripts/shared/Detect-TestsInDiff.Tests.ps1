@@ -20,12 +20,53 @@ BeforeAll {
 
     $methodFunction = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Get-AddedDeviceTestMethodsFromPatch'
+        $args[0].Name -eq 'Get-ChangedDeviceTestMethodsFromPatch'
     }, $true)
     if (-not $methodFunction) {
-        throw "Function 'Get-AddedDeviceTestMethodsFromPatch' not found"
+        throw "Function 'Get-ChangedDeviceTestMethodsFromPatch' not found"
     }
     Invoke-Expression $methodFunction.Extent.Text
+
+    $hasTestMethodsFunction = $ast.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Test-CsFileHasTestMethods'
+    }, $true)
+    if (-not $hasTestMethodsFunction) {
+        throw "Function 'Test-CsFileHasTestMethods' not found"
+    }
+    Invoke-Expression $hasTestMethodsFunction.Extent.Text
+}
+
+Describe 'Detect-TestsInDiff source test attributes' {
+    It 'recognizes a fully qualified xUnit attribute' {
+        $testFile = Join-Path $TestDrive 'QualifiedTests.cs'
+        @'
+public class QualifiedTests
+{
+    [Xunit.Fact]
+    public void Runs()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath $testFile -Encoding UTF8
+
+        Test-CsFileHasTestMethods -RelativePath $testFile | Should -BeTrue
+    }
+
+    It 'does not treat a qualified lookalike attribute as a test' {
+        $testFile = Join-Path $TestDrive 'QualifiedHelpers.cs'
+        @'
+public class QualifiedHelpers
+{
+    [Contoso.TestFactory]
+    public void Build()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath $testFile -Encoding UTF8
+
+        Test-CsFileHasTestMethods -RelativePath $testFile | Should -BeFalse
+    }
 }
 
 Describe 'Detect-TestsInDiff device-test filtering' {
@@ -194,7 +235,7 @@ Describe 'Detect-TestsInDiff added device-test methods' {
 +}
 '@
 
-        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
             Should -Be @('TextColorCanBeCleared', 'IconColorUpdates')
     }
 
@@ -213,8 +254,112 @@ Describe 'Detect-TestsInDiff added device-test methods' {
 +}
 '@
 
-        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) |
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
             Should -Be @('RunsInline', 'RunsWithValueTask')
+    }
+
+    It 'keeps multiline Theory and Fact attributes pending through balanced arguments' {
+        $patch = @'
+@@ -0,0 +1,28 @@
++[Theory(
++    Skip = "",
++    DisplayName = "literal ) and ] " + nameof(Format),
++    Timeout = GetTimeout(new[] { ")", "]" })
++)]
++public async Task TheoryWithArguments(string value)
++{
++    await Task.Yield();
++}
++
++[Fact(
++    Skip = @"verbatim text with ""quotes"",
++a closing-looking ] on another line"
++)]
++public void FactWithArguments()
++{
++}
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('TheoryWithArguments', 'FactWithArguments')
+    }
+
+    It 'supports stacked multiline attributes with comments and directives before the method' {
+        $patch = @'
+@@ -0,0 +1,24 @@
++[Theory(
++    Skip = GetReason(
++        "nested call")
++)]
++[Trait(
++    "Category",
++    "Device"
++)]
++
++// The declaration remains associated with the test attributes.
++#if TEST_CONFIGURATION
++public virtual ValueTask StackedAttributes()
++{
++    return ValueTask.CompletedTask;
++}
++#endif
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('StackedAttributes')
+    }
+
+    It 'clears a completed test marker when an unrelated declaration intervenes' {
+        $patch = @'
+@@ -0,0 +1,20 @@
++[Fact(
++    Skip = "temporarily disabled"
++)]
++private const string Reason = "not a method";
++
++public void HelperMustNotInheritFact()
++{
++}
++
++[Theory]
++public Task ActualTest()
++{
++    return Task.CompletedTask;
++}
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('ActualTest')
+    }
+
+    It 'does not leak malformed or unclosed attributes into later methods or hunks' {
+        $patch = @'
+@@ -0,0 +1,12 @@
++[Theory(
++    Skip = "missing the closing bracket"
++public void HiddenInsideMalformedAttribute()
++{
++}
+@@ -40,0 +53,14 @@
++public void MethodInAnotherHunk()
++{
++}
++
++[Fact(
++    Skip = "missing the closing parenthesis"
++]
++public void ClosedButMalformed()
++{
++}
++
++[Fact]
++public void ValidAfterMalformedAttribute()
++{
++}
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('ValidAfterMalformedAttribute')
     }
 
     It 'returns no methods when the patch adds only helpers' {
@@ -230,7 +375,144 @@ Describe 'Detect-TestsInDiff added device-test methods' {
 +}
 '@
 
-        @(Get-AddedDeviceTestMethodsFromPatch -Patch $patch) | Should -BeNullOrEmpty
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) | Should -BeNullOrEmpty
+    }
+
+    It 'selects an existing test when only its body changes' {
+        $source = @'
+public class ExistingTests
+{
+    [Fact]
+    public void ChangedTest()
+    {
+        var first = 1;
+        var second = 2;
+        Assert.Equal(4, first + second);
+    }
+
+    [Fact]
+    public void UnrelatedSibling()
+    {
+        Assert.True(true);
+    }
+}
+'@
+        $patch = @'
+@@ -5,5 +5,5 @@ public void ChangedTest()
+     {
+         var first = 1;
+         var second = 2;
+-        Assert.Equal(3, first + second);
++        Assert.Equal(4, first + second);
+     }
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch -SourceContent $source) |
+            Should -Be @('ChangedTest')
+    }
+
+    It 'selects an existing test when a test attribute is added above its unchanged declaration' {
+        $source = @'
+public class ExistingTests
+{
+    [Theory]
+    [InlineData(42)]
+    public void ExistingTheory(int value)
+    {
+        Assert.Equal(42, value);
+    }
+}
+'@
+        $patch = @'
+@@ -1,6 +1,7 @@
+ public class ExistingTests
+ {
+     [Theory]
++    [InlineData(42)]
+     public void ExistingTheory(int value)
+     {
+         Assert.Equal(42, value);
+'@
+
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch -SourceContent $source) |
+            Should -Be @('ExistingTheory')
+    }
+
+    It 'keeps production result scoping on the existing method whose body changed' {
+        $root = Join-Path $TestDrive 'body-only-repo'
+        $relativeFile = 'src/Core/tests/DeviceTests/Handlers/Picker/PickerHandlerTests.cs'
+        $testFile = Join-Path $root $relativeFile
+
+        New-Item -ItemType Directory -Force -Path (Split-Path $testFile -Parent) | Out-Null
+        @'
+namespace Microsoft.Maui.DeviceTests;
+
+[Category(TestCategory.Picker)]
+public class PickerHandlerTests
+{
+    [Fact]
+    public void ChangedExistingTest()
+    {
+        var first = 1;
+        var second = 2;
+        var third = 3;
+        var fourth = 4;
+        Assert.Equal(10, first + second + third + fourth);
+    }
+
+    [Fact]
+    public void UnrelatedSibling()
+    {
+        Assert.True(true);
+    }
+}
+'@ | Set-Content $testFile -Encoding UTF8
+
+        Push-Location $root
+        try {
+            git init -q
+            git config user.email tests@example.com
+            git config user.name Tests
+            git add .
+            git commit -q -m base
+            $base = (git rev-parse HEAD).Trim()
+
+            @'
+namespace Microsoft.Maui.DeviceTests;
+
+[Category(TestCategory.Picker)]
+public class PickerHandlerTests
+{
+    [Fact]
+    public void ChangedExistingTest()
+    {
+        var first = 1;
+        var second = 2;
+        var third = 3;
+        var fourth = 4;
+        Assert.Equal(11, first + second + third + fourth);
+    }
+
+    [Fact]
+    public void UnrelatedSibling()
+    {
+        Assert.True(true);
+    }
+}
+'@ | Set-Content $testFile -Encoding UTF8
+            git add .
+            git commit -q -m snapshot
+
+            $tests = @(& $scriptPath `
+                -ChangedFiles $relativeFile `
+                -DiffBase $base `
+                -Platform android)
+        } finally {
+            Pop-Location
+        }
+
+        $test = $tests | Where-Object { $_.Type -eq 'DeviceTest' } | Select-Object -First 1
+        @($test.Methods) | Should -Be @('ChangedExistingTest')
     }
 
     It 'keeps method selection pinned to DiffBase..HEAD when the worktree changes later' {

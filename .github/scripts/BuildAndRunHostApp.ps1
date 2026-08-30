@@ -64,8 +64,40 @@ param(
 
     [string]$DeviceUdid,
 
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [switch]$NoRestore
 )
+
+function Get-AndroidRetryClassification {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$TestRun
+    )
+
+    $isMixedRun =
+        $null -ne $TestRun -and
+        [int]$TestRun.Failed -gt 0 -and
+        [int]$TestRun.Passed -gt 0
+    $failedResults = if ($isMixedRun) {
+        @($TestRun.Results | Where-Object { $_.status -eq 'Failed' })
+    } else {
+        @()
+    }
+    $baselineFailures = @($failedResults | Where-Object {
+        ($_.error -as [string]) -match '(?i)Baseline snapshot not yet created'
+    })
+    $retryNames = @($failedResults |
+        Where-Object { ($_.error -as [string]) -notmatch '(?i)Baseline snapshot not yet created' } |
+        ForEach-Object { $_.name })
+
+    return [pscustomobject]@{
+        IsMixedRun = $isMixedRun
+        BaselineFailures = $baselineFailures
+        RetryNames = $retryNames
+    }
+}
 
 function Merge-RetryTrxResults {
     [CmdletBinding()]
@@ -286,6 +318,7 @@ $buildDeployParams = @{
     Configuration = $Configuration
     DeviceUdid = $DeviceUdid
     Rebuild = $Rebuild
+    NoRestore = $NoRestore
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
@@ -587,6 +620,9 @@ try {
         "--logger", "console;verbosity=normal",
         "--results-directory", $trxResultsDir,
         "/p:VStestUseMSBuildOutput=false")
+    if ($NoRestore) {
+        $testArgs += '--no-restore'
+    }
     if ($effectiveFilter) {
         $testArgs = @($TestProject, "--filter", $effectiveFilter) + $testArgs[1..($testArgs.Length-1)]
     }
@@ -636,18 +672,16 @@ try {
     if ($testExitCode -ne 0 -and $Platform -eq 'android' -and (Test-Path $trxFilePath)) {
         . "$PSScriptRoot/shared/Get-TrxResults.ps1"
         $firstRun = Get-TrxResults -TrxPath $trxFilePath
-        if ($firstRun -and [int]$firstRun.Failed -gt 0 -and [int]$firstRun.Passed -gt 0) {
+        $retryClassification = Get-AndroidRetryClassification -TestRun $firstRun
+        if ($retryClassification.IsMixedRun) {
             # "Baseline snapshot not yet created" failures are brand-new VerifyScreenshot
             # tests with no committed baseline — deterministic new-baseline results, not
             # emulator flake. Retrying them wastes a full re-run (they can never pass
             # without a committed baseline) and can exhaust the deep category time budget
             # on snapshot-heavy PRs. Exclude them from the flaky-retry set; the downstream
             # summary reclassifies them as "new baseline".
-            $failedResults = @($firstRun.Results | Where-Object { $_.status -eq 'Failed' })
-            $baselineFailures = @($failedResults | Where-Object { ($_.error -as [string]) -match '(?i)Baseline snapshot not yet created' })
-            $failedNames = @($failedResults |
-                Where-Object { ($_.error -as [string]) -notmatch '(?i)Baseline snapshot not yet created' } |
-                ForEach-Object { $_.name })
+            $baselineFailures = @($retryClassification.BaselineFailures)
+            $failedNames = @($retryClassification.RetryNames)
             if ($baselineFailures.Count -gt 0) {
                 Write-Info "  ⚠ $($baselineFailures.Count) new-baseline failure(s) (no committed snapshot) excluded from flaky-retry — deterministic, not emulator flake."
             }

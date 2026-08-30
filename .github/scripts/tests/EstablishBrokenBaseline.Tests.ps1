@@ -373,7 +373,8 @@ Describe 'An unusable scope is refused before an agent touches the tree' {
         $output = Invoke-BaselineScript -Root $script:Repo `
             -Environment @{ MAUI_BASELINE_SCOPE_FILE = $script:Scope }
 
-        $output | Should -Match 'not valid JSON'
+        # PowerShell inserts a leading "|" when its host width wraps an error.
+        $output | Should -Match 'not\s+valid(?:\s*\|\s*|\s+)JSON'
         Test-Path (Get-StatePath $script:Repo) | Should -BeFalse
     }
 
@@ -383,7 +384,7 @@ Describe 'An unusable scope is refused before an agent touches the tree' {
         $output = Invoke-BaselineScript -Root $script:Repo `
             -Environment @{ MAUI_BASELINE_SCOPE_FILE = $missing }
 
-        $output | Should -Match 'does not exist'
+        $output | Should -Match 'does\s+not(?:\s*\|\s*|\s+)exist'
         Test-Path (Get-StatePath $script:Repo) | Should -BeFalse
     }
 }

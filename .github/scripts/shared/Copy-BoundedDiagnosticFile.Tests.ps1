@@ -140,4 +140,195 @@ Describe 'Copy-BoundedDiagnosticFileSet' {
         (Get-Item -LiteralPath (Join-Path $script:destinationDir 'appium.log')).Length |
             Should -BeLessOrEqual 512
     }
+
+    It 'retains colliding text diagnostic names from separate attempts' {
+        $firstAttempt = Join-Path $script:sourceDir 'attempt-1'
+        $secondAttempt = Join-Path $script:sourceDir 'attempt-2'
+        New-Item -ItemType Directory -Path $firstAttempt, $secondAttempt -Force | Out-Null
+        'first attempt' |
+            Set-Content -LiteralPath (Join-Path $firstAttempt 'android-device.log') -NoNewline
+        'second attempt' |
+            Set-Content -LiteralPath (Join-Path $secondAttempt 'android-device.log') -NoNewline
+
+        $files = @(
+            Get-Item -LiteralPath (Join-Path $firstAttempt 'android-device.log')
+            Get-Item -LiteralPath (Join-Path $secondAttempt 'android-device.log')
+        )
+        $result = Copy-BoundedDiagnosticFileSet `
+            -Files $files `
+            -DestinationDirectory $script:destinationDir
+
+        $result.CopiedFiles | Should -Be 2
+        $result.CopiedBytes | Should -Be 27
+        $retained = @(Get-ChildItem -LiteralPath $script:destinationDir -Filter 'android-device*.log')
+        $retained.Name | Should -Contain 'android-device.log'
+        $retained.Name | Should -Contain 'android-device-1.log'
+        $retainedContents = @($retained | ForEach-Object {
+            Get-Content -Raw -LiteralPath $_.FullName
+        })
+        $retainedContents.Count | Should -Be 2
+        $retainedContents | Should -Contain 'first attempt'
+        $retainedContents | Should -Contain 'second attempt'
+    }
+}
+
+Describe 'Copy-BoundedRegularFileTree' {
+    BeforeEach {
+        $script:fixture = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:sourceDir = Join-Path $script:fixture 'source'
+        $script:destinationDir = Join-Path $script:fixture 'destination'
+        New-Item -ItemType Directory -Path $script:sourceDir -Force | Out-Null
+    }
+
+    It 'copies a bounded regular-file tree while preserving relative paths' {
+        $nested = Join-Path $script:sourceDir 'nested'
+        New-Item -ItemType Directory -Path $nested -Force | Out-Null
+        'root' | Set-Content -LiteralPath (Join-Path $script:sourceDir 'root.log') -NoNewline
+        'nested' | Set-Content -LiteralPath (Join-Path $nested 'child.json') -NoNewline
+
+        $result = Copy-BoundedRegularFileTree `
+            -SourceDirectory $script:sourceDir `
+            -DestinationDirectory $script:destinationDir `
+            -MaxFileCount 4 `
+            -MaxDirectoryCount 4 `
+            -MaxFileBytes 256 `
+            -MaxTotalBytes 512
+
+        $result.CopiedFiles | Should -Be 2
+        $result.CopiedDirectories | Should -Be 2
+        $result.CopiedBytes | Should -Be 10
+        (Get-Content -Raw -LiteralPath (Join-Path $script:destinationDir 'root.log')) |
+            Should -BeExactly 'root'
+        (Get-Content -Raw -LiteralPath (Join-Path $script:destinationDir 'nested/child.json')) |
+            Should -BeExactly 'nested'
+    }
+
+    It 'fails closed when the file-count limit is exceeded' {
+        1..3 | ForEach-Object {
+            "$_" | Set-Content -LiteralPath (Join-Path $script:sourceDir "$_.log") -NoNewline
+        }
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileCount 2 `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*2-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'fails closed when a regular file exceeds the per-file limit' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'oversized.log') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'tail-truncates an explicitly allowed oversized diagnostic file' {
+        $source = Join-Path $script:sourceDir 'entry-validation.log'
+        ('begin-' + ('x' * 1024) + '-FINAL-MARKER') |
+            Set-Content -LiteralPath $source -NoNewline
+
+        $result = Copy-BoundedRegularFileTree `
+            -SourceDirectory $script:sourceDir `
+            -DestinationDirectory $script:destinationDir `
+            -MaxFileBytes 256 `
+            -MaxTotalBytes 512 `
+            -TruncateOversizedFileExtensions @('.log')
+        $copied = Get-Content -Raw -LiteralPath (
+            Join-Path $script:destinationDir 'entry-validation.log')
+
+        $result.CopiedFiles | Should -Be 1
+        $result.CopiedBytes | Should -Be 256
+        $result.TruncatedFiles | Should -Be 1
+        $copied | Should -Match '^--- Diagnostic log truncated from '
+        $copied | Should -Match '-FINAL-MARKER$'
+        $copied | Should -Not -Match 'begin-'
+    }
+
+    It 'still rejects an oversized non-diagnostic file when log truncation is enabled' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'winner.json') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024 `
+                -TruncateOversizedFileExtensions @('.log')
+        } | Should -Throw '*winner.json*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'rejects an oversized snapshot diff before the posting tree is created' {
+        ('x' * 300) |
+            Set-Content -LiteralPath (Join-Path $script:sourceDir 'oversized-diff.png') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 1024
+        } | Should -Throw '*oversized-diff.png*256-byte per-file limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'fails closed when regular files exceed the aggregate limit' {
+        ('a' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'first.log') -NoNewline
+        ('b' * 200) | Set-Content -LiteralPath (Join-Path $script:sourceDir 'second.log') -NoNewline
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir `
+                -MaxFileBytes 256 `
+                -MaxTotalBytes 300
+        } | Should -Throw '*300-byte aggregate limit*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'rejects a reparse-point escape before creating the destination' {
+        $outside = Join-Path $script:fixture 'outside.log'
+        'outside' | Set-Content -LiteralPath $outside -NoNewline
+        New-Item `
+            -ItemType SymbolicLink `
+            -Path (Join-Path $script:sourceDir 'escape.log') `
+            -Target $outside |
+            Out-Null
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir
+        } | Should -Throw '*unsupported reparse point*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
+
+    It 'rejects a snapshot diff reparse point before the posting tree is created' {
+        $outside = Join-Path $script:fixture 'outside.png'
+        'outside' | Set-Content -LiteralPath $outside -NoNewline
+        New-Item `
+            -ItemType SymbolicLink `
+            -Path (Join-Path $script:sourceDir 'escape-diff.png') `
+            -Target $outside |
+            Out-Null
+
+        {
+            Copy-BoundedRegularFileTree `
+                -SourceDirectory $script:sourceDir `
+                -DestinationDirectory $script:destinationDir
+        } | Should -Throw '*unsupported reparse point*escape-diff.png*'
+        Test-Path -LiteralPath $script:destinationDir | Should -BeFalse
+    }
 }

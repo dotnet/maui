@@ -37,6 +37,7 @@ Describe 'MAUI Copilot mode routing' {
     It 'requires exactly the target number for the selected mode' {
         $script:Pipeline | Should -Match 'Mode=review requires PRNumber > 0 and IssueNumber = 0'
         $script:Pipeline | Should -Match 'Mode=replicate requires IssueNumber > 0 and PRNumber = 0'
+        $script:Pipeline | Should -Match 'Mode=replicate currently requires Platform=android'
         $script:Pipeline | Should -Match 'PARAM_MODE: \$\{\{ parameters\.Mode \}\}'
         $script:Pipeline | Should -Match 'PARAM_ISSUE_NUMBER: \$\{\{ parameters\.IssueNumber \}\}'
     }
@@ -75,12 +76,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Not -Match 'Expected at most one writable MauiBot fork of dotnet/maui'
         $script:Pipeline | Should -Not -Match "'api', '-X', 'POST', 'repos/dotnet/maui/forks'"
         $script:Pipeline | Should -Match "(?s)job: ReplicationFeedback.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
-        $migrationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing reproduction PRs to testing fork'")
         $copilotJobIndex = $script:Pipeline.IndexOf("- job: CopilotReview")
-        $migrationIndex | Should -BeGreaterThan -1
-        $migrationIndex | Should -BeLessThan $copilotJobIndex
+        $copilotJobIndex | Should -BeGreaterThan -1
         $script:Pipeline | Should -Match 'sparseCheckoutDirectories: \.github/scripts/shared'
-        $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
+        $script:Pipeline | Should -Not -Match 'Move-ReplicationPRsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'Move-ReplicationPRCommentsToTestingFork\.ps1'
         $script:Pipeline | Should -Match 'Export-ReplicationPRFeedback\.ps1'
         $script:Pipeline | Should -Match "(?s)displayName: 'Migrate comments and export replication feedback'.*?condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'feedback'\)\)"
@@ -116,28 +115,30 @@ Describe 'MAUI Copilot mode routing' {
     }
 
     It 'validates before separating trusted evidence and MauiBot PR credentials' {
-        $validationIndex = $script:Pipeline.IndexOf("displayName: 'Validate replication candidate without credentials'")
+        # First certification now happens in a stage of its own, so anchor on
+        # the step that runs it rather than on the job that shares its name.
+        $validationIndex = $script:Pipeline.IndexOf(
+            "            displayName: 'Validate fix candidate without credentials'")
+        $recheckIndex = $script:Pipeline.IndexOf(
+            "displayName: 'Recheck validated bundle before credential use'")
         $credentialIndex = $script:Pipeline.IndexOf('$checkoutToken = $null', $validationIndex)
-        $evidenceIndex = $script:Pipeline.IndexOf("displayName: 'Publish reproduction evidence'")
-        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Move existing PRs and create MauiBot testing draft PR'")
+        $evidenceIndex = $script:Pipeline.IndexOf("displayName: 'Publish fix evidence'")
+        $publicationIndex = $script:Pipeline.IndexOf("displayName: 'Create MauiBot fix draft PR'")
 
         $validationIndex | Should -BeGreaterThan -1
-        $validationIndex | Should -BeLessThan $credentialIndex
+        $recheckIndex | Should -BeGreaterThan $validationIndex
+        $recheckIndex | Should -BeLessThan $credentialIndex
         $credentialIndex | Should -BeLessThan $evidenceIndex
         $evidenceIndex | Should -BeLessThan $publicationIndex
-        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationCredentialCheck\.replicationEvidenceOnly'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationIssueIneligible'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\)\)"
+        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationCredentialCheck\.replicationEvidenceOnly'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationIssueIneligible'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\), in\(dependencies\.ValidateReplication\.result, 'Succeeded', 'SucceededWithIssues'\)\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'
         $script:Pipeline | Should -Match 'Publish-ReplicationOutcome\.ps1'
-        # Matched as a quoted staging entry rather than an exact literal, so
-        # that changing where a script is copied from cannot fail a test whose
-        # subject is that the script is staged at all.
-        $script:Pipeline | Should -Match "'[^']*Move-ReplicationPRsToTestingFork\.ps1'"
         $script:Pipeline | Should -Match "(?s)displayName: 'Publish MauiBot non-reproduction outcome'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Match 's/try-latest-version'
-        $script:Pipeline | Should -Match "(?s)displayName: 'Move existing PRs and create MauiBot testing draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
-        $script:Pipeline | Should -Match 'Move-ReplicationPRsToTestingFork\.ps1'
+        $script:Pipeline | Should -Match "(?s)displayName: 'Create MauiBot fix draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
+        $script:Pipeline | Should -Not -Match 'Move-ReplicationPRsToTestingFork\.ps1'
         $script:Pipeline | Should -Match '-TargetOwner "kubaflo"'
         $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
         $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'
@@ -147,9 +148,9 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "'[^']*Assert-ReplicationTestGuard\.ps1'"
         $script:Pipeline | Should -Match '\$validation\.Count -ne 1'
         $script:Pipeline | Should -Match '\$validation\[0\]\.validationPassed -ne \$true'
+        $validationStart = $script:Pipeline.LastIndexOf('- pwsh: |', $validationIndex)
         $validationTask = $script:Pipeline.Substring(
-            $script:Pipeline.LastIndexOf('- pwsh: |', $validationIndex),
-            $credentialIndex - $script:Pipeline.LastIndexOf('- pwsh: |', $validationIndex))
+            $validationStart, $validationIndex - $validationStart)
         $validationTask | Should -Not -Match '\$LASTEXITCODE'
     }
 
@@ -177,11 +178,33 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'Copilot CLI native Windows executable was not installed'
     }
 
+    It 'starts the hosted-job deadline before replicate setup and passes it to the orchestrator' {
+        $capture = $script:Pipeline.IndexOf("displayName: 'Capture replication job budget'")
+        $setup = $script:Pipeline.IndexOf("displayName: 'Capture trusted test infrastructure'")
+        $run = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")
+        $capture | Should -BeGreaterThan -1
+        $capture | Should -BeLessThan $setup
+        $setup | Should -BeLessThan $run
+        $script:Pipeline | Should -Match 'variable=replicationJobStartedAtUtc'
+        $script:Pipeline | Should -Match '-JobStartedAtUtc "\$\(replicationJobStartedAtUtc\)"'
+    }
+
     It 'does not validate or publish blocked candidates as reproduced results' {
         $script:Pipeline | Should -Match '\[string\]\$candidate\.status -ne ''reproduced'''
         $script:Pipeline | Should -Match 'REPLICATION_CANDIDATE_READY\]false'
-        $script:Pipeline | Should -Match 'REPLICATION_CANDIDATE_READY\]true'
+        $script:Pipeline | Should -Match 'status = ''fix-not-available'''
+        # The ready flag moved into the credentialless stage's summary writer,
+        # which is the only place that decides it now.
+        $script:Pipeline | Should -Match 'Write-ValidationSummary -Status ''fix-not-available'' -CandidateReady \$false'
+        $script:Pipeline | Should -Match 'REPLICATION_CANDIDATE_READY\]\$\(\$CandidateReady\.ToString\(\)\.ToLowerInvariant\(\)\)'
         $script:Pipeline | Should -Match "condition: and\(succeeded\(\), eq\(variables\['REPLICATION_CANDIDATE_READY'\], 'true'\)\)"
+    }
+
+    It 'withholds a clean-validator downgrade that carries no validated fix files' {
+        $script:Pipeline | Should -Match '\$fixFilesProperty = \$validation\[0\]\.PSObject\.Properties\[''fixFiles''\]'
+        $script:Pipeline | Should -Match '\$candidateReady = \$validatedFixFiles\.Count -gt 0'
+        $script:Pipeline | Should -Match 'if \(\$candidateReady\) \{ ''validated'' \} else \{ ''fix-withheld'' \}'
+        $script:Pipeline | Should -Not -Match 'Write-ValidationSummary -Status ''validated'' -CandidateReady \$true'
     }
 }
 
@@ -245,8 +268,11 @@ Describe 'Replication issue outcome publication boundary' {
     It 'gives the publisher media validator room to install' {
         # Build 14999448 produced a publishable candidate and then lost it
         # because this install exhausted a ten-minute budget.
+        # Media validation moved to the credentialless stage with the rest of
+        # the first certification, so the install moved with it.
+        $script:Pipeline | Should -Not -Match "Install publisher media validator"
         $script:Pipeline |
-            Should -Match "(?s)Install publisher media validator'.{0,300}?timeoutInMinutes: 25"
+            Should -Match "(?s)Install validation media validator'.{0,300}?timeoutInMinutes: 25"
         $installs = [regex]::Matches(
             $script:Pipeline,
             'apt-get install -y -q(?<flags>[^\r\n]*)ffmpeg')
@@ -313,11 +339,11 @@ Describe 'Replication issue outcome publication boundary' {
         $telemetry.Contains('exit 0') | Should -BeTrue
     }
 
-    It 'checks for a duplicate reproduction pull request before any device work' {
+    It 'checks for a duplicate fix pull request before any device work' {
         # Build 15001358 spent over forty minutes reproducing issue 37407 and
         # authoring a test, only for the publisher to reject the result because
         # PR 152 already covered it. The same question is now asked up front.
-        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check = $script:Pipeline.IndexOf('Check for an existing fix pull request')
         $replicate = $script:Pipeline.IndexOf('Replicate issue and author failing test')
         $check | Should -BeGreaterThan 0
         $replicate | Should -BeGreaterThan $check
@@ -332,7 +358,7 @@ Describe 'Replication issue outcome publication boundary' {
     It 'reads the public fork without ever handling the publishing credential' {
         # The duplicate check runs in the untrusted agent job, so it must not
         # widen that job's credential surface to reach the publisher's token.
-        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check = $script:Pipeline.IndexOf('Check for an existing fix pull request')
         $check | Should -BeGreaterThan 0
 
         $step = $script:Pipeline.Substring($check, 400)
@@ -340,7 +366,7 @@ Describe 'Replication issue outcome publication boundary' {
         $step.Contains('GH_REPLICATION_TOKEN') | Should -BeFalse
     }
 
-    It 'skips the device run and the publisher when a duplicate already exists' {
+    It 'skips the device run and the publisher when a fix PR already exists' {
         $script:Pipeline.Contains(
             "ne(variables['replicationAlreadyPublished'], 'true')") |
             Should -BeTrue
@@ -349,12 +375,42 @@ Describe 'Replication issue outcome publication boundary' {
             Should -BeTrue
     }
 
+    It 'does not let a reproduction-only PR block generation of a fix' {
+        $check = $script:Pipeline.IndexOf('Check for an existing fix pull request')
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
+        $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
+
+        $step.Contains('$matchingPulls =') | Should -BeTrue
+        $step.Contains('$existing = $matchingPulls | Select-Object -First 1') | Should -BeTrue
+
+        $logicStart = $step.IndexOf('$supersedeExisting = [bool]::Parse(')
+        $logicEnd = $step.IndexOf('# PR 199', $logicStart)
+        $logicStart | Should -BeGreaterThan 0
+        $logicEnd | Should -BeGreaterThan $logicStart
+        $logic = ($step.Substring($logicStart, $logicEnd - $logicStart)).Replace(
+            '${{ parameters.SupersedeExisting }}', 'false')
+        $guard = [scriptblock]::Create("param(`$existing)`n$logic")
+
+        $reproductionOutput = @(& $guard ([pscustomobject]@{
+            body = '<!-- MAUI_COPILOT_REPLICATION issue=1 platform=windows -->'
+            url = 'https://example.invalid/reproduction'
+        }) 6>&1) -join "`n"
+        $reproductionOutput | Should -Not -Match 'variable=replicationAlreadyPublished'
+        $reproductionOutput | Should -Match 'does not block generation of a validated fix'
+
+        $fixOutput = @(& $guard ([pscustomobject]@{
+            body = "<!-- MAUI_COPILOT_REPLICATION issue=1 platform=windows -->`n`n## Proposed fix"
+            url = 'https://example.invalid/fix'
+        }) 6>&1) -join "`n"
+        $fixOutput | Should -Match 'variable=replicationAlreadyPublished'
+    }
+
     It 'skips the device run and the publisher when the issue is not open' {
         # PR 199 spent a full run reproducing dotnet/maui#37243 and published a
         # draft before anyone noticed the issue was already closed as
         # not_planned. Ask GitHub before spending the device.
         $check = $script:Pipeline.IndexOf(
-            'Check for an existing reproduction pull request')
+            'Check for an existing fix pull request')
         $check | Should -BeGreaterThan 0
         # Slice from where the step actually begins rather than a fixed number
         # of characters back, which silently truncated the step whenever it grew.
@@ -382,7 +438,7 @@ Describe 'Replication issue outcome publication boundary' {
         # nothing on every run, warns, and approves - the exact failure mode
         # the platform gate beside it once shipped.
         $check = $script:Pipeline.IndexOf(
-            'Check for an existing reproduction pull request')
+            'Check for an existing fix pull request')
         $check | Should -BeGreaterThan 0
         $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
         $stepStart | Should -BeGreaterThan 0
@@ -428,7 +484,7 @@ Describe 'Replication issue outcome publication boundary' {
 
     It 'lets an unmeasured upstream cross-reference proceed rather than refuse' {
         $check = $script:Pipeline.IndexOf(
-            'Check for an existing reproduction pull request')
+            'Check for an existing fix pull request')
         $stepStart = $script:Pipeline.LastIndexOf("`n          - pwsh:", $check)
         $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
 
@@ -509,7 +565,7 @@ Describe 'A run that produced nothing does not fail the publisher too' {
         # failure.
         foreach ($step in @(
             'Pin clean replication baseline',
-            'Install publisher media validator',
+            'Install validation media validator',
             'Publish MauiBot non-reproduction outcome')) {
             $index = $script:Pipeline.IndexOf($step)
             $index | Should -BeGreaterThan -1
@@ -519,10 +575,22 @@ Describe 'A run that produced nothing does not fail the publisher too' {
         }
     }
 
+    It 'writes a publication document even when nothing was produced' {
+        # The publication artifact uploads on succeededOrFailed, so the recheck
+        # runs the same way and short-circuits from the inside. Gating the step
+        # instead would report a clean stop a second time, as a failed upload.
+        $index = $script:Pipeline.IndexOf(
+            "displayName: 'Recheck validated bundle before credential use'")
+        $index | Should -BeGreaterThan -1
+        $script:Pipeline.Substring($index, 120) | Should -Match 'condition: succeededOrFailed\(\)'
+        $script:Pipeline | Should -Match 'so there is nothing to recheck'
+        $script:Pipeline | Should -Match '\[string\]\$env:REPLICATION_ARTIFACT_PRESENT -ne ''true'''
+    }
+
     It 'still refuses to publish anything without a validated candidate' {
         foreach ($step in @(
-            'Publish reproduction evidence',
-            'Move existing PRs and create MauiBot testing draft PR')) {
+            'Publish fix evidence',
+            'Create MauiBot fix draft PR')) {
             $index = $script:Pipeline.IndexOf($step)
             $index | Should -BeGreaterThan -1
 
@@ -607,6 +675,23 @@ Describe 'MAUI Copilot pipeline argument contracts' {
 
         $entry.Success | Should -BeTrue
         $entry.Groups['body'].Value | Should -Match '-AllowAnonymousFallback:\$AllowAnonymousFallback'
+    }
+
+    It 'does not treat a recovered GitHub CLI exit code as issue-context failure' {
+        $prepareIndex = $script:Pipeline.IndexOf("displayName: 'Prepare sanitized issue context'")
+        $prepareStart = $script:Pipeline.LastIndexOf('- pwsh:', $prepareIndex)
+        $prepareBlock = $script:Pipeline.Substring($prepareStart, $prepareIndex - $prepareStart)
+        $prepareBlock | Should -Match 'Get-ReplicationIssueContext\.ps1'
+        $prepareBlock | Should -Not -Match 'if \(\$LASTEXITCODE'
+        $prepareBlock | Should -Match '\$global:LASTEXITCODE = 0'
+    }
+
+    It 'clears handled GitHub CLI failures after duplicate and eligibility checks' {
+        $checkIndex = $script:Pipeline.IndexOf("displayName: 'Check for an existing fix pull request'")
+        $checkStart = $script:Pipeline.LastIndexOf('- pwsh:', $checkIndex)
+        $checkBlock = $script:Pipeline.Substring($checkStart, $checkIndex - $checkStart)
+        $checkBlock | Should -Match 'Read the issue state anonymously'
+        $checkBlock | Should -Match '\$global:LASTEXITCODE = 0'
     }
 }
 
@@ -1405,11 +1490,16 @@ Describe 'A build step may not report success for work it never ran' {
         foreach ($job in @('CopilotReview', 'RunUITests')) {
             $jobStart = $script:Yaml.IndexOf("- job: $job")
             $jobStart | Should -BeGreaterThan -1
-            $capture = $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
             $reader = $script:Yaml.IndexOf('trusted-github/scripts/shared/Resolve-BuildShell.ps1', $jobStart)
+            $captureCandidates = @(
+                $script:Yaml.IndexOf('git archive "${SOURCE_VERSION}"', $jobStart)
+                $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
+            ) | Where-Object { $_ -ge $jobStart } | Sort-Object
+            $capture = @($captureCandidates | Where-Object { $_ -lt $reader } |
+                Select-Object -Last 1)
 
-            $capture | Should -BeGreaterThan -1
-            $reader | Should -BeGreaterThan $capture
+            $capture | Should -Not -BeNullOrEmpty
+            $reader | Should -BeGreaterThan $capture[0]
         }
     }
 
@@ -1542,30 +1632,27 @@ Describe 'No job may read a pipeline script from the worktree after it detaches'
     }
 }
 
-Describe 'An already-covered issue may be re-run deliberately' {
-    # Every certified reproduction opens a pull request, and that pull request
-    # then blocks the issue from ever being replicated again. A pipeline change
-    # is therefore untestable against precisely the runs that exercise it.
+Describe 'An already-fixed issue may be re-run deliberately' {
 
     It 'offers superseding as an explicit, off-by-default choice' {
         $script:Pipeline | Should -Match "(?s)- name: SupersedeExisting.*?type: boolean.*?default: false"
     }
 
     It 'lets the pre-check skip only while superseding is off' {
-        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check = $script:Pipeline.IndexOf('Check for an existing fix pull request')
         $check | Should -BeGreaterThan 0
         $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
         $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
 
         $step.Contains('$supersedeExisting = [bool]::Parse(') | Should -BeTrue
-        $step.Contains('if ($existing -and -not $supersedeExisting)') | Should -BeTrue
+        $step.Contains('if ($existingCarriesFix -and -not $supersedeExisting)') | Should -BeTrue
     }
 
     It 'leaves the existing pull request untouched in the untrusted job' {
         # The pre-check runs without the publishing credential, and closing the
         # earlier pull request before this run has published anything would
         # destroy the only evidence the issue has if the run then fails.
-        $check = $script:Pipeline.IndexOf('Check for an existing reproduction pull request')
+        $check = $script:Pipeline.IndexOf('Check for an existing fix pull request')
         $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $check)
         $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
 
@@ -1701,17 +1788,7 @@ Describe 'The catalyst build registers its app where the mac2 driver looks' {
     }
 }
 
-Describe 'The manifest, not the file system, decides whether a fix is published' {
-    # Build 15102442 reached a certified reproduction, passed two fix candidates,
-    # and was killed by the task timeout inside the panel. That orphans fix.patch
-    # beside the staged manifest, which names no fix files, and the publisher
-    # refused the whole candidate: "A fix patch was provided but the manifest
-    # names no fix files." A finished reproduction was destroyed by a
-    # contradiction it did not cause.
-    #
-    # These tests execute the pipeline's own guard rather than matching its text,
-    # because source text is present whether or not it works (see 'Every pipeline
-    # script parses').
+Describe 'Both the manifest and patch are required to publish a fix' {
     BeforeAll {
         $script:YmlText = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
@@ -1744,8 +1821,11 @@ Describe 'The manifest, not the file system, decides whether a fix is published'
             # reading it from the region cannot drift from the code under test.
             $resultVar = if ($body -match '\$publishFixArgument') { 'publishFixArgument' } else { 'fixPatchArgument' }
             $prelude = (@($Variables.Keys) | ForEach-Object { "`$$_ = `$Vars['$_']" }) -join "`n"
-            $sb = [scriptblock]::Create("param(`$Vars)`n$prelude`n$body`n,@(`$$resultVar.Keys)")
-            , @((& $sb $Variables) | Select-Object -First 1)
+            $epilogue = "`$guard = Get-Variable -Name '$resultVar' -ValueOnly`n" +
+                "[pscustomobject]@{ Ready = `$fixReadyForPublication; HasFixPatch = `$guard.ContainsKey('FixPatchPath') }"
+            $sb = [scriptblock]::Create(
+                "param(`$Vars)`n$prelude`n$body`n$epilogue")
+            @(& $sb $Variables) | Select-Object -Last 1
         }
 
         function script:New-Workspace {
@@ -1765,52 +1845,56 @@ Describe 'The manifest, not the file system, decides whether a fix is published'
         BeforeAll {
             $script:ValidatorRegion = script:Get-YmlRegion `
                 -StartsWith '$fixPatchPath = Join-Path $artifactRoot' `
-                -EndsBefore '$validation = @('
+                -EndsBefore '# No-fix candidates remain pipeline artifacts'
         }
 
         It 'validates the fix when the manifest names fix files' {
             $ws = script:New-Workspace -WritePatch $true
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                $result = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
                     artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
                     candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/Platform/Windows/LabelHtmlHelper.cs') }
                 }
-                @($keys) | Should -Contain 'FixPatchPath'
+                $result.Ready | Should -BeTrue
+                $result.HasFixPatch | Should -BeTrue
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
 
-        It 'ignores an orphan fix patch when the manifest names no fix files' {
+        It 'keeps an orphan fix patch as artifact-only when the manifest names no fix files' {
             $ws = script:New-Workspace -WritePatch $true
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                $result = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
                     artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
                     candidate    = [pscustomobject]@{ fixFiles = @() }
                 }
-                @($keys) | Should -Not -Contain 'FixPatchPath'
+                $result.Ready | Should -BeFalse
+                $result.HasFixPatch | Should -BeFalse
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
 
-        It 'ignores an orphan fix patch when the manifest has no fixFiles property at all' {
+        It 'keeps an orphan fix patch as artifact-only when the manifest has no fixFiles property' {
             # A missing property is $null, and @($null).Count is 1, which a naive
             # count reads as one named fix file.
             $ws = script:New-Workspace -WritePatch $true
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                $result = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
                     artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
                     candidate    = [pscustomobject]@{ status = 'reproduced' }
                 }
-                @($keys) | Should -Not -Contain 'FixPatchPath'
+                $result.Ready | Should -BeFalse
+                $result.HasFixPatch | Should -BeFalse
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
 
-        It 'passes no fix argument when there is no fix patch on disk' {
+        It 'keeps named fix files as artifact-only when there is no fix patch on disk' {
             $ws = script:New-Workspace -WritePatch $false
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
+                $result = script:Invoke-FixPatchGuard -Region $script:ValidatorRegion -Workspace $ws -Variables @{
                     artifactRoot = (Join-Path $ws 'ReplicationArtifacts')
                     candidate    = [pscustomobject]@{ fixFiles = @('src/Core/src/X.cs') }
                 }
-                @($keys) | Should -Not -Contain 'FixPatchPath'
+                $result.Ready | Should -BeFalse
+                $result.HasFixPatch | Should -BeFalse
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
     }
@@ -1827,8 +1911,8 @@ Describe 'The manifest, not the file system, decides whether a fix is published'
             Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
                 -Value '{"fixFiles":["src/Core/src/X.cs"]}' -Encoding utf8NoBOM
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
-                @($keys) | Should -Contain 'FixPatchPath'
+                $result = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                $result.HasFixPatch | Should -BeTrue
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
 
@@ -1840,8 +1924,8 @@ Describe 'The manifest, not the file system, decides whether a fix is published'
             Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
                 -Value '{"fixFiles":[]}' -Encoding utf8NoBOM
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
-                @($keys) | Should -Not -Contain 'FixPatchPath'
+                $result = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                $result.HasFixPatch | Should -BeFalse
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
 
@@ -1850,9 +1934,212 @@ Describe 'The manifest, not the file system, decides whether a fix is published'
             Set-Content -LiteralPath (Join-Path $ws 'ReplicationPublication/validated-candidate.json') `
                 -Value '{"schemaVersion":1,"validationPassed":true}' -Encoding utf8NoBOM
             try {
-                $keys = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
-                @($keys) | Should -Not -Contain 'FixPatchPath'
+                $result = script:Invoke-FixPatchGuard -Region $script:PublisherRegion -Workspace $ws -Variables @{ publishOnly = $true }
+                $result.HasFixPatch | Should -BeFalse
             } finally { Remove-Item -LiteralPath $ws -Recurse -Force -ErrorAction SilentlyContinue }
         }
+    }
+}
+
+Describe 'Certification happens on a fresh agent that holds no credential' {
+    BeforeAll {
+        $script:StageOrder = @('ReviewPR', 'ValidateReplication', 'PublishReplication')
+        $script:ValidateStageIndex = $script:Pipeline.IndexOf('  - stage: ValidateReplication')
+        $script:PublishStageIndex = $script:Pipeline.IndexOf('  - stage: PublishReplication')
+        $script:DeepStageIndex = $script:Pipeline.IndexOf('  - stage: RunDeepUITests')
+        $script:ValidateStage = $script:Pipeline.Substring(
+            $script:ValidateStageIndex, $script:PublishStageIndex - $script:ValidateStageIndex)
+        $script:PublishStage = $script:Pipeline.Substring(
+            $script:PublishStageIndex, $script:DeepStageIndex - $script:PublishStageIndex)
+    }
+
+    It 'runs certification between the agent stage and the credentialed publisher' {
+        # A fresh Microsoft-hosted job, not a second checkout in the job that
+        # ran the models: `.git` and the agent's global config survive a second
+        # `clean: true`, so the same agent is never isolation.
+        $script:ValidateStageIndex | Should -BeGreaterThan -1
+        $script:ValidateStageIndex | Should -BeLessThan $script:PublishStageIndex
+        $script:ValidateStage | Should -Match '(?s)- stage: ValidateReplication.*?dependsOn: ReviewPR'
+        $script:ValidateStage | Should -Match '(?s)- job: ValidateReplication.*?pool:\s+name: Azure Pipelines\s+vmImage: ubuntu-22\.04'
+        $script:ValidateStage | Should -Match '(?s)- job: ValidateReplication.*?workspace:\s+clean: all'
+        $script:PublishStage | Should -Match '(?s)dependsOn:\s+- ReviewPR\s+- ValidateReplication'
+        $script:PublishStage | Should -Match 'in\(dependencies\.ValidateReplication\.result'
+    }
+
+    It 'checks out the immutable pipeline revision without persisting a credential' {
+        $script:ValidateStage | Should -Match '(?s)- checkout: self.*?clean: true.*?persistCredentials: false'
+        $script:ValidateStage | Should -Not -Match 'persistCredentials: true'
+        $script:ValidateStage | Should -Match '\$pinned = ''\$\(Build\.SourceVersion\)'''
+        $script:ValidateStage | Should -Match 'Validation checkout is at \$actual but the run was queued at \$pinned'
+    }
+
+    It 'holds no GitHub, Copilot, Azure, System, feed, proxy, or git credential' {
+        # Asserted twice: the stage carries no `env:` that names one, and the
+        # job proves the absence at runtime rather than assuming the YAML is
+        # the only way a variable reaches a step.
+        # Named secrets are matched in the form that actually grants one -- a
+        # pipeline variable reference in an `env:` mapping. The stage does name
+        # several of them as strings, in the step that proves they are absent,
+        # and a test that could not tell those apart would have to be deleted
+        # the first time somebody added a check.
+        foreach ($secret in @(
+            'GH_COMMENT_TOKEN',
+            'COPILOT_TOKEN',
+            'GH_TOKEN',
+            'GITHUB_TOKEN',
+            'COPILOT_GITHUB_TOKEN',
+            'SYSTEM_ACCESSTOKEN',
+            'System\.AccessToken',
+            'AZURE_STORAGE_KEY',
+            'AZURE_STORAGE_SAS_TOKEN',
+            'GH_REPLICATION_TOKEN')) {
+            $script:ValidateStage | Should -Not -Match ('\$\(' + $secret + '\)')
+        }
+        # And no `env:` block anywhere in the stage other than the one that
+        # forwards the already-public baseline SHA.
+        $envNames = @([regex]::Matches(
+                $script:ValidateStage,
+                '(?m)^\s{12}env:\r?\n((?:\s{14}\S.*\r?\n)+)') |
+            ForEach-Object { $_.Groups[1].Value } |
+            ForEach-Object { [regex]::Matches($_, '(?m)^\s{14}([A-Za-z_][A-Za-z0-9_]*):') } |
+            ForEach-Object { $_.Groups[1].Value })
+        $envNames | Should -Not -BeNullOrEmpty
+        foreach ($name in $envNames) {
+            $name | Should -Be 'REPLICATION_BASE_SHA'
+        }
+        $script:ValidateStage | Should -Match "displayName: 'Assert the validation job holds no credential'"
+        $script:ValidateStage | Should -Match 'The credentialless validation job was given credentials'
+        $script:ValidateStage | Should -Match "config --get-regexp 'http\\.\.\*\\.extraheader'"
+        $script:ValidateStage | Should -Match 'The credentialless validation checkout persisted a credential'
+        $script:ValidateStage | Should -Match "config --get-regexp 'credential\\.\.\*helper'"
+    }
+
+    It 'stages every trusted validator it runs from that pinned checkout' {
+        # The staging list is written by hand, so it is compared against what
+        # the stage actually loads and against what those scripts dot-source.
+        $stagingBlock = [regex]::Match(
+            $script:ValidateStage,
+            "(?s)foreach \(\`$relative in @\((.*?)\)\) \{").Groups[1].Value
+        $stagingBlock | Should -Not -BeNullOrEmpty
+        $staged = @([regex]::Matches($stagingBlock, "'(scripts/(?:[A-Za-z0-9\-]+/)*[A-Za-z0-9\-]+\.ps1)'") |
+            ForEach-Object { $_.Groups[1].Value })
+        $staged.Count | Should -BeGreaterThan 0
+        $stagedNames = @($staged | ForEach-Object { Split-Path -Leaf $_ })
+
+        $required = [System.Collections.Generic.HashSet[string]]::new()
+        foreach ($relative in $staged) {
+            $stagedPath = Join-Path $PSScriptRoot ($relative -replace '^scripts/', '')
+            (Test-Path -LiteralPath $stagedPath -PathType Leaf) | Should -BeTrue -Because `
+                "the validation stage stages $relative, so it must exist"
+            $source = Get-Content -LiteralPath $stagedPath -Raw
+            foreach ($match in [regex]::Matches($source, "(?m)^\s*\.\s+.*?['`"]?([A-Za-z0-9\-]+\.ps1)")) {
+                [void]$required.Add($match.Groups[1].Value)
+            }
+        }
+        foreach ($name in $required) {
+            $stagedNames | Should -Contain $name -Because `
+                "a staged validator dot-sources $name, so it must be staged too"
+        }
+
+        # Every script the stage invokes by path is staged.
+        foreach ($match in [regex]::Matches(
+                $script:ValidateStage,
+                'TRUSTED_REPLICATION_VALIDATOR_ROOT.{0,12}?''(scripts/(?:[A-Za-z0-9\-]+/)*[A-Za-z0-9\-]+\.ps1)''')) {
+            $staged | Should -Contain $match.Groups[1].Value
+        }
+    }
+
+    It 'downloads artifacts outside the checkout and emits only bounded data' {
+        $script:ValidateStage | Should -Match 'targetPath: ''\$\(Pipeline\.Workspace\)/ReplicationArtifacts'''
+        $script:ValidateStage | Should -Not -Match 'targetPath: ''\$\(Build\.SourcesDirectory\)'
+        $script:ValidateStage | Should -Match "artifact: 'ReplicationValidation'"
+        $script:ValidateStage | Should -Match 'targetPath: ''\$\(Pipeline\.Workspace\)/ReplicationValidation'''
+        $script:ValidateStage | Should -Match "displayName: 'Bound the validation artifact'"
+        $script:ValidateStage | Should -Match "'validated-candidate\.json', 'validation-summary\.json'"
+        $script:ValidateStage | Should -Match 'The validation artifact may contain only bounded result documents'
+        $script:ValidateStage | Should -Match '\$item\.Length -gt 1MB'
+    }
+
+    It 're-derives the trusted tree and requires the certification binding' {
+        $script:ValidateStage | Should -Match 'Assert-TrustedTreeMatchesReference'
+        $script:ValidateStage | Should -Match '-ReferenceRoot "\$\(TRUSTED_REPLICATION_VALIDATOR_ROOT\)"'
+        $script:ValidateStage | Should -Match 'git -C "\$\(Build\.SourcesDirectory\)" archive'
+        $script:ValidateStage | Should -Match 'TRUSTED_REPLICATION_REFERENCE_ROOT'
+        $script:ValidateStage | Should -Match '-ExpectedSourceVersion ''\$\(Build\.SourceVersion\)'''
+        $script:ValidateStage | Should -Match 'ReferencePipelineDefinitionPath'
+        $script:ValidateStage | Should -Match 'The run published no trusted-tree attestation'
+        $script:ValidateStage | Should -Match '-RequireCertificationBinding'
+        $script:ValidateStage | Should -Match '-CertificationBindingPath \(Join-Path \$artifactRoot ''certification-binding\.json''\)'
+        # An undefined $(MACRO) is left as literal text by Azure and evaluated
+        # as a subexpression by PowerShell, so the variables a skipped step may
+        # not have set are read from the environment instead.
+        $script:ValidateStage | Should -Match '\[string\]\$env:TRUSTED_TREE_HASH'
+        $script:ValidateStage | Should -Match '\[string\]\$env:TRUSTED_REPLICATION_VALIDATOR_ROOT'
+        $script:ValidateStage | Should -Match 'The trusted validators were never staged'
+        $script:ValidateStage | Should -Match 'Validation produced no certification binding digest'
+    }
+
+    It 'rechecks the bundle digest and every artifact hash before the credential' {
+        $recheckIndex = $script:PublishStage.IndexOf(
+            "displayName: 'Recheck validated bundle before credential use'")
+        $credentialIndex = $script:PublishStage.IndexOf('$checkoutToken = $null')
+        $recheckIndex | Should -BeGreaterThan -1
+        $recheckIndex | Should -BeLessThan $credentialIndex
+
+        $script:PublishStage | Should -Match 'Assert-ReplicationCertificationBinding'
+        $completeScanIndex = $script:PublishStage.IndexOf(
+            'Assert-ReplicationFixSources')
+        $bindingIndex = $script:PublishStage.IndexOf(
+            'Assert-ReplicationCertificationBinding `')
+        $completeScanIndex | Should -BeGreaterThan -1
+        $completeScanIndex | Should -BeLessThan $bindingIndex
+        $completeScanIndex | Should -BeLessThan $credentialIndex
+        $script:PublishStage | Should -Match "Assert-ReplicationTestGuard\.ps1"
+        $script:PublishStage | Should -Match "-Context 'publisher recheck'"
+        $script:PublishStage | Should -Match 'The replication artifacts changed after validation'
+        $script:PublishStage | Should -Match 'Assert-ReplicationNoSecretMarkers'
+        $script:PublishStage | Should -Match 'The credentialless validation stage produced no result'
+        $script:PublishStage | Should -Match 'The validation result was produced at a different pipeline revision'
+        # The publisher consumes the decision; it never makes it.
+        $script:PublishStage | Should -Not -Match 'Validate-ReplicationCandidate\.ps1"? `'
+        $script:PublishStage | Should -Not -Match '-RequireCertificationBinding'
+    }
+}
+
+Describe 'The trusted tree is attested rather than merely made read-only' {
+    It 'attests the captured tree at the immutable pipeline revision' {
+        $captureIndex = $script:Pipeline.IndexOf("displayName: 'Capture trusted test infrastructure'")
+        $attestIndex = $script:Pipeline.IndexOf("displayName: 'Attest trusted test infrastructure'")
+        $replicateIndex = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")
+
+        $captureIndex | Should -BeGreaterThan -1
+        $captureIndex | Should -BeLessThan $attestIndex
+        $attestIndex | Should -BeLessThan $replicateIndex
+
+        $script:Pipeline | Should -Match 'New-TrustedTreeAttestation'
+        $script:Pipeline | Should -Match 'Assert-TrustedTreeAttestation'
+        $script:Pipeline | Should -Match 'git archive "\$\{SOURCE_VERSION\}"'
+        $script:Pipeline | Should -Match 'cygpath -u'
+        $script:Pipeline | Should -Match 'trusted-source/eng/pipelines/ci-copilot\.yml'
+        $script:Pipeline | Should -Match '-PipelineDefinitionPath'
+        # The document may not live inside the tree it describes.
+        $script:Pipeline | Should -Match '\$attestationRoot = Join-Path "\$\(Agent\.TempDirectory\)" ''trusted-attestation'''
+        $script:Pipeline | Should -Match 'name: AttestTrustedTree'
+        $script:Pipeline | Should -Match 'variable=trustedTreeHash;isOutput=true'
+    }
+
+    It 'hands the orchestrator the attestation and the revision it was taken at' {
+        $script:Pipeline | Should -Match '-TrustedTreeAttestationPath "\$\(TRUSTED_TREE_ATTESTATION_PATH\)"'
+        $script:Pipeline | Should -Match '-TrustedSourceVersion "\$\(Build\.SourceVersion\)"'
+        $script:Pipeline | Should -Match "displayName: 'Stage trusted tree attestation'"
+        $script:Pipeline | Should -Match 'The trusted-tree attestation is missing, so this run cannot be validated'
+    }
+
+    It 'gives generated execution a canary that must never come back' {
+        $script:Pipeline | Should -Match 'MAUI_REPLICATION_SECRET_CANARY: maui-replication-secret-canary-\$\(Build\.BuildId\)-\$\(System\.JobAttempt\)'
+        # Named only where it is set. A canary echoed into another step's env is
+        # a canary that proves nothing.
+        ([regex]::Matches($script:Pipeline, 'MAUI_REPLICATION_SECRET_CANARY')).Count |
+            Should -Be 1
     }
 }

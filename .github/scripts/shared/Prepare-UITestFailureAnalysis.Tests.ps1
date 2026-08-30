@@ -15,16 +15,24 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    $function = $ast.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'ConvertTo-UiFailureSafeConsoleText'
-    }, $true)
+    foreach ($functionName in @(
+        'Resolve-AgentTempOutputPath',
+        'ConvertTo-UiFailureSafeConsoleText'
+    )) {
+        $function = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $functionName
+        }, $true)
 
-    if (-not $function) {
-        throw 'ConvertTo-UiFailureSafeConsoleText not found'
+        if (-not $function) {
+            throw "$functionName not found"
+        }
+
+        Invoke-Expression $function.Extent.Text
     }
 
-    Invoke-Expression $function.Extent.Text
+    $script:pipelineContent = Get-Content -Raw (
+        Join-Path $PSScriptRoot '../../../eng/pipelines/ci-copilot.yml')
 }
 
 Describe 'Prepare UI test failure analysis console safety' {
@@ -44,5 +52,45 @@ Describe 'Prepare UI test failure analysis console safety' {
 
         $summaryLine | Should -Match '\$safeCategoryNames'
         $summaryLine | Should -Not -Match '\$regular\.Keys'
+    }
+}
+
+Describe 'Prepare UI test failure analysis output safety' {
+    It 'accepts an output nested under the trusted agent temp root' {
+        $tempRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'agent-temp'))
+        $output = Join-Path $tempRoot 'nested/uifail-input.md'
+
+        Resolve-AgentTempOutputPath -OutputPath $output -TrustedTempRoot $tempRoot |
+            Should -Be ([System.IO.Path]::GetFullPath($output))
+    }
+
+    It 'rejects an output outside or beside the trusted agent temp root' {
+        $parent = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'path-fixture'))
+        $tempRoot = Join-Path $parent 'agent-temp'
+
+        {
+            Resolve-AgentTempOutputPath `
+                -OutputPath (Join-Path $parent 'checkout/uifail-input.md') `
+                -TrustedTempRoot $tempRoot
+        } | Should -Throw '*must be contained by AgentTempDirectory*'
+
+        {
+            Resolve-AgentTempOutputPath `
+                -OutputPath (Join-Path $parent 'agent-temp-sibling/uifail-input.md') `
+                -TrustedTempRoot $tempRoot
+        } | Should -Throw '*must be contained by AgentTempDirectory*'
+    }
+
+    It 'fails closed when the trusted agent temp root is unavailable' {
+        {
+            Resolve-AgentTempOutputPath `
+                -OutputPath (Join-Path $PSScriptRoot 'uifail-input.md') `
+                -TrustedTempRoot ''
+        } | Should -Throw '*AgentTempDirectory is required*'
+    }
+
+    It 'passes the trusted Azure temp root explicitly from the pipeline' {
+        $script:pipelineContent | Should -Match ([regex]::Escape(
+            '-AgentTempDirectory "$(Agent.TempDirectory)"'))
     }
 }

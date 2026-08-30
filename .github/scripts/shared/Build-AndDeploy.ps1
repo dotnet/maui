@@ -57,7 +57,16 @@ param(
     [string]$BundleId,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Rebuild
+    [switch]$Rebuild,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$EnforceNetworkIsolation,
+
+    [Parameter(Mandatory=$false)]
+    [string]$NetworkIsolationManifestPath,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$NoRestore
 )
 
 # Import shared utilities
@@ -134,6 +143,30 @@ if ($Platform -eq "android") {
     # APK makes it self-contained so any install/relaunch works — this is exactly what the
     # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
+    if ($EnforceNetworkIsolation) {
+        if ([string]::IsNullOrWhiteSpace($NetworkIsolationManifestPath)) {
+            throw 'Android replication requires a trusted network-isolation manifest path.'
+        }
+        $isolationManifest = [IO.Path]::GetFullPath($NetworkIsolationManifestPath)
+        if (-not (Test-Path -LiteralPath $isolationManifest -PathType Leaf)) {
+            throw 'Android replication network-isolation manifest is missing.'
+        }
+        $isolationManifestItem = Get-Item -LiteralPath $isolationManifest -Force
+        if ($isolationManifestItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Android replication network-isolation manifest must be a regular file.'
+        }
+        # Microsoft.Android resolves AndroidManifest relative to the project
+        # directory even when MSBuild receives an absolute path.
+        $relativeIsolationManifest = [IO.Path]::GetRelativePath(
+            (Split-Path -Parent $ProjectPath),
+            $isolationManifest
+        ).Replace('\', '/')
+        if ([IO.Path]::IsPathRooted($relativeIsolationManifest)) {
+            throw 'Android replication network-isolation manifest must be reachable relative to the project directory.'
+        }
+        $buildArgs += "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
+    }
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -260,6 +293,7 @@ if ($Platform -eq "android") {
     # main pipeline never sets _MustTrim and does not hit MT0180 on the Tahoe pool,
     # so matching its recipe fixes the link failure without reintroducing MT0180.
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $runtimeId, "-p:BuildIpa=true", "-p:_UseNativeAot=false", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -393,6 +427,7 @@ if ($Platform -eq "android") {
     $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
     Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }
@@ -533,6 +568,7 @@ if ($Platform -eq "android") {
         "-p:WindowsPackageType=None",
         "-p:_MauiReplicationUnpackaged=true"
     ) + $hostAppBuildProps
+    if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
     }

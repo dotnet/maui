@@ -42,6 +42,9 @@ BeforeAll {
     foreach ($name in @(
         'ConvertTo-ReplicationSingleLine',
         'ConvertTo-ReplicationInlineCode',
+        'Get-ReplicationCandidateSelector',
+        'Get-ReplicationQualityDisclosureBlock',
+        'Test-ReplicationQualityPublicationAllowed',
         'Get-ReplicationPullRequestMarker',
         'New-ReplicationBranchName',
         'Get-ReplicationCandidateText',
@@ -56,7 +59,7 @@ BeforeAll {
         'Get-ReplicationFixRegressionSignal',
         'Get-ReplicationExpressionSkeleton',
         'Get-ReplicationOracleIndependenceSignal',
-        'Test-ReplicationWeakerThanOpenPullRequest',
+        'Test-ReplicationPullRequestCarriesFix',
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
@@ -216,6 +219,110 @@ Describe 'Trusted replication pull request publishing' {
             -BuildUrl 'https://example.com/build/1'
         $namedBody |
             Should -Match 'Microsoft\.Maui\.TestCases\.Tests\.Issues\.Issue37440\.ReproducesIssue37440'
+    }
+
+    It 'renders the centralized selector and quality contract without choosing a grammar' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 12345
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            verificationTestType = 'DeviceTest'
+            testName = 'Issue12345'
+            testFilter = 'Issue12345'
+            testClassName = 'Microsoft.Maui.DeviceTests.Issue12345'
+            testMethodName = 'Reproduces'
+            expectedFailureSignature = 'Control disappeared'
+            observedFailureSignature = 'Control disappeared'
+            actualFailureMessage = 'Control disappeared'
+            verificationRunCount = 2
+            reproductionSteps = @('Open page', 'Trigger issue')
+            fixFiles = @()
+            selector = [ordered]@{
+                variant = 'device-category-only'
+                raw = 'Category=Issue12345'
+                project = 'Core.DeviceTests'
+                projectPath = 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj'
+                class = 'Microsoft.Maui.DeviceTests.Issue12345'
+                method = 'Reproduces'
+                platform = 'android'
+                discoveredCount = 1
+                executedCount = 1
+                fixture = ''
+            }
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                userVisible = [ordered]@{ contract = 'Control stays visible'; trigger = 'Apply transition' }
+                oracle = [ordered]@{ primary = 'Native control is visible'; independent = $null; independence = 'not-applicable'; rationale = 'No second observation' }
+                scenario = [ordered]@{ name = 'static control'; precondition = 'Attached'; trigger = 'Apply transition'; transition = 'Control changes'; observableIdentity = 'control-1'; affectedControl = $null }
+                risk = [ordered]@{ adjacentStates = @('null'); lifecycleStates = @(); statelessApplicability = 'not-applicable' }
+                semanticBlastRadius = [ordered]@{ affectedType = 'Button'; affectedControl = 'control-1'; ownership = 'Controls'; sharedConsumers = @('ButtonHandler'); unchangedBehavior = 'Other buttons unchanged' }
+                mediaAlignment = 'verified'
+                review = [ordered]@{
+                    findings = @([ordered]@{
+                        category = 'coverage'
+                        grounding = 'trusted-evidence'
+                        confidence = 'medium'
+                        corroboration = 'not-corroborated'
+                        detail = 'Adjacent lifecycle state was not measured'
+                    })
+                }
+            }
+        }
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence ([pscustomobject]@{ blobs = [pscustomobject]@{ video = 'v'; preview = 'p'; manifest = 'm' } }) `
+            -IssueTitle 'Selector contract' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl ''
+        $body | Should -Match 'Selector variant'
+        $body | Should -Match 'Category=Issue12345'
+        $body | Should -Match 'Trusted selector counts: 1 discovered / 1 executed'
+        $body | Should -Match 'Quality contract'
+        $body | Should -Match 'Media alignment: `verified`'
+        $body | Should -Match (
+            '\*\*coverage\*\* \(`trusted-evidence`, `medium`, ' +
+            '`not-corroborated`\): Adjacent lifecycle state was not measured')
+    }
+
+    It 'renders an unknown quality contract with empty lists under strict mode' {
+        Set-StrictMode -Version 3.0
+        try {
+            $candidate = [pscustomobject]@{
+                qualityContract = [ordered]@{
+                    userVisible = [ordered]@{ contract = 'unknown'; trigger = 'unknown' }
+                    oracle = [ordered]@{
+                        primary = 'unknown'; independent = $null
+                        independence = 'unknown'; rationale = 'unknown'
+                    }
+                    scenario = [ordered]@{
+                        name = 'unknown'; precondition = 'unknown'; trigger = 'unknown'
+                        transition = 'unknown'; observableIdentity = 'unknown'
+                        affectedControl = $null
+                    }
+                    risk = [ordered]@{
+                        adjacentStates = @(); lifecycleStates = @()
+                        statelessApplicability = 'unknown'
+                    }
+                    semanticBlastRadius = [ordered]@{
+                        affectedType = 'unknown'; affectedControl = 'unknown'
+                        ownership = 'unknown'; sharedConsumers = @()
+                        unchangedBehavior = 'unknown'
+                    }
+                    mediaAlignment = 'not-measured'
+                    review = [ordered]@{ findings = @() }
+                }
+            }
+
+            $block = Get-ReplicationQualityDisclosureBlock -Candidate $candidate
+
+            $block | Should -Match 'Risk adjacent states: not measured'
+            $block | Should -Match 'Risk lifecycle states: not measured'
+            $block | Should -Match 'Blast radius shared consumers: not measured'
+        } finally {
+            Set-StrictMode -Off
+        }
     }
 
     It 'states the evidence level so a reviewer need not infer it' {
@@ -524,6 +631,7 @@ Describe 'Trusted replication pull request publishing' {
                 'Remove-UnsafeIssueCharacters',
                 'Remove-AzureLoggingCommands',
                 'Remove-IssueInstructionMarkers',
+                'Remove-IssueUrls',
                 'Limit-IssueLine',
                 'ConvertTo-SafeIssueProse'
             )) {
@@ -698,7 +806,7 @@ Describe 'Trusted replication pull request publishing' {
             issueNumber = 33333
             platform = 'android'
             baseSha = 'abc123'
-            testType = 'UnitTest'
+            testType = 'unit'
             testFilter = 'Issue33333'
             expectedFailureSignature = 'Expected: 1; Actual: 0'
             actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
@@ -795,7 +903,7 @@ Describe 'Trusted replication pull request publishing' {
         } | Should -Throw '*targeted failure message*'
     }
 
-    It 'uses an add-only staged diff and creates a MauiBot fork draft PR' {
+    It 'uses an add-only staged diff and creates a MauiBot fork draft fix PR' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
         $script:PrSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
@@ -807,11 +915,38 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match '-X POST'
         $script:PrSource | Should -Match 'creating one failed'
         $script:PrSource | Should -Match 'did not become writable within 60 seconds'
+        $script:PrSource | Should -Match '\$matches = @\(\s*@\(\$response\.data\.viewer\.repositories\.nodes\) \|'
         $script:PrSource | Should -Match "'replication-fork'"
         $script:PrSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
         $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
         $script:PrSource | Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
+    }
+
+    It 'refuses a reproduction-only candidate before reading publication assets' {
+        $candidatePath = Join-Path $TestDrive 'reproduction-only-candidate.json'
+        [ordered]@{
+            validationPassed = $true
+            issueNumber = 12345
+            platform = 'android'
+            fixFiles = @()
+        } |
+            ConvertTo-Json |
+            Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+
+        $publisher = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+        $output = @(& pwsh -NoProfile -File $publisher `
+            -ValidatedCandidatePath $candidatePath `
+            -PublishedEvidencePath (Join-Path $TestDrive 'missing-evidence.json') `
+            -IssueContextPath (Join-Path $TestDrive 'missing-context.json') `
+            -PatchPath (Join-Path $TestDrive 'missing-test.patch') `
+            -RepositoryRoot $TestDrive `
+            -DryRun 2>&1)
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $rendered = $output -join [Environment]::NewLine
+        $rendered | Should -Match 'reproduction-only pull requests are'
+        $rendered | Should -Match 'not published'
     }
 
     It 'opens the reproduction against the exact commit it was verified on' {
@@ -1484,16 +1619,11 @@ Describe 'A quoted reporter title may not restate the platform claim' {
     }
 }
 
-Describe 'Superseding an existing reproduction pull request' {
-    # Thirty-one certified reproductions reached the fix phase and every one of
-    # them died in it, and none could be re-run afterwards: an open pull request
-    # covered each issue and platform, so both the pre-check and the publisher
-    # refused. Re-running an already-covered issue is the only way to test a
-    # pipeline change against the reproductions that exercise it.
+Describe 'Superseding an existing replication pull request' {
 
-    It 'refuses a duplicate only while it is not asked to supersede one' {
+    It 'protects an existing fix unless it is asked to supersede one' {
         $script:PrSource | Should -Match '\[switch\]\$SupersedeExisting'
-        $script:PrSource | Should -Match 'if \(\$duplicate -and -not \$SupersedeExisting\)'
+        $script:PrSource | Should -Match 'if \(\$duplicateCarriesFix -and -not \$SupersedeExisting\)'
     }
 
     It 'retires the earlier pull request only after the replacement is open' {
@@ -1514,8 +1644,8 @@ Describe 'Superseding an existing reproduction pull request' {
         $script:PrSource | Should -Match 'gh pr comment \$supersededNumber'
     }
 
-    It 'keeps a failed retirement from failing a published reproduction' {
-        # The reproduction is already on GitHub by this point. Throwing here
+    It 'keeps a failed retirement from failing a published fix' {
+        # The fix is already on GitHub by this point. Throwing here
         # would report a successful publication as a failed build.
         $script:PrSource | Should -Match 'could not be retired, so it stays open'
     }
@@ -1789,10 +1919,7 @@ Describe 'The regression cross-reference reports and never refuses' {
     }
 }
 
-Describe 'A reproduction never retires a pull request that carries a fix' {
-    # Builds 15075238 and 15076851 reproduced issues 36412 and 35624, found no
-    # fix, and closed pull requests 393 and 396 - each carrying a four-arm
-    # certified fix - in favour of reproduction-only replacements.
+Describe 'A validated fix replaces reproduction-only pull requests safely' {
 
     BeforeAll {
         $script:fixBody = @'
@@ -1812,53 +1939,62 @@ Tap the thing.
 '@
     }
 
-    It 'stands aside when the open pull request has a fix and this run has none' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $false |
+    It 'recognizes a publisher-authored fix section' {
+        Test-ReplicationPullRequestCarriesFix -Body $script:fixBody |
             Should -BeTrue
     }
 
-    It 'supersedes normally when this run also carries a fix' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:fixBody -IncomingCarriesFix $true |
+    It 'does not classify a reproduction-only body as a fix' {
+        Test-ReplicationPullRequestCarriesFix -Body $script:reproBody |
             Should -BeFalse
     }
 
-    It 'supersedes normally when the open pull request is reproduction-only' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $script:reproBody -IncomingCarriesFix $false |
+    It 'treats an empty or absent body as not carrying a fix' {
+        Test-ReplicationPullRequestCarriesFix -Body '' |
             Should -BeFalse
-    }
-
-    It 'treats an empty or absent body as nothing worth protecting' {
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody '' -IncomingCarriesFix $false |
-            Should -BeFalse
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $null -IncomingCarriesFix $false |
+        Test-ReplicationPullRequestCarriesFix -Body $null |
             Should -BeFalse
     }
 
     It 'does not mistake prose that merely mentions a proposed fix' {
         $prose = "We considered a fix.`n`nSee ## Proposed fix elsewhere for details."
-        Test-ReplicationWeakerThanOpenPullRequest -DuplicateBody $prose -IncomingCarriesFix $false |
+        Test-ReplicationPullRequestCarriesFix -Body $prose |
             Should -BeFalse
     }
 
-    It 'stands aside before the supersede branch can retire anything' {
+    It 'keeps an existing fix unless explicit superseding is enabled' {
         $text = $script:PrSource
-        $ast = [System.Management.Automation.Language.Parser]::ParseInput($text, [ref]$null, [ref]$null)
-
-        # The last occurrence is the call site; the first is the definition,
-        # and asserting against that would make the ordering check vacuous.
-        $callIndex = $text.LastIndexOf('Test-ReplicationWeakerThanOpenPullRequest')
-        $definitionIndex = $text.IndexOf('function Test-ReplicationWeakerThanOpenPullRequest')
+        $callIndex = $text.LastIndexOf('Test-ReplicationPullRequestCarriesFix')
+        $definitionIndex = $text.IndexOf('function Test-ReplicationPullRequestCarriesFix')
         $callIndex | Should -BeGreaterThan $definitionIndex
 
-        # The guard has to come first: once $supersededPull is set the earlier
-        # pull request is closed further down.
         $supersedeIndex = $text.IndexOf('$supersededPull = $duplicate')
         $supersedeIndex | Should -BeGreaterThan $callIndex
 
-        # And it has to leave without publishing rather than fall through.
         $between = $text.Substring($callIndex, $supersedeIndex - $callIndex)
+        $between | Should -Match '\$duplicateCarriesFix -and -not \$SupersedeExisting'
         $between | Should -Match 'exit 0'
         $between | Should -Not -Match 'gh pr close'
+    }
+
+    It 'prioritizes an existing fix when reproduction-only duplicates also exist' {
+        $matchingIndex = $script:PrSource.IndexOf('$matchingPulls =')
+        $fixIndex = $script:PrSource.IndexOf(
+            'Test-ReplicationPullRequestCarriesFix -Body ([string]$_.body)',
+            $matchingIndex)
+        $fallbackIndex = $script:PrSource.IndexOf(
+            '$duplicate = $matchingPulls | Select-Object -First 1',
+            $fixIndex)
+
+        $matchingIndex | Should -BeGreaterThan 0
+        $fixIndex | Should -BeGreaterThan $matchingIndex
+        $fallbackIndex | Should -BeGreaterThan $fixIndex
+    }
+
+    It 'automatically replaces a reproduction-only pull request with a fix' {
+        $script:PrSource | Should -Match '\$duplicateCarriesFix = \$duplicate -and'
+        $script:PrSource | Should -Match 'if \(\$duplicateCarriesFix -and -not \$SupersedeExisting\)'
+        $script:PrSource | Should -Match 'if \(\$duplicate\)\s*\{'
     }
 }
 
@@ -2190,7 +2326,14 @@ Describe 'The pull request body reports the independent review of the winning fi
                 model = 'gpt-5.6-sol'
                 summary = 'The diff restores the null guard and the test covers it.'
                 findings = @(
-                    [pscustomobject]@{ severity = 'blocking'; detail = 'The guard is not applied on the Android path.' }
+                    [pscustomobject]@{
+                        severity = 'blocking'
+                        category = 'product-defect'
+                        grounding = 'code-path'
+                        confidence = 'high'
+                        corroboration = 'deterministic'
+                        detail = 'The guard is not applied on the Android path.'
+                    }
                     [pscustomobject]@{ severity = 'minor'; detail = 'The new field could be readonly.' }
                 )
             }
@@ -2211,6 +2354,15 @@ Describe 'The pull request body reports the independent review of the winning fi
 
         $block | Should -Match '\*\*blocking\.\*\* The guard is not applied on the Android path\.'
         $block | Should -Match '\*\*minor\.\*\* The new field could be readonly\.'
+    }
+
+    It 'renders grounded review metadata instead of variable names' {
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
+
+        $block | Should -Match (
+            '`product-defect`; grounding `code-path`, confidence `high`, ' +
+            'corroboration `deterministic`; advisory')
+        $block | Should -Not -Match '\$(?:category|grounding|confidence|corroboration)'
     }
 
     It 'says plainly that findings did not block publication' {
@@ -2602,11 +2754,14 @@ Describe 'Reproduction-only runs are never published' {
         $topLevel = $ast.EndBlock.Statements | Where-Object {
             $_ -isnot [System.Management.Automation.Language.FunctionDefinitionAst]
         }
+
         $gate = $topLevel | Where-Object {
-            $_.Extent.Text -match 'Test-ReplicationPublishableFix' -and
+            $_ -is [System.Management.Automation.Language.IfStatementAst] -and
             $_.Extent.Text -match 'withheldReason'
         }
         @($gate).Count | Should -BeGreaterThan 0
+        ($topLevel.Extent.Text -join "`n") |
+            Should -Match '\$publishableFix = Test-ReplicationPublishableFix'
 
         # And it must stand down rather than fall through into publication.
         $gateText = ($gate | Select-Object -First 1).Extent.Text
@@ -2624,7 +2779,7 @@ Describe 'Reproduction-only runs are never published' {
 
         $gate = $ast.EndBlock.Statements | Where-Object {
             $_ -is [System.Management.Automation.Language.IfStatementAst] -and
-            $_.Extent.Text -match 'Test-ReplicationPublishableFix'
+            $_.Extent.Text -match 'withheldReason'
         } | Select-Object -First 1
         $gate | Should -Not -BeNullOrEmpty
 
@@ -2633,11 +2788,46 @@ Describe 'Reproduction-only runs are never published' {
         # A reproduction with no fix: the condition must be TRUE, so the gate body
         # (which withholds) runs.
         $candidate = [pscustomobject]@{ files = @('tests/Issue1Tests.cs') }
+        $publishableFix = Test-ReplicationPublishableFix -Candidate $candidate
+        $qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed -Candidate $candidate
         & $condition | Should -BeTrue -Because 'a run without a fix must stand down'
 
-        # A real fix: the condition must be FALSE, so publication proceeds.
+        # A claimed fix without the trusted trigger-removed control is withheld.
         $candidate = [pscustomobject]@{ fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.iOS.cs') }
-        & $condition | Should -BeFalse -Because 'a run carrying a fix must still publish'
+        $publishableFix = Test-ReplicationPublishableFix -Candidate $candidate
+        $qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed -Candidate $candidate
+        & $condition | Should -BeTrue -Because 'a claimed fix without a legitimate control must stand down'
+    }
+
+    It 'withholds a claimed fix when the trusted trigger-removed control is absent' {
+        $candidate = [pscustomobject]@{
+            fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.cs')
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                scenario = [ordered]@{ name = 'scenario' }
+                oracle = [ordered]@{ primary = 'oracle' }
+            }
+        }
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeFalse
+    }
+
+    It 'allows only trusted complete control evidence, never a quality disclosure' {
+        $candidate = [pscustomobject]@{
+            fixFiles = @('src/Core/src/Handlers/Entry/EntryHandler.cs')
+            qualityContract = [ordered]@{
+                schemaVersion = 1
+                scenario = [ordered]@{ name = 'model says publish' }
+                oracle = [ordered]@{ primary = 'model says pass' }
+            }
+            negativeControl = [ordered]@{
+                runCount = 3
+                passCount = 3
+                result = 'verification/negative-control-result.json'
+            }
+        }
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeTrue
+        $candidate.qualityContract.scenario.name = 'model says withhold'
+        Test-ReplicationQualityPublicationAllowed -Candidate $candidate | Should -BeTrue
     }
 
     It 'declares withheldReason on the manifest so a withheld run is distinguishable' {        # Without the property the manifest of a withheld run is shaped exactly
@@ -2645,6 +2835,8 @@ Describe 'Reproduction-only runs are never published' {
         # pipeline would fail a green outcome.
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
         $source | Should -Match 'withheldReason\s*=\s*\$null'
+        $source | Should -Match '\$qualityPublicationAllowed = Test-ReplicationQualityPublicationAllowed'
+        $source | Should -Match 'if \(-not \$qualityPublicationAllowed\)'
     }
 }
 

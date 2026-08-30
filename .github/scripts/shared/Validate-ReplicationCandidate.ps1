@@ -25,6 +25,17 @@ param(
     [long]$IssueNumber,
     [string]$Platform,
     [string]$OutputPath,
+    # The binding that ties the certification to the immutable inputs it was
+    # earned on, plus the identities this job can prove independently. Supplied
+    # by the credentialless validation job and re-supplied by the publisher, so
+    # an artifact mutated between the two is caught by the second check.
+    [string]$CertificationBindingPath = '',
+    [string]$ArtifactRoot = '',
+    [string]$TrustedSourceVersion = '',
+    [string]$TrustedTreeHash = '',
+    [string]$TrustedPipelineSha256 = '',
+    [string]$ReplicationBaseSha = '',
+    [switch]$RequireCertificationBinding,
     [scriptblock]$MediaProbe
 )
 
@@ -43,6 +54,17 @@ if (-not (Test-Path -LiteralPath $certificationPath -PathType Leaf)) {
 }
 . $certificationPath
 
+foreach ($replicationTrustedModule in @(
+    'Assert-ReplicationCertificationBinding.ps1',
+    'Assert-ReplicationExecutionEnvironment.ps1'
+)) {
+    $replicationTrustedModulePath = Join-Path $PSScriptRoot $replicationTrustedModule
+    if (-not (Test-Path -LiteralPath $replicationTrustedModulePath -PathType Leaf)) {
+        throw "Trusted replication module is missing: $replicationTrustedModulePath"
+    }
+    . $replicationTrustedModulePath
+}
+
 $script:ManifestMaxBytes = 64KB
 $script:EvidenceJsonMaxBytes = 64KB
 $script:PatchMaxBytes = 2MB
@@ -50,6 +72,7 @@ $script:CandidateFileMaxBytes = 256KB
 $script:CandidateTotalMaxBytes = 1MB
 $script:CandidateFileMaxCount = 24
 $script:FixPatchMaxBytes = 512KB
+$script:FixScopeMaxBytes = 32KB
 $script:FixFileMaxCount = 8
 $script:FixChangedLineMaxCount = 400
 $script:VerificationArtifactMaxBytes = 2MB
@@ -59,6 +82,58 @@ $script:VerificationMinimumRunCount = 2
 $script:ValidatedEffectiveFailureSignature = ''
 $script:VideoMaxBytes = 100MB
 $script:PreviewMaxBytes = 20MB
+$script:QualityContractMaxBytes = 48KB
+$script:QualityContractMaxStringLength = 1000
+$script:QualityContractMaxStateCount = 8
+$script:QualityContractMaxFindingCount = 8
+$script:SelectorMaxBytes = 12KB
+$script:SelectorMaxStringLength = 512
+$script:SelectorMaxCount = 1
+$script:ReplicationSelectorVariants = @(
+    'ui-parameterized-fixture',
+    'device-category-only',
+    'fully-qualified-name',
+    'unknown'
+)
+$script:ReplicationOracleIndependenceValues = @(
+    'independent',
+    'coupled',
+    'not-applicable',
+    'unknown'
+)
+$script:ReplicationRiskApplicabilityValues = @(
+    'required',
+    'not-applicable',
+    'unknown'
+)
+$script:ReplicationReviewCategories = @(
+    'grounded-product-defect',
+    'missing-evidence-coverage',
+    'advisory-hardening',
+    'unsupported-speculative',
+    'unknown'
+)
+$script:ReplicationReviewGroundingValues = @(
+    'source',
+    'runner',
+    'diff',
+    'source-and-runner',
+    'none',
+    'unknown'
+)
+$script:ReplicationReviewConfidenceValues = @(
+    'high',
+    'medium',
+    'low',
+    'unknown'
+)
+$script:ReplicationReviewCorroborationValues = @(
+    'deterministic',
+    'independent',
+    'multiple',
+    'none',
+    'unknown'
+)
 
 $script:DisqualifyingFailurePatterns = @(
     [pscustomobject]@{
@@ -587,6 +662,1119 @@ function ConvertTo-NormalizedTestType {
     }
 }
 
+function Get-ReplicationQualityProperty {
+    <#
+    .SYNOPSIS
+        Reads one quality-contract property without allowing duplicate aliases.
+
+    .DESCRIPTION
+        Quality metadata is written by an untrusted author.  This helper keeps
+        the contract closed while allowing the camelCase/snake_case spelling
+        used by older replication artifacts.  It is deliberately independent
+        of authority: the returned value is only a disclosure.
+    #>
+    param(
+        [AllowNull()][object]$Object,
+        [Parameter(Mandatory = $true)][string[]]$Names,
+        [string]$Context = 'Quality contract'
+    )
+
+    if ($null -eq $Object) {
+        return [pscustomobject]@{ Found = $false; Name = ''; Value = $null }
+    }
+
+    $matches = @(
+        Get-ObjectPropertyEntries -Object $Object |
+            Where-Object { $_.Name -iin $Names }
+    )
+    if ($matches.Count -gt 1) {
+        throw "$Context contains more than one alias for '$($Names[0])'."
+    }
+    if ($matches.Count -eq 0) {
+        return [pscustomobject]@{ Found = $false; Name = ''; Value = $null }
+    }
+
+    return [pscustomobject]@{
+        Found = $true
+        Name = [string]$matches[0].Name
+        Value = $matches[0].Value
+    }
+}
+
+function New-ReplicationUnknownQualityContract {
+    <#
+    .SYNOPSIS
+        Returns the safe disclosure used when quality metadata is absent.
+
+    .DESCRIPTION
+        Unknown quality metadata is never promoted to a positive claim.  The
+        shape is complete so every downstream consumer can render it without
+        dereferencing agent-controlled missing properties.
+    #>
+    return [ordered]@{
+        schemaVersion = 1
+        userVisible = [ordered]@{
+            contract = 'unknown'
+            trigger = 'unknown'
+        }
+        oracle = [ordered]@{
+            primary = 'unknown'
+            independent = $null
+            independence = 'unknown'
+            rationale = 'unknown'
+        }
+        scenario = [ordered]@{
+            name = 'unknown'
+            precondition = 'unknown'
+            trigger = 'unknown'
+            transition = 'unknown'
+            observableIdentity = 'unknown'
+            affectedControl = $null
+        }
+        risk = [ordered]@{
+            adjacentStates = @()
+            lifecycleStates = @()
+            statelessApplicability = 'unknown'
+        }
+        semanticBlastRadius = [ordered]@{
+            affectedType = 'unknown'
+            affectedControl = 'unknown'
+            ownership = 'unknown'
+            sharedConsumers = @()
+            unchangedBehavior = 'unknown'
+        }
+        mediaAlignment = 'not-measured'
+        review = [ordered]@{
+            findings = @()
+        }
+    }
+}
+
+function ConvertTo-ReplicationQualityString {
+    param(
+        [AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context,
+        [int]$MaximumLength = 1000,
+        [switch]$AllowUnknown
+    )
+
+    if ($Value -isnot [string]) {
+        if ($AllowUnknown) { return 'unknown' }
+        throw "$Context must be a string."
+    }
+
+    $safe = ConvertTo-ReplicationDisclosureText `
+        -Value ([string]$Value) `
+        -MaximumLength $MaximumLength
+    if ([string]::IsNullOrWhiteSpace($safe)) {
+        if ($AllowUnknown) { return 'unknown' }
+        throw "$Context is empty or unsafe."
+    }
+
+    return $safe
+}
+
+function ConvertTo-ReplicationQualityEnum {
+    param(
+        [AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context,
+        [Parameter(Mandatory = $true)][string[]]$Allowed,
+        [string]$Fallback = 'unknown'
+    )
+
+    if ($Value -isnot [string]) { return $Fallback }
+    $candidate = ([string]$Value).Trim().ToLowerInvariant()
+    if ($Allowed -contains $candidate) { return $candidate }
+    return $Fallback
+}
+
+function ConvertTo-ReplicationQualityStateList {
+    param(
+        [AllowNull()][object]$Value,
+        [Parameter(Mandatory = $true)][string]$Context,
+        [int]$MaximumCount = 8
+    )
+
+    if ($null -eq $Value) { return @() }
+    if ($Value -is [string]) { return @('unknown') }
+
+    $items = @($Value)
+    if ($items.Count -gt $MaximumCount) {
+        return @('unknown')
+    }
+
+    $result = [Collections.Generic.List[string]]::new()
+    foreach ($item in $items) {
+        if ($item -isnot [string]) {
+            [void]$result.Add('unknown')
+            continue
+        }
+        $safe = ConvertTo-ReplicationDisclosureText `
+            -Value ([string]$item) `
+            -MaximumLength 256
+        if ([string]::IsNullOrWhiteSpace($safe)) {
+            [void]$result.Add('unknown')
+        } else {
+            [void]$result.Add($safe)
+        }
+    }
+
+    return @($result.ToArray())
+}
+
+function Assert-ReplicationQualityContract {
+    <#
+    .SYNOPSIS
+        Validates the closed, disclosure-only replication quality contract.
+
+    .DESCRIPTION
+        This is intentionally separate from the publication gate.  A malformed
+        quality report is safe to drop and cannot veto an otherwise validated
+        reproduction; it also cannot authorize a path, command, selector,
+        credential, execution, count, or publication action.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][object]$Contract,
+        [string]$Context = 'Quality contract'
+    )
+
+    if ($Contract -is [string] -or $null -eq $Contract) {
+        throw "$Context must be a JSON object."
+    }
+
+    $top = @(
+        'schemaVersion',
+        'schema_version',
+        'userVisible',
+        'user_visible',
+        'oracle',
+        'scenario',
+        'risk',
+        'semanticBlastRadius',
+        'semantic_blast_radius',
+        'mediaAlignment',
+        'media_alignment',
+        'review'
+    )
+    Assert-KnownProperties -Object $Contract -AllowedNames $top -Context $Context
+
+    $schema = Get-ReplicationQualityProperty -Object $Contract -Names @('schemaVersion', 'schema_version') -Context $Context
+    if (-not $schema.Found -or
+        (ConvertTo-PositiveInteger -Value $schema.Value -Context "$Context schema version") -ne 1) {
+        throw "$Context schema version must be 1."
+    }
+
+    $userVisible = (Get-ReplicationQualityProperty `
+            -Object $Contract `
+            -Names @('userVisible', 'user_visible') `
+            -Context $Context).Value
+    if ($null -eq $userVisible) { throw "$Context is missing user-visible contract and trigger." }
+    Assert-KnownProperties `
+        -Object $userVisible `
+        -AllowedNames @('contract', 'trigger') `
+        -Context "$Context userVisible"
+    $null = ConvertTo-ReplicationQualityString `
+        -Value (Get-ReplicationQualityProperty -Object $userVisible -Names @('contract') -Context "$Context userVisible").Value `
+        -Context "$Context user-visible contract" `
+        -AllowUnknown
+    $null = ConvertTo-ReplicationQualityString `
+        -Value (Get-ReplicationQualityProperty -Object $userVisible -Names @('trigger') -Context "$Context userVisible").Value `
+        -Context "$Context user-visible trigger" `
+        -AllowUnknown
+
+    $oracle = (Get-ReplicationQualityProperty `
+            -Object $Contract `
+            -Names @('oracle') `
+            -Context $Context).Value
+    if ($null -eq $oracle) { throw "$Context is missing oracle metadata." }
+    Assert-KnownProperties `
+        -Object $oracle `
+        -AllowedNames @('primary', 'independent', 'independence', 'rationale') `
+        -Context "$Context oracle"
+    $primaryOracle = Get-ReplicationQualityProperty -Object $oracle -Names @('primary') -Context "$Context oracle"
+    if (-not $primaryOracle.Found) { throw "$Context oracle is missing its primary oracle." }
+    $null = ConvertTo-ReplicationQualityString `
+        -Value $primaryOracle.Value `
+        -Context "$Context primary oracle" `
+        -AllowUnknown
+    $independentOracle = Get-ReplicationQualityProperty -Object $oracle -Names @('independent') -Context "$Context oracle"
+    if ($independentOracle.Found -and $null -ne $independentOracle.Value) {
+        $null = ConvertTo-ReplicationQualityString `
+            -Value $independentOracle.Value `
+            -Context "$Context independent oracle" `
+            -AllowUnknown
+    }
+    $independence = Get-ReplicationQualityProperty -Object $oracle -Names @('independence') -Context "$Context oracle"
+    if (-not $independence.Found) { throw "$Context oracle is missing independence." }
+    if ($independence.Value -isnot [string] -or
+        ([string]$independence.Value).Trim().ToLowerInvariant() -notin $script:ReplicationOracleIndependenceValues) {
+        throw "$Context oracle independence is not a closed value."
+    }
+    if (
+        ([string]$independence.Value).Trim().ToLowerInvariant() -eq 'independent' -and
+        (-not $independentOracle.Found -or
+            $null -eq $independentOracle.Value -or
+            [string]::IsNullOrWhiteSpace([string]$independentOracle.Value) -or
+            [string]$independentOracle.Value -eq 'unknown')
+    ) {
+        throw "$Context independent oracle is required when independence is independent."
+    }
+    $rationale = Get-ReplicationQualityProperty -Object $oracle -Names @('rationale') -Context "$Context oracle"
+    if (-not $rationale.Found) { throw "$Context oracle is missing its independence rationale." }
+    $null = ConvertTo-ReplicationQualityString `
+        -Value $rationale.Value `
+        -Context "$Context oracle rationale" `
+        -AllowUnknown
+
+    $scenario = (Get-ReplicationQualityProperty `
+            -Object $Contract `
+            -Names @('scenario') `
+            -Context $Context).Value
+    if ($null -eq $scenario) { throw "$Context is missing scenario metadata." }
+    Assert-KnownProperties `
+        -Object $scenario `
+        -AllowedNames @('name', 'precondition', 'trigger', 'transition', 'observableIdentity', 'observable_identity', 'affectedControl', 'affected_control') `
+        -Context "$Context scenario"
+    foreach ($field in @(
+            @{ Names = @('name'); Label = 'scenario name' },
+            @{ Names = @('precondition'); Label = 'precondition' },
+            @{ Names = @('trigger'); Label = 'scenario trigger' },
+            @{ Names = @('transition'); Label = 'transition' },
+            @{ Names = @('observableIdentity', 'observable_identity'); Label = 'observable identity' }
+        )) {
+        $value = Get-ReplicationQualityProperty -Object $scenario -Names $field.Names -Context "$Context scenario"
+        if (-not $value.Found) { throw "$Context is missing $($field.Label)." }
+        $null = ConvertTo-ReplicationQualityString `
+            -Value $value.Value `
+            -Context "$Context $($field.Label)" `
+            -AllowUnknown
+    }
+    $affectedControl = Get-ReplicationQualityProperty `
+        -Object $scenario `
+        -Names @('affectedControl', 'affected_control') `
+        -Context "$Context scenario"
+    if ($affectedControl.Found -and $null -ne $affectedControl.Value) {
+        if ($affectedControl.Value -is [string]) {
+            throw "$Context affected control identity must be an object or null."
+        }
+        Assert-KnownProperties `
+            -Object $affectedControl.Value `
+            -AllowedNames @('id', 'type') `
+            -Context "$Context affected control"
+        foreach ($field in @('id', 'type')) {
+            $value = Get-ReplicationQualityProperty `
+                -Object $affectedControl.Value `
+                -Names @($field) `
+                -Context "$Context affected control"
+            if (-not $value.Found) { throw "$Context affected control is missing $field." }
+            $null = ConvertTo-ReplicationQualityString `
+                -Value $value.Value `
+                -Context "$Context affected control $field" `
+                -MaximumLength 256 `
+                -AllowUnknown
+        }
+    }
+
+    $risk = (Get-ReplicationQualityProperty -Object $Contract -Names @('risk') -Context $Context).Value
+    if ($null -eq $risk) { throw "$Context is missing risk metadata." }
+    Assert-KnownProperties `
+        -Object $risk `
+        -AllowedNames @('adjacentStates', 'adjacent_states', 'lifecycleStates', 'lifecycle_states', 'statelessApplicability', 'stateless_applicability') `
+        -Context "$Context risk"
+    foreach ($field in @(
+            @{ Names = @('adjacentStates', 'adjacent_states'); Label = 'adjacent states' },
+            @{ Names = @('lifecycleStates', 'lifecycle_states'); Label = 'lifecycle states' }
+        )) {
+        $value = Get-ReplicationQualityProperty -Object $risk -Names $field.Names -Context "$Context risk"
+        if (-not $value.Found -or $null -eq $value.Value -or $value.Value -is [string]) {
+            throw "$Context $($field.Label) must be an array."
+        }
+        if (@($value.Value).Count -gt $script:QualityContractMaxStateCount) {
+            throw "$Context $($field.Label) contains too many states."
+        }
+        foreach ($state in @($value.Value)) {
+            $null = ConvertTo-ReplicationQualityString `
+                -Value $state `
+                -Context "$Context $($field.Label) entry" `
+                -MaximumLength 256 `
+                -AllowUnknown
+        }
+    }
+    $applicability = Get-ReplicationQualityProperty `
+        -Object $risk `
+        -Names @('statelessApplicability', 'stateless_applicability') `
+        -Context "$Context risk"
+    if (-not $applicability.Found -or
+        $applicability.Value -isnot [string] -or
+        ([string]$applicability.Value).Trim().ToLowerInvariant() -notin $script:ReplicationRiskApplicabilityValues) {
+        throw "$Context stateless applicability is not a closed value."
+    }
+
+    # A transition/lifecycle report needs at least one lifecycle state.  A
+    # genuinely static report must say that stateless testing is not applicable;
+    # it is never forced through a universal matrix.
+    $triggerText = @(
+        [string](Get-ReplicationQualityProperty -Object $scenario -Names @('trigger') -Context "$Context scenario").Value
+        [string](Get-ReplicationQualityProperty -Object $scenario -Names @('transition') -Context "$Context scenario").Value
+    ) -join ' '
+    $lifecycleList = @(
+        (Get-ReplicationQualityProperty -Object $risk -Names @('lifecycleStates', 'lifecycle_states') -Context "$Context risk").Value
+    )
+    $requiresLifecycle = $triggerText -match '(?i)\b(?:lifecycle|attach|detach|connect|disconnect|appear|navigate|reuse|recycl|load|unload|modal|back|flyout|tab|orientation|rotate|resize|scroll|cancel)\b'
+    if ($requiresLifecycle -and
+        $lifecycleList.Count -eq 0 -and
+        ([string]$applicability.Value).Trim().ToLowerInvariant() -ne 'not-applicable') {
+        throw "$Context must list a risk-based lifecycle state for a dynamic transition."
+    }
+
+    $blast = (Get-ReplicationQualityProperty `
+            -Object $Contract `
+            -Names @('semanticBlastRadius', 'semantic_blast_radius') `
+            -Context $Context).Value
+    if ($null -eq $blast) { throw "$Context is missing semantic blast radius." }
+    Assert-KnownProperties `
+        -Object $blast `
+        -AllowedNames @('affectedType', 'affected_type', 'affectedControl', 'affected_control', 'ownership', 'sharedConsumers', 'shared_consumers', 'unchangedBehavior', 'unchanged_behavior') `
+        -Context "$Context semantic blast radius"
+    foreach ($field in @(
+            @{ Names = @('affectedType', 'affected_type'); Label = 'affected type' },
+            @{ Names = @('affectedControl', 'affected_control'); Label = 'affected control' },
+            @{ Names = @('ownership'); Label = 'ownership' },
+            @{ Names = @('unchangedBehavior', 'unchanged_behavior'); Label = 'unchanged behavior' }
+        )) {
+        $value = Get-ReplicationQualityProperty -Object $blast -Names $field.Names -Context "$Context semantic blast radius"
+        if (-not $value.Found) { throw "$Context is missing $($field.Label)." }
+        $null = ConvertTo-ReplicationQualityString `
+            -Value $value.Value `
+            -Context "$Context $($field.Label)" `
+            -AllowUnknown
+    }
+    $consumers = Get-ReplicationQualityProperty `
+        -Object $blast `
+        -Names @('sharedConsumers', 'shared_consumers') `
+        -Context "$Context semantic blast radius"
+    if (-not $consumers.Found -or $null -eq $consumers.Value -or $consumers.Value -is [string]) {
+        throw "$Context shared consumers must be an array."
+    }
+    if (@($consumers.Value).Count -gt $script:QualityContractMaxStateCount) {
+        throw "$Context lists too many shared consumers."
+    }
+    foreach ($consumer in @($consumers.Value)) {
+        $null = ConvertTo-ReplicationQualityString `
+            -Value $consumer `
+            -Context "$Context shared consumer" `
+            -MaximumLength 256 `
+            -AllowUnknown
+    }
+
+    $media = Get-ReplicationQualityProperty -Object $Contract -Names @('mediaAlignment', 'media_alignment') -Context $Context
+    if (-not $media.Found -or
+        $media.Value -isnot [string] -or
+        ([string]$media.Value).Trim().ToLowerInvariant() -notin @('verified', 'partial', 'not-measured')) {
+        throw "$Context media alignment is not a closed value."
+    }
+
+    $review = (Get-ReplicationQualityProperty -Object $Contract -Names @('review') -Context $Context).Value
+    if ($null -eq $review) { throw "$Context is missing review metadata." }
+    Assert-KnownProperties -Object $review -AllowedNames @('findings') -Context "$Context review"
+    $findings = Get-ReplicationQualityProperty -Object $review -Names @('findings') -Context "$Context review"
+    if (-not $findings.Found -or $null -eq $findings.Value -or $findings.Value -is [string]) {
+        throw "$Context review findings must be an array."
+    }
+    if (@($findings.Value).Count -gt $script:QualityContractMaxFindingCount) {
+        throw "$Context contains too many review findings."
+    }
+    foreach ($finding in @($findings.Value)) {
+        if ($finding -is [string] -or $null -eq $finding) {
+            throw "$Context review finding must be an object."
+        }
+        Assert-KnownProperties `
+            -Object $finding `
+            -AllowedNames @('category', 'grounding', 'confidence', 'corroboration', 'detail') `
+            -Context "$Context review finding"
+        foreach ($field in @(
+                @{ Name = 'category'; Allowed = $script:ReplicationReviewCategories },
+                @{ Name = 'grounding'; Allowed = $script:ReplicationReviewGroundingValues },
+                @{ Name = 'confidence'; Allowed = $script:ReplicationReviewConfidenceValues },
+                @{ Name = 'corroboration'; Allowed = $script:ReplicationReviewCorroborationValues }
+            )) {
+            $value = Get-ReplicationQualityProperty `
+                -Object $finding `
+                -Names @($field.Name) `
+                -Context "$Context review finding"
+            if (-not $value.Found -or
+                $value.Value -isnot [string] -or
+                ([string]$value.Value).Trim().ToLowerInvariant() -notin $field.Allowed) {
+                throw "$Context review finding $($field.Name) is not a closed value."
+            }
+        }
+        $detail = Get-ReplicationQualityProperty -Object $finding -Names @('detail') -Context "$Context review finding"
+        if (-not $detail.Found) { throw "$Context review finding is missing detail." }
+        $null = ConvertTo-ReplicationQualityString `
+            -Value $detail.Value `
+            -Context "$Context review finding detail" `
+            -MaximumLength 800 `
+            -AllowUnknown
+    }
+
+    return $true
+}
+
+function ConvertTo-ReplicationQualityContract {
+    <#
+    .SYNOPSIS
+        Normalizes quality metadata without granting it authority.
+
+    .DESCRIPTION
+        The strict validator above is useful at a trust boundary, while this
+        disclosure normalizer is deliberately fail-safe.  Missing, malformed,
+        oversized, or unsafe agent output becomes a complete unknown contract
+        rather than blocking a reproduction or becoming an implicit approval.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$Value,
+        [switch]$Strict
+    )
+
+    if ($Strict) {
+        Assert-ReplicationQualityContract -Contract $Value | Out-Null
+        return $Value
+    }
+
+    try {
+        if ($null -eq $Value -or $Value -is [string]) {
+            return New-ReplicationUnknownQualityContract
+        }
+        $copy = $Value | ConvertTo-Json -Depth 10 -Compress
+        if ([Text.Encoding]::UTF8.GetByteCount($copy) -gt $script:QualityContractMaxBytes) {
+            return New-ReplicationUnknownQualityContract
+        }
+        Assert-ReplicationQualityContract -Contract $Value | Out-Null
+
+        $user = (Get-ReplicationQualityProperty -Object $Value -Names @('userVisible', 'user_visible') -Context 'Quality contract').Value
+        $oracle = (Get-ReplicationQualityProperty -Object $Value -Names @('oracle') -Context 'Quality contract').Value
+        $scenario = (Get-ReplicationQualityProperty -Object $Value -Names @('scenario') -Context 'Quality contract').Value
+        $risk = (Get-ReplicationQualityProperty -Object $Value -Names @('risk') -Context 'Quality contract').Value
+        $blast = (Get-ReplicationQualityProperty -Object $Value -Names @('semanticBlastRadius', 'semantic_blast_radius') -Context 'Quality contract').Value
+        $review = (Get-ReplicationQualityProperty -Object $Value -Names @('review') -Context 'Quality contract').Value
+        $affected = (Get-ReplicationQualityProperty -Object $scenario -Names @('affectedControl', 'affected_control') -Context 'Quality scenario').Value
+        $normalizedFindings = [Collections.Generic.List[object]]::new()
+        foreach ($finding in @($review.findings)) {
+            [void]$normalizedFindings.Add([ordered]@{
+                category = ([string]$finding.category).Trim().ToLowerInvariant()
+                grounding = ([string]$finding.grounding).Trim().ToLowerInvariant()
+                confidence = ([string]$finding.confidence).Trim().ToLowerInvariant()
+                corroboration = ([string]$finding.corroboration).Trim().ToLowerInvariant()
+                detail = ConvertTo-ReplicationQualityString `
+                    -Value $finding.detail `
+                    -Context 'Quality review finding detail' `
+                    -MaximumLength 800 `
+                    -AllowUnknown
+            })
+        }
+        return [ordered]@{
+            schemaVersion = 1
+            userVisible = [ordered]@{
+                contract = ConvertTo-ReplicationQualityString -Value $user.contract -Context 'Quality user-visible contract' -AllowUnknown
+                trigger = ConvertTo-ReplicationQualityString -Value $user.trigger -Context 'Quality user-visible trigger' -AllowUnknown
+            }
+            oracle = [ordered]@{
+                primary = ConvertTo-ReplicationQualityString -Value $oracle.primary -Context 'Quality primary oracle' -AllowUnknown
+                independent = if ($null -eq $oracle.independent) {
+                    $null
+                } else {
+                    ConvertTo-ReplicationQualityString -Value $oracle.independent -Context 'Quality independent oracle' -AllowUnknown
+                }
+                independence = ([string]$oracle.independence).Trim().ToLowerInvariant()
+                rationale = ConvertTo-ReplicationQualityString -Value $oracle.rationale -Context 'Quality oracle rationale' -AllowUnknown
+            }
+            scenario = [ordered]@{
+                name = ConvertTo-ReplicationQualityString -Value $scenario.name -Context 'Quality scenario name' -AllowUnknown
+                precondition = ConvertTo-ReplicationQualityString -Value $scenario.precondition -Context 'Quality precondition' -AllowUnknown
+                trigger = ConvertTo-ReplicationQualityString -Value $scenario.trigger -Context 'Quality scenario trigger' -AllowUnknown
+                transition = ConvertTo-ReplicationQualityString -Value $scenario.transition -Context 'Quality transition' -AllowUnknown
+                observableIdentity = ConvertTo-ReplicationQualityString -Value $scenario.observableIdentity -Context 'Quality observable identity' -AllowUnknown
+                affectedControl = if ($null -eq $affected) {
+                    $null
+                } else {
+                    [ordered]@{
+                        id = ConvertTo-ReplicationQualityString -Value $affected.id -Context 'Quality affected control id' -MaximumLength 256 -AllowUnknown
+                        type = ConvertTo-ReplicationQualityString -Value $affected.type -Context 'Quality affected control type' -MaximumLength 256 -AllowUnknown
+                    }
+                }
+            }
+            risk = [ordered]@{
+                adjacentStates = @(ConvertTo-ReplicationQualityStateList -Value (
+                        (Get-ReplicationQualityProperty -Object $risk -Names @('adjacentStates', 'adjacent_states') -Context 'Quality risk').Value) -Context 'Quality adjacent states')
+                lifecycleStates = @(ConvertTo-ReplicationQualityStateList -Value (
+                        (Get-ReplicationQualityProperty -Object $risk -Names @('lifecycleStates', 'lifecycle_states') -Context 'Quality risk').Value) -Context 'Quality lifecycle states')
+                statelessApplicability = ([string](Get-ReplicationQualityProperty -Object $risk -Names @('statelessApplicability', 'stateless_applicability') -Context 'Quality risk').Value).Trim().ToLowerInvariant()
+            }
+            semanticBlastRadius = [ordered]@{
+                affectedType = ConvertTo-ReplicationQualityString -Value (
+                        (Get-ReplicationQualityProperty -Object $blast -Names @('affectedType', 'affected_type') -Context 'Quality blast radius').Value) -Context 'Quality affected type' -AllowUnknown
+                affectedControl = ConvertTo-ReplicationQualityString -Value (
+                        (Get-ReplicationQualityProperty -Object $blast -Names @('affectedControl', 'affected_control') -Context 'Quality blast radius').Value) -Context 'Quality blast affected control' -AllowUnknown
+                ownership = ConvertTo-ReplicationQualityString -Value (
+                        (Get-ReplicationQualityProperty -Object $blast -Names @('ownership') -Context 'Quality blast radius').Value) -Context 'Quality ownership' -AllowUnknown
+                sharedConsumers = @(ConvertTo-ReplicationQualityStateList -Value (
+                        (Get-ReplicationQualityProperty -Object $blast -Names @('sharedConsumers', 'shared_consumers') -Context 'Quality blast radius').Value) -Context 'Quality shared consumers')
+                unchangedBehavior = ConvertTo-ReplicationQualityString -Value (
+                        (Get-ReplicationQualityProperty -Object $blast -Names @('unchangedBehavior', 'unchanged_behavior') -Context 'Quality blast radius').Value) -Context 'Quality unchanged behavior' -AllowUnknown
+            }
+            mediaAlignment = ([string](Get-ReplicationQualityProperty -Object $Value -Names @('mediaAlignment', 'media_alignment') -Context 'Quality contract').Value).Trim().ToLowerInvariant()
+            review = [ordered]@{
+                findings = @($normalizedFindings.ToArray())
+            }
+        }
+    } catch {
+        return New-ReplicationUnknownQualityContract
+    }
+}
+
+function Get-ReplicationQualityScenarioIdentity {
+    param([AllowNull()][object]$Contract)
+
+    $normalized = ConvertTo-ReplicationQualityContract -Value $Contract
+    $scenario = $normalized.scenario
+    $control = if ($null -eq $scenario.affectedControl) {
+        ''
+    } else {
+        "$($scenario.affectedControl.id)|$($scenario.affectedControl.type)"
+    }
+    return @(
+        [string]$scenario.name
+        [string]$scenario.precondition
+        [string]$scenario.trigger
+        [string]$scenario.transition
+        [string]$scenario.observableIdentity
+        $control
+    ) -join "`n"
+}
+
+function Get-ReplicationQualityContractAlignment {
+    <#
+    .SYNOPSIS
+        Compares the trusted recording/test contract identity.
+
+    .OUTPUTS
+        verified, partial, or not-measured.  This is a derived disclosure and
+        never a generated verdict or publication authorization.
+    #>
+    param(
+        [AllowNull()][object]$RecordingContract,
+        [AllowNull()][object]$TestContract
+    )
+
+    $recording = ConvertTo-ReplicationQualityContract -Value $RecordingContract
+    $test = ConvertTo-ReplicationQualityContract -Value $TestContract
+    if (
+        $recording.scenario.name -eq 'unknown' -or
+        $test.scenario.name -eq 'unknown' -or
+        $recording.scenario.observableIdentity -eq 'unknown' -or
+        $test.scenario.observableIdentity -eq 'unknown'
+    ) {
+        return 'not-measured'
+    }
+    if ((Get-ReplicationQualityScenarioIdentity -Contract $recording) -ceq
+        (Get-ReplicationQualityScenarioIdentity -Contract $test)) {
+        return 'verified'
+    }
+    return 'partial'
+}
+
+function Get-ReplicationQualityContractForPublication {
+    <#
+    .SYNOPSIS
+        Produces the bounded disclosure copied into validated artifacts.
+
+    .DESCRIPTION
+        The supplied contract remains advisory.  Only the trusted comparison of
+        recording/test identities may set mediaAlignment; no agent value can
+        upgrade it to verified.
+    #>
+    param(
+        [AllowNull()][object]$Contract,
+        [AllowNull()][object]$RecordingContract,
+        [AllowNull()][object]$TestContract,
+        [ValidateSet('verified', 'partial', 'not-measured')]
+        [string]$TrustedMediaAlignment = 'not-measured'
+    )
+
+    $normalized = ConvertTo-ReplicationQualityContract -Value $Contract
+    $alignment = if ($TrustedMediaAlignment -in @('verified', 'partial', 'not-measured')) {
+        $TrustedMediaAlignment
+    } else {
+        Get-ReplicationQualityContractAlignment `
+            -RecordingContract $RecordingContract `
+            -TestContract $TestContract
+    }
+    $normalized.mediaAlignment = $alignment
+    return $normalized
+}
+
+function Read-ReplicationQualityContract {
+    <#
+    .SYNOPSIS
+        Compatibility name for reading the bounded disclosure contract.
+    #>
+    param(
+        [AllowNull()][object]$Value,
+        [switch]$Strict
+    )
+    return ConvertTo-ReplicationQualityContract -Value $Value -Strict:$Strict
+}
+
+function Get-ReplicationMediaAlignment {
+    param(
+        [AllowNull()][object]$RecordingContract,
+        [AllowNull()][object]$TestContract
+    )
+    return Get-ReplicationQualityContractAlignment `
+        -RecordingContract $RecordingContract `
+        -TestContract $TestContract
+}
+
+function Get-ReplicationSelectorProperty {
+    param(
+        [AllowNull()][object]$Selector,
+        [Parameter(Mandatory = $true)][string[]]$Names,
+        [string]$Context = 'Selector'
+    )
+
+    return Get-ReplicationQualityProperty -Object $Selector -Names $Names -Context $Context
+}
+
+function New-ReplicationUnknownSelector {
+    return [ordered]@{
+        variant = 'unknown'
+        raw = 'unknown'
+        project = 'unknown'
+        projectPath = 'unknown'
+        class = 'unknown'
+        method = 'unknown'
+        platform = 'unknown'
+        discoveredCount = 0
+        executedCount = 0
+        fixture = 'unknown'
+    }
+}
+
+function Get-ReplicationSelectorVariant {
+    param(
+        [AllowNull()][object]$Value,
+        [string]$Context = 'Selector variant'
+    )
+
+    if ($Value -isnot [string]) { throw "$Context must be a string." }
+    $variant = ([string]$Value).Trim().ToLowerInvariant()
+    switch ($variant) {
+        'ui-parameterized-fixture' { return 'ui-parameterized-fixture' }
+        'ui-parameterized' { return 'ui-parameterized-fixture' }
+        'ui-fixture' { return 'ui-parameterized-fixture' }
+        'ui' { return 'ui-parameterized-fixture' }
+        'device-category-only' { return 'device-category-only' }
+        'device-category' { return 'device-category-only' }
+        'device' { return 'device-category-only' }
+        'fully-qualified-name' { return 'fully-qualified-name' }
+        'fully-qualified' { return 'fully-qualified-name' }
+        'unit-xaml-fully-qualified' { return 'fully-qualified-name' }
+        default { throw "$Context is not a supported selector variant." }
+    }
+}
+
+function Assert-ReplicationSelectorPlatformScope {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$Platform
+    )
+
+    # Reuse the candidate-path rule below so selector and clean-validation
+    # platform suffix/folder semantics cannot drift apart.
+    Assert-CandidatePathAppliesToPlatform -Path ($Path.Replace('\', '/')) -Platform $Platform
+}
+
+function Assert-ReplicationSelector {
+    <#
+    .SYNOPSIS
+        Validates the one typed selector union used by all replication phases.
+
+    .DESCRIPTION
+        The runner, not the model, owns selector grammar.  This check accepts
+        only the variant appropriate to the trusted test type and requires the
+        trusted runner to report exactly one discovered and executed test.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][object]$Selector,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('UITest', 'UnitTest', 'XamlUnitTest', 'DeviceTest', 'ui', 'unit', 'xaml', 'device')]
+        [string]$ExpectedTestType,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$ExpectedPlatform,
+        [long]$ExpectedIssueNumber = 0,
+        [string]$TestPath = '',
+        [int]$TrustedDiscoveredCount = -1,
+        [int]$TrustedExecutedCount = -1
+    )
+
+    $ExpectedTestType = ConvertTo-NormalizedTestType -Value $ExpectedTestType
+    if ($Selector -is [string] -or $null -eq $Selector) {
+        throw 'Selector must be a JSON object.'
+    }
+    try {
+        $selectorJson = $Selector | ConvertTo-Json -Depth 6 -Compress
+        $selectorMaxBytesProperty = Get-Variable -Name SelectorMaxBytes -Scope Script -ErrorAction SilentlyContinue
+        $selectorMaxBytes = if ($selectorMaxBytesProperty) { [int]$selectorMaxBytesProperty.Value } else { 12KB }
+        if ([Text.Encoding]::UTF8.GetByteCount($selectorJson) -gt $selectorMaxBytes) {
+            throw 'Replication selector is oversized.'
+        }
+    } catch {
+        if ($_.Exception.Message -like '*Replication selector is oversized*') { throw }
+        throw 'Replication selector is not valid bounded JSON.'
+    }
+    Assert-KnownProperties `
+        -Object $Selector `
+        -AllowedNames @(
+            'variant', 'kind',
+            'raw', 'rawSelector', 'raw_selector',
+            'project', 'normalizedProject', 'normalized_project',
+            'projectPath', 'project_path', 'normalizedProjectPath', 'normalized_project_path',
+            'class', 'className', 'class_name',
+            'method', 'methodName', 'method_name',
+            'platform', 'normalizedPlatform', 'normalized_platform',
+            'discoveredCount', 'trustedDiscoveredCount', 'discovered_count',
+            'executedCount', 'trustedExecutedCount', 'executed_count',
+            'fixture'
+        ) `
+        -Context 'Replication selector'
+
+    $variantValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('variant', 'kind') -Context 'Replication selector'
+    if (-not $variantValue.Found) { throw 'Replication selector is missing its variant.' }
+    $variant = Get-ReplicationSelectorVariant -Value $variantValue.Value
+    $expectedVariant = switch ($ExpectedTestType) {
+        'UITest' { 'ui-parameterized-fixture' }
+        'DeviceTest' { 'device-category-only' }
+        'UnitTest' { 'fully-qualified-name' }
+        'XamlUnitTest' { 'fully-qualified-name' }
+    }
+    if ($variant -cne $expectedVariant) {
+        throw "Selector variant '$variant' does not agree with test type '$ExpectedTestType'."
+    }
+
+    $rawValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('raw', 'rawSelector', 'raw_selector') -Context 'Replication selector'
+    if (-not $rawValue.Found) { throw 'Replication selector is missing raw syntax.' }
+    $raw = ConvertTo-BoundedSingleLine `
+        -Value $rawValue.Value `
+        -Context 'Replication selector raw syntax' `
+        -MinimumLength 1 `
+        -MaximumLength $script:SelectorMaxStringLength
+    $raw = $raw.Trim()
+
+    $projectValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('project', 'normalizedProject', 'normalized_project') -Context 'Replication selector'
+    $projectPathValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('projectPath', 'project_path', 'normalizedProjectPath', 'normalized_project_path') -Context 'Replication selector'
+    $classValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('class', 'className', 'class_name') -Context 'Replication selector'
+    $methodValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('method', 'methodName', 'method_name') -Context 'Replication selector'
+    foreach ($entry in @(
+            @{ Property = $projectValue; Name = 'project'; Pattern = '^[A-Za-z0-9_.-]+$'; Max = 256 },
+            @{ Property = $classValue; Name = 'class'; Pattern = '^[A-Za-z_][A-Za-z0-9_.]*$'; Max = 512 },
+            @{ Property = $methodValue; Name = 'method'; Pattern = '^[A-Za-z_][A-Za-z0-9_]*$'; Max = 256 }
+        )) {
+        if (-not $entry.Property.Found) { throw "Replication selector is missing normalized $($entry.Name)." }
+        $value = ConvertTo-BoundedSingleLine `
+            -Value $entry.Property.Value `
+            -Context "Replication selector $($entry.Name)" `
+            -MaximumLength $entry.Max
+        if ($value -notmatch $entry.Pattern) {
+            throw "Replication selector normalized $($entry.Name) is not a safe identifier."
+        }
+    }
+    if (-not $projectPathValue.Found) { throw 'Replication selector is missing normalized project path.' }
+    $projectPath = ConvertTo-BoundedSingleLine `
+        -Value $projectPathValue.Value `
+        -Context 'Replication selector project path' `
+        -MaximumLength 512
+    if ($projectPath -notmatch '^[A-Za-z0-9._/-]+$' -or
+        $projectPath.Contains('..') -or
+        -not $projectPath.EndsWith('.csproj', [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Replication selector normalized project path is not a safe project file.'
+    }
+
+    $platformValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('platform', 'normalizedPlatform', 'normalized_platform') -Context 'Replication selector'
+    if (-not $platformValue.Found) { throw 'Replication selector is missing normalized platform.' }
+    $platform = ConvertTo-NormalizedPlatform -Value $platformValue.Value -Context 'Replication selector platform'
+    if ($platform -cne $ExpectedPlatform) {
+        throw 'Replication selector platform does not match the trusted platform.'
+    }
+    if ($TestPath) {
+        Assert-ReplicationSelectorPlatformScope -Path $TestPath -Platform $ExpectedPlatform
+    }
+
+    $fixtureValue = Get-ReplicationSelectorProperty -Selector $Selector -Names @('fixture') -Context 'Replication selector'
+    $fixture = if ($fixtureValue.Found -and $null -ne $fixtureValue.Value -and
+        -not [string]::IsNullOrWhiteSpace([string]$fixtureValue.Value)) {
+        ConvertTo-BoundedSingleLine -Value $fixtureValue.Value -Context 'Replication selector fixture' -MaximumLength 64
+    } else {
+        ''
+    }
+
+    switch ($variant) {
+        'ui-parameterized-fixture' {
+            if ($raw -notmatch '^(?:(?:--filter\s+)?["'']?)FullyQualifiedName~(?<token>[A-Za-z0-9_.]*Issue\d+(?:\([A-Za-z]+\))?)[:"'']?$') {
+                throw 'UI selector must use the parameterized FullyQualifiedName~Issue<N> grammar.'
+            }
+            if ([string]::IsNullOrWhiteSpace($fixture)) {
+                throw 'UI selector must preserve its parameterized fixture argument.'
+            }
+            if ($fixture -notin @('Android', 'iOS', 'Mac', 'Windows', 'android', 'ios', 'catalyst', 'windows')) {
+                throw 'UI selector fixture is not a supported platform argument.'
+            }
+            $expectedFixture = switch ($ExpectedPlatform) {
+                'android' { @('Android', 'android') }
+                'ios' { @('iOS', 'ios') }
+                'catalyst' { @('Mac', 'catalyst') }
+                'windows' { @('Windows', 'windows') }
+            }
+            if ($fixture -notin $expectedFixture) {
+                throw 'UI selector fixture does not match the trusted platform.'
+            }
+        }
+        'device-category-only' {
+            if ($raw -notmatch '^(?:(?:TestFilter=)?)Category=Issue\d+$') {
+                throw 'Device selector must use category-only Category=Issue<N> grammar.'
+            }
+            if ($fixture) { throw 'Device category-only selector cannot carry a UI fixture argument.' }
+        }
+        'fully-qualified-name' {
+            if ($raw -notmatch '^(?:(?:--filter\s+)?["'']?)FullyQualifiedName=(?<name>[A-Za-z_][A-Za-z0-9_.]*\.[A-Za-z_][A-Za-z0-9_]*)["'']?$') {
+                throw 'Unit/XAML selector must use an exact FullyQualifiedName=Class.Method grammar.'
+            }
+            if ($Matches['name'] -cne ("$($classValue.Value).$($methodValue.Value)")) {
+                throw 'Fully-qualified selector does not match the normalized class and method.'
+            }
+            if ($fixture) { throw 'Unit/XAML selector cannot carry a UI fixture argument.' }
+        }
+    }
+
+    if ($ExpectedIssueNumber -gt 0) {
+        $issueToken = if ($ExpectedTestType -ceq 'XamlUnitTest') {
+            "Maui$ExpectedIssueNumber"
+        } else {
+            "Issue$ExpectedIssueNumber"
+        }
+        if ($variant -eq 'device-category-only' -or $variant -eq 'ui-parameterized-fixture') {
+            if ($raw -notmatch [regex]::Escape($issueToken)) {
+                throw 'Selector raw syntax does not carry the trusted issue token.'
+            }
+        } elseif (
+            $raw -notmatch [regex]::Escape($issueToken) -and
+            ($ExpectedTestType -ne 'XamlUnitTest' -or
+                $raw -notmatch ("Issue" + [regex]::Escape([string]$ExpectedIssueNumber)))
+        ) {
+            throw 'Fully-qualified selector does not carry the trusted issue token.'
+        }
+    }
+
+    $discoveredProperty = Get-ReplicationSelectorProperty `
+        -Selector $Selector `
+        -Names @('discoveredCount', 'trustedDiscoveredCount', 'discovered_count') `
+        -Context 'Replication selector'
+    $executedProperty = Get-ReplicationSelectorProperty `
+        -Selector $Selector `
+        -Names @('executedCount', 'trustedExecutedCount', 'executed_count') `
+        -Context 'Replication selector'
+    if (-not $discoveredProperty.Found -or -not $executedProperty.Found) {
+        throw 'Replication selector must preserve trusted discovered and executed counts.'
+    }
+    foreach ($entry in @(
+            @{ Property = $discoveredProperty; Name = 'discovered' },
+            @{ Property = $executedProperty; Name = 'executed' }
+        )) {
+        if ($entry.Property.Value -isnot [int] -and $entry.Property.Value -isnot [long]) {
+            throw "Replication selector $($entry.Name) count must be an integer."
+        }
+        $count = [long]$entry.Property.Value
+        if ($count -lt 1 -or $count -gt 1000) {
+            throw "Replication selector $($entry.Name) count must be between 1 and 1000."
+        }
+        if ($count -ne $script:SelectorMaxCount) {
+            throw "Replication selector $($entry.Name) count is $count instead of exactly one targeted test; zero, ambiguous, and whole-suite selections are refused."
+        }
+    }
+    if ($TrustedDiscoveredCount -ge 0 -and
+        [long]$discoveredProperty.Value -ne $TrustedDiscoveredCount) {
+        throw 'Replication selector discovered count does not match the trusted runner result.'
+    }
+    if ($TrustedExecutedCount -ge 0 -and
+        [long]$executedProperty.Value -ne $TrustedExecutedCount) {
+        throw 'Replication selector executed count does not match the trusted runner result.'
+    }
+
+    return [ordered]@{
+        variant = $variant
+        raw = $raw
+        project = [string]$projectValue.Value
+        projectPath = $projectPath
+        class = [string]$classValue.Value
+        method = [string]$methodValue.Value
+        platform = $platform
+        discoveredCount = [int]$discoveredProperty.Value
+        executedCount = [int]$executedProperty.Value
+        fixture = $fixture
+    }
+}
+
+function ConvertTo-ReplicationSelector {
+    <#
+    .SYNOPSIS
+        Normalizes a selector or returns an unknown selector safely.
+    #>
+    [CmdletBinding()]
+    param(
+        [AllowNull()][object]$Value,
+        [ValidateSet('UITest', 'UnitTest', 'XamlUnitTest', 'DeviceTest', 'ui', 'unit', 'xaml', 'device')]
+        [string]$ExpectedTestType = 'UnitTest',
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$ExpectedPlatform = 'android',
+        [long]$ExpectedIssueNumber = 0,
+        [string]$TestPath = '',
+        [int]$TrustedDiscoveredCount = -1,
+        [int]$TrustedExecutedCount = -1,
+        [switch]$Strict
+    )
+
+    try {
+        return Assert-ReplicationSelector `
+            -Selector $Value `
+            -ExpectedTestType $ExpectedTestType `
+            -ExpectedPlatform $ExpectedPlatform `
+            -ExpectedIssueNumber $ExpectedIssueNumber `
+            -TestPath $TestPath `
+            -TrustedDiscoveredCount $TrustedDiscoveredCount `
+            -TrustedExecutedCount $TrustedExecutedCount
+    } catch {
+        if ($Strict) { throw }
+        return New-ReplicationUnknownSelector
+    }
+}
+
+function New-ReplicationSelectorContract {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('UITest', 'UnitTest', 'XamlUnitTest', 'DeviceTest', 'ui', 'unit', 'xaml', 'device')]
+        [string]$TestType,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform,
+        [string]$Project = '',
+        [string]$ProjectPath = '',
+        [Parameter(Mandatory = $true)][string]$Class,
+        [Parameter(Mandatory = $true)][string]$Method,
+        [Parameter(Mandatory = $true)][string]$TestFilter,
+        [Parameter(Mandatory = $true)][long]$IssueNumber,
+        [string]$TestPath = '',
+        [int]$DiscoveredCount = 1,
+        [int]$ExecutedCount = 1,
+        [string]$Fixture = ''
+    )
+
+    $TestType = ConvertTo-NormalizedTestType -Value $TestType
+    $variant = switch ($TestType) {
+        'UITest' { 'ui-parameterized-fixture' }
+        'DeviceTest' { 'device-category-only' }
+        default { 'fully-qualified-name' }
+    }
+    if ([string]::IsNullOrWhiteSpace($Project) -and $TestType -eq 'UITest') {
+        $Project = 'Controls.TestCases.Shared.Tests'
+    }
+    if ([string]::IsNullOrWhiteSpace($ProjectPath) -and $TestType -eq 'UITest') {
+        $ProjectPath = 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj'
+    }
+    if ([string]::IsNullOrWhiteSpace($ProjectPath) -and $TestType -eq 'DeviceTest') {
+        $ProjectPath = switch -Regex ($Project) {
+            '(?i)^Controls' { 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'; break }
+            '(?i)^Core' { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj'; break }
+            '(?i)^Essentials' { 'src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj'; break }
+            '(?i)^Graphics' { 'src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj'; break }
+            '(?i)^Blazor' { 'src/BlazorWebView/tests/DeviceTests/BlazorWebView.DeviceTests.csproj'; break }
+            default { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($Fixture) -and $TestType -eq 'UITest') {
+        $Fixture = switch ($Platform) {
+            'android' { 'Android' }
+            'ios' { 'iOS' }
+            'catalyst' { 'Mac' }
+            'windows' { 'Windows' }
+        }
+    }
+    $raw = switch ($variant) {
+        'ui-parameterized-fixture' { "FullyQualifiedName~$TestFilter" }
+        'device-category-only' { "Category=$TestFilter" }
+        default { "FullyQualifiedName=$Class.$Method" }
+    }
+    return Assert-ReplicationSelector `
+        -Selector ([ordered]@{
+            variant = $variant
+            raw = $raw
+            project = $Project
+            projectPath = $ProjectPath
+            class = $Class
+            method = $Method
+            platform = $Platform
+            discoveredCount = $DiscoveredCount
+            executedCount = $ExecutedCount
+            fixture = $Fixture
+        }) `
+        -ExpectedTestType $TestType `
+        -ExpectedPlatform $Platform `
+        -ExpectedIssueNumber $IssueNumber `
+        -TestPath $TestPath `
+        -TrustedDiscoveredCount $DiscoveredCount `
+        -TrustedExecutedCount $ExecutedCount
+}
+
+function Assert-ReplicationSelectorContract {
+    param(
+        [Parameter(Mandatory = $true)][object]$Selector,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestType,
+        [Parameter(Mandatory = $true)][string]$ExpectedPlatform,
+        [long]$ExpectedIssueNumber = 0,
+        [string]$TestPath = '',
+        [int]$TrustedDiscoveredCount = -1,
+        [int]$TrustedExecutedCount = -1
+    )
+    return Assert-ReplicationSelector `
+        -Selector $Selector `
+        -ExpectedTestType $ExpectedTestType `
+        -ExpectedPlatform $ExpectedPlatform `
+        -ExpectedIssueNumber $ExpectedIssueNumber `
+        -TestPath $TestPath `
+        -TrustedDiscoveredCount $TrustedDiscoveredCount `
+        -TrustedExecutedCount $TrustedExecutedCount
+}
+
+function New-ReplicationSelector {
+    param(
+        [Parameter(Mandatory = $true)][string]$TestType,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [string]$Project = '',
+        [string]$ProjectPath = '',
+        [Parameter(Mandatory = $true)][string]$Class,
+        [Parameter(Mandatory = $true)][string]$Method,
+        [Parameter(Mandatory = $true)][string]$TestFilter,
+        [Parameter(Mandatory = $true)][long]$IssueNumber,
+        [string]$TestPath = '',
+        [int]$DiscoveredCount = 1,
+        [int]$ExecutedCount = 1,
+        [string]$Fixture = ''
+    )
+    return New-ReplicationSelectorContract @PSBoundParameters
+}
+
 function ConvertTo-PublishedTestType {
     param([Parameter(Mandatory = $true)][string]$TestType)
 
@@ -801,8 +1989,12 @@ function Read-ReplicationManifest {
         'testType', 'test_type',
         'testName', 'test_name',
         'testFilter', 'test_filter', 'exactFilter', 'exact_filter',
+        'testProject', 'test_project',
+        'testProjectPath', 'test_project_path',
         'testClassName', 'test_class_name',
         'testMethodName', 'test_method_name',
+        'selector', 'selectorContract', 'selector_contract',
+        'qualityContract', 'quality_contract',
         'expectedFailurePattern', 'expected_failure_pattern',
         'expectedFailureSignature', 'expected_failure_signature',
         'reproductionMarker', 'reproduction_marker',
@@ -816,6 +2008,16 @@ function Read-ReplicationManifest {
         'fixFiles', 'fix_files',
         'fixPatch', 'fix_patch',
         'fixRootCause', 'fix_root_cause',
+        'fixRootCausePath', 'fix_root_cause_path',
+        'fixOwnership', 'fix_ownership',
+        'fixDynamicState', 'fix_dynamic_state',
+        'fixThreading', 'fix_threading',
+        'fixTeardown', 'fix_teardown',
+        'fixSharedConsumers', 'fix_shared_consumers',
+        'fixUnchangedBehavior', 'fix_unchanged_behavior',
+        'fixSemanticBlastRadius', 'fix_semantic_blast_radius',
+        'fixRepairApplied', 'fix_repair_applied',
+        'fixRepairFindings', 'fix_repair_findings',
         'fixRegressionLane', 'fix_regression_lane',
         'fixApproach', 'fix_approach',
         'fixRejectedApproaches', 'fix_rejected_approaches',
@@ -1142,6 +2344,32 @@ function Read-ReplicationManifest {
         throw 'Manifest test name contains unsupported characters.'
     }
 
+    $testProject = ''
+    $testProjectPath = ''
+    foreach ($entry in @(
+            @{ Names = @('testProject', 'test_project'); Label = 'Manifest test project'; Max = 256 },
+            @{ Names = @('testProjectPath', 'test_project_path'); Label = 'Manifest test project path'; Max = 512 }
+        )) {
+        $property = Find-AliasedProperty `
+            -Object $manifest `
+            -Names $entry.Names `
+            -Context 'Candidate manifest'
+        if ($property.Found -and $null -ne $property.Value) {
+            $safeValue = ConvertTo-BoundedSingleLine `
+                -Value $property.Value `
+                -Context $entry.Label `
+                -MaximumLength $entry.Max
+            if ($safeValue -match '[\x00-\x1F\x7F]') {
+                throw "$($entry.Label) contains control characters."
+            }
+            if ($entry.Names[0] -ceq 'testProject') {
+                $testProject = $safeValue
+            } else {
+                $testProjectPath = $safeValue.Replace('\', '/')
+            }
+        }
+    }
+
     $failurePattern = ConvertTo-BoundedSingleLine `
         -Value (Find-AliasedProperty `
             -Object $manifest `
@@ -1199,6 +2427,33 @@ function Read-ReplicationManifest {
             -Path $normalizedPath `
             -Platform $manifestPlatform
         $proposedFiles.Add($normalizedPath)
+    }
+
+    $qualityProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('qualityContract', 'quality_contract') `
+        -Context 'Candidate manifest'
+    $qualityContract = if ($qualityProperty.Found) {
+        ConvertTo-ReplicationQualityContract -Value $qualityProperty.Value
+    } else {
+        New-ReplicationUnknownQualityContract
+    }
+
+    $selectorProperty = Find-AliasedProperty `
+        -Object $manifest `
+        -Names @('selector', 'selectorContract', 'selector_contract') `
+        -Context 'Candidate manifest'
+    $selector = if ($selectorProperty.Found) {
+        Assert-ReplicationSelector `
+            -Selector $selectorProperty.Value `
+            -ExpectedTestType $testType `
+            -ExpectedPlatform $manifestPlatform `
+            -ExpectedIssueNumber $ExpectedIssueNumber `
+            -TestPath ($proposedFiles | Select-Object -First 1)
+    } elseif ($isArtifactContract) {
+        throw 'Candidate manifest is missing the centralized trusted selector contract.'
+    } else {
+        New-ReplicationUnknownSelector
     }
 
     # A fix is optional: a reproduction that reaches trigger-certified without one
@@ -1261,6 +2516,8 @@ function Read-ReplicationManifest {
         TestType = $testType
         TestName = $testName
         TestFilter = $testFilter
+        TestProject = $testProject
+        TestProjectPath = $testProjectPath
         TestClassName = $testClassName
         TestMethodName = $testMethodName
         ExpectedFailurePattern = $failurePattern
@@ -1270,11 +2527,21 @@ function Read-ReplicationManifest {
         FixFiles = @($fixFiles.ToArray() | Sort-Object)
         BaseSha = $baseSha
         FixRootCause = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRootCause' -MaximumLength 600)
+        FixRootCausePath = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRootCausePath' -MaximumLength 600)
+        FixOwnership = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixOwnership' -MaximumLength 300)
+        FixDynamicState = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixDynamicState' -MaximumLength 600)
+        FixThreading = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixThreading' -MaximumLength 600)
+        FixTeardown = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixTeardown' -MaximumLength 600)
+        FixSharedConsumers = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixSharedConsumers' -MaximumLength 256 | Select-Object -First 8)
+        FixUnchangedBehavior = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixUnchangedBehavior' -MaximumLength 600)
+        FixSemanticBlastRadius = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixSemanticBlastRadius' -MaximumLength 800)
         FixRegressionLane = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionLane' -MaximumLength 120)
         FixApproach = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixApproach' -MaximumLength 600)
         FixRejectedApproaches = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches' -MaximumLength 300)
         FixPanel = @(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixPanel')
         FixIndependentReview = (Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixIndependentReview')
+        QualityContract = $qualityContract
+        Selector = $selector
         PublishedTestType = ConvertTo-PublishedTestType -TestType $testType
         ReproductionSteps = @($reproductionSteps)
         SelectedDeviceId = $selectedDeviceId
@@ -1470,49 +2737,9 @@ function Assert-ReplicationFixPath {
 
     $fixPath = Assert-CandidatePathShape -Path $Path -Context 'Fix'
 
-    $extension = [System.IO.Path]::GetExtension($fixPath).ToLowerInvariant()
-    if ($extension -notin @('.cs', '.xaml')) {
-        throw 'Fix path has an unexpected extension.'
-    }
-
-    # This list is an allowlist and stays one: it runs in the job that holds the
-    # credential, so "everything not named is allowed" is the wrong shape here.
-    #
-    # It was incomplete, and the omission cost a whole certified run. Build
-    # 15076525 cleared its control, scoped `src/Core/maps/src/...`, ran the
-    # panel, passed the fix arm 3 of 3 and the restoration arm 3 of 3 - a full
-    # four-arm `certified-oracle` - and was thrown away here, because Maps ships
-    # from three roots and none of them was named.
-    #
-    # The orchestrator's own scope validator asks only that a path be under
-    # `src/`, not test code, `.cs` or `.xaml`, and tracked. So the two halves of
-    # one system were reading different rules, and everything between scoping
-    # and publication was spent before they disagreed. A test reads the
-    # repository and fails when a shipping product root is missing from this
-    # list, because a hand-maintained enumeration drifts exactly once and then
-    # costs a certified run.
-    $allowed = $fixPath -cmatch ('^src/(?:' +
-        'Controls/(?:Maps/|Foldable/)?src' +
-        '|Core/(?:maps/)?src' +
-        '|Essentials/src' +
-        '|Graphics/src' +
-        '|BlazorWebView/src' +
-        '|Compatibility/(?:Core|Maps|Material|Android\.AppLinks)/src' +
-        '|SingleProject/Resizetizer/src' +
-        ')/')
-    if (-not $allowed) {
-        throw 'Fix path is outside the established product source directories.'
-    }
-
-    foreach ($segment in $fixPath.Split('/')) {
-        if ($segment -match '(?i)^(?:tests?|.*\.(?:unit|device|ui)?tests?|testcases.*)$') {
-            throw 'Fix path targets test code rather than product code.'
-        }
-    }
-
-    $fileName = [System.IO.Path]::GetFileName($fixPath)
-    if ($fileName -match '(?i)\.(?:g|designer|generated)\.cs$') {
-        throw 'Fix path targets generated source.'
+    $policyRejection = Get-ReplicationFixPathPolicyRejection -Path $fixPath
+    if ($policyRejection) {
+        throw "Fix path $policyRejection."
     }
 
     if ($fixPath -cnotin $AllowedPaths) {
@@ -1520,6 +2747,70 @@ function Assert-ReplicationFixPath {
     }
 
     return $fixPath
+}
+
+function Read-ReplicationTrustedFixScope {
+    <#
+    .SYNOPSIS
+        Reads the immutable scope snapshot written before a fix candidate runs.
+
+    .DESCRIPTION
+        The manifest is agent-authored disclosure. It cannot authorize a patch
+        to widen the files which trusted orchestration made writable before the
+        candidate was invoked.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$CandidateManifestPath
+    )
+
+    $manifestPath = [System.IO.Path]::GetFullPath($CandidateManifestPath)
+    $artifactRoot = [System.IO.Path]::GetDirectoryName($manifestPath)
+    if ([string]::IsNullOrWhiteSpace($artifactRoot)) {
+        throw 'Candidate manifest has no artifact directory for the trusted fix scope.'
+    }
+    $scopePath = Join-Path $artifactRoot 'fix-scope-baseline.json'
+    $text = Read-BoundedUtf8File `
+        -Path $scopePath `
+        -MaximumBytes $script:FixScopeMaxBytes `
+        -Root $artifactRoot `
+        -Context 'Trusted fix scope snapshot'
+    $scope = ConvertFrom-BoundedJson -Text $text -Context 'Trusted fix scope snapshot'
+    Assert-KnownProperties `
+        -Object $scope `
+        -AllowedNames @('files') `
+        -Context 'Trusted fix scope snapshot'
+    $filesProperty = Find-AliasedProperty `
+        -Object $scope `
+        -Names @('files') `
+        -Context 'Trusted fix scope snapshot' `
+        -Required
+    if ($null -eq $filesProperty.Value -or $filesProperty.Value -is [string]) {
+        throw 'Trusted fix scope snapshot files must be an array.'
+    }
+
+    $rawFiles = @($filesProperty.Value)
+    if ($rawFiles.Count -eq 0 -or $rawFiles.Count -gt $script:FixFileMaxCount) {
+        throw "Trusted fix scope snapshot files must contain between 1 and $($script:FixFileMaxCount) entries."
+    }
+
+    $seen = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+    $files = [System.Collections.Generic.List[string]]::new()
+    foreach ($rawFile in $rawFiles) {
+        $path = Assert-ReplicationFixPath `
+            -Path $rawFile `
+            -AllowedPaths @([string]$rawFile)
+        if (-not $seen.Add($path)) {
+            throw 'Trusted fix scope snapshot contains duplicate or case-colliding paths.'
+        }
+        [void]$files.Add($path)
+    }
+
+    return [pscustomobject]@{
+        Path = $scopePath
+        Files = @($files.ToArray() | Sort-Object)
+    }
 }
 
 function Get-ReplicationFixFilesFromPatch {
@@ -1584,6 +2875,7 @@ function Get-ReplicationFixFilesFromPatch {
         $hunkCount = 0
         $addedLines = 0
         $removedLines = 0
+        $addedContent = [System.Collections.Generic.List[string]]::new()
         $remainingOld = 0
         $remainingNew = 0
         $insideHunk = $false
@@ -1603,6 +2895,7 @@ function Get-ReplicationFixFilesFromPatch {
                     '+' {
                         $remainingNew--
                         $addedLines++
+                        [void]$addedContent.Add($line.Substring(1))
                     }
                     '-' {
                         $remainingOld--
@@ -1695,6 +2988,7 @@ function Get-ReplicationFixFilesFromPatch {
             AddedLines = $addedLines
             RemovedLines = $removedLines
             HunkCount = $hunkCount
+            AddedContent = ($addedContent -join "`n")
         })
     }
 
@@ -1984,6 +3278,13 @@ function Assert-ReplicationFixPathsExist {
             throw 'Fix patch modifies a file that does not exist in the trusted checkout.'
         }
         Assert-NoLinkInExistingPath -Path $fullPath
+        $trackedPath = (Invoke-GitText `
+                -Repository $repositoryPath `
+                -Arguments @('ls-files', '--', ":(literal)$path") `
+                -MaximumOutputBytes 4KB).Trim()
+        if ($trackedPath -cne $path) {
+            throw 'Fix patch modifies a file that is not tracked by the trusted checkout.'
+        }
     }
 }
 
@@ -2109,6 +3410,7 @@ function Assert-SourceTextIsSafe {
 
     Assert-ReplicationConditionalCompilationBalance -Content $normalized -Path $Path
     Assert-ReplicationGeneratedSourceSafety -Content $normalized -Path $Path
+    Assert-ReplicationGeneratedTestXamlSafety -Content $normalized -Path $Path
     Assert-ReplicationPlatformSourceSafety `
         -Content $normalized `
         -Path $Path `
@@ -3252,6 +4554,97 @@ function Assert-ReplicationVerificationEvidence {
                 'logFiles'
             ) `
             -Context 'Verification result'
+
+        # Selector truth is shared with orchestration and publication.  The
+        # runner's machine result, rather than the model's selector spelling,
+        # supplies the counts and the resolved identity used for this check.
+        $selector = $Manifest.Selector
+        if ($selector -and [string]$selector.variant -cne 'unknown') {
+            $resultProject = Find-AliasedProperty `
+                -Object $result `
+                -Names @('testProject', 'project') `
+                -Context 'Verification result'
+            $resultProjectPath = Find-AliasedProperty `
+                -Object $result `
+                -Names @('testProjectPath', 'projectPath') `
+                -Context 'Verification result'
+            $resultClass = Find-AliasedProperty `
+                -Object $result `
+                -Names @('testClass', 'class') `
+                -Context 'Verification result'
+            $resultMethod = Find-AliasedProperty `
+                -Object $result `
+                -Names @('testMethod', 'method') `
+                -Context 'Verification result'
+            if (-not $resultClass.Found -or -not $resultMethod.Found) {
+                throw 'Verification result is missing the trusted selector identity.'
+            }
+            if ([string]$resultClass.Value -cne [string]$selector.class -or
+                [string]$resultMethod.Value -cne [string]$selector.method) {
+                throw 'Verification result identity does not match the centralized selector.'
+            }
+            if ($Manifest.TestProject -and
+                (-not $resultProject.Found -or [string]$resultProject.Value -cne [string]$Manifest.TestProject)) {
+                throw 'Verification result project does not match the centralized selector.'
+            }
+            if ($Manifest.TestProjectPath -and
+                (-not $resultProjectPath.Found -or [string]$resultProjectPath.Value -ne [string]$Manifest.TestProjectPath)) {
+                throw 'Verification result project path does not match the centralized selector.'
+            }
+            if ([string]$selector.project -ne 'unknown' -and
+                $resultProject.Found -and
+                -not [string]::IsNullOrWhiteSpace([string]$resultProject.Value) -and
+                [string]$resultProject.Value -cne [string]$selector.project) {
+                throw 'Verification result project does not match the selector identity.'
+            }
+            if ([string]$selector.projectPath -ne 'unknown' -and
+                $resultProjectPath.Found -and
+                -not [string]::IsNullOrWhiteSpace([string]$resultProjectPath.Value) -and
+                [string]$resultProjectPath.Value -ne [string]$selector.projectPath) {
+                throw 'Verification result project path does not match the selector identity.'
+            }
+
+            $selectorCounts = Find-AliasedProperty `
+                -Object $result `
+                -Names @('executedTestCounts', 'executed_test_counts') `
+                -Context 'Verification result'
+            if (-not $selectorCounts.Found -or
+                $null -eq $selectorCounts.Value -or
+                $selectorCounts.Value -is [string]) {
+                throw 'Verification result is missing trusted selector execution counts.'
+            }
+            $counts = @($selectorCounts.Value)
+            if ($counts.Count -eq 0 -or $counts.Count -gt 3) {
+                throw 'Verification result trusted selector counts are empty or oversized.'
+            }
+            foreach ($count in $counts) {
+                if ($count -isnot [int] -and $count -isnot [long]) {
+                    throw 'Verification result trusted selector count is not an integer.'
+                }
+                if ([long]$count -ne 1) {
+                    throw "Verification result trusted selector count is $count instead of exactly one targeted test."
+                }
+            }
+            $discovered = 1
+            $discoveredProperty = Find-AliasedProperty `
+                -Object $result `
+                -Names @('discoveredTestCount', 'discovered_test_count') `
+                -Context 'Verification result'
+            if ($discoveredProperty.Found) {
+                if ($discoveredProperty.Value -isnot [int] -and $discoveredProperty.Value -isnot [long]) {
+                    throw 'Verification result discovered selector count is not an integer.'
+                }
+                $discovered = [int]$discoveredProperty.Value
+            }
+            Assert-ReplicationSelector `
+                -Selector $selector `
+                -ExpectedTestType $Manifest.TestType `
+                -ExpectedPlatform $Manifest.Platform `
+                -ExpectedIssueNumber ([long]$Manifest.IssueNumber) `
+                -TestPath ($Manifest.ProposedFiles | Select-Object -First 1) `
+                -TrustedDiscoveredCount $discovered `
+                -TrustedExecutedCount 1 | Out-Null
+        }
         if (
             (ConvertTo-PositiveInteger `
                 -Value (Find-AliasedProperty `
@@ -3651,6 +5044,16 @@ function Assert-ReplicationVerificationEvidence {
             -NotePropertyValue $certification.Level -Force
         Add-Member -InputObject $result -NotePropertyName 'certificationSummary' `
             -NotePropertyValue (Get-ReplicationCertificationSummary -Certification $certification) -Force
+        Add-Member -InputObject $result -NotePropertyName 'negativeControl' `
+            -NotePropertyValue ([ordered]@{
+                runCount = $negativeRuns
+                passCount = $negativePasses
+                result = if ($negativeRuns -gt 0) {
+                    'verification/negative-control-result.json'
+                } else {
+                    $null
+                }
+            }) -Force
         return $result
     }
 
@@ -3800,13 +5203,121 @@ function ConvertTo-NullableDouble {
     return $number
 }
 
-function Invoke-DefaultMediaProbe {
+function Get-ReplicationBigEndianUInt32 {
+    param(
+        [Parameter(Mandatory = $true)][byte[]]$Bytes,
+        [Parameter(Mandatory = $true)][int]$Offset
+    )
+
+    if ($Offset -lt 0 -or $Offset -gt ($Bytes.Length - 4)) {
+        throw 'Media atom is truncated.'
+    }
+
+    return ([int64]$Bytes[$Offset] * 16777216) +
+        ([int64]$Bytes[$Offset + 1] * 65536) +
+        ([int64]$Bytes[$Offset + 2] * 256) +
+        [int64]$Bytes[$Offset + 3]
+}
+
+function Assert-ReplicationMediaHasNoExternalReferences {
+    <#
+    .SYNOPSIS
+        Refuses ISO BMFF data references that point outside the artifact.
+
+    .DESCRIPTION
+        ffprobe's protocol whitelist prevents the actual fetch. This bounded
+        preflight also makes an external MOV/MP4 data reference an explicit
+        validation failure instead of relying on a decoder error.
+    #>
     param([Parameter(Mandatory = $true)][string]$Path)
 
+    if ([IO.Path]::GetExtension($Path).ToLowerInvariant() -notin @(
+            '.mp4', '.mov', '.m4v', '.m4a', '.3gp', '.3g2'
+        )) {
+        return
+    }
+
+    $file = Get-SafeRegularFile `
+        -Path $Path `
+        -MinimumBytes 1 `
+        -MaximumBytes $script:VideoMaxBytes `
+        -Context 'Media file'
+    $bytes = [System.IO.File]::ReadAllBytes($file.FullName)
+    for ($typeOffset = 4; $typeOffset -le ($bytes.Length - 4); $typeOffset++) {
+        if (
+            $bytes[$typeOffset] -ne 0x64 -or
+            $bytes[$typeOffset + 1] -ne 0x72 -or
+            $bytes[$typeOffset + 2] -ne 0x65 -or
+            $bytes[$typeOffset + 3] -ne 0x66
+        ) {
+            continue
+        }
+
+        $boxOffset = $typeOffset - 4
+        $boxSize = Get-ReplicationBigEndianUInt32 -Bytes $bytes -Offset $boxOffset
+        if ($boxSize -eq 1) {
+            throw 'Media data-reference atom uses an unsupported extended size.'
+        }
+        if ($boxSize -eq 0) {
+            $boxSize = $bytes.Length - $boxOffset
+        }
+        if (
+            $boxSize -lt 16 -or
+            $boxSize -gt ($bytes.Length - $boxOffset)
+        ) {
+            continue
+        }
+
+        $boxEnd = $boxOffset + [int]$boxSize
+        $entryCount = Get-ReplicationBigEndianUInt32 -Bytes $bytes -Offset ($typeOffset + 8)
+        if ($entryCount -gt 64) {
+            throw 'Media data-reference atom contains too many entries.'
+        }
+
+        $entryOffset = $typeOffset + 12
+        for ($entryIndex = 0; $entryIndex -lt $entryCount; $entryIndex++) {
+            if ($entryOffset -gt ($boxEnd - 12)) {
+                throw 'Media data-reference atom is truncated.'
+            }
+            $entrySize = Get-ReplicationBigEndianUInt32 -Bytes $bytes -Offset $entryOffset
+            if (
+                $entrySize -lt 12 -or
+                $entrySize -gt ($boxEnd - $entryOffset)
+            ) {
+                throw 'Media data-reference atom is malformed.'
+            }
+
+            $entryType = [Text.Encoding]::ASCII.GetString($bytes, $entryOffset + 4, 4)
+            $entryFlags = Get-ReplicationBigEndianUInt32 -Bytes $bytes -Offset ($entryOffset + 8)
+            if ($entryType -ceq 'url ') {
+                if (($entryFlags -band 1) -eq 0) {
+                    throw 'Media contains an external URL data reference.'
+                }
+            } elseif ($entryType -in @('urn ', 'alis', 'rsrc')) {
+                throw 'Media contains an external data reference.'
+            } else {
+                throw 'Media contains an unsupported data reference.'
+            }
+
+            $entryOffset += [int]$entrySize
+        }
+    }
+}
+
+function Invoke-DefaultMediaProbe {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [switch]$ExternalReferencesAlreadyChecked
+    )
+
+    if (-not $ExternalReferencesAlreadyChecked) {
+        Assert-ReplicationMediaHasNoExternalReferences -Path $Path
+    }
     $result = Invoke-ExternalBytes `
         -FileName 'ffprobe' `
         -Arguments @(
             '-v', 'error',
+            '-protocol_whitelist', 'file,pipe',
             '-print_format', 'json',
             '-show_format',
             '-show_streams',
@@ -3829,6 +5340,7 @@ function Invoke-DefaultMediaProbe {
         IsDecodable = $true
         Format = $probe.format
         Streams = @($probe.streams)
+        ExternalReferences = @()
     }
 }
 
@@ -3889,6 +5401,21 @@ function Assert-MediaProbeResult {
         }
         if (-not $decodable) {
             throw "$Name is not decodable."
+        }
+    }
+
+    $externalReferences = Get-LoosePropertyValue `
+        -Object $ProbeResult `
+        -Names @('ExternalReferences', 'externalReferences', 'ExternalReference', 'externalReference')
+    foreach ($reference in @($externalReferences)) {
+        if ($reference -is [bool]) {
+            if ($reference) {
+                throw "$Name probe reports an external media reference."
+            }
+            continue
+        }
+        if (-not [string]::IsNullOrWhiteSpace([string]$reference)) {
+            throw "$Name probe reports an external media reference."
         }
     }
 
@@ -3999,6 +5526,7 @@ function Assert-ReplicationMediaEvidence {
             -Root $Inventory.MediaRoot `
             -Context $entry.Name
         Assert-MediaMagic -File $file -Kind $entry.Kind
+        Assert-ReplicationMediaHasNoExternalReferences -Path $file.FullName
 
         $probeResult = if ($Probe) {
             $results = @(& $Probe $file.FullName $entry.Kind | Where-Object { $null -ne $_ })
@@ -4007,12 +5535,100 @@ function Assert-ReplicationMediaEvidence {
             }
             $results[0]
         } else {
-            Invoke-DefaultMediaProbe -Path $file.FullName
+            Invoke-DefaultMediaProbe `
+                -Path $file.FullName `
+                -ExternalReferencesAlreadyChecked
         }
         Assert-MediaProbeResult `
             -ProbeResult $probeResult `
             -Kind $entry.Kind `
             -Name $entry.Name
+    }
+}
+
+function Assert-ReplicationTrustedBinding {
+    <#
+        .SYNOPSIS
+        Re-derives the certification binding and refuses any disagreement.
+
+        .DESCRIPTION
+        Everything the grade rests on is recomputed here from the artifacts in
+        hand: the two patch digests, every evidence file, the selector identity
+        and the trusted discovered/executed counts, and the trusted script and
+        tree identities. The manifest is compared against the binding too, so a
+        manifest that names a different class, method, project, platform, or
+        base commit than the run that earned the grade is rejected rather than
+        published.
+
+        `RequireBinding` is what makes this fail closed on absence. Without it a
+        run that simply omitted the document would validate exactly like a run
+        that produced a matching one.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BindingPath,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$ArtifactRoot,
+        [Parameter(Mandatory = $true)][object]$Manifest,
+        [AllowEmptyString()][string]$TrustedSourceVersion = '',
+        [AllowEmptyString()][string]$TrustedTreeHash = '',
+        [AllowEmptyString()][string]$TrustedPipelineSha256 = '',
+        [AllowEmptyString()][string]$ReplicationBaseSha = '',
+        [switch]$RequireBinding
+    )
+
+    if ([string]::IsNullOrWhiteSpace($BindingPath) -or [string]::IsNullOrWhiteSpace($ArtifactRoot)) {
+        if ($RequireBinding) {
+            throw 'A certification binding and its artifact root are required for validation.'
+        }
+        return $null
+    }
+    if (-not (Test-Path -LiteralPath $BindingPath -PathType Leaf)) {
+        throw "Certification binding is missing: $BindingPath"
+    }
+    if ($RequireBinding -and [string]::IsNullOrWhiteSpace($TrustedSourceVersion)) {
+        throw 'A trusted pipeline source commit is required to verify the certification binding.'
+    }
+
+    $binding = Read-ReplicationCertificationBinding -Path $BindingPath
+    $expectedSelector = Get-ReplicationBindingSelector `
+        -Selector $Manifest.Selector `
+        -TestType ([string]$Manifest.TestType)
+
+    $sourceVersion = if ([string]::IsNullOrWhiteSpace($TrustedSourceVersion)) {
+        [string]$binding.trustedSourceVersion
+    } else {
+        $TrustedSourceVersion
+    }
+
+    $result = Assert-ReplicationCertificationBinding `
+        -Binding $binding `
+        -ArtifactRoot $ArtifactRoot `
+        -TrustedSourceVersion $sourceVersion `
+        -TrustedTreeHash $TrustedTreeHash `
+        -PipelineSha256 $TrustedPipelineSha256 `
+        -ReplicationBaseSha $ReplicationBaseSha `
+        -Selector $expectedSelector `
+        -IssueNumber ([long]$Manifest.IssueNumber) `
+        -Platform ([string]$Manifest.Platform) `
+        -Context 'clean replication validation'
+
+    # The manifest and the binding are two independent documents about the same
+    # run. They agreeing on the commit the reproduction was authored against is
+    # what stops a manifest being retargeted at a different baseline.
+    if (-not [string]::IsNullOrWhiteSpace([string]$Manifest.BaseSha) -and
+        ([string]$Manifest.BaseSha).ToLowerInvariant() -cne ([string]$binding.replicationBaseSha)) {
+        throw 'The candidate manifest and the certification binding disagree on the replication base commit.'
+    }
+
+    return [pscustomobject]@{
+        Digest = [string]$result.Digest
+        TrustedTreeHash = [string]$binding.trustedTreeHash
+        TrustedSourceVersion = [string]$binding.trustedSourceVersion
+        PipelineSha256 = [string]$binding.pipelineSha256
+        ReplicationBaseSha = [string]$binding.replicationBaseSha
+        ExecutionHeadSha = [string]$binding.executionHeadSha
+        TestPatchSha256 = [string]$binding.testPatchSha256
+        FixPatchSha256 = if ($null -eq $binding.fixPatchSha256) { $null } else { [string]$binding.fixPatchSha256 }
     }
 }
 
@@ -4068,6 +5684,13 @@ function Invoke-ReplicationCandidateValidation {
         [Parameter(Mandatory = $true)][long]$IssueNumber,
         [Parameter(Mandatory = $true)][string]$Platform,
         [Parameter(Mandatory = $true)][string]$OutputPath,
+        [string]$CertificationBindingPath = '',
+        [string]$ArtifactRoot = '',
+        [string]$TrustedSourceVersion = '',
+        [string]$TrustedTreeHash = '',
+        [string]$TrustedPipelineSha256 = '',
+        [string]$ReplicationBaseSha = '',
+        [switch]$RequireCertificationBinding,
         [scriptblock]$MediaProbe
     )
 
@@ -4167,18 +5790,34 @@ function Invoke-ReplicationCandidateValidation {
             if (@($manifest.FixFiles).Count -eq 0) {
                 throw 'A fix patch was provided but the manifest names no fix files.'
             }
+            $trustedFixScope = Read-ReplicationTrustedFixScope `
+                -CandidateManifestPath $CandidateManifestPath
+            foreach ($declared in @($manifest.FixFiles)) {
+                if ($declared -cnotin @($trustedFixScope.Files)) {
+                    throw 'Manifest fix files expand the trusted fix scope.'
+                }
+            }
             $fixFiles = @(Get-ReplicationFixFilesFromPatch `
                 -Path $FixPatchPath `
-                -AllowedPaths @($manifest.FixFiles))
+                -AllowedPaths @($trustedFixScope.Files))
             $patchedPaths = @($fixFiles | ForEach-Object { $_.Path })
             foreach ($declared in @($manifest.FixFiles)) {
                 if ($declared -cnotin $patchedPaths) {
                     throw 'The manifest names a fix file the fix patch never modifies.'
                 }
             }
+            foreach ($patched in $patchedPaths) {
+                if ($patched -cnotin @($manifest.FixFiles)) {
+                    throw 'Fix patch modifies a file the manifest does not name.'
+                }
+            }
             Assert-ReplicationFixPathsExist `
                 -Repository $repoPath `
                 -Paths $patchedPaths
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $repoPath `
+                -Paths $patchedPaths `
+                -PatchPath $FixPatchPath
         } elseif (@($manifest.FixFiles).Count -gt 0) {
             throw 'The manifest names fix files but no fix patch was provided.'
         }
@@ -4243,9 +5882,52 @@ function Invoke-ReplicationCandidateValidation {
         if ($manifest.ArtifactContract -and $null -eq $verificationResult) {
             throw 'Verification evidence must include a trusted targeted failure message.'
         }
+        if ($hasFixPatch -and $verificationResult) {
+            $trustedControl = $verificationResult.negativeControl
+            if ($null -eq $trustedControl -or
+                [int]$trustedControl.runCount -lt $script:VerificationMinimumRunCount -or
+                [int]$trustedControl.passCount -ne [int]$trustedControl.runCount) {
+                # A product diff without a legitimate trigger-removed control
+                # cannot be published as a fix.  Keep the reproduction evidence
+                # and discard only the optional fix claim.
+                Write-Host 'No legitimate negative control was recorded; withholding the product fix.'
+                $hasFixPatch = $false
+                $fixFiles = @()
+                $fixArms = $null
+            }
+        }
+
         Assert-ReplicationMediaEvidence `
             -Inventory $inventory `
             -Probe $MediaProbe
+
+        # Read last, over the artifacts as they now stand, so it covers exactly
+        # what the rest of this validation just judged.
+        $effectiveArtifactRoot = if ([string]::IsNullOrWhiteSpace($ArtifactRoot)) {
+            $EvidenceDir
+        } else {
+            $ArtifactRoot
+        }
+        $binding = Assert-ReplicationTrustedBinding `
+            -BindingPath $CertificationBindingPath `
+            -ArtifactRoot $effectiveArtifactRoot `
+            -Manifest $manifest `
+            -TrustedSourceVersion $TrustedSourceVersion `
+            -TrustedTreeHash $TrustedTreeHash `
+            -TrustedPipelineSha256 $TrustedPipelineSha256 `
+            -ReplicationBaseSha $ReplicationBaseSha `
+            -RequireBinding:$RequireCertificationBinding
+
+        # A token, a proxy credential, or the run's own canary reaching an
+        # artifact means the stripping this pipeline depends on did not hold.
+        # That is not a publication that needs redacting; it is a run that must
+        # not be published.
+        if (-not [string]::IsNullOrWhiteSpace($effectiveArtifactRoot) -and
+            (Test-Path -LiteralPath $effectiveArtifactRoot -PathType Container)) {
+            $null = Assert-ReplicationNoSecretMarkers `
+                -Root $effectiveArtifactRoot `
+                -Context 'clean replication validation'
+        }
 
         $validatedDocument = [ordered]@{
             schemaVersion = 1
@@ -4257,14 +5939,23 @@ function Invoke-ReplicationCandidateValidation {
             testType = $manifest.PublishedTestType
             verificationTestType = $manifest.TestType
             testName = $manifest.TestName
+            testProject = $manifest.TestProject
+            testProjectPath = $manifest.TestProjectPath
             testClassName = $manifest.TestClassName
             testMethodName = $manifest.TestMethodName
             testFilter = $manifest.TestFilter
+            selector = $manifest.Selector
+            qualityContract = $manifest.QualityContract
             expectedFailureSignature = $manifest.ExpectedFailurePattern
             observedFailureSignature = $script:ValidatedEffectiveFailureSignature
             expectedFailurePattern = $manifest.ExpectedFailurePattern
             actualFailureMessage = if ($verificationResult) {
                 [string]$verificationResult.actualFailureMessage
+            } else {
+                $null
+            }
+            negativeControl = if ($verificationResult) {
+                $verificationResult.negativeControl
             } else {
                 $null
             }
@@ -4300,6 +5991,46 @@ function Invoke-ReplicationCandidateValidation {
             fixRootCause = if ($hasFixPatch) {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixRootCause -MaximumLength 600
             } else { '' }
+            fixRootCausePath = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRootCausePath -MaximumLength 600
+            } else { '' }
+            fixOwnership = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixOwnership -MaximumLength 300
+            } else { '' }
+            fixDynamicState = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixDynamicState -MaximumLength 600
+            } else { '' }
+            fixThreading = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixThreading -MaximumLength 600
+            } else { '' }
+            fixTeardown = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixTeardown -MaximumLength 600
+            } else { '' }
+            fixSharedConsumers = if ($hasFixPatch) {
+                @($manifest.FixSharedConsumers | Select-Object -First 8)
+            } else { @() }
+            fixUnchangedBehavior = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixUnchangedBehavior -MaximumLength 600
+            } else { '' }
+            fixSemanticBlastRadius = if ($hasFixPatch) {
+                ConvertTo-ReplicationDisclosureText -Value $manifest.FixSemanticBlastRadius -MaximumLength 800
+            } else { '' }
+            fixRepairApplied = if ($hasFixPatch) {
+                $repairProperty = Find-AliasedProperty `
+                    -Object $manifest `
+                    -Names @('fixRepairApplied', 'fix_repair_applied') `
+                    -Context 'Candidate manifest'
+                if ($repairProperty.Found -and $repairProperty.Value -is [bool]) {
+                    [bool]$repairProperty.Value
+                } else {
+                    $false
+                }
+            } else { $false }
+            fixRepairFindings = if ($hasFixPatch) {
+                @(@(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixRepairFindings') |
+                    ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength 400 } |
+                    Where-Object { $_ } | Select-Object -First 4)
+            } else { @() }
             fixRegressionLane = if ($hasFixPatch) {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixRegressionLane -MaximumLength 120
             } else { '' }
@@ -4329,6 +6060,10 @@ function Invoke-ReplicationCandidateValidation {
                     summary = ConvertTo-ReplicationDisclosureText -Value $manifest.FixIndependentReview.summary -MaximumLength 600
                     findings = @(@($manifest.FixIndependentReview.findings) | Where-Object { $_ } | ForEach-Object {
                         [ordered]@{
+                            category = ConvertTo-ReplicationDisclosureText -Value $_.category -MaximumLength 48
+                            grounding = ConvertTo-ReplicationDisclosureText -Value $_.grounding -MaximumLength 48
+                            confidence = ConvertTo-ReplicationDisclosureText -Value $_.confidence -MaximumLength 16
+                            corroboration = ConvertTo-ReplicationDisclosureText -Value $_.corroboration -MaximumLength 24
                             severity = ConvertTo-ReplicationDisclosureText -Value $_.severity -MaximumLength 40
                             detail = ConvertTo-ReplicationDisclosureText -Value $_.detail -MaximumLength 800
                         }
@@ -4337,6 +6072,21 @@ function Invoke-ReplicationCandidateValidation {
             } else { $null }
             reproductionSteps = @($manifest.ReproductionSteps)
             candidateSource = $candidateSource
+            # Carried into the publisher so it can re-check the same digest and
+            # the same artifact hashes before it extracts a credential, rather
+            # than trusting that a previous job said so.
+            certificationBinding = if ($binding) {
+                [ordered]@{
+                    digest = [string]$binding.Digest
+                    trustedTreeHash = [string]$binding.TrustedTreeHash
+                    trustedSourceVersion = [string]$binding.TrustedSourceVersion
+                    pipelineSha256 = [string]$binding.PipelineSha256
+                    replicationBaseSha = [string]$binding.ReplicationBaseSha
+                    executionHeadSha = [string]$binding.ExecutionHeadSha
+                    testPatchSha256 = [string]$binding.TestPatchSha256
+                    fixPatchSha256 = if ($hasFixPatch) { [string]$binding.FixPatchSha256 } else { $null }
+                }
+            } else { $null }
             evidence = [ordered]@{
                 video = 'repro.mp4'
                 preview = $inventory.PreviewName
@@ -4367,5 +6117,12 @@ if ($MyInvocation.InvocationName -ne '.') {
         -IssueNumber $IssueNumber `
         -Platform $Platform `
         -OutputPath $OutputPath `
+        -CertificationBindingPath $CertificationBindingPath `
+        -ArtifactRoot $ArtifactRoot `
+        -TrustedSourceVersion $TrustedSourceVersion `
+        -TrustedTreeHash $TrustedTreeHash `
+        -TrustedPipelineSha256 $TrustedPipelineSha256 `
+        -ReplicationBaseSha $ReplicationBaseSha `
+        -RequireCertificationBinding:$RequireCertificationBinding `
         -MediaProbe $MediaProbe
 }
