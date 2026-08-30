@@ -8,7 +8,10 @@ param(
     [Parameter(Mandatory = $true)][string]$RepositoryRoot,
     [Parameter(Mandatory = $true)][string]$ScriptPath,
     [Parameter(Mandatory = $true)][string]$ArgumentPayload,
-    [Parameter(Mandatory = $true)][string]$DeviceUdid
+    [Parameter(Mandatory = $true)][string]$DeviceUdid,
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('true', 'false')]
+    [string]$AllowDeviceControl
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,7 +30,11 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
 
     foreach ($probe in @(
         @{ File = '/usr/bin/sudo'; Arguments = @('-n', 'true'); Name = 'sudo' },
-        @{ File = '/usr/bin/systemd-run'; Arguments = @('--user', '--quiet', '/usr/bin/true'); Name = 'systemd user manager' }
+        @{ File = '/usr/bin/systemd-run'; Arguments = @('--user', '--quiet', '/usr/bin/true'); Name = 'systemd user manager' },
+        @{ File = '/usr/bin/docker'; Arguments = @('version'); Name = 'Docker daemon' },
+        @{ File = '/usr/bin/podman'; Arguments = @('version'); Name = 'Podman runtime' },
+        @{ File = '/usr/bin/ctr'; Arguments = @('version'); Name = 'containerd' },
+        @{ File = '/usr/bin/nerdctl'; Arguments = @('version'); Name = 'nerdctl' }
     )) {
         $escaped = $false
         try {
@@ -38,6 +45,31 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
         }
         if ($escaped) {
             throw "Generated execution isolation allowed escape through $($probe.Name)."
+        }
+        foreach ($socket in @(
+            '/run/docker.sock',
+            '/var/run/docker.sock',
+            '/run/containerd/containerd.sock',
+            '/run/podman/podman.sock',
+            '/run/buildkit/buildkitd.sock'
+        )) {
+            if (-not (Test-Path -LiteralPath $socket)) {
+                continue
+            }
+            $probeSocket = [Net.Sockets.Socket]::new(
+                [Net.Sockets.AddressFamily]::Unix,
+                [Net.Sockets.SocketType]::Stream,
+                [Net.Sockets.ProtocolType]::Unspecified)
+            try {
+                $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($socket))
+                if ($probeSocket.Connected) {
+                    throw "Generated execution isolation exposed privileged socket $socket."
+                }
+            } catch {
+                if ($_.Exception.Message -match 'exposed privileged socket') { throw }
+            } finally {
+                $probeSocket.Dispose()
+            }
         }
     }
 }
@@ -65,7 +97,19 @@ if ($childArguments.Count -gt 128 -or
 [Environment]::SetEnvironmentVariable('MAUI_REPLICATION_EGRESS_ISOLATED', '1')
 try {
     Assert-ReplicationPrivilegeEscapesBlocked
-    $null = Assert-ReplicationAndroidGuestNetworkIsolation -DeviceUdid $DeviceUdid
+    if ($AllowDeviceControl -ceq 'false') {
+        $adb = Get-Command adb -ErrorAction SilentlyContinue
+        if ($adb) {
+            try {
+                & $adb.Source version 2>$null | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    throw 'Generated execution isolation exposed adb control.'
+                }
+            } catch {
+                if ($_.Exception.Message -match 'exposed adb control') { throw }
+            }
+        }
+    }
     $null = Assert-ReplicationOutboundNetworkIsolation `
         -Platform $Platform `
         -RepositoryRoot $root

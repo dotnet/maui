@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 
 Set-StrictMode -Version Latest
+$script:ReplicationBuildExecutedPathCache = @{}
 
 function Get-ReplicationUnsafeSourcePatterns {
     # Scope 'raw' rules scan comments and string literals too, because hiding
@@ -14,7 +15,7 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'http-client'; Scope = 'code'; Pattern = '(?i)\b(?:HttpClient|HttpMessageHandler|HttpRequestMessage|HttpWebRequest|SocketsHttpHandler|RestClient|GrpcChannel)\b' },
         [pscustomobject]@{ Code = 'network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Net\b|\b(?:Dns|WebClient|WebRequest|FtpWebRequest|SmtpClient|HttpListener|Ping|TcpClient|TcpListener|UdpClient|WebSocket|ClientWebSocket|NSUrlSession|NSURLSession|NetworkStream)\b|\bSocket\s*[.(]|\bnew\s+\w*Socket\b|\b(?:Java|Android)\s*\.\s*Net\b' },
         [pscustomobject]@{ Code = 'service-model-network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*ServiceModel\b|\b(?:ChannelFactory|WebChannelFactory|ClientBase|HttpBinding|BasicHttpBinding|WSHttpBinding|NetTcpBinding)\b' },
-        [pscustomobject]@{ Code = 'xml-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:XmlTextReader|XmlValidatingReader|XmlUrlResolver|XmlSecureResolver|XmlPreloadedResolver|XmlResolver|XmlDataDocument|XPathDocument|XslCompiledTransform|XmlSchemaSet)\b|\bXmlReader\s*\.\s*Create\b|\b(?:XmlReaderSettings|XmlDocument)\s*\.\s*XmlResolver\b|\bXmlResolver\s*=|\b(?:XmlDocument|XDocument|XElement|XPathDocument|XslCompiledTransform|XmlSchema)\s*\.\s*(?:Load|Read)\b|\.\s*(?:Read|Write|Infer)Xml(?:Schema)?\s*\(' },
+        [pscustomobject]@{ Code = 'xml-external-access'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Xml\b|\b(?:XmlReader|XmlTextReader|XmlValidatingReader|XmlUrlResolver|XmlSecureResolver|XmlPreloadedResolver|XmlResolver|XmlReaderSettings|XmlDocument|XmlDataDocument|XDocument|XElement|XPathDocument|XslCompiledTransform|XmlSchemaSet|XmlSchema)\b|\.\s*(?:Read|Write|Infer)Xml(?:Schema)?\s*\(' },
         [pscustomobject]@{ Code = 'platform-network'; Scope = 'code'; Pattern = '(?i)\b(?:NSUrl|NSURL|NSUrlRequest|NSURLRequest|NSMutableUrlRequest|NSURLConnection|WKWebView|UIWebView|SFSafariViewController|ASWebAuthenticationSession|NSUrlSession|NSURLSession|NWConnection|CFNetwork)\b|\b(?:Android|Java)\s*\.\s*(?:Net|Webkit)\b|\b(?:HttpURLConnection|URLConnection|AndroidHttpClient|OkHttpClient|CustomTabsIntent|DownloadManager|WebViewClient)\b|\b(?:Intent|PendingIntent)\s*(?:[.(]|\b)|\b(?:Windows\s*\.\s*(?:Web\s*\.\s*Http|Foundation\s*\.\s*Uri|System\s*\.\s*Launcher)|Microsoft\s*\.\s*Web\s*\.\s*WebView2|CoreWebView2|WebView2|WinHttpHandler)\b|\b(?:LoadRequest|LoadUrl|LoadDataWithBaseURL|Navigate|NavigateWithHttpRequestMessage|LaunchUriAsync)\s*\(' },
         [pscustomobject]@{ Code = 'process-start'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Diagnostics\s*\.\s*Process\b|\bProcess\s*\.\s*(?:Start|GetCurrentProcess|GetProcess|GetProcesses|GetProcessById|EnterDebugMode|Kill)\b|\bnew\s+Process\s*[({]|\b(?:ProcessStartInfo|UseShellExecute|RedirectStandardOutput|RedirectStandardError|WaitForExit|Win32Exception|ManagementObject|NSTask|NSWorkspace|CreateProcess|ShellExecute|Runtime\s*\.\s*GetRuntime)\b' },
         [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*(?:Reflection|Runtime\s*\.\s*Loader|Type)\b|\b(?:Assembly|Type|Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|Delegate)\s*\.\s*(?:Load|LoadFrom|LoadFile|LoadWithPartialName|CreateInstance|CreateDelegate|DynamicInvoke|Invoke|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetProperty|GetProperties|GetMember|GetMembers|GetTypes|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties|GetTypeFromHandle|GetType)\b|\b(?:Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|RuntimeMethodHandle|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetMember|GetMembers|GetProperties|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties)\b|(?<!Mapper\s*\.\s*)\bGetProperty\b|\bType\s*\.\s*GetType\b|\btypeof\s*\([^)]*\)\s*\.\s*Assembly\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
@@ -475,23 +476,23 @@ function Invoke-ReplicationUnsafeSourceCapabilities {
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Patterns
     )
 
-    $scan = Get-ReplicationSourceSafetyScanContext -Content $Content -Path $Path
     if ([IO.Path]::GetExtension($Path) -ieq '.cs') {
-        try {
-            $syntaxTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText($Content)
-            foreach ($token in $syntaxTree.GetRoot().DescendantTokens()) {
-                if ($token.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::IdentifierToken -and
-                    $token.Text -match '\\(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})') {
-                    throw "Candidate source '$Path' contains prohibited 'obfuscated-source' Unicode escapes in an executable identifier."
-                }
+        $unicodeText = Get-ReplicationCommentFreeText -Text $Content -Path $Path
+        foreach ($escape in [regex]::Matches(
+                $unicodeText,
+                '\\(?:u(?<short>[0-9a-fA-F]{4})|U(?<long>[0-9a-fA-F]{8}))'
+            )) {
+            $codePoint = if ($escape.Groups['short'].Success) {
+                $escape.Groups['short'].Value
+            } else {
+                $escape.Groups['long'].Value.TrimStart('0')
             }
-        } catch {
-            if ($_.Exception.Message -match "prohibited 'obfuscated-source'") {
-                throw $_.Exception
+            if ($codePoint -notmatch '^(?i:2028|2029)$') {
+                throw "Candidate source '$Path' contains prohibited 'obfuscated-source' Unicode escapes that could obscure executable identifiers."
             }
-            throw "Candidate source '$Path' could not be tokenized by the offline Roslyn parser."
         }
     }
+    $scan = Get-ReplicationSourceSafetyScanContext -Content $Content -Path $Path
     foreach ($entry in $Patterns) {
         $scope = if ($entry.PSObject.Properties['Scope']) { [string]$entry.Scope } else { 'raw' }
         $target = switch ($scope) {
@@ -742,6 +743,31 @@ function Get-ReplicationCSharpMemberRecords {
         })
     }
 
+    $conditionalLines = $Content.Replace("`r`n", "`n").Split("`n")
+    $conditionalStack = [Collections.Generic.List[int]]::new()
+    $conditionalOrdinal = 0
+    for ($lineIndex = 0; $lineIndex -lt $conditionalLines.Count; $lineIndex++) {
+        if ($conditionalLines[$lineIndex] -match '^\s*#\s*if\b') {
+            $conditionalStack.Add($lineIndex)
+            continue
+        }
+        if ($conditionalLines[$lineIndex] -notmatch '^\s*#\s*endif\b' -or
+            $conditionalStack.Count -eq 0) {
+            continue
+        }
+        $startIndex = $conditionalStack[$conditionalStack.Count - 1]
+        $conditionalStack.RemoveAt($conditionalStack.Count - 1)
+        $conditionalOrdinal++
+        $records.Add([pscustomobject]@{
+            Key = "conditional:$conditionalOrdinal"
+            Text = ($conditionalLines[$startIndex..$lineIndex] -join "`n")
+            Kind = 'conditional'
+        })
+    }
+    if ($conditionalStack.Count -gt 0) {
+        throw "Product fix source '$Path' has an unterminated conditional-compilation region."
+    }
+
     return @($records)
 }
 
@@ -767,6 +793,7 @@ function Get-ReplicationXamlElementRecords {
     $records = [Collections.Generic.List[object]]::new()
     foreach ($element in @($document.SelectNodes('//*'))) {
         $segments = [Collections.Generic.List[string]]::new()
+        $structuralSegments = [Collections.Generic.List[string]]::new()
         $cursor = $element
         while ($cursor -and $cursor.NodeType -eq [Xml.XmlNodeType]::Element) {
             $ordinal = 1
@@ -780,6 +807,7 @@ function Get-ReplicationXamlElementRecords {
                 $sibling = $sibling.PreviousSibling
             }
             $segments.Insert(0, "$($cursor.NamespaceURI)|$($cursor.LocalName)[$ordinal]")
+            $structuralSegments.Insert(0, "$($cursor.Name)[$ordinal]")
             $cursor = $cursor.ParentNode
         }
         $attributes = @($element.Attributes | Where-Object {
@@ -787,9 +815,16 @@ function Get-ReplicationXamlElementRecords {
         } | ForEach-Object {
             "$($_.Name)=`"$($_.Value)`""
         } | Sort-Object -CaseSensitive)
+        $namespaceMappings = @($element.Attributes | Where-Object {
+            $_.NamespaceURI -ceq 'http://www.w3.org/2000/xmlns/'
+        } | ForEach-Object {
+            "$($_.Name)=$($_.Value)"
+        } | Sort-Object -CaseSensitive)
         $records.Add([pscustomobject]@{
             Key = $segments -join '/'
+            StructuralKey = $structuralSegments -join '/'
             Header = "<$($element.Name) $($attributes -join ' ')>"
+            NamespaceMappings = $namespaceMappings -join "`n"
             DirectText = (@($element.ChildNodes | Where-Object {
                 $_.NodeType -in @([Xml.XmlNodeType]::Text, [Xml.XmlNodeType]::CDATA)
             } | ForEach-Object { $_.Value }) -join '')
@@ -828,6 +863,17 @@ function Assert-ReplicationProductFixDeltaSafety {
         foreach ($record in @(Get-ReplicationXamlElementRecords -Content $AfterContent -Path $Path)) {
             $afterRecords[$record.Key] = $record
         }
+        $beforeStructuralRecords = @{}
+        foreach ($record in @($beforeRecords.Values)) {
+            $beforeStructuralRecords[$record.StructuralKey] = $record
+        }
+        foreach ($record in @($afterRecords.Values)) {
+            if ($beforeStructuralRecords.ContainsKey($record.StructuralKey) -and
+                $record.NamespaceMappings -cne
+                    $beforeStructuralRecords[$record.StructuralKey].NamespaceMappings) {
+                throw "Product fix source '$Path' changes an XAML namespace mapping, which the fail-closed safety scan does not permit."
+            }
+        }
         $removed = @($beforeRecords.Keys | Where-Object {
             -not $afterRecords.ContainsKey($_)
         })
@@ -842,10 +888,16 @@ function Assert-ReplicationProductFixDeltaSafety {
         foreach ($key in $changedKeys) {
             $record = $afterRecords[$key]
             if (-not $beforeRecords.ContainsKey($key)) {
+                if (-not [string]::IsNullOrWhiteSpace($record.NamespaceMappings)) {
+                    throw "Product fix source '$Path' adds an XAML namespace mapping, which the fail-closed safety scan does not permit."
+                }
                 Assert-ReplicationProductFixSafety -Content $record.Header -Path $Path
                 if (-not [string]::IsNullOrWhiteSpace($record.DirectText)) {
                     Assert-ReplicationProductFixSafety -Content $record.DirectText -Path $Path
                 }
+            } elseif ($record.NamespaceMappings -cne
+                $beforeRecords[$record.Key].NamespaceMappings) {
+                throw "Product fix source '$Path' changes an XAML namespace mapping, which the fail-closed safety scan does not permit."
             } elseif ($record.Header -cne $beforeRecords[$record.Key].Header) {
                 Assert-ReplicationProductFixSafety -Content $record.Header -Path $Path
             }
@@ -981,9 +1033,69 @@ function Get-ReplicationFixPathPolicyRejection {
         if (-not $fullPath.StartsWith($rootPrefix, [StringComparison]::Ordinal)) {
             return 'resolves outside the repository'
         }
+        $buildExecutedPaths = Get-ReplicationBuildExecutedSourcePaths -RepositoryRoot $root
+        if ($buildExecutedPaths.Contains($normalized)) {
+            return 'is linked into a source generator, analyzer, or build task'
+        }
     }
 
     return $null
+}
+
+function Get-ReplicationBuildExecutedSourcePaths {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
+
+    $root = [IO.Path]::GetFullPath($RepositoryRoot)
+    if ($script:ReplicationBuildExecutedPathCache.ContainsKey($root)) {
+        return ,$script:ReplicationBuildExecutedPathCache[$root]
+    }
+
+    $paths = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($project in @(Get-ChildItem -LiteralPath (Join-Path $root 'src') `
+            -Filter '*.csproj' -File -Recurse -ErrorAction Stop)) {
+        if ($project.Length -gt 1MB -or
+            $project.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw "Build-executed source inventory found an unsafe project: $($project.FullName)"
+        }
+        $projectText = [IO.File]::ReadAllText($project.FullName)
+        $isBuildExecuted = (
+            $projectText -match '(?i)<IsRoslynComponent>\s*true\s*</IsRoslynComponent>' -or
+            $projectText -match '(?i)<OutputItemType>\s*Analyzer\s*</OutputItemType>' -or
+            $project.BaseName -match '(?i)(?:SourceGen|Generator|Analyzer|Build[._-]?Tasks?|CodeFix)'
+        )
+        if (-not $isBuildExecuted) { continue }
+
+        $settings = [Xml.XmlReaderSettings]::new()
+        $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+        $settings.XmlResolver = $null
+        $document = [Xml.XmlDocument]::new()
+        $document.XmlResolver = $null
+        $reader = [Xml.XmlReader]::Create([IO.StringReader]::new($projectText), $settings)
+        try { $document.Load($reader) } finally { $reader.Dispose() }
+        foreach ($compile in @($document.SelectNodes('//*[local-name()="Compile"][@Include]'))) {
+            $include = [string]$compile.GetAttribute('Include')
+            if ([string]::IsNullOrWhiteSpace($include) -or
+                $include.Contains('$(') -or
+                $include.IndexOfAny([char[]]'*?') -ge 0) {
+                continue
+            }
+            $include = $include.Replace(
+                '\',
+                [IO.Path]::DirectorySeparatorChar)
+            $sourcePath = [IO.Path]::GetFullPath(
+                (Join-Path $project.DirectoryName $include))
+            if ($sourcePath.StartsWith(
+                    $root.TrimEnd([IO.Path]::DirectorySeparatorChar) +
+                        [IO.Path]::DirectorySeparatorChar,
+                    [StringComparison]::Ordinal)) {
+                [void]$paths.Add(
+                    [IO.Path]::GetRelativePath($root, $sourcePath).Replace('\', '/'))
+            }
+        }
+    }
+    $script:ReplicationBuildExecutedPathCache[$root] = $paths
+    return ,$paths
 }
 
 function Assert-ReplicationFixSources {

@@ -432,7 +432,8 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][string]$DeviceUdid,
-        [scriptblock]$AdbInvoker
+        [scriptblock]$AdbInvoker,
+        [switch]$VerifyOnly
     )
 
     if ([string]::IsNullOrWhiteSpace($DeviceUdid) -or
@@ -466,14 +467,16 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
         return $result
     }
 
-    & $invoke @('-s', $DeviceUdid, 'root') 'restart adb as root' | Out-Null
-    & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the rooted emulator' | Out-Null
-    & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
-        'enable airplane mode' | Out-Null
-    & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
-        'disable guest Wi-Fi' | Out-Null
-    & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
-        'disable guest mobile data' | Out-Null
+    if (-not $VerifyOnly) {
+        & $invoke @('-s', $DeviceUdid, 'root') 'restart adb as root' | Out-Null
+        & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the rooted emulator' | Out-Null
+        & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
+            'enable airplane mode' | Out-Null
+        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
+            'disable guest Wi-Fi' | Out-Null
+        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
+            'disable guest mobile data' | Out-Null
+    }
 
     $chain = 'MAUI_REPLICATION'
     foreach ($tool in @('iptables', 'ip6tables')) {
@@ -481,6 +484,9 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
             '-s', $DeviceUdid, 'shell', $tool, '-C', 'OUTPUT', '-j', $chain
         ) "inspect the $tool OUTPUT chain" -AllowFailure
         if ([int]$jump.ExitCode -ne 0) {
+            if ($VerifyOnly) {
+                throw "Android guest network isolation lost the $tool OUTPUT chain."
+            }
             & $invoke @(
                 '-s', $DeviceUdid, 'shell', $tool, '-N', $chain
             ) "create the $tool isolation chain" | Out-Null
@@ -506,11 +512,12 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
     }
 
     foreach ($family in @('-4', '-6')) {
-        for ($attempt = 0; $attempt -lt 4; $attempt++) {
+        for ($attempt = 0; $attempt -lt $(if ($VerifyOnly) { 1 } else { 4 }); $attempt++) {
             $routes = (& $invoke @(
                 '-s', $DeviceUdid, 'shell', 'ip', $family, 'route', 'show', 'default'
             ) 'inspect guest routes').Output
             if ([string]::IsNullOrWhiteSpace([string]$routes)) { break }
+            if ($VerifyOnly) { break }
             & $invoke @(
                 '-s', $DeviceUdid, 'shell', 'ip', $family, 'route', 'del', 'default'
             ) 'remove a guest default route' | Out-Null
@@ -560,6 +567,7 @@ function Get-ReplicationNetworkIsolatedCommand {
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Arguments,
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Environment,
         [Parameter(Mandatory = $true)][ValidateCount(1, 4)][string[]]$WritableRoots,
+        [switch]$AllowDeviceControl,
         [string]$DeviceUdid = '',
         [ValidateRange(1, 10800)][int]$TimeoutSeconds = 1800,
         [ValidateSet('linux', 'macos', 'windows')]
@@ -599,7 +607,8 @@ function Get-ReplicationNetworkIsolatedCommand {
         '-RepositoryRoot', $RepositoryRoot,
         '-ScriptPath', $ScriptPath,
         '-ArgumentPayload', $argumentPayload,
-        '-DeviceUdid', $DeviceUdid
+        '-DeviceUdid', $DeviceUdid,
+        '-AllowDeviceControl', $AllowDeviceControl.IsPresent.ToString().ToLowerInvariant()
     )
 
     if ($validateHostTools) {
@@ -620,6 +629,42 @@ function Get-ReplicationNetworkIsolatedCommand {
     }
     $unitBaseName = "maui-replication-$PID-$([guid]::NewGuid().ToString('N'))"
     $unitName = "$unitBaseName.service"
+
+    $inaccessiblePaths = @(
+        "-/run/user/$UserId",
+        '-/usr/bin/sudo',
+        '-/bin/sudo',
+        '-/usr/bin/systemd-run',
+        '-/bin/systemd-run',
+        '-/usr/bin/systemctl',
+        '-/bin/systemctl',
+        '-/usr/bin/busctl',
+        '-/usr/bin/dbus-send',
+        '-/run/docker.sock',
+        '-/var/run/docker.sock',
+        '-/run/containerd/containerd.sock',
+        '-/run/podman/podman.sock',
+        '-/run/buildkit/buildkitd.sock',
+        '-/usr/bin/docker',
+        '-/usr/bin/podman',
+        '-/usr/bin/ctr',
+        '-/usr/bin/nerdctl',
+        '-/usr/bin/buildctl'
+    )
+    if (-not $AllowDeviceControl) {
+        $inaccessiblePaths += @(
+            '-/usr/bin/adb',
+            '-/usr/local/bin/adb',
+            '-/bin/adb'
+        )
+        foreach ($androidHomeName in @('ANDROID_HOME', 'ANDROID_SDK_ROOT')) {
+            $androidHome = [string]$Environment[$androidHomeName]
+            if (-not [string]::IsNullOrWhiteSpace($androidHome) -and
+                [IO.Path]::IsPathRooted($androidHome)) {
+                $inaccessiblePaths += "-$(Join-Path $androidHome 'platform-tools/adb')"
+            }
+        }
+    }
 
     $systemdArguments = @(
         '-n',
@@ -652,7 +697,8 @@ function Get-ReplicationNetworkIsolatedCommand {
         '--property=LockPersonality=yes',
         '--property=RestrictRealtime=yes',
         '--property=RemoveIPC=yes',
-        "--property=InaccessiblePaths=-/run/user/$UserId -/usr/bin/sudo -/bin/sudo -/usr/bin/systemd-run -/bin/systemd-run -/usr/bin/systemctl -/bin/systemctl -/usr/bin/busctl -/usr/bin/dbus-send",
+        '--property=SupplementaryGroups=',
+        "--property=InaccessiblePaths=$($inaccessiblePaths -join ' ')",
         '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
     )
     foreach ($writableRoot in @($WritableRoots | Sort-Object -Unique)) {

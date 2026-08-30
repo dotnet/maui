@@ -416,6 +416,10 @@ Describe 'Selecting a real process isolation boundary' {
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/run/user/1000'
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/systemctl'
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/busctl'
+        ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/run/docker\.sock'
+        ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/docker'
+        ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/adb'
+        $command.Arguments | Should -Contain '--property=SupplementaryGroups='
         $command.Arguments | Should -Contain '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
         ($command.Arguments -join "`n") | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED'
         ($command.Arguments -join "`n") | Should -Not -Match '--setenv=XDG_RUNTIME_DIR='
@@ -456,6 +460,25 @@ Describe 'Selecting a real process isolation boundary' {
         } | Should -Throw '*local emulator transport*'
     }
 
+    It 'grants adb only to trusted device-control phases' {
+        $command = Get-ReplicationNetworkIsolatedCommand `
+            -Platform android `
+            -RepositoryRoot $script:IsolationPlanRepo `
+            -ScriptPath $script:Target `
+            -Arguments @('-Value', 'ok') `
+            -Environment $script:MinimalEnvironment `
+            -WritableRoots @($script:IsolationPlanRepo) `
+            -AllowDeviceControl `
+            -DeviceUdid 'emulator-5554' `
+            -OperatingSystem linux `
+            -UserId 1000 `
+            -GroupId 1000
+
+        ($command.Arguments -join "`n") | Should -Not -Match 'platform-tools/adb'
+        $command.Arguments | Should -Contain '-AllowDeviceControl'
+        $command.Arguments | Should -Contain 'true'
+    }
+
     It 'makes privilege and user-manager escape canaries part of the isolated wrapper' {
         $source = Get-Content -LiteralPath $script:Wrapper -Raw
         $escape = $source.IndexOf(
@@ -470,6 +493,8 @@ Describe 'Selecting a real process isolation boundary' {
 
         $source | Should -Match "'/usr/bin/sudo'"
         $source | Should -Match "'/usr/bin/systemd-run'"
+        $source | Should -Match "'/usr/bin/docker'"
+        $source | Should -Match "'/run/docker.sock'"
         $source | Should -Match "'--user'"
         $escape | Should -BeGreaterOrEqual 0
         $escape | Should -BeLessThan $network
@@ -581,6 +606,24 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
                 -DeviceUdid emulator-5554 `
                 -AdbInvoker $invoker
         } | Should -Throw '*left an IPv4 default route*'
+    }
+
+    It 'fails closed after execution if the guest firewall was removed' {
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            if ($text -match ' (?:ip6tables|iptables) -C OUTPUT ') {
+                return [pscustomobject]@{ ExitCode = 1; Output = '' }
+            }
+            return [pscustomobject]@{ ExitCode = 0; Output = '1' }
+        }
+
+        {
+            Assert-ReplicationAndroidGuestNetworkIsolation `
+                -DeviceUdid emulator-5554 `
+                -AdbInvoker $invoker `
+                -VerifyOnly
+        } | Should -Throw '*lost the iptables OUTPUT chain*'
     }
 }
 

@@ -417,9 +417,9 @@ Describe 'Replication orchestrator security boundary' {
     It 'bounds every external replication phase below the job timeout' {
         $script:Source | Should -Match 'CopilotTimeoutMinutes = 20'
         $script:Source | Should -Match '-Arguments \(Get-ReplicationPwshArguments'
-        $script:Source | Should -Match "-Description 'Preparing the Sandbox app'\s+``\s+-TimeoutSeconds 1800"
-        $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+-TimeoutSeconds 300"
-        $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+-TimeoutSeconds 300"
+        $script:Source | Should -Match "-Description 'Preparing the Sandbox app'\s+``\s+(?:-AllowDeviceControl\s+``\s+)?-TimeoutSeconds 1800"
+        $script:Source | Should -Match "-Description 'Launching the Sandbox before evidence recording'\s+``\s+(?:-AllowDeviceControl\s+``\s+)?-TimeoutSeconds 300"
+        $script:Source | Should -Match "-Description 'Recording the on-device reproduction'\s+``\s+(?:-AllowDeviceControl\s+``\s+)?-TimeoutSeconds 300"
         $script:Source |
             Should -Match ([regex]::Escape(
                 "-TimeoutSeconds (5400 + (1800 * (" + '$VerificationRunCount' + " - 1)))"))
@@ -2725,6 +2725,11 @@ InitializeComponent();
         $attestation | Should -BeLessThan $probe
         $probe | Should -BeLessThan $clear
         $clear | Should -BeLessThan $launch
+        $script:Source | Should -Match (
+            '(?s)Assert-ReplicationAndroidGuestNetworkIsolation.*?' +
+            'Get-ReplicationNetworkIsolatedCommand.*?' +
+            'Stop-ReplicationNetworkIsolationUnit.*?' +
+            'Assert-ReplicationAndroidGuestNetworkIsolation.*?-VerifyOnly')
     }
 
     It 'prewarms trusted inputs and forbids restore during isolated execution' {
@@ -2741,6 +2746,9 @@ InitializeComponent();
         $script:Source | Should -Match "-Verb build"
         $script:Source | Should -Match 'GRADLE_USER_HOME'
         $script:Source | Should -Match 'DOTNET_CLI_HOME'
+        $script:Source | Should -Match '\$replicationRuntimeParent = if .*AGENT_TEMPDIRECTORY'
+        $script:Source | Should -Not -Match 'Join-Path \$ArtifactRoot ''runtime'''
+        $script:Source | Should -Match 'Remove-Item -LiteralPath \$replicationRuntimeRoot -Recurse'
 
         $verification = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1') -Raw
@@ -2753,6 +2761,14 @@ InitializeComponent();
         $verifier | Should -Match '\$testArgs \+= ''--no-restore'''
         $sandbox | Should -Match '\$appiumRunArguments \+= ''--no-restore'''
         $device | Should -Match '\$buildArgs \+= ''--no-restore'''
+    }
+
+    It 'withholds host-executed generated UI tests from replication' {
+        $proposal = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Read-TestProposal\b.*?^}').Value
+        $proposal | Should -Match "testType -eq 'ui'"
+        $proposal | Should -Match 'UI test replication is withheld'
     }
 
     It 'has exactly one capability set, with no parameter that can widen it' {
@@ -9740,6 +9756,8 @@ Describe 'Only trusted code may call a fix candidate a pass' {
         $logged | Should -Match 'Invoke-WithoutReplicationSecrets'
         $logged | Should -Match '\$allSecretNames'
         $logged | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
+        $logged | Should -Match 'effectiveDeviceControl'
+        $logged | Should -Match '(?s)if \(\$effectiveDeviceControl\) \{.*?Assert-ReplicationAndroidGuestNetworkIsolation'
     }
 
     It 'does not let an injected model Pass become the panel verdict' {

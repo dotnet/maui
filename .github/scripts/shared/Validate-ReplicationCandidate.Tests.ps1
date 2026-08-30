@@ -1116,6 +1116,28 @@ var characterSeparator = '\u2029';
         } | Should -Not -Throw
     }
 
+    It 'rejects escaped identifiers inside every conditional branch' -TestCases @(
+        @{ Symbol = 'ANDROID' },
+        @{ Symbol = 'IOS' },
+        @{ Symbol = 'WINDOWS' },
+        @{ Symbol = 'MACCATALYST' },
+        @{ Symbol = 'DEBUG' },
+        @{ Symbol = 'NET' }
+    ) {
+        param($Symbol)
+        $source = @"
+#if $Symbol
+var process = S\u0079stem.Diagn\u006fstics.Pr\u006fcess.Start("tool");
+#endif
+"@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'Issue1.cs'
+        } | Should -Throw '*obfuscated-source*'
+        {
+            Assert-ReplicationProductFixSafety -Content $source -Path 'Product.cs'
+        } | Should -Throw '*obfuscated-source*'
+    }
+
     It 'rejects every URL-capable XML and native platform sink' -TestCases @(
         @{
             Name = 'integer-char XmlTextReader'
@@ -1124,6 +1146,14 @@ var characterSeparator = '\u2029';
         @{
             Name = 'aliased XML reader'
             Snippet = 'using R = System.Xml.XmlTextReader; var reader = new R(string.Concat("ht", "tp", "://169.254.169.254"));'
+        }
+        @{
+            Name = 'reordered fragments through XmlDocument instance Load'
+            Snippet = 'var seg = new[] { "//169.254.169.254/x.xml", "ht", "tp:" }; var address = seg[1] + seg[2] + seg[0]; var document = new System.Xml.XmlDocument(); document.Load(address);'
+        }
+        @{
+            Name = 'aliased XmlDocument instance Load'
+            Snippet = 'using D = System.Xml.XmlDocument; var document = new D(); document.Load(address);'
         }
         @{
             Name = 'XML resolver'
@@ -3776,6 +3806,21 @@ Describe 'Which product files a fix is allowed to touch' {
                 Should -Throw -Because "$path is not a repository-relative product path"
         }
     }
+
+    It 'refuses runtime-tree files linked into the source generator' {
+        $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+        foreach ($path in @(
+            'src/Controls/src/Core/Internals/INameScope.cs',
+            'src/Controls/src/Xaml/XamlParser.cs',
+            'src/Core/src/Services/Crc64.cs',
+            'src/Graphics/src/Graphics/ColorUtils.cs'
+        )) {
+            Get-ReplicationFixPathPolicyRejection `
+                -Path $path `
+                -RepositoryRoot $repositoryRoot |
+                Should -Match 'linked into a source generator'
+        }
+    }
 }
 
 Describe 'Complete post-patch product source scanning' {
@@ -3948,6 +3993,25 @@ class SafeHandler
         } | Should -Throw -Because "$Error must be rejected before the patched file can execute"
     }
 
+    It 'scans changed conditional-compilation branches for every platform symbol' -TestCases @(
+        @{ Symbol = 'ANDROID'; Sink = 'new HttpClient();'; Error = 'http-client' },
+        @{ Symbol = 'IOS'; Sink = 'Process.Start("tool");'; Error = 'process-start' },
+        @{ Symbol = 'WINDOWS'; Sink = 'NativeLibrary.Load("native");'; Error = 'native-code' },
+        @{ Symbol = 'MACCATALYST'; Sink = '[ModuleInitializer] static void Initialize() { }'; Error = 'module-initializer' }
+    ) {
+        param($Symbol, $Sink, $Error)
+        $before = "#if $Symbol`nclass ConditionalCode { }`n#endif`nclass Other { }"
+        $after = "#if $Symbol`nclass ConditionalCode { void Run() { $Sink } }`n#endif`nclass Other { }"
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw "*$Error*"
+    }
+
     It 'resolves unchanged aliases and fields used by a changed member' -TestCases @(
         @{
             Before = 'using R = System.Xml.XmlTextReader; class SafeHandler { void Safe(string address) { } }'
@@ -4054,6 +4118,23 @@ class SafeHandler
                 -Paths @($script:completePath) `
                 -PatchPath $patch
         } | Should -Throw
+    }
+
+    It 'rejects a changed XAML namespace mapping' {
+        $script:completePath = 'src/Controls/src/Core/Views/SafeView.xaml'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:foo="clr-namespace:Safe"><foo:Widget /></ContentPage>'
+        $after = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:foo="https://example.invalid/schema"><foo:Widget /></ContentPage>'
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*changes an XAML namespace mapping*'
     }
 
     It 'fails closed when a complete XAML guard or setter element is removed' {

@@ -229,7 +229,13 @@ $fixPatchPath = Join-Path $ArtifactRoot 'fix.patch'
 $fixScopePath = Join-Path $agentDir 'fix-scope.json'
 $fixWinnerPath = Join-Path $agentDir 'fix-winner.json'
 $fixReviewPath = Join-Path $agentDir 'fix-review.json'
-$replicationRuntimeRoot = Join-Path $ArtifactRoot 'runtime'
+$replicationRuntimeParent = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEMPDIRECTORY)) {
+    [IO.Path]::GetFullPath($env:AGENT_TEMPDIRECTORY)
+} else {
+    [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+}
+$replicationRuntimeRoot = Join-Path $replicationRuntimeParent (
+    "maui-replication-runtime-$IssueNumber-$PID")
 $replicationGradleHome = Join-Path $replicationRuntimeRoot 'gradle'
 $replicationDotnetHome = Join-Path $replicationRuntimeRoot 'dotnet'
 $replicationNugetPackages = Join-Path $replicationRuntimeRoot 'nuget-packages'
@@ -6233,6 +6239,9 @@ function Read-TestProposal {
     if ([string]$proposal.testType -notin $allowedTypes) {
         throw "Invalid testType in test proposal: $($proposal.testType)"
     }
+    if ([string]$proposal.testType -eq 'ui') {
+        throw 'UI test replication is withheld because host-executed generated UI tests require adb control.'
+    }
 
     $expectedFilter = if ([string]$proposal.testType -eq 'xaml') {
         "Maui$IssueNumber"
@@ -7702,7 +7711,8 @@ function Invoke-LoggedChildProcess {
         [Parameter(Mandatory = $true)][string]$Description,
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 10800)]
-        [int]$TimeoutSeconds
+        [int]$TimeoutSeconds,
+        [switch]$AllowDeviceControl
     )
 
     # Every trusted runner started from here builds, deploys, or executes
@@ -7711,9 +7721,20 @@ function Invoke-LoggedChildProcess {
     # redundant and kept anyway: this process's own environment is what a
     # trusted script would read if one ever ran without the allowlist.
     $childEnvironment = Get-ReplicationRuntimeEnvironment
+    $testTypeIndex = [Array]::IndexOf([object[]]$Arguments, '-TestType')
+    $effectiveDeviceControl = $AllowDeviceControl -or (
+        $testTypeIndex -ge 0 -and
+        $testTypeIndex + 1 -lt $Arguments.Count -and
+        [string]$Arguments[$testTypeIndex + 1] -ceq 'DeviceTest')
     $null = Assert-ReplicationTrustedTree -Context "before $Description"
     $isolatedCommand = $null
     try {
+        # Guest firewall setup stays in the trusted parent so host-generated
+        # tests can run without seeing adb inside their isolated process tree.
+        if ($effectiveDeviceControl) {
+            $null = Assert-ReplicationAndroidGuestNetworkIsolation `
+                -DeviceUdid $DeviceUdid
+        }
         $isolatedCommand = Get-ReplicationNetworkIsolatedCommand `
             -Platform $Platform `
             -RepositoryRoot $repoRoot `
@@ -7721,6 +7742,7 @@ function Invoke-LoggedChildProcess {
             -Arguments $Arguments `
             -Environment $childEnvironment `
             -WritableRoots @($repoRoot, $ArtifactRoot) `
+            -AllowDeviceControl:$effectiveDeviceControl `
             -DeviceUdid $DeviceUdid `
             -TimeoutSeconds $TimeoutSeconds
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
@@ -7739,7 +7761,15 @@ function Invoke-LoggedChildProcess {
                     -UnitName ([string]$isolatedCommand.UnitName)
             }
         } finally {
-            $null = Assert-ReplicationTrustedTree -Context "after $Description"
+            try {
+                if ($effectiveDeviceControl) {
+                    $null = Assert-ReplicationAndroidGuestNetworkIsolation `
+                        -DeviceUdid $DeviceUdid `
+                        -VerifyOnly
+                }
+            } finally {
+                $null = Assert-ReplicationTrustedTree -Context "after $Description"
+            }
         }
     }
     $output = @($runResult.Output)
@@ -9101,27 +9131,32 @@ $selectedDeviceId = if ($DeviceUdid) {
     'host'
 }
 $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
-Invoke-ReplicationTrustedRestore `
-    -Target $sandboxProjectPath `
-    -AdditionalArguments @('-p:TargetFramework=net10.0-android')
-Invoke-ReplicationTrustedRestore `
-    -Target $sandboxProjectPath `
-    -Verb build `
-    -AdditionalArguments @(
-        '-f', 'net10.0-android',
-        '-c', 'Debug',
-        '--no-restore',
-        '-p:EmbedAssembliesIntoApk=true',
-        "-p:AndroidManifest=$(Join-Path $sandboxDir 'Platforms/Android/ReplicationNetworkIsolationManifest.xml')"
-    )
-$null = Get-ReplicationNetworkIsolatedCommand `
-    -Platform $Platform `
-    -RepositoryRoot $repoRoot `
-    -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
-    -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
-    -Environment (Get-ReplicationRuntimeEnvironment) `
-    -WritableRoots @($repoRoot, $ArtifactRoot) `
-    -DeviceUdid $DeviceUdid
+try {
+    Invoke-ReplicationTrustedRestore `
+        -Target $sandboxProjectPath `
+        -AdditionalArguments @('-p:TargetFramework=net10.0-android')
+    Invoke-ReplicationTrustedRestore `
+        -Target $sandboxProjectPath `
+        -Verb build `
+        -AdditionalArguments @(
+            '-f', 'net10.0-android',
+            '-c', 'Debug',
+            '--no-restore',
+            '-p:EmbedAssembliesIntoApk=true',
+            "-p:AndroidManifest=$(Join-Path $sandboxDir 'Platforms/Android/ReplicationNetworkIsolationManifest.xml')"
+        )
+    $null = Get-ReplicationNetworkIsolatedCommand `
+        -Platform $Platform `
+        -RepositoryRoot $repoRoot `
+        -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+        -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
+        -Environment (Get-ReplicationRuntimeEnvironment) `
+        -WritableRoots @($repoRoot, $ArtifactRoot) `
+        -DeviceUdid $DeviceUdid
+} catch {
+    Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction SilentlyContinue
+    throw
+}
 Assert-InitialReplicationWorktree
 Clear-TransientAppiumDirectory
 
@@ -9216,6 +9251,7 @@ try {
                 -Arguments $prepareArgs `
                 -LogPath $prepareLog `
                 -Description 'Preparing the Sandbox app' `
+                -AllowDeviceControl `
                 -TimeoutSeconds 1800
 
             $launchArgs = @(
@@ -9234,6 +9270,7 @@ try {
                 -Arguments $launchArgs `
                 -LogPath (Join-Path $sandboxArtifactDir "launch-attempt-$attempt.log") `
                 -Description 'Launching the Sandbox before evidence recording' `
+                -AllowDeviceControl `
                 -TimeoutSeconds 300
 
             $escapedRepoRoot = $repoRoot.Replace("'", "''")
@@ -9267,6 +9304,7 @@ try {
                 -Arguments $recordArguments `
                 -LogPath (Join-Path $sandboxArtifactDir "record-attempt-$attempt.log") `
                 -Description 'Recording the on-device reproduction' `
+                -AllowDeviceControl `
                 -TimeoutSeconds 300
 
             Copy-SandboxEvidence
@@ -9292,6 +9330,7 @@ try {
                     -Arguments $launchArgs `
                     -LogPath (Join-Path $sandboxArtifactDir "relaunch-attempt-$attempt.log") `
                     -Description 'Relaunching the Sandbox before the confirmation replay' `
+                    -AllowDeviceControl `
                     -TimeoutSeconds 300
             }
             Invoke-LoggedChildProcess `
@@ -9299,6 +9338,7 @@ try {
                 -Arguments @() `
                 -LogPath (Join-Path $sandboxArtifactDir "confirm-attempt-$attempt.log") `
                 -Description 'Confirming the on-device reproduction repeats' `
+                -AllowDeviceControl `
                 -TimeoutSeconds 300
             Write-Host 'The reported behavior reproduced twice on this device.'
             [ordered]@{
@@ -10194,6 +10234,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
     }
 
     & $writeCandidateManifest $true
+    Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
 }
 catch {
     $rawReason = [string]$_.Exception.Message
@@ -10226,6 +10267,11 @@ catch {
         Restore-TransientSandbox
     } catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
+    }
+    try {
+        Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
+    } catch {
+        Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
     if ($code -in @('sandbox_not_reproduced', 'unsupported_scenario', 'verification_not_trustworthy',
             'control_refuted_reproduction', 'harness_unavailable')) {
