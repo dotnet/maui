@@ -7692,6 +7692,53 @@ function Get-ReplicationRuntimeEnvironment {
     }
 }
 
+function Get-ReplicationWindowsRidRestoreArguments {
+    return @(
+        '-p:TargetFramework=net10.0-windows10.0.19041.0',
+        '-p:RuntimeIdentifier=win-x64',
+        '-p:RuntimeIdentifierOverride=win-x64',
+        '-p:DisableTransitiveFrameworkReferenceDownloads=false',
+        '-p:SelfContained=true'
+    )
+}
+
+function Remove-ReplicationRuntimeCache {
+    if (-not (Test-Path -LiteralPath $replicationRuntimeRoot)) {
+        return
+    }
+
+    try {
+        $shutdown = Invoke-BoundedProcess `
+            -FilePath 'dotnet' `
+            -Arguments @('build-server', 'shutdown') `
+            -TimeoutSeconds 30 `
+            -Environment (Get-ReplicationRuntimeEnvironment)
+        if ($shutdown.TimedOut -or [int]$shutdown.ExitCode -ne 0) {
+            Write-Warning (
+                "dotnet build-server shutdown did not complete cleanly " +
+                "(exit $($shutdown.ExitCode), timedOut=$($shutdown.TimedOut)).")
+        }
+    } catch {
+        Write-Warning "dotnet build-server shutdown failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 300)"
+    }
+
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 10; $attempt++) {
+        try {
+            Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force `
+                -ErrorAction Stop
+            return
+        } catch {
+            $lastError = $_
+            if ($attempt -lt 10) {
+                Start-Sleep -Seconds 3
+            }
+        }
+    }
+    throw ("Replication runtime-cache cleanup remained locked after bounded retries: " +
+        (ConvertTo-ReplicationSafeLog $lastError.Exception.Message 500))
+}
+
 function Invoke-ReplicationTrustedRestore {
     [CmdletBinding()]
     param(
@@ -7754,9 +7801,19 @@ function Get-ReplicationPlannedRestoreTargets {
             }
             default { throw 'The planned device-test path has no trusted restore mapping.' }
         }
+        $restorePlatform = [string](Get-Variable `
+                -Name Platform `
+                -Scope Script `
+                -ValueOnly `
+                -ErrorAction SilentlyContinue)
+        $restoreArguments = if ($restorePlatform -eq 'windows') {
+            @(Get-ReplicationWindowsRidRestoreArguments)
+        } else {
+            @()
+        }
         $targets.Add([pscustomobject]@{
             Path = Join-Path $repoRoot $relative
-            Arguments = @()
+            Arguments = $restoreArguments
         })
         return @($targets)
     }
@@ -9260,7 +9317,14 @@ try {
             'this pool has no enforceable process-tree and app outbound-network deny boundary.')
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
-    Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath
+    $bootstrapRestoreArguments = if ($Platform -eq 'windows') {
+        @(Get-ReplicationWindowsRidRestoreArguments)
+    } else {
+        @()
+    }
+    Invoke-ReplicationTrustedRestore `
+        -Target $sandboxProjectPath `
+        -AdditionalArguments $bootstrapRestoreArguments
     if ($Platform -eq 'android') {
         if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
             throw 'DeviceUdid is required for android replication.'
@@ -9310,7 +9374,9 @@ try {
         }
         $controlsDeviceProject = Join-Path $repoRoot (
             'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
-        Invoke-ReplicationTrustedRestore -Target $controlsDeviceProject
+        Invoke-ReplicationTrustedRestore `
+            -Target $controlsDeviceProject `
+            -AdditionalArguments $bootstrapRestoreArguments
         foreach ($prewarm in @(
             [pscustomobject]@{
                 Path = $sandboxProjectPath
@@ -10403,7 +10469,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 
     & $writeCandidateManifest $true
     try {
-        Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
+        Remove-ReplicationRuntimeCache
     } catch {
         Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
@@ -10441,7 +10507,7 @@ catch {
         Write-Warning "Sandbox cleanup also failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }
     try {
-        Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
+        Remove-ReplicationRuntimeCache
     } catch {
         Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
     }

@@ -138,6 +138,8 @@ BeforeAll {
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationRuntimeEnvironment',
+        'Get-ReplicationWindowsRidRestoreArguments',
+        'Remove-ReplicationRuntimeCache',
         'Invoke-ReplicationTrustedRestore',
         'Get-ReplicationPlannedRestoreTargets',
         'Restore-TrackedVerificationSideEffects',
@@ -453,7 +455,7 @@ Describe 'Replication orchestrator security boundary' {
     It 'does not let best-effort runtime-cache cleanup overwrite a certified result' {
         $script:Source | Should -Match (
             '(?s)& \$writeCandidateManifest \$true\s+try \{\s+' +
-            'Remove-Item -LiteralPath \$replicationRuntimeRoot.*?' +
+            'Remove-ReplicationRuntimeCache.*?' +
             '\} catch \{\s+Write-Warning "Replication runtime-cache cleanup failed')
     }
 
@@ -2950,7 +2952,18 @@ InitializeComponent();
         $script:Source | Should -Match "CI = 'true'"
         $script:Source | Should -Match '\$replicationRuntimeParent = if .*AGENT_TEMPDIRECTORY'
         $script:Source | Should -Not -Match 'Join-Path \$ArtifactRoot ''runtime'''
-        $script:Source | Should -Match 'Remove-Item -LiteralPath \$replicationRuntimeRoot -Recurse'
+        $script:Source | Should -Match 'Remove-ReplicationRuntimeCache'
+        $script:Source | Should -Match (
+            '-p:DisableTransitiveFrameworkReferenceDownloads=false')
+        $script:Source | Should -Match (
+            '-p:TargetFramework=net10\.0-windows10\.0\.19041\.0')
+        $script:Source | Should -Match (
+            '(?s)function Get-ReplicationWindowsRidRestoreArguments.*?' +
+            'RuntimeIdentifierOverride=win-x64')
+        $plannedRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationPlannedRestoreTargets\b.*?^}').Value
+        $plannedRestore | Should -Match 'Get-ReplicationWindowsRidRestoreArguments'
 
         $verification = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1') -Raw
@@ -2963,6 +2976,18 @@ InitializeComponent();
         $verifier | Should -Match '\$testArgs \+= ''--no-restore'''
         $sandbox | Should -Match '\$appiumRunArguments \+= ''--no-restore'''
         $device | Should -Match '\$buildArgs \+= ''--no-restore'''
+    }
+
+    It 'shuts down build servers and retries bounded runtime-cache cleanup' {
+        $script:Source | Should -Match 'function Remove-ReplicationRuntimeCache'
+        $script:Source | Should -Match "@\('build-server', 'shutdown'\)"
+        $script:Source | Should -Match 'for \(\$attempt = 1; \$attempt -le 10;'
+        $script:Source | Should -Match "'-p:RuntimeIdentifier=win-x64'"
+        $script:Source | Should -Match '-TimeoutSeconds 30'
+        ([regex]::Matches(
+            $script:Source,
+            'Remove-ReplicationRuntimeCache')).Count |
+            Should -BeGreaterOrEqual 3
     }
 
     It 'surfaces bounded trusted-restore diagnostics' {

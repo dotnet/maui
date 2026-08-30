@@ -3,10 +3,37 @@
 
 BeforeAll {
     . (Join-Path $PSScriptRoot '../shared/Assert-ReplicationWindowsAppContainer.ps1')
+    $script:BridgePath = Join-Path $PSScriptRoot (
+        '../shared/Invoke-ReplicationWindowsAppx.ps1')
     $script:SandboxManifest = Join-Path $PSScriptRoot (
         '../../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml')
     $script:DeviceManifest = Join-Path $PSScriptRoot (
         '../../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml')
+}
+
+Describe 'Windows AppX compatibility bridge' {
+    It 'keeps AppX cmdlets inside a fixed Windows PowerShell 5.1 script' {
+        $bridge = Get-Content -LiteralPath $script:BridgePath -Raw
+        $parent = Get-Content -LiteralPath (Join-Path $PSScriptRoot (
+            '../shared/Assert-ReplicationWindowsAppContainer.ps1')) -Raw
+        $sandbox = Get-Content -LiteralPath (Join-Path $PSScriptRoot (
+            '../BuildAndRunSandbox.ps1')) -Raw
+
+        $bridge | Should -Match '^#!/usr/bin/env powershell\.exe'
+        $bridge | Should -Match (
+            "\[ValidateSet\('Query', 'Install', 'Remove'\)\]")
+        $bridge | Should -Match 'Get-AppxPackage'
+        $bridge | Should -Match 'Get-AppxPackageManifest'
+        $bridge | Should -Match 'Add-AppxPackage'
+        $bridge | Should -Match 'Remove-AppxPackage'
+        $parent | Should -Not -Match (
+            '(?m)^\s*(?:Get|Add|Remove)-AppxPackage')
+        $sandbox | Should -Not -Match (
+            '(?m)^\s*(?:Get|Add|Remove)-AppxPackage')
+        $parent | Should -Match (
+            'System32\\WindowsPowerShell\\v1\.0\\powershell\.exe')
+        $parent | Should -Match '\$startInfo\.Environment\.Clear\(\)'
+    }
 }
 
 Describe 'Windows replication AppContainer manifests' {

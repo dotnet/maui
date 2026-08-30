@@ -360,6 +360,41 @@ Describe 'Replication issue outcome publication boundary' {
         $step = $script:Pipeline.Substring($stepStart, $check - $stepStart)
         $step.Contains('MAUI_COPILOT_REPLICATION issue=') | Should -BeTrue
         $step.Contains('variable=replicationAlreadyPublished') | Should -BeTrue
+        $step | Should -Match "--repo 'dotnet/maui'"
+        $step | Should -Match '--state open'
+        $step | Should -Match 'body,isDraft,number,title,url'
+        $step | Should -Match '\(\?!\\d\)'
+        $step | Should -Match 'Upstream duplicate search returned'
+        $step | Should -Match 'Upstream product-fix match:'
+    }
+
+    It 'treats an open upstream draft with an exact closing reference as a product fix' {
+        $issueNumber = '37886'
+        $closingReference = (
+            '(?im)\b(?:fix(?:e[sd])?|close[sd]?|resolve[sd]?)(?:\s*:\s*|\s+)' +
+            '(?:(?:dotnet/maui)?#' + [regex]::Escape($issueNumber) +
+            '(?!\d)|https://github\.com/dotnet/maui/issues/' +
+            [regex]::Escape($issueNumber) + '(?!\d))')
+        $pulls = @(
+            [pscustomobject]@{
+                isDraft = $true
+                body = "### Issues Fixed`n`nFixes #37886"
+                url = 'https://github.com/dotnet/maui/pull/37887'
+            },
+            [pscustomobject]@{
+                isDraft = $false
+                body = 'Mentions #37886 and fixes #378860'
+                url = 'https://example.invalid/false-positive'
+            }
+        )
+        $matched = @($pulls | Where-Object {
+                ([string]$_.body) -match $closingReference
+            })
+        $matched.Count | Should -Be 1
+        $matched[0].isDraft | Should -BeTrue
+        $matched[0].url | Should -BeExactly (
+            'https://github.com/dotnet/maui/pull/37887')
+        ("Fixes: #37886" -match $closingReference) | Should -BeTrue
     }
 
     It 'reads the public fork without ever handling the publishing credential' {

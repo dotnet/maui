@@ -315,6 +315,138 @@ function Remove-ReplicationWindowsSigningCertificate {
     }
 }
 
+function Invoke-ReplicationWindowsAppxBridge {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Query', 'Install', 'Remove')]
+        [string]$Operation,
+        [string]$PackageName = '',
+        [string]$PackagePath = '',
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 300
+    )
+
+    if (-not [OperatingSystem]::IsWindows()) {
+        throw 'The Windows AppX bridge requires a Windows host.'
+    }
+    $powershell = Join-Path $env:SystemRoot (
+        'System32\WindowsPowerShell\v1.0\powershell.exe')
+    $bridge = Join-Path $PSScriptRoot 'Invoke-ReplicationWindowsAppx.ps1'
+    foreach ($path in @($powershell, $bridge)) {
+        $item = Get-Item -LiteralPath $path -Force -ErrorAction Stop
+        if ($item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw "Windows AppX bridge input must be a regular file: $path"
+        }
+    }
+    $arguments = @(
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', $bridge,
+        '-Operation', $Operation
+    )
+    if (-not [string]::IsNullOrWhiteSpace($PackageName)) {
+        if ($PackageName -cnotmatch '^[A-Za-z0-9.-]{3,50}$') {
+            throw 'Windows AppX bridge package name is invalid.'
+        }
+        $arguments += @('-PackageName', $PackageName)
+    }
+    if (-not [string]::IsNullOrWhiteSpace($PackagePath)) {
+        $fullPackagePath = [IO.Path]::GetFullPath($PackagePath)
+        $arguments += @('-PackagePath', $fullPackagePath)
+    }
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $powershell
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.CreateNoWindow = $true
+    foreach ($argument in $arguments) {
+        [void]$startInfo.ArgumentList.Add($argument)
+    }
+    $startInfo.Environment.Clear()
+    foreach ($name in @(
+        'SystemRoot',
+        'WINDIR',
+        'SystemDrive',
+        'PATH',
+        'PATHEXT',
+        'TEMP',
+        'TMP',
+        'USERPROFILE',
+        'HOMEDRIVE',
+        'HOMEPATH',
+        'LOCALAPPDATA',
+        'APPDATA',
+        'PROGRAMDATA',
+        'PROGRAMFILES',
+        'PROGRAMFILES(X86)'
+    )) {
+        $value = [Environment]::GetEnvironmentVariable($name)
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $startInfo.Environment[$name] = $value
+        }
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw 'Windows PowerShell AppX bridge did not start.'
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            $process.Kill($true)
+            [void]$process.WaitForExit(10000)
+            throw "Windows PowerShell AppX bridge timed out after $TimeoutSeconds seconds."
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult().Trim()
+        $stderr = $stderrTask.GetAwaiter().GetResult().Trim()
+        if ($process.ExitCode -ne 0) {
+            if ($stderr.Length -gt 1000) {
+                $stderr = $stderr.Substring($stderr.Length - 1000)
+            }
+            throw "Windows PowerShell AppX bridge failed with exit $($process.ExitCode): $stderr"
+        }
+        if ($stdout.Length -gt 1MB) {
+            throw 'Windows PowerShell AppX bridge produced oversized output.'
+        }
+        return $stdout
+    } finally {
+        $process.Dispose()
+    }
+}
+
+function Get-ReplicationWindowsInstalledPackage {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$PackageName)
+
+    $json = Invoke-ReplicationWindowsAppxBridge `
+        -Operation Query `
+        -PackageName $PackageName
+    if ([string]::IsNullOrWhiteSpace($json) -or $json -ceq 'null') {
+        return $null
+    }
+    $package = $json | ConvertFrom-Json -Depth 6
+    $expected = @(
+        'installLocation',
+        'manifestXml',
+        'name',
+        'packageFamilyName',
+        'packageFullName',
+        'publisher'
+    )
+    $actual = @($package.PSObject.Properties.Name | Sort-Object)
+    if (($actual -join ',') -cne (($expected | Sort-Object) -join ',')) {
+        throw 'Windows PowerShell AppX bridge returned an unexpected package schema.'
+    }
+    return $package
+}
+
 function Assert-ReplicationInstalledWindowsAppContainerPackage {
     [CmdletBinding()]
     param(
@@ -325,13 +457,15 @@ function Assert-ReplicationInstalledWindowsAppContainerPackage {
     if (-not [OperatingSystem]::IsWindows()) {
         throw 'Installed Windows package validation requires a Windows host.'
     }
-    $manifest = Get-AppxPackageManifest -Package $Package -ErrorAction Stop
+    $manifest = Read-ReplicationWindowsManifestXml `
+        -Content ([string]$Package.manifestXml) `
+        -Description "Installed package '$($Package.packageFullName)'"
     $identity = Assert-ReplicationWindowsAppContainerManifestDocument `
         -Document $manifest `
-        -Description "Installed package '$($Package.PackageFullName)'" `
+        -Description "Installed package '$($Package.packageFullName)'" `
         -ExpectedPublisher $ExpectedPublisher
-    if ([string]$Package.Publisher -cne $ExpectedPublisher -or
-        [string]$Package.Name -cne [string]$identity.Name) {
+    if ([string]$Package.publisher -cne $ExpectedPublisher -or
+        [string]$Package.name -cne [string]$identity.Name) {
         throw 'Installed Windows replication package identity does not match its audited manifest.'
     }
     return $identity
@@ -344,9 +478,9 @@ function Remove-ReplicationWindowsAppContainerPackage {
     if (-not [OperatingSystem]::IsWindows()) {
         throw 'Windows replication package cleanup requires a Windows host.'
     }
-    foreach ($package in @(Get-AppxPackage -Name $PackageName -ErrorAction SilentlyContinue)) {
-        Remove-AppxPackage -Package $package.PackageFullName -ErrorAction Stop
-    }
+    $null = Invoke-ReplicationWindowsAppxBridge `
+        -Operation Remove `
+        -PackageName $PackageName
 }
 
 function Install-ReplicationWindowsAppContainerPackage {
@@ -375,25 +509,28 @@ function Install-ReplicationWindowsAppContainerPackage {
         if ($dependency.Attributes -band [IO.FileAttributes]::ReparsePoint) {
             throw "Windows replication dependency must be a regular file: $($dependency.FullName)"
         }
-        Add-AppxPackage -Path $dependency.FullName -ErrorAction Stop
+        $null = Invoke-ReplicationWindowsAppxBridge `
+            -Operation Install `
+            -PackagePath $dependency.FullName
     }
-    Add-AppxPackage -Path $fullPath -ErrorAction Stop
+    $null = Invoke-ReplicationWindowsAppxBridge `
+        -Operation Install `
+        -PackagePath $fullPath
 
-    $packages = @(Get-AppxPackage -Name $identity.Name -ErrorAction Stop)
-    if ($packages.Count -ne 1) {
-        throw "Expected exactly one installed Windows replication package '$($identity.Name)'; found $($packages.Count)."
+    $package = Get-ReplicationWindowsInstalledPackage -PackageName $identity.Name
+    if ($null -eq $package) {
+        throw "Windows replication package '$($identity.Name)' was not installed."
     }
-    $package = $packages[0]
     $null = Assert-ReplicationInstalledWindowsAppContainerPackage -Package $package
     $localStatePath = Join-Path $env:LOCALAPPDATA (
-        "Packages\$($package.PackageFamilyName)\LocalState")
+        "Packages\$($package.packageFamilyName)\LocalState")
     New-Item -ItemType Directory -Path $localStatePath -Force | Out-Null
 
     return [pscustomobject]@{
-        Name = [string]$package.Name
-        PackageFullName = [string]$package.PackageFullName
-        PackageFamilyName = [string]$package.PackageFamilyName
-        InstallLocation = [string]$package.InstallLocation
+        Name = [string]$package.name
+        PackageFullName = [string]$package.packageFullName
+        PackageFamilyName = [string]$package.packageFamilyName
+        InstallLocation = [string]$package.installLocation
         LocalStatePath = [IO.Path]::GetFullPath($localStatePath)
         PackagePath = $fullPath
         PackageSha256 = (Get-FileHash -LiteralPath $fullPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -557,14 +694,13 @@ function Start-ReplicationWindowsAppContainerProcess {
     if (-not [OperatingSystem]::IsWindows()) {
         throw 'Windows AppContainer launch requires a Windows host.'
     }
-    $packages = @(Get-AppxPackage -Name $PackageName -ErrorAction Stop)
-    if ($packages.Count -ne 1) {
-        throw "Expected exactly one installed Windows replication package '$PackageName'; found $($packages.Count)."
+    $package = Get-ReplicationWindowsInstalledPackage -PackageName $PackageName
+    if ($null -eq $package) {
+        throw "Windows replication package '$PackageName' is not installed."
     }
-    $package = $packages[0]
     $null = Assert-ReplicationInstalledWindowsAppContainerPackage -Package $package
     Initialize-ReplicationWindowsNativeMethods
-    $aumid = "$($package.PackageFamilyName)!App"
+    $aumid = "$($package.packageFamilyName)!App"
     $processId = [ReplicationWindowsNativeMethods]::Activate($aumid, $AppArguments)
     if ($processId -le 0) {
         throw "Windows package activation returned invalid process ID '$processId'."
@@ -572,7 +708,7 @@ function Start-ReplicationWindowsAppContainerProcess {
     $process = Get-Process -Id $processId -ErrorAction Stop
     $null = Assert-ReplicationWindowsAppContainerProcess `
         -Process $process `
-        -ExpectedPackageFullName $package.PackageFullName
+        -ExpectedPackageFullName $package.packageFullName
 
     if ($RequireWindow) {
         $deadline = [DateTimeOffset]::UtcNow.AddSeconds($WindowTimeoutSeconds)
@@ -595,9 +731,9 @@ function Start-ReplicationWindowsAppContainerProcess {
         Process = $process
         ProcessId = [int]$processId
         MainWindowHandle = $process.MainWindowHandle.ToInt64()
-        PackageName = [string]$package.Name
-        PackageFullName = [string]$package.PackageFullName
-        PackageFamilyName = [string]$package.PackageFamilyName
+        PackageName = [string]$package.name
+        PackageFullName = [string]$package.packageFullName
+        PackageFamilyName = [string]$package.packageFamilyName
         AppUserModelId = $aumid
     }
 }
