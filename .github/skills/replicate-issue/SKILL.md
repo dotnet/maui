@@ -82,6 +82,14 @@ Use the same order as `evaluate-pr-tests` and `write-tests-agent`:
 
 Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, or `write-device-tests` skill. State why every lighter type cannot prove the observed Sandbox failure.
 
+Windows replication is narrower: the only selectable tier is one issue-keyed
+`.Windows.cs` test in `src/Controls/tests/DeviceTests/`. It executes in the
+trusted capability-free Controls AppContainer package. Unit, XAML, shared device,
+other device-project, and host UI tests are unavailable on that lane. Dynamic
+XAML loading, COM/WinRT activation, launchers, WebViews, URI activation,
+reflection, native loading, process, network, and filesystem APIs remain
+prohibited even inside the package.
+
 - Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.
 - Every generated test must run normally and fail on the unfixed baseline without an environment variable, command-line switch, category override, or other opt-in gate.

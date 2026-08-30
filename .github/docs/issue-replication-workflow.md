@@ -15,9 +15,10 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
 2. Set `Mode` to `replicate`.
 3. Set `PRNumber` to `0`.
 4. Set `IssueNumber` to the `dotnet/maui` issue number.
-5. Choose `android`. The iOS Simulator, Mac Catalyst, and Windows values remain
-   available to review mode, but replication fails closed on those lanes until
-   their pools provide a verified process-tree and app egress boundary.
+5. Choose `android` or `windows`. Windows replication is restricted to the
+   capability-free packaged Sandbox and one Windows-only Controls device test.
+   iOS Simulator and Mac Catalyst remain review-only because those pools do not
+   provide a verified process-tree and app egress boundary.
 
 Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` replication PRs, and skips device reproduction. It does not create or migrate pull requests.
 
@@ -150,7 +151,7 @@ Issue content and generated code are untrusted.
 - Copilot write approval is exact-file only, and never names a trusted root or anything under one. A planning pass selects new issue-specific test paths, trusted code validates them, and later authoring/repair passes can modify only those files and their proposal manifest.
 - Appium interactions are bounded JSON data interpreted by trusted code; the agent cannot author host-executable Appium code.
 - Generated Sandbox and test sources are capability-scanned before any credentialless execution. URL-capable XML readers/resolvers (including the `DataSet`/`DataTable` filename overloads), service-model channels, platform-native web/network APIs, URI/image/browser sinks, and constructed/encoded addresses are rejected.
-- Generated execution is launched inside an enforced outbound-network boundary and must fail live DNS, direct metadata TCP, and HTTP probes before it starts. Linux/Android uses a systemd cgroup with privilege, user-manager, container-runtime, supplementary-group, and Git-hook/config escape paths removed, plus a replication-only Android manifest without `INTERNET` materialized from the immutable PR Git blob into the attested trusted-root source overrides. Host-only generated tests run in a private network namespace, so local VSTest communication remains available while neither external addresses nor the host loopback ADB server are reachable. The hosted workspace and immutable trusted scripts are explicitly remounted into a temporary home view; arbitrary home-directory content remains hidden. Trusted setup enables airplane mode, disables Wi-Fi/mobile data, installs IPv4/IPv6 guest OUTPUT chains that reject everything except loopback, removes both guest default routes, and re-verifies those controls after device-control execution. Host-executed UI tests and iOS Simulator, Mac Catalyst, and Windows replication are withheld until their pools provide an equally enforceable process-tree and app boundary.
+- Generated execution is launched inside an enforced outbound-network boundary. Linux/Android must fail live DNS, direct metadata TCP, and HTTP probes before it starts; it uses a systemd cgroup with privilege, user-manager, container-runtime, supplementary-group, and Git-hook/config escape paths removed, plus a replication-only Android manifest without `INTERNET` materialized from the immutable PR Git blob into the attested trusted-root source overrides. Host-only generated tests run in a private network namespace, so local VSTest communication remains available while neither external addresses nor the host loopback ADB server are reachable. The hosted workspace and immutable trusted scripts are explicitly remounted into a temporary home view; arbitrary home-directory content remains hidden. Trusted setup enables airplane mode, disables Wi-Fi/mobile data, installs IPv4/IPv6 guest OUTPUT chains that reject everything except loopback, removes both guest default routes, and re-verifies those controls after device-control execution. Windows uses a different boundary: trusted host code restores, builds, signs, installs, records, and drives the app, while every model-authored byte executes only in an MSIX whose source, built, and installed manifests require `appContainer` trust and declare no capabilities or extensions. The trusted launcher verifies the running token is an AppContainer and that its package identity matches before Appium attaches. Windows test generation is limited to one `.Windows.cs` Controls device test; unit, XAML, shared device, other device-project, and host UI tests are rejected. iOS Simulator and Mac Catalyst remain withheld.
 - Product-fix scope uses one default-deny classifier everywhere. Source generators, analyzers, build tasks/targets, tooling, Resizetizer, provisioning, workload/packaging roots, generated/assembly-wide inputs, tests, and runtime-tree files linked into Roslyn/build projects can never be model-authored fix paths. Every changed product file is scanned in full after the patch is applied, so a deletion, condition inversion, or harmless-looking edit cannot activate a dangerous sink that was already present elsewhere in the file.
 - Trusted scripts run builds, tests, Appium, recording, patch validation, uploads, and publication.
 - The publisher runs from a clean trusted checkout, validates artifacts before extracting the persisted checkout credential, and never executes generated code.
@@ -211,12 +212,14 @@ step. It must never reach a generated process, an artifact, a log, a patch, or a
 JSON document; `Assert-ReplicationNoSecretMarkers` fails the run when it — or a
 real credential shape — appears in what the run published.
 
-The allowlisted environment is passed to a trusted isolation launcher.
-`Invoke-ReplicationNetworkIsolatedProcess.ps1` runs inside the platform boundary,
-sets a private attestation marker, proves DNS, direct TCP, and HTTP cannot leave
-the job, removes the marker, and only then starts the requested runner. A missing
-tool, failed isolation setup, successful egress probe, or unsupported lane stops
-before generated code executes.
+The allowlisted environment is passed to a trusted isolation launcher. Android's
+`Invoke-ReplicationNetworkIsolatedProcess.ps1` enters the cgroup boundary, sets a
+private attestation marker, proves DNS, direct TCP, and HTTP cannot leave the job,
+removes the marker, and only then starts the requested runner. Windows admits only
+three exact trusted host runners; their generated payload can be activated only
+after source/MSIX/installed-manifest and process-token checks. A missing tool,
+failed boundary check, forbidden capability, wrong package/process identity, or
+unsupported lane stops before generated code executes.
 
 ### Certification binding
 
@@ -321,5 +324,5 @@ Before each run, confirm the issue is still open, has no equivalent active fix P
 - Android: `#37440`
 - iOS: `#31059`
 - Mac Catalyst: `#35516`
-
-Windows recording and runner behavior is covered by focused validation in the implementation PR; a live Windows issue is not required for the initial pilot.
+- Windows duplicate gate: `#37886`
+- Windows packaged publication: `#37540`

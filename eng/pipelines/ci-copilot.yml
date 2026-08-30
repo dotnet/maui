@@ -248,8 +248,8 @@ stages:
                     echo "##vso[task.logissue type=error]Mode=replicate requires IssueNumber > 0 and PRNumber = 0."
                     exit 1
                   fi
-                  if [ "${PARAM_PLATFORM}" != "android" ]; then
-                    echo "##vso[task.logissue type=error]Mode=replicate currently requires Platform=android because other lanes do not provide a verified process-tree and app egress boundary."
+                  if [ "${PARAM_PLATFORM}" != "android" ] && [ "${PARAM_PLATFORM}" != "windows" ]; then
+                    echo "##vso[task.logissue type=error]Mode=replicate requires Platform=android or Platform=windows; other lanes have no verified process-tree and app egress boundary."
                     exit 1
                   fi
                   ;;
@@ -445,6 +445,8 @@ stages:
                eng/scripts \
                .github/patches/catalyst-retina-screenshot.patch \
                src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml \
+               src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml \
                eng/pipelines/ci-copilot.yml |
                tar -xf - -C "$STAGED_SOURCE"
              cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
@@ -453,6 +455,8 @@ stages:
              mkdir -p "$TRUSTED/source-overrides"
              cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
              cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsSandboxManifest.xml"
+             cp "$STAGED_SOURCE/src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml"
              chmod -R a-w "$TRUSTED"
              echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted test infrastructure'
@@ -1733,6 +1737,41 @@ stages:
             condition: succeeded()
             retryCountOnTaskFailure: 2
             timeoutInMinutes: 10
+            env:
+              APPIUM_HOME: $(APPIUM_HOME)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $driverJson = (& appium driver list --installed --json 2>&1) -join [Environment]::NewLine
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to enumerate installed Appium drivers: $driverJson"
+              }
+              $drivers = $driverJson | ConvertFrom-Json -Depth 10
+              if (-not $drivers.PSObject.Properties['windows']) {
+                throw 'The Appium Windows driver is not installed.'
+              }
+              $developerMode = Get-ItemPropertyValue `
+                -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock' `
+                -Name 'AllowDevelopmentWithoutDevLicense' `
+                -ErrorAction SilentlyContinue
+              if ([int]$developerMode -ne 1) {
+                throw 'Windows replication requires Developer Mode on the trusted pool.'
+              }
+              $winAppDriverCandidates = @(
+                (Get-Command WinAppDriver.exe -ErrorAction SilentlyContinue |
+                  Select-Object -ExpandProperty Source),
+                "${env:ProgramFiles(x86)}\Windows Application Driver\WinAppDriver.exe",
+                "$env:ProgramFiles\Windows Application Driver\WinAppDriver.exe"
+              ) | Where-Object {
+                -not [string]::IsNullOrWhiteSpace($_) -and
+                (Test-Path -LiteralPath $_ -PathType Leaf)
+              } | Sort-Object -Unique
+              if ($winAppDriverCandidates.Count -eq 0) {
+                throw 'WinAppDriver.exe is unavailable on the trusted Windows pool.'
+              }
+              Write-Host "Windows packaged-device prerequisites verified."
+            displayName: 'Verify Windows packaged-device prerequisites'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'windows'))
             env:
               APPIUM_HOME: $(APPIUM_HOME)
 
@@ -3096,6 +3135,8 @@ stages:
                 eng/scripts `
                 .github/patches/catalyst-retina-screenshot.patch `
                 src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml `
+                src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml `
+                src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml `
                 eng/pipelines/ci-copilot.yml
               if ($LASTEXITCODE -ne 0) {
                 throw 'Unable to materialize trusted validators from the pinned Git revision.'
@@ -3123,6 +3164,10 @@ stages:
                 -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
               Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') `
                 -Destination (Join-Path $cleanValidatorRoot 'source-overrides') -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides/ReplicationWindowsSandboxManifest.xml') -Force
+              Copy-Item -LiteralPath (Join-Path $referenceSourceRoot 'src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml') `
+                -Destination (Join-Path $cleanValidatorRoot 'source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml') -Force
 
               # Every script this job runs, checked for existence up front so a
               # missing validator is a named failure rather than a late one.
@@ -3967,7 +4012,9 @@ stages:
                .github/skills \
                eng/scripts \
                .github/patches/catalyst-retina-screenshot.patch \
-               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml |
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml \
+               src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml \
+               src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml |
                tar -xf - -C "$STAGED_SOURCE"
              cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"
              cp -r "$STAGED_SOURCE/.github/skills"  "$TRUSTED/skills"
@@ -3975,6 +4022,8 @@ stages:
              mkdir -p "$TRUSTED/source-overrides"
              cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"
              cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"
+             cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsSandboxManifest.xml"
+             cp "$STAGED_SOURCE/src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml"
              chmod -R a-w "$TRUSTED"
              echo "Trusted scripts and source overrides materialized from Git blobs at $SOURCE_VERSION"
             displayName: 'Capture trusted scripts for deep UI tests'

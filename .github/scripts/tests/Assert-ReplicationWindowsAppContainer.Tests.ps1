@@ -1,0 +1,82 @@
+#!/usr/bin/env pwsh
+#Requires -Modules Pester
+
+BeforeAll {
+    . (Join-Path $PSScriptRoot '../shared/Assert-ReplicationWindowsAppContainer.ps1')
+    $script:SandboxManifest = Join-Path $PSScriptRoot (
+        '../../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml')
+    $script:DeviceManifest = Join-Path $PSScriptRoot (
+        '../../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml')
+}
+
+Describe 'Windows replication AppContainer manifests' {
+    It 'accepts only the dedicated capability-free manifests' {
+        foreach ($path in @($script:SandboxManifest, $script:DeviceManifest)) {
+            $result = Assert-ReplicationWindowsAppContainerManifest -Path $path
+            $result.Publisher | Should -BeExactly 'CN=DotNetMauiReplication'
+            $result.TrustLevel | Should -BeExactly 'appContainer'
+            $result.RuntimeBehavior | Should -BeExactly 'packagedClassicApp'
+        }
+    }
+
+    It 'rejects every network, full-trust, and device capability' {
+        $source = Get-Content -LiteralPath $script:SandboxManifest -Raw
+        foreach ($capability in @(
+            'runFullTrust',
+            'internetClient',
+            'internetClientServer',
+            'privateNetworkClientServer',
+            'location'
+        )) {
+            $mutated = $source.Replace(
+                '</Package>',
+                "<Capabilities><Capability Name=`"$capability`" /></Capabilities></Package>")
+            $document = Read-ReplicationWindowsManifestXml `
+                -Content $mutated `
+                -Description 'mutated manifest'
+            {
+                Assert-ReplicationWindowsAppContainerManifestDocument `
+                    -Document $document `
+                    -Description 'mutated manifest'
+            } | Should -Throw '*must not declare package capabilities*'
+        }
+    }
+
+    It 'rejects full-trust runtime behavior and URI or service extensions' {
+        $source = Get-Content -LiteralPath $script:SandboxManifest -Raw
+        $fullTrust = $source.Replace(
+            'uap10:TrustLevel="appContainer"',
+            'uap10:TrustLevel="mediumIL"')
+        {
+            $document = Read-ReplicationWindowsManifestXml `
+                -Content $fullTrust `
+                -Description 'full trust manifest'
+            Assert-ReplicationWindowsAppContainerManifestDocument `
+                -Document $document `
+                -Description 'full trust manifest'
+        } | Should -Throw '*must require appContainer trust*'
+
+        $extension = $source.Replace(
+            '</Application>',
+            '<Extensions><uap:Extension Category="windows.protocol" /></Extensions></Application>')
+        {
+            $document = Read-ReplicationWindowsManifestXml `
+                -Content $extension `
+                -Description 'extension manifest'
+            Assert-ReplicationWindowsAppContainerManifestDocument `
+                -Document $document `
+                -Description 'extension manifest'
+        } | Should -Throw '*must not declare application or package extensions*'
+    }
+
+    It 'quotes packaged-app arguments without introducing a shell' {
+        ConvertTo-ReplicationWindowsAppArguments -Arguments @(
+            'C:\Path With Spaces\result.xml',
+            'Issue37540'
+        ) | Should -BeExactly '"C:\Path With Spaces\result.xml" "Issue37540"'
+
+        {
+            ConvertTo-ReplicationWindowsAppArguments -Arguments @("value`nnext")
+        } | Should -Throw '*invalid value*'
+    }
+}

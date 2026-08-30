@@ -2506,7 +2506,7 @@ public partial class MainPage : ContentPage
             Should -Throw '*prohibited service-provider access*'
     }
 
-    It 'allows standard XAML schema URIs in LoadFromXaml strings only' {
+    It 'blocks runtime XAML loading even when the payload uses only schema URIs' {
         $source = @'
 var xaml = """
 <Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -2520,13 +2520,64 @@ new Label().LoadFromXaml(xaml);
             Assert-ReplicationGeneratedSourceSafety `
                 -Content $source `
                 -Path 'MainPage.xaml.cs'
-        } | Should -Not -Throw
+        } | Should -Throw "*prohibited 'dynamic-xaml'*"
 
         {
             Assert-ReplicationGeneratedSourceSafety `
                 -Content ($source + "`nvar endpoint = `"https://example.invalid`";") `
                 -Path 'MainPage.xaml.cs'
-        } | Should -Throw "*prohibited 'remote-url'*"
+        } | Should -Throw "*prohibited 'dynamic-xaml'*"
+    }
+
+    It 'blocks Windows activation and COM deputies explicitly' {
+        $cases = @{
+            '[ComImport] interface IActivationManager { }' = 'windows-activation'
+            'var manager = new PackageManager();' = 'windows-activation'
+            'await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();' = 'windows-activation'
+            'var connection = new AppServiceConnection();' = 'windows-activation'
+            'var value = Microsoft.UI.Xaml.Markup.XamlReader.Load(text);' = 'dynamic-xaml'
+        }
+
+        foreach ($entry in $cases.GetEnumerator()) {
+            {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content $entry.Key `
+                    -Path 'Issue37540.Windows.cs'
+            } | Should -Throw "*prohibited '$($entry.Value)'*"
+        }
+    }
+
+    It 'does not accept a commented-out issue category and rejects any second Windows category' {
+        $commented = @'
+/*
+[Category("Issue37540")]
+*/
+[Fact]
+public void Repro() { }
+'@
+        Assert-ReplicationDeviceTestIsSelectable `
+            -Content $commented `
+            -Path 'Issue37540.Windows.cs' `
+            -Issue 37540 |
+            Should -BeFalse
+
+        $secondCategory = @'
+[Category("Issue37540")]
+[Category(@"..\..\host_Issue37540")]
+public class Issue37540Tests { }
+'@
+        Assert-ReplicationDeviceCategoryIsExclusive `
+            -Content $secondCategory `
+            -Path 'Issue37540.Windows.cs' `
+            -Issue 37540 `
+            -Platform windows |
+            Should -BeExactly '@"..\..\host_Issue37540"'
+    }
+
+    It 'keeps Windows activation and dynamic XAML blocked in product fixes' {
+        $patterns = @(Get-ReplicationProductFixUnsafePatterns)
+        @($patterns.Code) | Should -Contain 'windows-activation'
+        @($patterns.Code) | Should -Contain 'dynamic-xaml'
     }
 
     It 'accepts assembly-qualified XAML namespace declarations without allowing reflection' {
@@ -2598,7 +2649,8 @@ InitializeComponent();
         $script:Source | Should -Match 'Copy-Item[\s\S]*trustedAppiumRunnerPath'
         $script:Source | Should -Not -Match 'Create "\$appiumScriptPath"'
         $script:BuildSandboxSource | Should -Match 'REPLICATION_PLATFORM'
-        $script:BuildSandboxSource | Should -Match 'REPLICATION_WINDOWS_APP_PATH'
+        $script:BuildSandboxSource | Should -Match 'REPLICATION_WINDOWS_PROCESS_ID'
+        $script:BuildSandboxSource | Should -Match 'Assert-ReplicationWindowsAppContainerProcess'
         $script:BuildSandboxSource | Should -Match 'shell pidof -s com\.microsoft\.maui\.sandbox'
         $script:TrustedAppiumSource |
             Should -Match '"appium:uiautomator2ServerInstallTimeout",\s*300_000'
@@ -2625,6 +2677,10 @@ InitializeComponent();
             Should -Match '#:property WindowsAppSdkDeploymentManagerInitialize=false'
         $script:TrustedAppiumSource |
             Should -Match 'options\.DeviceName\s*=\s*"WindowsPC"'
+        $script:TrustedAppiumSource |
+            Should -Match 'WindowsAppContainerGuard\.AssertIsExpectedAppContainer'
+        $script:TrustedAppiumSource |
+            Should -Not -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
         $script:BuildSandboxSource |
             Should -Match "\`$appiumRunArguments = @\('run', '--file', \`$AppiumTestScript\)"
         $script:BuildSandboxSource |
@@ -2634,6 +2690,14 @@ InitializeComponent();
         $script:BuildDeploySource |
             Should -Match '"-p:WindowsPackageType=None"'
         $script:BuildDeploySource |
+            Should -Match '"-p:WindowsPackageType=MSIX"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:PackageManifest=\$manifestPath"'
+        $script:BuildDeploySource |
+            Should -Not -Match '_MauiReplicationWindowsManifest'
+        $script:BuildDeploySource |
+            Should -Match 'Install-ReplicationWindowsAppContainerPackage'
+        $script:BuildDeploySource |
             Should -Match '"-p:RuntimeIdentifierOverride=win-x64"'
         $script:BuildDeploySource |
             Should -Match '"-p:_MauiReplicationUnpackaged=true"'
@@ -2641,8 +2705,8 @@ InitializeComponent();
             Should -Not -Match '"-p:WindowsAppSDKSelfContained=true"'
         $script:SandboxProjectSource |
             Should -Match '<WindowsAppSDKSelfContained Condition="[^"]*_MauiReplicationUnpackaged[^"]*">true</WindowsAppSDKSelfContained>'
-        $script:TrustedAppiumSource |
-            Should -Match 'Process\.Start\(new ProcessStartInfo\(appPath\)'
+        $script:BuildSandboxSource |
+            Should -Match '\$cleanupProcess\.Kill\(\$true\)'
         $script:TrustedAppiumSource |
             Should -Match 'MainWindowHandle\s*!=\s*IntPtr\.Zero'
         $script:TrustedAppiumSource |
@@ -2702,17 +2766,34 @@ InitializeComponent();
             Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml') -Raw
         $windowsManifest = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/Package.appxmanifest') -Raw
+        $windowsReplicationManifest = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml') -Raw
+        $windowsDeviceManifest = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml') -Raw
 
         $androidManifest | Should -Not -Match 'tools:node="remove"'
         $replicationManifest | Should -Match 'android\.permission\.INTERNET'
         $replicationManifest | Should -Match 'tools:node="remove"'
         $windowsManifest | Should -Not -Match '(?i)internetClient|privateNetworkClientServer'
+        foreach ($isolatedWindowsManifest in @(
+            $windowsReplicationManifest,
+            $windowsDeviceManifest
+        )) {
+            $isolatedWindowsManifest | Should -Match 'uap10:TrustLevel="appContainer"'
+            $isolatedWindowsManifest | Should -Match 'uap10:RuntimeBehavior="packagedClassicApp"'
+            $isolatedWindowsManifest | Should -Not -Match (
+                '(?i)runFullTrust|internetClient|internetClientServer|' +
+                'privateNetworkClientServer|DeviceCapability')
+        }
+
         $script:Source | Should -Match "'-EnforceNetworkIsolation'"
         $script:Source | Should -Match 'source-overrides/ReplicationNetworkIsolationManifest\.xml'
         $script:Source | Should -Match 'GetRelativePath\('
         $buildDeploy = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') -Raw
         $buildDeploy | Should -Match 'NetworkIsolationManifestPath'
+        $buildDeploy | Should -Match 'WindowsAppContainerManifestPath'
+        $buildDeploy | Should -Match 'PackageCertificateThumbprint'
         $buildDeploy | Should -Match 'GetRelativePath\('
         $buildDeploy | Should -Match (
             '-p:_MauiReplicationAndroidManifest=\$relativeIsolationManifest')
@@ -2738,14 +2819,38 @@ InitializeComponent();
         ($isolatedNodes -join "`n") | Should -BeExactly ($ordinaryNodes -join "`n")
     }
 
+    It 'passes the trusted Windows manifest as a final global MSBuild property' {
+        foreach ($project in @(
+            '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj',
+            '../../src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        )) {
+            $projectPath = Join-Path $PSScriptRoot $project
+            $marker = 'REPLICATION_MANIFEST_WINS'
+            $output = @(& dotnet msbuild $projectPath `
+                -getProperty:PackageManifest `
+                -p:TargetFramework=net10.0-windows10.0.19041.0 `
+                "-p:PackageManifest=$marker" `
+                -p:WindowsPackageType=MSIX `
+                -nologo 2>&1)
+            $LASTEXITCODE | Should -Be 0 -Because ($output -join "`n")
+            ($output -join "`n").Trim() | Should -BeExactly $marker
+        }
+        $script:BuildDeploySource |
+            Should -Match '"-p:PackageManifest=\$manifestPath"'
+        (Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot (
+                '../skills/run-device-tests/scripts/Run-DeviceTests.ps1')) -Raw) |
+            Should -Match '/p:PackageManifest=\$windowsManifestPath'
+    }
+
     It 'fails unsupported lanes before generated execution and never sets its own isolation marker' {
         $script:Source | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
         $script:Source | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED\s*='
         $script:Source | Should -Match (
-            "(?s)if \(\`$Platform -ne 'android'\).*?" +
+            "(?s)if \(\`$Platform -notin @\('android', 'windows'\)\).*?" +
             'Unsupported replication scenario:.*?replication is withheld')
         $unsupported = $script:Source.IndexOf(
-            "if (`$Platform -ne 'android')",
+            "if (`$Platform -notin @('android', 'windows'))",
             [StringComparison]::Ordinal)
         $prewarm = $script:Source.IndexOf(
             'Invoke-ReplicationTrustedRestore `',
@@ -2764,6 +2869,7 @@ InitializeComponent();
         $isolationSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') -Raw
         $isolationSource | Should -Match "(?s)Platform -ne 'android'.*?withheld"
+        $isolationSource | Should -Match 'function Get-ReplicationWindowsAppContainerCommand'
         $wrapperSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1') -Raw
         $wrapperSource | Should -Match (
@@ -2797,7 +2903,7 @@ InitializeComponent();
             '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
             [StringComparison]::Ordinal)
         $mainTry = $script:Source.IndexOf(
-            "if (`$Platform -ne 'android')",
+            "if (`$Platform -notin @('android', 'windows'))",
             [StringComparison]::Ordinal)
 
         $attemptKinds | Should -BeGreaterOrEqual 0
@@ -3058,6 +3164,9 @@ InitializeComponent();
         Copy-Item `
             -LiteralPath (Join-Path $PSScriptRoot 'shared/shared-utils.ps1') `
             -Destination (Join-Path $trustedShared 'shared-utils.ps1')
+        Copy-Item `
+            -LiteralPath (Join-Path $PSScriptRoot 'shared/Assert-ReplicationWindowsAppContainer.ps1') `
+            -Destination (Join-Path $trustedShared 'Assert-ReplicationWindowsAppContainer.ps1')
         @'
 param(
     [string]$Platform,
@@ -3133,6 +3242,24 @@ exit 0
             Should -Match 'git restore --source \$BaseSha --staged --worktree -- \.'
         $script:Source |
             Should -Not -Match 'git restore --worktree -- \$sandboxXamlPath \$sandboxCodePath'
+        $restoreFunction = [regex]::Match(
+            $script:Source,
+            '(?sm)function Restore-TransientSandbox \{.*?^}')
+        $restoreFunction.Success | Should -BeTrue
+        $restoreFunction.Value.IndexOf(
+            'git restore --source $BaseSha',
+            [StringComparison]::Ordinal) |
+            Should -BeLessThan (
+                $restoreFunction.Value.IndexOf(
+                    '-Cleanup',
+                    [StringComparison]::Ordinal))
+        $restoreFunction.Value |
+            Should -Match 'REPLICATION_SANDBOX_CLEANUP_FAILED:'
+        $restoreFunction.Value | Should -Match (
+            "(?s)try \{.*?git restore.*?BuildAndRunSandbox\.ps1.*?" +
+            'Clear-TransientAppiumDirectory.*?\} catch \{')
+        $restoreFunction.Value | Should -Match (
+            "StartsWith\(\s*'REPLICATION_SANDBOX_CLEANUP_FAILED:'")
     }
 
     It 'restores tracked verifier build side effects while preserving generated tests' {
@@ -6669,6 +6796,17 @@ Describe 'Every caller of the environment-gate guard states its tier' {
 }
 
 Describe 'Get-ReplicationBlockedCode control refutation' {
+    It 'never turns a Windows cleanup fault into a conclusive non-reproduction' {
+        $kinds = [System.Collections.Generic.List[string]]::new()
+        $kinds.Add('not-reproduced')
+        $kinds.Add('not-reproduced')
+        Get-ReplicationBlockedCode `
+            -RawReason 'REPLICATION_SANDBOX_CLEANUP_FAILED: package remained in use' `
+            -Stage 'sandbox' `
+            -AttemptKinds $kinds |
+            Should -BeExactly 'cleanup_failed'
+    }
+
     It 'names a control that ran and refuted the reproduction' {
         # Build 15034006 ran its control, saw the test stay red without the
         # trigger, correctly refused the reproduction and then exited red,
@@ -6816,7 +6954,7 @@ Describe 'confirmation replay starts from a clean app' {
         # Ordering is the whole point: relaunching after the replay resets
         # nothing that the replay depended on.
         $relaunch | Should -BeLessThan $confirm
-        $script:Source.Contains("if (`$Platform -in @('android', 'ios')) {") | Should -BeTrue
+        $script:Source.Contains("if (`$Platform -in @('android', 'ios', 'windows')) {") | Should -BeTrue
     }
 }
 
@@ -9883,8 +10021,11 @@ Describe 'Only trusted code may call a fix candidate a pass' {
         $logged | Should -Match 'Invoke-WithoutReplicationSecrets'
         $logged | Should -Match '\$allSecretNames'
         $logged | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
+        $logged | Should -Match 'Get-ReplicationWindowsAppContainerCommand'
         $logged | Should -Match 'effectiveDeviceControl'
-        $logged | Should -Match '(?s)if \(\$effectiveDeviceControl\) \{.*?Assert-ReplicationAndroidGuestNetworkIsolation'
+        $logged | Should -Match (
+            "(?s)if \(\`$Platform -eq 'android' -and " +
+            '\$effectiveDeviceControl\) \{.*?Assert-ReplicationAndroidGuestNetworkIsolation')
     }
 
     It 'does not let an injected model Pass become the panel verdict' {
@@ -12929,6 +13070,21 @@ Describe 'A tier the repository rules out is never offered' {
             Should -Not -Contain 'unit' -Because 'a project with an ios target framework builds for ios'
     }
 
+    It 'always excludes host-executed tiers from Windows replication' {
+        $excluded = @(Get-ReplicationUnbuildableTestTiers `
+            -Platform 'windows' `
+            -RepositoryRoot $script:RepoRoot)
+        $excluded | Should -Contain 'unit'
+        $excluded | Should -Contain 'xaml'
+
+        $script:Source | Should -Match (
+            "Windows replication permits only a packaged Controls device test")
+        $script:Source | Should -Match (
+            "Windows replication requires exactly one Windows-only C# file in Controls\.DeviceTests")
+        $script:Source | Should -Match (
+            "WINDOWS PACKAGED BOUNDARY: testType must be device")
+    }
+
     It 'is seeded before the first plan attempt, not after the first refusal' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
         $seed = [regex]::Match($source, '\$forbiddenTestTiers = @\(([^\r\n]*)\)')
@@ -15204,14 +15360,11 @@ Describe 'An issue-keyed device category is the only category on skip-filtered p
             Should -BeNullOrEmpty
     }
 
-    It 'exempts windows, which selects from discovered traits' {
-        # ControlsHeadlessTestRunner collects tc.Traits["Category"], so
-        # "Issue31330" is a real category there. PR 525 selected its single
-        # Windows test correctly with a second category present.
+    It 'rejects a second Windows category before LocalState crosses the host boundary' {
         $source = "public class T`n{`n`t[Category(TestCategory.Shape)]`n`t[Category(`"Issue31330`")]`n`tpublic void M() { }`n}"
         Assert-ReplicationDeviceCategoryIsExclusive `
             -Content $source -Path 'a.cs' -Issue 31330 -Platform 'windows' |
-            Should -BeNullOrEmpty
+            Should -BeExactly 'TestCategory.Shape'
     }
 
     It 'ignores a commented-out conventional category' {

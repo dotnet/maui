@@ -148,7 +148,13 @@ param(
     [string]$TestType,
 
     [Parameter(Mandatory = $false)]
-    [switch]$NoRestore
+    [switch]$NoRestore,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireWindowsAppContainer,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ReplicationTrustedRoot
 )
 
 $ErrorActionPreference = "Stop"
@@ -694,6 +700,14 @@ function Invoke-TestRun {
                 Rebuild = $true
                 NoRestore = $NoRestore
             }
+            if ($RequireWindowsAppContainer) {
+                if ($devicePlatform -ne 'windows' -or
+                    [string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
+                    throw 'The replication AppContainer verifier requires Windows and the trusted root.'
+                }
+                $deviceParams.RequireWindowsAppContainer = $true
+                $deviceParams.ReplicationTrustedRoot = $ReplicationTrustedRoot
+            }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray
 
             # Pass filter through — detection ensures it's Category= format
@@ -766,6 +780,23 @@ function Test-IsWindowsDeviceTargetTimeoutError {
         $TestEntry.Type -eq 'DeviceTest' -and
         -not [string]::IsNullOrWhiteSpace($Message) -and
         $Message.StartsWith('WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:', [System.StringComparison]::Ordinal)
+    )
+}
+
+function Test-IsWindowsDeviceCleanupError {
+    param(
+        [string]$RunPlatform,
+        [hashtable]$TestEntry,
+        [string]$Message
+    )
+
+    return (
+        $RunPlatform -eq 'windows' -and
+        $TestEntry.Type -eq 'DeviceTest' -and
+        -not [string]::IsNullOrWhiteSpace($Message) -and
+        $Message.StartsWith(
+            'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:',
+            [System.StringComparison]::Ordinal)
     )
 }
 
@@ -1054,8 +1085,14 @@ function Invoke-TestRunWithRetry {
                 -RunPlatform $Platform `
                 -TestEntry $TestEntry `
                 -Message $message
+            $isWindowsCleanupError = Test-IsWindowsDeviceCleanupError `
+                -RunPlatform $Platform `
+                -TestEntry $TestEntry `
+                -Message $message
 
-            if (-not $isWindowsNoResults -and -not $isWindowsTargetTimeout) {
+            if (-not $isWindowsNoResults -and
+                -not $isWindowsTargetTimeout -and
+                -not $isWindowsCleanupError) {
                 throw
             }
 
@@ -1072,6 +1109,7 @@ function Invoke-TestRunWithRetry {
                 EnvError = $true
                 WindowsDeviceNoResults = $isWindowsNoResults
                 WindowsDeviceTargetTimeout = $isWindowsTargetTimeout
+                WindowsDeviceCleanupFailed = $isWindowsCleanupError
                 Error = $message
                 FailCount = 0
                 Failed = 0

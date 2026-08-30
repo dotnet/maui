@@ -17,6 +17,8 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'service-model-network'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*ServiceModel\b|\b(?:ChannelFactory|WebChannelFactory|ClientBase|HttpBinding|BasicHttpBinding|WSHttpBinding|NetTcpBinding)\b' },
         [pscustomobject]@{ Code = 'xml-external-access'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Xml\b|\b(?:XmlReader|XmlTextReader|XmlValidatingReader|XmlUrlResolver|XmlSecureResolver|XmlPreloadedResolver|XmlResolver|XmlReaderSettings|XmlDocument|XmlDataDocument|XDocument|XElement|XPathDocument|XslCompiledTransform|XmlSchemaSet|XmlSchema)\b|\.\s*(?:Read|Write|Infer)Xml(?:Schema)?\s*\(' },
         [pscustomobject]@{ Code = 'platform-network'; Scope = 'code'; Pattern = '(?i)\b(?:NSUrl|NSURL|NSUrlRequest|NSURLRequest|NSMutableUrlRequest|NSURLConnection|WKWebView|UIWebView|SFSafariViewController|ASWebAuthenticationSession|NSUrlSession|NSURLSession|NWConnection|CFNetwork)\b|\b(?:Android|Java)\s*\.\s*(?:Net|Webkit)\b|\b(?:HttpURLConnection|URLConnection|AndroidHttpClient|OkHttpClient|CustomTabsIntent|DownloadManager|WebViewClient)\b|\b(?:Intent|PendingIntent)\s*(?:[.(]|\b)|\b(?:Windows\s*\.\s*(?:Web\s*\.\s*Http|Foundation\s*\.\s*Uri|System\s*\.\s*Launcher)|Microsoft\s*\.\s*Web\s*\.\s*WebView2|CoreWebView2|WebView2|WinHttpHandler)\b|\b(?:LoadRequest|LoadUrl|LoadDataWithBaseURL|Navigate|NavigateWithHttpRequestMessage|LaunchUriAsync)\s*\(' },
+        [pscustomobject]@{ Code = 'windows-activation'; Scope = 'code'; Pattern = '(?i)\b(?:ComImport|IApplicationActivationManager|ApplicationActivationManager|PackageManager|FullTrustProcessLauncher|AppServiceConnection|AppInstance|ActivationFactory|RoGetActivationFactory|CoCreateInstance|GetActiveObject|GetTypeFromProgID)\b|\bWindows\s*\.\s*ApplicationModel\s*\.\s*(?:Activation|AppService)\b|\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\s*\.\s*ComTypes\b' },
+        [pscustomobject]@{ Code = 'dynamic-xaml'; Scope = 'code'; Pattern = '(?i)\b(?:XamlReader|XamlServices|LoadFromXaml|ParseXaml|LoadXaml)\b|\b(?:Microsoft\s*\.\s*UI|Windows\s*\.\s*UI|System\s*\.\s*Windows)\s*\.\s*Xaml\s*\.\s*Markup\b' },
         [pscustomobject]@{ Code = 'process-start'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Diagnostics\s*\.\s*Process\b|\bProcess\s*\.\s*(?:Start|GetCurrentProcess|GetProcess|GetProcesses|GetProcessById|EnterDebugMode|Kill)\b|\bnew\s+Process\s*[({]|\b(?:ProcessStartInfo|UseShellExecute|RedirectStandardOutput|RedirectStandardError|WaitForExit|Win32Exception|ManagementObject|NSTask|NSWorkspace|CreateProcess|ShellExecute|Runtime\s*\.\s*GetRuntime)\b' },
         [pscustomobject]@{ Code = 'reflection'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*(?:Reflection|Runtime\s*\.\s*Loader|Type)\b|\b(?:Assembly|Type|Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|Delegate)\s*\.\s*(?:Load|LoadFrom|LoadFile|LoadWithPartialName|CreateInstance|CreateDelegate|DynamicInvoke|Invoke|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetProperty|GetProperties|GetMember|GetMembers|GetTypes|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties|GetTypeFromHandle|GetType)\b|\b(?:Activator|AppDomain|MethodInfo|MethodBase|PropertyInfo|FieldInfo|ConstructorInfo|DynamicMethod|RuntimeMethodHandle|InvokeMember|GetMethod|GetMethods|GetField|GetFields|GetMember|GetMembers|GetProperties|GetConstructors|GetNestedTypes|GetRuntimeMethod|GetRuntimeMethods|GetRuntimeField|GetRuntimeFields|GetRuntimeProperty|GetRuntimeProperties)\b|(?<!Mapper\s*\.\s*)\bGetProperty\b|\bType\s*\.\s*GetType\b|\btypeof\s*\([^)]*\)\s*\.\s*Assembly\b|\bGetType\s*\(\s*\)\s*\.\s*(?!Name\b|FullName\b|ToString\b)' },
         [pscustomobject]@{ Code = 'dynamic-loading'; Scope = 'code'; Pattern = '(?i)\b(?:dynamic|ExpandoObject|CallSite|DynamicMetaObject|IDynamicMetaObjectProvider)\b|\bRuntimeHelpers\s*\.\s*(?:GetUninitializedObject|PrepareMethod|RunClassConstructor)\b' },
@@ -537,6 +539,8 @@ function Get-ReplicationProductFixUnsafePatterns {
         'service-model-network',
         'xml-external-access',
         'platform-network',
+        'windows-activation',
+        'dynamic-xaml',
         'process-start',
         'reflection',
         'dynamic-loading',
@@ -3438,11 +3442,12 @@ function Assert-ReplicationDeviceTestIsSelectable {
         return $false
     }
 
+    $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path
     $token = "Issue$Issue"
     # [Category("Issue37275")] or [Category(TestCategory.Entry, "Issue37275")]
     $pattern = '(?m)^\s*\[\s*(?:(?:[A-Za-z_]\w*)\.)*Category\s*\([^)]*"' +
         [regex]::Escape($token) + '"'
-    return [bool]([regex]::IsMatch($Content, $pattern))
+    return [bool]([regex]::IsMatch($source, $pattern))
 }
 
 function Assert-ReplicationDeviceCategoryIsExclusive {
@@ -3466,10 +3471,10 @@ function Assert-ReplicationDeviceCategoryIsExclusive {
         PR 515 (Mac Catalyst, Accessibility + Issue37140) executed zero tests.
         In both cases removing only the broad category made the exact test run.
 
-        Windows is exempt. Its runner filters by *discovered* traits
-        (ControlsHeadlessTestRunner collects tc.Traits["Category"]), so
-        "Issue<N>" is a real category there and a second one is harmless --
-        which is why PR 525 selected its single Windows test correctly.
+        Windows ordinary review tests are exempt because their runner filters by
+        discovered traits. Replication still requires the issue category alone:
+        app-authored category text crosses the AppContainer boundary through a
+        trusted result-file path, so no second value is accepted.
 
         Returns the offending category argument, or an empty string when the
         issue-keyed category is the only one.
@@ -3482,7 +3487,7 @@ function Assert-ReplicationDeviceCategoryIsExclusive {
     )
 
     if ([string]::IsNullOrWhiteSpace($Content)) { return '' }
-    if ($Platform -notin @('android', 'ios', 'catalyst')) { return '' }
+    if ($Platform -notin @('android', 'ios', 'catalyst', 'windows')) { return '' }
 
     # A commented-out attribute declares nothing.
     $source = Get-ReplicationCommentFreeText -Text $Content -Path $Path

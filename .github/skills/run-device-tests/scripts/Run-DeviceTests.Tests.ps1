@@ -53,8 +53,27 @@ Describe 'Build isolation options' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match '\$summaryClassFilter\s*=\s*\$IncludeClasses'
         $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
-        $content | Should -Match '-RequireClassIsolation:\(-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)'
+        $content | Should -Match (
+            '(?s)-RequireClassIsolation:\(\s*-not \$RequireAppContainer -and\s*' +
+            '-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)')
         $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
+    }
+
+    It 'packages replication tests into the audited Controls AppContainer only' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\[switch\]\$RequireWindowsAppContainer'
+        $content | Should -Match (
+            "Windows replication permits only the Controls device-test package")
+        $content | Should -Match 'ReplicationWindowsControlsDeviceTestsManifest\.xml'
+        $content | Should -Match '/p:WindowsPackageType=MSIX'
+        $content | Should -Match '/p:GenerateAppxPackageOnBuild=true'
+        $content | Should -Match '/p:PackageManifest=\$windowsManifestPath'
+        $content | Should -Not -Match '_MauiReplicationWindowsManifest'
+        $content | Should -Match 'Install-ReplicationWindowsAppContainerPackage'
+        $content | Should -Match 'Start-ReplicationWindowsAppContainerProcess'
+        $content | Should -Match 'PackageLocalStatePath'
+        $content | Should -Match 'Remove-ReplicationWindowsAppContainerPackage'
+        $content | Should -Match 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:'
     }
 }
 
@@ -271,6 +290,28 @@ Describe 'Windows device test category filtering' {
             -AllCategories @('Button', 'Window') `
             -Filter '' |
             Should -Be @('Button', 'Window')
+    }
+
+    It 'requires the exact issue category in the AppContainer lane' {
+        @(Select-WindowsDeviceTestCategories `
+            -AllCategories @('safe_Issue37540', 'Button') `
+            -Filter 'Issue37540' `
+            -RequireExact) | Should -BeNullOrEmpty
+
+        Select-WindowsDeviceTestCategories `
+            -AllCategories @('Issue37540', 'safe_Issue37540') `
+            -Filter 'Issue37540' `
+            -RequireExact |
+            Should -Be @('Issue37540')
+    }
+
+    It 'validates discovered category values before host path construction' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\^\[A-Za-z0-9_\.\+ -\]\{1,128\}\$'
+        $content | Should -Match '-RequireExact:\$RequireAppContainer'
+        $content | Should -Match 'result path escapes the trusted output root'
+        $content | Should -Match 'result root contains a reparse point'
+        $content | Should -Match 'result path is a reparse point'
     }
 
     It 'always requires category discovery for Controls' {

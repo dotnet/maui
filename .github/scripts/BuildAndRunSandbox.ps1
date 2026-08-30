@@ -54,9 +54,14 @@ param(
 
     [switch]$LaunchOnly,
 
-    [switch]$EnforceNetworkIsolation
+    [switch]$EnforceNetworkIsolation,
+
+    [switch]$Cleanup
 )
 
+if ($Cleanup -and ($PrepareOnly -or $SkipBuildDeploy -or $LaunchOnly)) {
+    throw 'Cleanup cannot be combined with build or launch modes.'
+}
 if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
     throw 'PrepareOnly cannot be combined with SkipBuildDeploy or LaunchOnly.'
 }
@@ -78,6 +83,7 @@ if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) {
 $SandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
 $SandboxAppiumDir = Join-Path $RepoRoot "CustomAgentLogsTmp/Sandbox"
 $AppiumTestScript = Join-Path $SandboxAppiumDir "RunWithAppiumTest.cs"
+$WindowsPackageStatePath = Join-Path $SandboxAppiumDir 'windows-appcontainer-state.json'
 $AppiumPort = 4723
 
 function Resolve-CatalystSandboxAppPath {
@@ -109,6 +115,65 @@ function Resolve-CatalystSandboxAppPath {
 
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
+. "$PSScriptRoot/shared/Assert-ReplicationWindowsAppContainer.ps1"
+
+if ($Cleanup) {
+    if ($Platform -ne 'windows' -or -not $EnforceNetworkIsolation) {
+        throw 'Cleanup is reserved for the isolated Windows replication package.'
+    }
+    if (Test-Path -LiteralPath $WindowsPackageStatePath -PathType Leaf) {
+        $stateItem = Get-Item -LiteralPath $WindowsPackageStatePath -Force
+        if ($stateItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+            $stateItem.Length -le 0 -or $stateItem.Length -gt 32KB) {
+            throw 'Windows replication cleanup state must be a bounded regular file.'
+        }
+        $cleanupState = Get-Content -LiteralPath $WindowsPackageStatePath -Raw |
+            ConvertFrom-Json -Depth 5
+        $cleanupProperties = @($cleanupState.PSObject.Properties.Name | Sort-Object)
+        $expectedCleanupProperties = @(
+            'mainWindowHandle',
+            'packageFamilyName',
+            'packageFullName',
+            'packageName',
+            'packagePath',
+            'packageSha256',
+            'processId',
+            'schemaVersion'
+        ) | Sort-Object
+        if (($cleanupProperties -join "`n") -cne
+                ($expectedCleanupProperties -join "`n") -or
+            [int]$cleanupState.schemaVersion -ne 1 -or
+            [string]$cleanupState.packageName -cne 'com.microsoft.maui.sandbox' -or
+            [string]$cleanupState.packageFullName -cnotmatch
+                '^com\.microsoft\.maui\.sandbox_[A-Za-z0-9.]+_(?:x64|neutral)__[A-Za-z0-9]+$') {
+            throw 'Windows replication cleanup state is malformed.'
+        }
+        $cleanupProcessId = [int]$cleanupState.processId
+        if ($cleanupProcessId -gt 0) {
+            $cleanupProcess = Get-Process -Id $cleanupProcessId `
+                -ErrorAction SilentlyContinue
+            if ($cleanupProcess) {
+                try {
+                    $null = Assert-ReplicationWindowsAppContainerProcess `
+                        -Process $cleanupProcess `
+                        -ExpectedPackageFullName (
+                            [string]$cleanupState.packageFullName)
+                    $cleanupProcess.Kill($true)
+                    if (-not $cleanupProcess.WaitForExit(30000)) {
+                        throw "Windows AppContainer process $cleanupProcessId did not terminate."
+                    }
+                } finally {
+                    $cleanupProcess.Dispose()
+                }
+            }
+        }
+    }
+    Remove-ReplicationWindowsAppContainerPackage `
+        -PackageName 'com.microsoft.maui.sandbox'
+    Remove-Item -LiteralPath $WindowsPackageStatePath -Force -ErrorAction SilentlyContinue
+    Write-Success 'Windows replication AppContainer package removed'
+    return
+}
 
 # Banner
 Write-Host @"
@@ -258,10 +323,19 @@ $buildDeployParams = @{
     EnforceNetworkIsolation = $EnforceNetworkIsolation
     NoRestore = $EnforceNetworkIsolation
 }
-if ($EnforceNetworkIsolation) {
+if ($EnforceNetworkIsolation -and $Platform -eq 'android') {
     $buildDeployParams.NetworkIsolationManifestPath = Join-Path (
         Split-Path -Parent $PSScriptRoot
     ) 'source-overrides/ReplicationNetworkIsolationManifest.xml'
+}
+if ($EnforceNetworkIsolation -and $Platform -eq 'windows') {
+    $windowsManifestPath = Join-Path (
+        Split-Path -Parent $PSScriptRoot
+    ) 'source-overrides/ReplicationWindowsSandboxManifest.xml'
+    $null = Assert-ReplicationWindowsAppContainerManifest `
+        -Path $windowsManifestPath
+    $buildDeployParams.WindowsAppContainerManifestPath = $windowsManifestPath
+    $buildDeployParams.WindowsPackageStatePath = $WindowsPackageStatePath
 }
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
@@ -285,19 +359,57 @@ if ($PrepareOnly) {
 }
 
 $windowsApp = $null
+$windowsPackageState = $null
 if ($Platform -eq "windows") {
-    $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
-    $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
-        Get-ChildItem `
-            -LiteralPath $windowsBin `
-            -Filter "Maui.Controls.Sample.Sandbox.exe" `
-            -Recurse `
-            -File `
-            -ErrorAction SilentlyContinue |
-            Select-Object -First 1 -ExpandProperty FullName
-    }
-    if (-not $windowsApp) {
-        throw "Windows Sandbox executable was not found under '$windowsBin'."
+    if ($EnforceNetworkIsolation) {
+        if (-not (Test-Path -LiteralPath $WindowsPackageStatePath -PathType Leaf)) {
+            throw 'Windows replication package state is missing.'
+        }
+        $windowsPackageState = Get-Content -LiteralPath $WindowsPackageStatePath -Raw |
+            ConvertFrom-Json -Depth 5
+        $stateProperties = @($windowsPackageState.PSObject.Properties.Name | Sort-Object)
+        $expectedStateProperties = @(
+            'mainWindowHandle',
+            'packageFamilyName',
+            'packageFullName',
+            'packageName',
+            'packagePath',
+            'packageSha256',
+            'processId',
+            'schemaVersion'
+        ) | Sort-Object
+        if (($stateProperties -join "`n") -cne ($expectedStateProperties -join "`n") -or
+            [int]$windowsPackageState.schemaVersion -ne 1 -or
+            [string]$windowsPackageState.packageName -cne 'com.microsoft.maui.sandbox' -or
+            [string]$windowsPackageState.packageSha256 -cnotmatch '^[0-9a-f]{64}$') {
+            throw 'Windows replication package state is malformed.'
+        }
+        $package = @(Get-AppxPackage `
+                -Name ([string]$windowsPackageState.packageName) `
+                -ErrorAction Stop)
+        if ($package.Count -ne 1 -or
+            [string]$package[0].PackageFullName -cne
+                [string]$windowsPackageState.packageFullName -or
+            [string]$package[0].PackageFamilyName -cne
+                [string]$windowsPackageState.packageFamilyName) {
+            throw 'Installed Windows replication package does not match trusted state.'
+        }
+        $null = Assert-ReplicationInstalledWindowsAppContainerPackage `
+            -Package $package[0]
+    } else {
+        $windowsBin = Join-Path $RepoRoot "artifacts/bin/Maui.Controls.Sample.Sandbox/$Configuration/$TargetFramework"
+        $windowsApp = if (Test-Path -LiteralPath $windowsBin) {
+            Get-ChildItem `
+                -LiteralPath $windowsBin `
+                -Filter "Maui.Controls.Sample.Sandbox.exe" `
+                -Recurse `
+                -File `
+                -ErrorAction SilentlyContinue |
+                Select-Object -First 1 -ExpandProperty FullName
+        }
+        if (-not $windowsApp) {
+            throw "Windows Sandbox executable was not found under '$windowsBin'."
+        }
     }
 }
 
@@ -323,7 +435,18 @@ if ($LaunchOnly) {
             }
         }
         "windows" {
-            Start-Process -FilePath $windowsApp -WorkingDirectory (Split-Path -Parent $windowsApp)
+            if (-not $EnforceNetworkIsolation) {
+                Start-Process -FilePath $windowsApp -WorkingDirectory (Split-Path -Parent $windowsApp)
+                break
+            }
+            $launched = Start-ReplicationWindowsAppContainerProcess `
+                -PackageName ([string]$windowsPackageState.packageName) `
+                -RequireWindow
+            $windowsPackageState.processId = $launched.ProcessId
+            $windowsPackageState.mainWindowHandle = $launched.MainWindowHandle
+            $windowsPackageState | ConvertTo-Json -Depth 5 |
+                Set-Content -LiteralPath $WindowsPackageStatePath -Encoding utf8NoBOM
+            $launched.Process.Dispose()
         }
     }
 }
@@ -480,7 +603,26 @@ try {
     $env:DEVICE_UDID = $DeviceUdid
     $env:REPLICATION_PLATFORM = $Platform
     if ($Platform -eq "windows") {
-        $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
+        if ($EnforceNetworkIsolation) {
+            $processId = [int]$windowsPackageState.processId
+            if ($processId -le 0) {
+                throw 'Windows replication AppContainer was not launched by the trusted host.'
+            }
+            $process = Get-Process -Id $processId -ErrorAction Stop
+            try {
+                $null = Assert-ReplicationWindowsAppContainerProcess `
+                    -Process $process `
+                    -ExpectedPackageFullName ([string]$windowsPackageState.packageFullName)
+            } finally {
+                $process.Dispose()
+            }
+            $env:REPLICATION_WINDOWS_PROCESS_ID = [string]$processId
+            $env:REPLICATION_WINDOWS_PACKAGE_FULL_NAME =
+                [string]$windowsPackageState.packageFullName
+            $env:REPLICATION_WINDOWS_APP_PATH = $null
+        } else {
+            $env:REPLICATION_WINDOWS_APP_PATH = $windowsApp
+        }
     }
     
     Write-Info "Executing trusted file-based runner: dotnet run --file RunWithAppiumTest.cs"

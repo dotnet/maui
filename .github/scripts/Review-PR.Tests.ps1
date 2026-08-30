@@ -762,6 +762,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsSandboxManifest.xml"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))
@@ -783,6 +785,8 @@ Describe 'Reviewer pipeline timeout containment' {
         $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsSandboxManifest.xml"'))
+        $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml" "$TRUSTED/source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml"'))
         $captureBlock | Should -Not -Match 'retryCountOnTaskFailure'
         $resolveBlock | Should -Match 'retryCountOnTaskFailure: 2'
         $resolveBlock | Should -Not -Match ([regex]::Escape('cp -r .github/scripts'))

@@ -597,6 +597,7 @@ function Get-ReplicationNetworkIsolatedCommand {
     if ($Platform -ne 'android') {
         throw "$Platform replication is withheld because this pool has no enforceable process-tree and app outbound-network deny boundary."
     }
+
     if ($Platform -ceq 'android' -and $OperatingSystem -cne 'linux') {
         throw 'Android replication requires the Linux network-isolated runner.'
     }
@@ -837,6 +838,162 @@ function Get-ReplicationNetworkIsolatedCommand {
         Environment = $Environment
         Boundary = 'systemd-cgroup-loopback-only'
         UnitName = $unitName
+    }
+}
+
+function Get-ReplicationWindowsAppContainerCommand {
+    <#
+        .SYNOPSIS
+        Builds the trusted host command for the Windows AppContainer lane.
+
+        .DESCRIPTION
+        Windows does not run generated code in this host process. The allowlist
+        admits only the fixed Sandbox recorder and packaged device-test verifier;
+        those runners audit and activate an appContainer package before any
+        model-authored assembly is loaded. No generic script path or test tier is
+        accepted.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$TrustedRoot,
+        [Parameter(Mandatory = $true)][string]$ScriptPath,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()][object[]]$Arguments,
+        [Parameter(Mandatory = $true)]
+        [System.Collections.IDictionary]$Environment,
+        [ValidateSet('windows')]
+        [string]$OperatingSystem = $(if ([OperatingSystem]::IsWindows()) {
+            'windows'
+        } else {
+            throw 'Windows AppContainer replication requires a Windows host.'
+        })
+    )
+
+    $trustedRootPath = [IO.Path]::GetFullPath($TrustedRoot)
+    $trustedRootItem = Get-Item -LiteralPath $trustedRootPath -Force -ErrorAction Stop
+    if (-not $trustedRootItem.PSIsContainer -or
+        $trustedRootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Windows replication requires a regular trusted root.'
+    }
+    $trustedScriptPath = [IO.Path]::GetFullPath($ScriptPath)
+    $allowedScripts = [ordered]@{
+        (Join-Path $trustedRootPath 'scripts/BuildAndRunSandbox.ps1') = 'sandbox'
+        (Join-Path $trustedRootPath 'scripts/shared/Record-Reproduction.ps1') = 'record'
+        (Join-Path $trustedRootPath 'scripts/shared/Invoke-ReplicationTestVerification.ps1') = 'verify'
+    }
+    $kind = $null
+    foreach ($candidate in $allowedScripts.Keys) {
+        if ($trustedScriptPath -ceq [IO.Path]::GetFullPath($candidate)) {
+            $kind = $allowedScripts[$candidate]
+            break
+        }
+    }
+    if ($null -eq $kind -or
+        -not (Test-Path -LiteralPath $trustedScriptPath -PathType Leaf) -or
+        (Get-Item -LiteralPath $trustedScriptPath -Force).Attributes -band
+            [IO.FileAttributes]::ReparsePoint) {
+        throw 'Windows replication host execution is limited to exact trusted runners.'
+    }
+
+    $argumentStrings = @(
+        foreach ($argument in $Arguments) {
+            if ($null -eq $argument) {
+                throw 'Windows replication command contains a null argument.'
+            }
+            $value = [string]$argument
+            if ($value.Length -gt 4096 -or
+                $value.IndexOf([char]0) -ge 0 -or
+                $value -match '[\r\n]') {
+                throw 'Windows replication command contains an invalid argument.'
+            }
+            $value
+        }
+    )
+    if ($argumentStrings.Count -gt 64) {
+        throw 'Windows replication command contains too many arguments.'
+    }
+
+    function Get-RequiredWindowsReplicationArgument {
+        param(
+            [Parameter(Mandatory = $true)][string[]]$Values,
+            [Parameter(Mandatory = $true)][string]$Name
+        )
+        $indexes = @(
+            for ($index = 0; $index -lt $Values.Count; $index++) {
+                if ($Values[$index] -ceq $Name) { $index }
+            }
+        )
+        if ($indexes.Count -ne 1 -or $indexes[0] + 1 -ge $Values.Count -or
+            $Values[$indexes[0] + 1].StartsWith('-',
+                [StringComparison]::Ordinal)) {
+            throw "Windows replication command requires exactly one '$Name' value."
+        }
+        return $Values[$indexes[0] + 1]
+    }
+
+    $platformValue = Get-RequiredWindowsReplicationArgument `
+        -Values $argumentStrings `
+        -Name '-Platform'
+    if ($platformValue -cne 'windows') {
+        throw 'Windows replication trusted runner received a different platform.'
+    }
+
+    switch ($kind) {
+        'sandbox' {
+            if ($argumentStrings -cnotcontains '-EnforceNetworkIsolation') {
+                throw 'Windows Sandbox replication requires the AppContainer boundary.'
+            }
+        }
+        'record' {
+            $reproductionPath = Get-RequiredWindowsReplicationArgument `
+                -Values $argumentStrings `
+                -Name '-ReproductionScriptPath'
+            $expectedReproductionPath = Join-Path $trustedRootPath (
+                'scripts/BuildAndRunSandbox.ps1')
+            if ([IO.Path]::GetFullPath($reproductionPath) -cne
+                [IO.Path]::GetFullPath($expectedReproductionPath)) {
+                throw 'Windows recording may replay only the trusted Sandbox runner.'
+            }
+            $payload = Get-RequiredWindowsReplicationArgument `
+                -Values $argumentStrings `
+                -Name '-ReproductionArgumentsPayload'
+            try {
+                $decoded = [Text.UTF8Encoding]::new($false, $true).GetString(
+                    [Convert]::FromBase64String($payload))
+                $nested = @(
+                    ConvertFrom-Json -InputObject $decoded -NoEnumerate |
+                        ForEach-Object { [string]$_ })
+            } catch {
+                throw 'Windows recording replay arguments are malformed.'
+            }
+            if ($nested -cnotcontains '-EnforceNetworkIsolation' -or
+                (Get-RequiredWindowsReplicationArgument `
+                    -Values $nested `
+                    -Name '-Platform') -cne 'windows') {
+                throw 'Windows recording replay must preserve the AppContainer boundary.'
+            }
+        }
+        'verify' {
+            if ((Get-RequiredWindowsReplicationArgument `
+                    -Values $argumentStrings `
+                    -Name '-TestType') -cne 'DeviceTest') {
+                throw 'Windows replication permits only packaged device tests.'
+            }
+        }
+    }
+
+    $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+    return [pscustomobject]@{
+        FilePath = $pwsh
+        Arguments = @(
+            '-NoLogo',
+            '-NoProfile',
+            '-NonInteractive',
+            '-File', $trustedScriptPath
+        ) + $argumentStrings
+        Environment = $Environment
+        UnitName = ''
+        Boundary = 'windows-appcontainer'
     }
 }
 

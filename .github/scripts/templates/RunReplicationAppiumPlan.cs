@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using OpenQA.Selenium;
@@ -283,16 +285,24 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
             options.AddAdditionalAppiumOption("appium:skipAppKill", true);
             return new MacDriver(server, options);
         case "windows":
-            var appPath = RequireEnvironmentValue("REPLICATION_WINDOWS_APP_PATH");
-            launchedWindowsApp = Array.Find(
-                Process.GetProcessesByName(Path.GetFileNameWithoutExtension(appPath)),
-                process => !process.HasExited);
-            launchedWindowsApp ??= Process.Start(new ProcessStartInfo(appPath)
-                {
-                    UseShellExecute = false,
-                    WorkingDirectory = Path.GetDirectoryName(appPath)
-                        ?? throw new InvalidOperationException("Windows app directory is unavailable.")
-                }) ?? throw new InvalidOperationException("Windows Sandbox process did not start.");
+            var processIdText = RequireEnvironmentValue(
+                "REPLICATION_WINDOWS_PROCESS_ID");
+            if (!int.TryParse(
+                    processIdText,
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var processId) ||
+                processId <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Trusted Windows AppContainer process ID is invalid.");
+            }
+            var expectedPackageFullName = RequireEnvironmentValue(
+                "REPLICATION_WINDOWS_PACKAGE_FULL_NAME");
+            launchedWindowsApp = Process.GetProcessById(processId);
+            WindowsAppContainerGuard.AssertIsExpectedAppContainer(
+                launchedWindowsApp,
+                expectedPackageFullName);
             var launchedWindowsProcessId = launchedWindowsApp.Id;
             var windowDeadline = DateTime.UtcNow.AddSeconds(30);
             while (DateTime.UtcNow < windowDeadline)
@@ -1294,6 +1304,94 @@ sealed class ReplicationStep
     public string? Value { get; set; }
 
     public int TimeoutSeconds { get; set; }
+}
+
+static class WindowsAppContainerGuard
+{
+    const uint TokenQuery = 0x0008;
+    const int TokenIsAppContainer = 29;
+    const int ErrorInsufficientBuffer = 122;
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern bool CloseHandle(IntPtr handle);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool OpenProcessToken(
+        IntPtr processHandle,
+        uint desiredAccess,
+        out IntPtr tokenHandle);
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    static extern bool GetTokenInformation(
+        IntPtr tokenHandle,
+        int tokenInformationClass,
+        out int tokenInformation,
+        int tokenInformationLength,
+        out int returnLength);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    static extern int GetPackageFullName(
+        IntPtr processHandle,
+        ref int packageFullNameLength,
+        StringBuilder? packageFullName);
+
+    public static void AssertIsExpectedAppContainer(
+        Process process,
+        string expectedPackageFullName)
+    {
+        process.Refresh();
+        if (process.HasExited)
+        {
+            throw new InvalidOperationException(
+                $"Windows AppContainer process {process.Id} already exited.");
+        }
+        if (!OpenProcessToken(process.Handle, TokenQuery, out var token))
+        {
+            throw new System.ComponentModel.Win32Exception(
+                Marshal.GetLastWin32Error());
+        }
+        try
+        {
+            if (!GetTokenInformation(
+                    token,
+                    TokenIsAppContainer,
+                    out var isAppContainer,
+                    sizeof(int),
+                    out var returnedLength) ||
+                returnedLength != sizeof(int) ||
+                isAppContainer == 0)
+            {
+                throw new InvalidOperationException(
+                    $"Windows process {process.Id} is not an AppContainer.");
+            }
+        }
+        finally
+        {
+            CloseHandle(token);
+        }
+
+        var length = 0;
+        var result = GetPackageFullName(process.Handle, ref length, null);
+        if (result != ErrorInsufficientBuffer || length <= 1)
+        {
+            throw new InvalidOperationException(
+                $"Windows process {process.Id} has no package identity.");
+        }
+        var actualPackageFullName = new StringBuilder(length);
+        result = GetPackageFullName(
+            process.Handle,
+            ref length,
+            actualPackageFullName);
+        if (result != 0 ||
+            !string.Equals(
+                actualPackageFullName.ToString(),
+                expectedPackageFullName,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Windows process {process.Id} does not belong to the audited package.");
+        }
+    }
 }
 
 sealed class ReplicationLocator
