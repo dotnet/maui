@@ -2271,7 +2271,23 @@ function Assert-NoReparsePointInParentPath {
 }
 
 function Get-ReplicationGitStatus {
-    $lines = @(& git status --porcelain=v1 --untracked-files=all)
+    $gitArguments = @(
+        '-c', 'core.hooksPath=/dev/null',
+        '-c', 'core.fsmonitor=false',
+        '-c', 'core.untrackedCache=false',
+        '-c', 'credential.helper=',
+        'status', '--porcelain=v1', '--untracked-files=all'
+    )
+    $savedConfigCount = [Environment]::GetEnvironmentVariable('GIT_CONFIG_COUNT')
+    $savedConfigParameters = [Environment]::GetEnvironmentVariable('GIT_CONFIG_PARAMETERS')
+    try {
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_COUNT', $null)
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_PARAMETERS', $null)
+        $lines = @(& git @gitArguments)
+    } finally {
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_COUNT', $savedConfigCount)
+        [Environment]::SetEnvironmentVariable('GIT_CONFIG_PARAMETERS', $savedConfigParameters)
+    }
     if ($LASTEXITCODE -ne 0) {
         throw 'Unable to inspect the replication worktree.'
     }
@@ -4025,6 +4041,7 @@ function Assert-GeneratedTestContent {
         $content = Get-Content -LiteralPath (Join-Path $repoRoot $file) -Raw
         foreach ($guard in @(
             { Assert-ReplicationGeneratedSourceSafety -Content $content -Path $file },
+            { Assert-ReplicationGeneratedTestXamlSafety -Content $content -Path $file },
             { Assert-ReplicationPlatformSourceSafety -Content $content -Path $file -Platform $TargetPlatform },
             # The font is named on the host page rather than in the test, so this
             # runs for every candidate file and not only the test ones.
@@ -6235,12 +6252,9 @@ function Read-TestProposal {
     }
     $proposal | Add-Member -NotePropertyName qualityContract `
         -NotePropertyValue $qualityContract -Force
-    $allowedTypes = @('unit', 'xaml', 'device', 'ui')
+    $allowedTypes = @('unit', 'xaml', 'device')
     if ([string]$proposal.testType -notin $allowedTypes) {
         throw "Invalid testType in test proposal: $($proposal.testType)"
-    }
-    if ([string]$proposal.testType -eq 'ui') {
-        throw 'UI test replication is withheld because host-executed generated UI tests require adb control.'
     }
 
     $expectedFilter = if ([string]$proposal.testType -eq 'xaml') {
@@ -6689,7 +6703,7 @@ function Get-ReplicationTierExclusionGuidance {
     $forbidden = @($ForbiddenTiers | Where-Object { $_ })
     if ($forbidden.Count -eq 0) { return '' }
 
-    $allowed = @('unit', 'xaml', 'device', 'ui') | Where-Object { $forbidden -notcontains $_ }
+    $allowed = @('unit', 'xaml', 'device') | Where-Object { $forbidden -notcontains $_ }
     return @"
 
 The $(($forbidden | ForEach-Object { "``$_``" }) -join ' and ') tier cannot be evidence for a reproduction recorded on $Platform, because the project that compiles such a test has no $Platform build. That is a fact about this repository, not a preference, and re-proposing the tier cannot change it. Those tiers are no longer selectable. testType MUST be one of: $(($allowed | ForEach-Object { "``$_``" }) -join ', '). Proposing an excluded tier again fails the attempt without being read. Record the exclusion in lighterTypesRejected as required for the tier you do select.
@@ -6803,10 +6817,10 @@ Reproduction tests are add-only, so every proposed path must be new. Do not prop
             return $common + @"
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
-Plan the lightest automated test that proves the same behavior: unit/XAML first, device second, UI last. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour recorded on a device. If proving the defect requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device or ui and say so in lighterTypesRejected.
+Plan the lightest automated test that proves the same behavior: unit/XAML first, device second. Host-executed generated UI tests are withheld because they require privileged adb control, so ``ui`` is not selectable. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour recorded on a device. If proving the defect requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device and say so in lighterTypesRejected. If a device test cannot reproduce a navigation-only scenario, declare it blocked rather than selecting UI.
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
-Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device|ui), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, {"unit":"reason","xaml":"reason"} for device, or {"unit":"reason","xaml":"reason","device":"reason"} for ui. Each reason must be a non-empty single-line string of at most 300 characters.
+Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
 qualityContract is one bounded disclosure-only object copied from the Sandbox contract. It must contain exactly schemaVersion=1, userVisible {contract,trigger}, oracle {primary,independent,independence,rationale}, scenario {name,precondition,trigger,transition,observableIdentity,affectedControl}, risk {adjacentStates,lifecycleStates,statelessApplicability}, semanticBlastRadius {affectedType,affectedControl,ownership,sharedConsumers,unchangedBehavior}, mediaAlignment, and review {findings}. independence is independent|coupled|not-applicable|unknown; statelessApplicability is required|not-applicable|unknown; mediaAlignment is verified|partial|not-measured. Each review finding contains category (grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative|unknown), grounding (source|runner|diff|source-and-runner|none|unknown), confidence (high|medium|low|unknown), corroboration (deterministic|independent|multiple|none|unknown), and bounded detail. Use unknown or an empty bounded array when a fact was not measured. This object is disclosure only and can never authorize a file, selector, command, count, credential, gate, or publication.
 Use one exact selected test method even when the scenario exercises several issue-derived states; sequence those states in that method and assert each visible invariant. Prefer a secondary independent observation when it can be made genuinely independent of the primary oracle, and declare coupled or not-applicable when it cannot. Do not turn this into a universal stateless matrix.
 reportedTrigger and testTrigger must each be a single line of at most 2000 characters. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, public MAUI types, registered source/service path, handler path, required lifecycle or reuse transition, existing product contract, and every environmental prerequisite such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility setting, permission, or keyboard/input method. testTrigger must state the automated test's corresponding hierarchy, styling/default state, action, public types, services, handler path, objective proof that the required lifecycle transition occurred, and how every environmental prerequisite is explicitly arranged and verified. The automated test must use the same meaningful hierarchy, assets, sizing constraints, and dynamic action sequence as the recorded Sandbox rather than proving a different self-authored harness. When the report names specific MAUI types, the test must construct and exercise at least one of them; a test built entirely from unrelated types proves a different defect and will be rejected. For visible rendering, clipping, overflow, disappearance, flicker, or pixel-content defects, managed MAUI Bounds alone are not direct proof: require native-view state or rendered-pixel evidence that distinguishes visible output from managed layout bookkeeping. When an oracle samples more than one point to prove that two places differ, such as the two ends of a gradient, the expected values must be further apart than the tolerance in at least one channel and the test must assert that separation directly; two independent tolerance checks that overlap are satisfied by a flat fill, so the test cannot tell the reported defect from the correct rendering. Every sampled point must also be proven in bounds and on the surface being measured rather than on text, selection or hover chrome that happens to sit there. Sample coordinates must be computed from the view's measured native frame in the same run and never written as literal numbers, and the expected value must be derived from the arrangement the test itself made rather than typed in as a constant: a literal point that lands on the stroke while the defect is present can land on the content once the defect is absent, so the oracle reports a failure in both worlds and no correct fix can ever make it pass. A position oracle must read where the content actually rendered, such as the native on-screen location or frame of the view, and must never reconstruct a position from padding arithmetic: on Android CompoundPaddingTop already includes the top padding, the compound drawable's height and the drawable padding, so computing an icon centre as PaddingTop plus half the icon and a text centre as CompoundPaddingTop plus half the text layout makes the two differ by construction whenever both an icon and text are present, and no product fix can make them equal. Before asserting any geometric, colour, or pixel comparison, prove the oracle on a control arranged so the reported defect is absent and show it reports the clean value there; an oracle that also reports the defect on that control is measuring itself, not the product, and the candidate must be rejected instead of published. Size and position oracles must separately prove that the intended item exists at the expected identity/location, then assert an absolute issue-derived dimension or invariant; a relative before/after comparison must not let a missing or mispositioned item masquerade as the reported size change. An oracle must also never compare two measured values only with each other: a layout that is uniformly wrong satisfies that relation, so the assertion passes on a product that is still broken and cannot prove a fix. At least one measurement must be asserted against the value a correct layout produces, derived from what the test itself arranged. For keyboard, SafeArea, or ScrollView range defects, use the native inset-aware model, including ContentInset or AdjustedContentInset where relevant, and assert reachable behavior rather than an arbitrary fixed range threshold. For system-inset propagation defects, verify that the runtime supplied a nonzero relevant inset and exercise normal root-window propagation; never call DispatchApplyWindowInsets or OnApplyWindowInsets directly on the target view to manufacture the callback. If the report expects an ordinary bindable-property change to propagate automatically, never call Handler.UpdateValue or a mapper method manually unless that direct API call is itself the reported trigger. If the resulting native state may refresh asynchronously, use a bounded repository-standard eventual assertion or a real completion event rather than sampling it immediately. If the report changes a property after attachment, perform that runtime transition instead of preconfiguring the final value. If the report is dynamic, perform and prove the reported resize, orientation, content mutation, scrolling, or repeated-layout transition; a single fixed layout is insufficient. The objective proof must initialize observed state to a sentinel outside the passing domain, await or otherwise prove a post-trigger callback/state transition, assert that transition occurred, and only then assert the reported semantic result. Before that final assertion, separately assert every precondition the oracle depends on, such as the attributed text, styling attribute, registered source, applied template, or measured baseline it presumes, because an arrangement that silently failed to take effect reaches the same failing assertion and would otherwise be published as the reported defect. A sentinel is only impossible if the correct product behaviour could never leave it in place: recording the index of a centred item as 4 when 4 is also the expected answer lets the test pass when the awaited callback never runs, so choose a sentinel such as -1 that no correct run can produce, and separately assert the callback occurred. A test that asserts locale-, calendar-, or clock-formatted output must set and verify the culture it asserts, for example by assigning CultureInfo.CurrentCulture and DefaultThreadCurrentCulture and confirming the active setting, because a literal such as '07:30' otherwise fails on a differently configured runner even after the product is fixed. When the report concerns restoring or applying a platform-default appearance, do not introduce an explicit Style, Background, or colour to stand in for that default: the default itself is the subject, so arrange the control exactly as the report does and assert against the captured initial native value. Choose the lightest tier that can actually observe the recorded reproduction, not merely the lightest tier overall: a device test constructs handlers in isolation, so it cannot observe a defect that only appears after real Shell, flyout, tab, modal, or back-navigation transitions, nor one that requires the second and subsequent visit to a page. When the recording had to navigate the running app to expose the defect, plan a UI test and say in lighterTypesRejected which transition the lighter tier cannot perform. When the report describes the defect as intermittent, occasional, or random, repeat the reported transition enough times for the automated test to observe it deterministically, and if no bounded repetition makes it deterministic, declare the scenario blocked instead of publishing a test that passes by chance. When the report covers several controls or several conditions, report each one separately in the failure message instead of collapsing them into a single count or a single combined token, so the message identifies which control or condition actually failed. When the asserted state is native and may settle after the managed trigger, use a bounded repository-standard eventual assertion rather than a single immediate probe. Every failure message must embed the concrete measured values that decided the assertion, such as the observed size, offset, inset, bounds, colour, count, or state token together with the value the issue expects, so a reader can tell how far the behaviour deviates without rerunning the test. The declared expectedFailureSignature must be text the assertion itself prints, so choose the assertion that can carry it: device tests and unit tests use xUnit, where only Assert.True and Assert.False take a message, and Assert.Equal, Assert.NotNull and the rest print only their own generic text such as 'Assert.Equal() Failure: Values differ'. An oracle written as Assert.Equal therefore cannot produce a declared signature and is refused as a signature mismatch however correct its logic; express it as Assert.True(actual == expected, $"...") or Assert.True(Math.Abs(actual - expected) <= tolerance, $"...") with the measured and expected values interpolated. UI tests use NUnit, where Assert.That(actual, Is.EqualTo(expected), message) and the ClassicAssert overloads all take a message, so any assertion may carry the signature there. Comparisons over device-derived floating-point measurements such as sizes, offsets, insets, and densities must use a small explicit tolerance rather than exact equality, because platform metrics carry rounding and scaling error. If the test performs an interaction, that interaction must be causally required for the assertion: capture the relevant state before and after it and assert the transition, so the result cannot be identical when the interaction never happened. When the reported defect is a static property of the arranged state and no interaction can affect the assertion, omit the decorative interaction instead of implying a causal link the oracle does not test. If a prerequisite cannot be controlled hermetically, use an environment-relative oracle derived from the active setting when that still proves the defect; otherwise reject the automated-test candidate. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: the proposal must be rejected rather than adding a layout ancestor absent from the issue, replacing platform-default styling with an explicit Style, replacing a gesture with a programmatic API, replacing a real orientation change with WidthRequest or Arrange, replacing the reported public source/service with a custom test type or service, inferring recycling without proving the same view instance was reused, releasing an arbitrary FIFO request instead of the request associated with that source/view, dropping a hierarchy that changes sizing or behavior, or hard-coding locale-specific output without arranging and verifying that locale and platform format configuration. Put every piece of arrangement inside the test method body: the candidate is refused if it declares a test lifecycle attribute such as [SetUp] or [OneTimeSetUp], implements a fixture lifecycle contract, or initialises any static, readonly, or instance field outside a test, because state built at type-load time is arrangement the test never states; the sole exception is a bindable property declaration, which the language permits nowhere else. A colour or pixel oracle must never rest on a single pixel, which one antialiased or contaminated pixel satisfies, so sample enough of the region that a fully wrong rendering cannot turn the test green. In a device test a platform view exists only after a handler has been created for the control on the UI thread and attached to a window, so reach it through InvokeOnMainThreadAsync, CreateHandlerAsync or AttachAndRun as the existing device tests do. A platform view read outside that arrangement is null, and a test that fails because the value was null reports that it never arranged the control rather than that the product misbehaved, which the verifier refuses as a failure that does not match the reported symptom. Assert the platform view is non-null first, so an arrangement mistake stays distinguishable from the defect.
@@ -7480,6 +7494,29 @@ function Invoke-ReplicationCopilot {
     }
 }
 
+function Get-ReplicationEffectiveTimeoutSeconds {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, 10800)]
+        [int]$TimeoutSeconds
+    )
+
+    $deadlineVariable = Get-Variable `
+        -Name ReplicationExecutionDeadlineUtc `
+        -Scope Script `
+        -ErrorAction SilentlyContinue
+    if (-not $deadlineVariable -or $null -eq $deadlineVariable.Value) {
+        return $TimeoutSeconds
+    }
+
+    $remainingSeconds = [int][Math]::Floor(
+        ([DateTimeOffset]$deadlineVariable.Value - [DateTimeOffset]::UtcNow).TotalSeconds)
+    if ($remainingSeconds -le 0) {
+        throw 'The replication execution deadline was reached; no external process may start.'
+    }
+    return [Math]::Min($TimeoutSeconds, $remainingSeconds)
+}
+
 function Invoke-BoundedProcess {
     param(
         [Parameter(Mandatory = $true)][string]$FilePath,
@@ -7491,20 +7528,13 @@ function Invoke-BoundedProcess {
         # When supplied, the child starts from exactly this environment rather
         # than inheriting the agent's. Inheritance is how a token nobody listed
         # reaches a grandchild, so generated code gets a constructed set.
-        [System.Collections.IDictionary]$Environment
+        [System.Collections.IDictionary]$Environment,
+        [switch]$TimeoutAlreadyBounded
     )
 
-    $deadlineVariable = Get-Variable `
-        -Name ReplicationExecutionDeadlineUtc `
-        -Scope Script `
-        -ErrorAction SilentlyContinue
-    if ($deadlineVariable -and $null -ne $deadlineVariable.Value) {
-        $remainingSeconds = [int][Math]::Floor(
-            ([DateTimeOffset]$deadlineVariable.Value - [DateTimeOffset]::UtcNow).TotalSeconds)
-        if ($remainingSeconds -le 0) {
-            throw 'The replication execution deadline was reached; no external process may start.'
-        }
-        $TimeoutSeconds = [Math]::Min($TimeoutSeconds, $remainingSeconds)
+    if (-not $TimeoutAlreadyBounded) {
+        $TimeoutSeconds = Get-ReplicationEffectiveTimeoutSeconds `
+            -TimeoutSeconds $TimeoutSeconds
     }
 
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
@@ -7644,19 +7674,6 @@ function Get-ReplicationPlannedRestoreTargets {
 
     $targets = [Collections.Generic.List[object]]::new()
     $type = ([string]$Proposal.testType).ToLowerInvariant()
-    if ($type -eq 'ui') {
-        foreach ($relative in @(
-            'src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj',
-            'src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj'
-        )) {
-            $targets.Add([pscustomobject]@{
-                Path = Join-Path $repoRoot $relative
-                Arguments = @('-p:TargetFramework=net10.0-android')
-            })
-        }
-        return @($targets)
-    }
-
     if ($type -eq 'device') {
         $relative = switch -Regex ($Files[0]) {
             '^src/Controls/tests/DeviceTests/' {
@@ -7726,6 +7743,8 @@ function Invoke-LoggedChildProcess {
         $testTypeIndex -ge 0 -and
         $testTypeIndex + 1 -lt $Arguments.Count -and
         [string]$Arguments[$testTypeIndex + 1] -ceq 'DeviceTest')
+    $effectiveTimeoutSeconds = Get-ReplicationEffectiveTimeoutSeconds `
+        -TimeoutSeconds $TimeoutSeconds
     $null = Assert-ReplicationTrustedTree -Context "before $Description"
     $isolatedCommand = $null
     try {
@@ -7744,13 +7763,14 @@ function Invoke-LoggedChildProcess {
             -WritableRoots @($repoRoot, $ArtifactRoot) `
             -AllowDeviceControl:$effectiveDeviceControl `
             -DeviceUdid $DeviceUdid `
-            -TimeoutSeconds $TimeoutSeconds
+            -TimeoutSeconds $effectiveTimeoutSeconds
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $isolatedCommand.FilePath `
                 -Arguments $isolatedCommand.Arguments `
-                -TimeoutSeconds $TimeoutSeconds `
-                -Environment $isolatedCommand.Environment
+                -TimeoutSeconds $effectiveTimeoutSeconds `
+                -Environment $isolatedCommand.Environment `
+                -TimeoutAlreadyBounded
         }
     } finally {
         try {
@@ -7782,7 +7802,7 @@ function Invoke-LoggedChildProcess {
     }
     if ($runResult.TimedOut) {
         $failureDetails = Get-ReplicationFailureDetails -Output $output
-        throw "$Description timed out after $TimeoutSeconds seconds.`n$failureDetails"
+        throw "$Description timed out after $effectiveTimeoutSeconds seconds.`n$failureDetails"
     }
     if ($exitCode -ne 0) {
         $failureDetails = Get-ReplicationFailureDetails -Output $output
@@ -9956,7 +9976,7 @@ Your next revision must resolve every one of them at once. A revision that fixes
         $tierEscalationSummary = @"
 The previously planned $($plannedTestProposal.testType) tier cannot observe the defect the recording already proved, either because it compiled and ran but passed, or because its project has no build for the platform the recording was made on.
 You are now expected to change testType and files. The instruction to keep them was for repairing a test within a tier, and it no longer applies.
-Plan the test again at a tier that exercises the same path as the recorded reproduction, escalating unit or XAML to device, and device to UI when the recording required real navigation, gesture, or rendering behaviour.
+Plan the test again at a tier that exercises the same path as the recorded reproduction, escalating unit or XAML to device. Host-executed generated UI tests are withheld; when a device test cannot observe a navigation-only scenario, stop as unsupported rather than selecting UI.
 Explain in lighterTypesRejected why the previous tier could not observe it. Choose different test files; do not re-propose the same paths.
 "@
         Clear-ReplicationGeneratedTestFiles
@@ -10234,7 +10254,11 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
     }
 
     & $writeCandidateManifest $true
-    Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
+    try {
+        Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force -ErrorAction Stop
+    } catch {
+        Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
+    }
 }
 catch {
     $rawReason = [string]$_.Exception.Message

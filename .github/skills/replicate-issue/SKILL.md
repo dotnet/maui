@@ -78,9 +78,9 @@ Use the same order as `evaluate-pr-tests` and `write-tests-agent`:
 
 1. **Unit or XAML** — managed behavior or XAML parsing/compilation/source generation
 2. **Device** — native handler/view, platform API, rendering, or lifecycle
-3. **UI** — Appium, visual layout, or end-to-end interaction is unavoidable
+3. **Unsupported** — if a device test cannot observe the recorded interaction, stop; host-executed generated UI tests are withheld until the runner provides an isolated Appium/ADB control plane
 
-Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, `write-device-tests`, or `write-ui-tests` skill. State why every lighter type cannot prove the observed Sandbox failure.
+Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, or `write-device-tests` skill. State why every lighter type cannot prove the observed Sandbox failure.
 
 - Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.
@@ -98,8 +98,7 @@ Invoke the corresponding `write-unit-tests`, `write-xaml-tests`, `write-device-t
 - Preserve environmental prerequisites such as locale/culture, 12/24-hour mode, time zone, theme, font scale, orientation, accessibility settings, permissions, and keyboard/input method. Explicitly arrange and verify each required setting. Never hard-code localized or platform-configured output without that setup; use an environment-relative oracle only when it still distinguishes correct behavior from the bug, otherwise reject the automated-test candidate.
 - For Mac Catalyst device tests using UIKit, use an `.iOS.cs` file or an existing Apple-platform directory; never create `.MacCatalyst.cs`, which can be included by other platform compile globs.
 - An iOS-only test in an `.iOS.cs` file must compile its test declaration only when `!MACCATALYST`; the filename alone does not isolate it from Mac Catalyst.
-- Unit and device file/class/filter names must use exactly `Issue<issue>`; XAML uses `Maui<issue>` and UI uses `Issue<issue>` per their existing skills.
-- UI tests may use only the repository-standard explicit empty `TestDevice` forwarding constructor. Forward the same parameter identifier to `base(...)`; never convert it to class primary-constructor syntax.
+- Unit and device file/class/filter names must use exactly `Issue<issue>`; XAML uses `Maui<issue>`.
 - The assertion must describe correct behavior and fail because of the observed bug, not because of setup, compilation, infrastructure, missing data, screenshot, or baseline errors.
 - Have the trusted `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1` wrapper invoke `verify-tests-fail-without-fix` in failure-only mode with the exact issue filter and literal expected failure signature. Never add a fix or use `-RequireFullVerification`.
 
@@ -280,8 +279,8 @@ Allowed values:
 - `blocked.stage`: `input`, `sandbox`, `video`, `test`, or `cleanup`
 - `blocked.code`: `invalid_input`, `unsupported_scenario`, `copilot_cli_unavailable`, `copilot_service_unavailable`, `sandbox_not_reproduced`, `sandbox_inconclusive`, `video_missing`, `video_invalid`, `test_not_failing`, `verification_inconclusive`, or `cleanup_failed`
 - `platform`: `android`, `ios`, `catalyst`, or `windows`
-- `testType`: `unit`, `xaml`, `device`, or `ui`
-- `testFilter`: `Issue<issueNumber>` for unit/device/UI, or `Maui<issueNumber>` for XAML
+- `testType`: `unit`, `xaml`, or `device`
+- `testFilter`: `Issue<issueNumber>` for unit/device, or `Maui<issueNumber>` for XAML
 - `selector.variant`: exactly one of `ui-parameterized-fixture`, `device-category-only`, or `fully-qualified-name`; raw syntax and normalized identity/counts are trusted only after the runner reports one selected test.
 
 For `status: "blocked"`, set `blocked` to:

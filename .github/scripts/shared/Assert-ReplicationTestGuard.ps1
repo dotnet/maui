@@ -22,10 +22,11 @@ function Get-ReplicationUnsafeSourcePatterns {
         [pscustomobject]@{ Code = 'dynamic-loading'; Scope = 'code'; Pattern = '(?i)\b(?:dynamic|ExpandoObject|CallSite|DynamicMetaObject|IDynamicMetaObjectProvider)\b|\bRuntimeHelpers\s*\.\s*(?:GetUninitializedObject|PrepareMethod|RunClassConstructor)\b' },
         [pscustomobject]@{ Code = 'native-code'; Scope = 'code'; Pattern = '(?i)\bSystem\s*\.\s*Runtime\s*\.\s*InteropServices\b(?!\s*\.\s*COMException\b)|\b(?:DllImport|LibraryImport|GeneratedDllImport|NativeLibrary|UnmanagedCallersOnly|GetDelegateForFunctionPointer|GCHandle)\b|\bMarshal\s*\.|(?-i:\bunsafe\s*[{(]|\bunsafe\s+(?:static|void|partial|class|struct|int|byte|char|fixed)\b|\bstackalloc\b|\bextern\s+(?:static|alias)\b|\bstatic\s+extern\b)' },
         [pscustomobject]@{ Code = 'environment-secrets'; Scope = 'code'; Pattern = '(?i)\busing\s+[A-Za-z_]\w*\s*=\s*(?:global\s*::)?System\s*\.\s*Environment\s*;|\b(?:System\s*\.\s*)?Environment\s*\.\s*(?:GetEnvironmentVariable|GetEnvironmentVariables|SetEnvironmentVariable|ExpandEnvironmentVariables)\b|\bEnvironmentVariableTarget\b|\b(?:System\s*\.\s*)?AppContext\s*\.\s*(?:GetData|SetData|BaseDirectory)\b|\b(?:GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|AZURE_STORAGE_KEY|AZURE_STORAGE_SAS_TOKEN)\b' },
-        [pscustomobject]@{ Code = 'device-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|Preferences)\s*\.|\b(?:ImageSource|HybridWebView|BlazorWebView|UrlWebViewSource|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b|(?<![A-Za-z0-9_])(?:Source|BackgroundImageSource|ImageSource|IconImageSource)\s*=(?!=)|\bSetValue\s*\(\s*[A-Za-z_]\w*\s*\.\s*(?:Source|BackgroundImageSource|ImageSource|IconImageSource)Property\b' },
+        [pscustomobject]@{ Code = 'device-external-access'; Scope = 'code'; Pattern = '(?i)\b(?:Browser|Launcher|SecureStorage|FileSystem|Connectivity|Clipboard|Preferences)\s*\.|\b(?:ImageSource|HybridWebView|BlazorWebView|UrlWebViewSource|UriImageSource|FileImageSource|UIApplication|PendingIntent)\b|(?<![A-Za-z0-9_])(?:Source|BackgroundImageSource|ImageSource|IconImageSource)\s*=(?!=)|\b(?:SetValue|SetBinding)\s*\(\s*(?:[A-Za-z_]\w*\s*\.\s*)*(?:Source|BackgroundImageSource|ImageSource|IconImageSource)Property\b' },
         [pscustomobject]@{ Code = 'webview'; Scope = 'literal'; Pattern = '(?i)<\s*(?:[A-Za-z_]\w*\s*:\s*)?(?:WebView|WebView2|HybridWebView|BlazorWebView)\b|\busing\s+[A-Za-z_]\w*\s*=\s*(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\s*;|\bnew\s+(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\b|\b(?:WebView|WebView2|HybridWebView|BlazorWebView|UrlWebViewSource|HtmlWebViewSource)\s*(?:<|\(|\.|[A-Za-z_]\w*\s*(?:[=;,)])|[),])|\b(?:as|typeof)\s*\(?\s*(?:(?:global\s*::)?[A-Za-z_]\w*\s*\.\s*)*(?:WebView|WebView2|HybridWebView|BlazorWebView)\b' },
         [pscustomobject]@{ Code = 'uri-construction'; Scope = 'code'; Pattern = '(?i)\b(?:System\s*\.\s*)?Uri(?:Builder)?\b|\b(?:Uri|UriBuilder)\s*\.\s*(?:Parse|TryCreate|EscapeDataString|UnescapeDataString)\b' },
         [pscustomobject]@{ Code = 'source-generator-analyzer'; Scope = 'code'; Pattern = '(?i)\bMicrosoft\s*\.\s*CodeAnalysis\b|\b(?:ISourceGenerator|IIncrementalGenerator|GeneratorInitializationContext|IncrementalGeneratorInitializationContext|GeneratorExecutionContext|DiagnosticAnalyzer(?:Attribute)?|AnalysisContext|GeneratorDriver|CSharpGeneratorDriver|Register(?:SourceOutput|ImplementationSourceOutput|PostInitializationOutput))\b|\[\s*(?:[A-Za-z_]\w*\s*\.\s*)?(?:Generator|DiagnosticAnalyzer)(?:Attribute)?\b' },
+        [pscustomobject]@{ Code = 'build-execution-deputy'; Scope = 'code'; Pattern = '(?i)\bMicrosoft\s*\.\s*Build\s*\.\s*(?:Utilities|Framework)\b|\b(?:ToolTask|ToolTaskExtension|IBuildEngine\d*|BuildEngine\d*|TaskLoggingHelper|CodeTaskFactory|RoslynCodeTaskFactory)\b|\bnew\s+(?:Microsoft\s*\.\s*Build\s*\.\s*)?(?:Exec|MSBuild)\b' },
         [pscustomobject]@{ Code = 'module-initializer'; Scope = 'code'; Pattern = '(?i)\[\s*(?:[A-Za-z_]\w*\s*\.\s*)?ModuleInitializer(?:Attribute)?\b' },
         [pscustomobject]@{ Code = 'assembly-runtime-policy'; Scope = 'code'; Pattern = '(?i)\b(?:DefaultDllImportSearchPaths|DisableRuntimeMarshalling|SkipLocalsInit|UnverifiableCode|SecurityRules|SecurityPermission)(?:Attribute)?\b' },
         [pscustomobject]@{ Code = 'preprocessor-symbol'; Scope = 'code'; Pattern = '(?im)^\s*#\s*(?:define|undef)\b' },
@@ -376,6 +377,49 @@ function Invoke-ReplicationJoinedLiteralSafety {
     }
 }
 
+function Test-ReplicationLiteralFragmentsCanAssembleUrl {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Fragments)
+
+    $bounded = @($Fragments | ForEach-Object { [string]$_ } | Where-Object {
+        $_.Length -gt 0 -and $_.Length -le 4096
+    })
+    if ($bounded.Count -lt 2) {
+        return $false
+    }
+    if ($bounded.Count -gt 256) {
+        return $true
+    }
+
+    foreach ($target in @(
+            'http://', 'https://', 'ftp://', 'ftps://', 'ws://', 'wss://',
+            'file:', 'data:', 'javascript:', 'mailto:'
+        )) {
+        $reachable = [bool[]]::new($target.Length + 1)
+        $reachable[0] = $true
+        for ($position = 0; $position -lt $target.Length; $position++) {
+            if (-not $reachable[$position]) { continue }
+            $remaining = $target.Substring($position)
+            foreach ($fragment in $bounded) {
+                if ($remaining.StartsWith(
+                        $fragment,
+                        [StringComparison]::OrdinalIgnoreCase)) {
+                    $reachable[$position + $fragment.Length] = $true
+                } elseif ($fragment.StartsWith(
+                        $remaining,
+                        [StringComparison]::OrdinalIgnoreCase)) {
+                    return $true
+                }
+            }
+        }
+        if ($reachable[$target.Length]) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Invoke-ReplicationObfuscatedUrlSafety {
     [CmdletBinding()]
     param(
@@ -405,6 +449,9 @@ function Invoke-ReplicationObfuscatedUrlSafety {
 
     $allFragments = @(Get-ReplicationLiteralFragments -Text $CodeText)
     if ($allFragments.Count -gt 1) {
+        if (Test-ReplicationLiteralFragmentsCanAssembleUrl -Fragments $allFragments) {
+            throw "Candidate source '$Path' contains prohibited 'remote-url' content assembled out of source order."
+        }
         Invoke-ReplicationJoinedLiteralSafety `
             -Text ([string]::Concat([string[]]$allFragments)) `
             -Patterns $Patterns `
@@ -477,6 +524,9 @@ function Invoke-ReplicationUnsafeSourceCapabilities {
     )
 
     if ([IO.Path]::GetExtension($Path) -ieq '.cs') {
+        if ($Content -match '[\u0085\u2028\u2029\u202A-\u202E\u2066-\u2069\u200B-\u200F\uFEFF]') {
+            throw "Candidate source '$Path' contains prohibited 'obfuscated-source' Unicode control characters."
+        }
         $unicodeText = Get-ReplicationCommentFreeText -Text $Content -Path $Path
         foreach ($escape in [regex]::Matches(
                 $unicodeText,
@@ -536,6 +586,7 @@ function Get-ReplicationProductFixUnsafePatterns {
         'webview',
         'uri-construction',
         'source-generator-analyzer',
+        'build-execution-deputy',
         'module-initializer',
         'assembly-runtime-policy',
         'preprocessor-symbol',
@@ -847,10 +898,8 @@ function Assert-ReplicationProductFixDeltaSafety {
     if ($BeforeContent -ceq $AfterContent) {
         throw "Product fix source '$Path' is unchanged."
     }
-    # The entire post-patch file is the security boundary, not only changed
-    # members. A guard or field edit can activate a dangerous sink in an
-    # otherwise unchanged member, so any changed file retaining such a sink is
-    # outside model-authored fix scope.
+    # A guard or field edit can activate a dangerous sink in any unchanged
+    # member, so the security boundary is the complete resulting file.
     Assert-ReplicationProductFixSafety -Content $AfterContent -Path $Path
 
     $extension = [IO.Path]::GetExtension($Path).ToLowerInvariant()
@@ -1032,6 +1081,9 @@ function Get-ReplicationFixPathPolicyRejection {
         ) + [IO.Path]::DirectorySeparatorChar
         if (-not $fullPath.StartsWith($rootPrefix, [StringComparison]::Ordinal)) {
             return 'resolves outside the repository'
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $root 'src') -PathType Container)) {
+            return 'cannot be checked because the repository source inventory is unavailable'
         }
         $buildExecutedPaths = Get-ReplicationBuildExecutedSourcePaths -RepositoryRoot $root
         if ($buildExecutedPaths.Contains($normalized)) {
@@ -1248,6 +1300,52 @@ function Assert-ReplicationGeneratedSourceSafety {
 
         $detail = Get-ReplicationUnsafeMatchDetail -ScanText $scan.CodeText -Match $group.Group[1]
         throw "Candidate source '$Path' assigns '$($group.Name).AutomationId' $($group.Count) times: $detail. MAUI allows AutomationId to be set only once, so change a dedicated result element's Text to signal progress instead."
+    }
+}
+
+function Assert-ReplicationGeneratedTestXamlSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ([IO.Path]::GetExtension($Path) -ine '.xaml') { return }
+    $settings = [Xml.XmlReaderSettings]::new()
+    $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+    $settings.XmlResolver = $null
+    $document = [Xml.XmlDocument]::new()
+    $document.XmlResolver = $null
+    $reader = [Xml.XmlReader]::Create([IO.StringReader]::new($Content), $settings)
+    try { $document.Load($reader) } finally { $reader.Dispose() }
+
+    $xamlNamespace = 'http://schemas.microsoft.com/winfx/2009/xaml'
+    foreach ($element in @($document.SelectNodes('//*'))) {
+        foreach ($attribute in @($element.Attributes)) {
+            if ($attribute.NamespaceURI -ceq $xamlNamespace -and
+                $attribute.LocalName -in @('FactoryMethod', 'Arguments', 'Type', 'Static')) {
+                throw "Candidate test XAML '$Path' uses prohibited x:$($attribute.LocalName) execution."
+            }
+            if ($attribute.Value -match '(?i)\{\s*x:(?:Static|Type)\b') {
+                throw "Candidate test XAML '$Path' uses a prohibited executable XAML markup extension."
+            }
+            if ($attribute.NamespaceURI -ceq 'http://www.w3.org/2000/xmlns/' -and
+                $attribute.Value -match '(?i)^clr-namespace:(?<namespace>[^;]+)(?:;assembly=(?<assembly>.+))?$') {
+                $namespace = $Matches['namespace']
+                $assembly = $Matches['assembly']
+                if ($namespace -notmatch '^(?:Microsoft\.Maui|Maui\.)' -or
+                    ($assembly -and $assembly -notmatch '^Microsoft\.Maui')) {
+                    throw "Candidate test XAML '$Path' maps an untrusted CLR namespace or assembly."
+                }
+            }
+        }
+        if ($element.NamespaceURI -ceq $xamlNamespace -and
+            $element.LocalName -in @('FactoryMethod', 'Arguments', 'Type', 'Static')) {
+            throw "Candidate test XAML '$Path' uses prohibited x:$($element.LocalName) execution."
+        }
+        if ($element.LocalName -match '(?i)^(?:ObjectDataProvider|Process|ToolTask|Exec)$') {
+            throw "Candidate test XAML '$Path' constructs a prohibited executable type."
+        }
     }
 }
 

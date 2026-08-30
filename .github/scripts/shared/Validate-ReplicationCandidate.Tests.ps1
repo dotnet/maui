@@ -1057,6 +1057,7 @@ static void LoadInlineXaml()
         @{ Kind = 'other environment secret'; Snippet = 'Environment.GetEnvironmentVariable("SECRET_VALUE");' },
         @{ Kind = 'shell execution'; Snippet = 'var shell = "bash -c whoami";' },
         @{ Kind = 'package reference'; Snippet = '#r "nuget: Evil.Package, 1.0.0"' }
+        @{ Kind = 'MSBuild ToolTask'; Snippet = 'class Runner : Microsoft.Build.Utilities.ToolTask { protected override string ToolName => "python"; }' }
     ) {
         param($Kind, $Snippet)
 
@@ -1077,6 +1078,8 @@ static void LoadInlineXaml()
         @{ Kind = 'split scheme'; Snippet = 'var url = string.Concat("ht", "tps", ":", "//example.invalid");' }
         @{ Kind = 'aliased split scheme'; Snippet = 'using S = System.String; var url = S.Concat("ht", "tps", ":", "//example.invalid");' }
         @{ Kind = 'concatenated scheme'; Snippet = 'var url = "htt" + "ps" + ":" + "//example.invalid";' }
+        @{ Kind = 'reordered list scheme'; Snippet = 'var p = new System.Collections.Generic.List<string> { "//example.invalid", "ht", "tp:" }; var url = p[1] + p[2] + p[0];' }
+        @{ Kind = 'reordered dictionary scheme'; Snippet = 'var p = new System.Collections.Generic.Dictionary<int, string> { [0] = "//example.invalid", [1] = "ht", [2] = "tp:" }; var url = p[1] + p[2] + p[0];' }
         @{ Kind = 'base64 scheme'; Snippet = 'var url = "aHR0cHM6Ly9leGFtcGxlLmludmFsaWQ=";' }
         @{ Kind = 'character scheme'; Snippet = "var url = string.Concat('h', 't', 't', 'p', 's', ':', '/', '/');" }
         @{ Kind = 'hex scheme'; Snippet = 'var url = new string(new[] { (char)0x68, (char)0x74 });' }
@@ -1138,6 +1141,37 @@ var process = S\u0079stem.Diagn\u006fstics.Pr\u006fcess.Start("tool");
         } | Should -Throw '*obfuscated-source*'
     }
 
+    It 'rejects raw Unicode bidi and invisible controls' -TestCases @(
+        @{ Value = [char]0x0085 },
+        @{ Value = [char]0x202E },
+        @{ Value = [char]0x2066 },
+        @{ Value = [char]0x200B },
+        @{ Value = [char]0xFEFF }
+    ) {
+        param($Value)
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content ("var na${Value}me = 1;") `
+                -Path 'Issue1.cs'
+        } | Should -Throw '*Unicode control characters*'
+    }
+
+    It 'rejects executable generated-test XAML factories and namespaces' -TestCases @(
+        @{
+            Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:p="clr-namespace:System.Diagnostics;assembly=System.Diagnostics.Process"><p:Process x:FactoryMethod="Start"><x:Arguments><x:String>tool</x:String></x:Arguments></p:Process></ContentPage>'
+        },
+        @{
+            Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"><Label Text="{x:Static System.Environment.CurrentDirectory}" /></ContentPage>'
+        }
+    ) {
+        param($Snippet)
+        {
+            Assert-ReplicationGeneratedTestXamlSafety `
+                -Content $Snippet `
+                -Path 'src/Controls/tests/Xaml.UnitTests/Issue1.xaml'
+        } | Should -Throw
+    }
+
     It 'rejects every URL-capable XML and native platform sink' -TestCases @(
         @{
             Name = 'integer-char XmlTextReader'
@@ -1154,6 +1188,10 @@ var process = S\u0079stem.Diagn\u006fstics.Pr\u006fcess.Start("tool");
         @{
             Name = 'aliased XmlDocument instance Load'
             Snippet = 'using D = System.Xml.XmlDocument; var document = new D(); document.Load(address);'
+        }
+        @{
+            Name = 'reordered fragments through fully-qualified SourceProperty'
+            Snippet = 'var parts = new System.Collections.Generic.List<string> { "//169.254.169.254/latest/meta-data", "ht", "tp:" }; image.SetValue(Microsoft.Maui.Controls.Image.SourceProperty, parts[1] + parts[2] + parts[0]);'
         }
         @{
             Name = 'XML resolver'

@@ -369,12 +369,23 @@ Describe 'Selecting a real process isolation boundary' {
         $script:Target = Join-Path $script:ScratchRoot 'isolated-target.ps1'
         $script:IsolationPlanRepo = Join-Path $script:ScratchRoot 'isolation-plan-repo'
         New-Item -ItemType Directory -Path $script:IsolationPlanRepo -Force | Out-Null
+        foreach ($relative in @('.git/hooks', '.git/objects', '.git/refs', '.git/info')) {
+            New-Item -ItemType Directory -Path (Join-Path $script:IsolationPlanRepo $relative) -Force |
+                Out-Null
+        }
+        foreach ($relative in @('.git/config', '.git/HEAD', '.git/packed-refs')) {
+            Set-Content -LiteralPath (Join-Path $script:IsolationPlanRepo $relative) `
+                -Value 'trusted' -Encoding utf8NoBOM
+        }
+        $nugetPackages = Join-Path $script:ScratchRoot 'nuget-packages'
+        New-Item -ItemType Directory -Path $nugetPackages -Force | Out-Null
         Set-Content -LiteralPath $script:Target -Encoding utf8NoBOM -Value (
             'param([string]$Value) Write-Output $Value')
         $script:MinimalEnvironment = @{
             PATH = [Environment]::GetEnvironmentVariable('PATH')
             HOME = [Environment]::GetEnvironmentVariable('HOME')
             TMPDIR = [IO.Path]::GetTempPath()
+            NUGET_PACKAGES = $nugetPackages
         }
     }
 
@@ -419,10 +430,15 @@ Describe 'Selecting a real process isolation boundary' {
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/run/docker\.sock'
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/docker'
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/usr/bin/adb'
+        $command.Arguments | Should -Contain '--property=PrivateNetwork=yes'
+        ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/\.git/hooks'
+        ($command.Arguments -join "`n") | Should -Match 'ReadOnlyPaths=.*?/\.git/config'
         $command.Arguments | Should -Contain '--property=SupplementaryGroups='
+        $command.Arguments | Should -Contain '--property=RestrictAddressFamilies=AF_UNIX'
         $command.Arguments | Should -Contain '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
         ($command.Arguments -join "`n") | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED'
         ($command.Arguments -join "`n") | Should -Not -Match '--setenv=XDG_RUNTIME_DIR='
+        ($command.Arguments -join "`n") | Should -Match 'BindPaths=.*?/nuget-packages'
     }
 
     It 'withholds lanes that have no enforceable process and app boundary' -TestCases @(
@@ -475,6 +491,8 @@ Describe 'Selecting a real process isolation boundary' {
             -GroupId 1000
 
         ($command.Arguments -join "`n") | Should -Not -Match 'platform-tools/adb'
+        $command.Arguments | Should -Not -Contain '--property=PrivateNetwork=yes'
+        $command.Arguments | Should -Not -Contain '--property=RestrictAddressFamilies=AF_UNIX'
         $command.Arguments | Should -Contain '-AllowDeviceControl'
         $command.Arguments | Should -Contain 'true'
     }

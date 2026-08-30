@@ -134,6 +134,7 @@ BeforeAll {
         'Get-ReplicationTargetTestDeclarations',
         'Resolve-ReplicationVerifierMetadata',
         'Assert-GeneratedTestContent',
+        'Get-ReplicationEffectiveTimeoutSeconds',
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationRuntimeEnvironment',
@@ -433,6 +434,26 @@ Describe 'Replication orchestrator security boundary' {
         $script:Source | Should -Match '\$parsedJobStartedAtUtc\.AddMinutes\(345\)'
         $script:Source | Should -Match '\$stepExecutionDeadlineUtc -lt \$jobExecutionDeadlineUtc'
         $script:Source | Should -Match 'The replication execution deadline was reached'
+    }
+
+    It 'uses one deadline-clamped timeout for the transient unit and its parent wait' {
+        $logged = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-LoggedChildProcess\b.*?^}').Value
+        $logged | Should -Match (
+            '\$effectiveTimeoutSeconds = Get-ReplicationEffectiveTimeoutSeconds')
+        ([regex]::Matches(
+            $logged,
+            '-TimeoutSeconds \$effectiveTimeoutSeconds'
+        )).Count | Should -Be 2
+        $logged | Should -Match '-TimeoutAlreadyBounded'
+    }
+
+    It 'does not let best-effort runtime-cache cleanup overwrite a certified result' {
+        $script:Source | Should -Match (
+            '(?s)& \$writeCandidateManifest \$true\s+try \{\s+' +
+            'Remove-Item -LiteralPath \$replicationRuntimeRoot.*?' +
+            '\} catch \{\s+Write-Warning "Replication runtime-cache cleanup failed')
     }
 
     It 'verifies the targeted test more than once by default' {
@@ -2763,12 +2784,27 @@ InitializeComponent();
         $device | Should -Match '\$buildArgs \+= ''--no-restore'''
     }
 
-    It 'withholds host-executed generated UI tests from replication' {
+    It 'does not offer host-executed generated UI tests to replication' {
         $proposal = [regex]::Match(
             $script:Source,
             '(?ms)^function Read-TestProposal\b.*?^}').Value
-        $proposal | Should -Match "testType -eq 'ui'"
-        $proposal | Should -Match 'UI test replication is withheld'
+        $proposal | Should -Match '\$allowedTypes = @\(''unit'', ''xaml'', ''device''\)'
+        $proposal | Should -Not -Match "'ui'"
+        $skill = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../skills/replicate-issue/SKILL.md') -Raw
+        $skill | Should -Match 'host-executed generated UI tests are withheld'
+        $skill | Should -Not -Match '`testType`:.*`ui`'
+    }
+
+    It 'disables hooks and fsmonitor for git status after generated execution' {
+        $status = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationGitStatus\b.*?^}').Value
+        $status | Should -Match 'core\.hooksPath=/dev/null'
+        $status | Should -Match 'core\.fsmonitor=false'
+        $status | Should -Match 'credential\.helper='
+        $status | Should -Match 'GIT_CONFIG_COUNT'
+        $status | Should -Match 'GIT_CONFIG_PARAMETERS'
     }
 
     It 'has exactly one capability set, with no parameter that can widen it' {
@@ -7799,7 +7835,7 @@ Describe 'A tier with no build for the platform escalates instead of stalling' {
             $guidance | Should -Match 'testType MUST be one of'
             $guidance | Should -Match '`xaml`'
             $guidance | Should -Match '`device`'
-            $guidance | Should -Match '`ui`'
+            $guidance | Should -Not -Match '`ui`'
         }
 
         It 'never offers a rejected tier back as an option' {

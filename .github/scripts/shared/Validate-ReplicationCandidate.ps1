@@ -3410,6 +3410,7 @@ function Assert-SourceTextIsSafe {
 
     Assert-ReplicationConditionalCompilationBalance -Content $normalized -Path $Path
     Assert-ReplicationGeneratedSourceSafety -Content $normalized -Path $Path
+    Assert-ReplicationGeneratedTestXamlSafety -Content $normalized -Path $Path
     Assert-ReplicationPlatformSourceSafety `
         -Content $normalized `
         -Path $Path `

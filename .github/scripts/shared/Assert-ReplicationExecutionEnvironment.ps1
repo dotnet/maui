@@ -665,6 +665,25 @@ function Get-ReplicationNetworkIsolatedCommand {
             }
         }
     }
+    $gitDirectory = Join-Path $RepositoryRoot '.git'
+    $readOnlyPaths = [Collections.Generic.List[string]]::new()
+    if (Test-Path -LiteralPath $gitDirectory -PathType Container) {
+        $inaccessiblePaths += "-$(Join-Path $gitDirectory 'hooks')"
+        foreach ($relative in @(
+            'config',
+            'config.worktree',
+            'HEAD',
+            'objects',
+            'refs',
+            'packed-refs',
+            'info'
+        )) {
+            $candidate = Join-Path $gitDirectory $relative
+            if (Test-Path -LiteralPath $candidate) {
+                $readOnlyPaths.Add($candidate)
+            }
+        }
+    }
 
     $systemdArguments = @(
         '-n',
@@ -701,6 +720,21 @@ function Get-ReplicationNetworkIsolatedCommand {
         "--property=InaccessiblePaths=$($inaccessiblePaths -join ' ')",
         '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
     )
+    if (-not $AllowDeviceControl) {
+        # Generated host tests do not need IP sockets. Blocking AF_INET and
+        # AF_INET6 also removes the loopback ADB server as a control-plane
+        # escape even when no adb executable is visible inside the unit.
+        $systemdArguments += '--property=RestrictAddressFamilies=AF_UNIX'
+    }
+    if (-not $AllowDeviceControl) {
+        # Host-only unit/XAML phases need no Appium or adb connection. A private
+        # network namespace prevents raw loopback protocol access to the host's
+        # adb server even if generated code bypasses every API scan.
+        $systemdArguments += '--property=PrivateNetwork=yes'
+    }
+    if ($readOnlyPaths.Count -gt 0) {
+        $systemdArguments += "--property=ReadOnlyPaths=$($readOnlyPaths -join ' ')"
+    }
     foreach ($writableRoot in @($WritableRoots | Sort-Object -Unique)) {
         $fullWritableRoot = [IO.Path]::GetFullPath($writableRoot)
         if (-not (Test-Path -LiteralPath $fullWritableRoot -PathType Container) -or
@@ -716,7 +750,8 @@ function Get-ReplicationNetworkIsolatedCommand {
         $Environment['ANDROID_AVD_HOME'],
         $Environment['ANDROID_USER_HOME'],
         $Environment['GRADLE_USER_HOME'],
-        $Environment['DOTNET_CLI_HOME']
+        $Environment['DOTNET_CLI_HOME'],
+        $Environment['NUGET_PACKAGES']
     )) {
         if (-not [string]::IsNullOrWhiteSpace([string]$candidate) -and
             [IO.Path]::IsPathRooted([string]$candidate) -and
