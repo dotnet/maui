@@ -9219,6 +9219,7 @@ try {
         -Environment (Get-ReplicationRuntimeEnvironment) `
         -WritableRoots @($repoRoot, $ArtifactRoot) `
         -DeviceUdid $DeviceUdid
+Restore-TrackedVerificationSideEffects -PreservedFiles @()
 Assert-InitialReplicationWorktree
 Clear-TransientAppiumDirectory
 

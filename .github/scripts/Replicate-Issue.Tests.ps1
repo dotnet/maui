@@ -2820,6 +2820,16 @@ InitializeComponent();
             [StringComparison]::Ordinal)
         $prewarm | Should -BeGreaterOrEqual 0
         $prewarm | Should -BeLessThan $isolation
+        $cleanup = $script:Source.IndexOf(
+            'Restore-TrackedVerificationSideEffects -PreservedFiles @()',
+            $isolation,
+            [StringComparison]::Ordinal)
+        $baselineCheck = $script:Source.IndexOf(
+            'Assert-InitialReplicationWorktree',
+            $cleanup,
+            [StringComparison]::Ordinal)
+        $cleanup | Should -BeGreaterThan $isolation
+        $baselineCheck | Should -BeGreaterThan $cleanup
         $script:Source | Should -Match 'Get-ReplicationPlannedRestoreTargets'
         $script:Source | Should -Match 'MauiBlazorWebView\.DeviceTests\.csproj'
         $script:Source | Should -Not -Match (
