@@ -7888,7 +7888,11 @@ function Restore-TransientSandbox {
 }
 
 function Restore-TrackedVerificationSideEffects {
-    param([Parameter(Mandatory = $true)][string[]]$PreservedFiles)
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$PreservedFiles
+    )
 
     $preserved = [System.Collections.Generic.HashSet[string]]::new(
         [StringComparer]::Ordinal)

@@ -140,6 +140,7 @@ BeforeAll {
         'Get-ReplicationRuntimeEnvironment',
         'Invoke-ReplicationTrustedRestore',
         'Get-ReplicationPlannedRestoreTargets',
+        'Restore-TrackedVerificationSideEffects',
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
         'Test-ReplicationSandboxBuildFailure',
@@ -2830,6 +2831,9 @@ InitializeComponent();
             [StringComparison]::Ordinal)
         $cleanup | Should -BeGreaterThan $isolation
         $baselineCheck | Should -BeGreaterThan $cleanup
+        (Get-Command Restore-TrackedVerificationSideEffects).Parameters['PreservedFiles'].Attributes |
+            Where-Object { $_ -is [System.Management.Automation.AllowEmptyCollectionAttribute] } |
+            Should -Not -BeNullOrEmpty
         $script:Source | Should -Match 'Get-ReplicationPlannedRestoreTargets'
         $script:Source | Should -Match 'MauiBlazorWebView\.DeviceTests\.csproj'
         $script:Source | Should -Not -Match (
