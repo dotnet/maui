@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(Material3FeatureSwitchTestCollection.Name)]
 	public partial class ImageButtonHandlerTests
 	{
-		const string Material3FeatureSwitch = "Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled";
+		const string Material3FeatureSwitch = "Microsoft.Maui.RuntimeFeature." + nameof(RuntimeFeature.IsMaterial3Enabled);
 
 		[Fact(DisplayName = "ImageButton uses MauiShapeableImageView with expected activity context")]
 		public Task ImageButtonUsesMauiShapeableImageViewWithExpectedActivityContext()
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				AppContext.TryGetSwitch(Material3FeatureSwitch, out bool wasMaterial3Enabled);
+				bool wasMaterial3Enabled = RuntimeFeature.IsMaterial3Enabled;
 				AppContext.SetSwitch(Material3FeatureSwitch, true);
 				try
 				{

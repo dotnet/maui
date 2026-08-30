@@ -42,7 +42,10 @@ namespace Microsoft.Maui.Platform
 		/// optionally applying the .NET MAUI Material 3 theme to the context.
 		/// </summary>
 		/// <param name="context">The Android context for the view.</param>
-		/// <param name="useMaterial3">Whether to apply the .NET MAUI Material 3 theme.</param>
+		/// <param name="useMaterial3">
+		/// <see langword="true"/> to use the .NET MAUI Material 3 theme; otherwise, to use the Material 2 theme
+		/// when <paramref name="context"/> is already wrapped in a .NET MAUI Material theme.
+		/// </param>
 		public MauiShapeableImageView(Context? context, bool useMaterial3)
 			: base(GetThemedContext(context, useMaterial3))
 		{
