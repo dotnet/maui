@@ -9208,7 +9208,7 @@ try {
             '-c', 'Debug',
             '--no-restore',
             '-p:EmbedAssembliesIntoApk=true',
-            "-p:AndroidManifest=$relativeIsolationManifest"
+            "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
         )
     $null = Get-ReplicationNetworkIsolatedCommand `
         -Platform $Platform `

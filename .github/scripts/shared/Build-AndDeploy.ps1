@@ -161,7 +161,7 @@ if ($Platform -eq "android") {
             (Split-Path -Parent $ProjectPath),
             $isolationManifest
         ).Replace('\', '/')
-        $buildArgs += "-p:AndroidManifest=$relativeIsolationManifest"
+        $buildArgs += "-p:_MauiReplicationAndroidManifest=$relativeIsolationManifest"
     }
     if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
