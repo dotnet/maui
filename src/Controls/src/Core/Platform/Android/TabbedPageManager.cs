@@ -994,34 +994,18 @@ public class TabbedPageManager
 
 	void SetBottomMenuItemChecked(int index)
 	{
-		using var menu = _bottomNavigationView.Menu;
-		index = Math.Min(index, menu.Size() - 1);
 		if (index < 0)
 			return;
 
-		if (index < _registeredMenuItems.Count &&
-			_registeredMenuItems[index].IsAlive())
-		{
-			_registeredMenuItems[index].SetChecked(true);
-			return;
-		}
-
-		var menuItem = menu.GetItem(index);
-		if (menuItem is null)
-			return;
-
-		var disposeMenuItem = !_registeredMenuItems.Any(
-			registeredMenuItem => ReferenceEquals(registeredMenuItem, menuItem));
-		try
-		{
-			if (menuItem.IsAlive())
-				menuItem.SetChecked(true);
-		}
-		finally
-		{
-			if (disposeMenuItem)
-				menuItem.Dispose();
-		}
+		using var menu = _bottomNavigationView.Menu;
+		var menuItemId = NativeBottomNavigationSelection.GetMenuItemId(
+			index,
+			Element.Children.Count,
+			_bottomNavigationView.MaxItemCount,
+			BottomNavigationViewUtils.MoreTabId);
+		var menuItem = menu.FindItem(menuItemId);
+		if (menuItem.IsAlive())
+			menuItem.SetChecked(true);
 	}
 
 	protected virtual void OnMoreItemSelected(int selectedIndex, BottomSheetDialog dialog)

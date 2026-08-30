@@ -152,6 +152,9 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
+				if (i == currentIndex)
+					menuItem.SetChecked(true);
+
 				menuItems.Add(menuItem);
 			}
 

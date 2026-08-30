@@ -71,6 +71,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		readonly List<IMenuItem> _registeredMenuItems = new List<IMenuItem>();
 		readonly List<(ShellSection Owner, AView View)> _moreItemViews = new List<(ShellSection, AView)>();
 		int _tabRegistrationGeneration;
+		bool _destroyed;
 
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
@@ -109,6 +110,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void Destroy()
 		{
+			if (_destroyed)
+				return;
+
+			_destroyed = true;
 			_tabRegistrationGeneration++;
 			_nativeMoreRegistrations.Clear();
 			_nativeTabRegistrations.Clear();
@@ -145,7 +150,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		}
 
-		// Use OnDestory become OnDestroyView may fire before events are completed.
+		// Use OnDestroy because OnDestroyView may fire before events are completed.
 		public override void OnDestroy()
 		{
 			Destroy();
@@ -305,34 +310,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetBottomMenuItemChecked(int index)
 		{
-			using var menu = _bottomView.Menu;
-			index = Math.Min(index, menu.Size() - 1);
 			if (index < 0)
 				return;
 
-			if (index < _registeredMenuItems.Count &&
-				_registeredMenuItems[index].IsAlive())
-			{
-				_registeredMenuItems[index].SetChecked(true);
-				return;
-			}
-
-			var menuItem = menu.GetItem(index);
-			if (menuItem is null)
-				return;
-
-			var disposeMenuItem = !_registeredMenuItems.Any(
-				registeredMenuItem => ReferenceEquals(registeredMenuItem, menuItem));
-			try
-			{
-				if (menuItem.IsAlive())
-					menuItem.SetChecked(true);
-			}
-			finally
-			{
-				if (disposeMenuItem)
-					menuItem.Dispose();
-			}
+			using var menu = _bottomView.Menu;
+			var menuItemId = NativeBottomNavigationSelection.GetMenuItemId(
+				index,
+				ShellItemController.GetItems().Count,
+				_bottomView.MaxItemCount,
+				MoreTabId);
+			var menuItem = menu.FindItem(menuItemId);
+			if (menuItem.IsAlive())
+				menuItem.SetChecked(true);
 		}
 
 		protected override void OnDisplayedPageChanged(Page newPage, Page oldPage)
@@ -615,7 +604,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					continue;
 
 				object owner = isMoreItem
-					? ShellItem
+					? (object)ShellItem
 					: shellSections[menuItem.ItemId];
 				registrationItems.Add((menuItem, owner, isMoreItem));
 				_nativeTabRegistrations.Register(
@@ -662,6 +651,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var source = shellSection.Icon;
 			var index = ShellItemController.GetItems().IndexOf(shellSection);
+			if (index < 0)
+				return;
+
 			var iconUpdateIsCurrent = BottomNavigationViewUtils.BeginMenuIconUpdate(_bottomView, index);
 			BottomNavigationViewUtils.SetMenuItemIcon(
 				menuItem,

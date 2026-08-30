@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler)
 		{
-			if (!ReferenceEquals(oldHandler?.PlatformView, newHandler?.PlatformView))
+			if (newHandler is null ||
+				!ReferenceEquals(oldHandler?.PlatformView, newHandler.PlatformView))
 			{
 				_nativeMenuRegistrations.Clear();
 			}
