@@ -2715,10 +2715,10 @@ InitializeComponent();
         $buildDeploy | Should -Match 'GetRelativePath\('
         $buildDeploy | Should -Match (
             '-p:_MauiReplicationAndroidManifest=\$relativeIsolationManifest')
-        $sandboxProject = Get-Content -LiteralPath (
-            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj') -Raw
-        $sandboxProject | Should -Match '<AndroidManifest'
-        $sandboxProject | Should -Match '\$\(_MauiReplicationAndroidManifest\)'
+        $sampleTargets = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Directory.Build.targets') -Raw
+        $sampleTargets | Should -Match "MSBuildProjectName.*Maui\.Controls\.Sample\.Sandbox"
+        $sampleTargets | Should -Match '<AndroidManifest>\$\(_MauiReplicationAndroidManifest\)</AndroidManifest>'
 
         [xml]$ordinary = $androidManifest
         [xml]$isolated = $replicationManifest
