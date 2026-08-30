@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 			{
 				// Dispatch because this is going to be async, and we want to catch any errors
 				var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
-				ComponentsDispatcher.InvokeAsync(async () =>
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					var newItems = (eventArgs.NewItems ?? Array.Empty<object>()).Cast<RootComponent>();
 					var oldItems = (eventArgs.OldItems ?? Array.Empty<object>()).Cast<RootComponent>();
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 					{
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
-				}).FireAndForget(logger);
+				}).ObserveExceptionsAsync(logger);
 			}
 		}
 
@@ -277,11 +277,11 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				// Razor component code from working because it requires the WebView to exist.
 				// Dispatch because this is going to be async, and we want to catch any errors.
 				var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
-				ComponentsDispatcher.InvokeAsync(async () =>
+				_ = ComponentsDispatcher.InvokeAsync(async () =>
 				{
 					await _webviewManager.DisposeAsync();
 					base.Dispose(disposing);
-				}).FireAndForget(logger);
+				}).ObserveExceptionsAsync(logger);
 				return;
 			}
 

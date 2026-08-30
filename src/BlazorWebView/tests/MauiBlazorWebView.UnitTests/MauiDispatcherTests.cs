@@ -73,17 +73,49 @@ public sealed class MauiDispatcherTests
 	}
 
 	[Fact]
-	public async Task FireAndForgetLogsFailure()
+	public async Task ObserveExceptionsLogsFailure()
 	{
 		var exception = new InvalidOperationException("sentinel");
-		var loggedException = new TaskCompletionSource<Exception>(
-			TaskCreationOptions.RunContinuationsAsynchronously);
+		Exception? loggedException = null;
 
-		Task.FromException(exception).FireAndForget(new CallbackLogger(loggedException));
+		await Task.FromException(exception).ObserveExceptionsAsync(
+			new CallbackLogger(ex => loggedException = ex));
 
-		Assert.Same(
-			exception,
-			await loggedException.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+		Assert.Same(exception, loggedException);
+	}
+
+	[Fact]
+	public async Task ObserveExceptionsIgnoresCanceledTask()
+	{
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+
+		await Task.FromCanceled(cancellation.Token).ObserveExceptionsAsync(
+			new CallbackLogger(_ => Assert.Fail("Cancellation should not be logged.")));
+	}
+
+	[Fact]
+	public async Task ObserveExceptionsLogsFaultedCancellationException()
+	{
+		var exception = new OperationCanceledException("faulted cancellation");
+		Exception? loggedException = null;
+
+		await Task.FromException(exception).ObserveExceptionsAsync(
+			new CallbackLogger(ex => loggedException = ex));
+
+		Assert.Same(exception, loggedException);
+	}
+
+	[Fact]
+	public async Task ObserveExceptionsPropagatesLoggerFailureThroughReturnedTask()
+	{
+		var loggingException = new InvalidOperationException("logger failure");
+		var observer = Task.FromException(new InvalidOperationException("work item failure"))
+			.ObserveExceptionsAsync(new CallbackLogger(_ => throw loggingException));
+
+		var thrown = await Assert.ThrowsAsync<InvalidOperationException>(() => observer);
+
+		Assert.Same(loggingException, thrown);
 	}
 
 	private Task InvokeFailure(DispatcherWorkItemKind workItemKind, Exception exception) =>
@@ -133,7 +165,7 @@ public sealed class MauiDispatcherTests
 			throw new NotSupportedException();
 	}
 
-	private sealed class CallbackLogger(TaskCompletionSource<Exception> loggedException) : ILogger
+	private sealed class CallbackLogger(Action<Exception> logException) : ILogger
 	{
 		public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
 
@@ -148,7 +180,7 @@ public sealed class MauiDispatcherTests
 		{
 			if (exception is not null)
 			{
-				loggedException.TrySetResult(exception);
+				logException(exception);
 			}
 		}
 	}

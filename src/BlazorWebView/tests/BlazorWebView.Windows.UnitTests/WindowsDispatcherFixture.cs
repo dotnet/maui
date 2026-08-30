@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Runtime.ExceptionServices;
+using System.Windows.Forms;
 using ComponentsDispatcher = Microsoft.AspNetCore.Components.Dispatcher;
 using DispatcherPriority = System.Windows.Threading.DispatcherPriority;
 using WindowsDispatcher = System.Windows.Threading.Dispatcher;
@@ -14,6 +15,7 @@ public sealed class WindowsDispatcherCollection : ICollectionFixture<WindowsDisp
 
 public sealed class WindowsDispatcherFixture : IDisposable
 {
+	private static readonly TimeSpan StartupTimeout = TimeSpan.FromSeconds(30);
 	private readonly ApplicationContext _applicationContext;
 	private readonly Thread _wpfThread;
 	private readonly Thread _windowsFormsThread;
@@ -38,10 +40,9 @@ public sealed class WindowsDispatcherFixture : IDisposable
 			}
 		});
 
-		(WpfNativeDispatcher, WpfDispatcher) = wpfReady.Task
-			.WaitAsync(TimeSpan.FromSeconds(5))
-			.GetAwaiter()
-			.GetResult();
+		(WpfNativeDispatcher, WpfDispatcher) = WaitForStartup(
+			wpfReady.Task,
+			"WPF");
 
 		var windowsFormsReady = new TaskCompletionSource<(
 			Control Control,
@@ -51,7 +52,9 @@ public sealed class WindowsDispatcherFixture : IDisposable
 		{
 			try
 			{
-				WinFormsApplication.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+				WinFormsApplication.SetUnhandledExceptionMode(
+					UnhandledExceptionMode.CatchException,
+					threadScope: true);
 				var context = new ApplicationContext();
 				using var control = new Control();
 				_ = control.Handle;
@@ -67,11 +70,9 @@ public sealed class WindowsDispatcherFixture : IDisposable
 			}
 		});
 
-		(WindowsFormsControl, _applicationContext, WindowsFormsDispatcher) =
-			windowsFormsReady.Task
-				.WaitAsync(TimeSpan.FromSeconds(5))
-				.GetAwaiter()
-				.GetResult();
+		(WindowsFormsControl, _applicationContext, WindowsFormsDispatcher) = WaitForStartup(
+			windowsFormsReady.Task,
+			"Windows Forms");
 	}
 
 	public WindowsDispatcher WpfNativeDispatcher { get; }
@@ -102,20 +103,65 @@ public sealed class WindowsDispatcherFixture : IDisposable
 
 	public void Dispose()
 	{
-		WpfNativeDispatcher.BeginInvokeShutdown(DispatcherPriority.Send);
-		WindowsFormsControl.BeginInvoke(_applicationContext.ExitThread);
+		var exceptions = new List<Exception>();
+
+		TryCleanup(
+			() => WpfNativeDispatcher.BeginInvokeShutdown(DispatcherPriority.Send),
+			exceptions);
+		TryCleanup(
+			() => WindowsFormsControl.BeginInvoke(_applicationContext.ExitThread),
+			exceptions);
 
 		if (!_wpfThread.Join(TimeSpan.FromSeconds(5)))
 		{
-			throw new TimeoutException("The WPF test dispatcher did not stop.");
+			exceptions.Add(new TimeoutException("The WPF test dispatcher did not stop."));
 		}
 
 		if (!_windowsFormsThread.Join(TimeSpan.FromSeconds(5)))
 		{
-			throw new TimeoutException("The Windows Forms test dispatcher did not stop.");
+			exceptions.Add(new TimeoutException("The Windows Forms test dispatcher did not stop."));
 		}
 
-		_applicationContext.Dispose();
+		TryCleanup(_applicationContext.Dispose, exceptions);
+
+		if (exceptions.Count == 1)
+		{
+			ExceptionDispatchInfo.Capture(exceptions[0]).Throw();
+		}
+
+		if (exceptions.Count > 1)
+		{
+			throw new AggregateException("Multiple errors occurred while stopping the test dispatchers.", exceptions);
+		}
+	}
+
+	private static TResult WaitForStartup<TResult>(Task<TResult> startup, string dispatcherName)
+	{
+		try
+		{
+			return startup
+				.WaitAsync(StartupTimeout)
+				.GetAwaiter()
+				.GetResult();
+		}
+		catch (TimeoutException ex) when (!startup.IsCompleted)
+		{
+			throw new TimeoutException(
+				$"The {dispatcherName} test dispatcher did not start within {StartupTimeout}.",
+				ex);
+		}
+	}
+
+	private static void TryCleanup(Action cleanup, List<Exception> exceptions)
+	{
+		try
+		{
+			cleanup();
+		}
+		catch (Exception ex)
+		{
+			exceptions.Add(ex);
+		}
 	}
 
 	private static Thread StartStaThread(string name, ThreadStart start)

@@ -58,6 +58,7 @@ internal static class DispatcherTestHelpers
 		var thrown = await Assert.ThrowsAnyAsync<OperationCanceledException>(
 			() => task.WaitAsync(TimeSpan.FromSeconds(5)));
 
+		Assert.Same(exception, thrown);
 		Assert.Equal(cancellationToken, thrown.CancellationToken);
 		Assert.True(task.IsCanceled);
 		Assert.False(task.IsFaulted);

@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
 				});
-				global::Microsoft.AspNetCore.Components.WebView.TaskExtensions.FireAndForget(dispatchTask, logger);
+				_ = dispatchTask.ObserveExceptionsAsync(logger);
 			}
 		}
 #endif

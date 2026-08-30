@@ -74,10 +74,6 @@ namespace Microsoft.AspNetCore.Components.WebView.WindowsForms
 				{
 					completion.TrySetResult(await workItem().ConfigureAwait(false));
 				}
-				catch (OperationCanceledException ex)
-				{
-					completion.TrySetCanceled(ex.CancellationToken);
-				}
 				catch (Exception ex)
 				{
 					completion.TrySetException(ex);

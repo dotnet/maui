@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
-internal static class TaskExtensions
+internal static class WebViewTaskExtensions
 {
-	public static async void FireAndForget(
+	public static async Task ObserveExceptionsAsync(
 		this Task task,
 		ILogger logger,
 		[CallerMemberName] string? callerName = null)
@@ -15,6 +15,10 @@ internal static class TaskExtensions
 		try
 		{
 			await task.ConfigureAwait(false);
+		}
+		catch (OperationCanceledException) when (task.IsCanceled)
+		{
+			// Cancellation is an expected completion state for discarded dispatcher work.
 		}
 		catch (Exception ex)
 		{

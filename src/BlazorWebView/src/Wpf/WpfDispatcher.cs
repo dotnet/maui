@@ -58,10 +58,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				{
 					completion.TrySetResult(await workItem().ConfigureAwait(false));
 				}
-				catch (OperationCanceledException ex)
-				{
-					completion.TrySetCanceled(ex.CancellationToken);
-				}
 				catch (Exception ex)
 				{
 					completion.TrySetException(ex);
