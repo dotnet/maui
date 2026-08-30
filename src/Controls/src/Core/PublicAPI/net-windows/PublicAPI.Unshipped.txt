@@ -164,6 +164,7 @@ static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Map
 static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapFooter(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView!>! handler, Microsoft.Maui.Controls.ItemsView! itemsView) -> void
 static Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.MapFooterTemplate(Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView!>! handler, Microsoft.Maui.Controls.ItemsView! itemsView) -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateItemsSource() -> void
+~static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutBackgroundImage(Microsoft.Maui.Controls.Handlers.ShellHandler handler, Microsoft.Maui.Controls.Shell view) -> void
 ~static Microsoft.Maui.Controls.VisualStateManager.InvalidateVisualStates(Microsoft.Maui.Controls.VisualElement visualElement) -> void
 ~static readonly Microsoft.Maui.Controls.BackButtonBehavior.AccessibilityLabelProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
