@@ -313,7 +313,7 @@ $publisherSecretNames = $allSecretNames | Where-Object { $_ -ne 'COPILOT_GITHUB_
 # execution now runs between two verifications of the whole tree, so a phase
 # that rewrote a gate is caught by the gate's own hash rather than by the gate
 # it rewrote.
-$script:TrustedSourceVersion = ''
+$script:AttestedSourceVersion = ''
 $script:TrustedTreeAttestation = $null
 $script:TrustedTreeHash = ''
 $script:TrustedPipelineSha256 = ''
@@ -325,7 +325,7 @@ if ([string]::IsNullOrWhiteSpace($TrustedTreeAttestationPath)) {
 if ($TrustedSourceVersion -cnotmatch '^[0-9a-f]{40}$') {
     throw 'Replicate-Issue.ps1 requires the lowercase pipeline source commit the trusted tree was captured at.'
 }
-$script:TrustedSourceVersion = $TrustedSourceVersion
+$script:AttestedSourceVersion = $TrustedSourceVersion
 $script:TrustedTreeAttestation = Read-TrustedTreeAttestation -Path $TrustedTreeAttestationPath
 $script:TrustedTreeHash = [string]$script:TrustedTreeAttestation.treeHash
 $script:TrustedPipelineSha256 = [string]$script:TrustedTreeAttestation.pipelineSha256
@@ -348,7 +348,7 @@ function Assert-ReplicationTrustedTree {
     $result = Assert-TrustedTreeAttestation `
         -TrustedRoot $TrustedRoot `
         -Attestation $script:TrustedTreeAttestation `
-        -ExpectedSourceVersion $script:TrustedSourceVersion `
+        -ExpectedSourceVersion $script:AttestedSourceVersion `
         -Context $Context
     $script:TrustedTreeVerifications++
     return $result
@@ -9997,7 +9997,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
             -IssueNumber $IssueNumber `
             -Platform $Platform `
             -ArtifactRoot $ArtifactRoot `
-            -TrustedSourceVersion $script:TrustedSourceVersion `
+            -TrustedSourceVersion $script:AttestedSourceVersion `
             -TrustedTreeHash $script:TrustedTreeHash `
             -PipelineSha256 $script:TrustedPipelineSha256 `
             -ReplicationBaseSha $BaseSha.ToLowerInvariant() `

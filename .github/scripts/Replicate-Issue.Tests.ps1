@@ -15748,6 +15748,8 @@ Describe 'The trusted tree is re-verified around everything untrusted' {
         $script:Source | Should -Match '\$qualitySelectorTrustedSourceVersion = \$TrustedSourceVersion'
         $script:Source | Should -Match '\$ArtifactRoot = \$qualitySelectorArtifactRoot'
         $script:Source | Should -Match '\$TrustedSourceVersion = \$qualitySelectorTrustedSourceVersion'
+        $script:Source | Should -Not -Match '\$script:TrustedSourceVersion\s*='
+        $script:Source | Should -Match '\$script:AttestedSourceVersion = \$TrustedSourceVersion'
     }
 
     It 'binds the selector with the canonical verifier test type' {
@@ -15790,7 +15792,7 @@ Describe 'The trusted tree is re-verified around everything untrusted' {
 
     It 'verifies against the recorded revision every time, not just the first' {
         $body = script:Get-FunctionText -Name 'Assert-ReplicationTrustedTree'
-        $body | Should -Match '-ExpectedSourceVersion \$script:TrustedSourceVersion'
+        $body | Should -Match '-ExpectedSourceVersion \$script:AttestedSourceVersion'
         $body | Should -Match '-Attestation \$script:TrustedTreeAttestation'
         $body | Should -Match '-TrustedRoot \$TrustedRoot'
     }
@@ -15872,7 +15874,7 @@ Describe 'The candidate carries a binding to the inputs it was earned on' {
             $script:Source,
             '(?s)\$writeCandidateManifest = \{.*?\n    \}\n').Value
         foreach ($argument in @(
-            '-TrustedSourceVersion \$script:TrustedSourceVersion',
+            '-TrustedSourceVersion \$script:AttestedSourceVersion',
             '-TrustedTreeHash \$script:TrustedTreeHash',
             '-PipelineSha256 \$script:TrustedPipelineSha256',
             '-ReplicationBaseSha \$BaseSha\.ToLowerInvariant\(\)',
