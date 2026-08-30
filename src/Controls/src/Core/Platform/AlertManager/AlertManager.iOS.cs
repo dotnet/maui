@@ -362,9 +362,9 @@ namespace Microsoft.Maui.Controls.Platform
 					new Dictionary<UIAlertAction, MenuItem>();
 				IReadOnlyDictionary<UIAlertAction, LogicalDialogAction> _logicalActions;
 				NSTimer _lifecycleTimer;
+				IDisposable _nativeSubscriptionWatcher;
 				object _owner;
 				WeakReference<UIAlertController> _presentedController;
-				bool _subscriptionHooked;
 				int _disposed;
 
 				public void Register(
@@ -401,14 +401,14 @@ namespace Microsoft.Maui.Controls.Platform
 							StringComparer.Ordinal);
 					var actionViews = FindAlertActionViews(alert.View, actionsByTitle.Keys)
 						.GroupBy(GetActionViewTitle, StringComparer.Ordinal)
-						.Where(group => group.Count() == 1)
+						.Where(group => !string.IsNullOrEmpty(group.Key) && group.Count() == 1)
 						.Select(group => group.Single())
 						.ToList();
 					var retainedActionViews = new List<object>(actionViews.Count);
 					foreach (var actionView in actionViews)
 					{
 						var title = GetActionViewTitle(actionView);
-						if (!actionsByTitle.ContainsKey(title))
+						if (string.IsNullOrEmpty(title) || !actionsByTitle.ContainsKey(title))
 							continue;
 
 						retainedActionViews.Add(actionView);
@@ -566,11 +566,10 @@ namespace Microsoft.Maui.Controls.Platform
 					_owner = owner;
 					_logicalActions = logicalActions;
 					_presentedController = new WeakReference<UIAlertController>(presentedController);
-					if (!_subscriptionHooked)
-					{
-						NativeElementDiagnostics.SubscriptionAdded += OnSubscriptionAdded;
-						_subscriptionHooked = true;
-					}
+					_nativeSubscriptionWatcher ??=
+						NativeElementSubscriptionWatcher<AlertRegistration>.Attach(
+							this,
+							static registration => registration.OnSubscriptionAdded());
 
 					_lifecycleTimer?.Invalidate();
 					_lifecycleTimer?.Dispose();
@@ -621,11 +620,8 @@ namespace Microsoft.Maui.Controls.Platform
 					_lifecycleTimer?.Invalidate();
 					_lifecycleTimer?.Dispose();
 					_lifecycleTimer = null;
-					if (_subscriptionHooked)
-					{
-						NativeElementDiagnostics.SubscriptionAdded -= OnSubscriptionAdded;
-						_subscriptionHooked = false;
-					}
+					_nativeSubscriptionWatcher?.Dispose();
+					_nativeSubscriptionWatcher = null;
 					_actionViewRegistrations.Dispose();
 					_registrations.Dispose();
 					_logicalActionModels.Clear();

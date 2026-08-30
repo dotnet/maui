@@ -28,6 +28,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.EndsWith(versionSuffix, NativeElementDiagnostics.UnregisteredEventName, StringComparison.Ordinal);
 		}
 
+		[Theory]
+		[InlineData(4, 4, 4, 4, false, true, 4, false)]
+		[InlineData(6, 6, 5, 5, true, true, 5, true)]
+		[InlineData(6, 6, 6, 6, false, true, 6, false)]
+		[InlineData(6, 6, 5, 3, true, false, 5, true)]
+		[InlineData(6, 6, 5, 5, false, false, 5, false)]
+		public void TabBarRegistrationPlanRequiresCoherentUIKitState(
+			int logicalItemCount,
+			int viewControllerCount,
+			int tabBarItemCount,
+			int realizedControlCount,
+			bool lastItemIsMore,
+			bool expectedCanMap,
+			int expectedSlotCount,
+			bool expectedHasMore)
+		{
+			var canMap = NativeTabBarRegistrationPlanner.TryPlan(
+				logicalItemCount,
+				viewControllerCount,
+				tabBarItemCount,
+				realizedControlCount,
+				lastItemIsMore,
+				out var slotCount,
+				out var hasMore);
+
+			Assert.Equal(expectedCanMap, canMap);
+			Assert.Equal(expectedSlotCount, slotCount);
+			Assert.Equal(expectedHasMore, hasMore);
+		}
+
 		[Fact]
 		public void RegisterEmitsVersionedLifecycleWithReferenceIdentity()
 		{
@@ -766,6 +796,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(references.Registrations.IsAlive);
 			Assert.False(references.Owner.IsAlive);
 			Assert.False(references.NativeElement.IsAlive);
+		}
+
+		[Fact]
+		public void SubscriptionWatcherDoesNotRootTarget()
+		{
+			var target = CreateWatchedTarget();
+
+			for (var attempt = 0; attempt < 3 && target.IsAlive; attempt++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect();
+			}
+
+			Assert.False(target.IsAlive);
+
+			using var subscription = NativeElementDiagnostics.Listener.Subscribe(
+				new RecordingObserver(new List<KeyValuePair<string, object>>()));
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateWatchedTarget()
+		{
+			var target = new object();
+			NativeElementSubscriptionWatcher<object>.Attach(target, static _ => { });
+			return new WeakReference(target);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]

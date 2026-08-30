@@ -9,18 +9,20 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
+	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer, IDisconnectable
 	{
 		CGSize _previousBounds;
 		UIVisualEffectView _blurView;
 		UIImageView _bgImage;
 		readonly IShellContext _shellContext;
+		readonly Shell _shell;
 		UIContainerView _headerView;
 		UIContainerView _footerView;
 		View _footer;
 		ShellTableViewController _tableViewController;
 		ShellFlyoutLayoutManager _shellFlyoutContentManager;
 		UIView[] _uIViews;
+		bool _disposed;
 		public event EventHandler WillAppear;
 		public event EventHandler WillDisappear;
 
@@ -34,11 +36,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_uIViews = new UIView[5];
 			_shellContext = context;
+			_shell = context.Shell;
 			_tableViewController = CreateShellTableViewController();
 			_shellFlyoutContentManager = _tableViewController?.ShellFlyoutContentManager;
 			AddChildViewController(_tableViewController);
 
-			context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			_shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
 		protected virtual ShellTableViewController CreateShellTableViewController()
@@ -48,6 +51,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void HandleShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed)
+				return;
+
 			if (e.IsOneOf(
 				Shell.FlyoutBackgroundColorProperty,
 				Shell.FlyoutBackgroundProperty,
@@ -78,6 +84,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlowDirection()
 		{
+			if (_disposed || _tableViewController is null)
+				return;
+
 			_tableViewController.View.UpdateFlowDirection(_shellContext.Shell);
 			_headerView?.UpdateFlowDirection(_shellContext.Shell);
 			_footerView?.UpdateFlowDirection(_shellContext.Shell);
@@ -85,6 +94,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutHeader()
 		{
+			if (_disposed || _tableViewController is null)
+				return;
+
 			var header = ((IShellController)_shellContext.Shell).FlyoutHeader;
 
 			if (header == _headerView?.View)
@@ -124,11 +136,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutFooter()
 		{
+			if (_disposed)
+				return;
+
 			UpdateFlyoutFooter(((IShellController)_shellContext.Shell).FlyoutFooter);
 		}
 
 		void UpdateFlyoutFooter(View view)
 		{
+			if (_disposed || _tableViewController is null)
+				return;
+
 			if (_footer == view)
 				return;
 
@@ -244,6 +262,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
+			if (_disposed)
+				return;
+
 			UpdateFooterPosition();
 			UpdateFlyoutContent();
 			var currentSize = View.Bounds.Size;
@@ -257,6 +278,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateBackground()
 		{
+			if (_disposed)
+				return;
+
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
 			var brush = _shellContext.Shell.FlyoutBackground;
 			int previousIndex = GetPreviousIndex(_blurView);
@@ -296,7 +320,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var nativeImage = result?.Value;
 
-				if (View is null || nativeImage is null)
+				if (_disposed || View is null || nativeImage is null)
 					return;
 
 				int previousIndex = GetPreviousIndex(_bgImage);
@@ -334,6 +358,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+			if (_disposed)
+				return;
 
 			_tableViewController.LayoutParallax();
 			_blurView.Frame = View.Bounds;
@@ -369,6 +395,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutContent()
 		{
+			if (_disposed || _shellFlyoutContentManager is null || _tableViewController is null)
+				return;
+
 			var view = (_shellContext.Shell as IShellController).FlyoutContent;
 
 			var previousIndex = GetPreviousIndex(_shellFlyoutContentManager.ContentView);
@@ -388,7 +417,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewWillAppear(bool animated)
 		{
-			UpdateFlowDirection();
+			if (!_disposed)
+				UpdateFlowDirection();
 			base.ViewWillAppear(animated);
 			WillAppear?.Invoke(this, EventArgs.Empty);
 		}
@@ -402,7 +432,68 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnElementSelected(Element element)
 		{
+			if (_disposed)
+				return;
+
 			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
 		}
+
+		internal void Disconnect()
+		{
+			if (_disposed)
+				return;
+
+			_disposed = true;
+			_shell.PropertyChanged -= HandleShellPropertyChanged;
+
+			if (_footer is not null)
+				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
+
+			var header = _headerView?.View;
+			var headerRenderer = header?.Handler;
+			var footer = _footerView?.View;
+			var footerRenderer = footer?.Handler;
+			if (_tableViewController is not null)
+			{
+				_tableViewController.HeaderView = null;
+				_tableViewController.FooterView = null;
+			}
+
+			_tableViewController?.ViewIfLoaded?.RemoveFromSuperview();
+			_tableViewController?.RemoveFromParentViewController();
+			_tableViewController?.Dispose();
+			_tableViewController = null;
+			_shellFlyoutContentManager = null;
+
+			_headerView?.Disconnect();
+			_headerView?.RemoveFromSuperview();
+			_headerView?.Dispose();
+			_headerView = null;
+			_footerView?.Disconnect();
+			_footerView?.RemoveFromSuperview();
+			_footerView?.Dispose();
+			_footerView = null;
+			if (ReferenceEquals(header?.Handler, headerRenderer))
+				header.Handler = null;
+			headerRenderer?.DisconnectHandler();
+			if (ReferenceEquals(footer?.Handler, footerRenderer))
+				footer.Handler = null;
+			footerRenderer?.DisconnectHandler();
+
+			_bgImage?.RemoveFromSuperview();
+			_bgImage?.Image?.Dispose();
+			_bgImage?.Dispose();
+			_bgImage = null;
+			_blurView?.RemoveFromSuperview();
+			_blurView?.Dispose();
+			_blurView = null;
+			if (_uIViews is not null)
+				Array.Clear(_uIViews, 0, _uIViews.Length);
+			_footer = null;
+			WillAppear = null;
+			WillDisappear = null;
+		}
+
+		void IDisconnectable.Disconnect() => Disconnect();
 	}
 }

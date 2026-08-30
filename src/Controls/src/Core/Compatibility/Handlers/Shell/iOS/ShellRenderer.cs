@@ -1,6 +1,9 @@
 #nullable disable
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
@@ -97,6 +100,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IShellFlyoutRenderer _flyoutRenderer;
 		Task _activeTransition = Task.CompletedTask;
 		IShellItemRenderer _incomingRenderer;
+		readonly HashSet<IShellItemRenderer> _ownedRenderers =
+			new HashSet<IShellItemRenderer>(ReferenceEqualityComparer.Instance);
+		readonly ConditionalWeakTable<IShellItemRenderer, object> _disposedRenderers =
+			new ConditionalWeakTable<IShellItemRenderer, object>();
 		IMauiContext _mauiContext;
 
 		IShellFlyoutRenderer FlyoutRenderer
@@ -105,6 +112,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_flyoutRenderer == null)
 				{
+					if (_disposed)
+						return null;
+
 					FlyoutRenderer = CreateFlyoutRenderer();
 					FlyoutRenderer.AttachFlyout(this, this);
 				}
@@ -116,13 +126,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public VisualElement Element { get; private set; }
-		public UIView NativeView => FlyoutRenderer.View;
+		public UIView NativeView => FlyoutRenderer?.View;
 		public Shell Shell => (Shell)Element;
-		public UIViewController ViewController => FlyoutRenderer.ViewController;
+		public UIViewController ViewController => FlyoutRenderer?.ViewController;
 
 		public void SetElement(VisualElement element)
 		{
-			if (Element != null)
+			if (_disposed || Element != null)
 				throw new NotSupportedException("Reuse of the Shell Renderer is not supported");
 			Element = element;
 			OnElementSet((Shell)Element);
@@ -139,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			if (_currentShellItemRenderer != null)
+			if (!_disposed && _currentShellItemRenderer != null)
 				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
 		}
 
@@ -203,15 +213,54 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
+			if (disposing)
+				Disconnect();
+
 			base.Dispose(disposing);
+		}
 
-			if (disposing && !_disposed)
-			{
-				_disposed = true;
-				FlyoutRenderer?.Dispose();
-			}
+		void Disconnect()
+		{
+			if (_disposed)
+				return;
 
-			FlyoutRenderer = null;
+			_disposed = true;
+
+			var element = Element;
+			if (element is Shell shell)
+				shell.PropertyChanged -= OnElementPropertyChanged;
+
+			if (_currentShellItemRenderer is not null)
+				_ownedRenderers.Add(_currentShellItemRenderer);
+			if (_incomingRenderer is not null)
+				_ownedRenderers.Add(_incomingRenderer);
+			_currentShellItemRenderer = null;
+			_incomingRenderer = null;
+
+			// Child renderers read IShellContext.Shell while removing their observers.
+			foreach (var renderer in new List<IShellItemRenderer>(_ownedRenderers))
+				DisposeRendererOnce(renderer);
+
+			_flyoutRenderer?.Dispose();
+			_flyoutRenderer = null;
+			Element = null;
+			if (ReferenceEquals(element?.Handler, this))
+				element.Handler = null;
+			_mauiContext = null;
+		}
+
+		void DisposeRendererOnce(IShellItemRenderer renderer)
+		{
+			if (renderer is null || _disposedRenderers.TryGetValue(renderer, out _))
+				return;
+
+			_disposedRenderers.Add(renderer, new object());
+			_ownedRenderers.Remove(renderer);
+			var viewController = renderer.ViewController;
+			(renderer as IDisconnectable)?.Disconnect();
+			viewController?.ViewIfLoaded?.RemoveFromSuperview();
+			viewController?.RemoveFromParentViewController();
+			renderer.Dispose();
 		}
 
 		protected virtual async void OnCurrentItemChanged()
@@ -228,6 +277,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual async Task OnCurrentItemChangedAsync()
 		{
+			if (_disposed)
+				return;
+
 			var currentItem = Shell.CurrentItem;
 
 			var oldLayer = _currentShellItemRenderer
@@ -239,6 +291,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				oldLayer.RemoveAllAnimations();
 
 			await _activeTransition;
+			if (_disposed)
+				return;
+
 			if (_currentShellItemRenderer?.ShellItem != currentItem)
 			{
 				var newController = CreateShellItemRenderer(currentItem);
@@ -303,15 +358,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected async Task SetCurrentShellItemControllerAsync(IShellItemRenderer value)
 		{
 			_incomingRenderer = value;
+			_ownedRenderers.Add(value);
 			await _activeTransition;
+			if (_disposed)
+			{
+				DisposeRendererOnce(value);
+				return;
+			}
 
 			// This means the selected item changed while the active transition
 			// was finishing up
 			if (_incomingRenderer != value ||
 				value.ShellItem != this.Shell.CurrentItem)
 			{
-				(value as IDisconnectable)?.Disconnect();
-				value?.Dispose();
+				DisposeRendererOnce(value);
 				return;
 			}
 
@@ -333,10 +393,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				_activeTransition = transition.Transition(oldRenderer, newRenderer);
 				await _activeTransition;
+				if (_disposed)
+					return;
 
-				oldRenderer.ViewController.RemoveFromParentViewController();
-				oldRenderer.ViewController.View.RemoveFromSuperview();
-				oldRenderer.Dispose();
+				DisposeRendererOnce(oldRenderer);
 			}
 			else
 			{
@@ -353,6 +413,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void UpdateBackgroundColor()
 		{
+			if (_disposed || Element is null || FlyoutRenderer is null)
+				return;
+
 			var color = Shell.BackgroundColor?.ToPlatform();
 			if (color == null)
 				color = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor;
@@ -411,16 +474,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.UpdateValue(string property)
 		{
+			if (_disposed || Element is null)
+				return;
+
 			Mapper.UpdateProperty(this, Element, property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
+			if (_disposed || Element is null)
+				return;
+
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
+			Disconnect();
 		}
 	}
 }

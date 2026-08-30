@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
+			if (_disposed)
+				return;
+
 			if (appearance == null)
 			{
 				_backdropBrush = Brush.Default;
@@ -44,14 +47,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		UIViewController IShellFlyoutRenderer.ViewController => this;
 
-		public override bool PrefersHomeIndicatorAutoHidden => Detail.PrefersHomeIndicatorAutoHidden;
+		public override bool PrefersHomeIndicatorAutoHidden =>
+			Detail?.PrefersHomeIndicatorAutoHidden ?? base.PrefersHomeIndicatorAutoHidden;
 
-		public override bool PrefersStatusBarHidden() => Detail.PrefersStatusBarHidden();
+		public override bool PrefersStatusBarHidden() =>
+			Detail?.PrefersStatusBarHidden() ?? base.PrefersStatusBarHidden();
 
-		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation => Detail.PreferredStatusBarUpdateAnimation;
+		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation =>
+			Detail?.PreferredStatusBarUpdateAnimation ?? base.PreferredStatusBarUpdateAnimation;
 
 		void IShellFlyoutRenderer.AttachFlyout(IShellContext context, UIViewController content)
 		{
+			if (_disposed)
+				return;
+
 			Context = context;
 			Shell = Context.Shell;
 			Detail = content;
@@ -112,6 +121,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IFlyoutBehaviorObserver.OnFlyoutBehaviorChanged(FlyoutBehavior behavior)
 		{
+			if (_disposed)
+				return;
+
 			_flyoutBehavior = behavior;
 			if (behavior == FlyoutBehavior.Locked)
 				IsOpen = true;
@@ -161,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get { return _isOpen; }
 			set
 			{
-				if (_isOpen == value)
+				if (_disposed || Shell is null || _isOpen == value)
 					return;
 
 				_isOpen = value;
@@ -172,6 +184,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlyoutAccessibility()
 		{
+			if (_disposed)
+				return;
+
 			bool flyoutElementsHidden = false;
 			bool detailsElementsHidden = false;
 
@@ -196,11 +211,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					break;
 			}
 
-			if (Flyout?.ViewController?.View != null)
-				Flyout.ViewController.View.AccessibilityElementsHidden = flyoutElementsHidden;
+			if (Flyout?.ViewController?.ViewIfLoaded is UIView flyoutView)
+				flyoutView.AccessibilityElementsHidden = flyoutElementsHidden;
 
-			if (Detail?.View != null)
-				Detail.View.AccessibilityElementsHidden = detailsElementsHidden;
+			if (Detail?.ViewIfLoaded is UIView detailView)
+				detailView.AccessibilityElementsHidden = detailsElementsHidden;
 		}
 
 		UIPanGestureRecognizer PanGestureRecognizer { get; set; }
@@ -214,6 +229,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+			if (_disposed)
+				return;
 
 			if (_flyoutAnimation == null)
 				LayoutSidebar(false);
@@ -221,7 +238,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewWillAppear(bool animated)
 		{
-			UpdateFlowDirection();
+			if (!_disposed)
+				UpdateFlowDirection();
 			base.ViewWillAppear(animated);
 		}
 
@@ -248,7 +266,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			coordinator.AnimateAlongsideTransition((IUIViewControllerTransitionCoordinatorContext obj) =>
 			{
-				if (IsOpen && TapoffView != null)
+				if (!_disposed && IsOpen && TapoffView != null)
 				{
 					TapoffView.Frame = View.Bounds;
 				}
@@ -257,28 +275,63 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
+			if (_disposed)
+				return;
 
 			if (disposing)
 			{
-				if (!_disposed)
+				_flyoutAnimation?.StopAnimation(true);
+				_flyoutAnimation = null;
+				_gestureActive = false;
+				DisposeTapoffView();
+
+				if (PanGestureRecognizer is not null)
 				{
+					ViewIfLoaded?.RemoveGestureRecognizer(PanGestureRecognizer);
+					PanGestureRecognizer.Dispose();
+					PanGestureRecognizer = null;
+				}
+
+				if (Shell is not null)
 					ShellController.RemoveAppearanceObserver(this);
 
-					_disposed = true;
+				_disposed = true;
 
+				if (Shell is not null)
+				{
 					Shell.PropertyChanged -= OnShellPropertyChanged;
 					((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
-
-					Context = null;
-					Shell = null;
-					Detail = null;
 				}
+
+				if (Flyout?.ViewController is UIViewController flyoutController)
+				{
+					(Flyout as IDisconnectable)?.Disconnect();
+
+					flyoutController.ViewIfLoaded?.RemoveFromSuperview();
+					flyoutController.RemoveFromParentViewController();
+					flyoutController.Dispose();
+				}
+				Flyout = null;
+
+				if (Detail is UIViewController detailController)
+				{
+					detailController.ViewIfLoaded?.RemoveFromSuperview();
+					detailController.RemoveFromParentViewController();
+				}
+
+				Context = null;
+				Shell = null;
+				Detail = null;
 			}
+
+			base.Dispose(disposing);
 		}
 
 		protected virtual void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+			if (_disposed || Shell is null)
+				return;
+
 			if (e.PropertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
 			{
 				var isPresented = Shell.FlyoutIsPresented;
@@ -296,6 +349,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlowDirection(bool readdViews = false)
 		{
+			if (_disposed || Shell is null)
+				return;
+
 			var originalValue = View.SemanticContentAttribute;
 			var originalFlyoutValue = Flyout?.ViewController?.View?.SemanticContentAttribute;
 			var originalDetailValue = Detail?.View?.SemanticContentAttribute;
@@ -326,7 +382,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateTapoffViewBackgroundColor()
 		{
-			if (TapoffView == null)
+			if (_disposed || TapoffView == null)
 				return;
 
 			TapoffView.UpdateBackground(_backdropBrush);
@@ -346,7 +402,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void AddTapoffView()
 		{
-			if (TapoffView != null)
+			if (_disposed || Flyout?.ViewController?.ViewIfLoaded is null || TapoffView != null)
 				return;
 
 			TapoffView = new UIView(View.Bounds);
@@ -370,6 +426,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void HandlePanGesture(UIPanGestureRecognizer pan)
 		{
+			if (_disposed ||
+				Flyout?.ViewController?.ViewIfLoaded is null ||
+				Detail?.ViewIfLoaded is null)
+			{
+				return;
+			}
+
 			var translation = pan.TranslationInView(View).X;
 			double openProgress = 0;
 			double openLimit = Flyout.ViewController.View.Frame.Width;
@@ -428,6 +491,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LayoutSidebar(bool animate, bool cancelExisting = false)
 		{
 			_layoutOccured = true;
+			if (_disposed ||
+				Flyout?.ViewController?.ViewIfLoaded is null ||
+				Detail?.ViewIfLoaded is null)
+			{
+				return;
+			}
+
 			if (_gestureActive)
 				return;
 
@@ -468,6 +538,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				_flyoutAnimation.AddCompletion((p) =>
 				{
+					if (_disposed)
+						return;
+
 					if (p == UIViewAnimatingPosition.End)
 					{
 						if (TapoffView != null)
@@ -513,7 +586,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (TapoffView == null)
 				return;
 
+			var tapoffView = TapoffView;
+			TapoffView = null;
+			tapoffView.RemoveFromSuperview();
+		}
+
+		void DisposeTapoffView()
+		{
+			if (TapoffView == null)
+				return;
+
+			foreach (var recognizer in TapoffView.GestureRecognizers ?? Array.Empty<UIGestureRecognizer>())
+			{
+				TapoffView.RemoveGestureRecognizer(recognizer);
+				recognizer.Dispose();
+			}
 			TapoffView.RemoveFromSuperview();
+			TapoffView.Dispose();
 			TapoffView = null;
 		}
 	}
