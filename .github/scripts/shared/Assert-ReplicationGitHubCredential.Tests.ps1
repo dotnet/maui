@@ -357,8 +357,10 @@ Describe 'Replication credential pre-flight wiring' {
         # publish would hide a dying credential until the publish step.
         $contextIndex = $script:Pipeline.IndexOf('Prepare sanitized issue context')
         $contextIndex | Should -BeGreaterThan 0
-        $window = $script:Pipeline.Substring($contextIndex - 1200, 1200)
-        $window | Should -Match 'AllowAnonymousFallback'
-        $window | Should -Match "REPLICATION_EVIDENCE_ONLY -eq 'true'"
+        $contextStart = $script:Pipeline.LastIndexOf('- pwsh:', $contextIndex)
+        $contextStart | Should -BeGreaterThan 0
+        $contextStep = $script:Pipeline.Substring($contextStart, $contextIndex - $contextStart)
+        $contextStep | Should -Match 'AllowAnonymousFallback'
+        $contextStep | Should -Match "REPLICATION_EVIDENCE_ONLY -eq 'true'"
     }
 }
