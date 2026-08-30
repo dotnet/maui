@@ -93,59 +93,19 @@ function Get-ReplicationCommentFreeText {
         return $builder.ToString()
     }
 
-    $index = 0
-    while ($index -lt $length) {
-        $char = $Text[$index]
-        $next = if ($index + 1 -lt $length) { $Text[$index + 1] } else { [char]0 }
-
-        if ($char -eq '/' -and $next -eq '/') {
-            $end = $Text.IndexOf("`n", $index)
-            if ($end -lt 0) { $end = $length }
-            & $blank $index $end
-            $index = $end
-            continue
+    $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText($Text)
+    $nullPredicate = [System.Func[Microsoft.CodeAnalysis.SyntaxNode, bool]]$null
+    $commentKinds = @(
+        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SingleLineCommentTrivia,
+        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::MultiLineCommentTrivia,
+        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SingleLineDocumentationCommentTrivia,
+        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::MultiLineDocumentationCommentTrivia,
+        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::DocumentationCommentExteriorTrivia
+    )
+    foreach ($trivia in $tree.GetRoot().DescendantTrivia($nullPredicate, $true)) {
+        if ($trivia.RawKind -in $commentKinds) {
+            & $blank $trivia.FullSpan.Start $trivia.FullSpan.End
         }
-        if ($char -eq '/' -and $next -eq '*') {
-            $end = $Text.IndexOf('*/', $index + 2)
-            $end = if ($end -lt 0) { $length } else { $end + 2 }
-            & $blank $index $end
-            $index = $end
-            continue
-        }
-        if ($char -eq '"' -and $index + 2 -lt $length -and
-            $Text[$index + 1] -eq '"' -and $Text[$index + 2] -eq '"') {
-            $fence = 0
-            while ($index + $fence -lt $length -and $Text[$index + $fence] -eq '"') { $fence++ }
-            $terminator = '"' * $fence
-            $end = $Text.IndexOf($terminator, $index + $fence)
-            $index = if ($end -lt 0) { $length } else { $end + $fence }
-            continue
-        }
-        if ($char -eq '@' -and $next -eq '"') {
-            $index += 2
-            while ($index -lt $length) {
-                if ($Text[$index] -eq '"') {
-                    if ($index + 1 -lt $length -and $Text[$index + 1] -eq '"') { $index += 2; continue }
-                    $index++
-                    break
-                }
-                $index++
-            }
-            continue
-        }
-        if ($char -eq '"' -or $char -eq "'") {
-            $quote = $char
-            $index++
-            while ($index -lt $length) {
-                if ($Text[$index] -eq '\') { $index += 2; continue }
-                if ($Text[$index] -eq $quote) { $index++; break }
-                if ($Text[$index] -eq "`n") { break }
-                $index++
-            }
-            continue
-        }
-
-        $index++
     }
 
     return $builder.ToString()
@@ -744,7 +704,7 @@ function Get-ReplicationCSharpMemberRecords {
     })) {
         $kind = $node.GetType().Name
         $containers = @($node.Ancestors() | Where-Object {
-            $_.GetType().Name -match '^(?:Class|Struct|Interface|Record)DeclarationSyntax$'
+            $_.GetType().Name -match '^(?:Class|Struct|Interface|Record|RecordStruct)DeclarationSyntax$'
         } | ForEach-Object { $_.Identifier.ValueText })
         [array]::Reverse($containers)
         $name = if ($node.PSObject.Properties['Identifier']) {
@@ -775,13 +735,13 @@ function Get-ReplicationCSharpMemberRecords {
     }
 
     foreach ($node in @($root.DescendantNodes() | Where-Object {
-        $_.GetType().Name -match '^(?:Class|Struct|Interface|Record|Enum)DeclarationSyntax$'
+        $_.GetType().Name -match '^(?:Class|Struct|Interface|Record|RecordStruct|Enum)DeclarationSyntax$'
     })) {
         $full = $node.ToFullString()
         $brace = $full.IndexOf('{')
         $header = if ($brace -ge 0) { $full.Substring(0, $brace + 1) } else { $full }
         $containers = @($node.Ancestors() | Where-Object {
-            $_.GetType().Name -match '^(?:Class|Struct|Interface|Record)DeclarationSyntax$'
+            $_.GetType().Name -match '^(?:Class|Struct|Interface|Record|RecordStruct)DeclarationSyntax$'
         } | ForEach-Object { $_.Identifier.ValueText })
         [array]::Reverse($containers)
         $baseKey = "$($containers -join '.')|type|$($node.Identifier.ValueText)"
@@ -895,6 +855,12 @@ function Assert-ReplicationProductFixDeltaSafety {
 
     $BeforeContent = $BeforeContent.Replace("`r`n", "`n").TrimEnd("`r", "`n") + "`n"
     $AfterContent = $AfterContent.Replace("`r`n", "`n").TrimEnd("`r", "`n") + "`n"
+    if ($BeforeContent.StartsWith([char]0xFEFF)) {
+        $BeforeContent = $BeforeContent.Substring(1)
+    }
+    if ($AfterContent.StartsWith([char]0xFEFF)) {
+        $AfterContent = $AfterContent.Substring(1)
+    }
     if ($BeforeContent -ceq $AfterContent) {
         throw "Product fix source '$Path' is unchanged."
     }
@@ -1319,27 +1285,44 @@ function Assert-ReplicationGeneratedTestXamlSafety {
     $reader = [Xml.XmlReader]::Create([IO.StringReader]::new($Content), $settings)
     try { $document.Load($reader) } finally { $reader.Dispose() }
 
-    $xamlNamespace = 'http://schemas.microsoft.com/winfx/2009/xaml'
+    $xamlNamespaces = @(
+        'http://schemas.microsoft.com/winfx/2009/xaml',
+        'http://schemas.microsoft.com/winfx/2006/xaml'
+    )
+    $knownSchemaNamespaces = @(
+        'http://schemas.microsoft.com/dotnet/2021/maui',
+        'http://schemas.microsoft.com/winfx/2009/xaml',
+        'http://schemas.microsoft.com/winfx/2006/xaml',
+        'http://schemas.microsoft.com/winfx/2006/xaml/presentation',
+        'http://schemas.microsoft.com/netfx/2007/xaml/presentation',
+        'http://schemas.openxmlformats.org/markup-compatibility/2006',
+        'http://schemas.microsoft.com/expression/blend/2008'
+    )
     foreach ($element in @($document.SelectNodes('//*'))) {
         foreach ($attribute in @($element.Attributes)) {
-            if ($attribute.NamespaceURI -ceq $xamlNamespace -and
+            if ($attribute.NamespaceURI -in $xamlNamespaces -and
                 $attribute.LocalName -in @('FactoryMethod', 'Arguments', 'Type', 'Static')) {
                 throw "Candidate test XAML '$Path' uses prohibited x:$($attribute.LocalName) execution."
             }
-            if ($attribute.Value -match '(?i)\{\s*x:(?:Static|Type)\b') {
+            if ($attribute.Value -match '(?i)\{\s*[A-Za-z_]\w*:(?:Static|Type)\b') {
                 throw "Candidate test XAML '$Path' uses a prohibited executable XAML markup extension."
             }
-            if ($attribute.NamespaceURI -ceq 'http://www.w3.org/2000/xmlns/' -and
-                $attribute.Value -match '(?i)^clr-namespace:(?<namespace>[^;]+)(?:;assembly=(?<assembly>.+))?$') {
-                $namespace = $Matches['namespace']
-                $assembly = $Matches['assembly']
-                if ($namespace -notmatch '^(?:Microsoft\.Maui|Maui\.)' -or
-                    ($assembly -and $assembly -notmatch '^Microsoft\.Maui')) {
+            if ($attribute.NamespaceURI -ceq 'http://www.w3.org/2000/xmlns/') {
+                $mapping = [string]$attribute.Value
+                if ($mapping -in $knownSchemaNamespaces) { continue }
+                if ($mapping -match '(?i)^(?:clr-namespace:|using:)(?<namespace>[^;]+)(?:;assembly=(?<assembly>.+))?$') {
+                    $namespace = $Matches['namespace']
+                    $assembly = $Matches['assembly']
+                    if ($namespace -notmatch '^(?:Microsoft\.Maui|Maui\.)' -or
+                        ($assembly -and $assembly -notmatch '^(?:Microsoft\.Maui|Controls\.Xaml\.UnitTests)')) {
+                        throw "Candidate test XAML '$Path' maps an untrusted CLR namespace or assembly."
+                    }
+                } else {
                     throw "Candidate test XAML '$Path' maps an untrusted CLR namespace or assembly."
                 }
             }
         }
-        if ($element.NamespaceURI -ceq $xamlNamespace -and
+        if ($element.NamespaceURI -in $xamlNamespaces -and
             $element.LocalName -in @('FactoryMethod', 'Arguments', 'Type', 'Static')) {
             throw "Candidate test XAML '$Path' uses prohibited x:$($element.LocalName) execution."
         }

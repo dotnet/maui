@@ -7846,6 +7846,12 @@ Describe 'A tier with no build for the platform escalates instead of stalling' {
             $allowed | Should -Match '`device`'
         }
 
+        It 'stops as unsupported when every isolated tier is exhausted' {
+            Get-ReplicationTierExclusionGuidance `
+                -ForbiddenTiers @('unit', 'xaml', 'device') |
+                Should -Match 'Stop as unsupported'
+        }
+
         It 'names the platform the rejection was made for' {
             Get-ReplicationTierExclusionGuidance -ForbiddenTiers @('unit') |
                 Should -Match 'catalyst'

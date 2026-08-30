@@ -272,6 +272,16 @@ ssh://encoded.outside.example/path, and https%3A%2F%2Fencoded.outside.example/pa
         $description | Should -Not -Match 'maliciousCall'
     }
 
+    It 'preserves file labels in prose while bounding quoted URL redaction' {
+        $text = 'file: MainPage.xaml failed after opening "https://evil.example/path"; inspect the control.'
+
+        $safe = Remove-IssueUrls -Text $text
+
+        $safe | Should -Match 'file: MainPage\.xaml'
+        $safe | Should -Match '"\[url removed\]"'
+        $safe | Should -Match '; inspect the control\.'
+    }
+
     It 'bounds the combined body sections and individual lines' {
         $body = @"
 ### Description

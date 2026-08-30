@@ -136,23 +136,23 @@ function Remove-IssueUrls {
         '')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<![\w])[A-Za-z][A-Za-z0-9+.-]{1,31}\s*://[^\s<>\[\]{}]*',
+        '(?i)(?<![\w])[A-Za-z][A-Za-z0-9+.-]{1,31}\s*://[^\s<>"''\[\]{}]*',
         '[url removed]')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto|tel|sms|intent|blob|about|ms-appx(?:-web)?)\s*:\s*(?://)?[^\s<>\[\]{}]*',
+        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto|tel|sms|intent|blob|about|ms-appx(?:-web)?)\s*:(?:\s*//[^\s<>"''\[\]{}]*|[^\s<>"''\[\]{}][^\s<>"''\[\]{}]*)',
         '[url removed]')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto)(?:%25)?%3a(?:%2f){0,2}[^\s<>\[\]{}]*',
+        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto)(?:%25)?%3a(?:%2f){0,2}[^\s<>"''\[\]{}]*',
         '[url removed]')
     $safe = [regex]::Replace(
         $safe,
-        '(?i)(?<![:\w])//(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d{1,5})?(?:/[^\s<>\[\]{}]*)?',
+        '(?i)(?<![:\w])//(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d{1,5})?(?:/[^\s<>"''\[\]{}]*)?',
         '[url removed]')
     return [regex]::Replace(
         $safe,
-        '(?i)\bwww\.[^\s<>\[\]{}]+',
+        '(?i)\bwww\.[^\s<>"''\[\]{}]+',
         '[url removed]')
 }
 

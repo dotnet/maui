@@ -366,7 +366,9 @@ Describe 'Selecting a real process isolation boundary' {
     BeforeAll {
         $script:Wrapper = Join-Path $PSScriptRoot (
             '../shared/Invoke-ReplicationNetworkIsolatedProcess.ps1')
-        $script:Target = Join-Path $script:ScratchRoot 'isolated-target.ps1'
+        $script:TrustedRoot = Join-Path $script:ScratchRoot 'trusted-root'
+        New-Item -ItemType Directory -Path $script:TrustedRoot -Force | Out-Null
+        $script:Target = Join-Path $script:TrustedRoot 'isolated-target.ps1'
         $script:IsolationPlanRepo = Join-Path $script:ScratchRoot 'isolation-plan-repo'
         New-Item -ItemType Directory -Path $script:IsolationPlanRepo -Force | Out-Null
         foreach ($relative in @('.git/hooks', '.git/objects', '.git/refs', '.git/info')) {
@@ -393,6 +395,7 @@ Describe 'Selecting a real process isolation boundary' {
         $command = Get-ReplicationNetworkIsolatedCommand `
             -Platform android `
             -RepositoryRoot $script:IsolationPlanRepo `
+            -TrustedRoot $script:TrustedRoot `
             -ScriptPath $script:Target `
             -Arguments @('-Value', 'ok') `
             -Environment $script:MinimalEnvironment `
@@ -418,7 +421,8 @@ Describe 'Selecting a real process isolation boundary' {
         $command.Arguments | Should -Contain '--property=RestrictSUIDSGID=yes'
         $command.Arguments | Should -Contain '--property=RestrictNamespaces=yes'
         $command.Arguments | Should -Contain '--property=ProtectSystem=strict'
-        $command.Arguments | Should -Contain '--property=ProtectHome=yes'
+        $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
+        $command.Arguments | Should -Not -Contain '--property=ProtectHome=yes'
         $command.Arguments | Should -Contain '--property=ProtectControlGroups=yes'
         $command.Arguments | Should -Contain '--property=ProtectKernelModules=yes'
         $command.Arguments | Should -Contain '--property=ProtectKernelTunables=yes'
@@ -434,11 +438,13 @@ Describe 'Selecting a real process isolation boundary' {
         ($command.Arguments -join "`n") | Should -Match 'InaccessiblePaths=.*?/\.git/hooks'
         ($command.Arguments -join "`n") | Should -Match 'ReadOnlyPaths=.*?/\.git/config'
         $command.Arguments | Should -Contain '--property=SupplementaryGroups='
-        $command.Arguments | Should -Contain '--property=RestrictAddressFamilies=AF_UNIX'
+        $command.Arguments | Should -Not -Contain '--property=RestrictAddressFamilies=AF_UNIX'
         $command.Arguments | Should -Contain '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
         ($command.Arguments -join "`n") | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED'
         ($command.Arguments -join "`n") | Should -Not -Match '--setenv=XDG_RUNTIME_DIR='
         ($command.Arguments -join "`n") | Should -Match 'BindPaths=.*?/nuget-packages'
+        ($command.Arguments -join "`n") |
+            Should -Match ([regex]::Escape("BindReadOnlyPaths=$($script:TrustedRoot)"))
     }
 
     It 'withholds lanes that have no enforceable process and app boundary' -TestCases @(
@@ -452,6 +458,7 @@ Describe 'Selecting a real process isolation boundary' {
             Get-ReplicationNetworkIsolatedCommand `
                 -Platform $Platform `
                 -RepositoryRoot $script:IsolationPlanRepo `
+                -TrustedRoot $script:TrustedRoot `
                 -ScriptPath $script:Target `
                 -Arguments @() `
                 -Environment $script:MinimalEnvironment `
@@ -465,6 +472,7 @@ Describe 'Selecting a real process isolation boundary' {
             Get-ReplicationNetworkIsolatedCommand `
                 -Platform android `
                 -RepositoryRoot $script:IsolationPlanRepo `
+                -TrustedRoot $script:TrustedRoot `
                 -ScriptPath $script:Target `
                 -Arguments @() `
                 -Environment $script:MinimalEnvironment `
@@ -476,10 +484,31 @@ Describe 'Selecting a real process isolation boundary' {
         } | Should -Throw '*local emulator transport*'
     }
 
+    It 'rejects a generated-execution script outside the immutable trusted root' {
+        $outside = Join-Path $script:IsolationPlanRepo 'outside.ps1'
+        Set-Content -LiteralPath $outside -Value 'exit 0' -Encoding utf8NoBOM
+
+        {
+            Get-ReplicationNetworkIsolatedCommand `
+                -Platform android `
+                -RepositoryRoot $script:IsolationPlanRepo `
+                -TrustedRoot $script:TrustedRoot `
+                -ScriptPath $outside `
+                -Arguments @() `
+                -Environment $script:MinimalEnvironment `
+                -WritableRoots @($script:IsolationPlanRepo) `
+                -DeviceUdid 'emulator-5554' `
+                -OperatingSystem linux `
+                -UserId 1000 `
+                -GroupId 1000
+        } | Should -Throw '*inside the trusted root*'
+    }
+
     It 'grants adb only to trusted device-control phases' {
         $command = Get-ReplicationNetworkIsolatedCommand `
             -Platform android `
             -RepositoryRoot $script:IsolationPlanRepo `
+            -TrustedRoot $script:TrustedRoot `
             -ScriptPath $script:Target `
             -Arguments @('-Value', 'ok') `
             -Environment $script:MinimalEnvironment `
@@ -495,6 +524,38 @@ Describe 'Selecting a real process isolation boundary' {
         $command.Arguments | Should -Not -Contain '--property=RestrictAddressFamilies=AF_UNIX'
         $command.Arguments | Should -Contain '-AllowDeviceControl'
         $command.Arguments | Should -Contain 'true'
+    }
+
+    It 'protects linked-worktree administrative Git metadata' {
+        $worktree = Join-Path $script:ScratchRoot 'linked-worktree'
+        $admin = Join-Path $script:ScratchRoot 'git-admin/worktrees/linked'
+        $common = Join-Path $script:ScratchRoot 'git-admin'
+        New-Item -ItemType Directory -Path $worktree -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $admin 'hooks') -Force | Out-Null
+        New-Item -ItemType Directory -Path (Join-Path $common 'hooks') -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $worktree '.git') `
+            -Value "gitdir: $admin" -Encoding utf8NoBOM
+        Set-Content -LiteralPath (Join-Path $admin 'commondir') `
+            -Value '../..' -Encoding utf8NoBOM
+
+        $command = Get-ReplicationNetworkIsolatedCommand `
+            -Platform android `
+            -RepositoryRoot $worktree `
+            -TrustedRoot $script:TrustedRoot `
+            -ScriptPath $script:Target `
+            -Arguments @() `
+            -Environment $script:MinimalEnvironment `
+            -WritableRoots @($worktree) `
+            -DeviceUdid 'emulator-5554' `
+            -OperatingSystem linux `
+            -UserId 1000 `
+            -GroupId 1000
+
+        $arguments = $command.Arguments -join "`n"
+        $arguments | Should -Match ([regex]::Escape("ReadOnlyPaths=$worktree/.git"))
+        $arguments | Should -Match ([regex]::Escape($admin))
+        $arguments | Should -Match ([regex]::Escape($common))
+        $arguments | Should -Match ([regex]::Escape("$common/hooks"))
     }
 
     It 'makes privilege and user-manager escape canaries part of the isolated wrapper' {

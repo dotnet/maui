@@ -188,7 +188,7 @@ function Get-ReplicationIndependentReviewBlock {
                 ConvertTo-ReplicationSingleLine -Value ([string]$entry.corroboration) -MaximumLength 24
             } else { 'unknown' }
             $findings += ('- **' + $severity + '.** ' + $detail +
-                " (`$category`; grounding `$grounding`, confidence `$confidence`, corroboration `$corroboration`; advisory)")
+                " (``$category``; grounding ``$grounding``, confidence ``$confidence``, corroboration ``$corroboration``; advisory)")
             if ($findings.Count -ge 6) { break }
         }
     }
@@ -494,7 +494,7 @@ function Get-ReplicationQualityDisclosureBlock {
         $corroboration = ConvertTo-ReplicationSingleLine -Value ([string]$finding.corroboration) -MaximumLength 24
         $detail = ConvertTo-ReplicationSingleLine -Value ([string]$finding.detail) -MaximumLength 360
         if ($detail) {
-            $findingLines += "- **$category** (`$grounding`, `$confidence`, `$corroboration`): $detail"
+            $findingLines += "- **$category** (``$grounding``, ``$confidence``, ``$corroboration``): $detail"
         }
     }
 

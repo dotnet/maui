@@ -258,7 +258,15 @@ Describe 'Trusted replication pull request publishing' {
                 risk = [ordered]@{ adjacentStates = @('null'); lifecycleStates = @(); statelessApplicability = 'not-applicable' }
                 semanticBlastRadius = [ordered]@{ affectedType = 'Button'; affectedControl = 'control-1'; ownership = 'Controls'; sharedConsumers = @('ButtonHandler'); unchangedBehavior = 'Other buttons unchanged' }
                 mediaAlignment = 'verified'
-                review = [ordered]@{ findings = @() }
+                review = [ordered]@{
+                    findings = @([ordered]@{
+                        category = 'coverage'
+                        grounding = 'trusted-evidence'
+                        confidence = 'medium'
+                        corroboration = 'not-corroborated'
+                        detail = 'Adjacent lifecycle state was not measured'
+                    })
+                }
             }
         }
         $body = New-ReplicationPullRequestBody `
@@ -273,6 +281,9 @@ Describe 'Trusted replication pull request publishing' {
         $body | Should -Match 'Trusted selector counts: 1 discovered / 1 executed'
         $body | Should -Match 'Quality contract'
         $body | Should -Match 'Media alignment: `verified`'
+        $body | Should -Match (
+            '\*\*coverage\*\* \(`trusted-evidence`, `medium`, ' +
+            '`not-corroborated`\): Adjacent lifecycle state was not measured')
     }
 
     It 'states the evidence level so a reviewer need not infer it' {
@@ -2276,7 +2287,14 @@ Describe 'The pull request body reports the independent review of the winning fi
                 model = 'gpt-5.6-sol'
                 summary = 'The diff restores the null guard and the test covers it.'
                 findings = @(
-                    [pscustomobject]@{ severity = 'blocking'; detail = 'The guard is not applied on the Android path.' }
+                    [pscustomobject]@{
+                        severity = 'blocking'
+                        category = 'product-defect'
+                        grounding = 'code-path'
+                        confidence = 'high'
+                        corroboration = 'deterministic'
+                        detail = 'The guard is not applied on the Android path.'
+                    }
                     [pscustomobject]@{ severity = 'minor'; detail = 'The new field could be readonly.' }
                 )
             }
@@ -2297,6 +2315,15 @@ Describe 'The pull request body reports the independent review of the winning fi
 
         $block | Should -Match '\*\*blocking\.\*\* The guard is not applied on the Android path\.'
         $block | Should -Match '\*\*minor\.\*\* The new field could be readonly\.'
+    }
+
+    It 'renders grounded review metadata instead of variable names' {
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $script:ReviewCandidate
+
+        $block | Should -Match (
+            '`product-defect`; grounding `code-path`, confidence `high`, ' +
+            'corroboration `deterministic`; advisory')
+        $block | Should -Not -Match '\$(?:category|grounding|confidence|corroboration)'
     }
 
     It 'says plainly that findings did not block publication' {

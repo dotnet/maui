@@ -346,8 +346,9 @@ function Assert-ReplicationOutboundNetworkIsolation {
 
     if ($null -eq $DnsProbe) {
         $DnsProbe = {
-            $udp = [Net.Sockets.UdpClient]::new()
+            $udp = $null
             try {
+                $udp = [Net.Sockets.UdpClient]::new()
                 $udp.Client.ReceiveTimeout = 1500
                 $udp.Connect('1.1.1.1', 53)
                 $id = [BitConverter]::GetBytes([uint16](Get-Random -Minimum 1 -Maximum 65535))
@@ -368,20 +369,21 @@ function Assert-ReplicationOutboundNetworkIsolation {
             } catch {
                 $false
             } finally {
-                $udp.Dispose()
+                if ($null -ne $udp) { $udp.Dispose() }
             }
         }
     }
     if ($null -eq $TcpProbe) {
         $TcpProbe = {
-            $client = [Net.Sockets.TcpClient]::new()
+            $client = $null
             try {
+                $client = [Net.Sockets.TcpClient]::new()
                 $task = $client.ConnectAsync('169.254.169.254', 80)
                 $task.Wait(1500) -and $client.Connected
             } catch {
                 $false
             } finally {
-                $client.Dispose()
+                if ($null -ne $client) { $client.Dispose() }
             }
         }
     }
@@ -563,6 +565,7 @@ function Get-ReplicationNetworkIsolatedCommand {
         [ValidateSet('android', 'ios', 'catalyst', 'windows')]
         [string]$Platform,
         [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$TrustedRoot,
         [Parameter(Mandatory = $true)][string]$ScriptPath,
         [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Arguments,
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Environment,
@@ -597,6 +600,32 @@ function Get-ReplicationNetworkIsolatedCommand {
     $wrapperPath = Join-Path $PSScriptRoot 'Invoke-ReplicationNetworkIsolatedProcess.ps1'
     if (-not (Test-Path -LiteralPath $wrapperPath -PathType Leaf)) {
         throw 'Trusted replication network-isolation wrapper is missing.'
+    }
+    $trustedRootPath = [IO.Path]::GetFullPath($TrustedRoot)
+    $trustedRootItem = Get-Item -LiteralPath $trustedRootPath -Force -ErrorAction Stop
+    if (-not $trustedRootItem.PSIsContainer -or
+        $trustedRootItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $trustedRootPath -ceq [IO.Path]::GetPathRoot($trustedRootPath) -or
+        $trustedRootPath -ceq [Environment]::GetFolderPath(
+            [Environment+SpecialFolder]::UserProfile)) {
+        throw 'Generated execution requires a regular trusted root directory.'
+    }
+    $trustedRootPrefix = $trustedRootPath.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar
+    ) + [IO.Path]::DirectorySeparatorChar
+    $trustedScriptPath = [IO.Path]::GetFullPath($ScriptPath)
+    if (-not $trustedScriptPath.StartsWith(
+            $trustedRootPrefix,
+            [StringComparison]::Ordinal)) {
+        throw 'Generated execution script must remain inside the trusted root.'
+    }
+    $wrapperDirectory = [IO.Path]::GetFullPath($PSScriptRoot)
+    $wrapperInsideTrustedRoot = $wrapperDirectory.StartsWith(
+        $trustedRootPrefix,
+        [StringComparison]::Ordinal)
+    if ($validateHostTools -and -not $wrapperInsideTrustedRoot) {
+        throw 'The network-isolation wrapper must execute from the trusted root.'
     }
     $argumentJson = ConvertTo-Json -InputObject @($Arguments) -Compress -Depth 4
     $argumentPayload = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($argumentJson))
@@ -665,10 +694,40 @@ function Get-ReplicationNetworkIsolatedCommand {
             }
         }
     }
-    $gitDirectory = Join-Path $RepositoryRoot '.git'
-    $readOnlyPaths = [Collections.Generic.List[string]]::new()
+    $gitMarker = Join-Path $RepositoryRoot '.git'
+    $gitDirectory = $gitMarker
+    if (Test-Path -LiteralPath $gitMarker -PathType Leaf) {
+        $markerText = [IO.File]::ReadAllText($gitMarker).Trim()
+        if ($markerText -notmatch '^gitdir:\s*(?<path>.+)$') {
+            throw 'Generated execution found a malformed linked-worktree .git file.'
+        }
+        $gitDirectoryValue = $Matches['path']
+        $gitDirectory = if ([IO.Path]::IsPathRooted($gitDirectoryValue)) {
+            [IO.Path]::GetFullPath($gitDirectoryValue)
+        } else {
+            [IO.Path]::GetFullPath((Join-Path $RepositoryRoot $gitDirectoryValue))
+        }
+        $readOnlyPaths = [Collections.Generic.List[string]]::new()
+        $readOnlyPaths.Add($gitMarker)
+    } else {
+        $readOnlyPaths = [Collections.Generic.List[string]]::new()
+    }
     if (Test-Path -LiteralPath $gitDirectory -PathType Container) {
+        $readOnlyPaths.Add($gitDirectory)
         $inaccessiblePaths += "-$(Join-Path $gitDirectory 'hooks')"
+        $commonDirMarker = Join-Path $gitDirectory 'commondir'
+        if (Test-Path -LiteralPath $commonDirMarker -PathType Leaf) {
+            $commonRelative = [IO.File]::ReadAllText($commonDirMarker).Trim()
+            $commonDirectory = if ([IO.Path]::IsPathRooted($commonRelative)) {
+                [IO.Path]::GetFullPath($commonRelative)
+            } else {
+                [IO.Path]::GetFullPath((Join-Path $gitDirectory $commonRelative))
+            }
+            if (Test-Path -LiteralPath $commonDirectory -PathType Container) {
+                $readOnlyPaths.Add($commonDirectory)
+                $inaccessiblePaths += "-$(Join-Path $commonDirectory 'hooks')"
+            }
+        }
         foreach ($relative in @(
             'config',
             'config.worktree',
@@ -707,7 +766,7 @@ function Get-ReplicationNetworkIsolatedCommand {
         '--property=RestrictNamespaces=yes',
         '--property=PrivateTmp=yes',
         '--property=ProtectSystem=strict',
-        '--property=ProtectHome=yes',
+        '--property=ProtectHome=tmpfs',
         '--property=ProtectControlGroups=yes',
         '--property=ProtectKernelModules=yes',
         '--property=ProtectKernelTunables=yes',
@@ -721,16 +780,17 @@ function Get-ReplicationNetworkIsolatedCommand {
         '--property=UnsetEnvironment=XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS'
     )
     if (-not $AllowDeviceControl) {
-        # Generated host tests do not need IP sockets. Blocking AF_INET and
-        # AF_INET6 also removes the loopback ADB server as a control-plane
-        # escape even when no adb executable is visible inside the unit.
-        $systemdArguments += '--property=RestrictAddressFamilies=AF_UNIX'
-    }
-    if (-not $AllowDeviceControl) {
         # Host-only unit/XAML phases need no Appium or adb connection. A private
         # network namespace prevents raw loopback protocol access to the host's
         # adb server even if generated code bypasses every API scan.
         $systemdArguments += '--property=PrivateNetwork=yes'
+    }
+    $systemdArguments += "--property=BindReadOnlyPaths=$trustedRootPath"
+    if (-not $wrapperInsideTrustedRoot) {
+        # Unit tests load this helper outside their fake trusted root. Production
+        # stages the helper under TrustedRoot, so this extra bind is normally
+        # unnecessary but keeps command construction directly testable.
+        $systemdArguments += "--property=BindReadOnlyPaths=$wrapperDirectory"
     }
     if ($readOnlyPaths.Count -gt 0) {
         $systemdArguments += "--property=ReadOnlyPaths=$($readOnlyPaths -join ' ')"

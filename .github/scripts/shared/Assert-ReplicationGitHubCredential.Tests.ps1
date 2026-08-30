@@ -22,6 +22,26 @@ BeforeAll {
 }
 
 Describe 'Assert-ReplicationGitHubCredential' {
+    It 'uses the supplied token only in the authenticated request header' {
+        $script:authorization = ''
+        Mock Invoke-WebRequest {
+            param($Uri, $Headers, $Method, $TimeoutSec, $SkipHttpErrorCheck)
+            $script:authorization = [string]$Headers.Authorization
+            [pscustomobject]@{
+                StatusCode = 200
+                Content = '{"login":"MauiBot"}'
+                Headers = @{}
+            }
+        }
+
+        $result = Invoke-ReplicationCredentialRequest `
+            -Token 'credential-value' `
+            -ApiBase 'https://api.github.com'
+
+        $script:authorization | Should -BeExactly 'Bearer credential-value'
+        $result.Login | Should -BeExactly 'MauiBot'
+    }
+
     It 'returns the authenticated login when GitHub accepts the token' {
         $login = Assert-ReplicationGitHubCredential `
             -Token 'valid' `

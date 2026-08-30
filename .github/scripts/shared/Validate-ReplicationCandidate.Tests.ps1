@@ -1156,12 +1156,35 @@ var process = S\u0079stem.Diagn\u006fstics.Pr\u006fcess.Start("tool");
         } | Should -Throw '*Unicode control characters*'
     }
 
+    It 'cannot hide executable sinks behind interpolation-hole comment markers' {
+        $source = @'
+var open = $"{"/*"}";
+System.Environment.GetEnvironmentVariable("GH_TOKEN");
+System.IO.File.WriteAllText("state", "value");
+var client = new System.Net.Http.HttpClient();
+System.Diagnostics.Process.Start("tool");
+var close = $"{"*/"}";
+'@
+        {
+            Assert-ReplicationGeneratedSourceSafety -Content $source -Path 'Issue1.cs'
+        } | Should -Throw
+        {
+            Assert-ReplicationProductFixSafety -Content $source -Path 'Product.cs'
+        } | Should -Throw
+    }
+
     It 'rejects executable generated-test XAML factories and namespaces' -TestCases @(
         @{
             Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:p="clr-namespace:System.Diagnostics;assembly=System.Diagnostics.Process"><p:Process x:FactoryMethod="Start"><x:Arguments><x:String>tool</x:String></x:Arguments></p:Process></ContentPage>'
         },
         @{
             Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"><Label Text="{x:Static System.Environment.CurrentDirectory}" /></ContentPage>'
+        }
+        @{
+            Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:q="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sys="using:System.Diagnostics"><Label Text="{q:Static sys:Environment.CurrentDirectory}" /></ContentPage>'
+        }
+        @{
+            Snippet = '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:q="http://schemas.microsoft.com/winfx/2006/xaml"><Label q:FactoryMethod="Create"><q:Arguments><q:String>tool</q:String></q:Arguments></Label></ContentPage>'
         }
     ) {
         param($Snippet)
@@ -3981,7 +4004,7 @@ class SafeHandler
         Get-Content -LiteralPath $script:completeFile -Raw | Should -Match 'false'
     }
 
-    It 'rejects an edit to any file that retains a dangerous trusted member' {
+    It 'rejects an edit to any file that retains dangerous trusted content' {
         $before = @'
 class SafeHandler
 {
@@ -4006,6 +4029,39 @@ class SafeHandler
                 -Paths @($script:completePath) `
                 -PatchPath $patch
         } | Should -Throw '*device-external-access*'
+    }
+
+    It 'rejects an unrelated edit beside unchanged trusted executable capabilities' {
+        $before = @'
+using System.IO;
+using System.Reflection;
+class SafeHandler
+{
+    static SafeHandler() { File.Exists("trusted"); }
+    ImageSource Source { get; set; }
+    Assembly Existing() => typeof(SafeHandler).Assembly;
+    int Safe() => 1;
+}
+'@
+        $after = @'
+using System.IO;
+using System.Reflection;
+class SafeHandler
+{
+    static SafeHandler() { File.Exists("trusted"); }
+    ImageSource Source { get; set; }
+    Assembly Existing() => typeof(SafeHandler).Assembly;
+    int Safe() => 2;
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*file-system*'
     }
 
     It 'rejects compilation-unit runtime policy attributes and preprocessor activation' -TestCases @(
