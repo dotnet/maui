@@ -7692,7 +7692,7 @@ function Get-ReplicationRuntimeEnvironment {
     }
 }
 
-function Get-ReplicationWindowsRidRestoreArguments {
+function Get-ReplicationWindowsGraphRestoreArguments {
     return @(
         '-p:IncludeAndroidTargetFrameworks=false',
         '-p:IncludeIosTargetFrameworks=false',
@@ -7701,8 +7701,16 @@ function Get-ReplicationWindowsRidRestoreArguments {
         '-p:IncludeTizenTargetFrameworks=false',
         '-p:IncludeWindowsTargetFrameworks=true',
         '-p:RuntimeIdentifiers=win-x64',
-        '-p:RuntimeIdentifierOverride=win-x64',
-        '-p:DisableTransitiveFrameworkReferenceDownloads=false',
+        '-p:DisableTransitiveFrameworkReferenceDownloads=false'
+    )
+}
+
+function Get-ReplicationWindowsTopLevelRidRestoreArguments {
+    return @(
+        Get-ReplicationWindowsGraphRestoreArguments
+    ) + @(
+        '--no-dependencies',
+        '-r', 'win-x64',
         '-p:SelfContained=true'
     )
 }
@@ -7712,6 +7720,7 @@ function Assert-ReplicationWindowsRestoreAssets {
     param(
         [Parameter(Mandatory = $true)][string]$ProjectArtifactName,
         [Parameter(Mandatory = $true)][string[]]$SourceGeneratorArtifactNames,
+        [string[]]$WindowsProjectArtifactNames = @(),
         [string]$ArtifactsRoot = (Join-Path $repoRoot 'artifacts/obj'),
         [string]$RuntimePackagesRoot = $replicationNugetPackages
     )
@@ -7737,6 +7746,18 @@ function Assert-ReplicationWindowsRestoreAssets {
         if ($targets -cnotcontains 'netstandard2.0') {
             throw ("Trusted Windows restore corrupted source-generator assets " +
                 "for '$sourceGenerator': netstandard2.0 is missing.")
+        }
+    }
+
+    foreach ($windowsProject in $WindowsProjectArtifactNames) {
+        $assetsPath = Join-Path $ArtifactsRoot (
+            "$windowsProject/project.assets.json")
+        $assets = Read-RestoreAssets -Path $assetsPath
+        if (@($assets['targets'].Keys | Where-Object {
+                    $_ -match '^net\d+\.\d+-windows10\.0\.\d+\.0/win-x64$'
+                }).Count -lt 1) {
+            throw ("Trusted Windows restore did not retain a win-x64 target for " +
+                "referenced project '$windowsProject'.")
         }
     }
 
@@ -7834,6 +7855,33 @@ function Invoke-ReplicationTrustedRestore {
     }
 }
 
+function Invoke-ReplicationWindowsTwoPhaseRestore {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Target,
+        [Parameter(Mandatory = $true)][string]$ProjectArtifactName,
+        [Parameter(Mandatory = $true)][string[]]$SourceGeneratorArtifactNames,
+        [string[]]$WindowsProjectArtifactNames = @()
+    )
+
+    # Phase 1 restores the trusted project-reference graph with no RID global,
+    # preserving source generators at their own netstandard2.0 target.
+    Invoke-ReplicationTrustedRestore `
+        -Target $Target `
+        -AdditionalArguments @(Get-ReplicationWindowsGraphRestoreArguments)
+
+    # Phase 2 touches only the top-level app. It adds the win-x64 target and
+    # runtime pack without rewriting any ProjectReference assets.
+    Invoke-ReplicationTrustedRestore `
+        -Target $Target `
+        -AdditionalArguments @(Get-ReplicationWindowsTopLevelRidRestoreArguments)
+
+    $null = Assert-ReplicationWindowsRestoreAssets `
+        -ProjectArtifactName $ProjectArtifactName `
+        -SourceGeneratorArtifactNames $SourceGeneratorArtifactNames `
+        -WindowsProjectArtifactNames $WindowsProjectArtifactNames
+}
+
 function Get-ReplicationPlannedRestoreTargets {
     [CmdletBinding()]
     param(
@@ -7862,19 +7910,9 @@ function Get-ReplicationPlannedRestoreTargets {
             }
             default { throw 'The planned device-test path has no trusted restore mapping.' }
         }
-        $restorePlatform = [string](Get-Variable `
-                -Name Platform `
-                -Scope Script `
-                -ValueOnly `
-                -ErrorAction SilentlyContinue)
-        $restoreArguments = if ($restorePlatform -eq 'windows') {
-            @(Get-ReplicationWindowsRidRestoreArguments)
-        } else {
-            @()
-        }
         $targets.Add([pscustomobject]@{
             Path = Join-Path $repoRoot $relative
-            Arguments = $restoreArguments
+            Arguments = @()
         })
         return @($targets)
     }
@@ -9378,18 +9416,14 @@ try {
             'this pool has no enforceable process-tree and app outbound-network deny boundary.')
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
-    $bootstrapRestoreArguments = if ($Platform -eq 'windows') {
-        @(Get-ReplicationWindowsRidRestoreArguments)
-    } else {
-        @()
-    }
-    Invoke-ReplicationTrustedRestore `
-        -Target $sandboxProjectPath `
-        -AdditionalArguments $bootstrapRestoreArguments
     if ($Platform -eq 'windows') {
-        $null = Assert-ReplicationWindowsRestoreAssets `
+        Invoke-ReplicationWindowsTwoPhaseRestore `
+            -Target $sandboxProjectPath `
             -ProjectArtifactName 'Maui.Controls.Sample.Sandbox' `
-            -SourceGeneratorArtifactNames @('Controls.BindingSourceGen')
+            -SourceGeneratorArtifactNames @('Controls.BindingSourceGen') `
+            -WindowsProjectArtifactNames @('Controls.Core')
+    } else {
+        Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath
     }
     if ($Platform -eq 'android') {
         if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
@@ -9440,14 +9474,16 @@ try {
         }
         $controlsDeviceProject = Join-Path $repoRoot (
             'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
-        Invoke-ReplicationTrustedRestore `
+        Invoke-ReplicationWindowsTwoPhaseRestore `
             -Target $controlsDeviceProject `
-            -AdditionalArguments $bootstrapRestoreArguments
-        $null = Assert-ReplicationWindowsRestoreAssets `
             -ProjectArtifactName 'Controls.DeviceTests' `
             -SourceGeneratorArtifactNames @(
                 'Controls.BindingSourceGen',
                 'TestUtils.DeviceTests.Runners.SourceGen'
+            ) `
+            -WindowsProjectArtifactNames @(
+                'Controls.Core',
+                'TestUtils.DeviceTests.Runners'
             )
         foreach ($prewarm in @(
             [pscustomobject]@{
@@ -9980,17 +10016,23 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         foreach ($restoreTarget in @(Get-ReplicationPlannedRestoreTargets `
                 -Proposal $plannedTestProposal `
                 -Files $plannedTestFiles)) {
-            Invoke-ReplicationTrustedRestore `
-                -Target $restoreTarget.Path `
-                -AdditionalArguments @($restoreTarget.Arguments)
-        }
-        if ($Platform -eq 'windows') {
-            $null = Assert-ReplicationWindowsRestoreAssets `
-                -ProjectArtifactName 'Controls.DeviceTests' `
-                -SourceGeneratorArtifactNames @(
-                    'Controls.BindingSourceGen',
-                    'TestUtils.DeviceTests.Runners.SourceGen'
-                )
+            if ($Platform -eq 'windows') {
+                Invoke-ReplicationWindowsTwoPhaseRestore `
+                    -Target $restoreTarget.Path `
+                    -ProjectArtifactName 'Controls.DeviceTests' `
+                    -SourceGeneratorArtifactNames @(
+                        'Controls.BindingSourceGen',
+                        'TestUtils.DeviceTests.Runners.SourceGen'
+                    ) `
+                    -WindowsProjectArtifactNames @(
+                        'Controls.Core',
+                        'TestUtils.DeviceTests.Runners'
+                    )
+            } else {
+                Invoke-ReplicationTrustedRestore `
+                    -Target $restoreTarget.Path `
+                    -AdditionalArguments @($restoreTarget.Arguments)
+            }
         }
         $repairFailureSummary = ''
         $testFailureHistory = [ordered]@{}
