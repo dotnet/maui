@@ -16,6 +16,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		const string ContentElementName = "ContentElement";
+
 		[Fact(DisplayName = "Vertical text alignment uses the current template content")]
 		public async Task VerticalTextAlignmentUsesCurrentTemplateContent()
 		{
@@ -26,14 +28,14 @@ namespace Microsoft.Maui.DeviceTests
 				var textBox = GetNativeEditor(handler);
 				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Bottom);
 
-				var previousContentElement = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+				var previousContentElement = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
 				Assert.NotNull(previousContentElement);
 				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
 
 				textBox.Template = CreateTextBoxTemplate();
 				textBox.ApplyTemplate();
 
-				var currentContentElement = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+				var currentContentElement = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
 				Assert.NotNull(currentContentElement);
 				Assert.NotSame(previousContentElement, currentContentElement);
 
