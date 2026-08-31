@@ -15,6 +15,7 @@ BeforeAll {
 
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
+        'Invoke-BoundedWindowsDeviceBuild',
         'Get-CategoryFiltersFromTestFilter',
         'ConvertTo-DeviceTestClassFilterValue',
         'New-AndroidDeviceTestClassFilterInjection',
@@ -84,10 +85,10 @@ Describe 'Build isolation options' {
             'PackageManifest|GenerateAppxPackageOnBuild|' +
             'PackageCertificateThumbprint|AppxPackageDir')
         $graphBuild = $content.IndexOf(
-            '& dotnet @windowsGraphBuildArgs',
+            '-Arguments $windowsGraphBuildArgs',
             [StringComparison]::Ordinal)
         $packageBuild = $content.IndexOf(
-            '& dotnet @buildArgs',
+            '-Arguments $buildArgs',
             $graphBuild,
             [StringComparison]::Ordinal)
         $graphBuild | Should -BeGreaterOrEqual 0
@@ -120,6 +121,62 @@ Describe 'Build isolation options' {
         $content | Should -Match 'PackageLocalStatePath'
         $content | Should -Match 'Remove-ReplicationWindowsAppContainerPackage'
         $content | Should -Match 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:'
+        $content | Should -Match 'windows-unpackaged-graph-build\.log'
+        $content | Should -Match 'windows-top-level-package-build\.log'
+    }
+
+    It 'retains bounded redacted Windows compiler diagnostics' {
+        $root = Join-Path $TestDrive 'windows-build-diagnostics'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        $logPath = Join-Path $root 'graph-build.log'
+        $secret = 'ghp_abcdefghijklmnopqrstuvwxyz0123456789'
+        $message = ''
+        try {
+            Invoke-BoundedWindowsDeviceBuild `
+                -Arguments @('build', 'Controls.DeviceTests.csproj') `
+                -LogPath $logPath `
+                -AllowedRoot $root `
+                -Description 'Unpackaged Windows graph build' `
+                -CommandInvoker {
+                    [pscustomobject]@{
+                        ExitCode = 1
+                        Output = @(
+                            "GH_TOKEN=$secret",
+                            "Authorization: Bearer $secret",
+                            ('Issue37540.Windows.cs(42,17): error CS1061: ' +
+                                "'Label' does not contain a definition for 'Missing'"),
+                            'Build FAILED.'
+                        )
+                    }
+                }
+        } catch {
+            $message = $_.Exception.Message
+        }
+
+        $message | Should -Match 'error CS1061'
+        $message | Should -Match 'Retained diagnostics:'
+        $message | Should -Not -Match ([regex]::Escape($secret))
+        $item = Get-Item -LiteralPath $logPath -Force
+        $item.PSIsContainer | Should -BeFalse
+        ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) |
+            Should -BeFalse
+        $item.Length | Should -BeGreaterThan 0
+        $item.Length | Should -BeLessOrEqual 1MB
+        $content = Get-Content -LiteralPath $logPath -Raw
+        $content | Should -Match 'error CS1061'
+        $content | Should -Match '<redacted'
+        $content | Should -Not -Match ([regex]::Escape($secret))
+
+        {
+            Invoke-BoundedWindowsDeviceBuild `
+                -Arguments @('build') `
+                -LogPath (Join-Path $TestDrive 'outside.log') `
+                -AllowedRoot $root `
+                -Description 'outside probe' `
+                -CommandInvoker {
+                    [pscustomobject]@{ ExitCode = 0; Output = @('ok') }
+                }
+        } | Should -Throw '*must stay inside its trusted root*'
     }
 
     It 'signs Mac Catalyst replication tests into the no-network App Sandbox' {
