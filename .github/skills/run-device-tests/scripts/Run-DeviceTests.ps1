@@ -1243,6 +1243,16 @@ if ($RequireWindowsAppContainer) {
     . $windowsHelperPath
     $null = Assert-ReplicationWindowsAppContainerManifest `
         -Path $windowsManifestPath
+    $windowsManifestObservationRoot =
+        $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(
+            $OutputDirectory)
+    New-Item -ItemType Directory `
+        -Path $windowsManifestObservationRoot `
+        -Force |
+        Out-Null
+    $windowsManifestObservationDirectory = Join-Path `
+        $windowsManifestObservationRoot `
+        'windows-manifest-observation'
 }
 if ($RequireMacCatalystAppSandbox) {
     if ($Platform -ne 'maccatalyst' -or -not [OperatingSystem]::IsMacOS()) {
@@ -1555,7 +1565,10 @@ try {
                 $appPath = $msixFiles[0].FullName
                 $windowsInstalledPackage =
                     Install-ReplicationWindowsAppContainerPackage `
-                        -PackagePath $appPath
+                        -PackagePath $appPath `
+                        -ManifestObservationRoot $windowsManifestObservationRoot `
+                        -ManifestObservationDirectory `
+                            $windowsManifestObservationDirectory
             } else {
                 $exeSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder"
                 $exeFile = Get-ChildItem -Path $exeSearchPath -Filter "$appName.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1

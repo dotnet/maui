@@ -56,6 +56,10 @@ param(
 
     [switch]$EnforceNetworkIsolation,
 
+    [string]$WindowsManifestObservationRoot,
+
+    [string]$WindowsManifestObservationDirectory,
+
     [switch]$Cleanup
 )
 
@@ -67,6 +71,15 @@ if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
 }
 if ($LaunchOnly -and -not $SkipBuildDeploy) {
     throw 'LaunchOnly requires SkipBuildDeploy.'
+}
+if ([string]::IsNullOrWhiteSpace($WindowsManifestObservationRoot) -ne
+    [string]::IsNullOrWhiteSpace($WindowsManifestObservationDirectory)) {
+    throw 'Windows registration observation requires both root and directory.'
+}
+if (-not [string]::IsNullOrWhiteSpace($WindowsManifestObservationRoot) -and
+    ($Platform -ne 'windows' -or -not $EnforceNetworkIsolation -or
+        -not $PrepareOnly)) {
+    throw 'Windows registration observation is limited to isolated preparation.'
 }
 
 # Script configuration
@@ -359,6 +372,13 @@ if ($EnforceNetworkIsolation -and $Platform -eq 'windows') {
         -Path $windowsManifestPath
     $buildDeployParams.WindowsAppContainerManifestPath = $windowsManifestPath
     $buildDeployParams.WindowsPackageStatePath = $WindowsPackageStatePath
+    if (-not [string]::IsNullOrWhiteSpace(
+            $WindowsManifestObservationRoot)) {
+        $buildDeployParams.WindowsManifestObservationRoot =
+            $WindowsManifestObservationRoot
+        $buildDeployParams.WindowsManifestObservationDirectory =
+            $WindowsManifestObservationDirectory
+    }
 }
 if ($EnforceNetworkIsolation -and $Platform -eq 'catalyst') {
     $catalystEntitlementsPath = Join-Path (

@@ -112,6 +112,10 @@ Describe 'Build isolation options' {
             '\(Join-Path \$RepoRoot \$projectPath\)\)')
         $content | Should -Not -Match '_MauiReplicationWindowsManifest'
         $content | Should -Match 'Install-ReplicationWindowsAppContainerPackage'
+        $content | Should -Match (
+            '-ManifestObservationRoot \$windowsManifestObservationRoot')
+        $content | Should -Match (
+            '\$windowsManifestObservationDirectory')
         $content | Should -Match 'Start-ReplicationWindowsAppContainerProcess'
         $content | Should -Match 'PackageLocalStatePath'
         $content | Should -Match 'Remove-ReplicationWindowsAppContainerPackage'

@@ -2746,6 +2746,12 @@ InitializeComponent();
             Should -Not -Match '_MauiReplicationWindowsManifest'
         $script:BuildDeploySource |
             Should -Match 'Install-ReplicationWindowsAppContainerPackage'
+        $script:Source | Should -Match (
+            "'-WindowsManifestObservationRoot', \`$ArtifactRoot")
+        $script:Source | Should -Match (
+            'windows-manifest-observation-attempt-\$attempt')
+        $script:BuildDeploySource |
+            Should -Match 'ManifestObservationDirectory'
         $script:BuildDeploySource |
             Should -Match '"-p:RuntimeIdentifierOverride=win-x64"'
         $script:BuildDeploySource |

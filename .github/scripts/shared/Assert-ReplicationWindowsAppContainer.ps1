@@ -534,6 +534,146 @@ function Get-ReplicationWindowsRegistrationRecordsSha256 {
     }
 }
 
+function Write-ReplicationWindowsRegistrationObservation {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][Xml.XmlDocument]$Document,
+        [Parameter(Mandatory = $true)][string]$ManifestContent,
+        [Parameter(Mandatory = $true)][string]$PackagePath,
+        [Parameter(Mandatory = $true)][string]$ObservationRoot,
+        [Parameter(Mandatory = $true)][string]$ObservationDirectory,
+        [Parameter(Mandatory = $true)][Exception]$Mismatch
+    )
+
+    if ($Mismatch.Data['ReplicationWindowsRegistrationProfileMismatch'] -ne
+        $true) {
+        throw 'Windows registration observation requires a trusted profile mismatch.'
+    }
+    $rootPath = [IO.Path]::GetFullPath($ObservationRoot).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $rootItem = Get-Item -LiteralPath $rootPath -Force -ErrorAction Stop
+    if (-not $rootItem.PSIsContainer -or
+        $rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Windows registration observation root must be a regular directory.'
+    }
+    $directoryPath = [IO.Path]::GetFullPath($ObservationDirectory)
+    $comparison = if ([OperatingSystem]::IsWindows()) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+    $rootPrefix = "$rootPath$([IO.Path]::DirectorySeparatorChar)"
+    if (-not $directoryPath.StartsWith($rootPrefix, $comparison)) {
+        throw 'Windows registration observation directory must be inside its trusted root.'
+    }
+    $probe = $directoryPath
+    while (-not [string]::Equals($probe, $rootPath, $comparison)) {
+        if (Test-Path -LiteralPath $probe) {
+            $probeItem = Get-Item -LiteralPath $probe -Force -ErrorAction Stop
+            if (-not $probeItem.PSIsContainer -or
+                $probeItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'Windows registration observation path contains a linked component.'
+            }
+        }
+        $parent = Split-Path -Parent $probe
+        if ([string]::IsNullOrWhiteSpace($parent) -or
+            [string]::Equals($parent, $probe, $comparison)) {
+            throw 'Windows registration observation path did not reach its trusted root.'
+        }
+        $probe = $parent
+    }
+    New-Item -ItemType Directory -Path $directoryPath -Force | Out-Null
+
+    $observationPath = ''
+    $sequence = 0
+    for ($candidate = 1; $candidate -le 64; $candidate++) {
+        $candidatePath = Join-Path $directoryPath (
+            "observation-$($candidate.ToString('000'))")
+        if (-not (Test-Path -LiteralPath $candidatePath)) {
+            New-Item -ItemType Directory -Path $candidatePath |
+                Out-Null
+            $observationPath = $candidatePath
+            $sequence = $candidate
+            break
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($observationPath)) {
+        throw 'Windows registration observation limit was exceeded.'
+    }
+
+    $records = @(Get-ReplicationWindowsInProcessRegistrationRecords `
+        -Document $Document `
+        -Shape Manifest `
+        -Description 'Observed Windows package manifest')
+    $recordsContent = [string]::Join("`n", $records)
+    if ([Text.Encoding]::UTF8.GetByteCount($ManifestContent) -gt 512KB -or
+        [Text.Encoding]::UTF8.GetByteCount($recordsContent) -gt 2MB) {
+        throw 'Windows registration observation content exceeds its trusted bounds.'
+    }
+    $manifestPath = Join-Path $observationPath 'AppxManifest.xml'
+    $recordsPath = Join-Path $observationPath 'normalized-records.txt'
+    [IO.File]::WriteAllText(
+        $manifestPath,
+        $ManifestContent,
+        [Text.UTF8Encoding]::new($false))
+    [IO.File]::WriteAllText(
+        $recordsPath,
+        $recordsContent,
+        [Text.UTF8Encoding]::new($false))
+
+    $extensions = @($Document.SelectNodes(
+            "/*[local-name()='Package']/*[local-name()='Extensions']/" +
+            "*[local-name()='Extension']"))
+    $manifestBytes = [Text.UTF8Encoding]::new($false).GetBytes(
+        $ManifestContent)
+    $manifestSha = [Security.Cryptography.SHA256]::Create()
+    try {
+        $manifestSha256 = ([BitConverter]::ToString(
+                $manifestSha.ComputeHash($manifestBytes))).Replace(
+                    '-',
+                    '').ToLowerInvariant()
+    } finally {
+        $manifestSha.Dispose()
+    }
+    $packageItem = Get-Item -LiteralPath $PackagePath -Force `
+        -ErrorAction Stop
+    $observation = [ordered]@{
+        schemaVersion = 1
+        kind = 'windows-registration-profile-observation'
+        authorization = 'diagnostic-only'
+        canAuthorizeCurrentRun = $false
+        sequence = $sequence
+        identityName = [string]$Mismatch.Data['IdentityName']
+        actualExtensionCount = $extensions.Count
+        actualRecordCount = $records.Count
+        actualNormalizedRecordsSha256 =
+            Get-ReplicationWindowsRegistrationRecordsSha256 -Records $records
+        expectedExtensionCount =
+            [int]$Mismatch.Data['ExpectedExtensionCount']
+        expectedRecordCount = [int]$Mismatch.Data['ExpectedRecordCount']
+        expectedNormalizedRecordsSha256 =
+            [string]$Mismatch.Data['ExpectedNormalizedRecordsSha256']
+        sourceMsixFileName = $packageItem.Name
+        sourceMsixLength = $packageItem.Length
+        sourceMsixSha256 = (
+            Get-FileHash -LiteralPath $packageItem.FullName -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
+        manifestFile = 'AppxManifest.xml'
+        manifestSha256 = $manifestSha256
+        normalizedRecordsFile = 'normalized-records.txt'
+    }
+    $observationJson = $observation | ConvertTo-Json -Depth 5
+    if ([Text.Encoding]::UTF8.GetByteCount($observationJson) -gt 16KB) {
+        throw 'Windows registration observation metadata exceeds its trusted bound.'
+    }
+    [IO.File]::WriteAllText(
+        (Join-Path $observationPath 'profile.json'),
+        $observationJson,
+        [Text.UTF8Encoding]::new($false))
+    return $observationPath
+}
+
 function Assert-ReplicationWindowsWinUiExtensions {
     [CmdletBinding()]
     param(
@@ -568,11 +708,19 @@ function Assert-ReplicationWindowsWinUiExtensions {
         -not [StringComparer]::Ordinal.Equals(
             $recordsSha256,
             [string]$profile.normalizedRecordsSha256)) {
-        throw (
+        $mismatch = [IO.InvalidDataException]::new(
             "$Description does not match its trusted Windows registration " +
             "profile: extensions $($extensions.Count)/$($profile.extensionCount), " +
             "records $($records.Count)/$($profile.recordCount), " +
             "SHA-256 $recordsSha256/$($profile.normalizedRecordsSha256).")
+        $mismatch.Data['ReplicationWindowsRegistrationProfileMismatch'] = $true
+        $mismatch.Data['IdentityName'] = $identityName
+        $mismatch.Data['ExpectedExtensionCount'] =
+            [int]$profile.extensionCount
+        $mismatch.Data['ExpectedRecordCount'] = [int]$profile.recordCount
+        $mismatch.Data['ExpectedNormalizedRecordsSha256'] =
+            [string]$profile.normalizedRecordsSha256
+        throw $mismatch
     }
     return $true
 }
@@ -737,7 +885,16 @@ function Assert-ReplicationWindowsAppContainerManifest {
 
 function Get-ReplicationWindowsMsixManifest {
     [CmdletBinding()]
-    param([Parameter(Mandatory = $true)][string]$PackagePath)
+    param(
+        [Parameter(Mandatory = $true)][string]$PackagePath,
+        [string]$ManifestObservationRoot = '',
+        [string]$ManifestObservationDirectory = ''
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ManifestObservationRoot) -ne
+        [string]::IsNullOrWhiteSpace($ManifestObservationDirectory)) {
+        throw 'Windows manifest observation requires both root and directory.'
+    }
 
     $fullPath = [IO.Path]::GetFullPath($PackagePath)
     $item = Get-Item -LiteralPath $fullPath -Force -ErrorAction Stop
@@ -778,10 +935,29 @@ function Get-ReplicationWindowsMsixManifest {
     $document = Read-ReplicationWindowsManifestXml `
         -Content $content `
         -Description "MSIX manifest in '$fullPath'"
-    $identity = Assert-ReplicationWindowsAppContainerManifestDocument `
-        -Document $document `
-        -Description "MSIX manifest in '$fullPath'" `
-        -AllowTrustedWinUiExtensions
+    try {
+        $identity = Assert-ReplicationWindowsAppContainerManifestDocument `
+            -Document $document `
+            -Description "MSIX manifest in '$fullPath'" `
+            -AllowTrustedWinUiExtensions
+    } catch {
+        if ($_.Exception.Data[
+                'ReplicationWindowsRegistrationProfileMismatch'] -eq $true -and
+            -not [string]::IsNullOrWhiteSpace($ManifestObservationRoot)) {
+            $observationPath =
+                Write-ReplicationWindowsRegistrationObservation `
+                    -Document $document `
+                    -ManifestContent $content `
+                    -PackagePath $fullPath `
+                    -ObservationRoot $ManifestObservationRoot `
+                    -ObservationDirectory $ManifestObservationDirectory `
+                    -Mismatch $_.Exception
+            Write-Host (
+                'Recorded diagnostic-only rejected Windows registration ' +
+                "profile at '$observationPath'.")
+        }
+        throw
+    }
     if ([string]::IsNullOrWhiteSpace($identity.Name) -or
         $identity.Name -notmatch '^[A-Za-z0-9.-]{3,50}$') {
         throw "MSIX manifest in '$fullPath' has an invalid package identity."
@@ -1073,14 +1249,19 @@ function Remove-ReplicationWindowsAppContainerPackage {
 function Install-ReplicationWindowsAppContainerPackage {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true)][string]$PackagePath
+        [Parameter(Mandatory = $true)][string]$PackagePath,
+        [string]$ManifestObservationRoot = '',
+        [string]$ManifestObservationDirectory = ''
     )
 
     if (-not [OperatingSystem]::IsWindows()) {
         throw 'Windows replication package installation requires a Windows host.'
     }
     $fullPath = [IO.Path]::GetFullPath($PackagePath)
-    $identity = Get-ReplicationWindowsMsixManifest -PackagePath $fullPath
+    $identity = Get-ReplicationWindowsMsixManifest `
+        -PackagePath $fullPath `
+        -ManifestObservationRoot $ManifestObservationRoot `
+        -ManifestObservationDirectory $ManifestObservationDirectory
     Remove-ReplicationWindowsAppContainerPackage -PackageName $identity.Name
 
     $packageDirectory = Split-Path -Parent $fullPath
