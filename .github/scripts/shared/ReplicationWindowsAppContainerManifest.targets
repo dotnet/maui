@@ -1,0 +1,43 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectFullPath)' == '$(MauiReplicationAppContainerProject)'">
+    <AppxManifest Remove="@(AppxManifest)" />
+    <AppxManifest Include="$(MauiReplicationAppContainerManifest)">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+
+  <Target
+      Name="_ValidateMauiReplicationAppContainerManifestInput"
+      BeforeTargets="MauiGeneratePackageAppxManifest"
+      Condition="'$(MSBuildProjectFullPath)' == '$(MauiReplicationAppContainerProject)'">
+    <Error
+        Condition="'$(MauiReplicationAppContainerManifest)' == '' or !Exists('$(MauiReplicationAppContainerManifest)')"
+        Text="The trusted replication AppContainer manifest is unavailable." />
+    <Error
+        Condition="'@(AppxManifest)' != '$(MauiReplicationAppContainerManifest)'"
+        Text="The top-level replication AppxManifest input was overridden." />
+  </Target>
+
+  <Target
+      Name="_ValidateMauiReplicationGeneratedAppContainerManifest"
+      BeforeTargets="_ValidatePresenceOfAppxManifestItems"
+      DependsOnTargets="MauiGeneratePackageAppxManifest"
+      Condition="'$(MSBuildProjectFullPath)' == '$(MauiReplicationAppContainerProject)'">
+    <Error
+        Condition="'@(AppxManifest->Count())' != '1'"
+        Text="The generated replication AppxManifest item is missing or ambiguous." />
+    <XmlPeek
+        XmlInputPath="@(AppxManifest)"
+        Query="/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/@*[local-name()='TrustLevel' and namespace-uri()='http://schemas.microsoft.com/appx/manifest/uap/windows10/10']">
+      <Output TaskParameter="Result" ItemName="_MauiReplicationTrustLevel" />
+    </XmlPeek>
+    <XmlPeek
+        XmlInputPath="@(AppxManifest)"
+        Query="/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/@*[local-name()='RuntimeBehavior' and namespace-uri()='http://schemas.microsoft.com/appx/manifest/uap/windows10/10']">
+      <Output TaskParameter="Result" ItemName="_MauiReplicationRuntimeBehavior" />
+    </XmlPeek>
+    <Error
+        Condition="'@(_MauiReplicationTrustLevel)' != 'appContainer' or '@(_MauiReplicationRuntimeBehavior)' != 'packagedClassicApp'"
+        Text="The generated replication manifest does not preserve appContainer trust and packagedClassicApp runtime behavior." />
+  </Target>
+</Project>

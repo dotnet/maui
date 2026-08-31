@@ -74,13 +74,36 @@ function Assert-ReplicationWindowsAppContainerManifestDocument {
     if ([string]$application.GetAttribute('Id') -cne 'App') {
         throw "$Description must expose exactly the trusted App application identity."
     }
+    $actualTrustLevel =
+        [string]$application.GetAttribute('TrustLevel', $uap10Namespace)
+    $actualRuntimeBehavior =
+        [string]$application.GetAttribute('RuntimeBehavior', $uap10Namespace)
     if (
-        [string]$application.GetAttribute('TrustLevel', $uap10Namespace) -cne
-            'appContainer' -or
-        [string]$application.GetAttribute('RuntimeBehavior', $uap10Namespace) -cne
-            'packagedClassicApp'
+        $actualTrustLevel -cne 'appContainer' -or
+        $actualRuntimeBehavior -cne 'packagedClassicApp'
     ) {
-        throw "$Description must require appContainer trust and packagedClassicApp runtime behavior."
+        $attributeSummary = @(
+            $application.Attributes |
+                ForEach-Object {
+                    $text = "$($_.Name){$($_.NamespaceURI)}=$($_.Value)"
+                    $text -replace '[^\x20-\x7E]', '?'
+                }
+        ) -join '; '
+        $attributeSummary = $attributeSummary -replace '##(?=\[|vso\[)', '## '
+        if ($attributeSummary.Length -gt 1000) {
+            $attributeSummary = $attributeSummary.Substring(0, 1000)
+        }
+        $reportedTrustLevel =
+            ($actualTrustLevel -replace '[^\x20-\x7E]', '?') -replace
+                '##(?=\[|vso\[)', '## '
+        $reportedRuntimeBehavior =
+            ($actualRuntimeBehavior -replace '[^\x20-\x7E]', '?') -replace
+                '##(?=\[|vso\[)', '## '
+        throw (
+            "$Description must require appContainer trust and packagedClassicApp " +
+            "runtime behavior. Actual TrustLevel='$reportedTrustLevel', " +
+            "RuntimeBehavior='$reportedRuntimeBehavior'; Application attributes: " +
+            $attributeSummary)
     }
 
     $capabilities = @($Document.SelectNodes(

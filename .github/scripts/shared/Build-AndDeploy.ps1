@@ -599,6 +599,16 @@ if ($Platform -eq "android") {
         }
 
         $manifestPath = [IO.Path]::GetFullPath($WindowsAppContainerManifestPath)
+        $manifestOverrideTargets = Join-Path $PSScriptRoot (
+            'ReplicationWindowsAppContainerManifest.targets')
+        $manifestOverrideItem = Get-Item -LiteralPath $manifestOverrideTargets `
+            -Force -ErrorAction Stop
+        if ($manifestOverrideItem.PSIsContainer -or
+            $manifestOverrideItem.Attributes -band
+                [IO.FileAttributes]::ReparsePoint) {
+            throw 'Windows replication manifest override targets are unavailable.'
+        }
+        $topLevelProjectPath = [IO.Path]::GetFullPath($ProjectPath)
         $statePath = [IO.Path]::GetFullPath($WindowsPackageStatePath)
         $null = Assert-ReplicationWindowsAppContainerManifest -Path $manifestPath
         $stateDirectory = Split-Path -Parent $statePath
@@ -608,6 +618,8 @@ if ($Platform -eq "android") {
             Remove-Item -LiteralPath $packageOutput -Recurse -Force
         }
         New-Item -ItemType Directory -Path $packageOutput -Force | Out-Null
+        $manifestStampPath = Join-Path $packageOutput (
+            "replication-manifest-$([guid]::NewGuid().ToString('N')).stamp")
         Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
 
         $signingCertificate = $null
@@ -645,7 +657,10 @@ if ($Platform -eq "android") {
                 "-p:PackageCertificateThumbprint=$($signingCertificate.Thumbprint)",
                 "-p:SelfContained=true",
                 "-p:ExtraDefineConstants=PACKAGED",
-                "-p:PackageManifest=$manifestPath",
+                "-p:CustomAfterMicrosoftCommonTargets=$manifestOverrideTargets",
+                "-p:MauiReplicationAppContainerProject=$topLevelProjectPath",
+                "-p:MauiReplicationAppContainerManifest=$manifestPath",
+                "-p:_MauiManifestStampFile=$manifestStampPath",
                 "-p:AppxPackageDir=$($packageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)",
                 "-p:BuildProjectReferences=false",
                 "--no-restore"

@@ -9,6 +9,8 @@ BeforeAll {
         '../../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml')
     $script:DeviceManifest = Join-Path $PSScriptRoot (
         '../../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml')
+    $script:OverrideTargets = Join-Path $PSScriptRoot (
+        '../shared/ReplicationWindowsAppContainerManifest.targets')
 }
 
 Describe 'Windows AppX compatibility bridge' {
@@ -81,7 +83,10 @@ Describe 'Windows replication AppContainer manifests' {
             Assert-ReplicationWindowsAppContainerManifestDocument `
                 -Document $document `
                 -Description 'full trust manifest'
-        } | Should -Throw '*must require appContainer trust*'
+        } | Should -Throw (
+            "*Actual TrustLevel='mediumIL', " +
+            "RuntimeBehavior='packagedClassicApp'; Application attributes:*" +
+            'TrustLevel{http://schemas.microsoft.com/appx/manifest/uap/windows10/10}=mediumIL*')
 
         $extension = $source.Replace(
             '</Application>',
@@ -105,5 +110,21 @@ Describe 'Windows replication AppContainer manifests' {
         {
             ConvertTo-ReplicationWindowsAppArguments -Arguments @("value`nnext")
         } | Should -Throw '*invalid value*'
+    }
+
+    It 'replaces the manifest item only for the exact top-level project' {
+        $content = Get-Content -LiteralPath $script:OverrideTargets -Raw
+        $content | Should -Match (
+            "MSBuildProjectFullPath.*MauiReplicationAppContainerProject")
+        $content | Should -Match '<AppxManifest Remove="@\(AppxManifest\)"'
+        $content | Should -Match (
+            '<AppxManifest Include="\$\(MauiReplicationAppContainerManifest\)"')
+        $content | Should -Match (
+            'BeforeTargets="MauiGeneratePackageAppxManifest"')
+        $content | Should -Match (
+            'DependsOnTargets="MauiGeneratePackageAppxManifest"')
+        $content | Should -Match '<XmlPeek'
+        $content | Should -Match (
+            'generated replication manifest does not preserve appContainer trust')
     }
 }
