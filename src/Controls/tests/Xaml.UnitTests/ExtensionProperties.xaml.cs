@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -112,37 +113,36 @@ public partial class ExtensionProperties : ContentPage
 {
 	public ExtensionProperties() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TearDown]
-		public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-		[Test]
-		public void ExtensionPropertyCanBeSetFromXaml([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyCanBeSetFromXaml(XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
 			// Verify the C# 14 extension property was set from XAML (like a regular property)
-			Assert.That(page.labelWithExtProp.MyTag, Is.EqualTo("Hello from extension property"));
-			Assert.That(page.labelWithExtProp.Text, Is.EqualTo("Regular text"));
+			Assert.Equal("Hello from extension property", page.labelWithExtProp.MyTag);
+			Assert.Equal("Regular text", page.labelWithExtProp.Text);
 		}
 
-		[Test]
-		public void MultipleExtensionPropertiesCanBeSetFromXaml([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void MultipleExtensionPropertiesCanBeSetFromXaml(XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
 			// Verify multiple C# 14 extension properties were set from XAML
-			Assert.That(page.labelWithMultipleExtProps.MyTag, Is.EqualTo("Tag value"));
-			Assert.That(page.labelWithMultipleExtProps.MyPriority, Is.EqualTo(42));
+			Assert.Equal("Tag value", page.labelWithMultipleExtProps.MyTag);
+			Assert.Equal(42, page.labelWithMultipleExtProps.MyPriority);
 		}
 
-		[Test]
-		public void ExtensionPropertyCanBeSetAndReadInCode()
+		[Fact]
+		internal void ExtensionPropertyCanBeSetAndReadInCode()
 		{
 			var label = new Label();
 
@@ -151,12 +151,13 @@ public partial class ExtensionProperties : ContentPage
 			label.MyPriority = 123;
 
 			// Read via C# 14 extension property syntax
-			Assert.That(label.MyTag, Is.EqualTo("Test value"));
-			Assert.That(label.MyPriority, Is.EqualTo(123));
+			Assert.Equal("Test value", label.MyTag);
+			Assert.Equal(123, label.MyPriority);
 		}
 
-		[Test]
-		public void ExtensionPropertyOnViewModelCanBeBoundTo([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyOnViewModelCanBeBoundTo(XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel
 			{
@@ -169,14 +170,15 @@ public partial class ExtensionProperties : ContentPage
 			};
 
 			// Verify binding to FullName (which uses C# 14 extension property internally)
-			Assert.That(page.labelWithBinding.Text, Is.EqualTo("Jane Smith"));
+			Assert.Equal("Jane Smith", page.labelWithBinding.Text);
 
 			// Verify binding to DisplayInfo (computed C# 14 extension property)
-			Assert.That(page.labelWithComputedBinding.Text, Is.EqualTo("Jane Smith (Age: 25)"));
+			Assert.Equal("Jane Smith (Age: 25)", page.labelWithComputedBinding.Text);
 		}
 
-		[Test]
-		public void ExtensionPropertyOnCollectionWorks([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyOnCollectionWorks(XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel
 			{
@@ -189,15 +191,16 @@ public partial class ExtensionProperties : ContentPage
 			};
 
 			// Verify binding to IsCollectionEmpty (which uses C# 14 extension property on ICollection<T>)
-			Assert.That(page.labelWithIsEmptyBinding.Text, Is.EqualTo("True"));
+			Assert.Equal("True", page.labelWithIsEmptyBinding.Text);
 
 			// Update collection and verify change
 			vm.Items = new List<string> { "item1", "item2" };
-			Assert.That(page.labelWithIsEmptyBinding.Text, Is.EqualTo("False"));
+			Assert.Equal("False", page.labelWithIsEmptyBinding.Text);
 		}
 
-		[Test]
-		public void ExtensionPropertyUpdatesProperly([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyUpdatesProperly(XamlInflator inflator)
 		{
 			var vm = new ExtensionPropertiesViewModel();
 			var page = new ExtensionProperties(inflator)
@@ -206,30 +209,30 @@ public partial class ExtensionProperties : ContentPage
 			};
 
 			// Initial value
-			Assert.That(page.labelWithBinding.Text, Is.EqualTo("John Doe"));
+			Assert.Equal("John Doe", page.labelWithBinding.Text);
 
 			// Update the person and verify binding updates
 			vm.Person = new PersonModel { FirstName = "Alice", LastName = "Wonder", Age = 28 };
-			Assert.That(page.labelWithBinding.Text, Is.EqualTo("Alice Wonder"));
-			Assert.That(page.labelWithComputedBinding.Text, Is.EqualTo("Alice Wonder (Age: 28)"));
+			Assert.Equal("Alice Wonder", page.labelWithBinding.Text);
+			Assert.Equal("Alice Wonder (Age: 28)", page.labelWithComputedBinding.Text);
 		}
 
-		[Test]
-		public void ExtensionPropertyDirectUsageInCode()
+		[Fact]
+		internal void ExtensionPropertyDirectUsageInCode()
 		{
 			// Test C# 14 extension properties can be used directly in C# code
 			var person = new PersonModel { FirstName = "Test", LastName = "User", Age = 42 };
 
 			// Using the C# 14 extension property syntax
-			Assert.That(person.FullName, Is.EqualTo("Test User"));
-			Assert.That(person.DisplayInfo, Is.EqualTo("Test User (Age: 42)"));
+			Assert.Equal("Test User", person.FullName);
+			Assert.Equal("Test User (Age: 42)", person.DisplayInfo);
 
 			// Test C# 14 collection extension property
 			var emptyList = new List<int>();
 			var nonEmptyList = new List<int> { 1, 2, 3 };
 
-			Assert.That(emptyList.IsEmpty, Is.True);
-			Assert.That(nonEmptyList.IsEmpty, Is.False);
+			Assert.True(emptyList.IsEmpty);
+			Assert.False(nonEmptyList.IsEmpty);
 		}
 	}
 }

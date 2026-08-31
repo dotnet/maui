@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
-using NUnit.Framework;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
@@ -122,17 +122,15 @@ public partial class ExtensionPropertiesBinding : ContentPage
 {
 	public ExtensionPropertiesBinding() => InitializeComponent();
 
-	[TestFixture]
-	class Tests
+	[Collection("Xaml Inflation")]
+	public class Tests : IDisposable
 	{
-		[SetUp]
-		public void Setup() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public Tests() => DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+		public void Dispose() => DispatcherProvider.SetCurrent(null);
 
-		[TearDown]
-		public void TearDown() => DispatcherProvider.SetCurrent(null);
-
-		[Test]
-		public void ExtensionPropertyBindingWithComputedValues([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyBindingWithComputedValues(XamlInflator inflator)
 		{
 			var vm = new OrderViewModel
 			{
@@ -153,12 +151,13 @@ public partial class ExtensionPropertiesBinding : ContentPage
 			};
 
 			// Total: (10 * 2) + (25 * 1) = 45.00
-			Assert.That(page.totalLabel.Text, Is.EqualTo("45.00"));
-			Assert.That(page.itemCountLabel.Text, Is.EqualTo("3 items"));
+			Assert.Equal("45.00", page.totalLabel.Text);
+			Assert.Equal("3 items", page.itemCountLabel.Text);
 		}
 
-		[Test]
-		public void ExtensionPropertyBindingWithDiscount([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyBindingWithDiscount(XamlInflator inflator)
 		{
 			var vm = new OrderViewModel
 			{
@@ -178,14 +177,15 @@ public partial class ExtensionPropertiesBinding : ContentPage
 			};
 
 			// With 10% discount: $100 - $10 = $90
-			Assert.That(page.totalLabel.Text, Is.EqualTo("90.00"));
-			Assert.That(page.discountLabel.Text, Does.Contain("100.00"));
-			Assert.That(page.discountLabel.Text, Does.Contain("90.00"));
-			Assert.That(page.discountLabel.Text, Does.Contain("10%"));
+			Assert.Equal("90.00", page.totalLabel.Text);
+			Assert.Contains("100.00", page.discountLabel.Text, StringComparison.Ordinal);
+			Assert.Contains("90.00", page.discountLabel.Text, StringComparison.Ordinal);
+			Assert.Contains("10%", page.discountLabel.Text, StringComparison.Ordinal);
 		}
 
-		[Test]
-		public void ExtensionPropertyBindingUpdatesOnChange([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyBindingUpdatesOnChange(XamlInflator inflator)
 		{
 			var vm = new OrderViewModel
 			{
@@ -203,18 +203,18 @@ public partial class ExtensionPropertiesBinding : ContentPage
 				BindingContext = vm
 			};
 
-			Assert.That(page.totalLabel.Text, Is.EqualTo("50.00"));
-			Assert.That(page.itemCountLabel.Text, Is.EqualTo("1 items"));
+			Assert.Equal("50.00", page.totalLabel.Text);
+			Assert.Equal("1 items", page.itemCountLabel.Text);
 
 			// Add another item and verify binding updates
 			vm.AddItem(new OrderItem { Name = "Item2", Price = 30.00m, Quantity = 2 });
 
-			Assert.That(page.totalLabel.Text, Is.EqualTo("110.00"));
-			Assert.That(page.itemCountLabel.Text, Is.EqualTo("3 items"));
+			Assert.Equal("110.00", page.totalLabel.Text);
+			Assert.Equal("3 items", page.itemCountLabel.Text);
 		}
 
-		[Test]
-		public void ExtensionPropertyOnEnumerableWorks()
+		[Fact]
+		internal void ExtensionPropertyOnEnumerableWorks()
 		{
 			// Test C# 14 extension properties on IEnumerable<T>
 			var items = new List<OrderItem>
@@ -224,28 +224,28 @@ public partial class ExtensionPropertiesBinding : ContentPage
 			};
 
 			// Extension property: TotalValue
-			Assert.That(items.TotalValue, Is.EqualTo(200.00m)); // (10*5) + (150*1)
+			Assert.Equal(200.00m, items.TotalValue); // (10*5) + (150*1)
 
 			// Extension property: HasExpensiveItems
-			Assert.That(items.HasExpensiveItems, Is.True);
+			Assert.True(items.HasExpensiveItems);
 
 			var cheapItems = new List<OrderItem>
 			{
 				new() { Name = "Budget1", Price = 5.00m, Quantity = 1 },
 				new() { Name = "Budget2", Price = 10.00m, Quantity = 1 }
 			};
-			Assert.That(cheapItems.HasExpensiveItems, Is.False);
+			Assert.False(cheapItems.HasExpensiveItems);
 		}
 
-		[Test]
-		public void ExtensionPropertyChainedUsage()
+		[Fact]
+		internal void ExtensionPropertyChainedUsage()
 		{
 			// Test using extension properties that depend on other extension properties
 			var item = new OrderItem { Name = "Test", Price = 19.99m, Quantity = 3 };
 
 			// LineTotal is an extension property
-			Assert.That(item.LineTotal, Is.EqualTo(59.97m));
-			Assert.That(item.FormattedLineTotal, Is.EqualTo("59.97"));
+			Assert.Equal(59.97m, item.LineTotal);
+			Assert.Equal("59.97", item.FormattedLineTotal);
 
 			var order = new Order
 			{
@@ -254,14 +254,15 @@ public partial class ExtensionPropertiesBinding : ContentPage
 			};
 
 			// These extension properties use other extension properties internally
-			Assert.That(order.SubTotal, Is.EqualTo(59.97m));
-			Assert.That(order.DiscountAmount, Is.EqualTo(11.994m));
-			Assert.That(order.Total, Is.EqualTo(47.976m));
-			Assert.That(order.Summary, Does.Contain("3 items"));
+			Assert.Equal(59.97m, order.SubTotal);
+			Assert.Equal(11.994m, order.DiscountAmount);
+			Assert.Equal(47.976m, order.Total);
+			Assert.Contains("3 items", order.Summary, StringComparison.Ordinal);
 		}
 
-		[Test]
-		public void ExtensionPropertySummaryBinding([Values] XamlInflator inflator)
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertySummaryBinding(XamlInflator inflator)
 		{
 			var vm = new OrderViewModel
 			{
@@ -281,8 +282,8 @@ public partial class ExtensionPropertiesBinding : ContentPage
 			};
 
 			// Summary uses the extension property Order.Summary
-			Assert.That(page.summaryLabel.Text, Does.Contain("3 items"));
-			Assert.That(page.summaryLabel.Text, Does.Contain("50.00"));
+			Assert.Contains("3 items", page.summaryLabel.Text, StringComparison.Ordinal);
+			Assert.Contains("50.00", page.summaryLabel.Text, StringComparison.Ordinal);
 		}
 	}
 }
