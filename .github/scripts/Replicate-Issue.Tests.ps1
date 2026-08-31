@@ -138,10 +138,12 @@ BeforeAll {
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationRuntimeEnvironment',
-        'Get-ReplicationWindowsRidRestoreArguments',
+        'Get-ReplicationWindowsGraphRestoreArguments',
+        'Get-ReplicationWindowsTopLevelRidRestoreArguments',
         'Assert-ReplicationWindowsRestoreAssets',
         'Remove-ReplicationRuntimeCache',
         'Invoke-ReplicationTrustedRestore',
+        'Invoke-ReplicationWindowsTwoPhaseRestore',
         'Get-ReplicationPlannedRestoreTargets',
         'Restore-TrackedVerificationSideEffects',
         'Test-TransientCopilotServiceFailure',
@@ -2856,7 +2858,8 @@ InitializeComponent();
             "if (`$Platform -notin @('android', 'windows'))",
             [StringComparison]::Ordinal)
         $prewarm = $script:Source.IndexOf(
-            'Invoke-ReplicationTrustedRestore `',
+            'Invoke-ReplicationWindowsTwoPhaseRestore `',
+            $unsupported,
             [StringComparison]::Ordinal)
         $attemptKinds = $script:Source.IndexOf(
             '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
@@ -2959,6 +2962,8 @@ InitializeComponent();
         $script:Source | Should -Not -Match (
             "'-p:TargetFramework=net10\.0-windows10\.0\.19041\.0'")
         $script:Source | Should -Match "'-p:RuntimeIdentifiers=win-x64'"
+        $script:Source | Should -Match "'--no-dependencies'"
+        $script:Source | Should -Match "'-r', 'win-x64'"
         foreach ($property in @(
             'IncludeAndroidTargetFrameworks=false',
             'IncludeIosTargetFrameworks=false',
@@ -2970,12 +2975,13 @@ InitializeComponent();
             $script:Source | Should -Match ([regex]::Escape($property))
         }
         $script:Source | Should -Match (
-            '(?s)function Get-ReplicationWindowsRidRestoreArguments.*?' +
-            'RuntimeIdentifierOverride=win-x64')
+            '(?s)function Get-ReplicationWindowsTopLevelRidRestoreArguments.*?' +
+            '--no-dependencies')
         $plannedRestore = [regex]::Match(
             $script:Source,
             '(?ms)^function Get-ReplicationPlannedRestoreTargets\b.*?^}').Value
-        $plannedRestore | Should -Match 'Get-ReplicationWindowsRidRestoreArguments'
+        $plannedRestore | Should -Not -Match 'RuntimeIdentifier'
+        $script:Source | Should -Match 'Invoke-ReplicationWindowsTwoPhaseRestore'
         $script:Source | Should -Match 'Assert-ReplicationWindowsRestoreAssets'
 
         $verification = Get-Content -LiteralPath (
@@ -2995,7 +3001,7 @@ InitializeComponent();
         $script:Source | Should -Match 'function Remove-ReplicationRuntimeCache'
         $script:Source | Should -Match "@\('build-server', 'shutdown'\)"
         $script:Source | Should -Match 'for \(\$attempt = 1; \$attempt -le 10;'
-        $script:Source | Should -Match "'-p:RuntimeIdentifiers=win-x64'"
+        $script:Source | Should -Match "'--no-dependencies'"
         $script:Source | Should -Match '-TimeoutSeconds 30'
         ([regex]::Matches(
             $script:Source,
@@ -3008,6 +3014,7 @@ InitializeComponent();
         $packagesRoot = Join-Path $TestDrive 'windows-restore-packages'
         foreach ($name in @(
             'Controls.DeviceTests',
+            'Controls.Core',
             'Controls.BindingSourceGen',
             'TestUtils.DeviceTests.Runners.SourceGen'
         )) {
@@ -3024,6 +3031,13 @@ InitializeComponent();
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot 'Controls.DeviceTests/project.assets.json')
+        @{
+            targets = @{
+                'net10.0-windows10.0.19041.0' = @{}
+                'net10.0-windows10.0.19041.0/win-x64' = @{}
+            }
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $objRoot 'Controls.Core/project.assets.json')
         foreach ($name in @(
             'Controls.BindingSourceGen',
             'TestUtils.DeviceTests.Runners.SourceGen'
@@ -3044,6 +3058,7 @@ InitializeComponent();
                     'Controls.BindingSourceGen',
                     'TestUtils.DeviceTests.Runners.SourceGen'
                 ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Not -Throw
@@ -3059,6 +3074,7 @@ InitializeComponent();
                     'Controls.BindingSourceGen',
                     'TestUtils.DeviceTests.Runners.SourceGen'
                 ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Throw '*netstandard2.0 is missing*'
@@ -3081,6 +3097,7 @@ InitializeComponent();
                     'Controls.BindingSourceGen',
                     'TestUtils.DeviceTests.Runners.SourceGen'
                 ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Throw '*did not create a win-x64 target*'
@@ -3101,9 +3118,31 @@ InitializeComponent();
                     'Controls.BindingSourceGen',
                     'TestUtils.DeviceTests.Runners.SourceGen'
                 ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Throw '*did not materialize the win-x64 runtime pack*'
+
+        @{
+            targets = @{
+                'net10.0-windows10.0.19041.0' = @{}
+            }
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $objRoot 'Controls.Core/project.assets.json')
+        New-Item -ItemType Directory -Path (Join-Path $packagesRoot (
+            'microsoft.netcore.app.runtime.win-x64/10.0.0')) -Force |
+            Out-Null
+        {
+            Assert-ReplicationWindowsRestoreAssets `
+                -ProjectArtifactName 'Controls.DeviceTests' `
+                -SourceGeneratorArtifactNames @(
+                    'Controls.BindingSourceGen',
+                    'TestUtils.DeviceTests.Runners.SourceGen'
+                ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
+                -ArtifactsRoot $objRoot `
+                -RuntimePackagesRoot $packagesRoot
+        } | Should -Throw '*referenced project*Controls.Core*'
     }
 
     It 'surfaces bounded trusted-restore diagnostics' {
