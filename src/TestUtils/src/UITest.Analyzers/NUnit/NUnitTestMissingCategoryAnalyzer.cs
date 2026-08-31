@@ -84,27 +84,31 @@ namespace UITest.Analyzers.NUnit
 				return;
 			}
 
+			string? shardedCategory = null;
 			foreach (var attribute in methodAttributes.Concat(methodSymbol.ContainingType.GetAttributes()))
 			{
 				if (TryGetDirectCategory(attribute, out var category) &&
-					CiShardCategoryPrefixes.Contains(category))
+					IsRegisteredCiShardCategory(category))
 				{
-					context.ReportDiagnostic(Diagnostic.Create(
-						ShardedCategoryRule,
-						methodSymbol.Locations[0],
-						methodSymbol.Name,
-						category));
+					shardedCategory = category;
+					break;
 				}
 
-				if (TryGetTestCaseCategory(attribute, out category) &&
-					CiShardCategoryPrefixes.Contains(category))
+				var testCaseCategory = GetTestCaseCategories(attribute)
+					.FirstOrDefault(IsRegisteredCiShardCategory);
+				if (testCaseCategory != null)
 				{
-					context.ReportDiagnostic(Diagnostic.Create(
-						ShardedCategoryRule,
-						methodSymbol.Locations[0],
-						methodSymbol.Name,
-						category));
+					shardedCategory = testCaseCategory;
+					break;
 				}
+			}
+			if (shardedCategory != null)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(
+					ShardedCategoryRule,
+					methodSymbol.Locations[0],
+					methodSymbol.Name,
+					shardedCategory));
 			}
 
 			// Count category attributes on the method
@@ -157,9 +161,7 @@ namespace UITest.Analyzers.NUnit
 
 		private static int CountTestCaseCategory(AttributeData attribute)
 		{
-			return TryGetTestCaseCategory(attribute, out var category) && !IsCiShardCategory(category)
-				? 1
-				: 0;
+			return GetTestCaseCategories(attribute).Count(category => !IsCiShardCategory(category));
 		}
 
 		/// <summary>
@@ -243,6 +245,11 @@ namespace UITest.Analyzers.NUnit
 			return false;
 		}
 
+		private static bool IsRegisteredCiShardCategory(string category)
+		{
+			return CiShardCategoryPrefixes.Contains(category) || IsCiShardCategory(category);
+		}
+
 		private static bool TryGetDirectCategory(AttributeData attribute, out string category)
 		{
 			category = string.Empty;
@@ -257,26 +264,26 @@ namespace UITest.Analyzers.NUnit
 			return true;
 		}
 
-		private static bool TryGetTestCaseCategory(AttributeData attribute, out string category)
+		private static IEnumerable<string> GetTestCaseCategories(AttributeData attribute)
 		{
-			category = string.Empty;
 			if (!IsParameterizedTestAttribute(attribute))
 			{
-				return false;
+				return Enumerable.Empty<string>();
 			}
 
 			foreach (var namedArgument in attribute.NamedArguments)
 			{
 				if (namedArgument.Key == "Category" &&
-					namedArgument.Value.Value is string value &&
-					!string.IsNullOrWhiteSpace(value))
+					namedArgument.Value.Value is string value)
 				{
-					category = value;
-					return true;
+					return value
+						.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+						.Select(category => category.Trim())
+						.Where(category => category.Length > 0);
 				}
 			}
 
-			return false;
+			return Enumerable.Empty<string>();
 		}
 
 		/// <summary>

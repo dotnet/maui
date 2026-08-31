@@ -251,6 +251,72 @@ public class NUnitTestCategoryAnalyzerTests
 	}
 
 	[Fact]
+	public async Task TestCase_WithCommaSeparatedShardedUmbrella_ReportsShardAndMultipleCategoryDiagnostics()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "CollectionView, Smoke")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Contains(diagnostics, diagnostic =>
+			diagnostic.Id == NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId);
+		Assert.Contains(diagnostics, diagnostic =>
+			diagnostic.Id == NUnitTestMissingCategoryAnalyzer.MultipleCategoriesDiagnosticId);
+	}
+
+	[Fact]
+	public async Task TestCase_WithCommaSeparatedNumberedShard_ReportsShardedCategoryDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "CollectionView1, Smoke")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(source);
+
+		Assert.Single(diagnostics);
+		Assert.Equal(NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId, diagnostics[0].Id);
+	}
+
+	[Fact]
+	public async Task TestCase_WithMultipleCommaSeparatedFunctionalCategories_ReportsMultipleCategoriesDiagnostic()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.TestCase(1, Category = "Navigation, Shell")]
+					public void TestMethod(int value) { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.MultipleCategoriesDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Contains("2", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public async Task TestCaseSource_WithNoCategory_ReportsMissingCategoryDiagnostic()
 	{
 		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """

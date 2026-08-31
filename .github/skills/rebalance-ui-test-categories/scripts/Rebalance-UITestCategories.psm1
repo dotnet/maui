@@ -1053,6 +1053,7 @@ function Test-UITestShardPlan {
 
 	$plannedIds = [System.Collections.Generic.HashSet[string]]::new(
 		[System.StringComparer]::Ordinal)
+	$assignmentPaths = @{}
 	foreach ($assignment in @($Plan.assignments)) {
 		if (-not $assignment.PSObject.Properties['testId'] -or
 			[string]::IsNullOrWhiteSpace([string]$assignment.testId)) {
@@ -1072,14 +1073,33 @@ function Test-UITestShardPlan {
 		if (-not $validShards.Contains($shard)) {
 			throw "Plan assignment '$testId' uses invalid shard '$shard'; expected ${Category}1 through $Category$shardCount."
 		}
+
+		if (-not $assignment.PSObject.Properties['file'] -or
+			[string]::IsNullOrWhiteSpace([string]$assignment.file)) {
+			throw "Plan assignment '$testId' does not contain a file path."
+		}
+		$assignmentPath = ([string]$assignment.file).Replace('\', '/')
+		if ([System.IO.Path]::IsPathRooted([string]$assignment.file) -or
+			$assignmentPath -match '^[A-Za-z]:/' -or
+			$assignmentPath.StartsWith('/') -or
+			$assignmentPath -match '(^|/)\.\.(/|$)') {
+			throw "Plan assignment '$testId' contains invalid relative file path '$($assignment.file)'."
+		}
+		if ($assignmentPath.StartsWith('./')) {
+			$assignmentPath = $assignmentPath.Substring(2)
+		}
+		$assignmentPaths[$testId] = $assignmentPath
 	}
 
 	$inventoryIds = [System.Collections.Generic.HashSet[string]]::new(
 		[System.StringComparer]::Ordinal)
+	$inventoryPaths = @{}
 	foreach ($test in @(Get-UITestInventory -TestRoot $TestRoot -Category $Category)) {
 		if (-not $inventoryIds.Add([string]$test.Id)) {
 			throw "Pre-apply inventory contains duplicate test ID '$($test.Id)'."
 		}
+		$inventoryPaths[[string]$test.Id] =
+			([System.IO.Path]::GetRelativePath($TestRoot, $test.File)).Replace('\', '/')
 	}
 
 	$missing = @($inventoryIds | Where-Object { -not $plannedIds.Contains($_) } | Sort-Object)
@@ -1094,6 +1114,15 @@ function Test-UITestShardPlan {
 			}
 		) -join '; '
 		throw "Plan assignment IDs do not exactly match the pre-apply inventory ($details)."
+	}
+
+	foreach ($testId in $inventoryIds) {
+		if (-not [string]::Equals(
+			[string]$assignmentPaths[$testId],
+			[string]$inventoryPaths[$testId],
+			[System.StringComparison]::Ordinal)) {
+			throw "Plan assignment '$testId' references '$($assignmentPaths[$testId])' but the pre-apply inventory is in '$($inventoryPaths[$testId])'."
+		}
 	}
 }
 
