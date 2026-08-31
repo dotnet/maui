@@ -43,6 +43,8 @@ Describe 'Windows replication AppContainer manifests' {
         foreach ($path in @($script:SandboxManifest, $script:DeviceManifest)) {
             $result = Assert-ReplicationWindowsAppContainerManifest -Path $path
             $result.Publisher | Should -BeExactly 'CN=DotNetMauiReplication'
+            $result.EntryPoint |
+                Should -BeExactly 'windows.partialTrustApplication'
             $result.TrustLevel | Should -BeExactly 'appContainer'
             $result.RuntimeBehavior | Should -BeExactly 'packagedClassicApp'
         }
@@ -101,6 +103,26 @@ Describe 'Windows replication AppContainer manifests' {
         } | Should -Throw '*must not declare application or package extensions*'
     }
 
+    It 'rejects generated or full-trust application entry points' {
+        $source = Get-Content -LiteralPath $script:SandboxManifest -Raw
+        foreach ($entryPoint in @(
+            '$targetentrypoint$',
+            'Windows.FullTrustApplication'
+        )) {
+            $mutated = $source.Replace(
+                'EntryPoint="windows.partialTrustApplication"',
+                "EntryPoint=`"$entryPoint`"")
+            {
+                $document = Read-ReplicationWindowsManifestXml `
+                    -Content $mutated `
+                    -Description 'mutated manifest'
+                Assert-ReplicationWindowsAppContainerManifestDocument `
+                    -Document $document `
+                    -Description 'mutated manifest'
+            } | Should -Throw '*partial-trust Windows application entry point*'
+        }
+    }
+
     It 'quotes packaged-app arguments without introducing a shell' {
         ConvertTo-ReplicationWindowsAppArguments -Arguments @(
             'C:\Path With Spaces\result.xml',
@@ -125,6 +147,6 @@ Describe 'Windows replication AppContainer manifests' {
             'DependsOnTargets="MauiGeneratePackageAppxManifest"')
         $content | Should -Match '<XmlPeek'
         $content | Should -Match (
-            'generated replication manifest does not preserve appContainer trust')
+            'generated replication manifest does not preserve the partial-trust AppContainer')
     }
 }

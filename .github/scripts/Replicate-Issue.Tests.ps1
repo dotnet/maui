@@ -2724,6 +2724,15 @@ InitializeComponent();
             [StringComparison]::Ordinal)
         $graphBuildIndex | Should -BeGreaterOrEqual 0
         $packageBuildIndex | Should -BeGreaterThan $graphBuildIndex
+        $packageArgumentsStart = $script:BuildDeploySource.LastIndexOf(
+            '$buildArgs = @(',
+            $packageBuildIndex,
+            [StringComparison]::Ordinal)
+        $packageArguments = $script:BuildDeploySource.Substring(
+            $packageArgumentsStart,
+            $packageBuildIndex - $packageArgumentsStart)
+        $packageArguments |
+            Should -Match 'WindowsAppSdkDeploymentManagerInitialize=false'
         $script:BuildDeploySource |
             Should -Match (
                 '"-p:CustomAfterMicrosoftCommonTargets=' +
@@ -2743,6 +2752,10 @@ InitializeComponent();
             Should -Match '"-p:_MauiReplicationUnpackaged=true"'
         $script:BuildDeploySource |
             Should -Not -Match '"-p:WindowsAppSDKSelfContained=true"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:WindowsAppSdkBootstrapInitialize=false"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:WindowsAppSdkDeploymentManagerInitialize=false"'
         $script:SandboxProjectSource |
             Should -Match '<WindowsAppSDKSelfContained Condition="[^"]*_MauiReplicationUnpackaged[^"]*">true</WindowsAppSDKSelfContained>'
         $script:BuildSandboxSource |
@@ -2926,6 +2939,8 @@ InitializeComponent();
                 Should -BeExactly 'appContainer'
             $generatedApplication[0].GetAttribute('RuntimeBehavior', $uap10) |
                 Should -BeExactly 'packagedClassicApp'
+            $generatedApplication[0].GetAttribute('EntryPoint') |
+                Should -BeExactly 'windows.partialTrustApplication'
         }
         $script:BuildDeploySource |
             Should -Match 'MauiReplicationAppContainerManifest'
