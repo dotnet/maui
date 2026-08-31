@@ -157,25 +157,10 @@ namespace Microsoft.Maui.MauiBlazorWebView.UnitTests
 		}
 
 		[Fact]
-		public void TryLoad_WhenAppPackageUnavailable_ReturnsNullAndDoesNotThrow()
+		public async Task TryLoadAsync_WhenAppPackageUnavailable_ReturnsNullAndDoesNotThrow()
 		{
 			// In the unit-test context the platform FileSystem app-package APIs are unavailable and throw,
 			// which the broadened catch must swallow so loading an optional manifest never propagates.
-			StaticWebAssetsManifest.ResetCacheForTests();
-			try
-			{
-				var manifest = StaticWebAssetsManifest.TryLoad();
-				Assert.Null(manifest);
-			}
-			finally
-			{
-				StaticWebAssetsManifest.ResetCacheForTests();
-			}
-		}
-
-		[Fact]
-		public async Task TryLoadAsync_WhenAppPackageUnavailable_ReturnsNullAndDoesNotThrow()
-		{
 			StaticWebAssetsManifest.ResetCacheForTests();
 			try
 			{

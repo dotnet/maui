@@ -93,7 +93,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// initialization (for example OnInitializedAsync) - before serializing, otherwise
 					// async host content (and its render-mode registrations) could be omitted from the
 					// document. This mirrors how the framework's own static HTML rendering awaits quiescence.
-					await rootComponent.QuiescenceTask.ConfigureAwait(false);
+					// No ConfigureAwait(false): this runs inside Dispatcher.InvokeAsync, so the continuation
+					// must resume on the renderer's dispatcher - ToHtmlString()/Dispose() require its thread
+					// affinity.
+					await rootComponent.QuiescenceTask;
 
 					var html = rootComponent.ToHtmlString();
 					return new HybridHostPageResult(html, renderer._registrations);
@@ -106,16 +109,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			});
 		}
-
-		/// <summary>
-		/// Synchronous fallback used when the host document is rendered outside the handler's async startup
-		/// path (for example a direct <c>CreateFileProvider</c> call). Blocks on <see cref="RenderAsync"/>.
-		/// </summary>
-		public static HybridHostPageResult Render(
-			IServiceProvider services,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
-			ResourceAssetCollection? assets = null)
-			=> Task.Run(() => RenderAsync(services, appComponentType, assets)).GetAwaiter().GetResult();
 
 		/// <inheritdoc />
 		protected override IComponent ResolveComponentForRenderMode(

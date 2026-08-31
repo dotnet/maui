@@ -255,31 +255,25 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return platformFileProvider;
 			}
 
-			// The host document is normally rendered ahead of startup by the handler (asynchronously, on
-			// the MAUI dispatcher). If it hasn't been - for example a direct CreateFileProvider call, or
-			// because the async render failed and the handler is starting the web view anyway - fall back
-			// to a synchronous render so this path has content to serve.
-			if (!_appTypeRendered)
+			// AppType overlays the rendered document at the HostPage path. If HostPage has been cleared
+			// (it is a public settable property), there is nowhere to overlay it, so serve the platform
+			// provider unchanged and let the request surface a normal 404 rather than throwing.
+			if (string.IsNullOrEmpty(HostPage))
 			{
-				try
-				{
-					EnsureAppTypeRendered();
-				}
-				catch (Exception ex)
-				{
-					// Rendering the host document failed (an invalid AppType, a throwing OnInitializedAsync,
-					// a missing service, ...). Degrade to the platform provider unchanged so the synthetic
-					// host-page request falls through to the normal 404 pipeline, rather than throwing out of
-					// the platform startup path and crashing the app. On the async path this same failure was
-					// already logged by the handler; log here too for the direct-call path.
-					Handler?.MauiContext?.Services?.GetService<ILoggerFactory>()?
-						.CreateLogger<BlazorWebView>()?
-						.LogError(ex, "Failed to render the {AppType} host document; falling back to the platform file provider so the host-page request surfaces a 404 instead of crashing startup.", nameof(AppType));
-					return platformFileProvider;
-				}
+				return platformFileProvider;
 			}
 
-			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
+			// The handler renders the host document asynchronously and only starts the web view once the
+			// render has completed. If the document is not rendered by the time we get here - the async
+			// render failed, or CreateFileProvider was called directly outside the handler flow - there is
+			// nothing to overlay, so serve the platform provider and let the host-page request surface a
+			// normal 404 instead of a blank or stale page.
+			if (!_appTypeRendered)
+			{
+				return platformFileProvider;
+			}
+
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
 			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, _manifest);
 		}
 
@@ -316,23 +310,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				ApplyAppTypeRender(result, manifest);
 			}
-		}
-
-		// See RenderAppTypeAsync for why the IL2072 suppression is required (AppType is XAML-reflection-set).
-		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
-			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
-		private void EnsureAppTypeRendered()
-		{
-			if (_appTypeRendered || AppType is null)
-			{
-				return;
-			}
-
-			var services = GetAppTypeServices();
-			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
-			var manifest = StaticWebAssetsManifest.TryLoad(logger);
-			var result = HybridHostPageRenderer.Render(services, AppType, manifest?.Assets);
-			ApplyAppTypeRender(result, manifest);
 		}
 
 		private IServiceProvider GetAppTypeServices() =>
