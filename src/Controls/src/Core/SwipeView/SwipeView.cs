@@ -19,9 +19,11 @@ namespace Microsoft.Maui.Controls
 
 		// Content.PropertyChanged used to be subscribed to with a plain (strong) event handler,
 		// which kept this SwipeView alive for as long as a shared/long-lived Content instance was
-		// alive. Route the subscription through a weak-event proxy instead
-		readonly WeakNotifyPropertyChangedProxy _contentPropertyChangedProxy = new();
-		readonly PropertyChangedEventHandler _contentPropertyChanged;
+		// alive. Route the subscription through a weak-event proxy instead. Allocated lazily
+		// (only once Content is actually set) to avoid the allocation for SwipeViews that never
+		// set Content.
+		WeakNotifyPropertyChangedProxy _contentPropertyChangedProxy;
+		PropertyChangedEventHandler _contentPropertyChanged;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SwipeView"/> class.
@@ -29,7 +31,6 @@ namespace Microsoft.Maui.Controls
 		public SwipeView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
-			_contentPropertyChanged = OnPropertyChanged;
 
 			// This just disables any of the legacy layout code from running
 			DisableLayout = true;
@@ -290,6 +291,8 @@ namespace Microsoft.Maui.Controls
 			// potentially cached/long-lived SwipeItems back to this SwipeView.
 			if (child is not SwipeItems)
 			{
+				_contentPropertyChanged ??= OnPropertyChanged;
+				_contentPropertyChangedProxy ??= new();
 				_contentPropertyChangedProxy.Subscribe(child, _contentPropertyChanged);
 			}
 		}
@@ -302,7 +305,8 @@ namespace Microsoft.Maui.Controls
 			// tracked source — guards against unsubscribing a subscription for a newer Content.
 			if (child is not SwipeItems)
 			{
-				if (_contentPropertyChangedProxy.TryGetSource(out var source) && ReferenceEquals(source, child))
+				if (_contentPropertyChangedProxy is not null &&
+					_contentPropertyChangedProxy.TryGetSource(out var source) && ReferenceEquals(source, child))
 				{
 					_contentPropertyChangedProxy.Unsubscribe();
 				}
