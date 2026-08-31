@@ -187,7 +187,7 @@ static class SetPropertyHelpers
 		if (HasExplicitConversion(localVar.Type, property.Type, context))
 			return true;
 
-		//TODO could we replace this by a runimt check (generating a if/else) ?
+		//TODO could we replace this by a runimt check (generating a if/else) ?            
 		if (localVar.Type.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 			return true;
 
@@ -421,7 +421,7 @@ static class SetPropertyHelpers
 		if (fromType == null || toType == null)
 			return false;
 
-		//return false, no need to multiple cast here
+		//return false, no need to multiple cast here    
 		if (context.Compilation.HasImplicitConversion(fromType, toType))
 			return false;
 

@@ -162,9 +162,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			else if (IsCollectionItem(node, parentNode) && parentNode is ListNode node2)
 			{
-				//				IL_000d:  ldloc.2
+				//				IL_000d:  ldloc.2 
 				//				IL_000e:  callvirt instance class [mscorlib]System.Collections.Generic.IList`1<!0> class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Layout`1<class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.View>::get_Children()
-				//				IL_0013:  ldloc.0
+				//				IL_0013:  ldloc.0 
 				//				IL_0014:  callvirt instance void class [mscorlib]System.Collections.Generic.ICollection`1<class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.View>::Add(!0)
 
 				var parentList = node2;
@@ -898,7 +898,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
 						var indexTypeDef = indexType.ResolveCached(context.Cache);
-						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String)
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) 
 							&& !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32)
 							&& indexTypeDef?.IsEnum != true)
 							throw new BuildException(BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
@@ -1012,19 +1012,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//				.method private static hidebysig default valuetype[mscorlib] System.ValueTuple`2<string, bool> '<Main>m__0' (class ViewModel A_0)  cil managed
 			//				{
 			//					.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//					IL_0000:  ldarg.0
+			//					IL_0000:  ldarg.0 
 			//					IL_0001:  dup
 			//					IL_0002:  ldnull
 			//					IL_0003:  ceq
 			//					IL_0005:  brfalse IL_0013
 			//					IL_000a:  pop
 			//					IL_000b:  ldnull
-			//					IL_000c:  ldc.i4.0
+			//					IL_000c:  ldc.i4.0 
 			//					IL_000d:  newobj instance void valuetype[mscorlib]System.ValueTuple`2<string, bool>::'.ctor'(!0, !1)
 			//					IL_0012:  ret
 			//					IL_0013:  nop
 			//					IL_0014:  call instance string class ViewModel::get_Text()
-			//					IL_0019:  ldc.i4.1
+			//					IL_0019:  ldc.i4.1 
 			//					IL_001a:  newobj instance void valuetype[mscorlib]System.ValueTuple`2<string, bool>::'.ctor'(!0, !1)
 			//					IL_001f:  ret
 			//				}
@@ -1113,9 +1113,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//			{
 			//				.custom instance void class [mscorlib]System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
 			//
-			//				IL_0000:  ldarg.0
+			//				IL_0000:  ldarg.0 
 			//				IL_0001:  callvirt instance class ViewModel class ViewModel::get_Model()
-			//				IL_0006:  ldarg.1
+			//				IL_0006:  ldarg.1 
 			//				IL_0007:  callvirt instance void class ViewModel::set_Text(string)
 			//				IL_000c:  ret
 			//			}
@@ -1230,13 +1230,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			//			.method private static hidebysig default object '<Main>m__2'(class ViewModel vm)  cil managed {
 			//				.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//				IL_0000:  ldarg.0
+			//				IL_0000:  ldarg.0 
 			//				IL_0001:  ret
 			//			} // end of method Test::<Main>m__2
 
 			//			.method private static hidebysig default object '<Main>m__3' (class ViewModel vm)  cil managed {
 			//				.custom instance void class [mscorlib] System.Runtime.CompilerServices.CompilerGeneratedAttribute::'.ctor'() =  (01 00 00 00 ) // ....
-			//				IL_0000:  ldarg.0
+			//				IL_0000:  ldarg.0 
 			//				IL_0001:  callvirt instance class ViewModel class ViewModel::get_Model()
 			//				IL_0006:  ret
 			//			}
@@ -1301,26 +1301,26 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var tupleCtor = module.ImportReference(tupleRef.ResolveCached(context.Cache).GetConstructors().First());
 			tupleCtor = tupleCtor.MakeGeneric(tupleRef, new[] { funcObjRef, module.TypeSystem.String });
 
-			//			IL_003a:  ldc.i4.2
+			//			IL_003a:  ldc.i4.2 
 			//			IL_003b:  newarr class [mscorlib] System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel,object>,string>
 
 			//			IL_0040:  dup
-			//			IL_0041:  ldc.i4.0
+			//			IL_0041:  ldc.i4.0 
 			//			IL_0049:  ldnull
 			//			IL_004a:  ldftn object class Test::'<Main>m__2'(class ViewModel)
 			//			IL_0050:  newobj instance void class [mscorlib]System.Func`2<class ViewModel, object>::'.ctor'(object, native int)
 			//			IL_005f:  ldstr "Model"
 			//			IL_0064:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
-			//			IL_0069:  stelem.ref
+			//			IL_0069:  stelem.ref 
 
 			//			IL_006a:  dup
-			//			IL_006b:  ldc.i4.1
+			//			IL_006b:  ldc.i4.1 
 			//			IL_0073:  ldnull
 			//			IL_0074:  ldftn object class Test::'<Main>m__3'(class ViewModel)
 			//			IL_007a:  newobj instance void class [mscorlib]System.Func`2<class ViewModel, object>::'.ctor'(object, native int)
 			//			IL_0089:  ldstr "Text"
 			//			IL_008e:  newobj instance void class [mscorlib]System.Tuple`2<class [mscorlib]System.Func`2<class ViewModel, object>, string>::'.ctor'(!0, !1)
-			//			IL_0093:  stelem.ref
+			//			IL_0093:  stelem.ref 
 
 			var handlers = new List<(MethodDefinition PartGetter, string PropertyName)>();
 			for (int i = 0; i < properties.Count; i++)
@@ -1450,8 +1450,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var adder = module.ImportReference(eventinfo.AddMethod);
 			adder = adder.ResolveGenericParameters(eventDeclaringTypeRef, module);
 
-			//			IL_0007:  ldloc.0
-			//			IL_0008:  ldarg.0
+			//			IL_0007:  ldloc.0 
+			//			IL_0008:  ldarg.0 
 			//
 			//			IL_0009:  ldftn instance void class Microsoft.Maui.Controls.Xaml.XamlcTests.MyPage::OnButtonClicked(object, class [mscorlib]System.EventArgs)
 			//OR, if the handler is virtual (non-static)
@@ -1680,7 +1680,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var module = context.Body.Method.Module;
 			var bindableObjectType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject");
 
-			//			IL_0007:  ldloc.0
+			//			IL_0007:  ldloc.0 
 			//			IL_0008:  ldsfld class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableProperty [Microsoft.Maui.Controls]Microsoft.Maui.Controls.Label::TextProperty
 			//			IL_000d:  ldstr "foo"
 			//			IL_0012:  callvirt instance void class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableObject::SetValue(class [Microsoft.Maui.Controls]Microsoft.Maui.Controls.BindableProperty, object)
