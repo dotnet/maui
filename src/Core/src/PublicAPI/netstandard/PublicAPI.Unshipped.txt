@@ -8,6 +8,10 @@ Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScrip
 Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.IHybridWebView.Invoker.set -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.ISafeAreaElement
+Microsoft.Maui.ISafeAreaElement.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.SafeAreaElementExtensions
+static Microsoft.Maui.SafeAreaElementExtensions.GetEffectiveSafeAreaEdges(this Microsoft.Maui.ISafeAreaElement! safeAreaElement) -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.ITab
 Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.ITab.IsEnabled.get -> bool
