@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
+	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElementController
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}
