@@ -1073,6 +1073,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ThrowingPageAttachedDoesNotEscapePageAttachment()
+		{
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host)
+				{
+					PageAttachedBehavior = () => throw new InvalidOperationException("attach boom")
+				};
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+
+			var exception = Record.Exception(() => AttachRootPage(window));
+
+			Assert.Null(exception);
+
+			platform.PageAttachedBehavior = null;
+			AttachRootPage(window);
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			Assert.Equal(1, platform.PageAttachedCount);
+			Assert.Same(modal, Assert.Single(platform.Pushed).Page);
+		}
+
+		[Fact]
 		public void PlatformIsDisposedWhenTheWindowIsDestroyed()
 		{
 			var (window, _, factory) = CreateWindowWithPlatform();
@@ -1103,6 +1132,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, first.DisposeCount);
 
 			// The next access resolves a fresh instance from the new scope.
+			ForceResolvePlatform(window);
+
+			Assert.Equal(2, factory.CallCount);
+			Assert.NotSame(first, factory.Created[1]);
+		}
+
+		[Fact]
+		public void ThrowingDisposeDoesNotEscapeHandlerReplacement()
+		{
+			var (window, _, factory) = CreateWindowWithPlatform();
+			AttachRootPage(window);
+			var first = (RecordingModalNavigationPlatform)factory.Created[0];
+			first.DisposeBehavior = () => throw new InvalidOperationException("dispose boom");
+
+			var exception = Record.Exception(() => window.Handler = CreateHandler(factory));
+
+			Assert.Null(exception);
+			Assert.Equal(1, first.DisposeCount);
+
 			ForceResolvePlatform(window);
 
 			Assert.Equal(2, factory.CallCount);
@@ -1281,6 +1329,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public int DisposeCount { get; private set; }
 
+			public Action PageAttachedBehavior { get; set; }
+
 			public Action DisposeBehavior { get; set; }
 
 			public Action<Page, bool> PushBehavior { get; set; }
@@ -1313,7 +1363,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Popped.Add(new ModalOperation(modal, animated, Host.CurrentPlatformPage, new List<Page>(Host.PlatformModalStack)));
 			}
 
-			public void PageAttached() => PageAttachedCount++;
+			public void PageAttached()
+			{
+				PageAttachedBehavior?.Invoke();
+				PageAttachedCount++;
+			}
 
 			public void Dispose()
 			{

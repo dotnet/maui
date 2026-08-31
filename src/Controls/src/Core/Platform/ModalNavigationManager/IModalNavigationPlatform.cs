@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Controls.Platform
 	/// obtained through them is still usable there — teardown may already have disposed the window's
 	/// service scope. Capture whatever cleanup needs while the instance is live and treat disposal as
 	/// best effort. A disposed instance is never reused; a new one is created from the factory if the
-	/// window gets a new handler.
+	/// window gets a new handler. Exceptions thrown from <see cref="IDisposable.Dispose"/> are logged
+	/// and do not interrupt window teardown or handler replacement.
 	/// </para>
 	/// </remarks>
 	public interface IModalNavigationPlatform : IDisposable
@@ -161,6 +162,10 @@ namespace Microsoft.Maui.Controls.Platform
 		/// handles. Notification is withheld until the window has a service scope — until then the
 		/// framework cannot tell whether a factory is registered, and notifying the built-in platform
 		/// early would leave its hooks installed alongside this instance's.
+		/// </para>
+		/// <para>
+		/// If this method throws, the framework logs the exception and continues attaching the page. The
+		/// notification is considered delivered and is not retried for the same page-handler attachment.
 		/// </para>
 		/// </remarks>
 		void PageAttached();

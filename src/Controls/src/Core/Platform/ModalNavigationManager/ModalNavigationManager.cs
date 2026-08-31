@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		IModalNavigationPlatform? _platformOverride;
+		ILogger<ModalNavigationManager>? _platformOverrideLogger;
 
 		// Latched once resolution has been attempted, so the factory is consulted exactly once per
 		// window scope. It is also set (with a null override) to *block* resolution while the window is
@@ -134,6 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
+					_platformOverrideLogger = services.CreateLogger<ModalNavigationManager>();
 					_platformOverride = services
 						.GetService<IModalNavigationPlatformFactory>()?
 						.CreateModalNavigationPlatform(this);
@@ -144,7 +146,7 @@ namespace Microsoft.Maui.Controls.Platform
 					// touch this property first (a property getter reached during a sync, a lifecycle
 					// event, ...). Log it and fall back to the built-in platform permanently: retrying on
 					// every access would turn a broken registration into a storm of exceptions.
-					services.CreateLogger<ModalNavigationManager>()?
+					_platformOverrideLogger?
 						.LogError(exception, "IModalNavigationPlatformFactory threw while creating the modal navigation platform. Falling back to the built-in platform for this window.");
 
 					_platformOverride = null;
@@ -189,7 +191,17 @@ namespace Microsoft.Maui.Controls.Platform
 			_pageAttachedNotifiedForHandler = pageHandler;
 
 			if (platformOverride is not null)
-				platformOverride.PageAttached();
+			{
+				try
+				{
+					platformOverride.PageAttached();
+				}
+				catch (Exception exception)
+				{
+					_platformOverrideLogger?
+						.LogError(exception, "IModalNavigationPlatform threw while handling page attachment.");
+				}
+			}
 			else
 				OnPageAttachedHandler();
 		}
@@ -201,7 +213,19 @@ namespace Microsoft.Maui.Controls.Platform
 			// A replacement instance has to be told about the current page handler itself.
 			_pageAttachedNotifiedForHandler = null;
 
-			platformOverride?.Dispose();
+			try
+			{
+				platformOverride?.Dispose();
+			}
+			catch (Exception exception)
+			{
+				_platformOverrideLogger?
+					.LogError(exception, "IModalNavigationPlatform threw while being disposed.");
+			}
+			finally
+			{
+				_platformOverrideLogger = null;
+			}
 		}
 
 		Window IModalNavigationHost.Window => _window;
@@ -308,6 +332,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// state set by OnWindowHandlerChanging, and the terminal state set by teardown.
 			_destroyed = false;
 			_platformOverride = null;
+			_platformOverrideLogger = null;
 			_platformOverrideResolved = false;
 			_useBuiltInPlatform = false;
 			_pageAttachedNotifiedForHandler = null;
