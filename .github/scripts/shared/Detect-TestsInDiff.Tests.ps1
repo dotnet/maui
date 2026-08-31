@@ -67,6 +67,12 @@ public class QualifiedHelpers
 
         Test-CsFileHasTestMethods -RelativePath $testFile | Should -BeFalse
     }
+
+    It 'does not treat a deleted C# test file as runnable' {
+        $deletedFile = Join-Path $TestDrive 'DeletedTests.cs'
+
+        Test-CsFileHasTestMethods -RelativePath $deletedFile | Should -BeFalse
+    }
 }
 
 Describe 'Detect-TestsInDiff device-test filtering' {

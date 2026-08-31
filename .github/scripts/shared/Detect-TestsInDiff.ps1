@@ -345,15 +345,18 @@ function Test-CsFileHasTestMethods {
     param([string]$RelativePath)
     $candidates = @($RelativePath)
     if ($RepoRootForRead) { $candidates += (Join-Path $RepoRootForRead $RelativePath) }
+    $foundExistingFile = $false
     foreach ($p in $candidates) {
-        if (Test-Path $p) {
+        if (Test-Path -LiteralPath $p -PathType Leaf) {
+            $foundExistingFile = $true
             try { $content = Get-Content $p -Raw -ErrorAction Stop } catch { continue }
             # xUnit: [Fact] [Theory]; NUnit: [Test] [TestCase] [TestCaseSource]; MSTest: [TestMethod]
             return ($content -match '(?m)\[\s*(?:(?:\w+)\.)*(Fact|Theory|Test|TestCase|TestCaseSource|TestMethod)\b')
         }
     }
-    # File unreadable (deleted/unresolvable) — don't over-filter; let existing fallbacks handle it.
-    return $true
+    # Preserve the permissive fallback for an existing but unreadable file. A path absent
+    # from the committed PR snapshot is deleted and cannot contain a runnable test.
+    return $foundExistingFile
 }
 
 function Get-ChangedDeviceTestMethodsFromPatch {
