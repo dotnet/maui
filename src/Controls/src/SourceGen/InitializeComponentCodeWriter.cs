@@ -115,6 +115,7 @@ static class InitializeComponentCodeWriter
 					else
 						nodeIds = NodeIdHelper.AssignIds(root);
 				}
+				sgcontext.NodeIds = nodeIds;
 
 				using (newblock())
 				{
@@ -373,7 +374,8 @@ $$"""
 			return null;
 		}
 
-		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields);
+		var templateNodeIds = NodeIdHelper.GetTemplateNodeIds(newRoot, effectiveNewIds!);
+		return UpdateComponentCodeWriter.GeneratePatchBody(diff, fromVersion, toVersion, rootType, compilation, xmlnsCache, typeCache, effectiveNewIds, sourceProductionContext, projectItem, generatedFields, templateNodeIds);
 	}
 
 	static void WriteMultiLineString(IndentedTextWriter writer, string text)

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.SourceGen;
 /// <item>IC compile-time converters (Color, Thickness, Enum, GridLength, etc.) — same pipeline as <c>InitializeComponent</c>.</item>
 /// <item>Language primitives (<c>string</c>, <c>bool</c>, <c>int</c>, <c>double</c>, etc.) — inline literal.</item>
 /// <item>Fallback — <c>TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString("value")</c>.</item>
-/// <item>Property not found on type — return (skip patch).</item>
+/// <item>Property not found on type — omit that property assignment.</item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -73,7 +73,8 @@ static class UpdateComponentCodeWriter
 		Dictionary<ElementNode, string>? newIds = null,
 		SourceProductionContext sourceProductionContext = default,
 		ProjectItem? projectItem = null,
-		Dictionary<string, XmlType>? generatedFields = null)
+		Dictionary<string, XmlType>? generatedFields = null,
+		ISet<string>? templateNodeIds = null)
 	{
 		if (diff.IsEmpty)
 			return null;
@@ -127,7 +128,10 @@ static class UpdateComponentCodeWriter
 				continue;
 			}
 
-			codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
+			if (templateNodeIds?.Contains(nodeDiff.NodeId) == true)
+				codeWriter.WriteLine($"foreach (var {varName} in global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.GetTemplateComponents(this, \"{nodeDiff.NodeId}\"))");
+			else
+				codeWriter.WriteLine($"if (global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.TryGet(this, \"{nodeDiff.NodeId}\", out var {varName}))");
 			using (PrePost.NewBlock(codeWriter))
 			{
 				INamedTypeSymbol? nodeType = null;
