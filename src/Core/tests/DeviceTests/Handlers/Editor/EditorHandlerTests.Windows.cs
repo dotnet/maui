@@ -7,15 +7,57 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
-
 using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		[Fact(DisplayName = "Vertical text alignment uses the current template content")]
+		public async Task VerticalTextAlignmentUsesCurrentTemplateContent()
+		{
+			var editor = new EditorStub();
+
+			await AttachAndRun(editor, handler =>
+			{
+				var textBox = GetNativeEditor(handler);
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Bottom);
+
+				var previousContentElement = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+				Assert.NotNull(previousContentElement);
+				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
+
+				textBox.Template = CreateTextBoxTemplate();
+				textBox.ApplyTemplate();
+
+				var currentContentElement = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+				Assert.NotNull(currentContentElement);
+				Assert.NotSame(previousContentElement, currentContentElement);
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Top);
+
+				Assert.Equal(NativeVerticalAlignment.Top, currentContentElement.VerticalAlignment);
+				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
+			});
+		}
+
+		static ControlTemplate CreateTextBoxTemplate() =>
+			(ControlTemplate)XamlReader.Load(
+				"""
+				<ControlTemplate
+					xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					TargetType="TextBox">
+					<Grid>
+						<ScrollViewer x:Name="ContentElement" />
+						<TextBlock x:Name="PlaceholderTextContentPresenter" />
+					</Grid>
+				</ControlTemplate>
+				""");
+
 		static TextBox GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.PlatformView;
 
