@@ -226,6 +226,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				relativePath = _hostPageRelativePath;
 			}
+			else if (_handler.VirtualView is BlazorWebView { AppType: not null } appTypeView &&
+				appTypeView.TryResolveFingerprintedPath(relativePath, out var physicalRelativePath))
+			{
+				// When AppType is set, @Assets emits fingerprinted routes (app.abc123.css). On WinUI the
+				// static content is served from the package folder here rather than through the IFileProvider
+				// (which is a NullFileProvider), so the route -> physical remap that BlazorWebViewFileProvider
+				// applies on the other platforms has to be applied explicitly here, otherwise fingerprinted
+				// asset requests would 404.
+				relativePath = physicalRelativePath;
+			}
 			relativePath = Path.Combine(_contentRootRelativeToAppRoot, relativePath.Replace('/', '\\'));
 			var statusCode = 200;
 			var statusMessage = "OK";

@@ -149,6 +149,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		internal bool IsAppTypeRendered => _appTypeRendered;
 
 		/// <summary>
+		/// Resolves a fingerprinted <c>@Assets</c> request route (for example <c>app.abc123.css</c>) to its
+		/// physical asset file under the web root, using the manifest loaded for the current
+		/// <see cref="AppType"/> render. Returns <c>false</c> (and echoes the input) when there is no manifest
+		/// or the route needs no remapping.
+		/// </summary>
+		/// <remarks>
+		/// On most platforms the wrapped <see cref="BlazorWebViewFileProvider"/> performs this remap, but the
+		/// WinUI static-content pipeline serves files from the package folder directly (its
+		/// <c>IFileProvider</c> is a <c>NullFileProvider</c>), so it calls this to apply the same remap and
+		/// avoid 404s for fingerprinted assets.
+		/// </remarks>
+		internal bool TryResolveFingerprintedPath(string requestedPath, out string physicalPath)
+		{
+			if (_manifest is not null)
+			{
+				return _manifest.TryResolvePhysicalPath(requestedPath, out physicalPath);
+			}
+
+			physicalPath = requestedPath;
+			return false;
+		}
+
+		/// <summary>
 		/// Bindable property for <see cref="StartPath"/>.
 		/// </summary>
 		public static readonly BindableProperty StartPathProperty = BindableProperty.Create(nameof(StartPath), typeof(string), typeof(BlazorWebView), "/");

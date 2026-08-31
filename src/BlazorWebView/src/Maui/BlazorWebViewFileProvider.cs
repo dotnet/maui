@@ -44,9 +44,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			var normalized = NormalizePath(subpath);
 
-			// Serve the rendered host page from memory.
+			// Serve the rendered host page from memory. Compared case-insensitively (like the fingerprint
+			// route map below) because the platform static-content pipelines - the WinUI folder handler and
+			// the iOS custom-scheme handler in particular - do not guarantee the request path casing matches
+			// the configured host page path.
 			if (_hostPageContents is not null &&
-				string.Equals(normalized, _hostPageRelativePath, StringComparison.Ordinal))
+				string.Equals(normalized, _hostPageRelativePath, StringComparison.OrdinalIgnoreCase))
 			{
 				return new InMemoryFileInfo(Path.GetFileName(_hostPageRelativePath!), _hostPageContents);
 			}

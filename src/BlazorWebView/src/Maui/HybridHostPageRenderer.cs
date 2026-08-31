@@ -27,10 +27,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// document like a Blazor Web App does. Instead, an interactive <c>@rendermode</c> boundary is
 	/// converted into a mount element plus a selector-based attach registration:
 	/// <list type="bullet">
-	/// <item><description><c>HeadOutlet</c> is attached at <c>head::after</c>.</description></item>
-	/// <item><description>Any other interactive component is attached at <c>#app</c>.</description></item>
+	/// <item><description><c>HeadOutlet</c> (or a type derived from it) is attached at
+	/// <c>head::after</c>.</description></item>
+	/// <item><description>Any other interactive component is attached at a unique mount element -
+	/// <c>#app</c> for the first boundary, then <c>#app-1</c>, <c>#app-2</c>, … for any additional
+	/// boundaries in the same document.</description></item>
 	/// </list>
-	/// The render mode value itself is documentary; all interactive modes are treated identically.
+	/// The render mode value itself is documentary; every render mode is treated identically, because
+	/// Blazor Hybrid is always interactive in-process.
 	/// </remarks>
 	internal sealed class HybridHostPageRenderer : StaticHtmlRenderer
 	{
@@ -120,27 +124,28 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			IComponentActivator componentActivator,
 			IComponentRenderMode renderMode)
 		{
-			// The mode value is documentary — all interactive modes are intercepted identically.
-			if (renderMode is InteractiveServerRenderMode or InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
+			// Blazor Hybrid is always interactive in-process, so the render mode value is documentary:
+			// every render mode - built-in, user-defined, or one added by a future framework release - is
+			// intercepted identically and converted into a mount element plus a selector attach. This
+			// mirrors WebViewRenderer (which no-ops all render modes for the same reason) and, crucially,
+			// avoids the base StaticHtmlRenderer throwing an opaque NotSupportedException for a render mode
+			// this method does not recognize.
+			if (typeof(HeadOutlet).IsAssignableFrom(componentType))
 			{
-				if (componentType == typeof(HeadOutlet))
-				{
-					// HeadOutlet appends to the live <head>; nothing is emitted into the static document.
-					_registrations.Add(new HybridRootComponentRegistration(HeadOutletSelector, componentType));
-					return new HybridEmptyPlaceholder();
-				}
-
-				// Any other interactive root becomes a mount element that the live component attaches to.
-				// Each root gets a unique element id (app, app-1, app-2, ...) so a host document that
-				// declares more than one interactive boundary does not emit duplicate ids that collide
-				// on a single querySelector('#app') target.
-				var elementId = _mountElementCount == 0 ? AppElementId : $"{AppElementId}-{_mountElementCount}";
-				_mountElementCount++;
-				_registrations.Add(new HybridRootComponentRegistration("#" + elementId, componentType));
-				return new HybridMountPlaceholder(elementId, componentType);
+				// HeadOutlet (or a derived head outlet) appends to the live <head>; nothing is emitted into
+				// the static document.
+				_registrations.Add(new HybridRootComponentRegistration(HeadOutletSelector, componentType));
+				return new HybridEmptyPlaceholder();
 			}
 
-			return base.ResolveComponentForRenderMode(componentType, parentComponentId, componentActivator, renderMode);
+			// Any other interactive root becomes a mount element that the live component attaches to.
+			// Each root gets a unique element id (app, app-1, app-2, ...) so a host document that
+			// declares more than one interactive boundary does not emit duplicate ids that collide
+			// on a single querySelector('#app') target.
+			var elementId = _mountElementCount == 0 ? AppElementId : $"{AppElementId}-{_mountElementCount}";
+			_mountElementCount++;
+			_registrations.Add(new HybridRootComponentRegistration("#" + elementId, componentType));
+			return new HybridMountPlaceholder(elementId, componentType);
 		}
 
 		/// <summary>
