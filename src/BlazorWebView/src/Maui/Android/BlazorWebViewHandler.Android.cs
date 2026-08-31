@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using AndroidX.Activity;
@@ -115,6 +116,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			platformView.StopLoading();
 
+			// Capture and null the client fields now, but dispose them only after the native view
+			// detaches them in DestroyPlatformView — the fire-and-forget path below doesn't await,
+			// so disposing here first would race ahead of that detach.
+			var webViewClient = _webViewClient;
+			var webChromeClient = _webChromeClient;
+			_webViewClient = null;
+			_webChromeClient = null;
+
 			if (_webviewManager != null)
 			{
 				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
@@ -137,18 +146,66 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
+
+					// Disposal already finished (we blocked on it above), so it's safe to tear down
+					// the native WebView synchronously right here.
+					DestroyPlatformView(platformView, webViewClient, webChromeClient);
 				}
 				else
 				{
-					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					// Otherwise, by default, we'll fire-and-forget the disposal task. The native
+					// WebView must stay alive until the Blazor/JS teardown driven by disposal has
+					// actually completed, so the (Android-native-resource-releasing) teardown below
+					// is chained as a continuation instead of running immediately.
 					disposalTask.FireAndForget(_logger);
+					_ = DestroyPlatformViewAfterDisposalAsync(disposalTask, platformView, webViewClient, webChromeClient);
 				}
 
 				_webviewManager = null;
 			}
+			else
+			{
+				// No WebViewManager was ever created (e.g. handler connected/disconnected before
+				// StartWebViewCoreIfPossible ran) -- nothing to await, so tear down immediately.
+				DestroyPlatformView(platformView, webViewClient, webChromeClient);
+			}
+		}
 
-			_webViewClient?.Dispose();
-			_webChromeClient?.Dispose();
+		// Android's WebView requires an explicit Destroy() call after removal from the view
+		// hierarchy, or it keeps native/Chromium state (and Activity/Context references) alive
+		// indefinitely. webViewClient/webChromeClient are disposed here, after being detached via
+		// SetWebViewClient(null)/SetWebChromeClient(null), so ordering is correct on both the
+		// synchronous and fire-and-forget teardown paths (see DisconnectHandler).
+		static void DestroyPlatformView(AWebView platformView, WebViewClient? webViewClient, WebChromeClient? webChromeClient)
+		{
+			platformView.SetWebViewClient(null!);
+			platformView.SetWebChromeClient(null);
+
+			if (platformView.Parent is ViewGroup parent)
+				parent.RemoveView(platformView);
+
+			platformView.RemoveAllViews();
+			platformView.Destroy();
+
+			webViewClient?.Dispose();
+			webChromeClient?.Dispose();
+		}
+
+		static async Task DestroyPlatformViewAfterDisposalAsync(Task disposalTask, AWebView platformView, WebViewClient? webViewClient, WebChromeClient? webChromeClient)
+		{
+			try
+			{
+				// AWebView.Destroy() must run on the UI thread; ConfigureAwait(true) ensures the
+				// continuation resumes there instead of on a background thread.
+				await disposalTask.ConfigureAwait(true);
+			}
+			catch
+			{
+				// Already logged/handled by the sibling disposalTask.FireAndForget(_logger) call;
+				// swallow here so this continuation still runs the native cleanup below.
+			}
+
+			DestroyPlatformView(platformView, webViewClient, webChromeClient);
 		}
 
 		private bool RequiredStartupPropertiesSet =>
