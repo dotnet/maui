@@ -22,12 +22,13 @@ permissions:
   contents: read
 
 env:
-  VALLY_VERSION: "0.12.0"
+  VALLY_VERSION: "0.14.0"
   NODE_VERSION: "22"
 
 jobs:
   code-review:
     name: code-review live soak (advisory)
+    if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
     environment: copilot-pat-pool
     timeout-minutes: 90

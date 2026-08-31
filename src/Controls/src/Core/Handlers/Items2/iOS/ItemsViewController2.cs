@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public Items.IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		bool _initialized;
 		bool _isEmpty = true;
+		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
@@ -142,15 +144,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void CheckForEmptySource()
 		{
 			var wasEmpty = _isEmpty;
+			var hadNoItems = _hasNoItems;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_hasNoItems = ItemsSource.ItemCount == 0;
+			_isEmpty = IsEmptySource();
 
 			if (wasEmpty != _isEmpty)
 			{
 				UpdateEmptyViewVisibility(_isEmpty);
 			}
 
-			if (wasEmpty && !_isEmpty)
+			if (hadNoItems && !_hasNoItems)
 			{
 				// If we're going from empty to having stuff, it's possible that we've never actually measured
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
@@ -259,6 +263,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return OperatingSystem.IsIOSVersionAtLeast(15);
 		}
 
+    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
@@ -370,6 +375,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewDisplayed)
 			{
+				UpdateEmptyViewFlowDirection();
 				AlignEmptyView();
 			}
 
@@ -505,6 +511,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
+		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
+		// Exposed so the handler can avoid the expansive-size fallback without
+		// reaching into _emptyViewDisplayed or ItemsSource directly.
+		internal bool IsEmpty => _isEmpty && !_emptyViewDisplayed;
+
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{
 			return ScrollDirection;
@@ -546,7 +559,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			UpdateEmptyViewVisibility(IsEmptySource());
+		}
+
+		bool IsEmptySource()
+		{
+			if (ItemsSource is null)
+			{
+				return true;
+			}
+
+			return ItemsView is GroupableItemsView { IsGrouped: true }
+				? ItemsSource.GroupCount == 0
+				: ItemsSource.ItemCount == 0;
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)
@@ -573,10 +598,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
+			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
+			var transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? CGAffineTransform.MakeScale(-1, 1)
+				: CGAffineTransform.MakeIdentity();
+
+			if (!_emptyUIView.Transform.Equals(transform))
+			{
+				_emptyUIView.Transform = transform;
+			}
+		}
+
+		void UpdateEmptyViewFlowDirection()
+		{
 			if (_emptyViewFormsElement is not null)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
@@ -605,34 +642,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-
-			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
-			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
-			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
-			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
-			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
-			// Adding to the superview avoids this flip zone entirely.
-			var targetView = CollectionView.Superview;
-			if (targetView is not null)
-			{
-				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
-			}
-			else
-			{
-				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
-				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
-				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
-				CollectionView.AddSubview(_emptyUIView);
-			}
+			CollectionView.AddSubview(_emptyUIView);
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
+			UpdateEmptyViewFlowDirection();
 			LayoutEmptyView();
 
-			AlignEmptyView();
 			_emptyViewDisplayed = true;
 		}
 
@@ -681,7 +700,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			_emptyUIView.Frame = frame;
+			if (!_emptyUIView.Frame.Equals(frame))
+			{
+				// UIKit's Frame is undefined under a non-identity transform.
+				_emptyUIView.Transform = CGAffineTransform.MakeIdentity();
+				_emptyUIView.Frame = frame;
+			}
+
+			AlignEmptyView();
 
 			return frame;
 		}
