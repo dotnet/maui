@@ -45,6 +45,11 @@ BeforeAll {
 }
 
 Describe 'Analyze-UITestFailures input cap' {
+    It 'only accepts approved GPT models and ignores environment model overrides' {
+        $script:AnalyzeText | Should -Match ([regex]::Escape(
+            "[ValidateSet('gpt-5.6-sol', 'gpt-5.3-codex')]"))
+        $script:AnalyzeText | Should -Not -Match 'COPILOT_REVIEW_MODEL'
+    }
 
     It 'defines a $maxInputChars cap that is safely under the Linux 128 KB per-arg limit' {
         $script:AnalyzeText | Should -Match '\$maxInputChars\s*=\s*(\d+)'

@@ -923,7 +923,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     write_spec(
       "defaults" => {
         "model" => "gpt-5.6-sol",
-        "judge_model" => "claude-opus-5"
+        "judge_model" => "gpt-5.3-codex"
       },
       "stimuli" => [
         {
@@ -959,7 +959,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
     assert status.success?, stderr
     assert_equal(
       %w[
-        claude-opus-5
+        gpt-5.3-codex
         gpt-5.6-sol
         panel-judge-a
         panel-judge-b
@@ -1471,7 +1471,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
             fi
             shift
           done
-          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "claude-opus-5" ]; then
+          if [ "$COPILOT_GITHUB_TOKEN" = "partial-token" ] && [ "$model" = "gpt-5.3-codex" ]; then
             printf WRONG_MODEL
             exit 0
           fi
@@ -1502,7 +1502,7 @@ class TestPrepareVallyEvaluation < Minitest::Test
         root,
         File.join(root, "probe"),
         "gpt-5.6-sol",
-        "claude-opus-5"
+        "gpt-5.3-codex"
       )
 
       assert status.success?, stderr

@@ -30,15 +30,15 @@
     Pull request number (for phrasing only).
 
 .PARAMETER Model
-    Copilot model. Defaults to $env:COPILOT_REVIEW_MODEL or 'gpt-5.6-sol'
-    (same default as the main review).
+    Approved Copilot model. Defaults to 'gpt-5.6-sol', matching the main review.
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)] [string] $InputFile,
     [Parameter(Mandatory = $true)] [string] $OutputFile,
     [Parameter(Mandatory = $true)] [string] $PRNumber,
-    [string] $Model
+    [ValidateSet('gpt-5.6-sol', 'gpt-5.3-codex')]
+    [string] $Model = 'gpt-5.6-sol'
 )
 
 $ErrorActionPreference = 'Continue'
@@ -106,9 +106,6 @@ if (-not $copilotCmd) {
     exit 0
 }
 
-if ([string]::IsNullOrWhiteSpace($Model)) {
-    $Model = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.6-sol' }
-}
 # Context tier and reasoning effort mirror the main review: longest context, max effort.
 
 $outDir = Split-Path -Parent $OutputFile

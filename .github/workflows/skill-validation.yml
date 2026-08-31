@@ -1033,7 +1033,7 @@ jobs:
             "$TRUSTED_COPILOT_HOME" \
             "$RUNNER_TEMP/hermeticity-model-probe" \
             gpt-5.6-sol \
-            claude-opus-5
+            gpt-5.3-codex
 
       - name: Run hermeticity control
         id: herm

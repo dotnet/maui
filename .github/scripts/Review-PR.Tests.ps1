@@ -258,8 +258,9 @@ Stop-TrustedCatalystOverlayFailure -Message 'Trusted Catalyst screenshot overrid
 }
 
 Describe 'Copilot reviewer configuration' {
-    It 'defaults the main review orchestrator to GPT-5.6 Sol with long context' {
-        $content | Should -Match ([regex]::Escape("else { 'gpt-5.6-sol' }"))
+    It 'pins the main review orchestrator to GPT-5.6 Sol with long context' {
+        $content | Should -Match ([regex]::Escape("`$copilotModel = 'gpt-5.6-sol'"))
+        $content | Should -Not -Match 'COPILOT_REVIEW_MODEL'
         $content | Should -Match '--context long_context'
     }
 

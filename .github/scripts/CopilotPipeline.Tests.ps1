@@ -2,6 +2,9 @@
 #Requires -Modules Pester
 
 BeforeAll {
+    $repoRoot = Join-Path $PSScriptRoot '..' '..' |
+        Resolve-Path |
+        Select-Object -ExpandProperty Path
     $pipelinePath = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'ci-copilot.yml' |
         Resolve-Path |
         Select-Object -ExpandProperty Path
@@ -18,12 +21,39 @@ BeforeAll {
                 "^$($Matches[1])$"
             }
     )
+
+    $script:AutomationFiles = @(
+        Get-ChildItem -LiteralPath (Join-Path $repoRoot '.github') -Recurse -File |
+            Where-Object { $_.Extension -in @('.json', '.md', '.ps1', '.rb', '.sh', '.yaml', '.yml') }
+        Get-Item -LiteralPath $pipelinePath
+    )
 }
 
 Describe 'Copilot reviewer base branch allowlist' {
     It 'keeps every pipeline validator synchronized' {
         $script:BaseBranchPatterns.Count | Should -Be 5
         @($script:BaseBranchPatterns | Select-Object -Unique).Count | Should -Be 1
+    }
+
+    Describe 'Copilot model policy' {
+        It 'contains no Anthropic model identifiers in repository automation' {
+            $violations = foreach ($file in $script:AutomationFiles) {
+                Select-String `
+                    -LiteralPath $file.FullName `
+                    -Pattern '(?i)\b(?:claude|anthropic)-[a-z0-9][a-z0-9.-]*\b' `
+                    -AllMatches |
+                    ForEach-Object { "$($file.FullName):$($_.LineNumber):$($_.Line.Trim())" }
+            }
+
+            @($violations) | Should -BeNullOrEmpty
+        }
+
+        It 'pins the primary reviewer instead of accepting an environment override' {
+            $reviewScript = Get-Content -Raw -LiteralPath (Join-Path $PSScriptRoot 'Review-PR.ps1')
+
+            $reviewScript | Should -Match ([regex]::Escape("`$copilotModel = 'gpt-5.6-sol'"))
+            $reviewScript | Should -Not -Match 'COPILOT_REVIEW_MODEL'
+        }
     }
 
     It 'accepts every supported base branch shape' {

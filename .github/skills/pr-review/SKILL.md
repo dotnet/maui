@@ -49,10 +49,10 @@ Phase 2 uses these 2 AI models (run SEQUENTIALLY — they modify the same files)
 
 | Order | Model |
 |-------|-------|
-| 1 | `claude-opus-5` |
+| 1 | `gpt-5.3-codex` |
 | 2 | `gpt-5.6-sol` |
 
-Two models keep the try-fix phase fast (each attempt is a full build+test cycle, so every extra model adds ~15–20 min to the review) while preserving cross-family diversity: `claude-opus-5` explores a different model family from the GPT-5.6 Sol orchestrator, and `gpt-5.6-sol` provides a same-family fallback.
+Two GPT-family models keep the try-fix phase fast (each attempt is a full build+test cycle, so every extra model adds ~15–20 min to the review) while still varying optimization profiles: `gpt-5.3-codex` explores the implementation first, and `gpt-5.6-sol` provides the higher-reasoning comparison.
 
 **🚨 MANDATORY: Use `mode: "sync"` for ALL try-fix task invocations.** Never use `mode: "background"`. Background mode causes the orchestrator to move on before the attempt finishes, which means `try-fix/content.md` is never written and try-fix results are lost from the PR comment. Each try-fix task MUST complete and return its result before you proceed to the next attempt or to the Phase 3 completion checklist.
 
@@ -110,7 +110,7 @@ The purpose is NOT to re-test the PR's fix, but to:
 
 ### Checklist (you MUST complete ALL of these)
 
-- [ ] Attempt 1 launched with claude-opus-5
+- [ ] Attempt 1 launched with gpt-5.3-codex
 - [ ] `try-fix/content.md` updated with attempt 1 result
 - [ ] Attempt 2 launched with gpt-5.6-sol
 - [ ] `try-fix/content.md` updated with attempt 2 result

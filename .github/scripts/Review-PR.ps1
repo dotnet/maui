@@ -1468,13 +1468,9 @@ function Invoke-CopilotStep {
     # Use JSON output format to stream live progress of agent activity.
     # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
     # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
-    # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model
-    # access can run this script (e.g., with 'claude-opus-5' or 'claude-sonnet-5'). The review
-    # orchestrator spans pre-flight, multi-model try-fix, and final expert review/comparison; the
-    # try-fix panel's alternative models (Opus 5 / Sonnet 5 / GPT-5.3-Codex / GPT-5.6 Sol) are
-    # selected per-attempt by the pr-review skill, not per copilot process. The reviewer/judge runs
-    # on gpt-5.6-sol at the longest context tier and maximum reasoning effort.
-    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.6-sol' }
+    # Keep the direct reviewer on the approved GPT model. Try-fix alternatives are
+    # selected per attempt by the pr-review skill, not per Copilot process.
+    $copilotModel = 'gpt-5.6-sol'
     if ([string]::IsNullOrWhiteSpace($modelName)) {
         $modelName = $copilotModel
     }
@@ -2565,7 +2561,7 @@ Generate a bounded set of alternative fix candidates for PR #$PRNumber.
 
 - Produce **at most two candidates total**.
 - Launch **no more than two child task invocations**, sequentially and with ``mode: "sync"``. Attempt both in order unless the remaining STEP 5a budget makes the second unsafe:
-  1. ``claude-opus-5`` — invoke the ``try-fix`` skill once.
+  1. ``gpt-5.3-codex`` — invoke the ``try-fix`` skill once.
   2. ``gpt-5.6-sol`` — invoke the ``try-fix`` skill once.
 - Do not launch cross-pollination, final-audit, rubber-duck, or follow-up reviewer agents.
 - Do not invoke ``maui-expert-reviewer`` separately for each candidate. The ``try-fix`` skill's inline expert self-review is sufficient for this phase.
