@@ -18,8 +18,8 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		const string ContentElementName = "ContentElement";
 
-		[Fact(DisplayName = "Vertical text alignment uses the current template content")]
-		public async Task VerticalTextAlignmentUsesCurrentTemplateContent()
+		[Fact(DisplayName = "Content element cache is reused and invalidated with template changes")]
+		public async Task ContentElementCacheIsReusedAndInvalidatedWithTemplateChanges()
 		{
 			var editor = new EditorStub();
 
@@ -32,6 +32,15 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(previousContentElement);
 				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
 
+				var cachedSearchCount = MauiTextBox.GetContentElementSearchCount(textBox);
+				Assert.True(cachedSearchCount > 0);
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Top);
+				Assert.Equal(cachedSearchCount, MauiTextBox.GetContentElementSearchCount(textBox));
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Bottom);
+				Assert.Equal(cachedSearchCount, MauiTextBox.GetContentElementSearchCount(textBox));
+
 				textBox.Template = CreateTextBoxTemplate();
 				textBox.ApplyTemplate();
 
@@ -41,6 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Top);
 
+				Assert.True(MauiTextBox.GetContentElementSearchCount(textBox) > cachedSearchCount);
 				Assert.Equal(NativeVerticalAlignment.Top, currentContentElement.VerticalAlignment);
 				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
 			});
@@ -106,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var textBox = GetNativeEditor(editorHandler);
 
-			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var sv = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
 			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
 
 			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);

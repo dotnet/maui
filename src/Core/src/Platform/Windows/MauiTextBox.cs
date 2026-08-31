@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Platform
 		sealed class TextBoxTemplateCache
 		{
 			public WeakReference<ScrollViewer>? ContentElement { get; set; }
+			public int ContentElementSearchCount { get; set; }
 		}
 
 		public static void InvalidateAttachedProperties(DependencyObject obj)
@@ -54,18 +55,28 @@ namespace Microsoft.Maui.Platform
 
 		static ScrollViewer? GetContentElement(FrameworkElement element)
 		{
-			var cache = s_templateCaches.GetOrCreateValue(element);
-
-			if (cache.ContentElement?.TryGetTarget(out var contentElement) == true &&
+			s_templateCaches.TryGetValue(element, out var cache);
+			if (cache?.ContentElement?.TryGetTarget(out var contentElement) == true &&
 				IsDescendantOf(contentElement, element))
 			{
 				return contentElement;
 			}
 
 			contentElement = element.GetDescendantByName<ScrollViewer>(ContentElementName);
-			cache.ContentElement = contentElement is null ? null : new(contentElement);
+			if (cache is null && contentElement is not null)
+				cache = s_templateCaches.GetOrCreateValue(element);
+
+			if (cache is not null)
+			{
+				cache.ContentElement = contentElement is null ? null : new(contentElement);
+				cache.ContentElementSearchCount++;
+			}
+
 			return contentElement;
 		}
+
+		internal static int GetContentElementSearchCount(FrameworkElement element) =>
+			s_templateCaches.TryGetValue(element, out var cache) ? cache.ContentElementSearchCount : 0;
 
 		static bool IsDescendantOf(DependencyObject element, DependencyObject ancestor)
 		{
