@@ -127,6 +127,13 @@ param(
     [string]$PRNumber,
 
     [Parameter(Mandatory = $false)]
+    [switch]$ReplicationIssueMode,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateRange(0, [int]::MaxValue)]
+    [int]$ReplicationIssueNumber = 0,
+
+    [Parameter(Mandatory = $false)]
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$')]
     [string]$Repository = 'dotnet/maui',
 
@@ -290,9 +297,16 @@ if ($TestType -in @("UITest", "DeviceTest") -and -not $Platform) {
 }
 
 # ============================================================
-# Detect PR number if not provided
+# Detect PR number if not provided. Issue replication is not a pull request:
+# it binds directly to the immutable trusted baseline supplied by its parent.
 # ============================================================
-if (-not $PRNumber) {
+if ($ReplicationIssueMode) {
+    if ($ReplicationIssueNumber -le 0 -or
+        $BaseBranch -cnotmatch '^[0-9a-fA-F]{40}$' -or
+        -not [string]::IsNullOrWhiteSpace($PRNumber)) {
+        throw 'Replication issue verification requires an issue number and immutable base SHA, without a PR number.'
+    }
+} elseif (-not $PRNumber) {
     # Try to get PR number from branch name (e.g., pr-27847)
     $currentBranch = git branch --show-current 2>$null
     if ($currentBranch -match "^pr-(\d+)") {
@@ -321,8 +335,13 @@ if (-not $PRNumber) {
     }
 }
 
-# Set output directory based on PR number
-$OutputDir = "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate/verify-tests-fail"
+# Keep the established artifact layout while using the correct trusted identity.
+$verificationNumber = if ($ReplicationIssueMode) {
+    $ReplicationIssueNumber
+} else {
+    $PRNumber
+}
+$OutputDir = "CustomAgentLogsTmp/PRState/$verificationNumber/PRAgent/gate/verify-tests-fail"
 Write-Host "📁 Output directory: $OutputDir" -ForegroundColor Cyan
 
 # ============================================================
@@ -333,6 +352,12 @@ $BaselineScript = Join-Path $RepoRoot ".github/scripts/EstablishBrokenBaseline.p
 # Import Test-IsTestFile and Find-MergeBase from shared script
 $ExplicitBaseBranch = $BaseBranch
 . $BaselineScript
+if ($ReplicationIssueMode) {
+    # EstablishBrokenBaseline.ps1 has its own param block and therefore clears
+    # BaseBranch when dot-sourced. Restore the immutable issue baseline saved
+    # before the import instead of falling through to PR/network heuristics.
+    $BaseBranch = $ExplicitBaseBranch
+}
 
 # Import the shared test detection script
 $DetectTestsScript = Join-Path $RepoRoot ".github/scripts/shared/Detect-TestsInDiff.ps1"
@@ -2374,7 +2399,7 @@ Write-Host "🔍 Detecting base branch and merge point..." -ForegroundColor Cyan
 # Passing the explicit PR number makes `gh pr view` reliable. Fetch the selected
 # repository's current target-branch tip once, bind origin/<base> to that frozen
 # commit, and let Find-MergeBase step 1 resolve it directly.
-if (-not $BaseBranch -and $PRNumber) {
+if (-not $ReplicationIssueMode -and -not $BaseBranch -and $PRNumber) {
     $prBaseJson = @(& gh pr view $PRNumber --repo $Repository --json baseRefName 2>$null) -join "`n"
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($prBaseJson)) {
         throw "Could not resolve the target branch for $Repository#$PRNumber."
@@ -2406,6 +2431,13 @@ if (-not $BaseBranch -and $PRNumber) {
 }
 
 $baseInfo = Find-MergeBase -ExplicitBaseBranch $BaseBranch
+
+if ($ReplicationIssueMode -and (
+        $null -eq $baseInfo -or
+        [string]$baseInfo.Source -cne 'explicit' -or
+        [string]$baseInfo.MergeBase -ine $ExplicitBaseBranch)) {
+    throw 'Replication issue verification did not resolve the exact immutable baseline.'
+}
 
 if (-not $baseInfo) {
     Write-Host ""

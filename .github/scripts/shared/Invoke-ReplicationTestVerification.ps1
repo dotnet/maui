@@ -11,6 +11,10 @@ param(
     [int]$IssueNumber,
 
     [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
+    [string]$BaseSha,
+
+    [Parameter(Mandatory = $true)]
     [ValidateSet('android', 'ios', 'catalyst', 'windows')]
     [string]$Platform,
 
@@ -293,7 +297,9 @@ function Invoke-SingleVerificationRun {
             '-TestClass', $TestClass,
             '-TestMethod', $TestMethod,
             '-MachineResultPath', $machineResultPath,
-            '-PRNumber', [string]$IssueNumber,
+            '-ReplicationIssueMode',
+            '-ReplicationIssueNumber', [string]$IssueNumber,
+            '-BaseBranch', $BaseSha,
             '-NoRestore',
             # Tell the verifier what it is being asked to prove. Without this it
             # prints "VERIFICATION PASSED / This proves the tests correctly

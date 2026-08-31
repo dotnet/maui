@@ -87,6 +87,29 @@ Describe 'Gate test detection snapshot pinning' {
         $params.ContainsKey('PRNumber') | Should -BeFalse
     }
 
+    Describe 'Replication issue baseline identity' {
+        It 'uses the immutable issue baseline without resolving a pull request' {
+            $script:VerifierSource | Should -Match '\[switch\]\$ReplicationIssueMode'
+            $script:VerifierSource | Should -Match (
+                '(?s)if \(\$ReplicationIssueMode\).*?' +
+                '\$BaseBranch -cnotmatch ''\^\[0-9a-fA-F\]\{40\}\$''')
+            $script:VerifierSource | Should -Match (
+                '(?s)\$verificationNumber = if \(\$ReplicationIssueMode\).*?' +
+                '\$ReplicationIssueNumber')
+            $script:VerifierSource | Should -Match (
+                '(?s)\$ExplicitBaseBranch = \$BaseBranch.*?' +
+                '\. \$BaselineScript.*?' +
+                'if \(\$ReplicationIssueMode\).*?' +
+                '\$BaseBranch = \$ExplicitBaseBranch')
+            $script:VerifierSource | Should -Match (
+                'if \(-not \$ReplicationIssueMode -and -not \$BaseBranch -and \$PRNumber\)')
+            $script:VerifierSource | Should -Match (
+                '(?s)\$baseInfo = Find-MergeBase.*?' +
+                "Source -cne 'explicit'.*?" +
+                'MergeBase -ine \$ExplicitBaseBranch')
+        }
+    }
+
     It 'falls back to live PR metadata only without a usable local snapshot' {
         $params = Get-GateTestDetectionParameters `
             -MergeBase '' `
