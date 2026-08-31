@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _bound;
 		bool _measureInvalidated;
 		bool _needsArrange;
-		bool _hasArrangedSize;
+		bool _needsFinalArrange;
 		Size _measuredSize;
 		Size _cachedConstraints;
 		Size _lastArrangedSize;
@@ -170,10 +170,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_needsArrange)
 				{
+					// Safe area depends on the final cell position and is applied from LayoutSubviews.
+					ClearCellSafeAreaOverride();
 					_needsArrange = false;
+					_needsFinalArrange = true;
 					virtualView.Arrange(new Rect(Point.Zero, size));
 					_lastArrangedSize = size;
-					_hasArrangedSize = true;
 				}
 			}
 
@@ -210,29 +212,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				var boundsSize = Bounds.Size.ToSize();
-				if (!_needsArrange && !_hasArrangedSize)
+				var needsFinalArrange = _needsFinalArrange;
+
+				// LayoutSubviews can run without a preceding preferred-size pass, such as
+				// during rotation. Wait until the cell has at least one valid arranged size.
+				if (!needsFinalArrange && _lastArrangedSize == default)
 				{
 					return;
 				}
 
+				var boundsSize = Bounds.Size.ToSize();
 				var sizeChanged = !Bounds.Size.IsCloseTo(_lastArrangedSize);
-				if (!_needsArrange && sizeChanged)
-				{
-					// The layout can stretch a cell beyond its preferred size (for example,
-					// to match the tallest item in a grid row). Only re-arrange when every
-					// finite measurement constraint still matches the final bounds.
-					var measuredConstraintsMatchBounds =
-						(double.IsPositiveInfinity(_cachedConstraints.Width) ||
-							Math.Abs(_cachedConstraints.Width - boundsSize.Width) < 0.001) &&
-						(double.IsPositiveInfinity(_cachedConstraints.Height) ||
-							Math.Abs(_cachedConstraints.Height - boundsSize.Height) < 0.001);
-
-					if (!measuredConstraintsMatchBounds)
-					{
-						return;
-					}
-				}
 
 				var previousCellSafeArea = PlatformView is MauiView currentMauiView
 					? currentMauiView.CellSafeAreaOverride
@@ -244,18 +234,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var safeAreaChanged = PlatformView is MauiView updatedMauiView &&
 					!previousCellSafeArea.EqualsAtPixelLevel(updatedMauiView.CellSafeAreaOverride);
 
-				if (!_needsArrange)
+				if (!needsFinalArrange)
 				{
-					if (!sizeChanged && !safeAreaChanged)
+					// Bounds can change on the unconstrained axis without another preferred-size
+					// pass (for example, a grid row stretching to its tallest item). Arrange that
+					// change, but wait for remeasurement when a finite constraint changed.
+					var measuredConstraintsMatchBounds = Bounds.Size.IsCloseTo(new Size(
+						double.IsPositiveInfinity(_cachedConstraints.Width) ? boundsSize.Width : _cachedConstraints.Width,
+						double.IsPositiveInfinity(_cachedConstraints.Height) ? boundsSize.Height : _cachedConstraints.Height));
+
+					if ((sizeChanged && measuredConstraintsMatchBounds) || safeAreaChanged)
 					{
-						return;
+						virtualView.Arrange(new Rect(Point.Zero, boundsSize));
+						_lastArrangedSize = boundsSize;
 					}
+
+					return;
+				}
+				_needsFinalArrange = false;
+
+				if (!sizeChanged && !safeAreaChanged)
+				{
+					return;
 				}
 
-				_needsArrange = false;
 				virtualView.Arrange(new Rect(Point.Zero, boundsSize));
 				_lastArrangedSize = boundsSize;
-				_hasArrangedSize = true;
 			}
 		}
 
@@ -359,7 +363,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			_measureInvalidated = false;
 			_needsArrange = false;
-			_hasArrangedSize = false;
+			_needsFinalArrange = false;
 			_lastArrangedSize = default;
 			ClearCellSafeAreaOverride();
 		}

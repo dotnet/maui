@@ -28,6 +28,7 @@ public partial class Issue37427Card : Border
 		heading.SetBinding(Label.TextProperty, new Binding(nameof(HeadingText), source: this));
 		body.SetBinding(Label.TextProperty, new Binding(nameof(BodyText), source: this));
 		previewColorsPancakeView.SetBinding(IsVisibleProperty, new Binding(nameof(ShowPreviewColors), source: this));
+		previewColorsLayout.SetBinding(AutomationIdProperty, new Binding(nameof(AutomationId), source: this, stringFormat: "{0}PreviewColors"));
 		image.SetBinding(Image.SourceProperty, new Binding(nameof(ImageSource), source: this));
 	}
 
@@ -63,7 +64,7 @@ public partial class Issue37427Card : Border
 
 	static void HandlePreviewColorsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 	{
-		if (bindable is not Issue37427Card card || newValue is not IEnumerable<Color> colors)
+		if (bindable is not Issue37427Card card)
 		{
 			return;
 		}
@@ -72,7 +73,7 @@ public partial class Issue37427Card : Border
 		card.previewColorsLayout.ColumnDefinitions.Clear();
 		card.previewColorsLayout.Children.Clear();
 
-		if (!colors.Any())
+		if (newValue is not IEnumerable<Color> colors || !colors.Any())
 		{
 			return;
 		}
