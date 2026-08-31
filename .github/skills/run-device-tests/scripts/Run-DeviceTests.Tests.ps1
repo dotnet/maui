@@ -66,6 +66,7 @@ Describe 'Build isolation options' {
             "Windows replication permits only the Controls device-test package")
         $content | Should -Match 'ReplicationWindowsControlsDeviceTestsManifest\.xml'
         $content | Should -Match '/p:WindowsPackageType=MSIX'
+        $content | Should -Match '/p:PublishReadyToRun=false'
         $content | Should -Match '/p:GenerateAppxPackageOnBuild=true'
         $content | Should -Match '/p:PackageManifest=\$windowsManifestPath'
         $content | Should -Not -Match '_MauiReplicationWindowsManifest'

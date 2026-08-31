@@ -2982,6 +2982,9 @@ InitializeComponent();
         $script:Source | Should -Match (
             '(?s)function Get-ReplicationWindowsTopLevelRidRestoreArguments.*?' +
             '--no-dependencies')
+        $platformRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationWindowsPlatformRestoreArguments\b.*?^}').Value
         $graphRestore = [regex]::Match(
             $script:Source,
             '(?ms)^function Get-ReplicationWindowsGraphRestoreArguments\b.*?^}').Value
@@ -2992,8 +2995,14 @@ InitializeComponent();
             $script:Source,
             '(?ms)^function Get-ReplicationWindowsTopLevelRidRestoreArguments\b.*?^}').Value
         $graphRestore | Should -Match 'RuntimeIdentifiers=win-x64'
+        $graphRestore |
+            Should -Match 'Get-ReplicationWindowsPlatformRestoreArguments'
+        $platformRestore | Should -Match 'PublishReadyToRun=false'
         $plainGeneratorRestore | Should -Match '--no-dependencies'
+        $plainGeneratorRestore | Should -Match 'PublishReadyToRun=false'
         $plainGeneratorRestore | Should -Not -Match 'RuntimeIdentifiers?'
+        $topLevelRestore |
+            Should -Match 'Get-ReplicationWindowsPlatformRestoreArguments'
         $topLevelRestore | Should -Not -Match 'RuntimeIdentifiers='
         $twoPhaseRestore = [regex]::Match(
             $script:Source,
@@ -3037,6 +3046,28 @@ InitializeComponent();
         $verifier | Should -Match '\$testArgs \+= ''--no-restore'''
         $sandbox | Should -Match '\$appiumRunArguments \+= ''--no-restore'''
         $device | Should -Match '\$buildArgs \+= ''--no-restore'''
+        ([regex]::Matches(
+            $script:Source,
+            "'-p:PublishReadyToRun=false'")).Count |
+            Should -BeGreaterOrEqual 4
+        ([regex]::Matches(
+            $script:BuildDeploySource,
+            '"-p:PublishReadyToRun=false"')).Count |
+            Should -BeGreaterOrEqual 2
+        $device | Should -Match '/p:PublishReadyToRun=false'
+        $script:Source | Should -Match (
+            "(?s)'-c', 'Debug',\s*'--no-restore',\s*" +
+            "'-p:RuntimeIdentifierOverride=win-x64',\s*" +
+            "'-p:PublishReadyToRun=false',\s*" +
+            "'-p:WindowsPackageType=None',\s*" +
+            "'-p:_MauiReplicationUnpackaged=true'")
+        $script:Source | Should -Match (
+            "(?s)'-c', 'Release',\s*'--no-restore',\s*" +
+            "'-p:RuntimeIdentifierOverride=win-x64',\s*" +
+            "'-p:PublishReadyToRun=false',\s*" +
+            "'-p:WindowsPackageType=None',\s*" +
+            "'-p:_MauiDeviceTestUnpackaged=true',\s*" +
+            "'-p:SelfContained=true'")
     }
 
     It 'shuts down build servers and retries bounded runtime-cache cleanup' {
