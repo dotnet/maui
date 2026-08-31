@@ -10333,6 +10333,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
 
                 $verificationArgs = @(
                     '-IssueNumber', [string]$IssueNumber,
+                    '-BaseSha', $BaseSha,
                     '-Platform', $Platform,
                     '-TestType', $verifierTestType,
                     '-TestFilter', [string]$testProposal.testFilter,

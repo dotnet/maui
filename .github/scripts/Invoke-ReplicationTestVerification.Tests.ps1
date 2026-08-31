@@ -83,11 +83,15 @@ param(
     [switch]`$RequireWindowsAppContainer,
     [switch]`$RequireMacCatalystAppSandbox,
     [string]`$ReplicationTrustedRoot,
-    [string]`$PRNumber
+    [string]`$PRNumber,
+    [switch]`$ReplicationIssueMode,
+    [int]`$ReplicationIssueNumber,
+    [string]`$BaseBranch
 )
 if (-not [string]::IsNullOrWhiteSpace(`$DeviceTestScriptPath)) { Set-Content -LiteralPath (`$MachineResultPath + '.device-runner-path') -Value `$DeviceTestScriptPath -Encoding utf8NoBOM }
 if (`$RequireWindowsAppContainer) { Set-Content -LiteralPath (`$MachineResultPath + '.windows-appcontainer') -Value `$ReplicationTrustedRoot -Encoding utf8NoBOM }
 if (`$RequireMacCatalystAppSandbox) { Set-Content -LiteralPath (`$MachineResultPath + '.catalyst-app-sandbox') -Value `$ReplicationTrustedRoot -Encoding utf8NoBOM }
+if (`$ReplicationIssueMode) { Set-Content -LiteralPath (`$MachineResultPath + '.issue-mode') -Value "`$ReplicationIssueNumber|`$BaseBranch|`$PRNumber" -Encoding utf8NoBOM }
 Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
 if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'fail-after-first.flag')) {
     if ((Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count -gt 1) {
@@ -238,6 +242,7 @@ Describe 'Replication failure-only verification' {
 
         $stderr = & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UITest `
             -TestFilter 'FullyQualifiedName~Issue12345' `
@@ -269,6 +274,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -298,6 +304,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -333,6 +340,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -361,6 +369,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -399,6 +408,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 36800 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UITest `
             -TestFilter Issue36800 `
@@ -428,6 +438,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -468,6 +479,7 @@ Describe 'Replication failure-only verification' {
         $output = Join-Path $TestDrive 'device-success'
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 31059 `
+            -BaseSha ('a' * 40) `
             -Platform ios `
             -TestType DeviceTest `
             -TestFilter Issue31059 `
@@ -505,6 +517,7 @@ Describe 'Replication failure-only verification' {
         $output = Join-Path $TestDrive 'windows-device-success'
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 37540 `
+            -BaseSha ('a' * 40) `
             -Platform windows `
             -TestType DeviceTest `
             -TestFilter Issue37540 `
@@ -523,6 +536,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 37540 `
+            -BaseSha ('a' * 40) `
             -Platform windows `
             -TestType UnitTest `
             -TestFilter Issue37540 `
@@ -567,6 +581,7 @@ Describe 'Replication failure-only verification' {
         $output = Join-Path $TestDrive 'catalyst-device-success'
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 35511 `
+            -BaseSha ('a' * 40) `
             -Platform catalyst `
             -TestType DeviceTest `
             -TestFilter Issue35511 `
@@ -582,6 +597,9 @@ Describe 'Replication failure-only verification' {
         Get-Content -LiteralPath (
             Join-Path $output 'verifier-machine-result.json.catalyst-app-sandbox') |
             Should -BeExactly $trustedRoot
+        (Get-Content -LiteralPath (
+            Join-Path $output 'verifier-machine-result.json.issue-mode')).Trim() |
+            Should -BeExactly "35511|$('a' * 40)|"
     }
 }
 
@@ -632,6 +650,7 @@ Describe 'Replication test verification determinism enforcement' {
 
         $stderr = & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -665,6 +684,7 @@ Describe 'Replication test verification determinism enforcement' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 12345 `
+            -BaseSha ('a' * 40) `
             -Platform android `
             -TestType UnitTest `
             -TestFilter Issue12345 `
@@ -744,7 +764,10 @@ param(
     [string]`$TestMethod,
     [string]`$MachineResultPath,
     [string]`$DeviceTestScriptPath,
-    [string]`$PRNumber
+    [string]`$PRNumber,
+    [switch]`$ReplicationIssueMode,
+    [int]`$ReplicationIssueNumber,
+    [string]`$BaseBranch
 )
 Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
 `$run = @(Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count
@@ -794,6 +817,7 @@ exit 1
 
             & pwsh -NoProfile -File $script:ControlScriptPath `
                 -IssueNumber 12345 `
+                -BaseSha ('a' * 40) `
                 -Platform android `
                 -TestType UnitTest `
                 -TestFilter Issue12345 `
