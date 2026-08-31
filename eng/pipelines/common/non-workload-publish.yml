@@ -20,7 +20,6 @@ stages:
     dependsOn: approval
     condition: eq(dependencies.approval.result, 'Succeeded')
     variables:
-      HasPackages: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.HasPackages'] ]
       PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
     templateContext:
       type: releaseJob

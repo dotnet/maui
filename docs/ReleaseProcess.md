@@ -17,8 +17,9 @@ The pipeline accepts:
   for an Android libraries release.
 - Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
   `dotnet/maui`. Other enabled repositories use the ordinary NuGet package path.
-- `commitHash`: the source commit registered in BAR. It must resolve to exactly
-  one build for the requested repository. The default value, `skip`, prevents
+- `commitHash`: the source commit registered in BAR. The first matching build
+  returned by Darc is used, preserving the existing workload-release behavior.
+  The default value, `skip`, prevents
   all preparation, approval, workload-channel, and NuGet publishing jobs.
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.

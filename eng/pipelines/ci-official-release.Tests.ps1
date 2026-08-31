@@ -53,10 +53,11 @@ Describe 'ci-official-release.yml' {
     $nonWorkloadTemplate | Should -Not -Match 'skip-assets-publishing|add-build-to-channel'
   }
 
-  It 'requires commit resolution to return one BAR build for the repository' {
+  It 'preserves first-match BAR resolution for every repository' {
     $pipeline | Should -Not -Match '(?m)^- name: barBuildId$'
     $pipeline | Should -Match '--repo \$sourceRepository --commit'
-    $pipeline | Should -Match 'Expected exactly one BAR build'
+    $pipeline | Should -Match '\$build = \$builds\[0\]'
+    $pipeline | Should -Not -Match 'Expected exactly one BAR build'
     $pipeline | Should -Not -Match 'requiredChannel(Name|Id)|build\.channels|5172'
   }
 
@@ -70,6 +71,8 @@ Describe 'ci-official-release.yml' {
     $nonWorkloadTemplate | Should -Match "publishFeedCredentials: 'nuget\.org \(dotnetframework\)'"
     $pipeline | Should -Not -Match '(?m)^- name: nugetPublishServiceConnection$'
     $pipeline | Should -Not -Match '(?m)^- name: nugetAlreadyAttemptedNonWorkloadFilters$'
+    $pipeline | Should -Not -Match 'HasPackages'
+    $nonWorkloadTemplate | Should -Not -Match 'HasPackages'
   }
 
   It 'uses the original repository text inputs and rejects workload manifests on the inferred non-workload path' {

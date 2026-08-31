@@ -235,8 +235,8 @@ extends:
                 }
 
                 $builds = @($buildJson | ConvertFrom-Json)
-                if ($builds.Count -ne 1) {
-                  throw "Expected exactly one BAR build for '$sourceRepository', found $($builds.Count)."
+                if ($builds.Count -eq 0) {
+                  throw "No BAR build was returned for '$sourceRepository'."
                 }
                 $build = $builds[0]
                 $repository = ([Uri] $build.gitHubRepository).GetLeftPart([UriPartial]::Path).TrimEnd('/').ToLowerInvariant()
@@ -472,8 +472,6 @@ extends:
                   } | ConvertTo-Json -Depth 5 |
                     Set-Content -LiteralPath (Join-Path $auditPath 'release-audit.json') -Encoding utf8
 
-                  $hasPackages = ($staged.Count -gt 0).ToString().ToLowerInvariant()
-                  Write-Host "##vso[task.setvariable variable=HasPackages;isOutput=true]$hasPackages"
                 }
 
                 Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
