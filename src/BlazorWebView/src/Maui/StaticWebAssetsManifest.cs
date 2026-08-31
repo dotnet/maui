@@ -66,30 +66,65 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return s_cached;
 			}
 
-			// Load without holding a lock so a concurrent BlazorWebView start is not serialized behind
-			// this one blocking on app-package I/O. The manifest is immutable build output, so in the
-			// rare case two starts race the first-load, both produce an equivalent result and the last
-			// write wins.
 			StaticWebAssetsManifest? manifest = null;
 			try
 			{
-				// Offload to the thread pool and block: the downstream static-content pipeline that
-				// consumes this is synchronous. Some platform app-package readers are genuinely
-				// asynchronous (for example the Windows StorageFile-based reader), which is exactly why
-				// the load is performed once and cached rather than repeated per call.
+				// Offload to the thread pool and block. This blocking overload exists only for the
+				// synchronous CreateFileProvider fallback; the primary startup path awaits TryLoadAsync
+				// so the UI thread is never blocked on app-package I/O.
 				manifest = Task.Run(LoadAsync).GetAwaiter().GetResult();
 			}
-			catch (Exception ex) when (ex is IOException or JsonException or NotImplementedException or UnauthorizedAccessException)
+			catch (Exception ex)
 			{
-				// A missing manifest is already handled in LoadAsync, so this only fires for a present
-				// but corrupt/unreadable manifest. Fingerprinting simply stays off, but it is logged so
-				// the resulting asset 404s are diagnosable rather than silent.
-				logger?.LogWarning(ex, "Failed to load the Blazor static web assets manifest '{ManifestPath}'; asset fingerprinting is disabled.", ManifestPackagePath);
+				LogLoadFailure(logger, ex);
 			}
 
+			return Publish(manifest);
+		}
+
+		/// <summary>
+		/// Asynchronously loads and parses the bundled manifest from the app package, caching the result
+		/// for the lifetime of the process. Preferred over <see cref="TryLoad"/> on any path that can
+		/// await, so the (possibly genuinely asynchronous) app-package read never blocks the caller.
+		/// </summary>
+		/// <param name="logger">An optional logger used to report a corrupt (but present) manifest.</param>
+		/// <returns>The parsed manifest, or <c>null</c> if it is not present or cannot be read.</returns>
+		public static async Task<StaticWebAssetsManifest?> TryLoadAsync(ILogger? logger = null)
+		{
+			if (s_cacheLoaded)
+			{
+				return s_cached;
+			}
+
+			StaticWebAssetsManifest? manifest = null;
+			try
+			{
+				manifest = await LoadAsync().ConfigureAwait(false);
+			}
+			catch (Exception ex)
+			{
+				LogLoadFailure(logger, ex);
+			}
+
+			return Publish(manifest);
+		}
+
+		private static StaticWebAssetsManifest? Publish(StaticWebAssetsManifest? manifest)
+		{
+			// The manifest is immutable build output, so caching "not present" (null) is intentional. In
+			// the rare case two starts race the first load, both produce an equivalent result.
 			s_cached = manifest;
 			s_cacheLoaded = true;
 			return manifest;
+		}
+
+		private static void LogLoadFailure(ILogger? logger, Exception ex)
+		{
+			// A missing manifest returns null from LoadAsync without throwing, so this only fires for a
+			// present-but-unreadable manifest. Loading an OPTIONAL fingerprinting manifest must never be
+			// able to take down the WebView, so any failure is swallowed (fingerprinting stays off) and
+			// logged so the resulting asset 404s are diagnosable rather than silent.
+			logger?.LogWarning(ex, "Failed to load the Blazor static web assets manifest '{ManifestPath}'; asset fingerprinting is disabled.", ManifestPackagePath);
 		}
 
 		private static async Task<StaticWebAssetsManifest?> LoadAsync()
@@ -167,11 +202,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				resources.Add(new ResourceAsset(url, properties));
 
-				// Serving: a fingerprinted route (label present and different from the route) maps to the
-				// physical file stored under the web root at the logical label.
+				// Serving: a fingerprinted route maps to the physical file stored under the web root at
+				// the logical label. Only recorded when the normalized route and label actually differ, so
+				// the map holds no redundant identity entries (matching TryResolvePhysicalPath's contract).
 				if (label is not null)
 				{
-					routeToPhysical.TryAdd(NormalizePath(url), NormalizePath(label));
+					var normalizedRoute = NormalizePath(url);
+					var normalizedLabel = NormalizePath(label);
+					if (!string.Equals(normalizedRoute, normalizedLabel, StringComparison.OrdinalIgnoreCase))
+					{
+						routeToPhysical.TryAdd(normalizedRoute, normalizedLabel);
+					}
 				}
 			}
 

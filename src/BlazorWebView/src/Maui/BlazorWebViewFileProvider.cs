@@ -78,20 +78,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private sealed class InMemoryFileInfo : IFileInfo
 		{
 			private readonly byte[] _contents;
-			private readonly DateTimeOffset _lastModified;
 
 			public InMemoryFileInfo(string name, byte[] contents)
 			{
 				Name = name;
 				_contents = contents;
-				_lastModified = DateTimeOffset.UtcNow;
 			}
 
 			public bool Exists => true;
 			public long Length => _contents.Length;
 			public string? PhysicalPath => null;
 			public string Name { get; }
-			public DateTimeOffset LastModified => _lastModified;
+
+			// A stable timestamp (Unix epoch), matching the platform asset providers
+			// (AndroidMauiAssetFileProvider / iOSMauiAssetFileProvider). The rendered host page is
+			// immutable for the process lifetime, so a fixed value keeps conditional-request/caching
+			// behaviour deterministic instead of reporting the document as modified on every request.
+			public DateTimeOffset LastModified => DateTimeOffset.UnixEpoch;
 			public bool IsDirectory => false;
 
 			public Stream CreateReadStream() => new MemoryStream(_contents, writable: false);

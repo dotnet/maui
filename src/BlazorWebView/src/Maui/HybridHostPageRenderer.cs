@@ -39,22 +39,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private readonly List<HybridRootComponentRegistration> _registrations = new();
 		private readonly ResourceAssetCollection _assets;
-		private readonly Dispatcher? _dispatcher;
 		private int _mountElementCount;
 
-		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets, Dispatcher? dispatcher)
+		private HybridHostPageRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, ResourceAssetCollection assets)
 			: base(serviceProvider, loggerFactory)
 		{
 			_assets = assets;
-			_dispatcher = dispatcher;
 		}
-
-		/// <summary>
-		/// Uses the supplied MAUI dispatcher (the same one the live <c>WebViewManager</c> renders on) when
-		/// provided, so the static host render shares a single threading model with the rest of the Blazor
-		/// pipeline. Falls back to the base renderer's default dispatcher when none is supplied.
-		/// </summary>
-		public override Dispatcher Dispatcher => _dispatcher ?? base.Dispatcher;
 
 		/// <summary>
 		/// Supplies the fingerprint-aware asset collection so that <c>@Assets["logical"]</c> resolves to
@@ -67,19 +58,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <summary>
 		/// Asynchronously renders <paramref name="appComponentType"/> to a full HTML document and returns
 		/// the markup together with the interactive components that must be attached to the live document.
-		/// The render runs on <paramref name="dispatcher"/> when supplied (the MAUI UI dispatcher), so it
-		/// integrates with the UI message loop and is awaited rather than blocked.
+		/// The render runs on the renderer's own dispatcher (a dedicated, thread-pool-serialized context -
+		/// deliberately NOT the MAUI UI thread, since driving this static render on the UI thread deadlocks)
+		/// and is awaited rather than blocked. The caller marshals the post-render work back to the MAUI
+		/// dispatcher.
 		/// </summary>
 		/// <param name="services">The application service provider.</param>
 		/// <param name="appComponentType">The host component type to render (the <c>App.razor</c> equivalent).</param>
 		/// <param name="assets">The fingerprint-aware asset collection, or <c>null</c> to disable <c>@Assets</c> fingerprinting.</param>
-		/// <param name="dispatcher">The dispatcher to render on, or <c>null</c> to use the default renderer dispatcher.</param>
 		/// <returns>The rendered document markup and the collected interactive attach registrations.</returns>
 		public static Task<HybridHostPageResult> RenderAsync(
 			IServiceProvider services,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
-			ResourceAssetCollection? assets = null,
-			Dispatcher? dispatcher = null)
+			ResourceAssetCollection? assets = null)
 		{
 			ArgumentNullException.ThrowIfNull(services);
 			ArgumentNullException.ThrowIfNull(appComponentType);
@@ -87,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 			var resolvedAssets = assets ?? ResourceAssetCollection.Empty;
 
-			var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets, dispatcher);
+			var renderer = new HybridHostPageRenderer(services, loggerFactory, resolvedAssets);
 			return renderer.Dispatcher.InvokeAsync(async () =>
 			{
 				try
@@ -113,15 +104,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <summary>
-		/// Synchronous fallback used when the host document is rendered outside the handler's dispatcher-gated
-		/// startup path (for example a direct <c>CreateFileProvider</c> call). Renders on the default
-		/// (thread-pool) dispatcher and blocks. The primary, non-blocking path is <see cref="RenderAsync"/>.
+		/// Synchronous fallback used when the host document is rendered outside the handler's async startup
+		/// path (for example a direct <c>CreateFileProvider</c> call). Blocks on <see cref="RenderAsync"/>.
 		/// </summary>
 		public static HybridHostPageResult Render(
 			IServiceProvider services,
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type appComponentType,
 			ResourceAssetCollection? assets = null)
-			=> Task.Run(() => RenderAsync(services, appComponentType, assets, dispatcher: null)).GetAwaiter().GetResult();
+			=> Task.Run(() => RenderAsync(services, appComponentType, assets)).GetAwaiter().GetResult();
 
 		/// <inheritdoc />
 		protected override IComponent ResolveComponentForRenderMode(
@@ -147,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				var elementId = _mountElementCount == 0 ? AppElementId : $"{AppElementId}-{_mountElementCount}";
 				_mountElementCount++;
 				_registrations.Add(new HybridRootComponentRegistration("#" + elementId, componentType));
-				return new HybridMountPlaceholder(elementId);
+				return new HybridMountPlaceholder(elementId, componentType);
 			}
 
 			return base.ResolveComponentForRenderMode(componentType, parentComponentId, componentActivator, renderMode);
@@ -160,14 +150,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private sealed class HybridMountPlaceholder : IComponent
 		{
 			private readonly string _elementId;
+			private readonly Type _componentType;
 			private RenderHandle _renderHandle;
 
-			public HybridMountPlaceholder(string elementId) => _elementId = elementId;
+			public HybridMountPlaceholder(string elementId, Type componentType)
+			{
+				_elementId = elementId;
+				_componentType = componentType;
+			}
 
 			public void Attach(RenderHandle renderHandle) => _renderHandle = renderHandle;
 
 			public Task SetParametersAsync(ParameterView parameters)
 			{
+				// A hybrid interactive boundary becomes a bare mount element plus a selector attach; there
+				// is no channel to carry statically-authored parameters to the freshly-attached live
+				// component, so silently dropping them would mis-render. Fail fast with a clear diagnostic
+				// instead. (@rendermode itself is not a parameter and does not appear here.)
+				foreach (var parameter in parameters)
+				{
+					throw new NotSupportedException(
+						$"The interactive component '{_componentType.FullName}' declared in the {nameof(BlazorWebView.AppType)} host document has parameters (for example '{parameter.Name}'), which are not supported on a hybrid interactive boundary. Remove the parameters, or move them onto a child component rendered inside it.");
+				}
+
 				_renderHandle.Render(builder =>
 				{
 					builder.OpenElement(0, "div");

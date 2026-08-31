@@ -75,9 +75,12 @@ namespace Microsoft.Maui.MauiBlazorWebView.UnitTests
 		{
 			var provider = new BlazorWebViewFileProvider(new FakeFileProvider(), "wwwroot/index.html", "<html/>", manifest: null);
 
-			var fileInfo = provider.GetFileInfo("wwwroot/index.html");
+			// Two separate GetFileInfo calls must report the same LastModified (the discriminating test:
+			// an unstable per-call DateTimeOffset.UtcNow would fail here).
+			var first = provider.GetFileInfo("wwwroot/index.html");
+			var second = provider.GetFileInfo("wwwroot/index.html");
 
-			Assert.Equal(fileInfo.LastModified, fileInfo.LastModified);
+			Assert.Equal(first.LastModified, second.LastModified);
 		}
 
 		sealed class FakeFileProvider : IFileProvider

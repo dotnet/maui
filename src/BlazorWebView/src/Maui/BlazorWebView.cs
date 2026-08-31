@@ -78,6 +78,14 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <c>&lt;HeadOutlet @rendermode="InteractiveAuto" /&gt;</c>) are automatically attached to the
 		/// live document, so an explicit <see cref="RootComponents"/> entry is not required either.
 		/// </para>
+		/// <para>
+		/// Trimming/NativeAOT: when set from a XAML <c>{x:Type}</c> reference the type is preserved by the
+		/// XAML compiler, and the interactive components it renders are preserved by the Razor SDK trimming
+		/// roots. When assigned a runtime-computed type from code (for example
+		/// <c>AppType = Type.GetType(name)</c>), the caller is responsible for ensuring that type and its
+		/// members are preserved (for example with <c>[DynamicDependency]</c> or a trimming descriptor),
+		/// otherwise its members may be trimmed and the host render can fail at runtime.
+		/// </para>
 		/// </summary>
 		public Type? AppType
 		{
@@ -237,9 +245,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		}
 
 		/// <summary>
-		/// Renders the <see cref="AppType"/> host document asynchronously on the supplied MAUI dispatcher
-		/// (the same one the live components render on) so the render integrates with the UI message loop
-		/// and is awaited rather than blocking. Idempotent.
+		/// Renders the <see cref="AppType"/> host document asynchronously (on the renderer's own dispatcher)
+		/// and awaits it rather than blocking, then applies the result on the supplied MAUI dispatcher so the
+		/// <see cref="RootComponents"/> mutation happens on the UI thread the <c>WebViewManager</c> reads
+		/// from. Idempotent.
 		/// </summary>
 		internal async Task EnsureAppTypeRenderedAsync(IDispatcher? dispatcher)
 		{
@@ -248,10 +257,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return;
 			}
 
-			var (services, manifest) = PrepareAppTypeRender();
-			var blazorDispatcher = dispatcher is not null ? new MauiDispatcher(dispatcher) : null;
-			var result = await RenderAppTypeAsync(services, manifest, blazorDispatcher).ConfigureAwait(false);
-			ApplyAppTypeRender(result, manifest);
+			var services = GetAppTypeServices();
+
+			// Load the manifest asynchronously so the (possibly genuinely async on Windows) app-package
+			// read never blocks the UI thread.
+			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
+			var manifest = await StaticWebAssetsManifest.TryLoadAsync(logger).ConfigureAwait(false);
+
+			var result = await RenderAppTypeAsync(services, manifest).ConfigureAwait(false);
+
+			// Apply the render (mutating RootComponents and the latch state) back on the MAUI dispatcher,
+			// since RootComponents is read by the WebViewManager on the UI thread and the continuation
+			// after the awaits above may be on a thread-pool thread.
+			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+			{
+				await dispatcher.DispatchAsync(() => ApplyAppTypeRender(result, manifest)).ConfigureAwait(false);
+			}
+			else
+			{
+				ApplyAppTypeRender(result, manifest);
+			}
 		}
 
 		// See RenderAppTypeAsync for why the IL2072 suppression is required (AppType is XAML-reflection-set).
@@ -264,24 +289,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return;
 			}
 
-			var (services, manifest) = PrepareAppTypeRender();
+			var services = GetAppTypeServices();
+			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
+			var manifest = StaticWebAssetsManifest.TryLoad(logger);
 			var result = HybridHostPageRenderer.Render(services, AppType, manifest?.Assets);
 			ApplyAppTypeRender(result, manifest);
 		}
 
-		private (IServiceProvider Services, StaticWebAssetsManifest? Manifest) PrepareAppTypeRender()
-		{
-			var services = Handler?.MauiContext?.Services
+		private IServiceProvider GetAppTypeServices() =>
+			Handler?.MauiContext?.Services
 				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
-
-			// Load the bundled static web assets manifest (if present) so that @Assets fingerprinting
-			// and fingerprinted-route serving work. The manifest lives outside the web root and is read
-			// from the app package, so it is never served to the web view. Absent (or on platforms
-			// without app-package access), fingerprinting simply stays off.
-			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
-			var manifest = StaticWebAssetsManifest.TryLoad(logger);
-			return (services, manifest);
-		}
 
 		// IL2072: AppType flows into HybridHostPageRenderer.RenderAsync's [DynamicallyAccessedMembers(All)]
 		// parameter. AppType cannot itself be annotated: it is a public property set by XAML via
@@ -292,8 +309,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		// trimming roots (@rendermode / routable assembly), so their members survive trimming.
 		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
 			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
-		private Task<HybridHostPageResult> RenderAppTypeAsync(IServiceProvider services, StaticWebAssetsManifest? manifest, Dispatcher? dispatcher)
-			=> HybridHostPageRenderer.RenderAsync(services, AppType!, manifest?.Assets, dispatcher);
+		private Task<HybridHostPageResult> RenderAppTypeAsync(IServiceProvider services, StaticWebAssetsManifest? manifest)
+			=> HybridHostPageRenderer.RenderAsync(services, AppType!, manifest?.Assets);
 
 		private void ApplyAppTypeRender(HybridHostPageResult result, StaticWebAssetsManifest? manifest)
 		{

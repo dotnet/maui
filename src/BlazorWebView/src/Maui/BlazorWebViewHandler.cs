@@ -114,23 +114,35 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private async Task RenderAppTypeThenStartAsync(BlazorWebView appTypeView)
 		{
+			var dispatcher = MauiContext?.Services?.GetService<IDispatcher>();
 			try
 			{
-				var dispatcher = MauiContext?.Services?.GetService<IDispatcher>();
 				await appTypeView.EnsureAppTypeRenderedAsync(dispatcher);
 			}
 			catch (Exception ex)
 			{
-				// Allow a later reconnect to retry, and surface the failure instead of silently serving a
-				// blank host page.
-				_appTypeRenderScheduled = false;
 				MauiContext?.Services?.GetService<ILoggerFactory>()?
 					.CreateLogger<BlazorWebViewHandler>()?
 					.LogError(ex, "Failed to render the BlazorWebView AppType host document.");
-				return;
+			}
+			finally
+			{
+				// Clear the in-flight guard so a later AppType reassignment (which resets the view's
+				// rendered state) is able to schedule a fresh render.
+				_appTypeRenderScheduled = false;
 			}
 
-			StartWebViewCoreIfPossible();
+			// Start the web view core on the UI dispatcher regardless of render outcome: on success it
+			// serves the rendered host document; on failure the normal host-page 404 surfaces through the
+			// platform pipeline instead of a silent, permanently blank web view.
+			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+			{
+				await dispatcher.DispatchAsync(StartWebViewCoreIfPossible);
+			}
+			else
+			{
+				StartWebViewCoreIfPossible();
+			}
 		}
 
 		private string? HostPage { get; set; }

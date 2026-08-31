@@ -176,8 +176,10 @@
             }
 
             var route = endpoint.ItemSpec;
-            if (!string.IsNullOrEmpty(route))
+            if (!string.IsNullOrEmpty(route) && !byUrl.ContainsKey(route))
             {
+                // First-wins, matching the runtime StaticWebAssetsManifest.FromData (TryAdd), so build-time
+                // generation and runtime resolution never disagree on a duplicate route.
                 byUrl[route] = props.ToString();
             }
         }
@@ -234,7 +236,7 @@
           DependsOnTargets="ResolveStaticWebAssetsConfiguration"
           Condition="'@(StaticWebAssetEndpoint)' != ''">
     <PropertyGroup>
-      <_MauiBlazorAssetManifestFile>$(IntermediateOutputPath)maui\blazor-asset-manifest.json</_MauiBlazorAssetManifestFile>
+      <_MauiBlazorAssetManifestFile>$(IntermediateOutputPath)maui/blazor-asset-manifest.json</_MauiBlazorAssetManifestFile>
     </PropertyGroup>
     <_GenerateMauiBlazorAssetManifest Endpoints="@(StaticWebAssetEndpoint)"
                                       OutputFile="$(_MauiBlazorAssetManifestFile)" />

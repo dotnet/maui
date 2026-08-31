@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Xunit;
@@ -17,12 +18,12 @@ namespace Microsoft.Maui.MauiBlazorWebView.UnitTests
 		}
 
 		// Builds a manifest entry in the descriptor schema: { "Url": url, "Properties": [ {Name,Value}, ... ] }.
-		static string Entry(string? url, params (string Name, string Value)[] properties)
+		static string Entry(string? url, params (string Name, string? Value)[] properties)
 		{
 			static string Esc(string v) => v.Replace("\\", "\\\\", System.StringComparison.Ordinal).Replace("\"", "\\\"", System.StringComparison.Ordinal);
 			var props = string.Join(",", properties.Select(p =>
 				p.Value is null
-					? $"{{\"Name\":\"{p.Name}\",\"Value\":null}}"
+					? $"{{\"Name\":\"{Esc(p.Name)}\",\"Value\":null}}"
 					: $"{{\"Name\":\"{Esc(p.Name)}\",\"Value\":\"{Esc(p.Value)}\"}}"));
 			return url is null
 				? $"{{\"Url\":null,\"Properties\":[{props}]}}"
@@ -153,6 +154,38 @@ namespace Microsoft.Maui.MauiBlazorWebView.UnitTests
 		public void MalformedJsonThrows()
 		{
 			Assert.ThrowsAny<JsonException>(() => Parse("{ not valid json"));
+		}
+
+		[Fact]
+		public void TryLoad_WhenAppPackageUnavailable_ReturnsNullAndDoesNotThrow()
+		{
+			// In the unit-test context the platform FileSystem app-package APIs are unavailable and throw,
+			// which the broadened catch must swallow so loading an optional manifest never propagates.
+			StaticWebAssetsManifest.ResetCacheForTests();
+			try
+			{
+				var manifest = StaticWebAssetsManifest.TryLoad();
+				Assert.Null(manifest);
+			}
+			finally
+			{
+				StaticWebAssetsManifest.ResetCacheForTests();
+			}
+		}
+
+		[Fact]
+		public async Task TryLoadAsync_WhenAppPackageUnavailable_ReturnsNullAndDoesNotThrow()
+		{
+			StaticWebAssetsManifest.ResetCacheForTests();
+			try
+			{
+				var manifest = await StaticWebAssetsManifest.TryLoadAsync();
+				Assert.Null(manifest);
+			}
+			finally
+			{
+				StaticWebAssetsManifest.ResetCacheForTests();
+			}
 		}
 	}
 }
