@@ -239,6 +239,15 @@ namespace Microsoft.AspNetCore.Components.WebView
 				try
 				{
 					await attachTask.ConfigureAwait(false);
+				}
+				catch (Exception)
+				{
+					// The attach task reports its own failure and CompleteAttachAsync already attempts
+					// cleanup. Detach only waits for that work to finish before ensuring removal.
+				}
+
+				try
+				{
 					await _removeNotifier().ConfigureAwait(false);
 				}
 				catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)

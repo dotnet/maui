@@ -97,6 +97,32 @@ public class StaticContentHotReloadManagerTests
 		Assert.Equal(2, attachCount);
 	}
 
+	[Fact]
+	public async Task DetachDoesNotPropagatePendingAttachFailure()
+	{
+		var registration = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var removeCount = 0;
+		var state = new StaticContentHotReloadManager.AttachmentState(
+			() => registration.Task,
+			() =>
+			{
+				Interlocked.Increment(ref removeCount);
+				return Task.CompletedTask;
+			});
+
+		var attach = state.Attach();
+		var detach = state.Detach();
+
+		registration.SetException(new TestException());
+
+		await Assert.ThrowsAsync<TestException>(() => attach);
+		Assert.NotNull(detach);
+		await detach!;
+
+		Assert.True(detach.IsCompletedSuccessfully);
+		Assert.Equal(2, removeCount);
+	}
+
 	private sealed class TestException : Exception
 	{
 	}
