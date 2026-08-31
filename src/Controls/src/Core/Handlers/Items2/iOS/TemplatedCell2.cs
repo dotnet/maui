@@ -270,7 +270,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void PrepareForReuse()
 		{
-			//Unbind();
+			// Keep the virtual tree attached for reuse; BindVirtualView always
+			// revalidates layout after applying the next binding context.
 			_bound = false;
 			ResetArrangeState();
 			isSupplementaryView = false;
@@ -398,6 +399,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_invalidatedDuringArrange = false;
 			_requiresSafeAreaReconciliation = false;
 			_lastArrangedSize = default;
+			// Retain _cachedConstraints so MeasureFirstItem cells can reuse the
+			// first-item measurement when the collection constraints are unchanged.
 
 			if (PlatformView is MauiView mauiView && !mauiView.CellSafeAreaOverride.IsEmpty)
 			{
