@@ -81,11 +81,13 @@ param(
     [string]`$MachineResultPath,
     [string]`$DeviceTestScriptPath,
     [switch]`$RequireWindowsAppContainer,
+    [switch]`$RequireMacCatalystAppSandbox,
     [string]`$ReplicationTrustedRoot,
     [string]`$PRNumber
 )
 if (-not [string]::IsNullOrWhiteSpace(`$DeviceTestScriptPath)) { Set-Content -LiteralPath (`$MachineResultPath + '.device-runner-path') -Value `$DeviceTestScriptPath -Encoding utf8NoBOM }
 if (`$RequireWindowsAppContainer) { Set-Content -LiteralPath (`$MachineResultPath + '.windows-appcontainer') -Value `$ReplicationTrustedRoot -Encoding utf8NoBOM }
+if (`$RequireMacCatalystAppSandbox) { Set-Content -LiteralPath (`$MachineResultPath + '.catalyst-app-sandbox') -Value `$ReplicationTrustedRoot -Encoding utf8NoBOM }
 Add-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt') -Value 'run' -Encoding utf8NoBOM
 if (Test-Path -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'fail-after-first.flag')) {
     if ((Get-Content -LiteralPath (Join-Path (Split-Path -Parent `$MachineResultPath) 'invocations.txt')).Count -gt 1) {
@@ -397,7 +399,7 @@ Describe 'Replication failure-only verification' {
 
         & pwsh -NoProfile -File $scriptPath `
             -IssueNumber 36800 `
-            -Platform ios `
+            -Platform android `
             -TestType UITest `
             -TestFilter Issue36800 `
             -TestClass Microsoft.Maui.TestCases.Tests.Issues.Issue36800 `
@@ -543,6 +545,43 @@ Describe 'Replication failure-only verification' {
                 'shared/Invoke-ReplicationTestVerification.ps1')) -Raw
         $source | Should -Match "'-NoRestore'"
         $source | Should -Match "'-RequireWindowsAppContainer'"
+    }
+
+    It 'requires the trusted App Sandbox for Mac Catalyst device verification' {
+        $trustedRoot = Join-Path $TestDrive 'catalyst-trusted-github'
+        $verifier = Join-Path `
+            $trustedRoot `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        $deviceRunner = Join-Path `
+            $trustedRoot `
+            'skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $deviceRunner) -Force |
+            Out-Null
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue35511 expected stable content but observed drift'
+        'trusted runner' | Set-Content -LiteralPath $deviceRunner -Encoding utf8NoBOM
+
+        $output = Join-Path $TestDrive 'catalyst-device-success'
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 35511 `
+            -Platform catalyst `
+            -TestType DeviceTest `
+            -TestFilter Issue35511 `
+            -TestProject Controls `
+            -TestProjectPath src/Controls/tests/DeviceTests/Issue35511.iOS.cs `
+            -TestClass Microsoft.Maui.DeviceTests.Issue35511 `
+            -TestMethod RetainsContent `
+            -ExpectedFailureSignature Issue35511 `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        Get-Content -LiteralPath (
+            Join-Path $output 'verifier-machine-result.json.catalyst-app-sandbox') |
+            Should -BeExactly $trustedRoot
     }
 }
 

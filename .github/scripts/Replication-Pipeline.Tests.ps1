@@ -37,7 +37,7 @@ Describe 'MAUI Copilot mode routing' {
     It 'requires exactly the target number for the selected mode' {
         $script:Pipeline | Should -Match 'Mode=review requires PRNumber > 0 and IssueNumber = 0'
         $script:Pipeline | Should -Match 'Mode=replicate requires IssueNumber > 0 and PRNumber = 0'
-        $script:Pipeline | Should -Match 'Mode=replicate requires Platform=android or Platform=windows'
+        $script:Pipeline | Should -Match 'Mode=replicate received an unsupported platform'
         $script:Pipeline | Should -Match 'PARAM_MODE: \$\{\{ parameters\.Mode \}\}'
         $script:Pipeline | Should -Match 'PARAM_ISSUE_NUMBER: \$\{\{ parameters\.IssueNumber \}\}'
     }
@@ -108,6 +108,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 'ReplicationWindowsSandboxManifest\.xml'
         $script:Pipeline | Should -Match (
             'ReplicationWindowsControlsDeviceTestsManifest\.xml')
+        $script:Pipeline | Should -Match (
+            'ReplicationMacCatalystAppSandbox\.entitlements')
+        $script:Pipeline | Should -Match (
+            'ReplicationMacCatalystControlsDeviceTests\.entitlements')
         $script:Pipeline | Should -Match "(?s)displayName: 'Install reproduction recording tools'.*?eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
         $script:Pipeline | Should -Match "REPLICATION_AGENT_CONTEXT_PATH.*?issue-agent-context\.json"
         $script:Pipeline | Should -Match "(?s)name: RunReplication.*?COPILOT_GITHUB_TOKEN: \$\(COPILOT_TOKEN\)"

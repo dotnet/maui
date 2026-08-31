@@ -117,6 +117,38 @@ Describe 'Build isolation options' {
         $content | Should -Match 'Remove-ReplicationWindowsAppContainerPackage'
         $content | Should -Match 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:'
     }
+
+    It 'signs Mac Catalyst replication tests into the no-network App Sandbox' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\[switch\]\$RequireMacCatalystAppSandbox'
+        $content | Should -Match (
+            'ReplicationMacCatalystControlsDeviceTests\.entitlements')
+        $content | Should -Match '/p:CodesignEntitlements=\$catalystEntitlementsPath'
+        $content | Should -Match '/p:MtouchDebug=false'
+        $content | Should -Match '/p:UseSystemResourceKeys=false'
+        $content | Should -Match (
+            'maccatalyst-\$\(\[Runtime\.InteropServices\.RuntimeInformation\]' +
+            '::OSArchitecture\.ToString\(\)\.ToLowerInvariant\(\)\)')
+        $content | Should -Not -Match (
+            'RuntimeIdentifier\s*=\s*"maccatalyst-arm64"')
+        $content | Should -Match 'Assert-ReplicationSignedMacCatalystAppSandbox'
+        $content | Should -Match 'Start-ReplicationMacCatalystAppSandbox'
+        $content | Should -Match 'Invoke-ReplicationMacCatalystDeviceTests'
+        $content | Should -Match (
+            '\$timeoutSeconds = \[Math\]::Min\(\$timeoutSeconds, 600\)')
+        $content | Should -Match (
+            '(?s)if \(\$RequireMacCatalystAppSandbox\).*?' +
+            'Get-DeviceTestResultSummary.*?-RequireClassIsolation')
+        $content | Should -Match (
+            '(?s)\$platformConfig\.UsesXHarness -and\s*' +
+            '-not \$RequireMacCatalystAppSandbox')
+        $content | Should -Match (
+            'Mac Catalyst App Sandbox denied outbound networking at runtime')
+        $content | Should -Match 'App Sandbox'
+        $content | Should -Match 'file channel'
+        $content | Should -Match (
+            'Expected exactly one isolated Mac Catalyst app')
+    }
 }
 
 Describe 'Cross-platform device test class filtering' {

@@ -260,8 +260,9 @@ function ConvertTo-BoundedComparableFailureMessage {
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
-if ($Platform -eq 'windows' -and $TestType -ne 'DeviceTest') {
-    throw 'Windows replication permits only packaged Controls device tests.'
+if ($Platform -in @('windows', 'ios', 'catalyst') -and
+    $TestType -ne 'DeviceTest') {
+    throw "$Platform replication permits only isolated Controls device tests."
 }
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
@@ -322,6 +323,11 @@ function Invoke-SingleVerificationRun {
             if ($Platform -eq 'windows') {
                 $arguments += @(
                     '-RequireWindowsAppContainer',
+                    '-ReplicationTrustedRoot', $trustedRoot
+                )
+            } elseif ($Platform -eq 'catalyst') {
+                $arguments += @(
+                    '-RequireMacCatalystAppSandbox',
                     '-ReplicationTrustedRoot', $trustedRoot
                 )
             }

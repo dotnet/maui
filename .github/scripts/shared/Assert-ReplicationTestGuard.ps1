@@ -2536,7 +2536,12 @@ function Assert-ReplicationTestPlatformScope {
                 ", but the reproduction was observed on $Platform. The test must compile on the " +
                 'platform that produced the evidence.')
         }
-        return
+        # Apple-suffixed names compile into both iOS and Mac Catalyst. Only a
+        # single-platform filename is sufficient by itself; dual-platform
+        # names still require a compile directive around each test.
+        if ($fileScope.Count -le 1) {
+            return
+        }
     }
 
     $normalized = $Content.Replace("`r`n", "`n").Replace([string][char]0xFEFF, '')
@@ -2565,7 +2570,11 @@ function Assert-ReplicationTestPlatformScope {
                 'must compile on the platform that produced the evidence.')
         }
         $others = @(@('android', 'ios', 'catalyst', 'windows') |
-            Where-Object { $_ -ne $Platform -and $maps[$_][$index] })
+            Where-Object {
+                $_ -ne $Platform -and
+                ($null -eq $fileScope -or $fileScope -contains $_) -and
+                $maps[$_][$index]
+            })
         if ($others.Count -gt 0) {
             throw ("Candidate test source '$Path' lets its test method on line $lineNumber also run on " +
                 ($others -join ', ') + ", although the reproduction was only observed on $Platform. " +

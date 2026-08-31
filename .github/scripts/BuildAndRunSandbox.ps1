@@ -91,7 +91,8 @@ function Resolve-CatalystSandboxAppPath {
         [Parameter(Mandatory = $true)][string]$RepositoryRoot,
         [Parameter(Mandatory = $true)][string]$BuildConfiguration,
         [Parameter(Mandatory = $true)][string]$Framework,
-        [Parameter(Mandatory = $true)][string]$RuntimeIdentifier
+        [Parameter(Mandatory = $true)][string]$RuntimeIdentifier,
+        [switch]$AllowMissing
     )
 
     $outputDirectory = Join-Path $RepositoryRoot (
@@ -104,6 +105,9 @@ function Resolve-CatalystSandboxAppPath {
             -Directory `
             -ErrorAction SilentlyContinue
     )
+    if ($AllowMissing -and $apps.Count -eq 0) {
+        return $null
+    }
     if ($apps.Count -ne 1) {
         throw "Expected exactly one MacCatalyst Sandbox app under '$outputDirectory'; found $($apps.Count)."
     }
@@ -116,10 +120,29 @@ function Resolve-CatalystSandboxAppPath {
 # Import shared utilities
 . "$PSScriptRoot/shared/shared-utils.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationWindowsAppContainer.ps1"
+. "$PSScriptRoot/shared/Assert-ReplicationAppleAppSandbox.ps1"
 
 if ($Cleanup) {
-    if ($Platform -ne 'windows' -or -not $EnforceNetworkIsolation) {
-        throw 'Cleanup is reserved for the isolated Windows replication package.'
+    if (-not $EnforceNetworkIsolation) {
+        throw 'Cleanup is reserved for isolated replication packages.'
+    }
+    if ($Platform -eq 'catalyst') {
+        $cleanupArchitecture =
+            [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        $cleanupAppPath = Resolve-CatalystSandboxAppPath `
+            -RepositoryRoot $RepoRoot `
+            -BuildConfiguration $Configuration `
+            -Framework 'net10.0-maccatalyst' `
+            -RuntimeIdentifier "maccatalyst-$cleanupArchitecture" `
+            -AllowMissing
+        if ($cleanupAppPath) {
+            $null = Stop-ReplicationMacCatalystAppSandbox `
+                -AppPath $cleanupAppPath
+        }
+        return
+    }
+    if ($Platform -ne 'windows') {
+        throw 'Cleanup is available only for isolated Windows or Mac Catalyst replication.'
     }
     if (Test-Path -LiteralPath $WindowsPackageStatePath -PathType Leaf) {
         $stateItem = Get-Item -LiteralPath $WindowsPackageStatePath -Force
@@ -337,6 +360,15 @@ if ($EnforceNetworkIsolation -and $Platform -eq 'windows') {
     $buildDeployParams.WindowsAppContainerManifestPath = $windowsManifestPath
     $buildDeployParams.WindowsPackageStatePath = $WindowsPackageStatePath
 }
+if ($EnforceNetworkIsolation -and $Platform -eq 'catalyst') {
+    $catalystEntitlementsPath = Join-Path (
+        Split-Path -Parent $PSScriptRoot
+    ) 'source-overrides/ReplicationMacCatalystAppSandbox.entitlements'
+    $null = Assert-ReplicationMacCatalystEntitlements `
+        -Path $catalystEntitlementsPath
+    $buildDeployParams.AppleAppSandboxEntitlementsPath =
+        $catalystEntitlementsPath
+}
 
 if ($Platform -eq "ios" -or $Platform -eq "catalyst") {
     $buildDeployParams.BundleId = $AppBundleId
@@ -480,8 +512,70 @@ if ($Platform -eq "catalyst") {
     $stderrFile = "$deviceLogFile.stderr"
     $sandboxProject = Join-Path $RepoRoot "src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj"
         
-    $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($EnforceNetworkIsolation) {
+        $null = Assert-ReplicationSignedMacCatalystAppSandbox `
+            -AppPath $appPath
+        $expectedExecutablePath = Resolve-ReplicationAppleExistingPath `
+            -Path $executablePath
+        $expectedExecutableWriteTime = (
+            Get-Item -LiteralPath $expectedExecutablePath -Force
+        ).LastWriteTimeUtc
+        foreach ($candidate in @(Get-Process -Name "Maui.Controls.Sample.Sandbox" `
+                    -ErrorAction SilentlyContinue)) {
+            if ($candidate.HasExited) {
+                $candidate.Dispose()
+                continue
+            }
+            try {
+                $candidatePath = Resolve-ReplicationAppleExistingPath `
+                    -Path $candidate.Path
+            } catch {
+                $candidate.Dispose()
+                continue
+            }
+            if ($candidatePath -ceq $expectedExecutablePath) {
+                try {
+                    $candidateStartTime = $candidate.StartTime.ToUniversalTime()
+                } catch {
+                    $candidate.Dispose()
+                    continue
+                }
+                if ($candidateStartTime -le
+                    $expectedExecutableWriteTime) {
+                    $candidate.Kill($true)
+                    if (-not $candidate.WaitForExit(10000)) {
+                        $staleProcessId = $candidate.Id
+                        $candidate.Dispose()
+                        throw "Stale Mac Catalyst Sandbox process $staleProcessId did not exit."
+                    }
+                    $candidate.Dispose()
+                    continue
+                }
+                try {
+                    $null = Assert-ReplicationMacCatalystProcessNetworkDenied `
+                        -Process $candidate `
+                        -ExpectedExecutablePath $expectedExecutablePath
+                } catch {
+                    $candidate.Dispose()
+                    throw
+                }
+                $catalystAppProcess = $candidate
+                break
+            }
+            $candidate.Dispose()
+        }
+        if (-not $catalystAppProcess) {
+            Write-Info "Starting the signed Mac Catalyst App Sandbox..."
+            $catalystAppProcess = Start-ReplicationMacCatalystAppSandbox `
+                -AppPath $appPath
+        }
+    } else {
+        $catalystAppProcess = Get-Process -Name "Maui.Controls.Sample.Sandbox" -ErrorAction SilentlyContinue | Select-Object -First 1
+    }
     if (-not $catalystAppProcess) {
+        if ($EnforceNetworkIsolation) {
+            throw 'Mac Catalyst App Sandbox launch did not produce a proved live process.'
+        }
         Write-Info "Starting app with dotnet run (logs to $stderrFile)..."
         & dotnet run --project $sandboxProject -f $TargetFramework --no-build `
             -p:StandardOutputPath=$deviceLogFile `

@@ -72,13 +72,17 @@ param(
     [string]$WindowsAppContainerManifestPath,
 
     [Parameter(Mandatory=$false)]
-    [string]$WindowsPackageStatePath
+    [string]$WindowsPackageStatePath,
+
+    [Parameter(Mandatory=$false)]
+    [string]$AppleAppSandboxEntitlementsPath
 )
 
 # Import shared utilities
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $scriptDir "shared-utils.ps1")
 . (Join-Path $scriptDir "Assert-ReplicationWindowsAppContainer.ps1")
+. (Join-Path $scriptDir "Assert-ReplicationAppleAppSandbox.ps1")
 
 function Test-TransientAndroidDeployFailure {
     param(
@@ -434,6 +438,22 @@ if ($Platform -eq "android") {
     $macRid = if ($macArch -eq "x64") { "maccatalyst-x64" } else { "maccatalyst-arm64" }
     Write-Info "MacCatalyst RuntimeIdentifier: $macRid"
     $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-r", $macRid, "-p:BuildIpa=true", "-p:ValidateXcodeVersion=false") + $hostAppBuildProps
+    if ($EnforceNetworkIsolation) {
+        if ([string]::IsNullOrWhiteSpace($AppleAppSandboxEntitlementsPath)) {
+            throw 'Mac Catalyst replication requires trusted App Sandbox entitlements.'
+        }
+        $entitlementsPath = [IO.Path]::GetFullPath(
+            $AppleAppSandboxEntitlementsPath)
+        $null = Assert-ReplicationMacCatalystEntitlements `
+            -Path $entitlementsPath
+        $buildArgs += "-p:CodesignEntitlements=$entitlementsPath"
+        $buildArgs += '-p:CodesignKey=-'
+        # The Apple workload adds network.client for the soft debugger in Debug.
+        # Replication never attaches that debugger, so disable it or the signed
+        # app would defeat its own no-network entitlement boundary.
+        $buildArgs += '-p:MtouchDebug=false'
+        $buildArgs += '-p:UseSystemResourceKeys=false'
+    }
     if ($NoRestore) { $buildArgs += "--no-restore" }
     if ($Rebuild) {
         $buildArgs += "--no-incremental"
@@ -498,6 +518,10 @@ if ($Platform -eq "android") {
     }
 
     if ($catalystAppPath) {
+        if ($EnforceNetworkIsolation) {
+            $null = Assert-ReplicationSignedMacCatalystAppSandbox `
+                -AppPath $catalystAppPath.FullName
+        }
         $env:MAC_APP_PATH = $catalystAppPath.FullName
         Write-Info "MacCatalyst app bundle: $($catalystAppPath.FullName)"
 
@@ -549,6 +573,8 @@ if ($Platform -eq "android") {
         } else {
             Write-Warn "lsregister not found at any known path; skipping LaunchServices registration"
         }
+    } elseif ($EnforceNetworkIsolation) {
+        throw 'Mac Catalyst replication produced no auditable .app bundle.'
     } else {
         Write-Warn "Could not locate the built MacCatalyst .app under $artifactsDir; skipping LaunchServices registration"
     }
