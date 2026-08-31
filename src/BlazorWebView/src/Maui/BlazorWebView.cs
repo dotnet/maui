@@ -256,11 +256,27 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			// The host document is normally rendered ahead of startup by the handler (asynchronously, on
-			// the MAUI dispatcher). If it hasn't been - for example a direct CreateFileProvider call - fall
-			// back to a synchronous render so this path always has content to serve.
+			// the MAUI dispatcher). If it hasn't been - for example a direct CreateFileProvider call, or
+			// because the async render failed and the handler is starting the web view anyway - fall back
+			// to a synchronous render so this path has content to serve.
 			if (!_appTypeRendered)
 			{
-				EnsureAppTypeRendered();
+				try
+				{
+					EnsureAppTypeRendered();
+				}
+				catch (Exception ex)
+				{
+					// Rendering the host document failed (an invalid AppType, a throwing OnInitializedAsync,
+					// a missing service, ...). Degrade to the platform provider unchanged so the synthetic
+					// host-page request falls through to the normal 404 pipeline, rather than throwing out of
+					// the platform startup path and crashing the app. On the async path this same failure was
+					// already logged by the handler; log here too for the direct-call path.
+					Handler?.MauiContext?.Services?.GetService<ILoggerFactory>()?
+						.CreateLogger<BlazorWebView>()?
+						.LogError(ex, "Failed to render the {AppType} host document; falling back to the platform file provider so the host-page request surfaces a 404 instead of crashing startup.", nameof(AppType));
+					return platformFileProvider;
+				}
 			}
 
 			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage!);
