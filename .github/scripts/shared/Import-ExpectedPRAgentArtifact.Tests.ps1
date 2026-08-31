@@ -48,6 +48,42 @@ Describe 'Import-ExpectedPRAgentArtifact' {
         Test-Path -LiteralPath $script:Destination | Should -BeFalse
     }
 
+    It 'does not traverse reparse-point directories while discovering PRAgent candidates' {
+        Set-Content -LiteralPath (Join-Path $script:ExpectedPRAgent 'winner.json') -Value '{}'
+        $outside = Join-Path $script:CaseRoot 'outside'
+        New-Item -ItemType Directory -Path (Join-Path $outside 'PRAgent') -Force | Out-Null
+        New-Item `
+            -ItemType SymbolicLink `
+            -Path (Join-Path $script:ArtifactRoot 'linked-artifact') `
+            -Target $outside |
+            Out-Null
+
+        $result = Import-ExpectedPRAgentArtifact `
+            -ArtifactRoot $script:ArtifactRoot `
+            -PRNumber 36473 `
+            -DestinationDirectory $script:Destination
+
+        $result.CopiedFiles | Should -Be 1
+        Get-Content -LiteralPath (Join-Path $script:Destination 'winner.json') |
+            Should -Be '{}'
+    }
+
+    It 'bounds PRAgent candidate discovery before creating the destination' {
+        Set-Content -LiteralPath (Join-Path $script:ExpectedPRAgent 'winner.json') -Value '{}'
+        New-Item -ItemType Directory -Path (Join-Path $script:ArtifactRoot 'extra') -Force |
+            Out-Null
+
+        {
+            Import-ExpectedPRAgentArtifact `
+                -ArtifactRoot $script:ArtifactRoot `
+                -PRNumber 36473 `
+                -DestinationDirectory $script:Destination `
+                -MaxDirectoryCount 5
+        } | Should -Throw '*discovery exceeded the 5-directory limit*'
+
+        Test-Path -LiteralPath $script:Destination | Should -BeFalse
+    }
+
     It 'tail-truncates an oversized diagnostic log without rejecting review content' {
         $log = Join-Path $script:ExpectedPRAgent 'pr-plus-reviewer/entry-validation.log'
         $patch = Join-Path $script:ExpectedPRAgent 'pr-plus-reviewer/candidate.patch'
