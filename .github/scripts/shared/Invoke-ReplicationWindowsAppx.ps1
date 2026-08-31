@@ -29,7 +29,7 @@ function Get-BoundedPackage {
     $manifest = Get-AppxPackageManifest -Package $package -ErrorAction Stop
     $manifestXml = [string]$manifest.OuterXml
     if ([string]::IsNullOrWhiteSpace($manifestXml) -or
-        [Text.Encoding]::UTF8.GetByteCount($manifestXml) -gt 128KB) {
+        [Text.Encoding]::UTF8.GetByteCount($manifestXml) -gt 512KB) {
         throw "Installed package '$Name' has no bounded manifest."
     }
     return [ordered]@{
