@@ -1,0 +1,45 @@
+<Project>
+  <UsingTask
+    TaskName="Microsoft.Build.Msix.AppxManifest.WinAppSdkGenerateAppxManifest"
+    AssemblyFile="$(GeneratorTaskAssembly)" />
+
+  <Target Name="Generate">
+    <ItemGroup>
+      <WindowsMetadata Include="$(Win2DMetadata)">
+        <Implementation>Microsoft.Graphics.Canvas.dll</Implementation>
+        <TargetPath>Microsoft.Graphics.Canvas.winmd</TargetPath>
+      </WindowsMetadata>
+      <WindowsMetadata Include="$(WebView2Metadata)">
+        <Implementation>Microsoft.Web.WebView2.Core.dll</Implementation>
+        <TargetPath>Microsoft.Web.WebView2.Core.winmd</TargetPath>
+      </WindowsMetadata>
+      <TargetFamily Include="Windows.Desktop">
+        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+        <TargetPlatformVersion>10.0.26100.0</TargetPlatformVersion>
+      </TargetFamily>
+    </ItemGroup>
+
+    <WinAppSdkGenerateAppxManifest
+      AppxManifestInput="$(InputManifest)"
+      AppxManifestOutput="$(OutputManifest)"
+      ApplicationExecutableName="Controls.DeviceTests"
+      DefaultResourceLanguage="en-US"
+      QualifiersPath="$(MSBuildThisFileDirectory)missing-qualifiers.txt"
+      ManagedWinmdInprocImplementation="managed.dll"
+      WinmdFiles="@(WindowsMetadata)"
+      FrameworkSdkReferences="@(_Empty)"
+      NonFrameworkSdkReferences="@(_Empty)"
+      SDKWinmdFiles="@(_Empty)"
+      TargetDeviceFamilies="@(TargetFamily)"
+      MetadataNamespaceUri="http://schemas.microsoft.com/developer/appx/2015/build"
+      RestrictedCapabilitiesNamespaceUri="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+      DesktopNamespaceUri="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+      Uap10NamespaceUri="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+      WindowsPackageType="MSIX"
+      PackageArchitecture="x64"
+      EntryPoint="Windows.PartialTrustApplication"
+      PackageSigningEnabled="false"
+      EnableSigningChecks="false"
+      WinmdCacheEnabled="false" />
+  </Target>
+</Project>
