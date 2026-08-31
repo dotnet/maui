@@ -1543,7 +1543,9 @@ Describe 'A build step may not report success for work it never ran' {
             $jobStart | Should -BeGreaterThan -1
             $reader = $script:Yaml.IndexOf('trusted-github/scripts/shared/Resolve-BuildShell.ps1', $jobStart)
             $captureCandidates = @(
-                $script:Yaml.IndexOf('git archive "${SOURCE_VERSION}"', $jobStart)
+                $script:Yaml.IndexOf(
+                    'git -c core.autocrlf=false archive "${SOURCE_VERSION}"',
+                    $jobStart)
                 $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
             ) | Where-Object { $_ -ge $jobStart } | Sort-Object
             $capture = @($captureCandidates | Where-Object { $_ -lt $reader } |
@@ -2123,7 +2125,9 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
     It 're-derives the trusted tree and requires the certification binding' {
         $script:ValidateStage | Should -Match 'Assert-TrustedTreeMatchesReference'
         $script:ValidateStage | Should -Match '-ReferenceRoot "\$\(TRUSTED_REPLICATION_VALIDATOR_ROOT\)"'
-        $script:ValidateStage | Should -Match 'git -C "\$\(Build\.SourcesDirectory\)" archive'
+        $script:ValidateStage | Should -Match (
+            '(?s)git -C "\$\(Build\.SourcesDirectory\)"\s*`\s*' +
+            '-c core\.autocrlf=false\s*`\s*archive')
         $script:ValidateStage | Should -Match 'TRUSTED_REPLICATION_REFERENCE_ROOT'
         $script:ValidateStage | Should -Match '-ExpectedSourceVersion ''\$\(Build\.SourceVersion\)'''
         $script:ValidateStage | Should -Match 'ReferencePipelineDefinitionPath'
@@ -2178,7 +2182,13 @@ Describe 'The trusted tree is attested rather than merely made read-only' {
 
         $script:Pipeline | Should -Match 'New-TrustedTreeAttestation'
         $script:Pipeline | Should -Match 'Assert-TrustedTreeAttestation'
-        $script:Pipeline | Should -Match 'git archive "\$\{SOURCE_VERSION\}"'
+        ([regex]::Matches(
+                $script:Pipeline,
+                'git -c core\.autocrlf=false archive "\$\{SOURCE_VERSION\}"'
+            )).Count | Should -BeExactly 2
+        $script:Pipeline | Should -Match (
+            '(?s)& git -C "\$\(Build\.SourcesDirectory\)"\s*`\s*' +
+            '-c core\.autocrlf=false\s*`\s*archive')
         $script:Pipeline | Should -Match 'cygpath -u'
         $script:Pipeline | Should -Match 'trusted-source/eng/pipelines/ci-copilot\.yml'
         $script:Pipeline | Should -Match '-PipelineDefinitionPath'
@@ -2186,6 +2196,39 @@ Describe 'The trusted tree is attested rather than merely made read-only' {
         $script:Pipeline | Should -Match '\$attestationRoot = Join-Path "\$\(Agent\.TempDirectory\)" ''trusted-attestation'''
         $script:Pipeline | Should -Match 'name: AttestTrustedTree'
         $script:Pipeline | Should -Match 'variable=trustedTreeHash;isOutput=true'
+    }
+
+    It 'archives canonical LF bytes even when the agent enables autocrlf' {
+        $repository = Join-Path $TestDrive 'archive-repository'
+        $extracted = Join-Path $TestDrive 'archive-extracted'
+        $archive = Join-Path $TestDrive 'trusted.tar'
+        New-Item -ItemType Directory -Path $repository, $extracted |
+            Out-Null
+        git init -q $repository
+        git -C $repository config user.email tests@example.com
+        git -C $repository config user.name Tests
+        git -C $repository config core.autocrlf true
+        [IO.File]::WriteAllText(
+            (Join-Path $repository '.gitattributes'),
+            "* text=auto`n",
+            [Text.UTF8Encoding]::new($false))
+        [IO.File]::WriteAllText(
+            (Join-Path $repository 'trusted.txt'),
+            "first`nsecond`n",
+            [Text.UTF8Encoding]::new($false))
+        git -C $repository add .gitattributes trusted.txt
+        git -C $repository commit -q -m trusted
+
+        git -C $repository -c core.autocrlf=false archive `
+            --format=tar `
+            "--output=$archive" `
+            HEAD `
+            trusted.txt
+        $LASTEXITCODE | Should -Be 0
+        tar -xf $archive -C $extracted
+        $LASTEXITCODE | Should -Be 0
+        [IO.File]::ReadAllText((Join-Path $extracted 'trusted.txt')) |
+            Should -BeExactly "first`nsecond`n"
     }
 
     It 'hands the orchestrator the attestation and the revision it was taken at' {

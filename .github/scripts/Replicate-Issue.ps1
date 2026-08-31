@@ -6472,7 +6472,7 @@ function Read-TestProposal {
         ) -join [Environment]::NewLine
         if (
             $generatedSource -match '(?i)\.Bounds\b' -and
-            $generatedSource -notmatch '(?i)\b(?:PlatformView|ImageView|UIImageView|RenderTargetBitmap|PixelCopy|Screenshot|Bitmap|UIImage|CGImage)\b'
+            $generatedSource -notmatch '(?i)\b(?:PlatformView|ImageView|UIImageView|UIView|UILabel|UINavigationBar|CGBitmapContext|CGContext|CALayer|RenderTargetBitmap|PixelCopy|Screenshot|Bitmap|UIImage|CGImage)\b'
         ) {
             throw 'Generated visible-rendering test relies only on managed Bounds without native-view or rendered-pixel evidence.'
         }

@@ -757,7 +757,8 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape(
+            'git -c core.autocrlf=false archive "${SOURCE_VERSION}"'))
         $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/eng/scripts"     "$TRUSTED/eng-scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
@@ -783,7 +784,8 @@ Describe 'Reviewer pipeline timeout containment' {
 
         $captureStart | Should -BeGreaterThan -1
         $captureStart | Should -BeLessThan $resolveStart
-        $captureBlock | Should -Match ([regex]::Escape('git archive "${SOURCE_VERSION}"'))
+        $captureBlock | Should -Match ([regex]::Escape(
+            'git -c core.autocrlf=false archive "${SOURCE_VERSION}"'))
         $captureBlock | Should -Match ([regex]::Escape('cp -r "$STAGED_SOURCE/.github/scripts" "$TRUSTED/scripts"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/.github/patches/catalyst-retina-screenshot.patch" "$TRUSTED/source-overrides/"'))
         $captureBlock | Should -Match ([regex]::Escape('cp "$STAGED_SOURCE/src/Controls/samples/Controls.Sample.Sandbox/Platforms/Android/ReplicationNetworkIsolationManifest.xml" "$TRUSTED/source-overrides/"'))

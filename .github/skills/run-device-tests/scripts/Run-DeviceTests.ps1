@@ -193,6 +193,150 @@ function ConvertTo-AzdoSafeConsole {
     return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
 }
 
+function Invoke-BoundedWindowsDeviceBuild {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$LogPath,
+        [Parameter(Mandatory = $true)][string]$AllowedRoot,
+        [Parameter(Mandatory = $true)][string]$Description,
+        [scriptblock]$CommandInvoker
+    )
+
+    $rootPath = [IO.Path]::GetFullPath($AllowedRoot).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    $rootItem = Get-Item -LiteralPath $rootPath -Force -ErrorAction Stop
+    if (-not $rootItem.PSIsContainer -or
+        $rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Windows build diagnostic root must be a regular directory.'
+    }
+    $fullLogPath = [IO.Path]::GetFullPath($LogPath)
+    $comparison = if ([OperatingSystem]::IsWindows()) {
+        [StringComparison]::OrdinalIgnoreCase
+    } else {
+        [StringComparison]::Ordinal
+    }
+    if (-not $fullLogPath.StartsWith(
+            "$rootPath$([IO.Path]::DirectorySeparatorChar)",
+            $comparison)) {
+        throw 'Windows build diagnostic log must stay inside its trusted root.'
+    }
+    if (Test-Path -LiteralPath $fullLogPath) {
+        $existing = Get-Item -LiteralPath $fullLogPath -Force `
+            -ErrorAction Stop
+        if ($existing.PSIsContainer -or
+            $existing.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'Windows build diagnostic log must be a regular file.'
+        }
+    }
+
+    if ($null -eq $CommandInvoker) {
+        $CommandInvoker = {
+            param([string[]]$CommandArguments)
+            $output = @(& dotnet @CommandArguments 2>&1)
+            [pscustomobject]@{
+                ExitCode = $LASTEXITCODE
+                Output = @($output)
+            }
+        }
+    }
+    $invocation = & $CommandInvoker $Arguments
+    if ($null -eq $invocation -or
+        $null -eq $invocation.PSObject.Properties['ExitCode'] -or
+        $null -eq $invocation.PSObject.Properties['Output']) {
+        throw 'Windows build diagnostic invoker returned a malformed result.'
+    }
+
+    $diagnostics = [Collections.Generic.List[string]]::new()
+    $tail = [Collections.Generic.List[string]]::new()
+    foreach ($rawLine in @($invocation.Output)) {
+        $line = [string]$rawLine
+        $line = [regex]::Replace(
+            $line,
+            ([char]27 + '\[[0-?]*[ -/]*[@-~]'),
+            '')
+        $line = [regex]::Replace(
+            $line,
+            '(?i)##vso\[[^\]]*\]',
+            '## vso[redacted]')
+        $line = [regex]::Replace(
+            $line,
+            '(?i)\b(?:gh[pousr]_|github_pat_)[A-Za-z0-9_]{8,}\b',
+            '<redacted-github-token>')
+        $line = [regex]::Replace(
+            $line,
+            '(?i)(authorization\s*:\s*(?:basic|bearer)\s+)\S+',
+            '$1<redacted>')
+        $line = [regex]::Replace(
+            $line,
+            '(?i)\b([A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|PASSWD|PRIVATE_KEY|PAT)[A-Z0-9_]*)\s*=\s*\S+',
+            '$1=<redacted>')
+        $line = ($line -replace '[\r\n\f\v]+', ' ').TrimEnd()
+        if ($line.Length -gt 2000) {
+            $line = $line.Substring(0, 2000) + ' ... [truncated]'
+        }
+        $tail.Add($line)
+        if ($tail.Count -gt 200) {
+            $tail.RemoveAt(0)
+        }
+        if ($diagnostics.Count -lt 100 -and
+            $line -match (
+                '(?i)(:\s*error\s|error\s+(?:CS|MSB|MT|NETSDK|XA|NU|' +
+                'CA|APT|AMM|IL|MAUIX)\d+|Build FAILED|Unhandled exception|' +
+                '\bException:)')) {
+            $diagnostics.Add($line)
+        }
+    }
+
+    $logLines = [Collections.Generic.List[string]]::new()
+    $logLines.Add("Description: $Description")
+    $logLines.Add("ExitCode: $([int]$invocation.ExitCode)")
+    $logLines.Add('--- coded diagnostics ---')
+    foreach ($line in $diagnostics) { $logLines.Add($line) }
+    $logLines.Add('--- bounded output tail ---')
+    foreach ($line in $tail) { $logLines.Add($line) }
+    $logContent = [string]::Join([Environment]::NewLine, $logLines)
+    if ([Text.Encoding]::UTF8.GetByteCount($logContent) -gt 1MB) {
+        throw 'Windows build diagnostics exceed the trusted log bound.'
+    }
+    [IO.File]::WriteAllText(
+        $fullLogPath,
+        $logContent,
+        [Text.UTF8Encoding]::new($false))
+    $logItem = Get-Item -LiteralPath $fullLogPath -Force `
+        -ErrorAction Stop
+    if ($logItem.PSIsContainer -or
+        $logItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $logItem.Length -le 0 -or
+        $logItem.Length -gt 1MB) {
+        throw 'Windows build diagnostic log is not a bounded regular file.'
+    }
+
+    if ([int]$invocation.ExitCode -ne 0) {
+        $summaryLines = if ($diagnostics.Count -gt 0) {
+            @($diagnostics | Select-Object -Last 20)
+        } else {
+            @($tail | Select-Object -Last 20)
+        }
+        $summary = [string]::Join(
+            [Environment]::NewLine,
+            $summaryLines)
+        if ($summary.Length -gt 8000) {
+            $summary = $summary.Substring(0, 8000) + ' ... [truncated]'
+        }
+        throw (
+            "$Description failed with exit code $($invocation.ExitCode). " +
+            "Retained diagnostics: $fullLogPath" +
+            $(if ([string]::IsNullOrWhiteSpace($summary)) {
+                ''
+            } else {
+                [Environment]::NewLine + $summary
+            }))
+    }
+    return $fullLogPath
+}
+
 function Get-CategoryFiltersFromTestFilter {
     param([string]$Filter)
 
@@ -1464,10 +1608,13 @@ try {
                 Write-Host (
                     "Prebuilding Windows project graph: dotnet " +
                     ($windowsGraphBuildArgs -join ' ')) -ForegroundColor Gray
-                & dotnet @windowsGraphBuildArgs
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Unpackaged Windows graph build failed with exit code $LASTEXITCODE"
-                }
+                $null = Invoke-BoundedWindowsDeviceBuild `
+                    -Arguments $windowsGraphBuildArgs `
+                    -LogPath (Join-Path `
+                        $windowsManifestObservationRoot `
+                        'windows-unpackaged-graph-build.log') `
+                    -AllowedRoot $windowsManifestObservationRoot `
+                    -Description 'Unpackaged Windows graph build'
                 $windowsSigningCertificate =
                     New-ReplicationWindowsSigningCertificate
                 $buildArgs += "/p:WindowsPackageType=MSIX"
@@ -1500,11 +1647,20 @@ try {
     Write-Host "Running: dotnet $($buildArgs -join ' ')" -ForegroundColor Gray
     Write-Host ""
 
-    & dotnet @buildArgs
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Build failed with exit code $LASTEXITCODE"
-        exit $LASTEXITCODE
+    if ($RequireWindowsAppContainer) {
+        $null = Invoke-BoundedWindowsDeviceBuild `
+            -Arguments $buildArgs `
+            -LogPath (Join-Path `
+                $windowsManifestObservationRoot `
+                'windows-top-level-package-build.log') `
+            -AllowedRoot $windowsManifestObservationRoot `
+            -Description 'Packaged Windows top-level build'
+    } else {
+        & dotnet @buildArgs
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Build failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+        }
     }
 
     Write-Host ""
