@@ -6813,6 +6813,15 @@ $executionRules
 Target: issue $IssueNumber; platform $Platform; device "$DeviceUdid"; artifact root "$ArtifactRoot".
 "@
 
+    $appleNativeTypingGuidance = if ($Platform -in @('ios', 'catalyst')) {
+        @"
+
+When Apple-platform code traverses native descendants, preserve the static type of the value you use. UIKit.UIView does not declare Text even when the runtime object happens to be a label. A traversal/search helper that returns UIKit.UIView must not access .Text on that result. Narrow before reading label members with OfType<UIKit.UILabel>(), return UIKit.UILabel from the helper, or use an explicit view is UIKit.UILabel label pattern and read label.Text. Compiler diagnostics are authoritative: for CS1061, inspect the helper declaration and its declared return type rather than assuming the runtime subtype; repair every call according to the declared type.
+"@
+    } else {
+        ''
+    }
+
     switch ($Phase) {
         'sandbox' {
             $retryGuidance = if ([string]::IsNullOrWhiteSpace($FailureSummary)) {
@@ -6925,6 +6934,7 @@ If the issue is a leak, judge the WeakReference with "await AssertionExtensions.
 
 Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Read the matching trusted skill under "$trustedSkills".
+$appleNativeTypingGuidance
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
 Use one exact selected test method to exercise all issue-derived states; do not create a stateless matrix. Keep the primary oracle and, where feasible, a genuinely independent secondary observation. The test must assert the same visible invariant that the recording established.
 The generated test must run normally and fail without an environment variable, command-line switch, category override, or other opt-in gate. Do not reference MAUI_REPRODUCTION_ISSUE.
@@ -6957,6 +6967,7 @@ Rewrite test-proposal.json only to refine expectedFailureSignature, reproduction
 Trusted generated-source validation or the failure-only verifier rejected the generated test.
 Read "$testProposalPath" and, if it exists, "$verificationDir/verification-console.log".
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
+$appleNativeTypingGuidance
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
 Preserve the quality contract's user-visible invariant, scenario/precondition,
