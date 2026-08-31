@@ -612,6 +612,26 @@ if ($Platform -eq "android") {
 
         $signingCertificate = $null
         try {
+            $graphBuildArgs = @(
+                $ProjectPath,
+                "-f", $TargetFramework,
+                "-c", $Configuration,
+                "-p:RuntimeIdentifierOverride=win-x64",
+                "-p:PublishReadyToRun=false",
+                "-p:WindowsPackageType=None",
+                "-p:_MauiReplicationUnpackaged=true",
+                "-p:SelfContained=true",
+                "-p:BuildProjectReferences=true",
+                "--no-restore"
+            ) + $hostAppBuildProps
+            if ($Rebuild) { $graphBuildArgs += "--no-incremental" }
+
+            Write-Info "Prebuilding Windows project graph: dotnet build $($graphBuildArgs -join ' ')"
+            & dotnet build @graphBuildArgs
+            if ($LASTEXITCODE -ne 0) {
+                throw "Unpackaged Windows graph build failed with exit code $LASTEXITCODE"
+            }
+
             $signingCertificate = New-ReplicationWindowsSigningCertificate
             $buildArgs = @(
                 $ProjectPath,
@@ -627,6 +647,7 @@ if ($Platform -eq "android") {
                 "-p:ExtraDefineConstants=PACKAGED",
                 "-p:PackageManifest=$manifestPath",
                 "-p:AppxPackageDir=$($packageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)",
+                "-p:BuildProjectReferences=false",
                 "--no-restore"
             ) + $hostAppBuildProps
             if ($Rebuild) { $buildArgs += "--no-incremental" }

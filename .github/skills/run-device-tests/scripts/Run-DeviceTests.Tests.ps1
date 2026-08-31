@@ -67,6 +67,27 @@ Describe 'Build isolation options' {
         $content | Should -Match 'ReplicationWindowsControlsDeviceTestsManifest\.xml'
         $content | Should -Match '/p:WindowsPackageType=MSIX'
         $content | Should -Match '/p:PublishReadyToRun=false'
+        $content | Should -Match '\$windowsGraphBuildArgs = @\('
+        $content | Should -Match '/p:WindowsPackageType=None'
+        $content | Should -Match '/p:BuildProjectReferences=true'
+        $content | Should -Match '/p:BuildProjectReferences=false'
+        $graphBuildArguments = [regex]::Match(
+            $content,
+            '(?ms)\$windowsGraphBuildArgs = @\(.*?^\s*\)').Value
+        $graphBuildArguments | Should -Match '/p:WindowsPackageType=None'
+        $graphBuildArguments | Should -Match '/p:BuildProjectReferences=true'
+        $graphBuildArguments | Should -Not -Match (
+            'PackageManifest|GenerateAppxPackageOnBuild|' +
+            'PackageCertificateThumbprint|AppxPackageDir')
+        $graphBuild = $content.IndexOf(
+            '& dotnet @windowsGraphBuildArgs',
+            [StringComparison]::Ordinal)
+        $packageBuild = $content.IndexOf(
+            '& dotnet @buildArgs',
+            $graphBuild,
+            [StringComparison]::Ordinal)
+        $graphBuild | Should -BeGreaterOrEqual 0
+        $packageBuild | Should -BeGreaterThan $graphBuild
         $content | Should -Match '/p:GenerateAppxPackageOnBuild=true'
         $content | Should -Match '/p:PackageManifest=\$windowsManifestPath'
         $content | Should -Not -Match '_MauiReplicationWindowsManifest'
