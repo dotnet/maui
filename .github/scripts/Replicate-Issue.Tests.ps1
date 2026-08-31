@@ -4165,6 +4165,9 @@ public class Issue36573
         New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
             Out-Null
         @'
+using UIKit;
+using CoreGraphics;
+
 public class Issue14305
 {
     [Fact]
@@ -4198,6 +4201,66 @@ public class Issue14305
 
         { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
             Should -Throw '*relies only on managed Bounds without native-view or rendered-pixel evidence*'
+    }
+
+    It 'accepts UIKit geometry combined with native rendered-pixel evidence' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 35511
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = (
+            'src/Controls/tests/DeviceTests/Elements/NavigationPage/' +
+            'Issue35511.iOS.cs')
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) `
+            -Force |
+            Out-Null
+        @'
+public class Issue35511Tests
+{
+    public void CustomTitleViewPreservesVisibleBackButtonTitle()
+    {
+        UIKit.UINavigationBar navigationBar = GetNavigationBar();
+        UIKit.UILabel label = navigationBar.Subviews
+            .OfType<UIKit.UILabel>()
+            .Single(view => view.Text == "Main");
+        CoreGraphics.CGRect nativeBounds = label.Bounds;
+        using var context = new CoreGraphics.CGBitmapContext(
+            IntPtr.Zero, 64, 64, 8, 0,
+            CoreGraphics.CGColorSpace.CreateDeviceRGB(),
+            CoreGraphics.CGBitmapFlags.PremultipliedLast);
+        navigationBar.Layer.RenderInContext(context);
+        Assert.True(nativeBounds.Width > 0 && context.Data != IntPtr.Zero);
+    }
+}
+'@ | Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue35511'
+            expectedFailureSignature =
+                'Native back-button title pixels should remain visible.'
+            files = @($relativePath)
+            reproductionSteps = @(
+                'Push and pop a page with a custom TitleView.')
+            expectedBehavior =
+                'The native back-button title remains visibly rendered.'
+            observedBehavior =
+                'The native label disappears after the custom TitleView transition.'
+            reportedTrigger =
+                'Navigate with a custom TitleView and observe visible title pixels.'
+            testTrigger =
+                'Inspect UILabel geometry and UINavigationBar rendered pixels.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires UIKit rendering.'
+                xaml = 'Requires the native navigation bar.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+            Should -Not -Throw
     }
 
     It 'repairs generated tests that fail trusted source validation before verification' {
