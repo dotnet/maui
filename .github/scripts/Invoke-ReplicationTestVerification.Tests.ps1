@@ -532,6 +532,18 @@ Describe 'Replication failure-only verification' {
 
         $LASTEXITCODE | Should -Not -Be 0
     }
+
+    It 'keeps Windows verification builds on the trusted no-ReadyToRun policy' {
+        $deviceRunner = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot (
+                '../skills/run-device-tests/scripts/Run-DeviceTests.ps1')) -Raw
+        $deviceRunner | Should -Match '/p:PublishReadyToRun=false'
+        $source = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot (
+                'shared/Invoke-ReplicationTestVerification.ps1')) -Raw
+        $source | Should -Match "'-NoRestore'"
+        $source | Should -Match "'-RequireWindowsAppContainer'"
+    }
 }
 
 Describe 'Replication failure message determinism' {

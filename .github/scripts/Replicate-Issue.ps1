@@ -7700,7 +7700,8 @@ function Get-ReplicationWindowsPlatformRestoreArguments {
         '-p:IncludeMacOSTargetFrameworks=false',
         '-p:IncludeTizenTargetFrameworks=false',
         '-p:IncludeWindowsTargetFrameworks=true',
-        '-p:DisableTransitiveFrameworkReferenceDownloads=false'
+        '-p:DisableTransitiveFrameworkReferenceDownloads=false',
+        '-p:PublishReadyToRun=false'
     )
 }
 
@@ -7725,7 +7726,8 @@ function Get-ReplicationWindowsTopLevelRidRestoreArguments {
 function Get-ReplicationWindowsPlainGeneratorRestoreArguments {
     return @(
         '--no-dependencies',
-        '-p:DisableTransitiveFrameworkReferenceDownloads=false'
+        '-p:DisableTransitiveFrameworkReferenceDownloads=false',
+        '-p:PublishReadyToRun=false'
     )
 }
 
@@ -9593,6 +9595,7 @@ try {
                     '-c', 'Debug',
                     '--no-restore',
                     '-p:RuntimeIdentifierOverride=win-x64',
+                    '-p:PublishReadyToRun=false',
                     '-p:WindowsPackageType=None',
                     '-p:_MauiReplicationUnpackaged=true'
                 )
@@ -9604,6 +9607,7 @@ try {
                     '-c', 'Release',
                     '--no-restore',
                     '-p:RuntimeIdentifierOverride=win-x64',
+                    '-p:PublishReadyToRun=false',
                     '-p:WindowsPackageType=None',
                     '-p:_MauiDeviceTestUnpackaged=true',
                     '-p:SelfContained=true'

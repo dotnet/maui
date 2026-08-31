@@ -569,6 +569,7 @@ if ($Platform -eq "android") {
             "-f", $TargetFramework,
             "-c", $Configuration,
             "-p:RuntimeIdentifierOverride=win-x64",
+            "-p:PublishReadyToRun=false",
             "-p:WindowsPackageType=None",
             "-p:_MauiReplicationUnpackaged=true"
         ) + $hostAppBuildProps
@@ -617,6 +618,7 @@ if ($Platform -eq "android") {
                 "-f", $TargetFramework,
                 "-c", $Configuration,
                 "-p:RuntimeIdentifierOverride=win-x64",
+                "-p:PublishReadyToRun=false",
                 "-p:WindowsPackageType=MSIX",
                 "-p:GenerateAppxPackageOnBuild=true",
                 "-p:AppxPackageSigningEnabled=true",

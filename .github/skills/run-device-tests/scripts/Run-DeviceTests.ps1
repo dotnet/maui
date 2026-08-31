@@ -1375,6 +1375,7 @@ try {
         }
         "windows" {
             $buildArgs += "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)"
+            $buildArgs += "/p:PublishReadyToRun=false"
             if ($RequireWindowsAppContainer) {
                 $windowsPackageOutput = Join-Path $OutputDirectory 'windows-appcontainer-package'
                 $windowsPackageOutput = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath(
