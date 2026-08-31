@@ -111,11 +111,25 @@ namespace Microsoft.Maui
 		/// Event fired when the visual tree changes (child added or removed).
 		/// </summary>
 		/// <remarks>Subscribers receive <see cref="VisualTreeChangeEventArgs"/> with change details.</remarks>
-		public static event EventHandler<VisualTreeChangeEventArgs>? VisualTreeChanged;
+		public static event EventHandler<VisualTreeChangeEventArgs>? VisualTreeChanged
+		{
+			add
+			{
+				if (value is not null)
+					_weakEventManager.AddEventHandler(value);
+			}
+			remove
+			{
+				if (value is not null)
+					_weakEventManager.RemoveEventHandler(value);
+			}
+		}
+
+		static readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
 		static void OnVisualTreeChanged(VisualTreeChangeEventArgs e)
 		{
-			VisualTreeChanged?.Invoke(e.Parent, e);
+			_weakEventManager.HandleEvent(e.Parent, e, nameof(VisualTreeChanged));
 		}
 
 		/// <summary>

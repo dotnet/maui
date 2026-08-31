@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Xunit;
@@ -366,6 +367,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			window = (Window)iapp.CreateWindow(null!);
 
 			_treeEvents.Clear();
+		}
+
+		[Fact]
+		public async Task VisualTreeChangedSubscriberDoesNotLeak()
+		{
+			var reference = SubscribeToVisualTreeChanged();
+
+			Assert.False(await reference.WaitForCollect(), "VisualTreeChanged subscriber should not be alive!");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference SubscribeToVisualTreeChanged()
+		{
+			var subscriber = new VisualTreeChangedSubscriber();
+			VisualDiagnostics.VisualTreeChanged += subscriber.OnVisualTreeChanged;
+			return new WeakReference(subscriber);
+		}
+
+		sealed class VisualTreeChangedSubscriber
+		{
+			public void OnVisualTreeChanged(object? sender, VisualTreeChangeEventArgs e)
+			{
+			}
 		}
 	}
 }
