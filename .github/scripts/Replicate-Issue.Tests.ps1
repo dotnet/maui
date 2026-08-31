@@ -7864,6 +7864,23 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match 'CS0122'
     }
 
+    It 'preserves UILabel typing in Apple authoring and repair prompts' {
+        $script:Source | Should -Match 'UIView does not declare Text'
+        $script:Source | Should -Match 'OfType<UIKit\.UILabel>\(\)'
+        $script:Source | Should -Match (
+            'view is UIKit\.UILabel label')
+        $script:Source | Should -Match (
+            'inspect the helper declaration and its declared return type')
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test' \{.*?\`$appleNativeTypingGuidance.*?'repair' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'repair' \{.*?\`$appleNativeTypingGuidance.*?'control' \{"
+        ).Success | Should -BeTrue
+    }
+
     It 'names both sides of the nullable split, not just one' {
         # CS8604 (43), CS8602 (39), CS8632 (13) and CS8600 (12) are 107 of the
         # compiler errors measured across this pipeline's runs. They come from
