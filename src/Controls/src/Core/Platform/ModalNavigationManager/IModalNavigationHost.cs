@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls.Platform
 	/// <para>
 	/// The framework implements this interface and supplies an instance to
 	/// <see cref="IModalNavigationPlatformFactory.CreateModalNavigationPlatform(IModalNavigationHost)"/>.
-	/// One host exists per <see cref="Controls.Window"/>, so an implementation must never be shared
+	/// One host exists per <see cref="Window"/>, so an implementation must never be shared
 	/// between windows.
 	/// </para>
 	/// <para>
 	/// The framework owns the cross-platform modal stack, the page lifecycle events
 	/// (<c>Appearing</c>/<c>Disappearing</c>, <c>NavigatedTo</c>/<c>NavigatedFrom</c>), the
-	/// <see cref="Controls.Window.ModalPushing"/>/<see cref="Controls.Window.ModalPopped"/> events and the
+	/// <see cref="Window.ModalPushing"/>/<see cref="Window.ModalPopped"/> events and the
 	/// reconciliation loop that keeps the platform stack in sync with the requested stack. A platform
 	/// implementation is only responsible for the visual presentation of a single push or pop.
 	/// </para>
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <remarks>
 		/// This is an optional optimization hint, not a contract. Implementations can use it to dismiss
 		/// without animation so the modals in between do not flash on screen. It is only ever
-		/// <see langword="true"/> while <see cref="Controls.Window.Page"/> is a <see cref="Shell"/> that
+		/// <see langword="true"/> while <see cref="Window.Page"/> is a <see cref="Shell"/> that
 		/// is popping its modal stack; other batch dismissals report <see langword="false"/>. An
 		/// implementation that ignores it stays correct.
 		/// </remarks>
@@ -134,14 +134,20 @@ namespace Microsoft.Maui.Controls.Platform
 		/// notify the framework through this method or queued modals will never be presented.
 		/// </para>
 		/// <para>
-		/// This is safe to call from any thread: when the caller is not already on the window's UI
-		/// thread the work is marshalled there and this method returns immediately. When called
-		/// <b>on</b> the UI thread the reconciliation starts synchronously, which means
+		/// This is safe to call from any thread. When the caller is not already on the window's UI
+		/// thread and the window has a dispatcher, the work is marshalled there and this method returns
+		/// immediately. When called <b>on</b> the UI thread the reconciliation starts synchronously,
+		/// which means
 		/// <see cref="IModalNavigationPlatform.IsReady"/> and possibly
 		/// <see cref="IModalNavigationPlatform.PushModalAsync(Page, bool)"/> or
 		/// <see cref="IModalNavigationPlatform.PopModalAsync(Page, bool)"/> can be re-entered before
 		/// this method returns. Do not call it while holding a lock, and finish mutating your own state
 		/// before calling it.
+		/// </para>
+		/// <para>
+		/// A window created on a thread without a dispatcher has no UI-thread target to marshal to. In
+		/// that unusual case the framework runs the request inline as a best effort, so a backend that
+		/// supports such windows should call this method from its UI thread.
 		/// </para>
 		/// <para>
 		/// A marshalled request is bound to the window's current handler scope. If the window is

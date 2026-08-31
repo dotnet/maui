@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Platform
 	/// Application-wide factory for creating <see cref="IModalNavigationPlatform"/> instances.
 	/// Register an implementation in the application's
 	/// <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection"/> to replace the built-in
-	/// modal presentation for every window.
+	/// modal presentation for each window the factory chooses to handle.
 	/// </summary>
 	/// <remarks>
 	/// <para>

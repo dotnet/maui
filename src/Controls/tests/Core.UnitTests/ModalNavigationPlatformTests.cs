@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
@@ -79,6 +80,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static IModalNavigationHost Host(Window window) => window.ModalNavigationManager;
 
+		static List<Page> MutablePlatformModalStack(Window window) =>
+			Assert.IsType<List<Page>>(typeof(ModalNavigationManager)
+				.GetField("_platformModalPages", BindingFlags.Instance | BindingFlags.NonPublic)
+				.GetValue(window.ModalNavigationManager));
+
+		static Dictionary<Page, bool> PendingPopAnimations(Window window) =>
+			Assert.IsType<Dictionary<Page, bool>>(typeof(ModalNavigationManager)
+				.GetField("_pendingPopAnimations", BindingFlags.Instance | BindingFlags.NonPublic)
+				.GetValue(window.ModalNavigationManager));
+
 		// Forces the lazy factory resolution through the same entry point the framework uses when the
 		// window's page handler is attached.
 		static void ForceResolvePlatform(Window window) => window.ModalNavigationManager.PageAttachedHandler();
@@ -140,6 +151,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await window.Navigation.PopModalAsync();
 			Assert.Empty(host.PlatformModalStack);
 			Assert.Same(root, host.CurrentPlatformPage);
+		}
+
+		[Fact]
+		public void PlatformModalStackCannotBeMutatedByABackend()
+		{
+			var window = CreateWindow();
+			AttachRootPage(window);
+
+			var stack = Assert.IsAssignableFrom<IList<Page>>(Host(window).PlatformModalStack);
+
+			Assert.True(stack.IsReadOnly);
+			Assert.Throws<NotSupportedException>(() => stack.Add(new ContentPage()));
 		}
 
 		[Fact]
@@ -463,8 +486,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The replacement backend has established the same modal as its current platform state
 			// while the outgoing backend's push is still completing.
-			var replacementStack = Assert.IsType<List<Page>>(Host(window).PlatformModalStack);
-			replacementStack.Add(modal);
+			MutablePlatformModalStack(window).Add(modal);
 			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
 
 			failure.SetException(new InvalidOperationException("push boom"));
@@ -562,6 +584,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The push was animated; the deferred pop must not inherit that.
 			Assert.False(Assert.Single(platform.Popped).Animated);
+		}
+
+		[Fact]
+		public async Task PushAndPopBeforePlatformIsReadyLeavesNothingToReconcile()
+		{
+			RecordingModalNavigationPlatform platform = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				platform = new RecordingModalNavigationPlatform(host) { IsReadyValue = false };
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+			await window.Navigation.PopModalAsync();
+
+			Assert.Empty(platform.Pushed);
+			Assert.Empty(platform.Popped);
+			Assert.Empty(PendingPopAnimations(window));
+
+			platform.IsReadyValue = true;
+			platform.Host.RequestSync();
+
+			Assert.Empty(platform.Pushed);
+			Assert.Empty(platform.Popped);
+			Assert.Empty(Host(window).PlatformModalStack);
 		}
 
 		[Fact]
@@ -848,6 +899,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Resolution happened once the new handler was actually installed, against the NEW scope.
 			Assert.Equal(1, newFactory.CallCount);
+		}
+
+		[Fact]
+		public async Task RequestSyncFromDisposeDoesNotFallBackToTheBuiltInPlatform()
+		{
+			RecordingModalNavigationPlatform first = null;
+			var factory = new StubModalNavigationPlatformFactory(host =>
+			{
+				var platform = new RecordingModalNavigationPlatform(host);
+				first ??= platform;
+				return platform;
+			});
+
+			var window = CreateWindow(services => RegisterFactory(services, factory));
+			AttachRootPage(window);
+
+			first.IsReadyValue = false;
+			var modal = new ContentPage();
+			await window.Navigation.PushModalAsync(modal);
+
+			first.DisposeBehavior = first.Host.RequestSync;
+			window.Handler = CreateHandler(factory);
+
+			Assert.Empty(Host(window).PlatformModalStack);
+
+			ForceResolvePlatform(window);
+			var second = (RecordingModalNavigationPlatform)factory.Created[1];
+			second.Host.RequestSync();
+
+			Assert.Same(modal, Assert.Single(second.Pushed).Page);
+			Assert.Same(modal, Assert.Single(Host(window).PlatformModalStack));
 		}
 
 		[Fact]
@@ -1199,6 +1281,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public int DisposeCount { get; private set; }
 
+			public Action DisposeBehavior { get; set; }
+
 			public Action<Page, bool> PushBehavior { get; set; }
 
 			public Action<Page, bool> PopBehavior { get; set; }
@@ -1231,7 +1315,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public void PageAttached() => PageAttachedCount++;
 
-			public void Dispose() => DisposeCount++;
+			public void Dispose()
+			{
+				DisposeCount++;
+				DisposeBehavior?.Invoke();
+			}
 		}
 	}
 }

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 				});
 
-				builder.Services.AddSingleton(factory);
+				builder.Services.AddSingleton<IModalNavigationPlatformFactory>(factory);
 			});
 		}
 
