@@ -44,6 +44,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView" />
     <PackageReference Include="Microsoft.JSInterop" />
+    <!-- The app-level MauiEnableAndroidWebViewDragDrop property controls provider registration, not this package dependency. -->
     <PackageReference Include="Xamarin.AndroidX.WebKit" Condition=" '$(TargetPlatformIdentifier)' == 'android' " />
   </ItemGroup>
 

@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -18,6 +19,68 @@ public class BlazorTemplateTest : BaseTemplateTests
 			$"Unable to create template {templateShortName}. Check test output for errors.");
 
 		AssertIncludesRootGitIgnore(solutionProjectDir);
+	}
+
+	[Fact]
+	public void MauiBlazorAndroidManifest_ConfiguresImageDragDropProvider()
+	{
+		SetTestIdentifier();
+		const string templateShortName = "maui-blazor";
+		const string config = "Debug";
+		var framework = $"{DotNetCurrent}-android";
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, output: _output),
+			$"Unable to create template {templateShortName}. Check test output for errors.");
+
+		var directoryBuildPropsPath = Path.Combine(projectDir, "Directory.Build.props");
+		var directoryBuildProps = File.Exists(directoryBuildPropsPath)
+			? XDocument.Load(directoryBuildPropsPath)
+			: new XDocument(new XElement("Project"));
+		directoryBuildProps.Root!.Add(
+			new XElement("PropertyGroup",
+				new XAttribute("Condition", "'$(MauiEnableAndroidWebViewDragDrop)' == 'false'"),
+				new XElement("BaseIntermediateOutputPath", "obj-drag-drop-opt-out/"),
+				new XElement("BaseOutputPath", "bin-drag-drop-opt-out/")));
+		directoryBuildProps.Save(directoryBuildPropsPath);
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build with the default image drag provider configuration.");
+
+		var defaultManifest = Path.Combine(projectDir, "obj", config, framework, "android", "AndroidManifest.xml");
+		AssertImageDragDropProvider(defaultManifest, expected: true);
+
+		var optOutBuildProps = BuildProps;
+		optOutBuildProps.Add("MauiEnableAndroidWebViewDragDrop=false");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: optOutBuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build with image drag provider registration disabled.");
+
+		var optOutManifest = Path.Combine(projectDir, "obj-drag-drop-opt-out", config, framework, "android", "AndroidManifest.xml");
+		AssertImageDragDropProvider(optOutManifest, expected: false);
+	}
+
+	static void AssertImageDragDropProvider(string manifestPath, bool expected)
+	{
+		Assert.True(File.Exists(manifestPath), $"Merged Android manifest not found at {manifestPath}.");
+
+		XNamespace android = "http://schemas.android.com/apk/res/android";
+		var manifest = XDocument.Load(manifestPath);
+		var provider = manifest
+			.Descendants("provider")
+			.SingleOrDefault(element => (string?)element.Attribute(android + "name") == "androidx.webkit.DropDataContentProvider");
+
+		if (!expected)
+		{
+			Assert.Null(provider);
+			return;
+		}
+
+		Assert.NotNull(provider);
+		Assert.Equal($"{manifest.Root?.Attribute("package")?.Value}.DropDataProvider", (string?)provider.Attribute(android + "authorities"));
+		Assert.Equal("false", (string?)provider.Attribute(android + "exported"));
+		Assert.Equal("true", (string?)provider.Attribute(android + "grantUriPermissions"));
 	}
 
 	[Theory]
@@ -235,11 +298,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 
 		// Assert: No precompressed files should be in the MAUI APK
 		// These files bloat the app bundle since Blazor Hybrid serves assets locally
-		Assert.True(gzFiles.Length == 0, 
+		Assert.True(gzFiles.Length == 0,
 			$"APK should not contain .gz files but found {gzFiles.Length}. " +
 			$"See https://github.com/dotnet/maui/issues/33773. Files: {string.Join(", ", gzFiles.Select(f => Path.GetFileName(f)))}");
-		
-		Assert.True(brFiles.Length == 0, 
+
+		Assert.True(brFiles.Length == 0,
 			$"APK should not contain .br files but found {brFiles.Length}. " +
 			$"See https://github.com/dotnet/maui/issues/33773. Files: {string.Join(", ", brFiles.Select(f => Path.GetFileName(f)))}");
 
@@ -250,10 +313,10 @@ public class BlazorTemplateTest : BaseTemplateTests
 		// Check that our test file exists (uncompressed)
 		var sharedContentDir = Directory.GetDirectories(Path.Combine(wwwrootDir, "_content"), "*Shared*", SearchOption.TopDirectoryOnly);
 		Assert.True(sharedContentDir.Length > 0, "Shared RCL content directory should exist in APK");
-		
+
 		var testJsInApk = Path.Combine(sharedContentDir[0], "test-compression.js");
 		Assert.True(File.Exists(testJsInApk), $"Test JS file should exist uncompressed at {testJsInApk}");
-		
+
 		_output.WriteLine("✅ APK correctly contains no precompressed .gz/.br files from RCL");
 	}
 
@@ -315,11 +378,11 @@ public class BlazorTemplateTest : BaseTemplateTests
 		}
 
 		// Assert: Web app SHOULD have precompressed files for HTTP serving
-		Assert.True(gzFiles.Length > 0, 
+		Assert.True(gzFiles.Length > 0,
 			"Web app publish output should contain .gz files for HTTP compression. " +
 			"If this fails, the compression system may be broken.");
-		
-		Assert.True(brFiles.Length > 0, 
+
+		Assert.True(brFiles.Length > 0,
 			"Web app publish output should contain .br files for HTTP compression. " +
 			"If this fails, the compression system may be broken.");
 
@@ -328,9 +391,9 @@ public class BlazorTemplateTest : BaseTemplateTests
 		var testJsGz = Directory.GetFiles(sharedContentDir, "test-compression.js.gz", SearchOption.AllDirectories);
 		var testJsBr = Directory.GetFiles(sharedContentDir, "test-compression.js.br", SearchOption.AllDirectories);
 
-		Assert.True(testJsGz.Length > 0, 
+		Assert.True(testJsGz.Length > 0,
 			"Test JS file should have a .gz compressed version in web publish output");
-		Assert.True(testJsBr.Length > 0, 
+		Assert.True(testJsBr.Length > 0,
 			"Test JS file should have a .br compressed version in web publish output");
 
 		_output.WriteLine("✅ Web app correctly contains precompressed .gz/.br files from RCL");
