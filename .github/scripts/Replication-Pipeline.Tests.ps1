@@ -337,6 +337,10 @@ Describe 'Replication issue outcome publication boundary' {
         $publish = $script:Pipeline.IndexOf('Publish Replication Artifacts')
         $gate | Should -BeGreaterThan 0
         $publish | Should -BeGreaterThan $gate
+        $script:Pipeline | Should -Match (
+            "(?s)displayName: 'Publish Replication Artifacts'.*?" +
+            "targetPath: '\$\(REPLICATION_ARTIFACT_ROOT\)'.*?" +
+            "artifact: 'ReplicationArtifacts'")
     }
 
     It 'reports missing Copilot telemetry instead of failing the job again' {

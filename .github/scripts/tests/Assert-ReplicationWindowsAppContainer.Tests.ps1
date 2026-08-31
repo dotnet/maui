@@ -252,6 +252,131 @@ Describe 'Windows replication AppContainer manifests' {
         } | Should -Throw '*untrusted package extension*'
     }
 
+    It 'records every rejected MSIX profile as diagnostic-only evidence' {
+        $document = Read-ReplicationWindowsManifestXml `
+            -Content ([IO.File]::ReadAllText(
+                    $script:GeneratedManifestFixtures[0])) `
+            -Description 'observed Sandbox manifest'
+        $extensions = @($document.SelectNodes(
+            "/*[local-name()='Package']/*[local-name()='Extensions']/" +
+            "*[local-name()='Extension']"))
+        for ($index = $extensions.Count - 1; $index -ge 2; $index--) {
+            [void]$extensions[$index].ParentNode.RemoveChild(
+                $extensions[$index])
+        }
+        $remainingExtensions = @($document.SelectNodes(
+            "/*[local-name()='Package']/*[local-name()='Extensions']/" +
+            "*[local-name()='Extension']"))
+        $keepCounts = @(68, 1)
+        for ($index = 0; $index -lt $remainingExtensions.Count; $index++) {
+            $classes = @($remainingExtensions[$index].SelectNodes(
+                "*[local-name()='InProcessServer']/" +
+                "*[local-name()='ActivatableClass']"))
+            for ($classIndex = $classes.Count - 1;
+                $classIndex -ge $keepCounts[$index];
+                $classIndex--) {
+                [void]$classes[$classIndex].ParentNode.RemoveChild(
+                    $classes[$classIndex])
+            }
+        }
+        $content = $document.OuterXml
+        $packagePath = Join-Path $TestDrive 'observed.msix'
+        $archive = [IO.Compression.ZipFile]::Open(
+            $packagePath,
+            [IO.Compression.ZipArchiveMode]::Create)
+        try {
+            $entry = $archive.CreateEntry('AppxManifest.xml')
+            $stream = $entry.Open()
+            $writer = [IO.StreamWriter]::new(
+                $stream,
+                [Text.UTF8Encoding]::new($false))
+            try {
+                $writer.Write($content)
+            } finally {
+                $writer.Dispose()
+                $stream.Dispose()
+            }
+        } finally {
+            $archive.Dispose()
+        }
+        $observationRoot = Join-Path $TestDrive 'artifact-root'
+        $observationDirectory = Join-Path $observationRoot (
+            'sandbox/windows-manifest-observation-attempt-1')
+        New-Item -ItemType Directory -Path $observationRoot | Out-Null
+
+        foreach ($sequence in 1..2) {
+            {
+                Get-ReplicationWindowsMsixManifest `
+                    -PackagePath $packagePath `
+                    -ManifestObservationRoot $observationRoot `
+                    -ManifestObservationDirectory $observationDirectory
+            } | Should -Throw '*extensions 2/15, records 69/855*'
+        }
+
+        $observations = @(Get-ChildItem -LiteralPath $observationDirectory `
+            -Directory | Sort-Object Name)
+        $observations.Count | Should -BeExactly 2
+        for ($index = 0; $index -lt $observations.Count; $index++) {
+            $profilePath = Join-Path $observations[$index].FullName (
+                'profile.json')
+            $profile = Get-Content -LiteralPath $profilePath -Raw |
+                ConvertFrom-Json
+            $profile.kind |
+                Should -BeExactly 'windows-registration-profile-observation'
+            $profile.authorization | Should -BeExactly 'diagnostic-only'
+            $profile.canAuthorizeCurrentRun | Should -BeFalse
+            $profile.sequence | Should -BeExactly ($index + 1)
+            $profile.identityName |
+                Should -BeExactly 'com.microsoft.maui.sandbox'
+            $profile.actualExtensionCount | Should -BeExactly 2
+            $profile.actualRecordCount | Should -BeExactly 69
+            $profile.expectedExtensionCount | Should -BeExactly 15
+            $profile.expectedRecordCount | Should -BeExactly 855
+            $profile.sourceMsixSha256 |
+                Should -BeExactly (
+                    Get-FileHash -LiteralPath $packagePath -Algorithm SHA256
+                ).Hash.ToLowerInvariant()
+            $expectedFiles = @(
+                'AppxManifest.xml',
+                'normalized-records.txt',
+                'profile.json'
+            )
+            $files = @(Get-ChildItem -LiteralPath $observations[$index].FullName `
+                -File)
+            @($files.Name | Sort-Object) |
+                Should -Be @($expectedFiles | Sort-Object)
+            foreach ($name in $expectedFiles) {
+                $item = Get-Item -LiteralPath (
+                    Join-Path $observations[$index].FullName $name)
+                $item.PSIsContainer | Should -BeFalse
+                ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) |
+                    Should -BeFalse
+                $maximumLength = switch ($name) {
+                    'AppxManifest.xml' { 512KB }
+                    'normalized-records.txt' { 2MB }
+                    'profile.json' { 16KB }
+                }
+                $item.Length | Should -BeGreaterThan 0
+                $item.Length | Should -BeLessOrEqual $maximumLength
+            }
+            $files.Extension | Should -Not -Contain '.msix'
+            $records = @(Get-Content -LiteralPath (
+                    Join-Path $observations[$index].FullName (
+                        'normalized-records.txt')))
+            $records.Count | Should -BeExactly 69
+            (Get-ReplicationWindowsRegistrationRecordsSha256 `
+                    -Records $records) |
+                Should -BeExactly $profile.actualNormalizedRecordsSha256
+        }
+
+        {
+            Get-ReplicationWindowsMsixManifest `
+                -PackagePath $packagePath `
+                -ManifestObservationRoot $observationRoot `
+                -ManifestObservationDirectory (Join-Path $TestDrive 'outside')
+        } | Should -Throw '*must be inside its trusted root*'
+    }
+
     It 'rejects malformed package extension containers' {
         $content = [IO.File]::ReadAllText(
             $script:GeneratedManifestFixtures[1])

@@ -9819,6 +9819,14 @@ try {
             if ($DeviceUdid) {
                 $prepareArgs += @('-DeviceUdid', $DeviceUdid)
             }
+            if ($Platform -eq 'windows') {
+                $prepareArgs += @(
+                    '-WindowsManifestObservationRoot', $ArtifactRoot,
+                    '-WindowsManifestObservationDirectory', (
+                        Join-Path $sandboxArtifactDir (
+                            "windows-manifest-observation-attempt-$attempt"))
+                )
+            }
             Invoke-LoggedChildProcess `
                 -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
                 -Arguments $prepareArgs `

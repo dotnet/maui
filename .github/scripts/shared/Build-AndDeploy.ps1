@@ -75,6 +75,12 @@ param(
     [string]$WindowsPackageStatePath,
 
     [Parameter(Mandatory=$false)]
+    [string]$WindowsManifestObservationRoot,
+
+    [Parameter(Mandatory=$false)]
+    [string]$WindowsManifestObservationDirectory,
+
+    [Parameter(Mandatory=$false)]
     [string]$AppleAppSandboxEntitlementsPath
 )
 
@@ -623,6 +629,12 @@ if ($Platform -eq "android") {
             [string]::IsNullOrWhiteSpace($WindowsPackageStatePath)) {
             throw 'Windows replication requires trusted manifest and package-state paths.'
         }
+        if ([string]::IsNullOrWhiteSpace(
+                $WindowsManifestObservationRoot) -ne
+            [string]::IsNullOrWhiteSpace(
+                $WindowsManifestObservationDirectory)) {
+            throw 'Windows registration observation requires both root and directory.'
+        }
 
         $manifestPath = [IO.Path]::GetFullPath($WindowsAppContainerManifestPath)
         $manifestOverrideTargets = Join-Path $PSScriptRoot (
@@ -716,7 +728,9 @@ if ($Platform -eq "android") {
                 throw "Expected exactly one Windows replication MSIX under '$packageOutput'; found $($packages.Count)."
             }
             $installedPackage = Install-ReplicationWindowsAppContainerPackage `
-                -PackagePath $packages[0].FullName
+                -PackagePath $packages[0].FullName `
+                -ManifestObservationRoot $WindowsManifestObservationRoot `
+                -ManifestObservationDirectory $WindowsManifestObservationDirectory
             [ordered]@{
                 schemaVersion = 1
                 packageName = $installedPackage.Name
