@@ -49,6 +49,7 @@ $script:TrustedTreeKeyScriptPaths = @(
     'scripts/shared/Assert-ReplicationWindowsAppContainer.ps1',
     'scripts/shared/ReplicationWindowsAppContainerManifest.targets',
     'scripts/shared/Invoke-ReplicationWindowsAppx.ps1',
+    'scripts/shared/Assert-ReplicationAppleAppSandbox.ps1',
     'scripts/shared/Invoke-ReplicationNetworkIsolatedProcess.ps1',
     'scripts/shared/Get-ReplicationCertification.ps1',
     'scripts/shared/Invoke-ReplicationTestVerification.ps1',

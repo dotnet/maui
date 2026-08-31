@@ -178,7 +178,8 @@ foreach ($trustedModuleRelative in @(
     'shared/Assert-TrustedTreeAttestation.ps1',
     'shared/Assert-ReplicationExecutionEnvironment.ps1',
     'shared/Assert-ReplicationCertificationBinding.ps1',
-    'shared/Assert-ReplicationWindowsAppContainer.ps1'
+    'shared/Assert-ReplicationWindowsAppContainer.ps1',
+    'shared/Assert-ReplicationAppleAppSandbox.ps1'
 )) {
     $trustedModulePath = Join-Path $trustedScripts $trustedModuleRelative
     if (-not (Test-Path -LiteralPath $trustedModulePath -PathType Leaf)) {
@@ -6323,6 +6324,20 @@ function Read-TestProposal {
                 [StringComparison]::Ordinal)) {
             throw 'Windows replication requires exactly one Windows-only C# file in Controls.DeviceTests.'
         }
+    } elseif ($proposalPlatform -in @('ios', 'catalyst')) {
+        # Controls.DeviceTests compiles .iOS.cs for both Apple TFMs; Catalyst
+        # declarations are isolated inside the file with #if MACCATALYST.
+        $suffix = '.iOS.cs'
+        if ([string]$proposal.testType -cne 'device' -or
+            $proposedFiles.Count -ne 1 -or
+            -not $proposedFiles[0].StartsWith(
+                'src/Controls/tests/DeviceTests/',
+                [StringComparison]::Ordinal) -or
+            -not $proposedFiles[0].EndsWith(
+                $suffix,
+                [StringComparison]::Ordinal)) {
+            throw "$proposalPlatform replication requires exactly one platform-only Controls device test."
+        }
     }
     if ($PSBoundParameters.ContainsKey('ActualFiles')) {
         $actual = @($ActualFiles | Sort-Object -Unique)
@@ -6704,7 +6719,7 @@ function Get-ReplicationUnbuildableTestTiers {
         }
     }
 
-    if ($Platform -eq 'windows') {
+    if ($Platform -in @('windows', 'ios', 'catalyst')) {
         foreach ($tier in @('unit', 'xaml')) {
             if (-not $unbuildable.Contains($tier)) {
                 $unbuildable.Add($tier) | Out-Null
@@ -6839,7 +6854,7 @@ $retryGuidance
 "@
         }
         'test-plan' {
-            $planningRoots = if ($Platform -eq 'windows') {
+            $planningRoots = if ($Platform -in @('windows', 'ios', 'catalyst')) {
                 @('src/Controls/tests/DeviceTests/')
             } else {
                 $approvedTestRoots
@@ -6849,9 +6864,13 @@ $retryGuidance
                     -RepositoryRoot $repoRoot `
                     -ApprovedRoots $planningRoots `
                     -IssueNumber $IssueNumber)
-            $windowsBoundaryGuidance = if ($Platform -eq 'windows') {
+            $platformBoundaryGuidance = if ($Platform -eq 'windows') {
                 @"
 WINDOWS PACKAGED BOUNDARY: testType must be device. Propose exactly one new .Windows.cs file under src/Controls/tests/DeviceTests/ so it is compiled only into the audited Controls AppContainer package. Unit, XAML, UI, shared cross-platform device files, and every other device-test project are unavailable because they would execute model-authored code outside this package boundary. The class must carry only [Category("Issue$IssueNumber")], and the single method must prove the rendered/native state from inside the package. Do not use Launcher, WebView, URI activation, COM/WinRT activation, XamlReader/LoadFromXaml, reflection, native loading, process, or filesystem APIs.
+"@
+            } elseif ($Platform -in @('ios', 'catalyst')) {
+                @"
+APPLE APP BOUNDARY: testType must be device. Propose exactly one new .iOS.cs file under src/Controls/tests/DeviceTests/. For an iOS run, wrap the test in #if IOS && !MACCATALYST; for a Catalyst run, wrap it in #if MACCATALYST. Unit, XAML, UI, shared device files, and every other device-test project are unavailable because they would execute model-authored code outside the selected app boundary. Mac Catalyst uses signed App Sandbox entitlements with no network capability and a live runtime denial check. iOS runs only when the Aces host attests an independent hypervisor egress boundary; otherwise the orchestrator stops before authoring. The class must carry only [Category("Issue$IssueNumber")].
 "@
             } else {
                 ''
@@ -6870,7 +6889,7 @@ Reproduction tests are add-only, so every proposed path must be new. Do not prop
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second. Host-executed generated UI tests are withheld because they require privileged adb control, so ``ui`` is not selectable. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour recorded on a device. If proving the defect requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device and say so in lighterTypesRejected. If a device test cannot reproduce a navigation-only scenario, declare it blocked rather than selecting UI.
-$windowsBoundaryGuidance
+$platformBoundaryGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
@@ -8079,6 +8098,13 @@ function Invoke-LoggedChildProcess {
                 -ScriptPath $ScriptPath `
                 -Arguments $Arguments `
                 -Environment $childEnvironment
+        } elseif ($Platform -in @('ios', 'catalyst')) {
+            Get-ReplicationAppleIsolatedCommand `
+                -Platform $Platform `
+                -TrustedRoot $TrustedRoot `
+                -ScriptPath $ScriptPath `
+                -Arguments $Arguments `
+                -Environment $childEnvironment
         } else {
             Get-ReplicationNetworkIsolatedCommand `
                 -Platform $Platform `
@@ -8201,6 +8227,13 @@ function Restore-TransientSandbox {
             & (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
                 -Platform windows `
                 -RepoRoot $repoRoot `
+                -Cleanup `
+                -EnforceNetworkIsolation
+        } elseif ($Platform -eq 'catalyst' -and [OperatingSystem]::IsMacOS()) {
+            & (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+                -Platform catalyst `
+                -RepoRoot $repoRoot `
+                -Configuration Debug `
                 -Cleanup `
                 -EnforceNetworkIsolation
         }
@@ -9513,9 +9546,11 @@ $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
 $testAttemptKinds = [System.Collections.Generic.List[string]]::new()
 
 try {
-    if ($Platform -notin @('android', 'windows')) {
-        throw ("Unsupported replication scenario: $Platform replication is withheld because " +
-            'this pool has no enforceable process-tree and app outbound-network deny boundary.')
+    if ($Platform -eq 'ios' -and
+        [Environment]::GetEnvironmentVariable(
+            'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -cne '1') {
+        throw ('Unsupported replication scenario: iOS Simulator replication requires ' +
+            'an Aces host/hypervisor egress boundary; app permissions and host pf are insufficient.')
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
     if ($Platform -eq 'windows') {
@@ -9562,7 +9597,7 @@ try {
             -Environment (Get-ReplicationRuntimeEnvironment) `
             -WritableRoots @($repoRoot, $ArtifactRoot) `
             -DeviceUdid $DeviceUdid
-    } else {
+    } elseif ($Platform -eq 'windows') {
         if (-not [OperatingSystem]::IsWindows()) {
             throw 'Windows replication requires the Windows packaged-device pool.'
         }
@@ -9628,6 +9663,92 @@ try {
                 '-EnforceNetworkIsolation'
             ) `
             -Environment (Get-ReplicationRuntimeEnvironment)
+    } else {
+        if (-not [OperatingSystem]::IsMacOS()) {
+            throw "Unsupported replication scenario: $Platform replication requires the trusted Aces macOS pool."
+        }
+        if ($Platform -eq 'ios' -and [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+            throw 'DeviceUdid is required for iOS replication.'
+        }
+        $appleEntitlementsPath = ''
+        $deviceTestEntitlementsPath = ''
+        if ($Platform -eq 'catalyst') {
+            $appleEntitlementsPath = Join-Path $TrustedRoot (
+                'source-overrides/ReplicationMacCatalystAppSandbox.entitlements')
+            $deviceTestEntitlementsPath = Join-Path $TrustedRoot (
+                'source-overrides/ReplicationMacCatalystControlsDeviceTests.entitlements')
+            foreach ($entitlementsPath in @(
+                $appleEntitlementsPath,
+                $deviceTestEntitlementsPath
+            )) {
+                $null = Assert-ReplicationMacCatalystEntitlements `
+                    -Path $entitlementsPath
+            }
+        }
+        $boundaryArguments = @(
+            '-Platform', $Platform,
+            '-PrepareOnly',
+            '-EnforceNetworkIsolation'
+        )
+        $null = Get-ReplicationAppleIsolatedCommand `
+            -Platform $Platform `
+            -TrustedRoot $TrustedRoot `
+            -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+            -Arguments $boundaryArguments `
+            -Environment (Get-ReplicationRuntimeEnvironment)
+
+        $controlsDeviceProject = Join-Path $repoRoot (
+            'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
+        Invoke-ReplicationTrustedRestore -Target $controlsDeviceProject
+        $framework = if ($Platform -eq 'catalyst') {
+            'net10.0-maccatalyst'
+        } else {
+            'net10.0-ios'
+        }
+        $hostArchitecture = [Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        $rid = if ($Platform -eq 'catalyst') {
+            "maccatalyst-$hostArchitecture"
+        } else {
+            "iossimulator-$hostArchitecture"
+        }
+        foreach ($prewarm in @(
+            [pscustomobject]@{
+                Path = $sandboxProjectPath
+                Configuration = 'Debug'
+                Entitlements = $appleEntitlementsPath
+            },
+            [pscustomobject]@{
+                Path = $controlsDeviceProject
+                Configuration = 'Debug'
+                Entitlements = $deviceTestEntitlementsPath
+            }
+        )) {
+            Invoke-ReplicationTrustedRestore `
+                -Target $prewarm.Path `
+                -AdditionalArguments @(
+                    '--no-dependencies',
+                    '-r', $rid
+                )
+            $arguments = @(
+                '-f', $framework,
+                '-c', $prewarm.Configuration,
+                '-r', $rid,
+                '--no-restore',
+                '-p:BuildIpa=true',
+                '-p:ValidateXcodeVersion=false',
+                '-p:CodesignRequireProvisioningProfile=false'
+            )
+            if ($Platform -eq 'catalyst') {
+                $arguments += "-p:CodesignEntitlements=$($prewarm.Entitlements)"
+                $arguments += '-p:CodesignKey=-'
+                $arguments += '-p:MtouchDebug=false'
+                $arguments += '-p:UseSystemResourceKeys=false'
+            }
+            Invoke-ReplicationTrustedRestore `
+                -Target $prewarm.Path `
+                -Verb build `
+                -AdditionalArguments $arguments
+        }
     }
     Restore-TrackedVerificationSideEffects -PreservedFiles @()
     Assert-InitialReplicationWorktree

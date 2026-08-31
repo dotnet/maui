@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds and runs .NET MAUI device tests locally using xharness (Apple/Android) or the Windows device-test app directly.
+    Builds and runs .NET MAUI device tests locally using xharness, or a platform-isolated app directly.
 
 .DESCRIPTION
     This script builds a specified MAUI device test project for the target platform
@@ -126,7 +126,10 @@ param(
     [switch]$RequireWindowsAppContainer,
 
     [Parameter(Mandatory = $false)]
-    [string]$ReplicationTrustedRoot
+    [string]$ReplicationTrustedRoot,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireMacCatalystAppSandbox
 )
 
 $ErrorActionPreference = "Stop"
@@ -1158,7 +1161,7 @@ $PlatformConfigs = @{
     }
     "maccatalyst" = @{
         Tfm = "net10.0-maccatalyst"
-        RuntimeIdentifier = "maccatalyst-arm64"
+        RuntimeIdentifier = "maccatalyst-$([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())"
         AppExtension = ".app"
         XHarnessTarget = "maccatalyst"
         UsesXHarness = $true
@@ -1241,6 +1244,35 @@ if ($RequireWindowsAppContainer) {
     $null = Assert-ReplicationWindowsAppContainerManifest `
         -Path $windowsManifestPath
 }
+if ($RequireMacCatalystAppSandbox) {
+    if ($Platform -ne 'maccatalyst' -or -not [OperatingSystem]::IsMacOS()) {
+        throw 'The replication App Sandbox mode is available only for Mac Catalyst device tests.'
+    }
+    if (-not $NoRestore -or $Project -ne 'Controls' -or
+        [string]::IsNullOrWhiteSpace($IncludeClasses) -or
+        [string]::IsNullOrWhiteSpace($IncludeMethods) -or
+        $TestFilter -cnotmatch '^Issue[1-9][0-9]*$') {
+        throw 'Mac Catalyst replication requires one no-restore issue-keyed Controls device test with exact selectors.'
+    }
+    if ([string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
+        throw 'Mac Catalyst replication requires the attested trusted root.'
+    }
+    $ReplicationTrustedRoot = [IO.Path]::GetFullPath($ReplicationTrustedRoot)
+    $appleHelperPath = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/Assert-ReplicationAppleAppSandbox.ps1')
+    $catalystEntitlementsPath = Join-Path $ReplicationTrustedRoot (
+        'source-overrides/ReplicationMacCatalystControlsDeviceTests.entitlements')
+    foreach ($trustedPath in @($appleHelperPath, $catalystEntitlementsPath)) {
+        if (-not (Test-Path -LiteralPath $trustedPath -PathType Leaf) -or
+            (Get-Item -LiteralPath $trustedPath -Force).Attributes -band
+                [IO.FileAttributes]::ReparsePoint) {
+            throw "Mac Catalyst replication trusted input is unavailable: $trustedPath"
+        }
+    }
+    . $appleHelperPath
+    $null = Assert-ReplicationMacCatalystEntitlements `
+        -Path $catalystEntitlementsPath
+}
 
 # Align device-test TargetFrameworks with the checked-out branch (e.g. net11.0-android on the
 # net11.0 branch) instead of the hardcoded net10.0 defaults in $PlatformConfigs above.
@@ -1265,7 +1297,8 @@ try {
 
     # Check for xharness if needed (try local tool first, then global)
     $useLocalXharness = $false
-    if ($platformConfig.UsesXHarness) {
+    if ($platformConfig.UsesXHarness -and
+        -not $RequireMacCatalystAppSandbox) {
         $xharness = Get-Command "xharness" -ErrorAction SilentlyContinue
         
         if (-not $xharness) {
@@ -1372,6 +1405,12 @@ try {
         }
         "maccatalyst" {
             $buildArgs += "/p:CodesignRequireProvisioningProfile=false"
+            if ($RequireMacCatalystAppSandbox) {
+                $buildArgs += "/p:CodesignEntitlements=$catalystEntitlementsPath"
+                $buildArgs += "/p:CodesignKey=-"
+                $buildArgs += "/p:MtouchDebug=false"
+                $buildArgs += "/p:UseSystemResourceKeys=false"
+            }
             if ($SkipXcodeVersionCheck) {
                 $buildArgs += "/p:ValidateXcodeVersion=false"
             }
@@ -1473,9 +1512,14 @@ try {
         "maccatalyst" {
             # MacCatalyst apps may have different names - search for .app bundle
             $appSearchPath = "artifacts/bin/$artifactName/$Configuration/$tfmFolder/$ridFolder"
-            $appBundle = Get-ChildItem -Path $appSearchPath -Filter "*.app" -Directory -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($appBundle) {
-                $appPath = $appBundle.FullName
+            $appBundles = @(
+                Get-ChildItem -Path $appSearchPath -Filter "*.app" -Directory `
+                    -ErrorAction SilentlyContinue)
+            if ($RequireMacCatalystAppSandbox -and $appBundles.Count -ne 1) {
+                throw "Expected exactly one isolated Mac Catalyst app; found $($appBundles.Count)."
+            }
+            if ($appBundles.Count -gt 0) {
+                $appPath = $appBundles[0].FullName
             } else {
                 $appPath = "$appSearchPath/$appName.app"
             }
@@ -1534,6 +1578,21 @@ try {
     }
 
     Write-Host "✓ App found: $appPath" -ForegroundColor Green
+
+    if ($RequireMacCatalystAppSandbox) {
+        $null = Assert-ReplicationSignedMacCatalystAppSandbox -AppPath $appPath
+        $boundaryProcess = Start-ReplicationMacCatalystAppSandbox `
+            -AppPath $appPath
+        try {
+            Write-Host "✓ Mac Catalyst App Sandbox denied outbound networking at runtime" -ForegroundColor Green
+        } finally {
+            if (-not $boundaryProcess.HasExited) {
+                $boundaryProcess.Kill($true)
+                [void]$boundaryProcess.WaitForExit(10000)
+            }
+            $boundaryProcess.Dispose()
+        }
+    }
 
     if ($BuildOnly) {
         Write-Host ""
@@ -1638,7 +1697,46 @@ try {
         "testResults.xml"
     }
 
-    if ($platformConfig.UsesXHarness) {
+    if ($RequireMacCatalystAppSandbox) {
+        # XHarness's Mac Catalyst transport opens a loopback TCP channel. App Sandbox
+        # cannot distinguish loopback from external client networking, so replication
+        # launches the exact signed executable with an empty inherited environment.
+        # The runner writes its normal xUnit file inside its own container; trusted
+        # host code copies and parses that bounded file after the process exits.
+        $testOutputDirectory = New-XHarnessRunOutputDirectory `
+            -OutputDirectory $OutputDirectory
+        Write-Host "Mac Catalyst isolated run output: $testOutputDirectory" `
+            -ForegroundColor Gray
+        try {
+            $timeoutSeconds = [int][Math]::Ceiling(
+                [TimeSpan]::Parse($Timeout).TotalSeconds)
+        } catch {
+            throw "Invalid Mac Catalyst device-test timeout '$Timeout'."
+        }
+        $timeoutSeconds = [Math]::Min($timeoutSeconds, 600)
+        $catalystRun = Invoke-ReplicationMacCatalystDeviceTests `
+            -AppPath $appPath `
+            -IncludeClasses $IncludeClasses `
+            -OutputDirectory $testOutputDirectory `
+            -TimeoutSeconds $timeoutSeconds
+        $catalystResultFiles = @($catalystRun.ResultFile)
+        $script:XHarnessDeviceTestSummary = Get-DeviceTestResultSummary `
+            -ResultFiles $catalystResultFiles `
+            -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods `
+            -RequireClassIsolation
+        $script:XHarnessDeviceTestResultFiles = $catalystResultFiles
+        $testExitCode = if (
+            ($script:XHarnessDeviceTestSummary.Failed +
+                $script:XHarnessDeviceTestSummary.Errors) -eq 0) {
+            0
+        } else {
+            1
+        }
+        Write-Host (
+            'Mac Catalyst tests completed through the no-network App Sandbox ' +
+            "file channel. Log: $($catalystRun.LogFile)") -ForegroundColor Green
+    } elseif ($platformConfig.UsesXHarness) {
         # ═══════════════════════════════════════════════════════════
         # XHARNESS TEST EXECUTION (iOS, MacCatalyst, Android)
         # ═══════════════════════════════════════════════════════════

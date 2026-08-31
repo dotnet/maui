@@ -154,7 +154,10 @@ param(
     [switch]$RequireWindowsAppContainer,
 
     [Parameter(Mandatory = $false)]
-    [string]$ReplicationTrustedRoot
+    [string]$ReplicationTrustedRoot,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$RequireMacCatalystAppSandbox
 )
 
 $ErrorActionPreference = "Stop"
@@ -706,6 +709,14 @@ function Invoke-TestRun {
                     throw 'The replication AppContainer verifier requires Windows and the trusted root.'
                 }
                 $deviceParams.RequireWindowsAppContainer = $true
+                $deviceParams.ReplicationTrustedRoot = $ReplicationTrustedRoot
+            }
+            if ($RequireMacCatalystAppSandbox) {
+                if ($devicePlatform -ne 'maccatalyst' -or
+                    [string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
+                    throw 'The replication App Sandbox verifier requires Mac Catalyst and the trusted root.'
+                }
+                $deviceParams.RequireMacCatalystAppSandbox = $true
                 $deviceParams.ReplicationTrustedRoot = $ReplicationTrustedRoot
             }
             Write-Host "   Configuration: $deviceConfiguration" -ForegroundColor Gray

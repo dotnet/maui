@@ -90,6 +90,15 @@ XAML loading, COM/WinRT activation, launchers, WebViews, URI activation,
 reflection, native loading, process, network, and filesystem APIs remain
 prohibited even inside the package.
 
+Mac Catalyst replication has the same device-only rule, using exactly one
+`.iOS.cs` Controls device test guarded by `#if MACCATALYST`. Both the Sandbox and device-test app are
+signed into an App Sandbox without network entitlements and must pass the trusted
+live network-denial check. Device-test results use a bounded file in the app
+container; XHarness TCP and loopback network exceptions are forbidden. iOS
+Simulator generation is unavailable unless the
+Aces host supplies the separate hypervisor-egress attestation; never substitute
+host firewall toggles, proxy changes, or app-side claims for that boundary.
+
 - Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.
 - Every generated test must run normally and fail on the unfixed baseline without an environment variable, command-line switch, category override, or other opt-in gate.

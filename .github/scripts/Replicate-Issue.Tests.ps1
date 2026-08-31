@@ -2823,6 +2823,10 @@ InitializeComponent();
             Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml') -Raw
         $windowsDeviceManifest = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml') -Raw
+        $catalystEntitlements = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/MacCatalyst/ReplicationNetworkIsolation.entitlements') -Raw
+        $catalystDeviceEntitlements = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Controls/tests/DeviceTests/Platforms/MacCatalyst/ReplicationNetworkIsolation.entitlements') -Raw
 
         $androidManifest | Should -Not -Match 'tools:node="remove"'
         $replicationManifest | Should -Match 'android\.permission\.INTERNET'
@@ -2838,6 +2842,14 @@ InitializeComponent();
                 '(?i)runFullTrust|internetClient|internetClientServer|' +
                 'privateNetworkClientServer|DeviceCapability')
         }
+        foreach ($entitlements in @(
+            $catalystEntitlements,
+            $catalystDeviceEntitlements
+        )) {
+            $entitlements | Should -Match 'com\.apple\.security\.app-sandbox'
+            $entitlements | Should -Not -Match (
+                'com\.apple\.security\.(?:network|temporary-exception|exception)')
+        }
 
         $script:Source | Should -Match "'-EnforceNetworkIsolation'"
         $script:Source | Should -Match 'source-overrides/ReplicationNetworkIsolationManifest\.xml'
@@ -2846,6 +2858,12 @@ InitializeComponent();
             Join-Path $PSScriptRoot 'shared/Build-AndDeploy.ps1') -Raw
         $buildDeploy | Should -Match 'NetworkIsolationManifestPath'
         $buildDeploy | Should -Match 'WindowsAppContainerManifestPath'
+        $buildDeploy | Should -Match 'AppleAppSandboxEntitlementsPath'
+        $buildDeploy | Should -Match 'Assert-ReplicationSignedMacCatalystAppSandbox'
+        $buildDeploy | Should -Match 'MtouchDebug=false'
+        $buildDeploy | Should -Match 'UseSystemResourceKeys=false'
+        $buildDeploy | Should -Match (
+            'Mac Catalyst replication produced no auditable \.app bundle')
         $buildDeploy | Should -Match 'PackageCertificateThumbprint'
         $buildDeploy | Should -Match 'GetRelativePath\('
         $buildDeploy | Should -Match (
@@ -2950,18 +2968,65 @@ InitializeComponent();
             Should -Match 'MauiReplicationAppContainerManifest'
     }
 
-    It 'fails unsupported lanes before generated execution and never sets its own isolation marker' {
+    It 'requires a proved platform boundary before generated execution and never sets its own isolation marker' {
         $script:Source | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
-        $script:Source | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED\s*='
+        $script:Source | Should -Match 'Get-ReplicationWindowsAppContainerCommand'
+        $script:Source | Should -Match 'Get-ReplicationAppleIsolatedCommand'
         $script:Source | Should -Match (
-            "(?s)if \(\`$Platform -notin @\('android', 'windows'\)\).*?" +
-            'Unsupported replication scenario:.*?replication is withheld')
+            'source-overrides/ReplicationMacCatalystAppSandbox\.entitlements')
+        $script:Source | Should -Match (
+            'source-overrides/ReplicationMacCatalystControlsDeviceTests\.entitlements')
+        $script:Source | Should -Match (
+            '(?s)foreach \(\$entitlementsPath in @\(.*?' +
+            'Assert-ReplicationMacCatalystEntitlements')
+        $script:Source | Should -Match (
+            '(?s)Path = \$sandboxProjectPath\s*' +
+            'Configuration = ''Debug''\s*' +
+            'Entitlements = \$appleEntitlementsPath')
+        $script:Source | Should -Match (
+            '(?s)Path = \$controlsDeviceProject\s*' +
+            'Configuration = ''Debug''\s*' +
+            'Entitlements = \$deviceTestEntitlementsPath')
+        $script:Source | Should -Match (
+            'CodesignEntitlements=\$\(\$prewarm\.Entitlements\)')
+        $script:Source | Should -Match (
+            '(?s)foreach \(\$prewarm in @\(.*?' +
+            'Invoke-ReplicationTrustedRestore.*?' +
+            '-AdditionalArguments @\(\s*''--no-dependencies'',\s*' +
+            '''-r'', \$rid\s*\).*?-Verb build')
+        $script:Source | Should -Match (
+            '\$arguments \+= ''-p:UseSystemResourceKeys=false''')
+        $script:Source | Should -Not -Match 'MAUI_REPLICATION_EGRESS_ISOLATED\s*='
+        $script:BuildSandboxSource | Should -Match (
+            '(?s)if \(-not \$catalystAppProcess\) \{\s*' +
+            'if \(\$EnforceNetworkIsolation\) \{\s*' +
+            "throw 'Mac Catalyst App Sandbox launch did not produce a proved live process\.'")
+        $script:BuildSandboxSource | Should -Match (
+            'Resolve-ReplicationAppleExistingPath')
+        $script:BuildSandboxSource | Should -Match (
+            '\$candidate\.StartTime\.ToUniversalTime\(\)')
+        $script:BuildSandboxSource | Should -Match (
+            'Stop-ReplicationMacCatalystAppSandbox')
+        $script:Source | Should -Match (
+            "(?s)Platform -eq 'catalyst'.*?-Cleanup.*?" +
+            '-EnforceNetworkIsolation')
+        $earlyIosWithhold = $script:Source.IndexOf(
+            "if (`$Platform -eq 'ios' -and",
+            [StringComparison]::Ordinal)
+        $sandboxRestore = $script:Source.IndexOf(
+            'Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath',
+            [StringComparison]::Ordinal)
+        $earlyIosWithhold | Should -BeGreaterOrEqual 0
+        $earlyIosWithhold | Should -BeLessThan $sandboxRestore
+        (Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot (
+                'shared/Assert-ReplicationAppleAppSandbox.ps1')) -Raw) |
+            Should -Match 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'
         $unsupported = $script:Source.IndexOf(
-            "if (`$Platform -notin @('android', 'windows'))",
+            "if (-not [OperatingSystem]::IsMacOS())",
             [StringComparison]::Ordinal)
         $prewarm = $script:Source.IndexOf(
             'Invoke-ReplicationWindowsTwoPhaseRestore `',
-            $unsupported,
             [StringComparison]::Ordinal)
         $attemptKinds = $script:Source.IndexOf(
             '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
@@ -2972,8 +3037,8 @@ InitializeComponent();
         $attemptKinds | Should -BeGreaterOrEqual 0
         $attemptKinds | Should -BeLessThan $unsupported
         $unsupported | Should -BeGreaterOrEqual 0
-        $unsupported | Should -BeLessThan $deviceValidation
-        $unsupported | Should -BeLessThan $prewarm
+        $unsupported | Should -BeGreaterThan $deviceValidation
+        $unsupported | Should -BeGreaterThan $prewarm
         $isolationSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') -Raw
         $isolationSource | Should -Match "(?s)Platform -ne 'android'.*?withheld"
@@ -3011,7 +3076,7 @@ InitializeComponent();
             '$sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()',
             [StringComparison]::Ordinal)
         $mainTry = $script:Source.IndexOf(
-            "if (`$Platform -notin @('android', 'windows'))",
+            "if (`$Platform -eq 'android')",
             [StringComparison]::Ordinal)
 
         $attemptKinds | Should -BeGreaterOrEqual 0
@@ -3613,6 +3678,9 @@ InitializeComponent();
         Copy-Item `
             -LiteralPath (Join-Path $PSScriptRoot 'shared/Assert-ReplicationWindowsAppContainer.ps1') `
             -Destination (Join-Path $trustedShared 'Assert-ReplicationWindowsAppContainer.ps1')
+        Copy-Item `
+            -LiteralPath (Join-Path $PSScriptRoot 'shared/Assert-ReplicationAppleAppSandbox.ps1') `
+            -Destination (Join-Path $trustedShared 'Assert-ReplicationAppleAppSandbox.ps1')
         @'
 param(
     [string]$Platform,
@@ -3663,6 +3731,12 @@ exit 0
         $repo = Join-Path $TestDrive 'catalyst-repo'
         $output = Join-Path $repo 'artifacts/bin/Maui.Controls.Sample.Sandbox/Debug/net10.0-maccatalyst/maccatalyst-arm64'
         $app = Join-Path $output 'Maui.Controls.Sample.Sandbox.app'
+        Resolve-CatalystSandboxAppPath `
+            -RepositoryRoot $repo `
+            -BuildConfiguration Debug `
+            -Framework net10.0-maccatalyst `
+            -RuntimeIdentifier maccatalyst-arm64 `
+            -AllowMissing | Should -BeNullOrEmpty
         New-Item -ItemType Directory -Path $app -Force | Out-Null
 
         Resolve-CatalystSandboxAppPath `
@@ -3701,6 +3775,8 @@ exit 0
                     [StringComparison]::Ordinal))
         $restoreFunction.Value |
             Should -Match 'REPLICATION_SANDBOX_CLEANUP_FAILED:'
+        $restoreFunction.Value | Should -Match (
+            "(?s)Platform -eq 'catalyst'.*?-Cleanup.*?-EnforceNetworkIsolation")
         $restoreFunction.Value | Should -Match (
             "(?s)try \{.*?git restore.*?BuildAndRunSandbox\.ps1.*?" +
             'Clear-TransientAppiumDirectory.*?\} catch \{')
@@ -6949,7 +7025,7 @@ public class Issue36298 : _IssuesUITest
                 -Content $scoped `
                 -Path 'src/Controls/tests/TestCases.Shared.Tests/Tests/Issues/Issue1.cs' `
                 -Platform 'android'
-        } | Should -Throw '*also run on ios*'
+        } | Should -Throw '*also run on*ios*'
     }
 
     It 'reads an else branch' {
@@ -6987,6 +7063,32 @@ public class Issue36298 : _IssuesUITest
                 -Path 'src/Controls/tests/DeviceTests/Elements/Issue1.cs' `
                 -Platform 'android'
         } | Should -Throw '*ios, catalyst, windows*'
+    }
+
+    It 'requires a directive for dual-platform Apple-suffixed device tests' {
+        $deviceTest = $script:unscoped -replace '\[Test\]', '[Fact]'
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content $deviceTest `
+                -Path 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs' `
+                -Platform 'catalyst'
+        } | Should -Throw '*also run on ios*'
+    }
+
+    It 'accepts exact Catalyst and iOS directives in Apple-suffixed files' {
+        $deviceTest = $script:unscoped -replace '\[Test\]', '[Fact]'
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content "#if MACCATALYST`n$deviceTest`n#endif" `
+                -Path 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs' `
+                -Platform 'catalyst'
+        } | Should -Not -Throw
+        {
+            Assert-ReplicationTestPlatformScope `
+                -Content "#if IOS && !MACCATALYST`n$deviceTest`n#endif" `
+                -Path 'src/Controls/tests/DeviceTests/Issue36864.iOS.cs' `
+                -Platform 'ios'
+        } | Should -Not -Throw
     }
 }
 
@@ -13505,23 +13607,25 @@ Describe 'A tier the repository rules out is never offered' {
         # asserted through the function rather than by reasoning about it: with
         # the repository as it stands, unit is excluded, and it must stop being
         # excluded the moment one of its projects gains a platform target.
-        $excluded = @(Get-ReplicationUnbuildableTestTiers -Platform 'ios' -RepositoryRoot $script:RepoRoot)
+        $excluded = @(Get-ReplicationUnbuildableTestTiers -Platform 'android' -RepositoryRoot $script:RepoRoot)
         $excluded | Should -Contain 'unit'
 
         $fake = Join-Path $TestDrive 'faketree'
         New-Item -ItemType Directory -Path (Join-Path $fake 'src/Controls/tests/Core.UnitTests') -Force | Out-Null
         Set-Content -LiteralPath (Join-Path $fake 'src/Controls/tests/Core.UnitTests/Core.UnitTests.csproj') `
-            -Value '<Project><PropertyGroup><TargetFrameworks>net10.0-ios;net10.0-android</TargetFrameworks></PropertyGroup></Project>'
-        @(Get-ReplicationUnbuildableTestTiers -Platform 'ios' -RepositoryRoot $fake) |
-            Should -Not -Contain 'unit' -Because 'a project with an ios target framework builds for ios'
+            -Value '<Project><PropertyGroup><TargetFrameworks>net10.0-android</TargetFrameworks></PropertyGroup></Project>'
+        @(Get-ReplicationUnbuildableTestTiers -Platform 'android' -RepositoryRoot $fake) |
+            Should -Not -Contain 'unit' -Because 'a project with an android target framework builds for android'
     }
 
-    It 'always excludes host-executed tiers from Windows replication' {
-        $excluded = @(Get-ReplicationUnbuildableTestTiers `
-            -Platform 'windows' `
-            -RepositoryRoot $script:RepoRoot)
-        $excluded | Should -Contain 'unit'
-        $excluded | Should -Contain 'xaml'
+    It 'always excludes host-executed tiers from isolated app replication' {
+        foreach ($platform in @('windows', 'ios', 'catalyst')) {
+            $excluded = @(Get-ReplicationUnbuildableTestTiers `
+                -Platform $platform `
+                -RepositoryRoot $script:RepoRoot)
+            $excluded | Should -Contain 'unit'
+            $excluded | Should -Contain 'xaml'
+        }
 
         $script:Source | Should -Match (
             "Windows replication permits only a packaged Controls device test")
@@ -13529,6 +13633,8 @@ Describe 'A tier the repository rules out is never offered' {
             "Windows replication requires exactly one Windows-only C# file in Controls\.DeviceTests")
         $script:Source | Should -Match (
             "WINDOWS PACKAGED BOUNDARY: testType must be device")
+        $script:Source | Should -Match (
+            "APPLE APP BOUNDARY: testType must be device")
     }
 
     It 'is seeded before the first plan attempt, not after the first refusal' {
