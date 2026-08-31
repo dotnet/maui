@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This regression is specific to the iOS/MacCatalyst CollectionView2 handler.
+#if IOS || MACCATALYST // This regression is specific to the iOS/MacCatalyst CollectionView2 handler.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
