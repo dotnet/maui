@@ -54,6 +54,14 @@ Describe 'Copilot reviewer base branch allowlist' {
             $reviewScript | Should -Match ([regex]::Escape("`$copilotModel = 'gpt-5.6-sol'"))
             $reviewScript | Should -Not -Match 'COPILOT_REVIEW_MODEL'
         }
+
+        It 'pins the local test reviewer instead of accepting an environment override' {
+            $reviewTestsScript = Get-Content -Raw -LiteralPath (
+                Join-Path $PSScriptRoot 'Review-Tests.ps1')
+
+            $reviewTestsScript | Should -Match ([regex]::Escape('$model = "gpt-5.6-sol"'))
+            $reviewTestsScript | Should -Not -Match 'COPILOT_REVIEW_TESTS_MODEL'
+        }
     }
 
     It 'accepts every supported base branch shape' {

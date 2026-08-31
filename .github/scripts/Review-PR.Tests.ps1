@@ -294,9 +294,10 @@ Describe 'Copilot reviewer configuration' {
         $content | Should -Not -Match 'transient auth-validation 401'
     }
 
-    It 'defaults the local test reviewer to GPT-5.6 Sol with long context' {
+    It 'pins the local test reviewer to GPT-5.6 Sol with long context' {
         $reviewTests = Get-Content -Raw (Join-Path $PSScriptRoot 'Review-Tests.ps1')
-        $reviewTests | Should -Match ([regex]::Escape('else { "gpt-5.6-sol" }'))
+        $reviewTests | Should -Match ([regex]::Escape('$model = "gpt-5.6-sol"'))
+        $reviewTests | Should -Not -Match 'COPILOT_REVIEW_TESTS_MODEL'
         $reviewTests | Should -Match ([regex]::Escape('"--context", "long_context"'))
     }
 
