@@ -32,6 +32,8 @@ Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.get -> i
 Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.set -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -> int
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressing(Microsoft.Maui.Controls.View! sender, Microsoft.Maui.GestureStatus status, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.LongPressedEventArgs
 Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
@@ -208,6 +210,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.ShellHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
 ~static Microsoft.Maui.Controls.Handlers.ShellHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.Shell, Microsoft.Maui.Controls.Handlers.ShellHandler>
+~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 ~static Microsoft.Maui.Controls.Shell.GetBackground(Microsoft.Maui.Controls.BindableObject obj) -> Microsoft.Maui.Controls.Brush
@@ -301,3 +304,5 @@ Microsoft.Maui.Controls.Handlers.ShellContentHandler.ShellContentHandler() -> vo
 override Microsoft.Maui.Controls.Handlers.ShellContentHandler.CreatePlatformElement() -> UIKit.UIView!
 static Microsoft.Maui.Controls.Handlers.ShellContentHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.Controls.ShellContent!, Microsoft.Maui.Controls.Handlers.ShellContentHandler!>!
 static Microsoft.Maui.Controls.Handlers.ShellContentHandler.Mapper -> Microsoft.Maui.PropertyMapper<Microsoft.Maui.Controls.ShellContent!, Microsoft.Maui.Controls.Handlers.ShellContentHandler!>!
+~static Microsoft.Maui.Controls.Editor.MapAutoSize(Microsoft.Maui.Handlers.IEditorHandler handler, Microsoft.Maui.Controls.Editor editor) -> void
+static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?

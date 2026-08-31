@@ -23,6 +23,14 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DetectStaleOutputFilesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DeleteStaleOutputFilesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.CreatePartialInfoPlistTask" />
 
     <UsingTask
@@ -89,6 +97,14 @@
         <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
         <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
         <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
+
+        <!-- Rooted against the project directory rather than with [System.IO.Path]::GetFullPath, which
+             resolves against the process working directory. Unix reports that directory with every
+             symbolic link already resolved, so GetFullPath would spell the intermediate directory
+             differently from %(FullPath)/$(MSBuildProjectDirectory) whenever the project lives behind a
+             link (macOS /tmp and /var/folders, or a Windows junction). Handing this spelling to the
+             tasks keeps every path the build produces consistent with the paths MSBuild produces. -->
+        <_MauiIntermediateImagesFullPath>$([MSBuild]::EnsureTrailingSlash($([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(_MauiIntermediateImages)'))))</_MauiIntermediateImagesFullPath>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
@@ -785,7 +801,7 @@
             ThrowsErrorOnDuplicateOutput="$(_ResizetizerThrowsErrorOnDuplicateOutputFilename)"
             DuplicateOutputErrorMessage="$(_ResizetizerDefaultDuplicateFilenamesErrorMessage)"
             PlatformType="$(ResizetizerPlatformType)"
-            IntermediateOutputPath="$(_MauiIntermediateImages)"
+            IntermediateOutputPath="$(_MauiIntermediateImagesFullPath)"
             InputsFile="$(_ResizetizerInputsFile)"
             Images="@(_MauiImageToProcess)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
@@ -798,17 +814,14 @@
                  written into the intermediate folder by external backends (e.g. *.items files) are
                  never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
-            <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
-            <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
-            <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
-            <_ResizetizerImagesToDelete Remove="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
 
-        <!-- Remove files which are no longer needed -->
-        <Delete
-            Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
-            Files="@(_ResizetizerImagesToDelete)"
-        />
+        <!-- Keep validation and removal in one task so cleanup retains the opened root, parent and leaf
+             identities. Windows deletes the retained leaf while locking its ancestry; Unix atomically
+             moves it to a quarantine outside the resource tree, which _CleanResizetizer removes. -->
+        <DeleteStaleOutputFilesTask
+            Root="$(_MauiIntermediateImagesFullPath)"
+            KnownOutputs="@(_ResizetizerCollectedImages)" />
 
         <ItemGroup>
             <MauiProcessedImage Include="@(_ResizetizerCollectedImages)" />
@@ -903,14 +916,14 @@
 
         <!-- Tizen -->
         <PropertyGroup>
-            <ResizetizerIntermediateOutputAbsolutePath>$([System.IO.Path]::GetFullPath('$(_MauiIntermediateImages)'))</ResizetizerIntermediateOutputAbsolutePath>
+            <ResizetizerIntermediateOutputAbsolutePath>$(_MauiIntermediateImagesFullPath)</ResizetizerIntermediateOutputAbsolutePath>
         </PropertyGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True' And '@(_ResizetizerCollectedImages)' != ''">
             <TizenTpkUserIncludeFiles Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" TizenTpkSubDir="res\" />
             <FileWrites Include="$(ResizetizerIntermediateOutputAbsolutePath)res\res.xml" />
 
             <TizenTpkUserIncludeFiles Include="@(_ResizetizerCollectedImages)">
-                <TizenTpkSubDir>$([MSBuild]::MakeRelative($(ResizetizerIntermediateOutputAbsolutePath), $([System.IO.Path]::GetFullPath('%(_ResizetizerCollectedImages.RelativeDir)'))))</TizenTpkSubDir>
+                <TizenTpkSubDir>$([MSBuild]::MakeRelative('$(ResizetizerIntermediateOutputAbsolutePath)', '%(_ResizetizerCollectedImages.RelativeDir)'))</TizenTpkSubDir>
             </TizenTpkUserIncludeFiles>
         </ItemGroup>
 

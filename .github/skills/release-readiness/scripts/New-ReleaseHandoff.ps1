@@ -5,7 +5,7 @@
     Renders a copy-ready public release handoff from release-readiness JSON.
 
 .DESCRIPTION
-    Projects an existing Preview or SR readiness report plus separately verified
+    Projects an existing Preview, RC, or SR readiness report plus separately verified
     release evidence into Markdown and normalized JSON. It does not survey a
     branch, select a build, query private release systems, or publish content.
     Missing evidence is rendered as a literal TBD instead of being inferred.
@@ -312,20 +312,21 @@ function Get-HandoffReleaseType {
 
     $branchType = [string](Get-HandoffProperty -Object $Readiness -Name 'BranchType')
     if ($branchType -ieq 'preview') { return 'preview' }
+    if ($branchType -ieq 'rc') { return 'rc' }
     if ($branchType -ieq 'sr') { return 'sr' }
     if (Get-HandoffProperty -Object $Readiness -Name 'metadata') { return 'sr' }
-    throw 'Readiness JSON is not recognized as a Preview or SR report.'
+    throw 'Readiness JSON is not recognized as a Preview, RC, or SR report.'
 }
 
 function Get-HandoffReadinessSummary {
     param(
         [Parameter(Mandatory)]$Readiness,
-        [Parameter(Mandatory)][ValidateSet('preview', 'sr')][string]$ReleaseType,
+        [Parameter(Mandatory)][ValidateSet('preview', 'rc', 'sr')][string]$ReleaseType,
         [bool]$PublicSafe = $true
     )
 
     $rows = [Collections.Generic.List[object]]::new()
-    if ($ReleaseType -eq 'preview') {
+    if ($ReleaseType -in @('preview', 'rc')) {
         $checks = @(Get-HandoffProperty -Object $Readiness -Name 'Checks' -Default @())
     } else {
         $checks = @(Get-HandoffProperty -Object $Readiness -Name 'shipChecks' -Default @())
@@ -578,15 +579,20 @@ function New-ReleaseHandoffModel {
     $useEvidence = -not $PublicSafe -or $evidenceIsPublic
     $effectiveEvidence = if ($useEvidence) { $Evidence } else { [PSCustomObject]@{} }
     $releaseType = Get-HandoffReleaseType -Readiness $Readiness
-    if ($releaseType -eq 'preview') {
+    if ($releaseType -in @('preview', 'rc')) {
         $major = Get-HandoffProperty -Object $Readiness -Name 'MajorVersion'
-        $iteration = Get-HandoffProperty -Object $Readiness -Name 'PreviewNumber'
+        $iteration = if ($releaseType -eq 'rc') {
+            Get-HandoffProperty -Object $Readiness -Name 'RcNumber'
+        } else {
+            Get-HandoffProperty -Object $Readiness -Name 'PreviewNumber'
+        }
         $branch = Get-HandoffProperty -Object $Readiness -Name 'Branch'
         $mode = Get-HandoffProperty -Object $Readiness -Name 'Mode'
         $verdict = Get-HandoffProperty -Object $Readiness -Name 'Verdict'
         $checkState = Get-HandoffProperty -Object $Readiness -Name 'OverallStatus'
         $generatedAt = Get-HandoffProperty -Object $Readiness -Name 'GeneratedAt'
-        $defaultName = ".NET MAUI $major.0.0 Preview $iteration"
+        $stageName = if ($releaseType -eq 'rc') { 'RC' } else { 'Preview' }
+        $defaultName = ".NET MAUI $major.0.0 $stageName $iteration"
         $installability = Get-HandoffProperty -Object $Readiness -Name 'ConsumerInstallability'
     } else {
         $metadata = Get-HandoffProperty -Object $Readiness -Name 'metadata'
@@ -665,7 +671,7 @@ function New-ReleaseHandoffModel {
         $rollbackUrl = $null
     }
     if ($PublicSafe) {
-        if ($branch -notmatch '^release/\d+\.\d+\.\d+xx-(?:preview\d+|sr\d+)$') { $branch = $null }
+        if ($branch -notmatch '^release/\d+\.\d+\.\d+xx-(?:preview\d+|rc\d+|sr\d+)$') { $branch = $null }
         if ($mode -notin @('in-flight', 'candidate', 'shipped')) { $mode = $null }
         $verdict = ConvertTo-HandoffStructuredText -Value $verdict -Kind status -PublicSafe $true
         $checkStateText = [string]$checkState

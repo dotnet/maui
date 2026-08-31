@@ -52,6 +52,8 @@ Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.get -> i
 Microsoft.Maui.Controls.LongPressGestureRecognizer.MinimumPressDuration.set -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.get -> int
 Microsoft.Maui.Controls.LongPressGestureRecognizer.NumberOfTouchesRequired.set -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressed(Microsoft.Maui.Controls.View! sender, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
+Microsoft.Maui.Controls.LongPressGestureRecognizer.SendLongPressing(Microsoft.Maui.Controls.View! sender, Microsoft.Maui.GestureStatus status, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition = null) -> void
 Microsoft.Maui.Controls.LongPressGestureRecognizer.State.get -> Microsoft.Maui.GestureStatus
 Microsoft.Maui.Controls.LongPressedEventArgs
 Microsoft.Maui.Controls.LongPressedEventArgs.LongPressedEventArgs(object? parameter) -> void
@@ -162,6 +164,8 @@ override Microsoft.Maui.Controls.TextAlignmentConverter.CanConvertTo(System.Comp
 override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.TextAlignmentConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
+~static Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.MapLoop(Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapCurrentItem(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlowDirection(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
 static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyout(Microsoft.Maui.Controls.Handlers.ShellHandler! handler, Microsoft.Maui.Controls.Shell! shell) -> void
@@ -319,3 +323,6 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedConte
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.IToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Toolbar.MapDrawerToggleVisible(Microsoft.Maui.Handlers.ToolbarHandler! arg1, Microsoft.Maui.Controls.Toolbar! arg2) -> void
+static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?

@@ -225,6 +225,7 @@ public class XamlGenerator : IIncrementalGenerator
 				{
 					var rootType = ucRootType!;
 					var accessModifier = ucAccessModifier;
+					var generatedFields = XamlHotReloadState.GetGeneratedFields(assemblyName, targetFramework, stateKey);
 					var patchBody = InitializeComponentCodeWriter.TryGeneratePatchBody(
 						previousRoot,
 						previousNodeIds,
@@ -239,6 +240,7 @@ public class XamlGenerator : IIncrementalGenerator
 						typeCache,
 						sourceProductionContext,
 						xamlItem.ProjectItem,
+						generatedFields,
 						out var parsedNewRoot,
 						out var effectiveNewIds,
 						out var newNextNodeId,

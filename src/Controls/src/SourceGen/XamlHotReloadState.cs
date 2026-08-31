@@ -70,6 +70,11 @@ internal static class XamlHotReloadState
 		/// can tell how many times a file has been regenerated in the current build session.
 		/// </summary>
 		public int Version { get; set; }
+		/// <summary>
+		/// Names and declared XAML types of fields generated on the originally loaded type. This seed
+		/// remains stable across edits because metadata updates cannot add or remove instance fields.
+		/// </summary>
+		public Dictionary<string, XmlType>? GeneratedFields { get; set; }
 	}
 
 	/// <summary>
@@ -110,14 +115,37 @@ internal static class XamlHotReloadState
 		{
 			if (!_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry))
 			{
-				entry = new CacheEntry();
+				entry = new CacheEntry
+				{
+					GeneratedFields = parsedRoot is null
+						? null
+						: XamlGeneratedFieldCollector.Collect(parsedRoot),
+				};
 				_cache[(assemblyName, targetFramework, relativePath)] = entry;
+			}
+			else if (entry.GeneratedFields is null && parsedRoot is not null)
+			{
+				entry.GeneratedFields = XamlGeneratedFieldCollector.Collect(parsedRoot);
 			}
 			entry.XamlText = xamlText;
 			entry.ParsedRoot = parsedRoot;
 			entry.NodeIds = nodeIds;
 			entry.NextNodeId = nextNodeId;
 			entry.Version = version;
+		}
+	}
+
+	public static Dictionary<string, XmlType>? GetGeneratedFields(string assemblyName, string targetFramework, string relativePath)
+	{
+		lock (_lock)
+		{
+			if (_cache.TryGetValue((assemblyName, targetFramework, relativePath), out var entry)
+				&& entry.GeneratedFields is not null)
+			{
+				return new Dictionary<string, XmlType>(entry.GeneratedFields, System.StringComparer.Ordinal);
+			}
+
+			return null;
 		}
 	}
 
