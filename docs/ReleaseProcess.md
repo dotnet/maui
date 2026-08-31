@@ -15,6 +15,12 @@ The pipeline accepts:
 - `ghOwner` and `ghRepo`: the GitHub owner and repository name used to resolve
   the BAR build. Keep `ghOwner: dotnet` and enter `ghRepo: android-libraries`
   for an Android libraries release.
+- `barBuildId`: optional. BAR records a build's GitHub URL only when Arcade
+  could verify the AzDO-to-GitHub mapping when the build was published. A build
+  without that URL cannot be found by repository and commit, so supply its BAR
+  ID to resolve it directly. The requested commit is still verified against the
+  resolved build, and the repository is verified against the AzDO mirror naming
+  convention (`<owner>-<name>`). Leave it at `skip` otherwise.
 - Workload behavior is inferred for `dotnet/android`, `dotnet/macios`, and
   `dotnet/maui`. Other enabled repositories use the ordinary NuGet package path.
 - `commitHash`: the source commit registered in BAR. It must resolve to exactly

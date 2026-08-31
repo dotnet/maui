@@ -54,10 +54,46 @@ Describe 'ci-official-release.yml' {
   }
 
   It 'requires commit resolution to return one BAR build for the repository' {
-    $pipeline | Should -Not -Match '(?m)^- name: barBuildId$'
     $pipeline | Should -Match '--repo \$sourceRepository --commit'
     $pipeline | Should -Match 'Expected exactly one BAR build'
+    # Repository-specific channel policy was deliberately removed; identity is
+    # established by repository and commit alone.
     $pipeline | Should -Not -Match 'requiredChannel(Name|Id)|build\.channels|5172'
+  }
+
+  It 'enables dotnet/skiasharp as a non-workload repository' {
+    $allowed = [regex]::Match(
+      $pipeline,
+      '(?s)\$allowedRepositories = @\((?<entries>.*?)\r?\n\s*\)').Groups['entries'].Value
+    $allowed | Should -Match 'dotnet/skiasharp'
+
+    # skiasharp must not be inferred as a workload repository.
+    $isWorkload = [regex]::Match(
+      $pipeline,
+      "(?s)- name: isWorkload.*?value: \\\$\{\{(?<expr>.*?)\}\}").Groups['expr'].Value
+    $isWorkload | Should -Not -Match 'skiasharp'
+  }
+
+  It 'resolves a build by BAR ID when the GitHub URL is unavailable' {
+    $pipeline | Should -Match '(?m)^- name: barBuildId$'
+    $pipeline | Should -Match 'get-build --ci --id \$barBuildId --extended'
+    $pipeline | Should -Match 'BAR_BUILD_ID: \$\{\{ parameters\.barBuildId \}\}'
+    # A build found by ID was never matched against the request, so the commit
+    # must still be verified.
+    $pipeline | Should -Match 'not the requested'
+    # Darc reports failures on stdout; losing them makes the run undiagnosable.
+    $pipeline | Should -Match 'Darc failed to resolve the BAR build: \$\(\$buildJson \| Out-String\)'
+  }
+
+  It 'falls back to the AzDO mirror convention when BAR has no GitHub URL' {
+    # Anchored: a substring match would still pass if the field were renamed.
+    $pipeline | Should -Match '(?m)\$buildRepository = \$build\.gitHubRepository\s*$'
+    $pipeline | Should -Match '\[string\]::IsNullOrWhiteSpace\(\$buildRepository\)'
+    $pipeline | Should -Match "\`$separator = \`$azdoName\.IndexOf\('-'\)"
+    $pipeline | Should -Match 'mirror convention'
+    # The verified identity must come from the fallback, never the raw field.
+    $pipeline | Should -Match '\[Uri\] \$buildRepository'
+    $pipeline | Should -Not -Match '\[Uri\] \$build\.gitHubRepository'
   }
 
   It 'publishes a generic audit before approval and supports dry runs' {
