@@ -79,9 +79,13 @@ namespace Microsoft.Maui.Storage
 		static UIDocumentPickerViewController CreateDocumentPicker(string[] allowedUtis)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14))
-				return CreateModernDocumentPicker(allowedUtis);
+			{
+				var modernDocumentPicker = CreateModernDocumentPicker(allowedUtis);
+				if (modernDocumentPicker is not null)
+					return modernDocumentPicker;
+			}
 
-#pragma warning disable CA1416, CA1422 // The string-based constructor is required for MAUI's iOS 13 support.
+#pragma warning disable CA1416, CA1422 // Required for iOS 13 and to preserve unsupported custom identifier behavior.
 			return new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
 #pragma warning restore CA1416, CA1422
 		}
@@ -94,15 +98,19 @@ namespace Microsoft.Maui.Storage
 
 			foreach (var allowedUti in allowedUtis)
 			{
-				var contentType = UTType.CreateFromIdentifier(allowedUti);
+				var contentType = UTType.CreateFromIdentifier(allowedUti)
+					?? UTType.GetType(allowedUti.TrimStart('.'), UTTagClass.FilenameExtension, null);
 
-				if (contentType is null)
-					contentType = UTType.GetType(allowedUti.TrimStart('.'), UTTagClass.FilenameExtension, null);
+				if (contentType is null && allowedUti.IndexOf('.', StringComparison.Ordinal) > 0)
+					contentType = UTType.CreateImportedType(allowedUti);
 
-				contentTypes.Add(contentType ?? UTType.CreateImportedType(allowedUti));
+				if (contentType is not null)
+					contentTypes.Add(contentType);
 			}
 
-			return new UIDocumentPickerViewController(contentTypes.ToArray(), asCopy: false);
+			return contentTypes.Count == 0
+				? null
+				: new UIDocumentPickerViewController(contentTypes.ToArray(), asCopy: false);
 		}
 
 		static async void GetFileResults(NSUrl[] urls, TaskCompletionSource<IEnumerable<FileResult>> tcs)

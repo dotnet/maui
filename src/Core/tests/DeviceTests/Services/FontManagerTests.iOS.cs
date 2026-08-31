@@ -1,4 +1,5 @@
 ﻿using System;
+using Foundation;
 using UIKit;
 using Xunit;
 
@@ -35,6 +36,11 @@ public partial class FontManagerTests : TestBase
 			manager.GetFont(Font.OfSize("embedded-dokdo", manager.DefaultFontSize)));
 
 		Assert.Equal("Dokdo", font.FamilyName);
+
+		using var text = new NSString("Maui");
+		var measuredSize = text.GetSizeUsingAttributes(new UIStringAttributes { Font = font });
+		Assert.True(measuredSize.Width > 0);
+		Assert.True(measuredSize.Height > 0);
 	}
 
 }

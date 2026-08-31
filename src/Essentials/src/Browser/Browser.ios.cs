@@ -28,7 +28,7 @@ namespace Microsoft.Maui.ApplicationModel
 		private static async Task LaunchSafariViewController(Uri uri, BrowserLaunchOptions options)
 		{
 			var nativeUrl = new NSUrl(uri.AbsoluteUri);
-			var configuration = new SFSafariViewControllerConfiguration
+			using var configuration = new SFSafariViewControllerConfiguration
 			{
 				EntersReaderIfAvailable = false,
 			};
