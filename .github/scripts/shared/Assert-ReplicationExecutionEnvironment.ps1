@@ -960,8 +960,11 @@ function Get-ReplicationWindowsAppContainerCommand {
             try {
                 $decoded = [Text.UTF8Encoding]::new($false, $true).GetString(
                     [Convert]::FromBase64String($payload))
+                $decodedArguments = ConvertFrom-Json `
+                    -InputObject $decoded `
+                    -NoEnumerate
                 $nested = @(
-                    ConvertFrom-Json -InputObject $decoded -NoEnumerate |
+                    $decodedArguments |
                         ForEach-Object { [string]$_ })
             } catch {
                 throw 'Windows recording replay arguments are malformed.'

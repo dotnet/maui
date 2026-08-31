@@ -336,6 +336,58 @@ Describe 'Fail-closed outbound network isolation' {
             } | Should -Throw '*requires the AppContainer boundary*'
         }
 
+        It 'round-trips recording replay arguments without flattening the array' {
+            $nestedArguments = @(
+                '-Platform', 'windows',
+                '-Configuration', 'Debug',
+                '-EnforceNetworkIsolation'
+            )
+            $payload = [Convert]::ToBase64String(
+                [Text.Encoding]::UTF8.GetBytes(
+                    (ConvertTo-Json -InputObject $nestedArguments -Compress)))
+            $sandboxPath = Join-Path $script:WindowsTrustedRoot (
+                'scripts/BuildAndRunSandbox.ps1')
+
+            $command = Get-ReplicationWindowsAppContainerCommand `
+                -TrustedRoot $script:WindowsTrustedRoot `
+                -ScriptPath (Join-Path $script:WindowsTrustedRoot (
+                    'scripts/shared/Record-Reproduction.ps1')) `
+                -Arguments @(
+                    '-Platform', 'windows',
+                    '-ReproductionScriptPath', $sandboxPath,
+                    '-ReproductionArgumentsPayload', $payload
+                ) `
+                -Environment $script:WindowsEnvironment `
+                -OperatingSystem windows
+
+            $command.Boundary | Should -BeExactly 'windows-appcontainer'
+        }
+
+        It 'rejects recording replay arguments that drop AppContainer enforcement' {
+            $nestedArguments = @(
+                '-Platform', 'windows',
+                '-Configuration', 'Debug'
+            )
+            $payload = [Convert]::ToBase64String(
+                [Text.Encoding]::UTF8.GetBytes(
+                    (ConvertTo-Json -InputObject $nestedArguments -Compress)))
+            {
+                Get-ReplicationWindowsAppContainerCommand `
+                    -TrustedRoot $script:WindowsTrustedRoot `
+                    -ScriptPath (Join-Path $script:WindowsTrustedRoot (
+                        'scripts/shared/Record-Reproduction.ps1')) `
+                    -Arguments @(
+                        '-Platform', 'windows',
+                        '-ReproductionScriptPath', (Join-Path (
+                            $script:WindowsTrustedRoot) (
+                            'scripts/BuildAndRunSandbox.ps1')),
+                        '-ReproductionArgumentsPayload', $payload
+                    ) `
+                    -Environment $script:WindowsEnvironment `
+                    -OperatingSystem windows
+            } | Should -Throw '*must preserve the AppContainer boundary*'
+        }
+
         It 'rejects unlisted trusted scripts and host-executed test tiers' {
             {
                 Get-ReplicationWindowsAppContainerCommand `
