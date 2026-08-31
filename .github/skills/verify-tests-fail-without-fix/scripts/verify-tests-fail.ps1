@@ -1578,6 +1578,18 @@ function Write-ReplicationVerifierMachineResult {
         Set-Content -LiteralPath $MachineResultPath -Encoding utf8NoBOM
 }
 
+function Get-SnapshotSizeMismatchSignatures {
+    param([string]$Content)
+    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
+
+    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
+    return @($rx.Matches($Content) |
+        ForEach-Object {
+            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
+        } |
+        Sort-Object -Unique)
+}
+
 function Get-TestResultFromOutput {
     <#
     .SYNOPSIS
@@ -3954,18 +3966,6 @@ function Get-SnapshotDiffMap {
         }
     } catch { return @{} }
     return $map
-}
-
-function Get-SnapshotSizeMismatchSignatures {
-    param([string] $Content)
-    if ([string]::IsNullOrWhiteSpace($Content)) { return @() }
-
-    $rx = [regex]'(?i)Snapshot different than baseline:\s*(?<file>[^\r\n]+?)\s*\(size differs\s*-\s*baseline is (?<baseline>\d+x\d+) pixels?, actual is (?<actual>\d+x\d+) pixels?\)'
-    return @($rx.Matches($Content) |
-        ForEach-Object {
-            "$($_.Groups['file'].Value.Trim().ToLowerInvariant())|$($_.Groups['baseline'].Value)|$($_.Groups['actual'].Value)"
-        } |
-        Sort-Object -Unique)
 }
 
 function Test-SnapshotSizeMismatchPair {

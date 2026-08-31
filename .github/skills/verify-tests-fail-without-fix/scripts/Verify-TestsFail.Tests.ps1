@@ -970,6 +970,19 @@ F/DEBUG(9876): #00 pc abcdef0123456789 /other/path/libfoo.so (startup_abort+12)
 }
 
 Describe 'Failure-only runner reporting' {
+    It 'defines every result parser dependency before failure-only execution' {
+        $signatureHelper = $script:VerifierSource.IndexOf(
+            'function Get-SnapshotSizeMismatchSignatures')
+        $resultParser = $script:VerifierSource.IndexOf(
+            'function Get-TestResultFromOutput')
+        $failureOnlyExecution = $script:VerifierSource.IndexOf(
+            'Verify Tests Fail (Failure Only Mode)')
+
+        $signatureHelper | Should -BeGreaterOrEqual 0
+        $signatureHelper | Should -BeLessThan $resultParser
+        $resultParser | Should -BeLessThan $failureOnlyExecution
+    }
+
     It 'converts a runner exception into an environment result that reaches the report writer' {
         Mock Invoke-TestRunWithRetry { throw 'simulated non-Windows runner failure' }
         $entry = @{ TestName = 'Issue12345'; Type = 'DeviceTest' }
