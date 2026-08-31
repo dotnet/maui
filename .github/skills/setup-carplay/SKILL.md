@@ -14,7 +14,7 @@ Configures a .NET MAUI iOS app to include a CarPlay companion experience. Guides
 ## Overview
 
 CarPlay uses iOS's **scene architecture** — the same multi-window system MAUI already supports. A CarPlay app is just another scene in your app with:
-- A dedicated scene delegate (subclass of `CPTemplateApplicationSceneDelegate`)  
+- A dedicated scene delegate (subclass of `CPTemplateApplicationSceneDelegate`)
 - A template-based UI (`CPListTemplate`, `CPGridTemplate`, `CPTabBarTemplate`, etc.)
 - CarPlay-specific entitlements
 
@@ -365,7 +365,7 @@ Example XAML page for CarPlay (keep it simple — CarPlay display is ~800×480):
 
 Not all templates can be used as the **root** template. Allowed root templates:
 - `CPListTemplate` ✅
-- `CPGridTemplate` ✅  
+- `CPGridTemplate` ✅
 - `CPTabBarTemplate` ✅
 - `CPNowPlayingTemplate` ✅
 - `CPMapTemplate` ✅ (navigation only)
