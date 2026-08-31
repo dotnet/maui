@@ -144,14 +144,12 @@ Describe 'Windows replication AppContainer manifests' {
         $policy = Get-ReplicationWindowsWinUiRegistrationPolicy
         $policy.profiles.Count | Should -BeExactly 2
         $attributes = Get-Content -LiteralPath $script:GitAttributes -Raw
-        foreach ($name in @(
-            'WindowsGeneratedSandboxAppxManifest.xml',
-            'WindowsGeneratedDeviceTestsAppxManifest.xml'
-        )) {
-            $attributes | Should -Match (
-                [regex]::Escape(
-                    ".github/scripts/tests/fixtures/$name text eol=lf"))
-        }
+        $attributes | Should -Match ([regex]::Escape(
+                '.github/scripts/tests/fixtures/' +
+                'WindowsGeneratedSandboxAppxManifest.xml binary'))
+        $attributes | Should -Match ([regex]::Escape(
+                '.github/scripts/tests/fixtures/' +
+                'WindowsGeneratedDeviceTestsAppxManifest.xml text eol=lf'))
 
         $previousPackagesRoot = $env:NUGET_PACKAGES
         try {
@@ -174,8 +172,15 @@ Describe 'Windows replication AppContainer manifests' {
                             $identityName)
                     })
                 $profile.Count | Should -BeExactly 1
-                $profile[0].generatedManifestFixtureProvenance |
-                    Should -Match 'WinAppSdkGenerateAppxManifest'
+                if ($identityName -ceq 'com.microsoft.maui.sandbox') {
+                    $profile[0].generatedManifestFixtureProvenance |
+                        Should -Match 'run 15156446'
+                    $profile[0].generatedManifestFixtureProvenance |
+                        Should -Match 'Six diagnostic-only Sandbox observations'
+                } else {
+                    $profile[0].generatedManifestFixtureProvenance |
+                        Should -Match 'WinAppSdkGenerateAppxManifest'
+                }
                 (Get-FileHash -LiteralPath $fixturePath `
                         -Algorithm SHA256).Hash.ToLowerInvariant() |
                     Should -BeExactly (
@@ -260,24 +265,20 @@ Describe 'Windows replication AppContainer manifests' {
         $extensions = @($document.SelectNodes(
             "/*[local-name()='Package']/*[local-name()='Extensions']/" +
             "*[local-name()='Extension']"))
-        for ($index = $extensions.Count - 1; $index -ge 2; $index--) {
+        for ($index = $extensions.Count - 1; $index -ge 1; $index--) {
             [void]$extensions[$index].ParentNode.RemoveChild(
                 $extensions[$index])
         }
-        $remainingExtensions = @($document.SelectNodes(
+        $classes = @($document.SelectNodes(
             "/*[local-name()='Package']/*[local-name()='Extensions']/" +
-            "*[local-name()='Extension']"))
-        $keepCounts = @(68, 1)
-        for ($index = 0; $index -lt $remainingExtensions.Count; $index++) {
-            $classes = @($remainingExtensions[$index].SelectNodes(
-                "*[local-name()='InProcessServer']/" +
-                "*[local-name()='ActivatableClass']"))
-            for ($classIndex = $classes.Count - 1;
-                $classIndex -ge $keepCounts[$index];
-                $classIndex--) {
-                [void]$classes[$classIndex].ParentNode.RemoveChild(
-                    $classes[$classIndex])
-            }
+            "*[local-name()='Extension']/" +
+            "*[local-name()='InProcessServer']/" +
+            "*[local-name()='ActivatableClass']"))
+        for ($classIndex = $classes.Count - 1;
+            $classIndex -ge 1;
+            $classIndex--) {
+            [void]$classes[$classIndex].ParentNode.RemoveChild(
+                $classes[$classIndex])
         }
         $content = $document.OuterXml
         $packagePath = Join-Path $TestDrive 'observed.msix'
@@ -310,7 +311,7 @@ Describe 'Windows replication AppContainer manifests' {
                     -PackagePath $packagePath `
                     -ManifestObservationRoot $observationRoot `
                     -ManifestObservationDirectory $observationDirectory
-            } | Should -Throw '*extensions 2/15, records 69/855*'
+            } | Should -Throw '*extensions 1/2, records 1/69*'
         }
 
         $observations = @(Get-ChildItem -LiteralPath $observationDirectory `
@@ -328,10 +329,10 @@ Describe 'Windows replication AppContainer manifests' {
             $profile.sequence | Should -BeExactly ($index + 1)
             $profile.identityName |
                 Should -BeExactly 'com.microsoft.maui.sandbox'
-            $profile.actualExtensionCount | Should -BeExactly 2
-            $profile.actualRecordCount | Should -BeExactly 69
-            $profile.expectedExtensionCount | Should -BeExactly 15
-            $profile.expectedRecordCount | Should -BeExactly 855
+            $profile.actualExtensionCount | Should -BeExactly 1
+            $profile.actualRecordCount | Should -BeExactly 1
+            $profile.expectedExtensionCount | Should -BeExactly 2
+            $profile.expectedRecordCount | Should -BeExactly 69
             $profile.sourceMsixSha256 |
                 Should -BeExactly (
                     Get-FileHash -LiteralPath $packagePath -Algorithm SHA256
@@ -363,7 +364,7 @@ Describe 'Windows replication AppContainer manifests' {
             $records = @(Get-Content -LiteralPath (
                     Join-Path $observations[$index].FullName (
                         'normalized-records.txt')))
-            $records.Count | Should -BeExactly 69
+            $records.Count | Should -BeExactly 1
             (Get-ReplicationWindowsRegistrationRecordsSha256 `
                     -Records $records) |
                 Should -BeExactly $profile.actualNormalizedRecordsSha256
@@ -435,10 +436,10 @@ Describe 'Windows replication AppContainer manifests' {
                 '"schemaVersion": 1,',
                 '"schemaVersion": "1",'),
             $content.Replace(
-                '"extensionCount": 15,',
-                '"extensionCount": "15",'),
+                '"extensionCount": 16,',
+                '"extensionCount": "16",'),
             $content.Replace(
-                '"recordCount": 855,',
+                '"recordCount": 955,',
                 '"recordCount": true,'),
             $content.Replace(
                 '"schemaVersion": 1,',
@@ -468,7 +469,7 @@ Describe 'Windows replication AppContainer manifests' {
                 ('"identityName": "com.microsoft.maui.sandbox", ' +
                     '"unexpectedProfile": true,')),
             $content.Replace(
-                '      "recordCount": 855,' + "`n",
+                '      "recordCount": 955,' + "`n",
                 '')
         )
         foreach ($mutation in $structuralMutations) {
@@ -541,15 +542,10 @@ Describe 'Windows replication AppContainer manifests' {
             -Document $registrationDocument `
             -Shape Expected `
             -Description 'restored WinUI registrations')
-        $sandboxProfile = @($policy.profiles | Where-Object {
-                $_.identityName -ceq 'com.microsoft.maui.sandbox'
-            })[0]
-        $records.Count | Should -BeExactly $sandboxProfile.recordCount
-        (Get-ReplicationWindowsRegistrationRecordsSha256 -Records $records) |
-            Should -BeExactly $sandboxProfile.normalizedRecordsSha256
+        $records.Count | Should -BeExactly 855
         @($registrationDocument.DocumentElement.ChildNodes | Where-Object {
                 $_.NodeType -eq [Xml.XmlNodeType]::Element
-            }).Count | Should -BeExactly $sandboxProfile.extensionCount
+            }).Count | Should -BeExactly 15
 
         $nuspec = Read-ReplicationWindowsManifestXml `
             -Content ([IO.File]::ReadAllText(

@@ -15,7 +15,7 @@
 
 # Always checkout docs using unix line endings because mdoc uses unix line endings even on windows
 /docs/**/*.xml text eol=lf
-.github/scripts/tests/fixtures/WindowsGeneratedSandboxAppxManifest.xml text eol=lf
+.github/scripts/tests/fixtures/WindowsGeneratedSandboxAppxManifest.xml binary
 .github/scripts/tests/fixtures/WindowsGeneratedDeviceTestsAppxManifest.xml text eol=lf
 
 # avoid overriding GitInfo.txt on merge
