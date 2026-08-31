@@ -44,7 +44,7 @@ Describe 'Windows replication AppContainer manifests' {
             $result = Assert-ReplicationWindowsAppContainerManifest -Path $path
             $result.Publisher | Should -BeExactly 'CN=DotNetMauiReplication'
             $result.EntryPoint |
-                Should -BeExactly 'windows.partialTrustApplication'
+                Should -BeExactly 'Windows.PartialTrustApplication'
             $result.TrustLevel | Should -BeExactly 'appContainer'
             $result.RuntimeBehavior | Should -BeExactly 'packagedClassicApp'
         }
@@ -107,10 +107,11 @@ Describe 'Windows replication AppContainer manifests' {
         $source = Get-Content -LiteralPath $script:SandboxManifest -Raw
         foreach ($entryPoint in @(
             '$targetentrypoint$',
+            'windows.partialTrustApplication',
             'Windows.FullTrustApplication'
         )) {
             $mutated = $source.Replace(
-                'EntryPoint="windows.partialTrustApplication"',
+                'EntryPoint="Windows.PartialTrustApplication"',
                 "EntryPoint=`"$entryPoint`"")
             {
                 $document = Read-ReplicationWindowsManifestXml `

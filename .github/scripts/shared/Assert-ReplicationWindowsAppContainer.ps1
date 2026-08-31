@@ -75,7 +75,7 @@ function Assert-ReplicationWindowsAppContainerManifestDocument {
         throw "$Description must expose exactly the trusted App application identity."
     }
     $entryPoint = [string]$application.GetAttribute('EntryPoint')
-    if ($entryPoint -cne 'windows.partialTrustApplication') {
+    if ($entryPoint -cne 'Windows.PartialTrustApplication') {
         $reportedEntryPoint =
             (($entryPoint -replace '[^\x20-\x7E]', '?') -replace
                 '##(?=\[|vso\[)', '## ')

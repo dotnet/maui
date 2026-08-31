@@ -2958,8 +2958,32 @@ InitializeComponent();
             $generatedApplication[0].GetAttribute('RuntimeBehavior', $uap10) |
                 Should -BeExactly 'packagedClassicApp'
             $generatedApplication[0].GetAttribute('EntryPoint') |
-                Should -BeExactly 'windows.partialTrustApplication'
+                Should -BeExactly 'Windows.PartialTrustApplication'
         }
+        $sandboxProject = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot (
+            '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj')))
+        $sandboxManifest = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot (
+            '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml')))
+        $wrongCaseManifest = Join-Path $TestDrive 'wrong-case-manifest.xml'
+        (Get-Content -LiteralPath $sandboxManifest -Raw).Replace(
+            'Windows.PartialTrustApplication',
+            'windows.partialTrustApplication') |
+            Set-Content -LiteralPath $wrongCaseManifest -Encoding utf8NoBOM
+        $wrongCaseOutput = @(& dotnet msbuild $sandboxProject `
+            -t:_ValidateMauiReplicationGeneratedAppContainerManifest `
+            -p:TargetFramework=net10.0-windows10.0.19041.0 `
+            -p:WindowsPackageType=MSIX `
+            -p:EnableWindowsTargeting=true `
+            "-p:MicrosoftWindowsAppSDKPackageDir=$(Join-Path $TestDrive 'windowsappsdk')" `
+            "-p:CustomAfterMicrosoftCommonTargets=$overrideTargets" `
+            "-p:MauiReplicationAppContainerProject=$sandboxProject" `
+            "-p:MauiReplicationAppContainerManifest=$wrongCaseManifest" `
+            "-p:_MauiManifestStampFile=$(Join-Path $TestDrive (
+                [guid]::NewGuid().ToString('N') + '.stamp'))" `
+            -nologo 2>&1)
+        $LASTEXITCODE | Should -Not -Be 0
+        $wrongCaseOutput -join "`n" |
+            Should -Match 'does not preserve the partial-trust AppContainer'
         $script:BuildDeploySource |
             Should -Match 'MauiReplicationAppContainerManifest'
         (Get-Content -LiteralPath (
