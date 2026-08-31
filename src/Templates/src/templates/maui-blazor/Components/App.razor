@@ -1,23 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>MauiApp.1</title>
     <base href="/" />
-<!--#if (SampleContent) -->
-    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
-<!--#endif -->
-    <link rel="stylesheet" href="app.css" />
-    <link rel="stylesheet" href="MauiApp.1.styles.css" />
+    @*#if (SampleContent) -->
+    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+    ##endif*@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["MauiApp.1.styles.css"]" />
     <link rel="icon" href="data:,">
+    <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
 <body>
-
     <div class="status-bar-safe-area"></div>
 
-    <div id="app">Loading...</div>
+    <Routes @rendermode="InteractiveAuto" />
 
     <div id="blazor-error-ui" data-nosnippet>
         An unhandled error has occurred.
@@ -26,7 +27,6 @@
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
-
 </body>
 
 </html>

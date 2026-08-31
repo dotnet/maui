@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !(NETSTANDARD || !PLATFORM)
 			handler.HostPage = webView.HostPage;
-			handler.StartWebViewCoreIfPossible();
+			handler.StartWebViewCoreOrRenderAppType();
 #endif
 		}
 
@@ -82,11 +84,67 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 #if !(NETSTANDARD || !PLATFORM)
 			handler.RootComponents = webView.RootComponents;
-			handler.StartWebViewCoreIfPossible();
+			handler.StartWebViewCoreOrRenderAppType();
 #endif
 		}
 
 #if !(NETSTANDARD || !PLATFORM)
+		private bool _appTypeRenderScheduled;
+
+		// When AppType is set, the host document is rendered asynchronously on the MAUI dispatcher (the
+		// same dispatcher the live components render on) BEFORE the web view core starts, so we never block
+		// the UI thread. Startup resumes once the render completes. The legacy HostPage path is unchanged
+		// and starts synchronously.
+		private void StartWebViewCoreOrRenderAppType()
+		{
+			if (VirtualView is BlazorWebView { AppType: not null } appTypeView && !appTypeView.IsAppTypeRendered)
+			{
+				if (_appTypeRenderScheduled)
+				{
+					return;
+				}
+
+				_appTypeRenderScheduled = true;
+				_ = RenderAppTypeThenStartAsync(appTypeView);
+				return;
+			}
+
+			StartWebViewCoreIfPossible();
+		}
+
+		private async Task RenderAppTypeThenStartAsync(BlazorWebView appTypeView)
+		{
+			var dispatcher = MauiContext?.Services?.GetService<IDispatcher>();
+			try
+			{
+				await appTypeView.EnsureAppTypeRenderedAsync(dispatcher);
+			}
+			catch (Exception ex)
+			{
+				MauiContext?.Services?.GetService<ILoggerFactory>()?
+					.CreateLogger<BlazorWebViewHandler>()?
+					.LogError(ex, "Failed to render the BlazorWebView AppType host document.");
+			}
+			finally
+			{
+				// Clear the in-flight guard so a later AppType reassignment (which resets the view's
+				// rendered state) is able to schedule a fresh render.
+				_appTypeRenderScheduled = false;
+			}
+
+			// Start the web view core on the UI dispatcher regardless of render outcome: on success it
+			// serves the rendered host document; on failure the normal host-page 404 surfaces through the
+			// platform pipeline instead of a silent, permanently blank web view.
+			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+			{
+				await dispatcher.DispatchAsync(StartWebViewCoreIfPossible);
+			}
+			else
+			{
+				StartWebViewCoreIfPossible();
+			}
+		}
+
 		private string? HostPage { get; set; }
 
 		internal void UrlLoading(UrlLoadingEventArgs args) =>
@@ -132,8 +190,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Dispatch because this is going to be async, and we want to catch any errors
 				_ = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
-					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
-					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
+					// A collection change only populates one side for some actions - Add has no OldItems,
+					// Remove (raised when AppType is reassigned and ResetAppTypeRenderState removes the
+					// generated roots) has no NewItems - so treat an absent list as empty rather than
+					// dereferencing it.
+					var newItems = (eventArgs.NewItems ?? global::System.Array.Empty<object>()).Cast<RootComponent>();
+					var oldItems = (eventArgs.OldItems ?? global::System.Array.Empty<object>()).Cast<RootComponent>();
 
 					foreach (var item in newItems.Except(oldItems))
 					{

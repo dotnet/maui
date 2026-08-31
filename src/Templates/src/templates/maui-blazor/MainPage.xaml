@@ -2,10 +2,6 @@
              xmlns:components="clr-namespace:MauiApp._1.Components"
              x:Class="MauiApp._1.MainPage">
 
-    <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
-        <BlazorWebView.RootComponents>
-            <RootComponent Selector="#app" ComponentType="{x:Type components:Routes}" />
-        </BlazorWebView.RootComponents>
-    </BlazorWebView>
+    <BlazorWebView x:Name="blazorWebView" AppType="{x:Type components:App}" />
 
 </ContentPage>

@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -49,6 +54,122 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <para>This is an app relative path to the file such as <c>wwwroot\index.html</c></para>
 		/// </summary>
 		public string? HostPage { get; set; }
+
+		/// <summary>
+		/// The synthetic host page path used when <see cref="AppType"/> renders the host document.
+		/// </summary>
+		internal const string AppTypeHostPage = "wwwroot/index.html";
+
+		private Type? _appType;
+		private bool _appTypeRendered;
+		private bool _syntheticHostPageApplied;
+		private string? _renderedHostPageHtml;
+		private StaticWebAssetsManifest? _manifest;
+		private readonly List<RootComponent> _appTypeRootComponents = new();
+
+		/// <summary>
+		/// Gets or sets the type of a root component that renders the entire host HTML document (the
+		/// hybrid equivalent of a Blazor Web App's <c>App.razor</c>).
+		/// <para>
+		/// When set, the component is statically rendered to produce the host page, so a physical
+		/// <see cref="HostPage"/> file (such as <c>wwwroot/index.html</c>) is not required. Interactive
+		/// components declared inside it with a render mode (for example
+		/// <c>&lt;Routes @rendermode="InteractiveAuto" /&gt;</c> or
+		/// <c>&lt;HeadOutlet @rendermode="InteractiveAuto" /&gt;</c>) are automatically attached to the
+		/// live document, so an explicit <see cref="RootComponents"/> entry is not required either.
+		/// </para>
+		/// <para>
+		/// Trimming/NativeAOT: when set from a XAML <c>{x:Type}</c> reference the type is preserved by the
+		/// XAML compiler, and the interactive components it renders are preserved by the Razor SDK trimming
+		/// roots. When assigned a runtime-computed type from code (for example
+		/// <c>AppType = Type.GetType(name)</c>), the caller is responsible for ensuring that type and its
+		/// members are preserved (for example with <c>[DynamicDependency]</c> or a trimming descriptor),
+		/// otherwise its members may be trimmed and the host render can fail at runtime.
+		/// </para>
+		/// </summary>
+		public Type? AppType
+		{
+			get => _appType;
+			set
+			{
+				if (_appType == value)
+				{
+					return;
+				}
+
+				_appType = value;
+
+				// Any change to AppType invalidates a previous render: drop the rendered host page and
+				// remove the root components this class appended for it, so a subsequent start renders the
+				// new value cleanly instead of ignoring it (non-null -> non-null) or registering a
+				// duplicate selector (non-null -> null -> non-null).
+				ResetAppTypeRenderState();
+
+				if (value is not null)
+				{
+					// Provide a synthetic host page so the existing startup and relative-path logic
+					// flows unchanged; the rendered document is overlaid onto the file provider at this
+					// path. Only applied when the caller has not set an explicit HostPage.
+					if (string.IsNullOrEmpty(HostPage))
+					{
+						HostPage = AppTypeHostPage;
+						_syntheticHostPageApplied = true;
+					}
+				}
+				else if (_syntheticHostPageApplied && HostPage == AppTypeHostPage)
+				{
+					// Clearing AppType: undo the synthetic host page, but only if it is still the one we
+					// applied. A caller that set their own HostPage afterwards keeps it.
+					HostPage = null;
+					_syntheticHostPageApplied = false;
+				}
+			}
+		}
+
+		// Drops the rendered host page and removes any root components this class appended for the
+		// current AppType, so the next render (if any) starts from a clean slate.
+		private void ResetAppTypeRenderState()
+		{
+			_appTypeRendered = false;
+			_renderedHostPageHtml = null;
+			_manifest = null;
+
+			if (_appTypeRootComponents.Count > 0)
+			{
+				foreach (var rootComponent in _appTypeRootComponents)
+				{
+					RootComponents.Remove(rootComponent);
+				}
+
+				_appTypeRootComponents.Clear();
+			}
+		}
+
+		/// <summary>Gets whether the <see cref="AppType"/> host document has been rendered.</summary>
+		internal bool IsAppTypeRendered => _appTypeRendered;
+
+		/// <summary>
+		/// Resolves a fingerprinted <c>@Assets</c> request route (for example <c>app.abc123.css</c>) to its
+		/// physical asset file under the web root, using the manifest loaded for the current
+		/// <see cref="AppType"/> render. Returns <c>false</c> (and echoes the input) when there is no manifest
+		/// or the route needs no remapping.
+		/// </summary>
+		/// <remarks>
+		/// On most platforms the wrapped <see cref="BlazorWebViewFileProvider"/> performs this remap, but the
+		/// WinUI static-content pipeline serves files from the package folder directly (its
+		/// <c>IFileProvider</c> is a <c>NullFileProvider</c>), so it calls this to apply the same remap and
+		/// avoid 404s for fingerprinted assets.
+		/// </remarks>
+		internal bool TryResolveFingerprintedPath(string requestedPath, out string physicalPath)
+		{
+			if (_manifest is not null)
+			{
+				return _manifest.TryResolvePhysicalPath(requestedPath, out physicalPath);
+			}
+
+			physicalPath = requestedPath;
+			return false;
+		}
 
 		/// <summary>
 		/// Bindable property for <see cref="StartPath"/>.
@@ -124,7 +245,112 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
+			var platformFileProvider = GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
+
+			// Everything below is opt-in via AppType. For the legacy HostPage (index.html) path, return
+			// the platform provider unchanged so existing behaviour - including the handler's own file
+			// provider instance - is preserved exactly.
+			if (AppType is null)
+			{
+				return platformFileProvider;
+			}
+
+			// AppType overlays the rendered document at the HostPage path. If HostPage has been cleared
+			// (it is a public settable property), there is nowhere to overlay it, so serve the platform
+			// provider unchanged and let the request surface a normal 404 rather than throwing.
+			if (string.IsNullOrEmpty(HostPage))
+			{
+				return platformFileProvider;
+			}
+
+			// The handler renders the host document asynchronously and only starts the web view once the
+			// render has completed. If the document is not rendered by the time we get here - the async
+			// render failed, or CreateFileProvider was called directly outside the handler flow - there is
+			// nothing to overlay, so serve the platform provider and let the host-page request surface a
+			// normal 404 instead of a blank or stale page.
+			if (!_appTypeRendered)
+			{
+				return platformFileProvider;
+			}
+
+			var hostPageRelativePath = Path.GetRelativePath(contentRootDir, HostPage);
+			return new BlazorWebViewFileProvider(platformFileProvider, hostPageRelativePath, _renderedHostPageHtml, _manifest);
+		}
+
+		/// <summary>
+		/// Renders the <see cref="AppType"/> host document asynchronously (on the renderer's own dispatcher)
+		/// and awaits it rather than blocking, then applies the result on the supplied MAUI dispatcher so the
+		/// <see cref="RootComponents"/> mutation happens on the UI thread the <c>WebViewManager</c> reads
+		/// from. Idempotent.
+		/// </summary>
+		internal async Task EnsureAppTypeRenderedAsync(IDispatcher? dispatcher)
+		{
+			if (_appTypeRendered || AppType is null)
+			{
+				return;
+			}
+
+			var services = GetAppTypeServices();
+
+			// Load the manifest asynchronously so the (possibly genuinely async on Windows) app-package
+			// read never blocks the UI thread.
+			var logger = services.GetService<ILoggerFactory>()?.CreateLogger<BlazorWebView>();
+			var manifest = await StaticWebAssetsManifest.TryLoadAsync(logger).ConfigureAwait(false);
+
+			var result = await RenderAppTypeAsync(services, manifest).ConfigureAwait(false);
+
+			// Apply the render (mutating RootComponents and the latch state) back on the MAUI dispatcher,
+			// since RootComponents is read by the WebViewManager on the UI thread and the continuation
+			// after the awaits above may be on a thread-pool thread.
+			if (dispatcher is not null && dispatcher.IsDispatchRequired)
+			{
+				await dispatcher.DispatchAsync(() => ApplyAppTypeRender(result, manifest)).ConfigureAwait(false);
+			}
+			else
+			{
+				ApplyAppTypeRender(result, manifest);
+			}
+		}
+
+		private IServiceProvider GetAppTypeServices() =>
+			Handler?.MauiContext?.Services
+				?? throw new InvalidOperationException($"Cannot render {nameof(AppType)} because no service provider is available.");
+
+		// IL2072: AppType flows into HybridHostPageRenderer.RenderAsync's [DynamicallyAccessedMembers(All)]
+		// parameter. AppType cannot itself be annotated: it is a public property set by XAML via
+		// reflection (AppType="{x:Type components:App}"), and a DynamicallyAccessedMembers requirement on
+		// a reflection-set property/parameter is not satisfiable by the trimmer (it produces IL2111/IL2114
+		// instead). The assigned component type is preserved regardless: a {x:Type} reference is rooted by
+		// the XAML compiler, and the interactive components it renders are rooted by the Razor SDK's
+		// trimming roots (@rendermode / routable assembly), so their members survive trimming.
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
+			Justification = "AppType is set via XAML reflection so it cannot carry a DynamicallyAccessedMembers annotation; the component type is preserved by the XAML compiler ({x:Type}) and the Razor SDK trimming roots.")]
+		private Task<HybridHostPageResult> RenderAppTypeAsync(IServiceProvider services, StaticWebAssetsManifest? manifest)
+			=> HybridHostPageRenderer.RenderAsync(services, AppType!, manifest?.Assets);
+
+		private void ApplyAppTypeRender(HybridHostPageResult result, StaticWebAssetsManifest? manifest)
+		{
+			_renderedHostPageHtml = result.Html;
+			_manifest = manifest;
+
+			foreach (var registration in result.Registrations)
+			{
+				var rootComponent = new RootComponent
+				{
+					Selector = registration.Selector,
+					ComponentType = registration.ComponentType,
+				};
+
+				RootComponents.Add(rootComponent);
+
+				// Track what we added so a later AppType change can remove exactly these entries.
+				_appTypeRootComponents.Add(rootComponent);
+			}
+
+			// Only latch success after the render and registration complete. If rendering throws (an
+			// invalid AppType, a failing OnInitializedAsync, a missing service), the flag stays false so
+			// a later handler reconnect retries instead of permanently serving a blank host page.
+			_appTypeRendered = true;
 		}
 
 		/// <summary>

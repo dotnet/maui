@@ -69,6 +69,185 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Generate a minimal, deterministic asset manifest so that fingerprinted assets (@Assets) can be
+    resolved at runtime. Blazor Web Apps build the ResourceAssetCollection from the static web asset
+    endpoint descriptors via MapStaticAssets; hybrid apps have no server, so MAUI reconstructs the same
+    thing from those endpoint descriptors here.
+
+    Each retained entry mirrors a Blazor ResourceAsset: the served Url plus the endpoint properties Blazor
+    uses (label for @Assets resolution, integrity for SRI, and the preload hints). Volatile serving-only
+    headers (Last-Modified) are intentionally excluded, and entries are emitted sorted, so the file is byte
+    identical across architectures - which the SDK requires when merging universal (multi-RID) app bundles.
+    The file is bundled OUTSIDE wwwroot so it is never exposed to the web view, and BlazorWebView reads it
+    from the app package via FileSystem.OpenAppPackageFileAsync.
+  -->
+  <UsingTask TaskName="_GenerateMauiBlazorAssetManifest"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Endpoints ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <OutputFile ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        // Extract a named value from the serialized EndpointProperties JSON array. Each property is a
+        // { "Name": "...", "Value": "..." } object; Name and Value are matched independently within each
+        // object, so the result does not depend on the SDK's member ordering. Parsed with regex (rather
+        // than System.Text.Json) so the task runs under both dotnet msbuild and desktop MSBuild.exe.
+        static string ExtractProperty(string propertiesJson, string name)
+        {
+            foreach (Match obj in Regex.Matches(propertiesJson, "\\{[^{}]*\\}"))
+            {
+                var text = obj.Value;
+                var nameMatch = Regex.Match(text, "\"Name\"\\s*:\\s*\"(?<n>(?:[^\"\\\\]|\\\\.)*)\"");
+                if (!nameMatch.Success || nameMatch.Groups["n"].Value != name)
+                {
+                    continue;
+                }
+
+                var valueMatch = Regex.Match(text, "\"Value\"\\s*:\\s*\"(?<v>(?:[^\"\\\\]|\\\\.)*)\"");
+                if (valueMatch.Success)
+                {
+                    return valueMatch.Groups["v"].Value;
+                }
+            }
+
+            return null;
+        }
+
+        static string JsonEscape(string value) =>
+            value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+        // The endpoint properties Blazor's ResourceCollectionResolver carries into a ResourceAsset, in a
+        // stable order so the output is deterministic.
+        var resourceProperties = new[]
+        {
+            "label", "integrity",
+            "preloadrel", "preloadas", "preloadpriority", "preloadcrossorigin", "preloadorder", "preloadgroup",
+        };
+
+        var byUrl = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        var sawFingerprintEndpoint = false;
+        foreach (var endpoint in Endpoints)
+        {
+            var selectors = endpoint.GetMetadata("Selectors");
+            if (!string.IsNullOrEmpty(selectors) && selectors != "[]")
+            {
+                // A content-negotiated alternative representation (gzip/brotli); not a distinct asset.
+                continue;
+            }
+
+            var properties = endpoint.GetMetadata("EndpointProperties") ?? string.Empty;
+            if (!string.IsNullOrEmpty(ExtractProperty(properties, "fingerprint")))
+            {
+                sawFingerprintEndpoint = true;
+            }
+
+            var props = new StringBuilder();
+            var wroteProperty = false;
+            foreach (var propertyName in resourceProperties)
+            {
+                var value = ExtractProperty(properties, propertyName);
+                if (string.IsNullOrEmpty(value))
+                {
+                    continue;
+                }
+
+                if (wroteProperty)
+                {
+                    props.Append(',');
+                }
+
+                props.Append("{\"Name\":\"").Append(JsonEscape(propertyName))
+                     .Append("\",\"Value\":\"").Append(JsonEscape(value)).Append("\"}");
+                wroteProperty = true;
+            }
+
+            // Match ResourceCollectionResolver: only include descriptors that carry a label or integrity.
+            if (!wroteProperty)
+            {
+                continue;
+            }
+
+            var route = endpoint.ItemSpec;
+            if (!string.IsNullOrEmpty(route) && !byUrl.ContainsKey(route))
+            {
+                // First-wins, matching the runtime StaticWebAssetsManifest.FromData (TryAdd), so build-time
+                // generation and runtime resolution never disagree on a duplicate route.
+                byUrl[route] = props.ToString();
+            }
+        }
+
+        var builder = new StringBuilder();
+        builder.Append("{\"Assets\":[");
+        var first = true;
+        foreach (var pair in byUrl)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+            first = false;
+            builder.Append("{\"Url\":\"").Append(JsonEscape(pair.Key))
+                   .Append("\",\"Properties\":[").Append(pair.Value).Append("]}");
+        }
+        builder.Append("]}");
+
+        var content = builder.ToString();
+
+        // Only warn when fingerprinting is actually on (a fingerprinted endpoint was seen) but nothing
+        // could be extracted - that signals the SDK changed the EndpointProperties metadata shape. This
+        // deliberately does not fire for the legitimate "no fingerprinting" case. The warning carries a
+        // real code so it can be suppressed via NoWarn.
+        if (sawFingerprintEndpoint && byUrl.Count == 0)
+        {
+            Log.LogWarning(
+                null,
+                "BLAZORHYBRID0001",
+                null,
+                OutputFile,
+                0, 0, 0, 0,
+                "Fingerprinted static web asset endpoints were found but no entries could be extracted for the Blazor asset manifest. Asset fingerprinting (@Assets) will be disabled at runtime. This usually means the SDK changed the shape of the EndpointProperties metadata.");
+        }
+
+        var outputDir = Path.GetDirectoryName(OutputFile);
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            Directory.CreateDirectory(outputDir);
+        }
+
+        // Only write when the content changes so incremental builds stay clean.
+        if (!File.Exists(OutputFile) || File.ReadAllText(OutputFile) != content)
+        {
+            File.WriteAllText(OutputFile, content);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="_BundleMauiBlazorAssetManifest"
+          AfterTargets="ConvertStaticWebAssetsToMauiAssets"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+          Condition="'@(StaticWebAssetEndpoint)' != ''">
+    <PropertyGroup>
+      <_MauiBlazorAssetManifestFile>$(IntermediateOutputPath)maui/blazor-asset-manifest.json</_MauiBlazorAssetManifestFile>
+    </PropertyGroup>
+    <_GenerateMauiBlazorAssetManifest Endpoints="@(StaticWebAssetEndpoint)"
+                                      OutputFile="$(_MauiBlazorAssetManifestFile)" />
+    <ItemGroup>
+      <MauiAsset Include="$(_MauiBlazorAssetManifestFile)" Condition="Exists('$(_MauiBlazorAssetManifestFile)')">
+        <Link>_maui/blazor-asset-manifest.json</Link>
+        <TargetPath>_maui/blazor-asset-manifest.json</TargetPath>
+      </MauiAsset>
+    </ItemGroup>
+  </Target>
+
   <!-- Targets temporarily remove Content items in various folders so that they don't conflict with iOS/MacCatalyst SDK tasks -->
   <Target Name="HideContentFromiOSBundleResources" BeforeTargets="_CollectBundleResources">
     <ItemGroup>
