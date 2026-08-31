@@ -19,7 +19,7 @@ permissions:
 jobs:
   lock:
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'dotnet' }}
+    if: ${{ github.repository == 'dotnet/maui' }}
     steps:
       - name: Lock scanner issue
         env:

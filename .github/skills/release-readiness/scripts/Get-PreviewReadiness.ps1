@@ -2,8 +2,8 @@
 #Requires -Version 7.0
 <#
 .SYNOPSIS
-    Generates a public-safe .NET MAUI preview release-readiness report
-    for a specific net<major>.0-previewN branch.
+    Generates a .NET MAUI preview release-readiness report for a specific
+    release/<major>.0.1xx-preview<N> branch.
 
 .DESCRIPTION
     This is the "preview lane" companion to Get-ReleaseReadiness.ps1 (SR lane).
@@ -17,7 +17,12 @@
         - Known Build Error issues tagged release-relevant
         - Xcode requirement variables (from eng/pipelines/common/variables.yml)
         - CI truth (placeholder — not wired to #35052 yet)
-        - Internal release pipelines (READY/UNKNOWN classification — sanitized)
+        - Local net11 official-build health when authorized access is available
+
+    GitHub Actions never query the internal pipeline. Public-safe runs retain
+    only generic guidance unless a local caller explicitly requests the
+    internal query; any such local evidence is still redacted from public-safe
+    output.
 
     Deterministic by design — does NOT approve, merge, rerun, promote, or
     mutate GitHub / Maestro / darc state.
@@ -63,16 +68,19 @@
     markdown body is also returned to stdout).
 
 .PARAMETER IncludeInternal
-    When set, attempts to query internal dnceng Azure DevOps via `az` CLI
-    for the supplied -InternalBuildId. Only relevant for local runs by
-    release captains with internal access.
+    Forces the local internal check even when -PublicSafe is enabled. Local
+    net11 runs query the internal official pipeline automatically when Azure
+    DevOps access is available; GitHub Actions always skips the query.
 
 .PARAMETER InternalBuildId
-    Internal AzDO build ID used when -IncludeInternal is set.
+    Optional compatibility/debug override for the evaluated release branch.
+    Normal local runs discover the latest definition-1095 build independently
+    for net11.0 and the evaluated release branch.
 
 .PARAMETER PublicSafe
-    When true (default), any non-READY internal status is sanitized to
-    omit raw error/log payloads before being included in the report.
+    When true, internal build details are omitted and only the existing generic
+    public-safe row is rendered. Defaults to true. Local net11 skill/agent runs
+    explicitly pass false for enriched output.
 
 .PARAMETER ConfirmedWorkloadSetVersion
     Exact workload-set CLI version confirmed by the release owner, for
@@ -170,19 +178,43 @@ if (-not (Test-Path $publicSanitizerHelperPath)) {
 }
 . $publicSanitizerHelperPath
 
+# Local-only official-build health. The helper is loaded before the dot-source
+# guard so its pure classification/rendering functions are available to the
+# offline test harness.
+$Script:InternalOfficialBuildHelperLoaded = $false
+$internalOfficialBuildHelperPath = Join-Path $PSScriptRoot 'InternalOfficialBuild.ps1'
+if (Test-Path $internalOfficialBuildHelperPath) {
+    . $internalOfficialBuildHelperPath
+    $Script:InternalOfficialBuildHelperLoaded = $true
+} else {
+    Write-Warning "InternalOfficialBuild.ps1 helper not found at $internalOfficialBuildHelperPath — local internal checks disabled." -WarningAction Continue
+}
+
 # ===================================================================
 # BRANCH PARSING
 # ===================================================================
-# Preview branch contract: release/<major>.0.1xx-preview<N>
-# (Find-Trackers emits exactly this format for branchType='preview'.)
-if ($Branch -notmatch '^release/(\d+)\.0\.1xx-preview(\d+)$') {
-    throw "Branch '$Branch' does not match expected preview format 'release/<major>.0.1xx-preview<N>'."
+# Prerelease branch contract: release/<major>.0.1xx-<preview|rc><N>.
+if ($Branch -notmatch '^release/(\d+)\.0\.1xx-(preview|rc)(\d+)$') {
+    throw "Branch '$Branch' does not match expected prerelease format 'release/<major>.0.1xx-<preview|rc><N>'."
 }
 $majorVersion = [int]$Matches[1]
-$previewNumber = [int]$Matches[2]
+$releaseStage = $Matches[2].ToLowerInvariant()
+$releaseNumber = [int]$Matches[3]
+# Retain the legacy variable for Preview-specific helpers while the shared
+# report engine supports both prerelease lanes.
+$previewNumber = $releaseNumber
+$releaseStageDisplay = if ($releaseStage -eq 'rc') { 'RC' } else { 'Preview' }
+$releaseDisplayName = "$releaseStageDisplay $releaseNumber"
+$expectedChannelName = ".NET $majorVersion.0.1xx SDK $releaseStageDisplay $releaseNumber"
 $mainBranch = "net$majorVersion.0"
+$isGitHubActions = if (Get-Command Test-IsGitHubActions -ErrorAction SilentlyContinue) {
+    Test-IsGitHubActions
+} else {
+    "$env:GITHUB_ACTIONS" -ieq 'true'
+}
+$effectivePublicSafe = $PublicSafe
 
-# In candidate mode, the preview branch hasn't been cut yet — survey the
+# In candidate mode, the prerelease branch hasn't been cut yet — survey the
 # source instead (caller passes net<major>.0 via -SurveyRef). In in-flight
 # mode, the source IS the branch itself.
 if ([string]::IsNullOrWhiteSpace($SurveyRef)) {
@@ -196,9 +228,9 @@ if ([string]::IsNullOrWhiteSpace($SurveyRef)) {
 # the Preview N report.
 $mergeUpChainLabel = if ($Mode -eq 'candidate') { "main → $SurveyRef" } else { "$mainBranch → $SurveyRef" }
 
-# Canonical tracker key. Default matches Find-Trackers' New-PreviewTracker.
+# Canonical tracker key. Default matches tracker discovery.
 if ([string]::IsNullOrWhiteSpace($TrackerKey)) {
-    $TrackerKey = "net$majorVersion-preview$previewNumber"
+    $TrackerKey = "net$majorVersion-$releaseStage$releaseNumber"
 }
 
 # ===================================================================
@@ -467,6 +499,25 @@ function Get-PreReleaseVersionIteration {
     }
 
     return $null
+}
+
+function Get-PreReleaseVersionMetadata {
+    param([string]$BranchName)
+
+    $versions = Get-ContentFromRepo -Path "eng/Versions.props" -Ref $BranchName
+    $label = $null
+    $iteration = $null
+    if ($versions -match "<PreReleaseVersionLabel>\s*([^<]*)\s*</PreReleaseVersionLabel>") {
+        $label = $Matches[1].Trim()
+    }
+    if ($versions -match "<PreReleaseVersionIteration>\s*([^<]*)\s*</PreReleaseVersionIteration>") {
+        $iteration = $Matches[1].Trim()
+    }
+
+    return [PSCustomObject]@{
+        Label     = $label
+        Iteration = $iteration
+    }
 }
 
 function Get-XcodeRequirements {
@@ -830,7 +881,7 @@ function Get-AllMilestones {
     }
 }
 
-function Test-PreviewMilestoneExists {
+function Test-PrereleaseMilestoneExists {
     <#
     .SYNOPSIS
         Checks whether the GitHub milestone for THIS preview
@@ -854,18 +905,20 @@ function Test-PreviewMilestoneExists {
     #>
     param(
         [int]$Major,
-        [int]$Preview
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage,
+        [int]$Number
     )
 
-    $expected = ".NET $Major.0-preview$Preview"
+    $expected = ".NET $Major.0-$Stage$Number"
     $ms = Get-AllMilestones
     if (-not $ms.Success) {
         return @{ QueryFailed = $true; Exists = $false; ExpectedTitle = $expected; MatchedTitle = $null }
     }
 
     $acceptable = @(
-        ".net $Major.0-preview$Preview",
-        "$Major.0-preview$Preview"
+        ".net $Major.0-$Stage$Number",
+        "$Major.0-$Stage$Number"
     )
     $match = $null
     foreach ($m in $ms.Data) {
@@ -877,6 +930,12 @@ function Test-PreviewMilestoneExists {
         return @{ QueryFailed = $false; Exists = $true; ExpectedTitle = $expected; MatchedTitle = $match.title }
     }
     return @{ QueryFailed = $false; Exists = $false; ExpectedTitle = $expected; MatchedTitle = $null }
+}
+
+function Test-PreviewMilestoneExists {
+    param([int]$Major, [int]$Preview)
+
+    Test-PrereleaseMilestoneExists -Major $Major -Stage 'preview' -Number $Preview
 }
 
 function Get-CiScanLabelForBranch {
@@ -1011,37 +1070,58 @@ function Test-IssueReleaseRelevant {
     <#
     .SYNOPSIS
         Returns $true if a labelled issue is plausibly relevant to the
-        active major / preview number based on its title, milestone, or
+        active major / prerelease stage based on its title, milestone, or
         labels.
     .NOTES
         Uses a wide net on purpose — false negatives are worse than false
         positives for release-readiness triage. The one exception is a
-        *cross-major* collision: the bare "previewN" phrase matches every
-        major's previewN, so it is only honored when the issue carries no
+        Explicit Preview/RC markers must match the active stage and number.
+        A matching marker is only honored when the issue carries no
         contradicting foreign-major signal (see Test-IssueHasForeignMajor).
     #>
     param(
         $Issue,
         [int]$Major,
-        [int]$Preview
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage = 'preview',
+        [Alias('Preview')]
+        [int]$Number
     )
 
     $labels = @($Issue.labels | ForEach-Object { $_.name })
     $milestone = if ($Issue.milestone -and $Issue.milestone.title) { $Issue.milestone.title } else { "" }
     $haystack = "$($Issue.title) $milestone $($labels -join ' ')"
 
+    $prereleaseMarkerRx = '(?i)(?:preview|rc)[\s.-]*\d+'
+    $activeMarkerRx = "(?i)$Stage[\s.-]*$Number(?!\d)"
+    $releaseContext = "$milestone $($labels -join ' ')"
+    if ($Issue.title -match '(?i)(?:\.net\s*\d+|regressed-in-\d+)') {
+        $releaseContext += " $($Issue.title)"
+    }
+
+    if ($releaseContext -match $prereleaseMarkerRx) {
+        if ($releaseContext -notmatch $activeMarkerRx) {
+            return $false
+        }
+
+        # A stage marker is major-ambiguous; reject it when the issue
+        # explicitly names a different major.
+        if (-not (Test-IssueHasForeignMajor -Haystack $releaseContext -Major $Major)) {
+            return $true
+        }
+        return $false
+    }
+
     $majorRx = "(?i)net\s*$Major|net$Major|$Major\.0|$Major\.0\.1xx|xcode"
     if ($haystack -match $majorRx) {
         return $true
     }
 
-    if ($haystack -match "(?i)preview\s*$Preview|preview$Preview") {
-        # "previewN" alone is major-ambiguous; reject it when the issue
-        # explicitly names a different major (e.g. regressed-in-10-preview7
-        # surveyed against major 11).
-        if (-not (Test-IssueHasForeignMajor -Haystack $haystack -Major $Major)) {
-            return $true
-        }
+    # Preserve the wide net for a bare current-stage mention when no explicit
+    # release context or contradictory major is present.
+    if ($haystack -match $activeMarkerRx -and
+        -not (Test-IssueHasForeignMajor -Haystack $haystack -Major $Major)) {
+        return $true
     }
 
     return $false
@@ -1051,7 +1131,10 @@ function Get-ReleaseRelevantIssuesByLabel {
     param(
         [string[]]$Labels,
         [int]$Major,
-        [int]$Preview
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage = 'preview',
+        [Alias('Preview')]
+        [int]$Number
     )
 
     $issues = @()
@@ -1061,7 +1144,7 @@ function Get-ReleaseRelevantIssuesByLabel {
 
     $deduped = $issues |
         Sort-Object number -Unique |
-        Where-Object { Test-IssueReleaseRelevant -Issue $_ -Major $Major -Preview $Preview }
+        Where-Object { Test-IssueReleaseRelevant -Issue $_ -Major $Major -Stage $Stage -Number $Number }
 
     # PowerShell unwraps single-element arrays on function return, so a
     # naked `return @($deduped)` with a $null/empty pipeline result yields
@@ -1604,12 +1687,14 @@ function Format-PreviewComponentSourceCell {
         [AllowNull()][AllowEmptyString()][string]$Version,
         [int]$Major,
         [int]$Preview,
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage = 'preview',
         [Parameter(Mandatory)]$Drift,
         [switch]$Vmr
     )
 
     if ($Repo -eq 'dotnet/macios') {
-        $expectedStamp = "-net$Major-p$Preview"
+        $expectedStamp = if ($Stage -eq 'rc') { "-net$Major-rc.$Preview" } else { "-net$Major-p$Preview" }
         if ([string]::IsNullOrWhiteSpace($Version) -or
             $Version -notmatch "$([regex]::Escape($expectedStamp))(?!\d)") {
             $actual = if ([string]::IsNullOrWhiteSpace($Version)) { '<empty>' } else { $Version }
@@ -1814,6 +1899,7 @@ function New-PreviewInstallabilityFallback {
         $Summary
     }
     return [PSCustomObject]@{
+        PublicEvidence        = $PublicSafe
         Status               = 'unknown'
         Summary              = $publicSummary
         SdkVersion           = $null
@@ -1971,17 +2057,223 @@ function Get-PreviewIterationCheck {
         [AllowNull()][AllowEmptyString()][string]$Iteration
     )
 
-    $area = if ($Mode -eq 'candidate') { "$SurveyRef preview iteration (candidate source)" } else { "Preview iteration" }
-    if ($Iteration -eq [string]$PreviewNumber) {
+    return Get-PrereleaseVersionCheck -Mode $Mode -SurveyRef $SurveyRef `
+        -Stage 'preview' -Number $PreviewNumber -Label 'preview' -Iteration $Iteration
+}
+
+function Get-PrereleaseVersionCheck {
+    param(
+        [ValidateSet('candidate', 'in-flight')]
+        [string]$Mode,
+        [string]$SurveyRef,
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage,
+        [int]$Number,
+        [AllowNull()][AllowEmptyString()][string]$Label,
+        [AllowNull()][AllowEmptyString()][string]$Iteration
+    )
+
+    $stageDisplay = if ($Stage -eq 'rc') { 'RC' } else { 'Preview' }
+    $area = if ($Mode -eq 'candidate') {
+        "$SurveyRef $Stage version (candidate source)"
+    } else {
+        "$stageDisplay version"
+    }
+    if ($Label -eq $Stage -and $Iteration -eq [string]$Number) {
         return New-Check -Area $area -Status "READY" `
-            -Details "``$SurveyRef`` has PreReleaseVersionIteration=$Iteration." `
-            -NextAction "No version-iteration action needed."
+            -Details "``$SurveyRef`` has PreReleaseVersionLabel=$Label and PreReleaseVersionIteration=$Iteration." `
+            -NextAction "No prerelease-version action needed."
     }
 
-    $displayValue = if ($Iteration) { $Iteration } else { "<empty>" }
+    $displayLabel = if ($Label) { $Label } else { "<empty>" }
+    $displayIteration = if ($Iteration) { $Iteration } else { "<empty>" }
     return New-Check -Area $area -Status "BLOCKED" `
-        -Details "``$SurveyRef`` has PreReleaseVersionIteration=$displayValue; expected $PreviewNumber." `
-        -NextAction "Bump ``$SurveyRef`` to match the preview number before cutting."
+        -Details "``$SurveyRef`` has PreReleaseVersionLabel=$displayLabel and PreReleaseVersionIteration=$displayIteration; expected $Stage/$Number." `
+        -NextAction "Set ``$SurveyRef`` to PreReleaseVersionLabel=$Stage and PreReleaseVersionIteration=$Number before cutting."
+}
+
+function Get-PrereleaseChannelName {
+    param(
+        [int]$Major,
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage,
+        [int]$Number
+    )
+
+    $stageDisplay = if ($Stage -eq 'rc') { 'RC' } else { 'Preview' }
+    return ".NET $Major.0.1xx SDK $stageDisplay $Number"
+}
+
+function Test-PrereleaseDarcAvailable {
+    return $null -ne (Get-Command darc -ErrorAction SilentlyContinue)
+}
+
+function Invoke-PrereleaseDarcJson {
+    param([string[]]$DarcArgs)
+
+    try {
+        $rawOutput = @(& darc @DarcArgs --output-format json 2>$null)
+        $exitCode = $LASTEXITCODE
+        $joined = ($rawOutput -join "`n").Trim()
+        if ($exitCode -ne 0) {
+            # darc uses its generic exit code for a legitimate empty
+            # get-subscriptions result. Normalize only this exact command and
+            # message; all other exit-42 failures remain unknown.
+            if ($DarcArgs[0] -eq 'get-subscriptions' -and
+                $exitCode -eq 42 -and
+                $joined -eq 'No subscriptions found matching the specified criteria.') {
+                return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = $exitCode }
+            }
+            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $exitCode }
+        }
+
+        if ([string]::IsNullOrWhiteSpace($joined)) {
+            return [PSCustomObject]@{ Success = $true; Data = @(); ExitCode = 0 }
+        }
+
+        # Some successful empty queries emit a human-readable preamble before
+        # the JSON array. Discard only lines before the first JSON delimiter.
+        $jsonStart = $joined.IndexOf('[')
+        if ($jsonStart -lt 0) { $jsonStart = $joined.IndexOf('{') }
+        if ($jsonStart -lt 0) {
+            return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = 0 }
+        }
+        $parsed = $joined.Substring($jsonStart) | ConvertFrom-Json -ErrorAction Stop
+        return [PSCustomObject]@{ Success = $true; Data = @($parsed); ExitCode = 0 }
+    } catch {
+        return [PSCustomObject]@{ Success = $false; Data = @(); ExitCode = $null }
+    }
+}
+
+function Get-PrereleaseDependencyFlowChecks {
+    param(
+        [string]$Branch,
+        [string]$ExpectedChannelName,
+        [ValidateSet('preview', 'rc')]
+        [string]$Stage = 'preview',
+        [string]$RepositoryUrl = 'https://github.com/dotnet/maui',
+        [AllowNull()][object]$DefaultChannelsResult,
+        [AllowNull()][object]$SubscriptionsResult
+    )
+
+        $checks = [System.Collections.Generic.List[object]]::new()
+        $mappingCommand = "darc get-default-channels --source-repo $RepositoryUrl --branch $Branch"
+        $subscriptionCommand = "darc get-subscriptions --target-repo $RepositoryUrl --target-branch $Branch"
+
+        if ($null -eq $DefaultChannelsResult -or $null -eq $SubscriptionsResult) {
+            if (-not (Test-PrereleaseDarcAvailable)) {
+                if ($null -eq $DefaultChannelsResult) {
+                    $DefaultChannelsResult = [PSCustomObject]@{ Success = $false; Data = @() }
+                }
+                if ($null -eq $SubscriptionsResult) {
+                    $SubscriptionsResult = [PSCustomObject]@{ Success = $false; Data = @() }
+                }
+            } else {
+                if ($null -eq $DefaultChannelsResult) {
+                    $DefaultChannelsResult = Invoke-PrereleaseDarcJson -DarcArgs @(
+                        'get-default-channels', '--source-repo', $RepositoryUrl, '--branch', $Branch
+                    )
+                }
+                if ($null -eq $SubscriptionsResult) {
+                    $SubscriptionsResult = Invoke-PrereleaseDarcJson -DarcArgs @(
+                        'get-subscriptions', '--target-repo', $RepositoryUrl, '--target-branch', $Branch
+                    )
+                }
+            }
+        }
+
+        if (-not $DefaultChannelsResult.Success) {
+            $checks.Add((New-Check -Area 'MAUI outward default-channel mapping' -Status 'UNKNOWN' `
+                -Details "Could not query the outward MAUI build mapping for ``$Branch`` → ``$ExpectedChannelName``." `
+                -NextAction "Authenticate darc and run ``$mappingCommand``."))
+        } else {
+            $mappings = @($DefaultChannelsResult.Data | Where-Object {
+                "$($_.repository)".TrimEnd('/') -ieq $RepositoryUrl.TrimEnd('/') -and
+                "$($_.branch)" -eq $Branch
+            })
+            $matching = @($mappings | Where-Object { "$($_.channel.name)" -eq $ExpectedChannelName })
+            $enabled = @($matching | Where-Object { $_.enabled -eq $true })
+            if ($enabled.Count -gt 0) {
+                $checks.Add((New-Check -Area 'MAUI outward default-channel mapping' -Status 'READY' `
+                    -Details "Enabled default-channel mapping exists: ``$Branch`` → ``$ExpectedChannelName``. This controls where MAUI's own builds flow outward." `
+                    -NextAction 'No outward-mapping action needed.'))
+            } elseif ($matching.Count -gt 0) {
+                $checks.Add((New-Check -Area 'MAUI outward default-channel mapping' -Status 'BLOCKED' `
+                    -Details "Default-channel mapping exists but is disabled: ``$Branch`` → ``$ExpectedChannelName``." `
+                    -NextAction "Enable the mapping, then verify with ``$mappingCommand``."))
+            } elseif ($mappings.Count -gt 0) {
+                $actualChannels = @($mappings | ForEach-Object { "$($_.channel.name)" } | Sort-Object -Unique) -join ', '
+                $checks.Add((New-Check -Area 'MAUI outward default-channel mapping' -Status 'BLOCKED' `
+                    -Details "Missing matching default-channel mapping: expected ``$Branch`` → ``$ExpectedChannelName``; branch currently maps to: $actualChannels." `
+                    -NextAction "Add and enable the expected mapping, then verify with ``$mappingCommand``."))
+            } else {
+                $checks.Add((New-Check -Area 'MAUI outward default-channel mapping' -Status 'BLOCKED' `
+                    -Details "Missing default-channel mapping: ``$Branch`` → ``$ExpectedChannelName``. Without it, MAUI's own branch builds do not enter the RC/Preview SDK channel." `
+                    -NextAction "Add and enable the expected mapping, then verify with ``$mappingCommand``."))
+            }
+        }
+
+        if (-not $SubscriptionsResult.Success) {
+            foreach ($name in @('Android', 'macOS/iOS')) {
+                $checks.Add((New-Check -Area "$name inbound subscription" -Status 'UNKNOWN' `
+                    -Details "Could not query the inbound $name dependency flow into ``$Branch`` on ``$ExpectedChannelName``." `
+                    -NextAction "Authenticate darc and run ``$subscriptionCommand``."))
+            }
+            $checks.Add((New-Check -Area 'VMR reconciliation model' -Status 'UNKNOWN' `
+                -Details 'Could not verify that no dotnet/dotnet subscription is configured. VMR remains a local reconciliation against the authoritative official build.' `
+                -NextAction "Authenticate darc and run ``$subscriptionCommand``."))
+            return @($checks)
+        }
+
+        $subscriptions = @($SubscriptionsResult.Data | Where-Object {
+            "$($_.targetRepository)".TrimEnd('/') -ieq $RepositoryUrl.TrimEnd('/') -and
+            "$($_.targetBranch)" -eq $Branch
+        })
+        $required = @(
+            [PSCustomObject]@{ Name = 'Android'; Source = 'https://github.com/dotnet/android' },
+            [PSCustomObject]@{ Name = 'macOS/iOS'; Source = 'https://github.com/dotnet/macios' }
+        )
+        $missingSubscriptionStatus = if ($Stage -eq 'rc') { 'BLOCKED' } else { 'WATCH' }
+        foreach ($component in $required) {
+            $componentSubscriptions = @($subscriptions | Where-Object {
+                "$($_.sourceRepository)".TrimEnd('/') -ieq $component.Source
+            })
+            $matching = @($componentSubscriptions | Where-Object {
+                $_.enabled -eq $true -and "$($_.channel.name)" -eq $ExpectedChannelName
+            })
+            if ($matching.Count -gt 0) {
+                $checks.Add((New-Check -Area "$($component.Name) inbound subscription" -Status 'READY' `
+                    -Details "Enabled inbound subscription exists: ``$($component.Source)`` → ``$Branch`` on ``$ExpectedChannelName``." `
+                    -NextAction 'No inbound-subscription action needed.'))
+            } elseif ($componentSubscriptions.Count -eq 0) {
+                $checks.Add((New-Check -Area "$($component.Name) inbound subscription" -Status $missingSubscriptionStatus `
+                    -Details "Missing inbound subscription: ``$($component.Source)`` → ``$Branch`` on ``$ExpectedChannelName``." `
+                    -NextAction "Create and enable the matching subscription, then verify with ``$subscriptionCommand``."))
+            } else {
+                $actual = @($componentSubscriptions | ForEach-Object {
+                    "channel=$($_.channel.name), enabled=$($_.enabled)"
+                }) -join '; '
+                $checks.Add((New-Check -Area "$($component.Name) inbound subscription" -Status $missingSubscriptionStatus `
+                    -Details "Inbound subscription does not match the required enabled channel ``$ExpectedChannelName``: $actual." `
+                    -NextAction "Correct the subscription channel/state, then verify with ``$subscriptionCommand``."))
+            }
+        }
+
+        $enabledVmrSubscriptions = @($subscriptions | Where-Object {
+            "$($_.sourceRepository)".TrimEnd('/') -ieq 'https://github.com/dotnet/dotnet' -and
+            $_.enabled -eq $true
+        })
+        if ($enabledVmrSubscriptions.Count -eq 0) {
+            $checks.Add((New-Check -Area 'VMR reconciliation model' -Status 'READY' `
+                -Details 'No enabled dotnet/dotnet subscription is configured or required. VMR is reconciled locally against the authoritative official build.' `
+                -NextAction 'Keep VMR reconciliation local; do not add a dotnet/dotnet subscription.'))
+        } else {
+            $checks.Add((New-Check -Area 'VMR reconciliation model' -Status 'BLOCKED' `
+                -Details 'An unexpected dotnet/dotnet subscription targets this prerelease branch. VMR must remain locally reconciled against the authoritative official build.' `
+                -NextAction 'Remove or disable the unexpected VMR subscription after release-infrastructure review.'))
+        }
+
+        return @($checks)
 }
 
 function Get-OverallStatus {
@@ -2239,7 +2531,7 @@ if ($Mode -eq 'candidate') {
     if ($targetBranchExists) {
         # Branch already exists; if Find-Trackers ran today it would have
         # classified this as in-flight. Inform the operator but don't fail.
-        $checks += New-Check -Area "Target branch" -Status "WATCH" -Details "``$Branch`` already exists — preview was cut. Re-run Find-Trackers to switch this tracker to in-flight mode." -NextAction "Re-run Find-ReleaseReadinessTrackers and update the workflow input."
+        $checks += New-Check -Area "Target branch" -Status "WATCH" -Details "``$Branch`` already exists — $releaseDisplayName was cut. Re-run Find-Trackers to switch this tracker to in-flight mode." -NextAction "Re-run Find-ReleaseReadinessTrackers and update the workflow input."
     } else {
         $checks += New-Check -Area "Target branch (candidate)" -Status "READY" -Details "``$Branch`` does not exist yet — surveying source ``$SurveyRef`` (candidate mode)." -NextAction "Cut ``$Branch`` from ``$SurveyRef`` when ready."
     }
@@ -2251,21 +2543,28 @@ if ($Mode -eq 'candidate') {
     }
 }
 
-# --- Iteration check ---
+# --- Prerelease dependency-flow wiring ---
+if ($Mode -eq 'in-flight' -and $targetBranchExists) {
+    $checks += @(Get-PrereleaseDependencyFlowChecks -Branch $Branch `
+        -ExpectedChannelName $expectedChannelName -Stage $releaseStage)
+}
+
+# --- Version label + iteration check ---
 # In-flight: surveyRef == Branch, so we check that the branch itself declares
 # PreReleaseVersionIteration == previewNumber.
 # Candidate: surveyRef == net<major>.0, so we check that the source branch
 # is bumped to match THIS preview (the one about to be cut).
-$surveyIteration = $null
+$surveyVersion = $null
 $xcodeRequirements = [PSCustomObject]@{ RequiredXcode = $null; DeviceTestsRequiredXcode = $null }
 $surveyExists = if ($SurveyRef -eq $Branch) { $targetBranchExists } else { Test-BranchExists -BranchName $SurveyRef }
 if ($surveyExists) {
     try {
-        $surveyIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
-        $checks += Get-PreviewIterationCheck -Mode $Mode -SurveyRef $SurveyRef `
-            -PreviewNumber $previewNumber -Iteration $surveyIteration
+        $surveyVersion = Get-PreReleaseVersionMetadata -BranchName $SurveyRef
+        $checks += Get-PrereleaseVersionCheck -Mode $Mode -SurveyRef $SurveyRef `
+            -Stage $releaseStage -Number $releaseNumber `
+            -Label $surveyVersion.Label -Iteration $surveyVersion.Iteration
     } catch {
-        $checks += New-Check -Area "Preview iteration" -Status "UNKNOWN" -Details "Could not read version iteration from ``$SurveyRef``." -NextAction "Run locally and inspect eng/Versions.props."
+        $checks += New-Check -Area "$releaseStageDisplay version" -Status "UNKNOWN" -Details "Could not read prerelease version metadata from ``$SurveyRef``." -NextAction "Run locally and inspect eng/Versions.props."
     }
 
     try {
@@ -2280,7 +2579,7 @@ if ($surveyExists) {
     # against it. Read the template from main (issue templates are global per repo)
     # and verify the dropdown contains an entry matching this preview.
     try {
-        $expectedVersion = "$majorVersion.0.0-preview.$previewNumber"
+        $expectedVersion = "$majorVersion.0.0-$releaseStage.$releaseNumber"
         $templateBranch = if ($mainBranch) { $mainBranch } else { 'main' }
         $templateVersions = Get-BugTemplateVersions -BranchName $templateBranch
         if ($templateVersions.Count -eq 0) {
@@ -2296,8 +2595,8 @@ if ($surveyExists) {
     }
 }
 
-# --- Preview milestone existence check ---
-# Policy: a preview release-readiness tracker and its GitHub milestone are
+# --- Prerelease milestone existence check ---
+# Policy: a prerelease readiness tracker and its GitHub milestone are
 # coupled. If this tracker exists, the ".NET <major>.0-preview<N>" milestone
 # must exist RIGHT AWAY — not deferred to cut time — otherwise fixed issues have
 # no milestone to land on and the release-notes generator has nothing to query.
@@ -2306,24 +2605,24 @@ if ($surveyExists) {
 # candidate tracker's OWN milestone as blocking. Repo-global, so it runs
 # independent of branch/survey state (candidate and in-flight alike).
 try {
-    $msCheck = Test-PreviewMilestoneExists -Major $majorVersion -Preview $previewNumber
-    $msArea = "Milestone for preview$previewNumber ($($msCheck.ExpectedTitle))"
+    $msCheck = Test-PrereleaseMilestoneExists -Major $majorVersion -Stage $releaseStage -Number $releaseNumber
+    $msArea = "Milestone for $releaseStage$releaseNumber ($($msCheck.ExpectedTitle))"
     if ($msCheck.QueryFailed) {
         $checks += New-Check -Area $msArea -Status "UNKNOWN" `
             -Details "Could not query milestones from the GitHub API for ``$Repository`` (gh exited non-zero after retries). Treating as unknown so a gh outage does not silently pass — or falsely block — the milestone check." `
             -NextAction "Verify ``gh auth status`` and rerun, or check manually: ``gh api repos/$Repository/milestones``."
     } elseif ($msCheck.Exists) {
         $checks += New-Check -Area $msArea -Status "READY" `
-            -Details "Milestone ``$($msCheck.MatchedTitle)`` exists — fixed preview$previewNumber issues have a milestone to land on." `
+            -Details "Milestone ``$($msCheck.MatchedTitle)`` exists — fixed $releaseStage$releaseNumber issues have a milestone to land on." `
             -NextAction "No action needed."
     } else {
         $checks += New-Check -Area $msArea -Status "BLOCKED" `
-            -Details "No milestone matching ``$($msCheck.ExpectedTitle)`` exists in ``$Repository``. A preview$previewNumber release-readiness tracker exists, so its milestone must exist right away — without it, fixed issues have nowhere to land and the release-notes generator has nothing to query." `
+            -Details "No milestone matching ``$($msCheck.ExpectedTitle)`` exists in ``$Repository``. A $releaseStage$releaseNumber release-readiness tracker exists, so its milestone must exist right away — without it, fixed issues have nowhere to land and the release-notes generator has nothing to query." `
             -NextAction "Create it now: ``gh api repos/$Repository/milestones -f title=""$($msCheck.ExpectedTitle)"" -f state=open``"
     }
 } catch {
-    $checks += New-Check -Area "Milestone for preview$previewNumber" -Status "UNKNOWN" `
-        -Details "Failed to evaluate the preview milestone: $($_.Exception.Message)" `
+    $checks += New-Check -Area "Milestone for $releaseStage$releaseNumber" -Status "UNKNOWN" `
+        -Details "Failed to evaluate the prerelease milestone: $($_.Exception.Message)" `
         -NextAction "Check milestones manually: ``gh api repos/$Repository/milestones``."
 }
 
@@ -2441,8 +2740,10 @@ if ($p0Prs.Count -gt 0) {
 }
 
 # --- Release-relevant issues ---
-$priorityIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("p/0", "p/1") -Major $majorVersion -Preview $previewNumber
-$kbeIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("Known Build Error") -Major $majorVersion -Preview $previewNumber
+$priorityIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("p/0", "p/1") `
+    -Major $majorVersion -Stage $releaseStage -Number $releaseNumber
+$kbeIssues = Get-ReleaseRelevantIssuesByLabel -Labels @("Known Build Error") `
+    -Major $majorVersion -Stage $releaseStage -Number $releaseNumber
 
 # Carve out P/0 issues separately — these are surfaced in the hoisted
 # "🔴 High-priority items" section at the top of the report so the release
@@ -2536,8 +2837,8 @@ $componentPins = if ($surveyExists) {
 $consumerInstallability = New-PreviewInstallabilityFallback `
     -Summary 'Consumer installability could not be evaluated.' `
     -CliVersion $ConfirmedWorkloadSetVersion `
-    -PublicSafe $PublicSafe
-if ($Script:PreviewInstallabilityHelperLoaded) {
+    -PublicSafe $effectivePublicSafe
+if ($Script:PreviewInstallabilityHelperLoaded -and $releaseStage -eq 'preview') {
     try {
         $consumerInstallability = Get-PreviewConsumerInstallability `
             -Major $majorVersion `
@@ -2545,92 +2846,88 @@ if ($Script:PreviewInstallabilityHelperLoaded) {
             -Pins $componentPins `
             -WorkloadSetCliVersion $ConfirmedWorkloadSetVersion `
             -AdditionalPackageSource $AdditionalPackageSource `
-            -PublicSafe $PublicSafe
+            -PublicSafe $effectivePublicSafe
     } catch {
-        $warningDetail = if ($PublicSafe) { '' } else { ": $($_.Exception.Message)" }
+        $warningDetail = if ($effectivePublicSafe) { '' } else { ": $($_.Exception.Message)" }
         Write-Warning "Consumer installability check failed (non-fatal)$warningDetail" -WarningAction Continue
         $consumerInstallability = New-PreviewInstallabilityFallback `
             -Summary 'Consumer installability evaluation failed; no readiness claim can be made.' `
             -CliVersion $ConfirmedWorkloadSetVersion `
-            -PublicSafe $PublicSafe
+            -PublicSafe $effectivePublicSafe
     }
 }
 
-if ($Script:PreviewInstallabilityHelperLoaded) {
+if ($Script:PreviewInstallabilityHelperLoaded -and $releaseStage -eq 'preview') {
     $checks += ConvertTo-PreviewInstallabilityCheck -Result $consumerInstallability
+} elseif ($releaseStage -eq 'rc') {
+    $checks += New-Check -Area 'Consumer installability' -Status 'UNKNOWN' `
+        -Details 'The existing package-level installability probe is Preview-specific and does not yet resolve RC workload-set package IDs.' `
+        -NextAction 'Validate RC consumer installability against the authoritative official RC workload-set package.'
 } else {
     $checks += New-Check -Area 'Consumer installability' -Status 'UNKNOWN' `
         -Details $consumerInstallability.Summary `
         -NextAction 'Restore PreviewInstallability.ps1 and rerun the preview readiness report.'
 }
 
-# --- Internal release pipelines (sanitized) ---
-$internalStatus = "UNKNOWN"
-$internalDetails = "Internal release pipeline details are not queried in public workflow mode."
-$internalAction = "Run this script locally with internal access, then publish only sanitized status."
-
-if ($IncludeInternal) {
-    if ([string]::IsNullOrWhiteSpace($InternalBuildId)) {
-        $internalStatus = "UNKNOWN"
-        $internalDetails = "Internal validation requested, but no InternalBuildId was provided."
-        $internalAction = "Run with -InternalBuildId <build-id> or extend the local adapter for the target internal pipeline."
-    } elseif (Get-Command az -ErrorAction SilentlyContinue) {
-        try {
-            $azArgs = @(
-                "pipelines", "build", "show",
-                "--id", $InternalBuildId,
-                "--org", "https://dev.azure.com/dnceng",
-                "--project", "internal",
-                "--query", "{status:status,result:result}",
-                "-o", "json"
-            )
-            $azOutput = & az @azArgs 2>$null
-            if ($LASTEXITCODE -eq 0 -and $azOutput) {
-                $internal = $azOutput | ConvertFrom-Json
-                if ($internal.status -eq "completed" -and $internal.result -eq "succeeded") {
-                    $internalStatus = "READY"
-                    $internalDetails = "Local internal validation found a completed/succeeded internal build."
-                    $internalAction = "Keep detailed diagnostics internal; public issue may report READY."
-                } elseif ($internal.result) {
-                    $internalStatus = "BLOCKED"
-                    $internalDetails = "Local internal validation found an internal build that did not succeed."
-                    $internalAction = "Release owner should inspect internal pipeline details ASAP."
-                } else {
-                    $internalStatus = "WATCH"
-                    $internalDetails = "Local internal validation found an internal build still in progress."
-                    $internalAction = "Wait for completion or inspect internally if stale."
-                }
-            } else {
-                $internalStatus = "UNKNOWN"
-                $internalDetails = "Internal build query did not return usable status."
-                $internalAction = "Inspect internal Azure DevOps directly."
-            }
-        } catch {
-            $internalStatus = "UNKNOWN"
-            $internalDetails = "Internal validation failed locally."
-            $internalAction = "Inspect internal Azure DevOps directly; do not publish raw error details."
-        }
+# --- Internal official pipeline (definition 1095; local net11 only) ---
+# Public/GitHub Actions runs retain the existing generic row and never invoke
+# internal Azure DevOps. Local net11 runs auto-discover both net11.0 and the
+# evaluated release branch (when it exists), with an optional manual build-ID
+# override retained for diagnostics/backward compatibility.
+$internalOfficialBuildHealth = [PSCustomObject]@{
+    overall = 'skipped'
+    skipReason = if ($isGitHubActions) {
+        'github-actions'
+    } elseif ($majorVersion -ne 11) {
+        'unsupported-major'
+    } elseif (-not $Script:InternalOfficialBuildHelperLoaded) {
+        'helper-unavailable'
     } else {
-        $internalStatus = "UNKNOWN"
-        $internalDetails = "Azure CLI is not available for local internal validation."
-        $internalAction = "Install/configure Azure CLI or inspect internal Azure DevOps directly."
+        'public-safe'
     }
+    branches = @()
+}
+$shouldQueryInternal = $Script:InternalOfficialBuildHelperLoaded -and
+    $majorVersion -eq 11 -and
+    -not $isGitHubActions -and
+    (-not $effectivePublicSafe -or $IncludeInternal -or -not [string]::IsNullOrWhiteSpace($InternalBuildId))
+
+if ($shouldQueryInternal) {
+    $manualBranchRef = "refs/heads/$Branch"
+    $buildFetcher = New-AzdoInternalOfficialBuildFetcher `
+        -ManualBuildId $InternalBuildId `
+        -ManualBuildBranchRef $manualBranchRef
+    $headFetcher = New-GitHubBranchHeadFetcher -Repository $Repository
+    $repositoryRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../../..'))
+    $buildCurrencyFetcher = New-GitBuildCurrencyFetcher -RepositoryPath $repositoryRoot
+    $internalOfficialBuildHealth = Get-InternalOfficialBuildHealth `
+        -MajorVersion $majorVersion `
+        -ReleaseBranch $Branch `
+        -ReleaseBranchExists $targetBranchExists `
+        -BuildFetcher $buildFetcher `
+        -HeadFetcher $headFetcher `
+        -BuildCurrencyFetcher $buildCurrencyFetcher `
+        -GitHubActions:$false
 }
 
-if ($PublicSafe -and $internalStatus -ne "READY") {
-    $publicInternalText = Get-PublicSafeInternalPipelineText -Status $internalStatus
-    $internalDetails = $publicInternalText.Details
-    $internalAction = $publicInternalText.NextAction
+if ($Script:InternalOfficialBuildHelperLoaded) {
+    $checks += @(Convert-InternalOfficialBuildHealthToChecks `
+        -Health $internalOfficialBuildHealth `
+        -PublicSafe $effectivePublicSafe)
+} else {
+    $checks += New-Check `
+        -Area "Internal release pipelines" `
+        -Status "UNKNOWN" `
+        -Details "Internal release pipeline checks are unavailable because the local helper could not be loaded." `
+        -NextAction "Restore InternalOfficialBuild.ps1, rerun locally with internal access, then publish only sanitized status."
 }
-
-$checks += New-Check -Area "Internal release pipelines" -Status $internalStatus -Details $internalDetails -NextAction $internalAction
 
 # --- Component pin inventory ---
 # This evidence is required for the local VMR reconciliation handoff. A
 # transient file/API failure must not silently remove that guidance or let the
 # report look fully verified. $componentPins was already resolved above for
 # the consumer-installability gate; reuse it here instead of re-querying.
-$isCutPreview = $Mode -eq 'in-flight'
+$isCutPrerelease = $Mode -eq 'in-flight'
 $componentPinsCheck = Get-ComponentPinsReadinessCheck -Pins $componentPins -SurveyRef $SurveyRef
 if ($componentPinsCheck) {
     $checks += $componentPinsCheck
@@ -2649,9 +2946,13 @@ $report = [PSCustomObject]@{
     Branch                = $Branch
     Mode                  = $Mode
     SurveyRef             = $SurveyRef
-    BranchType            = "preview"
+    BranchType            = $releaseStage
+    ReleaseStage          = $releaseStage
+    ReleaseNumber         = $releaseNumber
     MajorVersion          = $majorVersion
-    PreviewNumber         = $previewNumber
+    PreviewNumber         = if ($releaseStage -eq 'preview') { $releaseNumber } else { $null }
+    RcNumber              = if ($releaseStage -eq 'rc') { $releaseNumber } else { $null }
+    ExpectedChannelName   = $expectedChannelName
     InflightBranch        = $mainBranch
     TrackerKey            = $TrackerKey
     OverallStatus         = $overallStatus
@@ -2672,6 +2973,9 @@ $report = [PSCustomObject]@{
     ConsumerInstallability = $consumerInstallability
     NightlyFeed           = $null
 }
+if (-not $effectivePublicSafe) {
+    $report | Add-Member -NotePropertyName InternalOfficialBuilds -NotePropertyValue $internalOfficialBuildHealth
+}
 
 # Nightly dogfood feed freshness (preview lane). Tracks the inflight/current dogfood stream
 # (ci.inflight builds) on the dotnet<major> feed; falls back to this preview's preview.N
@@ -2685,16 +2989,17 @@ if ($Script:NightlyFeedHelperLoaded -and
     try {
         $nfFeed = "dotnet$majorVersion"
         $nfFeedUrl = "https://dev.azure.com/dnceng/public/_artifacts/feed/$nfFeed"
-        $nfIteration = Get-PreReleaseVersionIteration -BranchName $SurveyRef
-        if ([string]::IsNullOrWhiteSpace($nfIteration)) { $nfIteration = "$previewNumber" }
-        $nfBand = "$majorVersion.0.0-preview.$nfIteration"
+        $nfVersion = Get-PreReleaseVersionMetadata -BranchName $SurveyRef
+        $nfLabel = if ([string]::IsNullOrWhiteSpace($nfVersion.Label)) { $releaseStage } else { $nfVersion.Label }
+        $nfIteration = if ([string]::IsNullOrWhiteSpace($nfVersion.Iteration)) { "$releaseNumber" } else { $nfVersion.Iteration }
+        $nfBand = "$majorVersion.0.0-$nfLabel.$nfIteration"
         $nfBandPrefix = '^' + [regex]::Escape("$nfBand.")
 
         $nfFresh = Resolve-NightlyDogfoodFreshness -Feed $nfFeed -BandPrefixRegex $nfBandPrefix
         if ($null -eq $nfFresh) { $nfFresh = @{ unknown = $true } }
 
         $nfBuildType = [string](Get-NightlyFeedProp $nfFresh 'buildType')
-        $nfLaneLabel = Format-NightlyFeedLaneLabel -Feed $nfFeed -FeedUrl $nfFeedUrl -BuildType $nfBuildType -BandNote "``$nfBand`` (preview.$nfIteration)"
+        $nfLaneLabel = Format-NightlyFeedLaneLabel -Feed $nfFeed -FeedUrl $nfFeedUrl -BuildType $nfBuildType -BandNote "``$nfBand`` ($nfLabel.$nfIteration)"
         $nfFresh['laneLabel'] = $nfLaneLabel
         $nfFresh['feedUrl'] = $nfFeedUrl
         $nfFresh['versionPrefix'] = $nfBandPrefix
@@ -2711,12 +3016,12 @@ if ($Script:NightlyFeedHelperLoaded -and
 
 $md = [System.Text.StringBuilder]::new()
 [void]$md.AppendLine("<!-- release-readiness-tracker: $TrackerKey -->")
-[void]$md.AppendLine("<!-- release-readiness-flavor: preview -->")
+[void]$md.AppendLine("<!-- release-readiness-flavor: $releaseStage -->")
 [void]$md.AppendLine("<!-- release-readiness-mode: $Mode -->")
 if ($Mode -eq 'candidate') {
-    [void]$md.AppendLine("# Release Readiness — .NET $majorVersion.0 preview $previewNumber (CANDIDATE from $SurveyRef) — $((Get-Date).ToString("yyyy-MM-dd"))")
+    [void]$md.AppendLine("# Release Readiness — .NET $majorVersion.0 $releaseDisplayName (CANDIDATE from $SurveyRef) — $((Get-Date).ToString("yyyy-MM-dd"))")
 } else {
-    [void]$md.AppendLine("# Release Readiness — .NET $majorVersion.0 preview $previewNumber — $((Get-Date).ToString("yyyy-MM-dd"))")
+    [void]$md.AppendLine("# Release Readiness — .NET $majorVersion.0 $releaseDisplayName — $((Get-Date).ToString("yyyy-MM-dd"))")
 }
 [void]$md.AppendLine("")
 [void]$md.AppendLine("**Ship verdict:** **$readinessVerdict** (check state: ``$overallStatus``)")
@@ -2730,7 +3035,7 @@ if ($nightlyFeedBanner) {
 [void]$md.AppendLine("**Tracker:** ``$TrackerKey`` · mode=``$Mode`` · branch=``$Branch`` · survey=``$SurveyRef``")
 [void]$md.AppendLine("")
 if ($Mode -eq 'candidate') {
-    [void]$md.AppendLine("> 🛫 **Pre-flight (candidate) mode.** Branch ``$Branch`` has not been cut yet. This report surveys ``$SurveyRef`` and shows what WOULD ship if the preview were cut today.")
+    [void]$md.AppendLine("> 🛫 **Pre-flight (candidate) mode.** Branch ``$Branch`` has not been cut yet. This report surveys ``$SurveyRef`` and shows what WOULD ship if $releaseDisplayName were cut today.")
     [void]$md.AppendLine("")
 }
 
@@ -2854,21 +3159,21 @@ $notesBlockText = $notesSb.ToString()
 # mandatory policy in a reusable block so the body cap can reserve and re-append it.
 $componentPolicySb = [System.Text.StringBuilder]::new()
 [void]$componentPolicySb.AppendLine("<!-- release-readiness:component-policy:begin -->")
-[void]$componentPolicySb.AppendLine("## 🏷️ Preview $previewNumber component build — branch pins + update paths")
+[void]$componentPolicySb.AppendLine("## 🏷️ $releaseDisplayName component build — branch pins + update paths")
 [void]$componentPolicySb.AppendLine("")
 [void]$componentPolicySb.AppendLine("> [!IMPORTANT]")
-$vmrPolicyText = if ($isCutPreview) {
-    "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut preview branch because the Maestro preview feed can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
+$vmrPolicyText = if ($isCutPrerelease) {
+    "VMR is intentionally different: there is **no dotnet/dotnet subscription** on a cut prerelease branch because the Maestro channel can differ from the official release source of truth; reconcile that pin locally against the official SDK/runtime build."
 } else {
-    "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official Preview $previewNumber SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
+    "Candidate mode surveys ``$SurveyRef``: its VMR flow signal describes the inflight branch subscription only and does **not** select or validate the official $releaseDisplayName SDK/runtime pin. After cut, use only Android/macOS-iOS subscriptions and reconcile VMR locally."
 }
 [void]$componentPolicySb.AppendLine("> **Branch pins** are read from ``$SurveyRef`` (``eng/Version.Details.xml`` — public git). **This is NOT a confirmed official build**; this public workflow cannot resolve the authoritative release designation. $vmrPolicyText")
 [void]$componentPolicySb.AppendLine(">")
 [void]$componentPolicySb.AppendLine("> ``````")
-$localVerificationPrompt = if ($isCutPreview) {
-    "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios preview subscriptions are wired to the .NET $majorVersion.0.1xx SDK Preview $previewNumber channel."
+$localVerificationPrompt = if ($isCutPrerelease) {
+    "Run release readiness for ${Branch}: resolve the official $releaseDisplayName SDK/runtime build from the authorized release source of truth, reconcile the MAUI SDK/VMR pin locally to that build, and verify only the dotnet/android + dotnet/macios inbound subscriptions are wired to the $expectedChannelName channel."
 } else {
-    "Run release readiness for ${Branch}: resolve the official Preview $previewNumber SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
+    "Run release readiness for ${Branch}: resolve the official $releaseDisplayName SDK/runtime build from the authorized release source of truth. Treat ``$SurveyRef`` VMR flow as inflight evidence only; after cut, add only dotnet/android + dotnet/macios subscriptions and reconcile MAUI's SDK/VMR pin locally."
 }
 [void]$componentPolicySb.AppendLine("> $localVerificationPrompt")
 [void]$componentPolicySb.AppendLine("> ``````")
@@ -2907,7 +3212,7 @@ if ($componentPins) {
     $allPRsForFlow   = @($targetPRs) + @($mergedPRsForFlow)
     $depFlowPRs      = @($allPRsForFlow | Where-Object { Test-IsDependencyFlowPr $_ })
 
-    [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-preview churn or not yet blessed).")
+    [void]$md.AppendLine("> The **Upstream** column is a hard git fact (not an inference): it compares our pinned SHA against the tip of each component's same-named branch (``$SurveyRef`` — derived, never hardcoded) via the public compare API. ⬆️ *N ahead* means the source moved past what we bundle — an FYI you *may* want to pull in, **not** a required bump (maui pins blessed builds deliberately, so those commits may be post-release churn or not yet blessed).")
     [void]$md.AppendLine("")
     [void]$md.AppendLine("| Component | Branch pin (bundled) | Commit | Update path / flow signal | Upstream (vs our pin) |")
     [void]$md.AppendLine("|-----------|----------------------|--------|---------------------------|-----------------------|")
@@ -2920,7 +3225,7 @@ if ($componentPins) {
     foreach ($r in $pinRows) {
         $flowCell = Format-PreviewComponentUpdatePathCell -Repo $r.Repo `
             -DepFlowPRs $depFlowPRs -Now $flowNow -StaleDays $flowStaleDays `
-            -LocalVmr:($isCutPreview) `
+            -LocalVmr:($isCutPrerelease) `
             -HistoryUnavailable:$mergedHistoryUnavailable
         $pin = $r.Pin
         if (-not $pin) {
@@ -2935,6 +3240,7 @@ if ($componentPins) {
         $drift = Get-UpstreamDriftSignal -Repo $r.Repo -Sha $pin.Sha -BranchName $SurveyRef
         $driftCell = Format-PreviewComponentSourceCell -Repo $r.Repo `
             -Version $pin.Version -Major $majorVersion -Preview $previewNumber `
+            -Stage $releaseStage `
             -Drift $drift -Vmr:$r.Vmr
 
         $commitCell = '—'
@@ -2945,14 +3251,14 @@ if ($componentPins) {
         [void]$md.AppendLine("| $(Format-MarkdownCell $r.Label) | ``$($pin.Version)`` | $commitCell | $flowCell | $driftCell |")
     }
     [void]$md.AppendLine("")
-    $updatePathLegend = if ($isCutPreview) {
+    $updatePathLegend = if ($isCutPrerelease) {
         "_Update-path legend: Android/macOS-iOS — 🔄 open dep-flow PR · ✅ merged ≤ $flowStaleDays d · ⚠️ newest merge > $flowStaleDays d · ❌ no PR trail (subscription may be missing). Confirm those two subscriptions with ``darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch $SurveyRef``. VMR — 🛠️ no subscription by design; reconcile locally against the official SDK/runtime build._"
     } else {
-        "_Update-path legend: candidate mode reports the existing ``$SurveyRef`` subscription PR trail. Its VMR signal is inflight evidence only, not proof of the official Preview $previewNumber SDK/runtime selection._"
+        "_Update-path legend: candidate mode reports the existing ``$SurveyRef`` subscription PR trail. Its VMR signal is inflight evidence only, not proof of the official $releaseDisplayName SDK/runtime selection._"
     }
     [void]$md.AppendLine($updatePathLegend)
     [void]$md.AppendLine("")
-    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-preview churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly; its upstream drift is informational because the official SDK/runtime build, not branch tip or Maestro feed, selects the release pin._")
+    [void]$md.AppendLine("_Upstream legend: ✅ current = our pin **is** the tip of the component's ``$SurveyRef`` branch · ⬆️ N ahead = that branch has N newer commit(s) than we bundle (**FYI** — may be post-release churn or not-yet-blessed work; not necessarily a bump you need) · ⚠️ diverged = our pin isn't a clean ancestor of the branch tip (build tag / different line) — compare manually · — = couldn't determine (no same-named upstream branch, or the compare API was unavailable). Branch is **derived** from the survey ref, never hardcoded. dotnet/dotnet (VMR) advances constantly; its upstream drift is informational because the official SDK/runtime build, not branch tip or Maestro feed, selects the release pin._")
 
     # If a manual/darc component-bump PR is open against the branch, it names the
     # pending target BAR builds in its title — surface it so readers see the pins
@@ -3029,7 +3335,7 @@ if ($cleanupChecks.Count -gt 0) {
 [void]$md.AppendLine("## Recent CI Failure Scanner signals (``ci-scan``)")
 [void]$md.AppendLine("")
 if (-not $ciScanLabel) {
-    [void]$md.AppendLine("_No CI Failure Scanner runs against ``$SurveyRef``. This section has no continuous-scan evidence for the cut preview branch._")
+    [void]$md.AppendLine("_No CI Failure Scanner runs against ``$SurveyRef``. This section has no continuous-scan evidence for the cut prerelease branch._")
     [void]$md.AppendLine("")
 } else {
     $ciScanBlurb = "_Filtered to issues whose ``**Branch**: <name>`` body marker matches ``$SurveyRef`` (auto-filed by the CI Failure Scanner workflow every 12h). Fresh issues (<24h) are flagged 🆕._"
@@ -3063,14 +3369,25 @@ if ($generatedAt -and (Get-Command Format-ReportFreshnessBanner -ErrorAction Sil
 [void]$md.AppendLine("|-------|-------|")
 [void]$md.AppendLine("| Branch | ``$Branch`` |")
 [void]$md.AppendLine("| Inflight branch | ``$mainBranch`` |")
-[void]$md.AppendLine("| Expected SDK channel | ``.NET $majorVersion.0.1xx SDK Preview $previewNumber`` |")
+[void]$md.AppendLine("| Release lane | ``$releaseStage`` |")
+[void]$md.AppendLine("| Expected SDK channel | ``$expectedChannelName`` |")
 [void]$md.AppendLine("| Workload release channel | ``.NET $majorVersion Workload Release`` |")
-[void]$md.AppendLine("| Expected PreReleaseVersionIteration | ``$previewNumber`` |")
+[void]$md.AppendLine("| Expected PreReleaseVersionLabel | ``$releaseStage`` |")
+[void]$md.AppendLine("| Expected PreReleaseVersionIteration | ``$releaseNumber`` |")
 [void]$md.AppendLine("")
 
 [void]$md.AppendLine("## Readiness checklist")
 [void]$md.AppendLine("")
 Add-CheckTable -Builder $md -Checks $checks
+
+if (-not $effectivePublicSafe -and $Script:InternalOfficialBuildHelperLoaded) {
+    [void]$md.AppendLine("## Local internal official-build health")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine("Definition ``1095`` (``dotnet-maui``) is queried independently for the inflight and release refs. This section is local-only and must not be copied into a public tracker issue.")
+    [void]$md.AppendLine("")
+    [void]$md.AppendLine((Format-InternalOfficialBuildTable -Health $internalOfficialBuildHealth -PublicSafe:$false))
+    [void]$md.AppendLine("")
+}
 
 [void]$md.AppendLine("## Maestro / dependency-flow PRs")
 [void]$md.AppendLine("")
@@ -3080,7 +3397,7 @@ $sdkBumpPrs = @($maestroPRs | Where-Object { Test-IsSdkBumpPr $_ })
 if ($sdkBumpPrs.Count -gt 0) {
     $sdkBumpLinks = ($sdkBumpPrs | ForEach-Object { "[#$($_.number)]($($_.url))" }) -join ', '
     [void]$md.AppendLine("> [!WARNING]")
-    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate**; this public workflow cannot resolve the authoritative release designation. **Confirm the official SDK/runtime build locally** (see 🏷️ Preview $previewNumber component build above) before treating the bumped pin as final.")
+    [void]$md.AppendLine("> $($sdkBumpPrs.Count) open PR(s) bump the **SDK/VMR** ($sdkBumpLinks). The new SDK pin they land is only a **candidate**; this public workflow cannot resolve the authoritative release designation. **Confirm the official SDK/runtime build locally** (see 🏷️ $releaseDisplayName component build above) before treating the bumped pin as final.")
     [void]$md.AppendLine("")
 }
 Add-PRTable -Builder $md -PRs $maestroPRs
@@ -3107,14 +3424,18 @@ Add-IssueTable -Builder $md -Issues $kbeIssues
 
 [void]$md.AppendLine("## Public/internal data boundary")
 [void]$md.AppendLine("")
-[void]$md.AppendLine((Get-PublicDataBoundaryText))
+if ($effectivePublicSafe) {
+    [void]$md.AppendLine((Get-PublicDataBoundaryText))
+} else {
+    [void]$md.AppendLine("This local report includes internal build IDs, source SHAs, and private Azure DevOps URLs. Do not paste this local-only section into a public GitHub tracker issue; rerun with ``-PublicSafe:`$true`` for public output.")
+}
 [void]$md.AppendLine("")
 
 $markdownBody = $md.ToString()
 
 # Public-safe mode sanitizes fetched text too (for example, PR titles can contain
 # internal repository coordinates even when every generated sentence is neutral).
-if ($PublicSafe) {
+if ($effectivePublicSafe) {
     $markdownBody = ConvertTo-PublicSafeMarkdown -Text $markdownBody
 }
 
@@ -3153,7 +3474,7 @@ $markdownBody = Limit-PreviewTrackerBody -MarkdownBody $markdownBody `
 # ===================================================================
 # OUTPUT
 # ===================================================================
-$reportJson = ConvertTo-PreviewReportJson -Report $report -PublicSafe:$PublicSafe
+$reportJson = ConvertTo-PreviewReportJson -Report $report -PublicSafe:$effectivePublicSafe
 
 if ($OutputDir) {
     if (-not (Test-Path $OutputDir)) {

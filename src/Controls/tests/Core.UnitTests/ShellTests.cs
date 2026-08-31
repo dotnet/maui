@@ -1930,6 +1930,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shellContent.Route = route;
 			shellContent.Route = route; // Should not throw - same element, same route
 			Assert.Equal(route, shellContent.Route);
+	}
+
+		// Regression test for https://github.com/dotnet/maui/issues/37217
+		// Assigning the same long-lived Page to many transient ShellContent instances must not
+		// keep those ShellContent instances alive via the Page's PropertyChanged subscription.
+		[Fact]
+		public async Task SharedPagePropertyChangedDoesNotRetainTransientShellContents()
+		{
+			const int shellContentsToCreate = 30;
+			var sharedPage = new ContentPage { Title = "Shared Page" };
+
+			var references = CreateShellContents(sharedPage, shellContentsToCreate);
+
+			await TestHelpers.Collect();
+
+			var alive = 0;
+			foreach (var reference in references)
+			{
+				if (reference.IsAlive)
+				{
+					alive++;
+				}
+			}
+
+			GC.KeepAlive(sharedPage);
+
+			Assert.Equal(0, alive);
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateShellContents(ContentPage sharedPage, int count)
+		{
+			var references = new List<WeakReference>(count);
+			for (var i = 0; i < count; i++)
+			{
+				var shellContent = new ShellContent
+				{
+					Content = sharedPage
+				};
+
+				references.Add(new WeakReference(shellContent));
+			}
+
+			return references;
 		}
 	}
 }
