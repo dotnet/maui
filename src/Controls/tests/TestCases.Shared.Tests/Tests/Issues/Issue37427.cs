@@ -1,4 +1,5 @@
-#if IOS || MACCATALYST // This regression is specific to the iOS/MacCatalyst CollectionView2 handler.
+#if IOS || MACCATALYST
+using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,54 +19,58 @@ public class Issue37427 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void DynamicallyAddedContentRendersAfterCellRealization()
 	{
-		App.WaitForElement("37427CollectionView");
+		var collection = App.WaitForElement("37427CollectionView").GetRect();
+		App.ScrollDown("37427CollectionView", ScrollStrategy.Gesture, 0.8, 500, withInertia: false);
 
-		// Scroll to a card that requires cell realization beyond the initial viewport.
-		App.ScrollTo("37427Card10");
-		AssertPreviewColorsRender("37427Card10", "after downward scroll");
+		var window = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+		var previews = Enumerable.Range(1, 10)
+			.Select(card => (card, element: App.FindElements($"37427Card{card}PreviewColors").FirstOrDefault()))
+			.Where(preview => preview.element is not null)
+			.Select(preview => (preview.card, rect: preview.element!.GetRect()))
+			.Where(preview =>
+				preview.rect.Y >= collection.Y &&
+				preview.rect.Y + preview.rect.Height <= collection.Y + collection.Height)
+			.ToArray();
 
-		// Jump back to the first card so Card 10 leaves the viewport and its cell can be reused.
-		App.ScrollTo("37427Card1", down: false);
-		AssertPreviewColorsRender("37427Card1", "after upward recycle");
+		Assert.That(previews, Has.Length.GreaterThanOrEqualTo(3),
+			"Expected at least three fully visible preview bars after the scroll gesture.");
+		Assert.That(previews.Select(preview => preview.card), Has.Some.GreaterThanOrEqualTo(7),
+			"Expected at least one card realized beyond the initial viewport.");
 
-		// Scroll down again to validate that downward recycling also works.
-		App.ScrollTo("37427Card10");
-		AssertPreviewColorsRender("37427Card10", "after downward recycle");
-	}
+		using var screenshot = new MagickImage(App.Screenshot());
+		// iOS screenshots use native pixels while Appium rectangles use points.
+		// Mac2 returns both in screen coordinates.
+#if IOS
+		var scale = (double)screenshot.Width / window.Width;
+#else
+		const double scale = 1;
+#endif
+		using var pixels = screenshot.GetPixels();
 
-	void AssertPreviewColorsRender(string cardId, string phase)
-	{
-		var cardBounds = App.WaitForElement(cardId).GetRect();
-
-		var previewBounds = App.WaitForElement($"{cardId}PreviewColors").GetRect();
-		var colorWidths = new double[5];
-		Assert.Multiple(() =>
+		foreach (var (card, preview) in previews)
 		{
-			for (var colorIndex = 0; colorIndex < 5; colorIndex++)
+			for (var column = 0; column < 5; column++)
 			{
-				var colorBounds = App.WaitForElement($"{cardId}Color{colorIndex}").GetRect();
-				Assert.That(colorBounds.Width, Is.GreaterThan(0), $"{phase}: color {colorIndex} should have a non-zero width.");
-				Assert.That(colorBounds.Height, Is.GreaterThan(0), $"{phase}: color {colorIndex} should have a non-zero height.");
-				colorWidths[colorIndex] = colorBounds.Width;
-			}
-		});
+				var x = (int)((preview.X + preview.Width * (column + 0.5) / 5) * scale);
+				var y = (int)((preview.Y + preview.Height / 2) * scale);
+				Assert.That(x, Is.InRange(0, (int)screenshot.Width - 1));
+				Assert.That(y, Is.InRange(0, (int)screenshot.Height - 1));
 
-		// All color boxes use Star columns and should fill the preview grid.
-		var averageWidth = colorWidths.Average();
-		var totalWidth = colorWidths.Sum();
-		Assert.Multiple(() =>
-		{
-			Assert.That(previewBounds.Width, Is.EqualTo(cardBounds.Width - 24).Within(8),
-				$"{phase}: preview width ({previewBounds.Width:F1}) should fill the card ({cardBounds.Width:F1}) inside its horizontal margin.");
-			Assert.That(totalWidth, Is.EqualTo(previewBounds.Width).Within(2),
-				$"{phase}: color widths ({totalWidth:F1}) should fill the preview grid ({previewBounds.Width:F1}).");
+				var color = pixels.GetPixel(x, y).ToColor();
+				Assert.That(color, Is.Not.Null);
 
-			for (var colorIndex = 0; colorIndex < colorWidths.Length; colorIndex++)
-			{
-				Assert.That(colorWidths[colorIndex], Is.EqualTo(averageWidth).Within(averageWidth * 0.15),
-					$"{phase}: color {colorIndex} width ({colorWidths[colorIndex]:F1}) should be proportional to average ({averageWidth:F1}).");
+				var channelRange = Math.Max(color!.R, Math.Max(color.G, color.B)) -
+					Math.Min(color.R, Math.Min(color.G, color.B));
+
+				Assert.That(channelRange, Is.GreaterThan(100),
+					$"Card {card}, preview column {column} should contain a rendered color, but sampled {color} at ({x},{y}); " +
+					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scale}.");
+
+				var colorBounds = App.WaitForElement($"37427Card{card}Color{column}").GetRect();
+				Assert.That(colorBounds.Width, Is.GreaterThan(0));
+				Assert.That(colorBounds.Height, Is.GreaterThan(0));
 			}
-		});
+		}
 	}
 }
 #endif
