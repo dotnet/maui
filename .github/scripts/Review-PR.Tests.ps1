@@ -728,6 +728,9 @@ Describe 'Reviewer pipeline timeout containment' {
         $resolveBlock = $pipelineContent.Substring(
             $resolveStart,
             $resolveEnd - $resolveStart)
+        $diskCleanup = $pipelineContent.IndexOf(
+            "displayName: 'Free disk space before .NET workloads (android)'",
+            $resolveEnd)
         $installWorkloads = $pipelineContent.IndexOf(
             "displayName: 'Install .NET and workloads'",
             $resolveEnd)
@@ -742,7 +745,8 @@ Describe 'Reviewer pipeline timeout containment' {
             [regex]::Escape('git checkout --detach "origin/${BASE_REF}"'))
         $resolveBlock | Should -Not -Match 'pull/\$\{PARAM_PR_NUMBER\}/head'
         $resolveBlock | Should -Not -Match 'git checkout --detach FETCH_HEAD'
-        $installWorkloads | Should -BeGreaterThan $resolveEnd
+        $diskCleanup | Should -BeGreaterThan $resolveEnd
+        $installWorkloads | Should -BeGreaterThan $diskCleanup
         $buildTasks | Should -BeGreaterThan $installWorkloads
         $setup | Should -BeGreaterThan $buildTasks
     }

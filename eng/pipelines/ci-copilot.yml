@@ -305,6 +305,28 @@ stages:
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
 
+          # Free disk space BEFORE .NET workload installation and the gate build.
+          # Android hosted agents are tight on disk after SDK provisioning: builds
+          # 15154242 and 15154507 exhausted the disk during `build.ps1
+          # --target=dotnet`, so the later pre-build cleanup was skipped. The same
+          # cleanup measured 1.3 GB free before and 16 GB after in build 15153835.
+          # common/provision.yml has already installed the repository-local
+          # ./.dotnet used below, so these unused hosted-image caches are safe to
+          # remove. Best-effort: every removal is non-blocking.
+          - ${{ if eq(parameters.Platform, 'android') }}:
+            - bash: |
+                echo "=== Disk space before pre-workload cleanup ==="
+                df -h 2>/dev/null || true
+                echo "Removing unused hosted-tool caches before .NET workload installation..."
+                sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
+                sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
+                sudo rm -rf /usr/share/swift 2>/dev/null || true
+                echo "=== Disk space after pre-workload cleanup ==="
+                df -h 2>/dev/null || true
+              displayName: 'Free disk space before .NET workloads (android)'
+              condition: succeeded()
+              continueOnError: true
+
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
@@ -494,32 +516,6 @@ stages:
             displayName: 'Verify .dotnet runtime completeness'
             condition: and(succeeded(), ne('${{ parameters.Platform }}', 'windows'))
             continueOnError: true
-
-          # Free disk space BEFORE the gate build. Android runs on Linux hosted
-          # agents that are tight on disk and have run OUT *during* 'Build MSBuild
-          # Tasks' ("No space left on device", build 14843877 / #36767) — which
-          # red-failed the ReviewPR/gate stage on pure INFRASTRUCTURE, not the PR.
-          # The existing emulator-cleanup step reclaims the same caches but runs
-          # LATER (after this build), so it could not prevent the build from
-          # exhausting the disk. Reclaim the unused hosted-tool caches up front so
-          # the gate build always has room. Linux (android) only — the removed
-          # paths are Linux hosted-image caches; the build uses ./.dotnet, never
-          # the system /usr/share/dotnet (already proven safe by the later cleanup).
-          # Best-effort: every removal is `|| true` and the step is non-blocking, so
-          # cleanup can never itself fail the review.
-          - ${{ if eq(parameters.Platform, 'android') }}:
-            - bash: |
-                echo "=== Disk space before pre-build cleanup ==="
-                df -h 2>/dev/null || true
-                echo "Removing unused hosted-tool caches to free space before the gate build..."
-                sudo rm -rf /usr/share/dotnet /usr/local/share/powershell /usr/local/share/chromium 2>/dev/null || true
-                sudo rm -rf /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/go /opt/hostedtoolcache/Python 2>/dev/null || true
-                sudo rm -rf /usr/share/swift 2>/dev/null || true
-                echo "=== Disk space after pre-build cleanup ==="
-                df -h 2>/dev/null || true
-              displayName: 'Free disk space before build (android)'
-              condition: succeeded()
-              continueOnError: true
 
           # Build MSBuild tasks (required for MAUI builds). Wrapped in a
           # wall-clock WATCHDOG because AzDO's step-level timeoutInMinutes does
