@@ -227,9 +227,8 @@
     <MonoVersionBand>$(DotNetVersionBand)</MonoVersionBand>
     <DotNetSdkManifestsFolder>$(DotNetVersionBand)</DotNetSdkManifestsFolder>
     <DotNetMauiManifestVersionBand>$(DotNetVersionBand)</DotNetMauiManifestVersionBand>
-    <!-- macOS still publishes Preview 7 manifest package IDs while the VMR and Android have advanced to RC 1. -->
     <DotNetAndroidManifestVersionBand>11.0.100-rc.1</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>11.0.100-preview.7</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>11.0.100-rc.1</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet110_265PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet110_265PackageVersion)</MicrosoftmacOSSdkPackageVersion>
