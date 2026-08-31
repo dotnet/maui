@@ -96,8 +96,7 @@ namespace Microsoft.Maui.Storage
 			{
 				var contentType = UTType.CreateFromIdentifier(allowedUti);
 
-				if (contentType is null &&
-					(!allowedUti.Contains(".", StringComparison.Ordinal) || allowedUti.StartsWith(".", StringComparison.Ordinal)))
+				if (contentType is null)
 					contentType = UTType.GetType(allowedUti.TrimStart('.'), UTTagClass.FilenameExtension, null);
 
 				contentTypes.Add(contentType ?? UTType.CreateImportedType(allowedUti));

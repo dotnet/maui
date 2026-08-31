@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 				if (font.ResourceStream is null)
 				{
 					if (!File.Exists(fontPath))
-						throw new InvalidOperationException("ResourceStream was null.");
+						throw new FileNotFoundException($"Font file '{fontPath}' was not found.", fontPath);
 				}
 				else
 				{
