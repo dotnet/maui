@@ -14,5 +14,6 @@ override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? property
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.Picker.~Picker() -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
