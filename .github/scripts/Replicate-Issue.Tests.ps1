@@ -2702,6 +2702,29 @@ InitializeComponent();
         $script:BuildDeploySource |
             Should -Match '"-p:WindowsPackageType=MSIX"'
         $script:BuildDeploySource |
+            Should -Match '\$graphBuildArgs = @\('
+        $script:BuildDeploySource |
+            Should -Match '"-p:BuildProjectReferences=true"'
+        $script:BuildDeploySource |
+            Should -Match '"-p:BuildProjectReferences=false"'
+        $graphBuildArguments = [regex]::Match(
+            $script:BuildDeploySource,
+            '(?ms)\$graphBuildArgs = @\(.*?^\s*\) \+ \$hostAppBuildProps').Value
+        $graphBuildArguments | Should -Match '"-p:WindowsPackageType=None"'
+        $graphBuildArguments | Should -Match '"-p:BuildProjectReferences=true"'
+        $graphBuildArguments | Should -Not -Match (
+            'PackageManifest|GenerateAppxPackageOnBuild|' +
+            'PackageCertificateThumbprint|AppxPackageDir')
+        $graphBuildIndex = $script:BuildDeploySource.IndexOf(
+            '& dotnet build @graphBuildArgs',
+            [StringComparison]::Ordinal)
+        $packageBuildIndex = $script:BuildDeploySource.IndexOf(
+            '& dotnet publish @buildArgs',
+            $graphBuildIndex,
+            [StringComparison]::Ordinal)
+        $graphBuildIndex | Should -BeGreaterOrEqual 0
+        $packageBuildIndex | Should -BeGreaterThan $graphBuildIndex
+        $script:BuildDeploySource |
             Should -Match '"-p:PackageManifest=\$manifestPath"'
         $script:BuildDeploySource |
             Should -Not -Match '_MauiReplicationWindowsManifest'

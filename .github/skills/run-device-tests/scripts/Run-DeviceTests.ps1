@@ -1384,6 +1384,31 @@ try {
                     Remove-Item -LiteralPath $windowsPackageOutput -Recurse -Force
                 }
                 New-Item -ItemType Directory -Path $windowsPackageOutput -Force | Out-Null
+                $windowsGraphBuildArgs = @(
+                    'build',
+                    $projectPath,
+                    '-c', $Configuration,
+                    '-f', $platformConfig.Tfm,
+                    '/p:TreatWarningsAsErrors=false',
+                    '--no-restore',
+                    "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)",
+                    '/p:PublishReadyToRun=false',
+                    '/p:WindowsPackageType=None',
+                    '/p:_MauiDeviceTestUnpackaged=true',
+                    '/p:SelfContained=true',
+                    '/p:UseMonoRuntime=false',
+                    '/p:BuildProjectReferences=true'
+                )
+                if ($Rebuild) {
+                    $windowsGraphBuildArgs += '-t:Rebuild'
+                }
+                Write-Host (
+                    "Prebuilding Windows project graph: dotnet " +
+                    ($windowsGraphBuildArgs -join ' ')) -ForegroundColor Gray
+                & dotnet @windowsGraphBuildArgs
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Unpackaged Windows graph build failed with exit code $LASTEXITCODE"
+                }
                 $windowsSigningCertificate =
                     New-ReplicationWindowsSigningCertificate
                 $buildArgs += "/p:WindowsPackageType=MSIX"
@@ -1394,6 +1419,7 @@ try {
                 $buildArgs += "/p:ExtraDefineConstants=PACKAGED"
                 $buildArgs += "/p:PackageManifest=$windowsManifestPath"
                 $buildArgs += "/p:AppxPackageDir=$($windowsPackageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)"
+                $buildArgs += "/p:BuildProjectReferences=false"
             } else {
                 # Keep ordinary local device-test execution unchanged. Replication
                 # never takes this full-trust, unpackaged branch.
