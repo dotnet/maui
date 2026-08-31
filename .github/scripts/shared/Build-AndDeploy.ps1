@@ -634,6 +634,8 @@ if ($Platform -eq "android") {
                 "-p:_MauiReplicationUnpackaged=true",
                 "-p:SelfContained=true",
                 "-p:BuildProjectReferences=true",
+                "-p:WindowsAppSdkBootstrapInitialize=false",
+                "-p:WindowsAppSdkDeploymentManagerInitialize=false",
                 "--no-restore"
             ) + $hostAppBuildProps
             if ($Rebuild) { $graphBuildArgs += "--no-incremental" }
@@ -657,6 +659,8 @@ if ($Platform -eq "android") {
                 "-p:PackageCertificateThumbprint=$($signingCertificate.Thumbprint)",
                 "-p:SelfContained=true",
                 "-p:ExtraDefineConstants=PACKAGED",
+                "-p:WindowsAppSdkBootstrapInitialize=false",
+                "-p:WindowsAppSdkDeploymentManagerInitialize=false",
                 "-p:CustomAfterMicrosoftCommonTargets=$manifestOverrideTargets",
                 "-p:MauiReplicationAppContainerProject=$topLevelProjectPath",
                 "-p:MauiReplicationAppContainerManifest=$manifestPath",

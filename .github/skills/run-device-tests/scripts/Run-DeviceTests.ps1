@@ -1405,7 +1405,9 @@ try {
                     '/p:_MauiDeviceTestUnpackaged=true',
                     '/p:SelfContained=true',
                     '/p:UseMonoRuntime=false',
-                    '/p:BuildProjectReferences=true'
+                    '/p:BuildProjectReferences=true',
+                    '/p:WindowsAppSdkBootstrapInitialize=false',
+                    '/p:WindowsAppSdkDeploymentManagerInitialize=false'
                 )
                 if ($Rebuild) {
                     $windowsGraphBuildArgs += '-t:Rebuild'
@@ -1425,6 +1427,8 @@ try {
                 $buildArgs += "/p:PackageCertificateThumbprint=$($windowsSigningCertificate.Thumbprint)"
                 $buildArgs += "/p:SelfContained=true"
                 $buildArgs += "/p:ExtraDefineConstants=PACKAGED"
+                $buildArgs += "/p:WindowsAppSdkBootstrapInitialize=false"
+                $buildArgs += "/p:WindowsAppSdkDeploymentManagerInitialize=false"
                 $windowsTopLevelProjectPath = [IO.Path]::GetFullPath(
                     (Join-Path $RepoRoot $projectPath))
                 $buildArgs += "/p:CustomAfterMicrosoftCommonTargets=$windowsManifestOverrideTargets"

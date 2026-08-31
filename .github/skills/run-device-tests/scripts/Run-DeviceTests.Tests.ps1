@@ -71,6 +71,10 @@ Describe 'Build isolation options' {
         $content | Should -Match '/p:WindowsPackageType=None'
         $content | Should -Match '/p:BuildProjectReferences=true'
         $content | Should -Match '/p:BuildProjectReferences=false'
+        $content | Should -Match (
+            '/p:WindowsAppSdkBootstrapInitialize=false')
+        $content | Should -Match (
+            '/p:WindowsAppSdkDeploymentManagerInitialize=false')
         $graphBuildArguments = [regex]::Match(
             $content,
             '(?ms)\$windowsGraphBuildArgs = @\(.*?^\s*\)').Value
@@ -88,6 +92,12 @@ Describe 'Build isolation options' {
             [StringComparison]::Ordinal)
         $graphBuild | Should -BeGreaterOrEqual 0
         $packageBuild | Should -BeGreaterThan $graphBuild
+        $deploymentInitializer = $content.IndexOf(
+            '$buildArgs += "/p:WindowsAppSdkDeploymentManagerInitialize=false"',
+            $graphBuild,
+            [StringComparison]::Ordinal)
+        $deploymentInitializer | Should -BeGreaterThan $graphBuild
+        $deploymentInitializer | Should -BeLessThan $packageBuild
         $content | Should -Match '/p:GenerateAppxPackageOnBuild=true'
         $content | Should -Match (
             '/p:CustomAfterMicrosoftCommonTargets=' +

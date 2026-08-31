@@ -36,8 +36,13 @@
         Query="/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/@*[local-name()='RuntimeBehavior' and namespace-uri()='http://schemas.microsoft.com/appx/manifest/uap/windows10/10']">
       <Output TaskParameter="Result" ItemName="_MauiReplicationRuntimeBehavior" />
     </XmlPeek>
+    <XmlPeek
+        XmlInputPath="@(AppxManifest)"
+        Query="/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/@EntryPoint">
+      <Output TaskParameter="Result" ItemName="_MauiReplicationEntryPoint" />
+    </XmlPeek>
     <Error
-        Condition="'@(_MauiReplicationTrustLevel)' != 'appContainer' or '@(_MauiReplicationRuntimeBehavior)' != 'packagedClassicApp'"
-        Text="The generated replication manifest does not preserve appContainer trust and packagedClassicApp runtime behavior." />
+        Condition="'@(_MauiReplicationTrustLevel)' != 'appContainer' or '@(_MauiReplicationRuntimeBehavior)' != 'packagedClassicApp' or '@(_MauiReplicationEntryPoint)' != 'windows.partialTrustApplication'"
+        Text="The generated replication manifest does not preserve the partial-trust AppContainer application identity." />
   </Target>
 </Project>

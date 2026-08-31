@@ -74,6 +74,18 @@ function Assert-ReplicationWindowsAppContainerManifestDocument {
     if ([string]$application.GetAttribute('Id') -cne 'App') {
         throw "$Description must expose exactly the trusted App application identity."
     }
+    $entryPoint = [string]$application.GetAttribute('EntryPoint')
+    if ($entryPoint -cne 'windows.partialTrustApplication') {
+        $reportedEntryPoint =
+            (($entryPoint -replace '[^\x20-\x7E]', '?') -replace
+                '##(?=\[|vso\[)', '## ')
+        if ($reportedEntryPoint.Length -gt 1000) {
+            $reportedEntryPoint = $reportedEntryPoint.Substring(0, 1000)
+        }
+        throw (
+            "$Description must use the partial-trust Windows application entry point. " +
+            "Actual EntryPoint='$reportedEntryPoint'.")
+    }
     $actualTrustLevel =
         [string]$application.GetAttribute('TrustLevel', $uap10Namespace)
     $actualRuntimeBehavior =
@@ -142,6 +154,7 @@ function Assert-ReplicationWindowsAppContainerManifestDocument {
         Name = [string]$identity.GetAttribute('Name')
         Publisher = [string]$identity.GetAttribute('Publisher')
         ApplicationId = [string]$application.GetAttribute('Id')
+        EntryPoint = $entryPoint
         TrustLevel = [string]$application.GetAttribute('TrustLevel', $uap10Namespace)
         RuntimeBehavior = [string]$application.GetAttribute(
             'RuntimeBehavior',
