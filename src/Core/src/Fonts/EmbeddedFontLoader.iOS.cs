@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.IO;
 using CoreGraphics;
 using CoreText;
 using Foundation;
@@ -16,54 +17,75 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public string? LoadFont(EmbeddedFont font)
 		{
+			string? temporaryFontPath = null;
+
 			try
 			{
-				CGFont? cgFont;
+				var fontPath = font.FontName;
 
-				if (font.ResourceStream == null)
+				if (font.ResourceStream is null)
 				{
-					if (!System.IO.File.Exists(font.FontName))
+					if (!File.Exists(fontPath))
 						throw new InvalidOperationException("ResourceStream was null.");
-
-					var provider = new CGDataProvider(font.FontName);
-					cgFont = CGFont.CreateFromProvider(provider);
 				}
 				else
 				{
-					var data = NSData.FromStream(font.ResourceStream);
-					if (data == null)
-						throw new InvalidOperationException("Unable to load font stream data.");
-					var provider = new CGDataProvider(data);
-					cgFont = CGFont.CreateFromProvider(provider);
+					temporaryFontPath = Path.ChangeExtension(
+						Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
+						Path.GetExtension(font.FontName));
+
+					using (var temporaryFontStream = File.Create(temporaryFontPath))
+						font.ResourceStream.CopyTo(temporaryFontStream);
+
+					fontPath = temporaryFontPath;
 				}
+
+				using var provider = new CGDataProvider(fontPath);
+				using var cgFont = CGFont.CreateFromProvider(provider);
 
 				if (cgFont == null)
 					throw new InvalidOperationException("Unable to load font from the stream.");
 
 				var name = cgFont.PostScriptName;
 
-#pragma warning disable CA1416  // TODO:  'RegisterGraphicsFont' is obsolete on: 'ios' 15.0 and later
-#pragma warning disable CA1422
-				if (CTFontManager.RegisterGraphicsFont(cgFont, out var error))
+				using var fontUrl = NSUrl.FromFilename(fontPath);
+				var error = CTFontManager.RegisterFontsForUrl(fontUrl, CTFontManagerScope.Process);
+				if (error is null)
 					return name;
-#pragma warning restore CA1422
-#pragma warning restore CA1416
 
 				var uiFont = UIFont.FromName(name, 10);
 				if (uiFont != null)
 					return name;
 
-				if (error != null)
-					throw new NSErrorException(error);
-				else
-					throw new InvalidOperationException("Unable to load font from the stream.");
+				throw new NSErrorException(error);
 			}
 			catch (Exception ex)
 			{
 				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable register font {Font} with the system.", font.FontName);
 			}
+			finally
+			{
+				if (temporaryFontPath is not null)
+					DeleteTemporaryFont(temporaryFontPath);
+			}
 
 			return null;
+		}
+
+		void DeleteTemporaryFont(string fontPath)
+		{
+			try
+			{
+				File.Delete(fontPath);
+			}
+			catch (IOException ex)
+			{
+				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable to delete temporary font file {FontPath}.", fontPath);
+			}
+			catch (UnauthorizedAccessException ex)
+			{
+				_serviceProvider?.CreateLogger<EmbeddedFontLoader>()?.LogWarning(ex, "Unable to delete temporary font file {FontPath}.", fontPath);
+			}
 		}
 	}
 }

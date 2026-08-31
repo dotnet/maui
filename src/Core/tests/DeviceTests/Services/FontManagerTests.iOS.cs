@@ -24,4 +24,17 @@ public partial class FontManagerTests : TestBase
 		Assert.Equal(expectedFamilyName, font.FamilyName);
 	}
 
+	[Fact]
+	public async System.Threading.Tasks.Task CanLoadEmbeddedFont()
+	{
+		var registrar = new FontRegistrar(new EmbeddedFontLoader());
+		registrar.Register("dokdo_regular.ttf", "embedded-dokdo", GetType().Assembly);
+		var manager = new FontManager(registrar);
+
+		var font = await InvokeOnMainThreadAsync(() =>
+			manager.GetFont(Font.OfSize("embedded-dokdo", manager.DefaultFontSize)));
+
+		Assert.Equal("Dokdo", font.FamilyName);
+	}
+
 }
