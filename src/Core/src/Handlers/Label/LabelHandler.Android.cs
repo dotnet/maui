@@ -99,6 +99,12 @@ namespace Microsoft.Maui.Handlers
 
 			if (label.Background.IsNullOrEmpty())
 			{
+				if (platformView.Background is MauiDrawable mauiDrawable)
+				{
+					platformView.Background = null;
+					mauiDrawable.Dispose();
+				}
+
 				platformView.Background = null;
 				return;
 			}

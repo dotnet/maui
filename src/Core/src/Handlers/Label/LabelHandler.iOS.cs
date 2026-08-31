@@ -42,9 +42,10 @@ namespace Microsoft.Maui.Handlers
 					// UpdateBackground returns early for non-LayoutView/ContentView types (e.g. UILabel),
 					// leaving any previously applied solid BackgroundColor in place. Explicitly clear it
 					// and remove any residual gradient layer so the label returns to transparent default.
-					handler.PlatformView?.RemoveBackgroundLayer();
-					handler.PlatformView?.BackgroundColor = UIColor.Clear;
+					handler.PlatformView.RemoveBackgroundLayer();
+					handler.PlatformView.BackgroundColor = UIColor.Clear;
 				}
+				// Container only survives here for non-null-but-empty paints or when Clip/Shadow/Mask keep base.NeedsContainer true.
 				if (containerView is not null)
 				{
 					containerView.RemoveBackgroundLayer();
@@ -66,6 +67,9 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
+				// Symmetric to the gradient branch: a previous gradient CALayer lives on the WrapperView
+				// and would show through the new (semi-transparent) solid paint. Remove it before applying.
+				(handler.ContainerView as UIView)?.RemoveBackgroundLayer();
 				handler.PlatformView?.UpdateBackground(label);
 			}
 		}
