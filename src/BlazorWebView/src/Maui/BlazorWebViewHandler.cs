@@ -190,8 +190,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Dispatch because this is going to be async, and we want to catch any errors
 				_ = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
-					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
-					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
+					// A collection change only populates one side for some actions - Add has no OldItems,
+					// Remove (raised when AppType is reassigned and ResetAppTypeRenderState removes the
+					// generated roots) has no NewItems - so treat an absent list as empty rather than
+					// dereferencing it.
+					var newItems = (eventArgs.NewItems ?? global::System.Array.Empty<object>()).Cast<RootComponent>();
+					var oldItems = (eventArgs.OldItems ?? global::System.Array.Empty<object>()).Cast<RootComponent>();
 
 					foreach (var item in newItems.Except(oldItems))
 					{
