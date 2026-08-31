@@ -7692,7 +7692,7 @@ function Get-ReplicationRuntimeEnvironment {
     }
 }
 
-function Get-ReplicationWindowsGraphRestoreArguments {
+function Get-ReplicationWindowsPlatformRestoreArguments {
     return @(
         '-p:IncludeAndroidTargetFrameworks=false',
         '-p:IncludeIosTargetFrameworks=false',
@@ -7700,19 +7700,103 @@ function Get-ReplicationWindowsGraphRestoreArguments {
         '-p:IncludeMacOSTargetFrameworks=false',
         '-p:IncludeTizenTargetFrameworks=false',
         '-p:IncludeWindowsTargetFrameworks=true',
-        '-p:RuntimeIdentifiers=win-x64',
         '-p:DisableTransitiveFrameworkReferenceDownloads=false'
+    )
+}
+
+function Get-ReplicationWindowsGraphRestoreArguments {
+    return @(
+        Get-ReplicationWindowsPlatformRestoreArguments
+    ) + @(
+        '-p:RuntimeIdentifiers=win-x64'
     )
 }
 
 function Get-ReplicationWindowsTopLevelRidRestoreArguments {
     return @(
-        Get-ReplicationWindowsGraphRestoreArguments
+        Get-ReplicationWindowsPlatformRestoreArguments
     ) + @(
         '--no-dependencies',
         '-r', 'win-x64',
         '-p:SelfContained=true'
     )
+}
+
+function Get-ReplicationWindowsPlainGeneratorRestoreArguments {
+    return @(
+        '--no-dependencies',
+        '-p:DisableTransitiveFrameworkReferenceDownloads=false'
+    )
+}
+
+function Get-ReplicationWindowsSourceGeneratorProjectPath {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$ArtifactName)
+
+    $relativePath = switch -CaseSensitive ($ArtifactName) {
+        'Controls.BindingSourceGen' {
+            'src/Controls/src/BindingSourceGen/Controls.BindingSourceGen.csproj'
+        }
+        'TestUtils.DeviceTests.Runners.SourceGen' {
+            'src/TestUtils/src/DeviceTests.Runners.SourceGen/TestUtils.DeviceTests.Runners.SourceGen.csproj'
+        }
+        default {
+            throw "Unknown trusted Windows source-generator artifact '$ArtifactName'."
+        }
+    }
+    return Join-Path $repoRoot $relativePath
+}
+
+function Read-ReplicationWindowsRestoreAssets {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if ($item.PSIsContainer -or
+        $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $item.Length -le 0 -or $item.Length -gt 64MB) {
+        throw "Trusted Windows restore assets must be a bounded regular file: $Path"
+    }
+    return Get-Content -LiteralPath $Path -Raw |
+        ConvertFrom-Json -AsHashtable -Depth 30
+}
+
+function Assert-ReplicationWindowsSourceGeneratorAssets {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string[]]$ArtifactNames,
+        [string]$ArtifactsRoot = (Join-Path $repoRoot 'artifacts/obj')
+    )
+
+    foreach ($sourceGenerator in $ArtifactNames) {
+        $assetsPath = Join-Path $ArtifactsRoot (
+            "$sourceGenerator/project.assets.json")
+        $assets = Read-ReplicationWindowsRestoreAssets -Path $assetsPath
+        $targets = @($assets['targets'].Keys)
+        $frameworks = @()
+        if ($assets.ContainsKey('project') -and
+            $assets['project'] -is [Collections.IDictionary] -and
+            $assets['project'].ContainsKey('frameworks')) {
+            $frameworks = @($assets['project']['frameworks'].Keys)
+        }
+        $hasPlainTarget = @($targets | Where-Object {
+            $_ -ceq 'netstandard2.0' -or
+            $_ -ceq '.NETStandard,Version=v2.0'
+        }).Count -eq 1
+        if (-not $hasPlainTarget -or
+            ($frameworks.Count -gt 0 -and
+                $frameworks -cnotcontains 'netstandard2.0')) {
+            throw ("Trusted Windows restore corrupted source-generator assets " +
+                "for '$sourceGenerator': netstandard2.0 is missing.")
+        }
+        if (@($targets | Where-Object {
+                $_ -match '/[^/]+$'
+            }).Count -gt 0) {
+            throw ("Trusted Windows restore left source-generator assets " +
+                "RID-qualified for '$sourceGenerator'; the generator must be RID-independent.")
+        }
+    }
+    return $true
 }
 
 function Assert-ReplicationWindowsRestoreAssets {
@@ -7725,50 +7809,53 @@ function Assert-ReplicationWindowsRestoreAssets {
         [string]$RuntimePackagesRoot = $replicationNugetPackages
     )
 
-    function Read-RestoreAssets {
-        param([Parameter(Mandatory = $true)][string]$Path)
-
-        $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
-        if ($item.PSIsContainer -or
-            $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
-            $item.Length -le 0 -or $item.Length -gt 64MB) {
-            throw "Trusted Windows restore assets must be a bounded regular file: $Path"
-        }
-        return Get-Content -LiteralPath $Path -Raw |
-            ConvertFrom-Json -AsHashtable -Depth 30
-    }
-
-    foreach ($sourceGenerator in $SourceGeneratorArtifactNames) {
-        $assetsPath = Join-Path $ArtifactsRoot (
-            "$sourceGenerator/project.assets.json")
-        $assets = Read-RestoreAssets -Path $assetsPath
-        $targets = @($assets['targets'].Keys)
-        if ($targets -cnotcontains 'netstandard2.0') {
-            throw ("Trusted Windows restore corrupted source-generator assets " +
-                "for '$sourceGenerator': netstandard2.0 is missing.")
-        }
-    }
+    $null = Assert-ReplicationWindowsSourceGeneratorAssets `
+        -ArtifactNames $SourceGeneratorArtifactNames `
+        -ArtifactsRoot $ArtifactsRoot
 
     foreach ($windowsProject in $WindowsProjectArtifactNames) {
         $assetsPath = Join-Path $ArtifactsRoot (
             "$windowsProject/project.assets.json")
-        $assets = Read-RestoreAssets -Path $assetsPath
-        if (@($assets['targets'].Keys | Where-Object {
-                    $_ -match '^net\d+\.\d+-windows10\.0\.\d+\.0/win-x64$'
-                }).Count -lt 1) {
+        $assets = Read-ReplicationWindowsRestoreAssets -Path $assetsPath
+        $targets = @($assets['targets'].Keys)
+        $ridTargets = @($targets | Where-Object {
+                $_ -match '^net\d+\.\d+-windows10\.0\.19041(?:\.\d+)?/win-x64$'
+            })
+        if ($ridTargets.Count -lt 1) {
             throw ("Trusted Windows restore did not retain a win-x64 target for " +
                 "referenced project '$windowsProject'.")
+        }
+        foreach ($ridTarget in $ridTargets) {
+            $ridlessTarget = $ridTarget.Substring(
+                0,
+                $ridTarget.Length - '/win-x64'.Length)
+            if ($targets -cnotcontains $ridlessTarget) {
+                throw ("Trusted Windows restore did not retain the RID-less target " +
+                    "for referenced project '$windowsProject'.")
+            }
         }
     }
 
     $projectAssetsPath = Join-Path $ArtifactsRoot (
         "$ProjectArtifactName/project.assets.json")
-    $projectAssets = Read-RestoreAssets -Path $projectAssetsPath
-    if (@($projectAssets['targets'].Keys | Where-Object {
-                $_ -match '^net\d+\.\d+-windows10\.0\.\d+\.0/win-x64$'
-            }).Count -lt 1) {
+    $projectAssets = Read-ReplicationWindowsRestoreAssets `
+        -Path $projectAssetsPath
+    $projectTargets = @($projectAssets['targets'].Keys)
+    $projectRidTargets = @($projectTargets | Where-Object {
+            $_ -match '^net\d+\.\d+-windows10\.0\.19041(?:\.\d+)?/win-x64$'
+        })
+    if ($projectRidTargets.Count -lt 1) {
         throw ("Trusted Windows restore did not create a win-x64 target for " +
             "'$ProjectArtifactName'.")
+    }
+    foreach ($ridTarget in $projectRidTargets) {
+        $ridlessTarget = $ridTarget.Substring(
+            0,
+            $ridTarget.Length - '/win-x64'.Length)
+        if ($projectTargets -cnotcontains $ridlessTarget) {
+            throw ("Trusted Windows restore did not retain the RID-less target for " +
+                "'$ProjectArtifactName'.")
+        }
     }
 
     $runtimePackRoot = Join-Path $RuntimePackagesRoot (
@@ -7864,11 +7951,24 @@ function Invoke-ReplicationWindowsTwoPhaseRestore {
         [string[]]$WindowsProjectArtifactNames = @()
     )
 
-    # Phase 1 restores the trusted project-reference graph with no RID global,
-    # preserving source generators at their own netstandard2.0 target.
+    # Phase 1 restores the Windows graph with a plural RID so Windows project
+    # references retain both RID-less and win-x64 targets.
     Invoke-ReplicationTrustedRestore `
         -Target $Target `
         -AdditionalArguments @(Get-ReplicationWindowsGraphRestoreArguments)
+
+    # SDK 10 propagates the plural RID into source-generator ProjectReferences.
+    # Re-restore only the two fixed, trusted generator projects without any RID
+    # property. --no-dependencies confines each overwrite to its own assets file.
+    foreach ($sourceGenerator in $SourceGeneratorArtifactNames) {
+        Invoke-ReplicationTrustedRestore `
+            -Target (Get-ReplicationWindowsSourceGeneratorProjectPath `
+                -ArtifactName $sourceGenerator) `
+            -AdditionalArguments @(
+                Get-ReplicationWindowsPlainGeneratorRestoreArguments)
+    }
+    $null = Assert-ReplicationWindowsSourceGeneratorAssets `
+        -ArtifactNames $SourceGeneratorArtifactNames
 
     # Phase 2 touches only the top-level app. It adds the win-x64 target and
     # runtime pack without rewriting any ProjectReference assets.

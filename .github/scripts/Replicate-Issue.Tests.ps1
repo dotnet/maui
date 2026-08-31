@@ -138,8 +138,13 @@ BeforeAll {
         'Invoke-BoundedProcess',
         'Get-ReplicationPwshArguments',
         'Get-ReplicationRuntimeEnvironment',
+        'Get-ReplicationWindowsPlatformRestoreArguments',
         'Get-ReplicationWindowsGraphRestoreArguments',
         'Get-ReplicationWindowsTopLevelRidRestoreArguments',
+        'Get-ReplicationWindowsPlainGeneratorRestoreArguments',
+        'Get-ReplicationWindowsSourceGeneratorProjectPath',
+        'Read-ReplicationWindowsRestoreAssets',
+        'Assert-ReplicationWindowsSourceGeneratorAssets',
         'Assert-ReplicationWindowsRestoreAssets',
         'Remove-ReplicationRuntimeCache',
         'Invoke-ReplicationTrustedRestore',
@@ -2977,6 +2982,43 @@ InitializeComponent();
         $script:Source | Should -Match (
             '(?s)function Get-ReplicationWindowsTopLevelRidRestoreArguments.*?' +
             '--no-dependencies')
+        $graphRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationWindowsGraphRestoreArguments\b.*?^}').Value
+        $plainGeneratorRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationWindowsPlainGeneratorRestoreArguments\b.*?^}').Value
+        $topLevelRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Get-ReplicationWindowsTopLevelRidRestoreArguments\b.*?^}').Value
+        $graphRestore | Should -Match 'RuntimeIdentifiers=win-x64'
+        $plainGeneratorRestore | Should -Match '--no-dependencies'
+        $plainGeneratorRestore | Should -Not -Match 'RuntimeIdentifiers?'
+        $topLevelRestore | Should -Not -Match 'RuntimeIdentifiers='
+        $twoPhaseRestore = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-ReplicationWindowsTwoPhaseRestore\b.*?^}').Value
+        $graphIndex = $twoPhaseRestore.IndexOf(
+            'Get-ReplicationWindowsGraphRestoreArguments',
+            [StringComparison]::Ordinal)
+        $generatorIndex = $twoPhaseRestore.IndexOf(
+            'Get-ReplicationWindowsPlainGeneratorRestoreArguments',
+            [StringComparison]::Ordinal)
+        $topLevelIndex = $twoPhaseRestore.IndexOf(
+            'Get-ReplicationWindowsTopLevelRidRestoreArguments',
+            [StringComparison]::Ordinal)
+        $generatorAssertIndex = $twoPhaseRestore.IndexOf(
+            'Assert-ReplicationWindowsSourceGeneratorAssets',
+            [StringComparison]::Ordinal)
+        $graphIndex | Should -BeGreaterOrEqual 0
+        $generatorIndex | Should -BeGreaterThan $graphIndex
+        $generatorAssertIndex | Should -BeGreaterThan $generatorIndex
+        $topLevelIndex | Should -BeGreaterThan $generatorAssertIndex
+        $script:Source | Should -Match (
+            'src/Controls/src/BindingSourceGen/Controls\.BindingSourceGen\.csproj')
+        $script:Source | Should -Match (
+            'src/TestUtils/src/DeviceTests\.Runners\.SourceGen/' +
+            'TestUtils\.DeviceTests\.Runners\.SourceGen\.csproj')
         $plannedRestore = [regex]::Match(
             $script:Source,
             '(?ms)^function Get-ReplicationPlannedRestoreTargets\b.*?^}').Value
@@ -3026,15 +3068,15 @@ InitializeComponent();
             Out-Null
         @{
             targets = @{
-                'net10.0-windows10.0.19041.0' = @{}
-                'net10.0-windows10.0.19041.0/win-x64' = @{}
+                'net10.0-windows10.0.19041' = @{}
+                'net10.0-windows10.0.19041/win-x64' = @{}
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot 'Controls.DeviceTests/project.assets.json')
         @{
             targets = @{
-                'net10.0-windows10.0.19041.0' = @{}
-                'net10.0-windows10.0.19041.0/win-x64' = @{}
+                'net10.0-windows10.0.19041' = @{}
+                'net10.0-windows10.0.19041/win-x64' = @{}
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot 'Controls.Core/project.assets.json')
@@ -3044,8 +3086,12 @@ InitializeComponent();
         )) {
             @{
                 targets = @{
-                    'netstandard2.0' = @{}
-                    'netstandard2.0/win-x64' = @{}
+                    '.NETStandard,Version=v2.0' = @{}
+                }
+                project = @{
+                    frameworks = @{
+                        'netstandard2.0' = @{}
+                    }
                 }
             } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
                 Join-Path $objRoot "$name/project.assets.json")
@@ -3062,6 +3108,31 @@ InitializeComponent();
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Not -Throw
+
+        @{
+            targets = @{
+                'net10.0-windows10.0.19041/win-x64' = @{}
+            }
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $objRoot 'Controls.Core/project.assets.json')
+        {
+            Assert-ReplicationWindowsRestoreAssets `
+                -ProjectArtifactName 'Controls.DeviceTests' `
+                -SourceGeneratorArtifactNames @(
+                    'Controls.BindingSourceGen',
+                    'TestUtils.DeviceTests.Runners.SourceGen'
+                ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
+                -ArtifactsRoot $objRoot `
+                -RuntimePackagesRoot $packagesRoot
+        } | Should -Throw '*did not retain the RID-less target*'
+        @{
+            targets = @{
+                'net10.0-windows10.0.19041' = @{}
+                'net10.0-windows10.0.19041/win-x64' = @{}
+            }
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $objRoot 'Controls.Core/project.assets.json')
 
         @{ targets = @{ 'netstandard2.0/win-x64' = @{} } } |
             ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
@@ -3081,8 +3152,37 @@ InitializeComponent();
 
         @{
             targets = @{
-                'netstandard2.0' = @{}
-                'netstandard2.0/win-x64' = @{}
+                '.NETStandard,Version=v2.0' = @{}
+                '.NETStandard,Version=v2.0/win-x64' = @{}
+            }
+            project = @{
+                frameworks = @{
+                    'netstandard2.0' = @{}
+                }
+            }
+        } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
+            Join-Path $objRoot (
+                'Controls.BindingSourceGen/project.assets.json'))
+        {
+            Assert-ReplicationWindowsRestoreAssets `
+                -ProjectArtifactName 'Controls.DeviceTests' `
+                -SourceGeneratorArtifactNames @(
+                    'Controls.BindingSourceGen',
+                    'TestUtils.DeviceTests.Runners.SourceGen'
+                ) `
+                -WindowsProjectArtifactNames @('Controls.Core') `
+                -ArtifactsRoot $objRoot `
+                -RuntimePackagesRoot $packagesRoot
+        } | Should -Throw '*generator must be RID-independent*'
+
+        @{
+            targets = @{
+                '.NETStandard,Version=v2.0' = @{}
+            }
+            project = @{
+                frameworks = @{
+                    'netstandard2.0' = @{}
+                }
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot (
@@ -3104,8 +3204,8 @@ InitializeComponent();
 
         @{
             targets = @{
-                'net10.0-windows10.0.19041.0' = @{}
-                'net10.0-windows10.0.19041.0/win-x64' = @{}
+                'net10.0-windows10.0.19041' = @{}
+                'net10.0-windows10.0.19041/win-x64' = @{}
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot 'Controls.DeviceTests/project.assets.json')
@@ -3125,7 +3225,7 @@ InitializeComponent();
 
         @{
             targets = @{
-                'net10.0-windows10.0.19041.0' = @{}
+                'net10.0-windows10.0.19041' = @{}
             }
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (
             Join-Path $objRoot 'Controls.Core/project.assets.json')
@@ -3143,6 +3243,44 @@ InitializeComponent();
                 -ArtifactsRoot $objRoot `
                 -RuntimePackagesRoot $packagesRoot
         } | Should -Throw '*referenced project*Controls.Core*'
+    }
+
+    It 'maps only fixed trusted source-generator restore projects' {
+        $priorRepoRoot = Get-Variable -Name repoRoot -Scope Script `
+            -ErrorAction SilentlyContinue
+        try {
+            $script:repoRoot = Split-Path -Parent (
+                Split-Path -Parent $PSScriptRoot)
+            $bindingGenerator =
+                Get-ReplicationWindowsSourceGeneratorProjectPath `
+                    -ArtifactName 'Controls.BindingSourceGen'
+            $bindingGenerator |
+                Should -Match (
+                    'src[/\\]Controls[/\\]src[/\\]BindingSourceGen[/\\]' +
+                    'Controls\.BindingSourceGen\.csproj$')
+            Test-Path -LiteralPath $bindingGenerator -PathType Leaf |
+                Should -BeTrue
+            $runnerGenerator =
+                Get-ReplicationWindowsSourceGeneratorProjectPath `
+                    -ArtifactName 'TestUtils.DeviceTests.Runners.SourceGen'
+            $runnerGenerator |
+                Should -Match (
+                    'src[/\\]TestUtils[/\\]src[/\\]DeviceTests\.Runners\.SourceGen[/\\]' +
+                    'TestUtils\.DeviceTests\.Runners\.SourceGen\.csproj$')
+            Test-Path -LiteralPath $runnerGenerator -PathType Leaf |
+                Should -BeTrue
+            {
+                Get-ReplicationWindowsSourceGeneratorProjectPath `
+                    -ArtifactName 'Untrusted.Generator'
+            } | Should -Throw '*Unknown trusted Windows source-generator artifact*'
+        } finally {
+            if ($priorRepoRoot) {
+                $script:repoRoot = $priorRepoRoot.Value
+            } else {
+                Remove-Variable -Name repoRoot -Scope Script `
+                    -ErrorAction SilentlyContinue
+            }
+        }
     }
 
     It 'surfaces bounded trusted-restore diagnostics' {
