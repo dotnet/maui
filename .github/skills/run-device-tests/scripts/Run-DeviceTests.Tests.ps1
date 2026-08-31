@@ -89,7 +89,17 @@ Describe 'Build isolation options' {
         $graphBuild | Should -BeGreaterOrEqual 0
         $packageBuild | Should -BeGreaterThan $graphBuild
         $content | Should -Match '/p:GenerateAppxPackageOnBuild=true'
-        $content | Should -Match '/p:PackageManifest=\$windowsManifestPath'
+        $content | Should -Match (
+            '/p:CustomAfterMicrosoftCommonTargets=' +
+            '\$windowsManifestOverrideTargets')
+        $content | Should -Match (
+            '/p:MauiReplicationAppContainerManifest=' +
+            '\$windowsManifestPath')
+        $content | Should -Match (
+            '/p:_MauiManifestStampFile=\$windowsManifestStampPath')
+        $content | Should -Match (
+            '\[IO\.Path\]::GetFullPath\(\s*' +
+            '\(Join-Path \$RepoRoot \$projectPath\)\)')
         $content | Should -Not -Match '_MauiReplicationWindowsManifest'
         $content | Should -Match 'Install-ReplicationWindowsAppContainerPackage'
         $content | Should -Match 'Start-ReplicationWindowsAppContainerProcess'

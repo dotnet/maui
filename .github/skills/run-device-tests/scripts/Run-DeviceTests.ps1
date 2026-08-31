@@ -1224,7 +1224,13 @@ if ($RequireWindowsAppContainer) {
         'scripts/shared/Assert-ReplicationWindowsAppContainer.ps1')
     $windowsManifestPath = Join-Path $ReplicationTrustedRoot (
         'source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml')
-    foreach ($trustedPath in @($windowsHelperPath, $windowsManifestPath)) {
+    $windowsManifestOverrideTargets = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/ReplicationWindowsAppContainerManifest.targets')
+    foreach ($trustedPath in @(
+        $windowsHelperPath,
+        $windowsManifestPath,
+        $windowsManifestOverrideTargets
+    )) {
         if (-not (Test-Path -LiteralPath $trustedPath -PathType Leaf) -or
             (Get-Item -LiteralPath $trustedPath -Force).Attributes -band
                 [IO.FileAttributes]::ReparsePoint) {
@@ -1384,6 +1390,8 @@ try {
                     Remove-Item -LiteralPath $windowsPackageOutput -Recurse -Force
                 }
                 New-Item -ItemType Directory -Path $windowsPackageOutput -Force | Out-Null
+                $windowsManifestStampPath = Join-Path $windowsPackageOutput (
+                    "replication-manifest-$([guid]::NewGuid().ToString('N')).stamp")
                 $windowsGraphBuildArgs = @(
                     'build',
                     $projectPath,
@@ -1417,7 +1425,12 @@ try {
                 $buildArgs += "/p:PackageCertificateThumbprint=$($windowsSigningCertificate.Thumbprint)"
                 $buildArgs += "/p:SelfContained=true"
                 $buildArgs += "/p:ExtraDefineConstants=PACKAGED"
-                $buildArgs += "/p:PackageManifest=$windowsManifestPath"
+                $windowsTopLevelProjectPath = [IO.Path]::GetFullPath(
+                    (Join-Path $RepoRoot $projectPath))
+                $buildArgs += "/p:CustomAfterMicrosoftCommonTargets=$windowsManifestOverrideTargets"
+                $buildArgs += "/p:MauiReplicationAppContainerProject=$windowsTopLevelProjectPath"
+                $buildArgs += "/p:MauiReplicationAppContainerManifest=$windowsManifestPath"
+                $buildArgs += "/p:_MauiManifestStampFile=$windowsManifestStampPath"
                 $buildArgs += "/p:AppxPackageDir=$($windowsPackageOutput.TrimEnd('\', '/'))$([IO.Path]::DirectorySeparatorChar)"
                 $buildArgs += "/p:BuildProjectReferences=false"
             } else {

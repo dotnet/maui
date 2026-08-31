@@ -2725,7 +2725,14 @@ InitializeComponent();
         $graphBuildIndex | Should -BeGreaterOrEqual 0
         $packageBuildIndex | Should -BeGreaterThan $graphBuildIndex
         $script:BuildDeploySource |
-            Should -Match '"-p:PackageManifest=\$manifestPath"'
+            Should -Match (
+                '"-p:CustomAfterMicrosoftCommonTargets=' +
+                '\$manifestOverrideTargets"')
+        $script:BuildDeploySource |
+            Should -Match (
+                '"-p:MauiReplicationAppContainerManifest=\$manifestPath"')
+        $script:BuildDeploySource |
+            Should -Match '"-p:_MauiManifestStampFile=\$manifestStampPath"'
         $script:BuildDeploySource |
             Should -Not -Match '_MauiReplicationWindowsManifest'
         $script:BuildDeploySource |
@@ -2852,28 +2859,80 @@ InitializeComponent();
         ($isolatedNodes -join "`n") | Should -BeExactly ($ordinaryNodes -join "`n")
     }
 
-    It 'passes the trusted Windows manifest as a final global MSBuild property' {
-        foreach ($project in @(
-            '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj',
-            '../../src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+    It 'evaluates the trusted XML as the single top-level AppxManifest item' {
+        $overrideTargets = Join-Path $PSScriptRoot (
+            'shared/ReplicationWindowsAppContainerManifest.targets')
+        foreach ($entry in @(
+            @{
+                Project = '../../src/Controls/samples/Controls.Sample.Sandbox/Maui.Controls.Sample.Sandbox.csproj'
+                Manifest = '../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/Windows/ReplicationAppContainerManifest.xml'
+            },
+            @{
+                Project = '../../src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                Manifest = '../../src/Controls/tests/DeviceTests/Platforms/Windows/ReplicationAppContainerManifest.xml'
+            }
         )) {
-            $projectPath = Join-Path $PSScriptRoot $project
-            $marker = 'REPLICATION_MANIFEST_WINS'
+            $projectPath = [IO.Path]::GetFullPath(
+                (Join-Path $PSScriptRoot $entry.Project))
+            $manifestPath = [IO.Path]::GetFullPath(
+                (Join-Path $PSScriptRoot $entry.Manifest))
             $output = @(& dotnet msbuild $projectPath `
-                -getProperty:PackageManifest `
+                -getItem:AppxManifest `
                 -p:TargetFramework=net10.0-windows10.0.19041.0 `
-                "-p:PackageManifest=$marker" `
                 -p:WindowsPackageType=MSIX `
+                -p:EnableWindowsTargeting=true `
+                "-p:CustomAfterMicrosoftCommonTargets=$overrideTargets" `
+                "-p:MauiReplicationAppContainerProject=$projectPath" `
+                "-p:MauiReplicationAppContainerManifest=$manifestPath" `
                 -nologo 2>&1)
             $LASTEXITCODE | Should -Be 0 -Because ($output -join "`n")
-            ($output -join "`n").Trim() | Should -BeExactly $marker
+            $evaluation = ($output -join "`n") |
+                ConvertFrom-Json -Depth 20
+            $items = @($evaluation.Items.AppxManifest)
+            $items.Count | Should -Be 1
+            [IO.Path]::GetFullPath([string]$items[0].Identity) |
+                Should -BeExactly $manifestPath
+            [string]$items[0].Extension | Should -BeExactly '.xml'
+            [IO.Path]::GetFullPath([string]$items[0].DefiningProjectFullPath) |
+                Should -BeExactly ([IO.Path]::GetFullPath($overrideTargets))
+
+            $generatedOutput = @(& dotnet msbuild $projectPath `
+                -t:_ValidateMauiReplicationGeneratedAppContainerManifest `
+                -getItem:AppxManifest `
+                -p:TargetFramework=net10.0-windows10.0.19041.0 `
+                -p:WindowsPackageType=MSIX `
+                -p:EnableWindowsTargeting=true `
+                "-p:MicrosoftWindowsAppSDKPackageDir=$(Join-Path $TestDrive 'windowsappsdk')" `
+                "-p:CustomAfterMicrosoftCommonTargets=$overrideTargets" `
+                "-p:MauiReplicationAppContainerProject=$projectPath" `
+                "-p:MauiReplicationAppContainerManifest=$manifestPath" `
+                "-p:_MauiManifestStampFile=$(Join-Path $TestDrive (
+                    [guid]::NewGuid().ToString('N') + '.stamp'))" `
+                -nologo 2>&1)
+            $LASTEXITCODE | Should -Be 0 -Because ($generatedOutput -join "`n")
+            $generatedEvaluation = ($generatedOutput -join "`n") |
+                ConvertFrom-Json -Depth 20
+            $generatedItems = @($generatedEvaluation.Items.AppxManifest)
+            $generatedItems.Count | Should -Be 1
+            [string]$generatedItems[0].Extension |
+                Should -BeExactly '.appxmanifest'
+            [xml]$generatedManifest = Get-Content -LiteralPath (
+                [string]$generatedItems[0].Identity) -Raw
+            $generatedApplication = @($generatedManifest.SelectNodes(
+                "/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']"))
+            $generatedApplication.Count | Should -Be 1
+            $uap10 = 'http://schemas.microsoft.com/appx/manifest/uap/windows10/10'
+            $generatedApplication[0].GetAttribute('TrustLevel', $uap10) |
+                Should -BeExactly 'appContainer'
+            $generatedApplication[0].GetAttribute('RuntimeBehavior', $uap10) |
+                Should -BeExactly 'packagedClassicApp'
         }
         $script:BuildDeploySource |
-            Should -Match '"-p:PackageManifest=\$manifestPath"'
+            Should -Match 'MauiReplicationAppContainerManifest'
         (Get-Content -LiteralPath (
             Join-Path $PSScriptRoot (
                 '../skills/run-device-tests/scripts/Run-DeviceTests.ps1')) -Raw) |
-            Should -Match '/p:PackageManifest=\$windowsManifestPath'
+            Should -Match 'MauiReplicationAppContainerManifest'
     }
 
     It 'fails unsupported lanes before generated execution and never sets its own isolation marker' {
