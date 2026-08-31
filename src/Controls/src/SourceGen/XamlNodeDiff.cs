@@ -388,7 +388,8 @@ static class XamlNodeDiff
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
-		bool forceBindingRefresh = false)
+		bool forceBindingRefresh = false,
+		bool insideTemplate = false)
 	{
 		// Structural check: element type must match
 		if (!XmlTypeEquals(oldNode.XmlType, newNode.XmlType))
@@ -409,12 +410,18 @@ static class XamlNodeDiff
 		// bindings as needing refresh too (not just descendant bindings). Otherwise a binding
 		// whose markup string is unchanged but whose type context shifted would silently keep
 		// its stale compiled binding accessor.
+		bool isTemplateNode = IsTemplateNode(oldNode);
 		bool xDataTypeChangesOnThisNode = DetectXDataTypeChange(oldNode, newNode);
+		// Template retypes are intentionally left on the existing conservative path. They regenerate
+		// compiled binding accessors and are part of the separate successive-edit identity work in #36482.
+		bool skipTemplateContentDiff = xDataTypeChangesOnThisNode
+			&& isTemplateNode;
+		bool templateContent = insideTemplate || isTemplateNode;
 		bool effectiveForce = forceBindingRefresh || xDataTypeChangesOnThisNode;
 
 		// Diff properties (simple value attributes)
 		var propDiffs = new List<PropertyDiff>();
-		if (!DiffProperties(oldNode, newNode, propDiffs, effectiveForce, out var xDataTypeChanged))
+		if (!DiffProperties(oldNode, newNode, propDiffs, effectiveForce, templateContent, out var xDataTypeChanged))
 			return false;
 
 		if (propDiffs.Count > 0)
@@ -423,8 +430,24 @@ static class XamlNodeDiff
 		// If x:DataType changed on this node, propagate to all descendant bindings
 		bool childForceRefresh = forceBindingRefresh || xDataTypeChanged;
 
+		if (!skipTemplateContentDiff)
+		{
+			foreach (var property in oldNode.Properties)
+			{
+				if (property.Value is ElementNode oldElement
+					&& newNode.Properties.TryGetValue(property.Key, out var newProperty)
+					&& newProperty is ElementNode newElement
+					&& XmlTypeEquals(oldElement.XmlType, newElement.XmlType)
+					&& ShouldDiffElementProperty(oldNode, property.Key, oldElement, newElement, templateContent))
+				{
+					if (!DiffNode(oldElement, newElement, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, childForceRefresh, templateContent))
+						return false;
+				}
+			}
+		}
+
 		// Diff children
-		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, childForceRefresh);
+		return DiffChildren(oldNode, newNode, nodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, childForceRefresh, templateContent);
 	}
 
 	/// <summary>
@@ -437,7 +460,8 @@ static class XamlNodeDiff
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
-		bool forceBindingRefresh = false)
+		bool forceBindingRefresh = false,
+		bool insideTemplate = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -464,7 +488,7 @@ static class XamlNodeDiff
 		{
 			if (oldCount != newCount)
 				return false;
-			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+			return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate);
 		}
 
 		// All children are elements. Fast path: same count + same positional types → no child list change
@@ -492,7 +516,7 @@ static class XamlNodeDiff
 			{
 				// If no duplicate types, positional is unambiguous — use fast path
 				if (!hasDuplicateTypes)
-					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate);
 
 				// Duplicate types exist — use cost-based matching to find optimal assignment.
 				// If the optimal assignment is the identity (same as positional), use fast path.
@@ -538,7 +562,7 @@ static class XamlNodeDiff
 				}
 
 				if (isIdentity)
-					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+					return DiffChildrenPositional(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate);
 
 				// Optimal matching differs from positional — fall through to general case
 				// which will produce a ChildListChangeDiff with reorder
@@ -546,7 +570,7 @@ static class XamlNodeDiff
 		}
 
 		// General case: type-based matching for reorder/add/remove
-		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh);
+		return DiffChildrenWithMatching(oldNode, newNode, parentNodeId, oldIds, newIds, effective, depth, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate);
 	}
 
 	/// <summary>
@@ -559,7 +583,8 @@ static class XamlNodeDiff
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
-		bool forceBindingRefresh = false)
+		bool forceBindingRefresh = false,
+		bool insideTemplate = false)
 	{
 		int count = oldNode.CollectionItems.Count;
 		for (int i = 0; i < count; i++)
@@ -569,7 +594,7 @@ static class XamlNodeDiff
 
 			if (oldChild is ElementNode oldElem && newChild is ElementNode newElem)
 			{
-				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
+				if (!DiffNode(oldElem, newElem, oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate))
 					return false;
 			}
 			else if (oldChild is ValueNode oldVal && newChild is ValueNode newVal)
@@ -602,7 +627,8 @@ static class XamlNodeDiff
 		Dictionary<ElementNode, string> oldIds, Dictionary<ElementNode, string> newIds,
 		Dictionary<ElementNode, string> effective, int depth,
 		List<NodeDiff> nodeChanges, List<ChildListChangeDiff> childListChanges,
-		bool forceBindingRefresh = false)
+		bool forceBindingRefresh = false,
+		bool insideTemplate = false)
 	{
 		int oldCount = oldNode.CollectionItems.Count;
 		int newCount = newNode.CollectionItems.Count;
@@ -682,7 +708,7 @@ static class XamlNodeDiff
 		// Recursively diff matched pairs (old IDs are transplanted inside DiffNode)
 		foreach (var (oldIdx, newIdx) in matched)
 		{
-			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh))
+			if (!DiffNode(oldChildren[oldIdx], newChildren[newIdx], oldIds, newIds, effective, depth + 1, nodeChanges, childListChanges, forceBindingRefresh, insideTemplate))
 				return false;
 		}
 
@@ -771,7 +797,7 @@ static class XamlNodeDiff
 	/// <c>x:DataType</c> changes from ancestor nodes.
 	/// </summary>
 	static bool DiffProperties(ElementNode oldNode, ElementNode newNode, List<PropertyDiff> diffs,
-		bool forceBindingRefresh, out bool xDataTypeChanged)
+		bool forceBindingRefresh, bool insideTemplate, out bool xDataTypeChanged)
 	{
 		xDataTypeChanged = false;
 
@@ -799,6 +825,14 @@ static class XamlNodeDiff
 				// Both sides have the property — compare values
 				bool valueChanged = !NodeValueEquals(oldPropNode, newPropNode);
 				bool forceThisBinding = forceBindingRefresh && IsBindingMarkup(newPropNode);
+
+				if (oldPropNode is ElementNode oldElement
+					&& newPropNode is ElementNode newElement
+					&& XmlTypeEquals(oldElement.XmlType, newElement.XmlType)
+					&& ShouldDiffElementProperty(oldNode, name, oldElement, newElement, insideTemplate))
+				{
+					continue;
+				}
 
 				if (valueChanged || forceThisBinding)
 				{
@@ -907,6 +941,33 @@ static class XamlNodeDiff
 		=> node is MarkupNode mn
 			&& (mn.MarkupString.StartsWith("{Binding", StringComparison.Ordinal)
 				|| mn.MarkupString.StartsWith("{TemplateBinding", StringComparison.Ordinal));
+
+	static bool IsTemplateNode(ElementNode node)
+		=> node.XmlType.RepresentsType(XamlParser.MauiUri, "DataTemplate")
+			|| node.XmlType.RepresentsType(XamlParser.MauiUri, "ControlTemplate");
+
+	static bool ShouldDiffElementProperty(
+		ElementNode owner,
+		XmlName propertyName,
+		ElementNode oldElement,
+		ElementNode newElement,
+		bool insideTemplate)
+	{
+		// Retyping a template regenerates compiled binding accessors. Keep the owning
+		// property on the conservative complex-property path instead of partially
+		// patching the old realized subtree.
+		if (IsTemplateNode(oldElement) && DetectXDataTypeChange(oldElement, newElement))
+			return false;
+
+		if (insideTemplate)
+			return true;
+
+		// #37890 is intentionally limited to a direct CollectionView.ItemTemplate.
+		// Do not opt unrelated controls with a same-named property into this path.
+		return owner.XmlType.RepresentsType(XamlParser.MauiUri, "CollectionView")
+			&& propertyName.LocalName == "ItemTemplate"
+			&& IsTemplateNode(oldElement);
+	}
 
 	/// <summary>
 	/// Returns <see langword="true"/> when the value of <c>x:DataType</c> on this node
