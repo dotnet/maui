@@ -2057,8 +2057,17 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
         $script:ValidateStage | Should -Match "displayName: 'Assert the validation job holds no credential'"
         $script:ValidateStage | Should -Match 'The credentialless validation job was given credentials'
         $script:ValidateStage | Should -Match "config --get-regexp 'http\\.\.\*\\.extraheader'"
+        $script:ValidateStage | Should -Match '\$extraheaderExitCode = \$LASTEXITCODE'
+        $script:ValidateStage | Should -Match '\$extraheaderExitCode -notin @\(0, 1\)'
         $script:ValidateStage | Should -Match 'The credentialless validation checkout persisted a credential'
         $script:ValidateStage | Should -Match "config --get-regexp 'credential\\.\.\*helper'"
+        $script:ValidateStage | Should -Match '\$helperExitCode = \$LASTEXITCODE'
+        $script:ValidateStage | Should -Match '\$helperExitCode -notin @\(0, 1\)'
+        $credentialProbe = [regex]::Match(
+            $script:ValidateStage,
+            "(?s)- pwsh: \\|.*?displayName: 'Assert the validation job holds no credential'"
+        ).Value
+        $credentialProbe | Should -Match '(?m)^\s+exit 0\s*$'
     }
 
     It 'stages every trusted validator it runs from that pinned checkout' {

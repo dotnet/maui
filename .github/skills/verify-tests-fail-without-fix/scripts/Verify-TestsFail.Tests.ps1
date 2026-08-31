@@ -212,6 +212,38 @@ Total tests: 2
         Remove-Item -LiteralPath $diagnostics -Recurse -Force
     }
 
+    It 'reads file-channel failure evidence when the runner returned no log path' {
+        $RepoRoot = $TestDrive
+        $resultFile = Join-Path $TestDrive 'xunit-test-file-channel.xml'
+        @'
+<assemblies>
+  <assembly>
+    <collection>
+      <test type="Microsoft.Maui.DeviceTests.Issue35511" method="BackButtonTitleRemainsVisibleWithCustomTitleView" result="Fail">
+        <failure>
+          <message><![CDATA[Issue35511: native back-button title was '<missing>' (visible: False) after custom TitleView loaded; expected visible 'Main'.]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content -LiteralPath $resultFile -Encoding utf8NoBOM
+        $script:ReplicationAuthoritativeResultPath = $null
+
+        Get-TargetedTestFailureMessage `
+            -LogFile '' `
+            -ResultFiles @($resultFile) `
+            -TargetClass 'Microsoft.Maui.DeviceTests.Issue35511' `
+            -TargetMethod 'BackButtonTitleRemainsVisibleWithCustomTitleView' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue35511 |
+            Should -BeExactly (
+                "Issue35511: native back-button title was '<missing>' " +
+                "(visible: False) after custom TitleView loaded; expected visible 'Main'.")
+        $script:ReplicationAuthoritativeResultPath |
+            Should -BeExactly $resultFile
+    }
+
     It 'prefers the newest device result when repair attempts share diagnostics' {
         $RepoRoot = [IO.Path]::GetTempPath()
         $log = New-LogFile '[DeviceTest] Issue12345 FAILED'

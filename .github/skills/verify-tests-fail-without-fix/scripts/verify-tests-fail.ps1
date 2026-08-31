@@ -1088,6 +1088,7 @@ function Invoke-TestRunWithRetry {
     $windowsDeviceTargetTimeoutAttemptCount = 0
     for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
         $logFileAttempt = if ($attempt -gt 1) { "$LogFile.attempt$attempt" } else { $LogFile }
+        $attemptResultFiles = @()
 
         # Clear stale test output files before each run to prevent
         # reading results from the previous run
@@ -1153,13 +1154,28 @@ function Invoke-TestRunWithRetry {
                 Skipped = 0
             }
         }
+        if ($TestEntry.Type -eq 'DeviceTest') {
+            $diagnosticsPath = "$logFileAttempt.diagnostics"
+            if (Test-Path -LiteralPath $diagnosticsPath -PathType Container) {
+                $attemptResultFiles = @(
+                    Get-ChildItem -LiteralPath $diagnosticsPath `
+                        -Filter '*.xml' `
+                        -File `
+                        -Recurse `
+                        -ErrorAction SilentlyContinue |
+                        Sort-Object LastWriteTimeUtc -Descending |
+                        Select-Object -First 20 |
+                        ForEach-Object FullName)
+            }
+        }
+        $result.ResultLogFile = $logFileAttempt
+        $result.ResultFiles = @($attemptResultFiles)
 
         # Some environment outcomes are deterministic: a missing snapshot baseline cannot
         # appear on retry, and NETSDK1178 means this operating system cannot provide the
         # requested platform SDK pack. Return immediately so they flow to INCONCLUSIVE without
         # burning repeated full test runs.
         if (-not $result.EnvError -or $result.SnapshotBaselineMissing -or $result.UnsupportedWorkloadPackFailure) {
-            $result.ResultLogFile = $logFileAttempt
             return $result
         }
 
@@ -1198,7 +1214,6 @@ function Invoke-TestRunWithRetry {
             $result.RetriesExhausted = $true
             $result.WindowsDeviceNoResultAttemptCount = $windowsDeviceNoResultAttemptCount
             $result.WindowsDeviceTargetTimeoutAttemptCount = $windowsDeviceTargetTimeoutAttemptCount
-            $result.ResultLogFile = $logFileAttempt
             Write-Host "  ⚠️ Environment error persisted after $MaxRetries attempts: $($result.Error)" -ForegroundColor Yellow
             return $result
         }
@@ -1274,18 +1289,19 @@ function Invoke-TestRunConfirmed {
 # ============================================================
 function Get-TargetedTestFailureMessage {
     param(
-        [Parameter(Mandatory = $true)][string]$LogFile,
+        [AllowEmptyString()][string]$LogFile = '',
+        [AllowEmptyCollection()][string[]]$ResultFiles = @(),
         [Parameter(Mandatory = $true)][string]$TargetClass,
         [Parameter(Mandatory = $true)][string]$TargetMethod,
         [string]$TargetTestType = '',
         [string]$TargetFilter = ''
     )
 
-    if (-not (Test-Path -LiteralPath $LogFile -PathType Leaf)) {
-        return ''
+    $content = ''
+    if (-not [string]::IsNullOrWhiteSpace($LogFile) -and
+        (Test-Path -LiteralPath $LogFile -PathType Leaf)) {
+        $content = Get-Content -LiteralPath $LogFile -Raw
     }
-
-    $content = Get-Content -LiteralPath $LogFile -Raw
     $shortClass = ($TargetClass -split '\.')[-1]
     $identities = @(
         "$TargetClass.$TargetMethod",
@@ -1346,15 +1362,30 @@ function Get-TargetedTestFailureMessage {
         [StringComparison]::Ordinal
     }
     $candidateResultPaths = [Collections.Generic.List[string]]::new()
+    $candidateResultPathSet =
+        [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($resultFile in @($ResultFiles)) {
+        if (-not [string]::IsNullOrWhiteSpace($resultFile) -and
+            $candidateResultPathSet.Add([string]$resultFile)) {
+            $candidateResultPaths.Add([string]$resultFile)
+        }
+    }
     if ($TargetTestType -ceq 'UITest' -and
         -not [string]::IsNullOrWhiteSpace($TargetFilter)) {
         $trxBaseName = $TargetFilter -replace '[^A-Za-z0-9._-]', '_'
-        $candidateResultPaths.Add((Join-Path `
+        $trxPath = Join-Path `
             $RepoRoot `
-            "CustomAgentLogsTmp/UITests/TestResults/$trxBaseName.trx"))
+            "CustomAgentLogsTmp/UITests/TestResults/$trxBaseName.trx"
+        if ($candidateResultPathSet.Add($trxPath)) {
+            $candidateResultPaths.Add($trxPath)
+        }
     }
-    $deviceDiagnosticsPath = "$LogFile.diagnostics"
+    $deviceDiagnosticsPath = if (
+        [string]::IsNullOrWhiteSpace($LogFile)) { '' } else {
+        "$LogFile.diagnostics"
+    }
     if ($TargetTestType -ceq 'DeviceTest' -and
+        -not [string]::IsNullOrWhiteSpace($deviceDiagnosticsPath) -and
         (Test-Path -LiteralPath $deviceDiagnosticsPath -PathType Container)) {
         foreach ($resultFile in @(Get-ChildItem `
             -LiteralPath $deviceDiagnosticsPath `
@@ -1364,7 +1395,9 @@ function Get-TargetedTestFailureMessage {
             -ErrorAction SilentlyContinue |
                 Sort-Object LastWriteTimeUtc -Descending |
                 Select-Object -First 20)) {
-            $candidateResultPaths.Add($resultFile.FullName)
+            if ($candidateResultPathSet.Add($resultFile.FullName)) {
+                $candidateResultPaths.Add($resultFile.FullName)
+            }
         }
     }
 
@@ -2686,6 +2719,7 @@ if ($DetectedFixFiles.Count -eq 0) {
         $actualFailureMessage = if (-not $targetResult.Passed) {
             Get-TargetedTestFailureMessage `
                 -LogFile ([string]$targetResult.ResultLogFile) `
+                -ResultFiles @($targetResult.ResultFiles) `
                 -TargetClass ([string]$targetEntry.ClassFilter) `
                 -TargetMethod ([string]($targetEntry.Methods | Select-Object -First 1)) `
                 -TargetTestType ([string]$targetEntry.Type) `

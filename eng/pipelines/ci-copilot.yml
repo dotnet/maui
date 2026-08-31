@@ -3143,14 +3143,25 @@ stages:
                 throw "The credentialless validation job was given credentials: $($present -join ', ')"
               }
               $extraheaders = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'http\..*\.extraheader' 2>$null)
+              $extraheaderExitCode = $LASTEXITCODE
+              if ($extraheaderExitCode -notin @(0, 1)) {
+                throw "Unable to inspect the validation checkout's HTTP configuration (exit $extraheaderExitCode)."
+              }
               if ($extraheaders.Count -gt 0) {
                 throw 'The credentialless validation checkout persisted a credential.'
               }
               $helpers = @(git -C "$(Build.SourcesDirectory)" config --get-regexp 'credential\..*helper' 2>$null)
+              $helperExitCode = $LASTEXITCODE
+              if ($helperExitCode -notin @(0, 1)) {
+                throw "Unable to inspect the validation checkout's credential helpers (exit $helperExitCode)."
+              }
               if ($helpers.Count -gt 0) {
                 throw 'The credentialless validation checkout configured a credential helper.'
               }
               Write-Host 'The validation job holds no GitHub, Copilot, Azure, feed, proxy, or git credential.'
+              # `git config --get-regexp` returns 1 when no entries match. The
+              # Azure PowerShell task propagates a lingering LASTEXITCODE.
+              exit 0
             displayName: 'Assert the validation job holds no credential'
 
           - pwsh: |
