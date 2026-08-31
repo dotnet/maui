@@ -1,6 +1,8 @@
 using System.Reflection.Metadata;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.ExternalHandler.UnitTests;
 /// Proves that a third-party handler can participate in MAUI Blazor static content hot reload
 /// through <see cref="BlazorWebViewStaticContentHotReload"/> without any access to internals.
 /// </summary>
+[Collection(nameof(ExternalStaticContentHotReloadTests))]
 public class ExternalStaticContentHotReloadTests
 {
 	private const string HotReloadScriptPath = "_framework/static-content-hot-reload.js";
@@ -79,6 +82,68 @@ public class ExternalStaticContentHotReloadTests
 	}
 
 	[Fact]
+	public async Task TryAttachToWebViewManager_IsThreadSafeForConcurrentCalls()
+	{
+		if (!MetadataUpdater.IsSupported)
+		{
+			return;
+		}
+
+		await using var manager = CreateManager();
+		const int callerCount = 8;
+		using var barrier = new Barrier(callerCount);
+
+		var calls = Enumerable.Range(0, callerCount)
+			.Select(_ => Task.Run(() =>
+			{
+				Assert.True(barrier.SignalAndWait(TimeSpan.FromSeconds(30)));
+				return new[] { BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager)! };
+			}))
+			.ToArray();
+
+		var attachTasks = (await Task.WhenAll(calls))
+			.Select(result => result[0])
+			.ToArray();
+
+		Assert.All(attachTasks, task => Assert.Same(attachTasks[0], task));
+		await Task.WhenAll(attachTasks);
+
+		// Concurrent callers registered exactly one notifier.
+		await manager.RemoveRootComponentAsync("body::after");
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			() => manager.RemoveRootComponentAsync("body::after"));
+	}
+
+	[Fact]
+	public async Task TryAttachToWebViewManager_RetriesAfterFailedAttach()
+	{
+		if (!MetadataUpdater.IsSupported)
+		{
+			return;
+		}
+
+		await using var manager = CreateManager();
+
+		await manager.AddRootComponentAsync(
+			typeof(TestRootComponentA),
+			"body::after",
+			ParameterView.Empty);
+
+		Assert.Throws<InvalidOperationException>(() =>
+		{
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		});
+
+		await manager.RemoveRootComponentAsync("body::after");
+
+		var retry = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		Assert.NotNull(retry);
+		await retry!;
+
+		await manager.RemoveRootComponentAsync("body::after");
+	}
+
+	[Fact]
 	public async Task TryAttachToWebViewManager_AttachesEachManagerIndependently()
 	{
 		await using var first = CreateManager();
@@ -100,6 +165,31 @@ public class ExternalStaticContentHotReloadTests
 		// Idempotence is scoped to a single manager, so each one really did get the notifier registered.
 		await first.RemoveRootComponentAsync("body::after");
 		await second.RemoveRootComponentAsync("body::after");
+	}
+
+	[Fact]
+	public async Task TryAttachToWebViewManager_WaitsForDiscardedDetach()
+	{
+		await using var manager = CreateManager();
+
+		var firstAttach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+		if (firstAttach is null)
+		{
+			return;
+		}
+
+		await firstAttach;
+
+		_ = BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(manager);
+		var secondAttach = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(manager);
+
+		Assert.NotNull(secondAttach);
+		await secondAttach!;
+
+		// Reattachment completed after removal and registered exactly one notifier.
+		await manager.RemoveRootComponentAsync("body::after");
+		await Assert.ThrowsAsync<InvalidOperationException>(
+			() => manager.RemoveRootComponentAsync("body::after"));
 	}
 
 	[Fact]
@@ -255,6 +345,11 @@ public class ExternalStaticContentHotReloadTests
 			await detach;
 			Assert.True(detach.IsCompletedSuccessfully);
 		}
+	}
+
+	[CollectionDefinition(nameof(ExternalStaticContentHotReloadTests), DisableParallelization = true)]
+	public sealed class ExternalStaticContentHotReloadTestCollection
+	{
 	}
 
 	[Fact]

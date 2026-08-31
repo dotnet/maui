@@ -96,8 +96,8 @@ _ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webViewManage
 and nothing was attached, or a `Task` that completes when the notifier root component has been
 registered. Awaiting it is optional when attaching before navigation, because registration completes
 synchronously until a page is attached. Attaching is idempotent per `WebViewManager` instance:
-repeat calls return the task from the first attach rather than failing on the notifier's fixed root
-component selector.
+concurrent and repeat calls return the current attach task rather than failing on the notifier's
+fixed root component selector. If an attach fails, a later call retries the registration.
 
 On teardown, **if your handler disposes its `WebViewManager` — as all the built-in handlers do — there
 is nothing to detach.** Disposing tears the notifier down along with the renderer, and a reconnected
@@ -124,9 +124,10 @@ if (detach is not null)
 
 It returns `null` when nothing was attached, so it is safe to call unconditionally and is idempotent.
 If the manager is disposed while a detach is still in flight, the returned task completes successfully
-rather than faulting, so discarding it cannot produce an unobserved exception. Detaching is never
-required to prevent a leak — the attachment is tracked weakly and the notifier unsubscribes when its
-root component is disposed.
+rather than faulting, so discarding it cannot produce an unobserved exception. A subsequent attach is
+sequenced after an in-flight detach even when the detach task was discarded. Detaching is never required
+to prevent a leak — the attachment is tracked weakly and the notifier unsubscribes when its root
+component is disposed.
 
 And while resolving each static content request:
 

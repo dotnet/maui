@@ -47,8 +47,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// synchronously until a page is attached.
 		/// </returns>
 		/// <remarks>
-		/// Attaching is idempotent per <see cref="WebViewManager"/> instance: repeat calls for the same manager
-		/// return the task produced by the first successful attach rather than registering the notifier again.
+		/// Attaching is idempotent per <see cref="WebViewManager"/> instance: concurrent and repeat calls for
+		/// the same manager return the current attach task rather than registering the notifier again. If an
+		/// attach fails, a later call retries the registration.
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
 		public static Task? TryAttachToWebViewManager(WebViewManager webViewManager)
@@ -76,9 +77,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <para>
 		/// Detaching is idempotent: calling it when nothing is attached returns <see langword="null"/> rather
 		/// than throwing. If the manager is disposed while a detach is still in flight, the returned task still
-		/// completes successfully rather than faulting, so it is safe to discard. It is not required to prevent
-		/// a leak — the attachment is tracked weakly and the notifier unsubscribes when its root component is
-		/// disposed.
+		/// completes successfully rather than faulting, so it is safe to discard. A subsequent attach is
+		/// sequenced after an in-flight detach, even when the detach task was discarded. Detaching is not
+		/// required to prevent a leak — the attachment is tracked weakly and the notifier unsubscribes when
+		/// its root component is disposed.
 		/// </para>
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="webViewManager"/> is <see langword="null"/>.</exception>
