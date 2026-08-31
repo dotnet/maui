@@ -669,7 +669,7 @@ if ($Phase -eq 'Setup') {
         New-Item -ItemType Directory -Force -Path $d | Out-Null
         $d
     }
-    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z]+|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
+    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
         $reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
         $reviewedTreeSha -notmatch '^[0-9a-fA-F]{40}$') {

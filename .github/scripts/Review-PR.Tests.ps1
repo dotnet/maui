@@ -146,6 +146,35 @@ Describe 'Setup PR metadata lookup' {
     }
 }
 
+Describe 'Setup snapshot base branch validation' {
+    It 'accepts supported inflight names and rejects unsafe near-misses' {
+        $validatorLine = $content -split '\r?\n' |
+            Where-Object { $_ -match '\$baseRefName -notmatch' } |
+            Select-Object -First 1
+        $validatorMatch = [regex]::Match($validatorLine, "-notmatch '([^']+)'")
+
+        $validatorMatch.Success | Should -BeTrue
+        $pattern = $validatorMatch.Groups[1].Value
+
+        @(
+            'inflight/current'
+            'inflight/10.0.101'
+            'inflight/11.0.100-preview.7'
+        ) | ForEach-Object {
+            [regex]::IsMatch($_, $pattern) | Should -BeTrue -Because "'$_' is supported"
+        }
+
+        @(
+            'inflight/.hidden'
+            'inflight/Future'
+            'inflight/foo/bar'
+            'inflight/../main'
+        ) | ForEach-Object {
+            [regex]::IsMatch($_, $pattern) | Should -BeFalse -Because "'$_' is unsafe"
+        }
+    }
+}
+
 Describe 'Gate retry classification' {
     It 'retries a report containing only an environment error' {
         Test-GateReportIsRetryableEnvironmentError -ReportContent @'
