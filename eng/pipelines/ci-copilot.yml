@@ -439,7 +439,7 @@ stages:
              rm -rf "$STAGED_SOURCE" 2>/dev/null || true
              mkdir -p "$TRUSTED"
              mkdir -p "$STAGED_SOURCE"
-             git archive "${SOURCE_VERSION}" \
+             git -c core.autocrlf=false archive "${SOURCE_VERSION}" \
                .github/scripts \
                .github/skills \
                eng/scripts \
@@ -3183,16 +3183,17 @@ stages:
                 throw "Validation checkout is at $actual but the run was queued at $pinned."
               }
 
-              # Stage from canonical Git blob bytes, not checkout bytes. Windows
-              # checkouts may translate text files to CRLF while this Ubuntu job
-              # checks them out as LF; git archive makes both jobs attest the same
-              # immutable bytes regardless of checkout policy.
+              # Stage from canonical Git blob bytes, not checkout bytes. git
+              # archive honors core.autocrlf, so override it explicitly or a
+              # Windows producer emits CRLF while this Ubuntu verifier emits LF.
               $referenceSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-source'
               Remove-Item -LiteralPath $referenceSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $referenceSourceRoot -Force | Out-Null
               $archivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-source.tar'
               Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
-              & git -C "$(Build.SourcesDirectory)" archive `
+              & git -C "$(Build.SourcesDirectory)" `
+                -c core.autocrlf=false `
+                archive `
                 --format=tar `
                 "--output=$archivePath" `
                 $pinned `
@@ -4079,7 +4080,7 @@ stages:
              rm -rf "$STAGED_SOURCE" 2>/dev/null || true
              mkdir -p "$TRUSTED"
              mkdir -p "$STAGED_SOURCE"
-             git archive "${SOURCE_VERSION}" \
+             git -c core.autocrlf=false archive "${SOURCE_VERSION}" \
                .github/scripts \
                .github/skills \
                eng/scripts \
