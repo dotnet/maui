@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
+		bool _isRotating;
+		NSObject _orientationObserver;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
@@ -91,6 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (disposing)
 			{
+				DisposeObserver();
 				ItemsSource?.Dispose();
 
 				((IUIViewLifeCycleEvents)CollectionView).MovedToWindow -= MovedToWindow;
@@ -191,6 +194,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			RegisterViewTypes();
 
 			EnsureLayoutInitialized();
+
+			// Rotation doesn't invalidate a UICollectionViewCompositionalLayout by default (its
+			// ShouldInvalidateLayoutForBoundsChange override returns false), so cells that were
+			// already measured before the rotation can end up with stale/empty content 
+			var weakController = new WeakReference<ItemsViewController2<TItemsView>>(this);
+			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification, _ => DeviceOrientationChanged(weakController));
+		}
+
+		static void DeviceOrientationChanged(WeakReference<ItemsViewController2<TItemsView>> weakController)
+		{
+			var orientation = UIDevice.CurrentDevice.Orientation;
+			if (orientation is not (UIDeviceOrientation.Portrait
+				or UIDeviceOrientation.PortraitUpsideDown
+				or UIDeviceOrientation.LandscapeLeft
+				or UIDeviceOrientation.LandscapeRight))
+			{
+				return;
+			}
+
+			if (weakController.TryGetTarget(out var controller))
+			{
+				controller._isRotating = true;
+			}
 		}
 
 		public override void LoadView()
@@ -207,6 +234,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				InvalidateLayoutIfItemsMeasureChanged();
 				collectionView.NeedsCellLayout = false;
+			}
+
+			if (_isRotating)
+			{
+				_isRotating = false;
+
+				// Force a genuine layout invalidation so cells are re-measured/re-rendered with
+				// their new bounds after the rotation completes 
+				CollectionView?.CollectionViewLayout?.InvalidateLayout();
 			}
 
 			base.ViewWillLayoutSubviews();
@@ -292,6 +328,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource?.Dispose();
 			ItemsSource = new Items.EmptySource();
 			ReloadData();
+		}
+
+		// remove the orientation observer when the controller is disposed to avoid a memory leak
+		internal void DisposeObserver()
+		{
+			if (_orientationObserver is null)
+			{
+				return;
+			}
+
+			NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+			_orientationObserver = null;
+			UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
 		}
 
 		void EnsureLayoutInitialized()
