@@ -204,6 +204,7 @@ Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePla
 virtual Microsoft.Maui.Controls.LongPressedEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+Microsoft.Maui.Controls.Picker.~Picker() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 ~Microsoft.Maui.Controls.SwipeItem.IconColor.get -> Microsoft.Maui.Graphics.Color
