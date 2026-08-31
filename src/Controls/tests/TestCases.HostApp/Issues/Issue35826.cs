@@ -102,7 +102,7 @@ public class Issue35826ChildActivity : AndroidX.AppCompat.App.AppCompatActivity
 				? "Photo Picker: Available"
 				: "Photo Picker: Unavailable"
 		};
-		pickerAvailabilityLabel.SetPadding(0, 0, 0, 50);
+		pickerAvailabilityLabel.SetPadding(0, 150, 0, 50);
 		SetViewIdResourceName(pickerAvailabilityLabel, "PhotoPickerAvailabilityLabel");
 
 		var pickButton = new Android.Widget.Button(this)

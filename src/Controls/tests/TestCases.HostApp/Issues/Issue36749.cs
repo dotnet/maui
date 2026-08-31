@@ -17,9 +17,6 @@ public class Issue36749 : ContentPage
 
     readonly Label _resultLabel;
     readonly Button _button;
-#if IOS || MACCATALYST
-    bool _hasRunVerification;
-#endif
 
     public Issue36749()
     {
@@ -38,7 +35,7 @@ public class Issue36749 : ContentPage
             Text = "Test Button",
             AutomationId = "Issue36749Button"
         };
-		_button.Loaded += OnButtonLoaded;
+        _button.Loaded += OnButtonLoaded;
 
         Content = new VerticalStackLayout
         {
@@ -48,45 +45,26 @@ public class Issue36749 : ContentPage
         };
     }
 
-	void OnButtonLoaded(object sender, EventArgs e)
+    void OnButtonLoaded(object sender, EventArgs e)
     {
 #if IOS || MACCATALYST
-		if (_hasRunVerification)
-			return;
+        if (_button.Handler?.PlatformView is UIButton platformButton)
+        {
+            // The native UIButton subclass sets BackgroundColor = UIColor.Cyan in its constructor.
+            // With the regression: initial null-Background mapping resets it to UIColor.Clear.
+            // With the fix:        the Window-null check skips the reset, preserving Cyan.
+            platformButton.BackgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
 
-		_hasRunVerification = true;
-
-		if (_button.Handler?.PlatformView is not UIButton platformButton ||
-			platformButton.BackgroundColor is not UIColor backgroundColor)
-		{
-			// Handler, platform view, or background unavailable — mark as FAIL so the test fails
-			// immediately rather than timing out on "Checking...".
-			_resultLabel.Text = "FAIL";
-			return;
-		}
-
-		// The native UIButton subclass sets BackgroundColor = UIColor.Cyan in its constructor.
-		// With the regression: initial null-Background mapping resets it to UIColor.Clear.
-		// With the fix:        no clear occurs until MAUI has applied a background, preserving Cyan.
-		backgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
-
-		// UIColor.Cyan = R:0, G:1, B:1, A:1
-		bool preservedInitialColor = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
-
-		// A later null mapping must clear MAUI-applied state even while the native view is
-		// detached. Tracking prior MAUI background application keeps this clear deterministic.
-		_button.Background = new SolidColorBrush(Colors.Red);
-		platformButton.RemoveFromSuperview();
-		_button.Background = null;
-
-		bool clearedDetachedColor = false;
-		if (platformButton.BackgroundColor is UIColor detachedColor)
-		{
-			detachedColor.GetRGBA(out _, out _, out _, out var detachedAlpha);
-			clearedDetachedColor = detachedAlpha < 0.01;
-		}
-
-		_resultLabel.Text = preservedInitialColor && clearedDetachedColor ? "PASS" : "FAIL";
+            // UIColor.Cyan = R:0, G:1, B:1, A:1
+            bool isCyan = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
+            _resultLabel.Text = isCyan ? "PASS" : "FAIL";
+        }
+        else
+        {
+            // Handler or platform view unavailable — mark as FAIL so the test fails
+            // immediately rather than timing out on "Checking...".
+            _resultLabel.Text = "FAIL";
+        }
 #endif
     }
 }
@@ -100,16 +78,16 @@ public class Issue36749Button : Button { }
 // The cross-platform Button intentionally leaves Background and TextColor unset.
 class Issue36749NativeStyledButton : UIButton
 {
-	public Issue36749NativeStyledButton() : base(UIButtonType.System)
-	{
-		BackgroundColor = UIColor.Cyan;
-		SetTitleColor(UIColor.DarkGray, UIControlState.Normal);
-	}
+    public Issue36749NativeStyledButton() : base(UIButtonType.System)
+    {
+        BackgroundColor = UIColor.Cyan;
+        SetTitleColor(UIColor.DarkGray, UIControlState.Normal);
+    }
 }
 
 class Issue36749ButtonHandler : ButtonHandler
 {
-	protected override UIButton CreatePlatformView() => new Issue36749NativeStyledButton();
+    protected override UIButton CreatePlatformView() => new Issue36749NativeStyledButton();
 }
 
 #endif

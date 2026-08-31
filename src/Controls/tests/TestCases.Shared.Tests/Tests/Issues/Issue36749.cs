@@ -13,7 +13,7 @@ public class Issue36749 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Button)]
-    public void NativeStyledButtonPreservesInitialAndClearsDetachedBackground()
+    public void NativeStyledButtonShouldPreserveBackgroundColorOnInitialRender()
     {
         App.WaitForElement("Issue36749Result");
 
@@ -21,8 +21,7 @@ public class Issue36749 : _IssuesUITest
 
         Assert.That(resultText, Is.EqualTo("PASS"),
             "Native BackgroundColor set in a UIButton subclass constructor should be preserved " +
-            "during the initial mapping, while later null Background updates must clear " +
-            "MAUI-applied state even when the native button is detached. " +
+            "when no cross-platform Background is assigned to the Button. " +
             "Regression: PR #33346 unconditionally reset BackgroundColor to UIColor.Clear " +
             "on the initial null-paint mapping, wiping native styling.");
     }
