@@ -104,8 +104,11 @@ namespace Microsoft.Maui.Handlers
 					platformView.Background = null;
 					mauiDrawable.Dispose();
 				}
+				else
+				{
+					platformView.Background = null;
+				}
 
-				platformView.Background = null;
 				return;
 			}
 
