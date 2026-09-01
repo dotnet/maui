@@ -1,0 +1,54 @@
+<Border
+    xmlns:effectsView="clr-namespace:Syncfusion.Maui.Toolkit.EffectsView;assembly=Syncfusion.Maui.Toolkit"
+    xmlns:pageModels="clr-namespace:SampleTest.PageModels"
+    xmlns:models="clr-namespace:SampleTest.Models"
+    xmlns:shimmer="clr-namespace:Syncfusion.Maui.Toolkit.Shimmer;assembly=Syncfusion.Maui.Toolkit"
+    x:Class="SampleTest.Pages.Controls.TaskView"
+    StrokeShape="RoundRectangle 20"
+    Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground}, Dark={StaticResource DarkSecondaryBackground}}"
+    x:DataType="models:ProjectTask">
+
+        <shimmer:SfShimmer
+            BackgroundColor="Transparent"
+            VerticalOptions="Fill"
+            IsActive="{Binding IsBusy, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}">
+            <shimmer:SfShimmer.CustomView>
+                <Grid 
+                    ColumnDefinitions="Auto,*"
+                    Padding="{OnIdiom 15, Desktop=20}">
+                    <BoxView 
+                        WidthRequest="24"
+                        HeightRequest="24"
+                        Margin="12, 0"
+                        Style="{StaticResource ShimmerCustomViewStyle}"/>
+                    <BoxView 
+                        Grid.Column="1"
+                        HeightRequest="24"
+                        Margin="12, 0"
+                        Style="{StaticResource ShimmerCustomViewStyle}"/>
+                </Grid>
+            </shimmer:SfShimmer.CustomView>
+            <shimmer:SfShimmer.Content>
+                <Grid ColumnDefinitions="*" ColumnSpacing="15" Padding="{OnIdiom 15, Desktop=20}">
+
+                    <Grid SemanticProperties.Description="{Binding Title}" Margin="{OnIdiom -15, Desktop=-20}">
+                        <Label
+                            Margin="{OnIdiom '65,0,0,0', Desktop= '70,0,0,0'}"
+                            Text="{Binding Title}"
+                            HorizontalOptions="Start"
+                            VerticalOptions="Center"
+                            LineBreakMode="WordWrap"/>
+                    </Grid>
+
+                    <CheckBox Grid.Column="0"
+                        WidthRequest="50"
+                        HorizontalOptions="Start"
+                        IsChecked="{Binding IsCompleted, Mode=OneTime}"
+                        VerticalOptions="Center"
+                        CheckedChanged="CheckBox_CheckedChanged"
+                        AutomationProperties.IsInAccessibleTree="True"
+                        SemanticProperties.Description="{Binding Title}"/>
+                </Grid>
+            </shimmer:SfShimmer.Content>
+        </shimmer:SfShimmer>
+</Border>

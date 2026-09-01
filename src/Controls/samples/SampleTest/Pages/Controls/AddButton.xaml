@@ -1,0 +1,10 @@
+<Button x:Class="SampleTest.Pages.Controls.AddButton"
+    ImageSource="{StaticResource IconAdd}" 
+    BackgroundColor="{StaticResource Primary}" 
+    CornerRadius="30" 
+    HeightRequest="60" 
+    WidthRequest="60" 
+    VerticalOptions="End" 
+    HorizontalOptions="End"
+    Margin="30" 
+    SemanticProperties.Description="Add" />
