@@ -16,7 +16,7 @@ namespace Microsoft.Maui.DeviceTests;
 public partial class HybridWebViewTests_MessageOrigins : HybridWebViewTestsBase
 {
 	const string OtherOrigin = "https://example.invalid/";
-	const string OtherOriginDocument = """
+	static readonly string OtherOriginDocument = $$"""
 		<!DOCTYPE html>
 		<html>
 			<body id="otherOriginDocument">
@@ -27,7 +27,7 @@ public partial class HybridWebViewTests_MessageOrigins : HybridWebViewTestsBase
 						} else if (window.webkit && window.webkit.messageHandlers) {
 							window.webkit.messageHandlers.webwindowinterop.postMessage(message);
 						} else {
-							return fetch("https://0.0.0.1/__hwvSendMessage", {
+							return fetch("{{new Uri(HybridWebViewHandler.AppOriginUri, HybridWebViewHandler.SendMessagePath).AbsoluteUri}}", {
 								method: "POST",
 								headers: {
 									"Content-Type": "text/plain",

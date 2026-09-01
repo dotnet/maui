@@ -16,10 +16,18 @@ public partial class HybridWebViewTests_MessageOrigins
 		string html)
 	{
 		var navigationDelegate = new NavigationDelegate();
+		var previousNavigationDelegate = handler.PlatformView.NavigationDelegate;
 		handler.PlatformView.NavigationDelegate = navigationDelegate;
 
-		handler.PlatformView.LoadHtmlString(html, new NSUrl(OtherOrigin));
-		await navigationDelegate.NavigationCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		try
+		{
+			handler.PlatformView.LoadHtmlString(html, new NSUrl(OtherOrigin));
+			await navigationDelegate.NavigationCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		}
+		finally
+		{
+			handler.PlatformView.NavigationDelegate = previousNavigationDelegate;
+		}
 	}
 
 	sealed class NavigationDelegate : WKNavigationDelegate
