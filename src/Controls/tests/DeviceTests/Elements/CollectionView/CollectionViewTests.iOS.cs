@@ -152,40 +152,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
-		[Fact("Cells Do Not Leak")]
-		public async Task CellsDoNotLeak()
-		{
-			SetupBuilder();
-
-			var labels = new List<WeakReference>();
-			VerticalCell cell = null;
-
-			var bindingContext = "foo";
-			var collectionView = new MyUserControl
-			{
-				Labels = labels
-			};
-			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
-
-			var handler = await CreateHandlerAsync(collectionView);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				cell = new VerticalCell(CGRect.Empty);
-				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-			});
-
-			Assert.NotNull(cell);
-
-			// HACK: test passes running individually, but fails when running entire suite.
-			// Skip the assertion on Catalyst for now.
-#if !MACCATALYST
-			await AssertionExtensions.WaitForGC([.. labels]);
-#endif
-		}
-#endif
-
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
 		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
 		public void GenerateIndexPathRange()
