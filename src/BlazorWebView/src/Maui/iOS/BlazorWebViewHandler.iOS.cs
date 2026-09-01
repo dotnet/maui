@@ -112,10 +112,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = webview
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(webview));
 
 			// Disable bounce scrolling to make Blazor apps feel more native
 			if (webview.ScrollView != null)

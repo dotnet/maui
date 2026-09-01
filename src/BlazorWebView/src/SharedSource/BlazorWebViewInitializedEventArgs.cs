@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// </summary>
 	public class BlazorWebViewInitializedEventArgs : EventArgs
 	{
-		private object? _platformWebView;
+		private readonly object? _platformWebView;
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorWebViewInitializedEventArgs"/>.
@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Components.WebView
 		{
 		}
 
-#if WEBVIEW2_MAUI
 		/// <summary>
 		/// Initializes a new instance of <see cref="BlazorWebViewInitializedEventArgs"/> for the specified
 		/// platform-native web view control.
@@ -45,13 +44,18 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// strongly typed <c>WebView</c> property is not declared.
 		/// </remarks>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="platformWebView"/> is <see langword="null"/>.</exception>
+#if WEBVIEW2_MAUI
 		public BlazorWebViewInitializedEventArgs(object platformWebView)
+#else
+		internal BlazorWebViewInitializedEventArgs(object platformWebView)
+#endif
 		{
 			ArgumentNullException.ThrowIfNull(platformWebView);
 
 			_platformWebView = platformWebView;
 		}
 
+#if WEBVIEW2_MAUI
 		/// <summary>
 		/// Gets the platform-native web view control that was initialized, as an untyped object, or
 		/// <see langword="null"/> when the handler did not supply one.
@@ -62,9 +66,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// target frameworks both properties report the same instance; where the stored value is not of the
 		/// platform's web view type, <c>WebView</c> reports <see langword="null"/> rather than throwing.
 		/// <para>
-		/// The value is write-once and can only be supplied by the handler that raises the event — either
-		/// through <see cref="BlazorWebViewInitializedEventArgs(object)"/> or, for the built-in handlers,
-		/// through the strongly typed <c>WebView</c> property. Event subscribers cannot change what later
+		/// The value is supplied by the handler that raises the event through
+		/// <see cref="BlazorWebViewInitializedEventArgs(object)"/>. Event subscribers cannot change what later
 		/// subscribers observe.
 		/// </para>
 		/// </remarks>
@@ -76,53 +79,24 @@ namespace Microsoft.AspNetCore.Components.WebView
 		/// <summary>
 		/// Gets the <see cref="WebView2Control"/> instance that was initialized.
 		/// </summary>
-		public WebView2Control WebView
-		{
-			get => _platformWebView as WebView2Control;
-			internal set => SetPlatformWebView(value);
-		}
+		public WebView2Control WebView => _platformWebView as WebView2Control;
 #elif ANDROID
 		/// <summary>
 		/// Gets the <see cref="AWebView"/> instance that was initialized.
 		/// </summary>
-		public AWebView WebView
-		{
-			get => _platformWebView as AWebView;
-			internal set => SetPlatformWebView(value);
-		}
+		public AWebView WebView => _platformWebView as AWebView;
 #elif MACCATALYST || IOS
 		/// <summary>
 		/// Gets the <see cref="WKWebView"/> instance that was initialized.
 		/// the default values to allow further configuring additional options.
 		/// </summary>
-		public WKWebView WebView
-		{
-			get => _platformWebView as WKWebView;
-			internal set => SetPlatformWebView(value);
-		}
+		public WKWebView WebView => _platformWebView as WKWebView;
 #elif TIZEN
 		/// <summary>
 		/// Gets the <see cref="TWebView"/> instance that was initialized.
 		/// </summary>
-		public TWebView WebView
-		{
-			get => _platformWebView as TWebView;
-			internal set => SetPlatformWebView(value);
-		}
+		public TWebView WebView => _platformWebView as TWebView;
 #endif
 #nullable restore
-
-#if WINDOWS || ANDROID || MACCATALYST || IOS || TIZEN
-		private void SetPlatformWebView(object? value)
-		{
-			if (_platformWebView is not null)
-			{
-				throw new InvalidOperationException(
-					$"The platform web view for this {nameof(BlazorWebViewInitializedEventArgs)} has already been set.");
-			}
-
-			_platformWebView = value;
-		}
-#endif
 	}
 }

@@ -237,10 +237,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = PlatformView,
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(PlatformView));
 
 			if (RootComponents != null)
 			{
