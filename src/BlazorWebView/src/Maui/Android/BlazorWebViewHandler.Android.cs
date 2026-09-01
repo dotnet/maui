@@ -119,6 +119,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				// Dispose this component's contents so that user-written disposal logic and Blazor disposal logic will complete.
 
+				// Disposing the manager tears down the hot reload notifier along with the renderer, and
+				// this handler always builds a new manager on reconnect, so there is nothing to detach.
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
@@ -187,13 +189,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				hostPageRelativePath,
 				Logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = PlatformView,
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(PlatformView));
 
 			if (RootComponents != null)
 			{
