@@ -5025,7 +5025,8 @@ function Assert-ReplicationVerificationEvidence {
                 -ExpectedTestClass ([string]$Manifest.TestClassName) `
                 -AdditionalSources @($generatedCSharp | Where-Object {
                         $_.Path -cne $selectedControlFiles[0].Path
-                    } | ForEach-Object Source)
+                    } | ForEach-Object Source) `
+                -RepositoryRoot $repoPath
             if ($expectedControlSource.Replace("`r`n", "`n").TrimEnd("`r", "`n") -cne
                 $controlSource.Replace("`r`n", "`n").TrimEnd("`r", "`n")) {
                 throw (

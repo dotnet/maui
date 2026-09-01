@@ -6688,7 +6688,8 @@ function Assert-ReplicationGeneratedControlGate {
         -Platform $Platform `
         -ExpectedTestMethod ([string]$VerifierMetadata.MethodName) `
         -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
-        -AdditionalSources $additionalSources
+        -AdditionalSources $additionalSources `
+        -RepositoryRoot $repoRoot
 }
 
 function Get-ReplicationUnbuildableTestTiers {
@@ -8486,7 +8487,8 @@ function Invoke-ReplicationNegativeControl {
                 -Platform $Platform `
                 -ExpectedTestMethod $methodName `
                 -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
-                -AdditionalSources $additionalControlSources
+                -AdditionalSources $additionalControlSources `
+                -RepositoryRoot $repoRoot
         }
         catch {
             # A command-resolution or binding failure here is a defect in this

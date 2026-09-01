@@ -9563,10 +9563,17 @@ Describe 'New-ReplicationControlVariant' {
             'New-ReplicationControlVariant:ExpectedTestMethod']
         $script:PriorExpectedControlClass = $PSDefaultParameterValues[
             'New-ReplicationControlVariant:ExpectedTestClass']
+        $script:PriorControlRepositoryRoot = $PSDefaultParameterValues[
+            'New-ReplicationControlVariant:RepositoryRoot']
+        $script:ControlRepositoryRoot =
+            (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
         $PSDefaultParameterValues[
             'New-ReplicationControlVariant:ExpectedTestMethod'] = 'Reproduces'
         $PSDefaultParameterValues[
             'New-ReplicationControlVariant:ExpectedTestClass'] = 'ControlTests'
+        $PSDefaultParameterValues[
+            'New-ReplicationControlVariant:RepositoryRoot'] =
+                $script:ControlRepositoryRoot
         $script:ControlBase = @'
 using Xunit;
 
@@ -9611,6 +9618,14 @@ public class ControlTests
             $PSDefaultParameterValues[
                 'New-ReplicationControlVariant:ExpectedTestClass'] =
                     $script:PriorExpectedControlClass
+        }
+        if ($null -eq $script:PriorControlRepositoryRoot) {
+            $PSDefaultParameterValues.Remove(
+                'New-ReplicationControlVariant:RepositoryRoot')
+        } else {
+            $PSDefaultParameterValues[
+                'New-ReplicationControlVariant:RepositoryRoot'] =
+                    $script:PriorControlRepositoryRoot
         }
     }
 
@@ -9701,6 +9716,306 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Edits @($script:GateEdit)
         } | Should -Throw '*no trusted assertion after the trigger*'
 
+    }
+
+    It 'allows the immutable AssertEventually boolean helper for the Catalyst Issue35511 observation' {
+        $baseline = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var destination = new global::Microsoft.Maui.Controls.ContentPage();
+        var navigationPage =
+            new global::Microsoft.Maui.Controls.NavigationPage(destination);
+        var window = new global::Microsoft.Maui.Controls.Window(navigationPage);
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var destinationLoaded = false;
+        destination.NavigatedTo += (_, _) => destinationLoaded = true;
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            titleView.IsVisible = false;
+        }
+
+        await CreateHandlerAndAddToWindow<
+            global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+            window,
+            async _ =>
+        {
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination && destinationLoaded);
+            Assert.Same(destination, navigationPage.CurrentPage);
+        });
+        Assert.Equal(2, titleView.MaxLines);
+        Assert.True(titleView.IsVisible);
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects generated AssertHelpers even when an alias shadows the trusted type' {
+        $baseline = @'
+using System;
+using System.Threading.Tasks;
+using Xunit;
+using AssertHelpers = Generated.AssertHelpers;
+
+namespace Generated
+{
+    public static class AssertHelpers
+    {
+        public static Task AssertEventually(Func<bool> predicate) =>
+            Task.CompletedTask;
+    }
+}
+
+public class ControlTests
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await AssertHelpers.AssertEventually(() => label.IsVisible);
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw (
+            '*Awaited symbol*Generated.AssertHelpers.AssertEventually*' +
+            "declared in 'control.cs' line*")
+    }
+
+    It 'rejects a generated source copy of the trusted AssertHelpers type' {
+        $baseline = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await AssertHelpers.AssertEventually(() => label.IsVisible);
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+        $copiedHelper = @'
+namespace Microsoft.Maui.DeviceTests
+{
+    public static class AssertHelpers
+    {
+        public static System.Threading.Tasks.Task AssertEventually(
+            System.Func<bool> assertion,
+            int timeout = 1000,
+            int interval = 100,
+            string message = "Assertion timed out") =>
+            System.Threading.Tasks.Task.CompletedTask;
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -AdditionalSources @($copiedHelper)
+        } | Should -Throw '*may await only a direct trusted external framework invocation*'
+    }
+
+    It 'rejects trusted helper rebinding to a generated framework type' {
+        $baseline = @'
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public async global::System.Threading.Tasks.Task Reproduces()
+    {
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await AssertHelpers.AssertEventually(() => label.IsVisible);
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+        $shadowTask = @'
+namespace System.Threading.Tasks
+{
+    public class Task
+    {
+        public static Task Delay(int milliseconds) => new Task();
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -AdditionalSources @($shadowTask)
+        } | Should -Throw '*exact Func<bool> baseline overload*'
+    }
+
+    It 'rejects the immutable AssertEventually async-predicate overload' {
+        $baseline = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await AssertHelpers.AssertEventually(
+            async () =>
+            {
+                await Task.CompletedTask;
+                return label.IsVisible;
+            });
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw (
+            '*exact immutable*AssertEventually(Func<bool>, int, int, string)*' +
+            'AssertHelpers.cs*line 30*')
+    }
+
+    It 'rejects writes calls and ambient state inside AssertEventually predicates' {
+        $baseline = @'
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public async System.Threading.Tasks.Task Reproduces()
+    {
+        var destination = new global::Microsoft.Maui.Controls.ContentPage();
+        var navigationPage =
+            new global::Microsoft.Maui.Controls.NavigationPage(destination);
+        var destinationLoaded = false;
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await AssertHelpers.AssertEventually(
+            () => navigationPage.CurrentPage == destination && destinationLoaded);
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+        $maliciousPredicates = @(
+            '() => (destinationLoaded = true)',
+            '() => GeneratedObserver.Observe(destination)',
+            '() => System.DateTime.UtcNow.Ticks > 0'
+        )
+        $generatedObserver = @'
+
+public static class GeneratedObserver
+{
+    public static bool Observe(
+        global::Microsoft.Maui.Controls.ContentPage page) => true;
+}
+'@
+        foreach ($predicate in $maliciousPredicates) {
+            $candidate = $baseline.Replace(
+                '() => navigationPage.CurrentPage == destination && destinationLoaded',
+                $predicate)
+            if ($predicate -cmatch 'GeneratedObserver') {
+                $candidate += $generatedObserver
+            }
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit)
+            } | Should -Throw '*AssertEventually predicate*'
+        }
+    }
+
+    It 'continues to reject every other source-defined await' {
+        $baseline = @'
+using System.Threading.Tasks;
+using Xunit;
+
+public static class GeneratedWait
+{
+    public static Task WaitAsync() => Task.CompletedTask;
+}
+
+public class ControlTests
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        await GeneratedWait.WaitAsync();
+        Assert.True(label.IsVisible);
+    }
+}
+'@
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw (
+            '*may await only a direct trusted external framework invocation*' +
+            '*GeneratedWait.WaitAsync*')
     }
 
     It 'allows a trusted instance trigger with a same-state alternate assignment' {
@@ -12668,6 +12983,17 @@ Describe 'The control author never writes the control source' {
 
     It 'builds the variant in trusted code' {
         $script:ControlLoopSource | Should -Match 'New-ReplicationControlVariant'
+    }
+
+    It 'passes the repository root to authoring and clean semantic gates' {
+        $script:Source | Should -Match (
+            '(?s)New-ReplicationControlVariant.*?' +
+            '-RepositoryRoot \$repoRoot')
+        $validatorSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1') -Raw
+        $validatorSource | Should -Match (
+            '(?s)New-ReplicationControlVariant.*?' +
+            '-RepositoryRoot \$repoPath')
     }
 
     It 'rethrows a script defect instead of blaming the author' {

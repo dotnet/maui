@@ -4159,12 +4159,6 @@ namespace Microsoft.Maui.DeviceTests
             where T : class, global::Microsoft.Maui.IElementHandler
             => System.Threading.Tasks.Task.CompletedTask;
     }
-    public static class AssertHelpers
-    {
-        public static System.Threading.Tasks.Task AssertEventually(
-            System.Func<bool> condition)
-            => System.Threading.Tasks.Task.CompletedTask;
-    }
 }
 
 namespace CoreGraphics
@@ -4275,6 +4269,14 @@ namespace Xunit
         public static T Throws<T>(params object[] arguments) => default;
         public static System.Threading.Tasks.Task<T> ThrowsAsync<T>(
             params object[] arguments) => default;
+    }
+}
+
+namespace Xunit.Sdk
+{
+    public sealed class XunitException : System.Exception
+    {
+        public XunitException(string message) : base(message) { }
     }
 }
 
@@ -4652,6 +4654,9 @@ function Confirm-ReplicationTrustedOracleExpression {
                 $_.Parent -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
             })) {
         $memberSymbol = $SemanticModel.GetSymbolInfo($member).Symbol
+        if ($memberSymbol -is [Microsoft.CodeAnalysis.INamespaceSymbol]) {
+            continue
+        }
         if ($null -eq $memberSymbol -or
             @($memberSymbol.Locations | Where-Object {
                     $_.IsInSource
@@ -4661,8 +4666,7 @@ function Confirm-ReplicationTrustedOracleExpression {
                 'Trusted assertion member reads must resolve to external metadata ' +
                 'properties or fields, never generated getters or events.')
         }
-        if ($memberSymbol -is [Microsoft.CodeAnalysis.INamespaceSymbol] -or
-            $memberSymbol -is [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+        if ($memberSymbol -is [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
             continue
         }
         if ($null -eq $memberSymbol.ContainingType -or
@@ -4835,6 +4839,104 @@ function Confirm-ReplicationTrustedOracleExpression {
     }
 }
 
+function Get-ReplicationTrustedAssertEventuallySource {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$GeneratedSourcePath
+    )
+
+    $root = (Resolve-Path -LiteralPath $RepositoryRoot -ErrorAction Stop).Path
+    $relativePath = 'src/TestUtils/src/DeviceTests/AssertHelpers.cs'
+    $expectedBaselineBlob = 'b2728c2b621b375c7599d3df169e9b0cac217ea7'
+    $expectedNormalizedSha256 =
+        '8fef848763a5185e932a050afdedd5d4d15243ebe9284073f0ecbcd5b633c439'
+    $trustedPath = [IO.Path]::GetFullPath((Join-Path $root $relativePath))
+    $rootPrefix = $root.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar) +
+        [IO.Path]::DirectorySeparatorChar
+    if (-not $trustedPath.StartsWith(
+            $rootPrefix,
+            [StringComparison]::Ordinal)) {
+        throw 'The trusted AssertEventually helper path escapes the repository root.'
+    }
+
+    $generatedPath = if ([IO.Path]::IsPathRooted($GeneratedSourcePath)) {
+        [IO.Path]::GetFullPath($GeneratedSourcePath)
+    } else {
+        [IO.Path]::GetFullPath((Join-Path $root $GeneratedSourcePath))
+    }
+    if ($generatedPath -ceq $trustedPath) {
+        throw (
+            'The generated test path may not replace the immutable trusted ' +
+            'AssertEventually helper source.')
+    }
+
+    $trustedItem = Get-Item -LiteralPath $trustedPath -Force -ErrorAction Stop
+    if (-not $trustedItem.PSIsContainer -and
+        ($trustedItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) {
+        $baselineBlob = @(& git -C $root rev-parse --verify "HEAD:$relativePath" 2>&1)
+        $baselineExitCode = $LASTEXITCODE
+    } else {
+        throw (
+            'The trusted AssertEventually helper must be one regular, non-linked ' +
+            'repository file.')
+    }
+    if ($baselineExitCode -ne 0 -or
+        $baselineBlob.Count -ne 1 -or
+        [string]$baselineBlob[0] -cne $expectedBaselineBlob) {
+        throw (
+            'The trusted AssertEventually helper does not match the reviewed ' +
+            'immutable repository blob pinned by this semantic gate.')
+    }
+
+    $bytes = [IO.File]::ReadAllBytes($trustedPath)
+    # Git's trusted `*.cs text` checkout may materialize CRLF on Windows while
+    # the reviewed blob stores LF. Normalize only CRLF, without running any
+    # configurable clean/smudge filter, then compare a pinned content digest.
+    $normalizedBytes = [Collections.Generic.List[byte]]::new($bytes.Length)
+    for ($index = 0; $index -lt $bytes.Length; $index++) {
+        if ($bytes[$index] -eq 13 -and
+            ($index + 1) -lt $bytes.Length -and
+            $bytes[$index + 1] -eq 10) {
+            continue
+        }
+        $normalizedBytes.Add($bytes[$index])
+    }
+    $hashAlgorithm = [Security.Cryptography.SHA256]::Create()
+    try {
+        $actualNormalizedSha256 = [Convert]::ToHexString(
+            $hashAlgorithm.ComputeHash(
+                [byte[]]$normalizedBytes.ToArray())).ToLowerInvariant()
+    }
+    finally {
+        $hashAlgorithm.Dispose()
+    }
+    if ($actualNormalizedSha256 -cne $expectedNormalizedSha256) {
+        throw (
+            "Trusted AssertEventually helper '$relativePath' differs from the " +
+            'reviewed immutable source pinned by this semantic gate.')
+    }
+
+    $stream = [IO.MemoryStream]::new($bytes, $false)
+    $reader = [IO.StreamReader]::new(
+        $stream,
+        [Text.UTF8Encoding]::new($false, $true),
+        $true)
+    try {
+        $source = $reader.ReadToEnd()
+    }
+    finally {
+        $reader.Dispose()
+        $stream.Dispose()
+    }
+    return [pscustomobject]@{
+        Path = $trustedPath
+        Source = $source
+    }
+}
+
 function New-ReplicationControlVariant {
     <#
         .SYNOPSIS
@@ -4858,7 +4960,8 @@ function New-ReplicationControlVariant {
         [string]$Platform = 'catalyst',
         [Parameter(Mandatory = $true)][string]$ExpectedTestMethod,
         [Parameter(Mandatory = $true)][string]$ExpectedTestClass,
-        [AllowEmptyCollection()][string[]]$AdditionalSources = @()
+        [AllowEmptyCollection()][string[]]$AdditionalSources = @(),
+        [string]$RepositoryRoot = ''
     )
 
     if (-not $SourcePath.EndsWith(
@@ -4908,7 +5011,8 @@ function New-ReplicationControlVariant {
         [string[]]@($symbol))
     $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
         $BaselineSource,
-        $parseOptions)
+        $parseOptions,
+        $SourcePath)
     $syntaxErrors = @($tree.GetDiagnostics() | Where-Object {
             [string]$_.Severity -ceq 'Error'
         } | Select-Object -First 4)
@@ -4920,6 +5024,45 @@ function New-ReplicationControlVariant {
     $semanticTrees =
         [System.Collections.Generic.List[Microsoft.CodeAnalysis.SyntaxTree]]::new()
     $semanticTrees.Add($tree)
+    $trustedAssertEventuallyTree = $null
+    $trustedAssertEventuallySource = $null
+    $mentionsAssertEventually = @(
+        $root.DescendantNodes() |
+        Where-Object {
+            $_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+            (($_.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $_.Expression.Name.Identifier.ValueText -ceq
+                        'AssertEventually') -or
+                ($_.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Expression.Identifier.ValueText -ceq
+                        'AssertEventually'))
+        }).Count -ne 0
+    if ($mentionsAssertEventually -and
+        -not [string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+        $trustedAssertEventuallySource =
+            Get-ReplicationTrustedAssertEventuallySource `
+                -RepositoryRoot $RepositoryRoot `
+                -GeneratedSourcePath $SourcePath
+        $trustedAssertEventuallyTree =
+            [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+                $trustedAssertEventuallySource.Source,
+                $parseOptions,
+                $trustedAssertEventuallySource.Path)
+        $trustedHelperErrors = @(
+            $trustedAssertEventuallyTree.GetDiagnostics() |
+            Where-Object { [string]$_.Severity -ceq 'Error' } |
+            Select-Object -First 4)
+        if ($trustedHelperErrors.Count -ne 0) {
+            throw (
+                'The immutable trusted AssertEventually helper is not valid C# ' +
+                'under the control semantic compilation.')
+        }
+        $semanticTrees.Add($trustedAssertEventuallyTree)
+    }
+    $additionalSourceIndex = 0
     foreach ($additionalSource in @($AdditionalSources)) {
         if ([string]::IsNullOrWhiteSpace($additionalSource)) {
             throw 'An additional generated control source is empty.'
@@ -4927,8 +5070,10 @@ function New-ReplicationControlVariant {
         $additionalTree =
             [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
                 $additionalSource,
-                $parseOptions)
+                $parseOptions,
+                "generated-control-additional-$additionalSourceIndex.cs")
         $semanticTrees.Add($additionalTree)
+        $additionalSourceIndex++
     }
     foreach ($semanticTree in $semanticTrees) {
         $conditionalSymbols = @($semanticTree.GetRoot().DescendantTrivia(
@@ -4972,6 +5117,102 @@ function New-ReplicationControlVariant {
             [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
                 [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
     $semanticModel = $semanticCompilation.GetSemanticModel($tree)
+    $trustedAssertEventuallyMethod = $null
+    if ($null -ne $trustedAssertEventuallyTree) {
+        $trustedHelperModel =
+            $semanticCompilation.GetSemanticModel($trustedAssertEventuallyTree)
+        $trustedAssertEventuallyMethods = @(
+            $trustedAssertEventuallyTree.GetRoot().DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax] -and
+                $_.Identifier.ValueText -ceq 'AssertEventually'
+            } |
+            ForEach-Object { $trustedHelperModel.GetDeclaredSymbol($_) } |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $_.MethodKind -eq [Microsoft.CodeAnalysis.MethodKind]::Ordinary -and
+                $_.IsStatic -and
+                $_.DeclaredAccessibility -eq
+                    [Microsoft.CodeAnalysis.Accessibility]::Public -and
+                $_.Arity -eq 0 -and
+                $_.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.DeviceTests.AssertHelpers' -and
+                $_.ReturnType -is
+                    [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+                $_.ReturnType.Name -ceq 'Task' -and
+                $_.ReturnType.ContainingNamespace.ToString() -ceq
+                    'System.Threading.Tasks' -and
+                $_.ReturnType.ContainingAssembly.Name -cne
+                    $semanticCompilation.AssemblyName -and
+                @($_.ReturnType.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0 -and
+                $_.Parameters.Length -eq 4 -and
+                $_.Parameters[0].Name -ceq 'assertion' -and
+                $_.Parameters[0].Type -is
+                    [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+                $_.Parameters[0].Type.Name -ceq 'Func' -and
+                $_.Parameters[0].Type.ContainingNamespace.ToString() -ceq
+                    'System' -and
+                $_.Parameters[0].Type.ContainingAssembly.Name -cne
+                    $semanticCompilation.AssemblyName -and
+                @($_.Parameters[0].Type.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0 -and
+                $_.Parameters[0].Type.TypeArguments.Length -eq 1 -and
+                $_.Parameters[0].Type.TypeArguments[0].SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Boolean -and
+                @($_.Parameters[0].Type.TypeArguments[0].Locations |
+                    Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0 -and
+                $_.Parameters[0].RefKind -eq
+                    [Microsoft.CodeAnalysis.RefKind]::None -and
+                -not $_.Parameters[0].IsOptional -and
+                $_.Parameters[1].Name -ceq 'timeout' -and
+                $_.Parameters[1].Type.SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Int32 -and
+                $_.Parameters[1].RefKind -eq
+                    [Microsoft.CodeAnalysis.RefKind]::None -and
+                $_.Parameters[1].IsOptional -and
+                [int]$_.Parameters[1].ExplicitDefaultValue -eq 1000 -and
+                $_.Parameters[2].Name -ceq 'interval' -and
+                $_.Parameters[2].Type.SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Int32 -and
+                $_.Parameters[2].RefKind -eq
+                    [Microsoft.CodeAnalysis.RefKind]::None -and
+                $_.Parameters[2].IsOptional -and
+                [int]$_.Parameters[2].ExplicitDefaultValue -eq 100 -and
+                $_.Parameters[3].Name -ceq 'message' -and
+                $_.Parameters[3].Type.SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_String -and
+                $_.Parameters[3].RefKind -eq
+                    [Microsoft.CodeAnalysis.RefKind]::None -and
+                $_.Parameters[3].IsOptional -and
+                [string]$_.Parameters[3].ExplicitDefaultValue -ceq
+                    'Assertion timed out'
+            })
+        if ($trustedAssertEventuallyMethods.Count -ne 1) {
+            throw (
+                'The immutable trusted AssertEventually helper no longer exposes ' +
+                'the one exact Func<bool> baseline overload.')
+        }
+        $trustedAssertEventuallyMethod = $trustedAssertEventuallyMethods[0]
+        $trustedMethodLocations = @(
+            $trustedAssertEventuallyMethod.Locations |
+            Where-Object { $_.IsInSource })
+        if ($trustedMethodLocations.Count -ne 1 -or
+            $trustedMethodLocations[0].SourceTree -ne
+                $trustedAssertEventuallyTree -or
+            [IO.Path]::GetFullPath(
+                $trustedMethodLocations[0].SourceTree.FilePath) -cne
+                $trustedAssertEventuallySource.Path) {
+            throw (
+                'The trusted AssertEventually symbol is not bound to the exact ' +
+                'immutable pre-existing repository helper file.')
+        }
+    }
     foreach ($semanticTree in $semanticTrees) {
         $generatedRoot = $semanticTree.GetRoot()
         $fieldInitializers = @($generatedRoot.DescendantNodes() |
@@ -5231,6 +5472,153 @@ function New-ReplicationControlVariant {
             "implicit framework calls cannot be closed semantically; offending " +
             "syntax in '$SourcePath' line $implicitLine.")
     }
+    $validateEventuallyPredicateExpression = $null
+    $validateEventuallyPredicateExpression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+
+        $conversion = $semanticModel.GetConversion($Expression)
+        if ($conversion.IsUserDefined) {
+            throw (
+                'The trusted AssertEventually predicate may not execute a ' +
+                'user-defined conversion.')
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+            & $validateEventuallyPredicateExpression `
+                -Expression $Expression.Expression
+            return
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+            if ($Expression.RawKind -notin @(
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::TrueLiteralExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::FalseLiteralExpression)) {
+                throw (
+                    'The trusted AssertEventually predicate permits only boolean ' +
+                    'literals.')
+            }
+            return
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            $identifierSymbol =
+                $semanticModel.GetSymbolInfo($Expression).Symbol
+            if ($identifierSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                $identifierSymbol.RefKind -ne
+                    [Microsoft.CodeAnalysis.RefKind]::None) {
+                throw (
+                    "AssertEventually predicate identifier '$Expression' must bind " +
+                    'to a non-ref selected-test local, not ambient or generated state.')
+            }
+            $localDeclarations = @(
+                $identifierSymbol.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    @($_.Ancestors() | Where-Object {
+                            $_ -eq $testMethod[0]
+                        }).Count -eq 1
+                })
+            $localType = $identifierSymbol.Type
+            $localTypeIsTrusted =
+                $localType.SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Boolean -or
+                ($localType.TypeKind -ne
+                    [Microsoft.CodeAnalysis.TypeKind]::Error -and
+                    $localType.ContainingAssembly.Name -ceq
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    @($localType.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -eq 0)
+            if ($localDeclarations.Count -ne 1 -or
+                -not $localTypeIsTrusted) {
+                throw (
+                    "AssertEventually predicate local '$Expression' must be declared " +
+                    'once in the selected test with a closed trusted type.')
+            }
+            return
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $property = $semanticModel.GetSymbolInfo($Expression).Symbol
+            if ($property -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $property.IsStatic -or
+                $property.IsIndexer -or
+                $null -eq $property.GetMethod -or
+                $property.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                -not $property.ContainingType.ToString().StartsWith(
+                    'Microsoft.Maui.Controls.',
+                    [StringComparison]::Ordinal) -or
+                @($property.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0 -or
+                @($property.GetMethod.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                throw (
+                    "AssertEventually predicate property '$Expression' must bind " +
+                    'to one nonstatic trusted MAUI metadata getter.')
+            }
+            & $validateEventuallyPredicateExpression `
+                -Expression $Expression.Expression
+            return
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+            $Expression.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalNotExpression) {
+            $operator = $semanticModel.GetSymbolInfo($Expression).Symbol
+            if ($null -ne $operator -and
+                ($operator -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                    $operator.MethodKind -ne
+                        [Microsoft.CodeAnalysis.MethodKind]::BuiltinOperator)) {
+                throw (
+                    'The trusted AssertEventually predicate may not execute an ' +
+                    'overloaded unary operator.')
+            }
+            & $validateEventuallyPredicateExpression `
+                -Expression $Expression.Operand
+            return
+        }
+        if ($Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+            $Expression.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalOrExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NotEqualsExpression)) {
+            $operator = $semanticModel.GetSymbolInfo($Expression).Symbol
+            $convertedType =
+                $semanticModel.GetTypeInfo($Expression).ConvertedType
+            if (($null -ne $operator -and
+                    ($operator -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                        $operator.MethodKind -ne
+                            [Microsoft.CodeAnalysis.MethodKind]::BuiltinOperator)) -or
+                $null -eq $convertedType -or
+                $convertedType.SpecialType -ne
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Boolean) {
+                throw (
+                    'The trusted AssertEventually predicate may use only built-in ' +
+                    'boolean/reference operators.')
+            }
+            & $validateEventuallyPredicateExpression -Expression $Expression.Left
+            & $validateEventuallyPredicateExpression -Expression $Expression.Right
+            return
+        }
+        throw (
+            "AssertEventually predicate syntax '$Expression' is outside the closed " +
+            'pure-observation contract; only property/local reads and boolean ' +
+            'composition are accepted.')
+    }
+    $acceptedAssertEventuallyInvocations =
+        [Collections.Generic.HashSet[int]]::new()
     foreach ($awaitExpression in @($testMethod[0].Body.DescendantNodes() |
             Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]
@@ -5242,30 +5630,148 @@ function New-ReplicationControlVariant {
                 [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
             $awaitedExpression = $awaitedExpression.Expression
         }
-        $awaitedMethod = if ($awaitedExpression -is
+        $awaitedInfo = if ($awaitedExpression -is
             [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
-            $semanticModel.GetSymbolInfo($awaitedExpression).Symbol
+            $semanticModel.GetSymbolInfo($awaitedExpression)
         } else {
             $null
         }
-        if ($awaitedMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
-            $awaitedMethod.ContainingAssembly.Name -cne
-                'Microsoft.Maui.Controls.ReplicationControlContract' -or
-            $awaitedMethod.ReturnType -isnot
-                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
-            $awaitedMethod.ReturnType.Name -cne 'Task' -or
-            $awaitedMethod.ReturnType.ContainingNamespace.ToString() -cne
-                'System.Threading.Tasks' -or
+        $awaitedMethod = if ($null -ne $awaitedInfo) {
+            $awaitedInfo.Symbol
+        } else {
+            $null
+        }
+        $isTrustedAssertEventually =
+            $awaitedMethod -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $trustedAssertEventuallyMethod -and
+            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $awaitedMethod,
+                $trustedAssertEventuallyMethod)
+        if ($isTrustedAssertEventually) {
+            if ($awaitedExpression.ArgumentList.Arguments.Count -ne 1) {
+                throw (
+                    'The trusted AssertEventually invocation must pass exactly one ' +
+                    'pure predicate and use the immutable baseline timeout defaults.')
+            }
+            $predicate =
+                $awaitedExpression.ArgumentList.Arguments[0].Expression
+            if ($predicate -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedLambdaExpressionSyntax] -or
+                $predicate.AsyncKeyword.RawKind -ne 0 -or
+                $predicate.ParameterList.Parameters.Count -ne 0 -or
+                $predicate.Body -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] -or
+                $semanticModel.GetTypeInfo($predicate).ConvertedType -isnot
+                    [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+                $semanticModel.GetTypeInfo(
+                    $predicate).ConvertedType.Name -cne 'Func' -or
+                $semanticModel.GetTypeInfo(
+                    $predicate).ConvertedType.ContainingNamespace.ToString() -cne
+                    'System' -or
+                $semanticModel.GetTypeInfo(
+                    $predicate).ConvertedType.TypeArguments.Length -ne 1 -or
+                $semanticModel.GetTypeInfo(
+                    $predicate).ConvertedType.TypeArguments[0].SpecialType -ne
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Boolean) {
+                throw (
+                    'The trusted AssertEventually invocation requires one ' +
+                    'non-async, parameterless expression lambda of type Func<bool>.')
+            }
+            & $validateEventuallyPredicateExpression `
+                -Expression $predicate.Body
+            [void]$acceptedAssertEventuallyInvocations.Add(
+                $awaitedExpression.SpanStart)
+            continue
+        }
+        $isTrustedExternalAwait =
+            $awaitedMethod -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $awaitedMethod.ContainingAssembly.Name -ceq
+                'Microsoft.Maui.Controls.ReplicationControlContract' -and
+            $awaitedMethod.ReturnType -is
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+            $awaitedMethod.ReturnType.Name -ceq 'Task' -and
+            $awaitedMethod.ReturnType.ContainingNamespace.ToString() -ceq
+                'System.Threading.Tasks' -and
             @($awaitedMethod.Locations | Where-Object {
                     $_.IsInSource
-                }).Count -ne 0) {
+                }).Count -eq 0
+        if (-not $isTrustedExternalAwait) {
             $awaitLine = $tree.GetLineSpan(
                 $awaitExpression.Span).StartLinePosition.Line + 1
+            $awaitedSymbol = if ($awaitedMethod) {
+                $awaitedMethod
+            } elseif ($null -ne $awaitedInfo) {
+                @($awaitedInfo.CandidateSymbols | Select-Object -First 1)
+            } else {
+                $null
+            }
+            $awaitedSymbolText = if ($awaitedSymbol) {
+                [string]$awaitedSymbol
+            } else {
+                '<unresolved>'
+            }
+            if ($awaitedSymbolText.Length -gt 200) {
+                $awaitedSymbolText =
+                    $awaitedSymbolText.Substring(0, 200) + '...'
+            }
+            $awaitedSymbolLocation = @(
+                if ($awaitedSymbol) {
+                    $awaitedSymbol.Locations |
+                        Where-Object { $_.IsInSource } |
+                        Select-Object -First 1
+                })
+            if ($awaitedSymbolLocation.Count -eq 1) {
+                $awaitedSymbolFile =
+                    [string]$awaitedSymbolLocation[0].SourceTree.FilePath
+                if ([string]::IsNullOrWhiteSpace($awaitedSymbolFile)) {
+                    $awaitedSymbolFile = '<generated source with no path>'
+                }
+                $awaitedSymbolLine =
+                    $awaitedSymbolLocation[0].GetLineSpan(
+                    ).StartLinePosition.Line + 1
+            } else {
+                $awaitedAssembly = if ($awaitedSymbol -and
+                    $awaitedSymbol.ContainingAssembly) {
+                    $awaitedSymbol.ContainingAssembly.Name
+                } else {
+                    'unresolved'
+                }
+                $awaitedSymbolFile = "<metadata:$awaitedAssembly>"
+                $awaitedSymbolLine = 0
+            }
+            if ($awaitedSymbolFile.Length -gt 260) {
+                $awaitedSymbolFile =
+                    '...' + $awaitedSymbolFile.Substring(
+                        $awaitedSymbolFile.Length - 257)
+            }
             throw (
                 "Generated tests may await only a direct trusted external " +
-                "framework invocation; offending await in '$SourcePath' line " +
+                'framework invocation or the exact immutable ' +
+                'Microsoft.Maui.DeviceTests.AssertHelpers.AssertEventually(' +
+                'Func<bool>, int, int, string) helper. Awaited symbol ' +
+                "'$awaitedSymbolText' declared in '$awaitedSymbolFile' line " +
+                "$awaitedSymbolLine; offending await in '$SourcePath' line " +
                 "$awaitLine.")
         }
+    }
+    $isAcceptedAssertEventuallyNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        $invocation = if ($Node -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $Node
+        } else {
+            @($Node.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+        }
+        return (
+            $null -ne $invocation -and
+            $acceptedAssertEventuallyInvocations.Contains(
+                $invocation.SpanStart))
     }
     $aliasOrDeconstruction = @($testMethod[0].Body.DescendantNodes() |
         Where-Object {
@@ -5424,6 +5930,9 @@ function New-ReplicationControlVariant {
                 [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax]) {
                 return $false
             }
+            if (& $isAcceptedAssertEventuallyNode -Node $_) {
+                return $false
+            }
             $symbolInfo = $semanticModel.GetSymbolInfo($_)
             $symbols = @($symbolInfo.Symbol) + @($symbolInfo.CandidateSymbols)
             return @($symbols | Where-Object {
@@ -5496,6 +6005,9 @@ function New-ReplicationControlVariant {
                     $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitObjectCreationExpressionSyntax] -or
                     $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax])
             })) {
+        if (& $isAcceptedAssertEventuallyNode -Node $operationNode) {
+            continue
+        }
         $operationText = $operationNode.ToString()
         $operationInfo = $semanticModel.GetSymbolInfo($operationNode)
         $precheckedSymbol = if ($operationInfo.Symbol) {
@@ -5572,7 +6084,6 @@ function New-ReplicationControlVariant {
                 }
                 $allowedContractCall = $operationKey -cin @(
                     'CoreGraphics.CGRect.Intersect',
-                    'Microsoft.Maui.DeviceTests.AssertHelpers.AssertEventually',
                     'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.CreateHandlerAndAddToWindow',
                     'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.EnsureHandlerCreated',
                     'Microsoft.Maui.Hosting.HandlerBuilder.ConfigureMauiHandlers',
