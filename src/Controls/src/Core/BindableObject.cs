@@ -651,7 +651,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (specificity == SetterSpecificity.DynamicResourceSetter
-				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0)
+				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& originalSpecificity == SetterSpecificity.ManualValueSetter)
 			{
 				context.Values.Remove(SetterSpecificity.ManualValueSetter);
 				originalSpecificity = context.Values.GetSpecificity();
@@ -684,7 +685,8 @@ namespace Microsoft.Maui.Controls
 
 			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
 				&& clearDynamicResources
-				&& (specificity == SetterSpecificity.ManualValueSetter || (specificity.IsBinding && !currentlyApplying)))
+				&& (specificity == SetterSpecificity.ManualValueSetter
+					|| (!currentlyApplying && (specificity == SetterSpecificity.FromHandler || specificity.IsBinding))))
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Bindings.GetValue();

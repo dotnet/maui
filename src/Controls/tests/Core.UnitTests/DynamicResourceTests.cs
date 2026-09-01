@@ -677,6 +677,61 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ManualValueSurvivesResourceUpdateUnderActiveVisualState()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState { Name = "Normal" },
+						new VisualState
+						{
+							Name = "Active",
+							Setters = { new Setter { Property = Label.TextProperty, Value = "FromVisualState" } }
+						}
+					}
+				}
+			});
+
+			VisualStateManager.GoToState(label, "Active");
+			label.Text = "Manual";
+			label.Resources["textKey"] = "UpdatedResource";
+			VisualStateManager.GoToState(label, "Normal");
+
+			Assert.Equal("Manual", label.Text);
+		}
+
+		[Fact]
+		public void ManualValueSurvivesResourceUpdateUnderActiveTrigger()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			label.Triggers.Add(new Trigger(typeof(Label))
+			{
+				Property = Label.IsEnabledProperty,
+				Value = false,
+				Setters = { new Setter { Property = Label.TextProperty, Value = "FromTrigger" } }
+			});
+
+			label.IsEnabled = false;
+			label.Text = "Manual";
+			label.Resources["textKey"] = "UpdatedResource";
+			label.IsEnabled = true;
+
+			Assert.Equal("Manual", label.Text);
+		}
+
+		[Fact]
 		public void ClearValueFallsBackToLastDynamicResourceValueAfterManualOverride()
 		{
 			var label = new Label
