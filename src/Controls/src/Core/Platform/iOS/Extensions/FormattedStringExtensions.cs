@@ -21,7 +21,16 @@ namespace Microsoft.Maui.Controls.Platform
 	public static class FormattedStringExtensions
 	{
 		public static NSAttributedString? ToNSAttributedString(this Label label)
-			=> ToNSAttributedString(
+		{
+			// Resolve the *effective* flow direction so that inherited RTL is honored
+			// (e.g. FlowDirection="MatchParent" under an RTL parent), matching how the
+			// plain-text path uses EffectiveUserInterfaceLayoutDirection. ToFlowDirection()
+			// always resolves to a concrete LeftToRight/RightToLeft (never MatchParent), so
+			// an already-resolved LTR label does not fall back to NSWritingDirection.Natural.
+			var effectiveFlowDirection = ((IVisualElementController)label).EffectiveFlowDirection;
+			var flowDirection = effectiveFlowDirection.ToFlowDirection();
+
+			return ToNSAttributedString(
 				label.FormattedText,
 				label.RequireFontManager(),
 				label.LineHeight,
@@ -30,7 +39,9 @@ namespace Microsoft.Maui.Controls.Platform
 				label.TextColor,
 				label.TextTransform,
 				label.LineBreakMode,
-				label.CharacterSpacing);
+				label.CharacterSpacing,
+				flowDirection);
+		}
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -51,7 +62,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
 			LineBreakMode lineBreakMode,
-			double defaultCharacterSpacing = 0d)
+			double defaultCharacterSpacing = 0d,
+			FlowDirection defaultFlowDirection = FlowDirection.MatchParent)
 		{
 			if (formattedString == null)
 			{
@@ -68,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode, defaultCharacterSpacing, defaultFlowDirection));
 			}
 
 			return attributed;
@@ -93,7 +105,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor,
 			TextTransform defaultTextTransform,
 			LineBreakMode lineBreakMode,
-			double defaultCharacterSpacing = 0d)
+			double defaultCharacterSpacing = 0d,
+			FlowDirection defaultFlowDirection = FlowDirection.MatchParent)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -115,12 +128,28 @@ namespace Microsoft.Maui.Controls.Platform
 				style.LineHeightMultiple = new nfloat(lineHeight);
 			}
 
+			// Set the writing direction on the paragraph style so that RTL text is
+			// rendered correctly in the attributed string (plain-text labels use
+			// EffectiveUserInterfaceLayoutDirection at the view level, but
+			// NSAttributedString paragraphs need their own direction hint).
+			style.BaseWritingDirection = defaultFlowDirection switch
+			{
+				FlowDirection.RightToLeft => NSWritingDirection.RightToLeft,
+				FlowDirection.LeftToRight => NSWritingDirection.LeftToRight,
+				_ => NSWritingDirection.Natural
+			};
+
+			// Mirror Start/End alignment for RTL so that TextAlignment.Start means
+			// "leading edge" on all flow directions, matching the plain-text path
+			// (which calls ToPlatformHorizontal(EffectiveUserInterfaceLayoutDirection)).
+			var isRtl = defaultFlowDirection == FlowDirection.RightToLeft;
 			style.Alignment = defaultHorizontalAlignment switch
 			{
-				TextAlignment.Start => UITextAlignment.Left,
+				TextAlignment.Start => isRtl ? UITextAlignment.Right : UITextAlignment.Left,
 				TextAlignment.Center => UITextAlignment.Center,
-				TextAlignment.End => UITextAlignment.Right,
-				_ => UITextAlignment.Left
+				TextAlignment.End => isRtl ? UITextAlignment.Left : UITextAlignment.Right,
+				TextAlignment.Justify => UITextAlignment.Justified,
+				_ => isRtl ? UITextAlignment.Right : UITextAlignment.Left
 			};
 
 			style.LineBreakMode = lineBreakMode switch
@@ -147,8 +176,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformFont = font.IsDefault ? null : font.ToUIFont(fontManager);
 
 			// CharacterSpacing with validation
-			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty) 
-				? span.CharacterSpacing 
+			var characterSpacing = span.IsSet(Span.CharacterSpacingProperty)
+				? span.CharacterSpacing
 				: defaultCharacterSpacing;
 			characterSpacing = Math.Max(0, characterSpacing);
 
@@ -220,16 +249,29 @@ namespace Microsoft.Maui.Controls.Platform
 			nint NSMaxRange(NSRange range) => range.Location + range.Length;
 
 			using var textStorage = new NSTextStorage();
-			using var layoutManager = new NSLayoutManager();
+			// On iOS 16+, NSLayoutManager's default UsesFontLeading=true causes it to include
+			// font leading (extra line spacing) from the OS/2 typographic metrics that CoreText
+			// uses when a font has an OpenType STAT table. This makes the layout manager compute
+			// line heights that don't match what CoreText uses to draw the glyphs, resulting in
+			// span tap hitboxes being vertically offset from the rendered text.
+			// Disabling UsesFontLeading on iOS 16+ makes NSLayoutManager match CoreText's metrics
+			// so the calculated span rects align with the actual rendered text positions.
+			// See: https://github.com/dotnet/maui/issues/36505
+			using var layoutManager = new NSLayoutManager
+			{
+				UsesFontLeading = !OperatingSystem.IsIOSVersionAtLeast(16)
+			};
 			using var textContainer = new NSTextContainer { LineFragmentPadding = 0 };
 
 			textStorage.AddLayoutManager(layoutManager);
 			layoutManager.AddTextContainer(textContainer);
 
-			// On iOS 26+ with NavigationPage, UILabel.Bounds may still be {0,0,0,0}
-			// during ArrangeOverride. Use finalSize (MAUI's computed size) as fallback.
-			var containerWidth = control.Bounds.Width > 0 ? control.Bounds.Width : (nfloat)finalSize.Width;
-			var containerHeight = control.Bounds.Height > 0 ? control.Bounds.Height : (nfloat)finalSize.Height;
+			// Always prefer finalSize from MAUI's layout system — it is the authoritative
+			// size for this arrange pass. On Mac Catalyst (and iOS 26+ with NavigationPage),
+			// control.Bounds may be stale or {0,0,0,0} during ArrangeOverride because UIKit
+			// frame updates can lag behind MAUI's layout.
+			var containerWidth = (nfloat)finalSize.Width > 0 ? (nfloat)finalSize.Width : control.Bounds.Width;
+			var containerHeight = (nfloat)finalSize.Height > 0 ? (nfloat)finalSize.Height : control.Bounds.Height;
 			textContainer.Size = new(containerWidth, control.Lines == 0 ? nfloat.MaxValue : containerHeight);
 
 			textStorage.SetString(attributedText);

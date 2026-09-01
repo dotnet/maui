@@ -78,6 +78,3 @@ variables:
     - group: DotNet-HelixApi-Access
     - group: SDL_Settings
     - group: AzureDevOps-Artifact-Feeds-Pats
-    - ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
-
-

@@ -121,22 +121,24 @@ public partial class TestPage
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 		{
-			global::System.Action<global::Test.TestPage, string>? setter = static (source, value) =>
+			global::System.Action<global::Test.TestPage, string?>? setter = static (source, value) =>
 			{
-				if (source.Foo.Bar is {} p0)
+				if (source.Foo is {} p0
+				&& p0.Bar is {} p1)
 				{
-					p0.Title = value;
+					p1.Title = value!;
+					p0.Bar = p1;
 				}
 			};
 
-			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-				getter: source => (source.Foo.Bar.Title, true),
+			return new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string?>(
+				getter: source => (source.Foo?.Bar.Title, true),
 				setter,
 				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
 				{
 					new(static source => source, "Foo"),
 					new(static source => source.Foo, "Bar"),
-					new(static source => source.Foo.Bar, "Title"),
+					new(static source => source.Foo?.Bar, "Title"),
 				})
 				{
 					Mode = extension.Mode,
@@ -421,13 +423,9 @@ public partial class TestPage
 		{
 			global::System.Action<global::Test.TestPage, string?>? setter = static (source, value) =>
 			{
-				if (value is null)
-				{
-					return;
-				}
 				if (source.Product is {} p0)
 				{
-					p0.Name = value;
+					p0.Name = value!;
 				}
 			};
 			
@@ -494,7 +492,7 @@ public class Product
 }
 """;
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		// Check that no CS8603 errors are present - even with non-nullable target property,
 		// the generated getter should handle the nullable path correctly
 		Assert.False(result.Diagnostics.Any(d => d.Id == "CS8603"));
@@ -547,12 +545,12 @@ public class Product
 }
 """;
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		// Verify no errors are present - value types through nullable paths don't need null checks
 		// because they use ?? default fallback in the getter and keep the non-nullable type
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// The setter for value types should NOT have HasValue check because PropertyType stays as double, not double?
 		// The conditional access is handled by pattern matching (source.Product is {} p0)
 		Assert.Contains("if (source.Product is {} p0)", generated, StringComparison.Ordinal);
@@ -817,16 +815,16 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter uses pattern matching for conditional access
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Should NOT have HasValue check since Count is int, not int?
 		Assert.DoesNotContain("HasValue", generated, StringComparison.Ordinal);
-		
+
 		// Getter should have ?? default for value type through nullable path
 		Assert.Contains("getter: source => (source.Container?.Count ?? default, true)", generated, StringComparison.Ordinal);
 	}
@@ -834,8 +832,11 @@ public class Container
 	[Fact]
 	public void NonNullableReferenceTypeAtEndOfConditionalAccessPath()
 	{
-		// Test non-nullable reference type property at the end of a binding path with conditional access
-		// The setter should have an early return for null since the target property doesn't accept null
+		// Test non-nullable reference type property at the end of a binding path with conditional access.
+		// The setter must still assign null: NRT annotations are not enforced at runtime, and both the
+		// runtime (BindingExpression) and XamlC (SetPropertiesVisitor.CompiledBindingGetSetter) binding
+		// paths write null straight through to the property. Dropping the write here would silently
+		// break two-way bindings such as clearing a selection.
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -871,16 +872,18 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
-		// Verify setter has early return for null since Label doesn't accept null
-		Assert.Contains("if (value is null)", generated, StringComparison.Ordinal);
-		Assert.Contains("return;", generated, StringComparison.Ordinal);
-		
-		// Verify setter uses pattern matching for conditional access
+
+		// Verify the setter does NOT drop the write when value is null
+		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(earlyReturnPattern, generated);
+
+		// Verify setter uses pattern matching for conditional access, and assigns with the
+		// null-forgiving operator so the generated code stays free of CS8601 warnings
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
+		Assert.Contains("p0.Label = value!;", generated, StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -923,17 +926,17 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter does NOT have early return since Description accepts null
 		// The setter should just use pattern matching without null check on value
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Check the setter signature accepts nullable
 		Assert.Contains("global::System.Action<global::Test.TestPage, string?>", generated, StringComparison.Ordinal);
-		
+
 		// Verify the pattern "if (value is null)" followed by "return;" does NOT appear
 		// This would indicate an early return that we don't want for nullable target properties
 		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
@@ -980,21 +983,146 @@ public class Container
 """;
 
 		var (result, generated) = RunGenerator(xaml, code);
-		
+
 		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
 		Assert.NotNull(generated);
-		
+
 		// Verify setter uses pattern matching for conditional access
 		Assert.Contains("if (source.Container is {} p0)", generated, StringComparison.Ordinal);
-		
+
 		// Check the setter signature accepts nullable value type
 		Assert.Contains("global::System.Action<global::Test.TestPage, int?>", generated, StringComparison.Ordinal);
-		
+
 		// Verify no early return patterns for nullable value types
 		// Should NOT have "if (!value.HasValue) { return;" or "if (value is null) { return;"
 		var hasValueEarlyReturnPattern = @"if\s*\(\s*!\s*value\s*\.\s*HasValue\s*\)\s*\{\s*return\s*;";
 		var isNullEarlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
 		Assert.DoesNotMatch(hasValueEarlyReturnPattern, generated);
 		Assert.DoesNotMatch(isNullEarlyReturnPattern, generated);
+	}
+
+	[Fact]
+	public void NullTolerantThroughNonNullableReferenceIntermediates()
+	{
+		// Regression test for https://github.com/dotnet/maui/issues/36313
+		// A binding path through *non-nullable-declared* reference-type intermediates must still
+		// generate null-conditional access, because reference types can be null at runtime
+		// regardless of their nullable annotation. Runtime and XamlC bindings tolerated this;
+		// the source generator must too (otherwise it throws NullReferenceException at runtime).
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Label Text="{Binding A.B.C.Text}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public A A { get; set; } = new A();
+}
+
+public class A
+{
+	public B B { get; set; } = new B();
+}
+
+public class B
+{
+	public C C { get; set; } = new C();
+}
+
+public class C
+{
+	public string Text { get; set; } = "";
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+
+		// The getter must use null-conditional access for the intermediate reference-type members
+		// so that a null A, B, or C at runtime yields null instead of a NullReferenceException.
+		Assert.Contains("getter: source => (source.A?.B?.C?.Text, true)", generated, StringComparison.Ordinal);
+
+		// The non-null-conditional form would NRE at runtime and must not be emitted.
+		Assert.DoesNotContain("source.A.B.C.Text", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public void TwoWayBindingThroughIntermediatesStillWritesNull()
+	{
+		// Making intermediate members null-tolerant widens TProperty to a nullable type, which must not
+		// cause the setter to drop null writes. Runtime and XamlC bindings both assign null to a
+		// non-nullable-declared property, so SourceGen has to as well - otherwise clearing a value
+		// through a two-way binding (e.g. deselecting an item) silently does nothing.
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:test="clr-namespace:Test"
+	x:Class="Test.TestPage"
+	x:DataType="test:TestPage">
+	<Entry Text="{Binding Model.Inner.Name, Mode=TwoWay}"/>
+</ContentPage>
+""";
+
+		var code =
+"""
+#nullable enable
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public Model Model { get; set; } = new Model();
+}
+
+public class Model
+{
+	public Inner Inner { get; set; } = new Inner();
+}
+
+public class Inner
+{
+	public string Name { get; set; } = "";
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code);
+
+		Assert.False(result.Diagnostics.Any(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error));
+		Assert.NotNull(generated);
+
+		// The setter must not bail out when value is null.
+		var earlyReturnPattern = @"if\s*\(\s*value\s+is\s+null\s*\)\s*\{\s*return\s*;";
+		Assert.DoesNotMatch(earlyReturnPattern, generated);
+
+		// It must guard the intermediates (so a null Model/Inner doesn't NRE) and then assign.
+		Assert.Contains("if (source.Model is {} p0", generated, StringComparison.Ordinal);
+		Assert.Contains("p1.Name = value!;", generated, StringComparison.Ordinal);
 	}
 }
