@@ -246,7 +246,6 @@ function Test-ReplicationRemoteUrlText {
 
     return $false
 }
-
 function Test-ReplicationBase64Url {
     [CmdletBinding()]
     param([AllowEmptyString()][string]$Text)
@@ -3943,14 +3942,44 @@ function Get-ReplicationControlSemanticReferences {
     $contractSource = @'
 namespace Microsoft.Maui.Controls
 {
-    public class BindableObject { }
-    public class Element : BindableObject { }
-    public class VisualElement : Element { }
+    public class BindableProperty { }
+    public class ResourceDictionary
+    {
+        public object this[string key]
+        {
+            get => null;
+            set { }
+        }
+    }
+    public class Brush { }
+    public class SolidColorBrush : Brush
+    {
+        public SolidColorBrush(global::Microsoft.Maui.Graphics.Color color) { }
+    }
+    public class BindableObject
+    {
+        public void SetDynamicResource(params object[] arguments) { }
+    }
+    public class Element : BindableObject
+    {
+        public global::Microsoft.Maui.IElementHandler Handler { get; set; }
+        public ResourceDictionary Resources { get; } = new ResourceDictionary();
+    }
+    public class VisualElement : Element
+    {
+        public object Background { get; set; }
+        public static BindableProperty BackgroundProperty { get; }
+    }
     public class View : VisualElement { }
-    public class Page : VisualElement { }
+    public class Page : VisualElement
+    {
+        public event System.EventHandler NavigatedTo;
+    }
     public class ContentPage : Page { }
     public class Label : View
     {
+        public static BindableProperty BackgroundColorProperty { get; }
+        public static BindableProperty TextColorProperty { get; }
         public bool IsVisible { get; set; }
         public int MaxLines { get; set; }
         public string Text { get; set; }
@@ -3958,6 +3987,9 @@ namespace Microsoft.Maui.Controls
 
     public class NavigationPage : Page
     {
+        public NavigationPage(Page root) { }
+        public INavigation Navigation { get; }
+        public Page CurrentPage { get; }
         public static void SetTitleView(params object[] arguments) { }
         public static void SetBackButtonTitle(params object[] arguments) { }
         public static void SetHasBackButton(params object[] arguments) { }
@@ -4041,6 +4073,179 @@ namespace Microsoft.Maui.Controls
         public static void SetLayoutBounds(params object[] arguments) { }
         public static void SetLayoutFlags(params object[] arguments) { }
     }
+    public interface INavigation
+    {
+        System.Threading.Tasks.Task PushAsync(Page page);
+        System.Threading.Tasks.Task<Page> PopAsync();
+    }
+    public class Layout : View { }
+    public class Toolbar : View { }
+    public class Window : Element
+    {
+        public Window(Page page) { }
+    }
+}
+
+namespace Microsoft.Maui
+{
+    public sealed class CategoryAttribute : System.Attribute
+    {
+        public CategoryAttribute(string value) { }
+    }
+
+    public interface IElementHandler
+    {
+        object PlatformView { get; }
+        IMauiContext MauiContext { get; }
+    }
+
+    public interface IMauiContext { }
+}
+
+namespace Microsoft.Maui.Graphics
+{
+    public struct Color { }
+    public static class Colors
+    {
+        public static Color Red { get; }
+        public static Color Transparent { get; }
+    }
+}
+
+namespace Microsoft.Maui.Controls.Handlers
+{
+    public class LabelHandler { }
+    public class LayoutHandler { }
+    public class PageHandler { }
+    public class ToolbarHandler { }
+}
+
+namespace Microsoft.Maui.Controls.Handlers.Compatibility
+{
+    public class NavigationRenderer { }
+}
+
+namespace Microsoft.Maui.DeviceTests.Stubs
+{
+    public class WindowHandlerStub : global::Microsoft.Maui.IElementHandler
+    {
+        public object PlatformView { get; }
+        public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
+}
+
+namespace Microsoft.Maui.Hosting
+{
+    public class HandlerCollection
+    {
+        public void AddHandler<TView, THandler>() { }
+    }
+    public class HandlerBuilder
+    {
+        public void ConfigureMauiHandlers(
+            System.Action<HandlerCollection> configure) { }
+    }
+}
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public class ControlsHandlerTestBase
+    {
+        protected void EnsureHandlerCreated(
+            System.Action<global::Microsoft.Maui.Hosting.HandlerBuilder> configure) { }
+        protected System.Threading.Tasks.Task CreateHandlerAndAddToWindow<T>(
+            global::Microsoft.Maui.Controls.Window window,
+            System.Func<object, System.Threading.Tasks.Task> action)
+            where T : class, global::Microsoft.Maui.IElementHandler
+            => System.Threading.Tasks.Task.CompletedTask;
+    }
+    public static class AssertHelpers
+    {
+        public static System.Threading.Tasks.Task AssertEventually(
+            System.Func<bool> condition)
+            => System.Threading.Tasks.Task.CompletedTask;
+    }
+}
+
+namespace CoreGraphics
+{
+    public struct CGSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+    public struct CGRect
+    {
+        public static CGRect Empty { get; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public static CGRect Intersect(CGRect first, CGRect second) => default;
+    }
+}
+
+namespace UIKit
+{
+    public class UIView
+    {
+        public double Alpha { get; set; }
+        public CoreGraphics.CGRect Bounds { get; set; }
+        public bool Hidden { get; set; }
+        public CoreGraphics.CGSize IntrinsicContentSize { get; }
+        public UIView[] Subviews { get; }
+        public UIView Window { get; }
+        public CoreGraphics.CGRect ConvertRectToView(
+            CoreGraphics.CGRect rect,
+            UIView view) => default;
+    }
+    public class UILabel : UIView
+    {
+        public string Text { get; set; }
+    }
+    public class UIButton : UIView { }
+    public class UIBarButtonItem
+    {
+        public string Title { get; set; }
+    }
+    public class UINavigationItem
+    {
+        public UIBarButtonItem BackBarButtonItem { get; }
+    }
+    public class UIViewController
+    {
+        public UINavigationItem NavigationItem { get; }
+    }
+    public class UINavigationBar : UIView
+    {
+        public void LayoutIfNeeded() { }
+    }
+    public class UINavigationController
+    {
+        public UINavigationBar NavigationBar { get; }
+        public UIViewController[] ViewControllers { get; }
+    }
+}
+
+namespace Microsoft.Maui.Platform
+{
+    public static class NavigationViewExtensions
+    {
+        public static UIKit.UIButton GetBackButton(
+            this UIKit.UINavigationBar navigationBar) => default;
+        public static T FindDescendantView<T>(this UIKit.UIView view)
+            where T : UIKit.UIView => default;
+        public static T FindDescendantView<T>(
+            this UIKit.UIView view,
+            System.Func<UIKit.UIView, bool> predicate)
+            where T : UIKit.UIView => default;
+    }
+    public static class ElementExtensions
+    {
+        public static UIKit.UIView ToPlatform(
+            this global::Microsoft.Maui.Controls.Element element) => default;
+        public static UIKit.UIView ToPlatform(
+            this global::Microsoft.Maui.Controls.Element element,
+            global::Microsoft.Maui.IMauiContext context) => default;
+    }
 }
 
 namespace Xunit
@@ -4076,9 +4281,13 @@ namespace Xunit
 namespace NUnit.Framework
 {
     public sealed class TestAttribute : System.Attribute { }
-    public class Constraint { }
+    public class Constraint
+    {
+        public ConstraintExpression And => new ConstraintExpression();
+    }
     public class ConstraintExpression
     {
+        public ConstraintExpression And => this;
         public Constraint Null => new Constraint();
         public Constraint True => new Constraint();
         public Constraint False => new Constraint();
@@ -4348,7 +4557,9 @@ function Confirm-ReplicationTrustedOracleExpression {
             'dispatch could execute generated overrides.')
     }
     if (@($nodes | Where-Object {
-                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                    $_.Parent -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax]) -or
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.QueryExpressionSyntax] -or
                 ($_.RawKind -in @(
@@ -4450,6 +4661,16 @@ function Confirm-ReplicationTrustedOracleExpression {
                 'Trusted assertion member reads must resolve to external metadata ' +
                 'properties or fields, never generated getters or events.')
         }
+        if ($memberSymbol -is [Microsoft.CodeAnalysis.INamespaceSymbol] -or
+            $memberSymbol -is [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+            continue
+        }
+        if ($null -eq $memberSymbol.ContainingType -or
+            $null -eq $memberSymbol.ContainingAssembly) {
+            throw (
+                'Trusted assertion member reads must have a resolved containing ' +
+                'type and assembly.')
+        }
         $memberType = $memberSymbol.ContainingType.ToString()
         $memberAssembly = $memberSymbol.ContainingAssembly.Name
         $allowedMemberRead = (
@@ -4457,6 +4678,9 @@ function Confirm-ReplicationTrustedOracleExpression {
                 'Microsoft.Maui.Controls.ReplicationControlContract' -and
                 ($memberType.StartsWith(
                         'Microsoft.Maui.Controls.',
+                        [StringComparison]::Ordinal) -or
+                    $memberType.StartsWith(
+                        'Microsoft.Maui.Graphics.',
                         [StringComparison]::Ordinal) -or
                     $memberType.StartsWith(
                         'NUnit.Framework.',
@@ -4748,6 +4972,53 @@ function New-ReplicationControlVariant {
             [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
                 [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
     $semanticModel = $semanticCompilation.GetSemanticModel($tree)
+    foreach ($semanticTree in $semanticTrees) {
+        $generatedRoot = $semanticTree.GetRoot()
+        $fieldInitializers = @($generatedRoot.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseFieldDeclarationSyntax]
+            } |
+            ForEach-Object {
+                $_.Declaration.Variables
+            } |
+            Where-Object { $null -ne $_.Initializer })
+        if ($fieldInitializers.Count -ne 0) {
+            $fieldLine = $semanticTree.GetLineSpan(
+                $fieldInitializers[0].Span).StartLinePosition.Line + 1
+            throw (
+                "Generated test source may not execute instance/static field " +
+                "initializers; offending field in '$SourcePath' line $fieldLine.")
+        }
+        $propertyInitializers = @($generatedRoot.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax] -and
+                $null -ne $_.Initializer
+            })
+        if ($propertyInitializers.Count -ne 0) {
+            $propertyLine = $semanticTree.GetLineSpan(
+                $propertyInitializers[0].Span).StartLinePosition.Line + 1
+            throw (
+                "Generated test source may not execute property initializers; " +
+                "offending property in '$SourcePath' line $propertyLine.")
+        }
+        $constructors = @($generatedRoot.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ConstructorDeclarationSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.DestructorDeclarationSyntax] -or
+                ((($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax]) -or
+                    ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.StructDeclarationSyntax]) -or
+                    ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.RecordDeclarationSyntax])) -and
+                    $null -ne $_.ParameterList)
+            })
+        if ($constructors.Count -ne 0) {
+            $constructorLine = $semanticTree.GetLineSpan(
+                $constructors[0].Span).StartLinePosition.Line + 1
+            throw (
+                "Generated test source may not declare constructors; offending " +
+                "constructor, primary constructor, or destructor in '$SourcePath' " +
+                "line $constructorLine.")
+        }
+    }
 
     $declarators = @($root.DescendantNodes() | Where-Object {
             $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
@@ -4782,13 +5053,17 @@ function New-ReplicationControlVariant {
             'condition of one if statement.')
     }
     $gate = $references[0].Parent
-    if ($gate.Else -or
-        $gate.Statement -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+    if ($gate.Statement -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
         $gate.Statement.Statements.Count -ne 1 -or
-        $gate.Statement.Statements[0] -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+        $gate.Statement.Statements[0] -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+        ($gate.Else -and
+            ($gate.Else.Statement -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+                $gate.Else.Statement.Statements.Count -ne 1 -or
+                $gate.Else.Statement.Statements[0] -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]))) {
         throw (
-            'The applyReportedTrigger block must contain exactly one direct ' +
-            'trigger expression and no else branch.')
+            'Each applyReportedTrigger branch must contain exactly one direct ' +
+            'framework operation; the else branch is optional.')
     }
     $testMethod = @($gate.Ancestors() | Where-Object {
             $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax]
@@ -4830,13 +5105,167 @@ function New-ReplicationControlVariant {
             "The trusted control gate must be in verifier-selected class " +
             "'$ExpectedTestClass', not another class with the same method name.")
     }
-    $selectedAttributes = @(
-        $testMethod[0].AttributeLists.Attributes)
-    if ($testMethod[0].ParameterList.Parameters.Count -ne 0 -or
-        $selectedAttributes.Count -ne 1) {
+    $selectedType = $selectedMethodSymbol.ContainingType
+    if ($selectedType.AllInterfaces.Length -ne 0) {
         throw (
-            'A trusted negative-control test must be parameterless and have ' +
-            'exactly one trusted test attribute; data sources are not accepted.')
+            'The selected generated test class may not implement lifecycle or ' +
+            'other interfaces whose callbacks execute outside the selected method.')
+    }
+    $baseType = $selectedType.BaseType
+    while ($null -ne $baseType -and
+        $baseType.SpecialType -ne [Microsoft.CodeAnalysis.SpecialType]::System_Object) {
+        if ($baseType.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $baseType.ToString() -cne
+                'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase') {
+            throw (
+                "The selected generated test class may inherit only trusted " +
+                "external control-contract bases, not '$baseType'.")
+        }
+        $baseType = $baseType.BaseType
+    }
+    $sourceOverrides = @($selectedType.DeclaringSyntaxReferences |
+        ForEach-Object {
+            $_.GetSyntax([Threading.CancellationToken]::None)
+        } |
+        ForEach-Object {
+            $_.Members
+        } |
+        Where-Object {
+            $null -ne $_.PSObject.Properties['Modifiers'] -and
+            @($_.Modifiers | Where-Object {
+                    $_.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::OverrideKeyword
+                }).Count -ne 0
+        })
+    if ($sourceOverrides.Count -ne 0) {
+        throw (
+            'The selected generated test class may not declare overrides whose ' +
+            'framework lifecycle callbacks execute outside the selected method.')
+    }
+    $selectedAttributes = @($testMethod[0].AttributeLists.Attributes)
+    $containingClass = @($testMethod[0].Ancestors() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseTypeDeclarationSyntax]
+        } | Select-Object -First 1)
+    $classCategoryAttributes = @(if ($containingClass.Count -eq 1) {
+        $containingClass[0].AttributeLists | ForEach-Object {
+                $_.Attributes
+            } | Where-Object {
+                $symbol = $semanticModel.GetSymbolInfo($_).Symbol
+                $symbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                    $symbol.ContainingType.Name -ceq 'CategoryAttribute'
+            }
+    })
+    if ($classCategoryAttributes.Count -ne 0) {
+        throw (
+            'The issue Category must be declared once on the selected test method, ' +
+            'not on its class, so generated lifecycle members cannot inherit it.')
+    }
+    $selectedAttributeNames = @($selectedAttributes | ForEach-Object {
+            $name = $_.Name.ToString().Split('.')[-1]
+            if ($name.EndsWith('Attribute', [StringComparison]::Ordinal)) {
+                $name.Substring(0, $name.Length - 'Attribute'.Length)
+            } else {
+                $name
+            }
+        })
+    $selectedTestAttributeCount = @($selectedAttributeNames | Where-Object {
+            $_ -cin @('Fact', 'Theory', 'Test')
+        }).Count
+    $unsupportedMethodAttributes = @($selectedAttributeNames | Where-Object {
+            $_ -cnotin @('Fact', 'Theory', 'Test', 'Category')
+        })
+    if ($testMethod[0].ParameterList.Parameters.Count -ne 0 -or
+        $selectedTestAttributeCount -ne 1 -or
+        $unsupportedMethodAttributes.Count -ne 0 -or
+        @($selectedAttributeNames | Where-Object {
+                $_ -ceq 'Category'
+            }).Count -gt 1) {
+        throw (
+            'A trusted negative-control test must be parameterless, have exactly ' +
+            'one trusted test attribute, and may additionally have one Category; ' +
+            'data-source or other method attributes are not accepted.')
+    }
+    $unsupportedAttributes = [System.Collections.Generic.List[object]]::new()
+    foreach ($semanticTree in $semanticTrees) {
+        foreach ($attribute in @($semanticTree.GetRoot().DescendantNodes() |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AttributeSyntax]
+                })) {
+            $isSelectedMethodAttribute =
+                $semanticTree -eq $tree -and
+                @($selectedAttributes | Where-Object {
+                        $_.SpanStart -eq $attribute.SpanStart -and
+                        $_.Span.Length -eq $attribute.Span.Length
+                    }).Count -eq 1
+            if (-not $isSelectedMethodAttribute) {
+                $unsupportedAttributes.Add($attribute)
+            }
+        }
+    }
+    if ($unsupportedAttributes.Count -ne 0) {
+        $attribute = $unsupportedAttributes[0]
+        $attributeTree = $attribute.GetLocation().SourceTree
+        $attributeLine = $attributeTree.GetLineSpan(
+            $attribute.Span).StartLinePosition.Line + 1
+        throw (
+            "Generated sources may not apply attributes outside the selected " +
+            "test method; offending attribute '$attribute' in " +
+            "'$($attributeTree.FilePath)' line $attributeLine.")
+    }
+    $implicitExecution = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachVariableStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.UsingStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.QueryExpressionSyntax] -or
+            ($_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
+                $_.UsingKeyword.RawKind -ne 0)
+        })
+    if ($implicitExecution.Count -ne 0) {
+        $implicitLine = $tree.GetLineSpan(
+            $implicitExecution[0].Span).StartLinePosition.Line + 1
+        throw (
+            "Generated tests may not use foreach, using, or query syntax whose " +
+            "implicit framework calls cannot be closed semantically; offending " +
+            "syntax in '$SourcePath' line $implicitLine.")
+    }
+    foreach ($awaitExpression in @($testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]
+            })) {
+        $awaitedExpression = $awaitExpression.Expression
+        while ($awaitedExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax] -or
+            $awaitedExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+            $awaitedExpression = $awaitedExpression.Expression
+        }
+        $awaitedMethod = if ($awaitedExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($awaitedExpression).Symbol
+        } else {
+            $null
+        }
+        if ($awaitedMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $awaitedMethod.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $awaitedMethod.ReturnType -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $awaitedMethod.ReturnType.Name -cne 'Task' -or
+            $awaitedMethod.ReturnType.ContainingNamespace.ToString() -cne
+                'System.Threading.Tasks' -or
+            @($awaitedMethod.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            $awaitLine = $tree.GetLineSpan(
+                $awaitExpression.Span).StartLinePosition.Line + 1
+            throw (
+                "Generated tests may await only a direct trusted external " +
+                "framework invocation; offending await in '$SourcePath' line " +
+                "$awaitLine.")
+        }
     }
     $aliasOrDeconstruction = @($testMethod[0].Body.DescendantNodes() |
         Where-Object {
@@ -4856,27 +5285,143 @@ function New-ReplicationControlVariant {
             'The selected test method may not use ref aliases, ref/out/in, or ' +
             'deconstruction; trusted dataflow must remain directly traceable.')
     }
-    $sourceCalls = @($testMethod[0].Body.DescendantNodes() | Where-Object {
+    if (@($testMethod[0].Body.DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThisExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseExpressionSyntax]
+            }).Count -ne 0) {
+        throw (
+            'The selected test method may not use this or base because virtual ' +
+            'dispatch could execute generated overrides.')
+    }
+    $isTrustedClosedType = {
+        param(
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.ITypeSymbol]$Type
+        )
+        if ($null -eq $Type -or
+            $Type.TypeKind -eq [Microsoft.CodeAnalysis.TypeKind]::Error -or
+            $Type.TypeKind -eq [Microsoft.CodeAnalysis.TypeKind]::Pointer -or
+            @($Type.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+        if ($Type -is [Microsoft.CodeAnalysis.IArrayTypeSymbol]) {
+            return & $isTrustedClosedType -Type $Type.ElementType
+        }
+        if ($Type -is [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+            foreach ($typeArgument in $Type.TypeArguments) {
+                if (-not (& $isTrustedClosedType -Type $typeArgument)) {
+                    return $false
+                }
+            }
+        }
+        return $true
+    }
+    $sourceTypedLocals = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
             if ($_ -isnot
-                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]) {
                 return $false
             }
-            $calledSymbol = $semanticModel.GetSymbolInfo($_).Symbol
+            $local = $semanticModel.GetDeclaredSymbol($_)
             return (
-                $calledSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
-                @($calledSymbol.Locations | Where-Object {
-                        $_.IsInSource
-                    }).Count -ne 0)
+                $local -is [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                -not (& $isTrustedClosedType -Type $local.Type))
         })
-    if ($sourceCalls.Count -ne 0) {
+    if ($sourceTypedLocals.Count -ne 0) {
         throw (
-            'The selected test method may not invoke generated source helpers; ' +
-            'trusted control setup and oracle dataflow use external metadata only.')
+            'The selected test method may not instantiate or carry generated ' +
+            'runtime types through its control or oracle.')
+    }
+    $typeSyntaxCandidates = @($testMethod[0].Body.DescendantNodes() |
+        ForEach-Object {
+            if ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclarationSyntax]) {
+                $_.Type
+            } elseif ($_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+                $_.Type
+            } elseif ($_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.DefaultExpressionSyntax]) {
+                $_.Type
+            } elseif ($_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+                $_.Type
+            } elseif ($_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.DeclarationExpressionSyntax]) {
+                $_.Type
+            }
+        } | Where-Object { $null -ne $_ } | Select-Object -Unique)
+    $untrustedTypeSyntax = @($typeSyntaxCandidates | Where-Object {
+            if ($_.ToString() -cin @('nfloat', 'nint', 'nuint')) {
+                return $false
+            }
+            $type = $semanticModel.GetTypeInfo($_).Type
+            if ($null -eq $type) {
+                $candidateType = $semanticModel.GetSymbolInfo($_).Symbol
+                if ($candidateType -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+                    $type = $candidateType
+                }
+            }
+            return (
+                -not (& $isTrustedClosedType -Type $type))
+        })
+    if ($untrustedTypeSyntax.Count -ne 0) {
+        $typeLine = $tree.GetLineSpan(
+            $untrustedTypeSyntax[0].Span).StartLinePosition.Line + 1
+        throw (
+            "Type '$($untrustedTypeSyntax[0])' is generated or unresolved in " +
+            "'$SourcePath' line $typeLine; control and oracle dataflow require " +
+            'trusted external types.')
+    }
+    $ambientSymbols = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]) {
+                return $false
+            }
+            $symbol = $semanticModel.GetSymbolInfo($_).Symbol
+            if ($symbol -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                $symbol -isnot [Microsoft.CodeAnalysis.IFieldSymbol] -and
+                $symbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol]) {
+                return $false
+            }
+            $typeName = $symbol.ContainingType.ToString()
+            return (
+                $typeName -cin @(
+                    'System.DateTime',
+                    'System.DateTimeOffset',
+                    'System.Environment',
+                    'System.Random',
+                    'System.Guid',
+                    'System.Diagnostics.Stopwatch'
+                ))
+        })
+    if ($ambientSymbols.Count -ne 0) {
+        throw (
+            'A trusted negative control may not use ambient clock, random, ' +
+            'environment, or process-time state.')
+    }
+    $throwStatements = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowExpressionSyntax]
+        })
+    if ($throwStatements.Count -ne 0) {
+        $throwLine = $tree.GetLineSpan(
+            $throwStatements[0].Span).StartLinePosition.Line + 1
+        throw (
+            "The selected test method may not throw before its trusted oracle; " +
+            "offending syntax in '$SourcePath' line $throwLine.")
     }
     $sourceExecutableSymbols = @($testMethod[0].Body.DescendantNodes() |
         Where-Object {
             if ($_ -isnot
                 [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]) {
+                return $false
+            }
+            if ($_ -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax]) {
                 return $false
             }
             $symbolInfo = $semanticModel.GetSymbolInfo($_)
@@ -4892,9 +5437,203 @@ function New-ReplicationControlVariant {
                 }).Count -ne 0
         })
     if ($sourceExecutableSymbols.Count -ne 0) {
+        $offendingNode = $sourceExecutableSymbols[0]
+        $offendingInfo = $semanticModel.GetSymbolInfo($offendingNode)
+        $offendingSymbol = if ($offendingInfo.Symbol) {
+            $offendingInfo.Symbol
+        } else {
+            @($offendingInfo.CandidateSymbols | Select-Object -First 1)
+        }
+        $offendingKind = if ($offendingSymbol) {
+            [string]$offendingSymbol.Kind
+        } else {
+            'unresolved'
+        }
+        $offendingLine = $tree.GetLineSpan(
+            $offendingNode.Span).StartLinePosition.Line + 1
+        $offendingText = $offendingNode.ToString()
+        if ($offendingText.Length -gt 160) {
+            $offendingText = $offendingText.Substring(0, 160) + '...'
+        }
         throw (
             'The selected test method may not execute generated constructors, ' +
-            'method groups, properties, indexers, fields, events, or operators.')
+            'method groups, properties, indexers, fields, events, or operators. ' +
+            "Offending $offendingKind symbol '$offendingSymbol' from syntax " +
+            "'$offendingText' in '$SourcePath' line $offendingLine.")
+    }
+    $trustedContractAssembly =
+        'Microsoft.Maui.Controls.ReplicationControlContract'
+    $assertAliasDeclared = @($root.Usings | Where-Object {
+            $null -ne $_.Alias -and
+            $_.Alias.Name.Identifier.ValueText -ceq 'Assert'
+        }).Count -ne 0
+    foreach ($genericName in @($testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]
+            })) {
+        foreach ($typeArgument in $genericName.TypeArgumentList.Arguments) {
+            $typeSymbol = $semanticModel.GetTypeInfo($typeArgument).Type
+            $isTrustedType = & $isTrustedClosedType -Type $typeSymbol
+            if (-not $isTrustedType -or
+                ($genericName.Identifier.ValueText -ceq 'AddHandler' -and
+                    $typeSymbol.ContainingAssembly.Name -cne
+                        $trustedContractAssembly)) {
+                $typeLine = $tree.GetLineSpan(
+                    $typeArgument.Span).StartLinePosition.Line + 1
+                throw (
+                    "Generic type argument '$typeArgument' is not a trusted " +
+                    "external framework type in '$SourcePath' line $typeLine.")
+            }
+        }
+    }
+    foreach ($operationNode in @($testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                -not $gate.Span.Contains($_.Span) -and
+                ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MemberBindingExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitObjectCreationExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax])
+            })) {
+        $operationText = $operationNode.ToString()
+        $operationInfo = $semanticModel.GetSymbolInfo($operationNode)
+        $precheckedSymbol = if ($operationInfo.Symbol) {
+            $operationInfo.Symbol
+        } else {
+            @($operationInfo.CandidateSymbols | Select-Object -First 1)
+        }
+        if ($operationText -cmatch
+                '^(?:Assert|ClassicAssert|CollectionAssert|StringAssert)\s*\.' -and
+            (($precheckedSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                    $precheckedSymbol.ContainingAssembly.Name -ceq
+                        $trustedContractAssembly -and
+                    $precheckedSymbol.ContainingType.ToString() -cin @(
+                        'Xunit.Assert',
+                        'NUnit.Framework.Assert',
+                        'NUnit.Framework.ClassicAssert',
+                        'Microsoft.VisualStudio.TestTools.UnitTesting.Assert',
+                        'Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert',
+                        'Microsoft.VisualStudio.TestTools.UnitTesting.StringAssert'
+                    )) -or
+                ($null -eq $precheckedSymbol -and -not $assertAliasDeclared))) {
+            # Assertion invocations are checked against the trusted test
+            # framework contract below, after trigger-shape diagnostics.
+            continue
+        }
+        $operationSymbol = $precheckedSymbol
+        if ($operationNode -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]) {
+            $indexedType = $semanticModel.GetTypeInfo(
+                $operationNode.Expression).Type
+            if ($indexedType -is [Microsoft.CodeAnalysis.IArrayTypeSymbol] -and
+                $indexedType.ElementType.ContainingAssembly.Name -ceq
+                    $trustedContractAssembly -and
+                @($indexedType.ElementType.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0) {
+                continue
+            }
+        }
+        if ($operationSymbol -and
+            ($operationSymbol -is [Microsoft.CodeAnalysis.INamespaceSymbol] -or
+                $operationSymbol -is [Microsoft.CodeAnalysis.INamedTypeSymbol])) {
+            continue
+        }
+        $operationAssembly = if ($operationSymbol -and
+            $operationSymbol.ContainingAssembly) {
+            $operationSymbol.ContainingAssembly.Name
+        } else {
+            ''
+        }
+        if ($operationAssembly -ceq $trustedContractAssembly) {
+            if ($operationSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $operationSymbol.MethodKind -ne
+                    [Microsoft.CodeAnalysis.MethodKind]::Constructor) {
+                $operationKey =
+                    "$($operationSymbol.ContainingType).$($operationSymbol.Name)"
+                if ($operationNode -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                    $operationKey -ceq
+                        'Microsoft.Maui.Platform.NavigationViewExtensions.FindDescendantView' -and
+                    @($operationNode.ArgumentList.DescendantNodes() |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                            $_.RawKind -in @(
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)
+                        }).Count -ne 0) {
+                    throw (
+                        'Trusted descendant-observation predicates may not write ' +
+                        'state or increment values.')
+                }
+                $allowedContractCall = $operationKey -cin @(
+                    'CoreGraphics.CGRect.Intersect',
+                    'Microsoft.Maui.DeviceTests.AssertHelpers.AssertEventually',
+                    'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.CreateHandlerAndAddToWindow',
+                    'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.EnsureHandlerCreated',
+                    'Microsoft.Maui.Hosting.HandlerBuilder.ConfigureMauiHandlers',
+                    'Microsoft.Maui.Hosting.HandlerCollection.AddHandler',
+                    'Microsoft.Maui.Platform.ElementExtensions.ToPlatform',
+                    'Microsoft.Maui.Platform.NavigationViewExtensions.FindDescendantView',
+                    'Microsoft.Maui.Platform.NavigationViewExtensions.GetBackButton',
+                    'NUnit.Framework.ConstraintExpression.EqualTo',
+                    'NUnit.Framework.ConstraintExpression.GreaterThan',
+                    'NUnit.Framework.ConstraintExpression.LessThan',
+                    'NUnit.Framework.ConstraintExpression.SameAs',
+                    'NUnit.Framework.Is.EqualTo',
+                    'NUnit.Framework.Is.GreaterThan',
+                    'NUnit.Framework.Is.LessThan',
+                    'NUnit.Framework.Is.SameAs',
+                    'UIKit.UIView.ConvertRectToView',
+                    'UIKit.UINavigationBar.LayoutIfNeeded'
+                )
+                if (-not $allowedContractCall) {
+                    $line = $tree.GetLineSpan(
+                        $operationNode.Span).StartLinePosition.Line + 1
+                    throw (
+                        "Trusted framework call '$operationKey' is not in the " +
+                        "closed lifecycle/observation allowlist outside the " +
+                        "reported-trigger gate for '$SourcePath' line $line.")
+                }
+            }
+            continue
+        }
+        $allowedPureOperation =
+            $operationSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            (($operationSymbol.ContainingType.ToString() -ceq 'System.Math' -and
+                    $operationSymbol.Name -ceq 'Abs') -or
+                ($operationSymbol.ContainingType.ToString() -ceq
+                    'System.Linq.Enumerable' -and
+                    @($operationSymbol.Parameters | Where-Object {
+                            $_.Type.TypeKind -eq
+                                [Microsoft.CodeAnalysis.TypeKind]::Delegate
+                        }).Count -eq 0 -and
+                    $operationSymbol.Name -cin @(
+                        'First',
+                        'OfType'
+                    )))
+        if ($allowedPureOperation) {
+            continue
+        }
+        $line = $tree.GetLineSpan(
+            $operationNode.Span).StartLinePosition.Line + 1
+        $text = $operationText
+        if ($text.Length -gt 160) {
+            $text = $text.Substring(0, 160) + '...'
+        }
+        $kind = if ($operationSymbol) {
+            [string]$operationSymbol.Kind
+        } else {
+            'unresolved'
+        }
+        throw (
+            "External operation '$operationSymbol' ($kind) from syntax '$text' " +
+            "is not in the trusted semantic MAUI/UIKit contract for " +
+            "'$SourcePath' line $line.")
     }
     if ($null -eq $testMethod[0].Body -or
         $localDeclaration.Parent -ne $testMethod[0].Body -or
@@ -4970,102 +5709,527 @@ function New-ReplicationControlVariant {
         }
     }
 
-    $triggerExpression = $gate.Statement.Statements[0].Expression
-    if ($triggerExpression -is [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
-        $triggerExpression = $triggerExpression.Expression
-    }
-    if ($triggerExpression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
-        $triggerExpression.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
-        throw (
-            'The trusted control gate may contain only one direct external ' +
-            'member invocation.')
-    }
-    $memberAccess = $triggerExpression.Expression
-    $receiverText = $memberAccess.Expression.ToString()
-    if ($receiverText -cnotmatch (
-            '^global::Microsoft\.Maui\.Controls\.' +
-            '[A-Za-z_][A-Za-z0-9_]*$')) {
-        throw (
-            "The trusted trigger receiver '$receiverText' must use its exact " +
-            'global-qualified external framework type.')
-    }
-    $nestedInvocations = @($triggerExpression.ArgumentList.DescendantNodes() |
-        Where-Object {
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
-        })
-    $nestedWrites = @($triggerExpression.ArgumentList.DescendantNodesAndSelf() |
-        Where-Object {
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
-            ($_.RawKind -in @(
-                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
-                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
-                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
-                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression))
-        })
-    if ($nestedInvocations.Count -ne 0 -or $nestedWrites.Count -ne 0) {
-        throw (
-            'The trusted trigger invocation must not contain nested calls, ' +
-            'assignments, ref/out writes, or lambdas in its arguments.')
-    }
-    $triggerSymbol = $semanticModel.GetSymbolInfo($triggerExpression).Symbol
-    if ($triggerSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
-        -not $triggerSymbol.IsStatic -or
-        $triggerSymbol.MethodKind -ne
-            [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
-        $triggerSymbol.ContainingAssembly.Name -cne
-            'Microsoft.Maui.Controls.ReplicationControlContract' -or
-        @($triggerSymbol.Locations | Where-Object { $_.IsInSource }).Count -ne 0 -or
-        @($triggerSymbol.ContainingType.Locations | Where-Object {
-                $_.IsInSource
-            }).Count -ne 0) {
-        throw (
-            'The trusted trigger must resolve semantically to an allowlisted ' +
-            'external static MAUI framework member.')
-    }
-    foreach ($argument in $triggerExpression.ArgumentList.Arguments) {
-        if ($argument.RefKindKeyword.RawKind -ne 0) {
-            throw 'The trusted trigger invocation must not use ref, out, or in arguments.'
+    $assertStableOperationLocal = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.ISymbol]$Symbol
+        )
+        if ($Symbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            return
         }
-        if ($argument.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
-            $argument.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+        $writes = @($root.DescendantNodes() | Where-Object {
+                if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    return $false
+                }
+                $candidate = $semanticModel.GetSymbolInfo($_).Symbol
+                if ($null -eq $candidate -or
+                    -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $candidate,
+                        $Symbol)) {
+                    return $false
+                }
+                return (
+                    ($_.Parent -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                        $_.Parent.Left -eq $_) -or
+                    $_.Parent.RawKind -in @(
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression) -or
+                    ($_.Parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                        $_.Parent.RefKindKeyword.RawKind -ne 0))
+            })
+        if ($writes.Count -ne 0) {
             throw (
-                'The trusted trigger accepts only semantically verified local, ' +
-                'parameter, or literal arguments.')
+                "The framework-operation receiver '$($Symbol.Name)' may not be " +
+                'reassigned, incremented, or passed by reference.')
         }
-        $conversion = $semanticModel.GetConversion($argument.Expression)
-        if ($conversion.IsUserDefined) {
-            throw (
-                'The trusted trigger arguments may not execute a user-defined ' +
-                'conversion.')
+    }
+    $validateFrameworkOperation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression,
+            [Parameter(Mandatory = $true)][string]$Description
+        )
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+            $Expression = $Expression.Expression
         }
-        if ($argument.Expression -is
-                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
-            $argumentSymbol =
-                $semanticModel.GetSymbolInfo($argument.Expression).Symbol
-            if ($argumentSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
-                $argumentSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol]) {
-                throw (
-                    'The trusted trigger identifier arguments must resolve to ' +
-                    'locals or parameters, never properties, fields, or events.')
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            if ($Expression.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                throw "$Description must be a direct framework member invocation."
             }
-            $argumentType = $semanticModel.GetTypeInfo(
-                $argument.Expression).Type
-            if ($null -eq $argumentType -or
-                $argumentType.TypeKind -eq
-                    [Microsoft.CodeAnalysis.TypeKind]::Error -or
-                @($argumentType.Locations | Where-Object {
+            $memberAccess = $Expression.Expression
+            if (@($Expression.ArgumentList.DescendantNodes() | Where-Object {
+                        $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+                        $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                        $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+                        $_.RawKind -in @(
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)
+                    }).Count -ne 0) {
+                throw "$Description arguments may not execute calls, writes, or lambdas."
+            }
+            $method = $semanticModel.GetSymbolInfo($Expression).Symbol
+            if ($method -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $method.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+                $method.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                -not $method.ContainingType.ToString().StartsWith(
+                    'Microsoft.Maui.Controls.',
+                    [StringComparison]::Ordinal) -or
+                @($method.Locations | Where-Object {
                         $_.IsInSource
                     }).Count -ne 0) {
-                throw (
-                    'The trusted trigger argument type must resolve to external ' +
-                    'metadata, not an unresolved or generated source type.')
+                throw "$Description must resolve to a trusted external MAUI method."
+            }
+            foreach ($argument in $Expression.ArgumentList.Arguments) {
+                if ($argument.RefKindKeyword.RawKind -ne 0) {
+                    throw "$Description may not use ref, out, or in arguments."
+                }
+                Confirm-ReplicationTrustedOracleExpression `
+                    -Expression $argument.Expression `
+                    -SemanticModel $semanticModel `
+                    -Root $root
+            }
+            $relatedSymbols = [System.Collections.Generic.List[
+                Microsoft.CodeAnalysis.ISymbol]]::new()
+            foreach ($argument in $Expression.ArgumentList.Arguments) {
+                $argumentSymbol =
+                    $semanticModel.GetSymbolInfo($argument.Expression).Symbol
+                if ($argumentSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                    $argumentSymbol -is
+                        [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                    $relatedSymbols.Add($argumentSymbol)
+                }
+            }
+            $affectedSymbol = $null
+            $stateFamily = $method.Name
+            $resourceKey = $null
+            if ($method.IsStatic) {
+                $receiverText = $memberAccess.Expression.ToString()
+                if ($receiverText -cnotmatch
+                    '^global::Microsoft\.Maui\.Controls\.[A-Za-z_][A-Za-z0-9_]*$') {
+                    throw "$Description static receiver must be an exact global-qualified MAUI type."
+                }
+                if ($Expression.ArgumentList.Arguments.Count -gt 0) {
+                    $first = $Expression.ArgumentList.Arguments[0].Expression
+                    if ($first -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                        $candidate = $semanticModel.GetSymbolInfo($first).Symbol
+                        if ($candidate -is [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                            $candidate -is [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                            $affectedSymbol = $candidate
+                            & $assertStableOperationLocal -Symbol $affectedSymbol
+                        }
+                    }
+                }
+            } else {
+                if ($memberAccess.Expression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    throw "$Description instance receiver must be one selected-method local or parameter."
+                }
+                $affectedSymbol =
+                    $semanticModel.GetSymbolInfo($memberAccess.Expression).Symbol
+                if ($affectedSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                    $affectedSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                    throw "$Description instance receiver must bind to a selected-method local or parameter."
+                }
+                $receiverType = $semanticModel.GetTypeInfo(
+                    $memberAccess.Expression).Type
+                if ($null -eq $receiverType -or
+                    $receiverType.TypeKind -eq [Microsoft.CodeAnalysis.TypeKind]::Error -or
+                    $receiverType.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                    @($receiverType.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -ne 0) {
+                    throw "$Description instance receiver must have a trusted external framework type."
+                }
+                & $assertStableOperationLocal -Symbol $affectedSymbol
+                if ($method.Name -cin @('SetDynamicResource', 'SetValue') -and
+                    $Expression.ArgumentList.Arguments.Count -gt 0) {
+                    $propertyArgument =
+                        $Expression.ArgumentList.Arguments[0].Expression
+                    $propertySymbol =
+                        $semanticModel.GetSymbolInfo($propertyArgument).Symbol
+                    if ($propertySymbol -isnot
+                            [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                        $propertySymbol -isnot
+                            [Microsoft.CodeAnalysis.IFieldSymbol]) {
+                        throw (
+                            "$Description must name the affected trusted " +
+                            'BindableProperty directly.')
+                    }
+                    $stateFamily = $propertySymbol.Name
+                    if ($stateFamily.EndsWith(
+                            'Property',
+                            [StringComparison]::Ordinal)) {
+                        $stateFamily = $stateFamily.Substring(
+                            0,
+                            $stateFamily.Length - 'Property'.Length)
+                    }
+                    if ($method.Name -ceq 'SetDynamicResource' -and
+                        $Expression.ArgumentList.Arguments.Count -ge 2) {
+                        $keyExpression =
+                            $Expression.ArgumentList.Arguments[1].Expression
+                        if ($keyExpression -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+                            $resourceKey = $keyExpression.Token.ValueText
+                        }
+                    }
+                } elseif ($method.Name.StartsWith(
+                        'Set',
+                        [StringComparison]::Ordinal)) {
+                    $stateFamily = $method.Name.Substring(3)
+                }
+            }
+            if ($stateFamily -ceq 'BackgroundColor') {
+                $stateFamily = 'Background'
+            }
+            if ($null -ne $affectedSymbol -and
+                @($relatedSymbols | Where-Object {
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $_,
+                            $affectedSymbol)
+                    }).Count -eq 0) {
+                $relatedSymbols.Add($affectedSymbol)
+            }
+            return [pscustomobject]@{
+                AffectedSymbol = $affectedSymbol
+                Kind = 'invocation'
+                StateFamily = $stateFamily
+                MethodName = $method.Name
+                ResourceKey = $resourceKey
+                AssignedValueSymbol = $null
+                RelatedSymbols = @($relatedSymbols)
             }
         }
-        Confirm-ReplicationTrustedOracleExpression `
-            -Expression $argument.Expression `
-            -SemanticModel $semanticModel `
-            -Root $root
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            if ($Expression.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                $Expression.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+                $Expression.Left.Expression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                throw "$Description must be one direct framework property assignment."
+            }
+            $property = $semanticModel.GetSymbolInfo($Expression.Left).Symbol
+            $affectedSymbol =
+                $semanticModel.GetSymbolInfo($Expression.Left.Expression).Symbol
+            if ($property -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $null -eq $property.SetMethod -or
+                $property.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                -not $property.ContainingType.ToString().StartsWith(
+                    'Microsoft.Maui.Controls.',
+                    [StringComparison]::Ordinal) -or
+                @($property.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0 -or
+                ($affectedSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                    $affectedSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol])) {
+                throw "$Description must resolve to a trusted external MAUI property on a test-local receiver."
+            }
+            & $assertStableOperationLocal -Symbol $affectedSymbol
+            if (@($Expression.Right.DescendantNodesAndSelf() | Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                    }).Count -ne 0) {
+                throw "$Description right-hand side may not execute calls."
+            }
+            Confirm-ReplicationTrustedOracleExpression `
+                -Expression $Expression.Right `
+                -SemanticModel $semanticModel `
+                -Root $root
+            $stateFamily = $property.Name
+            if ($stateFamily -ceq 'BackgroundColor') {
+                $stateFamily = 'Background'
+            }
+            return [pscustomobject]@{
+                AffectedSymbol = $affectedSymbol
+                Kind = 'assignment'
+                StateFamily = $stateFamily
+                MethodName = $null
+                ResourceKey = $null
+                AssignedValueSymbol = if ($Expression.Right -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    $semanticModel.GetSymbolInfo($Expression.Right).Symbol
+                } else {
+                    $null
+                }
+                RelatedSymbols = @($affectedSymbol)
+            }
+        }
+        throw "$Description must be one direct trusted framework invocation or property assignment."
+    }
+    $triggerOperation = & $validateFrameworkOperation `
+        -Expression $gate.Statement.Statements[0].Expression `
+        -Description 'The reported-trigger branch'
+    if ($gate.Else) {
+        $alternateOperation = & $validateFrameworkOperation `
+            -Expression $gate.Else.Statement.Statements[0].Expression `
+            -Description 'The alternate-action branch'
+        if ($alternateOperation.Kind -cne 'assignment') {
+            throw (
+                'The optional alternate action must be one direct trusted ' +
+                'framework property assignment.')
+        }
+        if ($triggerOperation.MethodName -cne 'SetDynamicResource') {
+            throw (
+                'An optional alternate action is accepted only for a trusted ' +
+                'SetDynamicResource trigger with closed resource-value provenance.')
+        }
+        if ($null -eq $triggerOperation.AffectedSymbol -or
+            $null -eq $alternateOperation.AffectedSymbol -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $triggerOperation.AffectedSymbol,
+                $alternateOperation.AffectedSymbol)) {
+            throw (
+                'The optional alternate action must operate on the same selected-' +
+                'method affected-state local as the reported trigger.')
+        }
+        if ($triggerOperation.StateFamily -cne
+            $alternateOperation.StateFamily) {
+            throw (
+                "The optional alternate action changes '$(
+                    $alternateOperation.StateFamily)' while the reported trigger " +
+                "changes '$($triggerOperation.StateFamily)'; both branches must " +
+                'establish the same logical framework state.')
+        }
+        if ($triggerOperation.MethodName -ceq 'SetDynamicResource' -and
+            $alternateOperation.Kind -ceq 'assignment') {
+            if ([string]::IsNullOrWhiteSpace(
+                    [string]$triggerOperation.ResourceKey) -or
+                $alternateOperation.AssignedValueSymbol -isnot
+                    [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                throw (
+                    'A SetDynamicResource/direct-assignment alternate requires ' +
+                    'one literal resource key and one trusted local alternate value.')
+            }
+            $unwrapResourceExpression = {
+                param(
+                    [Parameter(Mandatory = $true)]
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+                )
+                while ($Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax] -or
+                    $Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+                    $Expression = $Expression.Expression
+                }
+                return $Expression
+            }
+            $resourceAliases =
+                [System.Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
+            $allResourceWrites = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                        $_.Left -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]) {
+                        return $false
+                    }
+                    $resourceType = $semanticModel.GetTypeInfo(
+                        $_.Left.Expression).Type
+                    return (
+                        $null -ne $resourceType -and
+                        $resourceType.ContainingAssembly.Name -ceq
+                            $trustedContractAssembly -and
+                        $resourceType.ToString() -ceq
+                            'Microsoft.Maui.Controls.ResourceDictionary')
+                })
+            foreach ($resourceWrite in $allResourceWrites) {
+                $resourceKey =
+                    $resourceWrite.Left.ArgumentList.Arguments[0].Expression
+                if ($resourceKey -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+                    throw (
+                        'Every ResourceDictionary write in a controlled test must ' +
+                        'use a literal key.')
+                }
+            }
+            $targetResourceWrites = @($allResourceWrites | Where-Object {
+                    $_.Left.ArgumentList.Arguments[0].Expression.Token.ValueText -ceq
+                        $triggerOperation.ResourceKey
+                })
+            $isAffectedResourceExpression = {
+                param(
+                    [Parameter(Mandatory = $true)]
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+                )
+                $Expression = & $unwrapResourceExpression -Expression $Expression
+                if ($Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $Expression.Name.Identifier.ValueText -ceq 'Resources') {
+                    $receiver =
+                        $semanticModel.GetSymbolInfo($Expression.Expression).Symbol
+                    return [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $receiver,
+                        $triggerOperation.AffectedSymbol)
+                }
+                if ($Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    $symbol = $semanticModel.GetSymbolInfo($Expression).Symbol
+                    return @($resourceAliases | Where-Object {
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $_,
+                                $symbol)
+                        }).Count -ne 0
+                }
+                if ($Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ConditionalExpressionSyntax]) {
+                    return (
+                        (& $isAffectedResourceExpression `
+                            -Expression $Expression.WhenTrue) -or
+                        (& $isAffectedResourceExpression `
+                            -Expression $Expression.WhenFalse))
+                }
+                if ($Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+                    $Expression.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::CoalesceExpression) {
+                    return (
+                        (& $isAffectedResourceExpression `
+                            -Expression $Expression.Left) -or
+                        (& $isAffectedResourceExpression `
+                            -Expression $Expression.Right))
+                }
+                return $false
+            }
+            $aliasDeclarators = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $null -ne $_.Initializer
+                })
+            $aliasAssignments = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                    $_.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -and
+                    $_.Left -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]
+                })
+            do {
+                $aliasAdded = $false
+                foreach ($aliasDeclarator in $aliasDeclarators) {
+                    $aliasSymbol =
+                        $semanticModel.GetDeclaredSymbol($aliasDeclarator)
+                    $alreadyTracked = @($resourceAliases | Where-Object {
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $_,
+                                $aliasSymbol)
+                        }).Count -ne 0
+                    if ($null -ne $aliasSymbol -and
+                        -not $alreadyTracked -and
+                        (& $isAffectedResourceExpression `
+                            -Expression $aliasDeclarator.Initializer.Value)) {
+                        $resourceAliases.Add($aliasSymbol)
+                        $aliasAdded = $true
+                    }
+                }
+                foreach ($aliasAssignment in $aliasAssignments) {
+                    $aliasSymbol = $semanticModel.GetSymbolInfo(
+                        $aliasAssignment.Left).Symbol
+                    $alreadyTracked = @($resourceAliases | Where-Object {
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $_,
+                                $aliasSymbol)
+                        }).Count -ne 0
+                    if ($null -ne $aliasSymbol -and
+                        -not $alreadyTracked -and
+                        (& $isAffectedResourceExpression `
+                            -Expression $aliasAssignment.Right)) {
+                        $resourceAliases.Add($aliasSymbol)
+                        $aliasAdded = $true
+                    }
+                }
+            } while ($aliasAdded)
+            $resourceMappings = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                        $_.Left -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]) {
+                        return $false
+                    }
+                    $element = $_.Left
+                    if ($element.ArgumentList.Arguments.Count -ne 1) {
+                        return $false
+                    }
+                    $resourceExpression = & $unwrapResourceExpression `
+                        -Expression $element.Expression
+                    $writesAffectedResources = $false
+                    if ($resourceExpression -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                        $resourceExpression.Name.Identifier.ValueText -ceq 'Resources') {
+                        $receiver = $semanticModel.GetSymbolInfo(
+                            $resourceExpression.Expression).Symbol
+                        $writesAffectedResources =
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $receiver,
+                                $triggerOperation.AffectedSymbol)
+                    } elseif ($resourceExpression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                        $receiver =
+                            $semanticModel.GetSymbolInfo($resourceExpression).Symbol
+                        $writesAffectedResources = @($resourceAliases | Where-Object {
+                                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                    $_,
+                                    $receiver)
+                            }).Count -ne 0
+                    }
+                    if (-not $writesAffectedResources) {
+                        return $false
+                    }
+                    $key = $element.ArgumentList.Arguments[0].Expression
+                    if ($key -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+                        throw (
+                            'Writes through an affected Resources alias must use ' +
+                            'literal keys so alternate-action provenance is closed.')
+                    }
+                    return $key.Token.ValueText -ceq
+                        $triggerOperation.ResourceKey
+                })
+            $mappedValue = if ($resourceMappings.Count -eq 1) {
+                $semanticModel.GetSymbolInfo(
+                    $resourceMappings[0].Right).Symbol
+            } else {
+                $null
+            }
+            $directResourceExpression = if ($resourceMappings.Count -eq 1) {
+                & $unwrapResourceExpression `
+                    -Expression $resourceMappings[0].Left.Expression
+            } else {
+                $null
+            }
+            $mappingIsDirect = $resourceMappings.Count -eq 1 -and
+                $resourceMappings[0].Parent -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+                $resourceMappings[0].Parent.Parent -eq $testMethod[0].Body -and
+                $directResourceExpression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $directResourceExpression.Name.Identifier.ValueText -ceq
+                    'Resources'
+            if ($resourceMappings.Count -ne 1 -or
+                $targetResourceWrites.Count -ne 1 -or
+                -not $mappingIsDirect -or
+                $resourceMappings[0].SpanStart -ge $gate.SpanStart -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $mappedValue,
+                    $alternateOperation.AssignedValueSymbol)) {
+                throw (
+                    'The dynamic-resource key must be mapped exactly once before ' +
+                    'the gate to the same local value assigned by the alternate branch.')
+            }
+        }
     }
     $trustedContractAssembly =
         'Microsoft.Maui.Controls.ReplicationControlContract'
@@ -5076,6 +6240,7 @@ function New-ReplicationControlVariant {
         'Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute'
     )
     $trustedTestAttributeCount = 0
+    $trustedCategoryCount = 0
     foreach ($attribute in $testMethod[0].AttributeLists.Attributes) {
         $attributeSymbol = $semanticModel.GetSymbolInfo($attribute).Symbol
         if ($attributeSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol]) {
@@ -5090,17 +6255,39 @@ function New-ReplicationControlVariant {
                 }).Count -eq 0) {
             $trustedTestAttributeCount++
         }
+        if ($attributeSymbol.ContainingAssembly.Name -ceq
+                $trustedContractAssembly -and
+            $attributeTypeName -ceq 'Microsoft.Maui.CategoryAttribute' -and
+            @($attributeSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -eq 0) {
+            $trustedCategoryCount++
+        }
     }
-    if ($trustedTestAttributeCount -eq 0) {
+    if ($trustedTestAttributeCount -ne 1) {
         throw (
             'The selected test attribute must resolve semantically to a trusted ' +
             'external test framework.')
     }
+    $declaredCategoryCount = @($selectedAttributeNames | Where-Object {
+            $_ -ceq 'Category'
+        }).Count
+    if ($trustedCategoryCount -ne $declaredCategoryCount) {
+        throw (
+            'The Category attribute must resolve semantically to the trusted ' +
+            'external Microsoft.Maui.CategoryAttribute.')
+    }
 
     $flowEscapes = @($testMethod[0].Body.DescendantNodes() | Where-Object {
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax]
+            ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax]) -and
+            @($_.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax]
+                }).Count -eq 0
         })
     if ($flowEscapes.Count -ne 0) {
         throw (
@@ -5118,26 +6305,907 @@ function New-ReplicationControlVariant {
     )
     $assertionStatements = @($testMethod[0].Body.DescendantNodes() |
         Where-Object {
-            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
-                @(Get-ReplicationAssertionStatements `
-                    -Source $_.ToFullString()).Count -ne 0
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+                return $false
+            }
+            $expression = $_.Expression
+            if ($expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+                $expression = $expression.Expression
+            }
+            if ($expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                return $false
+            }
+            $symbol = $semanticModel.GetSymbolInfo($expression).Symbol
+            return (
+                $symbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $symbol.ContainingAssembly.Name -ceq $trustedContractAssembly -and
+                $symbol.ContainingType.ToString() -cin $trustedAssertionTypes -and
+                @($symbol.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0)
         })
-    if ($assertionStatements.Count -ne $methodAssertions.Count -or
-        $assertionStatements.Count -eq 0) {
+    if ($assertionStatements.Count -eq 0) {
         throw (
-            'Every textual oracle must be one semantically trusted assertion ' +
-            'statement in the selected test method.')
+            'The selected test method must contain a semantically trusted ' +
+            'assertion statement.')
     }
     $postTriggerAssertionCount = 0
+    # Unwraps an expression down to the identity-preserving symbol it
+    # ultimately observes, or returns $null if any part of the shape is
+    # not identity-preserving. Only two shapes are trusted:
+    #   - a bare identifier (through parens/`as`/identity casts), and
+    #   - a single-hop native-peer read applied directly to such an
+    #     identifier: `X.ToPlatform()` (zero-argument, exact symbol
+    #     `Microsoft.Maui.Platform.ElementExtensions.ToPlatform`) or
+    #     `X.Handler.PlatformView` (exact `Handler` then `PlatformView`
+    #     property symbols on the trusted external contract assembly).
+    # Both hops map a managed control to ITS OWN native peer -- never a
+    # selection/navigation over some other container -- so they cannot
+    # reintroduce the decoy-sibling, container-escape, or delegate-local
+    # bypass classes closed in prior rounds. This is a positive allowlist,
+    # not a growing denylist, so any other invocation/member-access shape
+    # (LINQ selection, descendant-navigation helpers, indexers, lambdas,
+    # object/array/collection construction, conditional/coalescing
+    # expressions, etc.) is rejected by default and must return $null.
+    # Native-peer properties that reveal only AMBIENT reachability/
+    # containment -- true for essentially any attached view regardless of
+    # what the trigger did -- and therefore can NEVER stand in for a
+    # trigger-caused oracle even when reached through an otherwise-trusted
+    # native-peer hop. `Window`/`Superview` merely prove the peer exists
+    # somewhere in a view hierarchy; `Subviews` and `Handler` expose
+    # further navigation/indirection rather than the peer's own rendered
+    # state. This is intentionally a narrow denylist of properties whose
+    # presence is structural rather than trigger-dependent, not a general
+    # allowlist -- every other native-peer property (e.g. `Bounds`,
+    # `Text`, `Alpha`, `Hidden`) remains eligible for the family-match
+    # relaxation below precisely because it reflects the peer's own
+    # current rendered/content state.
+    $ambientContainmentNativeProperties = @(
+        'Window',
+        'Superview',
+        'Subviews',
+        'Handler')
+    $unwrapIdentityHop = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression,
+            [ref]$UsedNativeHop
+        )
+        $current = $Expression
+        while ($true) {
+            if ($current -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax] -or
+                $current -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+                $current = $current.Expression
+                continue
+            }
+            if ($current -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+                $current.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::AsExpression) {
+                $current = $current.Left
+                continue
+            }
+            if ($current -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                $current.ArgumentList.Arguments.Count -eq 0 -and
+                $current.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $current.Expression.Name.Identifier.Text -ceq
+                    'ToPlatform') {
+                $toPlatformMethod =
+                    $semanticModel.GetSymbolInfo($current).Symbol
+                $toPlatformMethodKey = if ($toPlatformMethod -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol]) {
+                    "$($toPlatformMethod.ContainingType).$($toPlatformMethod.Name)"
+                } else {
+                    ''
+                }
+                if ($toPlatformMethodKey -cne
+                        'Microsoft.Maui.Platform.ElementExtensions.ToPlatform') {
+                    return $null
+                }
+                if ($null -ne $UsedNativeHop) {
+                    $UsedNativeHop.Value = $true
+                }
+                $current = $current.Expression.Expression
+                continue
+            }
+            if ($current -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $current.Name.Identifier.Text -ceq 'PlatformView' -and
+                $current.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $current.Expression.Name.Identifier.Text -ceq 'Handler') {
+                $platformViewProperty =
+                    $semanticModel.GetSymbolInfo($current).Symbol
+                $handlerProperty =
+                    $semanticModel.GetSymbolInfo($current.Expression).Symbol
+                if ($platformViewProperty -isnot
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $platformViewProperty.ContainingAssembly.Name -cne
+                        $trustedContractAssembly -or
+                    $handlerProperty -isnot
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $handlerProperty.ContainingAssembly.Name -cne
+                        $trustedContractAssembly) {
+                    return $null
+                }
+                if ($null -ne $UsedNativeHop) {
+                    $UsedNativeHop.Value = $true
+                }
+                $current = $current.Expression.Expression
+                continue
+            }
+            break
+        }
+        if ($current -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $null
+        }
+        return $current
+    }
+    $unwrapAssertionExpression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        while ($true) {
+            if ($Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+                $Expression = $Expression.Expression
+                continue
+            }
+            if ($Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+                $castType = $semanticModel.GetTypeInfo($Expression).Type
+                $innerType = $semanticModel.GetTypeInfo(
+                    $Expression.Expression).Type
+                if ($null -ne $castType -and
+                    $null -ne $innerType -and
+                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $castType,
+                        $innerType)) {
+                    $Expression = $Expression.Expression
+                    continue
+                }
+            }
+            break
+        }
+        return $Expression
+    }
+    $normalizeAssertionExpression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        $unwrapped = & $unwrapAssertionExpression -Expression $Expression
+        return $unwrapped.ToString()
+    }
+    $getObviousBooleanValue = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        $Expression = & $unwrapAssertionExpression -Expression $Expression
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+            if ($Expression.Token.ValueText -cin @('true', 'false')) {
+                return $Expression.Token.ValueText.ToLowerInvariant()
+            }
+            return 'unknown'
+        }
+        if ($Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+            $Expression.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalNotExpression) {
+            $operandValue = & $getObviousBooleanValue `
+                -Expression $Expression.Operand
+            if ($operandValue -ceq 'true') { return 'false' }
+            if ($operandValue -ceq 'false') { return 'true' }
+            return 'unknown'
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax]) {
+            $leftValue = & $getObviousBooleanValue -Expression $Expression.Left
+            $rightValue = & $getObviousBooleanValue -Expression $Expression.Right
+            if ($Expression.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalOrExpression) {
+                if ($leftValue -ceq 'true' -or $rightValue -ceq 'true') {
+                    return 'true'
+                }
+                if ($leftValue -ceq 'false' -and $rightValue -ceq 'false') {
+                    return 'false'
+                }
+            }
+            if ($Expression.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression) {
+                if ($leftValue -ceq 'false' -or $rightValue -ceq 'false') {
+                    return 'false'
+                }
+                if ($leftValue -ceq 'true' -and $rightValue -ceq 'true') {
+                    return 'true'
+                }
+            }
+            $leftOperand = & $unwrapAssertionExpression -Expression $Expression.Left
+            $rightOperand = & $unwrapAssertionExpression -Expression $Expression.Right
+            $leftText = & $normalizeAssertionExpression -Expression $leftOperand
+            $rightText = & $normalizeAssertionExpression -Expression $rightOperand
+            $rightNegatesLeft =
+                $rightOperand -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+                $rightOperand.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalNotExpression -and
+                (& $normalizeAssertionExpression -Expression $rightOperand.Operand) -ceq
+                    $leftText
+            $leftNegatesRight =
+                $leftOperand -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+                $leftOperand.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalNotExpression -and
+                (& $normalizeAssertionExpression -Expression $leftOperand.Operand) -ceq
+                    $rightText
+            if ($rightNegatesLeft -or $leftNegatesRight) {
+                if ($Expression.RawKind -in @(
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalOrExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NotEqualsExpression)) {
+                    return 'true'
+                }
+                if ($Expression.RawKind -in @(
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression)) {
+                    return 'false'
+                }
+            }
+            if ($leftText -ceq $rightText) {
+                if ($Expression.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression) {
+                    return 'true'
+                }
+                if ($Expression.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NotEqualsExpression) {
+                    return 'false'
+                }
+            }
+            return 'unknown'
+        }
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            $local = $semanticModel.GetSymbolInfo($Expression).Symbol
+            if ($local -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                $valueExpressions = @($testMethod[0].Body.DescendantNodes() |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                        $_.SpanStart -gt $gate.Span.End -and
+                        $_.Left -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $semanticModel.GetSymbolInfo($_.Left).Symbol,
+                            $local)
+                    } |
+                    ForEach-Object Right)
+                if ($valueExpressions.Count -eq 0) {
+                    $valueExpressions = @($local.DeclaringSyntaxReferences |
+                        ForEach-Object {
+                            $_.GetSyntax([Threading.CancellationToken]::None)
+                        } |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                            $null -ne $_.Initializer
+                        } |
+                        ForEach-Object { $_.Initializer.Value })
+                }
+                $values = @($valueExpressions | ForEach-Object {
+                        $valueExpression = $_
+                        $selfReference = @($valueExpression.DescendantNodesAndSelf() |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                    $semanticModel.GetSymbolInfo($_).Symbol,
+                                    $local)
+                            }).Count -ne 0
+                        if ($selfReference) {
+                            'unknown'
+                        } else {
+                            & $getObviousBooleanValue -Expression $valueExpression
+                        }
+                    } | Sort-Object -Unique)
+                if ($values.Count -eq 1 -and
+                    $values[0] -cin @('true', 'false')) {
+                    return $values[0]
+                }
+            }
+        }
+        return 'unknown'
+    }
+    $isDirectOracleObservation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        $Expression = & $unwrapAssertionExpression -Expression $Expression
+        $symbol = $semanticModel.GetSymbolInfo($Expression).Symbol
+        if (($symbol -is [Microsoft.CodeAnalysis.IPropertySymbol]) -and
+            -not $symbol.IsStatic -and
+            $symbol.ContainingAssembly.Name -ceq $trustedContractAssembly) {
+            $postGateFrameworkWrites = @(
+                $testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_.SpanStart -le $gate.Span.End) {
+                        return $false
+                    }
+                    $writtenExpression = $null
+                    if ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                        $writtenExpression = $_.Left
+                    } elseif (
+                        ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -or
+                         $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.PostfixUnaryExpressionSyntax]) -and
+                        ($_.RawKind -eq
+                            [Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression.value__ -or
+                         $_.RawKind -eq
+                            [Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression.value__ -or
+                         $_.RawKind -eq
+                            [Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression.value__ -or
+                         $_.RawKind -eq
+                            [Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression.value__)) {
+                        $writtenExpression = $_.Operand
+                    } else {
+                        return $false
+                    }
+                    $writtenProperty =
+                        $semanticModel.GetSymbolInfo($writtenExpression).Symbol
+                    return (
+                        $writtenProperty -is
+                            [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                        $writtenProperty.ContainingAssembly.Name -ceq
+                            $trustedContractAssembly)
+                })
+            if ($postGateFrameworkWrites.Count -ne 0) {
+                return $false
+            }
+            if ($Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                return $false
+            }
+            # Unwrap the receiver through the same identity-preserving
+            # shapes trusted everywhere else in the guard (parens/casts/
+            # `as`, plus the single-hop `ToPlatform()`/
+            # `Handler.PlatformView` native-peer read). This lets an
+            # INLINE native-peer observation such as
+            # `((UIKit.UILabel)label.ToPlatform()).Bounds` resolve its
+            # receiver to `label` exactly as a two-statement form
+            # (`var nativeLabel = label.ToPlatform(); nativeLabel.Bounds`)
+            # already does -- both are the SAME identity-preserving hop,
+            # just written inline.
+            $inlineNativeHopRef = [ref]$false
+            $receiverExpression = & $unwrapIdentityHop `
+                -Expression $Expression.Expression `
+                -UsedNativeHop $inlineNativeHopRef
+            if ($null -eq $receiverExpression) {
+                return $false
+            }
+            $observationUsedNativeHop = $inlineNativeHopRef.Value
+            $receiverSymbol =
+                $semanticModel.GetSymbolInfo($receiverExpression).Symbol
+            if ($receiverSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                $receiverSymbol -isnot
+                    [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                return $false
+            }
+            $pendingSymbols = [System.Collections.Generic.Queue[
+                Microsoft.CodeAnalysis.ISymbol]]::new()
+            $seenSymbols = [System.Collections.Generic.List[
+                Microsoft.CodeAnalysis.ISymbol]]::new()
+            $pendingSymbols.Enqueue($receiverSymbol)
+            $causallyRelated = $false
+            while ($pendingSymbols.Count -ne 0) {
+                $candidateSymbol = $pendingSymbols.Dequeue()
+                if (@($seenSymbols | Where-Object {
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $_,
+                                $candidateSymbol)
+                        }).Count -ne 0) {
+                    continue
+                }
+                $seenSymbols.Add($candidateSymbol)
+                if (@($triggerOperation.RelatedSymbols | Where-Object {
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $_,
+                                $candidateSymbol)
+                        }).Count -ne 0) {
+                    $causallyRelated = $true
+                    break
+                }
+                if ($candidateSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                    foreach ($candidateDeclaration in @(
+                            $candidateSymbol.DeclaringSyntaxReferences |
+                            ForEach-Object {
+                                $_.GetSyntax(
+                                    [Threading.CancellationToken]::None)
+                            } |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                                $null -ne $_.Initializer
+                            })) {
+                        # Only propagate causal relation through a true
+                        # identity-preserving hop. LINQ/platform helper
+                        # chains such as `.Subviews.OfType<T>().First()` or
+                        # `.FindDescendantView<T>(...)` do NOT preserve
+                        # object identity -- they select/construct a
+                        # DIFFERENT object that merely happens to be
+                        # reachable through a trigger-related receiver.
+                        # Root-typing such a chain to a Page/Window
+                        # container is insufficient: the selection can
+                        # still land on an unrelated sibling/descendant
+                        # view, or escape the container entirely via a
+                        # property such as `.Window`, so trusting ANY such
+                        # chain to prove causal relation lets a decoy
+                        # receiver satisfy the mandatory oracle. See
+                        # `$unwrapIdentityHop` for the exact allowlisted
+                        # shapes.
+                        $rootIdentifier = & $unwrapIdentityHop `
+                            -Expression $candidateDeclaration.Initializer.Value
+                        if ($null -eq $rootIdentifier) {
+                            continue
+                        }
+                        $rootSymbol =
+                            $semanticModel.GetSymbolInfo($rootIdentifier).Symbol
+                        if ($rootSymbol -is
+                                [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                            $rootSymbol -is
+                                [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                            $pendingSymbols.Enqueue($rootSymbol)
+                        }
+                    }
+                }
+            }
+            if (-not $causallyRelated) {
+                return $false
+            }
+            if ($receiverSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                $receiverDeclarators = @($receiverSymbol.DeclaringSyntaxReferences |
+                    ForEach-Object {
+                        $_.GetSyntax([Threading.CancellationToken]::None)
+                    } |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                        $null -ne $_.Initializer
+                    })
+                if ($receiverDeclarators.Count -ne 1 -or
+                    $null -eq $receiverDeclarators[0].Initializer) {
+                    return $false
+                }
+                # `$symbol` is the property actually being observed by the
+                # assertion. If it was reached by unwrapping through a
+                # trusted native-peer hop (`ToPlatform()` /
+                # `Handler.PlatformView`) applied directly to the
+                # receiver's own initializer, the property lives in the
+                # NATIVE namespace of the peer, not the managed
+                # BindableProperty namespace the trigger's state family is
+                # drawn from -- e.g. observing `.Bounds`/`.Text` on a
+                # native peer reflects that SAME element's own current
+                # rendered content, and is not expected to name-match the
+                # managed property the trigger set. Requiring a name match
+                # there is a category error and was the actual root cause
+                # of a regression that rejected legitimate native-peer
+                # geometry/content observations. However, a handful of
+                # native-peer properties reveal only AMBIENT
+                # containment/reachability true of nearly any attached
+                # view regardless of what the trigger did (`Window`,
+                # `Superview`, `Subviews`, `Handler`) -- those must remain
+                # rejected even via a native hop, since they prove nothing
+                # about causal linkage to the trigger. This is exactly the
+                # round-5 security-review Alert-1 PoC
+                # (`nativeRoot.Window`), which is still rejected below by
+                # the explicit denylist rather than a repurposed name
+                # match. For a receiver reached with NO native hop (a bare
+                # identifier, still just a managed-property observation),
+                # the family-name match remains the only signal and is
+                # still enforced unconditionally.
+                $usedNativeHopForFamily = $observationUsedNativeHop
+                if (-not $usedNativeHopForFamily -and
+                    $receiverDeclarators[0].SpanStart -ge $gate.SpanStart) {
+                    $familyCheckInitializer =
+                        $receiverDeclarators[0].Initializer.Value
+                    $nativeHopRef = [ref]$false
+                    $null = & $unwrapIdentityHop `
+                        -Expression $familyCheckInitializer `
+                        -UsedNativeHop $nativeHopRef
+                    $usedNativeHopForFamily = $nativeHopRef.Value
+                }
+                if ($usedNativeHopForFamily) {
+                    if (@($ambientContainmentNativeProperties |
+                            Where-Object {
+                                $_ -ceq $symbol.Name
+                            }).Count -ne 0) {
+                        return $false
+                    }
+                } else {
+                    $observedFamily = $symbol.Name
+                    if ($observedFamily -ceq 'BackgroundColor') {
+                        $observedFamily = 'Background'
+                    }
+                    $triggerFamily = [string]$triggerOperation.StateFamily
+                    if ($triggerFamily.StartsWith(
+                            'Set',
+                            [StringComparison]::Ordinal)) {
+                        $triggerFamily = $triggerFamily.Substring(3)
+                    }
+                    if ($triggerFamily -ceq 'BackgroundColor') {
+                        $triggerFamily = 'Background'
+                    }
+                    if ($observedFamily -cne $triggerFamily) {
+                        return $false
+                    }
+                }
+                if ($receiverDeclarators[0].SpanStart -ge $gate.SpanStart) {
+                    $receiverInitializer =
+                        $receiverDeclarators[0].Initializer.Value
+                    # A receiver declared after the gate can only be
+                    # trusted when it is a true identity-preserving hop to
+                    # a symbol that is itself trusted by the dependency
+                    # walk below. See `$unwrapIdentityHop` for the exact
+                    # allowlisted shapes and why no other invocation-based
+                    # receiver derivation is trusted here.
+                    $unwrappedReceiverInitializer = & $unwrapIdentityHop `
+                        -Expression $receiverInitializer
+                    if ($null -eq $unwrappedReceiverInitializer) {
+                        return $false
+                    }
+                    $receiverInitializer = $unwrappedReceiverInitializer
+                    foreach ($dependency in @(
+                            $receiverInitializer.DescendantNodesAndSelf() |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]
+                            } |
+                            ForEach-Object {
+                                $semanticModel.GetSymbolInfo($_).Symbol
+                            } |
+                            Where-Object {
+                                $_ -is [Microsoft.CodeAnalysis.ILocalSymbol]
+                            } |
+                            Select-Object -Unique)) {
+                        $dependencyDeclaration = @(
+                            $dependency.DeclaringSyntaxReferences |
+                            ForEach-Object {
+                                $_.GetSyntax(
+                                    [Threading.CancellationToken]::None)
+                            } |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]
+                            })
+                        if ($dependencyDeclaration.Count -ne 1 -or
+                            $dependencyDeclaration[0].SpanStart -ge
+                                $gate.SpanStart) {
+                            return $false
+                        }
+                        $dependencyAliases = @(
+                            $testMethod[0].Body.DescendantNodes() |
+                            Where-Object {
+                                $aliasTarget = $null
+                                $copiedExpression = if ($_ -is
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                                    $null -ne $_.Initializer -and
+                                    $_ -ne $receiverDeclarators[0] -and
+                                    $_ -ne $dependencyDeclaration[0]) {
+                                    $aliasTarget =
+                                        $semanticModel.GetDeclaredSymbol($_)
+                                    $_.Initializer.Value
+                                } elseif ($_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                                    $aliasTarget =
+                                        $semanticModel.GetSymbolInfo($_.Left).Symbol
+                                    $_.Right
+                                } elseif ($_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.SingleVariableDesignationSyntax]) {
+                                    $aliasTarget =
+                                        $semanticModel.GetDeclaredSymbol($_)
+                                    $patternExpression = @($_.Ancestors() |
+                                        Where-Object {
+                                            $_ -is
+                                                [Microsoft.CodeAnalysis.CSharp.Syntax.IsPatternExpressionSyntax] -or
+                                            $_ -is
+                                                [Microsoft.CodeAnalysis.CSharp.Syntax.SwitchStatementSyntax] -or
+                                            $_ -is
+                                                [Microsoft.CodeAnalysis.CSharp.Syntax.SwitchExpressionSyntax]
+                                        } |
+                                        Select-Object -First 1)
+                                    if ($patternExpression.Count -eq 1) {
+                                        if ($patternExpression[0] -is
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.SwitchExpressionSyntax]) {
+                                            $patternExpression[0].GoverningExpression
+                                        } else {
+                                            $patternExpression[0].Expression
+                                        }
+                                    } else {
+                                        $null
+                                    }
+                                } else {
+                                    $null
+                                }
+                                if ($null -eq $copiedExpression) {
+                                    return $false
+                                }
+                                if ($null -eq $aliasTarget -or
+                                    $null -eq $aliasTarget.Type -or
+                                    -not $aliasTarget.Type.IsReferenceType) {
+                                    return $false
+                                }
+                                $aliasConversion =
+                                    $semanticCompilation.ClassifyConversion(
+                                        $dependency.Type,
+                                        $aliasTarget.Type)
+                                if (-not $aliasConversion.Exists -or
+                                    -not $aliasConversion.IsReference) {
+                                    return $false
+                                }
+                                return @(
+                                    $copiedExpression.DescendantNodesAndSelf() |
+                                    Where-Object {
+                                        $_ -is
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                            $semanticModel.GetSymbolInfo($_).Symbol,
+                                            $dependency)
+                                    }).Count -ne 0
+                            })
+                        if ($dependencyAliases.Count -ne 0) {
+                            return $false
+                        }
+                        $dependencyWrites = @(
+                            $testMethod[0].Body.DescendantNodes() |
+                            Where-Object {
+                                $writtenExpression = if ($_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                                    $_.Left
+                                } elseif (($_ -is
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -or
+                                        $_ -is
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.PostfixUnaryExpressionSyntax]) -and
+                                    $_.RawKind -in @(
+                                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)) {
+                                    $_.Operand
+                                } else {
+                                    $null
+                                }
+                                if ($null -eq $writtenExpression) {
+                                    return $false
+                                }
+                                return @(
+                                    $writtenExpression.DescendantNodesAndSelf() |
+                                    Where-Object {
+                                        $_ -is
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                            $semanticModel.GetSymbolInfo($_).Symbol,
+                                            $dependency)
+                                    }).Count -ne 0
+                            })
+                        if ($dependencyWrites.Count -ne 0) {
+                            return $false
+                        }
+                    }
+                }
+            }
+            $receiverWrites = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                        return $false
+                    }
+                    $writtenReceiver =
+                        $semanticModel.GetSymbolInfo($_.Left).Symbol
+                    return (
+                        $null -ne $writtenReceiver -and
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $writtenReceiver,
+                            $receiverSymbol))
+                })
+            if ($receiverWrites.Count -ne 0) {
+                return $false
+            }
+            $writes = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($gate.Span.Contains($_.Span)) {
+                        return $false
+                    }
+                    $writtenExpression = if ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                        $_.Left
+                    } elseif (($_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -or
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.PostfixUnaryExpressionSyntax]) -and
+                        ($_.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression -or
+                            $_.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression -or
+                            $_.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression -or
+                            $_.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)) {
+                        $_.Operand
+                    } else {
+                        $null
+                    }
+                    if ($null -eq $writtenExpression) {
+                        return $false
+                    }
+                    $writtenSymbol =
+                        $semanticModel.GetSymbolInfo($writtenExpression).Symbol
+                    return (
+                        $null -ne $writtenSymbol -and
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $writtenSymbol,
+                            $symbol))
+                })
+            if ($writes.Count -ne 0) {
+                return $false
+            }
+            $observedFamily = $symbol.Name
+            if ($observedFamily -ceq 'BackgroundColor') {
+                $observedFamily = 'Background'
+            }
+            $dynamicResourceWrites = @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+                        $gate.Span.Contains($_.Span)) {
+                        return $false
+                    }
+                    $method = $semanticModel.GetSymbolInfo($_).Symbol
+                    if ($method -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                        $method.ContainingAssembly.Name -cne
+                            $trustedContractAssembly -or
+                        $method.Name -cne 'SetDynamicResource' -or
+                        $_.ArgumentList.Arguments.Count -lt 1) {
+                        return $false
+                    }
+                    $propertyArgument =
+                        $_.ArgumentList.Arguments[0].Expression
+                    $propertySymbol =
+                        $semanticModel.GetSymbolInfo($propertyArgument).Symbol
+                    if (($propertySymbol -isnot
+                                [Microsoft.CodeAnalysis.IPropertySymbol]) -and
+                        ($propertySymbol -isnot
+                                [Microsoft.CodeAnalysis.IFieldSymbol])) {
+                        return $true
+                    }
+                    $writtenFamily = $propertySymbol.Name
+                    if ($writtenFamily.EndsWith(
+                            'Property',
+                            [StringComparison]::Ordinal)) {
+                        $writtenFamily = $writtenFamily.Substring(
+                            0,
+                            $writtenFamily.Length - 'Property'.Length)
+                    }
+                    if ($writtenFamily -ceq 'BackgroundColor') {
+                        $writtenFamily = 'Background'
+                    }
+                    return $writtenFamily -ceq $observedFamily
+                })
+            if ($dynamicResourceWrites.Count -ne 0) {
+                return $false
+            }
+            return $true
+        }
+        return $false
+    }
+    $isExpectedOracleValue = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        $Expression = & $unwrapAssertionExpression -Expression $Expression
+        if ($Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+            return $true
+        }
+        $symbol = $semanticModel.GetSymbolInfo($Expression).Symbol
+        if ($symbol -is [Microsoft.CodeAnalysis.IParameterSymbol]) {
+            return $true
+        }
+        if ($symbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            return $false
+        }
+        Confirm-ReplicationTrustedOracleExpression `
+            -Expression $Expression `
+            -SemanticModel $semanticModel `
+            -Root $root
+        $declarator = @($symbol.DeclaringSyntaxReferences |
+            ForEach-Object {
+                $_.GetSyntax([Threading.CancellationToken]::None)
+            } |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                $null -ne $_.Initializer
+            } | Select-Object -First 1)
+        if ($declarator.Count -ne 1) {
+            return $false
+        }
+        $instanceReads = @($declarator[0].Initializer.Value.DescendantNodesAndSelf() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+            } |
+            ForEach-Object {
+                $semanticModel.GetSymbolInfo($_).Symbol
+            } |
+            Where-Object {
+                ($_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $_ -is [Microsoft.CodeAnalysis.IFieldSymbol]) -and
+                -not $_.IsStatic
+            })
+        return $instanceReads.Count -eq 0
+    }
+    $isNullableOracleExpression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        $Expression = & $unwrapAssertionExpression -Expression $Expression
+        $expressionSymbol =
+            $semanticModel.GetSymbolInfo($Expression).Symbol
+        if ($expressionSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            $reachingValues = @($expressionSymbol.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $null -ne $_.Initializer
+                } |
+                ForEach-Object { $_.Initializer.Value })
+            $reachingValues += @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                    $_.SpanStart -lt $assertionStatement.SpanStart -and
+                    $_.Left -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $semanticModel.GetSymbolInfo($_.Left).Symbol,
+                        $expressionSymbol)
+                } |
+                ForEach-Object Right)
+            foreach ($value in $reachingValues) {
+                $valueType = $semanticModel.GetTypeInfo($value).Type
+                if ($null -ne $valueType -and
+                    -not $valueType.IsReferenceType -and
+                    -not ($valueType -is [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+                        $valueType.OriginalDefinition.SpecialType -eq
+                            [Microsoft.CodeAnalysis.SpecialType]::System_Nullable_T)) {
+                    return $false
+                }
+            }
+        }
+        $type = $semanticModel.GetTypeInfo($Expression).Type
+        if ($null -eq $type) {
+            return $false
+        }
+        if ($type.IsReferenceType) {
+            return $true
+        }
+        return (
+            $type -is [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+            $type.OriginalDefinition.SpecialType -eq
+                [Microsoft.CodeAnalysis.SpecialType]::System_Nullable_T)
+    }
     foreach ($assertionStatement in $assertionStatements) {
-        if ($assertionStatement.Parent -ne $testMethod[0].Body) {
-            throw (
-                'Every trusted assertion must be a top-level statement so normal ' +
-                'control completion cannot skip the oracle.')
-        }
-        if ($assertionStatement.SpanStart -gt $gate.Span.End) {
-            $postTriggerAssertionCount++
-        }
         $assertionExpression = $assertionStatement.Expression
         if ($assertionExpression -is
             [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
@@ -5164,115 +7232,464 @@ function New-ReplicationControlVariant {
                 'Every assertion must resolve semantically to a trusted external ' +
                 'test framework member.')
         }
-        foreach ($assertionArgument in
-            $assertionExpression.ArgumentList.Arguments) {
-            if ($assertionArgument.RefKindKeyword.RawKind -ne 0) {
-                throw 'Trusted assertion arguments may not use ref, out, or in.'
+        if ($assertionStatement.Parent -eq $testMethod[0].Body -and
+            $assertionStatement.SpanStart -gt $gate.Span.End) {
+            $assertionArguments = @(
+                $assertionExpression.ArgumentList.Arguments)
+            $isSelfComparison =
+                $assertionArguments.Count -ge 2 -and
+                (& $normalizeAssertionExpression `
+                    -Expression $assertionArguments[0].Expression) -ceq
+                (& $normalizeAssertionExpression `
+                    -Expression $assertionArguments[1].Expression)
+            $isTautologicalAssertion = $isSelfComparison
+            $trueBooleanTautology = $false
+            $falseBooleanTautology = $false
+            if ($assertionArguments.Count -ge 1) {
+                $booleanExpression = & $unwrapAssertionExpression `
+                    -Expression $assertionArguments[0].Expression
+                if ($booleanExpression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+                    $trueBooleanTautology =
+                        $booleanExpression.Token.ValueText -ceq 'true'
+                    $falseBooleanTautology =
+                        $booleanExpression.Token.ValueText -ceq 'false'
+                } elseif ($booleanExpression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax]) {
+                    $leftOperand = & $unwrapAssertionExpression `
+                        -Expression $booleanExpression.Left
+                    $rightOperand = & $unwrapAssertionExpression `
+                        -Expression $booleanExpression.Right
+                    $leftText = & $normalizeAssertionExpression `
+                        -Expression $leftOperand
+                    $rightText = & $normalizeAssertionExpression `
+                        -Expression $rightOperand
+                    $rightNegatesLeft =
+                        $rightOperand -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+                        (& $normalizeAssertionExpression `
+                            -Expression $rightOperand.Operand) -ceq
+                            $leftText
+                    $leftNegatesRight =
+                        $leftOperand -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+                        (& $normalizeAssertionExpression `
+                            -Expression $leftOperand.Operand) -ceq
+                            $rightText
+                    $sameOperands = $leftText -ceq $rightText
+                    $trueBooleanTautology =
+                        ($booleanExpression.RawKind -eq
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalOrExpression -and
+                            ($rightNegatesLeft -or $leftNegatesRight)) -or
+                        ($booleanExpression.RawKind -eq
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression -and
+                            $sameOperands)
+                    $falseBooleanTautology =
+                        ($booleanExpression.RawKind -eq
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression -and
+                            ($rightNegatesLeft -or $leftNegatesRight)) -or
+                        ($booleanExpression.RawKind -eq
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NotEqualsExpression -and
+                            $sameOperands)
+                }
             }
-            Confirm-ReplicationTrustedOracleExpression `
-                -Expression $assertionArgument.Expression `
-                -SemanticModel $semanticModel `
-                -Root $root
+            if ($assertionArguments.Count -ge 1) {
+                $obviousBooleanValue = & $getObviousBooleanValue `
+                    -Expression $assertionArguments[0].Expression
+                if ($obviousBooleanValue -ceq 'true') {
+                    $trueBooleanTautology = $true
+                } elseif ($obviousBooleanValue -ceq 'false') {
+                    $falseBooleanTautology = $true
+                }
+            }
+            if ($assertionSymbol.Name -cin @('True', 'IsTrue')) {
+                $isTautologicalAssertion =
+                    $isTautologicalAssertion -or $trueBooleanTautology
+            } elseif ($assertionSymbol.Name -cin @('False', 'IsFalse')) {
+                $isTautologicalAssertion =
+                    $isTautologicalAssertion -or $falseBooleanTautology
+            }
+            if ($assertionTypeName -ceq 'NUnit.Framework.Assert' -and
+                $assertionSymbol.Name -ceq 'That' -and
+                $assertionArguments.Count -ge 2) {
+                $constraintExpression = & $unwrapAssertionExpression `
+                    -Expression $assertionArguments[1].Expression
+                if ($constraintExpression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                    $constraintExpression.Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $constraintExpression.Expression.Expression.ToString() -ceq 'Is' -and
+                    $constraintExpression.Expression.Name.Identifier.ValueText -cin
+                        @('EqualTo', 'SameAs') -and
+                    $constraintExpression.ArgumentList.Arguments.Count -eq 1 -and
+                    (& $normalizeAssertionExpression `
+                        -Expression $constraintExpression.ArgumentList.Arguments[0].Expression) -ceq
+                    (& $normalizeAssertionExpression `
+                        -Expression $assertionArguments[0].Expression)) {
+                    $isTautologicalAssertion = $true
+                }
+                if ($constraintExpression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $constraintExpression.Name.Identifier.ValueText -cin @('True', 'False')) {
+                    if ($constraintExpression.Name.Identifier.ValueText -ceq 'True') {
+                        $isTautologicalAssertion =
+                            $isTautologicalAssertion -or $trueBooleanTautology
+                    } else {
+                        $isTautologicalAssertion =
+                            $isTautologicalAssertion -or $falseBooleanTautology
+                    }
+                }
+            }
+            $argumentSymbols = @($assertionArguments | ForEach-Object {
+                    $_.Expression.DescendantNodesAndSelf() |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                        } |
+                        ForEach-Object {
+                            $semanticModel.GetSymbolInfo($_).Symbol
+                        } |
+                        Where-Object { $null -ne $_ }
+                })
+            $observesFrameworkMember = @($argumentSymbols |
+                Where-Object {
+                    ($_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                        $_ -is [Microsoft.CodeAnalysis.IFieldSymbol]) -and
+                    -not $_.IsStatic -and
+                    -not $_.ContainingType.ToString().StartsWith(
+                        'NUnit.Framework.',
+                        [StringComparison]::Ordinal)
+                }).Count -ne 0
+            $observesChangedLocal = $false
+            foreach ($local in @($argumentSymbols | Where-Object {
+                        $_ -is [Microsoft.CodeAnalysis.ILocalSymbol]
+                    } | Select-Object -Unique)) {
+                $localWrites = @($testMethod[0].Body.DescendantNodes() |
+                    Where-Object {
+                        if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                            $_.SpanStart -le $gate.Span.End) {
+                            return $false
+                        }
+                        $candidate =
+                            $semanticModel.GetSymbolInfo($_).Symbol
+                        return (
+                            $null -ne $candidate -and
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $candidate,
+                                $local) -and
+                            $_.Parent -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                            $_.Parent.Left -eq $_)
+                    })
+                $initializerReads = @($local.DeclaringSyntaxReferences |
+                    ForEach-Object {
+                        $_.GetSyntax([Threading.CancellationToken]::None)
+                    } |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                        $null -ne $_.Initializer
+                    } |
+                    ForEach-Object {
+                        $_.Initializer.Value.DescendantNodesAndSelf()
+                    } |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                    } |
+                    ForEach-Object {
+                        $semanticModel.GetSymbolInfo($_).Symbol
+                    } |
+                    Where-Object {
+                        $_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                        $_ -is [Microsoft.CodeAnalysis.IFieldSymbol]
+                    })
+                if ($localWrites.Count -ne 0 -or
+                    $initializerReads.Count -ne 0) {
+                    $observesChangedLocal = $true
+                    break
+                }
+            }
+            $supportedGuaranteedOracle = $false
+            $guaranteedObservationExpression = $null
+            $guaranteedExpectedExpression = $null
+            if ($assertionArguments.Count -ge 1 -and
+                $assertionSymbol.Name -cin @(
+                    'True',
+                    'False',
+                    'IsTrue',
+                    'IsFalse'
+                )) {
+                $guaranteedObservationExpression =
+                    $assertionArguments[0].Expression
+                $supportedGuaranteedOracle =
+                    & $isDirectOracleObservation `
+                        -Expression $guaranteedObservationExpression
+            } elseif ($assertionArguments.Count -ge 1 -and
+                $assertionSymbol.Name -cin @('NotNull', 'IsNotNull')) {
+                $supportedGuaranteedOracle =
+                    (& $isDirectOracleObservation `
+                        -Expression $assertionArguments[0].Expression) -and
+                    (& $isNullableOracleExpression `
+                        -Expression $assertionArguments[0].Expression)
+            } elseif ($assertionArguments.Count -ge 2 -and
+                $assertionSymbol.Name -cin @(
+                    'Equal',
+                    'NotEqual',
+                    'Same',
+                    'NotSame',
+                    'AreEqual',
+                    'AreNotEqual'
+                )) {
+                if ((& $isDirectOracleObservation `
+                        -Expression $assertionArguments[0].Expression) -and
+                    (& $isExpectedOracleValue `
+                        -Expression $assertionArguments[1].Expression)) {
+                    $supportedGuaranteedOracle = $true
+                    $guaranteedObservationExpression =
+                        $assertionArguments[0].Expression
+                    $guaranteedExpectedExpression =
+                        $assertionArguments[1].Expression
+                } elseif ((& $isDirectOracleObservation `
+                        -Expression $assertionArguments[1].Expression) -and
+                    (& $isExpectedOracleValue `
+                        -Expression $assertionArguments[0].Expression)) {
+                    $supportedGuaranteedOracle = $true
+                    $guaranteedObservationExpression =
+                        $assertionArguments[1].Expression
+                    $guaranteedExpectedExpression =
+                        $assertionArguments[0].Expression
+                }
+                $firstValue = & $unwrapAssertionExpression `
+                    -Expression $assertionArguments[0].Expression
+                $secondValue = & $unwrapAssertionExpression `
+                    -Expression $assertionArguments[1].Expression
+                if ($firstValue.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NullLiteralExpression -and
+                    -not (& $isNullableOracleExpression `
+                        -Expression $secondValue)) {
+                    $supportedGuaranteedOracle = $false
+                }
+                if ($secondValue.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NullLiteralExpression -and
+                    -not (& $isNullableOracleExpression `
+                        -Expression $firstValue)) {
+                    $supportedGuaranteedOracle = $false
+                }
+            } elseif ($assertionTypeName -ceq 'NUnit.Framework.Assert' -and
+                $assertionSymbol.Name -ceq 'That' -and
+                $assertionArguments.Count -ge 2 -and
+                (& $isDirectOracleObservation `
+                    -Expression $assertionArguments[0].Expression)) {
+                $guaranteedObservationExpression =
+                    $assertionArguments[0].Expression
+                $constraint = & $unwrapAssertionExpression `
+                    -Expression $assertionArguments[1].Expression
+                if ($constraint -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                    $constraint.Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $constraint.Expression.Name.Identifier.ValueText -cin
+                        @('EqualTo', 'SameAs', 'GreaterThan', 'LessThan') -and
+                    $constraint.ArgumentList.Arguments.Count -eq 1) {
+                    $supportedGuaranteedOracle =
+                        & $isExpectedOracleValue `
+                            -Expression $constraint.ArgumentList.Arguments[0].Expression
+                    $guaranteedExpectedExpression =
+                        $constraint.ArgumentList.Arguments[0].Expression
+                } elseif ($constraint -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $constraint.Expression.ToString() -ceq 'Is' -and
+                    $constraint.Name.Identifier.ValueText -cin @('True', 'False')) {
+                    $supportedGuaranteedOracle = $true
+                }
+            }
+            if ($supportedGuaranteedOracle -and
+                $null -ne $guaranteedObservationExpression) {
+                $unwrappedObservation = & $unwrapAssertionExpression `
+                    -Expression $guaranteedObservationExpression
+                $observationSymbol =
+                    $semanticModel.GetSymbolInfo($unwrappedObservation).Symbol
+                if ($observationSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                    $initializer = @($observationSymbol.DeclaringSyntaxReferences |
+                        ForEach-Object {
+                            $_.GetSyntax([Threading.CancellationToken]::None)
+                        } |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                            $null -ne $_.Initializer
+                        } |
+                        Select-Object -First 1)
+                    if ($initializer.Count -ne 1) {
+                        $supportedGuaranteedOracle = $false
+                    } else {
+                        $initialValue = $initializer[0].Initializer.Value
+                        $initialBoolean = & $getObviousBooleanValue `
+                            -Expression $initialValue
+                        if (($assertionSymbol.Name -cin @('True', 'IsTrue') -and
+                                $initialBoolean -ceq 'true') -or
+                            ($assertionSymbol.Name -cin @('False', 'IsFalse') -and
+                                $initialBoolean -ceq 'false')) {
+                            $supportedGuaranteedOracle = $false
+                        }
+                        if ($null -ne $guaranteedExpectedExpression -and
+                            (& $normalizeAssertionExpression `
+                                -Expression $initialValue) -ceq
+                            (& $normalizeAssertionExpression `
+                                -Expression $guaranteedExpectedExpression)) {
+                            $supportedGuaranteedOracle = $false
+                        }
+                        $observedProperties = @(
+                            $guaranteedObservationExpression.DescendantNodesAndSelf() |
+                                Where-Object {
+                                    $_ -is
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                                } |
+                                ForEach-Object {
+                                    $semanticModel.GetSymbolInfo($_).Symbol
+                                } |
+                                Where-Object {
+                                    $_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                                    -not $_.IsStatic -and
+                                    $_.ContainingAssembly.Name -ceq
+                                        $trustedContractAssembly
+                                } |
+                                Select-Object -Unique)
+                        foreach ($observedProperty in $observedProperties) {
+                            $testWrites = @($testMethod[0].Body.DescendantNodes() |
+                                Where-Object {
+                                    if ($_ -isnot
+                                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                                        $gate.Span.Contains($_.Span)) {
+                                        return $false
+                                    }
+                                    $writtenSymbol =
+                                        $semanticModel.GetSymbolInfo($_.Left).Symbol
+                                    return (
+                                        $null -ne $writtenSymbol -and
+                                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                            $writtenSymbol,
+                                            $observedProperty))
+                                })
+                            if ($testWrites.Count -ne 0) {
+                                $supportedGuaranteedOracle = $false
+                                break
+                            }
+                        }
+                    }
+                    $directObservedProperties = @(
+                        $guaranteedObservationExpression.DescendantNodesAndSelf() |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                            } |
+                            ForEach-Object {
+                                $semanticModel.GetSymbolInfo($_).Symbol
+                            } |
+                            Where-Object {
+                                $_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                                -not $_.IsStatic -and
+                                $_.ContainingAssembly.Name -ceq
+                                    $trustedContractAssembly
+                            } |
+                            Select-Object -Unique)
+                    foreach ($directObservedProperty in $directObservedProperties) {
+                        $directTestWrites = @($testMethod[0].Body.DescendantNodes() |
+                            Where-Object {
+                                if ($_ -isnot
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                                    $gate.Span.Contains($_.Span)) {
+                                    return $false
+                                }
+                                $writtenSymbol =
+                                    $semanticModel.GetSymbolInfo($_.Left).Symbol
+                                return (
+                                    $null -ne $writtenSymbol -and
+                                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                        $writtenSymbol,
+                                        $directObservedProperty))
+                            })
+                        if ($directTestWrites.Count -ne 0) {
+                            $supportedGuaranteedOracle = $false
+                            break
+                        }
+                    }
+                    $directObservation = & $unwrapAssertionExpression `
+                        -Expression $guaranteedObservationExpression
+                    if ($directObservation -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                        $syntacticWrites = @($testMethod[0].Body.DescendantNodes() |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                                -not $gate.Span.Contains($_.Span) -and
+                                $_.Left -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                                $_.Left.Name.Identifier.ValueText -ceq
+                                    $directObservation.Name.Identifier.ValueText -and
+                                (& $normalizeAssertionExpression `
+                                    -Expression $_.Left.Expression) -ceq
+                                    (& $normalizeAssertionExpression `
+                                        -Expression $directObservation.Expression)
+                            })
+                        if ($syntacticWrites.Count -ne 0) {
+                            $supportedGuaranteedOracle = $false
+                        }
+                    }
+                }
+            }
+            if (-not $isTautologicalAssertion -and
+                $supportedGuaranteedOracle -and
+                ($observesFrameworkMember -or $observesChangedLocal)) {
+                $postTriggerAssertionCount++
+            }
+        }
+        $argumentNodes = @($assertionExpression.ArgumentList.DescendantNodesAndSelf())
+        if (@($argumentNodes | Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+                    ($_.RawKind -in @(
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)) -or
+                    ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                        $_.RefKindKeyword.RawKind -ne 0)
+                }).Count -ne 0) {
+            throw (
+                'Trusted assertion arguments may not contain writes, increments, ' +
+                'lambdas, or ref/out/in values.')
+        }
+        foreach ($argumentNode in @($argumentNodes | Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                })) {
+            $argumentSymbol = $semanticModel.GetSymbolInfo($argumentNode).Symbol
+            if (($argumentSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                    $argumentSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol]) -and
+                @($argumentSymbol.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                throw (
+                    'Trusted assertion arguments may not execute generated ' +
+                    'helpers or getters.')
+            }
+            if ($argumentSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+                $argumentCallType = $argumentSymbol.ContainingType.ToString()
+                if ($argumentCallType -ceq 'System.Convert' -or
+                    ($argumentCallType -ceq 'string' -and
+                        $argumentSymbol.Name -cin @('Concat', 'Join'))) {
+                    throw (
+                        'Trusted assertion arguments may not use object-dispatching ' +
+                        'conversion or string helpers.')
+                }
+            }
         }
     }
     if ($postTriggerAssertionCount -eq 0) {
         throw 'The selected test method has no trusted assertion after the trigger.'
     }
-    foreach ($postGateStatement in @($testMethod[0].Body.Statements |
-            Where-Object { $_.SpanStart -gt $gate.Span.End })) {
-        if ($postGateStatement -is
-            [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax]) {
-            foreach ($postGateVariable in
-                $postGateStatement.Declaration.Variables) {
-                if ($null -eq $postGateVariable.Initializer) {
-                    throw (
-                        'Every post-trigger observation local must have one ' +
-                        'semantically validated initializer.')
-                }
-                Confirm-ReplicationTrustedOracleExpression `
-                    -Expression $postGateVariable.Initializer.Value `
-                    -SemanticModel $semanticModel `
-                    -Root $root
-            }
-            continue
-        }
-        if ($postGateStatement -is
-                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
-            $assertionStatements -contains $postGateStatement) {
-            continue
-        }
-        throw (
-            'After the trusted trigger, only validated observation declarations ' +
-            'and top-level trusted assertions are accepted.')
-    }
-    foreach ($preGateStatement in @($testMethod[0].Body.Statements |
-            Where-Object { $_.Span.End -le $gate.SpanStart })) {
-        if ($preGateStatement -eq $localDeclaration) {
-            continue
-        }
-        if ($preGateStatement -is
-            [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax]) {
-            foreach ($preGateVariable in
-                $preGateStatement.Declaration.Variables) {
-                if ($null -eq $preGateVariable.Initializer) {
-                    throw (
-                        'Every pre-trigger setup local must have one deterministic ' +
-                        'initializer.')
-                }
-                $preGateLocal =
-                    $semanticModel.GetDeclaredSymbol($preGateVariable)
-                if ($preGateLocal -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
-                    $preGateLocal.Type.TypeKind -eq
-                        [Microsoft.CodeAnalysis.TypeKind]::Error -or
-                    @($preGateLocal.Type.Locations | Where-Object {
-                            $_.IsInSource
-                        }).Count -ne 0) {
-                    throw (
-                        'Every pre-trigger setup local must have an external ' +
-                        'metadata type.')
-                }
-                Confirm-ReplicationTrustedOracleExpression `
-                    -Expression $preGateVariable.Initializer.Value `
-                    -SemanticModel $semanticModel `
-                    -Root $root
-            }
-            continue
-        }
-        if ($preGateStatement -is
-                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
-            $assertionStatements -contains $preGateStatement) {
-            continue
-        }
-        if ($preGateStatement -is
-            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
-            $setupAssignment = $preGateStatement.Expression
-            if ($setupAssignment -is
-                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
-                $setupAssignment.RawKind -eq
-                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -and
-                $setupAssignment.Left -is
-                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
-                $setupTarget =
-                    $semanticModel.GetSymbolInfo($setupAssignment.Left).Symbol
-                if ($setupTarget -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
-                    $setupTarget.ContainingAssembly.Name -ceq
-                        $trustedContractAssembly -and
-                    @($setupTarget.Locations | Where-Object {
-                            $_.IsInSource
-                        }).Count -eq 0) {
-                    Confirm-ReplicationTrustedOracleExpression `
-                        -Expression $setupAssignment.Right `
-                        -SemanticModel $semanticModel `
-                        -Root $root
-                    continue
-                }
-            }
-        }
-        throw (
-            'Before the trusted trigger, only deterministic local declarations, ' +
-            'contract-property setup, and trusted assertions are accepted.')
-    }
-
     $trueLiteral = $declarator.Initializer.Value
     $variant = $BaselineSource.Substring(0, $trueLiteral.Span.Start) +
         'false' +
