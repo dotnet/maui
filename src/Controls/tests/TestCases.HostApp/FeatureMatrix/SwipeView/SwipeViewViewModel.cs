@@ -9,8 +9,8 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 {
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
-	private Color _backgroundColor = Color.FromArgb("#F0F0F0");
 	private Color _swipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
+	private Color _backgroundColor = null;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private double _threshold = 0;
 	private bool _hasShadow = false;
@@ -269,8 +269,8 @@ public class SwipeViewViewModel : INotifyPropertyChanged
 	{
 		IsEnabled = true;
 		IsVisible = true;
-		BackgroundColor = Color.FromArgb("#F0F0F0");
 		SwipeItemsBackgroundColor = Color.FromArgb("#6A5ACD");
+		BackgroundColor = null;
 		FlowDirection = FlowDirection.LeftToRight;
 		Threshold = 0;
 		HasShadow = false;
