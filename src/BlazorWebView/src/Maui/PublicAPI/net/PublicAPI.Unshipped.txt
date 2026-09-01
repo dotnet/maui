@@ -12,3 +12,18 @@ Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.CreateFilePro
 Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.WebView.Maui.IBlazorWebViewHandler!>! factory) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
 static Microsoft.AspNetCore.Components.WebView.Maui.MauiBlazorWebViewBuilderExtensions.UsePlatformHandler<THandler>(this Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder! builder) -> Microsoft.AspNetCore.Components.WebView.Maui.IMauiBlazorWebViewBuilder!
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.BlazorWebViewInitializedEventArgs(object! platformWebView) -> void
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.PlatformWebView.get -> object?
+Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload
+Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher
+Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.MauiDispatcher(Microsoft.Maui.Dispatching.IDispatcher! dispatcher) -> void
+Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.AddToWebViewManagerAsync(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.WebView.Maui.RootComponent.RemoveFromWebViewManagerAsync(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.CheckAccess() -> bool
+override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync(System.Action! workItem) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
+override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>!>! workItem) -> System.Threading.Tasks.Task<TResult>!
+override Microsoft.AspNetCore.Components.WebView.Maui.MauiDispatcher.InvokeAsync<TResult>(System.Func<TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task?
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryDetachFromWebViewManager(Microsoft.AspNetCore.Components.WebView.WebViewManager! webViewManager) -> System.Threading.Tasks.Task?
+static Microsoft.AspNetCore.Components.WebView.Maui.BlazorWebViewStaticContentHotReload.TryGetUpdatedStaticContent(string! contentRootRelativePath, string! requestAbsoluteUri, out System.IO.Stream? content, out string? contentType) -> bool
