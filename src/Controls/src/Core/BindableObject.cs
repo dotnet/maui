@@ -496,7 +496,6 @@ namespace Microsoft.Maui.Controls
 		internal void SetDynamicResource(BindableProperty property, string key)
 			=> SetDynamicResource(property, key, SetterSpecificity.DynamicResourceSetter);
 
-		//FIXME, use specificity
 		internal void SetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
 			if (property == null)
@@ -504,6 +503,11 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
+			if (specificity == SetterSpecificity.DynamicResourceSetter)
+			{
+				BindablePropertyContext context = GetOrCreateContext(property);
+				context.Attributes |= BindableContextAttributes.IsDynamicResource;
+			}
 			OnSetDynamicResource(property, key, specificity);
 		}
 
@@ -658,6 +662,14 @@ namespace Microsoft.Maui.Controls
 				originalSpecificity = context.Values.GetSpecificity();
 			}
 
+			if (specificity == SetterSpecificity.DynamicResourceSetter
+				&& (context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& originalSpecificity == SetterSpecificity.ManualValueSetter)
+			{
+				context.Values.Remove(SetterSpecificity.ManualValueSetter);
+				originalSpecificity = context.Values.GetSpecificity();
+			}
+
 			//We keep setter of lower specificity so we can unapply
 			if (specificity < originalSpecificity)
 			{
@@ -683,7 +695,10 @@ namespace Microsoft.Maui.Controls
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
-			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
+			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& clearDynamicResources
+				&& (specificity == SetterSpecificity.ManualValueSetter
+					|| (!currentlyApplying && (specificity == SetterSpecificity.FromHandler || specificity.IsBinding))))
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Bindings.GetValue();
