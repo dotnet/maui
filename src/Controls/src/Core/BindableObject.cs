@@ -491,8 +491,11 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
 
-			BindablePropertyContext context = GetOrCreateContext(property);
-			context.Attributes |= BindableContextAttributes.IsDynamicResource;
+			if (specificity == SetterSpecificity.DynamicResourceSetter)
+			{
+				BindablePropertyContext context = GetOrCreateContext(property);
+				context.Attributes |= BindableContextAttributes.IsDynamicResource;
+			}
 			OnSetDynamicResource(property, key, specificity);
 		}
 
@@ -679,7 +682,9 @@ namespace Microsoft.Maui.Controls
 
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
-			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources && !currentlyApplying)
+			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0
+				&& clearDynamicResources
+				&& (specificity == SetterSpecificity.ManualValueSetter || (specificity.IsBinding && !currentlyApplying)))
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Bindings.GetValue();

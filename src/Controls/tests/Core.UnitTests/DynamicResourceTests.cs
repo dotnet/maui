@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -544,6 +545,191 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.Resources["foo"] = "UPDATED RESOURCE";
 
 			Assert.Equal("NEW LOCAL", label.Text);
+		}
+
+		[Fact]
+		public void StyleDynamicResourceFallsBackToUpdatedValueAfterManualOverrideIsCleared()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } },
+				Style = new Style(typeof(Label))
+				{
+					Setters =
+					{
+						new Setter { Property = Label.TextProperty, Value = new DynamicResource("textKey") }
+					}
+				}
+			};
+
+			label.Text = "Manual";
+			label.Resources["textKey"] = "UpdatedResource";
+			Assert.Equal("Manual", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+
+			Assert.Equal("UpdatedResource", label.Text);
+		}
+
+		[Fact]
+		public void StyleDynamicResourceFallsBackToUpdatedValueAfterBindingIsRemoved()
+		{
+			var viewModel = new MockViewModel { Text = "FromBinding" };
+			var label = new Label
+			{
+				BindingContext = viewModel,
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } },
+				Style = new Style(typeof(Label))
+				{
+					Setters =
+					{
+						new Setter { Property = Label.TextProperty, Value = new DynamicResource("textKey") }
+					}
+				}
+			};
+
+			label.SetBinding(Label.TextProperty, nameof(MockViewModel.Text));
+			label.Resources["textKey"] = "UpdatedResource";
+			Assert.Equal("FromBinding", label.Text);
+
+			label.RemoveBinding(Label.TextProperty);
+			label.ClearValue(Label.TextProperty, SetterSpecificity.FromBinding);
+
+			Assert.Equal("UpdatedResource", label.Text);
+		}
+
+		[Fact]
+		public void ManualValueSetDuringTwoWayBindingApplicationRemovesDynamicResource()
+		{
+			var viewModel = new MockViewModel { Text = "FromBinding" };
+			var label = new Label
+			{
+				BindingContext = viewModel,
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			var converter = new ManualValueDuringBindingConverter(() => label.Text = "Manual");
+			label.SetBinding(Label.TextProperty, new Binding(nameof(MockViewModel.Text), BindingMode.TwoWay, converter: converter));
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			converter.SetManualValue = true;
+			label.Resources["textKey"] = "UpdatedResource";
+
+			Assert.Equal("Manual", label.Text);
+			label.Resources["textKey"] = "LaterResource";
+			Assert.Equal("Manual", label.Text);
+		}
+
+		[Fact]
+		public void VisualStateOverridePreservesDynamicResourceFallback()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			VisualStateManager.SetVisualStateGroups(label, new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState { Name = "Normal" },
+						new VisualState
+						{
+							Name = "Active",
+							Setters = { new Setter { Property = Label.TextProperty, Value = "FromVisualState" } }
+						}
+					}
+				}
+			});
+
+			VisualStateManager.GoToState(label, "Active");
+			label.Resources["textKey"] = "UpdatedResource";
+			Assert.Equal("FromVisualState", label.Text);
+
+			VisualStateManager.GoToState(label, "Normal");
+
+			Assert.Equal("UpdatedResource", label.Text);
+		}
+
+		[Fact]
+		public void TriggerOverridePreservesDynamicResourceFallback()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			label.Triggers.Add(new Trigger(typeof(Label))
+			{
+				Property = Label.IsEnabledProperty,
+				Value = false,
+				Setters = { new Setter { Property = Label.TextProperty, Value = "FromTrigger" } }
+			});
+
+			label.IsEnabled = false;
+			label.Resources["textKey"] = "UpdatedResource";
+			Assert.Equal("FromTrigger", label.Text);
+
+			label.IsEnabled = true;
+
+			Assert.Equal("UpdatedResource", label.Text);
+		}
+
+		[Fact]
+		public void ClearValueFallsBackToLastDynamicResourceValueAfterManualOverride()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+			label.Text = "Manual";
+			label.Resources["textKey"] = "UpdatedResource";
+
+			label.ClearValue(Label.TextProperty);
+
+			Assert.Equal("FromResource", label.Text);
+		}
+
+		[Fact]
+		public void RemoveDynamicResourceRetainsValueAndStopsUpdates()
+		{
+			var label = new Label
+			{
+				Resources = new ResourceDictionary { { "textKey", "FromResource" } }
+			};
+			label.SetDynamicResource(Label.TextProperty, "textKey");
+
+			label.RemoveDynamicResource(Label.TextProperty);
+			label.Resources["textKey"] = "UpdatedResource";
+
+			Assert.Equal("FromResource", label.Text);
+		}
+
+		sealed class ManualValueDuringBindingConverter : IValueConverter
+		{
+			readonly Action _setManualValue;
+
+			public ManualValueDuringBindingConverter(Action setManualValue)
+			{
+				_setManualValue = setManualValue;
+			}
+
+			public bool SetManualValue { get; set; }
+
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				if (!SetManualValue)
+					return value;
+
+				SetManualValue = false;
+				_setManualValue();
+				return "Manual";
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+				=> value;
 		}
 	}
 }
