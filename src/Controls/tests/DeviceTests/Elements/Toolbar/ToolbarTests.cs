@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.DeviceTests.TestCases;
 using Microsoft.Maui.Handlers;
@@ -24,9 +25,12 @@ using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRend
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Toolbar)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -35,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 #if IOS || MACCATALYST
@@ -47,6 +51,18 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every ToolbarTests test run against both the NavigationPage renderer and handler.
+		// See ToolbarNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 

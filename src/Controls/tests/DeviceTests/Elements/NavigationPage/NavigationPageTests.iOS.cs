@@ -19,32 +19,55 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
+		// Runs against both variants: SetupBuilder() dispatches to whichever
+		// RegisterNavigationPageHandlers override is active (NavigationRenderer on the base
+		// class, NavigationViewHandler on NavigationPageNavigationHandlerTests). ViewController
+		// resolves to the UINavigationController for both: NavigationRenderer.ViewController
+		// returns itself, while NavigationViewHandler.ViewController wraps its own
+		// UINavigationController.
 		[Fact]
 		public async Task NavigatingBackViaBackButtonFiresNavigatedEvent()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
-			var page = new ContentPage();
+			SetupBuilder();
+			var page = new ContentPage() { Title = "Root Page" };
 
-			var navPage = new NavigationPage(false, page) { Title = "App Page" };
+			var navPage = new NavigationPage(page) { Title = "App Page" };
 
-			await navPage.PushAsync(new ContentPage());
+			await navPage.PushAsync(new ContentPage() { Title = "Second Page" });
+
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
 				await OnNavigatedToAsync(navPage.CurrentPage);
-				var navController = navPage.Handler as UINavigationController;
+
+				var navController = (navPage.Handler as IPlatformViewHandler)?.ViewController as UINavigationController;
+				Assert.NotNull(navController);
 
 				Assert.False(page.HasNavigatedTo);
+
 				navController.NavigationBar.TapBackButton();
-				await OnNavigatedToAsync(page);
+				await OnNavigatedToAsync(page, TimeSpan.FromSeconds(5));
 
 				Assert.True(page.HasNavigatedTo);
 			});
 		}
 
+		// Handler-only: exercises NavigationViewHandler's programmatic pop path via
+		// PopViewController(animated:false). NavigationRenderer doesn't reliably fire
+		// NavigatedTo through this path (verified: times out), so this test is
+		// Handler-only, bypassing SetupBuilder to hardcode NavigationViewHandler.
 		[Fact]
-		public async Task Handler_NavigatingBackViaBackButtonFiresNavigatedEvent()
+		public async Task Handler_NavigatingBackViaProgrammaticPopFiresNavigatedEvent()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterCommonHandlers(handlers);
+				});
+			});
+
 			var page = new ContentPage() { Title = "Root Page" };
 
 			var navPage = new NavigationPage(page) { Title = "App Page" };
@@ -103,7 +126,19 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Multiple calls to NavigationRenderer.Dispose shouldn't crash")]
 		public async Task NavigationRendererDoubleDisposal()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+			// This test targets NavigationRenderer.Dispose() specifically, so it always
+			// registers NavigationRenderer directly rather than deferring to SetupBuilder()
+			// (which, on the Handler subclass, would register NavigationViewHandler instead).
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterCommonHandlers(handlers);
+				});
+			});
 
 			var root = new ContentPage()
 			{
@@ -126,7 +161,20 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Multiple calls to NavigationViewHandler.DisconnectHandler shouldn't crash")]
 		public async Task Handler_NavigationViewHandlerDoubleDisposal()
 		{
-			SetupBuilder();
+			// This test targets NavigationViewHandler.DisconnectHandler() specifically, so it
+			// always registers NavigationViewHandler directly rather than deferring to
+			// SetupBuilder() (which, on the base Renderer class, would register
+			// NavigationRenderer instead).
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterCommonHandlers(handlers);
+				});
+			});
 
 			var root = new ContentPage()
 			{

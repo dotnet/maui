@@ -256,12 +256,22 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			[Theory]
 			[ClassData(typeof(ControlsPageTypesTestCases))]
-			public async Task NextMovesToNextEntry(ControlsPageTypesTestCase page)
+			public Task NextMovesToNextEntry(ControlsPageTypesTestCase page) =>
+				NextMovesToNextEntryCore(page, includeNavigationViewHandler: true);
+
+			// Also verify NavigationPage doesn't break entry focus advancement when using the
+			// legacy NavigationRenderer, not just the NavigationViewHandler above.
+			// See RendererHandlerVariant.cs.
+			[Fact]
+			public Task NextMovesToNextEntry_NavigationPageRenderer() =>
+				NextMovesToNextEntryCore(ControlsPageTypesTestCase.NavigationPage, includeNavigationViewHandler: false);
+
+			async Task NextMovesToNextEntryCore(ControlsPageTypesTestCase page, bool includeNavigationViewHandler)
 			{
 				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
 				{
-					ControlsPageTypesTestCases.Setup(builder);
+					ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));

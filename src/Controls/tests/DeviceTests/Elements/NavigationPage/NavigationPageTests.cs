@@ -18,44 +18,56 @@ namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.NavigationPage)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	// This base class exercises NavigationRenderer on iOS/MacCatalyst; the
+	// NavigationPageNavigationHandlerTests subclass overrides registration to exercise
+	// NavigationViewHandler instead, so every test below runs against both variants.
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					}
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-#endif
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
-					handlers.AddHandler<Border, BorderHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-					handlers.AddHandler<CarouselView, CarouselViewHandler>();
-					handlers.AddHandler<CollectionView, CollectionViewHandler>();
-					handlers.AddHandler<IContentView, ContentViewHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<RadioButton, RadioButtonHandler>();
-					handlers.AddHandler<Shape, ShapeViewHandler>();
-					handlers.AddHandler<Window, WindowHandlerStub>();
+					RegisterNavigationPageHandlers(handlers);
+					RegisterCommonHandlers(handlers);
 				});
 			});
+		}
+
+		// Registers the NavigationPage/TabbedPage/Toolbar handler mapping for this test variant.
+		protected virtual void RegisterNavigationPageHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
+		}
+
+		// Handlers shared by every NavigationPage test variant, regardless of which
+		// NavigationPage/TabbedPage handler mapping is registered above.
+		protected static void RegisterCommonHandlers(IMauiHandlersCollection handlers)
+		{
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+			handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+			handlers.AddHandler<Border, BorderHandler>();
+			handlers.AddHandler<Button, ButtonHandler>();
+			handlers.AddHandler<CarouselView, CarouselViewHandler>();
+			handlers.AddHandler<CollectionView, CollectionViewHandler>();
+			handlers.AddHandler<IContentView, ContentViewHandler>();
+			handlers.AddHandler<Label, LabelHandler>();
+			handlers.AddHandler<Layout, LayoutHandler>();
+			handlers.AddHandler<Page, PageHandler>();
+			handlers.AddHandler<RadioButton, RadioButtonHandler>();
+			handlers.AddHandler<Shape, ShapeViewHandler>();
+			handlers.AddHandler<Window, WindowHandlerStub>();
 		}
 
 		[Fact]

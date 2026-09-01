@@ -30,26 +30,18 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Window, WindowHandlerStub>();
@@ -57,6 +49,18 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every ModalTests test run against both the NavigationPage renderer and
+		// handler. See ModalNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 		[Theory]
@@ -264,7 +268,28 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+			// Renderer-only: pushing two nested modals back-to-back from Appearing
+			// hangs under NavigationViewHandler for useShell:false. Register
+			// NavigationRenderer directly (not via SetupBuilder) so this stays
+			// Renderer-only even when inherited by ModalNavigationHandlerTests.
+			// See Handler_PushModalFromAppearing_DoesNotCrash and
+			// Handler_PushModalFromNavigatedTo for the Handler-equivalent tests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
 			var windowPage = new ContentPage()
 			{
 				Content = new Label()
@@ -422,7 +447,22 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task Handler_PushModalFromAppearing_DoesNotCrash()
 		{
-			SetupBuilder(includeNavigationViewHandler: true);
+			// Handler-only: always exercises NavigationViewHandler, bypassing
+			// SetupBuilder/RegisterNavigationPageHandler so the subclass's default (Renderer or
+			// Handler) can't affect it. See PushModalFromAppearing above for the Renderer-only
+			// equivalent.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
 
 			var modalPage = new ContentPage()
 			{
