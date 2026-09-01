@@ -428,7 +428,6 @@ namespace Microsoft.Maui.Platform
 			{
 				InvalidateConstraintsCache();
 				_systemAdjustedContentInset = SystemAdjustedContentInset;
-				return false;
 			}
 
 			if (!oldSafeArea.Equals(_safeArea))
