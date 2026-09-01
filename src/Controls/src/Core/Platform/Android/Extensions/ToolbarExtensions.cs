@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// Recalculate safe-area padding after the AppBar collapse updates content bounds.
 				nativeToolbar.Post(() =>
 				{
-					if (nativeToolbar.IsAttachedToWindow)
+					if (nativeToolbar.IsAttachedToWindow && !toolbar.IsVisible)
 						ViewCompat.RequestApplyInsets(nativeToolbar);
 				});
 			}
