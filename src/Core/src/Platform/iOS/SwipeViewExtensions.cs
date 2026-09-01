@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, UIView? platformSwipeItem)
+		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, Dictionary<ISwipeItem, object>  _swipeItems)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
 			if (items == null)
@@ -22,11 +22,17 @@ namespace Microsoft.Maui.Platform
 				{
 					double swipeItemWidth = SwipeItemWidth;
 
-					if (platformSwipeItem is not null)
+					if(items.Mode == SwipeMode.Execute)
 					{
-						var measuredSize = platformSwipeItem.SizeThatFits(new CGSize(contentWidth, contentHeight));
-						if (measuredSize.Width > 0)
-							swipeItemWidth = measuredSize.Width;
+						double totalWidth = 0;
+						foreach (var item in _swipeItems)
+						{
+							var measuredSize = ((UIView)item.Value).SizeThatFits(
+								new CGSize(contentWidth, contentHeight));
+							totalWidth += measuredSize.Width;
+						}
+
+						swipeItemWidth = totalWidth > contentWidth ? contentWidth / items.Count : totalWidth / items.Count;
 					}
 
 					return new Size(
