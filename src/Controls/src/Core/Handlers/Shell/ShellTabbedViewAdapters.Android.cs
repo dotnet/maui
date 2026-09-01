@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers
         public bool IsSmoothScrollEnabled => false; // Not used
 
         public Element? Owner => _shellItem;
+        public object GetTabOwner(int index) => ((IShellItemController)_shellItem).GetItems()[index];
 
         public event NotifyCollectionChangedEventHandler TabsChanged
         {
@@ -118,6 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers
         public bool IsSmoothScrollEnabled => false; // Not used
 
         public Element? Owner => _shellSection;
+        public object GetTabOwner(int index) => SectionController.GetItems()[index];
 
         public event NotifyCollectionChangedEventHandler TabsChanged
         {

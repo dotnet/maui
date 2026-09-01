@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers
         bool _preserveFragmentResources; // During SwitchToShellItem, preserve fragment-level resources
         bool _switchingShellItem; // During SwitchToShellItem, suppress mapper-triggered SwitchToSection
         bool _pendingAdapterUpdate; // After adapter rebuild, suppress next smooth scroll to avoid VP2 overshoot
+        Action<int, AView>? _moreRowCreated;
 
         // Shared toolbar components (moved from ShellSectionHandler)
         internal Toolbar? _shellToolbar; // Virtual Toolbar view
@@ -208,9 +209,17 @@ namespace Microsoft.Maui.Controls.Handlers
 
             // Wire "More" bottom sheet creation so consumers can override CreateMoreBottomSheet
             // to provide a custom overflow UI (matching legacy ShellItemRenderer).
-            _tabbedViewManager.CreateMoreBottomSheet = (selectCallback, items) =>
+            _tabbedViewManager.CreateMoreBottomSheet = (selectCallback, items, rowCreated) =>
             {
-                return CreateMoreBottomSheet(selectCallback, items);
+                _moreRowCreated = rowCreated;
+                try
+                {
+                    return CreateMoreBottomSheet(selectCallback, items);
+                }
+                finally
+                {
+                    _moreRowCreated = null;
+                }
             };
 
             // SetElement creates BNV and populates tabs
@@ -440,7 +449,9 @@ namespace Microsoft.Maui.Controls.Handlers
             return BottomNavigationViewUtils.CreateMoreBottomSheet(
                 selectCallback,
                 MauiContext!,
-                items);
+                items,
+                BottomNavigationViewUtils.MaxBottomNavigationItems,
+                _moreRowCreated);
         }
 
         /// <summary>

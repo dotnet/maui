@@ -28,6 +28,7 @@ internal interface ITabbedViewSource
     int OffscreenPageLimit { get; }
     bool IsSwipePagingEnabled { get; }
     bool IsSmoothScrollEnabled { get; }
+    object GetTabOwner(int index);
 
     /// <summary>
     /// The visual Element that owns this tab source — used as a parent for brush

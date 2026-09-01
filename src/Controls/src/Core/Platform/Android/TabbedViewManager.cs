@@ -18,6 +18,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -76,6 +77,12 @@ internal class TabbedViewManager
     bool _tabItemStyleLoaded;
     TabLayoutMediator _tabLayoutMediator;
     IDisposable _pendingFragment;
+    readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+    readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+    readonly List<IMenuItem> _registeredMenuItems = new List<IMenuItem>();
+    readonly List<AView> _moreItemViews = new List<AView>();
+    BottomSheetDialog _moreDialog;
+    int _tabRegistrationGeneration;
 
     /// <summary>
     /// Callback invoked when a tab is selected. The consumer (Shell, TabbedPageManager) 
@@ -107,10 +114,14 @@ internal class TabbedViewManager
 
     /// <summary>
     /// Delegate for creating a custom "More" bottom sheet when 5+ tabs overflow.
-    /// Receives the select callback and tab items list; returns the configured BottomSheetDialog.
+    /// Receives the select callback, tab items, and a callback for each realized row.
     /// If null, the default BottomNavigationViewUtils.CreateMoreBottomSheet is used.
     /// </summary>
-    public Func<Action<int, BottomSheetDialog>, List<(string title, ImageSource icon, bool tabEnabled)>, BottomSheetDialog> CreateMoreBottomSheet { get; set; }
+    public Func<
+        Action<int, BottomSheetDialog>,
+        List<(string title, ImageSource icon, bool tabEnabled)>,
+        Action<int, AView>,
+        BottomSheetDialog> CreateMoreBottomSheet { get; set; }
 
     protected NavigationRootManager NavigationRootManager { get; }
     public static bool IsDarkTheme => (Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme) == AppTheme.Dark;
@@ -232,6 +243,10 @@ internal class TabbedViewManager
     {
         if (Element is not null)
         {
+            _tabRegistrationGeneration++;
+            CloseMoreDialog();
+            _nativeTabRegistrations.Clear();
+            _registeredMenuItems.Clear();
             Element.TabsChanged -= OnTabsCollectionChanged;
             RemoveTabs();
 
@@ -305,7 +320,6 @@ internal class TabbedViewManager
                     {
                         Gravity = (int)GravityFlags.Bottom
                     });
-
             }
             else
             {
@@ -342,6 +356,29 @@ internal class TabbedViewManager
                 SetTabLayout();
             }
         }
+    }
+
+    void RegisterTabBar()
+    {
+        var owner = Element?.Owner;
+        if (owner is null)
+        {
+            return;
+        }
+
+        var tabBar = IsBottomTabPlacement
+            ? (object)_bottomNavigationView
+            : _tabLayout;
+        if (tabBar is null)
+        {
+            return;
+        }
+
+        _nativeTabRegistrations.Register(
+            owner,
+            tabBar,
+            NativeElementRoles.ShellTab,
+            NativeElementDiscriminators.TabBar);
     }
 
     public void RemoveTabs()
@@ -492,6 +529,22 @@ internal class TabbedViewManager
 
     protected virtual void OnTabsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
+        _tabRegistrationGeneration++;
+        CloseMoreDialog();
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            _nativeTabRegistrations.Clear();
+            _registeredMenuItems.Clear();
+            RegisterTabBar();
+        }
+        else if (e.OldItems is not null)
+        {
+            foreach (var oldItem in e.OldItems)
+            {
+                _nativeTabRegistrations.UnregisterOwner(oldItem);
+            }
+        }
+
         if (IsBottomTabPlacement)
         {
             BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -504,6 +557,8 @@ internal class TabbedViewManager
             if (Element.Tabs.Count == 0)
             {
                 bottomNavigationView.Menu.Clear();
+                _registeredMenuItems.Clear();
+                _nativeTabRegistrations.Retain(new object[] { bottomNavigationView });
                 _bottomNavigationView?.SetOnItemSelectedListener(null);
                 _bottomNavigationView?.SetOnItemReselectedListener(null);
             }
@@ -524,6 +579,7 @@ internal class TabbedViewManager
             if (Element.Tabs.Count == 0)
             {
                 tabs.RemoveAllTabs();
+                _nativeTabRegistrations.Retain(new object[] { tabs });
                 tabs.SetupWithViewPager(null);
                 _tabLayoutMediator?.Detach();
                 _tabLayoutMediator = null;
@@ -584,8 +640,15 @@ internal class TabbedViewManager
                 var menu = _bottomNavigationView.Menu;
                 if (menu is not null && menu.Size() > 0)
                 {
-                    var clampedIndex = Math.Min(index, menu.Size() - 1);
-                    menu.GetItem(clampedIndex)?.SetChecked(true);
+                    var menuItemId = NativeBottomNavigationSelection.GetMenuItemId(
+                        index,
+                        Element?.Tabs.Count ?? 0,
+                        Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems),
+                        BottomNavigationViewUtils.MoreTabId);
+                    if (menuItemId >= 0)
+                    {
+                        menu.FindItem(menuItemId)?.SetChecked(true);
+                    }
                 }
             }
         }
@@ -663,7 +726,12 @@ internal class TabbedViewManager
             var menuItem = _bottomNavigationView.Menu.FindItem(index);
             if (menuItem is not null)
             {
-                LoadBottomNavIconAsync(menuItem, tab);
+                LoadBottomNavIconAsync(
+                    menuItem,
+                    index,
+                    Element,
+                    Element.GetTabOwner(index),
+                    tab.Icon as ImageSource);
             }
         }
         else
@@ -757,13 +825,13 @@ internal class TabbedViewManager
         _viewPager.UserInputEnabled = Element.IsSwipePagingEnabled;
     }
 
-    List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList()
+    static List<(string title, ImageSource icon, bool tabEnabled)> CreateTabList(IReadOnlyList<ITab> tabs)
     {
         var items = new List<(string title, ImageSource icon, bool tabEnabled)>();
 
-        for (int i = 0; i < Element.Tabs.Count; i++)
+        for (int i = 0; i < tabs.Count; i++)
         {
-            var tab = Element.Tabs[i];
+            var tab = tabs[i];
             // ITab.Icon is IImageSource; convert to ImageSource if possible for BottomNavigationViewUtils
             var icon = tab.Icon as ImageSource;
             // Fallback for null/whitespace Title to avoid a blank bottom tab label.
@@ -787,6 +855,8 @@ internal class TabbedViewManager
         if (tabs is null || tabs.Count == 0)
         {
             menu.Clear();
+            _registeredMenuItems.Clear();
+            _nativeTabRegistrations.Retain(new object[] { _bottomNavigationView });
             _bottomNavigationView.SetOnItemSelectedListener(null);
             _bottomNavigationView.SetOnItemReselectedListener(null);
             return;
@@ -796,6 +866,11 @@ internal class TabbedViewManager
         // TabbedPage has historically shown the tab bar even with a single tab.
         if (tabs.Count == 1 && Element?.Owner is not TabbedPage)
         {
+            menu.Clear();
+            _registeredMenuItems.Clear();
+            _nativeTabRegistrations.Retain(new object[] { _bottomNavigationView });
+            _bottomNavigationView.SetOnItemSelectedListener(null);
+            _bottomNavigationView.SetOnItemReselectedListener(null);
             _bottomNavigationView.Visibility = ViewStates.Gone;
             return;
         }
@@ -806,7 +881,12 @@ internal class TabbedViewManager
         // (reuses existing IMenuItem objects at unchanged positions, preserving identity).
         // This matches the renderer's ShellItemRenderer.SetupMenu behavior and avoids
         // menu.Clear() which destroys all IMenuItem references on every tab add/remove.
-        var items = CreateTabList();
+        var items = CreateTabList(tabs);
+        var tabOwners = new List<object>(tabs.Count);
+        for (var index = 0; index < tabs.Count; index++)
+        {
+            tabOwners.Add(Element.GetTabOwner(index));
+        }
 
         var currentIndex = Element.CurrentTabIndex;
         BottomNavigationViewUtils.SetupMenu(
@@ -816,7 +896,8 @@ internal class TabbedViewManager
             currentIndex,
             _bottomNavigationView,
             _context,
-            onIconLoaded: menuItem => SetupBottomNavigationViewIconColor(menuItem.ItemId, menuItem));
+            onIconLoaded: menuItem => SetupBottomNavigationViewIconColor(menuItem.ItemId, menuItem),
+            menuItemsUpdated: menuItems => RegisterBottomMenuItems(menuItems, tabOwners));
 
         _bottomNavigationView.SetShiftMode(false, false);
 
@@ -832,10 +913,121 @@ internal class TabbedViewManager
         _bottomNavigationView.SetOnItemReselectedListener(_listeners);
     }
 
-    async void LoadBottomNavIconAsync(IMenuItem menuItem, ITab tab)
+    void RegisterBottomMenuItems(
+        IReadOnlyList<IMenuItem> menuItems,
+        IReadOnlyList<object> tabOwners)
+    {
+        var registrationItems = new List<(IMenuItem MenuItem, object Owner, bool IsMoreItem)>();
+        foreach (var previousMenuItem in _registeredMenuItems)
+        {
+            var retained = false;
+            foreach (var currentMenuItem in menuItems)
+            {
+                if (ReferenceEquals(currentMenuItem, previousMenuItem))
+                {
+                    retained = true;
+                    break;
+                }
+            }
+
+            if (!retained)
+            {
+                _nativeTabRegistrations.Unregister(previousMenuItem);
+            }
+        }
+
+        _registeredMenuItems.Clear();
+        _registeredMenuItems.AddRange(menuItems);
+
+        foreach (var menuItem in menuItems)
+        {
+            var isMoreItem = menuItem.ItemId == BottomNavigationViewUtils.MoreTabId;
+            if (!isMoreItem && (menuItem.ItemId < 0 || menuItem.ItemId >= tabOwners.Count))
+            {
+                continue;
+            }
+
+            var owner = isMoreItem
+                ? ((object)Element.Owner ?? Element)
+                : tabOwners[menuItem.ItemId];
+            registrationItems.Add((menuItem, owner, isMoreItem));
+            _nativeTabRegistrations.Register(
+                owner,
+                menuItem,
+                isMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+                NativeElementDiscriminators.LogicalModel);
+        }
+
+        var bottomNavigationView = _bottomNavigationView;
+        var registrationGeneration = ++_tabRegistrationGeneration;
+        bottomNavigationView.Post(() =>
+        {
+            if (registrationGeneration != _tabRegistrationGeneration ||
+                !ReferenceEquals(_bottomNavigationView, bottomNavigationView) ||
+                !bottomNavigationView.IsAlive())
+            {
+                return;
+            }
+
+            var retainedElements = new List<object> { bottomNavigationView };
+            foreach (var registrationItem in registrationItems)
+            {
+                retainedElements.Add(registrationItem.MenuItem);
+            }
+
+            if (bottomNavigationView.GetChildAt(0) is ViewGroup menuView)
+            {
+                var count = Math.Min(menuView.ChildCount, registrationItems.Count);
+                for (var index = 0; index < count; index++)
+                {
+                    var registrationItem = registrationItems[index];
+                    if (menuView.GetChildAt(index) is AView itemView)
+                    {
+                        retainedElements.Add(itemView);
+                        _nativeTabRegistrations.RegisterExclusive(
+                            registrationItem.Owner,
+                            itemView,
+                            registrationItem.IsMoreItem ? NativeElementRoles.ShellTabOverflow : NativeElementRoles.ShellTab,
+                            NativeElementDiscriminators.RealizedView);
+                    }
+                }
+            }
+
+            _nativeTabRegistrations.Retain(retainedElements);
+        });
+    }
+
+    void RegisterTopTab(TabLayout.Tab tab, int position)
+    {
+        if (Element is null ||
+            position < 0 ||
+            position >= Element.Tabs.Count ||
+            tab.View is not AView tabView)
+        {
+            return;
+        }
+
+        _nativeTabRegistrations.RegisterExclusive(
+            Element.GetTabOwner(position),
+            tabView,
+            NativeElementRoles.ShellTab,
+            NativeElementDiscriminators.RealizedView);
+    }
+
+    async void LoadBottomNavIconAsync(
+        IMenuItem menuItem,
+        int index,
+        ITabbedViewSource element,
+        object owner,
+        ImageSource source)
     {
         try
         {
+            var bottomNavigationView = _bottomNavigationView;
+            var iconUpdateIsCurrent = BottomNavigationViewUtils.BeginMenuIconUpdate(
+                bottomNavigationView,
+                index);
+
             // Route through BottomNavigationViewUtils.SetMenuItemIcon instead of loading
             // the icon directly here. SetMenuItemIcon guards against a reused IMenuItem
             // being repurposed (by SetupMenu) for a different tab while this load is still
@@ -843,13 +1035,23 @@ internal class TabbedViewManager
             // SetupMenu-driven icon load and overwrite the wrong tab's icon.
             await BottomNavigationViewUtils.SetMenuItemIcon(
                 menuItem,
-                tab.Icon as ImageSource,
+                source,
                 _context,
                 // Apply per-item icon tint after loading so that:
                 // 1. FontImageSource with explicit Color shows its own color (tint cleared)
                 // 2. FontImageSource without Color gets SelectedTabColor/UnselectedTabColor tint
                 // Without this, the global ItemIconTintList overrides baked-in colors.
-                onIconLoaded: loadedMenuItem => SetupBottomNavigationViewIconColor(loadedMenuItem.ItemId, loadedMenuItem));
+                onIconLoaded: loadedMenuItem => SetupBottomNavigationViewIconColor(loadedMenuItem.ItemId, loadedMenuItem),
+                isCurrent: () =>
+                    iconUpdateIsCurrent() &&
+                    ReferenceEquals(Element, element) &&
+                    ReferenceEquals(_bottomNavigationView, bottomNavigationView) &&
+                    index >= 0 &&
+                    index < element.Tabs.Count &&
+                    ReferenceEquals(element.GetTabOwner(index), owner) &&
+                    ReferenceEquals(element.Tabs[index].Icon, source) &&
+                    index < _registeredMenuItems.Count &&
+                    ReferenceEquals(_registeredMenuItems[index], menuItem));
         }
         catch (Exception ex)
         {
@@ -1127,13 +1329,16 @@ internal class TabbedViewManager
 
     void ShowMoreBottomSheet()
     {
-        var items = CreateTabList();
+        CloseMoreDialog();
+
+        var items = CreateTabList(Element.Tabs);
         BottomSheetDialog bottomSheetDialog;
         if (CreateMoreBottomSheet is not null)
         {
             bottomSheetDialog = CreateMoreBottomSheet(
                 OnMoreItemSelectedInternal,
-                items);
+                items,
+                RegisterMoreRow);
         }
         else
         {
@@ -1141,31 +1346,36 @@ internal class TabbedViewManager
                 OnMoreItemSelectedInternal,
                 _context,
                 items,
-                Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems));
+                Math.Min(_bottomNavigationView.MaxItemCount, BottomNavigationViewUtils.MaxBottomNavigationItems),
+                RegisterMoreRow);
         }
-        bottomSheetDialog.DismissEvent += (s, e) => OnMoreSheetDismissedInternal(bottomSheetDialog);
+        _moreDialog = bottomSheetDialog;
+        bottomSheetDialog.DismissEvent += OnMoreSheetDismissedInternal;
         bottomSheetDialog.Show();
+        RegisterMoreDialog(bottomSheetDialog);
     }
 
-    void OnMoreSheetDismissedInternal(BottomSheetDialog dialog)
+    void OnMoreSheetDismissedInternal(object sender, EventArgs e)
     {
-        var index = Element.CurrentTabIndex;
-
-        var menu = _bottomNavigationView?.Menu;
-
-        if (menu is null || index < 0)
+        var dialog = sender as BottomSheetDialog ?? _moreDialog;
+        if (dialog is null)
         {
             return;
         }
 
-        int targetIndex = Math.Min(index, menu.Size() - 1);
-
-        if (targetIndex < 0)
+        dialog.DismissEvent -= OnMoreSheetDismissedInternal;
+        if (ReferenceEquals(_moreDialog, dialog))
         {
-            return;
+            _moreDialog = null;
         }
 
-        menu.GetItem(targetIndex)?.SetChecked(true);
+        ClearMoreRegistrations();
+        if (Element is not null)
+        {
+            SetSelectedTab(Element.CurrentTabIndex);
+        }
+
+        dialog.Dispose();
     }
 
     void OnMoreItemSelectedInternal(int selectedIndex, BottomSheetDialog dialog)
@@ -1177,7 +1387,87 @@ internal class TabbedViewManager
 
         OnMoreItemSelected?.Invoke(selectedIndex, dialog);
 
-        dialog.Dismiss();
+        if (ReferenceEquals(_moreDialog, dialog))
+        {
+            CloseMoreDialog();
+        }
+        else
+        {
+            if (dialog.IsShowing)
+            {
+                dialog.Dismiss();
+            }
+            dialog.Dispose();
+        }
+
+        if (Element is not null)
+        {
+            SetSelectedTab(Element.CurrentTabIndex);
+        }
+    }
+
+    void RegisterMoreRow(int tabIndex, AView view)
+    {
+        if (Element is null || tabIndex < 0 || tabIndex >= Element.Tabs.Count)
+        {
+            DisposeMoreItemView(view);
+            return;
+        }
+
+        _moreItemViews.Add(view);
+        _nativeMoreRegistrations.Register(
+            Element.GetTabOwner(tabIndex),
+            view,
+            NativeElementRoles.ShellTabOverflow,
+            NativeElementDiscriminators.OverflowRow);
+    }
+
+    void RegisterMoreDialog(BottomSheetDialog dialog)
+    {
+        if (Element?.Owner is not null && dialog.Window?.DecorView is AView dialogView)
+        {
+            _nativeMoreRegistrations.Register(
+                Element.Owner,
+                dialogView,
+                NativeElementRoles.ShellTabOverflow,
+                NativeElementDiscriminators.RealizedView);
+        }
+    }
+
+    void ClearMoreRegistrations()
+    {
+        _nativeMoreRegistrations.Clear();
+        foreach (var view in _moreItemViews)
+        {
+            DisposeMoreItemView(view);
+        }
+        _moreItemViews.Clear();
+    }
+
+    static void DisposeMoreItemView(AView view)
+    {
+        if (view.Parent is ViewGroup parent)
+        {
+            parent.RemoveView(view);
+        }
+        view.Dispose();
+    }
+
+    void CloseMoreDialog()
+    {
+        var dialog = _moreDialog;
+        _moreDialog = null;
+        ClearMoreRegistrations();
+        if (dialog is null)
+        {
+            return;
+        }
+
+        dialog.DismissEvent -= OnMoreSheetDismissedInternal;
+        if (dialog.IsShowing)
+        {
+            dialog.Dismiss();
+        }
         dialog.Dispose();
     }
 
@@ -1429,12 +1719,7 @@ internal class TabbedViewManager
 
             if (IsBottomTabPlacement)
             {
-                var menu = _bottomNavigationView.Menu;
-                if (menu.Size() > 0)
-                {
-                    int targetIndex = Math.Min(position, menu.Size() - 1);
-                    menu.GetItem(targetIndex)?.SetChecked(true);
-                }
+                _manager.SetSelectedTab(position);
             }
 
             _manager._previousTabIndex = position;
@@ -1446,6 +1731,7 @@ internal class TabbedViewManager
             if (p1 < _manager.Element.Tabs.Count)
             {
                 p0.SetText(_manager.Element.Tabs[p1].Title);
+                _manager.RegisterTopTab(p0, p1);
             }
         }
 

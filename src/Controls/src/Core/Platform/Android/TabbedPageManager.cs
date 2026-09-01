@@ -750,6 +750,8 @@ public class TabbedPageManager
 
 		public Element Owner => _tabbedPage;
 
+		public object GetTabOwner(int index) => _tabbedPage.Children[index];
+
 		public event NotifyCollectionChangedEventHandler TabsChanged
 		{
 			add => ((IPageController)_tabbedPage).InternalChildren.CollectionChanged += value;
