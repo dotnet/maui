@@ -41,6 +41,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	Canvas? _dropIndicatorCanvas;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+	internal SelectionMode MauiSelectionMode { get; set; }
 
 	public MauiItemsView()
 	{
@@ -50,6 +51,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
 		// or out of the collection; no extra intermediate stop on the owner itself.
 		IsTabStop = false;
+		TabNavigation = KeyboardNavigationMode.Local;
 		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a

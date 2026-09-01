@@ -5,6 +5,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2;
 
 internal partial class MauiItemsViewAutomationPeer(MauiItemsView owner) : ItemsViewAutomationPeer(owner), ISelectionProvider
 {
+	bool ISelectionProvider.CanSelectMultiple => owner.MauiSelectionMode == SelectionMode.Multiple;
+	bool ISelectionProvider.IsSelectionRequired => false;
+	IRawElementProviderSimple[] ISelectionProvider.GetSelection() => GetSelection();
+
 	protected override string GetClassNameCore() => nameof(CollectionView);
 
 	protected override object? GetPatternCore(PatternInterface patternInterface)

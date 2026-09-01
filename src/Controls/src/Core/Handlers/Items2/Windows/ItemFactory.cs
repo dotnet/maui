@@ -134,7 +134,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 			}
 
-			container ??= new ItemContainer()
+			container ??= new MauiItemContainer(_view)
 			{
 				Child = wrapper,
 				VerticalAlignment = VerticalAlignment.Stretch,
@@ -273,6 +273,26 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		}
 
 		_recyclePool.Clear();
+	}
+}
+
+internal sealed class MauiItemContainer(ItemsView itemsView) : ItemContainer
+{
+	readonly ItemsView _itemsView = itemsView;
+
+	protected override void OnApplyTemplate()
+	{
+		base.OnApplyTemplate();
+		UpdateSelectionMode();
+	}
+
+	internal void UpdateSelectionMode()
+	{
+		var state = _itemsView is SelectableItemsView { SelectionMode: SelectionMode.Multiple }
+			? "Multiple"
+			: "Single";
+
+		VisualStateManager.GoToState(this, state, false);
 	}
 }
 

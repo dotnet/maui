@@ -92,8 +92,12 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	public static void MapSelectionMode(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
+		if (handler.PlatformView is MauiItemsView mauiItemsView)
+			mauiItemsView.MauiSelectionMode = itemsView.SelectionMode;
+
 		handler.UpdatePlatformSelection();
 		handler.UpdateMultiSelectContentMargin();
+		handler.UpdateItemContainerSelectionModes();
 		// The margin change affects item sizes, so invalidate the MeasureFirstItem cache
 		// to avoid stale sizes being applied to items realized after the mode switch.
 		handler.InvalidateFirstItemSize();
@@ -119,6 +123,17 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			{
 				wrapper.Margin = margin;
 			}
+		}
+	}
+
+	void UpdateItemContainerSelectionModes()
+	{
+		if (PlatformView is null)
+			return;
+
+		foreach (var container in PlatformView.GetChildren<MauiItemContainer>())
+		{
+			container.UpdateSelectionMode();
 		}
 	}
 
@@ -162,13 +177,16 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		if (PlatformView is not null)
 		{
+			if (PlatformView is MauiItemsView mauiItemsView)
+				mauiItemsView.MauiSelectionMode = ItemsView.SelectionMode;
+
 			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
 					new UI.Xaml.Data.Binding
 					{
 						Source = ItemsView,
 						Path = new UI.Xaml.PropertyPath("SelectionMode"),
 						Converter = new SelectionModeConverter(),
-						Mode = UI.Xaml.Data.BindingMode.TwoWay
+						Mode = UI.Xaml.Data.BindingMode.OneWay
 					});
 
 			PlatformView.SelectionChanged += PlatformSelectionChanged;
@@ -249,15 +267,15 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			return;
 		}
 
-		switch (PlatformView.SelectionMode)
+		switch (ItemsView.SelectionMode)
 		{
-			case ItemsViewSelectionMode.Single:
+			case SelectionMode.Single:
 				UpdateVirtualSingleSelection();
 				break;
-			case ItemsViewSelectionMode.Multiple:
+			case SelectionMode.Multiple:
 				UpdateVirtualMultipleSelection();
 				break;
-			case ItemsViewSelectionMode.None:
+			case SelectionMode.None:
 			default:
 				break;
 		}
@@ -314,14 +332,28 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		if (PlatformView is null || ItemsView is null)
 			return;
 
-		var selectedItem = PlatformView.SelectedItem is ItemTemplateContext2 itemPair
-			? itemPair.Item
-			: PlatformView.SelectedItem;
+		object? selectedItem = null;
+		foreach (var nativeItem in PlatformView.SelectedItems)
+		{
+			var actualItem = nativeItem is ItemTemplateContext2 itemPair
+				? itemPair.Item
+				: nativeItem;
+
+			selectedItem ??= actualItem;
+			if (!object.Equals(actualItem, ItemsView.SelectedItem))
+			{
+				selectedItem = actualItem;
+				break;
+			}
+		}
 
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
 		ItemsView.SelectedItem = selectedItem;
-
 		ItemsView.SelectionChanged += VirtualSelectionChanged;
+
+		// WinUI Multiple mode is used internally so focus does not imply selection.
+		// Normalize an explicit interaction back to MAUI's single-selection contract.
+		UpdatePlatformSelection();
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -433,9 +465,9 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		_ignorePlatformSelectionChange = true;
 
-		switch (PlatformView.SelectionMode)
+		switch (ItemsView.SelectionMode)
 		{
-			case ItemsViewSelectionMode.Single:
+			case SelectionMode.Single:
 				if (ItemsView.SelectedItem is null)
 				{
 					PlatformView.DeselectAll();
@@ -450,7 +482,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 				}
 
 				break;
-			case ItemsViewSelectionMode.Multiple:
+			case SelectionMode.Multiple:
 				PlatformView.DeselectAll();
 
 				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
@@ -468,8 +500,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 					index++;
 				}
 				break;
-			case ItemsViewSelectionMode.None:
-			case ItemsViewSelectionMode.Extended:
+			case SelectionMode.None:
 			default:
 				break;
 		}
@@ -509,7 +540,9 @@ partial class SelectionModeConverter : UI.Xaml.Data.IValueConverter
 		var selectionMode = (SelectionMode)value;
 		return selectionMode switch
 		{
-			SelectionMode.Single => ItemsViewSelectionMode.Single,
+			// MultipleSelector keeps focus navigation separate from selection.
+			// The handler normalizes explicit interactions to one selected item.
+			SelectionMode.Single => ItemsViewSelectionMode.Multiple,
 			SelectionMode.Multiple => ItemsViewSelectionMode.Multiple,
 			_ => ItemsViewSelectionMode.None,
 		};
