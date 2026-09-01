@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.NavigationPage)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationViewHandler)] // See RendererHandlerVariant.cs
-	public class NavigationPageHandlerTests_NavigationPage : NavigationPageTests
+	public class NavigationPageNavigationHandlerTests : NavigationPageTests
 	{
 		protected override void RegisterNavigationPageHandlers(IMauiHandlersCollection handlers)
 		{

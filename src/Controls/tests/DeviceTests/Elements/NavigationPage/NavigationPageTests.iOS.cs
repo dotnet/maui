@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		// Runs against both variants: SetupBuilder() dispatches to whichever
 		// RegisterNavigationPageHandlers override is active (NavigationRenderer on the base
-		// class, NavigationViewHandler on NavigationPageHandlerTests_NavigationPage). ViewController
+		// class, NavigationViewHandler on NavigationPageNavigationHandlerTests). ViewController
 		// resolves to the UINavigationController for both: NavigationRenderer.ViewController
 		// returns itself, while NavigationViewHandler.ViewController wraps its own
 		// UINavigationController.

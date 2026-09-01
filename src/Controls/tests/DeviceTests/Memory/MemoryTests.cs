@@ -89,12 +89,10 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 
-				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #if IOS || MACCATALYST
-				if (!includeNavigationViewHandler)
-				{
-					handlers.AddHandler<NavigationPage, NavigationRenderer>();
-				}
+				handlers.AddHandler(typeof(NavigationPage), includeNavigationViewHandler ? typeof(NavigationViewHandler) : typeof(NavigationRenderer));
+#else
+				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
 #if IOS || MACCATALYST
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
