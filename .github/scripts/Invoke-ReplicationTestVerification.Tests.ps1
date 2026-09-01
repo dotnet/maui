@@ -749,6 +749,7 @@ Describe 'Replication negative control' {
                 [Parameter(Mandatory = $true)][string]$Path,
                 [switch]$Infrastructure,
                 [switch]$NeverClears,
+                [switch]$OmitMachineResultOnPass,
                 [string]$FailureMessage = '',
                 [int]$PassUntilRun = 0
             )
@@ -793,6 +794,7 @@ if ('$NeverClears' -eq 'True' -or ($PassUntilRun -gt 0 -and `$run -gt $PassUntil
             testProjectPath = `$TestProjectPath
             testClass = `$TestClass
             testMethod = `$TestMethod
+            executedTestCount = 1
             actualFailureMessage = '$FailureMessage'
         } | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
     }
@@ -800,6 +802,26 @@ if ('$NeverClears' -eq 'True' -or ($PassUntilRun -gt 0 -and `$run -gt $PassUntil
     Write-Host "[`$TestType] `$TestFilter FAILED"
     Write-Host 'VERIFICATION PASSED'
     exit 0
+}
+if ('$OmitMachineResultOnPass' -ne 'True') {
+`$machineFilter = if (`$TestType -in @('UnitTest', 'XamlUnitTest')) {
+    "FullyQualifiedName=`$TestClass.`$TestMethod"
+} else {
+    `$TestFilter
+}
+[ordered]@{
+    schemaVersion = 1
+    failed = `$false
+    testType = `$TestType
+    testFilter = `$machineFilter
+    testProject = `$TestProject
+    testProjectPath = `$TestProjectPath
+    testClass = `$TestClass
+    testMethod = `$TestMethod
+    executedTestCount = 1
+    actualFailureMessage = ''
+    resultFile = ''
+} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath `$MachineResultPath -Encoding utf8NoBOM
 }
 Write-Host 'VERIFY FAILURE ONLY MODE'
 Write-Host 'VERIFICATION FAILED'
@@ -844,6 +866,7 @@ exit 1
         $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
             ConvertFrom-Json
         $control.runCount | Should -Be 2
+        $control.executedCount | Should -Be 2
         $control.passCount | Should -Be 2
         $control.infrastructureFailure | Should -BeFalse
     }
@@ -859,6 +882,41 @@ exit 1
         Invoke-ReplicationControl -Verifier $verifier -Output $output | Out-Null
 
         Test-Path -LiteralPath (Join-Path $output 'verification-result.json') | Should -BeFalse
+    }
+
+    It 'does not count a pass banner without an authoritative machine result' {
+        $verifier = Join-Path $TestDrive 'control-forged-pass.ps1'
+        $output = Join-Path $TestDrive 'control-forged-pass-out'
+        New-ReplicationControlStub `
+            -Path $verifier `
+            -OmitMachineResultOnPass
+        New-Item -ItemType Directory -Path $output -Force | Out-Null
+        [ordered]@{
+            schemaVersion = 1
+            failed = $false
+            testType = 'UnitTest'
+            testFilter = 'FullyQualifiedName=Microsoft.Maui.Controls.Tests.Issue12345Tests.ReproducesIssue12345'
+            testProject = 'Controls.Core.UnitTests'
+            testProjectPath = 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
+            testClass = 'Microsoft.Maui.Controls.Tests.Issue12345Tests'
+            testMethod = 'ReproducesIssue12345'
+            executedTestCount = 1
+            actualFailureMessage = ''
+            resultFile = ''
+        } | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (
+                Join-Path $output 'verifier-machine-result.json') `
+                -Encoding utf8NoBOM
+
+        Invoke-ReplicationControl -Verifier $verifier -Output $output |
+            Out-Null
+        $LASTEXITCODE | Should -Not -Be 0
+
+        $control = Get-Content -LiteralPath (
+            Join-Path $output 'negative-control-result.json') -Raw |
+            ConvertFrom-Json
+        $control.executedCount | Should -Be 0
+        $control.passCount | Should -Be 0
     }
 
     It 'calls a control that passes once and fails once inconsistent, not refuting' {
@@ -909,6 +967,7 @@ exit 1
         # The whole point of the change: the refutation rests on both runs, not
         # on the first one to come back red.
         $control.runCount | Should -Be 2
+        $control.executedCount | Should -Be 2
         $control.passCount | Should -Be 0
     }
 
@@ -939,6 +998,7 @@ exit 1
 
         $control = Get-Content -LiteralPath (Join-Path $output 'negative-control-result.json') -Raw |
             ConvertFrom-Json
+        $control.executedCount | Should -Be 0
         $control.passCount | Should -Be 0
         $control.infrastructureFailure | Should -BeTrue
     }

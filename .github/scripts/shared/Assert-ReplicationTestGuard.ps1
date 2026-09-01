@@ -3922,6 +3922,695 @@ function Get-ReplicationWhitespaceInsensitiveSpan {
     }
 }
 
+function Get-ReplicationControlSemanticReferences {
+    if (Get-Variable -Name ReplicationControlSemanticReferences `
+            -Scope Script -ErrorAction SilentlyContinue) {
+        return @($script:ReplicationControlSemanticReferences)
+    }
+
+    $references = [System.Collections.Generic.List[Microsoft.CodeAnalysis.MetadataReference]]::new()
+    $trustedAssemblies = [string][AppContext]::GetData(
+        'TRUSTED_PLATFORM_ASSEMBLIES')
+    foreach ($assemblyPath in @($trustedAssemblies -split
+            [IO.Path]::PathSeparator | Where-Object { $_ })) {
+        $references.Add(
+            [Microsoft.CodeAnalysis.MetadataReference]::CreateFromFile(
+                $assemblyPath))
+    }
+
+    # Bind controls against a closed metadata contract. Source-defined aliases
+    # or types then resolve to source symbols and cannot impersonate MAUI APIs.
+    $contractSource = @'
+namespace Microsoft.Maui.Controls
+{
+    public class BindableObject { }
+    public class Element : BindableObject { }
+    public class VisualElement : Element { }
+    public class View : VisualElement { }
+    public class Page : VisualElement { }
+    public class ContentPage : Page { }
+    public class Label : View
+    {
+        public bool IsVisible { get; set; }
+        public int MaxLines { get; set; }
+        public string Text { get; set; }
+    }
+
+    public class NavigationPage : Page
+    {
+        public static void SetTitleView(params object[] arguments) { }
+        public static void SetBackButtonTitle(params object[] arguments) { }
+        public static void SetHasBackButton(params object[] arguments) { }
+        public static void SetHasNavigationBar(params object[] arguments) { }
+        public static void SetIconColor(params object[] arguments) { }
+        public static void SetTitleIconImageSource(params object[] arguments) { }
+    }
+
+    public class Shell : Page
+    {
+        public static void SetBackButtonBehavior(params object[] arguments) { }
+        public static void SetBackgroundColor(params object[] arguments) { }
+        public static void SetFlyoutBehavior(params object[] arguments) { }
+        public static void SetFlyoutItemIsVisible(params object[] arguments) { }
+        public static void SetFlyoutWidth(params object[] arguments) { }
+        public static void SetForegroundColor(params object[] arguments) { }
+        public static void SetNavBarHasShadow(params object[] arguments) { }
+        public static void SetNavBarIsVisible(params object[] arguments) { }
+        public static void SetPresentationMode(params object[] arguments) { }
+        public static void SetSearchHandler(params object[] arguments) { }
+        public static void SetTabBarBackgroundColor(params object[] arguments) { }
+        public static void SetTabBarDisabledColor(params object[] arguments) { }
+        public static void SetTabBarForegroundColor(params object[] arguments) { }
+        public static void SetTabBarIsVisible(params object[] arguments) { }
+        public static void SetTabBarTitleColor(params object[] arguments) { }
+        public static void SetTitleColor(params object[] arguments) { }
+    }
+
+    public static class VisualStateManager
+    {
+        public static bool GoToState(params object[] arguments) => false;
+    }
+
+    public static class AutomationProperties
+    {
+        public static void SetExcludedWithChildren(params object[] arguments) { }
+        public static void SetHeadingLevel(params object[] arguments) { }
+        public static void SetHelpText(params object[] arguments) { }
+        public static void SetIsInAccessibleTree(params object[] arguments) { }
+        public static void SetLabeledBy(params object[] arguments) { }
+        public static void SetName(params object[] arguments) { }
+        public static void SetPositionInSet(params object[] arguments) { }
+        public static void SetSizeOfSet(params object[] arguments) { }
+    }
+
+    public static class SemanticProperties
+    {
+        public static void SetDescription(params object[] arguments) { }
+        public static void SetHeadingLevel(params object[] arguments) { }
+        public static void SetHint(params object[] arguments) { }
+    }
+
+    public static class BindableLayout
+    {
+        public static void SetEmptyView(params object[] arguments) { }
+        public static void SetEmptyViewTemplate(params object[] arguments) { }
+        public static void SetItemTemplate(params object[] arguments) { }
+        public static void SetItemTemplateSelector(params object[] arguments) { }
+        public static void SetItemsSource(params object[] arguments) { }
+    }
+
+    public class Grid : View
+    {
+        public static void SetColumn(params object[] arguments) { }
+        public static void SetColumnSpan(params object[] arguments) { }
+        public static void SetRow(params object[] arguments) { }
+        public static void SetRowSpan(params object[] arguments) { }
+    }
+
+    public class FlexLayout : View
+    {
+        public static void SetAlignSelf(params object[] arguments) { }
+        public static void SetBasis(params object[] arguments) { }
+        public static void SetGrow(params object[] arguments) { }
+        public static void SetOrder(params object[] arguments) { }
+        public static void SetShrink(params object[] arguments) { }
+    }
+
+    public class AbsoluteLayout : View
+    {
+        public static void SetLayoutBounds(params object[] arguments) { }
+        public static void SetLayoutFlags(params object[] arguments) { }
+    }
+}
+
+namespace Xunit
+{
+    public sealed class FactAttribute : System.Attribute { }
+    public sealed class TheoryAttribute : System.Attribute { }
+    public static class Assert
+    {
+        public static void Contains(params object[] arguments) { }
+        public static void DoesNotContain(params object[] arguments) { }
+        public static void Empty(params object[] arguments) { }
+        public static void EndsWith(params object[] arguments) { }
+        public static void Equal(params object[] arguments) { }
+        public static void Fail(params object[] arguments) { }
+        public static void False(params object[] arguments) { }
+        public static void NotEmpty(params object[] arguments) { }
+        public static void NotEqual(params object[] arguments) { }
+        public static void NotNull(params object[] arguments) { }
+        public static void NotSame(params object[] arguments) { }
+        public static void Null(params object[] arguments) { }
+        public static void Same(params object[] arguments) { }
+        public static void Single(params object[] arguments) { }
+        public static void StartsWith(params object[] arguments) { }
+        public static void True(params object[] arguments) { }
+        public static T IsAssignableFrom<T>(params object[] arguments) => default;
+        public static T IsType<T>(params object[] arguments) => default;
+        public static T Throws<T>(params object[] arguments) => default;
+        public static System.Threading.Tasks.Task<T> ThrowsAsync<T>(
+            params object[] arguments) => default;
+    }
+}
+
+namespace NUnit.Framework
+{
+    public sealed class TestAttribute : System.Attribute { }
+    public class Constraint { }
+    public class ConstraintExpression
+    {
+        public Constraint Null => new Constraint();
+        public Constraint True => new Constraint();
+        public Constraint False => new Constraint();
+        public Constraint Empty => new Constraint();
+        public ConstraintExpression Not => this;
+        public Constraint EqualTo(params object[] arguments) => new Constraint();
+        public Constraint GreaterThan(params object[] arguments) => new Constraint();
+        public Constraint LessThan(params object[] arguments) => new Constraint();
+        public Constraint SameAs(params object[] arguments) => new Constraint();
+    }
+    public static class Is
+    {
+        public static Constraint Null => new Constraint();
+        public static Constraint True => new Constraint();
+        public static Constraint False => new Constraint();
+        public static Constraint Empty => new Constraint();
+        public static ConstraintExpression Not => new ConstraintExpression();
+        public static Constraint EqualTo(params object[] arguments)
+            => new Constraint();
+        public static Constraint GreaterThan(params object[] arguments)
+            => new Constraint();
+        public static Constraint LessThan(params object[] arguments)
+            => new Constraint();
+        public static Constraint SameAs(params object[] arguments)
+            => new Constraint();
+    }
+    public static class Assert
+    {
+        public static void Fail(params object[] arguments) { }
+        public static void Multiple(params object[] arguments) { }
+        public static void That(params object[] arguments) { }
+    }
+    public static class ClassicAssert
+    {
+        public static void AreEqual(params object[] arguments) { }
+        public static void AreNotEqual(params object[] arguments) { }
+        public static void IsFalse(params object[] arguments) { }
+        public static void IsNotNull(params object[] arguments) { }
+        public static void IsNull(params object[] arguments) { }
+        public static void IsTrue(params object[] arguments) { }
+    }
+}
+
+namespace Microsoft.VisualStudio.TestTools.UnitTesting
+{
+    public sealed class TestMethodAttribute : System.Attribute { }
+    public static class Assert
+    {
+        public static void AreEqual(params object[] arguments) { }
+        public static void AreNotEqual(params object[] arguments) { }
+        public static void Fail(params object[] arguments) { }
+        public static void IsFalse(params object[] arguments) { }
+        public static void IsNotNull(params object[] arguments) { }
+        public static void IsNull(params object[] arguments) { }
+        public static void IsTrue(params object[] arguments) { }
+    }
+    public static class CollectionAssert
+    {
+        public static void AreEqual(params object[] arguments) { }
+        public static void AreNotEqual(params object[] arguments) { }
+        public static void Contains(params object[] arguments) { }
+        public static void DoesNotContain(params object[] arguments) { }
+    }
+    public static class StringAssert
+    {
+        public static void Contains(params object[] arguments) { }
+        public static void DoesNotMatch(params object[] arguments) { }
+        public static void EndsWith(params object[] arguments) { }
+        public static void Matches(params object[] arguments) { }
+        public static void StartsWith(params object[] arguments) { }
+    }
+}
+'@
+    $contractTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        $contractSource)
+    $contractOptions =
+        [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
+            [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary)
+    $contractCompilation =
+        [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create(
+            'Microsoft.Maui.Controls.ReplicationControlContract',
+            [Microsoft.CodeAnalysis.SyntaxTree[]]@($contractTree),
+            [Microsoft.CodeAnalysis.MetadataReference[]]$references.ToArray(),
+            $contractOptions)
+    $contractStream = [IO.MemoryStream]::new()
+    try {
+        $emitResult = $contractCompilation.Emit($contractStream)
+        if (-not $emitResult.Success) {
+            $details = @($emitResult.Diagnostics | Where-Object {
+                    [string]$_.Severity -ceq 'Error'
+                } | Select-Object -First 4 | ForEach-Object ToString) -join '; '
+            throw "The trusted control semantic contract could not compile: $details"
+        }
+        $contractStream.Position = 0
+        $references.Add(
+            [Microsoft.CodeAnalysis.MetadataReference]::CreateFromStream(
+                $contractStream))
+    }
+    finally {
+        $contractStream.Dispose()
+    }
+
+    $script:ReplicationControlSemanticReferences = $references.ToArray()
+    return @($script:ReplicationControlSemanticReferences)
+}
+
+function Read-ReplicationControlResult {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [datetime]$MinimumWriteTimeUtc,
+        [Parameter(Mandatory = $true)][int]$ExpectedIssueNumber,
+        [Parameter(Mandatory = $true)][string]$ExpectedPlatform,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestType,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestFilter,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestClass,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestMethod,
+        [Parameter(Mandatory = $true)][int]$ExpectedRunCount,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Passed', 'PreExecutionFailure')]
+        [string]$ExpectedOutcome
+    )
+
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $item.PSIsContainer -or
+        $item.Length -le 0 -or
+        $item.Length -gt 64KB -or
+        ($PSBoundParameters.ContainsKey('MinimumWriteTimeUtc') -and
+            $item.LastWriteTimeUtc -lt $MinimumWriteTimeUtc)) {
+        throw 'The control result is not a fresh bounded regular file.'
+    }
+    $json = Get-Content -LiteralPath $Path -Raw -ErrorAction Stop
+    $document = [Text.Json.JsonDocument]::Parse($json)
+    try {
+        if ($document.RootElement.ValueKind -ne
+            [Text.Json.JsonValueKind]::Object) {
+            throw 'The control result root is not an object.'
+        }
+        $expectedKinds = [ordered]@{
+            schemaVersion = [Text.Json.JsonValueKind]::Number
+            issueNumber = [Text.Json.JsonValueKind]::Number
+            platform = [Text.Json.JsonValueKind]::String
+            testType = [Text.Json.JsonValueKind]::String
+            testFilter = [Text.Json.JsonValueKind]::String
+            testClass = [Text.Json.JsonValueKind]::String
+            testMethod = [Text.Json.JsonValueKind]::String
+            requestedRunCount = [Text.Json.JsonValueKind]::Number
+            runCount = [Text.Json.JsonValueKind]::Number
+            executedCount = [Text.Json.JsonValueKind]::Number
+            passCount = [Text.Json.JsonValueKind]::Number
+            infrastructureFailure = $null
+            observedFailureMessages = [Text.Json.JsonValueKind]::Array
+            reproductionFailureMessages = [Text.Json.JsonValueKind]::Array
+            failureModeChanged = $null
+            logFiles = [Text.Json.JsonValueKind]::Array
+        }
+        $seen = [Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::Ordinal)
+        foreach ($property in $document.RootElement.EnumerateObject()) {
+            $expectedKind = if ($property.Name -cin @(
+                    'infrastructureFailure',
+                    'failureModeChanged')) {
+                if ($property.Value.ValueKind -notin @(
+                        [Text.Json.JsonValueKind]::True,
+                        [Text.Json.JsonValueKind]::False)) {
+                    throw 'The control result has duplicate, unknown, or mistyped fields.'
+                }
+                $property.Value.ValueKind
+            } elseif ($property.Name -cin @($expectedKinds.Keys)) {
+                $expectedKinds[$property.Name]
+            } else {
+                $null
+            }
+            if (-not $seen.Add($property.Name) -or
+                $property.Name -cnotin @($expectedKinds.Keys) -or
+                $null -eq $expectedKind -or
+                $property.Value.ValueKind -ne $expectedKind) {
+                throw 'The control result has duplicate, unknown, or mistyped fields.'
+            }
+            if ($property.Value.ValueKind -eq
+                [Text.Json.JsonValueKind]::Number) {
+                $integerValue = 0
+                if (-not $property.Value.TryGetInt32([ref]$integerValue)) {
+                    throw 'The control result numeric fields must be 32-bit integers.'
+                }
+            }
+            if ($property.Value.ValueKind -eq
+                    [Text.Json.JsonValueKind]::String -and
+                $property.Value.GetString().Length -gt 4096) {
+                throw 'The control result contains an oversized string.'
+            }
+            if ($property.Value.ValueKind -eq
+                [Text.Json.JsonValueKind]::Array) {
+                $items = @($property.Value.EnumerateArray())
+                if ($items.Count -gt 100 -or
+                    @($items | Where-Object {
+                            $_.ValueKind -ne [Text.Json.JsonValueKind]::String -or
+                            $_.GetString().Length -gt 4096
+                        }).Count -ne 0) {
+                    throw 'The control result contains an invalid bounded string array.'
+                }
+            }
+        }
+        if ($seen.Count -ne $expectedKinds.Count) {
+            throw 'The control result is missing required fields.'
+        }
+    }
+    finally {
+        $document.Dispose()
+    }
+
+    $result = $json | ConvertFrom-Json -AsHashtable -Depth 10 -ErrorAction Stop
+    if ([int]$result.schemaVersion -ne 1 -or
+        [int]$result.issueNumber -ne $ExpectedIssueNumber -or
+        [string]$result.platform -cne $ExpectedPlatform -or
+        [string]$result.testType -cne $ExpectedTestType -or
+        [string]$result.testFilter -cne $ExpectedTestFilter -or
+        [string]$result.testClass -cne $ExpectedTestClass -or
+        [string]$result.testMethod -cne $ExpectedTestMethod -or
+        [int]$result.requestedRunCount -ne $ExpectedRunCount -or
+        [int]$result.runCount -ne $ExpectedRunCount) {
+        throw 'The control result identity does not match the trusted run.'
+    }
+
+    if ($ExpectedOutcome -ceq 'Passed') {
+        if ([int]$result.executedCount -ne $ExpectedRunCount -or
+            [int]$result.passCount -ne $ExpectedRunCount -or
+            $result.infrastructureFailure -ne $false -or
+            $result.failureModeChanged -ne $false -or
+            @($result.observedFailureMessages).Count -ne 0) {
+            throw 'The control result does not prove every trusted control run passed.'
+        }
+    } elseif ([int]$result.executedCount -ne 0 -or
+        [int]$result.passCount -ne 0 -or
+        $result.infrastructureFailure -ne $true -or
+        $result.failureModeChanged -ne $false) {
+        throw 'The control result does not prove a fresh zero-execution failure.'
+    }
+
+    return $result
+}
+
+function Confirm-ReplicationTrustedOracleExpression {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression,
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SemanticModel]$SemanticModel,
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SyntaxNode]$Root,
+        [Collections.Generic.HashSet[string]]$VisitedLocals
+    )
+
+    if ($null -eq $VisitedLocals) {
+        $VisitedLocals = [Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::Ordinal)
+    }
+    $nodes = @($Expression.DescendantNodesAndSelf())
+    if (@($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThisExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseExpressionSyntax]
+            }).Count -ne 0) {
+        throw (
+            'Trusted assertion dataflow may not use this or base because virtual ' +
+            'dispatch could execute generated overrides.')
+    }
+    if (@($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.QueryExpressionSyntax] -or
+                ($_.RawKind -in @(
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression))
+            }).Count -ne 0) {
+        throw (
+            'Trusted assertion arguments may not contain writes, increments, ' +
+            'lambdas, or query expressions.')
+    }
+    foreach ($argument in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax]
+            })) {
+        if ($argument.RefKindKeyword.RawKind -ne 0) {
+            throw 'Trusted assertion arguments may not use ref, out, or in.'
+        }
+    }
+    foreach ($expressionNode in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+            })) {
+        $conversion = $SemanticModel.GetConversion($expressionNode)
+        if ($conversion.IsUserDefined) {
+            throw 'Trusted assertion arguments may not execute user-defined conversions.'
+        }
+    }
+    foreach ($call in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+            })) {
+        $callSymbol = $SemanticModel.GetSymbolInfo($call).Symbol
+        if ($callSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            @($callSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            throw (
+                'Trusted assertion arguments may call only resolved external ' +
+                'metadata methods, never generated helpers.')
+        }
+        $callType = $callSymbol.ContainingType.ToString()
+        $allowedCall = (
+            $callType -cin @(
+                'NUnit.Framework.Is',
+                'NUnit.Framework.ConstraintExpression',
+                'System.Math'
+            ) -or
+            ($callType -ceq 'System.Linq.Enumerable' -and
+                $callSymbol.Name -cin @(
+                    'All',
+                    'Any',
+                    'Cast',
+                    'Count',
+                    'ElementAt',
+                    'First',
+                    'FirstOrDefault',
+                    'OfType',
+                    'SequenceEqual',
+                    'Single',
+                    'SingleOrDefault',
+                    'Skip',
+                    'Take',
+                    'ToArray',
+                    'ToList'
+                ))
+        )
+        if (-not $allowedCall) {
+            throw (
+                "Trusted assertion argument call '$callType.$(
+                    $callSymbol.Name)' is not an allowlisted pure observation.")
+        }
+    }
+    foreach ($creation in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitObjectCreationExpressionSyntax]
+            })) {
+        $constructor = $SemanticModel.GetSymbolInfo($creation).Symbol
+        if ($constructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            @($constructor.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0 -or
+            $constructor.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract') {
+            throw (
+                'Trusted assertion dataflow may construct only explicitly ' +
+                'allowlisted deterministic contract types.')
+        }
+    }
+    foreach ($member in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $_.Parent -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+            })) {
+        $memberSymbol = $SemanticModel.GetSymbolInfo($member).Symbol
+        if ($null -eq $memberSymbol -or
+            @($memberSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0 -or
+            $memberSymbol -is [Microsoft.CodeAnalysis.IEventSymbol]) {
+            throw (
+                'Trusted assertion member reads must resolve to external metadata ' +
+                'properties or fields, never generated getters or events.')
+        }
+        $memberType = $memberSymbol.ContainingType.ToString()
+        $memberAssembly = $memberSymbol.ContainingAssembly.Name
+        $allowedMemberRead = (
+            ($memberAssembly -ceq
+                'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                ($memberType.StartsWith(
+                        'Microsoft.Maui.Controls.',
+                        [StringComparison]::Ordinal) -or
+                    $memberType.StartsWith(
+                        'NUnit.Framework.',
+                        [StringComparison]::Ordinal))) -or
+            $memberType -ceq 'string' -or
+            $memberType -ceq 'System.Array' -or
+            $memberType -cmatch '^System\.Collections\.Generic\.(?:List|HashSet)<'
+        )
+        if (-not $allowedMemberRead) {
+            throw (
+                "Trusted assertion member '$memberType.$(
+                    $memberSymbol.Name)' is not an allowlisted deterministic " +
+                'observation.')
+        }
+    }
+    foreach ($indexer in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]
+            })) {
+        $indexerSymbol = $SemanticModel.GetSymbolInfo($indexer).Symbol
+        if ($indexerSymbol -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            @($indexerSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            throw (
+                'Trusted assertion indexers must resolve to external metadata, ' +
+                'never generated getters.')
+        }
+    }
+    foreach ($identifier in @($nodes | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                -not ($_.Parent -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $_.Parent.Name -eq $_) -and
+                $_.Parent -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AliasQualifiedNameSyntax] -and
+                $_.Parent -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.QualifiedNameSyntax]
+            })) {
+        $identifierSymbol = $SemanticModel.GetSymbolInfo($identifier).Symbol
+        if ($identifierSymbol -is [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            if ($identifierSymbol.Type.TypeKind -eq
+                    [Microsoft.CodeAnalysis.TypeKind]::Error -or
+                @($identifierSymbol.Type.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                throw (
+                    'A local used by trusted dataflow must have an external ' +
+                    'metadata type, never a generated or unresolved runtime type.')
+            }
+            $localKey = '{0}:{1}' -f
+                $identifierSymbol.Name,
+                $identifierSymbol.Locations[0].SourceSpan.Start
+            if (-not $VisitedLocals.Add($localKey)) {
+                continue
+            }
+            $declarations = @($identifierSymbol.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]
+                })
+            if ($declarations.Count -ne 1 -or
+                $null -eq $declarations[0].Initializer) {
+                throw (
+                    'A local used by the trusted assertion must have one traced ' +
+                    'initializer.')
+            }
+            $writes = @($Root.DescendantNodes() | Where-Object {
+                    if ($_ -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                        return $false
+                    }
+                    $candidate = $SemanticModel.GetSymbolInfo($_).Symbol
+                    if ($null -eq $candidate -or
+                        -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $candidate,
+                            $identifierSymbol)) {
+                        return $false
+                    }
+                    return (
+                        ($_.Parent -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                            $_.Parent.Left -eq $_) -or
+                        $_.Parent.RawKind -in @(
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression) -or
+                        ($_.Parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                            $_.Parent.RefKindKeyword.RawKind -ne 0))
+                })
+            if ($writes.Count -ne 0) {
+                throw 'A local used by the trusted assertion may not be reassigned.'
+            }
+            Confirm-ReplicationTrustedOracleExpression `
+                -Expression $declarations[0].Initializer.Value `
+                -SemanticModel $SemanticModel `
+                -Root $Root `
+                -VisitedLocals $VisitedLocals
+            continue
+        }
+        if ($identifierSymbol -is [Microsoft.CodeAnalysis.IParameterSymbol]) {
+            if ($identifierSymbol.Type.TypeKind -eq
+                    [Microsoft.CodeAnalysis.TypeKind]::Error -or
+                @($identifierSymbol.Type.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                throw 'Trusted assertion parameters must have external metadata types.'
+            }
+            continue
+        }
+        if ($identifierSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $identifierSymbol -is [Microsoft.CodeAnalysis.IFieldSymbol] -or
+            $identifierSymbol -is [Microsoft.CodeAnalysis.IEventSymbol]) {
+            if ($identifierSymbol -is [Microsoft.CodeAnalysis.IEventSymbol]) {
+                throw 'Trusted assertion dataflow may not read events.'
+            }
+            $identifierType = $identifierSymbol.ContainingType.ToString()
+            $identifierAssembly =
+                $identifierSymbol.ContainingAssembly.Name
+            $allowedIdentifierRead = (
+                ($identifierAssembly -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    ($identifierType.StartsWith(
+                            'Microsoft.Maui.Controls.',
+                            [StringComparison]::Ordinal) -or
+                        $identifierType.StartsWith(
+                            'NUnit.Framework.',
+                            [StringComparison]::Ordinal))) -or
+                $identifierType -ceq 'string' -or
+                $identifierType -ceq 'System.Array' -or
+                $identifierType -cmatch
+                    '^System\.Collections\.Generic\.(?:List|HashSet)<'
+            )
+            if (-not $allowedIdentifierRead) {
+                throw (
+                    "Trusted assertion identifier '$identifierType.$(
+                        $identifierSymbol.Name)' is not an allowlisted " +
+                    'deterministic observation.')
+            }
+            continue
+        }
+        if ($null -eq $identifierSymbol -or
+            @($identifierSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            throw (
+                "Trusted assertion identifier '$identifier' must resolve to a " +
+                'traced local, parameter, or external metadata symbol.')
+        }
+    }
+}
+
 function New-ReplicationControlVariant {
     <#
         .SYNOPSIS
@@ -3939,76 +4628,657 @@ function New-ReplicationControlVariant {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$BaselineSource,
-        [Parameter(Mandatory = $true)][AllowNull()]$Edits
+        [Parameter(Mandatory = $true)][AllowNull()]$Edits,
+        [string]$SourcePath = 'control.cs',
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform = 'catalyst',
+        [Parameter(Mandatory = $true)][string]$ExpectedTestMethod,
+        [Parameter(Mandatory = $true)][string]$ExpectedTestClass,
+        [AllowEmptyCollection()][string[]]$AdditionalSources = @()
     )
 
+    if (-not $SourcePath.EndsWith(
+            '.cs',
+            [StringComparison]::OrdinalIgnoreCase)) {
+        throw (
+            'A trusted negative control requires a C# applyReportedTrigger ' +
+            'gate; XAML or other free-form source edits are not accepted.')
+    }
     $editList = @($Edits)
-    if ($editList.Count -eq 0) {
-        throw 'The control edits list is empty. List the exact trigger statements to remove.'
-    }
-    if ($editList.Count -gt 10) {
-        throw "The control edits list has $($editList.Count) entries, which is more than the 10 a trigger removal should need."
+    if ($editList.Count -ne 1) {
+        throw (
+            'A negative control requires exactly one trusted gate edit: change ' +
+            'var applyReportedTrigger = true; to false.')
     }
 
-    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
-    $variant = [string]$BaselineSource
+    $edit = $editList[0]
+    $find = ''
+    $replace = ''
+    if ($edit -is [System.Collections.IDictionary]) {
+        if ($edit.Contains('find')) { $find = [string]$edit['find'] }
+        if ($edit.Contains('replace') -and $null -ne $edit['replace']) {
+            $replace = [string]$edit['replace']
+        }
+    } else {
+        $findProperty = $edit.PSObject.Properties['find']
+        if ($findProperty) { $find = [string]$findProperty.Value }
+        $replaceProperty = $edit.PSObject.Properties['replace']
+        if ($replaceProperty -and $null -ne $replaceProperty.Value) {
+            $replace = [string]$replaceProperty.Value
+        }
+    }
+    if ($find.Trim() -cne 'var applyReportedTrigger = true;' -or
+        $replace.Trim() -cne 'var applyReportedTrigger = false;') {
+        throw (
+            'The control author may request only the trusted ' +
+            'applyReportedTrigger true-to-false edit.')
+    }
 
-    foreach ($edit in $editList) {
-        $find = ''
-        $replace = ''
-        if ($edit -is [string]) {
-            $find = [string]$edit
-        } elseif ($edit -is [System.Collections.IDictionary]) {
-            if ($edit.Contains('find')) { $find = [string]$edit['find'] }
-            if ($edit.Contains('replace') -and $null -ne $edit['replace']) {
-                $replace = [string]$edit['replace']
+    $symbol = switch ($Platform) {
+        'android' { 'ANDROID' }
+        'ios' { 'IOS' }
+        'catalyst' { 'MACCATALYST' }
+        'windows' { 'WINDOWS' }
+    }
+    $parseOptions = [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default.WithPreprocessorSymbols(
+        [string[]]@($symbol))
+    $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        $BaselineSource,
+        $parseOptions)
+    $syntaxErrors = @($tree.GetDiagnostics() | Where-Object {
+            [string]$_.Severity -ceq 'Error'
+        } | Select-Object -First 4)
+    if ($syntaxErrors.Count -gt 0) {
+        throw 'The reproduction source is not valid C# for a trusted negative control gate.'
+    }
+
+    $root = $tree.GetRoot()
+    $semanticTrees =
+        [System.Collections.Generic.List[Microsoft.CodeAnalysis.SyntaxTree]]::new()
+    $semanticTrees.Add($tree)
+    foreach ($additionalSource in @($AdditionalSources)) {
+        if ([string]::IsNullOrWhiteSpace($additionalSource)) {
+            throw 'An additional generated control source is empty.'
+        }
+        $additionalTree =
+            [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+                $additionalSource,
+                $parseOptions)
+        $semanticTrees.Add($additionalTree)
+    }
+    foreach ($semanticTree in $semanticTrees) {
+        $conditionalSymbols = @($semanticTree.GetRoot().DescendantTrivia(
+                [System.Func[Microsoft.CodeAnalysis.SyntaxNode, bool]]$null,
+                $true) | ForEach-Object {
+                $structure = $_.GetStructure()
+                if ($structure -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IfDirectiveTriviaSyntax] -or
+                    $structure -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ElifDirectiveTriviaSyntax]) {
+                    $structure.Condition.DescendantNodesAndSelf() |
+                        Where-Object {
+                            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]
+                        } |
+                        ForEach-Object { $_.Identifier.ValueText }
+                }
+            } | Where-Object { $_ } | Sort-Object -Unique)
+        $unsupportedSymbols = @($conditionalSymbols | Where-Object {
+                $_ -cnotin @('ANDROID', 'IOS', 'MACCATALYST', 'WINDOWS')
+            })
+        if ($unsupportedSymbols.Count -ne 0) {
+            throw (
+                'Generated control sources use unsupported conditional symbols: ' +
+                ($unsupportedSymbols -join ', ') +
+                '. Only trusted platform symbols are accepted.')
+        }
+        if (@($semanticTree.GetRoot().DescendantNodes() | Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ConversionOperatorDeclarationSyntax]
+                }).Count -ne 0) {
+            throw (
+                'Generated control sources may not declare conversion operators; ' +
+                'argument evaluation must remain side-effect-free.')
+        }
+    }
+    $semanticCompilation =
+        [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create(
+            'Maui.Replication.GeneratedControl',
+            [Microsoft.CodeAnalysis.SyntaxTree[]]$semanticTrees.ToArray(),
+            [Microsoft.CodeAnalysis.MetadataReference[]]@(
+                Get-ReplicationControlSemanticReferences),
+            [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
+                [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
+    $semanticModel = $semanticCompilation.GetSemanticModel($tree)
+
+    $declarators = @($root.DescendantNodes() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+            $_.Identifier.ValueText -ceq 'applyReportedTrigger'
+        })
+    if ($declarators.Count -ne 1) {
+        throw 'The reproduction must declare exactly one applyReportedTrigger gate.'
+    }
+    $declarator = $declarators[0]
+    $declaration = $declarator.Parent
+    $localDeclaration = $declaration.Parent
+    if ($localDeclaration -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -or
+        $declaration.Variables.Count -ne 1 -or
+        $declaration.Type.ToString() -cne 'var' -or
+        $null -eq $declarator.Initializer -or
+        $declarator.Initializer.Value.RawKind -ne
+            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::TrueLiteralExpression) {
+        throw (
+            'The trusted control gate must be the standalone local declaration ' +
+            'var applyReportedTrigger = true;')
+    }
+
+    $references = @($root.DescendantNodes() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+            $_.Identifier.ValueText -ceq 'applyReportedTrigger'
+        })
+    if ($references.Count -ne 1 -or
+        $references[0].Parent -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax] -or
+        $references[0].Parent.Condition -ne $references[0]) {
+        throw (
+            'applyReportedTrigger must be used exactly once as the complete ' +
+            'condition of one if statement.')
+    }
+    $gate = $references[0].Parent
+    if ($gate.Else -or
+        $gate.Statement -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+        $gate.Statement.Statements.Count -ne 1 -or
+        $gate.Statement.Statements[0] -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+        throw (
+            'The applyReportedTrigger block must contain exactly one direct ' +
+            'trigger expression and no else branch.')
+    }
+    $testMethod = @($gate.Ancestors() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax]
+        } | Select-Object -First 1)
+    $interveningScopes = @($gate.Ancestors() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax]
+        })
+    $testAttributeNames = if ($testMethod.Count -eq 1) {
+        @($testMethod[0].AttributeLists.Attributes | ForEach-Object {
+                $name = $_.Name.ToString().Split('.')[-1]
+                if ($name.EndsWith(
+                        'Attribute',
+                        [StringComparison]::Ordinal)) {
+                    $name.Substring(0, $name.Length - 'Attribute'.Length)
+                } else {
+                    $name
+                }
+            })
+    } else {
+        @()
+    }
+    if ($testMethod.Count -ne 1 -or
+        $testMethod[0].Identifier.ValueText -cne $ExpectedTestMethod -or
+        $interveningScopes.Count -ne 0 -or
+        @($testAttributeNames | Where-Object {
+                $_ -cin @('Fact', 'Theory', 'Test')
+            }).Count -eq 0) {
+        throw (
+            'The trusted control gate must be directly inside the selected ' +
+            "test method '$ExpectedTestMethod', not a lambda, local function, " +
+            'or different attributed method.')
+    }
+    $selectedMethodSymbol = $semanticModel.GetDeclaredSymbol($testMethod[0])
+    if ($selectedMethodSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+        $selectedMethodSymbol.ContainingType.ToString() -cne
+            $ExpectedTestClass) {
+        throw (
+            "The trusted control gate must be in verifier-selected class " +
+            "'$ExpectedTestClass', not another class with the same method name.")
+    }
+    $selectedAttributes = @(
+        $testMethod[0].AttributeLists.Attributes)
+    if ($testMethod[0].ParameterList.Parameters.Count -ne 0 -or
+        $selectedAttributes.Count -ne 1) {
+        throw (
+            'A trusted negative-control test must be parameterless and have ' +
+            'exactly one trusted test attribute; data sources are not accepted.')
+    }
+    $aliasOrDeconstruction = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.RefExpressionSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.RefTypeSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.DeclarationExpressionSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachVariableStatementSyntax] -or
+            ($_.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                $_.Parent.Left -eq $_ -and
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.TupleExpressionSyntax]) -or
+            ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                $_.RefKindKeyword.RawKind -ne 0)
+        })
+    if ($aliasOrDeconstruction.Count -ne 0) {
+        throw (
+            'The selected test method may not use ref aliases, ref/out/in, or ' +
+            'deconstruction; trusted dataflow must remain directly traceable.')
+    }
+    $sourceCalls = @($testMethod[0].Body.DescendantNodes() | Where-Object {
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                return $false
             }
-        } else {
-            $findProperty = $edit.PSObject.Properties['find']
-            if ($findProperty) { $find = [string]$findProperty.Value }
-            $replaceProperty = $edit.PSObject.Properties['replace']
-            if ($replaceProperty -and $null -ne $replaceProperty.Value) {
-                $replace = [string]$replaceProperty.Value
+            $calledSymbol = $semanticModel.GetSymbolInfo($_).Symbol
+            return (
+                $calledSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                @($calledSymbol.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0)
+        })
+    if ($sourceCalls.Count -ne 0) {
+        throw (
+            'The selected test method may not invoke generated source helpers; ' +
+            'trusted control setup and oracle dataflow use external metadata only.')
+    }
+    $sourceExecutableSymbols = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]) {
+                return $false
             }
-        }
-
-        if ([string]::IsNullOrWhiteSpace($find)) {
-            throw 'A control edit has an empty find value. Quote the exact trigger text from the reproduction.'
-        }
-
-        # An edit that carries an assertion is the author deleting the oracle
-        # under the name of removing the trigger, which is the exact failure
-        # this function exists to make impossible.
-        if (@(Get-ReplicationAssertionStatements -Source $find).Count -gt 0) {
-            throw "A control edit removes an assertion: '$($find.Trim())'. Remove only the trigger and leave every assertion in place."
-        }
-        if (@(Get-ReplicationAssertionStatements -Source $replace).Count -gt 0) {
-            throw "A control edit introduces an assertion: '$($replace.Trim())'. The control must keep the reproduction's assertions unchanged."
-        }
-
-        $occurrences = ([regex]::Matches($variant, [regex]::Escape($find))).Count
-        if ($occurrences -eq 1) {
-            $index = $variant.IndexOf($find, [StringComparison]::Ordinal)
-            $length = $find.Length
-        } else {
-            $span = Get-ReplicationWhitespaceInsensitiveSpan -Source $variant -Find $find
-            if ($span.Count -ne 1) {
-                throw ("The control edit text occurs $($span.Count) times in the reproduction, " +
-                    "ignoring indentation, but it must occur exactly once: '$($find.Trim())'.")
+            $symbolInfo = $semanticModel.GetSymbolInfo($_)
+            $symbols = @($symbolInfo.Symbol) + @($symbolInfo.CandidateSymbols)
+            return @($symbols | Where-Object {
+                    ($_ -is [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                        $_ -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                        $_ -is [Microsoft.CodeAnalysis.IFieldSymbol] -or
+                        $_ -is [Microsoft.CodeAnalysis.IEventSymbol]) -and
+                    @($_.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -ne 0
+                }).Count -ne 0
+        })
+    if ($sourceExecutableSymbols.Count -ne 0) {
+        throw (
+            'The selected test method may not execute generated constructors, ' +
+            'method groups, properties, indexers, fields, events, or operators.')
+    }
+    if ($null -eq $testMethod[0].Body -or
+        $localDeclaration.Parent -ne $testMethod[0].Body -or
+        $gate.Parent -ne $testMethod[0].Body -or
+        $localDeclaration.SpanStart -ge $gate.SpanStart) {
+        throw (
+            'The trusted control declaration and gate must be ordered top-level ' +
+            'statements in the executable body of the selected test method.')
+    }
+    $declaredGateSymbol = $semanticModel.GetDeclaredSymbol($declarator)
+    $conditionGateSymbol = $semanticModel.GetSymbolInfo($references[0]).Symbol
+    if ($null -eq $declaredGateSymbol -or
+        $null -eq $conditionGateSymbol -or
+        -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+            $declaredGateSymbol,
+            $conditionGateSymbol)) {
+        throw (
+            'The trusted control condition must bind to the exact local gate ' +
+            'declared in the selected test method.')
+    }
+    $gateAssertions = @(Get-ReplicationAssertionStatements `
+        -Source $gate.Statement.ToFullString())
+    if ($gateAssertions.Count -ne 0) {
+        throw 'The applyReportedTrigger block must not contain an assertion.'
+    }
+    $methodAssertions = @(Get-ReplicationAssertionStatements `
+        -Source $testMethod[0].ToFullString())
+    if ($methodAssertions.Count -eq 0) {
+        throw 'The selected test method has no oracle outside its trigger gate.'
+    }
+    $directiveOrDisabledTrivia = @($gate.DescendantTrivia(
+            [System.Func[Microsoft.CodeAnalysis.SyntaxNode, bool]]$null,
+            $true) | Where-Object {
+            $_.GetStructure() -or
+            $_.RawKind -eq [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::DisabledTextTrivia -or
+            $_.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SingleLineCommentTrivia,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::MultiLineCommentTrivia)
+        })
+    if ($directiveOrDisabledTrivia.Count -ne 0) {
+        throw (
+            'The trusted control gate must not contain directives, disabled ' +
+            'preprocessor code, or comments.')
+    }
+    $declaredTypes = @($root.DescendantNodes() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseTypeDeclarationSyntax]
+        } | ForEach-Object { $_.Identifier.ValueText })
+    $declaredValues = @($root.DescendantNodes() | ForEach-Object {
+            if ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]) {
+                $_.Identifier.ValueText
+            } elseif ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ParameterSyntax]) {
+                $_.Identifier.ValueText
+            } elseif ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachStatementSyntax]) {
+                $_.Identifier.ValueText
+            } elseif ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.PropertyDeclarationSyntax]) {
+                $_.Identifier.ValueText
+            } elseif ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.UsingDirectiveSyntax] -and
+                $null -ne $_.Alias) {
+                $_.Alias.Name.Identifier.ValueText
             }
-            $index = $span.Index
-            $length = $span.Length
+        } | Where-Object { $_ })
+    foreach ($reservedAttribute in @(
+        'Fact',
+        'FactAttribute',
+        'Theory',
+        'TheoryAttribute',
+        'Test',
+        'TestAttribute'
+    )) {
+        if ($declaredTypes -ccontains $reservedAttribute -or
+            $declaredValues -ccontains $reservedAttribute) {
+            throw 'The generated test may not shadow a trusted test attribute name.'
         }
-
-        $variant = $variant.Substring(0, $index) + $replace +
-            $variant.Substring($index + $length)
     }
 
-    if ($variant -ceq [string]$BaselineSource) {
-        throw 'The control edits changed nothing, so the control would rerun the reproduction unchanged.'
+    $triggerExpression = $gate.Statement.Statements[0].Expression
+    if ($triggerExpression -is [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+        $triggerExpression = $triggerExpression.Expression
+    }
+    if ($triggerExpression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+        $triggerExpression.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+        throw (
+            'The trusted control gate may contain only one direct external ' +
+            'member invocation.')
+    }
+    $memberAccess = $triggerExpression.Expression
+    $receiverText = $memberAccess.Expression.ToString()
+    if ($receiverText -cnotmatch (
+            '^global::Microsoft\.Maui\.Controls\.' +
+            '[A-Za-z_][A-Za-z0-9_]*$')) {
+        throw (
+            "The trusted trigger receiver '$receiverText' must use its exact " +
+            'global-qualified external framework type.')
+    }
+    $nestedInvocations = @($triggerExpression.ArgumentList.DescendantNodes() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+        })
+    $nestedWrites = @($triggerExpression.ArgumentList.DescendantNodesAndSelf() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax] -or
+            ($_.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression))
+        })
+    if ($nestedInvocations.Count -ne 0 -or $nestedWrites.Count -ne 0) {
+        throw (
+            'The trusted trigger invocation must not contain nested calls, ' +
+            'assignments, ref/out writes, or lambdas in its arguments.')
+    }
+    $triggerSymbol = $semanticModel.GetSymbolInfo($triggerExpression).Symbol
+    if ($triggerSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+        -not $triggerSymbol.IsStatic -or
+        $triggerSymbol.MethodKind -ne
+            [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+        $triggerSymbol.ContainingAssembly.Name -cne
+            'Microsoft.Maui.Controls.ReplicationControlContract' -or
+        @($triggerSymbol.Locations | Where-Object { $_.IsInSource }).Count -ne 0 -or
+        @($triggerSymbol.ContainingType.Locations | Where-Object {
+                $_.IsInSource
+            }).Count -ne 0) {
+        throw (
+            'The trusted trigger must resolve semantically to an allowlisted ' +
+            'external static MAUI framework member.')
+    }
+    foreach ($argument in $triggerExpression.ArgumentList.Arguments) {
+        if ($argument.RefKindKeyword.RawKind -ne 0) {
+            throw 'The trusted trigger invocation must not use ref, out, or in arguments.'
+        }
+        if ($argument.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+            $argument.Expression -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+            throw (
+                'The trusted trigger accepts only semantically verified local, ' +
+                'parameter, or literal arguments.')
+        }
+        $conversion = $semanticModel.GetConversion($argument.Expression)
+        if ($conversion.IsUserDefined) {
+            throw (
+                'The trusted trigger arguments may not execute a user-defined ' +
+                'conversion.')
+        }
+        if ($argument.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            $argumentSymbol =
+                $semanticModel.GetSymbolInfo($argument.Expression).Symbol
+            if ($argumentSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                $argumentSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                throw (
+                    'The trusted trigger identifier arguments must resolve to ' +
+                    'locals or parameters, never properties, fields, or events.')
+            }
+            $argumentType = $semanticModel.GetTypeInfo(
+                $argument.Expression).Type
+            if ($null -eq $argumentType -or
+                $argumentType.TypeKind -eq
+                    [Microsoft.CodeAnalysis.TypeKind]::Error -or
+                @($argumentType.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                throw (
+                    'The trusted trigger argument type must resolve to external ' +
+                    'metadata, not an unresolved or generated source type.')
+            }
+        }
+        Confirm-ReplicationTrustedOracleExpression `
+            -Expression $argument.Expression `
+            -SemanticModel $semanticModel `
+            -Root $root
+    }
+    $trustedContractAssembly =
+        'Microsoft.Maui.Controls.ReplicationControlContract'
+    $trustedAttributeTypes = @(
+        'Xunit.FactAttribute',
+        'Xunit.TheoryAttribute',
+        'NUnit.Framework.TestAttribute',
+        'Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute'
+    )
+    $trustedTestAttributeCount = 0
+    foreach ($attribute in $testMethod[0].AttributeLists.Attributes) {
+        $attributeSymbol = $semanticModel.GetSymbolInfo($attribute).Symbol
+        if ($attributeSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            continue
+        }
+        $attributeTypeName = $attributeSymbol.ContainingType.ToString()
+        if ($attributeSymbol.ContainingAssembly.Name -ceq
+                $trustedContractAssembly -and
+            $attributeTypeName -cin $trustedAttributeTypes -and
+            @($attributeSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -eq 0) {
+            $trustedTestAttributeCount++
+        }
+    }
+    if ($trustedTestAttributeCount -eq 0) {
+        throw (
+            'The selected test attribute must resolve semantically to a trusted ' +
+            'external test framework.')
     }
 
+    $flowEscapes = @($testMethod[0].Body.DescendantNodes() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax]
+        })
+    if ($flowEscapes.Count -ne 0) {
+        throw (
+            'The selected test method may not return, yield, or jump around its ' +
+            'trusted assertion; the control must execute the oracle.')
+    }
+
+    $trustedAssertionTypes = @(
+        'Xunit.Assert',
+        'NUnit.Framework.Assert',
+        'NUnit.Framework.ClassicAssert',
+        'Microsoft.VisualStudio.TestTools.UnitTesting.Assert',
+        'Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert',
+        'Microsoft.VisualStudio.TestTools.UnitTesting.StringAssert'
+    )
+    $assertionStatements = @($testMethod[0].Body.DescendantNodes() |
+        Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+                @(Get-ReplicationAssertionStatements `
+                    -Source $_.ToFullString()).Count -ne 0
+        })
+    if ($assertionStatements.Count -ne $methodAssertions.Count -or
+        $assertionStatements.Count -eq 0) {
+        throw (
+            'Every textual oracle must be one semantically trusted assertion ' +
+            'statement in the selected test method.')
+    }
+    $postTriggerAssertionCount = 0
+    foreach ($assertionStatement in $assertionStatements) {
+        if ($assertionStatement.Parent -ne $testMethod[0].Body) {
+            throw (
+                'Every trusted assertion must be a top-level statement so normal ' +
+                'control completion cannot skip the oracle.')
+        }
+        if ($assertionStatement.SpanStart -gt $gate.Span.End) {
+            $postTriggerAssertionCount++
+        }
+        $assertionExpression = $assertionStatement.Expression
+        if ($assertionExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+            $assertionExpression = $assertionExpression.Expression
+        }
+        $assertionSymbol =
+            $semanticModel.GetSymbolInfo($assertionExpression).Symbol
+        if ($assertionExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+            $assertionSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            throw (
+                'Every assertion must resolve semantically to a trusted external ' +
+                "test framework member. Expression type: '$(
+                    $assertionExpression.GetType().FullName)'; symbol: '$assertionSymbol'.")
+        }
+        $assertionTypeName = $assertionSymbol.ContainingType.ToString()
+        if ($assertionSymbol.ContainingAssembly.Name -cne
+                $trustedContractAssembly -or
+            $assertionTypeName -cnotin $trustedAssertionTypes -or
+            @($assertionSymbol.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            throw (
+                'Every assertion must resolve semantically to a trusted external ' +
+                'test framework member.')
+        }
+        foreach ($assertionArgument in
+            $assertionExpression.ArgumentList.Arguments) {
+            if ($assertionArgument.RefKindKeyword.RawKind -ne 0) {
+                throw 'Trusted assertion arguments may not use ref, out, or in.'
+            }
+            Confirm-ReplicationTrustedOracleExpression `
+                -Expression $assertionArgument.Expression `
+                -SemanticModel $semanticModel `
+                -Root $root
+        }
+    }
+    if ($postTriggerAssertionCount -eq 0) {
+        throw 'The selected test method has no trusted assertion after the trigger.'
+    }
+    foreach ($postGateStatement in @($testMethod[0].Body.Statements |
+            Where-Object { $_.SpanStart -gt $gate.Span.End })) {
+        if ($postGateStatement -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax]) {
+            foreach ($postGateVariable in
+                $postGateStatement.Declaration.Variables) {
+                if ($null -eq $postGateVariable.Initializer) {
+                    throw (
+                        'Every post-trigger observation local must have one ' +
+                        'semantically validated initializer.')
+                }
+                Confirm-ReplicationTrustedOracleExpression `
+                    -Expression $postGateVariable.Initializer.Value `
+                    -SemanticModel $semanticModel `
+                    -Root $root
+            }
+            continue
+        }
+        if ($postGateStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $assertionStatements -contains $postGateStatement) {
+            continue
+        }
+        throw (
+            'After the trusted trigger, only validated observation declarations ' +
+            'and top-level trusted assertions are accepted.')
+    }
+    foreach ($preGateStatement in @($testMethod[0].Body.Statements |
+            Where-Object { $_.Span.End -le $gate.SpanStart })) {
+        if ($preGateStatement -eq $localDeclaration) {
+            continue
+        }
+        if ($preGateStatement -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax]) {
+            foreach ($preGateVariable in
+                $preGateStatement.Declaration.Variables) {
+                if ($null -eq $preGateVariable.Initializer) {
+                    throw (
+                        'Every pre-trigger setup local must have one deterministic ' +
+                        'initializer.')
+                }
+                $preGateLocal =
+                    $semanticModel.GetDeclaredSymbol($preGateVariable)
+                if ($preGateLocal -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                    $preGateLocal.Type.TypeKind -eq
+                        [Microsoft.CodeAnalysis.TypeKind]::Error -or
+                    @($preGateLocal.Type.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -ne 0) {
+                    throw (
+                        'Every pre-trigger setup local must have an external ' +
+                        'metadata type.')
+                }
+                Confirm-ReplicationTrustedOracleExpression `
+                    -Expression $preGateVariable.Initializer.Value `
+                    -SemanticModel $semanticModel `
+                    -Root $root
+            }
+            continue
+        }
+        if ($preGateStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $assertionStatements -contains $preGateStatement) {
+            continue
+        }
+        if ($preGateStatement -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+            $setupAssignment = $preGateStatement.Expression
+            if ($setupAssignment -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                $setupAssignment.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -and
+                $setupAssignment.Left -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $setupTarget =
+                    $semanticModel.GetSymbolInfo($setupAssignment.Left).Symbol
+                if ($setupTarget -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                    $setupTarget.ContainingAssembly.Name -ceq
+                        $trustedContractAssembly -and
+                    @($setupTarget.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -eq 0) {
+                    Confirm-ReplicationTrustedOracleExpression `
+                        -Expression $setupAssignment.Right `
+                        -SemanticModel $semanticModel `
+                        -Root $root
+                    continue
+                }
+            }
+        }
+        throw (
+            'Before the trusted trigger, only deterministic local declarations, ' +
+            'contract-property setup, and trusted assertions are accepted.')
+    }
+
+    $trueLiteral = $declarator.Initializer.Value
+    $variant = $BaselineSource.Substring(0, $trueLiteral.Span.Start) +
+        'false' +
+        $BaselineSource.Substring($trueLiteral.Span.End)
     $variantAssertions = @(Get-ReplicationAssertionStatements -Source $variant)
+    $baselineAssertions = @(Get-ReplicationAssertionStatements -Source $BaselineSource)
     if ($variantAssertions.Count -ne $baselineAssertions.Count) {
         throw "The control has $($variantAssertions.Count) assertions where the reproduction has $($baselineAssertions.Count). Remove only the trigger."
     }

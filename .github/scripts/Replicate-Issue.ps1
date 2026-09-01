@@ -6937,6 +6937,8 @@ Read the matching trusted skill under "$trustedSkills".
 $appleNativeTypingGuidance
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
 Use one exact selected test method to exercise all issue-derived states; do not create a stateless matrix. Keep the primary oracle and, where feasible, a genuinely independent secondary observation. The test must assert the same visible invariant that the recording established.
+Design the test so trusted code can run the same assertions after removing only the reported trigger. Prove the shared setup and transition, but do not add an assertion whose sole condition is the continued presence or attachment of the exact property, configuration, ordering, or API call that a negative control must remove. Such an assertion makes the control permanently red even when the product is healthy. If no benign trigger removal can preserve the same oracle and shared preconditions, the reproduction cannot be causally certified; do not fabricate a control-compatible assertion.
+For a C# reproduction that can be causally controlled, make the selected test parameterless with exactly one ordinary test attribute and no data-source attribute. Declare exactly one local "var applyReportedTrigger = true;" as a top-level statement in that method body. Use it exactly once as the complete condition of a later top-level if block with no else, and put exactly one direct static framework trigger invocation in that block. Write the receiver as its exact global-qualified Microsoft.Maui.Controls type, for example global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(...), rather than an alias, generated helper, inherited member, or instance value. Arguments may be only literals or side-effect-free locals whose types come from external metadata; never use a property, field, event, member access, generated type, test parameter, or user-defined conversion. Use only ANDROID, IOS, MACCATALYST, or WINDOWS in conditional directives; NET, runner-specific, target-framework, and TEST_FAILS_ON_* symbols are not accepted. Keep every setup step, transition, observation, measurement, and assertion outside the block. Put at least one ordinary xUnit, NUnit, or MSTest assertion as a top-level statement after the gate, and do not return, yield, goto, or conditionally skip it. Assertion arguments and any local initializer they depend on may use only resolved external metadata operations; never put a generated helper/getter, assignment, increment, lambda, query, ref/out/in value, unresolved member, or user-defined conversion in the oracle dataflow. Do not define or alias test attributes or Assert types. Do not put directives, comments, nested calls, assignments, lambdas, generated helpers, or oracle inputs in the trigger block. Trusted code constructs the control only by changing that one true literal to false. If the reported trigger cannot fit this shape, the test cannot be published automatically; do not imitate the marker around unrelated code.
 The generated test must run normally and fail without an environment variable, command-line switch, category override, or other opt-in gate. Do not reference MAUI_REPRODUCTION_ISSUE.
 This repository builds with warnings as errors, so warning-level diagnostics still break the build. Do not declare a member whose name hides an inherited MAUI member such as Page.Title, Element.Parent, VisualElement.Window, or View.Handler; give the field a distinct name instead of using `new`. Do not leave an unused field, variable, or using directive.
 The nullable setting that governs your file is not written in your file, nor in the project beside it, so do not try to infer it from either. A device test under src/Controls/tests/DeviceTests is compiled by Controls.DeviceTests.csproj, which never enables nullable annotations - Core.DeviceTests.Shared.csproj keeps the property commented out - so a `?` annotation on a reference type there is CS8632 and breaks the build. A UI test under TestCases.Shared.Tests is different: the body inside your #if ANDROID, #if IOS, #if MACCATALYST or #if WINDOWS block is compiled by the matching platform runner, and Controls.TestCases.Android.Tests.csproj and its iOS, Mac and WinUI siblings all set <Nullable>enable</Nullable> and glob those shared files, so there the compiler tracks nullability and refuses an unguarded dereference or argument with CS8602, CS8604 or CS8600. These four codes are 107 of the compiler errors measured across this pipeline's runs. Write no `?` annotation on a reference type in either place, and in a UI test guard every lookup that can return null with an explicit null check or Assert.NotNull before using its result.
@@ -7004,17 +7006,22 @@ $BaselineSource
 
 Read "$testProposalPath" for the reportedTrigger/testTrigger fields.
 Read its qualityContract as the contract-level oracle identity. Keep the same scenario,
-precondition, trigger, transition, observableIdentity, and affected control identity;
-remove only the reported trigger. If no legitimate trigger-only control can preserve
+shared preconditions, transition, observableIdentity, and affected control identity;
+remove only the reported trigger rather than preserving it. If the trigger is a property
+setter, configuration assignment, ordering call, or API invocation, delete
+that one complete operation. Never relocate or reinsert it later in the method: if it still
+executes before the oracle, the trigger remains and the control is invalid. If an existing
+assertion solely requires the removed trigger-specific object or state to remain present,
+no byte-identical trigger-only control exists; write controlNotPossible and no edits rather
+than moving the trigger or fabricating another object to satisfy the assertion.
+If no legitimate trigger-only control can preserve
 the same assertions and observable, write no fabricated variant and leave the
 quality contract's control evidence unknown. A model claim cannot certify a control.
-You do not write the control source. You describe the trigger removal and trusted code performs it, so the oracle stays byte-identical.
-Write one file, "$controlEditsPath", containing a JSON array of at most 10 edits. Each edit is an object with "find" and optional "replace":
-- "find" is text copied out of the generated test source, and it must appear exactly once in that file. Include enough surrounding text to be unique. Indentation and line endings are ignored when the text is located, so copy the code and do not try to reproduce tabs or blank lines exactly.
-- "replace" is what it becomes. Omit it or use "" to delete the text, or give the documented benign value to neutralise the trigger.
-Together the edits must remove or neutralise the reported trigger and change nothing else.
-An edit whose "find" or "replace" contains an assertion is rejected: the assertions are the oracle and they must survive untouched.
-Because trusted code applies these edits to the reproduction source, the namespace, class, method, attributes and usings are preserved automatically and the same test filter still selects the control.
+You do not write the control source. Trusted code accepts no free-form source deletion or replacement. It validates the exact applyReportedTrigger gate in the immutable reproduction and changes only its true initializer token to false.
+Write one file, "$controlEditsPath", containing exactly:
+[{"find":"var applyReportedTrigger = true;","replace":"var applyReportedTrigger = false;"}]
+Any other span, replacement, edit count, XAML edit, helper call, nested expression, local assignment, directive, or oracle mutation is rejected before execution and may be reauthored only within the bounded pre-execution control attempts.
+Because trusted code performs the fixed gate flip, the namespace, class, method, attributes, setup, oracle, assertions, and test selector remain byte-identical.
 Expect this control to PASS. If you believe removing the trigger cannot make this oracle pass, do not invent a passing variant: say so in test-proposal.json under controlNotPossible and write no file.
 Failure summary from the previous control attempt, if any: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 "@
@@ -8335,6 +8342,15 @@ function Invoke-ReplicationNegativeControl {
     )
 
     $methodName = [string]$VerifierMetadata.MethodName
+    $testTypeIndex = [Array]::IndexOf(
+        [object[]]$BaseVerificationArguments,
+        '-TestType')
+    if ($testTypeIndex -lt 0 -or
+        $testTypeIndex + 1 -ge $BaseVerificationArguments.Count) {
+        throw 'Negative control verification has no trusted test type.'
+    }
+    $expectedControlTestType =
+        [string]$BaseVerificationArguments[$testTypeIndex + 1]
     $baselineFile = @($GeneratedFiles | Where-Object {
         $full = Join-Path $repoRoot $_
         (Test-Path -LiteralPath $full -PathType Leaf) -and
@@ -8346,60 +8362,20 @@ function Invoke-ReplicationNegativeControl {
     }
 
     $relativePath = $baselineFile[0]
-    $oracleRelativePath = $relativePath
-    $oracleSource = Get-Content -LiteralPath (Join-Path $repoRoot $oracleRelativePath) -Raw
-    # A UI test drives the app from outside: its file holds the tap and the
-    # assertions, while the condition the report blames lives in the HostApp
-    # page. Offering only the test file leaves the author nothing to remove but
-    # the navigation, which destroys the oracle instead of isolating the defect,
-    # and builds 15033984 and 15033999 both declared the control impossible for
-    # exactly that reason. Editing the scene file instead keeps the oracle
-    # untouched by construction, because it is never written.
-    $sceneCandidates = @($GeneratedFiles | Where-Object {
-        $_ -ne $oracleRelativePath -and
-            (Test-Path -LiteralPath (Join-Path $repoRoot $_) -PathType Leaf)
-    })
-    $sceneRelativePath = $null
-    if ($sceneCandidates.Count -eq 1) {
-        $sceneRelativePath = $sceneCandidates[0]
-    } elseif ($sceneCandidates.Count -gt 1) {
-        # A XAML page arrives as markup plus code-behind, so "the other file" is
-        # ambiguous. The markup is where a declarative trigger lives, and the
-        # code-behind of a generated page is usually only InitializeComponent.
-        $markup = @($sceneCandidates | Where-Object { $_ -match '(?i)\.xaml$' })
-        if ($markup.Count -eq 1) {
-            $sceneRelativePath = $markup[0]
-        }
-    }
-    if ($sceneRelativePath) {
-        $relativePath = $sceneRelativePath
-        Write-Host ("Negative control will edit the scene file '$relativePath'; " +
-            "the oracle in '$oracleRelativePath' is left untouched.")
-    }
     $baselinePath = Join-Path $repoRoot $relativePath
     $baselineSource = Get-Content -LiteralPath $baselinePath -Raw
+    $oracleSource = $baselineSource
     # The gate reads the control snapshots from the verification root, and the
     # control writes only negative-control-result.json there, so it cannot
     # overwrite the reproduction's own verification-result.json.
     $controlDir = $verificationDir
     Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-baseline.cs') `
         -Value $baselineSource -Encoding utf8NoBOM
-    # The gate re-checks that the control preserved the oracle. When the control
-    # edits the scene file the oracle lives elsewhere, so snapshot it too;
-    # otherwise the gate reads a HostApp page, finds no assertions in it and
-    # refuses every certified candidate at the last step.
-    #
-    # Only when it lives elsewhere. A device test is a single file, so its
-    # oracle is the file the control edits, and snapshotting it would have the
-    # gate compare that snapshot against itself: assertion parity would hold by
-    # definition and a control that deleted the assertions would pass. Leaving
-    # the snapshot absent keeps the gate comparing baseline against control,
-    # which is the check that case needs.
+    # A deterministic control is always constructed in the verifier-selected
+    # test file. A scene file cannot satisfy the selected method/class binding,
+    # and switching to one would make UI controls structurally impossible.
     $oracleSnapshotPath = Join-Path $controlDir 'negative-control-oracle.cs'
-    if ($oracleRelativePath -ne $relativePath) {
-        Set-Content -LiteralPath $oracleSnapshotPath -Value $oracleSource -Encoding utf8NoBOM
-    } elseif (Test-Path -LiteralPath $oracleSnapshotPath -PathType Leaf) {
-        # A snapshot left by an earlier run would be read as this run's oracle.
+    if (Test-Path -LiteralPath $oracleSnapshotPath -PathType Leaf) {
         Remove-Item -LiteralPath $oracleSnapshotPath -Force
     }
 
@@ -8457,9 +8433,20 @@ function Invoke-ReplicationNegativeControl {
             }
             $controlEdits = Get-Content -LiteralPath $controlEditsPath -Raw |
                 ConvertFrom-Json -Depth 10 -ErrorAction Stop
+            $additionalControlSources = @($GeneratedFiles | Where-Object {
+                    $_ -ne $relativePath -and
+                    $_.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)
+                } | ForEach-Object {
+                    Get-Content -LiteralPath (Join-Path $repoRoot $_) -Raw
+                })
             $controlSource = New-ReplicationControlVariant `
                 -BaselineSource $baselineSource `
-                -Edits $controlEdits
+                -Edits $controlEdits `
+                -SourcePath $relativePath `
+                -Platform $Platform `
+                -ExpectedTestMethod $methodName `
+                -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
+                -AdditionalSources $additionalControlSources
         }
         catch {
             # A command-resolution or binding failure here is a defect in this
@@ -8480,21 +8467,12 @@ function Invoke-ReplicationNegativeControl {
 
         Set-Content -LiteralPath $controlVariantPath -Value $controlSource -Encoding utf8NoBOM
         try {
-            # When a scene file was found the control edits that and the oracle
-            # file is never written, so the oracle after the control is the
-            # oracle before it. With no scene file - a device test keeps the
-            # scenario and the assertions in one file - the control replaces the
-            # oracle file itself, and passing the baseline on both sides would
-            # compare the oracle to itself and wave through a control that
-            # simply deleted the assertion. That is the one arm that promotes a
-            # reproduction to a certified oracle.
-            $oracleControlSource = if ($sceneRelativePath) { $oracleSource } else { $controlSource }
             Assert-ReplicationNegativeControlIsInformative `
                 -BaselineSource $baselineSource `
                 -ControlSource $controlSource `
                 -TestFilter ([string]$TestProposal.testFilter) `
                 -OracleBaselineSource $oracleSource `
-                -OracleControlSource $oracleControlSource
+                -OracleControlSource $controlSource
         }
         catch {
             $controlFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 1000
@@ -8509,6 +8487,19 @@ function Invoke-ReplicationNegativeControl {
         Set-Content -LiteralPath (Join-Path $controlDir 'negative-control-variant.cs') `
             -Value $controlSource -Encoding utf8NoBOM
         $controlArguments = @($BaseVerificationArguments) + '-ExpectPass'
+        $controlResultPath = Join-Path $controlDir (
+            'negative-control-result.json')
+        if (Test-Path -LiteralPath $controlResultPath) {
+            $priorControlResult = Get-Item -LiteralPath $controlResultPath `
+                -Force -ErrorAction Stop
+            if ($priorControlResult.Attributes -band
+                [IO.FileAttributes]::ReparsePoint -or
+                $priorControlResult.PSIsContainer) {
+                throw 'The prior control result path is not a regular file.'
+            }
+            Remove-Item -LiteralPath $controlResultPath -Force
+        }
+        $controlInvocationStartUtc = [datetime]::UtcNow.AddSeconds(-1)
 
         try {
             Set-Content -LiteralPath $baselinePath -Value $controlSource -Encoding utf8NoBOM
@@ -8523,7 +8514,28 @@ function Invoke-ReplicationNegativeControl {
             $controlMessage = ConvertTo-ReplicationSafeLog $_.Exception.Message 2000
             $controlBuildFailed = Test-ReplicationTestBuildFailure -FailureSummary $controlMessage
             $controlChangedMode = Test-ReplicationControlChangedFailureMode -FailureSummary $controlMessage
-            if (($controlBuildFailed -or $controlChangedMode) -and $round -lt $MaxControlAttempts) {
+            $mayReauthorBeforeExecution = $false
+            if ($controlBuildFailed -and
+                (Test-Path -LiteralPath $controlResultPath -PathType Leaf)) {
+                try {
+                    $null = Read-ReplicationControlResult `
+                        -Path $controlResultPath `
+                        -MinimumWriteTimeUtc $controlInvocationStartUtc `
+                        -ExpectedIssueNumber $IssueNumber `
+                        -ExpectedPlatform $Platform `
+                        -ExpectedTestType $expectedControlTestType `
+                        -ExpectedTestFilter ([string]$TestProposal.testFilter) `
+                        -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
+                        -ExpectedTestMethod $methodName `
+                        -ExpectedRunCount $VerificationRunCount `
+                        -ExpectedOutcome PreExecutionFailure
+                    $mayReauthorBeforeExecution = $true
+                } catch {
+                    $mayReauthorBeforeExecution = $false
+                }
+            }
+            if ($mayReauthorBeforeExecution -and
+                $round -lt $MaxControlAttempts) {
                 # Build 15032126's control called a protected DisconnectHandler
                 # overload. The author can correct that when it is told which
                 # file, line and diagnostic, exactly as the reproduction test is
@@ -8533,18 +8545,6 @@ function Invoke-ReplicationNegativeControl {
                 # The control writes its own console log. Reading the shared
                 # directory's default name would hand the author the
                 # reproduction's diagnostics instead of the control's.
-                if ($controlChangedMode) {
-                    # This author did not write bad syntax; it wrote an edit that
-                    # removed more than the trigger. Handing it compiler advice
-                    # would be useless, so tell it what actually went wrong.
-                    $controlFailureSummary = ('The previous control edit changed why the test failed ' +
-                        'instead of removing the reported trigger. The test must still reach the same ' +
-                        'assertion it reached during the reproduction: keep every element the test ' +
-                        'locates, every AutomationId, and the whole navigation path intact, and remove ' +
-                        "only the reported trigger itself. $controlMessage")
-                    Write-Host "Negative control attempt ${round} changed the failure mode: $controlFailureSummary"
-                    continue
-                }
                 $diagnostics = Get-ReplicationCompilerDiagnostics `
                     -LogPath (Join-Path $controlDir 'negative-control-console.log')
                 $controlFailureSummary = if ($diagnostics) {
@@ -8576,12 +8576,21 @@ function Invoke-ReplicationNegativeControl {
             Set-Content -LiteralPath $baselinePath -Value $baselineSource -Encoding utf8NoBOM
         }
 
-        $controlResultPath = Join-Path $controlDir 'negative-control-result.json'
         if (-not (Test-Path -LiteralPath $controlResultPath -PathType Leaf)) {
             Write-Host 'Negative control skipped: the control produced no result file.'
             return $null
         }
-        $controlResult = Get-Content -LiteralPath $controlResultPath -Raw | ConvertFrom-Json
+        $controlResult = Read-ReplicationControlResult `
+            -Path $controlResultPath `
+            -MinimumWriteTimeUtc $controlInvocationStartUtc `
+            -ExpectedIssueNumber $IssueNumber `
+            -ExpectedPlatform $Platform `
+            -ExpectedTestType $expectedControlTestType `
+            -ExpectedTestFilter ([string]$TestProposal.testFilter) `
+            -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
+            -ExpectedTestMethod $methodName `
+            -ExpectedRunCount $VerificationRunCount `
+            -ExpectedOutcome Passed
         Write-Host ("Negative control passed {0} of {1} runs." -f $controlResult.passCount, $controlResult.runCount)
         return [ordered]@{
             runCount = [int]$controlResult.runCount

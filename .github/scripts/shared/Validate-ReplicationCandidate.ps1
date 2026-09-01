@@ -3588,7 +3588,6 @@ function Get-ReplicationEvidenceInventory {
         'verify-tests-fail.log',
         'test-without-fix.log',
         'negative-control-baseline.cs',
-        'negative-control-oracle.cs',
         'negative-control-variant.cs',
         'negative-control-console.log',
         'negative-control-result.json',
@@ -3696,7 +3695,6 @@ function Get-ReplicationEvidenceInventory {
                     'verification-console.log',
                     'verification-result.json',
                     'negative-control-baseline.cs',
-                    'negative-control-oracle.cs',
                     'negative-control-variant.cs',
                     'negative-control-console.log',
                     'negative-control-result.json',
@@ -4511,6 +4509,7 @@ function Assert-ReplicationVerificationEvidence {
     param(
         [Parameter(Mandatory = $true)][object]$Inventory,
         [Parameter(Mandatory = $true)][object]$Manifest,
+        [Parameter(Mandatory = $true)][object[]]$CandidateFiles,
         [object]$FixArms
     )
 
@@ -4945,12 +4944,17 @@ function Assert-ReplicationVerificationEvidence {
         # produces for the control instead.
         $controlResultPath = Join-Path $Inventory.VerificationRoot 'negative-control-result.json'
         if (Test-Path -LiteralPath $controlResultPath -PathType Leaf) {
-            $controlValue = Read-BoundedUtf8File `
+            $controlValue = Read-ReplicationControlResult `
                 -Path $controlResultPath `
-                -MaximumBytes $script:CandidateFileMaxBytes `
-                -Root $Inventory.VerificationRoot `
-                -Context 'Negative control result' |
-                ConvertFrom-Json
+                -ExpectedIssueNumber ([int]$Manifest.IssueNumber) `
+                -ExpectedPlatform ([string]$Manifest.Platform) `
+                -ExpectedTestType (
+                    ConvertTo-NormalizedTestType -Value $Manifest.TestType) `
+                -ExpectedTestFilter ([string]$Manifest.TestFilter) `
+                -ExpectedTestClass ([string]$Manifest.TestClassName) `
+                -ExpectedTestMethod ([string]$Manifest.TestMethodName) `
+                -ExpectedRunCount $completedRunCount `
+                -ExpectedOutcome Passed
             $negativeRuns = ConvertTo-PositiveInteger `
                 -Value (Find-AliasedProperty `
                     -Object $controlValue `
@@ -4978,36 +4982,60 @@ function Assert-ReplicationVerificationEvidence {
                 }
             }
 
-            $informativeArguments = @{
-                BaselineSource = Read-BoundedUtf8File `
-                    -Path $baselineSourcePath `
-                    -MaximumBytes $script:CandidateFileMaxBytes `
-                    -Root $Inventory.VerificationRoot `
-                    -Context 'Negative control baseline source'
-                ControlSource = Read-BoundedUtf8File `
-                    -Path $variantSourcePath `
-                    -MaximumBytes $script:CandidateFileMaxBytes `
-                    -Root $Inventory.VerificationRoot `
-                    -Context 'Negative control variant source'
-                TestFilter = $Manifest.TestName
+            $baselineSource = Read-BoundedUtf8File `
+                -Path $baselineSourcePath `
+                -MaximumBytes $script:CandidateFileMaxBytes `
+                -Root $Inventory.VerificationRoot `
+                -Context 'Negative control baseline source'
+            $controlSource = Read-BoundedUtf8File `
+                -Path $variantSourcePath `
+                -MaximumBytes $script:CandidateFileMaxBytes `
+                -Root $Inventory.VerificationRoot `
+                -Context 'Negative control variant source'
+            $generatedCSharp = @($CandidateFiles | Where-Object {
+                    ([string]$_.Path).EndsWith(
+                        '.cs',
+                        [StringComparison]::OrdinalIgnoreCase)
+                } | ForEach-Object {
+                    [pscustomobject]@{
+                        Path = [string]$_.Path
+                        Source = [string]$_.Content
+                    }
+                })
+            $normalizedBaselineSource =
+                $baselineSource.Replace("`r`n", "`n").TrimEnd("`r", "`n")
+            $selectedControlFiles = @($generatedCSharp | Where-Object {
+                    $_.Source.Replace("`r`n", "`n").TrimEnd("`r", "`n") -ceq
+                        $normalizedBaselineSource
+                })
+            if ($selectedControlFiles.Count -ne 1) {
+                throw (
+                    'The negative-control baseline must exactly match one ' +
+                    'verifier-selected generated C# test file.')
             }
-
-            # A UI test's control edits the HostApp page and never writes the
-            # test file, so the assertions it must preserve are in a third
-            # snapshot. Read from the page instead, the guard finds no
-            # assertions at all and refuses a control that is correct.
-            $oracleSourcePath = Join-Path $Inventory.VerificationRoot 'negative-control-oracle.cs'
-            if (Test-Path -LiteralPath $oracleSourcePath -PathType Leaf) {
-                $oracleSource = Read-BoundedUtf8File `
-                    -Path $oracleSourcePath `
-                    -MaximumBytes $script:CandidateFileMaxBytes `
-                    -Root $Inventory.VerificationRoot `
-                    -Context 'Negative control oracle source'
-                $informativeArguments['OracleBaselineSource'] = $oracleSource
-                $informativeArguments['OracleControlSource'] = $oracleSource
+            $expectedControlSource = New-ReplicationControlVariant `
+                -BaselineSource $baselineSource `
+                -Edits @(@{
+                        find = 'var applyReportedTrigger = true;'
+                        replace = 'var applyReportedTrigger = false;'
+                    }) `
+                -SourcePath $selectedControlFiles[0].Path `
+                -Platform ([string]$Manifest.Platform) `
+                -ExpectedTestMethod ([string]$Manifest.TestMethodName) `
+                -ExpectedTestClass ([string]$Manifest.TestClassName) `
+                -AdditionalSources @($generatedCSharp | Where-Object {
+                        $_.Path -cne $selectedControlFiles[0].Path
+                    } | ForEach-Object Source)
+            if ($expectedControlSource.Replace("`r`n", "`n").TrimEnd("`r", "`n") -cne
+                $controlSource.Replace("`r`n", "`n").TrimEnd("`r", "`n")) {
+                throw (
+                    'The negative-control variant is not the exact trusted ' +
+                    'true-to-false semantic transformation of the selected test.')
             }
-
-            Assert-ReplicationNegativeControlIsInformative @informativeArguments
+            Assert-ReplicationNegativeControlIsInformative `
+                -BaselineSource $baselineSource `
+                -ControlSource $controlSource `
+                -TestFilter $Manifest.TestName
         }
 
         # The two arms that turn a reproduction into a regression oracle are read
@@ -5878,6 +5906,7 @@ function Invoke-ReplicationCandidateValidation {
         $verificationResult = Assert-ReplicationVerificationEvidence `
             -Inventory $inventory `
             -Manifest $manifest `
+            -CandidateFiles $candidateFiles `
             -FixArms $fixArms
         if ($manifest.ArtifactContract -and $null -eq $verificationResult) {
             throw 'Verification evidence must include a trusted targeted failure message.'
