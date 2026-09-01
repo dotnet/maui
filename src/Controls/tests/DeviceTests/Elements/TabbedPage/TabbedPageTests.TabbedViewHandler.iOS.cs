@@ -13,8 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedViewHandler)] // See RendererHandlerVariant.cs
 	public class TabbedPageTests_TabbedViewHandler : TabbedPageTests
 	{
-		protected override Type TabbedPageHandlerType => typeof(TabbedViewHandler);
-
 		protected override void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
 		{
 			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
