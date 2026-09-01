@@ -282,6 +282,7 @@ extends:
                 }
                 if ($gatherFailed) {
                   Write-Warning "Darc exited with code $gatherExitCode for BAR build '$barId'; missing selected packages must already exist on NuGet.org."
+                  $LASTEXITCODE = 0
                 }
 
                 $shippingPath = Join-Path $dropPath 'shipping\packages'

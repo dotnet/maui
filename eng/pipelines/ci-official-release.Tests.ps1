@@ -31,6 +31,7 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match '(?s)if \(!\$releaseWorkload\) \{\s*\$gatherArguments \+= ''--continue-on-error'''
     $pipeline | Should -Match '(?s)& \$darc @gatherArguments.*?if \(\$gatherFailed -and \$releaseWorkload\) \{\s*throw'
     $pipeline | Should -Match 'missing selected packages must already exist on NuGet\.org'
+    $pipeline | Should -Match '(?s)if \(\$gatherFailed\) \{.*?Write-Warning.*?\$LASTEXITCODE = 0'
   }
 
   It 'rejects duplicate package file names before copying release artifacts' {
