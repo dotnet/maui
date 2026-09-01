@@ -10,6 +10,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using Google.Android.Material.Dialog;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using static Android.Views.ViewGroup;
 using AButton = Android.Widget.Button;
@@ -108,6 +109,12 @@ namespace Microsoft.Maui.Controls.Platform
 				dialog.Show();
 
 				var listView = dialog.GetListView();
+				RegisterDialog(
+					sender,
+					dialog,
+					listView,
+					dialog.GetButton((int)DialogButtonType.Positive),
+					dialog.GetButton((int)DialogButtonType.Negative));
 
 				if (listView != null)
 				{
@@ -161,6 +168,11 @@ namespace Microsoft.Maui.Controls.Platform
 				alert.SetButton((int)DialogButtonType.Negative, arguments.Cancel, (o, args) => arguments.SetResult(false));
 				alert.SetCancelEvent((o, args) => { arguments.SetResult(false); });
 				alert.Show();
+				RegisterDialog(
+					sender,
+					alert,
+					alert.GetButton((int)DialogButtonType.Positive),
+					alert.GetButton((int)DialogButtonType.Negative));
 
 				TextView textView = (TextView)alert.findViewByID(messageID);
 				textView.TextDirection = GetTextDirection(sender, arguments.FlowDirection);
@@ -257,7 +269,51 @@ namespace Microsoft.Maui.Controls.Platform
 
 				alertDialog.Window.SetSoftInputMode(SoftInput.StateVisible);
 				alertDialog.Show();
+				RegisterDialog(
+					sender,
+					alertDialog,
+					editText,
+					alertDialog.GetButton((int)DialogButtonType.Positive),
+					alertDialog.GetButton((int)DialogButtonType.Negative));
 				editText.RequestFocus();
+			}
+
+			static void RegisterDialog(
+				Page sender,
+				FlexibleAlertDialog dialog,
+				params AView[] nativeElements)
+			{
+				var registrations = new NativeElementRegistrationSet();
+				if (dialog.Window?.DecorView is AView dialogView)
+				{
+					registrations.Register(
+						sender,
+						dialogView,
+						NativeElementRoles.Dialog,
+						NativeElementDiscriminators.RealizedView);
+				}
+
+				foreach (var nativeElement in nativeElements)
+				{
+					if (nativeElement is null)
+						continue;
+
+					registrations.Register(
+						sender,
+						nativeElement,
+						nativeElement is AButton
+							? NativeElementRoles.DialogAction
+							: NativeElementRoles.Dialog,
+						NativeElementDiscriminators.RealizedView);
+				}
+
+				EventHandler dismissed = null;
+				dismissed = (_, _) =>
+				{
+					dialog.RemoveDismissEvent(dismissed);
+					registrations.Dispose();
+				};
+				dialog.SetDismissEvent(dismissed);
 			}
 
 			bool WaitForHandlerIfNeeded(IView sender, System.Action action)
@@ -522,6 +578,30 @@ namespace Microsoft.Maui.Controls.Platform
 					else
 					{
 						_legacyAlertDialog.CancelEvent += cancel;
+					}
+				}
+
+				public void SetDismissEvent(EventHandler dismissed)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.DismissEvent += dismissed;
+					}
+					else
+					{
+						_legacyAlertDialog.DismissEvent += dismissed;
+					}
+				}
+
+				public void RemoveDismissEvent(EventHandler dismissed)
+				{
+					if (_useAppCompat)
+					{
+						_appcompatAlertDialog.DismissEvent -= dismissed;
+					}
+					else
+					{
+						_legacyAlertDialog.DismissEvent -= dismissed;
 					}
 				}
 
