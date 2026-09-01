@@ -34,22 +34,14 @@ public class BlazorTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, output: _output),
 			$"Unable to create template {templateShortName}. Check test output for errors.");
 
-		var directoryBuildPropsPath = Path.Combine(projectDir, "Directory.Build.props");
-		var directoryBuildProps = File.Exists(directoryBuildPropsPath)
-			? XDocument.Load(directoryBuildPropsPath)
-			: new XDocument(new XElement("Project"));
-		directoryBuildProps.Root!.Add(
-			new XElement("PropertyGroup",
-				new XAttribute("Condition", "'$(MauiEnableAndroidWebViewDragDrop)' == 'false'"),
-				new XElement("BaseIntermediateOutputPath", "obj-drag-drop-opt-out/"),
-				new XElement("BaseOutputPath", "bin-drag-drop-opt-out/")));
-		directoryBuildProps.Save(directoryBuildPropsPath);
-
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build with the default image drag provider configuration.");
 
-		var defaultManifest = Path.Combine(projectDir, "obj", config, framework, "android", "AndroidManifest.xml");
+		var intermediatePath = Path.Combine(projectDir, "obj");
+		var defaultManifest = Path.Combine(intermediatePath, config, framework, "android", "AndroidManifest.xml");
 		AssertImageDragDropProvider(defaultManifest, expected: true);
+
+		Directory.Delete(intermediatePath, recursive: true);
 
 		var optOutBuildProps = BuildProps;
 		optOutBuildProps.Add("MauiEnableAndroidWebViewDragDrop=false");
@@ -57,7 +49,7 @@ public class BlazorTemplateTest : BaseTemplateTests
 		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: optOutBuildProps, msbuildWarningsAsErrors: true, output: _output),
 			$"Project {Path.GetFileName(projectFile)} failed to build with image drag provider registration disabled.");
 
-		var optOutManifest = Path.Combine(projectDir, "obj-drag-drop-opt-out", config, framework, "android", "AndroidManifest.xml");
+		var optOutManifest = Path.Combine(intermediatePath, config, framework, "android", "AndroidManifest.xml");
 		AssertImageDragDropProvider(optOutManifest, expected: false);
 	}
 
