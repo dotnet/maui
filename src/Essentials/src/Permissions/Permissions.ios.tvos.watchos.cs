@@ -16,7 +16,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="usageKey">The key to check for declaration in the <c>Info.plist</c> file.</param>
 		/// <returns><see langword="true"/> when the key is declared, otherwise <see langword="false"/>.</returns>
 		public static bool IsKeyDeclaredInInfoPlist(string usageKey) =>
-			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(usageKey));
+			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString(usageKey)) == true;
 
 		/// <summary>
 		/// Gets or sets the timeout that is used when the location permission is requested.

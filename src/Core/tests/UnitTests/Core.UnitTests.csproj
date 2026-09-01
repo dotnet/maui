@@ -16,6 +16,19 @@
     <EmbeddedResource Include="Resources\Dokdo-Regular.ttf" />
   </ItemGroup>
 
+  <!--
+    ExternalBackendTargetFrameworkTests compares the external-backend guard project's target frameworks
+    against Core's, and checks that a fake-native-view source exists for every platform. Unit tests run
+    on Helix from a payload directory with no repository on disk, so these inputs are embedded at build
+    time rather than read from the working tree. Embedding keeps the assertion hermetic while still
+    capturing the live files on every build, so real drift is still caught.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\Core.csproj" LogicalName="ProjectFiles/Core.csproj" />
+    <EmbeddedResource Include="..\ExternalBackend\Core.ExternalBackend.csproj" LogicalName="ProjectFiles/Core.ExternalBackend.csproj" />
+    <EmbeddedResource Include="..\ExternalBackend\FakeNativeViews.*.cs" LogicalName="ProjectFiles/%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -33,6 +46,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
+    <ProjectReference Include="..\ExternalBackend\Core.ExternalBackend.csproj" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.cs.resx" Link="Resources\StringResources.cs.resx" />

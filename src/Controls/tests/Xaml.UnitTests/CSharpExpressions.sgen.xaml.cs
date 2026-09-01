@@ -399,6 +399,15 @@ public partial class CSharpExpressions : ContentPage
 			Assert.Equal("Result: Method Result", page.interpolationMethodLabel.Text);
 		}
 
+		[Fact]
+		public void StringInterpolationWithTernaryInHole()
+		{
+			// Issue #36155: a ternary directly inside an interpolation hole must be
+			// auto-parenthesized so it compiles and evaluates correctly. Count == 0.
+			var page = new CSharpExpressions(XamlInflator.SourceGen);
+			Assert.Equal("You clicked 0 times.", page.interpolationTernaryLabel.Text);
+		}
+
 		// TYPED BINDING TESTS
 
 		[Fact]

@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Cílový DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Zahrnout ukázkové stránky",
   "symbols/IncludeSampleContent/description": "Nastavuje, jestli se mají přidávat ukázkové stránky a styly pro demonstraci základních vzorů použití.",
-  "symbols/Empty/description": "Nastavuje, jestli se mají vynechat ukázkové stránky a styly, které demonstrují základní vzory použití."
+  "symbols/empty/description": "Nastavuje, jestli se mají vynechat ukázkové stránky a styly, které demonstrují základní vzory použití."
 }

@@ -75,6 +75,19 @@ namespace Microsoft.Maui.Maps.Handlers
 			handler.PlatformView.ZoomEnabled = map.IsZoomEnabled;
 		}
 
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
+			handler.PlatformView.IsClusteringEnabled = map.IsClusteringEnabled;
+			// Re-add pins so they pick up the new clustering state
+			handler.PlatformView.AddPins((IList)map.Pins);
+		}
+
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+			// MapKit does not support custom JSON map styling.
+			// This property is marked with [UnsupportedOSPlatform] for iOS/MacCatalyst.
+		}
+
 		public static void MapPins(IMapHandler handler, IMap map)
 		{
 			handler.PlatformView.AddPins((IList)map.Pins);
@@ -88,9 +101,14 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
-			MapSpan? newRegion = arg as MapSpan;
-			if (newRegion != null)
+			if (arg is MoveToRegionRequest request && request.Region != null)
+			{
+				(handler as MapHandler)?.MoveToRegion(request.Region, request.Animated);
+			}
+			else if (arg is MapSpan newRegion)
+			{
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+			}
 		}
 
 		public void UpdateMapElement(IMapElement element)
@@ -104,6 +122,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			var center = mapSpan.Center;
 			var mapRegion = new MKCoordinateRegion(new CLLocationCoordinate2D(center.Latitude, center.Longitude), new MKCoordinateSpan(mapSpan.LatitudeDegrees, mapSpan.LongitudeDegrees));
 			PlatformView.SetRegion(mapRegion, animated);
+		}
+
+		void ShowInfoWindow(IMapPin pin)
+		{
+			if (pin.MarkerId is IMKAnnotation annotation)
+				PlatformView.SelectAnnotation(annotation, true);
+		}
+
+		void HideInfoWindow(IMapPin pin)
+		{
+			if (pin.MarkerId is IMKAnnotation annotation)
+				PlatformView.DeselectAnnotation(annotation, true);
 		}
 	}
 }

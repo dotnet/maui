@@ -9,17 +9,17 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnFocusClicked(object sender, EventArgs e)
+		void OnFocusClicked(object? sender, EventArgs e)
 		{
 			FocusEntry.Focus();
 		}
 
-		void OnUnfocusClicked(object sender, EventArgs e)
+		void OnUnfocusClicked(object? sender, EventArgs e)
 		{
 			FocusEntry.Unfocus();
 		}
 
-		void OnFocusEntryFocusChanged(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void OnFocusEntryFocusChanged(object? sender, Microsoft.Maui.Controls.FocusEventArgs e)
 		{
 			InfoLabel.Text += e.IsFocused ? "Focused" + Environment.NewLine : "Unfocused" + Environment.NewLine;
 		}

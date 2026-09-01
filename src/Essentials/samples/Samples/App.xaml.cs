@@ -7,7 +7,9 @@ using Microsoft.Maui.Controls.Xaml;
 using Samples.View;
 using Device = Microsoft.Maui.Controls.Device;
 
+#pragma warning disable CS0618 // XamlCompilationAttribute is deprecated, remove this in .NET 12
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+#pragma warning restore CS0618
 
 namespace Samples
 {

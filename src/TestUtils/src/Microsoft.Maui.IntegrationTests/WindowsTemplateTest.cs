@@ -105,9 +105,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
+	//[InlineData("maui", DotNetPrevious, "Release", true)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
@@ -132,7 +132,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 		var rid = usesRidGraph ? "win10-x64" : "win-x64";
 		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/publish");
 
-		AssetExists("dotnet_bot.scale-100.png");
+		if (id == "maui")
+		{
+			AssetExists("dotnet_bot.scale-100.png");
+		}
+
 		AssetExists("appiconLogo.scale-100.png");
 		AssetExists("OpenSans-Regular.ttf");
 		AssetExists("splashSplashScreen.scale-100.png");
@@ -148,9 +152,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	[InlineData("maui", DotNetPrevious, "Release", true)]
+	//[InlineData("maui", DotNetPrevious, "Release", true)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);

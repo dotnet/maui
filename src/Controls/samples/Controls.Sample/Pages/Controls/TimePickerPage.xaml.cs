@@ -29,12 +29,12 @@ namespace Maui.Controls.Sample.Pages
 			IsOpenTimePicker.Closed -= IsOpenTimePickerClosed;
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object? sender, EventArgs e)
 		{
 			UpdateTimePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, EventArgs e)
+		void OnClearBackgroundButtonClicked(object? sender, EventArgs e)
 		{
 			BackgroundTimePicker.Background = null;
 		}
@@ -56,22 +56,22 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void SetTimePickerToNull(object sender, EventArgs e)
+		void SetTimePickerToNull(object? sender, EventArgs e)
 		{
 			NullTimePicker.Time = null;
 		}
 
-		void SetTimePickerToNow(object sender, EventArgs e)
+		void SetTimePickerToNow(object? sender, EventArgs e)
 		{
 			NullTimePicker.Time = DateTime.Now.TimeOfDay;
 		}
 
-		void OnOpenClicked(object sender, EventArgs e)
+		void OnOpenClicked(object? sender, EventArgs e)
 		{
 			IsOpenTimePicker.IsOpen = true;
 		}
 
-		void OnCloseClicked(object sender, EventArgs e)
+		void OnCloseClicked(object? sender, EventArgs e)
 		{
 			IsOpenTimePicker.IsOpen = false;
 		}

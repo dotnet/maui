@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreLocation;
 using MapKit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Maps.Handlers;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -16,7 +18,15 @@ namespace Microsoft.Maui.Maps.Platform
 		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
+		bool _isClusteringEnabled;
+		IMKAnnotation? _suppressClickForAnnotation;
+
+		UILongPressGestureRecognizer? _mapLongClickedGestureRecognizer;
 		List<IMapElement>? _trackedMapElements;
+		const int MaxIconCacheSize = 64;
+		readonly IconCache<UIImage> _iconCache = new(MaxIconCacheSize, image => image.Dispose());
+		WeakReference<IMap>? _clusterImageOwner;
+		int _clusterImageVersion = int.MinValue;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
@@ -24,6 +34,15 @@ namespace Microsoft.Maui.Maps.Platform
 			OverlayRenderer = GetViewForOverlayDelegate;
 			// Assign custom annotation view delegate to enable gesture recognition on annotation callouts.
 			base.GetViewForAnnotation = GetViewForAnnotation;
+		}
+
+		/// <summary>
+		/// Gets or sets whether pin clustering is enabled.
+		/// </summary>
+		public bool IsClusteringEnabled
+		{
+			get => _isClusteringEnabled;
+			set => _isClusteringEnabled = value;
 		}
 
 		internal IMapHandler? Handler
@@ -80,28 +99,49 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			MKAnnotationView? mapPin;
 
+			// Resolved once: this block runs for every annotation entering the viewport and again
+			// on every pan/zoom, and both checks below need the concrete annotation type.
+			var annotationPeer = ResolveAnnotationPeer(annotation);
+
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
-			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
-			if (userLocationAnnotation != null)
+			if (annotationPeer is MKUserLocation)
 				return null!;
+
+			if (annotationPeer is MKClusterAnnotation clusterAnnotation)
+			{
+				return GetViewForClusterAnnotation(mapView, clusterAnnotation);
+			}
 
 			const string defaultPinId = "defaultPin";
 			mapPin = mapView.DequeueReusableAnnotation(defaultPinId);
+
+			// Find the IMapPin associated with this annotation
+			IMapPin? pin = GetPinForAnnotation(annotation);
+
+			// Determine if we need a custom image view or the default marker view
+			bool hasCustomImage = pin?.ImageSource != null;
+			string reuseId = hasCustomImage ? "customPin" : "defaultPin";
+
+			mapPin = mapView.DequeueReusableAnnotation(reuseId);
 			if (mapPin == null)
 			{
-				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				if (hasCustomImage)
 				{
-					mapPin = new MKMarkerAnnotationView(annotation, defaultPinId);
+					// Use MKAnnotationView for custom images
+					mapPin = new MKAnnotationView(annotation, reuseId);
+				}
+				else if (OperatingSystem.IsIOSVersionAtLeast(11))
+				{
+					mapPin = new MKMarkerAnnotationView(annotation, reuseId);
 				}
 				else
 				{
-					mapPin = new MKPinAnnotationView(annotation, defaultPinId);
-
+					mapPin = new MKPinAnnotationView(annotation, reuseId);
 				}
 
 				mapPin.CanShowCallout = true;
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				if (!hasCustomImage && OperatingSystem.IsIOSVersionAtLeast(11))
 				{
 					// Need to set this to get the callout bubble to show up
 					// Without this no callout is shown, it's displayed differently
@@ -110,9 +150,385 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			mapPin.Annotation = annotation;
+
+			// Set clustering identifier if clustering is enabled
+			if (_isClusteringEnabled && OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				if (pin != null)
+				{
+					mapPin.ClusteringIdentifier = pin.ClusteringIdentifier;
+				}
+			}
+			else if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				// Clear clustering identifier on the view when disabled.
+				// The original value is preserved in the IMapPin data and will be
+				// re-applied from GetPinForAnnotation when clustering is re-enabled.
+				mapPin.ClusteringIdentifier = null;
+			}
+
+			// Apply custom image if present
+			if (hasCustomImage && pin?.ImageSource != null)
+			{
+				// Clear any existing image on a reused annotation view before loading the new one
+				mapPin.Image = null;
+				ApplyCustomImageAsync(mapPin, pin).FireAndForget();
+			}
+
 			AttachGestureToPin(mapPin, annotation);
 
 			return mapPin;
+		}
+
+		// Resolves the managed peer for an annotation MapKit handed us. The GetViewForAnnotation block
+		// receives its annotation as a marshalled protocol wrapper (MKAnnotationWrapper), which is an
+		// INativeObject but *not* an NSObject - so neither a managed `is MKClusterAnnotation` check nor
+		// an NSObject-based IsKindOfClass sees the cluster, and every cluster fell through to the
+		// default marker. Going through the handle picks the managed type from the native class, and
+		// works for an already-typed annotation too (the selection callbacks pass the latter).
+		// A zero handle means the peer is already gone - a disposed annotation reaching a MapKit
+		// callback still in flight - so callers take the no-cluster path instead of throwing on it.
+		static Foundation.NSObject? ResolveAnnotationPeer(IMKAnnotation? annotation) =>
+			annotation is null || annotation.Handle == IntPtr.Zero
+				? null
+				: Runtime.GetNSObject(annotation.Handle);
+
+		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
+		{
+			// Read the member annotations once - each read marshals a fresh array over the ObjC bridge.
+			var members = clusterAnnotation.MemberAnnotations;
+			int clusterCount = members?.Length ?? 0;
+
+			// Resolve a custom cluster image from the virtual view (provider -> static).
+			IImageSource? clusterImage = null;
+			IMapHandler? handler = null;
+			if (_handlerRef.TryGetTarget(out handler) && handler?.VirtualView is IMapClusterImageProvider imageProvider)
+			{
+				// Count comes from MemberAnnotations directly (not the resolved pins list) so it
+				// stays accurate even on an occasional lookup miss. Pin resolution itself is deferred
+				// to LazyMapPinList below - it only runs if the provider
+				// actually enumerates the pins.
+				var pins = new LazyMapPinList(() => ResolveMemberPins(members));
+
+				var coordinate = clusterAnnotation.Coordinate;
+				var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
+				try
+				{
+					clusterImage = imageProvider.GetClusterImage(pins, clusterCount, location);
+				}
+				catch (Exception ex)
+				{
+					handler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>()?.LogWarning(ex, "Cluster image provider threw");
+				}
+			}
+
+			if (clusterImage != null)
+			{
+				const string customClusterId = "customClusterPin";
+				var customView = mapView.DequeueReusableAnnotation(customClusterId) as MKAnnotationView
+					?? new MKAnnotationView(clusterAnnotation, customClusterId);
+				customView.CanShowCallout = false;
+				customView.Annotation = clusterAnnotation;
+
+				var cacheKey = MapHandler.GetIconCacheKey(clusterImage);
+				if (_iconCache.TryGet(cacheKey, out var cached))
+				{
+					customView.Image = cached;
+				}
+				else
+				{
+					customView.Image = CreateClusterFallbackImage(clusterCount);
+					ApplyCustomClusterImageAsync(customView, clusterImage, clusterCount, cacheKey).FireAndForget(handler);
+				}
+				return customView;
+			}
+
+			const string clusterId = "clusterPin";
+			var clusterView = mapView.DequeueReusableAnnotation(clusterId) as MKMarkerAnnotationView;
+
+			if (clusterView == null)
+			{
+				clusterView = new MKMarkerAnnotationView(clusterAnnotation, clusterId);
+				clusterView.CanShowCallout = false; // Don't show callout for clusters
+			}
+
+			clusterView.Annotation = clusterAnnotation;
+
+			// Display the count of pins in the cluster
+			clusterView.GlyphText = clusterCount.ToString();
+
+			return clusterView;
+		}
+
+		// Resolves member pins with one snapshot of the map pins - IMap.Pins allocates a fresh
+		// copied list on every property access, so re-reading it per member would be quadratic.
+		List<IMapPin> ResolveMemberPins(IMKAnnotation[]? members)
+		{
+			var resolved = new List<IMapPin>(members?.Length ?? 0);
+			if (members == null || !_handlerRef.TryGetTarget(out var handler) || handler?.VirtualView == null)
+				return resolved;
+
+			var mapPins = handler.VirtualView.Pins; // snapshot once - the property copies on every access
+			foreach (var member in members)
+			{
+				for (int i = 0; i < mapPins.Count; i++)
+				{
+					var pin = mapPins[i];
+					if ((pin?.MarkerId as IMKAnnotation) == member)
+					{
+						resolved.Add(pin);
+						break;
+					}
+				}
+			}
+			return resolved;
+		}
+
+		void OnClusterClicked(MKClusterAnnotation clusterAnnotation)
+		{
+			if (!_handlerRef.TryGetTarget(out var handler) || handler?.VirtualView == null)
+				return;
+
+			var memberAnnotations = clusterAnnotation.MemberAnnotations;
+			if (memberAnnotations == null || memberAnnotations.Length == 0)
+				return;
+
+			// Convert member annotations to IMapPin list
+			var pins = new List<IMapPin>();
+			foreach (var memberAnnotation in memberAnnotations)
+			{
+				var pin = GetPinForAnnotation(memberAnnotation);
+				if (pin != null)
+				{
+					pins.Add(pin);
+				}
+			}
+
+			var coordinate = clusterAnnotation.Coordinate;
+			var location = new Devices.Sensors.Location(coordinate.Latitude, coordinate.Longitude);
+
+			// Call the handler's ClusterClicked method
+			var handled = handler.VirtualView.ClusterClicked(pins, location);
+
+			// If not handled, zoom to show all pins in the cluster
+			if (!handled)
+			{
+				ZoomToShowClusterPins(memberAnnotations);
+			}
+		}
+
+		void ZoomToShowClusterPins(IMKAnnotation[] annotations)
+		{
+			if (annotations.Length == 0)
+				return;
+
+			var rect = MKMapRect.Null;
+			foreach (var annotation in annotations)
+			{
+				var point = MKMapPoint.FromCoordinate(annotation.Coordinate);
+				rect = MKMapRect.Union(rect, new MKMapRect(point.X, point.Y, 0.1, 0.1));
+			}
+
+			// Add some padding
+			var paddedRect = new MKMapRect(
+				rect.MinX - rect.Width * 0.1,
+				rect.MinY - rect.Height * 0.1,
+				rect.Width * 1.2,
+				rect.Height * 1.2);
+
+			SetVisibleMapRect(paddedRect, true);
+		}
+
+		// Refreshes a pin already on the map after its ImageSource changed at runtime. Pins with no
+		// individual view (off-screen or collapsed into a cluster) are skipped; GetViewForAnnotation
+		// applies the current ImageSource when they appear.
+		internal void UpdatePinImage(IMapPin pin)
+		{
+			if (pin.MarkerId is not IMKAnnotation annotation || ViewForAnnotation(annotation) is not MKAnnotationView view)
+				return;
+
+			bool hasCustomImage = pin.ImageSource is not null;
+			bool viewShowsCustomImage = view is not MKMarkerAnnotationView && view is not MKPinAnnotationView;
+
+			if (hasCustomImage == viewShowsCustomImage)
+			{
+				// The current view type still matches; refresh the image in place. Don't pre-clear the
+				// custom image: ApplyCustomImageAsync only assigns on success, so a failed load keeps the
+				// previous icon (matching Android) instead of blanking a visible pin.
+				if (hasCustomImage)
+					ApplyCustomImageAsync(view, pin).FireAndForget();
+				else
+					view.Image = null;
+				return;
+			}
+
+			// ImageSource crossed the null/non-null boundary: custom-image pins and default pins use
+			// different annotation view types, so re-add the annotation to let GetViewForAnnotation
+			// recreate the view through the standard path. Restore selection without raising a
+			// synthetic PinClicked.
+			bool wasSelected = SelectedAnnotations?.Any(a => ReferenceEquals(a, annotation) || a.Handle == annotation.Handle) == true;
+			RemoveAnnotation(annotation);
+			AddAnnotation(annotation);
+
+			if (wasSelected)
+			{
+				// DidSelectAnnotationView may fire after the view is (re)created rather than inside
+				// SelectAnnotation, so suppression is annotation-matched rather than a flag scoped to
+				// this call; it's consumed by the matching event, or dropped in Cleanup.
+				_suppressClickForAnnotation = annotation;
+				SelectAnnotation(annotation, false);
+			}
+		}
+
+		async System.Threading.Tasks.Task ApplyCustomImageAsync(MKAnnotationView annotationView, IMapPin pin)
+		{
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			if (handler?.MauiContext == null || pin.ImageSource == null)
+				return;
+
+			// Capture the annotation and requested source before the async operation, to detect both
+			// view reuse and a newer ImageSource change that started while this load was in flight.
+			var targetAnnotation = annotationView.Annotation;
+			var requestedSource = pin.ImageSource;
+
+			try
+			{
+				using var result = await requestedSource.GetPlatformImageAsync(handler.MauiContext);
+
+				// Drop this load if the view was disposed/released, reused, or the pin's ImageSource changed since.
+				if (annotationView.Handle == IntPtr.Zero || annotationView.Annotation != targetAnnotation || !ReferenceEquals(pin.ImageSource, requestedSource))
+					return;
+
+				if (result?.Value is UIImage image)
+				{
+					using var scaledImage = CreateOwnedScaledImage(image, new CoreGraphics.CGSize(32, 32));
+					if (scaledImage is not null)
+						annotationView.Image = scaledImage;
+				}
+			}
+			catch (Exception ex)
+			{
+				if (_handlerRef.TryGetTarget(out var currentHandler))
+				{
+					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					logger?.LogWarning(ex, "Failed to load custom pin icon");
+				}
+			}
+		}
+
+		async System.Threading.Tasks.Task ApplyCustomClusterImageAsync(MKAnnotationView annotationView, IImageSource imageSource, int count, string? cacheKey)
+		{
+			_handlerRef.TryGetTarget(out IMapHandler? handler);
+			var mauiContext = handler?.MauiContext;
+			if (mauiContext == null)
+				return;
+
+			var targetAnnotation = annotationView.Annotation;
+			UIImage? scaledImage = null;
+			var disposeAfterUse = cacheKey is null;
+			try
+			{
+				scaledImage = await _iconCache.GetOrCreateAsync(
+					cacheKey,
+					async () =>
+					{
+						using var result = await imageSource.GetPlatformImageAsync(mauiContext);
+						return result?.Value is UIImage image
+							? CreateOwnedScaledImage(image, new CoreGraphics.CGSize(32, 32), 0)
+							: null;
+					},
+					() => MapHandler.GetIconCacheExpiry(imageSource));
+
+				// Verify the annotation view hasn't been reused for a different cluster.
+				if (annotationView.Annotation != targetAnnotation || Window == null)
+					return;
+
+				if (scaledImage is not null)
+				{
+					annotationView.Image = scaledImage;
+					return;
+				}
+
+				// Load produced no image: fall back to the default bubble so the cluster stays visible.
+				annotationView.Image = CreateClusterFallbackImage(count);
+			}
+			catch (Exception ex)
+			{
+				if (_handlerRef.TryGetTarget(out var currentHandler))
+				{
+					var logger = currentHandler.MauiContext?.Services?.GetService<ILogger<MauiMKMapView>>();
+					logger?.LogWarning(ex, "Failed to load custom cluster icon");
+				}
+				// Best-effort fallback; the view may already be disposed (that can be what threw).
+				try
+				{
+					if (annotationView.Annotation == targetAnnotation)
+						annotationView.Image = CreateClusterFallbackImage(count);
+				}
+				catch (ObjectDisposedException) { }
+			}
+			finally
+			{
+				if (disposeAfterUse)
+					scaledImage?.Dispose();
+			}
+		}
+
+		// Draws the default cluster bubble (blue circle + count) used when a requested custom cluster
+		// image can't be loaded, so the cluster never renders as an invisible marker.
+		static UIImage CreateClusterFallbackImage(int count)
+		{
+			const float size = 40f;
+			var renderer = new UIGraphicsImageRenderer(new CoreGraphics.CGSize(size, size));
+			return renderer.CreateImage(_ =>
+			{
+				var circle = UIBezierPath.FromOval(new CoreGraphics.CGRect(2, 2, size - 4, size - 4));
+				UIColor.FromRGB(66, 133, 244).SetFill(); // Google blue, matching Android
+				circle.Fill();
+
+				UIColor.White.SetStroke();
+				circle.LineWidth = 2;
+				circle.Stroke();
+
+				var text = count > 99 ? "99+" : count.ToString();
+				var attributes = new UIStringAttributes
+				{
+					Font = UIFont.BoldSystemFontOfSize(count > 99 ? 12 : 15),
+					ForegroundColor = UIColor.White,
+				};
+
+				using var nsText = new Foundation.NSString(text);
+				var textSize = nsText.GetSizeUsingAttributes(attributes);
+				var origin = new CoreGraphics.CGPoint((size - textSize.Width) / 2, (size - textSize.Height) / 2);
+				nsText.DrawString(origin, attributes);
+			});
+		}
+
+		static UIImage? CreateOwnedScaledImage(UIImage image, CoreGraphics.CGSize targetSize, nfloat? scale = null)
+		{
+			var size = image.Size;
+			if (size.Width <= 0 || size.Height <= 0)
+				return null;
+
+			var widthRatio = targetSize.Width / size.Width;
+			var heightRatio = targetSize.Height / size.Height;
+			var ratio = (nfloat)Math.Min(widthRatio, heightRatio);
+
+			var newSize = new CoreGraphics.CGSize(size.Width * ratio, size.Height * ratio);
+
+			// 0 = device screen scale; URI-downloaded images decode at scale 1.0 and would render
+			// blurry on Retina if we honored CurrentScale - the rendered icon is also cached, which
+			// would freeze the blur.
+			UIGraphics.BeginImageContextWithOptions(newSize, false, scale ?? image.CurrentScale);
+			try
+			{
+				image.Draw(new CoreGraphics.CGRect(0, 0, newSize.Width, newSize.Height));
+				return UIGraphics.GetImageFromCurrentImageContext();
+			}
+			finally
+			{
+				UIGraphics.EndImageContext();
+			}
 		}
 
 		internal void AddPins(IList pins)
@@ -120,6 +536,8 @@ namespace Microsoft.Maui.Maps.Platform
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			if (handler?.MauiContext == null)
 				return;
+
+			UpdateClusterImageVersion(handler.VirtualView);
 
 			if (Annotations?.Length > 0)
 				RemoveAnnotations(Annotations);
@@ -164,6 +582,9 @@ namespace Microsoft.Maui.Maps.Platform
 				RemoveAnnotations(Annotations);
 
 			_lastTouchedView = null;
+			_iconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
 		}
 
 		internal void AddElements(IList elements)
@@ -215,8 +636,14 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			RegionChanged += MkMapViewOnRegionChanged;
 			DidSelectAnnotationView += MkMapViewOnAnnotationViewSelected;
+			DidUpdateUserLocation += MkMapViewOnUserLocationUpdated;
 
 			AddGestureRecognizer(_mapClickedGestureRecognizer = new UITapGestureRecognizer(OnMapClicked)
+			{
+				ShouldReceiveTouch = OnShouldReceiveMapTouch
+			});
+
+			AddGestureRecognizer(_mapLongClickedGestureRecognizer = new UILongPressGestureRecognizer(OnMapLongClicked)
 			{
 				ShouldReceiveTouch = OnShouldReceiveMapTouch
 			});
@@ -230,13 +657,62 @@ namespace Microsoft.Maui.Maps.Platform
 				_mapClickedGestureRecognizer.Dispose();
 				_mapClickedGestureRecognizer = null;
 			}
+			if (_mapLongClickedGestureRecognizer != null)
+			{
+				RemoveGestureRecognizer(_mapLongClickedGestureRecognizer);
+				_mapLongClickedGestureRecognizer.Dispose();
+				_mapLongClickedGestureRecognizer = null;
+			}
 			RegionChanged -= MkMapViewOnRegionChanged;
 			DidSelectAnnotationView -= MkMapViewOnAnnotationViewSelected;
+			DidUpdateUserLocation -= MkMapViewOnUserLocationUpdated;
+
+			// Annotations survive detach/reattach, so drop any pending click suppression to prevent it
+			// from swallowing the next real tap after navigation or a Shell tab switch.
+			_suppressClickForAnnotation = null;
+			_iconCache.Clear();
+			_clusterImageOwner = null;
+			_clusterImageVersion = int.MinValue;
+		}
+
+		void UpdateClusterImageVersion(IMap map)
+		{
+			var version = map is IMapClusterImageProvider imageProvider
+				? imageProvider.ClusterImageVersion
+				: int.MinValue;
+			var sameOwner = _clusterImageOwner?.TryGetTarget(out var owner) == true && ReferenceEquals(owner, map);
+
+			if (sameOwner && _clusterImageVersion == version)
+				return;
+
+			_clusterImageOwner = new WeakReference<IMap>(map);
+			_clusterImageVersion = version;
+			_iconCache.Clear();
 		}
 
 		void MkMapViewOnAnnotationViewSelected(object? sender, MKAnnotationViewEventArgs e)
 		{
 			var annotation = e.View.Annotation;
+
+			// Selection was restored programmatically by UpdatePinImage; the user did not tap the pin.
+			// Only consume (and clear) the suppressor when this event is for the matching annotation, so
+			// a user tap on a different pin while the restore is pending isn't swallowed by mistake.
+			if (annotation is not null && _suppressClickForAnnotation is not null &&
+				(ReferenceEquals(annotation, _suppressClickForAnnotation) || annotation.Handle == _suppressClickForAnnotation.Handle))
+			{
+				_suppressClickForAnnotation = null;
+				return;
+			}
+
+			// Handle cluster annotation selection
+			if (ResolveAnnotationPeer(annotation) is MKClusterAnnotation clusterAnnotation)
+			{
+				OnClusterClicked(clusterAnnotation);
+				// Deselect the cluster annotation to allow re-selection
+				DeselectAnnotation(annotation, false);
+				return;
+			}
+
 			var pin = GetPinForAnnotation(annotation!);
 
 			if (pin == null)
@@ -256,15 +732,30 @@ namespace Microsoft.Maui.Maps.Platform
 				handler.VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(Region.Center.Latitude, Region.Center.Longitude), Region.Span.LatitudeDelta, Region.Span.LongitudeDelta);
 		}
 
+		void MkMapViewOnUserLocationUpdated(object? sender, MKUserLocationEventArgs e)
+		{
+			if (e.UserLocation?.Location == null)
+				return;
+
+			if (_handlerRef.TryGetTarget(out IMapHandler? handler) && handler?.VirtualView != null)
+			{
+				var location = new Devices.Sensors.Location(
+					e.UserLocation.Location.Coordinate.Latitude,
+					e.UserLocation.Location.Coordinate.Longitude);
+				handler.VirtualView.UserLocationUpdated(location);
+			}
+		}
+
 		IMapPin GetPinForAnnotation(IMKAnnotation annotation)
 		{
 			IMapPin targetPin = null!;
 			_handlerRef.TryGetTarget(out IMapHandler? handler);
 			IMap map = handler?.VirtualView!;
 
-			for (int i = 0; i < map.Pins.Count; i++)
+			var pins = map.Pins; // snapshot once - the property copies on every access
+			for (int i = 0; i < pins.Count; i++)
 			{
-				var pin = map.Pins[i];
+				var pin = pins[i];
 				if ((pin?.MarkerId as IMKAnnotation) == annotation)
 				{
 					targetPin = pin;
@@ -359,6 +850,119 @@ namespace Microsoft.Maui.Maps.Platform
 
 			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
 				handler?.VirtualView.Clicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+
+			void SendClickEvent(IMKOverlay overlay)
+			{
+				handler?.VirtualView.Elements
+				.FirstOrDefault(x => x.MapElementId == overlay)?
+				.Clicked();
+			}
+
+			// Hit-test overlays in order: Circle > Polygon > Polyline (first match wins)
+			var overlays = mauiMkMapView.Overlays;
+			if (overlays is null)
+				return;
+
+			foreach (var overlay in overlays)
+			{
+				if (overlay is MKCircle circle)
+				{
+					var center = new CLLocation(circle.Coordinate.Latitude, circle.Coordinate.Longitude);
+					var touch = new CLLocation(tapGPS.Latitude, tapGPS.Longitude);
+					var distance = center.DistanceFrom(touch);
+
+					if (distance <= circle.Radius)
+					{
+						SendClickEvent(overlay);
+						break;
+					}
+				}
+				else if (overlay is MKPolygon polygon)
+				{
+					var tapCoord = new CLLocationCoordinate2D(tapGPS.Latitude, tapGPS.Longitude);
+					var renderer = mauiMkMapView.GetViewForOverlayDelegate(mauiMkMapView, polygon) as MKPolygonRenderer;
+
+					if (renderer?.Path is not null)
+					{
+						var mapPoint = MKMapPoint.FromCoordinate(tapCoord);
+						var pointInRenderer = renderer.PointForMapPoint(mapPoint);
+
+						if (renderer.Path.ContainsPoint(pointInRenderer, true))
+						{
+							SendClickEvent(overlay);
+							break;
+						}
+					}
+				}
+				else if (overlay is MKPolyline polyline)
+				{
+					var renderer = mauiMkMapView.GetViewForOverlayDelegate(mauiMkMapView, polyline) as MKPolylineRenderer;
+
+					if (renderer?.Path is not null)
+					{
+						var tapCoord = new CLLocationCoordinate2D(tapGPS.Latitude, tapGPS.Longitude);
+						var mapPoint = MKMapPoint.FromCoordinate(tapCoord);
+						var pointInRenderer = renderer.PointForMapPoint(mapPoint);
+
+						// Use a minimum tap target width for easier polyline interaction
+						var hitTestWidth = renderer.LineWidth < 44 ? (nfloat)44 : renderer.LineWidth;
+						using var strokedPath = renderer.Path.CopyByStrokingPath(hitTestWidth, CoreGraphics.CGLineCap.Round, CoreGraphics.CGLineJoin.Round, 1);
+						if (strokedPath?.ContainsPoint(pointInRenderer, true) == true)
+						{
+							SendClickEvent(overlay);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		static void OnMapLongClicked(UILongPressGestureRecognizer recognizer)
+		{
+			// Only trigger on the began state to avoid multiple callbacks
+			if (recognizer.State != UIGestureRecognizerState.Began)
+				return;
+
+			if (recognizer.View is not MauiMKMapView mauiMkMapView)
+				return;
+
+			var tapPoint = recognizer.LocationInView(mauiMkMapView);
+			var tapGPS = mauiMkMapView.ConvertPoint(tapPoint, mauiMkMapView);
+
+			if (mauiMkMapView._handlerRef.TryGetTarget(out IMapHandler? handler))
+				handler?.VirtualView.LongClicked(new Devices.Sensors.Location(tapGPS.Latitude, tapGPS.Longitude));
+		}
+
+		// Materializes only when a cluster image provider actually enumerates the pins, so the
+		// default/static-icon paths never pay the per-member lookup.
+		sealed class LazyMapPinList : IReadOnlyList<IMapPin>
+		{
+			Func<List<IMapPin>>? _factory;
+			List<IMapPin>? _pins;
+
+			public LazyMapPinList(Func<List<IMapPin>> factory) => _factory = factory;
+
+			List<IMapPin> Pins
+			{
+				get
+				{
+					if (_pins is null)
+					{
+						_pins = _factory!();
+						_factory = null;
+					}
+					return _pins;
+				}
+			}
+
+			public IMapPin this[int index] => Pins[index];
+
+			// Materializes to stay consistent with the indexer/enumerator (IReadOnlyList
+			// contract). Count-only consumers should use the provider's count parameter /
+			// ClusterInfo.Count instead, which never touches this list.
+			public int Count => Pins.Count;
+			public IEnumerator<IMapPin> GetEnumerator() => Pins.GetEnumerator();
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 		}
 	}
 }
