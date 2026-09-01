@@ -76,6 +76,23 @@ Microsoft.Maui.Controls.Platform.IAlertManagerSubscription.OnPromptRequested(Mic
 Microsoft.Maui.Controls.Platform.IGesturePlatformManager
 Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory
 Microsoft.Maui.Controls.Platform.IGesturePlatformManagerFactory.CreateGesturePlatformManager(Microsoft.Maui.IViewHandler! handler) -> Microsoft.Maui.Controls.Platform.IGesturePlatformManager!
+Microsoft.Maui.Controls.Platform.IModalNavigationHost
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.CurrentPage.get -> Microsoft.Maui.Controls.Page?
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.CurrentPlatformPage.get -> Microsoft.Maui.Controls.Page!
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.IsBatchPopping.get -> bool
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.IsBatchPushing.get -> bool
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.IsWindowReady.get -> bool
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.MauiContext.get -> Microsoft.Maui.IMauiContext!
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.PlatformModalStack.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Page!>!
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.RequestSync() -> void
+Microsoft.Maui.Controls.Platform.IModalNavigationHost.Window.get -> Microsoft.Maui.Controls.Window!
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatform
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.IsReady.get -> bool
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.PageAttached() -> void
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.PopModalAsync(Microsoft.Maui.Controls.Page! modal, bool animated) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatform.PushModalAsync(Microsoft.Maui.Controls.Page! modal, bool animated) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatformFactory
+Microsoft.Maui.Controls.Platform.IModalNavigationPlatformFactory.CreateModalNavigationPlatform(Microsoft.Maui.Controls.Platform.IModalNavigationHost! host) -> Microsoft.Maui.Controls.Platform.IModalNavigationPlatform?
 Microsoft.Maui.Controls.Span.InvalidateStyle() -> void
 Microsoft.Maui.Controls.StyleableElement.InvalidateStyle() -> void
 Microsoft.Maui.Controls.TitleBar.TitleFontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
