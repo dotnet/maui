@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.Checked -= OnCheckedOrUnchecked;
 			platformView.Unchecked -= OnCheckedOrUnchecked;
-			platformView.GroupName = string.Empty;
 
 			base.DisconnectHandler(platformView);
 		}
