@@ -41,9 +41,13 @@ namespace Microsoft.Maui.DeviceTests
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
+#if WINDOWS
 #pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
+#endif
 					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
