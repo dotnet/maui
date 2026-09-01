@@ -1,58 +1,29 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Linq;
 using Foundation;
 
 namespace Microsoft.Maui.Platform
 {
 	public static class Culture
 	{
+		static NSLocale? s_locale;
 		static CultureInfo? s_currentCulture;
-		static string? s_localeIdentifier;
 
 		public static CultureInfo CurrentCulture
 		{
 			get
 			{
-				var locale = NSLocale.CurrentLocale;
-				var identifier = locale.LocaleIdentifier;
-
-				if (s_currentCulture is null || s_localeIdentifier != identifier)
+				if (s_locale == null || s_currentCulture == null || s_locale != NSLocale.CurrentLocale)
 				{
-					s_localeIdentifier = identifier;
+					s_locale = NSLocale.CurrentLocale;
+					string countryCode = s_locale.CountryCode;
+					var cultureInfo = CultureInfo.GetCultures(CultureTypes.AllCultures)
+						.Where(c => c.Name.EndsWith("-" + countryCode)).FirstOrDefault();
 
-					try
-					{
-						// On iOS 17+, the locale identifier can contain a Regional Format override
-						// (e.g. "en_US@rg=inzzzz"), which .NET cannot parse directly. Build the
-						// culture name from LanguageCode/ScriptCode/RegionCode instead, since
-						// RegionCode (unlike the identifier) resolves the "rg" override.
-						if (OperatingSystem.IsIOSVersionAtLeast(17))
-						{
-							var languageCode = locale.LanguageCode;
-							var scriptCode = locale.ScriptCode;
-							var regionCode = locale.RegionCode;
+					if (cultureInfo == null)
+						cultureInfo = CultureInfo.InvariantCulture;
 
-							var cultureName = string.IsNullOrEmpty(scriptCode)
-								? string.IsNullOrEmpty(regionCode) ? languageCode : $"{languageCode}-{regionCode}"
-								: string.IsNullOrEmpty(regionCode) ? $"{languageCode}-{scriptCode}" : $"{languageCode}-{scriptCode}-{regionCode}";
-
-							s_currentCulture = CultureInfo.GetCultureInfo(cultureName);
-						}
-						else
-						{
-							// Remove ICU keyword suffixes, which are not valid .NET culture names.
-							var keywordIndex = identifier.IndexOf('@', StringComparison.Ordinal);
-							var normalizedIdentifier = keywordIndex >= 0 ? identifier[..keywordIndex] : identifier;
-							var cultureName = normalizedIdentifier.Replace('_', '-');
-
-							s_currentCulture = CultureInfo.GetCultureInfo(cultureName);
-						}
-					}
-					catch (ArgumentException)
-					{
-						// CultureNotFoundException and ArgumentNullException derive from ArgumentException.
-						s_currentCulture = CultureInfo.InvariantCulture;
-					}
+					s_currentCulture = cultureInfo;
 				}
 
 				return s_currentCulture;

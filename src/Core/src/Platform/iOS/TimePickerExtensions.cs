@@ -40,28 +40,20 @@ public static class TimePickerExtensions
 	{
 		picker?.UpdateTime(timePicker);
 
-		var cultureInfo = Culture.CurrentCulture;
 		var time = timePicker.Time;
 		var format = timePicker.Format;
 
-		mauiTimePicker.Text = time?.ToFormattedString(format, cultureInfo);
+		mauiTimePicker.Text = time?.ToFormattedString(format);
 
 		if (picker is not null)
 		{
-			if (string.IsNullOrEmpty(format))
-			{
-				picker.Locale = new NSLocale(cultureInfo.TwoLetterISOLanguageName);
-			}
-			else if (format.Contains('H', StringComparison.Ordinal))
-			{
-				var ci = new CultureInfo("de-DE");
-				picker.Locale = new NSLocale(ci.TwoLetterISOLanguageName);
-			}
-			else if (format.Contains('h', StringComparison.Ordinal))
-			{
-				var ci = new CultureInfo("en-US");
-				picker.Locale = new NSLocale(ci.TwoLetterISOLanguageName);
-			}
+			var localeIdentifier = !string.IsNullOrEmpty(format) && format.Contains('H', StringComparison.Ordinal)
+				? "de"
+				: !string.IsNullOrEmpty(format) && format.Contains('h', StringComparison.Ordinal)
+					? "en"
+					: CultureInfo.CurrentCulture.Name;
+
+			picker.Locale = new NSLocale(localeIdentifier);
 		}
 
 		mauiTimePicker.UpdateCharacterSpacing(timePicker);

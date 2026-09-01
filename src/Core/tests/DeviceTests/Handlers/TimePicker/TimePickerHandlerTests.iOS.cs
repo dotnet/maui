@@ -15,45 +15,38 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TimePickerHandlerTests
 	{
-		[Fact(DisplayName = "Default Format Uses Current iOS Locale")]
-		public Task DefaultFormatUsesCurrentiOSLocale()
+		[Fact(DisplayName = "Format 't' Uses Current Culture")]
+		public Task FormatTUsesCurrentCulture()
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var time = new TimeSpan(14, 30, 0);
-				var timePicker = new TimePickerStub
+				var originalCulture = CultureInfo.CurrentCulture;
+				var originalUICulture = CultureInfo.CurrentUICulture;
+
+				try
 				{
-					Format = "t",
-					Time = time
-				};
-				var handler = CreateHandler(timePicker);
+					var culture = CultureInfo.GetCultureInfo("en-GB");
+					CultureInfo.CurrentCulture = culture;
+					CultureInfo.CurrentUICulture = culture;
 
-				var actual = GetNativeTimePicker(handler).Text;
+					var time = new TimeSpan(14, 30, 0);
+					var timePicker = new TimePickerStub
+					{
+						Format = "t",
+						Time = time
+					};
+					var handler = CreateHandler(timePicker);
+					var platformView = GetNativeTimePicker(handler);
+					var expectedLocale = new NSLocale(culture.Name);
 
-				// Use native iOS formatting because LocaleIdentifier can contain
-				// regional overrides that are not valid CultureInfo names.
-				var today = DateTime.Today.Add(time);
-				var components = new NSDateComponents
+					Assert.Equal(time.ToFormattedString("t", culture), platformView.Text);
+					Assert.Equal(expectedLocale.LocaleIdentifier, platformView.Picker.Locale.LocaleIdentifier);
+				}
+				finally
 				{
-					Year = today.Year,
-					Month = today.Month,
-					Day = today.Day,
-					Hour = today.Hour,
-					Minute = today.Minute,
-					Second = today.Second,
-					Calendar = NSCalendar.CurrentCalendar
-				};
-				var referenceDate = NSCalendar.CurrentCalendar.DateFromComponents(components);
-
-				var dateFormatter = new NSDateFormatter
-				{
-					Locale = NSLocale.CurrentLocale,
-					TimeStyle = NSDateFormatterStyle.Short,
-					DateStyle = NSDateFormatterStyle.None
-				};
-				var expected = dateFormatter.StringFor(referenceDate);
-
-				Assert.Equal(expected, actual);
+					CultureInfo.CurrentCulture = originalCulture;
+					CultureInfo.CurrentUICulture = originalUICulture;
+				}
 			});
 		}
 
