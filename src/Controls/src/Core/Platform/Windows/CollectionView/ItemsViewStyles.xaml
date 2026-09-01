@@ -364,18 +364,18 @@
                                                         HorizontalContentAlignment="Stretch"
                                                         VerticalContentAlignment="Stretch"/>
 
-                                        <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
+                                                                                <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
                                                                 ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                                                 HorizontalCacheLength="2"
                                                                 VerticalCacheLength="2"
-                                                                TabFocusNavigation="Once"
+																TabFocusNavigation="Local"
                                                                 ItemsSource="{TemplateBinding ItemsSource}"
                                                                 ItemTemplate="{TemplateBinding ItemTemplate}"
                                                                 Layout="{TemplateBinding Layout}"
                                                                 Margin="{TemplateBinding Padding}"
                                                                 HorizontalAlignment="Stretch"
                                                                 VerticalAlignment="Stretch"
-                                                                XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
+                                                                                                                                XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
 
 
                                         <!-- EmptyView sits between the items and the footer in the StackPanel

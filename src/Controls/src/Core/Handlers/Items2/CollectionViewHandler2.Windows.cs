@@ -36,8 +36,6 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
-	WItemsView? _queuedPlatformSelectionSource;
-	bool _queuedSelectionShouldRestoreVirtualSelection;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -235,47 +233,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
-		if (_ignorePlatformSelectionChange || PlatformView != sender)
+		if (PlatformView is null)
 			return;
 
-		var shouldRestoreVirtualSelection = sender.SelectionMode == ItemsViewSelectionMode.Single &&
-			sender is MauiItemsView { IsNavigationFocusInProgress: true };
-
-		if (_queuedPlatformSelectionSource == sender)
-		{
-			_queuedSelectionShouldRestoreVirtualSelection &= shouldRestoreVirtualSelection;
-			return;
-		}
-
-		_queuedPlatformSelectionSource = sender;
-		_queuedSelectionShouldRestoreVirtualSelection = shouldRestoreVirtualSelection;
-		if (!sender.DispatcherQueue.TryEnqueue(() =>
-		{
-			if (_queuedPlatformSelectionSource != sender)
-			{
-				return;
-			}
-
-			var restoreVirtualSelection = _queuedSelectionShouldRestoreVirtualSelection;
-			_queuedPlatformSelectionSource = null;
-			_queuedSelectionShouldRestoreVirtualSelection = false;
-
-			if (PlatformView == sender)
-			{
-				if (restoreVirtualSelection)
-				{
-					UpdatePlatformSelection();
-				}
-				else
-				{
-					UpdateVirtualSelection();
-				}
-			}
-		}) && _queuedPlatformSelectionSource == sender)
-		{
-			_queuedPlatformSelectionSource = null;
-			_queuedSelectionShouldRestoreVirtualSelection = false;
-		}
+		UpdateVirtualSelection();
 	}
 
 	/// <summary>
@@ -358,14 +319,9 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			: PlatformView.SelectedItem;
 
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
-		try
-		{
-			ItemsView.SelectedItem = selectedItem;
-		}
-		finally
-		{
-			ItemsView.SelectionChanged += VirtualSelectionChanged;
-		}
+		ItemsView.SelectedItem = selectedItem;
+
+		ItemsView.SelectionChanged += VirtualSelectionChanged;
 	}
 
 	void UpdateVirtualMultipleSelection()
@@ -374,18 +330,14 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			return;
 
 		ItemsView.SelectionChanged -= VirtualSelectionChanged;
-		try
+
+		var newSelection = ComputeNewMultipleSelection();
+		if (!SelectionListsAreEqual(newSelection, ItemsView.SelectedItems))
 		{
-			var newSelection = ComputeNewMultipleSelection();
-			if (!SelectionListsAreEqual(newSelection, ItemsView.SelectedItems))
-			{
-				ItemsView.UpdateSelectedItems(newSelection);
-			}
+			ItemsView.UpdateSelectedItems(newSelection);
 		}
-		finally
-		{
-			ItemsView.SelectionChanged += VirtualSelectionChanged;
-		}
+
+		ItemsView.SelectionChanged += VirtualSelectionChanged;
 	}
 
 	static bool SelectionListsAreEqual(IList<object> list1, IList<object> list2)
