@@ -1078,6 +1078,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue == null)
 				return;
 
+			((ShellContent)newValue).ApplyQueryAttributesFromSelection();
 			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)

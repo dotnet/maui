@@ -1968,6 +1968,7 @@ namespace Microsoft.Maui.Controls
 				ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
 				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
 			}
+			shell.CurrentContent?.ApplyQueryAttributesFromSelection();
 
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
