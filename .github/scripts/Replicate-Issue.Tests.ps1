@@ -4415,7 +4415,7 @@ public class Issue37440AlternativeTests
 [Fact]
 public void ReproducesIssue()
 {
-    Assert.True(false);
+    Assert.NotNull(titleView);
     _ = Environment.GetEnvironmentVariable("MAUI_REPRODUCTION_ISSUE");
 }
 '@
@@ -4432,7 +4432,7 @@ public void ReproducesIssue()
 public void ReproducesIssue()
 {
     VisualElement.SkipMeasureInvalidatedPropagation = true;
-    Assert.True(false);
+    Assert.NotNull(titleView);
 }
 '@
         {
@@ -5425,7 +5425,7 @@ public class Issue35511Tests
         var page = new global::Microsoft.Maui.Controls.ContentPage();
         var titleView = new global::Microsoft.Maui.Controls.Label();
         global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
-        Assert.True(false);
+        Assert.NotNull(titleView.Handler);
     }
 }
 '@ | Set-Content -LiteralPath $script:GateReadyPath
@@ -5452,9 +5452,9 @@ public class Issue35511Tests
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
         {
-            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+            titleView.Text = "trigger";
         }
-        Assert.True(false);
+        Assert.Equal("expected", titleView.Text);
     }
 }
 '@ | Set-Content -LiteralPath $script:GateReadyPath
@@ -9222,18 +9222,16 @@ Describe 'The reproduction is run again without the reported trigger' {
         $script:Source | Should -Match '-Platform \$Platform'
         $script:Source | Should -Match '-ExpectedTestMethod \$methodName'
         $script:Source | Should -Match (
-            'global::Microsoft\.Maui\.Controls\.NavigationPage\.SetTitleView')
+            'affected\.SetDynamicResource')
+        $script:Source | Should -Match (
+            'affected\.Background = expectedRedBrush')
+        $script:Source | Should -Match 'pre-authored else'
         $script:Source | Should -Match 'Expect this control to PASS'
         $script:Source | Should -Match (
-            'Never relocate or reinsert it later in the method')
-        $script:Source | Should -Match (
-            'if it still\s+executes before the oracle, the trigger remains')
-        $script:Source | Should -Match (
-            'assertion solely requires the removed trigger-specific object')
-        $script:Source | Should -Match (
-            'write controlNotPossible and no edits')
-        $script:Source | Should -Match (
-            'Design the test so trusted code can run the same assertions after removing only the reported trigger')
+            'changes only the true initializer token to false')
+        $script:Source | Should -Not -Match (
+            'put exactly one direct static framework trigger invocation')
+        $script:Source | Should -Not -Match 'braced if block with no else'
     }
 
     It 'lets the author refuse rather than invent a passing variant' {
@@ -9583,10 +9581,10 @@ public class ControlTests
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
         {
-            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+            label.IsVisible = false;
         }
-        Assert.Equal(2, 2);
-        Assert.True(true);
+        Assert.Equal(2, label.MaxLines);
+        Assert.True(label.IsVisible);
     }
 }
 
@@ -9620,8 +9618,1508 @@ public class ControlTests
         $variant = New-ReplicationControlVariant -BaselineSource $script:ControlBase `
             -Edits @($script:GateEdit)
         $variant | Should -Match 'var applyReportedTrigger = false;'
-        $variant | Should -Match 'NavigationPage\.SetTitleView'
+        $variant | Should -Match 'label\.IsVisible = false'
         @(Get-ReplicationAssertionStatements -Source $variant).Count | Should -Be 2
+    }
+
+    It 'allows device lifecycle lambdas with one top-level post-trigger oracle' {
+        $baseline = @'
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Platform;
+using Xunit;
+
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue35511")]
+    public async Task Reproduces()
+    {
+        EnsureHandlerCreated(builder =>
+        {
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler<
+                    global::Microsoft.Maui.Controls.Label,
+                    global::Microsoft.Maui.Controls.Handlers.LabelHandler>();
+            });
+        });
+
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var window = new global::Microsoft.Maui.Controls.Window(page);
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var observed = false;
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+
+        await CreateHandlerAndAddToWindow<
+            global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+            window,
+            async _ =>
+        {
+            observed = true;
+            Assert.True(observed);
+        });
+
+        var nativeLabel = titleView.ToPlatform();
+        var expectedBounds = default(CoreGraphics.CGRect);
+        Assert.Equal(expectedBounds, ((UIKit.UILabel)nativeLabel).Bounds);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+
+        $postGateMutation = $baseline.Replace(
+            '        var nativeLabel = titleView.ToPlatform();',
+            @'
+        titleView.Text = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+        var nativeLabel = titleView.ToPlatform();
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $postGateMutation `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $postGateIncrement = $baseline.Replace(
+            '        var nativeLabel = titleView.ToPlatform();',
+            @'
+        titleView.MaxLines++;
+        var nativeLabel = titleView.ToPlatform();
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $postGateIncrement `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+    }
+
+    It 'allows a trusted instance trigger with a same-state alternate assignment' {
+        $baseline = @'
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    [Category("Issue37540")]
+    public void Reproduces()
+    {
+        var affected = new Label();
+        var expectedRedBrush = new SolidColorBrush(Colors.Red);
+        affected.Resources["Issue37540Red"] = expectedRedBrush;
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affected.SetDynamicResource(
+                global::Microsoft.Maui.Controls.Label.BackgroundColorProperty,
+                "Issue37540Red");
+        }
+        else
+        {
+            affected.Background = expectedRedBrush;
+        }
+        Assert.Same(expectedRedBrush, affected.Background);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+
+        $missingResourceMapping = $baseline.Replace(
+            '        affected.Resources["Issue37540Red"] = expectedRedBrush;' +
+                [Environment]::NewLine,
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $missingResourceMapping `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $dormantResourceMapping = $baseline.Replace(
+            '        affected.Resources["Issue37540Red"] = expectedRedBrush;',
+            @'
+        System.Action mapResource = () =>
+        {
+            affected.Resources["Issue37540Red"] = expectedRedBrush;
+        };
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $dormantResourceMapping `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $duplicateResourceMapping = $baseline.Replace(
+            '        affected.Resources["Issue37540Red"] = expectedRedBrush;',
+            @'
+        var otherBrush = new SolidColorBrush(Colors.Transparent);
+        affected.Resources["Issue37540Red"] = expectedRedBrush;
+        affected.Resources["Issue37540Red"] = otherBrush;
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $duplicateResourceMapping `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $aliasedDuplicateMapping = $baseline.Replace(
+            '        affected.Resources["Issue37540Red"] = expectedRedBrush;',
+            @'
+        affected.Resources["Issue37540Red"] = expectedRedBrush;
+        var resources = affected.Resources;
+        resources["Issue37540Red"] = new SolidColorBrush(Colors.Transparent);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasedDuplicateMapping `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $parenthesizedResourceAlias = $aliasedDuplicateMapping.Replace(
+            'var resources = affected.Resources;',
+            'var resources = (affected.Resources);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $parenthesizedResourceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $conditionalResourceAlias = $aliasedDuplicateMapping.Replace(
+            'var resources = affected.Resources;',
+            'var resources = true ? affected.Resources : affected.Resources;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $conditionalResourceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $oneArmResourceAlias = $aliasedDuplicateMapping.Replace(
+            'var resources = affected.Resources;',
+            @'
+        var resources = true
+            ? affected.Resources
+            : new ResourceDictionary();
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $oneArmResourceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $coalescedResourceAlias = $aliasedDuplicateMapping.Replace(
+            'var resources = affected.Resources;',
+            'var resources = affected.Resources ?? new ResourceDictionary();')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $coalescedResourceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $reassignedResourceAlias = $aliasedDuplicateMapping.Replace(
+            'var resources = affected.Resources;',
+            @'
+        var resources = new ResourceDictionary();
+        resources = affected.Resources;
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $reassignedResourceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $differentProperty = $baseline.Replace(
+            'affected.Background = expectedRedBrush;',
+            'affected.Text = "expected";')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $differentProperty `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*both branches must establish the same logical framework state*'
+
+        $invocationAlternate = $baseline.Replace(
+            'affected.Background = expectedRedBrush;',
+            @'
+            affected.SetDynamicResource(
+                global::Microsoft.Maui.Controls.Label.BackgroundColorProperty,
+                "Issue37540Expected");
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $invocationAlternate `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*alternate action must be one direct trusted framework property assignment*'
+
+        $assignmentAlternate = $baseline.Replace(
+            @'
+            affected.SetDynamicResource(
+                global::Microsoft.Maui.Controls.Label.BackgroundColorProperty,
+                "Issue37540Red");
+'@,
+            '            affected.Background = new SolidColorBrush(Colors.Transparent);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $assignmentAlternate `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*optional alternate action is accepted only for a trusted SetDynamicResource*'
+    }
+
+    It 'rejects generated receivers and side-effecting branch arguments' {
+        $generatedReceiver = @'
+using Xunit;
+
+public class GeneratedLabel
+{
+    public void SetDynamicResource(params object[] arguments) { }
+}
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var affected = new GeneratedLabel();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affected.SetDynamicResource("key");
+        }
+        Assert.True(true);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $generatedReceiver `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*generated runtime types*'
+
+        $sideEffectingArgument = $script:ControlBase.Replace(
+            'label.IsVisible = false;',
+            'global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, CreateTitleView());')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $sideEffectingArgument `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*arguments may not execute calls*'
+    }
+
+    It 'rejects alternate actions on different state and oracle mutation in a branch' {
+        $differentState = $script:ControlBase.Replace(
+            @'
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+'@,
+            @'
+        if (applyReportedTrigger)
+        {
+            label.IsVisible = false;
+        }
+        else
+        {
+            titleView.Background = null;
+        }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $differentState `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*optional alternate action is accepted only for a trusted SetDynamicResource*'
+
+        $oracleMutation = $script:ControlBase.Replace(
+            'label.IsVisible = false;',
+            @'
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+            Assert.True(true);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $oracleMutation `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Each applyReportedTrigger branch must contain exactly one*'
+    }
+
+    It 'rejects generated alternate helpers and preserves the same oracle' {
+        $generatedAlternate = @'
+using Microsoft.Maui.Controls;
+using Xunit;
+
+public static class GeneratedAlternates
+{
+    public static void UnsafeAlternate(this Label label) { }
+}
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var affected = new Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affected.SetDynamicResource(
+                Label.BackgroundColorProperty,
+                "Issue37540Red");
+        }
+        else
+        {
+            affected.UnsafeAlternate();
+        }
+        Assert.NotNull(affected.Background);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $generatedAlternate `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Offending Method symbol*UnsafeAlternate*'
+
+        $variant = New-ReplicationControlVariant `
+            -BaselineSource ($script:ControlBase) `
+            -Edits @($script:GateEdit)
+        @(Get-ReplicationAssertionStatements -Source $variant) |
+            Should -Be @(
+                Get-ReplicationAssertionStatements `
+                    -Source $script:ControlBase)
+    }
+
+    It 'rejects unrelated resolved APIs, generated handler types, and throw paths' {
+        $registry = $script:ControlBase.Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        Microsoft.Win32.Registry.SetValue(
+            @"HKEY_CURRENT_USER\Software\MauiReplication",
+            "value",
+            "unsafe");
+        Assert.Equal(2, 2);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $registry `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*not in the trusted semantic MAUI/UIKit contract*'
+
+        $implicitMutex = $script:ControlBase.Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        System.Threading.Mutex mutex = new(false, "maui-replication");
+        Assert.Equal(2, 2);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $implicitMutex `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*not in the trusted semantic MAUI/UIKit contract*'
+
+        $assertAlias = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Xunit;`nusing Assert = Microsoft.Win32.Registry;").Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        Assert.SetValue(
+            @"HKEY_CURRENT_USER\Software\MauiReplication",
+            "value",
+            "unsafe");
+        Xunit.Assert.Equal(2, 2);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $assertAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Registry.SetValue*not in the trusted semantic MAUI/UIKit contract*'
+
+        $generatedHandler = @'
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests;
+using Xunit;
+
+public sealed class GeneratedHandler { }
+
+public class ControlTests : ControlsHandlerTestBase
+{
+    [Fact]
+    public void Reproduces()
+    {
+        EnsureHandlerCreated(builder =>
+        {
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler<Label, GeneratedHandler>();
+            });
+        });
+        var affected = new Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affected.SetDynamicResource(
+                Label.BackgroundColorProperty,
+                "Issue37540Red");
+        }
+        Assert.NotNull(affected);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $generatedHandler `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Generic type argument*GeneratedHandler*not a trusted external framework type*'
+
+        $throwPath = $script:ControlBase.Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        if (page is not null)
+            throw new System.Exception("fabricated");
+        Assert.Equal(2, 2);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $throwPath `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'Issue12345Tests.cs'
+        } | Should -Throw '*may not throw before its trusted oracle*Issue12345Tests.cs*line*'
+
+        $fieldInitializer = @'
+using Xunit;
+
+public class ControlTests
+{
+    object dangerous = CreateDangerousValue();
+
+    static object CreateDangerousValue()
+    {
+        Microsoft.Win32.Registry.SetValue(
+            @"HKEY_CURRENT_USER\Software\MauiReplication",
+            "value",
+            "unsafe");
+        return new object();
+    }
+
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.NotNull(page.Handler);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $fieldInitializer `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not execute instance/static field initializers*'
+
+        $propertyInitializer = $fieldInitializer.Replace(
+            'object dangerous = CreateDangerousValue();',
+            'object Dangerous { get; } = CreateDangerousValue();')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $propertyInitializer `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not execute property initializers*'
+
+        $primaryConstructor = $script:ControlBase.Replace(
+            'public class ControlTests',
+            'public class ControlTests(object dangerous)')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $primaryConstructor `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not declare constructors*'
+
+        $destructor = $script:ControlBase.Replace(
+            '    [Fact]',
+            @'
+    ~ControlTests()
+    {
+        System.Environment.SetEnvironmentVariable(
+            "REPLICATION_FINALIZER_SIDE_EFFECT",
+            "1");
+    }
+
+    [Fact]
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $destructor `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not declare constructors*'
+
+        $generatedArray = @'
+using Xunit;
+
+public struct GeneratedValue
+{
+    public override bool Equals(object other) => true;
+    public override int GetHashCode() => 0;
+}
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        GeneratedValue[] values = new GeneratedValue[1];
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.NotNull(page.Handler);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $generatedArray `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*generated runtime types*'
+    }
+
+    It 'allows bounded pure Math and LINQ observations' {
+        $baseline = $script:ControlBase.Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        var magnitude = System.Math.Abs(label.MaxLines);
+        var first = new[] { titleView }
+            .OfType<global::Microsoft.Maui.Controls.Label>()
+            .First();
+        Assert.Equal(2, label.MaxLines);
+        Assert.NotNull(first.Handler);
+'@).Replace(
+            'using Xunit;',
+            "using System.Linq;`nusing Xunit;")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'rejects framework operations outside the exact pure observation set' {
+        foreach ($operation in @(
+                'var rejected = System.Math.Max(1, label.MaxLines);',
+                @'
+        var rejected = new[] { titleView }
+            .OfType<global::Microsoft.Maui.Controls.Label>()
+            .Count();
+'@
+            )) {
+            $baseline = $script:ControlBase.Replace(
+                'Assert.Equal(2, label.MaxLines);',
+                "$operation`n        Assert.Equal(2, label.MaxLines);").Replace(
+                'using Xunit;',
+                "using System.Linq;`nusing Xunit;")
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $baseline `
+                    -Edits @($script:GateEdit)
+            } | Should -Throw '*not in the trusted semantic MAUI/UIKit contract*'
+        }
+    }
+
+    It 'requires Category to bind to the trusted external attribute' {
+        $sourceCategory = @'
+namespace Microsoft.Maui
+{
+    public sealed class CategoryAttribute : System.Attribute
+    {
+        public CategoryAttribute(string value) { }
+    }
+}
+'@
+        $baseline = $script:ControlBase.Replace(
+            '[Fact]',
+            "[Fact]`n    [Microsoft.Maui.Category(`"Issue12345`")]")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -AdditionalSources @($sourceCategory)
+        } | Should -Throw '*may not declare constructors*'
+
+        $classCategory = $script:ControlBase.Replace(
+            'public class ControlTests',
+            @'
+[Microsoft.Maui.Category("Issue12345")]
+public class ControlTests
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $classCategory `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Category must be declared once on the selected test method*'
+
+        $aliasedClassCategory = $script:ControlBase.Replace(
+            'using Xunit;',
+            @'
+using Xunit;
+using Cat = Microsoft.Maui.CategoryAttribute;
+'@).Replace(
+            'public class ControlTests',
+            @'
+[Cat("Issue12345")]
+public class ControlTests
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasedClassCategory `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*Category must be declared once on the selected test method*'
+    }
+
+    It 'rejects discovery-time source attribute setters outside the selected method' {
+        $baseline = @'
+using Xunit;
+
+public sealed class EvilAttribute : System.Attribute
+{
+    public string Value
+    {
+        get => string.Empty;
+        set => System.Environment.SetEnvironmentVariable(
+            "REPLICATION_ATTRIBUTE_SIDE_EFFECT",
+            value);
+    }
+}
+
+[Evil(Value = "unsafe")]
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.Equal(2, label.MaxLines);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not apply attributes outside the selected test method*'
+    }
+
+    It 'rejects source-defined custom awaiters without invocation syntax' {
+        $baseline = @'
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Xunit;
+
+public static class EvilAwaiter
+{
+    public static TaskAwaiter GetAwaiter(
+        this bool value)
+    {
+        System.Environment.SetEnvironmentVariable(
+            "REPLICATION_AWAITER_SIDE_EFFECT",
+            "1");
+        return Task.CompletedTask.GetAwaiter();
+    }
+}
+
+public class ControlTests
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var label = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        await global::Microsoft.Maui.Controls.VisualStateManager.GoToState(
+            page,
+            "Normal");
+        Assert.Equal(2, label.MaxLines);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may await only a direct trusted external framework invocation*'
+    }
+
+    It 'ignores ambient API names in comments and string literals' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var documentation =
+            "DateTime.UtcNow Random() Guid.NewGuid() Stopwatch.GetTimestamp()";
+        // Environment.TickCount64 is documentation, not an executable member read.
+        var applyReportedTrigger = true;
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'rejects test lifecycle interfaces that execute callbacks after the method' {
+        $baseline = $script:ControlBase.Replace(
+            'public class ControlTests',
+            'public class ControlTests : System.IDisposable').Replace(
+            "    }`n}",
+            @'
+    }
+
+    public void Dispose()
+    {
+        System.Environment.SetEnvironmentVariable(
+            "REPLICATION_DISPOSE_SIDE_EFFECT",
+            "1");
+    }
+}
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*may not implement lifecycle or other interfaces*'
+    }
+
+    It 'rejects selected-class framework lifecycle overrides' {
+        $baseline = $script:ControlBase.Replace(
+            'public class ControlTests',
+            'public class ControlTests : global::Microsoft.Maui.Controls.ContentPage').Replace(
+            '    [Fact]',
+            @'
+    protected override void OnAppearing()
+    {
+        Background = null;
+    }
+
+    [Fact]
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*inherit only trusted external control-contract bases*'
+    }
+
+    It 'rejects trusted mutators outside the reported-trigger gate' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.NavigationPage(page);
+        var destinationPage = new global::Microsoft.Maui.Controls.ContentPage();
+        var navigation = rootPage.Navigation;
+        await navigation.PushAsync(destinationPage);
+        var applyReportedTrigger = true;
+'@).Replace(
+            'public void Reproduces()',
+            'public async System.Threading.Tasks.Task Reproduces()')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*not in the closed lifecycle/observation allowlist outside*'
+    }
+
+    It 'rejects reassignment of the direct-oracle receiver' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        global::Microsoft.Maui.Controls.Element observed = titleView;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        observed = page;
+        Assert.NotNull(observed.Handler);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+    }
+
+    It 'rejects an unrelated top-level direct-property decoy oracle' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var decoy = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+'@).Replace(
+            'label.IsVisible = false;',
+            'label.IsVisible = false;').Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        if (!label.IsVisible)
+        {
+            Assert.True(false);
+        }
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(decoy.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a pre-gate decoy receiver reached through a dead ternary branch' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var decoy = false ? label : new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            '').Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(decoy.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $coalesced = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        global::Microsoft.Maui.Controls.Label unrelated = null;
+        var decoy = unrelated ?? label;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            '').Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(decoy.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $coalesced `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $switchExpression = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var other = new global::Microsoft.Maui.Controls.Label();
+        var selector = 0;
+        var decoy = selector switch
+        {
+            0 => other,
+            _ => label
+        };
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            '').Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(decoy.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $switchExpression `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $coalesceAssignment = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var unrelated = new global::Microsoft.Maui.Controls.Label();
+        var decoy = unrelated ??= label;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            '').Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(decoy.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $coalesceAssignment `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a post-gate identity-wrapped shadow receiver over a trigger-related local' {
+        $baseline = $script:ControlBase.Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var shadow = new[] { label }.First();
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '        Assert.True(shadow.IsVisible);').Replace(
+            'using Xunit;',
+            'using System.Linq;' + [Environment]::NewLine + 'using Xunit;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a trigger symbol smuggled only into a trusted chain indexer or predicate' {
+        $indexerSmuggled = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using System.Linq;`nusing Microsoft.Maui.Platform;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.ToPlatform().Subviews[label.MaxLines].Subviews
+            .OfType<UIKit.UILabel>()
+            .First();
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $indexerSmuggled `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $predicateSmuggled = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.ToPlatform().FindDescendantView<UIKit.UILabel>(
+            candidate => label.Text is null);
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $predicateSmuggled `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a trusted-method chain rooted at a non-render-tree trigger local' {
+        $labelRootedChain = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System.Linq;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = label.ToPlatform().Subviews
+            .OfType<global::Microsoft.Maui.Controls.Label>()
+            .First();
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $labelRootedChain `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $titleViewRootedChain = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System.Linq;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = titleView.ToPlatform().Subviews
+            .OfType<global::Microsoft.Maui.Controls.Label>()
+            .First();
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $titleViewRootedChain `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a delegate-local predicate smuggled into a descendant-navigation call' {
+        # Round-4 security-review PoC: a pre-gate delegate local carrying
+        # trigger-dependent branching in its body, passed BY REFERENCE into
+        # FindDescendantView, was never analyzed for its own body -- only
+        # inline lambdas/indexers at the call site were rejected. The
+        # bare-identity-hop-only rollback rejects this categorically,
+        # because the decoy receiver is still derived through an
+        # invocation chain rather than a true identity-preserving hop.
+        $delegateLocalSmuggled = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System;`nusing Xunit;").Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        System.Func<UIKit.UIView, bool> pick = candidate =>
+            candidate is UIKit.UILabel decoyLabel && decoyLabel.Text == "decoy";
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.ToPlatform().FindDescendantView<UIKit.UILabel>(pick);
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $delegateLocalSmuggled `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a chain that escapes the trigger receiver via .Window' {
+        # Round-4 finding (both security-review and rubber-duck,
+        # independently): the page/window-root-typed chain-trust mechanism
+        # constrained only the ROOT identifier's type, not the intermediate
+        # member-access property names, allowing an escape from the
+        # trigger's own container out to `.Window` to observe an unrelated
+        # native view elsewhere in the ancestor/sibling window. Now
+        # rejected categorically under bare-identity-hop-only causal
+        # provenance.
+        $windowEscape = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System.Linq;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.ToPlatform().Window.Subviews
+            .OfType<UIKit.UILabel>()
+            .First();
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $windowEscape `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a same-container decoy sibling selected via a page/window-rooted chain' {
+        # Round-4 rubber-duck finding: even a genuinely page/window-rooted
+        # `.ToPlatform().Subviews.OfType<T>().First()` selection is not
+        # identity-preserving -- it can select an unrelated sibling view
+        # under the SAME container that was never touched by the trigger,
+        # proving only "some view under this page has property X" rather
+        # than that the reported trigger was actually observed. Set the
+        # decoy's state BEFORE the trigger runs, with the trigger doing
+        # something unrelated, so a chain-trust bypass would let the
+        # assertion pass even though it observes nothing caused by the
+        # trigger.
+        $sameContainerDecoy = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System.Linq;`nusing Xunit;").Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        titleView.Text = "decoy";
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.ToPlatform().Subviews
+            .OfType<UIKit.UILabel>()
+            .First();
+        Assert.Equal("decoy", decoy.Text);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $sameContainerDecoy `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a post-gate ToPlatform receiver observing an unrelated property family' {
+        # Round-5 security-review Alert 1: a receiver declared AFTER the
+        # gate via `var nativeRoot = page.ToPlatform();` previously
+        # skipped the observed-vs-trigger property-family match entirely
+        # (that check only ran for PRE-gate receivers), letting an
+        # unrelated native-root property such as `.Window` -- established
+        # by test setup/lifecycle, not by the actual `SetTitleView`
+        # trigger -- stand in for a real oracle. The family match must now
+        # run unconditionally for every receiver declarator.
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var nativeRoot = page.ToPlatform();
+        Assert.NotNull(nativeRoot.Window);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'allows an inline chained ToPlatform property read as a single hop' {
+        # Widening (round-5 rubber-duck Concern 6): a native-peer read
+        # applied inline, without an intermediate local, is exactly as
+        # identity-preserving as declaring a local first -- both hops map
+        # `titleView` to ITS OWN native peer via the same trusted
+        # `ElementExtensions.ToPlatform` symbol. Realistic MAUI DeviceTests
+        # authoring commonly inlines this cast/property-read, so it must
+        # be accepted without reopening any prior bypass class. A static
+        # method-call trigger (`SetTitleView`) is used, not a property
+        # assignment, so the receiver identifier itself is never the LHS
+        # of any assignment in the method -- keeping this test isolated
+        # from the separate deletion/assignment-scanning rules.
+        $baseline = @'
+using Microsoft.Maui.Platform;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var expectedBounds = default(CoreGraphics.CGRect);
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.Equal(
+            expectedBounds,
+            ((UIKit.UILabel)titleView.ToPlatform()).Bounds);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'allows an as-cast identity-preserving receiver hop' {
+        $baseline = @'
+using Microsoft.Maui.Platform;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var expectedBounds = default(CoreGraphics.CGRect);
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        var nativeLabel = titleView.ToPlatform() as UIKit.UILabel;
+        Assert.Equal(expectedBounds, nativeLabel.Bounds);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'allows Handler.PlatformView as an atomic trusted receiver hop' {
+        # Widening (round-5 rubber-duck Concern 6): `X.Handler.PlatformView`
+        # is treated as equally trustworthy elsewhere in the codebase to
+        # `X.ToPlatform()` -- both resolve to the SAME control's own
+        # native peer via the trusted external contract assembly, with no
+        # selection/navigation semantics. This closes the inconsistency
+        # the reviewer flagged.
+        $baseline = @'
+using Microsoft.Maui.Platform;
+using Xunit;
+
+public class ControlTests
+{
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var expectedBounds = default(CoreGraphics.CGRect);
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        var nativeLabel = (UIKit.UILabel)titleView.Handler.PlatformView;
+        Assert.Equal(expectedBounds, nativeLabel.Bounds);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'rejects the side-effecting ToPlatform(IMauiContext) overload as a receiver hop' {
+        # The single-argument `ToPlatform(IMauiContext)` overload can
+        # create/attach a handler as a side effect and is NOT the same
+        # trusted zero-argument `ElementExtensions.ToPlatform(IElement)`
+        # symbol relied on elsewhere; it must remain outside the
+        # allowlist even though the method name text matches.
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing Xunit;").Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var nativeLabel = label.ToPlatform(label.Handler.MauiContext);
+        Assert.NotNull(nativeLabel);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a chained Subviews selection even when rooted at Handler.PlatformView' {
+        # Widening the atomic hop set to include `Handler.PlatformView`
+        # must not reopen the decoy-sibling bypass class: any further
+        # navigation/selection appended after the atomic hop (e.g.
+        # `.Subviews.OfType<T>().First()`) is still a non-identity chain
+        # and must be rejected exactly as it is for `.ToPlatform()`.
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing System.Linq;`nusing Xunit;").Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        titleView.Text = "decoy";
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var decoy = page.Handler.PlatformView;
+        Assert.NotNull(decoy);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a direct-oracle receiver constructed from post-gate shadow state' {
+        $baseline = $script:ControlBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        label.Text = "seed";
+        var page1 = new global::Microsoft.Maui.Controls.ContentPage();
+        var page2 = new global::Microsoft.Maui.Controls.ContentPage();
+        var expected = page2;
+        var applyReportedTrigger = true;
+'@).Replace(
+            'label.IsVisible = false;',
+            'label.Text = null;').Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        var shadow = new global::Microsoft.Maui.Controls.NavigationPage(
+            label.Text is null ? page1 : page2);
+        Assert.Same(expected, shadow.CurrentPage);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+    }
+
+    It 'rejects writes to dependencies of a post-gate pure receiver chain' {
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using System.Linq;`nusing Xunit;").Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var page1 = new global::Microsoft.Maui.Controls.ContentPage();
+        var page2 = new global::Microsoft.Maui.Controls.ContentPage();
+        var expected = page2;
+        var navs = new global::Microsoft.Maui.Controls.NavigationPage[]
+        {
+            new global::Microsoft.Maui.Controls.NavigationPage(page1)
+        };
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        Assert.Equal(2, label.MaxLines);',
+            @'
+        navs[0] = new global::Microsoft.Maui.Controls.NavigationPage(page2);
+        var shadow = navs.First();
+        Assert.Same(expected, shadow.CurrentPage);
+'@).Replace(
+            '        Assert.True(label.IsVisible);',
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $aliasedDependency = $baseline.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var alias = navs;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        navs[0] =',
+            '        alias[0] =')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasedDependency `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $patternAlias = $baseline.Replace(
+            '        navs[0] = new global::Microsoft.Maui.Controls.NavigationPage(page2);',
+            @'
+        if (navs is var alias)
+        {
+            alias[0] =
+                new global::Microsoft.Maui.Controls.NavigationPage(page2);
+        }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $patternAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $switchAlias = $baseline.Replace(
+            '        navs[0] = new global::Microsoft.Maui.Controls.NavigationPage(page2);',
+            @'
+        switch (navs)
+        {
+            case var alias:
+                alias[0] =
+                    new global::Microsoft.Maui.Controls.NavigationPage(page2);
+                break;
+        }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $switchAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $interfaceAlias = $baseline.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        global::System.Collections.IEnumerable alias =
+            true
+                ? (global::System.Collections.IEnumerable)navs
+                : (global::System.Collections.IEnumerable)navs;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '        navs[0] =',
+            @'
+        ((global::Microsoft.Maui.Controls.NavigationPage[])alias)[0] =
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $interfaceAlias `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects unresolved members outside the explicit observation surface' {
+        $baseline = $script:ControlBase.Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        UnknownMutation(page);
+        Assert.Equal(2, 2);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'Issue12345Tests.cs'
+        } | Should -Throw (
+            "*External operation*UnknownMutation*" +
+            "*Issue12345Tests.cs*line*")
+    }
+
+    It 'names the generated symbol and source line in semantic failures' {
+        $baseline = @'
+using Xunit;
+
+public class ControlTests
+{
+    static bool GeneratedObservation => true;
+
+    [Fact]
+    public void Reproduces()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.True(GeneratedObservation);
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'Issue12345Tests.cs'
+        } | Should -Throw (
+            "*Offending Property symbol*GeneratedObservation*" +
+            "*Issue12345Tests.cs*line*")
     }
 
     It 'binds the gate to the verifier-selected method' {
@@ -9652,7 +11150,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $parameterized `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*must be parameterless*data sources are not accepted*'
+        } | Should -Throw '*must be parameterless*data-source or other method attributes are not accepted*'
 
         $dataSource = $script:ControlBase.Replace(
             '[Fact]',
@@ -9664,7 +11162,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $dataSource `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*must be parameterless*data sources are not accepted*'
+        } | Should -Throw '*must be parameterless*data-source or other method attributes are not accepted*'
     }
 
     It 'binds the condition to the exact local in the selected method' {
@@ -9698,7 +11196,7 @@ public class ControlTests : GateBase
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated constructors, method groups*'
+        } | Should -Throw '*inherit only trusted external control-contract bases*'
     }
 
     It 'refuses a gate nested in another block of the selected method' {
@@ -9789,11 +11287,14 @@ namespace Microsoft.Maui.Controls
 }
 '@
         {
+            $baseline = $script:ControlBase.Replace(
+                'label.IsVisible = false;',
+                'global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);')
             New-ReplicationControlVariant `
-                -BaselineSource $script:ControlBase `
+                -BaselineSource $baseline `
                 -Edits @($script:GateEdit) `
                 -AdditionalSources @($lookalike)
-        } | Should -Throw '*generated source helpers*'
+        } | Should -Throw '*Offending Method symbol*SetTitleView*'
     }
 
     It 'accepts only the active platform symbols from additional sources' {
@@ -9892,7 +11393,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated constructors, method groups*'
+        } | Should -Throw '*generated runtime types*'
     }
 
     It 'rejects conversion operators from every generated source' {
@@ -9939,12 +11440,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated source helpers*'
+        } | Should -Throw '*Offending Method symbol*Assert.True*'
     }
 
     It 'rejects writes inside trusted assertion arguments' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             'Assert.Equal(2, ++label.MaxLines);')
         {
             New-ReplicationControlVariant `
@@ -9955,7 +11456,7 @@ public class ControlTests
 
     It 'rejects source helpers inside trusted assertion arguments' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             'Assert.True(Fabricate(page));').Replace(
             "    }`n}",
             @'
@@ -9969,12 +11470,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated source helpers*'
+        } | Should -Throw '*Offending Method symbol*Fabricate*'
     }
 
     It 'traces assertion locals and rejects generated helper initializers' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         var fabricated = Fabricate(page);
         Assert.True(fabricated);
@@ -9991,12 +11492,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated source helpers*'
+        } | Should -Throw '*Offending Method symbol*Fabricate*'
     }
 
     It 'allows direct external metadata property observations' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             'Assert.Equal("expected", titleView.Text);')
         {
             New-ReplicationControlVariant `
@@ -10011,10 +11512,10 @@ public class ControlTests
             'using NUnit.Framework;').Replace(
             '[Fact]',
             '[Test]').Replace(
-            'Assert.Equal(2, 2);',
-            'Assert.That(2, Is.EqualTo(2));').Replace(
-            'Assert.True(true);',
-            'Assert.That(true, Is.True);')
+            'Assert.Equal(2, label.MaxLines);',
+            'Assert.That(label.MaxLines, Is.EqualTo(2));').Replace(
+            'Assert.True(label.IsVisible);',
+            'Assert.That(label.IsVisible, Is.True);')
         {
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
@@ -10022,9 +11523,68 @@ public class ControlTests
         } | Should -Not -Throw
     }
 
+    It 'allows trusted NUnit relational constraint chains' {
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            'using NUnit.Framework;').Replace(
+            '[Fact]',
+            '[Test]').Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            'Assert.That(label.MaxLines, Is.GreaterThan(0).And.LessThan(5));').Replace(
+            'Assert.True(label.IsVisible);',
+            'Assert.That(label.IsVisible, Is.True);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'allows the trusted predicate descendant observation helper' {
+        $baseline = $script:ControlBase.Replace(
+            'using Xunit;',
+            "using Microsoft.Maui.Platform;`nusing Xunit;").Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var nativeRoot = page.ToPlatform();
+        var applyReportedTrigger = true;
+'@).Replace(
+            'Assert.Equal(2, label.MaxLines);',
+            @'
+        var nativeLabel = nativeRoot.FindDescendantView<UIKit.UILabel>(
+            candidate =>
+            {
+                if (candidate is UIKit.UILabel label && !label.Hidden)
+                {
+                    return true;
+                }
+                return false;
+            });
+        Assert.Equal(2, label.MaxLines);
+        Assert.NotNull(nativeLabel);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+
+        $sideEffectingPredicate = $baseline.Replace(
+            'return true;',
+            @'
+                    titleView.Text = "unsafe";
+                    return true;
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $sideEffectingPredicate `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*descendant-observation predicates may not write*'
+    }
+
     It 'rejects deconstruction writes fed by generated helpers' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         var counter = 0;
         var ignored = 0;
@@ -10076,7 +11636,7 @@ public class ControlTests
 
     It 'rejects generated helpers that mutate assertion objects by alias' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         var bag = new global::System.Collections.Generic.List<int>();
         Fabricate(page, bag);
@@ -10095,7 +11655,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated source helpers*'
+        } | Should -Throw '*Offending Method symbol*Fabricate*'
     }
 
     It 'rejects generated method groups hidden behind external delegates' {
@@ -10141,7 +11701,7 @@ public sealed class GeneratedHelper { }
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated constructors, method groups*'
+        } | Should -Throw '*generated runtime types*'
     }
 
     It 'rejects virtual dispatch through a metadata-typed boxed source object' {
@@ -10173,12 +11733,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*may not use this or base*'
+        } | Should -Throw '*may not declare overrides*'
     }
 
     It 'rejects object-dispatching string helpers in oracle dataflow' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         var observed = string.Concat((object)titleView);
         Assert.Equal("expected", observed);
@@ -10187,7 +11747,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*not an allowlisted pure observation*'
+        } | Should -Throw '*not in the trusted semantic MAUI/UIKit contract*'
     }
 
     It 'rejects ambient runtime members in oracle dataflow' `
@@ -10201,26 +11761,26 @@ public class ControlTests
         ) {
         param($Expression)
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             "Assert.NotEqual(0, $Expression);")
         {
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*not an allowlisted*'
+        } | Should -Throw '*ambient clock, random*'
     }
 
     It 'rejects static-imported ambient runtime members' {
         $baseline = $script:ControlBase.Replace(
             'using Xunit;',
             "using Xunit;`nusing static System.Environment;").Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             'Assert.NotEqual(0, TickCount);')
         {
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*not an allowlisted deterministic observation*'
+        } | Should -Throw '*ambient clock, random*'
     }
 
     It 'rejects ambient constructors and property writes before the gate' {
@@ -10235,7 +11795,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $randomSetup `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*construct only explicitly allowlisted deterministic*'
+        } | Should -Throw '*ambient clock, random*'
 
         $clockSetup = $script:ControlBase.Replace(
             'using Xunit;',
@@ -10249,7 +11809,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $clockSetup `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*not an allowlisted*'
+        } | Should -Throw '*ambient clock, random*'
     }
 
     It 'rejects boxed generated structs in traced oracle dataflow' {
@@ -10269,14 +11829,13 @@ public class ControlTests
     {
         var page = new global::Microsoft.Maui.Controls.ContentPage();
         var titleView = new global::Microsoft.Maui.Controls.Label();
-        GeneratedValue value = default;
-        object boxed = value;
+        object boxed = default(GeneratedValue);
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
         {
             global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
         }
-        Assert.NotNull(boxed);
+        Assert.Equal(boxed, boxed);
     }
 }
 '@
@@ -10284,12 +11843,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*local used by trusted dataflow*external metadata type*'
+        } | Should -Throw '*Type*GeneratedValue*generated or unresolved*'
     }
 
     It 'rejects arbitrary external constructors in oracle dataflow' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         var timestamp = new global::System.DateTime(2025, 1, 1);
         Assert.NotEqual(default, timestamp);
@@ -10298,12 +11857,12 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*construct only explicitly allowlisted deterministic*'
+        } | Should -Throw '*ambient clock, random*'
     }
 
     It 'rejects target-typed arbitrary external constructors' {
         $baseline = $script:ControlBase.Replace(
-            'Assert.Equal(2, 2);',
+            'Assert.Equal(2, label.MaxLines);',
             @'
         global::System.DateTime timestamp = new(2025, 1, 1);
         Assert.NotEqual(default, timestamp);
@@ -10312,7 +11871,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*construct only explicitly allowlisted deterministic*'
+        } | Should -Throw '*ambient clock, random*'
     }
 
     It 'rejects source indexer getters in assertion arguments' {
@@ -10341,21 +11900,21 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated constructors, method groups*'
+        } | Should -Throw '*may not use this or base*'
     }
 
     It 'traces and rejects reassigned trigger locals' {
         $baseline = $script:ControlBase.Replace(
             'var applyReportedTrigger = true;',
             @'
-        page = new global::Microsoft.Maui.Controls.ContentPage();
+        label = new global::Microsoft.Maui.Controls.Label();
         var applyReportedTrigger = true;
 '@)
         {
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*local used by the trusted assertion may not be reassigned*'
+        } | Should -Throw '*framework-operation receiver*may not be reassigned*'
     }
 
     It 'rejects an early return that can skip the oracle' {
@@ -10414,7 +11973,247 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*assertion must be a top-level statement*'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+    }
+
+    It 'rejects a skipped nested failure plus a vacuous top-level assertion' {
+        $baseline = $script:ControlBase.Replace(
+            @'
+        Assert.Equal(2, label.MaxLines);
+        Assert.True(label.IsVisible);
+'@,
+            @'
+        if (page is null)
+        {
+            Assert.True(false);
+        }
+        Assert.True(true);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $selfComparison = $baseline.Replace(
+            'Assert.True(true);',
+            'Assert.Same(page, page);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $selfComparison `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $parenthesizedSelfComparison = $baseline.Replace(
+            'Assert.True(true);',
+            'Assert.Equal(label.IsVisible, (label.IsVisible));')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $parenthesizedSelfComparison `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $identityCastSelfComparison = $baseline.Replace(
+            'Assert.True(true);',
+            'Assert.Equal((bool)label.IsVisible, label.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $identityCastSelfComparison `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $booleanTautology = $baseline.Replace(
+            'Assert.True(true);',
+            'Assert.True(label.IsVisible || !label.IsVisible);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $booleanTautology `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $parenthesizedBooleanTautology = $booleanTautology.Replace(
+            'Assert.True(label.IsVisible || !label.IsVisible);',
+            'Assert.True((label.IsVisible || !label.IsVisible));')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $parenthesizedBooleanTautology `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $parenthesizedNegationTautology = $booleanTautology.Replace(
+            '!label.IsVisible',
+            '(!label.IsVisible)')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $parenthesizedNegationTautology `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $nunitSelfComparison = $baseline.Replace(
+            'using Xunit;',
+            'using NUnit.Framework;').Replace(
+            '[Fact]',
+            '[Test]').Replace(
+            'Assert.True(false);',
+            'Assert.That(false, Is.True);').Replace(
+            'Assert.True(true);',
+            'Assert.That(label.IsVisible, Is.EqualTo(label.IsVisible));')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nunitSelfComparison `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $parenthesizedNunitSelf = $nunitSelfComparison.Replace(
+            'Is.EqualTo(label.IsVisible)',
+            '(Is.EqualTo(label.IsVisible))')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $parenthesizedNunitSelf `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $nunitLiteralTautology = $nunitSelfComparison.Replace(
+            'Assert.That(label.IsVisible, Is.EqualTo(label.IsVisible));',
+            'Assert.That(true, Is.True);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nunitLiteralTautology `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        $nunitBooleanTautology = $nunitSelfComparison.Replace(
+            'Assert.That(label.IsVisible, Is.EqualTo(label.IsVisible));',
+            'Assert.That(label.IsVisible || (!label.IsVisible), Is.True);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nunitBooleanTautology `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+
+        foreach ($aliasedOracle in @(
+            @'
+        label.IsVisible = true;
+        Assert.True(label.IsVisible);
+'@,
+            @'
+        label.MaxLines++;
+        Assert.Equal(1, label.MaxLines);
+'@,
+            @'
+        label.SetDynamicResource(
+            global::Microsoft.Maui.Controls.Label.BackgroundColorProperty,
+            "IssueKey");
+        Assert.NotNull(label.Background);
+'@,
+            @'
+        var alias = label;
+        alias.IsVisible = true;
+        Assert.True(label.IsVisible);
+'@,
+            @'
+        var fabricated = new global::Microsoft.Maui.Controls.Label
+        {
+            IsVisible = true
+        };
+        Assert.True(fabricated.IsVisible);
+'@,
+            @'
+        var observed = label.IsVisible || true;
+        Assert.True(observed);
+'@,
+            @'
+        var observed = false;
+        observed = label.IsVisible || true;
+        Assert.True(observed);
+'@,
+            @'
+        var observed = false;
+        observed = label.IsVisible != !label.IsVisible;
+        Assert.True(observed);
+'@,
+            @'
+        var observed = !!label.IsVisible;
+        Assert.True(observed);
+'@,
+            @'
+        object observed = label.IsVisible;
+        Assert.Equal(true, observed);
+'@,
+            @'
+        var observed = 0;
+        Assert.Equal(0, observed);
+        observed = label.MaxLines;
+'@,
+            @'
+        object observed = null;
+        observed = label.IsVisible;
+        Assert.NotNull(observed);
+'@,
+            @'
+        object observed = null;
+        observed = label.IsVisible;
+        Assert.NotEqual(null, observed);
+'@,
+            @'
+        object observed = null;
+        observed = label.IsVisible;
+        Assert.NotEqual(observed, null);
+'@,
+            '        Assert.NotNull(label.IsVisible);',
+            '        Assert.NotEqual(null, label.IsVisible);',
+            '        Assert.NotEqual(label.IsVisible, !label.IsVisible);'
+        )) {
+            $aliasTautology = $baseline.Replace(
+                '        Assert.True(true);',
+                $aliasedOracle)
+            $rejection = try {
+                New-ReplicationControlVariant `
+                    -BaselineSource $aliasTautology `
+                    -Edits @($script:GateEdit) | Out-Null
+                ''
+            } catch {
+                $_.Exception.Message
+            }
+            if (-not $rejection) {
+                throw "Accepted vacuous oracle: $aliasedOracle"
+            }
+            $expectedRejection = if ($aliasedOracle -match
+                '\.SetDynamicResource\s*\(') {
+                '*not in the closed lifecycle/observation allowlist outside*'
+            } else {
+                '*no trusted assertion after the trigger*'
+            }
+            $rejection | Should -BeLike $expectedRejection
+        }
+
+        $nunitNotConstraint = $nunitSelfComparison.Replace(
+            'Assert.That(label.IsVisible, Is.EqualTo(label.IsVisible));',
+            'Assert.That(label.IsVisible, Is.Not.False);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nunitNotConstraint `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects mutable expected-value locals in the guaranteed oracle' {
+        $baseline = $script:ControlBase.Replace(
+            @'
+        Assert.Equal(2, label.MaxLines);
+        Assert.True(label.IsVisible);
+'@,
+            @'
+        var expected = false;
+        expected = label.IsVisible;
+        Assert.Equal(expected, label.IsVisible);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Throw '*local used by the trusted assertion may not be reassigned*'
     }
 
     It 'rejects a source-defined test attribute from another generated file' {
@@ -10605,7 +12404,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*only one direct external member invocation*'
+        } | Should -Throw '*trusted external MAUI property on a test-local receiver*'
     }
 
     It 'refuses nested oracle lookup calls in trigger arguments' {
@@ -10628,7 +12427,27 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*must not contain nested calls*'
+        } | Should -Throw '*arguments may not execute calls*'
+
+        foreach ($assignment in @(
+                'titleView.MaxLines = System.Math.Max(1, label.MaxLines);',
+                @'
+            titleView.MaxLines = new[] { titleView }
+                .OfType<global::Microsoft.Maui.Controls.Label>()
+                .Count();
+'@
+            )) {
+            $nestedAssignment = $script:ControlBase.Replace(
+                'label.IsVisible = false;',
+                $assignment).Replace(
+                'using Xunit;',
+                "using System.Linq;`nusing Xunit;")
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $nestedAssignment `
+                    -Edits @($script:GateEdit)
+            } | Should -Throw '*right-hand side may not execute calls*'
+        }
     }
 
     It 'refuses trigger gates that contain surrounding setup' {
@@ -10652,7 +12471,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*exactly one direct trigger expression*'
+        } | Should -Throw '*Each applyReportedTrigger branch must contain exactly one*'
     }
 
     It 'refuses directives and disabled code inside the trigger gate' {
@@ -10753,7 +12572,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*global-qualified external framework type*'
+        } | Should -Throw '*generated runtime types*'
     }
 
     It 'refuses increment mutation in a trigger argument' {
@@ -10776,7 +12595,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*must not contain nested calls, assignments, ref/out writes, or lambdas*'
+        } | Should -Throw '*arguments may not execute calls, writes, or lambdas*'
     }
 
     It 'refuses a generated type that shadows the Fact attribute' {
@@ -10829,6 +12648,10 @@ Describe 'The control author never writes the control source' {
 
     It 'controls only the verifier-selected test file' {
         $script:ControlLoopSource | Should -Not -Match '\$sceneCandidates|\$sceneRelativePath'
+        $script:ControlLoopSource | Should -Match (
+            '\$relativePath = \[string\]\$VerifierMetadata\.File')
+        $script:ControlLoopSource | Should -Not -Match (
+            'Get-Content[^\r\n]*-match \[regex\]::Escape\(\$methodName\)')
         $script:ControlLoopSource | Should -Match '-ExpectedTestMethod \$methodName'
         $script:ControlLoopSource |
             Should -Match '-ExpectedTestClass \(\[string\]\$VerifierMetadata\.ClassName\)'
@@ -10837,8 +12660,10 @@ Describe 'The control author never writes the control source' {
     }
 
     It 'tells the author to keep whatever the oracle needs to run' {
-        $script:ControlLoopSource | Should -Match 'does not remove the navigation, the tap'
-        $script:ControlLoopSource | Should -Match 'If the control cannot reach the assertion, it is not a control'
+        $script:ControlLoopSource | Should -Match (
+            'You do not delete, replace, relocate, or add an action now')
+        $script:ControlLoopSource | Should -Match (
+            'Neither action nor any assertion may change')
     }
 
     It 'builds the variant in trusted code' {
@@ -15127,6 +16952,10 @@ Describe 'A tier the repository rules out is never offered' {
             "WINDOWS PACKAGED BOUNDARY: testType must be device")
         $script:Source | Should -Match (
             "APPLE APP BOUNDARY: testType must be device")
+        $script:Source | Should -Match (
+            'single selected method must carry only \[Category')
+        $script:Source | Should -Not -Match (
+            'class must carry only \[Category')
     }
 
     It 'is seeded before the first plan attempt, not after the first refusal' {
