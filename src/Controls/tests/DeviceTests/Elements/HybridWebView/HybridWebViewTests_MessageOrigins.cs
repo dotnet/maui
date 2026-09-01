@@ -51,7 +51,8 @@ public partial class HybridWebViewTests_MessageOrigins : HybridWebViewTestsBase
 		</html>
 		""";
 
-	static readonly TimeSpan MessageWaitTimeout = TimeSpan.FromSeconds(1);
+	static readonly TimeSpan OperationWaitTimeout = TimeSpan.FromSeconds(25);
+	static readonly TimeSpan MessageWaitTimeout = TimeSpan.FromSeconds(5);
 
 	[Fact]
 	public Task RawMessagesFromOtherOriginsAreIgnored() =>

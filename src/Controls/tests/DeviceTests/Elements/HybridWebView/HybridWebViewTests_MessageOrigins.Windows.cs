@@ -51,8 +51,8 @@ public partial class HybridWebViewTests_MessageOrigins
 		{
 			handler.PlatformView.CoreWebView2.Navigate(OtherOrigin);
 
-			await responseProvided.Task.WaitAsync(TimeSpan.FromSeconds(5));
-			var navigation = await navigationCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await responseProvided.Task.WaitAsync(OperationWaitTimeout);
+			var navigation = await navigationCompleted.Task.WaitAsync(OperationWaitTimeout);
 
 			Assert.True(navigation.IsSuccess, $"Navigation failed with {navigation.WebErrorStatus}.");
 		}

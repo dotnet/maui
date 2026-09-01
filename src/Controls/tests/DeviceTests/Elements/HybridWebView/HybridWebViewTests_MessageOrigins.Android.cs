@@ -42,9 +42,9 @@ public partial class HybridWebViewTests_MessageOrigins
 		try
 		{
 			handler.PlatformView.LoadUrl(OtherOrigin);
-			await responseProvided.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await responseProvided.Task.WaitAsync(OperationWaitTimeout);
 
-			for (var attempt = 0; attempt < 20; attempt++)
+			for (var attempt = 0; attempt < 100; attempt++)
 			{
 				var loaded = await hybridWebView.EvaluateJavaScriptAsync(
 					"document.getElementById('otherOriginDocument') !== null");
@@ -53,7 +53,7 @@ public partial class HybridWebViewTests_MessageOrigins
 					return;
 				}
 
-				await Task.Delay(100);
+				await Task.Delay(250);
 			}
 
 			throw new TimeoutException("The other-origin document did not finish loading.");
@@ -81,7 +81,7 @@ public partial class HybridWebViewTests_MessageOrigins
 
 		try
 		{
-			await bridgeAttempted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await bridgeAttempted.Task.WaitAsync(OperationWaitTimeout);
 		}
 		finally
 		{

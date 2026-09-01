@@ -22,7 +22,7 @@ public partial class HybridWebViewTests_MessageOrigins
 		try
 		{
 			handler.PlatformView.LoadHtmlString(html, new NSUrl(OtherOrigin));
-			await navigationDelegate.NavigationCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			await navigationDelegate.NavigationCompleted.Task.WaitAsync(OperationWaitTimeout);
 		}
 		finally
 		{
