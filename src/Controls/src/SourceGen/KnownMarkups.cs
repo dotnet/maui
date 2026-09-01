@@ -59,7 +59,7 @@ internal class KnownMarkups
 			value = string.Empty;
 			return false;
 		}
-
+		
 		var field = typeSymbol!.GetAllFields(membername, context).FirstOrDefault(f => f.IsStatic);
 		var property = typeSymbol!.GetAllProperties(membername, context).FirstOrDefault(p => p.IsStatic);
 
@@ -155,7 +155,7 @@ internal class KnownMarkups
 		if (!markupNode.Properties.TryGetValue(new XmlName("", "AncestorType"), out ancestorTypeNode)
 			&& !markupNode.Properties.TryGetValue(new XmlName(null, "AncestorType"), out ancestorTypeNode))
 			markupNode.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "AncestorType"), out ancestorTypeNode);
-
+		
 		if (ancestorTypeNode is not null)
 		{
 			if (ancestorTypeNode is ElementNode typeExtNode)
@@ -267,7 +267,7 @@ internal class KnownMarkups
 		}
 	}
 
-	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	public static bool ProvideValueForDynamicResourceExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!;
 		string? key = null;
@@ -333,7 +333,7 @@ internal class KnownMarkups
 		}
 	}
 
-	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	internal static bool ProvideValueForTemplateBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: true, getNodeValue, out returnType, out value);
 	}
@@ -343,13 +343,13 @@ internal class KnownMarkups
 		return ProvideValueForBindingExtension(markupNode, writer, context, isTemplateBinding: false, getNodeValue, out returnType, out value);
 	}
 
-	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
+	private static bool ProvideValueForBindingExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, bool isTemplateBinding,  NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 		ITypeSymbol? dataTypeSymbol = null;
-
+		
 		context.Variables.TryGetValue(markupNode, out ILocalValue? extVariable);
-
+		
 		if (extVariable is not null)
 		{
 			// Determine the source type for compiled binding based on the binding's Source configuration:
@@ -475,7 +475,7 @@ internal class KnownMarkups
 				expression += $", source:global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent";
 			}
 			else
-			{
+            {
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "Source"), out var sourceNode))
 					expression += $", source: {getNodeValue(sourceNode, context.Compilation.GetTypeByMetadataName("System.String")!).ValueAccessor}";
 				expression += ") {";
@@ -496,7 +496,7 @@ internal class KnownMarkups
 					expression += $"FallbackValue = {getNodeValue(fallbackValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
 				if (markupNode.Properties.TryGetValue(new XmlName(null, "TargetNullValue"), out var targetNullValueNode))
 					expression += $"TargetNullValue = {getNodeValue(targetNullValueNode, context.Compilation.GetTypeByMetadataName("System.Object")!).ValueAccessor}, ";
-			}
+            }
 
 			expression += "}";
 			value = expression;
@@ -951,7 +951,7 @@ internal class KnownMarkups
 		{
 			if (targetNode is null)
 				return null;
-
+				
 			if (targetNode is ValueNode vn)
 			{
 				// For ValueNode, convert directly using the property type
@@ -968,7 +968,7 @@ internal class KnownMarkups
 				var local = getNodeValue(targetNode, propertyType);
 				return local.ValueAccessor;
 			}
-
+			
 			return null;
 		}
 
@@ -1002,8 +1002,8 @@ internal class KnownMarkups
 		// At least one value must be set
 		if (lightValue is null && darkValue is null && defaultValue is null)
 		{
-			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError,
-				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""),
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, 
+				LocationHelpers.LocationCreate(context.ProjectItem.RelativePath!, (IXmlLineInfo)node, ""), 
 				"AppThemeBindingExtension requires a non-null value to be specified for at least one theme or Default"));
 			value = string.Empty;
 			return false;
@@ -1011,13 +1011,13 @@ internal class KnownMarkups
 
 		// Build the AppThemeBinding initialization expression
 		var parts = new List<string>();
-
+		
 		if (lightValue is not null)
 			parts.Add($"Light = {lightValue}");
-
+		
 		if (darkValue is not null)
 			parts.Add($"Dark = {darkValue}");
-
+		
 		if (defaultValue is not null)
 			parts.Add($"Default = {defaultValue}");
 
@@ -1046,7 +1046,7 @@ internal class KnownMarkups
 
 		var key = (string)keyValueNode.Value;
 		var resource = GetResourceNode(eNode, context, key);
-
+		
 		// Try to find the variable in current context or parent contexts (for lambda context)
 		ILocalValue? variable = null;
 		if (resource != null)
@@ -1059,13 +1059,13 @@ internal class KnownMarkups
 				ctx = ctx.ParentContext;
 			}
 		}
-
+		
 		if (resource is null || variable is null)
 		{
 			// Resource not in Variables - might be a lazy resource
 			var lazyResource = GetResourceNodeIncludingLazy(eNode, context, key);
-			if (lazyResource != null
-				&& lazyResource.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var lazyType)
+			if (lazyResource != null 
+				&& lazyResource.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var lazyType) 
 				&& lazyType != null)
 			{
 				// Find the Resources property accessor by walking up to find the element with Resources
@@ -1079,13 +1079,13 @@ internal class KnownMarkups
 					{
 						actualType = provideValueReturnType;
 					}
-
+					
 					returnType = actualType;
 					value = $"({actualType.ToFQDisplayString()}){resourcesAccessor}[\"{key}\"]";
 					return true;
 				}
 			}
-
+			
 			returnType = context.Compilation.ObjectType;
 			value = string.Empty;
 			return false;
@@ -1110,7 +1110,7 @@ internal class KnownMarkups
 
 				var propertyType = typeandconverter?.type ?? propertySymbol?.Type;
 				var converter = typeandconverter?.converter;
-
+				
 				// If no converter from BP, check the property's TypeConverter attribute
 				if (converter == null && propertySymbol != null)
 				{
@@ -1139,7 +1139,7 @@ internal class KnownMarkups
 				return true;
 			}
 		}
-
+		
 		// If we get here and getNodeValue is provided, use it as fallback
 		if (getNodeValue != null)
 		{
