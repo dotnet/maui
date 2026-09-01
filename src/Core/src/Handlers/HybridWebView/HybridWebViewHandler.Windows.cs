@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 			if (!Uri.TryCreate(args.Source, UriKind.Absolute, out var sourceUri) ||
 				!AppOriginUri.IsBaseOf(sourceUri))
 			{
-				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from another origin.");
+				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from an unrecognized source.");
 				return;
 			}
 
