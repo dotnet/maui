@@ -1200,19 +1200,19 @@ namespace Microsoft.Maui.Platform
 				{
 					double swipeItemWidth = SwipeViewExtensions.SwipeItemWidth;
 
-					if(items.Mode == SwipeMode.Execute)
+					if (items.Mode == SwipeMode.Execute)
 					{
 						var widths = _swipeItems.ToDictionary(
-    					item => item.Key,
-    					item =>
-    					{
-        					var view = (AView)item.Value;
-        					view.Measure(
-            					MeasureSpec.MakeMeasureSpec(_contentView.Width, MeasureSpecMode.AtMost),
-            					MeasureSpec.MakeMeasureSpec(_contentView.Height, MeasureSpecMode.AtMost));
+							item => item.Key,
+							item =>
+							{
+								var view = (AView)item.Value;
+								view.Measure(
+									MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+									MeasureSpec.MakeMeasureSpec(_contentView.Height, MeasureSpecMode.Exactly));
 
-        					return _context.FromPixels(view.MeasuredWidth);
-    					});
+								return _context.FromPixels(view.MeasuredWidth);
+							});
 						swipeItemWidth = widths.Values.Sum() > contentWidth ? contentWidth / items.Count : widths.Values.Sum() / items.Count;
 					}
 
