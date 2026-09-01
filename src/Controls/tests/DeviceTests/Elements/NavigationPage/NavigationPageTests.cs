@@ -64,10 +64,14 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 			handlers.AddHandler<Border, BorderHandler>();
 			handlers.AddHandler<Button, ButtonHandler>();
+#if WINDOWS
 #pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 			handlers.AddHandler<CarouselView, CarouselViewHandler>();
 			handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
+#endif
 			handlers.AddHandler<IContentView, ContentViewHandler>();
 			handlers.AddHandler<Label, LabelHandler>();
 			handlers.AddHandler<Layout, LayoutHandler>();

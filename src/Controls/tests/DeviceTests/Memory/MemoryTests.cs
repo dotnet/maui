@@ -27,10 +27,6 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 [Category(TestCategory.Memory)]
 public class MemoryTests : ControlsHandlerTestBase
 {
-	// Subclass used to enable memory tests for the CV2 handler
-	public class CarouselView2 : CarouselView { }
-
-
 	void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
@@ -49,9 +45,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #pragma warning restore CS0618 // Type or member is obsolete
-#endif
-#if IOS || MACCATALYST
-				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
@@ -267,9 +260,8 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TableView))]
 #pragma warning restore CS0618 // Type or member is obsolete
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
-#if IOS || MACCATALYST
-	[InlineData(typeof(CarouselView2))]
-#else
+	// CollectionViewHandler2 remains rooted in this test; see https://github.com/dotnet/maui/issues/29619.
+#if !IOS && !MACCATALYST
 	[InlineData(typeof(CollectionView))]
 #endif
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
@@ -594,7 +586,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
-			var carousel = new CarouselView2
+			var carousel = new CarouselView
 			{
 				ItemsSource = Enumerable.Range(1, 5).Select(static i => $"Item {i}").ToList(),
 				ItemTemplate = new DataTemplate(static () => new Label

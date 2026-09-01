@@ -125,10 +125,14 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
+#if WINDOWS
 #pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
+#endif
 				handlers.AddHandler<ContentView, ContentViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
