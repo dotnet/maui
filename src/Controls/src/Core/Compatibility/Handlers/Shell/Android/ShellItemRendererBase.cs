@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -30,9 +31,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		#endregion IShellItemRenderer
 
 		readonly Dictionary<Element, IShellObservableFragment> _fragmentMap = new Dictionary<Element, IShellObservableFragment>();
+		// FragmentManager.Contains sees only committed transactions, so track the desired
+		// state separately to prevent duplicate Add operations while a transaction is pending.
+		readonly HashSet<Fragment> _knownFragments =
+			new HashSet<Fragment>(ReferenceEqualityComparer.Instance);
+		readonly HashSet<Fragment> _scheduledFragments =
+			new HashSet<Fragment>(ReferenceEqualityComparer.Instance);
 		IShellObservableFragment _currentFragment;
 		ShellSection _shellSection;
 		Page _displayedPage;
+		bool _disconnected;
+		bool _destroyed;
 
 		protected ShellItemRendererBase(IShellContext shellContext)
 		{
@@ -84,15 +93,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return ShellContext.CreateFragmentForPage(page);
 		}
 
-		internal void Disconnect()
-		{
-			ShellSection = null;
-			DisplayedPage = null;
-			ShellContext = null;
-		}
-
 		void Destroy()
 		{
+			if (_destroyed)
+				return;
+
+			_destroyed = true;
 			foreach (var item in _fragmentMap)
 			{
 				RemoveFragment(item.Value.Fragment);
@@ -100,6 +106,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_fragmentMap.Clear();
+			_knownFragments.Clear();
+			_scheduledFragments.Clear();
 
 			ShellSection = null;
 			DisplayedPage = null;
@@ -109,8 +117,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnDestroy()
 		{
+			_disconnected = true;
 			base.OnDestroy();
 			Destroy();
+			ShellContext = null;
 		}
 
 		protected abstract ViewGroup GetNavigationTarget();
@@ -124,6 +134,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual Task<bool> HandleFragmentUpdate(ShellNavigationSource navSource, ShellSection shellSection, Page page, bool animated)
 		{
+			if (_disconnected || ShellContext is null || shellSection is null)
+				return Task.FromResult(false);
+
 			// We're using RunContinuationsAsynchronously because we don't want a subsequent navigation
 			// to start until the current one has finished.
 			// The AnimationFinished event is used to signal when the animation has completed,
@@ -153,9 +166,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				case ShellNavigationSource.Pop:
 					if (_fragmentMap.TryGetValue(page, out var frag))
 					{
-						if (ChildFragmentManager.Contains(frag.Fragment) && !isForCurrentTab)
+						if (IsFragmentAddedOrScheduled(frag.Fragment) && !isForCurrentTab)
 							RemoveFragment(frag.Fragment);
 						_fragmentMap.Remove(page);
+						if (!isForCurrentTab)
+							ForgetFragment(frag);
 					}
 					if (!isForCurrentTab)
 						return Task.FromResult(true);
@@ -164,7 +179,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				case ShellNavigationSource.Remove:
 					if (_fragmentMap.TryGetValue(page, out var removeFragment))
 					{
-						if (ChildFragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
+						if (IsFragmentAddedOrScheduled(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
 
@@ -172,6 +187,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						{
 							shellFragment.DisposePage();
 						}
+
+						if (!isForCurrentTab && removeFragment != _currentFragment)
+							ForgetFragment(removeFragment);
 					}
 
 					if (!isForCurrentTab && removeFragment != _currentFragment)
@@ -232,8 +250,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_currentFragment != null)
 						t.HideEx(_currentFragment.Fragment);
 
-					if (!ChildFragmentManager.Contains(target.Fragment))
-						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+					AddFragmentIfNeeded(t, target.Fragment);
 					t.ShowEx(target.Fragment);
 					break;
 
@@ -241,8 +258,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_currentFragment != null)
 						t.HideEx(_currentFragment.Fragment);
 
-					if (!ChildFragmentManager.Contains(target.Fragment))
-						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+					AddFragmentIfNeeded(t, target.Fragment);
 
 					t.ShowEx(target.Fragment);
 					break;
@@ -252,10 +268,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					trackFragment = _currentFragment;
 
 					if (_currentFragment != null)
-						t.RemoveEx(_currentFragment.Fragment);
+						RemoveFragment(t, _currentFragment.Fragment);
 
-					if (!ChildFragmentManager.Contains(target.Fragment))
-						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+					AddFragmentIfNeeded(t, target.Fragment);
 					t.ShowEx(target.Fragment);
 					break;
 			}
@@ -283,6 +298,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			t.CommitAllowingStateLossEx();
 			_currentFragment = target;
+			if (trackFragment is not null)
+				ForgetFragmentIfUnmapped(trackFragment);
 
 
 			return result.Task;
@@ -393,11 +410,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var kvp in _fragmentMap)
 			{
 				var f = kvp.Value.Fragment;
-				if (kvp.Value == _currentFragment || kvp.Value.Fragment == skip || !f.IsAdded)
+				if (kvp.Value == _currentFragment ||
+					kvp.Value.Fragment == skip ||
+					!IsFragmentAddedOrScheduled(f))
 					continue;
 
 				trans ??= ChildFragmentManager.BeginTransactionEx();
-				trans.Remove(f);
+				RemoveFragment(trans, f);
 			}
 			;
 
@@ -423,7 +442,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				t ??= ChildFragmentManager.BeginTransactionEx();
-				t.RemoveEx(kvp.Value.Fragment);
+				RemoveFragment(t, kvp.Value.Fragment);
+				ForgetFragment(kvp.Value);
 			}
 
 			t?.CommitAllowingStateLossEx();
@@ -432,8 +452,56 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void RemoveFragment(Fragment fragment)
 		{
 			var t = ChildFragmentManager.BeginTransactionEx();
-			t.RemoveEx(fragment);
+			RemoveFragment(t, fragment);
 			t.CommitAllowingStateLossEx();
+		}
+
+		void AddFragmentIfNeeded(FragmentTransaction transaction, Fragment fragment)
+		{
+			if (IsFragmentAddedOrScheduled(fragment))
+				return;
+
+			_scheduledFragments.Add(fragment);
+			transaction.AddEx(GetNavigationTarget().Id, fragment);
+		}
+
+		void RemoveFragment(FragmentTransaction transaction, Fragment fragment)
+		{
+			if (!IsFragmentAddedOrScheduled(fragment))
+				return;
+
+			_scheduledFragments.Remove(fragment);
+			transaction.RemoveEx(fragment);
+		}
+
+		bool IsFragmentAddedOrScheduled(Fragment fragment)
+		{
+			if (_knownFragments.Contains(fragment))
+				return _scheduledFragments.Contains(fragment);
+
+			_knownFragments.Add(fragment);
+			if (fragment.IsAdded ||
+				ChildFragmentManager.Fragments.Any(current => ReferenceEquals(current, fragment)))
+				_scheduledFragments.Add(fragment);
+
+			return _scheduledFragments.Contains(fragment);
+		}
+
+		void ForgetFragmentIfUnmapped(IShellObservableFragment fragment)
+		{
+			foreach (var mappedFragment in _fragmentMap.Values)
+			{
+				if (ReferenceEquals(mappedFragment, fragment))
+					return;
+			}
+
+			ForgetFragment(fragment);
+		}
+
+		void ForgetFragment(IShellObservableFragment fragment)
+		{
+			_knownFragments.Remove(fragment.Fragment);
+			_scheduledFragments.Remove(fragment.Fragment);
 		}
 	}
 }
