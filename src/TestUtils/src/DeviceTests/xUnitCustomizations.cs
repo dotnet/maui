@@ -273,7 +273,7 @@ namespace Microsoft.Maui
 #endif
 
 #if ANDROID
-					if (Traits.TryGetValue("Variant", out var variants) && variants is not null)
+					if (_reuseVariantPrefix is null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
 					{
 						// Check Handler first: a Handler subclass also inherits the base class's
 						// "Renderer" trait, so Traits may contain both values for this key.
