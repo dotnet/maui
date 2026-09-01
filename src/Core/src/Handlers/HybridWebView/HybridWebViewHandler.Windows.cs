@@ -98,6 +98,13 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
+			if (!Uri.TryCreate(args.Source, UriKind.Absolute, out var sourceUri) ||
+				!AppOriginUri.IsBaseOf(sourceUri))
+			{
+				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from another origin.");
+				return;
+			}
+
 			// The JS transport URL-encodes messages so embedded NUL characters survive WebView2's
 			// null-terminated string marshalling (TryGetWebMessageAsString returns an LPWSTR). Decode
 			// the payload before dispatching it.
