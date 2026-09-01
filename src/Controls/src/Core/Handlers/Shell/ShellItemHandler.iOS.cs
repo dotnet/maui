@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Controls.Handlers
         internal IShellTabBarAppearanceTracker? _appearanceTracker;
         bool _nativeSelectionInProgress;
         readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
+        readonly Dictionary<UITableViewCell, UIColor?> _defaultMoreTextLabelTextColors = new();
         ShellSection? _currentSection;
         Page? _displayedPage;
-        static UIColor? _defaultMoreTextLabelTextColor;
 
         internal IShellSectionRenderer? CurrentRenderer { get; private set; }
 
@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers
             }
 
             _sectionRenderers.Clear();
+            _defaultMoreTextLabelTextColors.Clear();
             CurrentRenderer = null;
             _currentSection = null;
             _displayedPage = null;
@@ -906,9 +907,9 @@ namespace Microsoft.Maui.Controls.Handlers
                 {
                     cell.UserInteractionEnabled = false;
 
-                    if (_defaultMoreTextLabelTextColor is null)
+                    if (!_defaultMoreTextLabelTextColors.ContainsKey(cell))
                     {
-                        _defaultMoreTextLabelTextColor = cell.TextLabel?.TextColor;
+                        _defaultMoreTextLabelTextColors[cell] = cell.TextLabel?.TextColor;
                     }
 
                     if (cell.TextLabel is not null)
@@ -922,7 +923,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
                     if (cell.TextLabel is not null)
                     {
-                        cell.TextLabel.TextColor = _defaultMoreTextLabelTextColor;
+                        if (_defaultMoreTextLabelTextColors.Remove(cell, out var defaultTextColor))
+                        {
+                            cell.TextLabel.TextColor = defaultTextColor;
+                        }
                     }
                 }
 #pragma warning restore CA1416, CA1422

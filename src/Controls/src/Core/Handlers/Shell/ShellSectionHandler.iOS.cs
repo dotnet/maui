@@ -113,6 +113,11 @@ namespace Microsoft.Maui.Controls.Handlers
                 throw new InvalidOperationException($"{nameof(ShellSectionHandler)} has no {nameof(IShellContext)}. The parent Shell's handler must be connected before connecting a shell section.");
             }
 
+            if (VirtualView.CurrentItem is null)
+            {
+                throw new InvalidOperationException($"Content not found for active {VirtualView}. Title: {VirtualView.Title}. Route: {VirtualView.Route}.");
+            }
+
             _appearanceTracker = _shellContext?.CreateNavBarAppearanceTracker();
 
             VirtualView.PropertyChanged += HandlePropertyChanged;
@@ -405,11 +410,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void LoadPages()
         {
-            if (VirtualView.CurrentItem is null)
-            {
-                throw new InvalidOperationException($"Content not found for active {VirtualView}. Title: {VirtualView.Title}. Route: {VirtualView.Route}.");
-            }
-
             _rootViewController = new ShellSectionRootViewController(this);
 
             _containerArea = new UIView();
@@ -870,7 +870,7 @@ namespace Microsoft.Maui.Controls.Handlers
             Task<bool> popTask;
             if (_isInMoreTab && _navigationController.ParentViewController is UITabBarController tabBarController)
             {
-                var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
+                _ = tabBarController.MoreNavigationController.PopViewController(animated);
                 CompletePopImmediately();
                 popTask = Task.FromResult(true);
             }
