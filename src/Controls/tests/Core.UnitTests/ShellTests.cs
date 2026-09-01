@@ -28,6 +28,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DisplayedPageObserversCanRemoveThemselvesDuringNotification()
+		{
+			var section = new ShellSection();
+			var controller = (IShellSectionController)section;
+			var firstObserver = new object();
+			var secondObserver = new object();
+			var firstCalls = 0;
+			var secondCalls = 0;
+			var removeFirstObserver = false;
+			controller.AddDisplayedPageObserver(
+				firstObserver,
+				_ =>
+				{
+					firstCalls++;
+					if (removeFirstObserver)
+						controller.RemoveDisplayedPageObserver(firstObserver);
+				});
+			controller.AddDisplayedPageObserver(secondObserver, _ => secondCalls++);
+			removeFirstObserver = true;
+
+			var exception = Record.Exception(() => section.DisplayedPage = new ContentPage());
+
+			Assert.Null(exception);
+			Assert.Equal(2, firstCalls);
+			Assert.Equal(2, secondCalls);
+
+			section.DisplayedPage = new ContentPage();
+
+			Assert.Equal(2, firstCalls);
+			Assert.Equal(3, secondCalls);
+		}
+
+		[Fact]
 		public void CurrentItemAutoSets()
 		{
 			var shell = new Shell();
