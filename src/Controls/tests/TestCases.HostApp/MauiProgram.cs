@@ -67,6 +67,7 @@ namespace Maui.Controls.Sample
 #endif
 #if IOS
 				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
+				handlers.AddHandler(typeof(Issue33037NativeTableView), typeof(Issue33037NativeTableViewHandler));
 #endif
 #if IOS || MACCATALYST || ANDROID || WINDOWS
 				handlers.AddHandler(typeof(Issue34310NativeHostView), typeof(Issue34310NativeHostViewHandler));

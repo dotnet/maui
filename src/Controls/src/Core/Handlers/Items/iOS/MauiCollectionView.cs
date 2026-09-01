@@ -3,15 +3,21 @@ using System.Diagnostics.CodeAnalysis;
 using CoreFoundation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController, ISafeAreaScrollView
 {
 	bool _invalidateParentWhenMovedToWindow;
 	bool? _isSwipeEnabled;
 	bool? _isBounceEnabled;
+	bool _isTopSafeAreaDelegated;
+	bool _restoreDelegatedTopPositionAfterLayout;
+	nfloat _delegatedTopInset;
+	nfloat _delegatedScrollIndicatorTopInset;
+	UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
 
 	readonly WeakEventManager _movedToWindowEventManager = new();
 
@@ -240,9 +246,105 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	{
 		base.LayoutSubviews();
 
+		if (_restoreDelegatedTopPositionAfterLayout)
+		{
+			var topOffset = -AdjustedContentInset.Top;
+			if (Tracking || Dragging || Decelerating)
+			{
+				_restoreDelegatedTopPositionAfterLayout = false;
+			}
+			else if (Math.Abs(ContentOffset.Y) < 0.5 ||
+				Math.Abs(ContentOffset.Y - topOffset) < 0.5)
+			{
+				ContentOffset = new CGPoint(ContentOffset.X, topOffset);
+				_restoreDelegatedTopPositionAfterLayout = false;
+			}
+			else
+			{
+				_restoreDelegatedTopPositionAfterLayout = false;
+			}
+		}
+
 		if (_isSwipeEnabled.HasValue)
 		{
 			ApplySwipeEnabledToEmbeddedScrollViews(_isSwipeEnabled.Value);
+		}
+	}
+
+	void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset)
+	{
+		var isFirstDelegation = !_isTopSafeAreaDelegated;
+		var wasAtTop = ContentOffset.Y <= 0;
+		var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
+		var contentInset = ContentInset;
+		var indicatorInsets = VerticalScrollIndicatorInsets;
+		var baseContentTop = contentInset.Top - _delegatedTopInset;
+		var baseIndicatorTop = indicatorInsets.Top - _delegatedScrollIndicatorTopInset;
+
+		if (isFirstDelegation)
+			_previousInsetAdjustmentBehavior = ContentInsetAdjustmentBehavior;
+
+		_isTopSafeAreaDelegated = true;
+		_delegatedTopInset = (nfloat)topInset;
+		_delegatedScrollIndicatorTopInset = (nfloat)topInset;
+		ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		ContentInset = new UIEdgeInsets(
+			baseContentTop + _delegatedTopInset,
+			contentInset.Left,
+			contentInset.Bottom,
+			contentInset.Right);
+		VerticalScrollIndicatorInsets = new UIEdgeInsets(
+			baseIndicatorTop + _delegatedScrollIndicatorTopInset,
+			indicatorInsets.Left,
+			indicatorInsets.Bottom,
+			indicatorInsets.Right);
+
+		if (!Dragging && !Decelerating)
+		{
+			ContentOffset = new CGPoint(
+				ContentOffset.X,
+				isFirstDelegation && wasAtTop
+					? -AdjustedContentInset.Top
+					: distanceFromTop - AdjustedContentInset.Top);
+		}
+
+		_restoreDelegatedTopPositionAfterLayout |=
+			isFirstDelegation && wasAtTop && !Tracking && !Dragging && !Decelerating;
+		if (_restoreDelegatedTopPositionAfterLayout)
+			SetNeedsLayout();
+	}
+
+	void ISafeAreaScrollView.ResetDelegatedTopInset()
+	{
+		if (!_isTopSafeAreaDelegated)
+			return;
+
+		var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
+		var contentInset = ContentInset;
+		var indicatorInsets = VerticalScrollIndicatorInsets;
+
+		ContentInset = new UIEdgeInsets(
+			contentInset.Top - _delegatedTopInset,
+			contentInset.Left,
+			contentInset.Bottom,
+			contentInset.Right);
+		VerticalScrollIndicatorInsets = new UIEdgeInsets(
+			indicatorInsets.Top - _delegatedScrollIndicatorTopInset,
+			indicatorInsets.Left,
+			indicatorInsets.Bottom,
+			indicatorInsets.Right);
+		ContentInsetAdjustmentBehavior = _previousInsetAdjustmentBehavior;
+
+		_isTopSafeAreaDelegated = false;
+		_restoreDelegatedTopPositionAfterLayout = false;
+		_delegatedTopInset = 0;
+		_delegatedScrollIndicatorTopInset = 0;
+
+		if (!Dragging && !Decelerating)
+		{
+			ContentOffset = new CGPoint(
+				ContentOffset.X,
+				distanceFromTop - AdjustedContentInset.Top);
 		}
 	}
 

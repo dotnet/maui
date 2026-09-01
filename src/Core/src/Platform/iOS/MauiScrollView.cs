@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	/// for .NET MAUI applications on iOS. This class handles the bridge between MAUI's cross-platform layout
 	/// system and iOS's native UIScrollView behavior.
 	/// </summary>
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController, ISafeAreaScrollView
 	{
 		internal const nint ContentTag = 0x845fed;
 
@@ -213,6 +213,10 @@ namespace Microsoft.Maui.Platform
 		}
 
 		SafeAreaEdges? _previousEdges;
+		bool _previousTopSafeAreaDelegation;
+		bool _isTopSafeAreaDelegated;
+		nfloat _delegatedTopInset;
+		nfloat _delegatedScrollIndicatorTopInset;
 
 		/// <summary>
 		/// Resolves the manual, per-edge inset to apply given a source set of raw insets.
@@ -234,7 +238,8 @@ namespace Microsoft.Maui.Platform
 			var blockedEdges = this.ResolveParentBlockedEdges(_blockedEdgesCache, ref _blockedEdgesCacheValid);
 
 			var manualInset = new UIEdgeInsets(
-					top: GetManualInsetForEdge(topRegion, sourceInsets.Top, blockedEdges[1]),
+					// Delegation carries the top safe area in ContentInset, so it must not also be baked into content coordinates.
+					top: GetManualInsetForEdge(topRegion, sourceInsets.Top, blockedEdges[1] || _isTopSafeAreaDelegated),
 					left: GetManualInsetForEdge(leftRegion, sourceInsets.Left, blockedEdges[0]),
 					bottom: GetManualInsetForEdge(bottomRegion, sourceInsets.Bottom, blockedEdges[3]),
 					right: GetManualInsetForEdge(rightRegion, sourceInsets.Right, blockedEdges[2])
@@ -253,10 +258,19 @@ namespace Microsoft.Maui.Platform
 
 			SafeAreaEdges safeAreaEdges = new SafeAreaEdges(leftRegion, topRegion, rightRegion, bottomRegion);
 
-			if (_previousEdges is not null && _previousEdges.Equals(safeAreaEdges))
+			if (_previousEdges is not null &&
+				_previousEdges.Equals(safeAreaEdges) &&
+				_previousTopSafeAreaDelegation == _isTopSafeAreaDelegated)
 				return false;
 
 			_previousEdges = safeAreaEdges;
+			_previousTopSafeAreaDelegation = _isTopSafeAreaDelegated;
+
+			if (_isTopSafeAreaDelegated)
+			{
+				ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+				return true;
+			}
 
 			// Check if all edges have the same SafeAreaRegions value
 			if (leftRegion == topRegion && topRegion == rightRegion && rightRegion == bottomRegion)
@@ -282,6 +296,81 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return true;
+		}
+
+		void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset)
+		{
+			var isFirstDelegation = !_isTopSafeAreaDelegated;
+			var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
+			var contentInset = ContentInset;
+			var indicatorInsets = VerticalScrollIndicatorInsets;
+			var baseContentTop = contentInset.Top - _delegatedTopInset;
+			var baseIndicatorTop = indicatorInsets.Top - _delegatedScrollIndicatorTopInset;
+
+			_isTopSafeAreaDelegated = true;
+			_delegatedTopInset = (nfloat)topInset;
+			_delegatedScrollIndicatorTopInset = (nfloat)topInset;
+			if (UpdateContentInsetAdjustmentBehavior())
+			{
+				InvalidateConstraintsCache();
+				_safeAreaInvalidated = true;
+			}
+			ContentInset = new UIEdgeInsets(
+				baseContentTop + _delegatedTopInset,
+				contentInset.Left,
+				contentInset.Bottom,
+				contentInset.Right);
+			VerticalScrollIndicatorInsets = new UIEdgeInsets(
+				baseIndicatorTop + _delegatedScrollIndicatorTopInset,
+				indicatorInsets.Left,
+				indicatorInsets.Bottom,
+				indicatorInsets.Right);
+
+			if (!Dragging && !Decelerating)
+			{
+				ContentOffset = new CGPoint(
+					ContentOffset.X,
+					isFirstDelegation && ContentOffset.Y <= 0
+						? -AdjustedContentInset.Top
+						: distanceFromTop - AdjustedContentInset.Top);
+			}
+		}
+
+		void ISafeAreaScrollView.ResetDelegatedTopInset()
+		{
+			if (!_isTopSafeAreaDelegated)
+				return;
+
+			var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
+			var contentInset = ContentInset;
+			var indicatorInsets = VerticalScrollIndicatorInsets;
+
+			ContentInset = new UIEdgeInsets(
+				contentInset.Top - _delegatedTopInset,
+				contentInset.Left,
+				contentInset.Bottom,
+				contentInset.Right);
+			VerticalScrollIndicatorInsets = new UIEdgeInsets(
+				indicatorInsets.Top - _delegatedScrollIndicatorTopInset,
+				indicatorInsets.Left,
+				indicatorInsets.Bottom,
+				indicatorInsets.Right);
+
+			_isTopSafeAreaDelegated = false;
+			_delegatedTopInset = 0;
+			_delegatedScrollIndicatorTopInset = 0;
+			if (UpdateContentInsetAdjustmentBehavior())
+			{
+				InvalidateConstraintsCache();
+				_safeAreaInvalidated = true;
+			}
+
+			if (!Dragging && !Decelerating)
+			{
+				ContentOffset = new CGPoint(
+					ContentOffset.X,
+					distanceFromTop - AdjustedContentInset.Top);
+			}
 		}
 
 		static nfloat GetManualInsetForEdge(SafeAreaRegions safeAreaRegion, nfloat safeAreaInset, bool isEdgeBlockedByParent)
@@ -783,8 +872,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-	    /// </summary>
+		    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+		    /// </summary>
 
 		internal void OnOrientationChanged()
 		{

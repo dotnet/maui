@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int FooterTag = 222;
 
 		bool _disposed;
+		nfloat _headerContentInset;
+		nfloat _footerContentInset;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _headerUIView;
@@ -180,11 +182,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
 				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
+				var topInset = currentInset.Top - _headerContentInset + headerHeight;
+				var bottomInset = currentInset.Bottom - _footerContentInset + footerHeight;
 
-				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)
+				if (currentInset.Top != topInset || currentInset.Bottom != bottomInset)
 				{
 					var currentOffset = CollectionView.ContentOffset;
-					CollectionView.ContentInset = new UIEdgeInsets(headerHeight, 0, footerHeight, 0);
+					CollectionView.ContentInset = new UIEdgeInsets(
+						topInset,
+						currentInset.Left,
+						bottomInset,
+						currentInset.Right);
+					_headerContentInset = headerHeight;
+					_footerContentInset = footerHeight;
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed
@@ -192,9 +202,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var yOffset = currentOffset.Y + (currentInset.Top - CollectionView.ContentInset.Top);
 
 					if (CollectionView.ContentSize.Height + headerHeight <= CollectionView.Bounds.Height)
-						yOffset = -headerHeight;
+						yOffset = -topInset;
 
-					if (currentOffset.Y.Value < headerHeight)
+					if (currentOffset.Y.Value < topInset)
 					{
 						CollectionView.ContentOffset = new CGPoint(CollectionView.ContentOffset.X, yOffset);
 					}
