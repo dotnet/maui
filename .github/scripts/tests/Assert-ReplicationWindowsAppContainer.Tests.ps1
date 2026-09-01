@@ -149,7 +149,7 @@ Describe 'Windows replication AppContainer manifests' {
                 'WindowsGeneratedSandboxAppxManifest.xml binary'))
         $attributes | Should -Match ([regex]::Escape(
                 '.github/scripts/tests/fixtures/' +
-                'WindowsGeneratedDeviceTestsAppxManifest.xml text eol=lf'))
+                'WindowsGeneratedDeviceTestsAppxManifest.xml binary'))
 
         $previousPackagesRoot = $env:NUGET_PACKAGES
         try {
@@ -178,8 +178,22 @@ Describe 'Windows replication AppContainer manifests' {
                     $profile[0].generatedManifestFixtureProvenance |
                         Should -Match 'Six diagnostic-only Sandbox observations'
                 } else {
+                    $profile[0].extensionCount | Should -BeExactly 2
+                    $profile[0].recordCount | Should -BeExactly 69
+                    $profile[0].normalizedRecordsSha256 |
+                        Should -BeExactly (
+                            '4fd7538d869a7209f1952cf193683812933e32d1273064212e' +
+                            '323ac8d1f0d712')
+                    $profile[0].generatedManifestFixtureSha256 |
+                        Should -BeExactly (
+                            '6175297114c999fe32b194167c3192943fe789e98029ce45e' +
+                            'd5d2a20fb409688')
                     $profile[0].generatedManifestFixtureProvenance |
-                        Should -Match 'WinAppSdkGenerateAppxManifest'
+                        Should -Match 'run 15159932'
+                    $profile[0].generatedManifestFixtureProvenance |
+                        Should -Match 'Seven independent DeviceTests observations'
+                    $profile[0].generatedManifestFixtureProvenance |
+                        Should -Match '28 diagnostic-only artifact copies'
                 }
                 (Get-FileHash -LiteralPath $fixturePath `
                         -Algorithm SHA256).Hash.ToLowerInvariant() |
@@ -436,10 +450,10 @@ Describe 'Windows replication AppContainer manifests' {
                 '"schemaVersion": 1,',
                 '"schemaVersion": "1",'),
             $content.Replace(
-                '"extensionCount": 16,',
-                '"extensionCount": "16",'),
+                '"extensionCount": 2,',
+                '"extensionCount": "2",'),
             $content.Replace(
-                '"recordCount": 955,',
+                '"recordCount": 69,',
                 '"recordCount": true,'),
             $content.Replace(
                 '"schemaVersion": 1,',
@@ -469,7 +483,7 @@ Describe 'Windows replication AppContainer manifests' {
                 ('"identityName": "com.microsoft.maui.sandbox", ' +
                     '"unexpectedProfile": true,')),
             $content.Replace(
-                '      "recordCount": 955,' + "`n",
+                '      "recordCount": 69,' + "`n",
                 '')
         )
         foreach ($mutation in $structuralMutations) {
@@ -520,7 +534,7 @@ Describe 'Windows replication AppContainer manifests' {
         $parent | Should -Match '\$entries\[0\]\.Length -gt 512KB'
     }
 
-    It 'matches snapshots to exact restored package and generator provenance' {
+    It 'keeps the observed profile distinct from synthetic regeneration' {
         if (-not (
             (Test-Path -LiteralPath $script:RealRegistrationPath -PathType Leaf) -and
             (Test-Path -LiteralPath $script:RealWindowsAppSdkNuspecPath -PathType Leaf) -and
@@ -618,7 +632,10 @@ Describe 'Windows replication AppContainer manifests' {
                 -Document $generatedDocument `
                 -Description 'independently regenerated DeviceTests manifest' `
                 -AllowTrustedWinUiExtensions
-        } | Should -Not -Throw
+        } | Should -Throw (
+            '*extensions 16/2, records 955/69, SHA-256 ' +
+            '83bd0199169bb05029dd04eb1d59ab355bccaf9596ef752f700ca49e3bb85177/' +
+            '4fd7538d869a7209f1952cf193683812933e32d1273064212e323ac8d1f0d712*')
     }
 
     It 'rejects generated or full-trust application entry points' {
