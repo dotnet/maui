@@ -6639,11 +6639,56 @@ function Resolve-ReplicationVerifierMetadata {
     }
 
     return [pscustomobject]@{
+        File = $declaration.File
         Project = $project
         ProjectPath = $projectPath
         ClassName = $declaration.QualifiedClassName
         MethodName = $declaration.MethodName
     }
+}
+
+function Assert-ReplicationGeneratedControlGate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Files,
+        [Parameter(Mandatory = $true)][object]$VerifierMetadata,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform
+    )
+
+    $selectedFile = [string]$VerifierMetadata.File
+    if ([string]::IsNullOrWhiteSpace($selectedFile) -or
+        $selectedFile -cnotin $Files -or
+        -not $selectedFile.EndsWith(
+            '.cs',
+            [StringComparison]::OrdinalIgnoreCase)) {
+        throw (
+            'The verifier-selected test source is not exactly one generated C# ' +
+            'file, so its deterministic control gate cannot be validated.')
+    }
+    $selectedPath = Join-Path $repoRoot $selectedFile
+    if (-not (Test-Path -LiteralPath $selectedPath -PathType Leaf)) {
+        throw "The verifier-selected test source does not exist: $selectedFile"
+    }
+    $baselineSource = Get-Content -LiteralPath $selectedPath -Raw
+    $additionalSources = @($Files | Where-Object {
+            $_ -cne $selectedFile -and
+            $_.EndsWith('.cs', [StringComparison]::OrdinalIgnoreCase)
+        } | ForEach-Object {
+            Get-Content -LiteralPath (Join-Path $repoRoot $_) -Raw
+        })
+    $null = New-ReplicationControlVariant `
+        -BaselineSource $baselineSource `
+        -Edits @(@{
+                find = 'var applyReportedTrigger = true;'
+                replace = 'var applyReportedTrigger = false;'
+            }) `
+        -SourcePath $selectedFile `
+        -Platform $Platform `
+        -ExpectedTestMethod ([string]$VerifierMetadata.MethodName) `
+        -ExpectedTestClass ([string]$VerifierMetadata.ClassName) `
+        -AdditionalSources $additionalSources
 }
 
 function Get-ReplicationUnbuildableTestTiers {
@@ -10349,6 +10394,10 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     -Files $plannedTestFiles `
                     -TestType $verifierTestType `
                     -TestFilter ([string]$testProposal.testFilter) `
+                    -Platform $Platform
+                Assert-ReplicationGeneratedControlGate `
+                    -Files $generatedFiles `
+                    -VerifierMetadata $verifierMetadata `
                     -Platform $Platform
 
                 foreach ($file in $generatedFiles) {

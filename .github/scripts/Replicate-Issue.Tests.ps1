@@ -133,6 +133,7 @@ BeforeAll {
         'Get-VerifierTestType',
         'Get-ReplicationTargetTestDeclarations',
         'Resolve-ReplicationVerifierMetadata',
+        'Assert-ReplicationGeneratedControlGate',
         'Assert-GeneratedTestContent',
         'Get-ReplicationEffectiveTimeoutSeconds',
         'Invoke-BoundedProcess',
@@ -5295,6 +5296,7 @@ public class Issue37440Tests
 
         $metadata.Project | Should -BeExactly 'Controls.Core.UnitTests'
         $metadata.ProjectPath | Should -BeExactly $project
+        $metadata.File | Should -BeExactly $file
         $metadata.ClassName |
             Should -BeExactly 'Microsoft.Maui.Controls.Tests.Issue37440Tests'
         $metadata.MethodName | Should -BeExactly 'ReproducesIssue37440'
@@ -5389,6 +5391,101 @@ public class $className
                 -Platform android `
                 -DetectorPath $script:DetectorPath
         } | Should -Throw '*exactly one targeted test method*'
+    }
+}
+
+Describe 'Generated tests require a deterministic control gate before verification' {
+    BeforeEach {
+        $repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repoRoot -Force | Out-Null
+        $script:GateReadyFile =
+            'src/Controls/tests/DeviceTests/Issues/Issue35511Tests.iOS.cs'
+        $script:GateReadyPath = Join-Path $repoRoot $script:GateReadyFile
+        New-Item -ItemType Directory `
+            -Path (Split-Path -Parent $script:GateReadyPath) `
+            -Force | Out-Null
+        $script:GateReadyMetadata = [pscustomobject]@{
+            File = $script:GateReadyFile
+            ClassName = 'Microsoft.Maui.DeviceTests.Issue35511Tests'
+            MethodName = 'ReproducesIssue35511'
+        }
+    }
+
+    It 'rejects a missing gate and accepts the repaired exact gate' {
+        @'
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue35511Tests
+{
+    [Fact]
+    public void ReproducesIssue35511()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        Assert.True(false);
+    }
+}
+'@ | Set-Content -LiteralPath $script:GateReadyPath
+
+        {
+            Assert-ReplicationGeneratedControlGate `
+                -Files @($script:GateReadyFile) `
+                -VerifierMetadata $script:GateReadyMetadata `
+                -Platform catalyst
+        } | Should -Throw '*declare exactly one applyReportedTrigger gate*'
+
+        @'
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue35511Tests
+{
+    [Fact]
+    public void ReproducesIssue35511()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        Assert.True(false);
+    }
+}
+'@ | Set-Content -LiteralPath $script:GateReadyPath
+
+        {
+            Assert-ReplicationGeneratedControlGate `
+                -Files @($script:GateReadyFile) `
+                -VerifierMetadata $script:GateReadyMetadata `
+                -Platform catalyst
+        } | Should -Not -Throw
+    }
+
+    It 'runs the gate assertion before intent-to-add and verifier execution' {
+        $loop = [regex]::Match(
+            $script:Source,
+            '\$verifierMetadata = Resolve-ReplicationVerifierMetadata.*?' +
+                'Invoke-LoggedChildProcess',
+            'Singleline').Value
+        $loop | Should -Not -BeNullOrEmpty
+        $gateIndex = $loop.IndexOf(
+            'Assert-ReplicationGeneratedControlGate',
+            [StringComparison]::Ordinal)
+        $intentIndex = $loop.IndexOf(
+            '& git add -N',
+            [StringComparison]::Ordinal)
+        $verifierIndex = $loop.IndexOf(
+            'Invoke-LoggedChildProcess',
+            [StringComparison]::Ordinal)
+        $gateIndex | Should -BeGreaterThan -1
+        $intentIndex | Should -BeGreaterThan $gateIndex
+        $verifierIndex | Should -BeGreaterThan $intentIndex
     }
 }
 
