@@ -282,6 +282,17 @@ function Invoke-SingleVerificationRun {
         [Parameter(Mandatory = $true)][string]$ConsoleLog
     )
 
+    if (Test-Path -LiteralPath $machineResultPath) {
+        $staleMachineResult = Get-Item -LiteralPath $machineResultPath `
+            -Force -ErrorAction Stop
+        if ($staleMachineResult.PSIsContainer -or
+            $staleMachineResult.Attributes -band
+                [IO.FileAttributes]::ReparsePoint) {
+            throw 'Verifier machine result path is not a regular file.'
+        }
+        Remove-Item -LiteralPath $machineResultPath -Force
+    }
+    $machineResultStartUtc = [datetime]::UtcNow.AddSeconds(-1)
     $savedSecrets = @{}
     try {
         foreach ($name in $secretNames) {
@@ -369,6 +380,8 @@ function Invoke-SingleVerificationRun {
     $actualFailureMessage = ''
     $executedTestCount = -1
     $retainedResultFile = ''
+    $machineResultTrusted = $false
+    $machineTestFailed = $null
     $expectedMachineFilter = if ($TestType -in @('UnitTest', 'XamlUnitTest')) {
         "FullyQualifiedName=$TestClass.$TestMethod"
     } else {
@@ -377,14 +390,19 @@ function Invoke-SingleVerificationRun {
     if (Test-Path -LiteralPath $machineResultPath -PathType Leaf) {
         try {
             $machineResultFile = Get-Item -LiteralPath $machineResultPath
-            if ($machineResultFile.Length -gt 64KB) {
-                throw 'Verifier machine result exceeds the trusted size limit.'
+            if ($machineResultFile.Length -le 0 -or
+                $machineResultFile.Length -gt 64KB -or
+                $machineResultFile.Attributes -band
+                    [IO.FileAttributes]::ReparsePoint -or
+                $machineResultFile.LastWriteTimeUtc -lt
+                    $machineResultStartUtc) {
+                throw 'Verifier machine result is not a fresh bounded regular file.'
             }
             $machineResult = Get-Content -LiteralPath $machineResultPath -Raw |
                 ConvertFrom-Json -ErrorAction Stop
             if (
                 [int]$machineResult.schemaVersion -eq 1 -and
-                $machineResult.failed -eq $true -and
+                $machineResult.failed -is [bool] -and
                 ([string]$machineResult.testType) -ceq $TestType -and
                 ([string]$machineResult.testFilter) -ceq $expectedMachineFilter -and
                 ([string]$machineResult.testProject) -ceq $TestProject -and
@@ -393,6 +411,8 @@ function Invoke-SingleVerificationRun {
                 ([string]$machineResult.testMethod) -ceq $TestMethod -and
                 ([string]$machineResult.actualFailureMessage).Length -le 10000
             ) {
+                $machineResultTrusted = $true
+                $machineTestFailed = [bool]$machineResult.failed
                 $actualFailureMessage = [string]$machineResult.actualFailureMessage
                 # Strict mode turns a missing property into a terminating error,
                 # and the catch below would blank the failure message, so probe
@@ -452,6 +472,9 @@ function Invoke-SingleVerificationRun {
     # "did not fail", and treating those as a passing control would certify the
     # very reproductions that never ran.
     $testPassed = (-not $infrastructureFailure) -and
+        $machineResultTrusted -and
+        $machineTestFailed -eq $false -and
+        $executedTestCount -eq 1 -and
         @(Get-ReplicationControlPassMarker | Where-Object {
             $combined.Contains($_, [StringComparison]::Ordinal)
         }).Count -gt 0
@@ -607,6 +630,16 @@ if ($ExpectPass) {
     # test pass, and let the credential-free gate decide what that proves.
     $controlRuns = $runOutcomes.Count
     $controlPasses = @($runOutcomes | Where-Object { $_.TestPassed }).Count
+    $controlExecutions = @($runOutcomes | ForEach-Object {
+            if ($_.ExecutedTestCount -gt 0) {
+                [int]$_.ExecutedTestCount
+            } else {
+                0
+            }
+        } | Measure-Object -Sum).Sum
+    if ($null -eq $controlExecutions) {
+        $controlExecutions = 0
+    }
     $controlInfrastructureFailure = @($runOutcomes |
         Where-Object { $_.InfrastructureFailure }).Count -gt 0
 
@@ -651,6 +684,7 @@ if ($ExpectPass) {
         testMethod = $TestMethod
         requestedRunCount = $RunCount
         runCount = $controlRuns
+        executedCount = [int]$controlExecutions
         passCount = $controlPasses
         infrastructureFailure = $controlInfrastructureFailure
         observedFailureMessages = @($controlFailureMessages)

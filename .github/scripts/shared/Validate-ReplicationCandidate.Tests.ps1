@@ -3112,6 +3112,57 @@ public class Issue36298 : _IssuesUITest
 
 Describe 'Validate-ReplicationCandidate certification' {
     BeforeAll {
+    function script:New-DeterministicControlFixtureSource {
+        param([Parameter(Mandatory = $true)][object]$Fixture)
+
+        $classParts = $Fixture.TestClassName.Split('.')
+        $className = $classParts[-1]
+        $namespace = if ($classParts.Count -gt 1) {
+            $classParts[0..($classParts.Count - 2)] -join '.'
+        } else {
+            'Replication.Tests'
+        }
+        $isUi = $Fixture.TestType -ceq 'UITest'
+        $framework = if ($isUi) { 'NUnit.Framework' } else { 'Xunit' }
+        $attribute = if ($isUi) { 'Test' } else { 'Fact' }
+        $assertion = if ($isUi) {
+            "Assert.That(false, Is.True, `"$($Fixture.FailurePattern)`");"
+        } else {
+            "Assert.True(false, `"$($Fixture.FailurePattern)`");"
+        }
+        $source = @"
+using $framework;
+
+namespace $namespace;
+
+$(if ($Fixture.TestType -ceq 'DeviceTest') { "[Category(`"Issue$($Fixture.IssueNumber)`")]`n" })public class $className
+{
+    [$attribute]
+    public void $($Fixture.TestMethodName)()
+    {
+        var page = new global::Microsoft.Maui.Controls.ContentPage();
+        var titleView = new global::Microsoft.Maui.Controls.Label();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(page, titleView);
+        }
+        $assertion
+    }
+}
+"@
+        if ($Fixture.TestType -cin @('DeviceTest', 'UITest')) {
+            $symbol = @{
+                android = 'ANDROID'
+                ios = 'IOS'
+                catalyst = 'MACCATALYST'
+                windows = 'WINDOWS'
+            }[$Fixture.Platform]
+            return "#if $symbol`n$source#endif`n"
+        }
+        return $source
+    }
+
         $script:ControlBaselineSource = @'
 [Test]
 public void Repro()
@@ -3140,6 +3191,18 @@ public void Repro_Control()
             [string]$VariantSource
         )
 
+        $controlBaseline = New-DeterministicControlFixtureSource `
+            -Fixture $Fixture
+        $Fixture.Source = $controlBaseline
+        Write-TestText `
+            -Path $Fixture.PatchPath `
+            -Value (New-AddOnlyPatch `
+                -Path $Fixture.CandidatePath `
+                -Content $Fixture.Source)
+        $controlVariant = $controlBaseline.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+
         # The control runs after verification-result.json is written, so
         # production never puts the control inside it. Fixtures that did hid a
         # defect that graded every real reproduction as uncontrolled, so write
@@ -3149,17 +3212,30 @@ public void Repro_Control()
             -Path (Join-Path $verificationRoot 'negative-control-result.json') `
             -Value ([ordered]@{
                 schemaVersion = 1
-                runCount      = $RunCount
-                passCount     = $PassCount
+                issueNumber = $Fixture.IssueNumber
+                platform = $Fixture.Platform
+                testType = $Fixture.TestType
+                testFilter = $Fixture.TestFilter
+                testClass = $Fixture.TestClassName
+                testMethod = $Fixture.TestMethodName
+                requestedRunCount = $RunCount
+                runCount = $RunCount
+                executedCount = $RunCount
+                passCount = $PassCount
+                infrastructureFailure = $false
+                observedFailureMessages = @()
+                reproductionFailureMessages = @($Fixture.FailurePattern)
+                failureModeChanged = $false
+                logFiles = @('negative-control-console.log')
             })
 
         if (-not $OmitSources) {
             Write-TestText `
                 -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
-                -Value $script:ControlBaselineSource
+                -Value $controlBaseline
             Write-TestText `
                 -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
-                -Value $(if ($VariantSource) { $VariantSource } else { $script:ControlVariantSource })
+                -Value $(if ($VariantSource) { $VariantSource } else { $controlVariant })
         }
 
         return $Fixture
@@ -3174,10 +3250,7 @@ public void Repro_Control()
         $result.certificationLevel | Should -BeExactly 'observed-reproduction'
     }
 
-    It 'certifies a control that edits the scene while the oracle lives elsewhere' {
-        # A UI test's control edits the HostApp page, which has no assertions of
-        # its own. Reading the oracle from that page, the gate found none and
-        # refused a control that had passed on the device.
+    It 'rejects an obsolete scene control and separate oracle snapshot' {
         $scene = @'
 public class Issue1 : ContentPage
 {
@@ -3198,12 +3271,11 @@ public class Issue1 : ContentPage
         Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
             -Value $script:ControlBaselineSource
 
-        $result = Invoke-FixtureValidation -Fixture $fixture
-
-        $result.certificationLevel | Should -BeExactly 'trigger-certified'
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*unexpected artifact*negative-control-oracle.cs*'
     }
 
-    It 'still refuses a scene control whose oracle snapshot has no assertion' {
+    It 'rejects every separate scene oracle snapshot' {
         $scene = 'public class Issue1 : ContentPage { public Issue1() { var x = 1; } }'
         $fixture = Add-NegativeControl `
             -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
@@ -3213,7 +3285,8 @@ public class Issue1 : ContentPage
         Write-TestText -Path (Join-Path $verificationRoot 'negative-control-oracle.cs') `
             -Value 'public class T { [Test] public void M() { App.Tap("x"); } }'
 
-        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*no assertion*'
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*unexpected artifact*negative-control-oracle.cs*'
     }
 
     It 'refuses a single-file control that drops the assertions it must preserve' {
@@ -3230,7 +3303,8 @@ public class Issue1 : ContentPage
         Test-Path -LiteralPath (Join-Path $verificationRoot 'negative-control-oracle.cs') |
             Should -BeFalse
 
-        { Invoke-FixtureValidation -Fixture $fixture } | Should -Throw '*asserts 0 times*'
+        { Invoke-FixtureValidation -Fixture $fixture } |
+            Should -Throw '*not the exact trusted*transformation*'
     }
 
     It 'certifies a UI run whose console carries only the verifier summary' {
@@ -3321,9 +3395,8 @@ public class Issue1 : ContentPage
             -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)) `
             -PassCount 0
 
-        $result = Invoke-FixtureValidation -Fixture $fixture
-
-        $result.certificationLevel | Should -BeExactly 'observed-reproduction'
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*does not prove every trusted control run passed*'
     }
 
     It 'rejects a control reporting more passes than runs' {
@@ -3332,7 +3405,23 @@ public class Issue1 : ContentPage
             -RunCount 2 -PassCount 5
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*more passes than runs*'
+            Should -Throw '*does not prove every trusted control run passed*'
+    }
+
+    It 'rejects contradictory or extended final control JSON' {
+        $fixture = Add-NegativeControl `
+            -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+        $resultPath = Join-Path `
+            $fixture.EvidenceDir `
+            'verification/negative-control-result.json'
+        $control = Get-Content -LiteralPath $resultPath -Raw |
+            ConvertFrom-Json
+        $control.executedCount = 0
+        $control | Add-Member -NotePropertyName unexpected -NotePropertyValue $true
+        Write-TestJson -Path $resultPath -Value $control
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*duplicate, unknown, or mistyped fields*'
     }
 
     It 'rejects a control that cannot be checked because its sources are missing' {
@@ -3351,7 +3440,7 @@ public class Issue1 : ContentPage
             -VariantSource $weakened
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*changes the oracle*'
+            Should -Throw '*not the exact trusted*transformation*'
     }
 
     It 'rejects a control identical to the reproduction' {
@@ -3360,7 +3449,7 @@ public class Issue1 : ContentPage
             -VariantSource $script:ControlBaselineSource
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
-            Should -Throw '*removes nothing*'
+            Should -Throw '*not the exact trusted*transformation*'
     }
 }
 
@@ -4293,15 +4382,43 @@ public void Issue12345()
             param([Parameter(Mandatory = $true)][object]$Fixture)
 
             $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
+            $controlBaseline = New-DeterministicControlFixtureSource `
+                -Fixture $Fixture
+            $controlVariant = $controlBaseline.Replace(
+                'var applyReportedTrigger = true;',
+                'var applyReportedTrigger = false;')
+            $Fixture.Source = $controlBaseline
+            Write-TestText `
+                -Path $Fixture.PatchPath `
+                -Value (New-AddOnlyPatch `
+                    -Path $Fixture.CandidatePath `
+                    -Content $Fixture.Source)
             Write-TestJson `
                 -Path (Join-Path $verificationRoot 'negative-control-result.json') `
-                -Value ([ordered]@{ schemaVersion = 1; runCount = 2; passCount = 2 })
+                -Value ([ordered]@{
+                    schemaVersion = 1
+                    issueNumber = $Fixture.IssueNumber
+                    platform = $Fixture.Platform
+                    testType = $Fixture.TestType
+                    testFilter = $Fixture.TestFilter
+                    testClass = $Fixture.TestClassName
+                    testMethod = $Fixture.TestMethodName
+                    requestedRunCount = 2
+                    runCount = 2
+                    executedCount = 2
+                    passCount = 2
+                    infrastructureFailure = $false
+                    observedFailureMessages = @()
+                    reproductionFailureMessages = @($Fixture.FailurePattern)
+                    failureModeChanged = $false
+                    logFiles = @('negative-control-console.log')
+                })
             Write-TestText `
                 -Path (Join-Path $verificationRoot 'negative-control-baseline.cs') `
-                -Value $script:oracleControlBaseline
+                -Value $controlBaseline
             Write-TestText `
                 -Path (Join-Path $verificationRoot 'negative-control-variant.cs') `
-                -Value $script:oracleControlVariant
+                -Value $controlVariant
             return $Fixture
         }
 
