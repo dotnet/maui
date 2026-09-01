@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 
 		public static Page CreatePageType(ControlsPageTypesTestCase name) => CreatePageType(name, new ContentPage());
 
-		public static void Setup(MauiAppBuilder builder)
+		public static void Setup(MauiAppBuilder builder, bool includeNavigationViewHandler = true)
 		{
 			builder.ConfigureMauiHandlers(handlers =>
 			{
@@ -95,7 +95,11 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 				handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
 				handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(NavigationPage), includeNavigationViewHandler ? typeof(NavigationViewHandler) : typeof(NavigationRenderer));
+#else
 				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else

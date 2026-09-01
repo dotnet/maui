@@ -28,6 +28,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()
@@ -37,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
@@ -45,6 +48,18 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every ShellTests test run against both the NavigationPage renderer and handler.
+		// See ShellNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 #if !MACCATALYST
 		[Fact]

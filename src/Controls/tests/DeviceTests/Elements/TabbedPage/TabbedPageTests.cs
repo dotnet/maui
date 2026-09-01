@@ -28,9 +28,12 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -42,18 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
+					RegisterNavigationPageHandler(handlers);
 
 #if IOS || MACCATALYST
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
@@ -64,6 +56,18 @@ namespace Microsoft.Maui.DeviceTests
 
 				additionalCreationActions?.Invoke(builder);
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every TabbedPageTests test run against both the NavigationPage renderer and
+		// handler. See TabbedPageNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 
@@ -235,7 +239,28 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: this test forces the old event-based NavigationImpl path
+			// (setForMaui:false) below, which NavigationRenderer supports but
+			// NavigationViewHandler does not implement via RequestNavigation (causes hangs).
+			// Register NavigationRenderer directly (not via SetupBuilder/RegisterNavigationPageHandler)
+			// so this stays Renderer-only even when inherited by TabbedPageNavigationHandlerTests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
@@ -380,7 +405,25 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: same setForMaui:false / RequestNavigation hang-avoidance reasoning
+			// as RemoveCurrentPageAndThenReAddDoesntCrash above.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var pages = new NavigationPage[5];
 

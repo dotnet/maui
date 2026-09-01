@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -28,6 +29,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
 		[Category(TestCategory.Lifecycle)]
+#if IOS || MACCATALYST
+		[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 		public class NewWindowCollection : ControlsHandlerTestBase
 		{
 			protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder builder)
@@ -38,13 +42,24 @@ namespace Microsoft.Maui.DeviceTests
 						.ConfigureBuilder(builder)
 						.ConfigureMauiHandlers(handlers =>
 						{
-							handlers.AddHandler<NavigationPage, NavigationViewHandler>();
+							RegisterNavigationPageHandler(handlers);
 #if WINDOWS || ANDROID
 							handlers.AddHandler<Toolbar, ToolbarHandler>();
-#else
-							handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
 						});
+			}
+
+			// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer,
+			// letting every NewWindowCollection test run against both the NavigationPage
+			// renderer and handler. See VisualElementNavigationHandlerTests.iOS.cs and
+			// RendererHandlerVariant.cs.
+			protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+			{
+#if IOS || MACCATALYST
+				handlers.AddHandler<NavigationPage, NavigationRenderer>();
+#else
+				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
+#endif
 			}
 
 			[Fact]
@@ -119,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 				page.Loaded += (_, __) => loaded++;
 				page.NavigatedTo += (_, __) => loadedFired = (loaded == 1);
 
-				await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+				await CreateHandlerAndAddToWindow<IElementHandler>(navPage, async (handler) =>
 				{
 					await navPage.PushAsync(page);
 					Assert.True(loadedFired);
@@ -137,7 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 				page.Loaded += (_, __) => loaded++;
 				page.Unloaded += (_, __) => unloaded++;
 
-				await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
+				await CreateHandlerAndAddToWindow<IElementHandler>(navPage, async (handler) =>
 				{
 					Assert.Equal(0, loaded);
 					Assert.Equal(0, unloaded);

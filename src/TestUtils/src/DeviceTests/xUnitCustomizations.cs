@@ -215,21 +215,37 @@ namespace Microsoft.Maui
 
 		string? _reuseVariantPrefix;
 
-		// Android-only: Shell/Modal/Window tests reuse the same test bodies across a renderer base
-		// class and a handler subclass (see ShellHandlerSubclasses.Android.cs), so DisplayName alone
-		// can't tell them apart. Tag the subclass run as "[Handler]" and the base run as "[Renderer]".
+		// Renderer/handler subclass pairs (Android Shell/Modal/Window; iOS/MacCatalyst
+		// NavigationPage-related tests) reuse the same test bodies, so DisplayName alone can't
+		// distinguish variants. The Android axis uses the "Variant" trait ("[Renderer]"/"[Handler]");
+		// the iOS/MacCatalyst axis uses the distinct "NavigationViewVariant" trait
+		// ("[NavigationRenderer]"/"[NavigationViewHandler]"), so the two never collide.
 		string GetReuseVariantPrefix()
 		{
 			if (_reuseVariantPrefix == null)
 			{
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
 				try
 				{
-					if (Traits.TryGetValue("Variant", out var variants) && variants is not null)
+					// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
+					if (Traits.TryGetValue("NavigationViewVariant", out var navigationViewVariants) && navigationViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "NavigationRenderer" trait, so Traits may contain both values for this key.
+						if (navigationViewVariants.Contains("NavigationViewHandler"))
+						{
+							_reuseVariantPrefix = "[NavigationViewHandler] ";
+						}
+						else if (navigationViewVariants.Contains("NavigationRenderer"))
+						{
+							_reuseVariantPrefix = "[NavigationRenderer] ";
+						}
+					}
+
+					if (_reuseVariantPrefix == null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
 					{
 						// Check Handler first: a Handler subclass also inherits the base class's
 						// "Renderer" trait, so Traits may contain both values for this key.
-						// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
 						if (variants.Contains("Handler"))
 						{
 							_reuseVariantPrefix = "[Handler] ";
@@ -238,15 +254,9 @@ namespace Microsoft.Maui
 						{
 							_reuseVariantPrefix = "[Renderer] ";
 						}
-						else
-						{
-							_reuseVariantPrefix = string.Empty;
-						}
 					}
-					else
-					{
-						_reuseVariantPrefix = string.Empty;
-					}
+
+					_reuseVariantPrefix ??= string.Empty;
 				}
 				catch
 				{
