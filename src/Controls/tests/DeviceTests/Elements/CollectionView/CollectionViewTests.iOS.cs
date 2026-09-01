@@ -19,7 +19,6 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
-#pragma warning disable CS0618 // These tests intentionally exercise the legacy CollectionView handler.
 	public partial class CollectionViewTests
 	{
 		[Fact]
@@ -42,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await Task.Delay(1000);
 				groupData.Clear();
@@ -135,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var frame = collectionView.Frame;
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(frame, collectionView);
 
@@ -325,12 +324,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
 		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
 		{
-			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
-		}
-
-		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
-		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
-		{
 			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
 		}
 
@@ -453,7 +446,7 @@ namespace Microsoft.Maui.DeviceTests
 				}),
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await Task.Delay(500);
 
@@ -719,5 +712,4 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 	}
-#pragma warning restore CS0618 // Type or member is obsolete
 }

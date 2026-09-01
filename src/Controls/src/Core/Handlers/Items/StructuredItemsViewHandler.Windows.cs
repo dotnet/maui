@@ -12,7 +12,7 @@ using WStyle = Microsoft.UI.Xaml.Style;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 instead.")]
+	[Obsolete("This type is obsolete on Windows. Use Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 instead.")]
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
 		View _currentHeader;

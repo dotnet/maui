@@ -13,7 +13,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 instead.")]
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 instead.")]
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		[Obsolete("Use ItemsView property instead")]

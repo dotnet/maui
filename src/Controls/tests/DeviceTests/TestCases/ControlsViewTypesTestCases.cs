@@ -5,7 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CarouselViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2;
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -120,7 +125,7 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
-#pragma warning disable CS0618 // This matrix intentionally includes the legacy Items handlers.
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #pragma warning restore CS0618 // Type or member is obsolete

@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -37,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 
-#pragma warning disable CS0618 // This suite intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #pragma warning restore CS0618 // Type or member is obsolete
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
@@ -84,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
 				bool expectation() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded;
@@ -204,7 +208,7 @@ Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 				})
 			};
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 #pragma warning restore CS0618 // Type or member is obsolete
 			{
@@ -286,7 +290,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				})
 			};
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 #pragma warning restore CS0618 // Type or member is obsolete
 			{
@@ -331,6 +335,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			}
 		}
 
+#if !IOS && !MACCATALYST
 		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
@@ -434,6 +439,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			});
 		}
+#endif
 
 		[Theory]
 		[InlineData(true, false, false)]
@@ -527,7 +533,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			var frame = collectionView.Frame;
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 #pragma warning restore CS0618 // Type or member is obsolete
 			{
@@ -568,7 +574,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			};
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 #pragma warning restore CS0618 // Type or member is obsolete
 			{
@@ -578,6 +584,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			});
 		}
 
+#if !IOS && !MACCATALYST
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
 			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };
@@ -590,6 +597,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				yield return new object[] { new CollectionViewSizingTestCase(option, new LinearItemsLayout(ItemsLayoutOrientation.Vertical)) };
 			}
 		}
+#endif
 
 		static void GenerateItems(int count, ObservableCollection<string> data)
 		{
@@ -627,7 +635,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				HeightRequest = 200,
 			};
 
-#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
+#pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 #pragma warning restore CS0618 // Type or member is obsolete
 			{

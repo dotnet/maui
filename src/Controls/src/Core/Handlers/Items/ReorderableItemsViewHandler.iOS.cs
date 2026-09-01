@@ -9,7 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> or a concrete Items2 handler instead.")]
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> or a concrete Items2 handler instead.")]
 	public partial class ReorderableItemsViewHandler<TItemsView> : GroupableItemsViewHandler<TItemsView> where TItemsView : ReorderableItemsView
 	{
 		protected override ItemsViewController<TItemsView> CreateController(TItemsView itemsView, ItemsViewLayout layout)

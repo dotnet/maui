@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	[Obsolete("Use the Items2 handler implementation with UIKit.UICollectionViewLayout instead.")]
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use the Items2 handler implementation with UIKit.UICollectionViewLayout instead.")]
 	public class GridViewLayout : ItemsViewLayout
 	{
 		readonly GridItemsLayout _itemsLayout;

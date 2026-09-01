@@ -2,14 +2,17 @@
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+#if IOS || MACCATALYST
+using CarouselViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-#pragma warning disable CS0618 // These tests intentionally exercise the legacy CarouselView handler.
 	[Category(TestCategory.CarouselView)]
 	public partial class CarouselViewTests : ControlsHandlerTestBase
 	{
@@ -155,7 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}
 	}
-#pragma warning restore CS0618 // Type or member is obsolete
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector
 	{
