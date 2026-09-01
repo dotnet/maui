@@ -370,6 +370,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewDisplayed)
 			{
+				UpdateEmptyViewFlowDirection();
 				AlignEmptyView();
 			}
 
@@ -573,10 +574,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
+			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
+			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
+			var transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? CGAffineTransform.MakeScale(-1, 1)
+				: CGAffineTransform.MakeIdentity();
+
+			if (!_emptyUIView.Transform.Equals(transform))
+			{
+				_emptyUIView.Transform = transform;
+			}
+		}
+
+		void UpdateEmptyViewFlowDirection()
+		{
 			if (_emptyViewFormsElement is not null)
 			{
-				// The empty view's FlowDirection is handled here instead of in UpdateFlowDirection()
-				// to ensure proper alignment independent of the CollectionView's layout flip behavior.
 				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
 				{
 					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
@@ -605,34 +618,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.Tag = EmptyTag;
-
-			// Add the empty view to the CollectionView's superview instead of the CollectionView itself.
-			// The compositional layout's flipsHorizontallyInOppositeLayoutDirection (default true) causes
-			// the CollectionView to flip its content coordinate system when SemanticContentAttribute is
-			// ForceRightToLeft. Layout-managed views (cells, supplementary views) are compensated by the
-			// layout, but direct subviews are NOT — resulting in mirror-flipped rendering.
-			// Adding to the superview avoids this flip zone entirely.
-			var targetView = CollectionView.Superview;
-			if (targetView is not null)
-			{
-				targetView.InsertSubviewAbove(_emptyUIView, CollectionView);
-			}
-			else
-			{
-				// TODO: DetermineEmptyViewFrame() returns superview-coordinate-space values (CollectionView.Frame.X/Y),
-				// which are incorrect when the empty view is a child of CollectionView. This fallback is unlikely
-				// to execute in practice since Superview is expected to be non-null by the time ShowEmptyView() is called.
-				CollectionView.AddSubview(_emptyUIView);
-			}
+			CollectionView.AddSubview(_emptyUIView);
 
 			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
 			{
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
+			UpdateEmptyViewFlowDirection();
 			LayoutEmptyView();
 
-			AlignEmptyView();
 			_emptyViewDisplayed = true;
 		}
 
@@ -681,7 +676,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			_emptyUIView.Frame = frame;
+			if (!_emptyUIView.Frame.Equals(frame))
+			{
+				// UIKit's Frame is undefined under a non-identity transform.
+				_emptyUIView.Transform = CGAffineTransform.MakeIdentity();
+				_emptyUIView.Frame = frame;
+			}
+
+			AlignEmptyView();
 
 			return frame;
 		}
