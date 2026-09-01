@@ -10,6 +10,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2 instead.")]
 	public abstract class TemplatedCell : ItemsViewCell, IPlatformMeasureInvalidationController
 	{
 		readonly WeakEventManager _weakEventManager = new();

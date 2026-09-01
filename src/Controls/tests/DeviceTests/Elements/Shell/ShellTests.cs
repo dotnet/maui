@@ -42,7 +42,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+#pragma warning disable CS0618 // Shell coverage intentionally includes the legacy CollectionView handler.
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
+#pragma warning restore CS0618 // Type or member is obsolete
 				});
 			});
 		}

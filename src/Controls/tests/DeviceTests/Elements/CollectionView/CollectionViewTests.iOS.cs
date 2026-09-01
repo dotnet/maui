@@ -19,6 +19,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#pragma warning disable CS0618 // These tests intentionally exercise the legacy CollectionView handler.
 	public partial class CollectionViewTests
 	{
 		[Fact]
@@ -718,4 +719,5 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

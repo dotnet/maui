@@ -50,12 +50,16 @@ namespace Maui.Controls.Sample
 				else
 				{
 					Console.WriteLine($"Using CollectionView handlers");
+#pragma warning disable CS0618 // The CollectionView1 test configuration explicitly validates legacy handlers.
 					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
 					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 
+#pragma warning disable CS0618 // Dedicated CollectionView1 controls explicitly validate legacy handlers.
 				handlers.AddHandler<CollectionView1, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
 				handlers.AddHandler<CarouselView1, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 
 				handlers.AddHandler<CollectionView2, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();

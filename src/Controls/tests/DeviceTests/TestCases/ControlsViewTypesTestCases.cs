@@ -120,8 +120,10 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
+#pragma warning disable CS0618 // This matrix intentionally includes the legacy Items handlers.
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<ContentView, ContentViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();

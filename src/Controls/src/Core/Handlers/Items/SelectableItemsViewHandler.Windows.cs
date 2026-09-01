@@ -11,6 +11,7 @@ using WASDKSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChang
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2 instead.")]
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
 		bool _ignorePlatformSelectionChange;

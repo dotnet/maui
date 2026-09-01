@@ -13,6 +13,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 instead.")]
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		[Obsolete("Use ItemsView property instead")]

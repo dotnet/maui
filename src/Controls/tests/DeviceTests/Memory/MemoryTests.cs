@@ -42,8 +42,10 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
+#pragma warning disable CS0618 // Memory coverage intentionally includes the legacy Items handlers.
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#pragma warning restore CS0618 // Type or member is obsolete
 #if IOS || MACCATALYST
 				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
 				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
@@ -500,7 +502,9 @@ public class MemoryTests : ControlsHandlerTestBase
 
 
 #if IOS || MACCATALYST
+#pragma warning disable CS0618 // Inspect the legacy handler when this test is running its CV1 variant.
 			var cv1handler = cv.Handler as CollectionViewHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var cv2handler = cv.Handler as CollectionViewHandler2;
 
 			if (cv1handler is not null)

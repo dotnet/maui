@@ -8,6 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use the Items2 handler implementation with UIKit.UICollectionViewLayout instead.")]
 	public class GridViewLayout : ItemsViewLayout
 	{
 		readonly GridItemsLayout _itemsLayout;

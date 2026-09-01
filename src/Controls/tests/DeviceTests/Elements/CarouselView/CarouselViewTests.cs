@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#pragma warning disable CS0618 // These tests intentionally exercise the legacy CarouselView handler.
 	[Category(TestCategory.CarouselView)]
 	public partial class CarouselViewTests : ControlsHandlerTestBase
 	{
@@ -154,6 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector
 	{

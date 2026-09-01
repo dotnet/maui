@@ -1,10 +1,12 @@
 #nullable disable
+using System;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController> instead.")]
 	public class SelectableItemsViewDelegator<TItemsView, TViewController> : ItemsViewDelegator<TItemsView, TViewController>
 		where TItemsView : SelectableItemsView
 		where TViewController : SelectableItemsViewController<TItemsView>

@@ -1,10 +1,12 @@
 #nullable disable
+using System;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2 instead.")]
 	public class CarouselViewDelegator : ItemsViewDelegator<CarouselView, CarouselViewController>
 	{
 		public CarouselViewDelegator(ItemsViewLayout itemsViewLayout, CarouselViewController itemsViewController)

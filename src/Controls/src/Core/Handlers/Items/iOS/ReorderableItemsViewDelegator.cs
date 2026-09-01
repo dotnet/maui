@@ -6,6 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewDelegator2<TItemsView, TViewController> instead.")]
 	public class ReorderableItemsViewDelegator<TItemsView, TViewController> : GroupableItemsViewDelegator<TItemsView, TViewController>
 		where TItemsView : ReorderableItemsView
 		where TViewController : ReorderableItemsViewController<TItemsView>

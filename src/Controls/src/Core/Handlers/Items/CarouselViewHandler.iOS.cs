@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 instead.")]
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		ItemsViewLayout _layout;

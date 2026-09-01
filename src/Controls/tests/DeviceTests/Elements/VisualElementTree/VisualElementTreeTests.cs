@@ -45,7 +45,9 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
+#pragma warning disable CS0618 // This test intentionally exercises the legacy CollectionView handler.
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#pragma warning restore CS0618 // Type or member is obsolete
 					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
