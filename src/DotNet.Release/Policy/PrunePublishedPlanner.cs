@@ -1,9 +1,9 @@
 namespace DotNet.Release;
 
 /// <summary>
-/// Decides which staged packages still need publishing. Pure: the caller performs the
-/// NuGet.org queries and the file deletions.
+/// Calculates whether each package is pending, already published, or previously attempted.
 /// </summary>
+/// <remarks>The caller performs NuGet.org queries and deletes withheld local files.</remarks>
 internal static class PrunePublishedPlanner
 {
     /// <summary>

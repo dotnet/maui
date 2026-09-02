@@ -26,7 +26,8 @@ internal sealed class ReleasePolicy
 
     public IReadOnlyCollection<RepositoryPolicy> Repositories => (IReadOnlyCollection<RepositoryPolicy>)_repositories.Values;
 
-    /// <summary>Parses policy JSON. Pure: the caller owns reading the file.</summary>
+    /// <summary>Parses and validates repository and workload-set policy JSON.</summary>
+    /// <remarks>The caller owns reading the policy file.</remarks>
     public static ReleasePolicy Parse(string json)
     {
         PolicyDocument? document;

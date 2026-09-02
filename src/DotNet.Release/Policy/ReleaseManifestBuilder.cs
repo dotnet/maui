@@ -9,9 +9,10 @@ internal sealed record StageOptions
 }
 
 /// <summary>
-/// Turns a gathered drop into a <see cref="ReleaseManifest"/>. Pure: the caller has already read
-/// the nupkgs and hashed them.
+/// Applies package selection, workload splitting, identity validation, and ordering to create
+/// a <see cref="ReleaseManifest"/>.
 /// </summary>
+/// <remarks>The caller reads and hashes package files before invoking this type.</remarks>
 internal static class ReleaseManifestBuilder
 {
     /// <summary>Repository-neutral artifact names consumed by the shared pipeline.</summary>

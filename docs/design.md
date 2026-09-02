@@ -184,7 +184,7 @@ src/DotNet.Release/
   Program.cs                           CLI entry point
   DotNetReleaseException.cs            expected CLI failure
   Cli/                                 command handlers and human-readable output
-  Policy/                              pure release decisions
+  Policy/                              release decisions with no network or filesystem I/O
   Model/                               release data, serialization, and set integrity
   Clients/                             read-only Maestro and NuGet clients
 

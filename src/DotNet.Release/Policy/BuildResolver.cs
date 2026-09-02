@@ -1,7 +1,8 @@
 namespace DotNet.Release;
 
 /// <summary>
-/// Verifies a BAR build against the request and the policy. Pure.
+/// Selects exactly one BAR build and verifies its selector, repository identity, commit,
+/// and required channel against release policy.
 /// </summary>
 internal static class BuildResolver
 {

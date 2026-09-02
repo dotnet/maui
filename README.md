@@ -135,7 +135,7 @@ src/DotNet.Release/             the tool - one project
   Program.cs                    the CLI entry point
   DotNetReleaseException.cs     expected CLI failure
   Cli/                          command handlers and human-readable output
-  Policy/                       pure decisions over plain data - no I/O
+  Policy/                       release decisions over supplied data - no I/O
   Model/                        release data, serialization, and set integrity
   Clients/                      read-only Maestro and NuGet clients
 tests/DotNet.Release.Tests/     one test project, zero network
