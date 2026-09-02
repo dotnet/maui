@@ -110,13 +110,13 @@ public class PipelineDefinitionTests
         Assert.DoesNotContain("- name: isWorkload", pipeline, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(pipeline, @"expectedWorkload:\s*'true'").Count);
         Assert.Single(Regex.Matches(pipeline, @"expectedWorkload:\s*'false'").Cast<Match>());
-        Assert.Contains("resolveBuild.IsWorkload", publish, StringComparison.Ordinal);
+        Assert.Contains("loadResolvedBuild.IsWorkload", publish, StringComparison.Ordinal);
         Assert.Contains("expectedWorkload", publish, StringComparison.Ordinal);
         Assert.Contains("${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg", publish, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Workload_stage_conditions_resolve_the_plan_output()
+    public void Workload_stage_conditions_use_the_loaded_resolve_result()
     {
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
@@ -132,8 +132,34 @@ public class PipelineDefinitionTests
             Assert.Contains($"name: {reference.Groups["step"].Value}", root, StringComparison.Ordinal);
         }
 
-        var verbs = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "ResolveCommand.cs"));
-        Assert.Contains("SetIsWorkload(resolved.Workload)", verbs, StringComparison.Ordinal);
+        Assert.Contains("name: loadResolvedBuild", root, StringComparison.Ordinal);
+        Assert.Contains("ConvertFrom-Json", root, StringComparison.Ordinal);
+        Assert.Contains("variable=IsWorkload;isOutput=true", root, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Cli_commands_do_not_emit_Azure_Pipelines_logging_commands()
+    {
+        var sourceRoot = Path.Combine(RepoRoot, "src", "DotNet.Release");
+        var source = string.Join("\n", Directory.GetFiles(sourceRoot, "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
+
+        Assert.DoesNotContain("##vso[", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Pipeline_translates_transient_command_results_into_Azure_variables()
+    {
+        var root = File.ReadAllText(PipelinePath);
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+
+        Assert.Contains("RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json", root, StringComparison.Ordinal);
+        Assert.Contains("name: loadResolvedBuild", root, StringComparison.Ordinal);
+        Assert.Contains("variable=BarId;isOutput=true", root, StringComparison.Ordinal);
+        Assert.Contains("variable=IsWorkload;isOutput=true", root, StringComparison.Ordinal);
+
+        Assert.Equal(4, Regex.Matches(publish, @"RESULT_PATH: \$\(Agent\.TempDirectory\)/prune-result\.json").Count);
+        Assert.Contains("$result.pendingPackageCount", publish, StringComparison.Ordinal);
+        Assert.Contains("variable=NuGetPackagesToPublish", publish, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -606,7 +632,7 @@ public class PipelineDefinitionTests
 
         Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
-        Assert.Contains("##vso[build.addbuildtag]BAR ID - $env:BAR_ID", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]BAR ID - $barId", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]REPO - $env:REPOSITORY", text, StringComparison.Ordinal);
     }
 

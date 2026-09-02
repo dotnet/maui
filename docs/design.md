@@ -148,8 +148,8 @@ step is present only in **Publish packages and promote the workload build**:
 - ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
 ```
 
-Its runtime condition additionally requires the `IsWorkload` output emitted by
-`release resolve`.
+Its runtime condition additionally requires the `IsWorkload` output that the pipeline
+loads from the transient `release resolve` JSON result.
 
 ### Queue-parameter safety
 
@@ -255,7 +255,7 @@ The prepare stage always runs, including on a dry run:
 checkout release-system source
   -> install pinned .NET SDK
   -> build and pin Release/_tool
-  -> release resolve
+  -> release resolve and load its transient JSON result
   -> darc gather-drop
   -> release stage
   -> pin release-manifest.json
@@ -291,14 +291,14 @@ Every package set uses the same internal stage definition:
 preflight
   -> download Release artifact
   -> verify manifest and tool hashes
-  -> release prune-published
+  -> release prune-published and load its transient JSON result
   -> publish exact pruned artifact for review
 
 ManualValidation@0
   -> production releaseJob
     -> download approved artifact
     -> verify manifest and tool hashes
-    -> refresh prune
+    -> refresh prune and load its transient JSON result
 
 when the selected mode publishes packages:
     -> 1ES.PublishNuget@1
@@ -372,9 +372,11 @@ Channel verification establishes a property distinct from source identity:
 
 `config/repositories.json` is the only source of workload classification.
 
-`release resolve` emits `IsWorkload` as an Azure DevOps output variable. When publishing is
-enabled, the pipeline contains the workload and non-workload stage shapes, and each stage
-uses a runtime condition against that output:
+`release resolve` writes a transient JSON result containing `barBuildId` and `workload`.
+The following PowerShell step reads that file and emits the Azure DevOps variables needed
+by Darc and the stage conditions. When publishing is enabled, the pipeline contains the
+workload and non-workload stage shapes, and each stage uses a runtime condition against
+the loaded `IsWorkload` output:
 
 - `publish_packs` and `publish_manifests` require `IsWorkload=true`;
 - `publish_packages` requires `IsWorkload=false`;
@@ -633,8 +635,9 @@ For each manifest package it records one disposition:
 | `AlreadyPublished` | Exact ID/version is visible | removed |
 | `PreviouslyAttempted` | Matched an operator recovery filter | removed |
 
-The immutable manifest is not rewritten. Dispositions are printed in full to the job log;
-there is no second JSON sidecar.
+The immutable manifest is not rewritten. Dispositions are printed in full to the job log.
+The command writes only a transient JSON result containing the pending package count; it
+is read from `Agent.TempDirectory` and is not included in any release artifact.
 
 Before deleting anything, all artifact and package names are revalidated as a single
 relative path component.
@@ -645,7 +648,8 @@ After pruning, the invariant is:
 file is present <=> disposition is Pending
 ```
 
-`NuGetPackagesToPublish=false` skips `1ES.PublishNuget@1` when nothing remains.
+The pipeline translates a zero pending count into `NuGetPackagesToPublish=false`, which
+skips `1ES.PublishNuget@1`.
 
 `1ES.PublishNuget@1` globs only top-level `.nupkg` files and publishes through
 `nuget.org (dotnetframework)`.
@@ -767,7 +771,8 @@ against the live service.
 Tests MUST fail when:
 
 - the pipeline repository dropdown differs from policy;
-- workload and non-workload stages do not use the `release resolve` classification output;
+- workload and non-workload stages do not use the classification loaded from the
+  `release resolve` JSON result;
 - a remote publish operation is not structurally nested beneath the derived publish boolean;
 - package-set local validation is nested beneath the derived publish boolean;
 - BAR mutation is not structurally nested beneath the derived promotion boolean;

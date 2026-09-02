@@ -204,7 +204,6 @@ extends:
           displayName: Build the release tool
 
         - task: AzureCLI@2
-          name: resolveBuild
           displayName: Resolve and verify the BAR build
           inputs:
             azureSubscription: "Darc: Maestro Production"
@@ -236,6 +235,7 @@ extends:
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
                 --commit $env:COMMIT_HASH `
+                --result "$env:RESULT_PATH" `
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
@@ -245,15 +245,29 @@ extends:
             GH_REPO: ${{ parameters.ghRepo }}
             COMMIT_HASH: ${{ parameters.commitHash }}
             BAR_BUILD_ID: ${{ parameters.barBuildId }}
+            RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json
 
-        # Match Arcade's established "BAR ID - <id>" build tag format. The repository tag uses
-        # the same readable convention so release runs can be filtered by either identity.
         - pwsh: |
-            Write-Host "##vso[build.addbuildtag]BAR ID - $env:BAR_ID"
+            $result = Get-Content -LiteralPath $env:RESULT_PATH -Raw | ConvertFrom-Json
+            $barId = 0
+            if (-not [int]::TryParse([string]$result.barBuildId, [ref]$barId) -or $barId -le 0) {
+              throw "The resolved-build result contains invalid BAR build ID '$($result.barBuildId)'."
+            }
+            if ($result.workload -isnot [bool]) {
+              throw "The resolved-build result contains invalid workload classification '$($result.workload)'."
+            }
+
+            $isWorkload = $result.workload.ToString().ToLowerInvariant()
+            Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
+            Write-Host "##vso[task.setvariable variable=IsWorkload;isOutput=true]$isWorkload"
+
+            # Match Arcade's established "BAR ID - <id>" build tag format.
+            Write-Host "##vso[build.addbuildtag]BAR ID - $barId"
             Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
-          displayName: Tag resolved release identity
+          name: loadResolvedBuild
+          displayName: Load resolved build result
           env:
-            BAR_ID: $(resolveBuild.BarId)
+            RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json
             REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
 
         - task: AzureCLI@2
@@ -272,13 +286,13 @@ extends:
               }
 
               & $darc gather-drop --ci `
-                --id $(resolveBuild.BarId) `
+                --id $(loadResolvedBuild.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
                 --include-released `
                 --asset-filter '^[^/]+$' `
                 --verbose
-              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(resolveBuild.BarId)." }
+              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(loadResolvedBuild.BarId)." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
 
@@ -312,7 +326,7 @@ extends:
             GH_OWNER: ${{ parameters.ghOwner }}
             GH_REPO: ${{ parameters.ghRepo }}
             COMMIT_HASH: ${{ parameters.commitHash }}
-            BAR_ID: $(resolveBuild.BarId)
+            BAR_ID: $(loadResolvedBuild.BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
@@ -345,7 +359,7 @@ extends:
               }
             displayName: Validate workload promotion mode
             env:
-              IS_WORKLOAD: $(resolveBuild.IsWorkload)
+              IS_WORKLOAD: $(loadResolvedBuild.IsWorkload)
 
     # -----------------------------------------------------------------------------------------
     # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
@@ -357,7 +371,7 @@ extends:
         ${{ else }}:
           displayName: Preview workload set promotion
         dependsOn: prepare_release
-        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.resolveBuild.IsWorkload'], 'true'))
+        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], 'true'))
         jobs:
         # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
         - job: promote_approval

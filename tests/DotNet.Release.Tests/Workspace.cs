@@ -103,6 +103,10 @@ internal sealed class Workspace : IDisposable
 
     public string DropPackages => Path.Combine(Drop, "shipping", "packages");
 
+    public string ResolveResult => Path.Combine(Root, "resolved-build.json");
+
+    public string PruneResult => Path.Combine(Root, "prune-result.json");
+
     public static readonly DateTimeOffset Now = new(2026, 8, 27, 18, 0, 0, TimeSpan.Zero);
 
     public static BarBuild Build(

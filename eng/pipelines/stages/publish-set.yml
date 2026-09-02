@@ -53,7 +53,7 @@ stages:
 - stage: ${{ parameters.stageName }}
   displayName: ${{ parameters.displayName }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.resolveBuild.IsWorkload'], '${{ parameters.expectedWorkload }}'))
+  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
   - job: preflight
@@ -117,6 +117,7 @@ stages:
           --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
           --expected-manifest-hash "$env:EXPECTED_MANIFEST_HASH" `
+          --result "$env:RESULT_PATH" `
           @recovery
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Prune versions already published on NuGet.org
@@ -126,6 +127,21 @@ stages:
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
+        RESULT_PATH: $(Agent.TempDirectory)/prune-result.json
+
+    - pwsh: |
+        $result = Get-Content -LiteralPath $env:RESULT_PATH -Raw | ConvertFrom-Json
+        $pending = 0
+        if (-not [int]::TryParse([string]$result.pendingPackageCount, [ref]$pending) -or $pending -lt 0) {
+          throw "The prune result contains invalid pending package count '$($result.pendingPackageCount)'."
+        }
+
+        $hasPackages = ($pending -gt 0).ToString().ToLowerInvariant()
+        Write-Host "Packages remaining to publish: $pending"
+        Write-Host "##vso[task.setvariable variable=NuGetPackagesToPublish]$hasPackages"
+      displayName: Load prune result
+      env:
+        RESULT_PATH: $(Agent.TempDirectory)/prune-result.json
 
     - pwsh: |
         $source = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
@@ -219,6 +235,7 @@ stages:
           --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
           --expected-manifest-hash "$env:EXPECTED_MANIFEST_HASH" `
+          --result "$env:RESULT_PATH" `
           @recovery
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Refresh already-published versions
@@ -228,6 +245,21 @@ stages:
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
+        RESULT_PATH: $(Agent.TempDirectory)/prune-result.json
+
+    - pwsh: |
+        $result = Get-Content -LiteralPath $env:RESULT_PATH -Raw | ConvertFrom-Json
+        $pending = 0
+        if (-not [int]::TryParse([string]$result.pendingPackageCount, [ref]$pending) -or $pending -lt 0) {
+          throw "The prune result contains invalid pending package count '$($result.pendingPackageCount)'."
+        }
+
+        $hasPackages = ($pending -gt 0).ToString().ToLowerInvariant()
+        Write-Host "Packages remaining to publish: $pending"
+        Write-Host "##vso[task.setvariable variable=NuGetPackagesToPublish]$hasPackages"
+      displayName: Load refreshed prune result
+      env:
+        RESULT_PATH: $(Agent.TempDirectory)/prune-result.json
 
     - ${{ if eq(parameters.publishPackages, true) }}:
       - task: 1ES.PublishNuget@1

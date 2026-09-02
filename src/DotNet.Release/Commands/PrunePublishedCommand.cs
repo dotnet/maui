@@ -1,9 +1,12 @@
 using System.CommandLine;
+using System.Text.Json;
 
 namespace DotNet.Release;
 
 internal static class PrunePublishedCommand
 {
+    private static readonly JsonSerializerOptions ResultJsonOptions = new() { WriteIndented = true };
+
     public static Command Build(TextWriter outputWriter)
     {
         var manifest = new Option<FileInfo>("--manifest")
@@ -33,10 +36,15 @@ internal static class PrunePublishedCommand
             Description = "Package-set directory name.",
             Required = true,
         };
+        var result = new Option<FileInfo>("--result")
+        {
+            Description = "Path for the transient prune JSON result.",
+            Required = true,
+        };
 
         var command = new Command("prune-published", "Remove package versions already published on the target feed.")
         {
-            manifest, stage, recoveryFilters, expectedHash, feed, set,
+            manifest, stage, recoveryFilters, expectedHash, feed, set, result,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -52,6 +60,7 @@ internal static class PrunePublishedCommand
                 PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
                 parse.GetValue(expectedHash)!,
                 parse.GetValue(set),
+                parse.GetValue(result)!.FullName,
                 cancellationToken);
         });
 
@@ -66,6 +75,7 @@ internal static class PrunePublishedCommand
         IReadOnlyList<string> recoveryPatterns,
         string expectedManifestHash,
         string? setName,
+        string resultPath,
         CancellationToken cancellationToken)
     {
         var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
@@ -103,6 +113,7 @@ internal static class PrunePublishedCommand
             pending += report.PendingCount;
         }
 
-        outputWriter.WriteLine(AzurePipelineCommand.SetPackagesToPublish(pending > 0));
+        var resultJson = JsonSerializer.Serialize(new PrunePublishedResult(pending), ResultJsonOptions);
+        await File.WriteAllTextAsync(resultPath, resultJson, cancellationToken).ConfigureAwait(false);
     }
 }

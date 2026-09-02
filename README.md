@@ -158,11 +158,15 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N]
+release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --result <resolved-build.json>
 release stage --config config/repositories.json --repo <owner/name> --commit <sha> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
+release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> --result <prune-result.json> [--recovery-filters '…']
 release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
+
+The result files are transient command outputs. The pipeline reads them from the current
+agent's temporary directory and translates their values into Azure DevOps variables.
+They are not release artifacts.
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.
 Do not rerun the whole stage: the immutable prepared artifact already exists for that run.

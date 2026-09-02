@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Xunit;
 
 namespace DotNet.Release.Tests;
@@ -15,7 +16,7 @@ public class VerbsTests : IDisposable
     public void Dispose() => _workspace.Dispose();
 
     private Task Resolve(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) => ResolveCommand.ExecuteAsync(
-        _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, CancellationToken.None);
+        _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, _workspace.ResolveResult, CancellationToken.None);
 
     private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242) =>
         StageCommand.ExecuteAsync(
@@ -34,7 +35,7 @@ public class VerbsTests : IDisposable
     // ---- resolve ----
 
     [Fact]
-    public async Task Resolve_prints_the_resolved_build_and_emits_pipeline_outputs()
+    public async Task Resolve_prints_the_resolved_build_and_writes_its_machine_result()
     {
         await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
@@ -51,25 +52,29 @@ public class VerbsTests : IDisposable
         Assert.Contains("Workload          : False", output, StringComparison.Ordinal);
         Assert.Contains("Channel name      : .NET Libraries", output, StringComparison.Ordinal);
         Assert.Contains("Channel ID        : 1648", output, StringComparison.Ordinal);
-        Assert.Contains("##vso[task.setvariable variable=BarId;isOutput=true]4242", _output.Output);
-        Assert.Contains("##vso[task.setvariable variable=IsWorkload;isOutput=true]false", _output.Output);
+
+        var result = JsonSerializer.Deserialize<ResolveResult>(File.ReadAllText(_workspace.ResolveResult));
+        Assert.NotNull(result);
+        Assert.Equal(4242, result.BarBuildId);
+        Assert.False(result.Workload);
     }
 
     [Fact]
-    public void Resolve_command_has_no_intermediate_output_option()
+    public void Resolve_command_has_a_transient_result_but_no_release_plan_output()
     {
         var command = ResolveCommand.Build(TextWriter.Null);
 
         Assert.Equal("resolve", command.Name);
+        Assert.Contains(command.Options, option => option.Name == "--result");
         Assert.DoesNotContain(command.Options, option => option.Name == "--out");
     }
 
     [Fact]
-    public async Task Resolve_emits_only_bar_id_and_workload_classification()
+    public async Task Resolve_emits_no_pipeline_commands()
     {
         await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        Assert.Equal(2, _output.Output.Count(l => l.StartsWith("##vso[", StringComparison.Ordinal)));
+        Assert.DoesNotContain(_output.Output, line => line.StartsWith("##vso[", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -236,7 +241,8 @@ public class VerbsTests : IDisposable
 
     private Task Filter(INuGetPackageLookup probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
         PrunePublishedCommand.ExecuteAsync(
-            _output, probe, _workspace.ReadManifest(), _workspace.Out, recovery ?? [], expectedHash ?? ManifestHash, set, CancellationToken.None);
+            _output, probe, _workspace.ReadManifest(), _workspace.Out, recovery ?? [], expectedHash ?? ManifestHash, set, _workspace.PruneResult,
+            CancellationToken.None);
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
@@ -249,7 +255,9 @@ public class VerbsTests : IDisposable
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
         Assert.True(File.Exists(Path.Combine(directory, "HarfBuzzSharp.8.3.1.5.nupkg")));
 
-        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]true", _output.Output);
+        var result = JsonSerializer.Deserialize<PrunePublishedResult>(File.ReadAllText(_workspace.PruneResult));
+        Assert.NotNull(result);
+        Assert.Equal(1, result.PendingPackageCount);
     }
 
     [Fact]
@@ -320,7 +328,10 @@ public class VerbsTests : IDisposable
 
         await Filter(new FakeProbe("skiasharp/3.119.0"));
 
-        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]false", _output.Output);
+        var result = JsonSerializer.Deserialize<PrunePublishedResult>(File.ReadAllText(_workspace.PruneResult));
+        Assert.NotNull(result);
+        Assert.Equal(0, result.PendingPackageCount);
+        Assert.DoesNotContain(_output.Output, line => line.StartsWith("##vso[", StringComparison.Ordinal));
     }
 
     [Fact]

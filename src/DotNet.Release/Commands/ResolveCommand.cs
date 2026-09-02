@@ -1,10 +1,13 @@
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
 internal static class ResolveCommand
 {
+    private static readonly JsonSerializerOptions ResultJsonOptions = new() { WriteIndented = true };
+
     public static Command Build(TextWriter outputWriter)
     {
         var config = new Option<FileInfo>("--config")
@@ -38,10 +41,15 @@ internal static class ResolveCommand
         {
             Description = "Managed identity client ID.",
         };
+        var result = new Option<FileInfo>("--result")
+        {
+            Description = "Path for the transient resolved-build JSON result.",
+            Required = true,
+        };
 
         var command = new Command("resolve", "Resolve and verify the BAR build.")
         {
-            config, repo, commit, barId, barUri, token, managedIdentity,
+            config, repo, commit, barId, barUri, token, managedIdentity, result,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -55,6 +63,7 @@ internal static class ResolveCommand
                 parse.GetValue(repo)!,
                 parse.GetValue(commit)!,
                 parse.GetValue(barId),
+                parse.GetValue(result)!.FullName,
                 cancellationToken);
         });
 
@@ -62,7 +71,7 @@ internal static class ResolveCommand
     }
 
     public static async Task ExecuteAsync(TextWriter outputWriter, IBuildRegistry registry, string policyJson, string repository,
-        string commit, int? barBuildId, CancellationToken cancellationToken)
+        string commit, int? barBuildId, string resultPath, CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
         var repositoryId = RepositoryId.Parse(repository);
@@ -76,8 +85,9 @@ internal static class ResolveCommand
         var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
 
         ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
-        outputWriter.WriteLine(AzurePipelineCommand.SetBarId(resolved.BarBuildId));
-        outputWriter.WriteLine(AzurePipelineCommand.SetIsWorkload(resolved.Workload));
+
+        var resultJson = JsonSerializer.Serialize(new ResolveResult(resolved.BarBuildId, resolved.Workload), ResultJsonOptions);
+        await File.WriteAllTextAsync(resultPath, resultJson, cancellationToken).ConfigureAwait(false);
     }
 
     private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>
