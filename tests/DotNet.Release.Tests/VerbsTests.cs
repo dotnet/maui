@@ -185,6 +185,17 @@ public class VerbsTests : IDisposable
     }
 
     [Fact]
+    public async Task Stage_does_not_open_an_excluded_package()
+    {
+        _workspace.WritePackage("SkiaSharp", "3.119.0");
+        File.WriteAllText(Path.Combine(_workspace.DropPackages, "Broken.1.0.0.nupkg"), "not a package");
+
+        await Stage(new StageOptions { Exclude = ["Broken*"] });
+
+        Assert.Equal("SkiaSharp", Assert.Single(ReleaseManifest.Deserialize(_workspace.ReadManifest()).AllPackages).Id);
+    }
+
+    [Fact]
     public async Task Stage_rejects_a_workload_manifest_in_a_non_workload_release()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");
@@ -345,11 +356,14 @@ public class VerbsTests : IDisposable
     public async Task Prune_honours_recovery_filters_before_consulting_the_feed()
     {
         await StagedManifestAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
+        var client = new FakeProbe();
 
-        await Filter(new FakeProbe(), recovery: ["SkiaSharp.*"]);
+        await Filter(client, recovery: ["SkiaSharp.*"]);
 
         var directory = _workspace.StagedSet(ReleaseManifestBuilder.PackagesArtifactName);
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
+        Assert.DoesNotContain("skiasharp/3.119.0", client.RequestedIdentities);
+        Assert.Contains("harfbuzzsharp/8.3.1.5", client.RequestedIdentities);
         Assert.Contains("Disposition        : PreviouslyAttempted", _output.AllOutput, StringComparison.Ordinal);
     }
 
@@ -438,6 +452,16 @@ public class VerbsTests : IDisposable
 
         await Verify(probe);
         Assert.Equal(3, probe.Calls);
+    }
+
+    [Fact]
+    public async Task Verify_does_not_retry_programming_errors()
+    {
+        await StagedManifestAsync(("SkiaSharp", "3.119.0"));
+        using var client = new NuGetClient((_, _, _) =>
+            Task.FromException<bool>(new InvalidOperationException("broken lookup")));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Verify(client));
     }
 
     [Fact]

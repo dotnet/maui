@@ -12,10 +12,11 @@
     <!--
       One tool, one assembly. The layering that matters is expressed by folders:
 
+        Cli/         command definitions and human-readable output
+        Clients/     read-only Maestro and NuGet access, including .nupkg reading
         Policy/      pure decisions over plain data - no I/O
-        Model/       the data those decisions operate on, and its serialization
-        Adapters/    the only I/O: read-only BAR and NuGet access, reading .nupkg files
-        project root   verbs and argument parsing
+        Model/       release data, serialization, and staged-set integrity
+        project root composition and expected failure handling
 
       Dependencies are chosen for what they can do, not just what they provide:
 

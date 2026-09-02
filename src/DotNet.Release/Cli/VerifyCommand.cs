@@ -1,4 +1,5 @@
 using System.CommandLine;
+using NuGet.Protocol.Core.Types;
 
 namespace DotNet.Release;
 
@@ -83,7 +84,7 @@ internal static class VerifyCommand
                     return;
                 }
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (IsTransientFeedFailure(ex, cancellationToken))
             {
                 outputWriter.WriteLine($"warning: NuGet.org query failed, will retry: {ex.Message}");
             }
@@ -112,4 +113,8 @@ internal static class VerifyCommand
     internal static string DescribeMissing(IReadOnlyList<ReleasePackage> missing) =>
         "The following packages are not available from NuGet.org: " +
         string.Join(", ", missing.Select(package => $"{package.Id} {package.Version}").Order(StringComparer.Ordinal));
+
+    private static bool IsTransientFeedFailure(Exception exception, CancellationToken cancellationToken) =>
+        exception is HttpRequestException or IOException or TimeoutException or FatalProtocolException ||
+        exception is OperationCanceledException && !cancellationToken.IsCancellationRequested;
 }

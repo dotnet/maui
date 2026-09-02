@@ -39,6 +39,8 @@ internal sealed class FakeProbe(params string[] published) : INuGetClient
 
     public int Calls { get; private set; }
 
+    public List<string> RequestedIdentities { get; } = [];
+
     /// <summary>Identities that become available once this many calls have been made.</summary>
     public Dictionary<string, int> AvailableAfterCall { get; init; } = [];
 
@@ -48,6 +50,7 @@ internal sealed class FakeProbe(params string[] published) : INuGetClient
     public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<ReleasePackage> packages, CancellationToken cancellationToken)
     {
         Calls++;
+        RequestedIdentities.AddRange(packages.Select(package => package.IdentityKey));
 
         IReadOnlyDictionary<string, bool> result = packages.ToDictionary(
             p => p.IdentityKey,

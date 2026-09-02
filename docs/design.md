@@ -185,7 +185,7 @@ src/DotNet.Release/
   DotNetReleaseException.cs            expected CLI failure
   Cli/                                 command handlers and human-readable output
   Policy/                              pure release decisions
-  Model/                               transport and value models
+  Model/                               release data, serialization, and set integrity
   Clients/                             read-only Maestro and NuGet clients
 
 tests/DotNet.Release.Tests/            unit, contract, architecture, and pipeline tests
@@ -479,7 +479,8 @@ change release state.
 
 ## Package validation and selection
 
-`release stage` reads each `.nupkg` using `PackageArchiveReader`.
+`release stage` applies filename filters, then reads each selected `.nupkg` using
+`PackageArchiveReader`.
 
 For every package it records:
 
@@ -489,7 +490,7 @@ For every package it records:
 - filename;
 - SHA-256 of package bytes.
 
-The stage fails closed on:
+For every selected package, the stage fails closed on:
 
 - malformed or missing nuspec metadata;
 - a filename not beginning with its nuspec ID;

@@ -97,10 +97,18 @@ internal static class StageCommand
         ReleaseOutput.WriteResolvedBuild(outputWriter, source);
         outputWriter.WriteLine();
 
-        var packageFiles = FindShippingPackages(dropDirectory);
-        if (packageFiles.Count == 0)
+        var allPackageFiles = FindShippingPackages(dropDirectory);
+        if (allPackageFiles.Count == 0)
         {
             throw new DotNetReleaseException($"No shipping nupkgs were found under '{dropDirectory}'.");
+        }
+
+        var packageFiles = allPackageFiles
+            .Where(file => ReleaseManifestBuilder.IsSelected(Path.GetFileName(file), source.Workload, options))
+            .ToList();
+        if (packageFiles.Count == 0)
+        {
+            throw new DotNetReleaseException("Package filtering selected no packages.");
         }
 
         var packages = new List<ReleasePackage>(packageFiles.Count);

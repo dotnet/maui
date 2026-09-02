@@ -80,7 +80,12 @@ internal static class PrunePublishedCommand
         {
             var setDirectory = set.GetDirectory(stageDirectory);
 
-            var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
+            var packagesToQuery = set.Packages
+                .Where(package => !PackageGlob.IsAnyMatch(package.FileName, recoveryPatterns))
+                .ToList();
+            IReadOnlyDictionary<string, bool> availability = packagesToQuery.Count == 0
+                ? new Dictionary<string, bool>(StringComparer.Ordinal)
+                : await lookup.GetAvailabilityAsync(packagesToQuery, cancellationToken).ConfigureAwait(false);
             var report = PrunePublishedPlanner.Plan(set, manifest.AllPackages, recoveryPatterns, availability);
             var invalidFileName = report.FilesToRemove.FirstOrDefault(fileName =>
                 string.IsNullOrWhiteSpace(fileName) ||

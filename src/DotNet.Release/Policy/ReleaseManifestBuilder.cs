@@ -50,11 +50,11 @@ internal static class ReleaseManifestBuilder
         // selection.
         var packs = drop
             .Where(p => !PackageClassifier.IsWorkloadManifest(p.FileName))
-            .Where(p => PackageGlob.IsSelected(p.FileName, options.Include, options.Exclude)).ToList();
+            .Where(p => IsSelected(p.FileName, workload: true, options)).ToList();
 
         var manifests = drop
             .Where(p => PackageClassifier.IsWorkloadManifest(p.FileName))
-            .Where(p => PackageGlob.IsSelected(p.FileName, include: [], options.Exclude)).ToList();
+            .Where(p => IsSelected(p.FileName, workload: true, options)).ToList();
 
         if (packs.Count == 0 || manifests.Count == 0)
         {
@@ -98,7 +98,7 @@ internal static class ReleaseManifestBuilder
         string toolVersion)
     {
         var selected = drop
-            .Where(p => PackageGlob.IsSelected(p.FileName, options.Include, options.Exclude)).ToList();
+            .Where(p => IsSelected(p.FileName, workload: false, options)).ToList();
 
         // A workload manifest requires the dedicated pack-before-manifest stage topology.
         // Reject it from a non-workload release instead of publishing it in the single set.
@@ -208,5 +208,13 @@ internal static class ReleaseManifestBuilder
         }
 
         return errors;
+    }
+
+    internal static bool IsSelected(string fileName, bool workload, StageOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var include = workload && PackageClassifier.IsWorkloadManifest(fileName) ? [] : options.Include;
+        return PackageGlob.IsSelected(fileName, include, options.Exclude);
     }
 }
