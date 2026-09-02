@@ -51,9 +51,20 @@ namespace Microsoft.Maui.Controls
 		public static void MapBackgroundImageSource(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
 
+		// `nameof(BackgroundColor)`/`nameof(Page.BackgroundImageSource)` are appended (by RemapForControls) after
+		// the Core `nameof(IView.Background)` key in `ViewHandler.ViewMapper`, so during the single bulk
+		// `UpdateProperties` pass that runs on initial connect (and on handler reuse/reconnect - see
+		// `IsMappingProperties`) the canonical `Background` mapping already reads the current composite
+		// BackgroundColor/BackgroundImageSource/Background value later in the very same pass, making this
+		// redirect redundant. We skip it only while that bulk pass is in flight, so any *dynamic* update that
+		// happens once the handler is fully connected still runs through `MapBackgroundColor`/
+		// `MapBackgroundImageSource` normally. This relies on `Background` never being reordered ahead of these
+		// keys and on no handler mutating `BackgroundColor`/`BackgroundImageSource` from within its own
+		// `ConnectHandler` or from a mapper that runs later in the same pass; both invariants are covered by
+		// VisualElementMapperTests.
 		static void MapBackgroundColorForControls(IViewHandler handler, IView view)
 		{
-			if (!handler.IsConnectingHandler())
+			if (!handler.IsMappingProperties())
 			{
 				MapBackgroundColor(handler, view);
 			}
@@ -61,7 +72,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapBackgroundImageSourceForControls(IViewHandler handler, IView view)
 		{
-			if (!handler.IsConnectingHandler())
+			if (!handler.IsMappingProperties())
 			{
 				MapBackgroundImageSource(handler, view);
 			}
@@ -76,9 +87,14 @@ namespace Microsoft.Maui.Controls
 		static void MapSemanticPropertiesDescriptionProperty(IViewHandler handler, IView element) =>
 			UpdateSemanticsFromMapper(handler, element);
 
+		// Same reasoning as the background guard above: the three `SemanticProperties` keys are appended
+		// after the Core `nameof(IView.Semantics)` key, so `MapSemantics` already reads the current composite
+		// Semantics value later in the same bulk `UpdateProperties` pass (initial connect or reconnect). We use
+		// `IsMappingProperties` (rather than `IsConnectingHandler`) so the same de-duplication also applies to
+		// handler reuse (e.g. CollectionView/CarouselView cell recycling), not only to the very first connect.
 		static void UpdateSemanticsFromMapper(IViewHandler handler, IView element)
 		{
-			if (!handler.IsConnectingHandler())
+			if (!handler.IsMappingProperties())
 			{
 				(element as VisualElement)?.UpdateSemanticsFromMapper();
 			}
