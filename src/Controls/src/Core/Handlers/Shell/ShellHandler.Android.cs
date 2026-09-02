@@ -89,12 +89,6 @@ namespace Microsoft.Maui.Controls.Handlers
         {
             base.ConnectHandler(platformView);
 
-            // Window insets setup for the CoordinatorLayout (same as FlyoutViewHandler)
-            if (_navigationRoot is CoordinatorLayout cl)
-            {
-                MauiWindowInsetListener.SetupViewWithLocalListener(cl);
-            }
-
             // Add appearance observer similar to ShellRenderer
             ((IShellController)VirtualView).AddAppearanceObserver(this, VirtualView);
 
@@ -144,11 +138,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // Clean up ViewAttachedToWindow listener
             platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 
-            // Clean up window insets and navigation root
-            if (_navigationRoot is CoordinatorLayout cl)
-            {
-                MauiWindowInsetListener.RemoveViewWithLocalListener(cl);
-            }
             _navigationRoot = null;
 
             // Disconnect MauiDrawerLayout

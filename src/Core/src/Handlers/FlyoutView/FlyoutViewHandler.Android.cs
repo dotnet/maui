@@ -220,12 +220,6 @@ namespace Microsoft.Maui.Handlers
 			// Subscribe to MauiDrawerLayout events
 			platformView.OnPresentedChanged += HandlePresentedChanged;
 			platformView.ViewAttachedToWindow += DrawerLayoutAttached;
-
-			if (platformView is DrawerLayout dl)
-			{
-				dl.DrawerStateChanged += OnDrawerStateChanged;
-				dl.ViewAttachedToWindow += DrawerLayoutAttached;
-			}
 		}
 
 		protected override void DisconnectHandler(MauiDrawerLayout platformView)
