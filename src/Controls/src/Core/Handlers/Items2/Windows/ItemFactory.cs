@@ -276,9 +276,15 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 	}
 }
 
-internal sealed class MauiItemContainer(ItemsView itemsView) : ItemContainer
+internal sealed class MauiItemContainer : ItemContainer
 {
-	readonly ItemsView _itemsView = itemsView;
+	readonly ItemsView _itemsView;
+
+	public MauiItemContainer(ItemsView itemsView)
+	{
+		_itemsView = itemsView;
+		Loaded += OnLoaded;
+	}
 
 	protected override void OnApplyTemplate()
 	{
@@ -286,13 +292,19 @@ internal sealed class MauiItemContainer(ItemsView itemsView) : ItemContainer
 		UpdateSelectionMode();
 	}
 
+	void OnLoaded(object sender, RoutedEventArgs e) => UpdateSelectionMode();
+
 	internal void UpdateSelectionMode()
 	{
-		var state = _itemsView is SelectableItemsView { SelectionMode: SelectionMode.Multiple }
+		var isMultiple = _itemsView is SelectableItemsView { SelectionMode: SelectionMode.Multiple };
+		var state = isMultiple
 			? "Multiple"
 			: "Single";
 
 		VisualStateManager.GoToState(this, state, false);
+
+		if (GetTemplateChild("PART_SelectionCheckbox") is FrameworkElement selectionCheckbox)
+			selectionCheckbox.Visibility = isMultiple ? Visibility.Visible : Visibility.Collapsed;
 	}
 }
 
