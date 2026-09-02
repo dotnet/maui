@@ -342,16 +342,14 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 		var bottomTabs = HostView.FindViewById<AView>(Resource.Id.navigationlayout_bottomtabs);
 		var appBarHasContent = HasMeasuredContent(appBar);
 		var bottomTabsVisible = bottomTabs is not null && bottomTabs.Visibility == ViewStates.Visible && bottomTabs.MeasuredHeight > 0;
-		var containerLeft = Math.Max(Snapshot.SystemBars.Left, Snapshot.DisplayCutout.Left);
 		var containerTop = Math.Max(Snapshot.SystemBars.Top, Snapshot.DisplayCutout.Top);
-		var containerRight = Math.Max(Snapshot.SystemBars.Right, Snapshot.DisplayCutout.Right);
 		var containerBottom = Math.Max(Snapshot.SystemBars.Bottom, Snapshot.DisplayCutout.Bottom);
 
 		_appBarApplicator.Apply(
 			appBar,
-			appBarHasContent ? containerLeft : 0,
+			appBarHasContent ? Snapshot.SystemBars.Left : 0,
 			appBarHasContent ? containerTop : 0,
-			appBarHasContent ? containerRight : 0,
+			appBarHasContent ? Snapshot.SystemBars.Right : 0,
 			0);
 
 		var toolbar = FindDescendant<MaterialToolbar>(appBar);
@@ -495,8 +493,16 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			return;
 		}
 
-		if (!TryGetSlotInScope(view, out var slot))
+		var safeAreaView = view is ICrossPlatformLayoutBacking backing
+			? SafeAreaExtensions.GetSafeAreaView2(backing.CrossPlatformLayout)
+			: null;
+
+		if (safeAreaView is null ||
+			!ShouldApplySafeArea(view, safeAreaView.HasExplicitSafeAreaEdges) ||
+			!TryGetSlotInScope(view, safeAreaView as IView, out var slot))
 		{
+			node.ResetContribution();
+			ResolveChildren(node, inheritedContext);
 			return;
 		}
 
@@ -514,25 +520,45 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 				context.Claims |= router.Claims;
 			}
 		}
-		var safeAreaView = view is ICrossPlatformLayoutBacking backing
-			? SafeAreaExtensions.GetSafeAreaView2(backing.CrossPlatformLayout)
-			: null;
 
-		if (safeAreaView is not null)
-		{
-			var isExplicit = safeAreaView.HasExplicitSafeAreaEdges;
-			var contribution = ResolveContribution(safeAreaView, isExplicit, slot, ref context);
-			node.ApplyContribution(contribution);
-		}
-		else
-		{
-			node.ResetContribution();
-		}
+		var isExplicit = safeAreaView.HasExplicitSafeAreaEdges;
+		var contribution = ResolveContribution(safeAreaView, isExplicit, slot, ref context);
+		node.ApplyContribution(contribution);
 
+		ResolveChildren(node, context);
+	}
+
+	void ResolveChildren(ParticipantNode node, SafeAreaBranchContext context)
+	{
 		for (int i = 0; i < node.Children.Count; i++)
 		{
 			ResolveNode(node.Children[i], context);
 		}
+	}
+
+	static bool ShouldApplySafeArea(AView view, bool hasExplicitSafeAreaEdges)
+	{
+		var parent = view.Parent;
+		var isInsideRecyclerEmptyView = false;
+
+		while (parent is not null)
+		{
+			if (parent is IMauiRecyclerViewEmptyView)
+			{
+				isInsideRecyclerEmptyView = true;
+			}
+
+			if (parent is AppBarLayout ||
+				parent is MauiScrollView ||
+				(parent is IMauiRecyclerView && !isInsideRecyclerEmptyView && !hasExplicitSafeAreaEdges))
+			{
+				return false;
+			}
+
+			parent = parent.Parent;
+		}
+
+		return true;
 	}
 
 	SafeAreaPadding ResolveContribution(
@@ -556,7 +582,9 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			}
 
 			double resolved = 0;
-			if (SafeAreaEdges.IsContainer(region))
+			if (region == SafeAreaRegions.Default ||
+				SafeAreaEdges.IsContainer(region) ||
+				(edge != 3 && SafeAreaEdges.IsSoftInput(region)))
 			{
 				var systemBars = ResolveSourceOverlap(InsetSource.SystemBars, edge, slot, context.Claims);
 				var displayCutout = ResolveSourceOverlap(InsetSource.DisplayCutout, edge, slot, context.Claims);
@@ -632,6 +660,22 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 		};
 	}
 
+	int ResolveBottomOverlap(AView view, int bottomInset)
+	{
+		if (bottomInset <= 0 || view.Height <= 0 || HostView.Height <= 0)
+		{
+			return bottomInset;
+		}
+
+		var viewLocation = new int[2];
+		var hostLocation = new int[2];
+		view.GetLocationInWindow(viewLocation);
+		HostView.GetLocationInWindow(hostLocation);
+
+		var viewBottom = viewLocation[1] - hostLocation[1] + view.Height;
+		return Math.Clamp(viewBottom - (HostView.Height - bottomInset), 0, bottomInset);
+	}
+
 	WindowInsetEdges GetEffectiveImeInsets()
 	{
 		if (!Snapshot.ImeVisible || HostView.Context?.GetActivity()?.Window?.Attributes is not WindowManagerLayoutParams attributes)
@@ -657,7 +701,7 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 		};
 	}
 
-	bool TryGetSlotInScope(AView view, out ParticipantSlot slot)
+	bool TryGetSlotInScope(AView view, IView? virtualView, out ParticipantSlot slot)
 	{
 		if (view.Width <= 0 || view.Height <= 0 || HostView.Width <= 0 || HostView.Height <= 0)
 		{
@@ -681,7 +725,20 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			return false;
 		}
 
-		slot = new ParticipantSlot(left, top, left + view.Width, top + view.Height);
+		var right = left + view.Width;
+		var bottom = top + view.Height;
+
+		if (virtualView is not null)
+		{
+			var margin = virtualView.Margin;
+			var context = view.Context;
+			left = Math.Max(0, left - (int)context.ToPixels(margin.Left));
+			top = Math.Max(0, top - (int)context.ToPixels(margin.Top));
+			right += (int)context.ToPixels(margin.Right);
+			bottom += (int)context.ToPixels(margin.Bottom);
+		}
+
+		slot = new ParticipantSlot(left, top, right, bottom);
 		return true;
 	}
 
@@ -839,6 +896,8 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 
 		public SourceEdgeMask Claims { get; protected set; }
 
+		protected MauiWindowInsetsScope? Scope => _scope;
+
 		public abstract void Apply(in WindowInsetsSnapshot snapshot);
 
 		public abstract void Reset();
@@ -901,9 +960,9 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			var hasContent = HasMeasuredContent(_appBar);
 			_appBarApplicator.Apply(
 				_appBar,
-				hasContent ? Math.Max(snapshot.SystemBars.Left, snapshot.DisplayCutout.Left) : 0,
+				hasContent ? snapshot.SystemBars.Left : 0,
 				hasContent ? Math.Max(snapshot.SystemBars.Top, snapshot.DisplayCutout.Top) : 0,
-				hasContent ? Math.Max(snapshot.SystemBars.Right, snapshot.DisplayCutout.Right) : 0,
+				hasContent ? snapshot.SystemBars.Right : 0,
 				0);
 
 			var toolbar = FindDescendant<MaterialToolbar>(_appBar);
@@ -937,12 +996,18 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 
 		public override void Apply(in WindowInsetsSnapshot snapshot)
 		{
+			var bottom = Math.Max(snapshot.SystemBars.Bottom, snapshot.DisplayCutout.Bottom);
+			if (Scope is not null)
+			{
+				bottom = Scope.ResolveBottomOverlap(RootView, bottom);
+			}
+
 			_applicator.Apply(
 				RootView,
 				Math.Max(snapshot.SystemBars.Left, snapshot.DisplayCutout.Left),
 				Math.Max(snapshot.SystemBars.Top, snapshot.DisplayCutout.Top),
 				Math.Max(snapshot.SystemBars.Right, snapshot.DisplayCutout.Right),
-				Math.Max(snapshot.SystemBars.Bottom, snapshot.DisplayCutout.Bottom));
+				bottom);
 
 			Claims = SourceEdgeMask.None;
 			for (int edge = 0; edge < 4; edge++)
