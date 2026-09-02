@@ -6,7 +6,27 @@
 
 _MAGENTA="\033[0;95m"
 _YELLOW="\033[0;33m"
+_RED="\033[0;31m"
 _RESET="\033[0m"
+
+# Resolve the path to this script. Only bash and zsh expose a reliable way to do
+# this when the script is sourced, so bail out on anything else instead of
+# guessing (and silently pointing DOTNET_ROOT at the wrong directory).
+if [ -n "${BASH_SOURCE:-}" ] ; then
+    _SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION:-}" ] ; then
+    _SCRIPT_SOURCE="${(%):-%x}"
+else
+    echo "This script must be sourced from bash or zsh: 'source activate.sh'."
+    return 1 2>/dev/null || exit 1
+fi
+
+# Make sure the script is being sourced rather than executed; otherwise the
+# environment changes below are discarded when the child process exits.
+if [ -n "${BASH_SOURCE:-}" ] && [ "${BASH_SOURCE[0]}" = "${0}" ] ; then
+    echo -e "${_RED}This script must be sourced. Run it by invoking 'source activate.sh'.${_RESET}"
+    exit 1
+fi
 
 deactivate () {
     # reset old environment variables
@@ -29,6 +49,7 @@ deactivate () {
 
     unset DOTNET_ROOT
     if [ ! "${1:-}" = "init" ] ; then
+        unset _SCRIPT_SOURCE
         # Remove the deactivate function
         unset -f deactivate
     fi
@@ -37,7 +58,7 @@ deactivate () {
 # Cleanup the environment
 deactivate init
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$( dirname "$_SCRIPT_SOURCE" )" && pwd )"
 _OLD_PATH="$PATH"
 # Tell dotnet where to find itself
 export DOTNET_ROOT="$DIR/.dotnet"
@@ -46,8 +67,8 @@ export PATH="$DOTNET_ROOT:$PATH"
 
 # Set the shell prompt
 if [ -z "${DISABLE_CUSTOM_PROMPT:-}" ] ; then
-    _OLD_PS1="$PS1"
-    export PS1="(maui) $PS1"
+    _OLD_PS1="${PS1:-}"
+    export PS1="(maui) ${PS1:-}"
 fi
 
 # This should detect bash and zsh, which have a hash command that must
@@ -62,5 +83,7 @@ echo -e "${_MAGENTA}Enabled the .NET environment for MAUI. Execute 'deactivate' 
 if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
     echo -e "${_YELLOW}.NET has not been installed yet. Run './build.sh -Target dotnet' to install it.${_RESET}"
 else
-    $DOTNET_ROOT/dotnet --version | xargs echo "dotnet = $DOTNET_ROOT/dotnet -"
+    echo "dotnet = $DOTNET_ROOT/dotnet - $("$DOTNET_ROOT/dotnet" --version)"
 fi
+
+unset DIR _MAGENTA _YELLOW _RED _RESET
