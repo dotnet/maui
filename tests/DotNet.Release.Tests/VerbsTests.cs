@@ -222,17 +222,21 @@ public class VerbsTests : IDisposable
     [InlineData("sub/package.nupkg")]
     [InlineData("/rooted.nupkg")]
     [InlineData("")]
-    public void A_deletion_target_must_be_one_file_name(string value)
+    public void A_package_set_artifact_name_must_be_one_path_component(string value)
     {
-        Assert.False(ReleaseArtifact.IsSinglePathComponent(value));
+        var set = TestData.Set() with { ArtifactName = value };
+
+        Assert.Throws<DotNetReleaseException>(() => set.GetDirectory(_workspace.Out));
     }
 
     [Theory]
     [InlineData("SkiaSharp.3.119.0.nupkg")]
     [InlineData("release-manifest.json")]
-    public void A_single_path_component_is_accepted(string value)
+    public void A_single_path_component_is_a_valid_package_set_artifact_name(string value)
     {
-        Assert.True(ReleaseArtifact.IsSinglePathComponent(value));
+        var set = TestData.Set() with { ArtifactName = value };
+
+        Assert.Equal(Path.Combine(_workspace.Out, value), set.GetDirectory(_workspace.Out));
     }
 
     private async Task<ReleaseManifest> StagedManifestAsync(params (string Id, string Version)[] packages)

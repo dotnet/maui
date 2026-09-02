@@ -49,7 +49,8 @@ internal static class VerifyCommand
             var manifestFile = parse.GetValue(manifest)!;
             using var lookup = new NuGetClient(parse.GetValue(feed));
 
-            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(manifestFile.FullName), TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
+            return ExecuteAsync(
+                outputWriter, lookup, File.ReadAllText(manifestFile.FullName), TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
                 () => DateTimeOffset.UtcNow, Task.Delay, parse.GetValue(set), parse.GetValue(expectedHash)!, cancellationToken);
         });
@@ -57,7 +58,8 @@ internal static class VerifyCommand
         return command;
     }
 
-    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetClient lookup, string manifestJson, TimeSpan maxDuration,
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter, INuGetClient lookup, string manifestJson, TimeSpan maxDuration,
         TimeSpan pollInterval, Func<DateTimeOffset> clock, Func<TimeSpan, CancellationToken, Task> delay, string? setName,
         string expectedManifestHash,
         CancellationToken cancellationToken)
@@ -107,7 +109,7 @@ internal static class VerifyCommand
         ];
     }
 
-    internal static string DescribeMissing(IReadOnlyList<ReleasePackage> missing) => "The following packages are not available from NuGet.org: " + string.Join(
-            ", ", missing
-                .Select(package => $"{package.Id} {package.Version}").Order(StringComparer.Ordinal));
+    internal static string DescribeMissing(IReadOnlyList<ReleasePackage> missing) =>
+        "The following packages are not available from NuGet.org: " +
+        string.Join(", ", missing.Select(package => $"{package.Id} {package.Version}").Order(StringComparer.Ordinal));
 }

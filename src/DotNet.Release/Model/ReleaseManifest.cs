@@ -8,6 +8,8 @@ namespace DotNet.Release;
 /// <summary>The immutable contract artifact serialized as <c>release-manifest.json</c>.</summary>
 internal sealed record ReleaseManifest
 {
+    public const string FileName = "release-manifest.json";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,

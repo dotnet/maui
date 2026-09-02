@@ -2,7 +2,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class StagedSetIntegrityTests
+public class ReleasePackageSetIntegrityTests
 {
     private static readonly ReleasePackage Skia = TestData.Drop("SkiaSharp", "3.119.0");
     private static readonly ReleasePackage HarfBuzz = TestData.Drop("HarfBuzzSharp", "8.3.1");
@@ -14,7 +14,7 @@ public class StagedSetIntegrityTests
     [Fact]
     public void Freshly_staged_directory_matching_the_plan_is_valid()
     {
-        StagedSetIntegrity.ValidateStaged(Set, Files(Skia, HarfBuzz));
+        Set.ValidateFiles(Files(Skia, HarfBuzz));
     }
 
     [Fact]
@@ -22,7 +22,7 @@ public class StagedSetIntegrityTests
     {
         var files = Files(Skia, HarfBuzz);
         files["release-manifest.json"] = TestData.Hash("manifest");
-        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
+        Assert.Throws<DotNetReleaseException>(() => Set.ValidateFiles(files));
     }
 
     [Fact]
@@ -31,14 +31,14 @@ public class StagedSetIntegrityTests
         var files = Files(Skia, HarfBuzz);
         files["Sneaky.1.0.0.nupkg"] = TestData.Hash("sneaky");
 
-        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
+        Assert.Throws<DotNetReleaseException>(() => Set.ValidateFiles(files));
     }
 
     [Fact]
     public void Missing_pending_file_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(
-            () => StagedSetIntegrity.ValidateStaged(Set, Files(Skia)));
+            () => Set.ValidateFiles(Files(Skia)));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class StagedSetIntegrityTests
         var files = Files(Skia, HarfBuzz);
         files[Skia.FileName] = TestData.Hash("tampered");
 
-        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
+        Assert.Throws<DotNetReleaseException>(() => Set.ValidateFiles(files));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class StagedSetIntegrityTests
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
             [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        StagedSetIntegrity.ValidateFiltered(Set, Files(HarfBuzz), report);
+        Set.ValidateFiles(Files(HarfBuzz), report);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class StagedSetIntegrityTests
             [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.Throws<DotNetReleaseException>(
-            () => StagedSetIntegrity.ValidateFiltered(Set, Files(Skia, HarfBuzz), report));
+            () => Set.ValidateFiles(Files(Skia, HarfBuzz), report));
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class StagedSetIntegrityTests
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
             [HarfBuzz.FileName], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        StagedSetIntegrity.ValidateFiltered(Set, new Dictionary<string, string>(), report);
+        Set.ValidateFiles(new Dictionary<string, string>(), report);
         Assert.Equal(0, report.PendingCount);
     }
 
@@ -90,6 +90,7 @@ public class StagedSetIntegrityTests
         File.WriteAllText(Path.Combine(directory, "diagnostics", "release.log"), "companion");
         File.WriteAllText(Path.Combine(directory, "nupkg-lookalike.nupkg.txt"), "companion");
 
-        Assert.Equal([Skia.FileName], ReleaseArtifact.ReadPackageHashes(directory).Keys);
+        var package = Skia with { Sha256 = TestData.Hash("package") };
+        TestData.Set(package).ValidateDirectory(directory);
     }
 }

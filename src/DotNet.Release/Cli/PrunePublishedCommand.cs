@@ -82,7 +82,10 @@ internal static class PrunePublishedCommand
 
             var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
             var report = PrunePublishedPlanner.Plan(set, manifest.AllPackages, recoveryPatterns, availability);
-            var invalidFileName = report.FilesToRemove.FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
+            var invalidFileName = report.FilesToRemove.FirstOrDefault(fileName =>
+                string.IsNullOrWhiteSpace(fileName) ||
+                Path.IsPathRooted(fileName) ||
+                Path.GetFileName(fileName) != fileName);
             if (invalidFileName is not null)
             {
                 throw new DotNetReleaseException($"Package file name '{invalidFileName}' must not contain a directory.");
@@ -99,7 +102,7 @@ internal static class PrunePublishedCommand
                 outputWriter.WriteLine($"Withheld {fileName}.");
             }
 
-            StagedSetIntegrity.ValidateFiltered(set, ReleaseArtifact.ReadPackageHashes(setDirectory), report);
+            set.ValidateDirectory(setDirectory, report);
 
             ReleaseOutput.WritePruneReport(outputWriter, set, report);
         }

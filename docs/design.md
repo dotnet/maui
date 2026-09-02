@@ -184,10 +184,9 @@ src/DotNet.Release/
   Program.cs                           CLI entry point
   DotNetReleaseException.cs            expected CLI failure
   Cli/                                 command handlers and human-readable output
-  Artifact/                            filesystem layout and package hashing
   Policy/                              pure release decisions
   Model/                               transport and value models
-  Adapters/                            read-only interfaces and implementations
+  Clients/                             read-only Maestro and NuGet clients
 
 tests/DotNet.Release.Tests/            unit, contract, architecture, and pipeline tests
 config/repositories.json               release policy

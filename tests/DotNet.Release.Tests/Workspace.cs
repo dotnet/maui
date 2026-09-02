@@ -103,7 +103,7 @@ internal sealed class Workspace : IDisposable
 
     public string DropPackages => Path.Combine(Drop, "shipping", "packages");
 
-    public string ManifestPath => Path.Combine(Out, ReleaseArtifact.ManifestFileName);
+    public string ManifestPath => Path.Combine(Out, ReleaseManifest.FileName);
 
     public static readonly DateTimeOffset Now = new(2026, 8, 27, 18, 0, 0, TimeSpan.Zero);
 

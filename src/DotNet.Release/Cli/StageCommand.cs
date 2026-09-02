@@ -141,10 +141,10 @@ internal static class StageCommand
 
         foreach (var set in manifest.Sets)
         {
-            StagedSetIntegrity.ValidateStaged(set, ReleaseArtifact.ReadPackageHashes(Path.Combine(outputDirectory, set.ArtifactName)));
+            set.ValidateDirectory(Path.Combine(outputDirectory, set.ArtifactName));
         }
 
-        var manifestPath = Path.Combine(outputDirectory, ReleaseArtifact.ManifestFileName);
+        var manifestPath = Path.Combine(outputDirectory, ReleaseManifest.FileName);
         await File.WriteAllTextAsync(manifestPath, manifestJson, cancellationToken).ConfigureAwait(false);
 
         ReleaseOutput.WriteReleaseManifest(outputWriter, manifest);

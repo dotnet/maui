@@ -135,10 +135,9 @@ src/DotNet.Release/             the tool - one project
   Program.cs                    the CLI entry point
   DotNetReleaseException.cs     expected CLI failure
   Cli/                          command handlers and human-readable output
-  Artifact/                     filesystem layout and package hashing
   Policy/                       pure decisions over plain data - no I/O
   Model/                        the data those decisions operate on
-  Adapters/                     read-only BAR/NuGet interfaces and implementations
+  Clients/                      read-only Maestro and NuGet clients
 tests/DotNet.Release.Tests/     one test project, zero network
 config/repositories.json        declarative release policy
 docs/design.md                  full rationale
