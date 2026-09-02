@@ -3969,6 +3969,7 @@ namespace Microsoft.Maui.Controls
     {
         public object Background { get; set; }
         public static BindableProperty BackgroundProperty { get; }
+        public bool IsVisible { get; set; }
     }
     public class View : VisualElement { }
     public class Page : VisualElement
@@ -3980,7 +3981,6 @@ namespace Microsoft.Maui.Controls
     {
         public static BindableProperty BackgroundColorProperty { get; }
         public static BindableProperty TextColorProperty { get; }
-        public bool IsVisible { get; set; }
         public int MaxLines { get; set; }
         public string Text { get; set; }
     }
@@ -3990,8 +3990,12 @@ namespace Microsoft.Maui.Controls
         public NavigationPage(Page root) { }
         public INavigation Navigation { get; }
         public Page CurrentPage { get; }
+        public System.Threading.Tasks.Task PushAsync(Page page) =>
+            System.Threading.Tasks.Task.CompletedTask;
+        public System.Threading.Tasks.Task<Page> PopAsync() =>
+            System.Threading.Tasks.Task.FromResult<Page>(null);
         public static void SetTitleView(params object[] arguments) { }
-        public static void SetBackButtonTitle(params object[] arguments) { }
+        public static void SetBackButtonTitle(BindableObject page, string value) { }
         public static void SetHasBackButton(params object[] arguments) { }
         public static void SetHasNavigationBar(params object[] arguments) { }
         public static void SetIconColor(params object[] arguments) { }
@@ -4080,7 +4084,7 @@ namespace Microsoft.Maui.Controls
     }
     public class Layout : View { }
     public class Toolbar : View { }
-    public class Window : Element
+    public class Window : Element, global::Microsoft.Maui.IElement
     {
         public Window(Page page) { }
     }
@@ -4092,6 +4096,8 @@ namespace Microsoft.Maui
     {
         public CategoryAttribute(string value) { }
     }
+
+    public interface IElement { }
 
     public interface IElementHandler
     {
@@ -4122,7 +4128,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-    public class NavigationRenderer { }
+    public class NavigationRenderer : UIKit.UINavigationController,
+        global::Microsoft.Maui.IElementHandler
+    {
+        public object PlatformView { get; }
+        public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
 }
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -4149,14 +4160,20 @@ namespace Microsoft.Maui.Hosting
 
 namespace Microsoft.Maui.DeviceTests
 {
+    public static class AssertionExtensions
+    {
+        public static UIKit.UIView GetBackButton(
+            this UIKit.UINavigationBar navigationBar) => default;
+    }
+
     public class ControlsHandlerTestBase
     {
         protected void EnsureHandlerCreated(
             System.Action<global::Microsoft.Maui.Hosting.HandlerBuilder> configure) { }
-        protected System.Threading.Tasks.Task CreateHandlerAndAddToWindow<T>(
-            global::Microsoft.Maui.Controls.Window window,
-            System.Func<object, System.Threading.Tasks.Task> action)
-            where T : class, global::Microsoft.Maui.IElementHandler
+        protected System.Threading.Tasks.Task CreateHandlerAndAddToWindow<THandler>(
+            global::Microsoft.Maui.IElement view,
+            System.Func<THandler, System.Threading.Tasks.Task> action)
+            where THandler : class, global::Microsoft.Maui.IElementHandler
             => System.Threading.Tasks.Task.CompletedTask;
     }
 }
@@ -4221,10 +4238,8 @@ namespace UIKit
 
 namespace Microsoft.Maui.Platform
 {
-    public static class NavigationViewExtensions
+    public static class ViewExtensions
     {
-        public static UIKit.UIButton GetBackButton(
-            this UIKit.UINavigationBar navigationBar) => default;
         public static T FindDescendantView<T>(this UIKit.UIView view)
             where T : UIKit.UIView => default;
         public static T FindDescendantView<T>(
@@ -4839,6 +4854,164 @@ function Confirm-ReplicationTrustedOracleExpression {
     }
 }
 
+function Get-ReplicationTrustedControlsHandlerTestBaseSource {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$GeneratedSourcePath
+    )
+
+    $root = (Resolve-Path -LiteralPath $RepositoryRoot -ErrorAction Stop).Path
+    $relativePath =
+        'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.cs'
+    $expectedBaselineBlob = '9fb3f59d29cf6429a5a3b8b392e02f9804fd6b02'
+    $expectedNormalizedSha256 =
+        '1310c10a6b56651cc999f3cd63d3be0a52bfb00c837e85d3ce1165385e694a14'
+    $trustedPath = [IO.Path]::GetFullPath((Join-Path $root $relativePath))
+    $rootPrefix = $root.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar) +
+        [IO.Path]::DirectorySeparatorChar
+    if (-not $trustedPath.StartsWith(
+            $rootPrefix,
+            [StringComparison]::Ordinal)) {
+        throw 'The trusted ControlsHandlerTestBase path escapes the repository root.'
+    }
+
+    $generatedPath = if ([IO.Path]::IsPathRooted($GeneratedSourcePath)) {
+        [IO.Path]::GetFullPath($GeneratedSourcePath)
+    } else {
+        [IO.Path]::GetFullPath((Join-Path $root $GeneratedSourcePath))
+    }
+    if ($generatedPath -ceq $trustedPath) {
+        throw (
+            'The generated test path may not replace the immutable trusted ' +
+            'ControlsHandlerTestBase source.')
+    }
+
+    $trustedItem = Get-Item -LiteralPath $trustedPath -Force -ErrorAction Stop
+    if (-not $trustedItem.PSIsContainer -and
+        ($trustedItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) {
+        $baselineBlob = @(& git -C $root rev-parse --verify "HEAD:$relativePath" 2>&1)
+        $baselineExitCode = $LASTEXITCODE
+    } else {
+        throw (
+            'The trusted ControlsHandlerTestBase helper must be one regular, ' +
+            'non-linked repository file.')
+    }
+    if ($baselineExitCode -ne 0 -or
+        $baselineBlob.Count -ne 1 -or
+        [string]$baselineBlob[0] -cne $expectedBaselineBlob) {
+        throw (
+            'The trusted ControlsHandlerTestBase helper does not match the ' +
+            'reviewed immutable repository blob pinned by this semantic gate.')
+    }
+
+    $bytes = [IO.File]::ReadAllBytes($trustedPath)
+    $normalizedBytes = [Collections.Generic.List[byte]]::new($bytes.Length)
+    for ($index = 0; $index -lt $bytes.Length; $index++) {
+        if ($bytes[$index] -eq 13 -and
+            ($index + 1) -lt $bytes.Length -and
+            $bytes[$index + 1] -eq 10) {
+            continue
+        }
+        $normalizedBytes.Add($bytes[$index])
+    }
+    $hashAlgorithm = [Security.Cryptography.SHA256]::Create()
+    try {
+        $actualNormalizedSha256 = [Convert]::ToHexString(
+            $hashAlgorithm.ComputeHash(
+                [byte[]]$normalizedBytes.ToArray())).ToLowerInvariant()
+    }
+    finally {
+        $hashAlgorithm.Dispose()
+    }
+    if ($actualNormalizedSha256 -cne $expectedNormalizedSha256) {
+        throw (
+            "Trusted ControlsHandlerTestBase helper '$relativePath' differs " +
+            'from the reviewed immutable source pinned by this semantic gate.')
+    }
+
+    $stream = [IO.MemoryStream]::new($bytes, $false)
+    $reader = [IO.StreamReader]::new(
+        $stream,
+        [Text.UTF8Encoding]::new($false, $true),
+        $true)
+    try {
+        $source = $reader.ReadToEnd()
+    }
+    finally {
+        $reader.Dispose()
+        $stream.Dispose()
+    }
+
+    $helperTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        $source,
+        [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default.WithPreprocessorSymbols(
+            [string[]]@('MACCATALYST')),
+        $trustedPath)
+    $helperDefinitions = @($helperTree.GetRoot().DescendantNodes() |
+        Where-Object {
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax] -or
+                $_.Identifier.ValueText -cne 'CreateHandlerAndAddToWindow' -or
+                $_.ReturnType.ToString() -cne 'Task' -or
+                $null -eq $_.TypeParameterList -or
+                $_.TypeParameterList.Parameters.Count -ne 1 -or
+                $_.TypeParameterList.Parameters[0].Identifier.ValueText -cne
+                    'THandler' -or
+                $_.ParameterList.Parameters.Count -ne 2 -or
+                $_.ParameterList.Parameters[0].Identifier.ValueText -cne 'view' -or
+                $_.ParameterList.Parameters[0].Type.ToString() -cne 'IElement' -or
+                $_.ParameterList.Parameters[1].Identifier.ValueText -cne 'action' -or
+                $_.ParameterList.Parameters[1].Type.ToString() -cne
+                    'Func<THandler, Task>' -or
+                $_.ConstraintClauses.Count -ne 1 -or
+                $_.ConstraintClauses[0].Name.Identifier.ValueText -cne 'THandler' -or
+                $_.ConstraintClauses[0].Constraints.Count -ne 2 -or
+                $_.ConstraintClauses[0].Constraints[0].ToString() -cne 'class' -or
+                $_.ConstraintClauses[0].Constraints[1].ToString() -cne
+                    'IElementHandler' -or
+                @($_.Modifiers | Where-Object {
+                        $_.RawKind -eq
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::ProtectedKeyword
+                    }).Count -ne 1 -or
+                @($_.Modifiers | Where-Object {
+                        $_.RawKind -eq
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StaticKeyword
+                    }).Count -ne 0) {
+                return $false
+            }
+            $containingType = @($_.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax]
+                } | Select-Object -First 1)
+            $containingNamespace = @($_.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BaseNamespaceDeclarationSyntax]
+                } | Select-Object -First 1)
+            return (
+                $containingType.Count -eq 1 -and
+                $containingType[0].Identifier.ValueText -ceq
+                    'ControlsHandlerTestBase' -and
+                $containingNamespace.Count -eq 1 -and
+                $containingNamespace[0].Name.ToString() -ceq
+                    'Microsoft.Maui.DeviceTests')
+        })
+    if ($helperDefinitions.Count -ne 1) {
+        throw (
+            'The immutable ControlsHandlerTestBase source no longer contains ' +
+            'exactly one reviewed CreateHandlerAndAddToWindow<THandler>(' +
+            'IElement, Func<THandler, Task>) definition.')
+    }
+
+    return [pscustomobject]@{
+        Path = $trustedPath
+        DefinitionLine = $helperTree.GetLineSpan(
+            $helperDefinitions[0].Span).StartLinePosition.Line + 1
+    }
+}
+
 function Get-ReplicationTrustedAssertEventuallySource {
     [CmdletBinding()]
     param(
@@ -5026,6 +5199,39 @@ function New-ReplicationControlVariant {
     $semanticTrees.Add($tree)
     $trustedAssertEventuallyTree = $null
     $trustedAssertEventuallySource = $null
+    $trustedControlsHandlerTestBaseSource = $null
+    $mentionsCreateHandlerAndAddToWindow = @(
+        $root.DescendantNodes() |
+        Where-Object {
+            if ($_ -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                return $false
+            }
+            $invokedName = if ($_.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+                $_.Expression.Identifier.ValueText
+            } elseif ($_.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                $_.Expression.Identifier.ValueText
+            } elseif ($_.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $_.Expression.Name.Identifier.ValueText
+            } else {
+                ''
+            }
+            return $invokedName -ceq 'CreateHandlerAndAddToWindow'
+        }).Count -ne 0
+    if ($mentionsCreateHandlerAndAddToWindow) {
+        if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+            throw (
+                'CreateHandlerAndAddToWindow requires an immutable repository ' +
+                'baseline, but RepositoryRoot was not provided.')
+        }
+        $trustedControlsHandlerTestBaseSource =
+            Get-ReplicationTrustedControlsHandlerTestBaseSource `
+                -RepositoryRoot $RepositoryRoot `
+                -GeneratedSourcePath $SourcePath
+    }
     $mentionsAssertEventually = @(
         $root.DescendantNodes() |
         Where-Object {
@@ -5619,6 +5825,1319 @@ function New-ReplicationControlVariant {
     }
     $acceptedAssertEventuallyInvocations =
         [Collections.Generic.HashSet[int]]::new()
+    $acceptedTrustedWindowHelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $acceptedTrustedBackTitleSetups =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedWindowCallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedWindowCallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
+    $trustedWindowCallbackAttachedSymbols =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedWindowCallbackNavigationRoots =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedWindowCallbackBackTitleRoots =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedWindowCallbackFinalPages =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $getInvocationName = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation
+        )
+        if ($Invocation.Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+            return $Invocation.Expression.Identifier.ValueText
+        }
+        if ($Invocation.Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $Invocation.Expression.Identifier.ValueText
+        }
+        if ($Invocation.Expression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            return $Invocation.Expression.Name.Identifier.ValueText
+        }
+        return ''
+    }
+    $isExactTrustedWindowHelperMethod = {
+        param(
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$Method
+        )
+        if ($null -eq $Method -or
+            $Method.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+            $Method.IsStatic -or
+            $Method.DeclaredAccessibility -ne
+                [Microsoft.CodeAnalysis.Accessibility]::Protected -or
+            $Method.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $Method.ContainingType.ToString() -cne
+                'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase' -or
+            $Method.Name -cne 'CreateHandlerAndAddToWindow' -or
+            $Method.Arity -ne 1 -or
+            $Method.TypeArguments.Length -ne 1 -or
+            @($Method.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+
+        $definition = $Method.OriginalDefinition
+        if ($definition.Parameters.Length -ne 2 -or
+            $definition.TypeParameters.Length -ne 1 -or
+            $definition.ReturnType -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $definition.ReturnType.Name -cne 'Task' -or
+            $definition.ReturnType.ContainingNamespace.ToString() -cne
+                'System.Threading.Tasks' -or
+            $definition.Parameters[0].Name -cne 'view' -or
+            $definition.Parameters[0].RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            $definition.Parameters[0].Type.ToString() -cne
+                'Microsoft.Maui.IElement' -or
+            $definition.Parameters[0].Type.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $definition.Parameters[1].Name -cne 'action' -or
+            $definition.Parameters[1].RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            $definition.Parameters[1].Type -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+            return $false
+        }
+
+        $callbackType = $definition.Parameters[1].Type
+        $typeParameter = $definition.TypeParameters[0]
+        if ($callbackType.Name -cne 'Func' -or
+            $callbackType.ContainingNamespace.ToString() -cne 'System' -or
+            $callbackType.TypeArguments.Length -ne 2 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $callbackType.TypeArguments[0],
+                $typeParameter) -or
+            $callbackType.TypeArguments[1] -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $callbackType.TypeArguments[1].Name -cne 'Task' -or
+            $callbackType.TypeArguments[1].ContainingNamespace.ToString() -cne
+                'System.Threading.Tasks' -or
+            -not $typeParameter.HasReferenceTypeConstraint -or
+            $typeParameter.HasValueTypeConstraint -or
+            $typeParameter.HasConstructorConstraint -or
+            $typeParameter.ConstraintTypes.Length -ne 1 -or
+            $typeParameter.ConstraintTypes[0].ToString() -cne
+                'Microsoft.Maui.IElementHandler' -or
+            $typeParameter.ConstraintTypes[0].ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract') {
+            return $false
+        }
+
+        $handlerType = $Method.TypeArguments[0]
+        if ($handlerType -isnot [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $handlerType.ToString() -cne
+                'Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub' -or
+            $handlerType.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($handlerType.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+        return @($handlerType.AllInterfaces | Where-Object {
+                $_.ToString() -ceq 'Microsoft.Maui.IElementHandler' -and
+                $_.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                @($_.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0
+            }).Count -eq 1
+    }
+    $throwTrustedWindowHelperViolation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node,
+            [AllowNull()]$HelperSymbol,
+            [Parameter(Mandatory = $true)][string]$Reason,
+            [switch]$Callback
+        )
+        $diagnosticTree = $Node.GetLocation().SourceTree
+        $diagnosticPath = if ($diagnosticTree -and
+            -not [string]::IsNullOrWhiteSpace($diagnosticTree.FilePath)) {
+            $diagnosticTree.FilePath
+        } else {
+            $SourcePath
+        }
+        $diagnosticLine = if ($diagnosticTree) {
+            $diagnosticTree.GetLineSpan($Node.Span).StartLinePosition.Line + 1
+        } else {
+            0
+        }
+        $diagnosticSyntax = $Node.ToString()
+        if ($diagnosticSyntax.Length -gt 200) {
+            $diagnosticSyntax =
+                $diagnosticSyntax.Substring(0, 200) + '...'
+        }
+        $symbolText = if ($null -ne $HelperSymbol) {
+            [string]$HelperSymbol
+        } else {
+            '<unresolved>'
+        }
+        $context = if ($Callback) {
+            'callback'
+        } else {
+            'invocation'
+        }
+        throw (
+            "Trusted helper symbol '$symbolText' rejected $context syntax " +
+            "'$diagnosticSyntax' in '$diagnosticPath' line ${diagnosticLine}: " +
+            $Reason)
+    }
+    $validateTrustedWindowHelperInvocation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]$AwaitExpression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        if ($null -eq $trustedControlsHandlerTestBaseSource) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the exact immutable ControlsHandlerTestBase source location ' +
+                    'and hash were not established.')
+        }
+        $statement = $AwaitExpression.Parent
+        if ($statement -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+            $statement.Expression -ne $AwaitExpression -or
+            $statement.Parent -ne $testMethod[0].Body -or
+            $statement.SpanStart -le $gate.Span.End) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the immutable helper must be directly awaited as one ' +
+                    'top-level selected-method statement after the reported-trigger gate.')
+        }
+        if ($Invocation.ArgumentList.Arguments.Count -ne 2 -or
+            @($Invocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or
+                    $null -ne $_.NameColon
+                }).Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the reviewed overload requires exactly the positional ' +
+                    'IElement and Func<WindowHandlerStub, Task> arguments.')
+        }
+
+        $windowCreation = $Invocation.ArgumentList.Arguments[0].Expression
+        if ($windowCreation -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $windowCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the first argument must be a direct new external ' +
+                    'Microsoft.Maui.Controls.Window(navigationPage) expression.')
+        }
+        $windowConstructor =
+            $semanticModel.GetSymbolInfo($windowCreation).Symbol
+        if ($windowConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $windowConstructor.MethodKind -ne
+                [Microsoft.CodeAnalysis.MethodKind]::Constructor -or
+            $windowConstructor.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $windowConstructor.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.Window' -or
+            @($windowConstructor.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0 -or
+            $windowConstructor.Parameters.Length -ne 1 -or
+            $windowConstructor.Parameters[0].Type.ToString() -cne
+                'Microsoft.Maui.Controls.Page' -or
+            $windowCreation.ArgumentList.Arguments.Count -ne 1 -or
+            $null -ne $windowCreation.Initializer) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $windowCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Window constructor must resolve to the exact external ' +
+                    'one-Page MAUI contract.')
+        }
+        $windowContent =
+            $windowCreation.ArgumentList.Arguments[0].Expression
+        $windowContentSymbol =
+            $semanticModel.GetSymbolInfo($windowContent).Symbol
+        $windowContentType = $semanticModel.GetTypeInfo($windowContent).Type
+        $windowContentDeclarations = @(if ($windowContentSymbol -is
+                [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            $windowContentSymbol.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $null -ne $_.Initializer
+                }
+        })
+        if ($windowContent -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $windowContentSymbol -isnot
+                [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $windowContentSymbol.RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            $windowContentType.ToString() -cne
+                'Microsoft.Maui.Controls.NavigationPage' -or
+            $windowContentType.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($windowContentType.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0 -or
+            $windowContentDeclarations.Count -ne 1 -or
+            $windowContentDeclarations[0].SpanStart -ge $gate.SpanStart) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $windowContent `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'new Window must receive one stable pre-gate selected-test ' +
+                    'NavigationPage local with external MAUI type.')
+        }
+        try {
+            Confirm-ReplicationTrustedOracleExpression `
+                -Expression $windowContent `
+                -SemanticModel $semanticModel `
+                -Root $root
+        }
+        catch {
+            & $throwTrustedWindowHelperViolation `
+                -Node $windowContent `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Window content is not safe closed test-local dataflow: ' +
+                    $_.Exception.Message)
+        }
+
+        $navigationCreation =
+            $windowContentDeclarations[0].Initializer.Value
+        $navigationRootExpression = if ($navigationCreation -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
+            $navigationCreation.ArgumentList.Arguments.Count -eq 1) {
+            $navigationCreation.ArgumentList.Arguments[0].Expression
+        } else {
+            $null
+        }
+        $navigationRootSymbol = if ($null -ne $navigationRootExpression) {
+            $semanticModel.GetSymbolInfo($navigationRootExpression).Symbol
+        } else {
+            $null
+        }
+        $backTitleSetups = @(
+            $testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                    return $false
+                }
+                $method = $semanticModel.GetSymbolInfo($_).Symbol
+                return (
+                    $method -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                    $method.ContainingAssembly.Name -ceq
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    $method.ContainingType.ToString() -ceq
+                        'Microsoft.Maui.Controls.NavigationPage' -and
+                    $method.Name -ceq 'SetBackButtonTitle')
+            })
+        $backTitleSetup = if ($backTitleSetups.Count -eq 1) {
+            $backTitleSetups[0]
+        } else {
+            $null
+        }
+        $backTitleTarget = if ($null -ne $backTitleSetup -and
+            $backTitleSetup.ArgumentList.Arguments.Count -eq 2) {
+            $backTitleSetup.ArgumentList.Arguments[0].Expression
+        } else {
+            $null
+        }
+        $backTitleValue = if ($null -ne $backTitleSetup -and
+            $backTitleSetup.ArgumentList.Arguments.Count -eq 2) {
+            $backTitleSetup.ArgumentList.Arguments[1].Expression
+        } else {
+            $null
+        }
+        $backTitleTargetSymbol = if ($null -ne $backTitleTarget) {
+            $semanticModel.GetSymbolInfo($backTitleTarget).Symbol
+        } else {
+            $null
+        }
+        if ($backTitleSetups.Count -ne 1 -or
+            $backTitleSetup.Parent -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+            $backTitleSetup.Parent.Parent -ne $testMethod[0].Body -or
+            $backTitleSetup.SpanStart -ge $gate.SpanStart -or
+            $backTitleTarget -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $backTitleValue -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $backTitleValue.Token.ValueText -cne 'Main' -or
+            $navigationRootExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $backTitleTargetSymbol,
+                $navigationRootSymbol)) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $(if ($null -ne $backTitleSetup) {
+                    $backTitleSetup
+                } else {
+                    $Invocation
+                }) `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the immutable Window helper scenario requires exactly one ' +
+                    'top-level pre-gate SetBackButtonTitle(rootPage, "Main") on ' +
+                    'the exact root Page used to construct its NavigationPage.')
+        }
+        [void]$acceptedTrustedBackTitleSetups.Add(
+            $backTitleSetup.SpanStart)
+        $handlerWrites = @(
+            $testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                    return $false
+                }
+                $property = $semanticModel.GetSymbolInfo($_.Left).Symbol
+                return (
+                    $property -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                    $property.ContainingAssembly.Name -ceq
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    $property.ContainingType.ToString() -ceq
+                        'Microsoft.Maui.Controls.Element' -and
+                    $property.Name -ceq 'Handler')
+            })
+        if ($handlerWrites.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $handlerWrites[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the immutable Window NavigationPage.Handler must be created ' +
+                    'only by the trusted helper and may not be assigned by generated code.')
+        }
+
+        $callback =
+            $Invocation.ArgumentList.Arguments[1].Expression
+        $callbackParameters = @(if ($callback -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedLambdaExpressionSyntax]) {
+            $callback.ParameterList.Parameters
+        } elseif ($callback -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax]) {
+            $callback.Parameter
+        } else {
+            @()
+        })
+        $callbackType = $semanticModel.GetTypeInfo($callback).ConvertedType
+        $callbackParameterSymbol = if ($callbackParameters.Count -eq 1) {
+            $semanticModel.GetDeclaredSymbol($callbackParameters[0])
+        } else {
+            $null
+        }
+        if ($callbackParameters.Count -ne 1 -or
+            $callback.AsyncKeyword.RawKind -eq 0 -or
+            $callback.Body -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+            $callbackType -isnot [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $callbackType.Name -cne 'Func' -or
+            $callbackType.ContainingNamespace.ToString() -cne 'System' -or
+            $callbackType.TypeArguments.Length -ne 2 -or
+            $callbackType.TypeArguments[0].ToString() -cne
+                'Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub' -or
+            $callbackType.TypeArguments[0].ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $callbackType.TypeArguments[1].ToString() -cne
+                'System.Threading.Tasks.Task' -or
+            $callbackParameterSymbol -isnot
+                [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $callbackParameterSymbol.RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $callbackParameterSymbol.Type,
+                $HelperMethod.TypeArguments[0])) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callback `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the callback must be one async block lambda whose sole ' +
+                    'parameter is exactly the trusted WindowHandlerStub/IElementHandler type.')
+        }
+
+        $callbackBody = $callback.Body
+        $deferredEventSubscriptions = @(
+            $testMethod[0].Body.DescendantNodes() |
+            Where-Object {
+                if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                    return $false
+                }
+                return $semanticModel.GetSymbolInfo($_.Left).Symbol -is
+                    [Microsoft.CodeAnalysis.IEventSymbol]
+            })
+        if ($deferredEventSubscriptions.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $deferredEventSubscriptions[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated tests using the immutable Window helper may not ' +
+                    'register deferred event callbacks that can mutate state ' +
+                    'during the trusted lifecycle transition.') `
+                -Callback
+        }
+        $callbackWrites = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $_.RawKind -in @(
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)
+            })
+        if ($callbackWrites.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackWrites[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may not assign framework/local ' +
+                    'state or increment values.') `
+                -Callback
+        }
+        $callbackEscapes = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax]
+            })
+        if ($callbackEscapes.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackEscapes[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may not return, yield, jump, ' +
+                    'throw, or declare deferred local functions.') `
+                -Callback
+        }
+        $callbackLoops = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.WhileStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.DoStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ForStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachStatementSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachVariableStatementSyntax]
+            })
+        if ($callbackLoops.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackLoops[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may not loop around lifecycle ' +
+                    'operations or the mandatory oracle.') `
+                -Callback
+        }
+        $callbackByRefArguments = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                $_.RefKindKeyword.RawKind -ne 0
+            })
+        if ($callbackByRefArguments.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackByRefArguments[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may not pass ref, out, or in arguments.') `
+                -Callback
+        }
+        $callbackCreations = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitObjectCreationExpressionSyntax]
+            })
+        if ($callbackCreations.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackCreations[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may observe existing test-local ' +
+                    'objects but may not construct replacement state.') `
+                -Callback
+        }
+        $callbackIndexers = @($callbackBody.DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]
+            })
+        if ($callbackIndexers.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callbackIndexers[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'generated helper callbacks may not execute indexers.') `
+                -Callback
+        }
+
+        foreach ($nestedLambda in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousFunctionExpressionSyntax]
+                })) {
+            $argument = $nestedLambda.Parent
+            $nestedInvocation = @($nestedLambda.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+            $nestedMethod = if ($nestedInvocation.Count -eq 1) {
+                $semanticModel.GetSymbolInfo($nestedInvocation[0]).Symbol
+            } else {
+                $null
+            }
+            $isEventuallyPredicate =
+                $argument -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                $argument.Expression -eq $nestedLambda -and
+                $nestedInvocation.Count -eq 1 -and
+                $nestedInvocation[0].ArgumentList.Arguments.Count -ge 1 -and
+                $nestedInvocation[0].ArgumentList.Arguments[0] -eq $argument -and
+                $null -ne $trustedAssertEventuallyMethod -and
+                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $nestedMethod,
+                    $trustedAssertEventuallyMethod)
+            if (-not $isEventuallyPredicate) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $nestedLambda `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'only the exact immutable AssertEventually pure predicate ' +
+                        'lambda may be nested in this callback.') `
+                    -Callback
+            }
+        }
+
+        foreach ($callbackExpression in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+                })) {
+            if ($semanticModel.GetConversion($callbackExpression).IsUserDefined) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $callbackExpression `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'generated helper callbacks may not execute user-defined ' +
+                        'conversions.') `
+                    -Callback
+            }
+        }
+        foreach ($operatorExpression in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -or
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -or
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.PostfixUnaryExpressionSyntax]
+                })) {
+            $operatorMethod =
+                $semanticModel.GetSymbolInfo($operatorExpression).Symbol
+            if ($null -ne $operatorMethod -and
+                ($operatorMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                    $operatorMethod.MethodKind -ne
+                        [Microsoft.CodeAnalysis.MethodKind]::BuiltinOperator)) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $operatorExpression `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'generated helper callbacks may use only built-in operators.') `
+                    -Callback
+            }
+        }
+
+        $trustedCallbackAssertionTypes = @(
+            'Xunit.Assert',
+            'NUnit.Framework.Assert',
+            'NUnit.Framework.ClassicAssert',
+            'Microsoft.VisualStudio.TestTools.UnitTesting.Assert',
+            'Microsoft.VisualStudio.TestTools.UnitTesting.CollectionAssert',
+            'Microsoft.VisualStudio.TestTools.UnitTesting.StringAssert')
+        $callbackLifecycleCalls =
+            [Collections.Generic.List[
+                Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]]::new()
+        $callbackEventuallyCalls =
+            [Collections.Generic.List[
+                Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]]::new()
+        $callbackStateRealizingCalls =
+            [Collections.Generic.List[
+                Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]]::new()
+        $isExactTrustedCallbackOperation = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Call,
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.IMethodSymbol]$Method,
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.IMethodSymbol]$Definition,
+                [Parameter(Mandatory = $true)][string]$Key
+            )
+
+            $parameterTypes = @($Definition.Parameters | ForEach-Object {
+                    $_.Type.ToString()
+                })
+            switch -CaseSensitive ($Key) {
+                'Microsoft.Maui.Controls.NavigationPage.PushAsync' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 1 -and
+                        $parameterTypes.Count -eq 1 -and
+                        $parameterTypes[0] -ceq
+                            'Microsoft.Maui.Controls.Page' -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'System.Threading.Tasks.Task')
+                }
+                'Microsoft.Maui.Controls.NavigationPage.PopAsync' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 0 -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page>')
+                }
+                'Microsoft.Maui.Controls.INavigation.PushAsync' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 1 -and
+                        $parameterTypes.Count -eq 1 -and
+                        $parameterTypes[0] -ceq
+                            'Microsoft.Maui.Controls.Page' -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'System.Threading.Tasks.Task')
+                }
+                'Microsoft.Maui.Controls.INavigation.PopAsync' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 0 -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'System.Threading.Tasks.Task<Microsoft.Maui.Controls.Page>')
+                }
+                'Microsoft.Maui.Platform.ElementExtensions.ToPlatform' {
+                    return (
+                        $Definition.IsStatic -and
+                        $Definition.IsExtensionMethod -and
+                        $null -ne $Method.ReducedFrom -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 1 -and
+                        $parameterTypes[0] -ceq
+                            'Microsoft.Maui.Controls.Element' -and
+                        $Definition.ReturnType.ToString() -ceq 'UIKit.UIView')
+                }
+                'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView' {
+                    $descendantType = if ($Method.TypeArguments.Length -eq 1) {
+                        $Method.TypeArguments[0]
+                    } else {
+                        $null
+                    }
+                    $isTrustedViewType =
+                        $descendantType -is
+                            [Microsoft.CodeAnalysis.INamedTypeSymbol] -and
+                        $descendantType.ContainingAssembly.Name -ceq
+                            'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                        @($descendantType.Locations | Where-Object {
+                                $_.IsInSource
+                            }).Count -eq 0
+                    $viewBase = $descendantType
+                    $inheritsView = $false
+                    while ($isTrustedViewType -and $null -ne $viewBase) {
+                        if ($viewBase.ToString() -ceq 'UIKit.UIView') {
+                            $inheritsView = $true
+                            break
+                        }
+                        $viewBase = $viewBase.BaseType
+                    }
+                    return (
+                        $Definition.IsStatic -and
+                        $Definition.IsExtensionMethod -and
+                        $null -ne $Method.ReducedFrom -and
+                        $Definition.Arity -eq 1 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 1 -and
+                        $parameterTypes[0] -ceq 'UIKit.UIView' -and
+                        $isTrustedViewType -and
+                        $inheritsView)
+                }
+                'Microsoft.Maui.DeviceTests.AssertionExtensions.GetBackButton' {
+                    return (
+                        $Definition.IsStatic -and
+                        $Definition.IsExtensionMethod -and
+                        $null -ne $Method.ReducedFrom -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 1 -and
+                        $parameterTypes[0] -ceq
+                            'UIKit.UINavigationBar' -and
+                        $Definition.ReturnType.ToString() -ceq 'UIKit.UIView')
+                }
+                'CoreGraphics.CGRect.Intersect' {
+                    return (
+                        $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 2 -and
+                        $parameterTypes.Count -eq 2 -and
+                        $parameterTypes[0] -ceq 'CoreGraphics.CGRect' -and
+                        $parameterTypes[1] -ceq 'CoreGraphics.CGRect' -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'CoreGraphics.CGRect')
+                }
+                'UIKit.UIView.ConvertRectToView' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 2 -and
+                        $parameterTypes.Count -eq 2 -and
+                        $parameterTypes[0] -ceq 'CoreGraphics.CGRect' -and
+                        $parameterTypes[1] -ceq 'UIKit.UIView' -and
+                        $Definition.ReturnType.ToString() -ceq
+                            'CoreGraphics.CGRect')
+                }
+                'UIKit.UINavigationBar.LayoutIfNeeded' {
+                    return (
+                        -not $Definition.IsStatic -and
+                        $Definition.Arity -eq 0 -and
+                        $Call.ArgumentList.Arguments.Count -eq 0 -and
+                        $parameterTypes.Count -eq 0 -and
+                        $Definition.ReturnsVoid)
+                }
+                default {
+                    return $false
+                }
+            }
+        }
+        foreach ($callbackCall in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                })) {
+            $callbackMethod =
+                $semanticModel.GetSymbolInfo($callbackCall).Symbol
+            if ($null -ne $trustedAssertEventuallyMethod -and
+                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $callbackMethod,
+                    $trustedAssertEventuallyMethod)) {
+                $eventuallyAwait = $callbackCall.Parent
+                $eventuallyStatement = if ($eventuallyAwait -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+                    $eventuallyAwait.Parent
+                } else {
+                    $null
+                }
+                if ($eventuallyAwait -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax] -or
+                    $eventuallyAwait.Expression -ne $callbackCall -or
+                    $eventuallyStatement -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+                    $eventuallyStatement.Parent -ne $callbackBody) {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $callbackCall `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            'the immutable AssertEventually predicate must be ' +
+                            'directly awaited as a top-level callback statement.') `
+                        -Callback
+                }
+                $callbackEventuallyCalls.Add($callbackCall)
+                continue
+            }
+            $callbackDefinition = if ($callbackMethod -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $null -ne $callbackMethod.ReducedFrom) {
+                $callbackMethod.ReducedFrom
+            } else {
+                $callbackMethod
+            }
+            $callbackCallKey = if ($callbackDefinition -is
+                [Microsoft.CodeAnalysis.IMethodSymbol]) {
+                "$($callbackDefinition.ContainingType).$($callbackDefinition.Name)"
+            } else {
+                ''
+            }
+            $isTrustedAssertionCall =
+                $callbackMethod -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $callbackMethod.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                $callbackMethod.ContainingType.ToString() -cin
+                    $trustedCallbackAssertionTypes -and
+                @($callbackMethod.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0
+            $isTrustedLifecycleOrObservationCall =
+                $callbackDefinition -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $callbackDefinition.MethodKind -eq
+                    [Microsoft.CodeAnalysis.MethodKind]::Ordinary -and
+                $callbackDefinition.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                @($callbackDefinition.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0 -and
+                (& $isExactTrustedCallbackOperation `
+                    -Call $callbackCall `
+                    -Method $callbackMethod `
+                    -Definition $callbackDefinition `
+                    -Key $callbackCallKey)
+            if ($callbackCallKey -cin @(
+                    'Microsoft.Maui.Controls.NavigationPage.PushAsync',
+                    'Microsoft.Maui.Controls.NavigationPage.PopAsync',
+                    'Microsoft.Maui.Controls.INavigation.PushAsync',
+                    'Microsoft.Maui.Controls.INavigation.PopAsync')) {
+                $lifecycleAwait = $callbackCall.Parent
+                $lifecycleStatement = if ($lifecycleAwait -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+                    $lifecycleAwait.Parent
+                } else {
+                    $null
+                }
+                if ($lifecycleAwait -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax] -or
+                    $lifecycleAwait.Expression -ne $callbackCall -or
+                    $lifecycleStatement -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+                    $lifecycleStatement.Parent -ne $callbackBody) {
+                    $isTrustedLifecycleOrObservationCall = $false
+                }
+            }
+            if (@($callbackCall.ArgumentList.Arguments | Where-Object {
+                        $null -ne $_.NameColon
+                    }).Count -ne 0) {
+                $isTrustedLifecycleOrObservationCall = $false
+            }
+            if (-not $isTrustedAssertionCall -and
+                -not $isTrustedLifecycleOrObservationCall) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $callbackCall `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "call '$callbackMethod' is not an exact trusted " +
+                        'lifecycle, observation, assertion, or AssertEventually operation.') `
+                    -Callback
+            }
+            if ($isTrustedLifecycleOrObservationCall -and
+                $callbackCallKey -cin @(
+                    'Microsoft.Maui.Controls.NavigationPage.PushAsync',
+                    'Microsoft.Maui.Controls.NavigationPage.PopAsync',
+                    'Microsoft.Maui.Controls.INavigation.PushAsync',
+                    'Microsoft.Maui.Controls.INavigation.PopAsync')) {
+                $callbackLifecycleCalls.Add($callbackCall)
+            }
+            if ($isTrustedLifecycleOrObservationCall -and
+                $callbackCallKey -ceq
+                    'UIKit.UINavigationBar.LayoutIfNeeded') {
+                $callbackStateRealizingCalls.Add($callbackCall)
+            }
+        }
+
+        if ($callbackLifecycleCalls.Count -eq 0 -or
+            $callbackEventuallyCalls.Count -eq 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callback `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the trusted post-gate callback requires a directly awaited ' +
+                    'lifecycle transition followed by the exact immutable ' +
+                    'AssertEventually observation before its oracle.') `
+                -Callback
+        }
+        foreach ($eventuallyCall in $callbackEventuallyCalls) {
+            if (@($callbackLifecycleCalls | Where-Object {
+                        $_.SpanStart -lt $eventuallyCall.SpanStart
+                    }).Count -eq 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $eventuallyCall `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'the immutable AssertEventually observation must follow ' +
+                        'a directly awaited lifecycle transition in the callback.') `
+                    -Callback
+            }
+        }
+        $lastLifecycleCall = @($callbackLifecycleCalls |
+            Sort-Object SpanStart |
+            Select-Object -Last 1)
+        $lastEventuallyCall = @($callbackEventuallyCalls |
+            Sort-Object SpanStart |
+            Select-Object -Last 1)
+        if ($lastLifecycleCall.Count -ne 1 -or
+            $lastEventuallyCall.Count -ne 1 -or
+            $lastEventuallyCall[0].SpanStart -le
+                    $lastLifecycleCall[0].SpanStart) {
+            & $throwTrustedWindowHelperViolation `
+                    -Node $lastLifecycleCall[0] `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'the final directly awaited lifecycle transition must be ' +
+                        'followed by a directly awaited immutable AssertEventually ' +
+                        'observation before the callback oracle.') `
+                    -Callback
+        }
+
+        foreach ($callbackMember in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]
+                })) {
+            $callbackMemberSymbol =
+                $semanticModel.GetSymbolInfo($callbackMember).Symbol
+            if ($callbackMemberSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $callbackMemberSymbol -is [Microsoft.CodeAnalysis.IFieldSymbol]) {
+                if ($callbackMemberSymbol -is
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                    ($callbackMemberSymbol.IsIndexer -or
+                        $null -eq $callbackMemberSymbol.GetMethod)) {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $callbackMember `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            'callback property observations require one direct, ' +
+                            'non-indexed external getter.') `
+                        -Callback
+                }
+                if ($callbackMemberSymbol.ContainingAssembly.Name -cne
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                    @($callbackMemberSymbol.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -ne 0) {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $callbackMember `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            "member '$callbackMemberSymbol' is generated, ambient, " +
+                            'or outside the trusted MAUI/UIKit observation contract.') `
+                        -Callback
+                }
+            }
+        }
+
+        $attachedSymbols =
+            [System.Collections.Generic.List[
+                Microsoft.CodeAnalysis.ISymbol]]::new()
+        $attachedSymbols.Add($windowContentSymbol)
+        $activePushedPages =
+            [System.Collections.Generic.List[
+                Microsoft.CodeAnalysis.ISymbol]]::new()
+        foreach ($lifecycleCall in $callbackLifecycleCalls) {
+            $lifecycleMethod =
+                $semanticModel.GetSymbolInfo($lifecycleCall).Symbol
+            $lifecycleDefinition = if ($lifecycleMethod -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $null -ne $lifecycleMethod.ReducedFrom) {
+                $lifecycleMethod.ReducedFrom
+            } else {
+                $lifecycleMethod
+            }
+            $lifecycleKey =
+                "$($lifecycleDefinition.ContainingType).$($lifecycleDefinition.Name)"
+            $lifecycleMember = $lifecycleCall.Expression
+            $navigationReceiver = if ($lifecycleKey.StartsWith(
+                    'Microsoft.Maui.Controls.NavigationPage.',
+                    [StringComparison]::Ordinal) -and
+                $lifecycleMember -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $lifecycleMember.Expression
+            } elseif ($lifecycleKey.StartsWith(
+                    'Microsoft.Maui.Controls.INavigation.',
+                    [StringComparison]::Ordinal) -and
+                $lifecycleMember -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $lifecycleMember.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $lifecycleMember.Expression.Name.Identifier.ValueText -ceq
+                    'Navigation') {
+                $navigationProperty = $semanticModel.GetSymbolInfo(
+                    $lifecycleMember.Expression).Symbol
+                if ($navigationProperty -isnot
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $navigationProperty.ContainingAssembly.Name -cne
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                    $navigationProperty.ContainingType.ToString() -cne
+                        'Microsoft.Maui.Controls.NavigationPage') {
+                    $null
+                } else {
+                    $lifecycleMember.Expression.Expression
+                }
+            } else {
+                $null
+            }
+            $navigationReceiverSymbol = if ($null -ne $navigationReceiver) {
+                $semanticModel.GetSymbolInfo($navigationReceiver).Symbol
+            } else {
+                $null
+            }
+            if ($navigationReceiver -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $navigationReceiverSymbol,
+                    $windowContentSymbol)) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $lifecycleCall `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'callback lifecycle transitions must execute directly on ' +
+                        'the exact NavigationPage attached by the immutable Window helper.') `
+                    -Callback
+            }
+
+            if ($lifecycleKey.EndsWith(
+                    '.PushAsync',
+                    [StringComparison]::Ordinal)) {
+                $pushedSymbol = $semanticModel.GetSymbolInfo(
+                    $lifecycleCall.ArgumentList.Arguments[0].Expression).Symbol
+                if ($pushedSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                    $pushedSymbol -isnot
+                        [Microsoft.CodeAnalysis.IParameterSymbol]) {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $lifecycleCall.ArgumentList.Arguments[0].Expression `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            'PushAsync must receive one directly traceable ' +
+                            'selected-test Page local.') `
+                        -Callback
+                }
+                $activePushedPages.Add($pushedSymbol)
+            } else {
+                if ($activePushedPages.Count -eq 0) {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $lifecycleCall `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            'PopAsync may remove only a Page pushed earlier in ' +
+                            'the same trusted callback.') `
+                        -Callback
+                }
+                $activePushedPages.RemoveAt($activePushedPages.Count - 1)
+            }
+        }
+        if ($activePushedPages.Count -ne 0) {
+            $attachedSymbols.Add(
+                $activePushedPages[$activePushedPages.Count - 1])
+        }
+        $finalPredicate =
+            $lastEventuallyCall[0].ArgumentList.Arguments[0].Expression
+        $finalPredicateBody = if ($finalPredicate -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedLambdaExpressionSyntax] -and
+            $finalPredicate.Body -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]) {
+            $finalPredicate.Body
+        } else {
+            $null
+        }
+        $currentPageExpression = $null
+        $expectedPageExpression = $null
+        if ($finalPredicateBody -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+            $finalPredicateBody.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression) {
+            if ($finalPredicateBody.Left -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $finalPredicateBody.Left.Name.Identifier.ValueText -ceq
+                        'CurrentPage') {
+                $currentPageExpression = $finalPredicateBody.Left
+                $expectedPageExpression = $finalPredicateBody.Right
+            } elseif ($finalPredicateBody.Right -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $finalPredicateBody.Right.Name.Identifier.ValueText -ceq
+                    'CurrentPage') {
+                $currentPageExpression = $finalPredicateBody.Right
+                $expectedPageExpression = $finalPredicateBody.Left
+            }
+        }
+        $currentPageProperty = if ($null -ne $currentPageExpression) {
+            $semanticModel.GetSymbolInfo($currentPageExpression).Symbol
+        } else {
+            $null
+        }
+        $currentNavigationExpression = if ($null -ne $currentPageExpression) {
+            $currentPageExpression.Expression
+        } else {
+            $null
+        }
+        $currentNavigationSymbol = if ($null -ne
+            $currentNavigationExpression) {
+            $semanticModel.GetSymbolInfo($currentNavigationExpression).Symbol
+        } else {
+            $null
+        }
+        $expectedPageSymbol = if ($null -ne $expectedPageExpression) {
+            $semanticModel.GetSymbolInfo($expectedPageExpression).Symbol
+        } else {
+            $null
+        }
+        $activeTopPage = if ($activePushedPages.Count -ne 0) {
+            $activePushedPages[$activePushedPages.Count - 1]
+        } else {
+            $null
+        }
+        if ($currentPageProperty -isnot
+                [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $currentPageProperty.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $currentPageProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.NavigationPage' -or
+            $currentPageProperty.Name -cne 'CurrentPage' -or
+            $currentNavigationExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $currentNavigationSymbol,
+                $windowContentSymbol) -or
+            $expectedPageExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $null -eq $activeTopPage -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $expectedPageSymbol,
+                $activeTopPage)) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $finalPredicate `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the final AssertEventually predicate must directly prove ' +
+                    'that the immutable Window NavigationPage.CurrentPage is ' +
+                    'the final Page still pushed by this callback.') `
+                -Callback
+        }
+        foreach ($platformCall in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                        return $false
+                    }
+                    $method = $semanticModel.GetSymbolInfo($_).Symbol
+                    $definition = if ($method -is
+                            [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                        $null -ne $method.ReducedFrom) {
+                        $method.ReducedFrom
+                    } else {
+                        $method
+                    }
+                    return (
+                        $definition -is
+                            [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                        "$($definition.ContainingType).$($definition.Name)" -ceq
+                            'Microsoft.Maui.Platform.ElementExtensions.ToPlatform')
+                })) {
+            $platformReceiver = if ($platformCall.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $platformCall.Expression.Expression
+            } else {
+                $null
+            }
+            $platformReceiverSymbol = if ($null -ne $platformReceiver) {
+                $semanticModel.GetSymbolInfo($platformReceiver).Symbol
+            } else {
+                $null
+            }
+            if ($platformReceiver -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                $platformCall.SpanStart -le
+                    $lastEventuallyCall[0].SpanStart -or
+                @($attachedSymbols | Where-Object {
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $_,
+                            $platformReceiverSymbol)
+                    }).Count -eq 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $platformCall `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'ToPlatform() may observe only after the final wait and ' +
+                        'on the directly attached ' +
+                        'Window NavigationPage or a Page directly pushed before ' +
+                        'the callback wait; gate-dependent handlers are not trusted.') `
+                    -Callback
+            }
+        }
+        foreach ($platformViewRead in @($callbackBody.DescendantNodes() |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $_.Name.Identifier.ValueText -ceq 'PlatformView' -and
+                    $_.Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $_.Expression.Name.Identifier.ValueText -ceq 'Handler'
+                })) {
+            $handlerReceiver = $platformViewRead.Expression.Expression
+            $handlerReceiverSymbol =
+                $semanticModel.GetSymbolInfo($handlerReceiver).Symbol
+            if ($handlerReceiver -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                $platformViewRead.SpanStart -le
+                    $lastEventuallyCall[0].SpanStart -or
+                @($attachedSymbols | Where-Object {
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $_,
+                            $handlerReceiverSymbol)
+                    }).Count -eq 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $platformViewRead `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'Handler.PlatformView may observe only after the final ' +
+                        'wait and on a Page whose ' +
+                        'attachment is independent of the trigger gate.') `
+                    -Callback
+            }
+        }
+        $trustedWindowCallbackAttachedSymbols[$callbackBody.SpanStart] =
+            @($attachedSymbols)
+        $trustedWindowCallbackNavigationRoots[$callbackBody.SpanStart] =
+            $windowContentSymbol
+        $trustedWindowCallbackBackTitleRoots[$callbackBody.SpanStart] =
+            $backTitleTargetSymbol
+        $trustedWindowCallbackFinalPages[$callbackBody.SpanStart] =
+            $activeTopPage
+
+        $oracleMinimum = $callbackBody.SpanStart
+        foreach ($sequencedCall in @($callbackLifecycleCalls) +
+            @($callbackEventuallyCalls) +
+            @($callbackStateRealizingCalls)) {
+            if ($sequencedCall.Span.End -gt $oracleMinimum) {
+                $oracleMinimum = $sequencedCall.Span.End
+            }
+        }
+        $trustedWindowCallbackOracleMinimums[$callbackBody.SpanStart] =
+            $oracleMinimum
+        [void]$trustedWindowCallbackBodies.Add($callbackBody.SpanStart)
+        [void]$acceptedTrustedWindowHelperInvocations.Add($Invocation.SpanStart)
+    }
     foreach ($awaitExpression in @($testMethod[0].Body.DescendantNodes() |
             Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]
@@ -5640,6 +7159,39 @@ function New-ReplicationControlVariant {
             $awaitedInfo.Symbol
         } else {
             $null
+        }
+        $invokedName = if ($awaitedExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            & $getInvocationName -Invocation $awaitedExpression
+        } else {
+            ''
+        }
+        $isTrustedWindowHelper =
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            (& $isExactTrustedWindowHelperMethod -Method $awaitedMethod)
+        if ($isTrustedWindowHelper) {
+            & $validateTrustedWindowHelperInvocation `
+                -AwaitExpression $awaitExpression `
+                -Invocation $awaitedExpression `
+                -HelperMethod $awaitedMethod
+            continue
+        }
+        if ($invokedName -ceq 'CreateHandlerAndAddToWindow') {
+            $helperCandidate = if ($null -ne $awaitedMethod) {
+                $awaitedMethod
+            } elseif ($null -ne $awaitedInfo) {
+                @($awaitedInfo.CandidateSymbols | Select-Object -First 1)
+            } else {
+                $null
+            }
+            & $throwTrustedWindowHelperViolation `
+                -Node $awaitedExpression `
+                -HelperSymbol $helperCandidate `
+                -Reason (
+                    'only the exact protected generic one-arity immutable ' +
+                    'ControlsHandlerTestBase.CreateHandlerAndAddToWindow<THandler>(' +
+                    'IElement, Func<THandler, Task>) definition constructed with ' +
+                    'the external WindowHandlerStub is trusted.')
         }
         $isTrustedAssertEventually =
             $awaitedMethod -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
@@ -5771,6 +7323,54 @@ function New-ReplicationControlVariant {
         return (
             $null -ne $invocation -and
             $acceptedAssertEventuallyInvocations.Contains(
+                $invocation.SpanStart))
+    }
+    $isAcceptedTrustedWindowHelperNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        $invocation = if ($Node -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $Node
+        } else {
+            @($Node.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+        }
+        return (
+            $null -ne $invocation -and
+            $acceptedTrustedWindowHelperInvocations.Contains(
+                $invocation.SpanStart))
+    }
+    $isTrustedWindowCallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedWindowCallbackBodies.Contains($_.SpanStart)
+            }).Count -ne 0
+    }
+    $isAcceptedTrustedBackTitleSetupNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        $invocation = if ($Node -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $Node
+        } else {
+            @($Node.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+        }
+        return (
+            $null -ne $invocation -and
+            $acceptedTrustedBackTitleSetups.Contains(
                 $invocation.SpanStart))
     }
     $aliasOrDeconstruction = @($testMethod[0].Body.DescendantNodes() |
@@ -6008,6 +7608,15 @@ function New-ReplicationControlVariant {
         if (& $isAcceptedAssertEventuallyNode -Node $operationNode) {
             continue
         }
+        if (& $isAcceptedTrustedWindowHelperNode -Node $operationNode) {
+            continue
+        }
+        if (& $isTrustedWindowCallbackNode -Node $operationNode) {
+            continue
+        }
+        if (& $isAcceptedTrustedBackTitleSetupNode -Node $operationNode) {
+            continue
+        }
         $operationText = $operationNode.ToString()
         $operationInfo = $semanticModel.GetSymbolInfo($operationNode)
         $precheckedSymbol = if ($operationInfo.Symbol) {
@@ -6064,10 +7673,42 @@ function New-ReplicationControlVariant {
                     [Microsoft.CodeAnalysis.MethodKind]::Constructor) {
                 $operationKey =
                     "$($operationSymbol.ContainingType).$($operationSymbol.Name)"
+                $operationDefinition = if ($null -ne
+                    $operationSymbol.ReducedFrom) {
+                    $operationSymbol.ReducedFrom
+                } else {
+                    $operationSymbol
+                }
+                $operationDefinitionKey =
+                    "$($operationDefinition.ContainingType).$($operationDefinition.Name)"
+                if ($operationNode -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                    $operationDefinitionKey -ceq
+                        'Microsoft.Maui.Platform.ElementExtensions.ToPlatform') {
+                    $isExactPureToPlatform =
+                        $null -ne $operationSymbol.ReducedFrom -and
+                        $operationNode.ArgumentList.Arguments.Count -eq 0 -and
+                        $operationDefinition.IsStatic -and
+                        $operationDefinition.IsExtensionMethod -and
+                        $operationDefinition.Arity -eq 0 -and
+                        $operationDefinition.Parameters.Length -eq 1 -and
+                        $operationDefinition.Parameters[0].Type.ToString() -ceq
+                            'Microsoft.Maui.Controls.Element' -and
+                        $operationDefinition.ReturnType.ToString() -ceq
+                            'UIKit.UIView'
+                    if (-not $isExactPureToPlatform) {
+                        $line = $tree.GetLineSpan(
+                            $operationNode.Span).StartLinePosition.Line + 1
+                        throw (
+                            "Trusted framework call '$operationSymbol' is not " +
+                            'the exact side-effect-free ToPlatform() observation ' +
+                            "overload for '$SourcePath' line $line.")
+                    }
+                }
                 if ($operationNode -is
                         [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
                     $operationKey -ceq
-                        'Microsoft.Maui.Platform.NavigationViewExtensions.FindDescendantView' -and
+                        'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView' -and
                     @($operationNode.ArgumentList.DescendantNodes() |
                         Where-Object {
                             $_ -is
@@ -6084,13 +7725,12 @@ function New-ReplicationControlVariant {
                 }
                 $allowedContractCall = $operationKey -cin @(
                     'CoreGraphics.CGRect.Intersect',
-                    'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.CreateHandlerAndAddToWindow',
                     'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.EnsureHandlerCreated',
                     'Microsoft.Maui.Hosting.HandlerBuilder.ConfigureMauiHandlers',
                     'Microsoft.Maui.Hosting.HandlerCollection.AddHandler',
                     'Microsoft.Maui.Platform.ElementExtensions.ToPlatform',
-                    'Microsoft.Maui.Platform.NavigationViewExtensions.FindDescendantView',
-                    'Microsoft.Maui.Platform.NavigationViewExtensions.GetBackButton',
+                    'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView',
+                    'Microsoft.Maui.DeviceTests.AssertionExtensions.GetBackButton',
                     'NUnit.Framework.ConstraintExpression.EqualTo',
                     'NUnit.Framework.ConstraintExpression.GreaterThan',
                     'NUnit.Framework.ConstraintExpression.LessThan',
@@ -7615,6 +9255,216 @@ function New-ReplicationControlVariant {
         }
         return $false
     }
+    $isTrustedWindowCallbackNativeOracle = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]$CallbackBody,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$AssertionMethod,
+            [Parameter(Mandatory = $true)][int]$AssertionArgumentCount,
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$ExpectedExpression
+        )
+
+        $Expression = & $unwrapAssertionExpression -Expression $Expression
+        if ($Expression -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            return $false
+        }
+        $nativeProperty = $semanticModel.GetSymbolInfo($Expression).Symbol
+        if ($nativeProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $nativeProperty.IsStatic -or
+            $nativeProperty.IsIndexer -or
+            $nativeProperty.ContainingAssembly.Name -cne
+                $trustedContractAssembly -or
+            @($nativeProperty.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+
+        if ($nativeProperty.ContainingType.ToString() -cne 'UIKit.UILabel' -or
+            $nativeProperty.Name -cne 'Text' -or
+            $AssertionMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $AssertionMethod.Name -cne 'Equal' -or
+            $AssertionArgumentCount -ne 2 -or
+            $ExpectedExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $ExpectedExpression.Token.ValueText -cne 'Main' -or
+            $triggerOperation.Kind -cne 'invocation' -or
+            $triggerOperation.MethodName -cne 'SetTitleView' -or
+            -not $trustedWindowCallbackAttachedSymbols.ContainsKey(
+                $CallbackBody.SpanStart) -or
+            -not $trustedWindowCallbackNavigationRoots.ContainsKey(
+                $CallbackBody.SpanStart) -or
+            -not $trustedWindowCallbackBackTitleRoots.ContainsKey(
+                $CallbackBody.SpanStart) -or
+            -not $trustedWindowCallbackFinalPages.ContainsKey(
+                $CallbackBody.SpanStart) -or
+            -not $trustedWindowCallbackOracleMinimums.ContainsKey(
+                $CallbackBody.SpanStart)) {
+            return $false
+        }
+        $attachedSymbols = @(
+            $trustedWindowCallbackAttachedSymbols[$CallbackBody.SpanStart])
+        if ($null -eq $triggerOperation.AffectedSymbol -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $triggerOperation.AffectedSymbol,
+                $trustedWindowCallbackFinalPages[$CallbackBody.SpanStart]) -or
+            @($attachedSymbols | Where-Object {
+                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $_,
+                        $triggerOperation.AffectedSymbol)
+                }).Count -eq 0) {
+            return $false
+        }
+
+        $getLocalInitializer = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]$Identifier
+            )
+            $local = $semanticModel.GetSymbolInfo($Identifier).Symbol
+            if ($local -isnot [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                return $null
+            }
+            $declarations = @(
+                $local.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $null -ne $_.Initializer -and
+                    $_.SpanStart -gt
+                        $trustedWindowCallbackOracleMinimums[
+                            $CallbackBody.SpanStart] -and
+                    $_.Parent.Parent.Parent -eq $CallbackBody
+                })
+            if ($declarations.Count -ne 1) {
+                return $null
+            }
+            return $declarations[0].Initializer.Value
+        }
+
+        $labelIdentifier = $Expression.Expression
+        if ($labelIdentifier -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $false
+        }
+        $findLabelCall = & $getLocalInitializer -Identifier $labelIdentifier
+        if ($findLabelCall -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            return $false
+        }
+        $findLabelMethod = $semanticModel.GetSymbolInfo($findLabelCall).Symbol
+        $findLabelDefinition = if ($findLabelMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $findLabelMethod.ReducedFrom) {
+            $findLabelMethod.ReducedFrom
+        } else {
+            $findLabelMethod
+        }
+        if ($findLabelDefinition -isnot
+                [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            "$($findLabelDefinition.ContainingType).$($findLabelDefinition.Name)" -cne
+                'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView' -or
+            $findLabelCall.ArgumentList.Arguments.Count -ne 0 -or
+            $findLabelMethod.TypeArguments.Length -ne 1 -or
+            $findLabelMethod.TypeArguments[0].ToString() -cne 'UIKit.UILabel' -or
+            $findLabelCall.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $findLabelCall.Expression.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $false
+        }
+
+        $backButtonCall = & $getLocalInitializer `
+            -Identifier $findLabelCall.Expression.Expression
+        if ($backButtonCall -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            return $false
+        }
+        $backButtonMethod = $semanticModel.GetSymbolInfo($backButtonCall).Symbol
+        $backButtonDefinition = if ($backButtonMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $backButtonMethod.ReducedFrom) {
+            $backButtonMethod.ReducedFrom
+        } else {
+            $backButtonMethod
+        }
+        if ($backButtonDefinition -isnot
+                [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            "$($backButtonDefinition.ContainingType).$($backButtonDefinition.Name)" -cne
+                'Microsoft.Maui.DeviceTests.AssertionExtensions.GetBackButton' -or
+            $backButtonCall.ArgumentList.Arguments.Count -ne 0 -or
+            $backButtonCall.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $backButtonCall.Expression.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $false
+        }
+
+        $navigationBarRead = & $getLocalInitializer `
+            -Identifier $backButtonCall.Expression.Expression
+        if ($navigationBarRead -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $navigationBarRead.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $false
+        }
+        $navigationBarProperty =
+            $semanticModel.GetSymbolInfo($navigationBarRead).Symbol
+        if ($navigationBarProperty -isnot
+                [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $navigationBarProperty.ContainingAssembly.Name -cne
+                $trustedContractAssembly -or
+            $navigationBarProperty.ContainingType.ToString() -cne
+                'UIKit.UINavigationController' -or
+            $navigationBarProperty.Name -cne 'NavigationBar') {
+            return $false
+        }
+
+        $navigationControllerCast = & $getLocalInitializer `
+            -Identifier $navigationBarRead.Expression
+        if ($navigationControllerCast -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax] -or
+            $semanticModel.GetTypeInfo($navigationControllerCast.Type).Type.ToString() -cne
+                'UIKit.UINavigationController') {
+            return $false
+        }
+        $handlerRead = $navigationControllerCast.Expression
+        while ($handlerRead -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+            $handlerRead = $handlerRead.Expression
+        }
+        if ($handlerRead -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $handlerRead.Name.Identifier.ValueText -cne 'Handler' -or
+            $handlerRead.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            return $false
+        }
+        $handlerProperty =
+            $semanticModel.GetSymbolInfo($handlerRead).Symbol
+        $navigationRoot =
+            $semanticModel.GetSymbolInfo(
+                $handlerRead.Expression).Symbol
+        return (
+            $handlerProperty -is
+                [Microsoft.CodeAnalysis.IPropertySymbol] -and
+            $handlerProperty.ContainingAssembly.Name -ceq
+                $trustedContractAssembly -and
+            $handlerProperty.ContainingType.ToString() -ceq
+                'Microsoft.Maui.Controls.Element' -and
+            $handlerProperty.Name -ceq 'Handler' -and
+            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $navigationRoot,
+                $trustedWindowCallbackNavigationRoots[$CallbackBody.SpanStart]))
+    }
     $isExpectedOracleValue = {
         param(
             [Parameter(Mandatory = $true)]
@@ -7743,8 +9593,22 @@ function New-ReplicationControlVariant {
                 'Every assertion must resolve semantically to a trusted external ' +
                 'test framework member.')
         }
-        if ($assertionStatement.Parent -eq $testMethod[0].Body -and
-            $assertionStatement.SpanStart -gt $gate.Span.End) {
+        $isDirectPostGateAssertion =
+            $assertionStatement.Parent -eq $testMethod[0].Body -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedWindowCallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedWindowCallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedWindowCallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedWindowCallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
+        if ($isDirectPostGateAssertion -or
+            $isTrustedWindowCallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -8150,6 +10014,44 @@ function New-ReplicationControlVariant {
                         }
                     }
                 }
+            }
+            if ($isTrustedWindowCallbackAssertion) {
+                if ($null -eq $guaranteedObservationExpression -and
+                    $assertionArguments.Count -ge 2 -and
+                    $assertionSymbol.Name -cin @(
+                        'Equal',
+                        'NotEqual',
+                        'AreEqual',
+                        'AreNotEqual')) {
+                    foreach ($argumentIndex in @(0, 1)) {
+                        $candidateObservation = & $unwrapAssertionExpression `
+                            -Expression $assertionArguments[$argumentIndex].Expression
+                        $candidateProperty =
+                            $semanticModel.GetSymbolInfo(
+                                $candidateObservation).Symbol
+                        if ($candidateProperty -is
+                                [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                            $candidateProperty.ContainingAssembly.Name -ceq
+                                $trustedContractAssembly -and
+                            $candidateProperty.ContainingType.ToString() -ceq
+                                'UIKit.UILabel' -and
+                            $candidateProperty.Name -ceq 'Text') {
+                            $guaranteedObservationExpression =
+                                $assertionArguments[$argumentIndex].Expression
+                            $guaranteedExpectedExpression =
+                                $assertionArguments[1 - $argumentIndex].Expression
+                            break
+                        }
+                    }
+                }
+                $supportedGuaranteedOracle =
+                    $null -ne $guaranteedObservationExpression -and
+                    (& $isTrustedWindowCallbackNativeOracle `
+                        -Expression $guaranteedObservationExpression `
+                        -CallbackBody $assertionStatement.Parent `
+                        -AssertionMethod $assertionSymbol `
+                        -AssertionArgumentCount $assertionArguments.Count `
+                        -ExpectedExpression $guaranteedExpectedExpression)
             }
             if (-not $isTautologicalAssertion -and
                 $supportedGuaranteedOracle -and
