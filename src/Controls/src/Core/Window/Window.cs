@@ -675,7 +675,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page.Handler is Handlers.Compatibility.ShellRenderer shellHandler)
 			{
-				//shellHandler.ReleaseDrawerCallbackBeforePageChange();
+				shellHandler.ReleaseDrawerCallbackBeforePageChange();
 				return;
 			}
 
