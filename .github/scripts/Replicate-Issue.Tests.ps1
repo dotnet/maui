@@ -9600,6 +9600,55 @@ public class ControlTests
             find = 'var applyReportedTrigger = true;'
             replace = 'var applyReportedTrigger = false;'
         }
+        $script:TrustedWindowHelperBase = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.DeviceTests;
+using Microsoft.Maui.Platform;
+using Xunit;
+
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();
+        global::Microsoft.Maui.Controls.NavigationPage.SetBackButtonTitle(
+            rootPage,
+            "Main");
+        var titleView = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "Custom title"
+        };
+        var destination = new global::Microsoft.Maui.Controls.ContentPage();
+        var navigationPage =
+            new global::Microsoft.Maui.Controls.NavigationPage(rootPage);
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(
+                destination,
+                titleView);
+        }
+
+        await CreateHandlerAndAddToWindow<
+            global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+            new global::Microsoft.Maui.Controls.Window(navigationPage),
+            async _ =>
+        {
+            await navigationPage.PushAsync(destination);
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+            var navigationController =
+                (UIKit.UINavigationController)navigationPage.Handler;
+            var navigationBar = navigationController.NavigationBar;
+            UIKit.UIView backButton = navigationBar.GetBackButton();
+            var nativeTitle =
+                backButton.FindDescendantView<UIKit.UILabel>();
+            Assert.Equal("Main", nativeTitle.Text);
+        });
+    }
+}
+'@
     }
 
     AfterAll {
@@ -9662,9 +9711,14 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         });
 
         var page = new global::Microsoft.Maui.Controls.ContentPage();
-        var window = new global::Microsoft.Maui.Controls.Window(page);
+        global::Microsoft.Maui.Controls.NavigationPage.SetBackButtonTitle(
+            page,
+            "Main");
+        var navigationPage =
+            new global::Microsoft.Maui.Controls.NavigationPage(page);
+        var callbackDestination =
+            new global::Microsoft.Maui.Controls.ContentPage();
         var titleView = new global::Microsoft.Maui.Controls.Label();
-        var observed = false;
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
         {
@@ -9673,11 +9727,13 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
 
         await CreateHandlerAndAddToWindow<
             global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
-            window,
+            new global::Microsoft.Maui.Controls.Window(navigationPage),
             async _ =>
         {
-            observed = true;
-            Assert.True(observed);
+            await navigationPage.PushAsync(callbackDestination);
+            await global::Microsoft.Maui.DeviceTests.AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == callbackDestination);
+            Assert.True(titleView.IsVisible);
         });
 
         var nativeLabel = titleView.ToPlatform();
@@ -9719,50 +9775,492 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     }
 
     It 'allows the immutable AssertEventually boolean helper for the Catalyst Issue35511 observation' {
-        $baseline = @'
-using System.Threading.Tasks;
-using Microsoft.Maui.DeviceTests;
-using Xunit;
-
-public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
-{
-    [Fact]
-    public async Task Reproduces()
-    {
-        var destination = new global::Microsoft.Maui.Controls.ContentPage();
-        var navigationPage =
-            new global::Microsoft.Maui.Controls.NavigationPage(destination);
-        var window = new global::Microsoft.Maui.Controls.Window(navigationPage);
-        var titleView = new global::Microsoft.Maui.Controls.Label();
-        var destinationLoaded = false;
-        destination.NavigatedTo += (_, _) => destinationLoaded = true;
-        var applyReportedTrigger = true;
-        if (applyReportedTrigger)
-        {
-            titleView.IsVisible = false;
-        }
-
-        await CreateHandlerAndAddToWindow<
-            global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
-            window,
-            async _ =>
-        {
-            await AssertHelpers.AssertEventually(
-                () => navigationPage.CurrentPage == destination && destinationLoaded);
-            Assert.Same(destination, navigationPage.CurrentPage);
-        });
-        Assert.Equal(2, titleView.MaxLines);
-        Assert.True(titleView.IsVisible);
-    }
-}
-'@
-
         {
             New-ReplicationControlVariant `
-                -BaselineSource $baseline `
+                -BaselineSource $script:TrustedWindowHelperBase `
                 -Edits @($script:GateEdit) `
                 -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
         } | Should -Not -Throw
+    }
+
+    It 'rejects a generated shadow of the immutable Window attachment helper' {
+        $shadow = $script:TrustedWindowHelperBase.Replace(
+            @'
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+'@,
+            @'
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    protected Task CreateHandlerAndAddToWindow<THandler>(
+        global::Microsoft.Maui.IElement view,
+        System.Func<THandler, Task> action)
+        where THandler : class, global::Microsoft.Maui.IElementHandler =>
+        Task.CompletedTask;
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $shadow `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*ControlTests.CreateHandlerAndAddToWindow*" +
+            "*rejected invocation syntax*Issue35511.iOS.cs*line*")
+    }
+
+    It 'rejects an alias that resolves the helper base to a generated source copy' {
+        $generatedBase = @'
+namespace Generated
+{
+    public class CopiedControlsHandlerTestBase
+    {
+        protected System.Threading.Tasks.Task
+            CreateHandlerAndAddToWindow<THandler>(
+                global::Microsoft.Maui.IElement view,
+                System.Func<THandler, System.Threading.Tasks.Task> action)
+            where THandler : class, global::Microsoft.Maui.IElementHandler =>
+            System.Threading.Tasks.Task.CompletedTask;
+    }
+}
+'@
+        $aliased = (
+            'using HandlerBaseAlias = Generated.CopiedControlsHandlerTestBase;' +
+            [Environment]::NewLine +
+            $script:TrustedWindowHelperBase).Replace(
+            'public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase',
+            'public class ControlTests : HandlerBaseAlias')
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliased `
+                -Edits @($script:GateEdit) `
+                -AdditionalSources @($generatedBase) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*inherit only trusted external control-contract bases*'
+    }
+
+    It 'rejects wrong Window attachment helper overloads type arguments and constructor inputs' {
+        $wrongOverload = $script:TrustedWindowHelperBase.Replace(
+            '        });',
+            '        }, null, null);')
+        $wrongTypeArgument = $script:TrustedWindowHelperBase.Replace(
+            'global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub',
+            'global::Microsoft.Maui.Controls.Handlers.LabelHandler')
+        $unsafeWindowReplacement = @'
+new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.NavigationPage(rootPage))
+'@
+        $unsafeWindowContent = $script:TrustedWindowHelperBase.Replace(
+            'new global::Microsoft.Maui.Controls.Window(navigationPage)',
+            $unsafeWindowReplacement.Trim())
+
+        foreach ($candidate in @(
+                $wrongOverload,
+                $wrongTypeArgument,
+                $unsafeWindowContent)) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+            } | Should -Throw (
+                "*Trusted helper symbol '*' rejected invocation syntax*" +
+                '*Issue35511.iOS.cs*line*')
+        }
+    }
+
+    It 'rejects malicious writes generated calls ambient state and returns in the trusted helper callback' {
+        $generatedCallSource = @'
+
+public static class GeneratedCallbackHelper
+{
+    public static void Observe(
+        global::Microsoft.Maui.Controls.ContentPage page) { }
+}
+'@
+        $cases = @(
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            destination.IsVisible = true;
+            await navigationPage.PushAsync(destination);
+'@)
+                Syntax = 'destination.IsVisible = true'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            GeneratedCallbackHelper.Observe(destination);
+            await navigationPage.PushAsync(destination);
+'@) + $generatedCallSource
+                Syntax = 'GeneratedCallbackHelper.Observe'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            destination.ToPlatform(_.MauiContext);
+            await navigationPage.PushAsync(destination);
+'@)
+                Syntax = 'destination.ToPlatform(_.MauiContext)'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            Assert.NotNull(navigationPage.PushAsync(destination));
+'@)
+                Syntax = 'navigationPage.PushAsync(destination)'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            while (true)
+            {
+                await navigationPage.PushAsync(destination);
+            }
+'@)
+                Syntax = 'while (true)'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    @'
+            await navigationPage.PushAsync(destination);
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+'@,
+                    @'
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+            await navigationPage.PushAsync(destination);
+'@)
+                Syntax = 'AssertHelpers.AssertEventually'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            var currentTime = System.DateTime.UtcNow;
+            await navigationPage.PushAsync(destination);
+'@)
+                Syntax = 'System.DateTime.UtcNow'
+            },
+            @{
+                Source = $script:TrustedWindowHelperBase.Replace(
+                    '            await navigationPage.PushAsync(destination);',
+                    @'
+            return;
+            await navigationPage.PushAsync(destination);
+'@)
+                Syntax = 'return;'
+            })
+
+        foreach ($case in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+            } | Should -Throw (
+                "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+                "*rejected callback syntax '*$($case.Syntax)*" +
+                "*Issue35511.iOS.cs*line*")
+        }
+    }
+
+    It 'rejects the trusted helper callback when it executes before the gate' {
+        $baseline = $script:TrustedWindowHelperBase
+        $helperStart = $baseline.IndexOf(
+            '        await CreateHandlerAndAddToWindow<',
+            [StringComparison]::Ordinal)
+        $helperEnd = $baseline.IndexOf(
+            '        });',
+            $helperStart,
+            [StringComparison]::Ordinal) + '        });'.Length
+        $helper = $baseline.Substring(
+            $helperStart,
+            $helperEnd - $helperStart)
+        $beforeGate = $baseline.Remove(
+            $helperStart,
+            $helperEnd - $helperStart).Replace(
+            '        var applyReportedTrigger = true;',
+            $helper + [Environment]::NewLine +
+                '        var applyReportedTrigger = true;')
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $beforeGate `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*top-level selected-method statement after the reported-trigger gate*')
+    }
+
+    It 'does not recognize assertions inside arbitrary post-gate lambdas as the mandatory oracle' {
+        $deferred = $script:TrustedWindowHelperBase.Replace(
+            '            Assert.Equal("Main", nativeTitle.Text);',
+            '').Replace(
+            '        });',
+            @'
+        });
+        System.Action deferredOracle = () =>
+        {
+            Assert.Equal("Custom title", titleView.Text);
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $deferred `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'requires lifecycle then AssertEventually before a helper callback oracle' {
+        $withoutLifecycle = $script:TrustedWindowHelperBase.Replace(
+            '            await navigationPage.PushAsync(destination);' +
+                [Environment]::NewLine,
+            '')
+        $withoutEventually = $script:TrustedWindowHelperBase.Replace(
+            @'
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+'@,
+            '')
+        $tautologicalWait = $script:TrustedWindowHelperBase.Replace(
+            '() => navigationPage.CurrentPage == destination',
+            '() => true')
+        $staleWait = $script:TrustedWindowHelperBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var reachedBeforePush = navigationPage.CurrentPage == rootPage;
+        var applyReportedTrigger = true;
+'@).Replace(
+            '() => navigationPage.CurrentPage == destination',
+            '() => reachedBeforePush')
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $withoutLifecycle `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*Issue35511.iOS.cs*line*: *requires a directly awaited lifecycle*' +
+            '*AssertEventually*')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $withoutEventually `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*requires a directly awaited lifecycle transition followed by*AssertEventually*')
+        foreach ($candidate in @($tautologicalWait, $staleWait)) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+            } | Should -Throw (
+                "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+                '*final AssertEventually predicate*CurrentPage*final Page*')
+        }
+    }
+
+    It 'rejects unrelated or not-independently-attached native callback oracles' {
+        $unrelatedProperty = $script:TrustedWindowHelperBase.Replace(
+            'Assert.Equal("Main", nativeTitle.Text);',
+            'Assert.Equal(1d, nativeTitle.Alpha);')
+        $oppositePolarity = $script:TrustedWindowHelperBase.Replace(
+            'Assert.Equal("Main", nativeTitle.Text);',
+            'Assert.NotEqual("Main", nativeTitle.Text);')
+        $relaxedEquality = $script:TrustedWindowHelperBase.Replace(
+            'Assert.Equal("Main", nativeTitle.Text);',
+            'Assert.Equal("Main", nativeTitle.Text, true);')
+        $wrongTriggerTarget = $script:TrustedWindowHelperBase.Replace(
+            @'
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(
+                destination,
+                titleView);
+'@,
+            @'
+            global::Microsoft.Maui.Controls.NavigationPage.SetTitleView(
+                navigationPage,
+                titleView);
+'@)
+        $detachedReceiver = $script:TrustedWindowHelperBase.Replace(
+            '        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();
+        var detachedLabel = new global::Microsoft.Maui.Controls.Label();
+'@).Replace(
+            '            await navigationPage.PushAsync(destination);',
+            @'
+            detachedLabel.ToPlatform();
+            await navigationPage.PushAsync(destination);
+'@)
+        $deferredMutation = $script:TrustedWindowHelperBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        destination.NavigatedTo += (_, _) =>
+            titleView.IsVisible = !titleView.IsVisible;
+        var applyReportedTrigger = true;
+'@)
+        $assignedHandler = $script:TrustedWindowHelperBase.Replace(
+            '        await CreateHandlerAndAddToWindow<',
+            @'
+        navigationPage.Handler =
+            (global::Microsoft.Maui.IElementHandler)(object)new global::Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer();
+        await CreateHandlerAndAddToWindow<
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $unrelatedProperty `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+        foreach ($candidate in @($relaxedEquality, $wrongTriggerTarget)) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+            } | Should -Throw '*no trusted assertion after the trigger*'
+        }
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $oppositePolarity `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $detachedReceiver `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*Issue35511.iOS.cs*line*: *gate-dependent handlers are not trusted*')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $deferredMutation `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*Issue35511.iOS.cs*line*: *deferred event callbacks*')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $assignedHandler `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*NavigationPage.Handler*may not be assigned by generated code*')
+    }
+
+    It 'rejects lifecycle transitions on detached navigation roots and detached pushed pages' {
+        $detachedNavigationRoot = $script:TrustedWindowHelperBase.Replace(
+            '        var applyReportedTrigger = true;',
+            @'
+        var detachedNavigationPage =
+            new global::Microsoft.Maui.Controls.NavigationPage(rootPage);
+        var applyReportedTrigger = true;
+'@).Replace(
+            'await navigationPage.PushAsync(destination);',
+            'await detachedNavigationPage.PushAsync(destination);')
+        $poppedBeforeOracle = $script:TrustedWindowHelperBase.Replace(
+            @'
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+'@,
+            @'
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+            await navigationPage.PopAsync();
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == rootPage);
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $detachedNavigationRoot `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*exact NavigationPage attached by the immutable Window helper*')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $poppedBeforeOracle `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*CreateHandlerAndAddToWindow*" +
+            '*final AssertEventually predicate*final Page still pushed*')
+    }
+
+    It 'does not recognize a callback oracle before native layout realization' {
+        $layoutAfterOracle = $script:TrustedWindowHelperBase.Replace(
+            '            Assert.Equal("Main", nativeTitle.Text);',
+            @'
+            Assert.Equal("Main", nativeTitle.Text);
+            navigationBar.LayoutIfNeeded();
+'@)
+        $nativeChain = @'
+            var navigationController =
+                (UIKit.UINavigationController)navigationPage.Handler;
+            var navigationBar = navigationController.NavigationBar;
+            UIKit.UIView backButton = navigationBar.GetBackButton();
+            var nativeTitle =
+                backButton.FindDescendantView<UIKit.UILabel>();
+'@
+        $chainBeforeWait = $script:TrustedWindowHelperBase.Replace(
+            $nativeChain,
+            '').Replace(
+            '            await navigationPage.PushAsync(destination);',
+            '            await navigationPage.PushAsync(destination);' +
+                [Environment]::NewLine +
+                $nativeChain.TrimEnd())
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $layoutAfterOracle `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $chainBeforeWait `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw '*no trusted assertion after the trigger*'
+    }
+
+    It 'rejects a callback parameter that is not the exact WindowHandlerStub contract type' {
+        $wrongParameterReplacement = @'
+            async (global::Microsoft.Maui.IElementHandler _) =>
+'@
+        $wrongParameter = $script:TrustedWindowHelperBase.Replace(
+            '            async _ =>',
+            $wrongParameterReplacement.TrimEnd())
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongParameter `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
+        } | Should -Throw (
+            "*Trusted helper symbol '*' rejected invocation syntax*" +
+            '*Issue35511.iOS.cs*line*')
     }
 
     It 'rejects generated AssertHelpers even when an alias shadows the trusted type' {
@@ -11234,7 +11732,7 @@ public class ControlTests
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*no trusted assertion after the trigger*'
+        } | Should -Throw '*exact side-effect-free ToPlatform() observation overload*'
     }
 
     It 'rejects a chained Subviews selection even when rooted at Handler.PlatformView' {
