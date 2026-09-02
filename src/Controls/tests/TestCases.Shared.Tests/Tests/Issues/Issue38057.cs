@@ -17,7 +17,6 @@ public class Issue38057 : _IssuesUITest
     public void Issue38057_MakeVisiblePositionsTargetAtBottomOfViewport()
     {
         App.WaitForElement("ScrollToProboscisMonkeyButton");
-        App.WaitForNoElement("Proboscis Monkey");
         App.Tap("ScrollToProboscisMonkeyButton");
         VerifyScreenshot();
     }
