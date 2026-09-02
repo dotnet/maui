@@ -9,7 +9,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	/// <summary>
 	/// Regression tests for the initial-connect/reconnect de-duplication of the
 	/// <c>BackgroundColor</c>, <c>BackgroundImageSource</c>, and <c>SemanticProperties.*</c> mapper
-	/// entries in <see cref="VisualElement"/>.RemapForControls (see VisualElement.Mapper.cs).
+	/// entries in <see cref="VisualElement"/>.RemapForControls (see VisualElement.Mapper.cs). The
+	/// de-duplication is scoped to a single bulk mapping pass (tracked per-handler), so it never
+	/// suppresses an explicit/reentrant call, a same-value call, a call made before the canonical
+	/// `Background`/`Semantics` mapping has ever run, or a call made on a subsequent connect/reconnect.
 	/// </summary>
 	public class VisualElementMapperTests : BaseTestFixture
 	{
@@ -258,10 +261,68 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, semanticsCalls);
 		}
 
+		// De-duplication is scoped to a single bulk mapping pass, not to whether the value itself changed.
+		// An explicit call requesting the SAME, unchanged value - made outside of any pass, e.g. well after
+		// connect has completed - must still go through every time it is made.
+		[Fact]
+		public void ExplicitSameValueBackgroundColorUpdateAfterConnect_StillApplies()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handlerStub.SetVirtualView(button);
+			Assert.Equal(1, backgroundCalls);
+
+			// Same value as already applied, requested twice in a row, well outside of any bulk pass.
+			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
+			Assert.Equal(2, backgroundCalls);
+
+			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
+			Assert.Equal(3, backgroundCalls);
+		}
+
+		// Same reasoning as ExplicitSameValueBackgroundColorUpdateAfterConnect_StillApplies, but for the
+		// SemanticProperties.Description redirect.
+		[Fact]
+		public void ExplicitSameValueSemanticDescriptionUpdateAfterConnect_StillApplies()
+		{
+			int semanticsCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Semantics)] = (h, v) => semanticsCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button();
+			SemanticProperties.SetDescription(button, "Same");
+
+			handlerStub.SetVirtualView(button);
+			Assert.Equal(1, semanticsCalls);
+
+			handlerStub.UpdateValue(SemanticProperties.DescriptionProperty.PropertyName);
+			Assert.Equal(2, semanticsCalls);
+
+			handlerStub.UpdateValue(SemanticProperties.DescriptionProperty.PropertyName);
+			Assert.Equal(3, semanticsCalls);
+		}
+
 		// Reproduces a mapper that runs *later* in the same bulk connect pass than BackgroundColor's own
-		// turn and legitimately changes BackgroundColor, forcing a further, explicit re-entrant
-		// UpdateValue call. That call must not be suppressed just because BackgroundColor's own turn
-		// already ran (and was a no-op) earlier in the very same pass.
+		// turn and legitimately changes BackgroundColor, forcing a further, re-entrant handler notification
+		// (property changes on VisualElement route straight to Handler.UpdateValue - see
+		// Element.OnPropertyChanged). That call must not be suppressed just because BackgroundColor's own
+		// turn already ran (and was a no-op) earlier in the very same pass.
 		[Fact]
 		public void Connect_LaterMapperChangesBackgroundColor_ReentrantUpdateStillApplies()
 		{
@@ -276,12 +337,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// A brand new key is guaranteed to be enumerated after every key RemapForControls/the real
 			// ViewHandler.ViewMapper already registers (including BackgroundColor), simulating a mapper
-			// that legitimately runs later in the same bulk pass.
-			mapper.Add("__LaterMapperReentry", (h, v) =>
-			{
-				((VisualElement)v).BackgroundColor = Colors.Green;
-				h.UpdateValue(nameof(VisualElement.BackgroundColor));
-			});
+			// that legitimately runs later in the same bulk pass. Setting BackgroundColor here
+			// automatically triggers Handler.UpdateValue(nameof(BackgroundColor)) - see
+			// Element.OnPropertyChanged - which is the re-entrant call under test.
+			mapper.Add("__LaterMapperReentry", (h, v) => ((VisualElement)v).BackgroundColor = Colors.Green);
 
 			var handlerStub = new HandlerStub(mapper, commandMapper);
 			var button = new Button { BackgroundColor = Colors.Red };
@@ -289,7 +348,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			handlerStub.SetVirtualView(button);
 
 			// Once for the natural Background key entry (BackgroundColor's own turn is then a no-op and
-			// is skipped), once more for the later mapper's explicit re-entrant call after BackgroundColor
+			// is skipped), once more for the later mapper's re-entrant notification after BackgroundColor
 			// legitimately changed.
 			Assert.Equal(2, backgroundCalls);
 			Assert.Equal(Colors.Green, button.BackgroundColor);
@@ -309,11 +368,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
 			VisualElement.RemapForControls(mapper, commandMapper);
 
-			mapper.Add("__LaterMapperReentry", (h, v) =>
-			{
-				((VisualElement)v).BackgroundColor = Colors.Purple;
-				h.UpdateValue(nameof(VisualElement.BackgroundColor));
-			});
+			mapper.Add("__LaterMapperReentry", (h, v) => ((VisualElement)v).BackgroundColor = Colors.Purple);
 
 			var handlerStub = new HandlerStub(mapper, commandMapper);
 			var firstView = new Button { BackgroundColor = Colors.Red };
@@ -344,11 +399,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
 			VisualElement.RemapForControls(mapper, commandMapper);
 
-			mapper.Add("__LaterMapperReentry", (h, v) =>
-			{
-				SemanticProperties.SetDescription((VisualElement)v, "Changed later");
-				h.UpdateValue(SemanticProperties.DescriptionProperty.PropertyName);
-			});
+			mapper.Add("__LaterMapperReentry", (h, v) => SemanticProperties.SetDescription((VisualElement)v, "Changed later"));
 
 			var handlerStub = new HandlerStub(mapper, commandMapper);
 			var button = new Button();
