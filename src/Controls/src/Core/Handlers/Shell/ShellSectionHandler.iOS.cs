@@ -1434,7 +1434,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateAdditionalSafeAreaInsets(IPlatformViewHandler pageHandler)
         {
-            if (OperatingSystem.IsIOSVersionAtLeast(11) && pageHandler.ViewController is not null)
+            if ((OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) &&
+                pageHandler.ViewController is not null)
             {
                 if (!pageHandler.ViewController.AdditionalSafeAreaInsets.Equals(_additionalSafeArea))
                 {
@@ -1445,7 +1446,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateAllAdditionalSafeAreaInsets()
         {
-            if (!OperatingSystem.IsIOSVersionAtLeast(11))
+            if (!OperatingSystem.IsIOSVersionAtLeast(11) &&
+                !OperatingSystem.IsMacCatalystVersionAtLeast(11))
             {
                 return;
             }
