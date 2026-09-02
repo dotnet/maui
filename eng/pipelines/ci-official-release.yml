@@ -220,10 +220,6 @@ extends:
             inlineScript: |
               $ErrorActionPreference = 'Stop'
 
-              if ($env:GH_OWNER -notmatch '^[A-Za-z0-9\-]+$' -or $env:GH_REPO -notmatch '^[A-Za-z0-9\-\._]+$') {
-                throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
-              }
-
               dotnet "$env:RELEASE_TOOL" `
                 resolve `
                 --config "$env:CONFIG_PATH" `

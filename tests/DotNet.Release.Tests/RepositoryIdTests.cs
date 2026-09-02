@@ -9,6 +9,7 @@ public class RepositoryIdTests
     [InlineData("DotNet/MAUI", "dotnet", "maui")]
     [InlineData("  dotnet/skiasharp  ", "dotnet", "skiasharp")]
     [InlineData("dotnet/android-libraries", "dotnet", "android-libraries")]
+    [InlineData("dotnet/repository.name_with-symbols", "dotnet", "repository.name_with-symbols")]
     public void Parse_normalizes_owner_and_name(string value, string owner, string name)
     {
         var id = RepositoryId.Parse(value);
@@ -25,6 +26,10 @@ public class RepositoryIdTests
     [InlineData("dotnet/maui/extra")]
     [InlineData("dotnet/")]
     [InlineData("/maui")]
+    [InlineData("dot_net/maui")]
+    [InlineData("dotnet/my repo")]
+    [InlineData("dotnet/repository@github")]
+    [InlineData("dotnet /maui")]
     public void Parse_rejects_malformed_input(string? value)
     {
         Assert.Throws<DotNetReleaseException>(() => RepositoryId.Parse(value));

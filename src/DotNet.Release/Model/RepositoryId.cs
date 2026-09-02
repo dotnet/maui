@@ -38,6 +38,12 @@ internal readonly record struct RepositoryId
             throw new DotNetReleaseException($"Repository '{value}' is not in 'owner/name' form.");
         }
 
+        if (!parts[0].All(character => char.IsAsciiLetterOrDigit(character) || character == '-') ||
+            !parts[1].All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '.' or '_'))
+        {
+            throw new DotNetReleaseException($"Repository '{value}' contains unexpected characters.");
+        }
+
         return new RepositoryId(Normalize(parts[0]), Normalize(parts[1]));
     }
 
@@ -94,7 +100,7 @@ internal readonly record struct RepositoryId
                 "follow the '<owner>-<name>' convention, so its identity cannot be established.");
         }
 
-        return new RepositoryId(mirrorName[..separator], mirrorName[(separator + 1)..]);
+        return Parse($"{mirrorName[..separator]}/{mirrorName[(separator + 1)..]}");
     }
 
     private static string Normalize(string value) => value.Trim().ToLowerInvariant();

@@ -157,7 +157,7 @@ Queue-time parameters are operator-controlled and MUST NOT be interpolated into 
 PowerShell text.
 
 Every queue-time string enters scripts through an `env:` binding and is read through
-`$env:...`. The pipeline validates:
+`$env:...`. The release CLI validates:
 
 - `buildIdentifier` as either a full 40-character commit SHA or a positive BAR build ID;
 - GitHub owner and repository names against a restricted character set.
