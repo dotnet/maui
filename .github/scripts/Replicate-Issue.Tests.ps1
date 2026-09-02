@@ -9783,6 +9783,47 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         } | Should -Not -Throw
     }
 
+    It 'allows the captured Catalyst helper invocation with an inferred handler parameter' {
+        $capturedSource = $script:TrustedWindowHelperBase.Replace(
+            'using Microsoft.Maui.DeviceTests;',
+            'using Microsoft.Maui.Controls;' + [Environment]::NewLine +
+                'using Microsoft.Maui.DeviceTests;').Replace(
+            'public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase',
+            'public partial class NavigationPageTests : ControlsHandlerTestBase').Replace(
+            'global::Microsoft.Maui.Controls.Window(navigationPage)',
+            'Window(navigationPage)').Replace(
+            'async _ =>',
+            'async handler =>')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $capturedSource `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'NavigationPageTests' `
+                -SourcePath 'src/Controls/tests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Not -Throw
+
+        $rejectedCapturedSource = $capturedSource.Replace(
+            @'
+            await AssertHelpers.AssertEventually(
+                () => navigationPage.CurrentPage == destination);
+'@,
+            @'
+            await AssertHelpers.AssertEventually(() =>
+            {
+                var reached = navigationPage.CurrentPage == destination;
+                return reached;
+            });
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $rejectedCapturedSource `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'NavigationPageTests' `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*generated helper callbacks may not return*')
+    }
+
     It 'rejects a generated shadow of the immutable Window attachment helper' {
         $shadow = $script:TrustedWindowHelperBase.Replace(
             @'
