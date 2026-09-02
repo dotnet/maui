@@ -6,6 +6,8 @@ namespace DotNet.Release;
 internal interface IBuildRegistry
 {
     Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<BarBuild>> GetBuildsAsync(string commit, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -18,9 +20,10 @@ internal interface IBuildRegistry
 /// build with release context; other failures remain typed exceptions.
 /// </para>
 /// <para>
-/// This type touches only <see cref="IBuilds.GetBuildAsync"/>. It never calls
-/// <c>CreateAsync</c> or <c>UpdateAsync</c>, which are BAR mutations; promotion stays an
-/// explicit <c>darc add-build-to-channel</c> step in pipeline YAML.
+/// This type touches only <see cref="IBuilds.GetBuildAsync"/> and
+/// <see cref="IBuilds.ListBuildsAsync"/>. It never calls <c>CreateAsync</c> or
+/// <c>UpdateAsync</c>, which are BAR mutations; promotion stays an explicit
+/// <c>darc add-build-to-channel</c> step in pipeline YAML.
 /// </para>
 /// </remarks>
 internal sealed class MaestroBuildRegistry : IBuildRegistry
@@ -69,6 +72,33 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
             // Every other status stays an exception rather than being flattened into "none".
             return [];
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<BarBuild>> GetBuildsAsync(string commit, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(commit))
+        {
+            return [];
+        }
+
+        var builds = new List<BarBuild>();
+        // Query by commit only. A repository filter would hide builds whose GitHub repository
+        // is null; BuildResolver applies normalized GitHub or AzDO-mirror identity afterward.
+        var page = _builds.ListBuildsAsync(
+            commit: commit.Trim(),
+            loadCollections: true,
+            cancellationToken: cancellationToken);
+
+        await foreach (var build in page.ConfigureAwait(false))
+        {
+            if (build is not null)
+            {
+                builds.Add(BarBuildMapper.Map(build));
+            }
+        }
+
+        return builds;
     }
 
 }

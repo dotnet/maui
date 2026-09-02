@@ -24,10 +24,8 @@ public class VerificationBudgetTests : IDisposable
 
         await StageCommand.ExecuteAsync(
             _output,
-            new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648))),
             Workspace.PolicyJson,
-            "dotnet/skiasharp",
-            4242,
+            TestData.ResolvedBuildJson(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648))),
             _workspace.Drop,
             _workspace.Out,
             new StageOptions(),

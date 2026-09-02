@@ -4,6 +4,8 @@ namespace DotNet.Release.Tests;
 
 public class MaestroBuildRegistryTests
 {
+    private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp");
+
     // ---- resolution by BAR ID ----
 
     [Fact]
@@ -71,6 +73,26 @@ public class MaestroBuildRegistryTests
         Assert.False(fake.LastIncludeAssetLocation);
     }
 
+    // ---- resolution by repository + commit ----
+
+    [Fact]
+    public async Task Repository_and_commit_lookup_loads_every_matching_build_and_channel()
+    {
+        var fake = new FakeBuilds(list: (_, _) =>
+        [
+            BuildFactory.Create(id: 1, channels: [(1648, ".NET Libraries")]),
+            BuildFactory.Create(id: 2, channels: [(1648, ".NET Libraries")]),
+        ]);
+
+        var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(BuildFactory.Commit, CancellationToken.None);
+
+        Assert.Equal([1, 2], builds.Select(build => build.Id));
+        Assert.Null(fake.LastRepository);
+        Assert.Equal(BuildFactory.Commit, fake.LastCommit);
+        Assert.True(fake.LastLoadCollections);
+        Assert.All(builds, build => Assert.Equal(new ChannelReference(".NET Libraries", 1648), Assert.Single(build.Channels)));
+    }
+
     // ---- end-to-end through build resolution ----
 
     /// <summary>
@@ -97,7 +119,7 @@ public class MaestroBuildRegistryTests
         var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
 
         var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(skia, BarBuildId: 328857), policy.GetRepository(skia), builds);
+            new ReleaseRequest(skia, Commit: null, BarBuildId: 328857), policy.GetRepository(skia), builds);
 
         Assert.Equal("dotnet/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);

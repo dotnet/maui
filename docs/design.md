@@ -253,9 +253,9 @@ The prepare stage always runs, including on a dry run:
 checkout release-system source
   -> install pinned .NET SDK
   -> build and pin Release/_tool
-  -> use the supplied BAR ID or resolve the commit with darc get-build
-  -> darc gather-drop downloads that candidate
-  -> release stage verifies BAR and creates release-manifest.json
+  -> release resolve validates BAR and writes resolved-build.json
+  -> darc gather-drop downloads the verified BAR ID
+  -> release stage creates release-manifest.json
   -> pin release-manifest.json
   -> publish Azure DevOps artifacts
 ```
@@ -372,12 +372,12 @@ Channel verification establishes a property distinct from source identity:
 
 `config/repositories.json` is the only source of workload classification.
 
-Darc resolves only the candidate BAR ID needed for gathering. After gathering, `release
-stage` reads the policy, re-reads that build through the typed PCS client, verifies the
-repository, exact commit, and required channel, and records the workload classification in
-the completed manifest. The pinning step reads that manifest and emits `IsWorkload` for
-downstream stage conditions. When publishing is enabled, the pipeline contains the workload
-and non-workload stage shapes:
+`release resolve` reads the policy, detects BAR ID versus commit SHA, validates the build,
+and records the workload classification in `resolved-build.json`. After gathering, `release
+stage` rechecks that classification against current policy while creating the completed
+manifest. The pinning step reads that manifest and emits `IsWorkload` for downstream stage
+conditions. When publishing is enabled, the pipeline contains the workload and non-workload
+stage shapes:
 
 - `publish_packs` and `publish_manifests` require `IsWorkload=true`;
 - `publish_packages` requires `IsWorkload=false`;
@@ -387,7 +387,7 @@ This keeps stage ordering explicit without duplicating repository classification
 
 ## BAR resolution
 
-The pipeline accepts either:
+`release resolve` accepts either:
 
 ```text
 repository + exact commit
@@ -396,20 +396,22 @@ repository + exact commit
 or:
 
 ```text
-BAR build ID + exact commit
+repository + BAR build ID
 ```
 
-When no ID is supplied, `darc get-build` requires exactly one repository-and-commit match and
-returns its ID. The gathered ID is still only a candidate. Before producing a manifest,
-`release stage` verifies:
+For a commit selector, the typed PCS query requires exactly one repository-and-commit match
+and returns its BAR ID. The query starts from the commit rather than a GitHub repository
+filter, so it can also find older builds whose `gitHubRepository` is null and identify them
+from the Azure DevOps mirror. For a BAR ID selector, the typed PCS query returns its commit.
+Both paths then verify:
 
 - exactly one build was found;
-- the build's commit equals the full requested commit;
+- the BAR ID and commit are valid and consistent with the selector;
 - the build belongs to the requested repository;
 - any required channel is present exactly once.
 
-Supplying or resolving a BAR ID does not imply trust; all checks run after gathering and
-before the manifest or release artifact is created.
+Supplying a BAR ID does not imply trust; repository, commit, and channel checks complete
+before Darc gathers any packages.
 
 ### Repository identity
 
@@ -434,14 +436,18 @@ dotnet-SkiaSharp -> dotnet/skiasharp
 The first hyphen separates owner and repository. A value that does not follow this
 convention fails with an explicit mirror-identity error.
 
-The stage log records whether identity came from `GitHubRepository` or
+The resolve log records whether identity came from `GitHubRepository` or
 `AzureDevOpsMirrorConvention`; this diagnostic does not need to cross job boundaries.
 
 ### Typed BAR client
 
 The tool uses `Microsoft.DotNet.ProductConstructionService.Client`:
 
-- `IBuilds.GetBuildAsync` to re-read and validate the candidate BAR build.
+- `IBuilds.GetBuildAsync` for BAR ID selectors;
+- `IBuilds.ListBuildsAsync` for commit selectors.
+
+Commit lookup requests channel collections so required-channel validation uses the same
+data on both selector paths.
 
 The client model is not nullable-annotated. Adapter code treats repository, commit, and
 channel strings as untrusted nullable input.
@@ -522,8 +528,8 @@ A non-workload release produces one package set and explicitly rejects workload 
 ## Release manifest contract
 
 `release-manifest.json` is the only JSON release artifact. `release stage` creates it once,
-after candidate resolution and package gathering. PowerShell pins those completed bytes before
-the file crosses the prepare/publish job boundary; it is immutable from creation.
+after verified build resolution and package gathering. PowerShell pins those completed bytes
+before the file crosses the prepare/publish job boundary; it is immutable from creation.
 
 The manifest is a machine transport object, not the human approval interface. The CLI MUST
 print every field in the resolved build, final manifest, and in-memory prune result in a
@@ -605,7 +611,7 @@ The prepare stage:
 1. builds the C# project into `Release/_tool` for execution and binary scanning;
 2. bundles `global.json` and `_tool` into `release-tool.zip`;
 3. hashes that bundle once as `ToolBundleHash`;
-4. executes `_tool/release.dll` once for `stage`;
+4. executes `_tool/release.dll` for `resolve` and `stage`;
 5. records every package SHA-256 in the manifest;
 6. writes one authoritative manifest into the release artifact root;
 7. computes the manifest hash independently with `Get-FileHash`;

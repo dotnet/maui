@@ -1,10 +1,16 @@
 using System.CommandLine;
-using Microsoft.DotNet.ProductConstructionService.Client;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DotNet.Release;
 
 internal static class StageCommand
 {
+    private static readonly JsonSerializerOptions ResolvedBuildJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() },
+    };
+
     public static Command Build(TextWriter outputWriter, string toolVersion)
     {
         var config = new Option<FileInfo>("--config")
@@ -12,14 +18,9 @@ internal static class StageCommand
             Description = "Release policy JSON.",
             Required = true,
         };
-        var repo = new Option<string>("--repo")
+        var resolvedBuild = new Option<FileInfo>("--resolved-build")
         {
-            Description = "Repository as 'owner/name'.",
-            Required = true,
-        };
-        var barId = new Option<int>("--bar-id")
-        {
-            Description = "Candidate BAR build ID resolved by Darc.",
+            Description = "Verified JSON written by release resolve.",
             Required = true,
         };
         var drop = new Option<DirectoryInfo>("--drop")
@@ -40,55 +41,33 @@ internal static class StageCommand
         {
             Description = "Semicolon-separated exclude filters.",
         };
-        var barUri = new Option<string?>("--bar-uri")
-        {
-            Description = "Product Construction Service URI. Defaults to production.",
-        };
-        var token = new Option<string?>("--bar-token")
-        {
-            Description = "Access token. Omit to use the ambient Azure identity.",
-        };
-        var managedIdentity = new Option<string?>("--managed-identity")
-        {
-            Description = "Managed identity client ID.",
-        };
-
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-manifest.json.")
         {
-            config, repo, barId, drop, output, include, exclude, barUri, token, managedIdentity,
+            config, resolvedBuild, drop, output, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) =>
-        {
-            var api = CreateApi(parse.GetValue(barUri), parse.GetValue(token), parse.GetValue(managedIdentity));
-
-            return ExecuteAsync(
-                outputWriter,
-                MaestroBuildRegistry.Create(api),
-                File.ReadAllText(parse.GetValue(config)!.FullName),
-                parse.GetValue(repo)!,
-                parse.GetValue(barId),
-                parse.GetValue(drop)!.FullName,
-                parse.GetValue(output)!.FullName,
-                new StageOptions
-                {
-                    Include = PackageGlob.ParseList(parse.GetValue(include)),
-                    Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
-                },
-                DateTimeOffset.UtcNow,
-                toolVersion,
-                cancellationToken);
-        });
+        command.SetAction((parse, cancellationToken) => ExecuteAsync(
+            outputWriter,
+            File.ReadAllText(parse.GetValue(config)!.FullName),
+            File.ReadAllText(parse.GetValue(resolvedBuild)!.FullName),
+            parse.GetValue(drop)!.FullName,
+            parse.GetValue(output)!.FullName,
+            new StageOptions
+            {
+                Include = PackageGlob.ParseList(parse.GetValue(include)),
+                Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
+            },
+            DateTimeOffset.UtcNow,
+            toolVersion,
+            cancellationToken));
 
         return command;
     }
 
     public static async Task ExecuteAsync(
         TextWriter outputWriter,
-        IBuildRegistry registry,
         string policyJson,
-        string repository,
-        int barBuildId,
+        string resolvedBuildJson,
         string dropDirectory,
         string outputDirectory,
         StageOptions options,
@@ -97,17 +76,20 @@ internal static class StageCommand
         CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        var repositoryId = RepositoryId.Parse(repository);
+        var resolved = DeserializeResolvedBuild(resolvedBuildJson);
+        var repositoryId = RepositoryId.Parse(resolved.Repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
-        if (barBuildId <= 0)
+        if (!string.Equals(resolved.RepositoryUrl, repositoryId.GitHubUrl, StringComparison.Ordinal) ||
+            resolved.Commit is not { Length: 40 } ||
+            !resolved.Commit.All(Uri.IsHexDigit) ||
+            resolved.BarBuildId <= 0 ||
+            resolved.Workload != repositoryPolicy.Workload ||
+            resolved.Channel != repositoryPolicy.Channel)
         {
-            throw new DotNetReleaseException($"BAR build ID '{barBuildId}' must be positive.");
+            throw new DotNetReleaseException("The resolved build does not match current repository policy or has incomplete identity.");
         }
 
-        var request = new ReleaseRequest(repositoryId, barBuildId);
-        var candidates = await registry.GetBuildAsync(barBuildId, cancellationToken).ConfigureAwait(false);
-        var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
         ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
         outputWriter.WriteLine();
 
@@ -202,8 +184,16 @@ internal static class StageCommand
         return indexed;
     }
 
-    private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>
-        baseUri is { Length: > 0 }
-            ? PcsApiFactory.GetAuthenticated(baseUri, token!, managedIdentityId!, disableInteractiveAuth: true)
-            : PcsApiFactory.GetAuthenticated(token!, managedIdentityId!, disableInteractiveAuth: true);
+    internal static ResolvedBuild DeserializeResolvedBuild(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<ResolvedBuild>(json, ResolvedBuildJsonOptions) ??
+                throw new DotNetReleaseException("The resolved build output is empty.");
+        }
+        catch (JsonException ex)
+        {
+            throw new DotNetReleaseException($"The resolved build output is not valid: {ex.Message}");
+        }
+    }
 }

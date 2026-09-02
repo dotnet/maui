@@ -15,10 +15,10 @@
 # What it does, in order:
 #   1. Prepare the release.
 #      1.1. Build and pin the C# tool bundle.
-#      1.2. Use the supplied BAR ID or resolve the commit to a candidate ID with Darc.
-#      1.3. `darc gather-drop` downloads the candidate's shipping packages.
-#      1.4. `release stage` verifies the BAR build, validates the packages, and creates
-#           `release-manifest.json`.
+#      1.2. `release resolve` detects BAR ID versus commit, verifies the build, and writes
+#           `resolved-build.json`.
+#      1.3. Read its BAR ID; `darc gather-drop` downloads that verified build's packages.
+#      1.4. `release stage` validates the packages and creates `release-manifest.json`.
 #      1.5. Pin the manifest and publish the Release artifact.
 #   2. When requested for a workload release, run the separately approved promotion stage.
 #   3. Release each applicable package set; workload packs complete before manifests begin.
@@ -153,8 +153,8 @@ extends:
     stages:
 
     # -----------------------------------------------------------------------------------------
-    # 1. Prepare the release: resolve a candidate build, gather its packages, validate the build
-    # and packages, create the manifest, and publish the pinned Release artifact.
+    # 1. Prepare the release: resolve and validate the build, gather and validate its packages,
+    # create the manifest, and publish the pinned Release artifact.
     # This stage runs for a dry run too — that is the point of a dry run.
     # -----------------------------------------------------------------------------------------
     - stage: prepare_release
@@ -210,14 +210,13 @@ extends:
           displayName: Build the release tool
 
         - task: AzureCLI@2
-          displayName: Resolve BAR ID and gather the drop
+          displayName: Resolve and verify the BAR build
           inputs:
             azureSubscription: "Darc: Maestro Production"
             scriptType: pscore
             scriptLocation: inlineScript
             # Queue-time values enter executable PowerShell only through environment
-            # variables. This step resolves only the candidate ID needed by gather-drop;
-            # `release stage` performs the authoritative BAR validation afterward.
+            # variables. The CLI owns all repository, commit, channel, and BAR validation.
             inlineScript: |
               $ErrorActionPreference = 'Stop'
 
@@ -225,97 +224,89 @@ extends:
                 throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
               }
 
+              dotnet "$env:RELEASE_TOOL" `
+                resolve `
+                --config "$env:CONFIG_PATH" `
+                --repo "$env:GH_OWNER/$env:GH_REPO" `
+                --build "$env:BUILD_IDENTIFIER" `
+                --output "$env:RESOLVED_BUILD"
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          env:
+            RELEASE_TOOL: $(ToolPath)
+            CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
+            GH_OWNER: ${{ parameters.ghOwner }}
+            GH_REPO: ${{ parameters.ghRepo }}
+            BUILD_IDENTIFIER: ${{ parameters.buildIdentifier }}
+            RESOLVED_BUILD: $(Agent.TempDirectory)/resolved-build.json
+
+        - pwsh: |
+            $resolved = Get-Content -LiteralPath $env:RESOLVED_BUILD -Raw | ConvertFrom-Json
+            $barId = 0
+            if (-not [int]::TryParse([string]$resolved.barBuildId, [ref]$barId) -or $barId -le 0) {
+              throw "The resolved-build output contains invalid BAR build ID '$($resolved.barBuildId)'."
+            }
+
+            Write-Host "##vso[task.setvariable variable=BarId]$barId"
+
+            # Match Arcade's established "BAR ID - <id>" build tag format.
+            Write-Host "##vso[build.addbuildtag]BAR ID - $barId"
+            Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
+          displayName: Load resolved build
+          env:
+            RESOLVED_BUILD: $(Agent.TempDirectory)/resolved-build.json
+            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
+
+        - task: AzureCLI@2
+          displayName: Gather the verified drop
+          inputs:
+            azureSubscription: "Darc: Maestro Production"
+            scriptType: pscore
+            scriptLocation: inlineScript
+            inlineScript: |
               . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
               $darc = Get-Darc
               if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
                 throw 'Arcade failed to install the Darc CLI.'
               }
 
-              $barId = 0
-              $selector = $env:BUILD_IDENTIFIER.Trim()
-              if ($selector -match '^[0-9a-fA-F]{40}$') {
-                $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
-                $buildJson = & $darc get-build --ci `
-                  --repo $sourceRepository `
-                  --commit $selector `
-                  --extended `
-                  --output-format json `
-                  --azdev-pat $env:AZDO_TOKEN
-                if ($LASTEXITCODE -ne 0) {
-                  throw "Darc failed to resolve the BAR build: $($buildJson | Out-String)"
-                }
-
-                $parsedBuilds = $buildJson | ConvertFrom-Json
-                $builds = @($parsedBuilds)
-                if ($builds.Count -ne 1) {
-                  throw "Expected exactly one BAR build for '$sourceRepository' at commit '$selector', found $($builds.Count)."
-                }
-                if (([string]$builds[0].commit).Trim() -ine $selector) {
-                  throw "Darc returned commit '$($builds[0].commit)' for requested commit '$selector'."
-                }
-                if (-not [int]::TryParse([string]$builds[0].id, [ref]$barId) -or $barId -le 0) {
-                  throw "Darc returned invalid BAR build ID '$($builds[0].id)'."
-                }
-              } elseif ($selector -match '^[0-9]+$') {
-                if (-not [int]::TryParse($selector, [ref]$barId) -or $barId -le 0) {
-                  throw "BAR build ID '$selector' is not a positive 32-bit integer."
-                }
-              } else {
-                throw "Build identifier '$selector' must be a positive BAR build ID or full 40-character commit SHA."
-              }
-
-              Write-Host "Candidate BAR build ID: $barId"
-              Write-Host "##vso[task.setvariable variable=BarId]$barId"
-
               # Darc owns feed discovery, authentication, released-asset handling, and retries.
               & $darc gather-drop --ci `
-                --id $barId `
+                --id $(BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
                 --include-released `
                 --asset-filter '^[^/]+$' `
                 --verbose
-              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $barId." }
+              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(BarId)." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
-            GH_OWNER: ${{ parameters.ghOwner }}
-            GH_REPO: ${{ parameters.ghRepo }}
-            BUILD_IDENTIFIER: ${{ parameters.buildIdentifier }}
 
-        - task: AzureCLI@2
-          displayName: Validate BAR build and stage packages
-          inputs:
-            azureSubscription: "Darc: Maestro Production"
-            scriptType: pscore
-            scriptLocation: inlineScript
-            inlineScript: |
-              $ErrorActionPreference = 'Stop'
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
 
-              $filters = @()
-              if ($env:INCLUDE_FILTERS -ne 'skip') {
-                $filters += @('--include', $env:INCLUDE_FILTERS)
-              }
-              if ($env:EXCLUDE_FILTERS -ne 'skip') {
-                $filters += @('--exclude', $env:EXCLUDE_FILTERS)
-              }
+            $filters = @()
+            if ($env:INCLUDE_FILTERS -ne 'skip') {
+              $filters += @('--include', $env:INCLUDE_FILTERS)
+            }
+            if ($env:EXCLUDE_FILTERS -ne 'skip') {
+              $filters += @('--exclude', $env:EXCLUDE_FILTERS)
+            }
 
-              dotnet "$env:RELEASE_TOOL" `
-                stage `
-                --config "$env:CONFIG_PATH" `
-                --repo "$env:GH_OWNER/$env:GH_REPO" `
-                --bar-id "$env:BAR_ID" `
-                --drop "$env:DROP_DIR" `
-                --out "$env:ARTIFACT_DIR" `
-                @filters
-              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dotnet "$env:RELEASE_TOOL" `
+              stage `
+              --config "$env:CONFIG_PATH" `
+              --resolved-build "$env:RESOLVED_BUILD" `
+              --drop "$env:DROP_DIR" `
+              --out "$env:ARTIFACT_DIR" `
+              @filters
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          displayName: Validate and stage packages
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
+            RESOLVED_BUILD: $(Agent.TempDirectory)/resolved-build.json
             DROP_DIR: $(Agent.TempDirectory)/drop
             ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
-            GH_OWNER: ${{ parameters.ghOwner }}
-            GH_REPO: ${{ parameters.ghRepo }}
-            BAR_ID: $(BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
@@ -335,15 +326,10 @@ extends:
             Write-Host "Release manifest SHA-256: $hash"
             Write-Host "##vso[task.setvariable variable=ReleaseManifestHash;isOutput=true]$hash"
             Write-Host "##vso[task.setvariable variable=IsWorkload;isOutput=true]$isWorkload"
-
-            # Tag only after stage has verified the candidate build and created the manifest.
-            Write-Host "##vso[build.addbuildtag]BAR ID - $env:EXPECTED_BAR_ID"
-            Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
           name: pinManifest
           displayName: Pin the release manifest hash
           env:
             EXPECTED_BAR_ID: $(BarId)
-            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
 
         # Record release intent as a build tag. The run name is already fixed at queue time.
         - ${{ if eq(variables.publishPackages, 'true') }}:

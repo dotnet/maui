@@ -47,8 +47,8 @@ A test fails the build if the dropdown and policy disagree.
 
 ```
 prepare_release
-  build the tool  →  darc get-build + gather-drop  →  release stage
-                                                    (validate BAR + packages)
+  build the tool  →  release resolve  →  darc gather-drop  →  release stage
+                       (validate BAR)                    (validate packages)
       ↓ artifacts + pinned manifest hash
 matching package-set stage
   query NuGet.org, prune published versions, and validate the exact local set
@@ -157,15 +157,16 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release stage --config config/repositories.json --repo <owner/name> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out <artifactDir>
+release resolve --config config/repositories.json --repo <owner/name> --build <barId|commitSha> --output <resolved-build.json>
+release stage --config config/repositories.json --resolved-build <resolved-build.json> --drop <dropPath> [--include '…'] [--exclude '…'] --out <artifactDir>
 release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
 release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
 
-Darc resolves the candidate BAR ID required by `gather-drop`. `stage` re-reads that build
-through the typed PCS client, verifies its repository, exact commit, and required channel,
-then validates the gathered packages and creates `release-manifest.json`. Every later stage
-reads that pinned file.
+`resolve` detects whether the selector is a BAR ID or commit SHA, performs all repository,
+commit, channel, and BAR validation, and writes both identities to `resolved-build.json`.
+Darc gathers the verified BAR ID, then `stage` validates the packages and creates
+`release-manifest.json`. Every later stage reads that pinned manifest.
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.
 Do not rerun the whole stage: the immutable prepared artifact already exists for that run.

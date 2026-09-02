@@ -33,10 +33,8 @@ public class WorkloadStageScopingTests : IDisposable
 
         await StageCommand.ExecuteAsync(
             _output,
-            new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
             Workspace.PolicyJson,
-            "dotnet/maui",
-            4242,
+            TestData.ResolvedBuildJson(Workspace.Build("https://github.com/dotnet/maui"), "dotnet/maui"),
             _workspace.Drop,
             _workspace.Out,
             new StageOptions(),

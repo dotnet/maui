@@ -18,9 +18,17 @@ internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
 {
     public int? RequestedBarId { get; private set; }
 
+    public string? RequestedCommit { get; private set; }
+
     public Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken)
     {
         RequestedBarId = barBuildId;
+        return Task.FromResult<IReadOnlyList<BarBuild>>(builds);
+    }
+
+    public Task<IReadOnlyList<BarBuild>> GetBuildsAsync(string commit, CancellationToken cancellationToken)
+    {
+        RequestedCommit = commit;
         return Task.FromResult<IReadOnlyList<BarBuild>>(builds);
     }
 }

@@ -1,9 +1,10 @@
 namespace DotNet.Release;
 
-/// <summary>The repository and BAR build selected by the operator.</summary>
+/// <summary>The repository and either commit or BAR build selected by the operator.</summary>
 internal sealed record ReleaseRequest(
     RepositoryId Repository,
-    int BarBuildId);
+    string? Commit,
+    int? BarBuildId);
 
 /// <summary>The verified BAR build and repository policy resolved in memory.</summary>
 internal sealed record ResolvedBuild

@@ -54,6 +54,17 @@ public class BuildResolverTests
     }
 
     [Fact]
+    public void Commit_selection_must_match_the_BAR_build()
+    {
+        var request = new ReleaseRequest(TestData.Repo("dotnet/skiasharp"), TestData.Commit, BarBuildId: null);
+
+        Assert.Equal(TestData.Commit, Resolve([TestData.Build(channels: Libraries)], request).Commit);
+        Assert.Throws<DotNetReleaseException>(() => Resolve(
+            [TestData.Build(commit: "1111111111111111111111111111111111111111", channels: Libraries)],
+            request));
+    }
+
+    [Fact]
     public void Wrong_repository_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(() =>
@@ -150,5 +161,13 @@ public class BuildResolverTests
     public void Invalid_BAR_commit_is_rejected()
     {
         Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(commit: "not-a-full-sha", channels: Libraries)]));
+    }
+
+    [Fact]
+    public void A_request_without_BAR_ID_or_commit_is_rejected()
+    {
+        var request = new ReleaseRequest(TestData.Repo("dotnet/skiasharp"), Commit: null, BarBuildId: null);
+
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: Libraries)], request));
     }
 }

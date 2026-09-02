@@ -147,25 +147,26 @@ public class PipelineDefinitionTests
     }
 
     [Fact]
-    public void Pipeline_uses_Darc_for_the_candidate_ID_and_stage_for_authoritative_validation()
+    public void Verified_resolve_output_drives_gather_and_manifest_staging()
     {
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var resolve = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "ResolveCommand.cs"));
         var stage = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "StageCommand.cs"));
 
-        Assert.Contains("$darc get-build --ci", root, StringComparison.Ordinal);
-        Assert.Contains("--output-format json", root, StringComparison.Ordinal);
-        Assert.Contains("$buildJson | ConvertFrom-Json", root, StringComparison.Ordinal);
-        Assert.Contains("$selector -match '^[0-9a-fA-F]{40}$'", root, StringComparison.Ordinal);
-        Assert.Contains("$selector -match '^[0-9]+$'", root, StringComparison.Ordinal);
-        Assert.Contains("$builds[0].commit", root, StringComparison.Ordinal);
+        Assert.Contains("--build \"$env:BUILD_IDENTIFIER\"", root, StringComparison.Ordinal);
+        Assert.Contains("--output \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
+        Assert.Contains("Get-Content -LiteralPath $env:RESOLVED_BUILD -Raw | ConvertFrom-Json", root, StringComparison.Ordinal);
         Assert.Contains("variable=BarId]", root, StringComparison.Ordinal);
-        Assert.Contains("registry.GetBuildAsync(barBuildId", stage, StringComparison.Ordinal);
-        Assert.Contains("BuildResolver.Resolve", stage, StringComparison.Ordinal);
+        Assert.Contains("registry.GetBuildAsync", resolve, StringComparison.Ordinal);
+        Assert.Contains("registry.GetBuildsAsync", resolve, StringComparison.Ordinal);
+        Assert.Contains("BuildResolver.Resolve", resolve, StringComparison.Ordinal);
+        Assert.Contains("--resolved-build \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
+        Assert.Contains("DeserializeResolvedBuild", stage, StringComparison.Ordinal);
         Assert.Contains("name: pinManifest", root, StringComparison.Ordinal);
         Assert.Contains("variable=IsWorkload;isOutput=true", root, StringComparison.Ordinal);
 
-        Assert.DoesNotContain("resolved-build.json", root, StringComparison.Ordinal);
+        Assert.Contains("resolved-build.json", root, StringComparison.Ordinal);
         Assert.DoesNotContain("prune-result.json", publish, StringComparison.Ordinal);
         Assert.DoesNotContain("--result", root + publish, StringComparison.Ordinal);
         Assert.Contains("Get-ChildItem -LiteralPath $setDirectory -Filter '*.nupkg' -File", publish, StringComparison.Ordinal);
@@ -176,7 +177,7 @@ public class PipelineDefinitionTests
     public void Prepare_creates_the_manifest_before_pinning_it()
     {
         var root = File.ReadAllText(PipelinePath);
-        var resolve = root.IndexOf("$darc get-build --ci", StringComparison.Ordinal);
+        var resolve = root.IndexOf("resolve `", StringComparison.Ordinal);
         var gather = root.IndexOf("& $darc gather-drop", StringComparison.Ordinal);
         var stage = root.IndexOf("stage `", StringComparison.Ordinal);
         var pin = root.IndexOf("name: pinManifest", StringComparison.Ordinal);
@@ -654,7 +655,7 @@ public class PipelineDefinitionTests
 
         Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
-        Assert.Contains("##vso[build.addbuildtag]BAR ID - $env:EXPECTED_BAR_ID", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]BAR ID - $barId", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]REPO - $env:REPOSITORY", text, StringComparison.Ordinal);
     }
 
@@ -685,7 +686,7 @@ public class PipelineDefinitionTests
     /// the initial Release artifact. NuGet availability is queried by package-set preflight.
     /// </summary>
     [Fact]
-    public void Prepare_stage_invokes_only_Darc_resolution_gather_and_stage()
+    public void Prepare_stage_invokes_only_resolve_gather_and_stage()
     {
         var lines = File.ReadAllLines(PipelinePath);
         var promotionStage = Array.FindIndex(lines,
@@ -694,10 +695,9 @@ public class PipelineDefinitionTests
             .Where(i => i < promotionStage)
             .Select(i => lines[i]).ToList();
 
-        Assert.Contains(scripts, line => line.Contains("get-build", StringComparison.Ordinal));
+        Assert.Contains(scripts, line => line.Trim() == "resolve `");
         Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
         Assert.Contains(scripts, line => line.Trim() == "stage `");
-        Assert.DoesNotContain(scripts, line => line.Trim() == "resolve `");
 
         Assert.DoesNotContain(scripts, line => line.Trim() == "prune-published `");
         Assert.DoesNotContain(scripts, line => line.Trim() == "verify `");

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Xunit;
 
 namespace DotNet.Release.Tests;
@@ -14,19 +15,97 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", int barId = 4242, IBuildRegistry? registry = null) =>
+    private Task<ResolvedBuild> Resolve(FakeRegistry registry, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
+        ResolveCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, repo, build, CancellationToken.None);
+
+    private static string ResolvedBuildJson(BarBuild? build = null, string repo = "dotnet/skiasharp")
+        => TestData.ResolvedBuildJson(build ?? Workspace.Build(channels: Libraries), repo);
+
+    private Task Stage(StageOptions? options = null, string? resolvedBuildJson = null) =>
         StageCommand.ExecuteAsync(
             _output,
-            registry ?? new FakeRegistry(Workspace.Build(channels: Libraries)),
             Workspace.PolicyJson,
-            repo,
-            barId,
+            resolvedBuildJson ?? ResolvedBuildJson(),
             _workspace.Drop,
             _workspace.Out,
             options ?? new StageOptions(),
             Workspace.Now,
             "1.0.0-test",
             CancellationToken.None);
+
+    // ---- resolve ----
+
+    [Fact]
+    public async Task Resolve_accepts_a_commit_and_returns_the_verified_BAR_ID()
+    {
+        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
+
+        var resolved = await Resolve(registry);
+
+        Assert.Equal(Workspace.Commit, registry.RequestedCommit);
+        Assert.Null(registry.RequestedBarId);
+        Assert.Equal(4242, resolved.BarBuildId);
+        Assert.Contains("Resolved build:", _output.AllOutput, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Resolve_accepts_a_BAR_ID_and_returns_its_commit()
+    {
+        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
+
+        var resolved = await Resolve(registry, build: "4242");
+
+        Assert.Equal(4242, registry.RequestedBarId);
+        Assert.Null(registry.RequestedCommit);
+        Assert.Equal(Workspace.Commit, resolved.Commit);
+    }
+
+    [Fact]
+    public async Task Resolve_supports_the_Azure_DevOps_mirror_identity_fallback()
+    {
+        var build = new BarBuild(4242, Workspace.Commit, null,
+            "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
+
+        var resolved = await Resolve(new FakeRegistry(build), build: "4242");
+
+        Assert.Equal("dotnet/skiasharp", resolved.Repository);
+        Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
+    }
+
+    [Fact]
+    public async Task Resolve_can_find_a_mirror_only_build_by_commit()
+    {
+        var mirrorBuild = new BarBuild(4242, Workspace.Commit, null,
+            "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
+        var unrelatedBuild = Workspace.Build("https://github.com/dotnet/maui");
+
+        var resolved = await Resolve(new FakeRegistry(mirrorBuild, unrelatedBuild));
+
+        Assert.Equal(4242, resolved.BarBuildId);
+        Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not-a-build")]
+    [InlineData("0")]
+    [InlineData("1234567890123456789012345678901234567890")]
+    public async Task Resolve_rejects_an_invalid_build_identifier(string build)
+    {
+        await Assert.ThrowsAsync<DotNetReleaseException>(() =>
+            Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)), build));
+    }
+
+    [Fact]
+    public async Task Resolve_structured_output_contains_both_BAR_ID_and_commit()
+    {
+        var resolved = await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)), build: "4242");
+        using var document = JsonDocument.Parse(ResolveCommand.SerializeOutput(resolved));
+
+        Assert.Equal(4242, document.RootElement.GetProperty("barBuildId").GetInt32());
+        Assert.Equal(Workspace.Commit, document.RootElement.GetProperty("commit").GetString());
+        Assert.Equal("dotnet/skiasharp", document.RootElement.GetProperty("repository").GetString());
+    }
 
     // ---- stage ----
 
@@ -114,55 +193,27 @@ public class VerbsTests : IDisposable
         await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage());
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task Stage_rejects_a_non_positive_bar_id(int barId)
-    {
-        _workspace.WritePackage("SkiaSharp", "3.119.0");
-
-        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(barId: barId));
-    }
-
     [Fact]
-    public async Task Stage_requeries_and_validates_the_candidate_BAR_build()
-    {
-        _workspace.WritePackage("SkiaSharp", "3.119.0");
-        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
-
-        await Stage(registry: registry);
-
-        Assert.Equal(4242, registry.RequestedBarId);
-    }
-
-    [Fact]
-    public async Task Stage_records_the_commit_returned_by_BAR()
+    public async Task Stage_records_the_commit_from_the_resolved_build()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");
         const string commit = "1111111111111111111111111111111111111111";
         var build = Workspace.Build(channels: Libraries) with { Commit = commit };
 
-        await Stage(registry: new FakeRegistry(build));
+        await Stage(resolvedBuildJson: ResolvedBuildJson(build));
 
         var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
         Assert.Equal(commit, manifest.Source.Commit);
     }
 
     [Fact]
-    public async Task Stage_fails_closed_when_the_required_BAR_channel_is_missing()
+    public async Task Stage_rejects_resolved_data_that_conflicts_with_current_policy()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");
+        var resolved = StageCommand.DeserializeResolvedBuild(ResolvedBuildJson()) with { Channel = null };
 
-        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(registry: new FakeRegistry(Workspace.Build())));
-    }
-
-    [Fact]
-    public async Task Stage_fails_closed_when_the_candidate_BAR_build_belongs_to_another_repository()
-    {
-        _workspace.WritePackage("SkiaSharp", "3.119.0");
-        var build = Workspace.Build("https://github.com/dotnet/maui", Libraries);
-
-        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(registry: new FakeRegistry(build)));
+        await Assert.ThrowsAsync<DotNetReleaseException>(() =>
+            Stage(resolvedBuildJson: ResolveCommand.SerializeOutput(resolved)));
     }
 
     // ---- prune-published ----

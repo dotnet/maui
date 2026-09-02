@@ -42,7 +42,17 @@ internal static class TestData
         params ChannelReference[] channels) => new(id, commit ?? Commit, gitHubRepository, azureDevOpsRepository, channels);
 
     public static ReleaseRequest Request(string repo = "dotnet/skiasharp", int barId = 4242) =>
-        new(Repo(repo), barId);
+        new(Repo(repo), Commit: null, BarBuildId: barId);
+
+    public static string ResolvedBuildJson(BarBuild build, string repo = "dotnet/skiasharp")
+    {
+        var repository = Repo(repo);
+        var resolved = BuildResolver.Resolve(
+            new ReleaseRequest(repository, Commit: null, BarBuildId: build.Id),
+            Policy().GetRepository(repository),
+            [build]);
+        return ResolveCommand.SerializeOutput(resolved);
+    }
 
     public static ReleaseSource Source(bool workload = false, string repo = "dotnet/skiasharp") => new()
     {
