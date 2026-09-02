@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
@@ -180,6 +181,102 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void ReentrantExplicitFlushDuringMapperExecutionDrainsRemainingQueue()
+		{
+			var mapped = new List<string>();
+			HandlerStub handler = null;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["First"] = (h, view) =>
+				{
+					mapped.Add("First");
+
+					// Simulate BatchCommit() being reached reentrantly from inside a mapper
+					// callback (for example an animation tick or a BatchCommitted/property-
+					// changed handler reached synchronously from mapper code), while
+					// _mapperExecutionDepth is still > 0 (we're inside InvokeCurrentPropertyMapper
+					// for "First"). "Second" is still sitting in the queue at this point.
+					((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+				},
+				["Second"] = (h, view) => mapped.Add("Second"),
+			};
+			handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			handler.UpdateValue("First");
+			handler.UpdateValue("Second");
+			((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+
+			// "Second" must not be silently stranded: here it is drained by the still-active
+			// outer flush loop continuing once "First" returns (this specific nested-in-the-
+			// same-drain-loop shape is safe even without the fix below, because the loop that
+			// invoked "First" keeps running against live, freshly-read queue state). See
+			// ReentrantExplicitFlushOutsideActiveDrainLoopDefersUntilDepthUnwinds for the
+			// narrower case the fix actually guards: a reentrant commit reached from *outside*
+			// any active drain loop while depth is still non-zero.
+			Assert.Equal(new[] { "First", "Second" }, mapped);
+		}
+
+		[Fact]
+		public void ReentrantExplicitFlushOutsideActiveDrainLoopDefersUntilDepthUnwinds()
+		{
+			// IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates() must not silently
+			// drop a pending queue when it is reached while _mapperExecutionDepth > 0 from
+			// *outside* the internal flush loop (for example a command mapper, or the automatic
+			// leading-update mapper, that synchronously runs code which commits an unrelated,
+			// still-open explicit batch on the same handler). Constructing that exact call
+			// stack requires depth > 0 while nothing is actively iterating the pending queue --
+			// a shape the other fixes in this PR (flushing before every command and platform-
+			// view access) make unreachable through the public API alone. _mapperExecutionDepth
+			// and FlushPendingExplicitUpdatesIfUnwound are internal implementation details, so
+			// this test drives them directly via reflection to pin down the two halves of the
+			// fix: (1) a reentrant commit while depth > 0 defers instead of silently no-op'ing,
+			// and (2) the deferred commit actually drains once depth unwinds back to 0.
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["First"] = (h, view) => mapped.Add("First"),
+			};
+			var handler = new HandlerStub(mapper);
+			var view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			var handlerType = typeof(ElementHandler);
+			var depthField = handlerType.GetField("_mapperExecutionDepth", BindingFlags.NonPublic | BindingFlags.Instance);
+			var unwindMethod = handlerType.GetMethod("FlushPendingExplicitUpdatesIfUnwound", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(depthField);
+			Assert.NotNull(unwindMethod);
+
+			handler.UpdateValue("First");
+			Assert.Empty(mapped);
+
+			// Simulate being reentrantly reached from inside some other mapper/command
+			// invocation (depth > 0) that is not the flush loop draining this same queue.
+			depthField.SetValue(handler, 1);
+			try
+			{
+				((IPropertyUpdateBatchingHandler)handler).FlushPendingPropertyUpdates();
+
+				// Must defer, not drop: nothing has run yet, and "First" is still queued.
+				Assert.Empty(mapped);
+			}
+			finally
+			{
+				depthField.SetValue(handler, 0);
+			}
+
+			// Simulate that outer invocation unwinding back to depth 0.
+			unwindMethod.Invoke(handler, null);
+
+			Assert.Equal(new[] { "First" }, mapped);
+		}
+
+		[Fact]
 		public void BatchedPropertyUpdatesProcessReentrantUpdates()
 		{
 			var mapped = new List<string>();
@@ -263,6 +360,67 @@ namespace Microsoft.Maui.UnitTests
 			view.BatchCommit();
 
 			Assert.Equal(1, mapCount);
+		}
+
+		[Fact]
+		public void AutomaticPropertyUpdatesApplyImmediatelyWithoutDispatcher()
+		{
+			// None of the dispatcher-based tests cover the fallback where MauiContext (and so
+			// GetOptionalDispatcher()) is null. Deliberately do NOT call SetMauiContext here, so
+			// SchedulePropertyUpdateFlush() falls back to invoking its callback synchronously.
+			var mapped = new List<string>();
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Leading"] = (handler, view) => mapped.Add("Leading"),
+				["Trailing"] = (handler, view) => mapped.Add("Trailing"),
+			};
+			var handler = new HandlerStub(mapper);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			// Every call here takes the automatic "leading" branch: the no-dispatcher
+			// synchronous fallback flushes and clears _hasMappedAutomaticLeadingUpdate before
+			// UpdateValue returns, so each subsequent call re-enters the leading branch instead
+			// of coalescing (a documented performance regression versus a real dispatcher, but
+			// every update must still apply correctly and without throwing).
+			handler.UpdateValue("Leading");
+			handler.UpdateValue("Trailing");
+			handler.UpdateValue("Trailing");
+
+			Assert.Equal(new[] { "Leading", "Trailing", "Trailing" }, mapped);
+		}
+
+		[Fact]
+		public void LeadingUpdateAppliesBeforeSchedulingWhenDispatcherIsUnavailable()
+		{
+			// SchedulePropertyUpdateFlush()'s no-dispatcher fallback invokes its callback
+			// synchronously, which drains the (still-empty) queue and, because
+			// _hasMappedAutomaticLeadingUpdate was already set, clears it again immediately.
+			// If that schedule happened *before* the leading mapper ran, the flag would already
+			// read false *while the mapper callback itself is executing* -- observable only via
+			// the internal field, since the final applied/mapped values are identical either
+			// way for this simple scenario. Capture the field's value from inside the mapper via
+			// reflection to pin down the fix precisely.
+			bool? leadingFlagDuringMapperExecution = null;
+			HandlerStub handler = null;
+			var depthAndFlagHolder = typeof(ElementHandler);
+			var leadingFlagField = depthAndFlagHolder.GetField("_hasMappedAutomaticLeadingUpdate", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(leadingFlagField);
+
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (h, view) => leadingFlagDuringMapperExecution = (bool)leadingFlagField.GetValue(handler),
+			};
+			handler = new HandlerStub(mapper);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+
+			handler.UpdateValue("Value");
+
+			Assert.True(leadingFlagDuringMapperExecution);
 		}
 
 		[Fact]
@@ -374,12 +532,17 @@ namespace Microsoft.Maui.UnitTests
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 
-			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
+			// The first InvalidateMeasure flushes the second (queued) "Value" update before
+			// running, so both mapped "Value" entries appear before either InvalidateMeasure.
+			Assert.Equal(new[] { "Value", "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
 			Assert.Equal(1, dispatcher.PendingCount);
 
 			dispatcher.RunNext();
 
-			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure", "Value" }, mapped);
+			// The queue was already drained by the InvalidateMeasure flush above, so the stale
+			// dispatcher callback safely no-ops instead of replaying "Value" a third time.
+			Assert.Equal(new[] { "Value", "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
+			Assert.Equal(0, dispatcher.PendingCount);
 		}
 
 		[Fact]
@@ -405,11 +568,15 @@ namespace Microsoft.Maui.UnitTests
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 			handler.Invoke(nameof(IView.InvalidateMeasure), null);
 
-			Assert.Equal(new[] { "InvalidateMeasure", "InvalidateMeasure" }, mapped);
+			// The first InvalidateMeasure flushes the queued "Value" update before running, even
+			// though the explicit batch is still open.
+			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
 
 			view.BatchCommit();
 
-			Assert.Equal(new[] { "InvalidateMeasure", "InvalidateMeasure", "Value" }, mapped);
+			// The queue was already drained by the InvalidateMeasure flush above, so committing
+			// the batch has nothing left to flush.
+			Assert.Equal(new[] { "Value", "InvalidateMeasure", "InvalidateMeasure" }, mapped);
 		}
 
 		[Fact]
@@ -540,6 +707,40 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void BaseElementHandlerTypedPlatformViewAccessFlushesPendingPropertyUpdates()
+		{
+			// ElementHandlerOfT/ViewHandler/ViewHandlerOfT all shadow PlatformView with `new`,
+			// not `override` -- member lookup for a shadowed (non-virtual) property is resolved
+			// by the STATIC type of the reference at compile time, not the runtime type. A
+			// caller whose reference is statically typed as the base ElementHandler must still
+			// observe the flush barrier; it must not silently bypass it by binding to a base
+			// property that lacks the flush.
+			var mapCount = 0;
+			var mapper = new PropertyMapper<IView, HandlerStub>
+			{
+				["Value"] = (handler, view) => mapCount++,
+			};
+			var dispatcher = new QueuedDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
+			var view = new AutomaticBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapCount = 0;
+
+			handler.UpdateValue("Value");
+			handler.UpdateValue("Value");
+
+			Assert.Equal(1, mapCount);
+
+			// Access PlatformView through a reference whose static type is the base
+			// ElementHandler, not the concrete HandlerStub/ViewHandler<,> type.
+			ElementHandler baseTypedHandler = handler;
+			Assert.NotNull(baseTypedHandler.PlatformView);
+
+			Assert.Equal(2, mapCount);
+		}
+
+		[Fact]
 		public void PendingDispatcherCallbackFlushesUpdatesQueuedAfterBarrier()
 		{
 			var mapCount = 0;
@@ -562,11 +763,25 @@ namespace Microsoft.Maui.UnitTests
 			handler.UpdateValue("Value");
 
 			Assert.Equal(3, mapCount);
-			Assert.Equal(1, dispatcher.PendingCount);
+			// The PlatformView barrier flush above resets the scheduling flag along with the
+			// queue, so the third UpdateValue's leading update is free to schedule a genuine new
+			// dispatcher callback: there are now two pending callbacks -- the stale one enqueued
+			// before the barrier flush, and the new one. Without resetting the flag, the stale
+			// flag would block the new schedule, leaving the fourth (queued) update stranded on
+			// a callback that was already consumed by the barrier flush.
+			Assert.Equal(2, dispatcher.PendingCount);
 
 			dispatcher.RunNext();
 
 			Assert.Equal(4, mapCount);
+			Assert.Equal(1, dispatcher.PendingCount);
+
+			// The remaining stale callback still runs safely against the now-empty queue: it
+			// does not reschedule or re-map anything.
+			dispatcher.RunNext();
+
+			Assert.Equal(4, mapCount);
+			Assert.Equal(0, dispatcher.PendingCount);
 		}
 
 		[Fact]

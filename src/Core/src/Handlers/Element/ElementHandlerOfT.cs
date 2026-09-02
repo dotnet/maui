@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				// base.PlatformView (ElementHandler.PlatformView) is the single canonical flush
+				// barrier; it already flushes pending property updates before returning. Do not
+				// duplicate that call here.
 				return (TPlatformView?)base.PlatformView ?? throw new InvalidOperationException($"PlatformView cannot be null here");
 			}
 			private set => base.PlatformView = value;
@@ -34,14 +36,7 @@ namespace Microsoft.Maui.Handlers
 
 		IElement? IElementHandler.VirtualView => base.VirtualView;
 
-		object? IElementHandler.PlatformView
-		{
-			get
-			{
-				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
-				return base.PlatformView;
-			}
-		}
+		object? IElementHandler.PlatformView => base.PlatformView;
 
 		protected abstract TPlatformView CreatePlatformElement();
 
