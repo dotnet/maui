@@ -221,6 +221,60 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void CommandMapperReentrantBatchCommitDoesNotThrowOrStrandQueuedUpdates()
+		{
+			// A public-API-only variant of the reentrancy scenario, reached through a command
+			// mapper (Invoke) rather than a property mapper -- e.g. a command handler that
+			// synchronously raises an event/animation callback which commits an unrelated,
+			// still-open explicit batch on the same view. Invoke() flushes any pending property
+			// updates before running the command (the fix for a different review thread), so by
+			// the time the reentrant BatchCommit() below is reached the queue already happens to
+			// be empty -- this does not discriminate the fix on drained *values* (see
+			// ReentrantExplicitFlushOutsideActiveDrainLoopDefersUntilDepthUnwinds for that), but
+			// it does exercise the real, non-reflection call path into
+			// IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates() /
+			// FlushPendingExplicitUpdatesIfUnwound() from inside InvokeCommandMapper, confirming
+			// there is no exception, no recursion, and no stuck batching state afterward.
+			var mapped = new List<string>();
+			CommandHandlerStub handler = null;
+			AlwaysBatchingButton view = null;
+			var mapper = new PropertyMapper<IView, CommandHandlerStub>
+			{
+				["First"] = (h, v) => mapped.Add("First"),
+				["Second"] = (h, v) => mapped.Add("Second"),
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>
+			{
+				["Custom"] = (h, v, args) =>
+				{
+					mapped.Add("Custom");
+					view.BatchCommit();
+				},
+			};
+			handler = new CommandHandlerStub(mapper, commandMapper);
+			view = new AlwaysBatchingButton();
+
+			handler.SetVirtualView(view);
+			mapped.Clear();
+
+			view.BatchBegin();
+			handler.UpdateValue("First");
+			handler.UpdateValue("Second");
+			handler.Invoke("Custom", null);
+
+			// "First"/"Second" are flushed by Invoke() before "Custom" runs; the reentrant
+			// BatchCommit() inside "Custom" must not throw, and must actually turn explicit
+			// batching off (matching a normal, non-reentrant commit) rather than leaving it
+			// stuck on.
+			Assert.Equal(new[] { "First", "Second", "Custom" }, mapped);
+
+			mapped.Clear();
+			handler.UpdateValue("First");
+
+			Assert.Equal(new[] { "First" }, mapped);
+		}
+
+		[Fact]
 		public void ReentrantExplicitFlushOutsideActiveDrainLoopDefersUntilDepthUnwinds()
 		{
 			// IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates() must not silently
@@ -363,11 +417,10 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
-		public void AutomaticPropertyUpdatesApplyImmediatelyWithoutDispatcher()
+		public void AutomaticPropertyUpdatesSkipBatchingBookkeepingWhenNoDispatcherIsAvailable()
 		{
 			// None of the dispatcher-based tests cover the fallback where MauiContext (and so
-			// GetOptionalDispatcher()) is null. Deliberately do NOT call SetMauiContext here, so
-			// SchedulePropertyUpdateFlush() falls back to invoking its callback synchronously.
+			// GetOptionalDispatcher()) is null. Deliberately do NOT call SetMauiContext here.
 			var mapped = new List<string>();
 			var mapper = new PropertyMapper<IView, HandlerStub>
 			{
@@ -380,47 +433,93 @@ namespace Microsoft.Maui.UnitTests
 			handler.SetVirtualView(view);
 			mapped.Clear();
 
-			// Every call here takes the automatic "leading" branch: the no-dispatcher
-			// synchronous fallback flushes and clears _hasMappedAutomaticLeadingUpdate before
-			// UpdateValue returns, so each subsequent call re-enters the leading branch instead
-			// of coalescing (a documented performance regression versus a real dispatcher, but
-			// every update must still apply correctly and without throwing).
+			var pendingViewField = typeof(ElementHandler).GetField("_pendingPropertyUpdateView", BindingFlags.NonPublic | BindingFlags.Instance);
+			var leadingFlagField = typeof(ElementHandler).GetField("_hasMappedAutomaticLeadingUpdate", BindingFlags.NonPublic | BindingFlags.Instance);
+			var scheduledFlagField = typeof(ElementHandler).GetField("_isPropertyUpdateFlushScheduled", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(pendingViewField);
+			Assert.NotNull(leadingFlagField);
+			Assert.NotNull(scheduledFlagField);
+
+			// With no dispatcher able to defer a flush, every update must take the plain
+			// immediate mapper path with no batching bookkeeping at all -- in particular,
+			// _pendingPropertyUpdateView must remain the current virtual view throughout.
+			// A broken implementation that still enters the leading branch and then relies on
+			// SchedulePropertyUpdateFlush's synchronous fallback ends up running a full
+			// (empty-queue) flush-and-clear cycle after every single call, which resets
+			// _pendingPropertyUpdateView back to null each time even though every applied
+			// value is still individually correct -- so asserting only on `mapped` would not
+			// catch that regression.
 			handler.UpdateValue("Leading");
+			Assert.Same(view, pendingViewField.GetValue(handler));
+			Assert.False((bool)leadingFlagField.GetValue(handler));
+			Assert.False((bool)scheduledFlagField.GetValue(handler));
+
 			handler.UpdateValue("Trailing");
+			Assert.Same(view, pendingViewField.GetValue(handler));
+
 			handler.UpdateValue("Trailing");
+			Assert.Same(view, pendingViewField.GetValue(handler));
 
 			Assert.Equal(new[] { "Leading", "Trailing", "Trailing" }, mapped);
 		}
 
-		[Fact]
-		public void LeadingUpdateAppliesBeforeSchedulingWhenDispatcherIsUnavailable()
+		class FailingDispatcher : IDispatcher
 		{
-			// SchedulePropertyUpdateFlush()'s no-dispatcher fallback invokes its callback
-			// synchronously, which drains the (still-empty) queue and, because
-			// _hasMappedAutomaticLeadingUpdate was already set, clears it again immediately.
-			// If that schedule happened *before* the leading mapper ran, the flag would already
-			// read false *while the mapper callback itself is executing* -- observable only via
-			// the internal field, since the final applied/mapped values are identical either
-			// way for this simple scenario. Capture the field's value from inside the mapper via
-			// reflection to pin down the fix precisely.
-			bool? leadingFlagDuringMapperExecution = null;
-			HandlerStub handler = null;
-			var depthAndFlagHolder = typeof(ElementHandler);
-			var leadingFlagField = depthAndFlagHolder.GetField("_hasMappedAutomaticLeadingUpdate", BindingFlags.NonPublic | BindingFlags.Instance);
-			Assert.NotNull(leadingFlagField);
+			public int DispatchAttempts { get; private set; }
 
+			public bool IsDispatchRequired => false;
+
+			public bool Dispatch(Action action)
+			{
+				DispatchAttempts++;
+				return false;
+			}
+
+			public bool DispatchDelayed(TimeSpan delay, Action action) =>
+				Dispatch(action);
+
+			public IDispatcherTimer CreateTimer() =>
+				throw new NotSupportedException();
+		}
+
+		[Fact]
+		public void AutomaticPropertyUpdatesSkipBatchingBookkeepingWhenDispatchFails()
+		{
+			// Covers the other half of the fallback: a real MauiContext/dispatcher is present,
+			// but Dispatch(...) itself returns false every time it is called (e.g. the
+			// dispatcher has shut down). Behavior must match the no-dispatcher case exactly.
+			var mapped = new List<string>();
 			var mapper = new PropertyMapper<IView, HandlerStub>
 			{
-				["Value"] = (h, view) => leadingFlagDuringMapperExecution = (bool)leadingFlagField.GetValue(handler),
+				["Leading"] = (handler, view) => mapped.Add("Leading"),
+				["Trailing"] = (handler, view) => mapped.Add("Trailing"),
 			};
-			handler = new HandlerStub(mapper);
+			var dispatcher = new FailingDispatcher();
+			var handler = CreateHandlerWithDispatcher(mapper, dispatcher);
 			var view = new AutomaticBatchingButton();
 
 			handler.SetVirtualView(view);
+			mapped.Clear();
 
-			handler.UpdateValue("Value");
+			var pendingViewField = typeof(ElementHandler).GetField("_pendingPropertyUpdateView", BindingFlags.NonPublic | BindingFlags.Instance);
+			var scheduledFlagField = typeof(ElementHandler).GetField("_isPropertyUpdateFlushScheduled", BindingFlags.NonPublic | BindingFlags.Instance);
+			Assert.NotNull(pendingViewField);
+			Assert.NotNull(scheduledFlagField);
 
-			Assert.True(leadingFlagDuringMapperExecution);
+			handler.UpdateValue("Leading");
+			Assert.Same(view, pendingViewField.GetValue(handler));
+			Assert.False((bool)scheduledFlagField.GetValue(handler));
+
+			handler.UpdateValue("Trailing");
+			Assert.Same(view, pendingViewField.GetValue(handler));
+
+			handler.UpdateValue("Trailing");
+			Assert.Same(view, pendingViewField.GetValue(handler));
+
+			Assert.Equal(new[] { "Leading", "Trailing", "Trailing" }, mapped);
+			// Every leading update legitimately retries Dispatch (the dispatcher could recover
+			// later); it must not be permanently given up on after the first failure.
+			Assert.Equal(3, dispatcher.DispatchAttempts);
 		}
 
 		[Fact]

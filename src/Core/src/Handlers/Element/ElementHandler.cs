@@ -194,18 +194,29 @@ namespace Microsoft.Maui.Handlers
 			}
 			else if (!_hasMappedAutomaticLeadingUpdate)
 			{
-				// Map the leading update before scheduling the flush. SchedulePropertyUpdateFlush
-				// falls back to invoking its callback synchronously when no dispatcher is
-				// available (or Dispatch fails), and that callback drains the (still-empty)
-				// queue and clears _hasMappedAutomaticLeadingUpdate. If we scheduled first, that
-				// synchronous fallback would wipe the flag before the leading property mapper
-				// even ran, and every subsequent property would re-enter this branch -- never
-				// coalescing anything, and re-attempting a schedule/flush round-trip per update.
-				// Invoking first means the no-dispatcher fallback degrades to the simple
-				// immediate-update path (matching pre-batching behavior) instead of a stuck state.
+				if (!TryScheduleAutomaticPropertyUpdateFlush())
+				{
+					// Starting a new automatic batch requires a dispatcher able to defer the
+					// flush to a later turn; without one (no MauiContext/dispatcher, or
+					// Dispatch(...) itself returning false), there is no way to coalesce
+					// trailing updates into it. Apply this update immediately via the same
+					// plain mapper path used when automatic batching is disabled outright, and
+					// leave no batching bookkeeping (leading flag, scheduled flag) behind for
+					// it. Every following update on this handler takes this same immediate
+					// path until a dispatcher becomes available again, exactly matching
+					// pre-batching behavior. Do NOT "fix" this by invoking the mapper and then
+					// scheduling anyway -- a fallback that synchronously runs the flush
+					// callback still sets and then immediately clears the leading flag on every
+					// single update, which applies every value correctly but is a pure
+					// schedule/clear bookkeeping regression with no coalescing benefit (see
+					// AutomaticPropertyUpdatesSkipBatchingBookkeepingWhenNoDispatcherIsAvailable
+					// and AutomaticPropertyUpdatesSkipBatchingBookkeepingWhenDispatchFails).
+					_mapper?.UpdateProperty(this, VirtualView!, property);
+					return;
+				}
+
 				_hasMappedAutomaticLeadingUpdate = true;
 				InvokePropertyMapper(property);
-				SchedulePropertyUpdateFlush();
 			}
 			else
 			{
@@ -340,17 +351,30 @@ namespace Microsoft.Maui.Handlers
 			FlushPendingPropertyUpdates();
 		}
 
-		void SchedulePropertyUpdateFlush()
+		// Attempts to defer a flush of this batch's leading/trailing updates to a later
+		// dispatcher turn. Returns true only if a flush was genuinely scheduled to run
+		// asynchronously (or one already is); returns false -- with no side effects at all --
+		// if there is no dispatcher to schedule with, or if Dispatch(...) itself fails. Callers
+		// must not fall back to invoking the callback synchronously on a false return: doing so
+		// applies the update correctly but immediately clears _hasMappedAutomaticLeadingUpdate
+		// again (the queue is still empty at that point), so every subsequent update re-enters
+		// the leading branch and repeats the same schedule-attempt/flush/clear cycle -- a
+		// bookkeeping cost regression versus not batching at all, with zero coalescing benefit.
+		bool TryScheduleAutomaticPropertyUpdateFlush()
 		{
 			if (_isPropertyUpdateFlushScheduled)
-				return;
-
-			_isPropertyUpdateFlushScheduled = true;
-			var callback = _scheduledPropertyUpdateFlushCallback ??= FlushScheduledPropertyUpdates;
+				return true;
 
 			var dispatcher = MauiContext?.GetOptionalDispatcher();
-			if (dispatcher?.Dispatch(callback) != true)
-				callback();
+			if (dispatcher is null)
+				return false;
+
+			var callback = _scheduledPropertyUpdateFlushCallback ??= FlushScheduledPropertyUpdates;
+			if (!dispatcher.Dispatch(callback))
+				return false;
+
+			_isPropertyUpdateFlushScheduled = true;
+			return true;
 		}
 
 		void FlushScheduledPropertyUpdates()
@@ -481,7 +505,8 @@ namespace Microsoft.Maui.Handlers
 			// triggered by a barrier (PlatformView/ContainerView access), an explicit commit, or
 			// a virtual-view/disconnect reset leaves _isPropertyUpdateFlushScheduled set to true
 			// even though nothing is actually scheduled to run against the *new* queue contents.
-			// SchedulePropertyUpdateFlush() would then early-return for the next leading update,
+			// TryScheduleAutomaticPropertyUpdateFlush() would then early-return true for the next
+			// leading update without actually scheduling anything new,
 			// silently relying on a stale dispatcher callback (if any) to eventually flush
 			// properties that callback was never queued for. Any already-dispatched callback
 			// still safely no-ops against an empty/foreign queue when it eventually runs.
