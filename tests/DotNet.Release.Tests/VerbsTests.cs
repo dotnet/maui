@@ -14,105 +14,21 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task Resolve(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) => ResolveCommand.ExecuteAsync(
-        _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, _workspace.ManifestPath, Workspace.Now, "1.0.0-test",
-        CancellationToken.None);
-
-    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242)
-    {
-        _workspace.WriteResolvedManifest(repo, commit, barId);
-
-        return StageCommand.ExecuteAsync(
+    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242,
+        IBuildRegistry? registry = null) =>
+        StageCommand.ExecuteAsync(
             _output,
+            registry ?? new FakeRegistry(Workspace.Build(channels: Libraries)),
             Workspace.PolicyJson,
-            _workspace.ReadManifest(),
-            _workspace.ManifestPath,
+            repo,
+            commit ?? Workspace.Commit,
+            barId,
             _workspace.Drop,
+            _workspace.Out,
             options ?? new StageOptions(),
+            Workspace.Now,
+            "1.0.0-test",
             CancellationToken.None);
-    }
-
-    // ---- resolve ----
-
-    [Fact]
-    public async Task Resolve_prints_the_resolved_build_and_initializes_the_release_manifest()
-    {
-        await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)));
-
-        Assert.True(Directory.Exists(_workspace.Out));
-        var output = _output.AllOutput;
-        Assert.Contains("Resolved build:", output, StringComparison.Ordinal);
-        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
-        Assert.Contains(
-            "Repository URL    : https://github.com/dotnet/skiasharp",
-            output, StringComparison.Ordinal);
-        Assert.Contains($"Commit            : {Workspace.Commit}", output, StringComparison.Ordinal);
-        Assert.Contains("BAR build ID      : 4242", output, StringComparison.Ordinal);
-        Assert.Contains("Repository origin : GitHubRepository", output, StringComparison.Ordinal);
-        Assert.Contains("Workload          : False", output, StringComparison.Ordinal);
-        Assert.Contains("Channel name      : .NET Libraries", output, StringComparison.Ordinal);
-        Assert.Contains("Channel ID        : 1648", output, StringComparison.Ordinal);
-
-        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
-        Assert.Equal(4242, manifest.Source.BarBuildId);
-        Assert.False(manifest.Source.Workload);
-        Assert.Empty(manifest.Sets);
-    }
-
-    [Fact]
-    public void Resolve_command_writes_the_release_manifest_directly()
-    {
-        var command = ResolveCommand.Build(TextWriter.Null, "1.0.0-test");
-
-        Assert.Equal("resolve", command.Name);
-        Assert.Contains(command.Options, option => option.Name == "--manifest");
-        Assert.DoesNotContain(command.Options, option => option.Name == "--result");
-        Assert.DoesNotContain(command.Options, option => option.Name == "--out");
-    }
-
-    [Fact]
-    public async Task Resolve_emits_no_pipeline_commands()
-    {
-        await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)));
-
-        Assert.DoesNotContain(_output.Output, line => line.StartsWith("##vso[", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public async Task Resolve_fails_closed_for_a_repository_outside_the_policy()
-    {
-        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)), repo: "dotnet/runtime"));
-        Assert.Contains("not enabled for release", exception.Message, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Resolve_fails_closed_when_the_channel_is_missing()
-    {
-        await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => Resolve(new FakeRegistry(Workspace.Build())));
-    }
-
-    [Fact]
-    public async Task Resolve_uses_the_bar_id_lookup_when_one_is_supplied()
-    {
-        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
-
-        await Resolve(registry, barId: 4242);
-
-        Assert.Equal(4242, registry.RequestedBarId);
-        Assert.Null(registry.RequestedCommit);
-    }
-
-    [Fact]
-    public async Task Resolve_records_that_identity_came_from_the_mirror_convention()
-    {
-        var registry = new FakeRegistry(new BarBuild(4242, Workspace.Commit, null,
-            "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]));
-
-        await Resolve(registry, barId: 4242);
-        Assert.Contains("AzureDevOpsMirrorConvention", _output.AllOutput, StringComparison.Ordinal);
-    }
 
     // ---- stage ----
 
@@ -132,6 +48,8 @@ public class VerbsTests : IDisposable
 
         var output = _output.AllOutput;
         Assert.Contains("Release manifest:", output, StringComparison.Ordinal);
+        Assert.Contains("Resolved build:", output, StringComparison.Ordinal);
+        Assert.Contains("Repository origin : GitHubRepository", output, StringComparison.Ordinal);
         Assert.Contains("Schema version : 1", output, StringComparison.Ordinal);
         Assert.Contains("Tool version   : 1.0.0-test", output, StringComparison.Ordinal);
         Assert.Contains($"Created UTC    : {Workspace.Now:O}", output, StringComparison.Ordinal);
@@ -209,21 +127,31 @@ public class VerbsTests : IDisposable
     }
 
     [Fact]
-    public async Task Stage_rejects_a_resolved_manifest_that_conflicts_with_repository_policy()
+    public async Task Stage_requeries_and_validates_the_candidate_BAR_build()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");
-        _workspace.WriteResolvedManifest();
-        var resolved = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
-        var tampered = resolved with { Source = resolved.Source with { Workload = true } };
+        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
 
-        await Assert.ThrowsAsync<DotNetReleaseException>(() => StageCommand.ExecuteAsync(
-            _output,
-            Workspace.PolicyJson,
-            ReleaseManifestSerializer.Serialize(tampered),
-            _workspace.ManifestPath,
-            _workspace.Drop,
-            new StageOptions(),
-            CancellationToken.None));
+        await Stage(registry: registry);
+
+        Assert.Equal(4242, registry.RequestedBarId);
+    }
+
+    [Fact]
+    public async Task Stage_fails_closed_when_the_required_BAR_channel_is_missing()
+    {
+        _workspace.WritePackage("SkiaSharp", "3.119.0");
+
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(registry: new FakeRegistry(Workspace.Build())));
+    }
+
+    [Fact]
+    public async Task Stage_fails_closed_when_the_candidate_BAR_build_belongs_to_another_repository()
+    {
+        _workspace.WritePackage("SkiaSharp", "3.119.0");
+        var build = Workspace.Build("https://github.com/dotnet/maui", Libraries);
+
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(registry: new FakeRegistry(build)));
     }
 
     // ---- prune-published ----

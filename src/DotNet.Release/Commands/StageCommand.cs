@@ -1,24 +1,40 @@
 using System.CommandLine;
+using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
 internal static class StageCommand
 {
-    public static Command Build(TextWriter outputWriter)
+    public static Command Build(TextWriter outputWriter, string toolVersion)
     {
         var config = new Option<FileInfo>("--config")
         {
             Description = "Release policy JSON.",
             Required = true,
         };
-        var manifest = new Option<FileInfo>("--manifest")
+        var repo = new Option<string>("--repo")
         {
-            Description = "Manifest initialized by release resolve.",
+            Description = "Repository as 'owner/name'.",
+            Required = true,
+        };
+        var commit = new Option<string>("--commit")
+        {
+            Description = "Exact source commit to verify against BAR.",
+            Required = true,
+        };
+        var barId = new Option<int>("--bar-id")
+        {
+            Description = "Candidate BAR build ID resolved by Darc.",
             Required = true,
         };
         var drop = new Option<DirectoryInfo>("--drop")
         {
             Description = "Directory produced by darc gather-drop.",
+            Required = true,
+        };
+        var output = new Option<DirectoryInfo>("--out")
+        {
+            Description = "Output directory.",
             Required = true,
         };
         var include = new Option<string?>("--include")
@@ -29,27 +45,44 @@ internal static class StageCommand
         {
             Description = "Semicolon-separated exclude filters.",
         };
+        var barUri = new Option<string?>("--bar-uri")
+        {
+            Description = "Product Construction Service URI. Defaults to production.",
+        };
+        var token = new Option<string?>("--bar-token")
+        {
+            Description = "Access token. Omit to use the ambient Azure identity.",
+        };
+        var managedIdentity = new Option<string?>("--managed-identity")
+        {
+            Description = "Managed identity client ID.",
+        };
 
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-manifest.json.")
         {
-            config, manifest, drop, include, exclude,
+            config, repo, commit, barId, drop, output, include, exclude, barUri, token, managedIdentity,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
-            var manifestFile = parse.GetValue(manifest)!;
+            var api = CreateApi(parse.GetValue(barUri), parse.GetValue(token), parse.GetValue(managedIdentity));
 
             return ExecuteAsync(
                 outputWriter,
+                MaestroBuildRegistry.Create(api),
                 File.ReadAllText(parse.GetValue(config)!.FullName),
-                File.ReadAllText(manifestFile.FullName),
-                manifestFile.FullName,
+                parse.GetValue(repo)!,
+                parse.GetValue(commit)!,
+                parse.GetValue(barId),
                 parse.GetValue(drop)!.FullName,
+                parse.GetValue(output)!.FullName,
                 new StageOptions
                 {
                     Include = PackageGlob.ParseList(parse.GetValue(include)),
                     Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
                 },
+                DateTimeOffset.UtcNow,
+                toolVersion,
                 cancellationToken);
         });
 
@@ -58,37 +91,47 @@ internal static class StageCommand
 
     public static async Task ExecuteAsync(
         TextWriter outputWriter,
+        IBuildRegistry registry,
         string policyJson,
-        string resolvedManifestJson,
-        string manifestPath,
+        string repository,
+        string commit,
+        int barBuildId,
         string dropDirectory,
+        string outputDirectory,
         StageOptions options,
+        DateTimeOffset now,
+        string toolVersion,
         CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        var resolvedManifest = ReleaseManifestSerializer.DeserializeManifest(resolvedManifestJson);
-        var source = resolvedManifest.Source;
-        var repositoryId = RepositoryId.Parse(source.Repository);
+        var repositoryId = RepositoryId.Parse(repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
-        if (resolvedManifest.Sets.Count != 0 || resolvedManifest.WorkloadSet is not null)
+        if (string.IsNullOrWhiteSpace(commit))
         {
-            throw new DotNetReleaseException("The manifest supplied to release stage has already been staged.");
+            throw new DotNetReleaseException("A commit must be supplied; a release is always pinned to an exact commit.");
         }
 
-        if (string.IsNullOrWhiteSpace(resolvedManifest.ToolVersion) || resolvedManifest.CreatedUtc == default)
+        if (barBuildId <= 0)
         {
-            throw new DotNetReleaseException("The resolved release manifest is missing tool identity or creation time.");
+            throw new DotNetReleaseException($"BAR build ID '{barBuildId}' must be positive.");
         }
 
-        if (!string.Equals(source.RepositoryUrl, repositoryId.GitHubUrl, StringComparison.Ordinal) ||
-            string.IsNullOrWhiteSpace(source.Commit) ||
-            source.BarBuildId <= 0 ||
-            source.Workload != repositoryPolicy.Workload ||
-            source.Channel != repositoryPolicy.Channel)
+        var request = new ReleaseRequest(repositoryId, commit, barBuildId);
+        var candidates = await registry.GetBuildAsync(barBuildId, cancellationToken).ConfigureAwait(false);
+        var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
+        ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
+        outputWriter.WriteLine();
+
+        var source = new ReleaseSource
         {
-            throw new DotNetReleaseException("The resolved release manifest does not match current repository policy or has incomplete source identity.");
-        }
+            Repository = resolved.Repository,
+            RepositoryUrl = resolved.RepositoryUrl,
+            Commit = resolved.Commit,
+            BarBuildId = resolved.BarBuildId,
+            Workload = resolved.Workload,
+            Channel = resolved.Channel,
+        };
 
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
@@ -117,10 +160,8 @@ internal static class StageCommand
             throw new DotNetReleaseException(readErrors);
         }
 
-        var manifest = ReleaseManifestBuilder.Build(
-            source, policy, packages, options, resolvedManifest.CreatedUtc, resolvedManifest.ToolVersion);
+        var manifest = ReleaseManifestBuilder.Build(source, policy, packages, options, now, toolVersion);
         var sourceFiles = IndexPackageFiles(packageFiles);
-        var outputDirectory = Path.GetDirectoryName(manifestPath)!;
         Directory.CreateDirectory(outputDirectory);
         var manifestJson = ReleaseManifestSerializer.Serialize(manifest);
 
@@ -140,6 +181,7 @@ internal static class StageCommand
             StagedSetIntegrity.ValidateStaged(set, ReleaseArtifact.ReadPackageHashes(Path.Combine(outputDirectory, set.ArtifactName)));
         }
 
+        var manifestPath = Path.Combine(outputDirectory, ReleaseArtifact.ManifestFileName);
         await File.WriteAllTextAsync(manifestPath, manifestJson, cancellationToken).ConfigureAwait(false);
 
         ReleaseOutput.WriteReleaseManifest(outputWriter, manifest);
@@ -172,4 +214,8 @@ internal static class StageCommand
         return indexed;
     }
 
+    private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>
+        baseUri is { Length: > 0 }
+            ? PcsApiFactory.GetAuthenticated(baseUri, token!, managedIdentityId!, disableInteractiveAuth: true)
+            : PcsApiFactory.GetAuthenticated(token!, managedIdentityId!, disableInteractiveAuth: true);
 }

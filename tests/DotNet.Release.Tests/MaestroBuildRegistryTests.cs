@@ -4,8 +4,6 @@ namespace DotNet.Release.Tests;
 
 public class MaestroBuildRegistryTests
 {
-    private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp");
-
     // ---- resolution by BAR ID ----
 
     [Fact]
@@ -73,99 +71,6 @@ public class MaestroBuildRegistryTests
         Assert.False(fake.LastIncludeAssetLocation);
     }
 
-    // ---- resolution by repository + commit ----
-
-    [Fact]
-    public async Task Get_by_repository_and_commit_queries_bar_with_the_github_url()
-    {
-        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create()]);
-
-        await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
-
-        Assert.Equal("https://github.com/dotnet/skiasharp", fake.LastRepository);
-        Assert.Equal(BuildFactory.Commit, fake.LastCommit);
-    }
-
-    [Fact]
-    public async Task Commit_is_trimmed_before_the_query()
-    {
-        var fake = new FakeBuilds(list: (_, _) => []);
-
-        await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, $"  {BuildFactory.Commit}\n", CancellationToken.None);
-
-        Assert.Equal(BuildFactory.Commit, fake.LastCommit);
-    }
-
-    /// <summary>
-    /// The service only eager-loads <c>BuildChannels</c> when <c>loadCollections</c> is true:
-    /// <code>if (loadCollections ?? false) { query = query.Include(b => b.BuildChannels)... }</code>
-    /// With it false, <c>Build.Channels</c> is empty and every required-channel check fails
-    /// with <c>BAR_CHANNEL_MISSING</c> while BAR shows the build correctly assigned — a
-    /// failure whose message points the operator at the wrong thing entirely.
-    /// </summary>
-    [Fact]
-    public async Task Channels_are_requested_because_the_service_omits_them_otherwise()
-    {
-        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create()]);
-
-        await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
-
-        Assert.True(fake.LastLoadCollections);
-    }
-
-    /// <summary>
-    /// Repository-and-commit lookup must load channel collections so policy can verify the
-    /// required channel.
-    /// </summary>
-    [Fact]
-    public async Task Required_channel_verification_succeeds_on_the_repository_and_commit_path()
-    {
-        var policy = ReleasePolicy.Parse("""
-        {
-          "schemaVersion": 1,
-          "repositories": {
-            "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
-          }
-        }
-        """);
-
-        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create(channels: [(1648, ".NET Libraries")])]);
-
-        var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
-
-        var resolved = BuildResolver.Resolve(new ReleaseRequest(Skia, BuildFactory.Commit, null), policy.GetRepository(Skia), builds);
-
-        Assert.Equal(new ChannelReference(".NET Libraries", 1648), resolved.Channel);
-    }
-
-    [Fact]
-    public async Task Every_page_entry_is_returned_so_Core_can_reject_an_ambiguous_match()
-    {
-        var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create(id: 1), BuildFactory.Create(id: 2)]);
-
-        var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
-
-        Assert.Equal([1, 2], builds.Select(b => b.Id));
-    }
-
-    [Fact]
-    public async Task No_matching_build_is_an_empty_result()
-    {
-        var fake = new FakeBuilds(list: (_, _) => []);
-
-        Assert.Empty(await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None));
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public async Task Blank_commit_is_rejected_without_calling_the_service(string commit)
-    {
-        var fake = new FakeBuilds(list: (_, _) => throw new InvalidOperationException("should not be called"));
-
-        Assert.Empty(await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, commit, CancellationToken.None));
-    }
-
     // ---- end-to-end through build resolution ----
 
     /// <summary>
@@ -175,6 +80,7 @@ public class MaestroBuildRegistryTests
     [Fact]
     public async Task Null_github_repository_resolves_and_verifies_end_to_end()
     {
+        var skia = RepositoryId.Parse("dotnet/skiasharp");
         var policy = ReleasePolicy.Parse("""
         {
           "schemaVersion": 1,
@@ -191,7 +97,7 @@ public class MaestroBuildRegistryTests
         var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
 
         var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(Skia, BuildFactory.Commit, BarBuildId: 328857), policy.GetRepository(Skia), builds);
+            new ReleaseRequest(skia, BuildFactory.Commit, BarBuildId: 328857), policy.GetRepository(skia), builds);
 
         Assert.Equal("dotnet/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);

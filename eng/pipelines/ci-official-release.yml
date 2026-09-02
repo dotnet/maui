@@ -15,11 +15,10 @@
 # What it does, in order:
 #   1. Prepare the release.
 #      1.1. Build and pin the C# tool bundle.
-#      1.2. `release resolve` verifies the BAR build and initializes `release-manifest.json`.
-#      1.3. Read the BAR ID and workload classification from the manifest.
-#      1.4. `darc gather-drop` downloads the build's shipping packages.
-#      1.5. `release stage` validates the packages and completes the manifest.
-#      1.6. Pin the completed manifest and publish the Release artifact.
+#      1.2. Darc resolves a candidate BAR ID and gathers its shipping packages.
+#      1.3. `release stage` verifies the BAR build, validates the packages, and creates
+#           `release-manifest.json`.
+#      1.4. Pin the manifest and publish the Release artifact.
 #   2. When requested for a workload release, run the separately approved promotion stage.
 #   3. Release each applicable package set; workload packs complete before manifests begin.
 #      3.1. Verify the pinned artifact and run `release prune-published`.
@@ -157,8 +156,8 @@ extends:
     stages:
 
     # -----------------------------------------------------------------------------------------
-    # 1. Prepare the release: resolve the build, gather and validate its packages, complete the
-    # manifest, and publish the pinned Release artifact.
+    # 1. Prepare the release: resolve a candidate build, gather its packages, validate the build
+    # and packages, create the manifest, and publish the pinned Release artifact.
     # This stage runs for a dry run too — that is the point of a dry run.
     # -----------------------------------------------------------------------------------------
     - stage: prepare_release
@@ -214,13 +213,14 @@ extends:
           displayName: Build the release tool
 
         - task: AzureCLI@2
-          displayName: Resolve and verify the BAR build
+          displayName: Resolve BAR ID and gather the drop
           inputs:
             azureSubscription: "Darc: Maestro Production"
             scriptType: pscore
             scriptLocation: inlineScript
             # Queue-time values enter executable PowerShell only through environment
-            # variables. Shape validation runs before the tool authenticates with Maestro.
+            # variables. This step resolves only the candidate ID needed by gather-drop;
+            # `release stage` performs the authoritative BAR validation afterward.
             inlineScript: |
               $ErrorActionPreference = 'Stop'
 
@@ -228,119 +228,126 @@ extends:
                 throw "Commit '$env:COMMIT_HASH' is not a 40-character hexadecimal SHA."
               }
 
-              $barId = @()
-              if ($env:BAR_BUILD_ID -ne 'skip') {
-                if ($env:BAR_BUILD_ID -notmatch '^[0-9]+$') {
-                  throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
-                }
-                $barId = @('--bar-id', $env:BAR_BUILD_ID)
-              }
-
               if ($env:GH_OWNER -notmatch '^[A-Za-z0-9\-]+$' -or $env:GH_REPO -notmatch '^[A-Za-z0-9\-\._]+$') {
                 throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
               }
 
-              dotnet "$env:RELEASE_TOOL" `
-                resolve `
-                --config "$env:CONFIG_PATH" `
-                --repo "$env:GH_OWNER/$env:GH_REPO" `
-                --commit $env:COMMIT_HASH `
-                --manifest "$env:MANIFEST_PATH" `
-                @barId
-              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          env:
-            RELEASE_TOOL: $(ToolPath)
-            CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
-            GH_OWNER: ${{ parameters.ghOwner }}
-            GH_REPO: ${{ parameters.ghRepo }}
-            COMMIT_HASH: ${{ parameters.commitHash }}
-            BAR_BUILD_ID: ${{ parameters.barBuildId }}
-            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
-
-        - pwsh: |
-            $manifest = Get-Content -LiteralPath $env:MANIFEST_PATH -Raw | ConvertFrom-Json
-            $barId = 0
-            if (-not [int]::TryParse([string]$manifest.source.barBuildId, [ref]$barId) -or $barId -le 0) {
-              throw "The release manifest contains invalid BAR build ID '$($manifest.source.barBuildId)'."
-            }
-            if ($manifest.source.workload -isnot [bool]) {
-              throw "The release manifest contains invalid workload classification '$($manifest.source.workload)'."
-            }
-
-            $isWorkload = $manifest.source.workload.ToString().ToLowerInvariant()
-            Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
-            Write-Host "##vso[task.setvariable variable=IsWorkload;isOutput=true]$isWorkload"
-
-            # Match Arcade's established "BAR ID - <id>" build tag format.
-            Write-Host "##vso[build.addbuildtag]BAR ID - $barId"
-            Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
-          name: loadResolvedBuild
-          displayName: Load resolved release manifest
-          env:
-            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
-            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
-
-        - task: AzureCLI@2
-          displayName: Gather the drop
-          inputs:
-            azureSubscription: "Darc: Maestro Production"
-            scriptType: pscore
-            scriptLocation: inlineScript
-            # darc owns feed discovery, authentication, retries and --include-released.
-            # Invoked here so Azure DevOps owns the exit code and --verbose lands in this log.
-            inlineScript: |
               . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
               $darc = Get-Darc
               if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
                 throw 'Arcade failed to install the Darc CLI.'
               }
 
+              $barId = 0
+              if ($env:BAR_BUILD_ID -ne 'skip') {
+                if (-not [int]::TryParse($env:BAR_BUILD_ID, [ref]$barId) -or $barId -le 0) {
+                  throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
+                }
+              } else {
+                $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
+                $buildJson = & $darc get-build --ci `
+                  --repo $sourceRepository `
+                  --commit $env:COMMIT_HASH `
+                  --extended `
+                  --output-format json `
+                  --azdev-pat $env:AZDO_TOKEN
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Darc failed to resolve the BAR build: $($buildJson | Out-String)"
+                }
+
+                $parsedBuilds = $buildJson | ConvertFrom-Json
+                $builds = @($parsedBuilds)
+                if ($builds.Count -ne 1) {
+                  throw "Expected exactly one BAR build for '$sourceRepository' at commit '$env:COMMIT_HASH', found $($builds.Count)."
+                }
+                if (-not [int]::TryParse([string]$builds[0].id, [ref]$barId) -or $barId -le 0) {
+                  throw "Darc returned invalid BAR build ID '$($builds[0].id)'."
+                }
+              }
+
+              Write-Host "Candidate BAR build ID: $barId"
+              Write-Host "##vso[task.setvariable variable=BarId]$barId"
+
+              # Darc owns feed discovery, authentication, released-asset handling, and retries.
               & $darc gather-drop --ci `
-                --id $(loadResolvedBuild.BarId) `
+                --id $barId `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
                 --include-released `
                 --asset-filter '^[^/]+$' `
                 --verbose
-              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(loadResolvedBuild.BarId)." }
+              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $barId." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
+            GH_OWNER: ${{ parameters.ghOwner }}
+            GH_REPO: ${{ parameters.ghRepo }}
+            COMMIT_HASH: ${{ parameters.commitHash }}
+            BAR_BUILD_ID: ${{ parameters.barBuildId }}
 
-        - pwsh: |
-            $ErrorActionPreference = 'Stop'
+        - task: AzureCLI@2
+          displayName: Validate BAR build and stage packages
+          inputs:
+            azureSubscription: "Darc: Maestro Production"
+            scriptType: pscore
+            scriptLocation: inlineScript
+            inlineScript: |
+              $ErrorActionPreference = 'Stop'
 
-            $filters = @()
-            if ($env:INCLUDE_FILTERS -ne 'skip') {
-              $filters += @('--include', $env:INCLUDE_FILTERS)
-            }
-            if ($env:EXCLUDE_FILTERS -ne 'skip') {
-              $filters += @('--exclude', $env:EXCLUDE_FILTERS)
-            }
+              $filters = @()
+              if ($env:INCLUDE_FILTERS -ne 'skip') {
+                $filters += @('--include', $env:INCLUDE_FILTERS)
+              }
+              if ($env:EXCLUDE_FILTERS -ne 'skip') {
+                $filters += @('--exclude', $env:EXCLUDE_FILTERS)
+              }
 
-            dotnet "$env:RELEASE_TOOL" `
-              stage `
-              --config "$env:CONFIG_PATH" `
-              --manifest "$env:MANIFEST_PATH" `
-              --drop "$env:DROP_DIR" `
-              @filters
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          displayName: Validate and stage packages
+              dotnet "$env:RELEASE_TOOL" `
+                stage `
+                --config "$env:CONFIG_PATH" `
+                --repo "$env:GH_OWNER/$env:GH_REPO" `
+                --commit "$env:COMMIT_HASH" `
+                --bar-id "$env:BAR_ID" `
+                --drop "$env:DROP_DIR" `
+                --out "$env:ARTIFACT_DIR" `
+                @filters
+              if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
-            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
             DROP_DIR: $(Agent.TempDirectory)/drop
+            ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
+            GH_OWNER: ${{ parameters.ghOwner }}
+            GH_REPO: ${{ parameters.ghRepo }}
+            COMMIT_HASH: ${{ parameters.commitHash }}
+            BAR_ID: $(BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
         # Get-FileHash independently pins the exact manifest bytes written by `release stage`.
         - pwsh: |
             $manifestPath = "$(Build.ArtifactStagingDirectory)/release-manifest.json"
+            $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+            if ([string]$manifest.source.barBuildId -ne $env:EXPECTED_BAR_ID) {
+              throw "The release manifest BAR build ID '$($manifest.source.barBuildId)' does not match resolved build '$env:EXPECTED_BAR_ID'."
+            }
+            if ($manifest.source.workload -isnot [bool]) {
+              throw "The release manifest contains invalid workload classification '$($manifest.source.workload)'."
+            }
+
             $hash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $isWorkload = $manifest.source.workload.ToString().ToLowerInvariant()
             Write-Host "Release manifest SHA-256: $hash"
             Write-Host "##vso[task.setvariable variable=ReleaseManifestHash;isOutput=true]$hash"
+            Write-Host "##vso[task.setvariable variable=IsWorkload;isOutput=true]$isWorkload"
+
+            # Tag only after stage has verified the candidate build and created the manifest.
+            Write-Host "##vso[build.addbuildtag]BAR ID - $env:EXPECTED_BAR_ID"
+            Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
           name: pinManifest
           displayName: Pin the release manifest hash
+          env:
+            EXPECTED_BAR_ID: $(BarId)
+            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
 
         # Record release intent as a build tag. The run name is already fixed at queue time.
         - ${{ if eq(variables.publishPackages, 'true') }}:
@@ -362,7 +369,7 @@ extends:
               }
             displayName: Validate workload promotion mode
             env:
-              IS_WORKLOAD: $(loadResolvedBuild.IsWorkload)
+              IS_WORKLOAD: $(pinManifest.IsWorkload)
 
     # -----------------------------------------------------------------------------------------
     # 2. Optionally promote the workload build. A BAR mutation, so it remains a separately
@@ -375,7 +382,7 @@ extends:
         ${{ else }}:
           displayName: Preview workload set promotion
         dependsOn: prepare_release
-        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], 'true'))
+        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.pinManifest.IsWorkload'], 'true'))
         jobs:
         # Promotion mutates BAR and therefore requires explicit approval of the completed,
         # pinned release manifest.

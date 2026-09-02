@@ -22,14 +22,18 @@ public class VerificationBudgetTests : IDisposable
             _workspace.WritePackage($"Package{i:D2}", "1.0.0");
         }
 
-        _workspace.WriteResolvedManifest();
         await StageCommand.ExecuteAsync(
             _output,
+            new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648))),
             Workspace.PolicyJson,
-            _workspace.ReadManifest(),
-            _workspace.ManifestPath,
+            "dotnet/skiasharp",
+            Workspace.Commit,
+            4242,
             _workspace.Drop,
+            _workspace.Out,
             new StageOptions(),
+            Workspace.Now,
+            "1.0.0-test",
             CancellationToken.None);
     }
 

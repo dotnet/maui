@@ -18,17 +18,9 @@ internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
 {
     public int? RequestedBarId { get; private set; }
 
-    public string? RequestedCommit { get; private set; }
-
     public Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken)
     {
         RequestedBarId = barBuildId;
-        return Task.FromResult<IReadOnlyList<BarBuild>>(builds);
-    }
-
-    public Task<IReadOnlyList<BarBuild>> GetBuildsAsync(RepositoryId repository, string commit, CancellationToken cancellationToken)
-    {
-        RequestedCommit = commit;
         return Task.FromResult<IReadOnlyList<BarBuild>>(builds);
     }
 }
@@ -110,32 +102,6 @@ internal sealed class Workspace : IDisposable
     public static BarBuild Build(
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
         params ChannelReference[] channels) => new(4242, Commit, gitHubRepository, null, channels);
-
-    public void WriteResolvedManifest(string repository = "dotnet/skiasharp", string? commit = null, int barBuildId = 4242)
-    {
-        var policy = ReleasePolicy.Parse(PolicyJson);
-        var repositoryId = RepositoryId.Parse(repository);
-        var repositoryPolicy = policy.GetRepository(repositoryId);
-        var manifest = new ReleaseManifest
-        {
-            ToolVersion = "1.0.0-test",
-            CreatedUtc = Now,
-            Source = new ReleaseSource
-            {
-                Repository = repositoryId.FullName,
-                RepositoryUrl = repositoryId.GitHubUrl,
-                Commit = commit ?? Commit,
-                BarBuildId = barBuildId,
-                Workload = repositoryPolicy.Workload,
-                Channel = repositoryPolicy.Channel,
-            },
-            WorkloadSet = null,
-            Sets = [],
-        };
-
-        Directory.CreateDirectory(Out);
-        File.WriteAllText(ManifestPath, ReleaseManifestSerializer.Serialize(manifest));
-    }
 
     /// <summary>Writes a real .nupkg into the simulated gather-drop output.</summary>
     public string WritePackage(string id, string version)

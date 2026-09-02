@@ -49,7 +49,8 @@ A test fails the build if the dropdown and policy disagree.
 
 ```
 prepare_release
-  build the tool  →  release resolve  →  darc gather-drop  →  release stage
+  build the tool  →  darc get-build + gather-drop  →  release stage
+                                                    (validate BAR + packages)
       ↓ artifacts + pinned manifest hash
 matching package-set stage
   query NuGet.org, prune published versions, and validate the exact local set
@@ -158,15 +159,15 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --manifest <release-manifest.json>
-release stage --config config/repositories.json --manifest <release-manifest.json> --drop <dropPath> [--include '…'] [--exclude '…']
+release stage --config config/repositories.json --repo <owner/name> --commit <sha> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out <artifactDir>
 release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
 release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
 
-`resolve` initializes `release-manifest.json` with the verified source build. `stage`
-completes that same file with package sets and hashes. The pipeline pins it only after
-staging; from that point onward it is immutable and every later stage reads it.
+Darc resolves the candidate BAR ID required by `gather-drop`. `stage` re-reads that build
+through the typed PCS client, verifies its repository, exact commit, and required channel,
+then validates the gathered packages and creates `release-manifest.json`. Every later stage
+reads that pinned file.
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.
 Do not rerun the whole stage: the immutable prepared artifact already exists for that run.

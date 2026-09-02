@@ -17,30 +17,15 @@ namespace DotNet.Release.Tests;
 internal sealed class FakeBuilds : IBuilds
 {
     private readonly Func<int, PcsModels.Build?>? _getById;
-    private readonly Func<string?, string?, IReadOnlyList<PcsModels.Build>>? _list;
     private readonly Exception? _throwOnGet;
 
-    public FakeBuilds(Func<int, PcsModels.Build?>? getById = null, Func<string?, string?, IReadOnlyList<PcsModels.Build>>? list = null,
-        Exception? throwOnGet = null)
+    public FakeBuilds(Func<int, PcsModels.Build?>? getById = null, Exception? throwOnGet = null)
     {
         _getById = getById;
-        _list = list;
         _throwOnGet = throwOnGet;
     }
 
-    /// <summary>Records what the adapter actually asked BAR for.</summary>
-    public string? LastCommit { get; private set; }
-
-    public string? LastRepository { get; private set; }
-
     public bool? LastIncludeAssetLocation { get; private set; }
-
-    /// <summary>
-    /// Recorded because the real service only eager-loads channels when this is true, and a
-    /// fake that silently ignored it hid a blocking bug: channel verification failed for
-    /// every repository that required a channel.
-    /// </summary>
-    public bool? LastLoadCollections { get; private set; }
 
     public Task<PcsModels.Build> GetBuildAsync(int id, bool? includeAssetLocation = null, CancellationToken cancellationToken = default)
     {
@@ -56,16 +41,8 @@ internal sealed class FakeBuilds : IBuilds
 
     public AsyncPageable<PcsModels.Build> ListBuildsAsync(string? azdoAccount = null, int? azdoBuildId = null, string? azdoProject = null,
         string? buildNumber = null, string? commit = null, int? channelId = null, bool? loadCollections = null, DateTimeOffset? notAfter = null,
-        DateTimeOffset? notBefore = null, string? repository = null, CancellationToken cancellationToken = default)
-    {
-        LastCommit = commit;
-        LastRepository = repository;
-        LastLoadCollections = loadCollections;
-
-        var values = _list?.Invoke(repository, commit) ?? [];
-        return AsyncPageable<PcsModels.Build>.FromPages(
-            [Page<PcsModels.Build>.FromValues(values, continuationToken: null, FakeResponse.Ok)]);
-    }
+        DateTimeOffset? notBefore = null, string? repository = null, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException(nameof(ListBuildsAsync));
 
     // ---- mutating members: never valid for this tool ----
 
@@ -100,8 +77,6 @@ internal sealed class FakeBuilds : IBuilds
 /// <summary>Minimal <see cref="Response"/> so a <see cref="RestApiException"/> can be built.</summary>
 internal sealed class FakeResponse(int status) : Response
 {
-    public static FakeResponse Ok { get; } = new(200);
-
     public override int Status { get; } = status;
 
     public override string ReasonPhrase => $"HTTP {Status}";

@@ -30,15 +30,19 @@ public class WorkloadStageScopingTests : IDisposable
     {
         _workspace.WritePackage(Pack, "10.0.0");
         _workspace.WritePackage(Manifest, "10.0.0");
-        _workspace.WriteResolvedManifest("dotnet/maui");
 
         await StageCommand.ExecuteAsync(
             _output,
+            new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
             Workspace.PolicyJson,
-            _workspace.ReadManifest(),
-            _workspace.ManifestPath,
+            "dotnet/maui",
+            Workspace.Commit,
+            4242,
             _workspace.Drop,
+            _workspace.Out,
             new StageOptions(),
+            Workspace.Now,
+            "1.0.0-test",
             CancellationToken.None);
 
         var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());

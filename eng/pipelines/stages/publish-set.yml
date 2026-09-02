@@ -57,7 +57,7 @@ stages:
 - stage: ${{ parameters.stageName }}
   displayName: ${{ parameters.displayName }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], '${{ parameters.expectedWorkload }}'))
+  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.pinManifest.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
   # 1. Prepare the exact package set that the operator will review.
