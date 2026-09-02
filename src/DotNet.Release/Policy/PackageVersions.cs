@@ -30,9 +30,7 @@ internal static class PackageVersions
     }
 
     /// <summary>True when <paramref name="normalized"/> is the normalized form of <paramref name="version"/>.</summary>
-    public static bool IsNormalizedForm(string? version, string? normalized)
-    {
-        return NuGetVersion.TryParse(version?.Trim(), out var parsed) && string.Equals(parsed.ToNormalizedString(), normalized?.Trim(),
-                StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool IsNormalizedForm(string? version, string? normalized) =>
+        NuGetVersion.TryParse(version?.Trim(), out var parsed) &&
+        string.Equals(parsed.ToNormalizedString(), normalized?.Trim(), StringComparison.OrdinalIgnoreCase);
 }

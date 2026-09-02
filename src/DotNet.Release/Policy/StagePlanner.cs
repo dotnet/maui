@@ -65,7 +65,8 @@ internal static class StagePlanner
         var duplicateIdentities = GetDuplicateIdentities([.. packs, .. manifests]);
         if (duplicateIdentities.Count > 0)
         {
-            throw new DotNetReleaseException($"Workload release contains duplicate package identities: " + $"{string.Join(", ", duplicateIdentities)}.");
+            throw new DotNetReleaseException(
+                $"Workload release contains duplicate package identities: {string.Join(", ", duplicateIdentities)}.");
         }
 
         var band = PackageClassifier.GetWorkloadBand([.. manifests.Select(m => m.FileName)]);
@@ -166,7 +167,8 @@ internal static class StagePlanner
         };
     }
 
-    private static List<string> GetDuplicateIdentities(IReadOnlyList<DropPackage> packages) => packages
+    private static List<string> GetDuplicateIdentities(IReadOnlyList<DropPackage> packages) =>
+        packages
             .GroupBy(p => $"{p.Id}/{p.NormalizedVersion}", StringComparer.OrdinalIgnoreCase)
             .Where(g => g.Count() > 1)
             .Select(g => g.Key).Order(StringComparer.Ordinal).ToList();

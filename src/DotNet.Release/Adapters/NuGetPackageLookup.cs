@@ -27,8 +27,10 @@ internal sealed class NuGetPackageLookup : INuGetPackageLookup, IDisposable
         var resource = Repository.Factory.GetCoreV3(sourceIndexUrl ?? NuGetOrgIndex).GetResourceAsync<FindPackageByIdResource>();
         var actualLogger = logger ?? NullLogger.Instance;
 
-        _lookup = async (id, version, cancellationToken) => await (await resource.ConfigureAwait(false))
-                .DoesPackageExistAsync(id, version, _cache, actualLogger, cancellationToken).ConfigureAwait(false);
+        _lookup = async (id, version, cancellationToken) =>
+            await (await resource.ConfigureAwait(false))
+                .DoesPackageExistAsync(id, version, _cache, actualLogger, cancellationToken)
+                .ConfigureAwait(false);
     }
 
     internal NuGetPackageLookup(Func<string, NuGetVersion, CancellationToken, Task<bool>> lookup, int maxConcurrency = 8)

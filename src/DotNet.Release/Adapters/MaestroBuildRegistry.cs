@@ -96,7 +96,10 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
         // fails with BAR_CHANNEL_MISSING while BAR shows the build correctly assigned. It is
         // a separate concern from includeAssetLocation on GetBuildAsync, which stays false
         // because `darc gather-drop` downloads the assets.
-        var page = _builds.ListBuildsAsync(commit: commit.Trim(), repository: repository.GitHubUrl, loadCollections: true,
+        var page = _builds.ListBuildsAsync(
+            commit: commit.Trim(),
+            repository: repository.GitHubUrl,
+            loadCollections: true,
             cancellationToken: cancellationToken);
 
         await foreach (var build in page.ConfigureAwait(false))

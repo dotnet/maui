@@ -6,7 +6,8 @@ namespace DotNet.Release;
 internal static partial class PackageClassifier
 {
     /// <summary>True when the package filename identifies a workload manifest.</summary>
-    public static bool IsWorkloadManifest(string fileName) => fileName.Contains("Manifest", StringComparison.OrdinalIgnoreCase) &&
+    public static bool IsWorkloadManifest(string fileName) =>
+        fileName.Contains("Manifest", StringComparison.OrdinalIgnoreCase) &&
         fileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>

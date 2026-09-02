@@ -45,11 +45,13 @@ internal static class ReleaseArtifact
         }
 
         var matched = ordered
-            .Where(set => string.Equals(set.ArtifactName, setName.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+            .Where(set => string.Equals(set.ArtifactName, setName.Trim(), StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
         if (matched.Count == 0)
         {
-            throw new DotNetReleaseException($"The release plan has no package set named '{setName}'. It contains: " +
+            throw new DotNetReleaseException(
+                $"The release plan has no package set named '{setName}'. It contains: " +
                 $"{string.Join(", ", ordered.Select(set => set.ArtifactName))}.");
         }
 

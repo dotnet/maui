@@ -3,7 +3,10 @@ using System.Text.Json.Serialization;
 namespace DotNet.Release;
 
 /// <summary>The repository, commit, and optional BAR build selected by the operator.</summary>
-internal sealed record ReleaseRequest(RepositoryId Repository, string Commit, int? BarBuildId);
+internal sealed record ReleaseRequest(
+    RepositoryId Repository,
+    string Commit,
+    int? BarBuildId);
 
 /// <summary>The verified BAR build and repository policy written by <c>release plan</c>.</summary>
 internal sealed record ResolvedRelease

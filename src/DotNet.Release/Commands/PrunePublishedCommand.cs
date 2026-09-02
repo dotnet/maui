@@ -46,15 +46,29 @@ internal static class PrunePublishedCommand
             var planFile = parse.GetValue(plan)!;
             using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
-            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(planFile.FullName), parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
-                PackageGlob.ParseList(parse.GetValue(recoveryFilters)), parse.GetValue(expectedHash)!, parse.GetValue(set), cancellationToken);
+            return ExecuteAsync(
+                outputWriter,
+                lookup,
+                File.ReadAllText(planFile.FullName),
+                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
+                parse.GetValue(expectedHash)!,
+                parse.GetValue(set),
+                cancellationToken);
         });
 
         return command;
     }
 
-    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetPackageLookup lookup, string planJson, string stageDirectory,
-        IReadOnlyList<string> recoveryPatterns, string expectedPlanHash, string? setName, CancellationToken cancellationToken)
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter,
+        INuGetPackageLookup lookup,
+        string planJson,
+        string stageDirectory,
+        IReadOnlyList<string> recoveryPatterns,
+        string expectedPlanHash,
+        string? setName,
+        CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
         var sets = ReleaseArtifact.SelectSets(plan, setName);
@@ -68,8 +82,7 @@ internal static class PrunePublishedCommand
 
             var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
             var report = PrunePublishedPlanner.Plan(set, plan.AllPackages, recoveryPatterns, availability);
-            var invalidFileName = report.FilesToRemove
-                .FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
+            var invalidFileName = report.FilesToRemove.FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
             if (invalidFileName is not null)
             {
                 throw new DotNetReleaseException($"Package file name '{invalidFileName}' must not contain a directory.");
@@ -88,7 +101,9 @@ internal static class PrunePublishedCommand
 
             StagedSetIntegrity.ValidateFiltered(set, ReleaseArtifact.ReadPackageHashes(setDirectory), report);
 
-            await File.WriteAllTextAsync(Path.Combine(setDirectory, ReportFileName), ReleasePlanSerializer.Serialize(report),
+            await File.WriteAllTextAsync(
+                Path.Combine(setDirectory, ReportFileName),
+                ReleasePlanSerializer.Serialize(report),
                 cancellationToken).ConfigureAwait(false);
 
             ReleaseOutput.WritePruneReport(outputWriter, set, report);

@@ -55,8 +55,17 @@ internal static class PlanCommand
         {
             var api = CreateApi(parse.GetValue(barUri), parse.GetValue(token), parse.GetValue(managedIdentity));
 
-            return ExecuteAsync(outputWriter, MaestroBuildRegistry.Create(api), File.ReadAllText(parse.GetValue(config)!.FullName), parse.GetValue(repo)!,
-                parse.GetValue(commit)!, parse.GetValue(barId), parse.GetValue(output)!.FullName, DateTimeOffset.UtcNow, toolVersion, cancellationToken);
+            return ExecuteAsync(
+                outputWriter,
+                MaestroBuildRegistry.Create(api),
+                File.ReadAllText(parse.GetValue(config)!.FullName),
+                parse.GetValue(repo)!,
+                parse.GetValue(commit)!,
+                parse.GetValue(barId),
+                parse.GetValue(output)!.FullName,
+                DateTimeOffset.UtcNow,
+                toolVersion,
+                cancellationToken);
         });
 
         return command;
@@ -70,7 +79,8 @@ internal static class PlanCommand
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
         var request = new ReleaseRequest(repositoryId, commit, barBuildId);
-        var candidates = barBuildId is { } id ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
+        var candidates = barBuildId is { } id
+            ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
             : await registry.GetBuildsAsync(repositoryId, commit, cancellationToken).ConfigureAwait(false);
 
         var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates, now, toolVersion);
@@ -84,7 +94,8 @@ internal static class PlanCommand
         outputWriter.WriteLine(AzurePipelineCommand.SetIsWorkload(resolved.Workload));
     }
 
-    private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) => baseUri is { Length: > 0 }
+    private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>
+        baseUri is { Length: > 0 }
             ? PcsApiFactory.GetAuthenticated(baseUri, token!, managedIdentityId!, disableInteractiveAuth: true)
             : PcsApiFactory.GetAuthenticated(token!, managedIdentityId!, disableInteractiveAuth: true);
 }

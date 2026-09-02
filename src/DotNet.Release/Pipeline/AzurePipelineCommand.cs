@@ -52,14 +52,20 @@ internal static class AzurePipelineCommand
         SetVariable(BarIdVariable, barBuildId.ToString(System.Globalization.CultureInfo.InvariantCulture), isOutput: true);
 
     /// <summary>Formats the workload classification emitted by <c>release plan</c>.</summary>
-    public static string SetIsWorkload(bool isWorkload) => SetVariable(IsWorkloadVariable, isWorkload ? "true" : "false", isOutput: true);
+    public static string SetIsWorkload(bool isWorkload) =>
+        SetVariable(IsWorkloadVariable, isWorkload ? "true" : "false", isOutput: true);
 
     /// <summary>Formats the flag the publish task's condition reads.</summary>
-    public static string SetPackagesToPublish(bool hasPackages) => SetVariable(PackagesToPublishVariable, hasPackages ? "true" : "false");
+    public static string SetPackagesToPublish(bool hasPackages) =>
+        SetVariable(PackagesToPublishVariable, hasPackages ? "true" : "false");
 
     /// <summary>
     /// Escapes characters Azure Pipelines would otherwise treat as command syntax.
     /// </summary>
-    private static string Escape(string value) => value.Replace("%", "%AZP25", StringComparison.Ordinal).Replace("\r", "%0D", StringComparison.Ordinal)
-        .Replace("\n", "%0A", StringComparison.Ordinal).Replace("]", "%5D", StringComparison.Ordinal).Replace(";", "%3B", StringComparison.Ordinal);
+    private static string Escape(string value) => value
+        .Replace("%", "%AZP25", StringComparison.Ordinal)
+        .Replace("\r", "%0D", StringComparison.Ordinal)
+        .Replace("\n", "%0A", StringComparison.Ordinal)
+        .Replace("]", "%5D", StringComparison.Ordinal)
+        .Replace(";", "%3B", StringComparison.Ordinal);
 }
