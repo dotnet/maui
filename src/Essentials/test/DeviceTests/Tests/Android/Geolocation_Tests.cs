@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Geolocation")]
 	public class Android_Geolocation_Tests
 	{
+		const string FusedProvider = "fused";
+
 		public static IEnumerable<object[]> AccuracyDistances =>
 			new[]
 			{
@@ -53,11 +55,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void SelectProvider_PrefersFusedProvider()
 		{
-			var enabledProviders = new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.FusedProvider };
+			var enabledProviders = new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider, FusedProvider };
 
 			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Best);
 
-			Assert.Equal(AndroidLocationManager.FusedProvider, provider);
+			Assert.Equal(FusedProvider, provider);
 		}
 
 		[Fact]
@@ -119,12 +121,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(AndroidLocationManager.FusedProvider)]
+		[InlineData(FusedProvider)]
 		[InlineData(AndroidLocationManager.GpsProvider)]
 		[InlineData(AndroidLocationManager.NetworkProvider)]
 		public void GetProviders_UsesOnlyExplicitProvider(string selectedProvider)
 		{
-			var enabledProviders = new[] { AndroidLocationManager.FusedProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
+			var enabledProviders = new[] { FusedProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
 
 			var providers = GeolocationImplementation.GetProviders(enabledProviders, selectedProvider, useExplicitProvider: true);
 
@@ -140,7 +142,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(AndroidLocationManager.FusedProvider)]
+		[InlineData(FusedProvider)]
 		[InlineData("custom")]
 		public void GetProviders_UsesFallbackWhenStandardProvidersAreUnavailable(string fallbackProvider)
 		{
