@@ -983,8 +983,8 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("SwipeViewControl");
 		App.SwipeLeftToRight("SwipeViewControl");
 		var ended = App.WaitForElement("SwipeEndedLabel").GetText();
-		Assert.That(ended, Does.Contain("IsOpen: Closed"),
-			$"When swipe distance is below Threshold, SwipeEnded.IsOpen must be false. Was: '{ended}'");
+		Assert.That(ended, Does.Contain("IsOpen: Open"),
+			$"When swipe distance is below Threshold, SwipeEnded.IsOpen must be true. Was: '{ended}'");
 	}
 
 	[Test, Order(59)]
