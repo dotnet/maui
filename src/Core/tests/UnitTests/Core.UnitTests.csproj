@@ -10,6 +10,8 @@
       CanAddMultipleEventsViaMultipleConfigureLifecycleEvents, CanAddMultipleEventsViaBuilder, EventsFireExactlyOnce
     -->
     <LangVersion>9.0</LangVersion>
+    <!-- Mirrors Core.csproj: lets HandlerInstrumentationTests compile/run when the instrumented Core is built. -->
+    <DefineConstants Condition="'$(MauiEnableHandlerInstrumentation)' == 'true'">$(DefineConstants);HANDLER_INSTRUMENTATION</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

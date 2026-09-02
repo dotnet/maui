@@ -10,7 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
     <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
-    <DefineConstants Condition="'$(EnableHandlerInstrumentation)' == 'true'">$(DefineConstants);HANDLER_INSTRUMENTATION</DefineConstants>
+    <DefineConstants Condition="'$(MauiEnableHandlerInstrumentation)' == 'true'">$(DefineConstants);HANDLER_INSTRUMENTATION</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
