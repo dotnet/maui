@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 
 		readonly SwipeRecognizerProxy _proxy;
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
+		readonly Dictionary<ISwipeItem, double> _swipeItemWidths;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UITapGestureRecognizer _tapGestureRecognizer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -49,6 +50,7 @@ namespace Microsoft.Maui.Platform
 			_contentView = new UIView();
 			_actionView = new UIStackView();
 			_swipeItems = new Dictionary<ISwipeItem, object>();
+			_swipeItemWidths = new Dictionary<ISwipeItem, double>();
 			_isScrollEnabled = true;
 
 			_tapGestureRecognizer = new UITapGestureRecognizer(_proxy.HandleTap)
@@ -352,7 +354,7 @@ namespace Microsoft.Maui.Platform
 				if (!child.Hidden)
 				{
 					var item = items[i];
-					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, _swipeItems);
+					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
 
 					float swipeItemHeight = (float)swipeItemSize.Height;
 					float swipeItemWidth = (float)swipeItemSize.Width;
@@ -924,7 +926,7 @@ namespace Microsoft.Maui.Platform
 						if (GetIsVisible(swipeItem))
 						{
 							_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
+							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
 							swipeThreshold += swipeItemSize.Width;
 						}
 					}
@@ -956,7 +958,7 @@ namespace Microsoft.Maui.Platform
 				if (GetIsVisible(swipeItem))
 				{
 					_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
+					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
 					swipeItemsHeight += (float)swipeItemSize.Height;
 					swipeItemsWidth += (float)swipeItemSize.Width;
 				}
