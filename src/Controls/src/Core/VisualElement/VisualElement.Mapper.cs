@@ -43,9 +43,14 @@ namespace Microsoft.Maui.Controls
 
 			// Record, on the handler, that the canonical `Background`/`Semantics` mapping has just run so
 			// the redirects below can skip only the single, immediately-following redundant invocation of
-			// each key within *this same* bulk mapping pass - never an explicit/reentrant call, a
-			// same-value call, or one that happens before any `Background`/`Semantics` mapping has run at
-			// all. See VisualElementMapperTests for coverage of this invariant.
+			// each key within *this same bulk `UpdateProperties` pass* - identified via
+			// PropertyMapperPassScope, not merely "the next time this key happens to run". This never
+			// suppresses an explicit/reentrant call, a same-value call, a call that happens before any
+			// `Background`/`Semantics` mapping has run at all, or a call triggered by `Background`/
+			// `Semantics` running *outside* of a bulk pass (e.g. a platform mapper that reacts to some
+			// other property by directly calling `Handler.UpdateValue(nameof(Background))` /
+			// `nameof(Semantics))` well after connect - see PickerHandler.Windows.MapTitle for a real
+			// example of this shape). See VisualElementMapperTests for coverage of this invariant.
 			viewMapper.AppendToMapping<IView, IViewHandler>(nameof(IView.Background), RecordBackgroundMapped);
 			viewMapper.AppendToMapping<IView, IViewHandler>(nameof(IView.Semantics), RecordSemanticsMapped);
 
@@ -65,22 +70,27 @@ namespace Microsoft.Maui.Controls
 		// `UpdateProperties` pass that runs on initial connect or reconnect, the canonical `Background`
 		// mapping already reads the current composite BackgroundColor/BackgroundImageSource/Background
 		// value later in that very same pass, making this redirect redundant. `RecordBackgroundMapped`
-		// marks, on the handler, that a pending redundant invocation of this key exists for the pass that
-		// just ran `Background`'s mapping; this method consumes that one pending mark (skipping only that
-		// single invocation) and applies normally for every other call - whether it happens before
-		// `Background` has ever been mapped (e.g. from `ConnectHandler`), after the pending mark has
+		// marks, on the handler, that a pending redundant invocation of this key exists for the *specific*
+		// bulk pass that just ran `Background`'s mapping (identified by `PropertyMapperPassScope`'s pass
+		// id); this method consumes that one pending mark only if it is still the current pass (skipping
+		// only that single invocation) and applies normally for every other call - whether it happens
+		// before `Background` has ever been mapped (e.g. from `ConnectHandler`), after the pending mark has
 		// already been consumed once (e.g. a mapper that runs later in the same pass and changes the
-		// value), or with an unchanged value. See VisualElementMapperTests for coverage of this invariant.
+		// value), with an unchanged value, or after the pass that armed the mark has since ended (whether
+		// normally or because a mapper threw) - a stale mark from a pass that is no longer current can never
+		// be consumed. See VisualElementMapperTests for coverage of this invariant.
 		static void MapBackgroundColorForControls(IViewHandler handler, IView view)
 		{
 			var state = GetMappingPassState(handler);
+			var currentPassId = PropertyMapperPassScope.GetCurrentPassId(handler);
 
-			if (state.BackgroundColorPendingSkip)
+			if (state.BackgroundColorPendingSkipPassId != 0 && state.BackgroundColorPendingSkipPassId == currentPassId)
 			{
-				state.BackgroundColorPendingSkip = false;
+				state.BackgroundColorPendingSkipPassId = 0;
 			}
 			else
 			{
+				state.BackgroundColorPendingSkipPassId = 0;
 				ApplyBackgroundRedirect(state, handler, view, MapBackgroundColor);
 			}
 		}
@@ -93,13 +103,15 @@ namespace Microsoft.Maui.Controls
 		static void MapBackgroundImageSourceForControls(IViewHandler handler, IView view)
 		{
 			var state = GetMappingPassState(handler);
+			var currentPassId = PropertyMapperPassScope.GetCurrentPassId(handler);
 
-			if (state.BackgroundImageSourcePendingSkip)
+			if (state.BackgroundImageSourcePendingSkipPassId != 0 && state.BackgroundImageSourcePendingSkipPassId == currentPassId)
 			{
-				state.BackgroundImageSourcePendingSkip = false;
+				state.BackgroundImageSourcePendingSkipPassId = 0;
 			}
 			else
 			{
+				state.BackgroundImageSourcePendingSkipPassId = 0;
 				ApplyBackgroundRedirect(state, handler, view, MapBackgroundImageSource);
 			}
 		}
@@ -124,13 +136,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// Marks, on the handler, that the very next invocation of `MapBackgroundColorForControls`/
-		// `MapBackgroundImageSourceForControls` (whichever comes first for each) is a redundant no-op -
-		// `Background` was just (re)computed from the current BackgroundColor/BackgroundImageSource, so
-		// immediately re-running either redirect within the same pass would just push the same value
-		// again. Appended to the `Background` key itself, this runs every time that key's mapping executes,
-		// through any path (bulk connect/reconnect pass or an explicit `UpdateValue(nameof(Background))`) -
-		// except when it is itself a leaf call made by one of the redirects above (see
-		// `ApplyBackgroundRedirect`), which must not arm a pending mark for anything.
+		// `MapBackgroundImageSourceForControls` (whichever comes first for each) is a redundant no-op for
+		// *this specific* bulk pass - `Background` was just (re)computed from the current
+		// BackgroundColor/BackgroundImageSource, so immediately re-running either redirect within the same
+		// pass would just push the same value again. Appended to the `Background` key itself, this runs
+		// every time that key's mapping executes, through any path - except: (1) when it is itself a leaf
+		// call made by one of the redirects above (see `ApplyBackgroundRedirect`), which must not arm a
+		// pending mark for anything, and (2) when `Background` is being mapped *outside* of a bulk
+		// `UpdateProperties` pass entirely (`PropertyMapperPassScope.GetCurrentPassId` returns 0) - e.g. a
+		// platform mapper reacting to some unrelated property by directly calling
+		// `Handler.UpdateValue(nameof(Background))` well after connect. In that case there is no guarantee
+		// whatsoever that either redirect's turn is still coming, so nothing may be armed.
 		static void RecordBackgroundMapped(IViewHandler handler, IView view)
 		{
 			var state = GetMappingPassState(handler);
@@ -140,8 +156,14 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			state.BackgroundColorPendingSkip = true;
-			state.BackgroundImageSourcePendingSkip = true;
+			var passId = PropertyMapperPassScope.GetCurrentPassId(handler);
+			if (passId == 0)
+			{
+				return;
+			}
+
+			state.BackgroundColorPendingSkipPassId = passId;
+			state.BackgroundImageSourcePendingSkipPassId = passId;
 		}
 
 		// Same reasoning as `MapBackgroundColorForControls` above, but for the `SemanticProperties.Description`
@@ -149,14 +171,19 @@ namespace Microsoft.Maui.Controls
 		static void MapSemanticPropertiesDescriptionProperty(IViewHandler handler, IView element)
 		{
 			var state = GetMappingPassState(handler);
+			var currentPassId = PropertyMapperPassScope.GetCurrentPassId(handler);
 
-			if (state.SemanticDescriptionPendingSkip)
+			if (state.SemanticDescriptionPendingSkipPassId != 0 && state.SemanticDescriptionPendingSkipPassId == currentPassId)
 			{
-				state.SemanticDescriptionPendingSkip = false;
+				state.SemanticDescriptionPendingSkipPassId = 0;
 			}
-			else if (element is VisualElement ve)
+			else
 			{
-				ApplySemanticsRedirect(state, ve);
+				state.SemanticDescriptionPendingSkipPassId = 0;
+				if (element is VisualElement ve)
+				{
+					ApplySemanticsRedirect(state, ve);
+				}
 			}
 		}
 
@@ -165,14 +192,19 @@ namespace Microsoft.Maui.Controls
 		static void MapSemanticPropertiesHintProperty(IViewHandler handler, IView element)
 		{
 			var state = GetMappingPassState(handler);
+			var currentPassId = PropertyMapperPassScope.GetCurrentPassId(handler);
 
-			if (state.SemanticHintPendingSkip)
+			if (state.SemanticHintPendingSkipPassId != 0 && state.SemanticHintPendingSkipPassId == currentPassId)
 			{
-				state.SemanticHintPendingSkip = false;
+				state.SemanticHintPendingSkipPassId = 0;
 			}
-			else if (element is VisualElement ve)
+			else
 			{
-				ApplySemanticsRedirect(state, ve);
+				state.SemanticHintPendingSkipPassId = 0;
+				if (element is VisualElement ve)
+				{
+					ApplySemanticsRedirect(state, ve);
+				}
 			}
 		}
 
@@ -181,14 +213,19 @@ namespace Microsoft.Maui.Controls
 		static void MapSemanticPropertiesHeadingLevelProperty(IViewHandler handler, IView element)
 		{
 			var state = GetMappingPassState(handler);
+			var currentPassId = PropertyMapperPassScope.GetCurrentPassId(handler);
 
-			if (state.SemanticHeadingLevelPendingSkip)
+			if (state.SemanticHeadingLevelPendingSkipPassId != 0 && state.SemanticHeadingLevelPendingSkipPassId == currentPassId)
 			{
-				state.SemanticHeadingLevelPendingSkip = false;
+				state.SemanticHeadingLevelPendingSkipPassId = 0;
 			}
-			else if (element is VisualElement ve)
+			else
 			{
-				ApplySemanticsRedirect(state, ve);
+				state.SemanticHeadingLevelPendingSkipPassId = 0;
+				if (element is VisualElement ve)
+				{
+					ApplySemanticsRedirect(state, ve);
+				}
 			}
 		}
 
@@ -209,9 +246,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// See `RecordBackgroundMapped`: marks, on the handler, that the very next invocation of each of the
-		// three `SemanticProperties.*` redirects above is a redundant no-op, since `Semantics` was just
-		// (re)computed from the current Description/Hint/HeadingLevel values - except when it is itself a
-		// leaf call made by one of those redirects (see `ApplySemanticsRedirect`).
+		// three `SemanticProperties.*` redirects above is a redundant no-op for *this specific* bulk pass,
+		// since `Semantics` was just (re)computed from the current Description/Hint/HeadingLevel values -
+		// except when it is itself a leaf call made by one of those redirects (see
+		// `ApplySemanticsRedirect`), or when `Semantics` is being mapped outside of any bulk
+		// `UpdateProperties` pass entirely (e.g. `PickerHandler.Windows.MapTitle`, which reacts to `Title`
+		// changing - possibly well after connect - by directly calling
+		// `Handler.UpdateValue(nameof(IView.Semantics))`; that call must never be allowed to suppress a
+		// later, unrelated `SemanticProperties.*` update).
 		static void RecordSemanticsMapped(IViewHandler handler, IView view)
 		{
 			var state = GetMappingPassState(handler);
@@ -221,9 +263,15 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			state.SemanticDescriptionPendingSkip = true;
-			state.SemanticHintPendingSkip = true;
-			state.SemanticHeadingLevelPendingSkip = true;
+			var passId = PropertyMapperPassScope.GetCurrentPassId(handler);
+			if (passId == 0)
+			{
+				return;
+			}
+
+			state.SemanticDescriptionPendingSkipPassId = passId;
+			state.SemanticHintPendingSkipPassId = passId;
+			state.SemanticHeadingLevelPendingSkipPassId = passId;
 		}
 
 		void UpdateSemanticsFromMapper()
@@ -244,11 +292,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// Per-handler (not per-VisualElement) tracking of which `Background`/`Semantics`-derived redirect
-		// keys still have a pending, provably-redundant invocation outstanding for the bulk mapping pass
-		// that most recently (re-)mapped `Background`/`Semantics`. Keyed on the handler - via a
-		// ConditionalWeakTable so no manual cleanup/disconnect handling is needed - because de-duplication
-		// must be scoped to "has this specific handler's current pass already produced this key's natural,
-		// redundant call", not to any state that outlives a single pass or that lives on the element.
+		// keys still have a pending, provably-redundant invocation outstanding for the *specific* bulk
+		// mapping pass (see `Microsoft.Maui.PropertyMapperPassScope`) that most recently (re-)mapped
+		// `Background`/`Semantics`. Keyed on the handler - via a ConditionalWeakTable so no manual
+		// cleanup/disconnect handling is needed - because de-duplication must be scoped to "has this
+		// specific handler's *current* bulk pass already produced this key's natural, redundant call", not
+		// to any state that outlives a single pass or that lives on the element.
 		static readonly ConditionalWeakTable<IViewHandler, MappingPassState> s_mappingPassState = new();
 
 		static MappingPassState GetMappingPassState(IViewHandler handler) =>
@@ -256,11 +305,17 @@ namespace Microsoft.Maui.Controls
 
 		sealed class MappingPassState
 		{
-			public bool BackgroundColorPendingSkip;
-			public bool BackgroundImageSourcePendingSkip;
-			public bool SemanticDescriptionPendingSkip;
-			public bool SemanticHintPendingSkip;
-			public bool SemanticHeadingLevelPendingSkip;
+			// Each field is 0 ("no pending skip") or the id (from PropertyMapperPassScope) of the bulk
+			// pass that armed it. A pending skip is honored only while PropertyMapperPassScope currently
+			// reports that exact same pass id as active for this handler - once the pass that armed a
+			// field has ended (normally, or because a mapper threw and PropertyMapper.UpdateProperties'
+			// finally ran), that id can never again match, so the field is permanently inert even if
+			// never explicitly reset to 0.
+			public int BackgroundColorPendingSkipPassId;
+			public int BackgroundImageSourcePendingSkipPassId;
+			public int SemanticDescriptionPendingSkipPassId;
+			public int SemanticHintPendingSkipPassId;
+			public int SemanticHeadingLevelPendingSkipPassId;
 			public bool IsApplyingBackgroundRedirect;
 			public bool IsApplyingSemanticsRedirect;
 		}

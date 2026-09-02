@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
@@ -10,9 +11,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	/// Regression tests for the initial-connect/reconnect de-duplication of the
 	/// <c>BackgroundColor</c>, <c>BackgroundImageSource</c>, and <c>SemanticProperties.*</c> mapper
 	/// entries in <see cref="VisualElement"/>.RemapForControls (see VisualElement.Mapper.cs). The
-	/// de-duplication is scoped to a single bulk mapping pass (tracked per-handler), so it never
-	/// suppresses an explicit/reentrant call, a same-value call, a call made before the canonical
-	/// `Background`/`Semantics` mapping has ever run, or a call made on a subsequent connect/reconnect.
+	/// de-duplication is scoped to one specific bulk <c>UpdateProperties</c> pass - identified via
+	/// <see cref="Microsoft.Maui.PropertyMapperPassScope"/>'s per-handler pass id, not merely to "the next
+	/// time this key happens to run" - so it never suppresses an explicit/reentrant call, a same-value
+	/// call, a call made before the canonical `Background`/`Semantics` mapping has ever run, a call made on
+	/// a subsequent connect/reconnect, a call triggered by `Background`/`Semantics` running *outside* of any
+	/// bulk pass (e.g. a platform mapper reacting to some unrelated property by directly calling
+	/// `Handler.UpdateValue(nameof(Background))`/`nameof(Semantics))`, mirroring
+	/// `PickerHandler.Windows.MapTitle`), or a call whose armed pass was aborted by an exception.
 	/// </summary>
 	public class VisualElementMapperTests : BaseTestFixture
 	{
@@ -495,6 +501,124 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(new[] { "prepend", "canonical" }, order);
 			// The redirect is still correctly deduplicated even with the user's prepended mapping.
 			Assert.Equal(1, backgroundCalls);
+		}
+
+		// De-duplication must be scoped to *this specific* bulk UpdateProperties pass, not to "the next
+		// time Background happens to run" regardless of context. If Background is (re)mapped by something
+		// standalone, entirely outside of any bulk pass (e.g. a direct Handler.UpdateValue(nameof(Background))
+		// call made well after connect has finished), that must not arm a pending skip at all - there is no
+		// guarantee whatsoever that BackgroundColor's own redirect turn is still coming, so a later,
+		// completely unrelated BackgroundColor update must still apply.
+		[Fact]
+		public void DirectBackgroundUpdateOutsideBulkPass_DoesNotSuppressLaterUnrelatedBackgroundColorUpdate()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+			handlerStub.SetVirtualView(button);
+
+			Assert.Equal(1, backgroundCalls);
+
+			// Something remaps Background directly and standalone, well outside of the connect pass and
+			// outside of either redirect (e.g. not through MapBackgroundColor/MapBackgroundImageSource).
+			backgroundCalls = 0;
+			handlerStub.UpdateValue(nameof(IView.Background));
+			Assert.Equal(1, backgroundCalls);
+
+			// A subsequent, unrelated explicit BackgroundColor update must still apply - it must not be
+			// wrongly treated as the "redundant" follow-up to the direct Background update above, since
+			// that update did not happen within any bulk UpdateProperties pass.
+			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
+			Assert.Equal(2, backgroundCalls);
+		}
+
+		// Mirrors PickerHandler.Windows.MapTitle, which reacts to Title changing - including well after
+		// connect, entirely outside of any bulk UpdateProperties pass - by directly calling
+		// handler.UpdateValue(nameof(IView.Semantics)). That call must not be able to suppress a later,
+		// unrelated SemanticProperties.Description update.
+		[Fact]
+		public void HandlerDirectSemanticsUpdateOutsideBulkPass_DoesNotSuppressLaterUnrelatedSemanticDescriptionUpdate()
+		{
+			int semanticsCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Semantics)] = (h, v) => semanticsCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button();
+			SemanticProperties.SetDescription(button, "Initial");
+			handlerStub.SetVirtualView(button);
+
+			Assert.Equal(1, semanticsCalls);
+
+			// Register the Title mapper only now (after connect has fully finished), so that its own
+			// invocation below happens strictly outside of any bulk UpdateProperties pass - simulating a
+			// platform mapper, like PickerHandler.Windows.MapTitle, that reacts to an unrelated property
+			// (here, a synthetic "Title" key) by directly calling handler.UpdateValue(nameof(IView.Semantics))
+			// well after connect, e.g. because Title changed dynamically.
+			mapper.Add("Title", (h, v) => h.UpdateValue(nameof(IView.Semantics)));
+
+			// "Title" changes well after connect, entirely outside of any bulk pass - mirroring
+			// PickerHandler.Windows.MapTitle firing from a standalone Title property change.
+			semanticsCalls = 0;
+			handlerStub.UpdateValue("Title");
+			Assert.Equal(1, semanticsCalls);
+
+			// A subsequent, unrelated explicit SemanticProperties.Description update must still apply.
+			handlerStub.UpdateValue(SemanticProperties.DescriptionProperty.PropertyName);
+			Assert.Equal(2, semanticsCalls);
+		}
+
+		// If a bulk UpdateProperties pass is aborted by an exception after Background has armed a pending
+		// skip but before BackgroundColor's redirect has had a chance to consume it, that pending mark must
+		// become permanently inert - it must never be honored by a later, unrelated BackgroundColor update
+		// made outside of the (now-ended) pass that armed it.
+		[Fact]
+		public void ExceptionDuringBulkPass_DoesNotLeaveStalePendingSkipForLaterUnrelatedUpdate()
+		{
+			int backgroundCalls = 0;
+
+			// Inserted (via the object initializer, before RemapForControls runs) directly between
+			// Background and BackgroundColor's insertion-order position: RemapForControls only ever
+			// replaces/appends keys, it never reorders or removes ones already present, and
+			// PropertyMapper.GetKeys() yields a mapper's own keys in insertion order. Background is
+			// inserted first (right here), this exploding key second, then RemapForControls appends
+			// BackgroundColor after both.
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+				["__ExplodingKey"] = (h, v) => throw new InvalidOperationException("Simulated mapper failure mid-pass."),
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>();
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			// The bulk pass aborts partway through: Background has already mapped (and armed
+			// BackgroundColor/BackgroundImageSource's pending skip for this pass), but the pass ends -
+			// via PropertyMapper.UpdateProperties' finally - before BackgroundColor's own redirect turn is
+			// ever reached.
+			Assert.Throws<InvalidOperationException>(() => handlerStub.SetVirtualView(button));
+			Assert.Equal(1, backgroundCalls);
+
+			// A later, unrelated explicit BackgroundColor update - entirely outside of the aborted pass -
+			// must still apply. The pending mark armed by the aborted pass can never match again, since
+			// PropertyMapperPassScope no longer reports that pass as current for this handler.
+			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
+			Assert.Equal(2, backgroundCalls);
 		}
 
 		class PageHandlerStub : ViewHandler<ContentPage, object>

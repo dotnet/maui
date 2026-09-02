@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -121,9 +123,23 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			foreach (var mapper in UpdatePropertiesMappers)
+			// Scope this bulk enumeration as a single "pass" for viewHandler (see PropertyMapperPassScope)
+			// so mapper implementations can tell a genuine step of *this* bulk pass apart from an unrelated
+			// single-key UpdateProperty call that merely happens to touch the same handler at a different
+			// time. Ended in a finally so the pass is never left open - and any pass-scoped state that a
+			// mapper implementation may have recorded against this pass's id can never again be matched -
+			// even if a mapper throws partway through the enumeration.
+			var passId = PropertyMapperPassScope.BeginPass(viewHandler);
+			try
 			{
-				mapper(viewHandler, virtualView);
+				foreach (var mapper in UpdatePropertiesMappers)
+				{
+					mapper(viewHandler, virtualView);
+				}
+			}
+			finally
+			{
+				PropertyMapperPassScope.EndPass(viewHandler, passId);
 			}
 		}
 
@@ -188,6 +204,70 @@ namespace Microsoft.Maui
 
 			return (updatePropertiesKeys, updatePropertiesMappers, cachedMappers);
 		}
+	}
+
+	/// <summary>
+	/// Tracks, per handler, whether a bulk <see cref="PropertyMapper.UpdateProperties"/> pass is currently
+	/// in progress for it, and a unique id for that specific pass. Mapper implementations that redirect one
+	/// property key's update into another (see VisualElement's BackgroundColor/BackgroundImageSource/
+	/// SemanticProperties redirects) can use this to tell whether two invocations happened within the very
+	/// same bulk pass - as opposed to two unrelated single-key <see cref="PropertyMapper.UpdateProperty"/>
+	/// calls (e.g. <c>Handler.UpdateValue(name)</c>) that merely happen to touch the same handler at
+	/// different times, possibly well after the pass that originally triggered a redirect has ended.
+	/// </summary>
+	internal static class PropertyMapperPassScope
+	{
+		static readonly ConditionalWeakTable<IElementHandler, StrongBox<int>> s_currentPassId = new();
+		static int s_nextPassId;
+
+		/// <summary>
+		/// Marks the start of a new bulk mapping pass for <paramref name="handler"/> and returns its
+		/// unique, non-zero id. Must be paired with a call to <see cref="EndPass"/> in a <c>finally</c>
+		/// block so the pass is considered over - and its id can never again be matched by
+		/// <see cref="GetCurrentPassId"/> - even if a mapper throws partway through the pass.
+		/// </summary>
+		public static int BeginPass(IElementHandler? handler)
+		{
+			var passId = Interlocked.Increment(ref s_nextPassId);
+
+			// A null handler (e.g. some unit tests call UpdateProperties(null!, ...) directly) can never be
+			// looked up again via GetCurrentPassId with that same null reference in a meaningful way, and
+			// ConditionalWeakTable does not accept null keys - so there is nothing to track for it.
+			if (handler is null)
+			{
+				return passId;
+			}
+
+			s_currentPassId.Remove(handler);
+			s_currentPassId.Add(handler, new StrongBox<int>(passId));
+			return passId;
+		}
+
+		/// <summary>
+		/// Marks the end of the bulk mapping pass identified by <paramref name="passId"/> for
+		/// <paramref name="handler"/>. A no-op if a nested/reentrant pass has already begun (and not yet
+		/// ended) for the same handler by the time this runs, so it never clears a more recent pass's id.
+		/// </summary>
+		public static void EndPass(IElementHandler? handler, int passId)
+		{
+			if (handler is null)
+			{
+				return;
+			}
+
+			if (s_currentPassId.TryGetValue(handler, out var box) && box.Value == passId)
+			{
+				s_currentPassId.Remove(handler);
+			}
+		}
+
+		/// <summary>
+		/// Returns the id of the bulk mapping pass currently in progress for <paramref name="handler"/>,
+		/// or <c>0</c> if no bulk mapping pass is currently in progress for it (including when
+		/// <paramref name="handler"/> is <see langword="null"/>).
+		/// </summary>
+		public static int GetCurrentPassId(IElementHandler? handler) =>
+			handler is not null && s_currentPassId.TryGetValue(handler, out var box) ? box.Value : 0;
 	}
 
 	public interface IPropertyMapper

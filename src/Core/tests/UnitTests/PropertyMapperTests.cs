@@ -41,6 +41,78 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal(insertedProperties, updatedProperties);
 		}
 
+		// Regression test for PropertyMapperPassScope, the pass/generation-scoped tracking used by
+		// VisualElement's BackgroundColor/BackgroundImageSource/SemanticProperties mapper redirects to
+		// distinguish a genuine step of *this* bulk UpdateProperties pass from an unrelated single-key
+		// UpdateProperty call that merely happens to touch the same handler at a different time.
+		[Fact]
+		public void UpdatePropertiesPassScopeIsActiveDuringBulkPassAndClearedAfterward()
+		{
+			var handler = new HandlerStub();
+			int? passIdDuringA = null;
+			int? passIdDuringB = null;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["A"] = (h, v) => passIdDuringA = PropertyMapperPassScope.GetCurrentPassId(h),
+				["B"] = (h, v) => passIdDuringB = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+
+			mapper.UpdateProperties(handler, new Button());
+
+			// Both mappers ran as part of the very same bulk pass, so they must have observed the same,
+			// non-zero pass id.
+			Assert.NotNull(passIdDuringA);
+			Assert.NotEqual(0, passIdDuringA);
+			Assert.Equal(passIdDuringA, passIdDuringB);
+
+			// The pass must be considered over once UpdateProperties has returned.
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+
+			// A later, standalone single-key update is not part of a bulk pass, so it must report no
+			// active pass at all - and must get a fresh id from a subsequent bulk pass, never reusing
+			// (or being confused with) the earlier one.
+			mapper.UpdateProperty(handler, new Button(), "A");
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+
+			int? passIdDuringSecondPass = null;
+			var mapper2 = new PropertyMapper<IView, IViewHandler>
+			{
+				["A"] = (h, v) => passIdDuringSecondPass = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+			mapper2.UpdateProperties(handler, new Button());
+			Assert.NotNull(passIdDuringSecondPass);
+			Assert.NotEqual(passIdDuringA, passIdDuringSecondPass);
+		}
+
+		// Even if a mapper throws partway through a bulk pass, the pass must be considered over - so any
+		// pass-scoped state a mapper implementation recorded against that pass's id (e.g. a "skip the next
+		// redundant redirected call" mark) can never again be matched once the pass has ended, whether it
+		// ended normally or via exception.
+		[Fact]
+		public void UpdatePropertiesPassScopeIsClearedInFinallyWhenAMapperThrows()
+		{
+			var handler = new HandlerStub();
+			int? passIdBeforeThrow = null;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["A"] = (h, v) => passIdBeforeThrow = PropertyMapperPassScope.GetCurrentPassId(h),
+				["Throws"] = (h, v) => throw new InvalidOperationException("Simulated mapper failure"),
+				["C"] = (h, v) => Assert.Fail("Should not run - the pass was aborted by an earlier mapper throwing"),
+			};
+
+			Assert.Throws<InvalidOperationException>(() => mapper.UpdateProperties(handler, new Button()));
+
+			Assert.NotNull(passIdBeforeThrow);
+			Assert.NotEqual(0, passIdBeforeThrow);
+
+			// The aborted pass must not be left "active" - a later caller must see no active pass.
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+		}
+
 		[Fact]
 		public void MapperExecutesChainedKeysFirst()
 		{
