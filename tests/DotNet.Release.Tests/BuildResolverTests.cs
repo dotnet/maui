@@ -65,6 +65,17 @@ public class BuildResolverTests
     }
 
     [Fact]
+    public void Conflicting_same_name_channel_ids_fail_closed()
+    {
+        Assert.Throws<DotNetReleaseException>(() => Resolve([
+            TestData.Build(channels: [
+                new ChannelReference(".NET Libraries", 1648),
+                new ChannelReference(".NET Libraries", 9999),
+            ]),
+        ]));
+    }
+
+    [Fact]
     public void Channel_name_comparison_is_case_sensitive()
     {
         // Channel policy binds both the exact display name and numeric ID.

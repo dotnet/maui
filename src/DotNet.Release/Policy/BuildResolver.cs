@@ -70,13 +70,14 @@ internal static class BuildResolver
             // matches a different ID means the channel was renamed or duplicated, which is
             // not something a release should silently accept.
             var matches = build.Channels
-                .Where(c => string.Equals(c.Name, required.Name, StringComparison.Ordinal) && c.Id == required.Id).ToList();
+                .Where(c => string.Equals(c.Name, required.Name, StringComparison.Ordinal))
+                .ToList();
 
-            if (matches.Count != 1)
+            if (matches.Count != 1 || matches[0].Id != required.Id)
             {
                 throw new DotNetReleaseException(
                     $"BAR build {build.Id} must be assigned to '{required.Name}' (channel {required.Id}), " +
-                    $"but has {matches.Count} such assignment. Its channels are: " +
+                    "without conflicting same-name channel IDs. Its channels are: " +
                     $"{(build.Channels.Count == 0 ? "(none)" : string.Join(", ", build.Channels.Select(c => $"{c.Name} ({c.Id})")))}.");
             }
         }
