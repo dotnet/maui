@@ -389,5 +389,42 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			public object Resource => GetValue(ResourceProperty);
 		}
+
+		[Fact]
+		public void VisualStateDynamicResourceDoesNotDestroyTheStylesRegistration()
+		{
+			Application.Current.Resources = new ResourceDictionary
+			{
+				{ "EnabledColor", Colors.Blue },
+				{ "DisabledColor", Colors.Gray },
+			};
+
+			var style = new Style(typeof(Button));
+			style.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = new DynamicResource("EnabledColor") });
+
+			var disabled = new VisualState { Name = "Disabled" };
+			disabled.Setters.Add(new Setter { Property = VisualElement.BackgroundColorProperty, Value = new DynamicResource("DisabledColor") });
+
+			var group = new VisualStateGroup { Name = "CommonStates" };
+			group.States.Add(new VisualState { Name = "Normal" });
+			group.States.Add(disabled);
+			style.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = new VisualStateGroupList { group } });
+
+			var button = new Button { Style = style };
+			Application.Current.MainPage = new ContentPage { Content = button };
+
+			Assert.Equal(Colors.Blue, button.BackgroundColor);
+
+			VisualStateManager.GoToState(button, "Disabled");
+			Assert.Equal(Colors.Gray, button.BackgroundColor);
+
+			VisualStateManager.GoToState(button, "Normal");
+			Assert.Equal(Colors.Blue, button.BackgroundColor);
+
+			// The style's registration must survive the state, so a later change to the resource
+			// still reaches the element.
+			Application.Current.Resources["EnabledColor"] = Colors.Red;
+			Assert.Equal(Colors.Red, button.BackgroundColor);
+		}
 	}
 }
