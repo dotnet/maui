@@ -678,7 +678,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Single_Photo_Pick_Publishes_Recovered_Result_And_Completes_Waiter()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateNonEmptyExternalMediaFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -736,7 +736,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			RecoveredMediaPickerResultKind kind,
 			string extension)
 		{
-			var pickPath = CreateNonEmptyMediaFile(extension);
+			var pickPath = CreateNonEmptyExternalMediaFile(extension);
 			var pickForResult = new TestPickVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -759,8 +759,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task AndroidX_Orphaned_Multiple_Photo_Pick_Publishes_Recovered_Result_With_Multiple_Files()
 		{
-			var firstPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
-			var secondPickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var firstPickPath = CreateNonEmptyExternalMediaFile(FileExtensions.Jpg);
+			var secondPickPath = CreateNonEmptyExternalMediaFile(FileExtensions.Jpg);
 			var pickForResult = new TestPickMultipleVisualMediaForResult();
 			using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -808,7 +808,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		[Fact]
 		public async Task Accepted_Pick_Materialization_Writes_Accepted_File_Paths()
 		{
-			var pickPath = CreateNonEmptyMediaFile(FileExtensions.Jpg);
+			var pickPath = CreateNonEmptyExternalMediaFile(FileExtensions.Jpg);
 			var pendingPick = MediaPickerRecoveryManager.BeginOperation(
 				RecoveredMediaPickerResultKind.PickPhoto,
 				[],
@@ -1877,6 +1877,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		static string CreateNonEmptyMediaFile(string extension)
 		{
 			var path = CreateCacheFilePath(extension);
+			WriteNonEmptyMediaFile(path);
+			return path;
+		}
+
+		static string CreateNonEmptyExternalMediaFile(string extension)
+		{
+			var externalCacheDirectory = Application.Context.ExternalCacheDir ??
+				throw new InvalidOperationException("External cache directory is not available.");
+			var path = Path.Combine(externalCacheDirectory.CanonicalPath, $"{Guid.NewGuid():N}{extension}");
 			WriteNonEmptyMediaFile(path);
 			return path;
 		}
