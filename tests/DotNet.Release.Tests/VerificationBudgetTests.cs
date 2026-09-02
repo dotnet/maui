@@ -116,8 +116,8 @@ public class VerificationBudgetTests : IDisposable
     [Fact]
     public void Verification_treats_false_and_unknown_identities_as_missing()
     {
-        var skia = TestData.Planned("SkiaSharp", "3.119.0");
-        var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+        var skia = TestData.Drop("SkiaSharp", "3.119.0");
+        var harfBuzz = TestData.Drop("HarfBuzzSharp", "8.3.1");
 
         var missing = VerifyCommand.GetMissing(
             [skia, harfBuzz], TestData.Availability((skia, false)));
@@ -128,8 +128,8 @@ public class VerificationBudgetTests : IDisposable
     [Fact]
     public void Verification_failure_message_has_a_stable_identity_order()
     {
-        var skia = TestData.Planned("SkiaSharp", "3.119.0");
-        var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+        var skia = TestData.Drop("SkiaSharp", "3.119.0");
+        var harfBuzz = TestData.Drop("HarfBuzzSharp", "8.3.1");
 
         Assert.Equal("The following packages are not available from NuGet.org: " + "HarfBuzzSharp 8.3.1, SkiaSharp 3.119.0",
             VerifyCommand.DescribeMissing([skia, harfBuzz]));
@@ -142,7 +142,7 @@ internal sealed class FlakyProbe(int failUntilCall, string[] published) : INuGet
 
     public int Calls { get; private set; }
 
-    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
+    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<ReleasePackage> packages, CancellationToken cancellationToken)
     {
         Calls++;
 

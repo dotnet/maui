@@ -77,7 +77,7 @@ internal static class ResolveCommand
         return command;
     }
 
-    public static async Task<ResolvedBuild> ExecuteAsync(
+    public static async Task<ReleaseSource> ExecuteAsync(
         TextWriter outputWriter,
         IMaestroClient maestro,
         string policyJson,
@@ -98,7 +98,7 @@ internal static class ResolveCommand
         return resolved;
     }
 
-    internal static string SerializeOutput(ResolvedBuild resolved) =>
+    internal static string SerializeOutput(ReleaseSource resolved) =>
         JsonSerializer.Serialize(resolved, OutputJsonOptions);
 
     private static ReleaseRequest ParseRequest(RepositoryId repository, string buildIdentifier)

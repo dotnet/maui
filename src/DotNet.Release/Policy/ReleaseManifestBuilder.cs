@@ -19,7 +19,7 @@ internal static class ReleaseManifestBuilder
     public const string ManifestsArtifactName = "ReleaseManifests";
     public const string PackagesArtifactName = "ReleasePackages";
 
-    public static ReleaseManifest Build(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
+    public static ReleaseManifest Build(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<ReleasePackage> drop, StageOptions options,
         DateTimeOffset createdUtc, string toolVersion)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -42,7 +42,7 @@ internal static class ReleaseManifestBuilder
             : BuildNonWorkloadManifest(source, drop, options, createdUtc, toolVersion);
     }
 
-    private static ReleaseManifest BuildWorkloadManifest(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
+    private static ReleaseManifest BuildWorkloadManifest(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<ReleasePackage> drop, StageOptions options,
         DateTimeOffset createdUtc, string toolVersion)
     {
         // Include filters select packs. Manifests remain selected unless explicitly excluded,
@@ -85,14 +85,14 @@ internal static class ReleaseManifestBuilder
             ToolVersion = toolVersion,
             CreatedUtc = createdUtc.ToUniversalTime(),
             Source = source,
-            WorkloadSet = new WorkloadSetTarget(workloadSet.Band, workloadSet.Channel, workloadSet.Feed),
+            WorkloadSet = workloadSet,
             Sets = [packSet, manifestSet],
         };
     }
 
     private static ReleaseManifest BuildNonWorkloadManifest(
         ReleaseSource source,
-        IReadOnlyList<DropPackage> drop,
+        IReadOnlyList<ReleasePackage> drop,
         StageOptions options,
         DateTimeOffset createdUtc,
         string toolVersion)
@@ -131,7 +131,7 @@ internal static class ReleaseManifestBuilder
         };
     }
 
-    private static ReleasePackageSet BuildSet(string name, int order, string artifactName, IReadOnlyList<DropPackage> packages, List<string> errors)
+    private static ReleasePackageSet BuildSet(string name, int order, string artifactName, IReadOnlyList<ReleasePackage> packages, List<string> errors)
     {
         var duplicateFileNames = packages
             .GroupBy(p => p.FileName, StringComparer.OrdinalIgnoreCase)
@@ -159,25 +159,17 @@ internal static class ReleaseManifestBuilder
             ArtifactName = artifactName,
             Packages = [.. packages
                 .OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(p => p.NormalizedVersion, StringComparer.OrdinalIgnoreCase)
-                .Select(p => new PlannedPackage
-                {
-                    Id = p.Id,
-                    Version = p.Version,
-                    NormalizedVersion = p.NormalizedVersion,
-                    FileName = p.FileName,
-                    Sha256 = p.Sha256,
-                })],
+                .ThenBy(p => p.NormalizedVersion, StringComparer.OrdinalIgnoreCase)],
         };
     }
 
-    private static List<string> GetDuplicateIdentities(IReadOnlyList<DropPackage> packages) =>
+    private static List<string> GetDuplicateIdentities(IReadOnlyList<ReleasePackage> packages) =>
         packages
             .GroupBy(p => $"{p.Id}/{p.NormalizedVersion}", StringComparer.OrdinalIgnoreCase)
             .Where(g => g.Count() > 1)
             .Select(g => g.Key).Order(StringComparer.Ordinal).ToList();
 
-    private static List<string> ValidateIdentities(IReadOnlyList<DropPackage> drop)
+    private static List<string> ValidateIdentities(IReadOnlyList<ReleasePackage> drop)
     {
         var errors = new List<string>();
 

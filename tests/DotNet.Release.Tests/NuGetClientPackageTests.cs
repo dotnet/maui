@@ -147,6 +147,7 @@ public class NuGetClientPackageTests : IDisposable
             RepositoryUrl = "https://github.com/dotnet/skiasharp",
             Commit = new string('a', 40),
             BarBuildId = 4242,
+            RepositoryOrigin = RepositoryOrigin.GitHubRepository,
             Workload = false,
             Channel = new ChannelReference(".NET Libraries", 1648),
         };

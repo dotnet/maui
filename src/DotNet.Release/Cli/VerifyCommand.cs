@@ -66,7 +66,7 @@ internal static class VerifyCommand
         var sets = ReleaseArtifact.SelectSets(manifest, setName);
         var packages = sets.SelectMany(set => set.Packages).ToList();
         var deadline = clock() + maxDuration;
-        IReadOnlyList<PlannedPackage> missing = packages;
+        IReadOnlyList<ReleasePackage> missing = packages;
 
         while (true)
         {
@@ -96,7 +96,7 @@ internal static class VerifyCommand
         }
     }
 
-    internal static IReadOnlyList<PlannedPackage> GetMissing(IEnumerable<PlannedPackage> packages, IReadOnlyDictionary<string, bool> availability)
+    internal static IReadOnlyList<ReleasePackage> GetMissing(IEnumerable<ReleasePackage> packages, IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(packages);
         ArgumentNullException.ThrowIfNull(availability);
@@ -107,7 +107,7 @@ internal static class VerifyCommand
         ];
     }
 
-    internal static string DescribeMissing(IReadOnlyList<PlannedPackage> missing) => "The following packages are not available from NuGet.org: " + string.Join(
+    internal static string DescribeMissing(IReadOnlyList<ReleasePackage> missing) => "The following packages are not available from NuGet.org: " + string.Join(
             ", ", missing
                 .Select(package => $"{package.Id} {package.Version}").Order(StringComparer.Ordinal));
 }

@@ -5,7 +5,7 @@ namespace DotNet.Release.Tests;
 
 public class NuGetClientTests
 {
-    private static PlannedPackage Package(string id, string version) => new()
+    private static ReleasePackage Package(string id, string version) => new()
     {
         Id = id,
         Version = version,
@@ -14,8 +14,8 @@ public class NuGetClientTests
         Sha256 = new string('a', 64),
     };
 
-    private static readonly PlannedPackage Skia = Package("SkiaSharp", "3.119.0");
-    private static readonly PlannedPackage HarfBuzz = Package("HarfBuzzSharp", "8.3.1.5");
+    private static readonly ReleasePackage Skia = Package("SkiaSharp", "3.119.0");
+    private static readonly ReleasePackage HarfBuzz = Package("HarfBuzzSharp", "8.3.1.5");
 
     [Fact]
     public async Task Reports_availability_keyed_by_identity()

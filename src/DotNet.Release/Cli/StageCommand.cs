@@ -10,7 +10,7 @@ namespace DotNet.Release;
 /// </summary>
 internal static class StageCommand
 {
-    private static readonly JsonSerializerOptions ResolvedBuildJsonOptions = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions ReleaseSourceJsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() },
     };
@@ -80,32 +80,22 @@ internal static class StageCommand
         CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        var resolved = DeserializeResolvedBuild(resolvedBuildJson);
-        var repositoryId = RepositoryId.Parse(resolved.Repository);
+        var source = DeserializeReleaseSource(resolvedBuildJson);
+        var repositoryId = RepositoryId.Parse(source.Repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
-        if (!string.Equals(resolved.RepositoryUrl, repositoryId.GitHubUrl, StringComparison.Ordinal) ||
-            resolved.Commit is not { Length: 40 } ||
-            !resolved.Commit.All(Uri.IsHexDigit) ||
-            resolved.BarBuildId <= 0 ||
-            resolved.Workload != repositoryPolicy.Workload ||
-            resolved.Channel != repositoryPolicy.Channel)
+        if (!string.Equals(source.RepositoryUrl, repositoryId.GitHubUrl, StringComparison.Ordinal) ||
+            source.Commit is not { Length: 40 } ||
+            !source.Commit.All(Uri.IsHexDigit) ||
+            source.BarBuildId <= 0 ||
+            source.Workload != repositoryPolicy.Workload ||
+            source.Channel != repositoryPolicy.Channel)
         {
             throw new DotNetReleaseException("The resolved build does not match current repository policy or has incomplete identity.");
         }
 
-        ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
+        ReleaseOutput.WriteResolvedBuild(outputWriter, source);
         outputWriter.WriteLine();
-
-        var source = new ReleaseSource
-        {
-            Repository = resolved.Repository,
-            RepositoryUrl = resolved.RepositoryUrl,
-            Commit = resolved.Commit,
-            BarBuildId = resolved.BarBuildId,
-            Workload = resolved.Workload,
-            Channel = resolved.Channel,
-        };
 
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
@@ -113,7 +103,7 @@ internal static class StageCommand
             throw new DotNetReleaseException($"No shipping nupkgs were found under '{dropDirectory}'.");
         }
 
-        var packages = new List<DropPackage>(packageFiles.Count);
+        var packages = new List<ReleasePackage>(packageFiles.Count);
         var readErrors = new List<string>();
 
         foreach (var file in packageFiles)
@@ -187,11 +177,11 @@ internal static class StageCommand
         return indexed;
     }
 
-    internal static ResolvedBuild DeserializeResolvedBuild(string json)
+    internal static ReleaseSource DeserializeReleaseSource(string json)
     {
         try
         {
-            return JsonSerializer.Deserialize<ResolvedBuild>(json, ResolvedBuildJsonOptions) ??
+            return JsonSerializer.Deserialize<ReleaseSource>(json, ReleaseSourceJsonOptions) ??
                 throw new DotNetReleaseException("The resolved build output is empty.");
         }
         catch (JsonException ex)

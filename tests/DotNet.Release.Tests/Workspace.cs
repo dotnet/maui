@@ -45,7 +45,7 @@ internal sealed class FakeProbe(params string[] published) : INuGetClient
     /// <summary>Every identity becomes available once this many calls have been made.</summary>
     public int? AllAvailableAfterCall { get; init; }
 
-    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
+    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<ReleasePackage> packages, CancellationToken cancellationToken)
     {
         Calls++;
 

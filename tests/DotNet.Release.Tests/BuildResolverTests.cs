@@ -4,7 +4,7 @@ namespace DotNet.Release.Tests;
 
 public class BuildResolverTests
 {
-    private static ResolvedBuild Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
+    private static ReleaseSource Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
         string repo = "dotnet/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates);
 
     private static readonly ChannelReference Libraries = new(".NET Libraries", 1648);

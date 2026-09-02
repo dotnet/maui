@@ -11,7 +11,7 @@ internal static class BuildResolver
     /// <param name="request">What the operator asked for.</param>
     /// <param name="policy">Policy for <see cref="ReleaseRequest.Repository"/>.</param>
     /// <param name="candidates">Builds the registry returned for the query.</param>
-    public static ResolvedBuild Resolve(ReleaseRequest request, RepositoryPolicy policy, IReadOnlyList<BarBuild> candidates)
+    public static ReleaseSource Resolve(ReleaseRequest request, RepositoryPolicy policy, IReadOnlyList<BarBuild> candidates)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(policy);
@@ -105,7 +105,7 @@ internal static class BuildResolver
             }
         }
 
-        return new ResolvedBuild
+        return new ReleaseSource
         {
             Repository = request.Repository.FullName,
             RepositoryUrl = request.Repository.GitHubUrl,

@@ -547,6 +547,7 @@ package's identity, file name, hash, and final disposition.
     "repositoryUrl": "https://github.com/dotnet/skiasharp",
     "commit": "<full-sha>",
     "barBuildId": 328857,
+    "repositoryOrigin": "AzureDevOpsMirrorConvention",
     "workload": false,
     "channel": { "name": ".NET Libraries", "id": 1648 }
   },

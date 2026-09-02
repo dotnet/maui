@@ -4,12 +4,21 @@ namespace DotNet.Release.Tests;
 
 public class ReleaseManifestBuilderTests
 {
-    private static ReleaseManifest Manifest(IReadOnlyList<DropPackage> drop, bool workload = false, StageOptions? options = null,
+    private static ReleaseManifest Manifest(IReadOnlyList<ReleasePackage> drop, bool workload = false, StageOptions? options = null,
         string repo = "dotnet/skiasharp") => ReleaseManifestBuilder.Build(
             TestData.Source(workload, repo), TestData.Policy(), drop, options ?? new StageOptions(), TestData.Now, TestData.ToolVersion);
 
-    private static DropPackage WorkloadManifest(string band = "10", string version = "10.0.0") =>
+    private static ReleasePackage WorkloadManifest(string band = "10", string version = "10.0.0") =>
         TestData.Drop($"Microsoft.NET.Sdk.Maui.Manifest-{band}.0.100", version);
+
+    private static ReleasePackage Package(string fileName, string id, string version, string normalizedVersion, string sha256) => new()
+    {
+        Id = id,
+        Version = version,
+        NormalizedVersion = normalizedVersion,
+        FileName = fileName,
+        Sha256 = sha256,
+    };
 
     // ---- non-workload ----
 
@@ -83,7 +92,7 @@ public class ReleaseManifestBuilderTests
         var manifest = Manifest(
             [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), WorkloadManifest("10")], workload: true, repo: "dotnet/maui");
 
-        Assert.Equal(new WorkloadSetTarget(10, ".NET 10 Workload Release", "dotnet10-workloads"), manifest.WorkloadSet);
+        Assert.Equal(new WorkloadSet(10, ".NET 10 Workload Release", "dotnet10-workloads"), manifest.WorkloadSet);
     }
 
     [Fact]
@@ -98,7 +107,7 @@ public class ReleaseManifestBuilderTests
     [InlineData(false, true)]
     public void Workload_release_requires_both_packs_and_manifests(bool hasPack, bool hasManifest)
     {
-        var drop = new List<DropPackage>();
+        var drop = new List<ReleasePackage>();
         if (hasPack)
         {
             drop.Add(TestData.Drop("Microsoft.Maui.Controls", "10.0.0"));
@@ -180,36 +189,38 @@ public class ReleaseManifestBuilderTests
     [Fact]
     public void Package_without_an_id_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() => Manifest([new DropPackage("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]));
+        Assert.Throws<DotNetReleaseException>(() => Manifest([Package("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]));
     }
 
     [Fact]
     public void File_name_disagreeing_with_the_nuspec_id_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() => Manifest([new DropPackage(
-            "SomethingElse.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]));
+        Assert.Throws<DotNetReleaseException>(() => Manifest([
+            Package("SomethingElse.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x")),
+        ]));
     }
 
     [Fact]
     public void File_name_containing_a_directory_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() => Manifest([new DropPackage(
-            "sub/SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]));
+        Assert.Throws<DotNetReleaseException>(() => Manifest([
+            Package("sub/SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x")),
+        ]));
     }
 
     [Fact]
     public void Package_staged_without_a_content_hash_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(() => Manifest(
-            [new DropPackage("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]));
+            [Package("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]));
     }
 
     [Fact]
     public void Package_validation_reports_all_actionable_errors()
     {
         var exception = Assert.Throws<DotNetReleaseException>(() => Manifest([
-            new DropPackage("First.1.0.0.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("first")),
-            new DropPackage("wrong-name.nupkg", "Second", "1.0.0", "1.0.0", ""),
+            Package("First.1.0.0.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("first")),
+            Package("wrong-name.nupkg", "Second", "1.0.0", "1.0.0", ""),
         ]));
 
         Assert.Contains("First.1.0.0.nupkg", exception.Message, StringComparison.Ordinal);
@@ -223,8 +234,9 @@ public class ReleaseManifestBuilderTests
         // A reader that returned the raw file-name version instead of the normalized form.
         // This is the check that converts the substring approach's silent wrong answer into
         // a loud failure at stage time.
-        Assert.Throws<DotNetReleaseException>(() => Manifest([new DropPackage(
-            "SkiaSharp.3.119.0.0.nupkg", "SkiaSharp", "3.119.0.0", "3.119.0.0", TestData.Hash("x"))]));
+        Assert.Throws<DotNetReleaseException>(() => Manifest([
+            Package("SkiaSharp.3.119.0.0.nupkg", "SkiaSharp", "3.119.0.0", "3.119.0.0", TestData.Hash("x")),
+        ]));
     }
 
     [Fact]

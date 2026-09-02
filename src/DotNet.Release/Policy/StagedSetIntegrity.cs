@@ -48,7 +48,7 @@ internal static class StagedSetIntegrity
         ArgumentNullException.ThrowIfNull(report);
 
         var dispositions = report.Decisions.ToDictionary(
-            d => d.FileName,
+            d => d.Package.FileName,
             d => d.Disposition, StringComparer.OrdinalIgnoreCase);
 
         Validate(set, observed,

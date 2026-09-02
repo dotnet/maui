@@ -33,8 +33,14 @@ internal static class TestData
     /// <summary>A stable fake content hash, so expectations stay readable.</summary>
     public static string Hash(string seed) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(seed)));
 
-    public static DropPackage Drop(string id, string version, string? fileName = null) => new(fileName ?? $"{id}.{version}.nupkg", id, version,
-            PackageVersions.Normalize(version), Hash($"{id}/{version}"));
+    public static ReleasePackage Drop(string id, string version, string? fileName = null) => new()
+    {
+        Id = id,
+        Version = version,
+        NormalizedVersion = PackageVersions.Normalize(version),
+        FileName = fileName ?? $"{id}.{version}.nupkg",
+        Sha256 = Hash($"{id}/{version}"),
+    };
 
     public static BarBuild Build(int id = 4242, string? commit = null,
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
@@ -60,11 +66,12 @@ internal static class TestData
         RepositoryUrl = $"https://github.com/{repo}",
         Commit = Commit,
         BarBuildId = 4242,
+        RepositoryOrigin = RepositoryOrigin.GitHubRepository,
         Workload = workload,
         Channel = workload ? null : new ChannelReference(".NET Libraries", 1648),
     };
 
-    public static ReleasePackageSet Set(params PlannedPackage[] packages) => new()
+    public static ReleasePackageSet Set(params ReleasePackage[] packages) => new()
     {
         Name = "NuGet packages",
         Order = 0,
@@ -72,16 +79,7 @@ internal static class TestData
         Packages = packages,
     };
 
-    public static PlannedPackage Planned(string id, string version) => new()
-    {
-        Id = id,
-        Version = version,
-        NormalizedVersion = PackageVersions.Normalize(version),
-        FileName = $"{id}.{version}.nupkg",
-        Sha256 = Hash($"{id}/{version}"),
-    };
-
-    /// <summary>Availability map keyed the way <see cref="PlannedPackage.IdentityKey"/> is.</summary>
-    public static Dictionary<string, bool> Availability(params (PlannedPackage Package, bool Published)[] entries) =>
+    /// <summary>Availability map keyed the way <see cref="ReleasePackage.IdentityKey"/> is.</summary>
+    public static Dictionary<string, bool> Availability(params (ReleasePackage Package, bool Published)[] entries) =>
         entries.ToDictionary(e => e.Package.IdentityKey, e => e.Published);
 }

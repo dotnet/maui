@@ -162,7 +162,7 @@ public class PipelineDefinitionTests
         Assert.Contains("maestro.GetBuildsAsync", resolve, StringComparison.Ordinal);
         Assert.Contains("BuildResolver.Resolve", resolve, StringComparison.Ordinal);
         Assert.Contains("--resolved-build \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
-        Assert.Contains("DeserializeResolvedBuild", stage, StringComparison.Ordinal);
+        Assert.Contains("DeserializeReleaseSource", stage, StringComparison.Ordinal);
         Assert.Contains("name: pinManifest", root, StringComparison.Ordinal);
         Assert.Contains("variable=IsWorkload;isOutput=true", root, StringComparison.Ordinal);
 

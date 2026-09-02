@@ -15,22 +15,18 @@ internal enum PackageDisposition
 
 /// <summary>The publication disposition calculated for one package in a manifest set.</summary>
 internal sealed record PruneDecision(
-    string FileName,
-    string Id,
-    string NormalizedVersion,
+    ReleasePackage Package,
     PackageDisposition Disposition);
 
 /// <summary>In-memory package dispositions decided by <c>release prune-published</c>.</summary>
 internal sealed record PruneReport
 {
-    public required string SetName { get; init; }
-
     public required IReadOnlyList<PruneDecision> Decisions { get; init; }
 
     public IReadOnlyList<string> FilesToRemove =>
     [.. Decisions
             .Where(decision => decision.Disposition != PackageDisposition.Pending)
-            .Select(decision => decision.FileName)
+            .Select(decision => decision.Package.FileName)
     ];
 
     public int PendingCount =>

@@ -16,8 +16,8 @@ internal static class PrunePublishedPlanner
     /// flat-container API, so those packages must be withheld from a second push without
     /// waiting for visibility.
     /// </param>
-    /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
-    public static PruneReport Plan(ReleasePackageSet set, IEnumerable<PlannedPackage> releasePackages, IReadOnlyList<string> recoveryPatterns,
+    /// <param name="availability">Availability keyed by <see cref="ReleasePackage.IdentityKey"/>.</param>
+    public static PruneReport Plan(ReleasePackageSet set, IEnumerable<ReleasePackage> releasePackages, IReadOnlyList<string> recoveryPatterns,
         IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(set);
@@ -67,9 +67,9 @@ internal static class PrunePublishedPlanner
             throw new DotNetReleaseException(missingAvailability);
         }
 
-        return new PruneReport { SetName = set.Name, Decisions = decisions };
+        return new PruneReport { Decisions = decisions };
     }
 
-    private static PruneDecision Decide(PlannedPackage package, PackageDisposition disposition) =>
-        new(package.FileName, package.Id, package.NormalizedVersion, disposition);
+    private static PruneDecision Decide(ReleasePackage package, PackageDisposition disposition) =>
+        new(package, disposition);
 }

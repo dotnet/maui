@@ -6,9 +6,6 @@ namespace DotNet.Release;
 /// <summary>Policy for one releasable repository.</summary>
 internal sealed record RepositoryPolicy(RepositoryId Repository, bool Workload, ChannelReference? Channel);
 
-/// <summary>The workload-set channel and feed for one .NET band.</summary>
-internal sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
-
 /// <summary>
 /// The declarative, checked-in release policy. Anything not listed fails closed.
 /// </summary>
@@ -19,9 +16,9 @@ internal sealed record WorkloadSetPolicy(int Band, string Channel, string Feed);
 internal sealed class ReleasePolicy
 {
     private readonly IReadOnlyDictionary<string, RepositoryPolicy> _repositories;
-    private readonly IReadOnlyDictionary<int, WorkloadSetPolicy> _workloadSets;
+    private readonly IReadOnlyDictionary<int, WorkloadSet> _workloadSets;
 
-    private ReleasePolicy(IReadOnlyDictionary<string, RepositoryPolicy> repositories, IReadOnlyDictionary<int, WorkloadSetPolicy> workloadSets)
+    private ReleasePolicy(IReadOnlyDictionary<string, RepositoryPolicy> repositories, IReadOnlyDictionary<int, WorkloadSet> workloadSets)
     {
         _repositories = repositories;
         _workloadSets = workloadSets;
@@ -95,7 +92,7 @@ internal sealed class ReleasePolicy
             }
         }
 
-        var workloadSets = new Dictionary<int, WorkloadSetPolicy>();
+        var workloadSets = new Dictionary<int, WorkloadSet>();
         foreach (var (key, entry) in document.WorkloadSets ?? [])
         {
             if (!int.TryParse(key, out var band) || band <= 0)
@@ -110,7 +107,7 @@ internal sealed class ReleasePolicy
                 continue;
             }
 
-            workloadSets[band] = new WorkloadSetPolicy(band, entry.Channel.Trim(), entry.Feed.Trim());
+            workloadSets[band] = new WorkloadSet(band, entry.Channel.Trim(), entry.Feed.Trim());
         }
 
         if (errors.Count > 0)
@@ -127,7 +124,7 @@ internal sealed class ReleasePolicy
                 $"Enabled repositories: {string.Join(", ", _repositories.Keys.Order(StringComparer.Ordinal))}.");
 
     /// <summary>Looks up the workload-set target for a .NET band.</summary>
-    public WorkloadSetPolicy GetWorkloadSet(int band) => _workloadSets.TryGetValue(band, out var policy) ? policy : throw new DotNetReleaseException(
+    public WorkloadSet GetWorkloadSet(int band) => _workloadSets.TryGetValue(band, out var policy) ? policy : throw new DotNetReleaseException(
                 $"No workload set channel is configured for .NET {band}.");
 
     /// <summary>Raw JSON representation of the repository and workload-set policy document.</summary>

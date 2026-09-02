@@ -2,16 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace DotNet.Release;
 
-/// <summary>Package identity and hash read from a gathered nupkg.</summary>
-internal sealed record DropPackage(
-    string FileName,
-    string Id,
-    string Version,
-    string NormalizedVersion,
-    string Sha256);
-
-/// <summary>A package selected for release.</summary>
-internal sealed record PlannedPackage
+/// <summary>Package identity and content hash used from drop inspection through publication.</summary>
+internal sealed record ReleasePackage
 {
     [JsonPropertyName("id")]
     public required string Id { get; init; }
@@ -45,5 +37,5 @@ internal sealed record ReleasePackageSet
     public required string ArtifactName { get; init; }
 
     [JsonPropertyName("packages")]
-    public required IReadOnlyList<PlannedPackage> Packages { get; init; }
+    public required IReadOnlyList<ReleasePackage> Packages { get; init; }
 }

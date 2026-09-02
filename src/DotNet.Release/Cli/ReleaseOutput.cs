@@ -3,7 +3,7 @@ namespace DotNet.Release;
 /// <summary>Writes the human-readable BAR, manifest, and pruning audit shown in pipeline logs.</summary>
 internal static class ReleaseOutput
 {
-    public static void WriteResolvedBuild(TextWriter writer, ResolvedBuild build)
+    public static void WriteResolvedBuild(TextWriter writer, ReleaseSource build)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(build);
@@ -26,6 +26,7 @@ internal static class ReleaseOutput
         writer.WriteLine($"{indent}  Repository URL    : {source.RepositoryUrl}");
         writer.WriteLine($"{indent}  Commit            : {source.Commit}");
         writer.WriteLine($"{indent}  BAR build ID      : {source.BarBuildId}");
+        writer.WriteLine($"{indent}  Repository origin : {source.RepositoryOrigin}");
         writer.WriteLine($"{indent}  Workload          : {source.Workload}");
         WriteChannel(writer, source.Channel, $"{indent}  ");
     }
@@ -119,21 +120,18 @@ internal static class ReleaseOutput
         ArgumentNullException.ThrowIfNull(report);
 
         writer.WriteLine("Prune report:");
-        writer.WriteLine($"  Set name       : {report.SetName}");
+        writer.WriteLine($"  Set name       : {set.Name}");
         writer.WriteLine($"  Set order      : {set.Order}");
         writer.WriteLine($"  Artifact name  : {set.ArtifactName}");
         writer.WriteLine("  Decisions:");
-        var packages = set.Packages.ToDictionary(
-            package => package.FileName, StringComparer.OrdinalIgnoreCase);
-
         foreach (var decision in report.Decisions)
         {
-            var package = packages[decision.FileName];
+            var package = decision.Package;
             writer.WriteLine("    Decision:");
-            writer.WriteLine($"      ID                 : {decision.Id}");
+            writer.WriteLine($"      ID                 : {package.Id}");
             writer.WriteLine($"      Raw version        : {package.Version}");
-            writer.WriteLine($"      Normalized version : {decision.NormalizedVersion}");
-            writer.WriteLine($"      File name          : {decision.FileName}");
+            writer.WriteLine($"      Normalized version : {package.NormalizedVersion}");
+            writer.WriteLine($"      File name          : {package.FileName}");
             writer.WriteLine($"      SHA-256            : {package.Sha256}");
             writer.WriteLine($"      Disposition        : {decision.Disposition}");
         }

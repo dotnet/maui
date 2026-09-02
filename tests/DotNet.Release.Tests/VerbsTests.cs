@@ -15,7 +15,7 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task<ResolvedBuild> Resolve(FakeMaestroClient maestro, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
+    private Task<ReleaseSource> Resolve(FakeMaestroClient maestro, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
         ResolveCommand.ExecuteAsync(_output, maestro, Workspace.PolicyJson, repo, build, CancellationToken.None);
 
     private static string ResolvedBuildJson(BarBuild? build = null, string repo = "dotnet/skiasharp")
@@ -209,7 +209,7 @@ public class VerbsTests : IDisposable
     public async Task Stage_rejects_resolved_data_that_conflicts_with_current_policy()
     {
         _workspace.WritePackage("SkiaSharp", "3.119.0");
-        var resolved = StageCommand.DeserializeResolvedBuild(ResolvedBuildJson()) with { Channel = null };
+        var resolved = StageCommand.DeserializeReleaseSource(ResolvedBuildJson()) with { Channel = null };
 
         await Assert.ThrowsAsync<DotNetReleaseException>(() =>
             Stage(resolvedBuildJson: ResolveCommand.SerializeOutput(resolved)));

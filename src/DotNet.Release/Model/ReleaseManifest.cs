@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace DotNet.Release;
 
 /// <summary>The workload-set channel a workload build is promoted to.</summary>
-internal sealed record WorkloadSetTarget(
+internal sealed record WorkloadSet(
     [property: JsonPropertyName("band")] int Band,
     [property: JsonPropertyName("channel")] string Channel,
     [property: JsonPropertyName("feed")] string Feed);
@@ -25,6 +25,9 @@ internal sealed record ReleaseSource
     [JsonPropertyName("barBuildId")]
     public required int BarBuildId { get; init; }
 
+    [JsonPropertyName("repositoryOrigin")]
+    public required RepositoryOrigin RepositoryOrigin { get; init; }
+
     [JsonPropertyName("workload")]
     public required bool Workload { get; init; }
 
@@ -45,12 +48,12 @@ internal sealed record ReleaseManifest
     public required ReleaseSource Source { get; init; }
 
     [JsonPropertyName("workloadSet")]
-    public WorkloadSetTarget? WorkloadSet { get; init; }
+    public WorkloadSet? WorkloadSet { get; init; }
 
     [JsonPropertyName("sets")]
     public required IReadOnlyList<ReleasePackageSet> Sets { get; init; }
 
     /// <summary>Every package across every set, in publication order.</summary>
-    public IEnumerable<PlannedPackage> AllPackages =>
+    public IEnumerable<ReleasePackage> AllPackages =>
         Sets.OrderBy(s => s.Order).SelectMany(s => s.Packages);
 }

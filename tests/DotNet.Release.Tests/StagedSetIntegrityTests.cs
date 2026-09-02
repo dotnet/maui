@@ -4,11 +4,11 @@ namespace DotNet.Release.Tests;
 
 public class StagedSetIntegrityTests
 {
-    private static readonly PlannedPackage Skia = TestData.Planned("SkiaSharp", "3.119.0");
-    private static readonly PlannedPackage HarfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+    private static readonly ReleasePackage Skia = TestData.Drop("SkiaSharp", "3.119.0");
+    private static readonly ReleasePackage HarfBuzz = TestData.Drop("HarfBuzzSharp", "8.3.1");
     private static readonly ReleasePackageSet Set = TestData.Set(HarfBuzz, Skia);
 
-    private static Dictionary<string, string> Files(params PlannedPackage[] packages) =>
+    private static Dictionary<string, string> Files(params ReleasePackage[] packages) =>
         packages.ToDictionary(p => p.FileName, p => p.Sha256, StringComparer.OrdinalIgnoreCase);
 
     [Fact]

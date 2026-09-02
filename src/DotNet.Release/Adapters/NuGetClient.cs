@@ -11,7 +11,7 @@ namespace DotNet.Release;
 internal interface INuGetClient
 {
     /// <summary>Returns feed availability keyed by normalized package identity.</summary>
-    Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken);
+    Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<ReleasePackage> packages, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -50,7 +50,7 @@ internal sealed class NuGetClient : INuGetClient, IDisposable
         _maxConcurrency = maxConcurrency;
     }
 
-    public async Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
+    public async Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<ReleasePackage> packages, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(packages);
 
@@ -83,7 +83,7 @@ internal sealed class NuGetClient : INuGetClient, IDisposable
     }
 
     /// <summary>Reads identity, normalized version, and SHA-256 from one local package archive.</summary>
-    public static async Task<DropPackage> ReadPackageAsync(string packageFilePath, CancellationToken cancellationToken)
+    public static async Task<ReleasePackage> ReadPackageAsync(string packageFilePath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageFilePath);
 
@@ -121,7 +121,14 @@ internal sealed class NuGetClient : INuGetClient, IDisposable
         var normalized = PackageVersions.Normalize(version);
         await using var hashStream = File.OpenRead(packageFilePath);
         var hash = await SHA256.HashDataAsync(hashStream, cancellationToken).ConfigureAwait(false);
-        return new DropPackage(fileName, id, version, normalized, Convert.ToHexStringLower(hash));
+        return new ReleasePackage
+        {
+            Id = id,
+            Version = version,
+            NormalizedVersion = normalized,
+            FileName = fileName,
+            Sha256 = Convert.ToHexStringLower(hash),
+        };
     }
 
     public void Dispose() => _cache?.Dispose();

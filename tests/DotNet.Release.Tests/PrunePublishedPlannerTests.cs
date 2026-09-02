@@ -4,8 +4,8 @@ namespace DotNet.Release.Tests;
 
 public class PrunePublishedPlannerTests
 {
-    private static readonly PlannedPackage Skia = TestData.Planned("SkiaSharp", "3.119.0");
-    private static readonly PlannedPackage HarfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+    private static readonly ReleasePackage Skia = TestData.Drop("SkiaSharp", "3.119.0");
+    private static readonly ReleasePackage HarfBuzz = TestData.Drop("HarfBuzzSharp", "8.3.1");
 
     private static readonly ReleasePackageSet Set = TestData.Set(HarfBuzz, Skia);
 
@@ -32,7 +32,7 @@ public class PrunePublishedPlannerTests
         Assert.Equal([Skia.FileName], report.FilesToRemove);
 
         Assert.Equal(PackageDisposition.AlreadyPublished,
-            report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
+            report.Decisions.Single(d => d.Package.FileName == Skia.FileName).Disposition);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class PrunePublishedPlannerTests
             [Skia.FileName], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.Equal(PackageDisposition.PreviouslyAttempted,
-            report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
+            report.Decisions.Single(d => d.Package.FileName == Skia.FileName).Disposition);
         Assert.Equal(1, report.PendingCount);
     }
 
@@ -90,13 +90,13 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Identity_key_is_case_insensitive_on_both_id_and_version()
     {
-        var upper = TestData.Planned("SKIASHARP", "3.119.0");
+        var upper = TestData.Drop("SKIASHARP", "3.119.0");
 
         Assert.Equal(Skia.IdentityKey, upper.IdentityKey);
     }
 
     [Fact]
-    public void Report_records_a_decision_for_every_planned_package()
+    public void Report_records_a_decision_for_every_release_package()
     {
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
@@ -106,7 +106,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filter_for_another_release_set_is_valid_but_does_not_prune_this_set()
     {
-        var manifest = TestData.Planned("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0");
+        var manifest = TestData.Drop("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0");
 
         var report = PrunePublishedPlanner.Plan(Set,
             [.. Set.Packages, manifest],
