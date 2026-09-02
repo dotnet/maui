@@ -619,6 +619,40 @@ namespace Microsoft.Maui.DeviceTests
 			await OnNavigatedToAsync(page);
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task FlyoutContentDisconnectsWithOptionalHeaderAndFooter(bool includeHeader, bool includeFooter)
+		{
+			SetupBuilder();
+			var header = includeHeader ? new Label() : null;
+			var footer = includeFooter ? new Label() : null;
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+				shell.FlyoutHeader = header;
+				shell.FlyoutFooter = footer;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, handler =>
+			{
+				var flyoutContent = handler.ViewController
+					.ChildViewControllers
+					.OfType<ShellFlyoutContentRenderer>()
+					.First();
+
+				flyoutContent.Disconnect();
+				flyoutContent.Disconnect();
+
+				Assert.Null(header?.Handler);
+				Assert.Null(footer?.Handler);
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact(DisplayName = "Shell Flyout Table View Has ScrollsToTop Disabled")]
 		public async Task ShellFlyoutTableViewScrollsToTopIsDisabled()
 		{

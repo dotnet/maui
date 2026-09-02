@@ -473,10 +473,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_footerView?.RemoveFromSuperview();
 			_footerView?.Dispose();
 			_footerView = null;
-			if (ReferenceEquals(header?.Handler, headerRenderer))
+			if (header is not null && ReferenceEquals(header.Handler, headerRenderer))
 				header.Handler = null;
 			headerRenderer?.DisconnectHandler();
-			if (ReferenceEquals(footer?.Handler, footerRenderer))
+			if (footer is not null && ReferenceEquals(footer.Handler, footerRenderer))
 				footer.Handler = null;
 			footerRenderer?.DisconnectHandler();
 
