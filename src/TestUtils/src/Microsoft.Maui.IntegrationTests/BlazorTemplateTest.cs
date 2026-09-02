@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -18,6 +19,60 @@ public class BlazorTemplateTest : BaseTemplateTests
 			$"Unable to create template {templateShortName}. Check test output for errors.");
 
 		AssertIncludesRootGitIgnore(solutionProjectDir);
+	}
+
+	[Fact]
+	public void MauiBlazorAndroidManifest_ConfiguresImageDragDropProvider()
+	{
+		SetTestIdentifier();
+		const string templateShortName = "maui-blazor";
+		const string config = "Debug";
+		var framework = $"{DotNetCurrent}-android";
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New(templateShortName, outputDirectory: projectDir, framework: DotNetCurrent, output: _output),
+			$"Unable to create template {templateShortName}. Check test output for errors.");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build with the default image drag provider configuration.");
+
+		var intermediatePath = Path.Combine(projectDir, "obj");
+		var defaultManifest = Path.Combine(intermediatePath, config, framework, "android", "AndroidManifest.xml");
+		AssertImageDragDropProvider(defaultManifest, expected: true);
+
+		Directory.Delete(intermediatePath, recursive: true);
+
+		var optOutBuildProps = BuildProps;
+		optOutBuildProps.Add("MauiEnableAndroidWebViewDragDrop=false");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: optOutBuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build with image drag provider registration disabled.");
+
+		var optOutManifest = Path.Combine(intermediatePath, config, framework, "android", "AndroidManifest.xml");
+		AssertImageDragDropProvider(optOutManifest, expected: false);
+	}
+
+	static void AssertImageDragDropProvider(string manifestPath, bool expected)
+	{
+		Assert.True(File.Exists(manifestPath), $"Merged Android manifest not found at {manifestPath}.");
+
+		XNamespace android = "http://schemas.android.com/apk/res/android";
+		var manifest = XDocument.Load(manifestPath);
+		var provider = manifest
+			.Descendants("provider")
+			.SingleOrDefault(element => (string?)element.Attribute(android + "name") == "androidx.webkit.DropDataContentProvider");
+
+		if (!expected)
+		{
+			Assert.Null(provider);
+			return;
+		}
+
+		Assert.NotNull(provider);
+		Assert.Equal($"{manifest.Root?.Attribute("package")?.Value}.DropDataProvider", (string?)provider.Attribute(android + "authorities"));
+		Assert.Equal("false", (string?)provider.Attribute(android + "exported"));
+		Assert.Equal("true", (string?)provider.Attribute(android + "grantUriPermissions"));
 	}
 
 	[Theory]
