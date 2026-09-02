@@ -242,12 +242,7 @@ namespace Microsoft.Maui.Controls.Internals
 				{
 					// get RenderWith attribute for just this type, do not inherit attributes from base types
 					var attribute = viewType.GetCustomAttributes<RenderWithAttribute>(false).FirstOrDefault();
-					if (attribute == null)
-					{
-						// TODO this doesn't appear to do anything. Register just returns as a NOOP if the renderer is null
-						Register(viewType, null, new[] { visualType }); // Cache this result so we don't have to do GetCustomAttributes again
-					}
-					else
+					if (attribute != null)
 					{
 						Type specificTypeRenderer = attribute.Type;
 
