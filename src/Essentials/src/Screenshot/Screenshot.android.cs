@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -17,9 +16,6 @@ namespace Microsoft.Maui.Media
 {
 	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
 	{
-		static readonly Lazy<Handler> PixelCopyCallbackHandler =
-			new(CreatePixelCopyCallbackHandler, LazyThreadSafetyMode.ExecutionAndPublication);
-
 		static IWindowManager? WindowManager =>
 			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
 
@@ -64,13 +60,9 @@ namespace Microsoft.Maui.Media
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				var bitmap = await RenderUsingPixelCopyAsync(view, window).ConfigureAwait(false);
+				var bitmap = await RenderUsingPixelCopyAsync(view, window);
 				if (bitmap is not null)
 					return bitmap;
-
-				// PixelCopy may complete off the UI thread, where view-based fallbacks are unsafe.
-				if (!MainThread.IsMainThread)
-					return null;
 			}
 
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
@@ -101,11 +93,13 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				var listener = new PixelCopyFinishedListener(tcs, bitmap);
-				PixelCopy.Request(window, rect, bitmap, listener, PixelCopyCallbackHandler.Value);
+				PixelCopy.Request(window, rect, bitmap,
+					listener,
+					new Handler(Looper.MainLooper!));
 
 				try
 				{
-					return await tcs.Task.ConfigureAwait(false);
+					return await tcs.Task.ConfigureAwait(true);
 				}
 				finally
 				{
@@ -117,17 +111,6 @@ namespace Microsoft.Maui.Media
 				bitmap.Dispose();
 				return null;
 			}
-		}
-
-		static Handler CreatePixelCopyCallbackHandler()
-		{
-			var thread = new HandlerThread("Microsoft.Maui.Screenshot.PixelCopy");
-			thread.Start();
-
-			var looper = thread.Looper
-				?? throw new InvalidOperationException("Unable to create the PixelCopy callback looper.");
-
-			return new Handler(looper);
 		}
 
 		static Activity? GetActivity(Context? context)
