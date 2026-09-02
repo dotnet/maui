@@ -33,24 +33,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(MaterialToolbar platformView)
 		{
 			base.ConnectHandler(platformView);
-			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
-			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 		}
-
-
-		void OnViewDetachedFromWindow(object? sender, View.ViewDetachedFromWindowEventArgs e)
-		{
-			if (sender is MaterialToolbar mt && mt.IsAlive() && mt.Context is not null)
-			{
-				MauiWindowInsetListenerExtensions.RemoveMauiWindowInsetListener(mt, mt.Context);
-			}
-		}
-		
-		void OnViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
-		{
-			var context = MauiContext?.Context ?? throw new InvalidOperationException("Context cannot be null");
-            MauiWindowInsetListenerExtensions.TrySetMauiWindowInsetListener(PlatformView, context);
-        }
 
 		private protected override void OnDisconnectHandler(object platformView)
 		{
@@ -59,8 +42,6 @@ namespace Microsoft.Maui.Handlers
 			if (platformView is MaterialToolbar mt && mt.IsAlive())
 			{
 				mt.RemoveFromParent();
-				mt.ViewAttachedToWindow -= OnViewAttachedToWindow;
-				mt.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
 
 			};
 		}

@@ -252,5 +252,36 @@ public class Issue32586 : _IssuesUITest
 		App.Tap("FooterButton");
 		WaitForText("TestLabel", "Footer is now hidden", timeoutSec: 10);
 	}
+
+#if ANDROID
+	[Test, Order(6)]
+	[Category(UITestCategories.SafeAreaEdges)]
+	public void ParentOwnershipChangesApplyTopInsetExactlyOnce()
+	{
+		App.WaitForElement("SafeAreaOwnershipSequenceButton");
+
+		App.Tap("SafeAreaOwnershipSequenceButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: All, Child: Default");
+		var parentAllY = App.WaitForElement("TopMarker").GetRect().Y;
+
+		App.Tap("SafeAreaOwnershipSequenceButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Default");
+		var edgeToEdgeY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(edgeToEdgeY, Is.LessThan(parentAllY),
+			"Releasing parent ownership must move an implicit child edge-to-edge");
+
+		App.Tap("SafeAreaOwnershipSequenceButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: None, Child: Container");
+		var childContainerY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(childContainerY, Is.EqualTo(parentAllY).Within(2),
+			"An explicit child Container must take over the released top inset once");
+
+		App.Tap("SafeAreaOwnershipSequenceButton");
+		WaitForText("SafeAreaStatusLabel", "Parent: All, Child: Container");
+		var restoredParentY = App.WaitForElement("TopMarker").GetRect().Y;
+		Assert.That(restoredParentY, Is.EqualTo(parentAllY).Within(2),
+			"Restoring parent ownership must not double-apply the child's top inset");
+	}
+#endif
 }
 #endif

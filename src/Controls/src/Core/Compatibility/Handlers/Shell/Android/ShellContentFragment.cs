@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellContent _shellContent;
 		AToolbar _toolbar;
 		IShellToolbarTracker _toolbarTracker;
+		IDisposable _insetsRouter;
 		bool _disposed;
 		bool _destroyed;
 
@@ -136,8 +137,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_root = inflater.Inflate(Controls.Resource.Layout.shellcontent, null).JavaCast<CoordinatorLayout>();
 
-			MauiWindowInsetListener.SetupViewWithLocalListener(_root);
-
 			var shellContentMauiContext = _shellContext.Shell.Handler.MauiContext.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager);
 
 			Maui.IElement parentElement = (_shellContent as Maui.IElement) ?? _page;
@@ -146,6 +145,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_toolbar = (AToolbar)shellToolbar.ToPlatform(shellContentMauiContext);
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
+			_insetsRouter = MauiWindowInsetsScope.RegisterAppBarRouter(_root, appBar);
 			appBar.AddView(_toolbar);
 			_viewhandler = _page.ToHandler(shellContentMauiContext);
 
@@ -183,11 +183,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// to avoid the navigation `TaskCompletionSource` to be stuck forever.
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 
-			// Clean up the coordinator layout and local listener first
-			if (_root is not null)
-			{
-				MauiWindowInsetListener.RemoveViewWithLocalListener(_root);
-			}
+			_insetsRouter?.Dispose();
+			_insetsRouter = null;
 
 			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
 
