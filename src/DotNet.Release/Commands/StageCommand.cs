@@ -11,9 +11,19 @@ internal static class StageCommand
             Description = "Release policy JSON.",
             Required = true,
         };
-        var plan = new Option<FileInfo>("--plan")
+        var repo = new Option<string>("--repo")
         {
-            Description = "plan.json written by release plan.",
+            Description = "Repository as 'owner/name'.",
+            Required = true,
+        };
+        var commit = new Option<string>("--commit")
+        {
+            Description = "Exact source commit verified by release resolve.",
+            Required = true,
+        };
+        var barId = new Option<int>("--bar-id")
+        {
+            Description = "Positive BAR build ID verified by release resolve.",
             Required = true,
         };
         var drop = new Option<DirectoryInfo>("--drop")
@@ -35,26 +45,67 @@ internal static class StageCommand
             Description = "Semicolon-separated exclude filters.",
         };
 
-        var command = new Command("stage", "Read the gathered drop, validate it, and write release-plan.json.")
+        var command = new Command("stage", "Read the gathered drop, validate it, and write release-manifest.json.")
         {
-            config, plan, drop, output, include, exclude,
+            config, repo, commit, barId, drop, output, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) => ExecuteAsync(outputWriter, File.ReadAllText(parse.GetValue(config)!.FullName),
-            File.ReadAllText(parse.GetValue(plan)!.FullName), parse.GetValue(drop)!.FullName, parse.GetValue(output)!.FullName, new StageOptions
+        command.SetAction((parse, cancellationToken) => ExecuteAsync(
+            outputWriter,
+            File.ReadAllText(parse.GetValue(config)!.FullName),
+            parse.GetValue(repo)!,
+            parse.GetValue(commit)!,
+            parse.GetValue(barId),
+            parse.GetValue(drop)!.FullName,
+            parse.GetValue(output)!.FullName,
+            new StageOptions
             {
                 Include = PackageGlob.ParseList(parse.GetValue(include)),
                 Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
-            }, DateTimeOffset.UtcNow, toolVersion, cancellationToken));
+            },
+            DateTimeOffset.UtcNow,
+            toolVersion,
+            cancellationToken));
 
         return command;
     }
 
-    public static async Task ExecuteAsync(TextWriter outputWriter, string policyJson, string resolvedPlanJson, string dropDirectory, string outputDirectory,
-        StageOptions options, DateTimeOffset now, string toolVersion, CancellationToken cancellationToken)
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter,
+        string policyJson,
+        string repository,
+        string commit,
+        int barBuildId,
+        string dropDirectory,
+        string outputDirectory,
+        StageOptions options,
+        DateTimeOffset now,
+        string toolVersion,
+        CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        var resolved = ReleasePlanSerializer.DeserializeResolved(resolvedPlanJson);
+        var repositoryId = RepositoryId.Parse(repository);
+        var repositoryPolicy = policy.GetRepository(repositoryId);
+
+        if (string.IsNullOrWhiteSpace(commit))
+        {
+            throw new DotNetReleaseException("A commit must be supplied; a release is always pinned to an exact commit.");
+        }
+
+        if (barBuildId <= 0)
+        {
+            throw new DotNetReleaseException($"BAR build ID '{barBuildId}' must be positive.");
+        }
+
+        var source = new ReleaseSource
+        {
+            Repository = repositoryId.FullName,
+            RepositoryUrl = repositoryId.GitHubUrl,
+            Commit = commit.Trim(),
+            BarBuildId = barBuildId,
+            Workload = repositoryPolicy.Workload,
+            Channel = repositoryPolicy.Channel,
+        };
 
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
@@ -83,12 +134,12 @@ internal static class StageCommand
             throw new DotNetReleaseException(readErrors);
         }
 
-        var plan = StagePlanner.Create(resolved, policy, packages, options, now, toolVersion);
+        var manifest = ReleaseManifestBuilder.Build(source, policy, packages, options, now, toolVersion);
         var sourceFiles = IndexPackageFiles(packageFiles);
         Directory.CreateDirectory(outputDirectory);
-        var planJson = ReleasePlanSerializer.Serialize(plan);
+        var manifestJson = ReleaseManifestSerializer.Serialize(manifest);
 
-        foreach (var set in plan.Sets.OrderBy(set => set.Order))
+        foreach (var set in manifest.Sets.OrderBy(set => set.Order))
         {
             var setDirectory = Path.Combine(outputDirectory, set.ArtifactName);
             Directory.CreateDirectory(setDirectory);
@@ -99,18 +150,18 @@ internal static class StageCommand
             }
         }
 
-        var planPath = Path.Combine(outputDirectory, ReleaseArtifact.PlanFileName);
-        await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
+        var manifestPath = Path.Combine(outputDirectory, ReleaseArtifact.ManifestFileName);
+        await File.WriteAllTextAsync(manifestPath, manifestJson, cancellationToken).ConfigureAwait(false);
 
-        foreach (var set in plan.Sets)
+        foreach (var set in manifest.Sets)
         {
             StagedSetIntegrity.ValidateStaged(set, ReleaseArtifact.ReadPackageHashes(Path.Combine(outputDirectory, set.ArtifactName)));
         }
 
-        ReleaseOutput.WriteReleasePlan(outputWriter, plan);
+        ReleaseOutput.WriteReleaseManifest(outputWriter, manifest);
         outputWriter.WriteLine();
-        outputWriter.WriteLine($"Wrote {planPath}.");
-        outputWriter.WriteLine($"Release plan SHA-256: {ReleasePlanSerializer.ComputeHash(planJson)}");
+        outputWriter.WriteLine($"Wrote {manifestPath}.");
+        outputWriter.WriteLine($"Release manifest SHA-256: {ReleaseManifestSerializer.ComputeHash(manifestJson)}");
     }
 
     internal static List<string> FindShippingPackages(string dropDirectory)
@@ -129,7 +180,8 @@ internal static class StageCommand
             var name = Path.GetFileName(file);
             if (!indexed.TryAdd(name, file))
             {
-                throw new DotNetReleaseException($"The gathered drop contains more than one '{name}': " + $"'{indexed[name]}' and '{file}'.");
+                throw new DotNetReleaseException(
+                    $"The gathered drop contains more than one '{name}': '{indexed[name]}' and '{file}'.");
             }
         }
 

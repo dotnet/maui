@@ -11,7 +11,7 @@ public class VerificationBudgetTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingWriter _output = new();
 
-    private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
+    private string ManifestHash => ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
 
     public void Dispose() => _workspace.Dispose();
 
@@ -22,26 +22,39 @@ public class VerificationBudgetTests : IDisposable
             _workspace.WritePackage($"Package{i:D2}", "1.0.0");
         }
 
-        var registry = new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
-
-        await PlanCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null, _workspace.Out, Workspace.Now,
-            "1.0.0-test", CancellationToken.None);
-
-        await StageCommand.ExecuteAsync(_output, Workspace.PolicyJson, File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)), _workspace.Drop,
-            _workspace.Out, new StageOptions(), Workspace.Now, "1.0.0-test", CancellationToken.None);
+        await StageCommand.ExecuteAsync(
+            _output,
+            Workspace.PolicyJson,
+            "dotnet/skiasharp",
+            Workspace.Commit,
+            4242,
+            _workspace.Drop,
+            _workspace.Out,
+            new StageOptions(),
+            Workspace.Now,
+            "1.0.0-test",
+            CancellationToken.None);
     }
 
     private Task Verify(INuGetPackageLookup probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)
     {
         var now = Workspace.Now;
 
-        return VerifyCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), TimeSpan.FromMinutes(deadlineMinutes), TimeSpan.FromSeconds(pollSeconds),
+        return VerifyCommand.ExecuteAsync(
+            _output,
+            probe,
+            _workspace.ReadManifest(),
+            TimeSpan.FromMinutes(deadlineMinutes),
+            TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) =>
             {
                 now = now.Add(delay);
                 return Task.CompletedTask;
-            }, null, PlanHash, CancellationToken.None);
+            },
+            null,
+            ManifestHash,
+            CancellationToken.None);
     }
 
     [Fact]
@@ -79,7 +92,7 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(41);
 
-        var straggler = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).AllPackages.Last();
+        var straggler = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest()).AllPackages.Last();
 
         var probe = new FakeProbe
         {

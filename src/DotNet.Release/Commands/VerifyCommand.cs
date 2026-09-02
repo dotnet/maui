@@ -6,9 +6,9 @@ internal static class VerifyCommand
 {
     public static Command Build(TextWriter outputWriter)
     {
-        var plan = new Option<FileInfo>("--plan")
+        var manifest = new Option<FileInfo>("--manifest")
         {
-            Description = "release-plan.json.",
+            Description = "release-manifest.json.",
             Required = true,
         };
         var maxDuration = new Option<int>("--max-duration-minutes")
@@ -30,22 +30,22 @@ internal static class VerifyCommand
             Description = "Package-set directory name.",
             Required = true,
         };
-        var expectedHash = new Option<string>("--expected-plan-hash")
+        var expectedHash = new Option<string>("--expected-manifest-hash")
         {
             Description = "The SHA-256 emitted by the prepare stage.",
             Required = true,
         };
         var command = new Command("verify", "Poll until every package in the set is indexed on NuGet.org.")
         {
-            plan, maxDuration, interval, feed, set, expectedHash,
+            manifest, maxDuration, interval, feed, set, expectedHash,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
-            var planFile = parse.GetValue(plan)!;
+            var manifestFile = parse.GetValue(manifest)!;
             using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
-            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(planFile.FullName), TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
+            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(manifestFile.FullName), TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
                 () => DateTimeOffset.UtcNow, Task.Delay, parse.GetValue(set), parse.GetValue(expectedHash)!, cancellationToken);
         });
@@ -53,12 +53,13 @@ internal static class VerifyCommand
         return command;
     }
 
-    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetPackageLookup lookup, string planJson, TimeSpan maxDuration, TimeSpan pollInterval,
-        Func<DateTimeOffset> clock, Func<TimeSpan, CancellationToken, Task> delay, string? setName, string expectedPlanHash,
+    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetPackageLookup lookup, string manifestJson, TimeSpan maxDuration,
+        TimeSpan pollInterval, Func<DateTimeOffset> clock, Func<TimeSpan, CancellationToken, Task> delay, string? setName,
+        string expectedManifestHash,
         CancellationToken cancellationToken)
     {
-        var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
-        var sets = ReleaseArtifact.SelectSets(plan, setName);
+        var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
+        var sets = ReleaseArtifact.SelectSets(manifest, setName);
         var packages = sets.SelectMany(set => set.Packages).ToList();
         var deadline = clock() + maxDuration;
         IReadOnlyList<PlannedPackage> missing = packages;

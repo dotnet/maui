@@ -3,7 +3,7 @@ namespace DotNet.Release;
 /// <summary>Reads and validates shared package-set artifact structure.</summary>
 internal static class ReleaseArtifact
 {
-    public const string PlanFileName = "release-plan.json";
+    public const string ManifestFileName = "release-manifest.json";
 
     internal static string GetSetDirectory(string stageDirectory, ReleasePackageSet set)
     {
@@ -35,9 +35,9 @@ internal static class ReleaseArtifact
         return hashes;
     }
 
-    internal static IReadOnlyList<ReleasePackageSet> SelectSets(ReleasePlan plan, string? setName)
+    internal static IReadOnlyList<ReleasePackageSet> SelectSets(ReleaseManifest manifest, string? setName)
     {
-        var ordered = plan.Sets.OrderBy(set => set.Order).ToList();
+        var ordered = manifest.Sets.OrderBy(set => set.Order).ToList();
 
         if (string.IsNullOrWhiteSpace(setName))
         {
@@ -51,7 +51,7 @@ internal static class ReleaseArtifact
         if (matched.Count == 0)
         {
             throw new DotNetReleaseException(
-                $"The release plan has no package set named '{setName}'. It contains: " +
+                $"The release manifest has no package set named '{setName}'. It contains: " +
                 $"{string.Join(", ", ordered.Select(set => set.ArtifactName))}.");
         }
 

@@ -18,7 +18,7 @@ public class WorkloadStageScopingTests : IDisposable
     private readonly RecordingWriter _output = new();
 
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
-    private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
+    private string ManifestHash => ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
 
     public void Dispose() => _workspace.Dispose();
 
@@ -26,22 +26,27 @@ public class WorkloadStageScopingTests : IDisposable
     private const string Manifest = "Microsoft.NET.Sdk.Maui.Manifest-10.0.100";
 
     /// <summary>Stages a workload release with one pack and one manifest.</summary>
-    private async Task<ReleasePlan> StageWorkloadAsync()
+    private async Task<ReleaseManifest> StageWorkloadAsync()
     {
         _workspace.WritePackage(Pack, "10.0.0");
         _workspace.WritePackage(Manifest, "10.0.0");
 
-        var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
+        await StageCommand.ExecuteAsync(
+            _output,
+            Workspace.PolicyJson,
+            "dotnet/maui",
+            Workspace.Commit,
+            4242,
+            _workspace.Drop,
+            _workspace.Out,
+            new StageOptions(),
+            Workspace.Now,
+            "1.0.0-test",
+            CancellationToken.None);
 
-        await PlanCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
-            _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
-
-        await StageCommand.ExecuteAsync(_output, Workspace.PolicyJson, File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
-            _workspace.Drop, _workspace.Out, new StageOptions(), Workspace.Now, "1.0.0-test", CancellationToken.None);
-
-        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
-        Assert.Equal(2, plan.Sets.Count);
-        return plan;
+        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        Assert.Equal(2, manifest.Sets.Count);
+        return manifest;
     }
 
     /// <summary>Simulates a publish stage: only its own artifact directory is present.</summary>
@@ -56,23 +61,23 @@ public class WorkloadStageScopingTests : IDisposable
         }
     }
 
-    private Task Filter(string? set, INuGetPackageLookup probe) => PrunePublishedCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), _workspace.Out,
-            [], PlanHash, set, CancellationToken.None);
+    private Task Filter(string? set, INuGetPackageLookup probe) => PrunePublishedCommand.ExecuteAsync(
+        _output, probe, _workspace.ReadManifest(), _workspace.Out, [], ManifestHash, set, CancellationToken.None);
 
     private Task Verify(string? set, INuGetPackageLookup probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 
-        return VerifyCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
+        return VerifyCommand.ExecuteAsync(_output, probe, _workspace.ReadManifest(), TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
             () => now,
-            (delay, _) => { now = now.Add(delay); return Task.CompletedTask; }, set, PlanHash, CancellationToken.None);
+            (delay, _) => { now = now.Add(delay); return Task.CompletedTask; }, set, ManifestHash, CancellationToken.None);
     }
 
     [Fact]
     public async Task Stage_logs_the_workload_target_sets_and_package_hashes()
     {
-        var plan = await StageWorkloadAsync();
-        var package = plan.AllPackages.First();
+        var manifest = await StageWorkloadAsync();
+        var package = manifest.AllPackages.First();
         var output = _output.AllOutput;
 
         Assert.Contains("Workload target:", output, StringComparison.Ordinal);
@@ -81,10 +86,10 @@ public class WorkloadStageScopingTests : IDisposable
         Assert.Contains("Feed    : dotnet10-workloads", output, StringComparison.Ordinal);
         Assert.Contains("Name          : Workload packs", output, StringComparison.Ordinal);
         Assert.Contains("Order         : 0", output, StringComparison.Ordinal);
-        Assert.Contains($"Artifact name : {StagePlanner.PacksArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name : {ReleaseManifestBuilder.PacksArtifactName}", output, StringComparison.Ordinal);
         Assert.Contains("Name          : Workload manifests", output, StringComparison.Ordinal);
         Assert.Contains("Order         : 1", output, StringComparison.Ordinal);
-        Assert.Contains($"Artifact name : {StagePlanner.ManifestsArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name : {ReleaseManifestBuilder.ManifestsArtifactName}", output, StringComparison.Ordinal);
         Assert.Contains($"File name          : {package.FileName}", output, StringComparison.Ordinal);
         Assert.Contains($"SHA-256            : {package.Sha256}", output, StringComparison.Ordinal);
     }
@@ -93,12 +98,12 @@ public class WorkloadStageScopingTests : IDisposable
     public async Task Packs_stage_prunes_only_its_own_set()
     {
         await StageWorkloadAsync();
-        KeepOnly(StagePlanner.PacksArtifactName);
+        KeepOnly(ReleaseManifestBuilder.PacksArtifactName);
 
         // Staging logged both set names, so inspect only the prune command output.
         _output.Output.Clear();
 
-        await Filter(StagePlanner.PacksArtifactName, new FakeProbe());
+        await Filter(ReleaseManifestBuilder.PacksArtifactName, new FakeProbe());
         Assert.Contains("Set name       : Workload packs", _output.AllOutput, StringComparison.Ordinal);
         Assert.DoesNotContain("Workload manifests", _output.AllOutput, StringComparison.Ordinal);
     }
@@ -111,7 +116,7 @@ public class WorkloadStageScopingTests : IDisposable
     public async Task Unscoped_prune_in_a_packs_only_stage_fails_closed()
     {
         await StageWorkloadAsync();
-        KeepOnly(StagePlanner.PacksArtifactName);
+        KeepOnly(ReleaseManifestBuilder.PacksArtifactName);
 
         await Assert.ThrowsAsync<DotNetReleaseException>(
             () => Filter(set: null, new FakeProbe()));
@@ -125,7 +130,7 @@ public class WorkloadStageScopingTests : IDisposable
         // Packs are live; manifests have not been pushed yet, which is correct at this point.
         var probe = new FakeProbe($"{Pack.ToLowerInvariant()}/10.0.0");
 
-        await Verify(StagePlanner.PacksArtifactName, probe);
+        await Verify(ReleaseManifestBuilder.PacksArtifactName, probe);
     }
 
     /// <summary>
@@ -151,7 +156,7 @@ public class WorkloadStageScopingTests : IDisposable
 
         var probe = new FakeProbe($"{Manifest.ToLowerInvariant()}/10.0.0");
 
-        await Verify(StagePlanner.ManifestsArtifactName, probe);
+        await Verify(ReleaseManifestBuilder.ManifestsArtifactName, probe);
     }
 
     /// <summary>
@@ -165,7 +170,7 @@ public class WorkloadStageScopingTests : IDisposable
 
         var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
             () => Verify("MauiPacksForNuGet", new FakeProbe()));
-        Assert.Contains(StagePlanner.PacksArtifactName, exception.Message, StringComparison.Ordinal);
+        Assert.Contains(ReleaseManifestBuilder.PacksArtifactName, exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -189,15 +194,15 @@ public class WorkloadStageScopingTests : IDisposable
 
         var probe = new FlakyProbe(failUntilCall: 3, published: [$"{Pack.ToLowerInvariant()}/10.0.0"]);
 
-        await Verify(StagePlanner.PacksArtifactName, probe);
+        await Verify(ReleaseManifestBuilder.PacksArtifactName, probe);
         Assert.True(probe.Calls >= 3);
     }
 
     [Fact]
-    public async Task Packs_are_ordered_before_manifests_in_the_plan()
+    public async Task Packs_are_ordered_before_manifests_in_the_manifest()
     {
-        var plan = await StageWorkloadAsync();
+        var manifest = await StageWorkloadAsync();
 
-        Assert.Equal(StagePlanner.PacksArtifactName, plan.Sets.OrderBy(s => s.Order).First().ArtifactName);
+        Assert.Equal(ReleaseManifestBuilder.PacksArtifactName, manifest.Sets.OrderBy(s => s.Order).First().ArtifactName);
     }
 }

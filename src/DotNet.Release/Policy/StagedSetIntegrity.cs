@@ -1,7 +1,7 @@
 namespace DotNet.Release;
 
 /// <summary>
-/// Enforces the invariant that keeps the immutable plan and the mutable staging directory
+/// Enforces the invariant that keeps the immutable manifest and the mutable staging directory
 /// consistent with each other.
 /// </summary>
 /// <remarks>
@@ -19,8 +19,8 @@ namespace DotNet.Release;
 internal static class StagedSetIntegrity
 {
     /// <summary>
-    /// Validates the staging directory against the plan before pruning: every
-    /// planned file must be present with the hash recorded at stage time, and nothing else
+    /// Validates the staging directory against the manifest before pruning: every
+    /// listed file must be present with the hash recorded at stage time, and nothing else
     /// may be in the directory.
     /// </summary>
     /// <param name="set">The planned set.</param>
@@ -29,7 +29,7 @@ internal static class StagedSetIntegrity
     /// <para>
     /// <b>Contract:</b> this must contain <i>only</i> the directory's <c>.nupkg</c> files.
     /// The unexpected-file rule is scoped by extension at the point of enumeration, never by
-    /// allow-listing companion file names here. Companion files — <c>release-plan.json</c>,
+    /// allow-listing companion file names here. Companion files — <c>release-manifest.json</c>,
     /// and anything added later — are simply never observed, so
     /// adding one requires no allow-list update. The invariant remains scoped to every
     /// <c>.nupkg</c> file in the directory tree.
@@ -84,15 +84,15 @@ internal static class StagedSetIntegrity
 
             if (isPresent && !string.Equals(actualHash, package.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add($"'{package.FileName}' has hash '{actualHash}' but the plan recorded " +
+                errors.Add($"'{package.FileName}' has hash '{actualHash}' but the manifest recorded " +
                     $"'{package.Sha256}'. It is not the file that was validated.");
             }
         }
 
-        // Anything in the directory the plan does not mention would be published unreviewed.
+        // Anything in the directory the manifest does not mention would be published unreviewed.
         foreach (var fileName in observed.Keys.Where(f => !planned.Contains(f)).Order(StringComparer.Ordinal))
         {
-            errors.Add($"Staging directory for '{set.Name}' contains '{fileName}', which the release " + "plan does not list.");
+            errors.Add($"Staging directory for '{set.Name}' contains '{fileName}', which the release manifest does not list.");
         }
 
         if (errors.Count > 0)

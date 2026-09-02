@@ -91,7 +91,7 @@ For either preview mode, the expanded pipeline MUST NOT contain:
 - `darc add-build-to-channel`;
 
 The matching package-set stage remains present. Its `preflight` job downloads the `Release`
-artifact, verifies plan/tool integrity, queries NuGet.org read-only, prunes already-published
+artifact, verifies manifest/tool integrity, queries NuGet.org read-only, prunes already-published
 versions, validates the remaining package set, and publishes that exact local artifact for
 review.
 
@@ -108,7 +108,7 @@ The dry run DOES:
 - download assets from Azure DevOps feeds or blob storage;
 - read repository dependency metadata when Darc requires it;
 - write and copy files on the disposable agent;
-- upload plans, packages, and the release-tool bundle as Azure DevOps artifacts;
+- upload the manifest, packages, and release-tool bundle as Azure DevOps artifacts;
 - pause at the same package-set `ManualValidation@0` gates used by a publish run;
 - run the same production `releaseJob`, including approved-artifact download, integrity
   validation, and the final read-only prune;
@@ -149,7 +149,7 @@ step is present only in **Publish packages and promote the workload build**:
 ```
 
 Its runtime condition additionally requires the `IsWorkload` output emitted by
-`release plan`.
+`release resolve`.
 
 ### Queue-parameter safety
 
@@ -255,10 +255,10 @@ The prepare stage always runs, including on a dry run:
 checkout release-system source
   -> install pinned .NET SDK
   -> build and pin Release/_tool
-  -> release plan
+  -> release resolve
   -> darc gather-drop
   -> release stage
-  -> pin release-plan.json
+  -> pin release-manifest.json
   -> publish Azure DevOps artifacts
 ```
 
@@ -274,8 +274,8 @@ bundle after approval without restoring or rebuilding it.
 
 When a promotion mode is requested for a workload repository:
 
-1. an agentless `ManualValidation@0` job displays the plan for review;
-2. a normal agent job verifies the plan and obtains Darc through Arcade;
+1. an agentless `ManualValidation@0` job displays the resolved target for review;
+2. a normal agent job verifies the manifest and obtains Darc through Arcade;
 3. a preview reports what would change, while the publishing mode runs
    `darc add-build-to-channel --skip-assets-publishing`.
 
@@ -290,14 +290,14 @@ Every package set uses the same internal stage definition:
 ```
 preflight
   -> download Release artifact
-  -> verify plan and tool hashes
+  -> verify manifest and tool hashes
   -> release prune-published
   -> publish exact pruned artifact for review
 
 ManualValidation@0
   -> production releaseJob
     -> download approved artifact
-    -> verify plan and tool hashes
+    -> verify manifest and tool hashes
     -> refresh prune
 
 when the selected mode publishes packages:
@@ -309,7 +309,7 @@ otherwise:
 ```
 
 The preflight job proves that a normal agent job can download the artifact, install the SDK,
-load the approved tool, query NuGet.org, interpret the plan, and validate the exact pending
+load the approved tool, query NuGet.org, interpret the manifest, and validate the exact pending
 set before approval. The dry run then exercises the production `releaseJob` without giving
 it a publishing task or credential. The release job repeats the prune after approval; the
 approved set can only shrink.
@@ -372,7 +372,7 @@ Channel verification establishes a property distinct from source identity:
 
 `config/repositories.json` is the only source of workload classification.
 
-`release plan` emits `IsWorkload` as an Azure DevOps output variable. When publishing is
+`release resolve` emits `IsWorkload` as an Azure DevOps output variable. When publishing is
 enabled, the pipeline contains the workload and non-workload stage shapes, and each stage
 uses a runtime condition against that output:
 
@@ -384,7 +384,7 @@ This keeps stage ordering explicit without duplicating repository classification
 
 ## BAR resolution
 
-`release plan` accepts either:
+`release resolve` accepts either:
 
 ```text
 repository + exact commit
@@ -428,8 +428,8 @@ dotnet-SkiaSharp -> dotnet/skiasharp
 The first hyphen separates owner and repository. A value that does not follow this
 convention fails with an explicit mirror-identity error.
 
-The plan records whether identity came from `GitHubRepository` or
-`AzureDevOpsMirrorConvention`.
+The resolve log records whether identity came from `GitHubRepository` or
+`AzureDevOpsMirrorConvention`; this diagnostic does not need to cross job boundaries.
 
 ### Typed BAR client
 
@@ -517,11 +517,11 @@ All manifests must resolve to one configured band.
 
 A non-workload release produces one package set and explicitly rejects workload manifests.
 
-## Release plan contract
+## Release manifest contract
 
-`release-plan.json` is the immutable contract crossing the prepare/publish job boundary.
+`release-manifest.json` is the immutable contract crossing the prepare/publish job boundary.
 It is a machine transport object, not the human approval interface. The CLI MUST print every
-field in the resolved release, final plan, and prune report in a readable summary. In
+field in the resolved build, final manifest, and in-memory prune result in a readable summary. In
 particular, the preflight log immediately before approval lists every package's identity,
 file name, hash, and final disposition.
 
@@ -560,7 +560,7 @@ file name, hash, and final disposition.
 }
 ```
 
-Unknown schema versions fail before the plan is used.
+Unknown schema versions fail before the manifest is used.
 
 ## Artifact contract
 
@@ -577,7 +577,7 @@ The artifact layout is:
 
 ```
 Release/
-  release-plan.json
+  release-manifest.json
   release-tool.zip
   _tool/
     release.dll
@@ -588,9 +588,9 @@ Release/
 ```
 
 Workload releases contain `ReleasePacks/` and `ReleaseManifests/` instead of
-`ReleasePackages/`. There is one authoritative `release-plan.json` at the artifact root.
+`ReleasePackages/`. There is one authoritative `release-manifest.json` at the artifact root.
 
-Each matching preflight publishes a prepared artifact containing the pinned root plan,
+Each matching preflight publishes a prepared artifact containing the pinned root manifest,
 the pinned tool bundle, and only that stage's pruned package-set directory. The approval
 artifact therefore cannot contain an unpruned sibling workload set and the release job
 needs no source checkout.
@@ -602,21 +602,21 @@ The prepare stage:
 1. builds the C# project into `Release/_tool` for execution and binary scanning;
 2. bundles `global.json` and `_tool` into `release-tool.zip`;
 3. hashes that bundle once as `ToolBundleHash`;
-4. executes `_tool/release.dll` for `plan` and `stage`;
-5. records every package SHA-256 in the plan;
-6. writes one authoritative plan into the release artifact root;
-7. computes the plan hash independently with `Get-FileHash`;
-8. exports `ToolBundleHash` and `ReleasePlanHash`.
+4. executes `_tool/release.dll` for `resolve` and `stage`;
+5. records every package SHA-256 in the manifest;
+6. writes one authoritative manifest into the release artifact root;
+7. computes the manifest hash independently with `Get-FileHash`;
+8. exports `ToolBundleHash` and `ReleaseManifestHash`.
 
 The publish job:
 
 1. downloads the stage's exact prepared artifact without checking out source;
 2. verifies `release-tool.zip` with `ToolBundleHash`;
 3. expands it and installs the SDK selected by its `global.json`;
-4. compares raw plan bytes with `ReleasePlanHash`;
+4. compares raw manifest bytes with `ReleaseManifestHash`;
 5. executes the bundled DLL for `prune-published`;
 6. validates all pending package hashes before invoking 1ES;
-7. executes the same DLL for `verify` with the same expected plan hash.
+7. executes the same DLL for `verify` with the same expected manifest hash.
 
 Unexpected `.nupkg` files, missing pending files, and changed package bytes fail closed.
 Companion JSON and executable files are excluded by the `.nupkg` enumeration.
@@ -625,7 +625,7 @@ Companion JSON and executable files are excluded by the `.nupkg` enumeration.
 
 `release prune-published` queries NuGet.org read-only using `FindPackageByIdResource`.
 
-For each planned package it records one disposition:
+For each manifest package it records one disposition:
 
 | Disposition | Meaning | File after pruning |
 |---|---|---|
@@ -633,8 +633,8 @@ For each planned package it records one disposition:
 | `AlreadyPublished` | Exact ID/version is visible | removed |
 | `PreviouslyAttempted` | Matched an operator recovery filter | removed |
 
-The immutable plan is not rewritten. Dispositions are written to
-`release-prune.json`.
+The immutable manifest is not rewritten. Dispositions are printed in full to the job log;
+there is no second JSON sidecar.
 
 Before deleting anything, all artifact and package names are revalidated as a single
 relative path component.
@@ -678,8 +678,8 @@ For partial publication:
 2. `prune-published` removes packages already visible on NuGet.org;
 3. if NuGet.org accepted a package but it is not yet visible, add its filename to
    `recoveryFilters`;
-4. each recovery filter must match a package anywhere in the release plan or the run fails;
-5. verification still requires every planned package, including recovered packages.
+4. each recovery filter must match a package anywhere in the release manifest or the run fails;
+5. verification still requires every manifest package, including recovered packages.
 
 Recovery filters are release-scoped. A pack-only filter remains valid while the manifest
 set is processed, and a manifest-only filter remains valid while the pack set is processed.
@@ -698,7 +698,7 @@ package file is unavailable. A repeated non-workload release whose internal pack
 has expired therefore fails during gathering or staging, even if that identity already
 exists on NuGet.org.
 
-Supporting that case requires the plan step to carry selected BAR asset identities and the
+Supporting that case requires the resolve/stage flow to carry selected BAR asset identities and the
 stage step to reconcile downloaded files against them. BAR versions must be normalized with
 `NuGetVersion` before any NuGet.org lookup.
 
@@ -767,7 +767,7 @@ against the live service.
 Tests MUST fail when:
 
 - the pipeline repository dropdown differs from policy;
-- workload and non-workload stages do not use the `release plan` classification output;
+- workload and non-workload stages do not use the `release resolve` classification output;
 - a remote publish operation is not structurally nested beneath the derived publish boolean;
 - package-set local validation is nested beneath the derived publish boolean;
 - BAR mutation is not structurally nested beneath the derived promotion boolean;
@@ -778,6 +778,6 @@ Tests MUST fail when:
 - pack/manifests stage ordering is broken;
 - the tool references NuGet's push API;
 - the tool references `System.Diagnostics.Process`;
-- the plan, package, or executable hash chain is inconsistent;
-- a future plan schema is read by an older tool;
+- the manifest, package, or executable hash chain is inconsistent;
+- a future manifest schema is read by an older tool;
 - an unexpected or changed `.nupkg` enters the publish set.

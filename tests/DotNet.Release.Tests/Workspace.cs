@@ -133,7 +133,7 @@ internal sealed class Workspace : IDisposable
         return path;
     }
 
-    public string ReadPlan() => File.ReadAllText(Path.Combine(Out, ReleaseArtifact.PlanFileName));
+    public string ReadManifest() => File.ReadAllText(Path.Combine(Out, ReleaseArtifact.ManifestFileName));
 
     public string StagedSet(string artifactName) => Path.Combine(Out, artifactName);
 

@@ -8,20 +8,20 @@ namespace DotNet.Release;
 /// The tool emits three pipeline variables:
 /// </para>
 /// <list type="number">
-/// <item><see cref="BarIdVariable"/>, from <c>release plan</c>, because the
+/// <item><see cref="BarIdVariable"/>, from <c>release resolve</c>, because the
 /// <c>darc gather-drop</c> step that follows needs the BAR ID that step discovered.</item>
-/// <item><see cref="IsWorkloadVariable"/>, from <c>release plan</c>, because stage conditions
+/// <item><see cref="IsWorkloadVariable"/>, from <c>release resolve</c>, because stage conditions
 /// select workload or non-workload publication from repository policy.</item>
 /// <item><see cref="PackagesToPublishVariable"/>, from <c>release prune-published</c>, because the
 /// publish task is skipped by an Azure DevOps <c>condition</c>, and a condition can only
 /// read a variable.</item>
 /// </list>
 /// <para>
-/// Channel, feed, package identities, and hashes travel in the plan file. Variables are
+/// Channel, feed, package identities, and hashes travel in the manifest file. Variables are
 /// limited to values Azure DevOps conditions or subsequent steps must consume directly.
 /// </para>
 /// <para>
-/// The plan's own hash is deliberately <i>not</i> emitted here. The pipeline computes it
+/// The manifest's own hash is deliberately <i>not</i> emitted here. The pipeline computes it
 /// with <c>Get-FileHash</c>, because a value that pins an artifact must not be sourced from
 /// that artifact.
 /// </para>
@@ -47,11 +47,11 @@ internal static class AzurePipelineCommand
         return $"##vso[task.setvariable variable={name}{flags}]{Escape(value)}";
     }
 
-    /// <summary>Formats the <c>BarId</c> output variable emitted by <c>release plan</c>.</summary>
+    /// <summary>Formats the <c>BarId</c> output variable emitted by <c>release resolve</c>.</summary>
     public static string SetBarId(int barBuildId) =>
         SetVariable(BarIdVariable, barBuildId.ToString(System.Globalization.CultureInfo.InvariantCulture), isOutput: true);
 
-    /// <summary>Formats the workload classification emitted by <c>release plan</c>.</summary>
+    /// <summary>Formats the workload classification emitted by <c>release resolve</c>.</summary>
     public static string SetIsWorkload(bool isWorkload) =>
         SetVariable(IsWorkloadVariable, isWorkload ? "true" : "false", isOutput: true);
 

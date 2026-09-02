@@ -110,7 +110,7 @@ public class PipelineDefinitionTests
         Assert.DoesNotContain("- name: isWorkload", pipeline, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(pipeline, @"expectedWorkload:\s*'true'").Count);
         Assert.Single(Regex.Matches(pipeline, @"expectedWorkload:\s*'false'").Cast<Match>());
-        Assert.Contains("releasePlan.IsWorkload", publish, StringComparison.Ordinal);
+        Assert.Contains("resolveBuild.IsWorkload", publish, StringComparison.Ordinal);
         Assert.Contains("expectedWorkload", publish, StringComparison.Ordinal);
         Assert.Contains("${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg", publish, StringComparison.Ordinal);
     }
@@ -132,7 +132,7 @@ public class PipelineDefinitionTests
             Assert.Contains($"name: {reference.Groups["step"].Value}", root, StringComparison.Ordinal);
         }
 
-        var verbs = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "PlanCommand.cs"));
+        var verbs = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "ResolveCommand.cs"));
         Assert.Contains("SetIsWorkload(resolved.Workload)", verbs, StringComparison.Ordinal);
     }
 
@@ -559,7 +559,7 @@ public class PipelineDefinitionTests
         Assert.Contains("ManualValidation@0", promote, StringComparison.Ordinal);
         Assert.Contains("pool: server", promote, StringComparison.Ordinal);
         Assert.Contains("dependsOn: promote_approval", promote, StringComparison.Ordinal);
-        Assert.Contains("Verify release plan integrity", promote, StringComparison.Ordinal);
+        Assert.Contains("Verify release manifest integrity", promote, StringComparison.Ordinal);
         Assert.Contains("dependsOn: [prepare_release, promote_workload_set]", text, StringComparison.Ordinal);
     }
 
@@ -606,8 +606,8 @@ public class PipelineDefinitionTests
 
         Assert.Contains("##vso[build.addbuildtag]PUBLISH", text, StringComparison.Ordinal);
         Assert.Contains("##vso[build.addbuildtag]DRY-RUN", text, StringComparison.Ordinal);
-        Assert.Contains("##vso[build.addbuildtag]BAR ID - $($plan.barBuildId)", text, StringComparison.Ordinal);
-        Assert.Contains("##vso[build.addbuildtag]REPO - $($plan.repository)", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]BAR ID - $env:BAR_ID", text, StringComparison.Ordinal);
+        Assert.Contains("##vso[build.addbuildtag]REPO - $env:REPOSITORY", text, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -637,7 +637,7 @@ public class PipelineDefinitionTests
     /// the initial Release artifact. NuGet availability is queried by package-set preflight.
     /// </summary>
     [Fact]
-    public void Prepare_stage_invokes_only_plan_gather_and_stage()
+    public void Prepare_stage_invokes_only_resolve_gather_and_stage()
     {
         var lines = File.ReadAllLines(PipelinePath);
         var promotionStage = Array.FindIndex(lines,
@@ -646,7 +646,7 @@ public class PipelineDefinitionTests
             .Where(i => i < promotionStage)
             .Select(i => lines[i]).ToList();
 
-        Assert.Contains(scripts, line => line.Trim() == "plan `");
+        Assert.Contains(scripts, line => line.Trim() == "resolve `");
         Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
         Assert.Contains(scripts, line => line.Trim() == "stage `");
 

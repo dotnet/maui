@@ -44,15 +44,12 @@ internal static class TestData
     public static ReleaseRequest Request(string repo = "dotnet/skiasharp", string? commit = null, int? barId = null) =>
         new(Repo(repo), commit ?? Commit, barId);
 
-    public static ResolvedRelease Resolved(bool workload = false, string repo = "dotnet/skiasharp") => new()
+    public static ReleaseSource Source(bool workload = false, string repo = "dotnet/skiasharp") => new()
     {
-        ToolVersion = ToolVersion,
-        CreatedUtc = Now,
         Repository = repo,
         RepositoryUrl = $"https://github.com/{repo}",
         Commit = Commit,
         BarBuildId = 4242,
-        RepositoryOrigin = RepositoryOrigin.GitHubRepository,
         Workload = workload,
         Channel = workload ? null : new ChannelReference(".NET Libraries", 1648),
     };
@@ -61,7 +58,7 @@ internal static class TestData
     {
         Name = "NuGet packages",
         Order = 0,
-        ArtifactName = StagePlanner.PackagesArtifactName,
+        ArtifactName = ReleaseManifestBuilder.PackagesArtifactName,
         Packages = packages,
     };
 

@@ -14,9 +14,9 @@
 #
 # What it does, in order:
 #   1. build the C# tool once into the Release artifact
-#   2. `release plan`  - resolve and verify the BAR build for the requested repo/commit
+#   2. `release resolve` - resolve and verify the BAR build for the requested repo/commit
 #   3. `darc gather-drop` - download that build's shipping packages
-#   4. `release stage`  - validate every package, write the hashed release plan, stage artifacts
+#   4. `release stage`  - validate every package, write the hashed release manifest, stage artifacts
 #   5. `release prune-published` -> manual approval gate (agentless)
 #   6. production release job -> refresh prune -> optional `1ES.PublishNuget@1` -> verification
 #
@@ -163,7 +163,7 @@ extends:
         templateContext:
           outputs:
           - output: pipelineArtifact
-            displayName: Publish release plan and packages
+            displayName: Publish release manifest and packages
             targetPath: $(Build.ArtifactStagingDirectory)
             artifactName: Release
         steps:
@@ -204,7 +204,7 @@ extends:
           displayName: Build the release tool
 
         - task: AzureCLI@2
-          name: releasePlan
+          name: resolveBuild
           displayName: Resolve and verify the BAR build
           inputs:
             azureSubscription: "Darc: Maestro Production"
@@ -232,17 +232,15 @@ extends:
               }
 
               dotnet "$env:RELEASE_TOOL" `
-                plan `
+                resolve `
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
                 --commit $env:COMMIT_HASH `
-                --out "$env:STAGE_DIR" `
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
-            STAGE_DIR: $(Agent.TempDirectory)/stage
             GH_OWNER: ${{ parameters.ghOwner }}
             GH_REPO: ${{ parameters.ghRepo }}
             COMMIT_HASH: ${{ parameters.commitHash }}
@@ -251,12 +249,12 @@ extends:
         # Match Arcade's established "BAR ID - <id>" build tag format. The repository tag uses
         # the same readable convention so release runs can be filtered by either identity.
         - pwsh: |
-            $plan = Get-Content "$env:PLAN_PATH" -Raw | ConvertFrom-Json
-            Write-Host "##vso[build.addbuildtag]BAR ID - $($plan.barBuildId)"
-            Write-Host "##vso[build.addbuildtag]REPO - $($plan.repository)"
+            Write-Host "##vso[build.addbuildtag]BAR ID - $env:BAR_ID"
+            Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
           displayName: Tag resolved release identity
           env:
-            PLAN_PATH: $(Agent.TempDirectory)/stage/plan.json
+            BAR_ID: $(resolveBuild.BarId)
+            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
 
         - task: AzureCLI@2
           displayName: Gather the drop
@@ -274,13 +272,13 @@ extends:
               }
 
               & $darc gather-drop --ci `
-                --id $(releasePlan.BarId) `
+                --id $(resolveBuild.BarId) `
                 -o "$(Agent.TempDirectory)/drop" `
                 --azdev-pat $env:AZDO_TOKEN `
                 --include-released `
                 --asset-filter '^[^/]+$' `
                 --verbose
-              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(releasePlan.BarId)." }
+              if ($LASTEXITCODE -ne 0) { throw "darc gather-drop failed for BAR build $(resolveBuild.BarId)." }
           env:
             AZDO_TOKEN: $(System.AccessToken)
 
@@ -298,7 +296,9 @@ extends:
             dotnet "$env:RELEASE_TOOL" `
               stage `
               --config "$env:CONFIG_PATH" `
-              --plan "$env:STAGE_DIR/plan.json" `
+              --repo "$env:GH_OWNER/$env:GH_REPO" `
+              --commit "$env:COMMIT_HASH" `
+              --bar-id "$env:BAR_ID" `
               --drop "$env:DROP_DIR" `
               --out "$env:ARTIFACT_DIR" `
               @filters
@@ -307,20 +307,23 @@ extends:
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
-            STAGE_DIR: $(Agent.TempDirectory)/stage
             DROP_DIR: $(Agent.TempDirectory)/drop
             ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
+            GH_OWNER: ${{ parameters.ghOwner }}
+            GH_REPO: ${{ parameters.ghRepo }}
+            COMMIT_HASH: ${{ parameters.commitHash }}
+            BAR_ID: $(resolveBuild.BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
-        # Get-FileHash independently pins the exact plan bytes written by release stage.
+        # Get-FileHash independently pins the exact manifest bytes written by release stage.
         - pwsh: |
-            $planPath = "$(Build.ArtifactStagingDirectory)/release-plan.json"
-            $hash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-            Write-Host "Release plan SHA-256: $hash"
-            Write-Host "##vso[task.setvariable variable=ReleasePlanHash;isOutput=true]$hash"
-          name: pinPlan
-          displayName: Pin the release plan hash
+            $manifestPath = "$(Build.ArtifactStagingDirectory)/release-manifest.json"
+            $hash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            Write-Host "Release manifest SHA-256: $hash"
+            Write-Host "##vso[task.setvariable variable=ReleaseManifestHash;isOutput=true]$hash"
+          name: pinManifest
+          displayName: Pin the release manifest hash
 
         # Record release intent as a build tag. The run name is already fixed at queue time.
         - ${{ if eq(variables.publishPackages, 'true') }}:
@@ -332,7 +335,7 @@ extends:
               Write-Host '##vso[build.addbuildtag]DRY-RUN'
               Write-Host 'DRY RUN. Package approval and production release jobs will run.'
               Write-Host 'Nothing will be pushed to NuGet.org and no BAR channel will change.'
-              Write-Host 'Review the staged artifacts and release-plan.json above.'
+              Write-Host 'Review the staged package summary above.'
             displayName: Dry run - nothing will be published
 
         - ${{ if eq(variables.includePromotion, 'true') }}:
@@ -342,7 +345,7 @@ extends:
               }
             displayName: Validate workload promotion mode
             env:
-              IS_WORKLOAD: $(releasePlan.IsWorkload)
+              IS_WORKLOAD: $(resolveBuild.IsWorkload)
 
     # -----------------------------------------------------------------------------------------
     # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
@@ -354,7 +357,7 @@ extends:
         ${{ else }}:
           displayName: Preview workload set promotion
         dependsOn: prepare_release
-        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], 'true'))
+        condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.resolveBuild.IsWorkload'], 'true'))
         jobs:
         # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
         - job: promote_approval
@@ -383,7 +386,7 @@ extends:
           dependsOn: promote_approval
           condition: eq(dependencies.promote_approval.result, 'Succeeded')
           variables:
-            ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+            ReleaseManifestHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinManifest.ReleaseManifestHash'] ]
           templateContext:
             inputs:
             - input: pipelineArtifact
@@ -395,14 +398,14 @@ extends:
             persistCredentials: false
 
           - pwsh: |
-              $planPath = "$(Pipeline.Workspace)/Release/release-plan.json"
-              $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-              if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-                throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
+              $manifestPath = "$(Pipeline.Workspace)/Release/release-manifest.json"
+              $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+              if ($manifestHash -ne $env:EXPECTED_MANIFEST_HASH) {
+                throw "Release manifest hash '$manifestHash' does not match the prepared hash '$env:EXPECTED_MANIFEST_HASH'."
               }
-            displayName: Verify release plan integrity
+            displayName: Verify release manifest integrity
             env:
-              EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+              EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
 
           - ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
             - task: AzureCLI@2
@@ -413,7 +416,7 @@ extends:
                 scriptLocation: inlineScript
                 # Channel and feed are read from the plan, so there is one source of truth.
                 inlineScript: |
-                  $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
+                  $manifest = Get-Content "$(Pipeline.Workspace)/Release/release-manifest.json" -Raw | ConvertFrom-Json
                   . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
                   $darc = Get-Darc
                   if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
@@ -421,8 +424,8 @@ extends:
                   }
 
                   & $darc add-build-to-channel --ci `
-                    --channel "$($plan.workloadSet.channel)" `
-                    --id "$($plan.source.barBuildId)" `
+                    --channel "$($manifest.workloadSet.channel)" `
+                    --id "$($manifest.source.barBuildId)" `
                     --skip-assets-publishing `
                     --azdev-pat $env:AZDO_TOKEN --verbose
                   if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
@@ -437,14 +440,14 @@ extends:
                 scriptType: pscore
                 scriptLocation: inlineScript
                 inlineScript: |
-                  $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
+                  $manifest = Get-Content "$(Pipeline.Workspace)/Release/release-manifest.json" -Raw | ConvertFrom-Json
                   . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
                   $darc = Get-Darc
                   if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
                     throw 'Arcade failed to install the Darc CLI.'
                   }
 
-                  Write-Host "DRY RUN. BAR build $($plan.source.barBuildId) would be added to '$($plan.workloadSet.channel)'."
+                  Write-Host "DRY RUN. BAR build $($manifest.source.barBuildId) would be added to '$($manifest.workloadSet.channel)'."
 
     # -----------------------------------------------------------------------------------------
     # Validate package-set jobs, approval, and artifact wiring on every run. The internal

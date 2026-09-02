@@ -53,7 +53,7 @@ stages:
 - stage: ${{ parameters.stageName }}
   displayName: ${{ parameters.displayName }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], '${{ parameters.expectedWorkload }}'))
+  condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.resolveBuild.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
   - job: preflight
@@ -61,7 +61,7 @@ stages:
     workspace:
       clean: all
     variables:
-      ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+      ReleaseManifestHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinManifest.ReleaseManifestHash'] ]
       ReleaseToolBundleHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolBundleHash'] ]
     templateContext:
       inputs:
@@ -83,10 +83,10 @@ stages:
           throw "Release tool bundle hash '$bundleHash' does not match '$env:EXPECTED_TOOL_BUNDLE_HASH'."
         }
 
-        $planPath = "$root/release-plan.json"
-        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-          throw "Release plan hash '$planHash' does not match '$env:EXPECTED_PLAN_HASH'."
+        $manifestPath = "$root/release-manifest.json"
+        $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($manifestHash -ne $env:EXPECTED_MANIFEST_HASH) {
+          throw "Release manifest hash '$manifestHash' does not match '$env:EXPECTED_MANIFEST_HASH'."
         }
 
         $expanded = "$(Agent.TempDirectory)/release-tool"
@@ -94,7 +94,7 @@ stages:
         Expand-Archive -LiteralPath $bundlePath -DestinationPath $expanded
       displayName: Verify and expand release tool
       env:
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         EXPECTED_TOOL_BUNDLE_HASH: $(ReleaseToolBundleHash)
 
     - task: UseDotNet@2
@@ -113,10 +113,10 @@ stages:
 
         dotnet "$env:RELEASE_TOOL" `
           prune-published `
-          --plan "$env:ARTIFACT_DIR/release-plan.json" `
+          --manifest "$env:ARTIFACT_DIR/release-manifest.json" `
           --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
-          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+          --expected-manifest-hash "$env:EXPECTED_MANIFEST_HASH" `
           @recovery
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Prune versions already published on NuGet.org
@@ -124,14 +124,14 @@ stages:
         RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         SET_NAME: ${{ parameters.setName }}
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
     - pwsh: |
         $source = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
         $prepared = "$(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}"
         New-Item -ItemType Directory -Path $prepared -Force | Out-Null
-        Copy-Item -LiteralPath "$source/release-plan.json" -Destination $prepared
+        Copy-Item -LiteralPath "$source/release-manifest.json" -Destination $prepared
         Copy-Item -LiteralPath "$source/release-tool.zip" -Destination $prepared
         Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
       displayName: Create exact approval artifact
@@ -163,7 +163,7 @@ stages:
     dependsOn: approval
     condition: eq(dependencies.approval.result, 'Succeeded')
     variables:
-      ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
+      ReleaseManifestHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinManifest.ReleaseManifestHash'] ]
       ReleaseToolBundleHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolBundleHash'] ]
     templateContext:
       type: releaseJob
@@ -183,10 +183,10 @@ stages:
           throw "Release tool bundle hash '$bundleHash' does not match '$env:EXPECTED_TOOL_BUNDLE_HASH'."
         }
 
-        $planPath = "$root/release-plan.json"
-        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-          throw "Release plan hash '$planHash' does not match '$env:EXPECTED_PLAN_HASH'."
+        $manifestPath = "$root/release-manifest.json"
+        $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($manifestHash -ne $env:EXPECTED_MANIFEST_HASH) {
+          throw "Release manifest hash '$manifestHash' does not match '$env:EXPECTED_MANIFEST_HASH'."
         }
 
         $expanded = "$(Agent.TempDirectory)/release-tool"
@@ -194,7 +194,7 @@ stages:
         Expand-Archive -LiteralPath $bundlePath -DestinationPath $expanded
       displayName: Verify and expand approved release tool
       env:
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         EXPECTED_TOOL_BUNDLE_HASH: $(ReleaseToolBundleHash)
 
     - task: UseDotNet@2
@@ -215,10 +215,10 @@ stages:
 
         dotnet "$env:RELEASE_TOOL" `
           prune-published `
-          --plan "$env:ARTIFACT_DIR/release-plan.json" `
+          --manifest "$env:ARTIFACT_DIR/release-manifest.json" `
           --stage "$env:ARTIFACT_DIR" `
           --set "$env:SET_NAME" `
-          --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+          --expected-manifest-hash "$env:EXPECTED_MANIFEST_HASH" `
           @recovery
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Refresh already-published versions
@@ -226,7 +226,7 @@ stages:
         RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         SET_NAME: ${{ parameters.setName }}
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
         RECOVERY_FILTERS: ${{ parameters.recoveryFilters }}
 
     - ${{ if eq(parameters.publishPackages, true) }}:
@@ -244,9 +244,9 @@ stages:
           $ErrorActionPreference = 'Stop'
           dotnet "$env:RELEASE_TOOL" `
             verify `
-            --plan "$env:ARTIFACT_DIR/release-plan.json" `
+            --manifest "$env:ARTIFACT_DIR/release-manifest.json" `
             --set "$env:SET_NAME" `
-            --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
+            --expected-manifest-hash "$env:EXPECTED_MANIFEST_HASH" `
             --max-duration-minutes 30 `
             --poll-seconds 20
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -255,7 +255,7 @@ stages:
           RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
           ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
           SET_NAME: ${{ parameters.setName }}
-          EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+          EXPECTED_MANIFEST_HASH: $(ReleaseManifestHash)
 
     - ${{ else }}:
       - pwsh: |

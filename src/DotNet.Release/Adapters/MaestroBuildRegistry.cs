@@ -2,7 +2,7 @@ using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
-/// <summary>Read-only access to BAR builds used by release planning.</summary>
+/// <summary>Read-only access to BAR builds used by release resolution.</summary>
 internal interface IBuildRegistry
 {
     Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);

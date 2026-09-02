@@ -2,45 +2,58 @@ namespace DotNet.Release;
 
 internal static class ReleaseOutput
 {
-    public static void WriteResolvedRelease(TextWriter writer, ResolvedRelease release, string heading = "Resolved release", string indent = "")
+    public static void WriteResolvedBuild(TextWriter writer, ResolvedBuild build)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        ArgumentNullException.ThrowIfNull(release);
+        ArgumentNullException.ThrowIfNull(build);
 
+        writer.WriteLine("Resolved build:");
+        writer.WriteLine($"  Repository        : {build.Repository}");
+        writer.WriteLine($"  Repository URL    : {build.RepositoryUrl}");
+        writer.WriteLine($"  Commit            : {build.Commit}");
+        writer.WriteLine($"  BAR build ID      : {build.BarBuildId}");
+        writer.WriteLine($"  Repository origin : {build.RepositoryOrigin}");
+        writer.WriteLine($"  Workload          : {build.Workload}");
+
+        WriteChannel(writer, build.Channel, "  ");
+    }
+
+    private static void WriteReleaseSource(TextWriter writer, ReleaseSource source, string heading, string indent)
+    {
         writer.WriteLine($"{indent}{heading}:");
-        writer.WriteLine($"{indent}  Schema version    : {release.SchemaVersion}");
-        writer.WriteLine($"{indent}  Tool version      : {release.ToolVersion}");
-        writer.WriteLine($"{indent}  Created UTC       : {release.CreatedUtc:O}");
-        writer.WriteLine($"{indent}  Repository        : {release.Repository}");
-        writer.WriteLine($"{indent}  Repository URL    : {release.RepositoryUrl}");
-        writer.WriteLine($"{indent}  Commit            : {release.Commit}");
-        writer.WriteLine($"{indent}  BAR build ID      : {release.BarBuildId}");
-        writer.WriteLine($"{indent}  Repository origin : {release.RepositoryOrigin}");
-        writer.WriteLine($"{indent}  Workload          : {release.Workload}");
+        writer.WriteLine($"{indent}  Repository        : {source.Repository}");
+        writer.WriteLine($"{indent}  Repository URL    : {source.RepositoryUrl}");
+        writer.WriteLine($"{indent}  Commit            : {source.Commit}");
+        writer.WriteLine($"{indent}  BAR build ID      : {source.BarBuildId}");
+        writer.WriteLine($"{indent}  Workload          : {source.Workload}");
+        WriteChannel(writer, source.Channel, $"{indent}  ");
+    }
 
-        if (release.Channel is { } channel)
+    private static void WriteChannel(TextWriter writer, ChannelReference? channel, string indent)
+    {
+        if (channel is not null)
         {
-            writer.WriteLine($"{indent}  Channel name      : {channel.Name}");
-            writer.WriteLine($"{indent}  Channel ID        : {channel.Id}");
+            writer.WriteLine($"{indent}Channel name      : {channel.Name}");
+            writer.WriteLine($"{indent}Channel ID        : {channel.Id}");
         }
         else
         {
-            writer.WriteLine($"{indent}  Channel           : (none)");
+            writer.WriteLine($"{indent}Channel           : (none)");
         }
     }
 
-    public static void WriteReleasePlan(TextWriter writer, ReleasePlan plan)
+    public static void WriteReleaseManifest(TextWriter writer, ReleaseManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(manifest);
 
-        writer.WriteLine("Release plan:");
-        writer.WriteLine($"  Schema version : {plan.SchemaVersion}");
-        writer.WriteLine($"  Tool version   : {plan.ToolVersion}");
-        writer.WriteLine($"  Created UTC    : {plan.CreatedUtc:O}");
-        WriteResolvedRelease(writer, plan.Source, "Source", "  ");
+        writer.WriteLine("Release manifest:");
+        writer.WriteLine($"  Schema version : {manifest.SchemaVersion}");
+        writer.WriteLine($"  Tool version   : {manifest.ToolVersion}");
+        writer.WriteLine($"  Created UTC    : {manifest.CreatedUtc:O}");
+        WriteReleaseSource(writer, manifest.Source, "Source", "  ");
 
-        if (plan.WorkloadSet is { } target)
+        if (manifest.WorkloadSet is { } target)
         {
             writer.WriteLine("  Workload target:");
             writer.WriteLine($"    Band    : {target.Band}");
@@ -53,7 +66,7 @@ internal static class ReleaseOutput
         }
 
         writer.WriteLine("  Package sets:");
-        foreach (var set in plan.Sets.OrderBy(set => set.Order))
+        foreach (var set in manifest.Sets.OrderBy(set => set.Order))
         {
             writer.WriteLine("    Set:");
             writer.WriteLine($"      Name          : {set.Name}");
@@ -73,16 +86,20 @@ internal static class ReleaseOutput
         }
     }
 
-    public static void WriteSelectedRelease(TextWriter writer, ReleasePlan plan, IReadOnlyList<ReleasePackageSet> sets, string expectedPlanHash)
+    public static void WriteSelectedRelease(
+        TextWriter writer,
+        ReleaseManifest manifest,
+        IReadOnlyList<ReleasePackageSet> sets,
+        string expectedManifestHash)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(sets);
 
-        WriteResolvedRelease(writer, plan.Source, "Selected release");
-        writer.WriteLine($"Plan SHA-256 : {expectedPlanHash}");
+        WriteReleaseSource(writer, manifest.Source, "Selected release", "");
+        writer.WriteLine($"Manifest SHA-256 : {expectedManifestHash}");
 
-        if (plan.WorkloadSet is { } target)
+        if (manifest.WorkloadSet is { } target)
         {
             writer.WriteLine($"Workload target: .NET {target.Band}, channel '{target.Channel}', feed '{target.Feed}'");
         }
@@ -102,7 +119,6 @@ internal static class ReleaseOutput
         ArgumentNullException.ThrowIfNull(report);
 
         writer.WriteLine("Prune report:");
-        writer.WriteLine($"  Schema version : {report.SchemaVersion}");
         writer.WriteLine($"  Set name       : {report.SetName}");
         writer.WriteLine($"  Set order      : {set.Order}");
         writer.WriteLine($"  Artifact name  : {set.ArtifactName}");

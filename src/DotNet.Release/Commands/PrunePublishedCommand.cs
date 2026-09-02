@@ -4,24 +4,22 @@ namespace DotNet.Release;
 
 internal static class PrunePublishedCommand
 {
-    public const string ReportFileName = "release-prune.json";
-
     public static Command Build(TextWriter outputWriter)
     {
-        var plan = new Option<FileInfo>("--plan")
+        var manifest = new Option<FileInfo>("--manifest")
         {
-            Description = "release-plan.json.",
+            Description = "release-manifest.json.",
             Required = true,
         };
         var stage = new Option<DirectoryInfo?>("--stage")
         {
-            Description = "Release artifact directory. Defaults to the plan directory.",
+            Description = "Release artifact directory. Defaults to the manifest directory.",
         };
         var recoveryFilters = new Option<string?>("--recovery-filters")
         {
             Description = "Semicolon-separated filters for already submitted packages.",
         };
-        var expectedHash = new Option<string>("--expected-plan-hash")
+        var expectedHash = new Option<string>("--expected-manifest-hash")
         {
             Description = "The SHA-256 emitted by the prepare stage.",
             Required = true,
@@ -38,19 +36,19 @@ internal static class PrunePublishedCommand
 
         var command = new Command("prune-published", "Remove package versions already published on the target feed.")
         {
-            plan, stage, recoveryFilters, expectedHash, feed, set,
+            manifest, stage, recoveryFilters, expectedHash, feed, set,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
-            var planFile = parse.GetValue(plan)!;
+            var manifestFile = parse.GetValue(manifest)!;
             using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
             return ExecuteAsync(
                 outputWriter,
                 lookup,
-                File.ReadAllText(planFile.FullName),
-                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                File.ReadAllText(manifestFile.FullName),
+                parse.GetValue(stage)?.FullName ?? manifestFile.DirectoryName!,
                 PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
                 parse.GetValue(expectedHash)!,
                 parse.GetValue(set),
@@ -63,17 +61,17 @@ internal static class PrunePublishedCommand
     public static async Task ExecuteAsync(
         TextWriter outputWriter,
         INuGetPackageLookup lookup,
-        string planJson,
+        string manifestJson,
         string stageDirectory,
         IReadOnlyList<string> recoveryPatterns,
-        string expectedPlanHash,
+        string expectedManifestHash,
         string? setName,
         CancellationToken cancellationToken)
     {
-        var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
-        var sets = ReleaseArtifact.SelectSets(plan, setName);
+        var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
+        var sets = ReleaseArtifact.SelectSets(manifest, setName);
 
-        ReleaseOutput.WriteSelectedRelease(outputWriter, plan, sets, expectedPlanHash);
+        ReleaseOutput.WriteSelectedRelease(outputWriter, manifest, sets, expectedManifestHash);
         var pending = 0;
 
         foreach (var set in sets)
@@ -81,7 +79,7 @@ internal static class PrunePublishedCommand
             var setDirectory = ReleaseArtifact.GetSetDirectory(stageDirectory, set);
 
             var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
-            var report = PrunePublishedPlanner.Plan(set, plan.AllPackages, recoveryPatterns, availability);
+            var report = PrunePublishedPlanner.Plan(set, manifest.AllPackages, recoveryPatterns, availability);
             var invalidFileName = report.FilesToRemove.FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
             if (invalidFileName is not null)
             {
@@ -100,11 +98,6 @@ internal static class PrunePublishedCommand
             }
 
             StagedSetIntegrity.ValidateFiltered(set, ReleaseArtifact.ReadPackageHashes(setDirectory), report);
-
-            await File.WriteAllTextAsync(
-                Path.Combine(setDirectory, ReportFileName),
-                ReleasePlanSerializer.Serialize(report),
-                cancellationToken).ConfigureAwait(false);
 
             ReleaseOutput.WritePruneReport(outputWriter, set, report);
             pending += report.PendingCount;

@@ -9,13 +9,31 @@ internal sealed record WorkloadSetTarget(
     [property: JsonPropertyName("feed")] string Feed);
 
 /// <summary>
-/// The single contract artifact, serialized as <c>release-plan.json</c>.
+/// The verified source of a release.
 /// </summary>
-/// <remarks>
-/// The plan is immutable after staging. <c>release prune-published</c> records dispositions
-/// in a sidecar so the plan hash remains valid through approval, publishing, and verification.
-/// </remarks>
-internal sealed record ReleasePlan
+internal sealed record ReleaseSource
+{
+    [JsonPropertyName("repository")]
+    public required string Repository { get; init; }
+
+    [JsonPropertyName("repositoryUrl")]
+    public required string RepositoryUrl { get; init; }
+
+    [JsonPropertyName("commit")]
+    public required string Commit { get; init; }
+
+    [JsonPropertyName("barBuildId")]
+    public required int BarBuildId { get; init; }
+
+    [JsonPropertyName("workload")]
+    public required bool Workload { get; init; }
+
+    [JsonPropertyName("channel")]
+    public ChannelReference? Channel { get; init; }
+}
+
+/// <summary>The immutable contract artifact serialized as <c>release-manifest.json</c>.</summary>
+internal sealed record ReleaseManifest
 {
     [JsonPropertyName("schemaVersion")]
     public int SchemaVersion { get; init; } = 1;
@@ -27,7 +45,7 @@ internal sealed record ReleasePlan
     public required DateTimeOffset CreatedUtc { get; init; }
 
     [JsonPropertyName("source")]
-    public required ResolvedRelease Source { get; init; }
+    public required ReleaseSource Source { get; init; }
 
     [JsonPropertyName("workloadSet")]
     public WorkloadSetTarget? WorkloadSet { get; init; }

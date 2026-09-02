@@ -49,8 +49,8 @@ A test fails the build if the dropdown and policy disagree.
 
 ```
 prepare_release
-  build the tool  →  release plan  →  darc gather-drop  →  release stage
-      ↓ artifacts + pinned plan hash
+  build the tool  →  release resolve  →  darc gather-drop  →  release stage
+      ↓ artifacts + pinned manifest hash
 matching package-set stage
   query NuGet.org, prune published versions, and validate the exact local set
   approval  →  production release job  →  refresh prune
@@ -158,10 +158,10 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --out ./stage
-release stage  --plan ./stage/plan.json --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release prune-published --plan <release-plan.json> --stage <artifactDir> --set <setName> --expected-plan-hash <sha256> [--recovery-filters '…']
-release verify --plan <release-plan.json> --set <setName> --expected-plan-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
+release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N]
+release stage --config config/repositories.json --repo <owner/name> --commit <sha> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
+release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
+release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.

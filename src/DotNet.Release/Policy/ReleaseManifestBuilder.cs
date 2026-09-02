@@ -9,17 +9,17 @@ internal sealed record StageOptions
 }
 
 /// <summary>
-/// Turns a gathered drop into a <see cref="ReleasePlan"/>. Pure: the caller has already read
+/// Turns a gathered drop into a <see cref="ReleaseManifest"/>. Pure: the caller has already read
 /// the nupkgs and hashed them.
 /// </summary>
-internal static class StagePlanner
+internal static class ReleaseManifestBuilder
 {
     /// <summary>Repository-neutral artifact names consumed by the shared pipeline.</summary>
     public const string PacksArtifactName = "ReleasePacks";
     public const string ManifestsArtifactName = "ReleaseManifests";
     public const string PackagesArtifactName = "ReleasePackages";
 
-    public static ReleasePlan Create(ResolvedRelease source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
+    public static ReleaseManifest Build(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
         DateTimeOffset createdUtc, string toolVersion)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -38,11 +38,11 @@ internal static class StagePlanner
             throw new DotNetReleaseException(malformed);
         }
 
-        return source.Workload ? CreateWorkloadPlan(source, policy, drop, options, createdUtc, toolVersion)
-            : CreateNonWorkloadPlan(source, drop, options, createdUtc, toolVersion);
+        return source.Workload ? BuildWorkloadManifest(source, policy, drop, options, createdUtc, toolVersion)
+            : BuildNonWorkloadManifest(source, drop, options, createdUtc, toolVersion);
     }
 
-    private static ReleasePlan CreateWorkloadPlan(ResolvedRelease source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
+    private static ReleaseManifest BuildWorkloadManifest(ReleaseSource source, ReleasePolicy policy, IReadOnlyList<DropPackage> drop, StageOptions options,
         DateTimeOffset createdUtc, string toolVersion)
     {
         // Include filters select packs. Manifests remain selected unless explicitly excluded,
@@ -80,7 +80,7 @@ internal static class StagePlanner
             throw new DotNetReleaseException(errors);
         }
 
-        return new ReleasePlan
+        return new ReleaseManifest
         {
             ToolVersion = toolVersion,
             CreatedUtc = createdUtc.ToUniversalTime(),
@@ -90,7 +90,11 @@ internal static class StagePlanner
         };
     }
 
-    private static ReleasePlan CreateNonWorkloadPlan(ResolvedRelease source, IReadOnlyList<DropPackage> drop, StageOptions options, DateTimeOffset createdUtc,
+    private static ReleaseManifest BuildNonWorkloadManifest(
+        ReleaseSource source,
+        IReadOnlyList<DropPackage> drop,
+        StageOptions options,
+        DateTimeOffset createdUtc,
         string toolVersion)
     {
         var selected = drop
@@ -117,7 +121,7 @@ internal static class StagePlanner
             throw new DotNetReleaseException(errors);
         }
 
-        return new ReleasePlan
+        return new ReleaseManifest
         {
             ToolVersion = toolVersion,
             CreatedUtc = createdUtc.ToUniversalTime(),
@@ -194,7 +198,8 @@ internal static class StagePlanner
             // so a reader that got it wrong would report published packages as missing.
             if (!PackageVersions.IsNormalizedForm(package.Version, package.NormalizedVersion))
             {
-                errors.Add($"Package '{package.FileName}' declares version '{package.Version}' but " + $"normalized version '{package.NormalizedVersion}'.");
+                errors.Add(
+                    $"Package '{package.FileName}' declares version '{package.Version}' but normalized version '{package.NormalizedVersion}'.");
             }
 
             // A file whose name disagrees with its nuspec identity would be pushed under one

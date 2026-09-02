@@ -3,11 +3,9 @@ using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
-internal static class PlanCommand
+internal static class ResolveCommand
 {
-    public const string FileName = "plan.json";
-
-    public static Command Build(TextWriter outputWriter, string toolVersion)
+    public static Command Build(TextWriter outputWriter)
     {
         var config = new Option<FileInfo>("--config")
         {
@@ -28,11 +26,6 @@ internal static class PlanCommand
         {
             Description = "BAR build ID for builds without a GitHub URL.",
         };
-        var output = new Option<DirectoryInfo>("--out")
-        {
-            Description = "Output directory.",
-            Required = true,
-        };
         var barUri = new Option<string?>("--bar-uri")
         {
             Description = "Product Construction Service URI. Defaults to production.",
@@ -46,9 +39,9 @@ internal static class PlanCommand
             Description = "Managed identity client ID.",
         };
 
-        var command = new Command("plan", "Resolve and verify the BAR build, then write plan.json.")
+        var command = new Command("resolve", "Resolve and verify the BAR build.")
         {
-            config, repo, commit, barId, output, barUri, token, managedIdentity,
+            config, repo, commit, barId, barUri, token, managedIdentity,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -62,9 +55,6 @@ internal static class PlanCommand
                 parse.GetValue(repo)!,
                 parse.GetValue(commit)!,
                 parse.GetValue(barId),
-                parse.GetValue(output)!.FullName,
-                DateTimeOffset.UtcNow,
-                toolVersion,
                 cancellationToken);
         });
 
@@ -72,7 +62,7 @@ internal static class PlanCommand
     }
 
     public static async Task ExecuteAsync(TextWriter outputWriter, IBuildRegistry registry, string policyJson, string repository,
-        string commit, int? barBuildId, string outputDirectory, DateTimeOffset now, string toolVersion, CancellationToken cancellationToken)
+        string commit, int? barBuildId, CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
         var repositoryId = RepositoryId.Parse(repository);
@@ -83,13 +73,9 @@ internal static class PlanCommand
             ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
             : await registry.GetBuildsAsync(repositoryId, commit, cancellationToken).ConfigureAwait(false);
 
-        var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates, now, toolVersion);
-        Directory.CreateDirectory(outputDirectory);
-        var planPath = Path.Combine(outputDirectory, FileName);
-        await File.WriteAllTextAsync(planPath, ReleasePlanSerializer.Serialize(resolved), cancellationToken).ConfigureAwait(false);
+        var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
 
-        ReleaseOutput.WriteResolvedRelease(outputWriter, resolved);
-        outputWriter.WriteLine($"Wrote {planPath}.");
+        ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
         outputWriter.WriteLine(AzurePipelineCommand.SetBarId(resolved.BarBuildId));
         outputWriter.WriteLine(AzurePipelineCommand.SetIsWorkload(resolved.Workload));
     }

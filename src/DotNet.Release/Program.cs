@@ -31,7 +31,7 @@ internal static class Program
     {
         var root = new RootCommand("Prepares and verifies a .NET package release from a BAR build. " + "1ES.PublishNuget performs every package upload.");
 
-        root.Subcommands.Add(PlanCommand.Build(Console.Out, ToolVersion));
+        root.Subcommands.Add(ResolveCommand.Build(Console.Out));
         root.Subcommands.Add(StageCommand.Build(Console.Out, ToolVersion));
         root.Subcommands.Add(PrunePublishedCommand.Build(Console.Out));
         root.Subcommands.Add(VerifyCommand.Build(Console.Out));

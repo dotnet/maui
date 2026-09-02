@@ -14,7 +14,7 @@ namespace DotNet.Release.Tests;
 /// </remarks>
 public class ArchitectureTests
 {
-    private static Assembly Tool => typeof(ReleasePlan).Assembly;
+    private static Assembly Tool => typeof(ReleaseManifest).Assembly;
 
     /// <summary>
     /// Types the tool must never reference.

@@ -4,9 +4,8 @@ namespace DotNet.Release.Tests;
 
 public class BuildResolverTests
 {
-    private static ResolvedRelease Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
-        string repo = "dotnet/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates, TestData.Now,
-            TestData.ToolVersion);
+    private static ResolvedBuild Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
+        string repo = "dotnet/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates);
 
     private static readonly ChannelReference Libraries = new(".NET Libraries", 1648);
 
@@ -125,7 +124,7 @@ public class BuildResolverTests
     public void Policy_for_a_different_repository_is_rejected()
     {
         Assert.Throws<DotNetReleaseException>(() => BuildResolver.Resolve(TestData.Request("dotnet/skiasharp"), TestData.RepoPolicy("dotnet/maui"),
-            [TestData.Build(channels: Libraries)], TestData.Now, TestData.ToolVersion));
+            [TestData.Build(channels: Libraries)]));
     }
 
     [Fact]

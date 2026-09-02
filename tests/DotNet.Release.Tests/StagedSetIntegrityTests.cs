@@ -21,7 +21,7 @@ public class StagedSetIntegrityTests
     public void Companion_file_names_are_not_allow_listed_in_the_rule_itself()
     {
         var files = Files(Skia, HarfBuzz);
-        files["release-plan.json"] = TestData.Hash("plan");
+        files["release-manifest.json"] = TestData.Hash("manifest");
         Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
     }
 
@@ -83,7 +83,7 @@ public class StagedSetIntegrityTests
     public void Package_hash_enumeration_is_extension_scoped()
     {
         using var workspace = new Workspace();
-        var directory = workspace.StagedSet(StagePlanner.PackagesArtifactName);
+        var directory = workspace.StagedSet(ReleaseManifestBuilder.PackagesArtifactName);
         Directory.CreateDirectory(Path.Combine(directory, "diagnostics"));
         File.WriteAllText(Path.Combine(directory, Skia.FileName), "package");
         File.WriteAllText(Path.Combine(directory, "release-audit.md"), "companion");

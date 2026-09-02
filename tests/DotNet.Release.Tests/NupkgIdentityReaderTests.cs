@@ -37,7 +37,7 @@ public class NupkgIdentityReaderTests : IDisposable
         Assert.Equal("SkiaSharp", result.Id);
         Assert.Equal("3.119.0", result.Version);
 
-        // The reader reports metadata as-is; StagePlanner applies filename policy.
+        // The reader reports metadata as-is; ReleaseManifestBuilder applies filename policy.
         Assert.Equal("totally-different-name.nupkg", result.FileName);
     }
 
@@ -140,23 +140,21 @@ public class NupkgIdentityReaderTests : IDisposable
         """);
 
         var read = await _reader.ReadAsync(_fixture.WritePackage("SkiaSharp", "3.119.0.0", fileName: "SkiaSharp.3.119.0.nupkg"), CancellationToken.None);
-        var resolved = new ResolvedRelease
+        var source = new ReleaseSource
         {
-            ToolVersion = "1.0.0-test",
-            CreatedUtc = DateTimeOffset.UnixEpoch,
             Repository = "dotnet/skiasharp",
             RepositoryUrl = "https://github.com/dotnet/skiasharp",
             Commit = new string('a', 40),
             BarBuildId = 4242,
-            RepositoryOrigin = RepositoryOrigin.GitHubRepository,
             Workload = false,
             Channel = new ChannelReference(".NET Libraries", 1648),
         };
 
-        var plan = StagePlanner.Create(resolved, policy, [read], new StageOptions(), DateTimeOffset.UnixEpoch, "1.0.0-test");
+        var manifest = ReleaseManifestBuilder.Build(
+            source, policy, [read], new StageOptions(), DateTimeOffset.UnixEpoch, "1.0.0-test");
 
         // The nuspec said 3.119.0.0; NuGet normalizes it to 3.119.0, which is what the
         // availability query will use.
-        Assert.Equal("3.119.0", plan.Sets[0].Packages[0].NormalizedVersion);
+        Assert.Equal("3.119.0", manifest.Sets[0].Packages[0].NormalizedVersion);
     }
 }

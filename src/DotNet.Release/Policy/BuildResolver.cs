@@ -11,14 +11,10 @@ internal static class BuildResolver
     /// <param name="request">What the operator asked for.</param>
     /// <param name="policy">Policy for <see cref="ReleaseRequest.Repository"/>.</param>
     /// <param name="candidates">Builds the registry returned for the query.</param>
-    /// <param name="createdUtc">Timestamp to stamp on the result.</param>
-    /// <param name="toolVersion">Version to stamp on the result.</param>
-    public static ResolvedRelease Resolve(
+    public static ResolvedBuild Resolve(
         ReleaseRequest request,
         RepositoryPolicy policy,
-        IReadOnlyList<BarBuild> candidates,
-        DateTimeOffset createdUtc,
-        string toolVersion)
+        IReadOnlyList<BarBuild> candidates)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(policy);
@@ -85,10 +81,8 @@ internal static class BuildResolver
             }
         }
 
-        return new ResolvedRelease
+        return new ResolvedBuild
         {
-            ToolVersion = toolVersion,
-            CreatedUtc = createdUtc.ToUniversalTime(),
             Repository = request.Repository.FullName,
             RepositoryUrl = request.Repository.GitHubUrl,
             Commit = request.Commit.Trim(),

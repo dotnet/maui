@@ -36,7 +36,8 @@ internal static class PrunePublishedPlanner
 
         if (unmatched.Count > 0)
         {
-            throw new DotNetReleaseException($"Recovery filters matched no expected packages in " + $"the release: {string.Join(", ", unmatched)}.");
+            throw new DotNetReleaseException(
+                $"Recovery filters matched no expected packages in the release: {string.Join(", ", unmatched)}.");
         }
 
         var decisions = new List<PruneDecision>(set.Packages.Count);
