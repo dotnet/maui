@@ -9,16 +9,25 @@
 # repository as a template and no other repository copies it: releasing repositories do not
 # change, they are named by parameter.
 #
-#   Run pipeline -> choose the repository, give it a commit (or a BAR ID), review the
-#   human-readable preflight log at the manual gate, approve, done.
+#   Run pipeline -> choose the repository, give it a commit and optional BAR ID, review each
+#   applicable human-readable preflight log at its manual gate, then approve or reject.
 #
 # What it does, in order:
-#   1. build the C# tool once into the Release artifact
-#   2. `release resolve` - resolve and verify the BAR build for the requested repo/commit
-#   3. `darc gather-drop` - download that build's shipping packages
-#   4. `release stage`  - validate every package, write the hashed release manifest, stage artifacts
-#   5. `release prune-published` -> manual approval gate (agentless)
-#   6. production release job -> refresh prune -> optional `1ES.PublishNuget@1` -> verification
+#   1. Prepare the release.
+#      1.1. Build and pin the C# tool bundle.
+#      1.2. `release resolve` verifies the BAR build and initializes `release-manifest.json`.
+#      1.3. Read the BAR ID and workload classification from the manifest.
+#      1.4. `darc gather-drop` downloads the build's shipping packages.
+#      1.5. `release stage` validates the packages and completes the manifest.
+#      1.6. Pin the completed manifest and publish the Release artifact.
+#   2. When requested for a workload release, run the separately approved promotion stage.
+#   3. Release each applicable package set; workload packs complete before manifests begin.
+#      3.1. Verify the pinned artifact and run `release prune-published`.
+#      3.2. Publish the exact pruned set as the approval artifact.
+#      3.3. Wait at the agentless manual approval gate.
+#      3.4. In the production release job, reverify the artifact and refresh pruning.
+#      3.5. In publish modes, publish any remaining packages, then run `release verify`.
+#   4. Fail if no package-set topology matched the resolved workload classification.
 #
 # Safety properties worth knowing before you press Run:
 #   - `releaseMode` defaults to a package preview. The default run publishes nothing while
@@ -148,7 +157,8 @@ extends:
     stages:
 
     # -----------------------------------------------------------------------------------------
-    # Prepare. Resolve the build, gather its packages, validate them, stage the artifacts.
+    # 1. Prepare the release: resolve the build, gather and validate its packages, complete the
+    # manifest, and publish the pinned Release artifact.
     # This stage runs for a dry run too — that is the point of a dry run.
     # -----------------------------------------------------------------------------------------
     - stage: prepare_release
@@ -323,7 +333,7 @@ extends:
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 
-        # Get-FileHash independently pins the exact manifest bytes written by release stage.
+        # Get-FileHash independently pins the exact manifest bytes written by `release stage`.
         - pwsh: |
             $manifestPath = "$(Build.ArtifactStagingDirectory)/release-manifest.json"
             $hash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -355,7 +365,8 @@ extends:
               IS_WORKLOAD: $(loadResolvedBuild.IsWorkload)
 
     # -----------------------------------------------------------------------------------------
-    # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
+    # 2. Optionally promote the workload build. A BAR mutation, so it remains a separately
+    # approved, explicit Darc step.
     # -----------------------------------------------------------------------------------------
     - ${{ if eq(variables.includePromotion, 'true') }}:
       - stage: promote_workload_set
@@ -366,7 +377,8 @@ extends:
         dependsOn: prepare_release
         condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], 'true'))
         jobs:
-        # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
+        # Promotion mutates BAR and therefore requires explicit approval of the completed,
+        # pinned release manifest.
         - job: promote_approval
           ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
             displayName: Approve workload promotion
@@ -421,7 +433,8 @@ extends:
                 azureSubscription: "Darc: Maestro Production"
                 scriptType: pscore
                 scriptLocation: inlineScript
-                # Channel and feed are read from the plan, so there is one source of truth.
+                # Channel and BAR build ID come from the pinned manifest, so there is one
+                # source of truth.
                 inlineScript: |
                   $manifest = Get-Content "$(Pipeline.Workspace)/Release/release-manifest.json" -Raw | ConvertFrom-Json
                   . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
@@ -457,8 +470,8 @@ extends:
                   Write-Host "DRY RUN. BAR build $($manifest.source.barBuildId) would be added to '$($manifest.workloadSet.channel)'."
 
     # -----------------------------------------------------------------------------------------
-    # Validate package-set jobs, approval, and artifact wiring on every run. The internal
-    # template includes NuGet.org mutation and post-publish verification only when publishing.
+    # 3. Run the applicable package-set stages on every run. The internal template includes
+    # NuGet.org mutation and post-publish verification only in publish modes.
     # -----------------------------------------------------------------------------------------
     - template: /eng/pipelines/stages/publish-set.yml@self
       parameters:
@@ -504,7 +517,7 @@ extends:
         dryRunApprovalInstructions: 'DRY RUN: Review every package and disposition printed by the preceding preflight job, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
-    # If the workload output is missing or invalid, all release stages skip. Turn that
+    # 4. If the workload output is missing or invalid, all package-set stages skip. Turn that
     # otherwise-green result into a failure.
     - stage: fail_if_no_release_topology
       displayName: Validate release topology

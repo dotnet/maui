@@ -1,9 +1,13 @@
-# Prunes and validates one package set and, when enabled, publishes it.
+# Releases one package set:
+#   1. Preflight verifies the pinned Release artifact, prunes packages already on NuGet.org,
+#      and publishes the exact remaining set as an approval artifact.
+#   2. An agentless manual-validation job approves or rejects that exact set.
+#   3. A production release job reverifies the approved artifact, refreshes pruning, and either
+#      publishes and verifies the remaining packages or completes the dry-run rehearsal.
 #
 # The preflight job always runs for the matching repository type. It downloads the Release
-# artifact, queries NuGet.org for existing versions, removes those local files, validates the
-# remaining set, and publishes the exact pruned artifact for review. Approval and the production
-# release job run in dry runs too; only mutation and post-publish verification are excluded.
+# artifact and queries NuGet.org read-only. Approval and the production release job run in dry
+# runs too; only package upload and post-publish verification are compile-time excluded.
 
 parameters:
 - name: stageName
@@ -56,6 +60,7 @@ stages:
   condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.loadResolvedBuild.IsWorkload'], '${{ parameters.expectedWorkload }}'))
   jobs:
 
+  # 1. Prepare the exact package set that the operator will review.
   - job: preflight
     displayName: Prune and validate package set
     workspace:
@@ -152,6 +157,7 @@ stages:
         Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
       displayName: Create exact approval artifact
 
+  # 2. Approve or reject the exact pruned package set in an agentless job.
   - job: approval
     ${{ if eq(parameters.publishPackages, true) }}:
       displayName: Approve exact pruned package set
@@ -170,6 +176,7 @@ stages:
           instructions: ${{ parameters.dryRunApprovalInstructions }}
         onTimeout: reject
 
+  # 3. Reverify and refresh the approved set, then publish or rehearse as selected.
   - job: publish
     ${{ if eq(parameters.publishPackages, true) }}:
       displayName: Publish to NuGet.org
