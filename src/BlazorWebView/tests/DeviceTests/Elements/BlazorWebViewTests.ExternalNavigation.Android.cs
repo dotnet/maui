@@ -190,7 +190,7 @@ public partial class BlazorWebViewTests
 		{
 			var bwvHandler = CreateHandler<BlazorWebViewHandler>(bwv);
 			var platformWebView = bwvHandler.PlatformView;
-			await WebViewHelpers.WaitForWebViewReady(platformWebView);
+			await WebViewHelpers.WaitForDocumentReady(platformWebView);
 			await WebViewHelpers.ExecuteScriptAsync(
 				platformWebView,
 				$"window.location.href = {JsonSerializer.Serialize(uri)};");
