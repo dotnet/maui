@@ -196,13 +196,13 @@ config/repositories.json               release policy
 The implementation is one executable project. Interfaces are retained where they make
 remote reads testable:
 
-- `IBuildRegistry`;
-- `INuGetPackageLookup`.
+- `IMaestroClient`;
+- `INuGetClient`.
 
-`NuGetPackageLookup` owns the NuGet protocol call, identity deduplication, and bounded
-concurrency behind that one batch-facing interface. Tests inject a delegate into the
-implementation when they need to observe individual lookups; there is no second production
-abstraction.
+`NuGetClient` owns local package identity reading plus the NuGet protocol call, identity
+deduplication, and bounded concurrency behind that one batch-facing interface. Tests inject
+a delegate into the implementation when they need to observe individual lookups; there is
+no second production abstraction.
 
 No dependency-injection container is required. The CLI composition root constructs the
 production adapters directly.

@@ -14,7 +14,7 @@ internal sealed class RecordingWriter : TextWriter
     public override void WriteLine(string? value) => Output.Add(value ?? string.Empty);
 }
 
-internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
+internal sealed class FakeMaestroClient(params BarBuild[] builds) : IMaestroClient
 {
     public int? RequestedBarId { get; private set; }
 
@@ -33,7 +33,7 @@ internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
     }
 }
 
-internal sealed class FakeProbe(params string[] published) : INuGetPackageLookup
+internal sealed class FakeProbe(params string[] published) : INuGetClient
 {
     private readonly HashSet<string> _published = new(published, StringComparer.OrdinalIgnoreCase);
 

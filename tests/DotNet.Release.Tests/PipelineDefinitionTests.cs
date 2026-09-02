@@ -158,8 +158,8 @@ public class PipelineDefinitionTests
         Assert.Contains("--output \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
         Assert.Contains("Get-Content -LiteralPath $env:RESOLVED_BUILD -Raw | ConvertFrom-Json", root, StringComparison.Ordinal);
         Assert.Contains("variable=BarId]", root, StringComparison.Ordinal);
-        Assert.Contains("registry.GetBuildAsync", resolve, StringComparison.Ordinal);
-        Assert.Contains("registry.GetBuildsAsync", resolve, StringComparison.Ordinal);
+        Assert.Contains("maestro.GetBuildAsync", resolve, StringComparison.Ordinal);
+        Assert.Contains("maestro.GetBuildsAsync", resolve, StringComparison.Ordinal);
         Assert.Contains("BuildResolver.Resolve", resolve, StringComparison.Ordinal);
         Assert.Contains("--resolved-build \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
         Assert.Contains("DeserializeResolvedBuild", stage, StringComparison.Ordinal);

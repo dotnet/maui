@@ -45,7 +45,7 @@ internal static class PrunePublishedCommand
         command.SetAction((parse, cancellationToken) =>
         {
             var manifestFile = parse.GetValue(manifest)!;
-            using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
+            using var lookup = new NuGetClient(parse.GetValue(feed));
 
             return ExecuteAsync(
                 outputWriter,
@@ -63,7 +63,7 @@ internal static class PrunePublishedCommand
 
     public static async Task ExecuteAsync(
         TextWriter outputWriter,
-        INuGetPackageLookup lookup,
+        INuGetClient lookup,
         string manifestJson,
         string stageDirectory,
         IReadOnlyList<string> recoveryPatterns,

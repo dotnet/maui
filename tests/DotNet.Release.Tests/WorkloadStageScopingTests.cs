@@ -59,10 +59,10 @@ public class WorkloadStageScopingTests : IDisposable
         }
     }
 
-    private Task Filter(string? set, INuGetPackageLookup probe) => PrunePublishedCommand.ExecuteAsync(
+    private Task Filter(string? set, INuGetClient probe) => PrunePublishedCommand.ExecuteAsync(
         _output, probe, _workspace.ReadManifest(), _workspace.Out, [], ManifestHash, set, CancellationToken.None);
 
-    private Task Verify(string? set, INuGetPackageLookup probe, int maxMinutes = 30)
+    private Task Verify(string? set, INuGetClient probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 

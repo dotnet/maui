@@ -1,9 +1,10 @@
 using Microsoft.DotNet.ProductConstructionService.Client;
+using PcsModels = Microsoft.DotNet.ProductConstructionService.Client.Models;
 
 namespace DotNet.Release;
 
 /// <summary>Read-only access to BAR builds used by release resolution.</summary>
-internal interface IBuildRegistry
+internal interface IMaestroClient
 {
     /// <summary>Gets the build with the exact BAR ID, or an empty list when it does not exist.</summary>
     Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);
@@ -13,7 +14,7 @@ internal interface IBuildRegistry
 }
 
 /// <summary>
-/// Read-only <see cref="IBuildRegistry"/> over the typed Product Construction Service client.
+/// Read-only <see cref="IMaestroClient"/> over the typed Product Construction Service client.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -27,25 +28,29 @@ internal interface IBuildRegistry
 /// <c>UpdateAsync</c>, which are BAR mutations; promotion stays an explicit
 /// <c>darc add-build-to-channel</c> step in pipeline YAML.
 /// </para>
+/// <para>
+/// The PCS model assembly is not nullable-annotated, although repository and channel values
+/// are null in real BAR data. Mapping normalizes those values before they enter release policy.
+/// </para>
 /// </remarks>
-internal sealed class MaestroBuildRegistry : IBuildRegistry
+internal sealed class MaestroClient : IMaestroClient
 {
     private const int NotFound = 404;
 
     private readonly IBuilds _builds;
 
     /// <param name="builds">The BAR builds endpoint. Narrow by design, so it is trivially fakeable.</param>
-    public MaestroBuildRegistry(IBuilds builds)
+    public MaestroClient(IBuilds builds)
     {
         ArgumentNullException.ThrowIfNull(builds);
         _builds = builds;
     }
 
-    /// <summary>Creates a registry from a configured API client.</summary>
-    public static MaestroBuildRegistry Create(IProductConstructionServiceApi api)
+    /// <summary>Creates a Maestro client from a configured PCS API client.</summary>
+    public static MaestroClient Create(IProductConstructionServiceApi api)
     {
         ArgumentNullException.ThrowIfNull(api);
-        return new MaestroBuildRegistry(api.Builds);
+        return new MaestroClient(api.Builds);
     }
 
     /// <inheritdoc />
@@ -65,7 +70,7 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
             // and asking for them makes the response substantially larger.
             var build = await _builds.GetBuildAsync(barBuildId, includeAssetLocation: false, cancellationToken).ConfigureAwait(false);
 
-            return build is null ? [] : [BarBuildMapper.Map(build)];
+            return build is null ? [] : [Map(build)];
         }
         catch (RestApiException ex) when (ex.Response?.Status == NotFound)
         {
@@ -96,11 +101,39 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
         {
             if (build is not null)
             {
-                builds.Add(BarBuildMapper.Map(build));
+                builds.Add(Map(build));
             }
         }
 
         return builds;
     }
 
+    /// <summary>Normalizes the PCS model into the nullable BAR data used by release policy.</summary>
+    internal static BarBuild Map(PcsModels.Build build)
+    {
+        ArgumentNullException.ThrowIfNull(build);
+
+        return new BarBuild(
+            build.Id,
+            NullIfBlank(build.Commit) ?? string.Empty,
+            NullIfBlank(build.GitHubRepository),
+            NullIfBlank(build.AzureDevOpsRepository),
+            MapChannels(build.Channels));
+    }
+
+    private static IReadOnlyList<ChannelReference> MapChannels(IEnumerable<PcsModels.Channel>? channels)
+    {
+        if (channels is null)
+        {
+            return [];
+        }
+
+        // Nameless channels cannot satisfy policy and should not appear as real empty names.
+        return [.. channels
+            .Where(channel => channel is not null && !string.IsNullOrWhiteSpace(channel.Name))
+            .Select(channel => new ChannelReference(channel.Name.Trim(), channel.Id))];
+    }
+
+    private static string? NullIfBlank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

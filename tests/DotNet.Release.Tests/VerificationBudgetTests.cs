@@ -34,7 +34,7 @@ public class VerificationBudgetTests : IDisposable
             CancellationToken.None);
     }
 
-    private Task Verify(INuGetPackageLookup probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)
+    private Task Verify(INuGetClient probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)
     {
         var now = Workspace.Now;
 
@@ -136,7 +136,7 @@ public class VerificationBudgetTests : IDisposable
     }
 }
 
-internal sealed class FlakyProbe(int failUntilCall, string[] published) : INuGetPackageLookup
+internal sealed class FlakyProbe(int failUntilCall, string[] published) : INuGetClient
 {
     private readonly HashSet<string> _published = new(published, StringComparer.OrdinalIgnoreCase);
 

@@ -62,7 +62,7 @@ internal static class ResolveCommand
             var api = CreateApi(parse.GetValue(barUri), parse.GetValue(token), parse.GetValue(managedIdentity));
             var resolved = await ExecuteAsync(
                 outputWriter,
-                MaestroBuildRegistry.Create(api),
+                MaestroClient.Create(api),
                 File.ReadAllText(parse.GetValue(config)!.FullName),
                 parse.GetValue(repo)!,
                 parse.GetValue(build)!,
@@ -79,7 +79,7 @@ internal static class ResolveCommand
 
     public static async Task<ResolvedBuild> ExecuteAsync(
         TextWriter outputWriter,
-        IBuildRegistry registry,
+        IMaestroClient maestro,
         string policyJson,
         string repository,
         string buildIdentifier,
@@ -90,8 +90,8 @@ internal static class ResolveCommand
         var repositoryPolicy = policy.GetRepository(repositoryId);
         var request = ParseRequest(repositoryId, buildIdentifier);
         var candidates = request.BarBuildId is { } barBuildId
-            ? await registry.GetBuildAsync(barBuildId, cancellationToken).ConfigureAwait(false)
-            : await registry.GetBuildsAsync(request.Commit!, cancellationToken).ConfigureAwait(false);
+            ? await maestro.GetBuildAsync(barBuildId, cancellationToken).ConfigureAwait(false)
+            : await maestro.GetBuildsAsync(request.Commit!, cancellationToken).ConfigureAwait(false);
 
         var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
         ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);

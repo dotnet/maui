@@ -3,10 +3,9 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class NupkgIdentityReaderTests : IDisposable
+public class NuGetClientPackageTests : IDisposable
 {
     private readonly PackageFixture _fixture = new();
-    private readonly NupkgIdentityReader _reader = new();
 
     public void Dispose() => _fixture.Dispose();
 
@@ -15,7 +14,7 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage("SkiaSharp", "3.119.0");
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
+        var result = await NuGetClient.ReadPackageAsync(path, CancellationToken.None);
 
         Assert.Equal("SkiaSharp", result.Id);
         Assert.Equal("3.119.0", result.Version);
@@ -32,7 +31,7 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage("SkiaSharp", "3.119.0", fileName: "totally-different-name.nupkg");
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
+        var result = await NuGetClient.ReadPackageAsync(path, CancellationToken.None);
 
         Assert.Equal("SkiaSharp", result.Id);
         Assert.Equal("3.119.0", result.Version);
@@ -50,7 +49,7 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage("SkiaSharp", version, fileName: $"SkiaSharp.{version}.nupkg");
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
+        var result = await NuGetClient.ReadPackageAsync(path, CancellationToken.None);
 
         Assert.Equal(expected, result.NormalizedVersion);
     }
@@ -60,7 +59,7 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage();
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
+        var result = await NuGetClient.ReadPackageAsync(path, CancellationToken.None);
 
         var expected = Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(path, CancellationToken.None)));
         Assert.Equal(expected, result.Sha256);
@@ -69,8 +68,8 @@ public class NupkgIdentityReaderTests : IDisposable
     [Fact]
     public async Task Two_packages_with_different_content_hash_differently()
     {
-        var a = await _reader.ReadAsync(_fixture.WritePackage("A", "1.0.0"), CancellationToken.None);
-        var b = await _reader.ReadAsync(_fixture.WritePackage("B", "1.0.0"), CancellationToken.None);
+        var a = await NuGetClient.ReadPackageAsync(_fixture.WritePackage("A", "1.0.0"), CancellationToken.None);
+        var b = await NuGetClient.ReadPackageAsync(_fixture.WritePackage("B", "1.0.0"), CancellationToken.None);
 
         Assert.NotEqual(a.Sha256, b.Sha256);
     }
@@ -79,14 +78,14 @@ public class NupkgIdentityReaderTests : IDisposable
     public async Task Missing_file_fails_closed()
     {
         await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => _reader.ReadAsync(Path.Combine(_fixture.Root, "nope.nupkg"), CancellationToken.None));
+            () => NuGetClient.ReadPackageAsync(Path.Combine(_fixture.Root, "nope.nupkg"), CancellationToken.None));
     }
 
     [Fact]
     public async Task Corrupt_archive_fails_with_a_release_exception()
     {
         await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => _reader.ReadAsync(_fixture.WriteCorruptPackage(), CancellationToken.None));
+            () => NuGetClient.ReadPackageAsync(_fixture.WriteCorruptPackage(), CancellationToken.None));
     }
 
     [Fact]
@@ -95,7 +94,7 @@ public class NupkgIdentityReaderTests : IDisposable
         var path = _fixture.WritePackage(nuspecEntryName: "not-a-nuspec.txt");
 
         await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => _reader.ReadAsync(path, CancellationToken.None));
+            () => NuGetClient.ReadPackageAsync(path, CancellationToken.None));
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public class NupkgIdentityReaderTests : IDisposable
         var path = _fixture.WritePackage(nuspecOverride: "<package><metadata><id>Broken");
 
         await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => _reader.ReadAsync(path, CancellationToken.None));
+            () => NuGetClient.ReadPackageAsync(path, CancellationToken.None));
     }
 
     [Fact]
@@ -122,7 +121,7 @@ public class NupkgIdentityReaderTests : IDisposable
             """);
 
         await Assert.ThrowsAsync<DotNetReleaseException>(
-            () => _reader.ReadAsync(path, CancellationToken.None));
+            () => NuGetClient.ReadPackageAsync(path, CancellationToken.None));
     }
 
     /// <summary>
@@ -139,7 +138,9 @@ public class NupkgIdentityReaderTests : IDisposable
         }
         """);
 
-        var read = await _reader.ReadAsync(_fixture.WritePackage("SkiaSharp", "3.119.0.0", fileName: "SkiaSharp.3.119.0.nupkg"), CancellationToken.None);
+        var read = await NuGetClient.ReadPackageAsync(
+            _fixture.WritePackage("SkiaSharp", "3.119.0.0", fileName: "SkiaSharp.3.119.0.nupkg"),
+            CancellationToken.None);
         var source = new ReleaseSource
         {
             Repository = "dotnet/skiasharp",

@@ -6,12 +6,12 @@ namespace DotNet.Release.Tests;
 /// Covers the boundary where the BAR client's unannotated <c>string</c> properties become
 /// this tool's explicitly-nullable model.
 /// </summary>
-public class BarBuildMapperTests
+public class MaestroClientMappingTests
 {
     [Fact]
     public void Maps_the_fields_the_release_depends_on()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(id: 328857, channels: [(1648, ".NET Libraries")]));
+        var mapped = MaestroClient.Map(BuildFactory.Create(id: 328857, channels: [(1648, ".NET Libraries")]));
 
         Assert.Equal(328857, mapped.Id);
         Assert.Equal(BuildFactory.Commit, mapped.Commit);
@@ -30,7 +30,7 @@ public class BarBuildMapperTests
     [InlineData("   ")]
     public void Absent_github_repository_becomes_null_not_empty(string? value)
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(gitHubRepository: value));
+        var mapped = MaestroClient.Map(BuildFactory.Create(gitHubRepository: value));
 
         Assert.Null(mapped.GitHubRepository);
     }
@@ -48,7 +48,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Production_build_328857_has_a_null_github_repository()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(id: 328857, gitHubRepository: null,
+        var mapped = MaestroClient.Map(BuildFactory.Create(id: 328857, gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp",
             channels: [(1648, ".NET Libraries")]));
 
@@ -63,7 +63,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Null_github_repository_still_carries_the_azdo_mirror_for_identity_recovery()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(gitHubRepository: null,
+        var mapped = MaestroClient.Map(BuildFactory.Create(gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp"));
 
         Assert.Null(mapped.GitHubRepository);
@@ -79,13 +79,13 @@ public class BarBuildMapperTests
     [InlineData("  ")]
     public void Absent_azdo_repository_becomes_null(string? value)
     {
-        Assert.Null(BarBuildMapper.Map(BuildFactory.Create(azureDevOpsRepository: value)).AzureDevOpsRepository);
+        Assert.Null(MaestroClient.Map(BuildFactory.Create(azureDevOpsRepository: value)).AzureDevOpsRepository);
     }
 
     [Fact]
     public void Values_are_trimmed()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(commit: $"  {BuildFactory.Commit}  ",
+        var mapped = MaestroClient.Map(BuildFactory.Create(commit: $"  {BuildFactory.Commit}  ",
             gitHubRepository: "  https://github.com/dotnet/skiasharp  ",
             channels: [(1648, "  .NET Libraries  ")]));
 
@@ -99,15 +99,15 @@ public class BarBuildMapperTests
     [InlineData("")]
     public void Absent_commit_becomes_empty_so_verification_fails_rather_than_throws(string? value)
     {
-        // Build resolution reports BAR_COMMIT_MISMATCH; a NullReferenceException here would be
-        // a worse diagnostic than the failure the operator actually needs to see.
-        Assert.Equal(string.Empty, BarBuildMapper.Map(BuildFactory.Create(commit: value)).Commit);
+        // Build resolution reports the invalid commit; a NullReferenceException here would be
+        // a worse diagnostic than the failure the operator needs.
+        Assert.Equal(string.Empty, MaestroClient.Map(BuildFactory.Create(commit: value)).Commit);
     }
 
     [Fact]
     public void Build_with_no_channels_maps_to_an_empty_list()
     {
-        Assert.Empty(BarBuildMapper.Map(BuildFactory.Create()).Channels);
+        Assert.Empty(MaestroClient.Map(BuildFactory.Create()).Channels);
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class BarBuildMapperTests
     [InlineData("   ")]
     public void Channels_without_a_usable_name_are_dropped(string? name)
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(channels: [(1648, name), (5172, ".NET 10")]));
+        var mapped = MaestroClient.Map(BuildFactory.Create(channels: [(1648, name), (5172, ".NET 10")]));
 
         Assert.Equal(new ChannelReference(".NET 10", 5172), Assert.Single(mapped.Channels));
     }
@@ -128,7 +128,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Multiple_channels_are_all_preserved_with_id_and_name()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(channels: [(1648, ".NET Libraries"), (5172, ".NET 10")]));
+        var mapped = MaestroClient.Map(BuildFactory.Create(channels: [(1648, ".NET Libraries"), (5172, ".NET 10")]));
 
         Assert.Equal(
             [(".NET Libraries", 1648), (".NET 10", 5172)],
@@ -138,6 +138,6 @@ public class BarBuildMapperTests
     [Fact]
     public void Null_build_is_a_programming_error()
     {
-        Assert.Throws<ArgumentNullException>(() => BarBuildMapper.Map(null!));
+        Assert.Throws<ArgumentNullException>(() => MaestroClient.Map(null!));
     }
 }

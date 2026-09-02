@@ -3,7 +3,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class NuGetPackageLookupTests
+public class NuGetClientTests
 {
     private static PlannedPackage Package(string id, string version) => new()
     {
@@ -32,7 +32,7 @@ public class NuGetPackageLookupTests
     public async Task Parses_and_queries_the_normalized_version()
     {
         var queried = new List<string>();
-        using var lookup = new NuGetPackageLookup((id, version, _) =>
+        using var lookup = new NuGetClient((id, version, _) =>
         {
             queried.Add($"{id}/{version.ToNormalizedString()}");
             return Task.FromResult(false);
@@ -59,7 +59,7 @@ public class NuGetPackageLookupTests
     public async Task Duplicate_identities_are_queried_once()
     {
         var calls = 0;
-        using var lookup = new NuGetPackageLookup((_, _, _) =>
+        using var lookup = new NuGetClient((_, _, _) =>
         {
             Interlocked.Increment(ref calls);
             return Task.FromResult(false);
@@ -75,7 +75,7 @@ public class NuGetPackageLookupTests
     [Fact]
     public async Task A_feed_failure_surfaces_rather_than_becoming_not_published()
     {
-        using var lookup = new NuGetPackageLookup((id, _, _) => id == "SkiaSharp" ? Task.FromException<bool>(new HttpRequestException("feed unavailable"))
+        using var lookup = new NuGetClient((id, _, _) => id == "SkiaSharp" ? Task.FromException<bool>(new HttpRequestException("feed unavailable"))
                 : Task.FromResult(false));
 
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -86,7 +86,7 @@ public class NuGetPackageLookupTests
     public async Task An_empty_plan_makes_no_queries()
     {
         var calls = 0;
-        using var lookup = new NuGetPackageLookup((_, _, _) =>
+        using var lookup = new NuGetClient((_, _, _) =>
         {
             Interlocked.Increment(ref calls);
             return Task.FromResult(false);
@@ -103,7 +103,7 @@ public class NuGetPackageLookupTests
             .Select(index => Package($"Package{index}", "1.0.0")).ToList();
         var active = 0;
         var peak = 0;
-        using var lookup = new NuGetPackageLookup(async (_, _, cancellationToken) =>
+        using var lookup = new NuGetClient(async (_, _, cancellationToken) =>
         {
             var current = Interlocked.Increment(ref active);
             int observed;
@@ -135,22 +135,22 @@ public class NuGetPackageLookupTests
     public void Concurrency_must_be_positive(int maxConcurrency)
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new NuGetPackageLookup((_, _, _) => Task.FromResult(false), maxConcurrency));
+            new NuGetClient((_, _, _) => Task.FromResult(false), maxConcurrency));
     }
 
     [Fact]
     public void A_lookup_delegate_is_required()
     {
         Assert.Throws<ArgumentNullException>(
-            () => new NuGetPackageLookup((Func<string, NuGetVersion, CancellationToken, Task<bool>>)null!));
+            () => new NuGetClient((Func<string, NuGetVersion, CancellationToken, Task<bool>>)null!));
     }
 
     [Fact]
     public void The_production_feed_is_nuget_org()
     {
-        Assert.Equal("https://api.nuget.org/v3/index.json", NuGetPackageLookup.NuGetOrgIndex);
+        Assert.Equal("https://api.nuget.org/v3/index.json", NuGetClient.NuGetOrgIndex);
     }
 
-    private static NuGetPackageLookup Lookup(Func<string, NuGetVersion, bool> lookup) =>
+    private static NuGetClient Lookup(Func<string, NuGetVersion, bool> lookup) =>
         new((id, version, _) => Task.FromResult(lookup(id, version)));
 }

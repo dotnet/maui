@@ -15,8 +15,8 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task<ResolvedBuild> Resolve(FakeRegistry registry, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
-        ResolveCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, repo, build, CancellationToken.None);
+    private Task<ResolvedBuild> Resolve(FakeMaestroClient maestro, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
+        ResolveCommand.ExecuteAsync(_output, maestro, Workspace.PolicyJson, repo, build, CancellationToken.None);
 
     private static string ResolvedBuildJson(BarBuild? build = null, string repo = "dotnet/skiasharp")
         => TestData.ResolvedBuildJson(build ?? Workspace.Build(channels: Libraries), repo);
@@ -38,7 +38,7 @@ public class VerbsTests : IDisposable
     [Fact]
     public async Task Resolve_accepts_a_commit_and_returns_the_verified_BAR_ID()
     {
-        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
+        var registry = new FakeMaestroClient(Workspace.Build(channels: Libraries));
 
         var resolved = await Resolve(registry);
 
@@ -51,7 +51,7 @@ public class VerbsTests : IDisposable
     [Fact]
     public async Task Resolve_accepts_a_BAR_ID_and_returns_its_commit()
     {
-        var registry = new FakeRegistry(Workspace.Build(channels: Libraries));
+        var registry = new FakeMaestroClient(Workspace.Build(channels: Libraries));
 
         var resolved = await Resolve(registry, build: "4242");
 
@@ -66,7 +66,7 @@ public class VerbsTests : IDisposable
         var build = new BarBuild(4242, Workspace.Commit, null,
             "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
 
-        var resolved = await Resolve(new FakeRegistry(build), build: "4242");
+        var resolved = await Resolve(new FakeMaestroClient(build), build: "4242");
 
         Assert.Equal("dotnet/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
@@ -79,7 +79,7 @@ public class VerbsTests : IDisposable
             "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
         var unrelatedBuild = Workspace.Build("https://github.com/dotnet/maui");
 
-        var resolved = await Resolve(new FakeRegistry(mirrorBuild, unrelatedBuild));
+        var resolved = await Resolve(new FakeMaestroClient(mirrorBuild, unrelatedBuild));
 
         Assert.Equal(4242, resolved.BarBuildId);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
@@ -93,13 +93,13 @@ public class VerbsTests : IDisposable
     public async Task Resolve_rejects_an_invalid_build_identifier(string build)
     {
         await Assert.ThrowsAsync<DotNetReleaseException>(() =>
-            Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)), build));
+            Resolve(new FakeMaestroClient(Workspace.Build(channels: Libraries)), build));
     }
 
     [Fact]
     public async Task Resolve_structured_output_contains_both_BAR_ID_and_commit()
     {
-        var resolved = await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)), build: "4242");
+        var resolved = await Resolve(new FakeMaestroClient(Workspace.Build(channels: Libraries)), build: "4242");
         using var document = JsonDocument.Parse(ResolveCommand.SerializeOutput(resolved));
 
         Assert.Equal(4242, document.RootElement.GetProperty("barBuildId").GetInt32());
@@ -248,7 +248,7 @@ public class VerbsTests : IDisposable
         return ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
     }
 
-    private Task Filter(INuGetPackageLookup probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
+    private Task Filter(INuGetClient probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
         PrunePublishedCommand.ExecuteAsync(
             _output, probe, _workspace.ReadManifest(), _workspace.Out, recovery ?? [], expectedHash ?? ManifestHash, set, CancellationToken.None);
 
@@ -405,7 +405,7 @@ public class VerbsTests : IDisposable
 
     // ---- verify ----
 
-    private Task Verify(INuGetPackageLookup probe, int maxMinutes = 30, string? set = null, int pollSeconds = 20)
+    private Task Verify(INuGetClient probe, int maxMinutes = 30, string? set = null, int pollSeconds = 20)
     {
         var now = Workspace.Now;
 

@@ -2,7 +2,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class MaestroBuildRegistryTests
+public class MaestroClientTests
 {
     private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp");
 
@@ -13,21 +13,21 @@ public class MaestroBuildRegistryTests
     {
         var fake = new FakeBuilds(getById: id => BuildFactory.Create(id: id, channels: [(1648, ".NET Libraries")]));
 
-        var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
+        var builds = await new MaestroClient(fake).GetBuildAsync(328857, CancellationToken.None);
 
         Assert.Equal(328857, Assert.Single(builds).Id);
     }
 
     /// <summary>
     /// A missing BAR build is a lookup result, not a transport failure. The adapter returns
-    /// an empty result so policy reports BAR_BUILD_NOT_FOUND with release context.
+    /// an empty result so policy reports the missing build with release context.
     /// </summary>
     [Fact]
     public async Task Http_404_becomes_an_empty_result_rather_than_an_exception()
     {
         var fake = new FakeBuilds(throwOnGet: BuildFactory.NotFound());
 
-        var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(1, CancellationToken.None);
+        var builds = await new MaestroClient(fake).GetBuildAsync(1, CancellationToken.None);
 
         Assert.Empty(builds);
     }
@@ -42,7 +42,7 @@ public class MaestroBuildRegistryTests
         var fake = new FakeBuilds(throwOnGet: BuildFactory.ServerError());
 
         await Assert.ThrowsAsync<Microsoft.DotNet.ProductConstructionService.Client.RestApiException>(
-            () => new MaestroBuildRegistry(fake).GetBuildAsync(1, CancellationToken.None));
+            () => new MaestroClient(fake).GetBuildAsync(1, CancellationToken.None));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class MaestroBuildRegistryTests
     {
         var fake = new FakeBuilds(getById: _ => null);
 
-        Assert.Empty(await new MaestroBuildRegistry(fake).GetBuildAsync(1, CancellationToken.None));
+        Assert.Empty(await new MaestroClient(fake).GetBuildAsync(1, CancellationToken.None));
     }
 
     [Theory]
@@ -60,7 +60,7 @@ public class MaestroBuildRegistryTests
     {
         var fake = new FakeBuilds(getById: _ => throw new InvalidOperationException("should not be called"));
 
-        Assert.Empty(await new MaestroBuildRegistry(fake).GetBuildAsync(barBuildId, CancellationToken.None));
+        Assert.Empty(await new MaestroClient(fake).GetBuildAsync(barBuildId, CancellationToken.None));
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class MaestroBuildRegistryTests
     {
         var fake = new FakeBuilds(getById: id => BuildFactory.Create(id: id));
 
-        await new MaestroBuildRegistry(fake).GetBuildAsync(1, CancellationToken.None);
+        await new MaestroClient(fake).GetBuildAsync(1, CancellationToken.None);
 
         Assert.False(fake.LastIncludeAssetLocation);
     }
@@ -84,7 +84,7 @@ public class MaestroBuildRegistryTests
             BuildFactory.Create(id: 2, channels: [(1648, ".NET Libraries")]),
         ]);
 
-        var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(BuildFactory.Commit, CancellationToken.None);
+        var builds = await new MaestroClient(fake).GetBuildsAsync(BuildFactory.Commit, CancellationToken.None);
 
         Assert.Equal([1, 2], builds.Select(build => build.Id));
         Assert.Null(fake.LastRepository);
@@ -96,8 +96,8 @@ public class MaestroBuildRegistryTests
     // ---- end-to-end through build resolution ----
 
     /// <summary>
-    /// The full production path for SkiaSharp build 328857: BAR has no GitHub URL, the build
-    /// is reachable only by ID, and identity is still established and verified.
+    /// The production shape for SkiaSharp build 328857: BAR has no GitHub URL, and identity
+    /// is still established and verified from the Azure DevOps mirror.
     /// </summary>
     [Fact]
     public async Task Null_github_repository_resolves_and_verifies_end_to_end()
@@ -116,7 +116,7 @@ public class MaestroBuildRegistryTests
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp",
             channels: [(1648, ".NET Libraries")]));
 
-        var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
+        var builds = await new MaestroClient(fake).GetBuildAsync(328857, CancellationToken.None);
 
         var resolved = BuildResolver.Resolve(
             new ReleaseRequest(skia, Commit: null, BarBuildId: 328857), policy.GetRepository(skia), builds);
@@ -129,6 +129,6 @@ public class MaestroBuildRegistryTests
     [Fact]
     public void The_registry_requires_a_builds_endpoint()
     {
-        Assert.Throws<ArgumentNullException>(() => new MaestroBuildRegistry(null!));
+        Assert.Throws<ArgumentNullException>(() => new MaestroClient(null!));
     }
 }

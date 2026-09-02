@@ -113,7 +113,6 @@ internal static class StageCommand
             throw new DotNetReleaseException($"No shipping nupkgs were found under '{dropDirectory}'.");
         }
 
-        var reader = new NupkgIdentityReader();
         var packages = new List<DropPackage>(packageFiles.Count);
         var readErrors = new List<string>();
 
@@ -121,7 +120,7 @@ internal static class StageCommand
         {
             try
             {
-                packages.Add(await reader.ReadAsync(file, cancellationToken).ConfigureAwait(false));
+                packages.Add(await NuGetClient.ReadPackageAsync(file, cancellationToken).ConfigureAwait(false));
             }
             catch (DotNetReleaseException ex)
             {
