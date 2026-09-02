@@ -163,6 +163,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
+				// ContainerView is backed by its own field (not routed through
+				// ElementHandler.PlatformView), so it needs its own explicit flush barrier.
 				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
 				return _containerView;
 			}
@@ -180,7 +182,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			get
 			{
-				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				// base.PlatformView (ElementHandler.PlatformView) already flushes pending
+				// property updates before returning; avoid a duplicate flush call here.
 				return (PlatformView?)base.PlatformView;
 			}
 			private protected set => base.PlatformView = value;

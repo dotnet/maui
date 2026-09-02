@@ -27,9 +27,11 @@ namespace Microsoft.Maui.Handlers
 		bool _isExplicitPropertyUpdateBatching;
 		bool _hasMappedAutomaticLeadingUpdate;
 		bool _isPropertyUpdateFlushScheduled;
+		bool _isExplicitFlushPendingUnwind;
 		int _pendingPropertyUpdateHead = -1;
 		int _pendingPropertyUpdateTail = -1;
 		int _mapperExecutionDepth;
+		object? _platformView;
 
 		ElementHandlerState IElementHandlerStateExhibitor.State => _handlerState;
 
@@ -45,7 +47,19 @@ namespace Microsoft.Maui.Handlers
 
 		public IServiceProvider? Services => MauiContext?.Services;
 
-		public object? PlatformView { get; private protected set; }
+		// This is the single canonical flush barrier for platform-view access: every other
+		// PlatformView/ContainerView accessor (ElementHandlerOfT, ViewHandler, ViewHandlerOfT)
+		// funnels through this getter via `base.PlatformView`, so there is exactly one place
+		// that needs to flush pending property updates before native code observes the view.
+		public object? PlatformView
+		{
+			get
+			{
+				FlushPendingPropertyUpdatesBeforePlatformViewAccess();
+				return _platformView;
+			}
+			private protected set => _platformView = value;
+		}
 
 		public IElement? VirtualView { get; private protected set; }
 
@@ -138,6 +152,7 @@ namespace Microsoft.Maui.Handlers
 				finally
 				{
 					_mapperExecutionDepth--;
+					FlushPendingExplicitUpdatesIfUnwound();
 				}
 			}
 
@@ -179,9 +194,18 @@ namespace Microsoft.Maui.Handlers
 			}
 			else if (!_hasMappedAutomaticLeadingUpdate)
 			{
+				// Map the leading update before scheduling the flush. SchedulePropertyUpdateFlush
+				// falls back to invoking its callback synchronously when no dispatcher is
+				// available (or Dispatch fails), and that callback drains the (still-empty)
+				// queue and clears _hasMappedAutomaticLeadingUpdate. If we scheduled first, that
+				// synchronous fallback would wipe the flag before the leading property mapper
+				// even ran, and every subsequent property would re-enter this branch -- never
+				// coalescing anything, and re-attempting a schedule/flush round-trip per update.
+				// Invoking first means the no-dispatcher fallback degrades to the simple
+				// immediate-update path (matching pre-batching behavior) instead of a stuck state.
 				_hasMappedAutomaticLeadingUpdate = true;
-				SchedulePropertyUpdateFlush();
 				InvokePropertyMapper(property);
+				SchedulePropertyUpdateFlush();
 			}
 			else
 			{
@@ -200,12 +224,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
-			if (command == nameof(IView.InvalidateMeasure))
-			{
-				InvokeCommandMapper(command, args);
-				return;
-			}
-
+			// Every command -- including InvalidateMeasure -- flushes pending property updates
+			// first. Otherwise a platform command (e.g. a layout pass triggered by
+			// InvalidateMeasure) could observe a platform view that still holds stale values
+			// for properties queued earlier in the same batch. InvalidateMeasure itself is
+			// still dispatched synchronously and is never queued/coalesced.
 			if (_mapperExecutionDepth == 0)
 				FlushPendingPropertyUpdates();
 
@@ -287,6 +310,33 @@ namespace Microsoft.Maui.Handlers
 		void IPropertyUpdateBatchingHandler.FlushPendingPropertyUpdates()
 		{
 			_isExplicitPropertyUpdateBatching = false;
+
+			if (_mapperExecutionDepth > 0)
+			{
+				// BatchCommit() was reached reentrantly from inside a mapper callback (for
+				// example an animation tick or a property-changed handler reached synchronously
+				// from mapper code). FlushPendingPropertyUpdates() would no-op here because it
+				// refuses to recurse into mapper invocation while a mapper is still on the
+				// stack, which would otherwise strand the queue with nothing left to trigger a
+				// drain (explicit batching is now off, so UpdateValue no longer re-queues or
+				// re-schedules). Instead, request a drain and perform it as soon as the
+				// outermost mapper invocation unwinds back to depth 0.
+				_isExplicitFlushPendingUnwind = true;
+				return;
+			}
+
+			FlushPendingPropertyUpdates();
+		}
+
+		// Called after every mapper/command invocation unwinds one level. If a reentrant
+		// explicit-batch commit requested a drain while depth was still non-zero, perform it
+		// as soon as we're back at depth 0.
+		void FlushPendingExplicitUpdatesIfUnwound()
+		{
+			if (_mapperExecutionDepth != 0 || !_isExplicitFlushPendingUnwind)
+				return;
+
+			_isExplicitFlushPendingUnwind = false;
 			FlushPendingPropertyUpdates();
 		}
 
@@ -371,6 +421,7 @@ namespace Microsoft.Maui.Handlers
 			finally
 			{
 				_mapperExecutionDepth--;
+				FlushPendingExplicitUpdatesIfUnwound();
 			}
 		}
 
@@ -382,11 +433,24 @@ namespace Microsoft.Maui.Handlers
 				if (!this.CanInvokeMappers())
 					return;
 
+				// Deliberately use GetProperty (a live chain walk) instead of UpdateProperty's
+				// flattened CachedMappers lookup. CachedMappers is memoized on this (the leaf)
+				// mapper instance and is only invalidated when *this* mapper's own Add/Chained
+				// setter runs -- mutating a chained mapper's registrations later (for example
+				// AppendToMapping/PrependToMapping/ModifyMapping called on the chained mapper
+				// after this handler has already snapshotted its cache) does not invalidate it.
+				// Flushed properties must resolve the mapper action current as of flush time,
+				// including such chained customization (see "Ordering and barriers" in
+				// docs/design/HandlerUpdateBatching.md and
+				// BatchedPropertyUpdatesResolveChainedMapperAtFlushTime); switching this to the
+				// cached path would silently drop any chained-mapper customization applied
+				// between when a property was queued and when it is flushed.
 				_mapper.GetProperty(property)?.Invoke(this, VirtualView!);
 			}
 			finally
 			{
 				_mapperExecutionDepth--;
+				FlushPendingExplicitUpdatesIfUnwound();
 			}
 		}
 
@@ -400,6 +464,7 @@ namespace Microsoft.Maui.Handlers
 			finally
 			{
 				_mapperExecutionDepth--;
+				FlushPendingExplicitUpdatesIfUnwound();
 			}
 		}
 
@@ -411,6 +476,17 @@ namespace Microsoft.Maui.Handlers
 			_hasMappedAutomaticLeadingUpdate = false;
 			_pendingPropertyUpdateHead = -1;
 			_pendingPropertyUpdateTail = -1;
+
+			// Reset the scheduling state along with the queue itself. Without this, a flush
+			// triggered by a barrier (PlatformView/ContainerView access), an explicit commit, or
+			// a virtual-view/disconnect reset leaves _isPropertyUpdateFlushScheduled set to true
+			// even though nothing is actually scheduled to run against the *new* queue contents.
+			// SchedulePropertyUpdateFlush() would then early-return for the next leading update,
+			// silently relying on a stale dispatcher callback (if any) to eventually flush
+			// properties that callback was never queued for. Any already-dispatched callback
+			// still safely no-ops against an empty/foreign queue when it eventually runs.
+			_isPropertyUpdateFlushScheduled = false;
+			_isExplicitFlushPendingUnwind = false;
 		}
 
 		struct PendingPropertyUpdate
@@ -456,13 +532,19 @@ namespace Microsoft.Maui.Handlers
 
 		void IElementHandler.DisconnectHandler()
 		{
-			if (PlatformView != null && VirtualView != null)
+			// Deliberately read/clear the raw field here, not the public PlatformView property.
+			// Pending property updates are discarded (not flushed) on disconnect -- see
+			// DisconnectHandler(object) below, which clears the queue via
+			// ClearPendingPropertyUpdates(). Going through the public property would run the
+			// platform-view-access flush barrier and apply queued updates to a handler that is
+			// about to be torn down.
+			if (_platformView != null && VirtualView != null)
 			{
 				// We set the PlatformView to null so no one outside of this handler tries to access
 				// PlatformView. PlatformView access should be isolated to the instance passed into
 				// DisconnectHandler
-				var oldPlatformView = PlatformView;
-				PlatformView = null;
+				var oldPlatformView = _platformView;
+				_platformView = null;
 				DisconnectHandler(oldPlatformView);
 			}
 
