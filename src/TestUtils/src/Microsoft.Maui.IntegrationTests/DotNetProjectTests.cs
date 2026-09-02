@@ -18,10 +18,19 @@ public class DotNetProjectTests
 			"src",
 			"DotNet",
 			"DotNet.csproj");
-		var defaultExtensionsPath = GetProjectProperty(projectFile, "MSBuildExtensionsPath");
-		var extensionsPathWithoutSeparator = defaultExtensionsPath.TrimEnd(
-			Path.DirectorySeparatorChar,
-			Path.AltDirectorySeparatorChar);
+		var sdkVersion = DotnetInternal.RunForOutput(
+			new[] { "--version" },
+			out var exitCode,
+			timeoutInSeconds: 60,
+			output: _output).Trim();
+		Assert.True(exitCode == 0, "Unable to determine the .NET SDK version.");
+		Assert.False(string.IsNullOrEmpty(sdkVersion), "The .NET SDK version was empty.");
+
+		var extensionsPathWithoutSeparator = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			".dotnet",
+			"sdk",
+			sdkVersion);
 		var extensionsPathWithSeparator = extensionsPathWithoutSeparator + Path.DirectorySeparatorChar;
 
 		var withoutSeparator = GetWorkloadPaths(projectFile, extensionsPathWithoutSeparator);
@@ -36,11 +45,20 @@ public class DotNetProjectTests
 				Path.AltDirectorySeparatorChar.ToString(),
 				StringComparison.Ordinal));
 		Assert.Equal(
-			$"{withoutSeparator.ExtensionsPath}../../sdk-manifests/{withoutSeparator.ManifestBand}",
-			withoutSeparator.ManifestDirectory);
+			Path.GetFullPath(Path.Combine(
+				withoutSeparator.ExtensionsPath,
+				"..",
+				"..",
+				"sdk-manifests",
+				withoutSeparator.ManifestBand)),
+			Path.GetFullPath(withoutSeparator.ManifestDirectory));
 		Assert.Equal(
-			$"{withoutSeparator.ExtensionsPath}../../dotnet",
-			withoutSeparator.DotNetPath);
+			Path.GetFullPath(Path.Combine(
+				withoutSeparator.ExtensionsPath,
+				"..",
+				"..",
+				"dotnet")),
+			Path.GetFullPath(withoutSeparator.DotNetPath));
 	}
 
 	(string ExtensionsPath, string ManifestDirectory, string DotNetPath, string ManifestBand) GetWorkloadPaths(
