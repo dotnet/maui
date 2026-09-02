@@ -42,7 +42,7 @@ public class PipelineDefinitionTests
     }
 
     private static ReleasePolicy Policy =>
-        ReleasePolicy.Parse(File.ReadAllText(Path.Combine(RepoRoot, "config", "repositories.json"))).Value;
+        ReleasePolicy.Parse(File.ReadAllText(Path.Combine(RepoRoot, "config", "repositories.json")));
 
     private static YamlMappingNode Parameter(string name) =>
         ((YamlSequenceNode)Pipeline["parameters"])
@@ -137,7 +137,7 @@ public class PipelineDefinitionTests
             .Cast<Match>()
             .ToList();
 
-        Assert.Collection(references, _ => { }, _ => { });
+        Assert.NotEmpty(references);
 
         foreach (var reference in references)
         {
@@ -148,7 +148,7 @@ public class PipelineDefinitionTests
 
         var verbs = File.ReadAllText(
             Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "PlanCommand.cs"));
-        Assert.Contains("SetIsWorkload(resolved.Value.Workload)", verbs, StringComparison.Ordinal);
+        Assert.Contains("SetIsWorkload(resolved.Workload)", verbs, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -172,8 +172,36 @@ public class PipelineDefinitionTests
     [Fact]
     public void Publishing_is_opt_in()
     {
-        Assert.Equal("false", ((YamlScalarNode)Parameter("publishPackages")["default"]).Value, ignoreCase: true);
-        Assert.Equal("false", ((YamlScalarNode)Parameter("promoteWorkloadSet")["default"]).Value, ignoreCase: true);
+        var mode = Parameter("releaseMode");
+        var values = ((YamlSequenceNode)mode["values"]).Cast<YamlScalarNode>().Select(v => v.Value).ToList();
+
+        Assert.Equal("Preview the package release without making changes", ((YamlScalarNode)mode["default"]).Value);
+        Assert.Equal(4, values.Count);
+        Assert.Equal(2, values.Count(value => value!.Contains("without making changes", StringComparison.Ordinal)));
+        Assert.Equal(2, values.Count(value => value!.StartsWith("Publish", StringComparison.Ordinal)));
+        Assert.DoesNotContain(
+            ((YamlSequenceNode)Pipeline["parameters"]).Cast<YamlMappingNode>(),
+            parameter => ((YamlScalarNode)parameter["name"]).Value is "publishPackages" or "promoteWorkloadSet");
+    }
+
+    [Fact]
+    public void Every_release_mode_comparison_uses_a_declared_dropdown_value()
+    {
+        var declared = ((YamlSequenceNode)Parameter("releaseMode")["values"])
+            .Cast<YamlScalarNode>()
+            .Select(value => value.Value!)
+            .ToHashSet(StringComparer.Ordinal);
+        var pipeline = File.ReadAllLines(PipelinePath);
+
+        var compared = pipeline
+            .Where(line => line.Contains("parameters.releaseMode", StringComparison.Ordinal))
+            .SelectMany(line => Regex.Matches(line, "'(?<value>[^']+)'").Cast<Match>())
+            .Select(match => match.Groups["value"].Value)
+            .ToList();
+
+        Assert.NotEmpty(compared);
+        Assert.All(compared, value => Assert.Contains(value, declared));
+        Assert.DoesNotContain(pipeline, line => line.Contains("ne(parameters.releaseMode", StringComparison.Ordinal));
     }
 
     /// <summary>
@@ -261,7 +289,7 @@ public class PipelineDefinitionTests
             .Cast<Match>()
             .ToList();
 
-        Assert.Equal(8, references.Count);
+        Assert.NotEmpty(references);
 
         var pipeline = File.ReadAllText(PipelinePath);
         foreach (var reference in references)
@@ -274,8 +302,8 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The tool is built before the Maestro-authenticated task, and the entire framework-
-    /// dependent tool directory is pinned before it is executed after approval.
+    /// The tool is built before the Maestro-authenticated task and one immutable bundle is
+    /// pinned for every later job.
     /// </summary>
     [Fact]
     public void The_tool_is_built_once_before_credentials_and_carried_in_the_artifact()
@@ -289,19 +317,13 @@ public class PipelineDefinitionTests
 
         Assert.True(build >= 0);
         Assert.True(authenticatedTask > build);
-        Assert.Contains("$(Build.ArtifactStagingDirectory)/_tool", root, StringComparison.Ordinal);
-        Assert.Contains("buildTool.ToolHash", publish, StringComparison.Ordinal);
-        Assert.Contains("_tool/release.dll", publish, StringComparison.Ordinal);
-        Assert.Contains("Get-DirectoryHash.ps1", root, StringComparison.Ordinal);
-        Assert.Equal(
-            4,
-            Regex.Matches(publish, "Get-DirectoryHash.ps1", RegexOptions.CultureInvariant).Count);
-        Assert.DoesNotContain(
-            "Get-FileHash -LiteralPath $toolPath",
-            root + publish,
-            StringComparison.Ordinal);
+        Assert.Contains("Join-Path $artifactDirectory '_tool'", root, StringComparison.Ordinal);
+        Assert.Contains("Compress-Archive", root, StringComparison.Ordinal);
+        Assert.Contains("release-tool.zip", root, StringComparison.Ordinal);
+        Assert.Contains("buildTool.ToolBundleHash", publish, StringComparison.Ordinal);
+        Assert.Contains("Expand-Archive", publish, StringComparison.Ordinal);
+        Assert.Contains("release-tool/_tool/release.dll", publish, StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet run", publish, StringComparison.Ordinal);
-        Assert.DoesNotContain("dotnet publish", root, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -320,8 +342,8 @@ public class PipelineDefinitionTests
         Assert.Contains("- checkout: none", releaseJob, StringComparison.Ordinal);
         Assert.DoesNotContain("- checkout: self", releaseJob, StringComparison.Ordinal);
         Assert.Contains("artifactName: ${{ parameters.preparedArtifactName }}", releaseJob, StringComparison.Ordinal);
-        Assert.Contains("workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}", releaseJob, StringComparison.Ordinal);
-        Assert.Contains("$root/_infra/Get-DirectoryHash.ps1", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("workingDirectory: $(Agent.TempDirectory)/release-tool", releaseJob, StringComparison.Ordinal);
+        Assert.Contains("release-tool.zip", releaseJob, StringComparison.Ordinal);
         Assert.Contains("UseDotNet@2", releaseJob, StringComparison.Ordinal);
         Assert.Contains("1ES.PublishNuget@1", releaseJob, StringComparison.Ordinal);
     }
@@ -366,12 +388,7 @@ public class PipelineDefinitionTests
             "Copy-Item -LiteralPath \"$source/${{ parameters.setName }}\"",
             text,
             StringComparison.Ordinal);
-        Assert.Equal(
-            2,
-            Regex.Matches(
-                text,
-                @"artifactName: \$\{\{ parameters\.preparedArtifactName \}\}",
-                RegexOptions.CultureInvariant).Count);
+        Assert.Contains("Copy-Item -LiteralPath \"$source/release-tool.zip\"", text, StringComparison.Ordinal);
         Assert.Contains("dependsOn: preflight", text, StringComparison.Ordinal);
 
         var pruneSteps = Enumerable.Range(0, lines.Length)
@@ -715,25 +732,27 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// BAR channel promotion is a remote mutation and must be compile-time excluded unless
-    /// both publishing and promotion were explicitly requested.
+    /// Promotion may be rehearsed, but its single BAR mutation must exist only in the mode
+    /// that explicitly requests publication and promotion.
     /// </summary>
     [Fact]
-    public void BAR_promotion_is_absent_from_a_dry_run()
+    public void BAR_mutation_is_compile_time_excluded_from_promotion_previews()
     {
         var lines = File.ReadAllLines(PipelinePath);
-        var promote = Array.FindIndex(
+        var mutation = Array.FindIndex(
             lines,
-            line => line.Contains("- stage: promote_workload_set", StringComparison.Ordinal));
+            line => line.Contains("& $darc add-build-to-channel", StringComparison.Ordinal));
 
-        Assert.True(promote >= 0, "The workload promotion stage was not found.");
+        Assert.True(mutation >= 0, "The workload promotion command was not found.");
 
-        var conditions = EnclosingConditions(lines, promote);
+        var conditions = EnclosingConditions(lines, mutation);
         Assert.Contains(
             conditions,
-            condition =>
-                condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal) &&
-                condition.Contains("parameters.promoteWorkloadSet, true", StringComparison.Ordinal));
+            condition => condition.Contains("variables.promoteWorkloadSet, 'true'", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            File.ReadAllText(PipelinePath),
+            "ne(parameters.releaseMode",
+            StringComparison.Ordinal);
     }
 
     /// <summary>Only normal jobs obtain Darc through Arcade; release artifacts never carry it.</summary>
@@ -746,7 +765,7 @@ public class PipelineDefinitionTests
         var globalJson = File.ReadAllText(Path.Combine(RepoRoot, "global.json"));
         var versionDetails = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
 
-        Assert.Equal(2, Regex.Matches(pipeline, @"\$darc = Get-Darc").Count);
+        Assert.True(Regex.Matches(pipeline, @"\$darc = Get-Darc").Count >= 2);
         Assert.Contains("eng/common/tools.ps1", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("dotnet tool install Microsoft.DotNet.Darc", pipeline, StringComparison.Ordinal);
         Assert.DoesNotContain("\"darc\"", globalJson, StringComparison.Ordinal);

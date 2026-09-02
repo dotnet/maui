@@ -4,7 +4,7 @@ namespace DotNet.Release.Tests;
 
 public class StagePlannerTests
 {
-    private static Result<ReleasePlan> Plan(
+    private static ReleasePlan Plan(
         IReadOnlyList<DropPackage> drop,
         bool workload = false,
         StageOptions? options = null,
@@ -27,11 +27,10 @@ public class StagePlannerTests
     {
         var plan = Plan([TestData.Drop("SkiaSharp", "3.119.0"), TestData.Drop("HarfBuzzSharp", "8.3.1")]);
 
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
-        var set = Assert.Single(plan.Value.Sets);
+        var set = Assert.Single(plan.Sets);
         Assert.Equal(0, set.Order);
         Assert.Equal(StagePlanner.PackagesArtifactName, set.ArtifactName);
-        Assert.Null(plan.Value.WorkloadSet);
+        Assert.Null(plan.WorkloadSet);
 
         // Deterministic ordering keeps the plan hash stable and the audit readable.
         Assert.Equal(["HarfBuzzSharp", "SkiaSharp"], set.Packages.Select(p => p.Id));
@@ -40,10 +39,8 @@ public class StagePlannerTests
     [Fact]
     public void Non_workload_release_rejects_workload_manifests_outright()
     {
-        var plan = Plan([TestData.Drop("SkiaSharp", "3.119.0"), Manifest()]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.ManifestInNonWorkload));
+        Assert.Throws<DotNetReleaseException>(
+            () => Plan([TestData.Drop("SkiaSharp", "3.119.0"), Manifest()]));
     }
 
     [Fact]
@@ -53,25 +50,21 @@ public class StagePlannerTests
             [TestData.Drop("SkiaSharp", "3.119.0"), Manifest()],
             options: new StageOptions { Exclude = ["*Manifest*"] });
 
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
-        Assert.Equal("SkiaSharp", Assert.Single(plan.Value.AllPackages).Id);
+        Assert.Equal("SkiaSharp", Assert.Single(plan.AllPackages).Id);
     }
 
     [Fact]
     public void Filters_selecting_nothing_fail_closed()
     {
-        var plan = Plan(
+        Assert.Throws<DotNetReleaseException>(() => Plan(
             [TestData.Drop("SkiaSharp", "3.119.0")],
-            options: new StageOptions { Include = ["NothingMatches*"] });
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageSetEmpty));
+            options: new StageOptions { Include = ["NothingMatches*"] }));
     }
 
     [Fact]
     public void Empty_drop_fails_closed()
     {
-        Assert.True(Plan([]).HasError(ErrorCodes.PackageSetEmpty));
+        Assert.Throws<DotNetReleaseException>(() => Plan([]));
     }
 
     // ---- workload ----
@@ -84,11 +77,10 @@ public class StagePlannerTests
             workload: true,
             repo: "dotnet/maui");
 
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
-        Assert.Equal(2, plan.Value.Sets.Count);
+        Assert.Equal(2, plan.Sets.Count);
 
-        var packs = plan.Value.Sets.Single(s => s.Order == 0);
-        var manifests = plan.Value.Sets.Single(s => s.Order == 1);
+        var packs = plan.Sets.Single(s => s.Order == 0);
+        var manifests = plan.Sets.Single(s => s.Order == 1);
 
         Assert.Equal(StagePlanner.PacksArtifactName, packs.ArtifactName);
         Assert.Equal(StagePlanner.ManifestsArtifactName, manifests.ArtifactName);
@@ -106,20 +98,16 @@ public class StagePlannerTests
             workload: true,
             repo: "dotnet/maui");
 
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
-        Assert.Equal(new WorkloadSetTarget(10, ".NET 10 Workload Release", "dotnet10-workloads"), plan.Value.WorkloadSet);
+        Assert.Equal(new WorkloadSetTarget(10, ".NET 10 Workload Release", "dotnet10-workloads"), plan.WorkloadSet);
     }
 
     [Fact]
     public void Workload_release_with_an_unconfigured_band_fails_closed()
     {
-        var plan = Plan(
+        Assert.Throws<DotNetReleaseException>(() => Plan(
             [TestData.Drop("Microsoft.Maui.Controls", "12.0.0"), Manifest("12", "12.0.0")],
             workload: true,
-            repo: "dotnet/maui");
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.WorkloadSetNotConfigured));
+            repo: "dotnet/maui"));
     }
 
     [Theory]
@@ -138,10 +126,8 @@ public class StagePlannerTests
             drop.Add(Manifest());
         }
 
-        var plan = Plan(drop, workload: true, repo: "dotnet/maui");
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageSetEmpty));
+        Assert.Throws<DotNetReleaseException>(
+            () => Plan(drop, workload: true, repo: "dotnet/maui"));
     }
 
     /// <summary>
@@ -161,22 +147,18 @@ public class StagePlannerTests
             options: new StageOptions { Include = ["Microsoft.Maui.Controls.*"] },
             repo: "dotnet/maui");
 
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
-        Assert.Equal("Microsoft.Maui.Controls", Assert.Single(plan.Value.Sets[0].Packages).Id);
-        Assert.Single(plan.Value.Sets[1].Packages);
+        Assert.Equal("Microsoft.Maui.Controls", Assert.Single(plan.Sets[0].Packages).Id);
+        Assert.Single(plan.Sets[1].Packages);
     }
 
     [Fact]
     public void Exclude_filters_apply_to_manifests_too()
     {
-        var plan = Plan(
+        Assert.Throws<DotNetReleaseException>(() => Plan(
             [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest()],
             workload: true,
             options: new StageOptions { Exclude = ["*Manifest*"] },
-            repo: "dotnet/maui");
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageSetEmpty));
+            repo: "dotnet/maui"));
     }
 
     // ---- validation ----
@@ -185,87 +167,78 @@ public class StagePlannerTests
     public void Duplicate_file_names_fail_closed()
     {
         var duplicate = TestData.Drop("SkiaSharp", "3.119.0");
-        var plan = Plan([duplicate, duplicate]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateFileName));
+        Assert.Throws<DotNetReleaseException>(() => Plan([duplicate, duplicate]));
     }
 
     [Fact]
     public void Duplicate_identities_under_different_file_names_fail_closed()
     {
-        var plan = Plan([
+        Assert.Throws<DotNetReleaseException>(() => Plan([
             TestData.Drop("SkiaSharp", "3.119.0"),
             TestData.Drop("SkiaSharp", "3.119.0", fileName: "SkiaSharp.3.119.0.0.nupkg"),
-        ]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));
+        ]));
     }
 
     [Fact]
     public void Duplicate_normalized_identities_fail_closed()
     {
-        var plan = Plan([
+        Assert.Throws<DotNetReleaseException>(() => Plan([
             TestData.Drop("SkiaSharp", "3.119", fileName: "SkiaSharp.3.119.nupkg"),
             TestData.Drop("SkiaSharp", "3.119.0", fileName: "SkiaSharp.3.119.0.nupkg"),
-        ]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));
+        ]));
     }
 
     [Fact]
     public void Duplicate_normalized_identities_across_workload_sets_fail_closed()
     {
-        var plan = Plan(
+        Assert.Throws<DotNetReleaseException>(() => Plan(
             [
                 TestData.Drop("Shared", "1.0", fileName: "Shared.1.0.nupkg"),
                 TestData.Drop("Shared", "1.0.0", fileName: "Shared.Manifest-10.1.0.0.nupkg"),
             ],
             workload: true,
-            repo: "dotnet/maui");
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageDuplicateIdentity));
+            repo: "dotnet/maui"));
     }
 
     [Fact]
     public void Package_without_an_id_fails_closed()
     {
-        var plan = Plan([new DropPackage("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageMalformed));
+        Assert.Throws<DotNetReleaseException>(() =>
+            Plan([new DropPackage("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]));
     }
 
     [Fact]
     public void File_name_disagreeing_with_the_nuspec_id_fails_closed()
     {
-        var plan = Plan([new DropPackage(
-            "SomethingElse.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageMalformed));
+        Assert.Throws<DotNetReleaseException>(() => Plan([new DropPackage(
+            "SomethingElse.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]));
     }
 
     [Fact]
     public void File_name_containing_a_directory_fails_closed()
     {
-        var plan = Plan([new DropPackage(
-            "sub/SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageMalformed));
+        Assert.Throws<DotNetReleaseException>(() => Plan([new DropPackage(
+            "sub/SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", TestData.Hash("x"))]));
     }
 
     [Fact]
     public void Package_staged_without_a_content_hash_fails_closed()
     {
-        var plan = Plan([new DropPackage("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]);
+        Assert.Throws<DotNetReleaseException>(() =>
+            Plan([new DropPackage("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]));
+    }
 
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageMalformed));
+    [Fact]
+    public void Package_validation_reports_all_actionable_errors()
+    {
+        var exception = Assert.Throws<DotNetReleaseException>(() => Plan([
+            new DropPackage("First.1.0.0.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("first")),
+            new DropPackage("wrong-name.nupkg", "Second", "1.0.0", "1.0.0", ""),
+        ]));
+
+        Assert.Contains("First.1.0.0.nupkg", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("without a content hash", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("does not start with its ID", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -274,17 +247,14 @@ public class StagePlannerTests
         // A reader that returned the raw file-name version instead of the normalized form.
         // This is the check that converts the substring approach's silent wrong answer into
         // a loud failure at stage time.
-        var plan = Plan([new DropPackage(
-            "SkiaSharp.3.119.0.0.nupkg", "SkiaSharp", "3.119.0.0", "3.119.0.0", TestData.Hash("x"))]);
-
-        Assert.True(plan.IsFailure);
-        Assert.True(plan.HasError(ErrorCodes.PackageMalformed));
+        Assert.Throws<DotNetReleaseException>(() => Plan([new DropPackage(
+            "SkiaSharp.3.119.0.0.nupkg", "SkiaSharp", "3.119.0.0", "3.119.0.0", TestData.Hash("x"))]));
     }
 
     [Fact]
     public void Plan_carries_the_verified_source_and_tool_version()
     {
-        var plan = Plan([TestData.Drop("SkiaSharp", "3.119.0")]).Value;
+        var plan = Plan([TestData.Drop("SkiaSharp", "3.119.0")]);
 
         Assert.Equal(TestData.Commit, plan.Source.Commit);
         Assert.Equal(4242, plan.Source.BarBuildId);

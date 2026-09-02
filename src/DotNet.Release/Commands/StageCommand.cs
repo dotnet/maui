@@ -4,7 +4,7 @@ namespace DotNet.Release;
 
 internal static class StageCommand
 {
-    public static Command Build(IReleaseConsole console, string toolVersion)
+    public static Command Build(TextWriter outputWriter, string toolVersion)
     {
         var config = new Option<FileInfo>("--config")
         {
@@ -43,7 +43,7 @@ internal static class StageCommand
         };
 
         command.SetAction((parse, cancellationToken) => ExecuteAsync(
-            console,
+            outputWriter,
             File.ReadAllText(parse.GetValue(config)!.FullName),
             File.ReadAllText(parse.GetValue(plan)!.FullName),
             parse.GetValue(drop)!.FullName,
@@ -60,8 +60,8 @@ internal static class StageCommand
         return command;
     }
 
-    public static async Task<int> ExecuteAsync(
-        IReleaseConsole console,
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter,
         string policyJson,
         string resolvedPlanJson,
         string dropDirectory,
@@ -72,69 +72,48 @@ internal static class StageCommand
         CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        if (policy.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, policy.Errors);
-        }
-
         var resolved = ReleasePlanSerializer.DeserializeResolved(resolvedPlanJson);
-        if (resolved.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, resolved.Errors);
-        }
 
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
         {
-            return ConsoleReporting.Fail(console, [new ReleaseError(
-                ErrorCodes.PackageSetEmpty,
-                $"No shipping nupkgs were found under '{dropDirectory}'.")]);
+            throw new DotNetReleaseException(
+                $"No shipping nupkgs were found under '{dropDirectory}'.");
         }
 
         var reader = new NupkgIdentityReader();
         var packages = new List<DropPackage>(packageFiles.Count);
-        var readErrors = new List<ReleaseError>();
+        var readErrors = new List<string>();
 
         foreach (var file in packageFiles)
         {
-            var read = await reader.ReadAsync(file, cancellationToken).ConfigureAwait(false);
-            if (read.IsFailure)
+            try
             {
-                readErrors.AddRange(read.Errors);
+                packages.Add(await reader.ReadAsync(file, cancellationToken).ConfigureAwait(false));
             }
-            else
+            catch (DotNetReleaseException ex)
             {
-                packages.Add(read.Value);
+                readErrors.Add(ex.Message);
             }
         }
 
         if (readErrors.Count > 0)
         {
-            return ConsoleReporting.Fail(console, readErrors);
+            throw new DotNetReleaseException(readErrors);
         }
 
         var plan = StagePlanner.Create(
-            resolved.Value,
-            policy.Value,
+            resolved,
+            policy,
             packages,
             options,
             now,
             toolVersion);
-        if (plan.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, plan.Errors);
-        }
-
         var sourceFiles = IndexPackageFiles(packageFiles);
-        if (sourceFiles.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, sourceFiles.Errors);
-        }
-
         Directory.CreateDirectory(outputDirectory);
-        var planJson = ReleasePlanSerializer.Serialize(plan.Value);
+        var planJson = ReleasePlanSerializer.Serialize(plan);
 
-        foreach (var set in plan.Value.Sets.OrderBy(set => set.Order))
+        foreach (var set in plan.Sets.OrderBy(set => set.Order))
         {
             var setDirectory = Path.Combine(outputDirectory, set.ArtifactName);
             Directory.CreateDirectory(setDirectory);
@@ -142,38 +121,27 @@ internal static class StageCommand
             foreach (var package in set.Packages)
             {
                 File.Copy(
-                    sourceFiles.Value[package.FileName],
+                    sourceFiles[package.FileName],
                     Path.Combine(setDirectory, package.FileName),
                     overwrite: true);
             }
-
-            await File.WriteAllTextAsync(
-                Path.Combine(setDirectory, ReleaseSetMarker.FileName),
-                ReleasePlanSerializer.Serialize(ReleaseSetMarker.For(set, resolved.Value)),
-                cancellationToken).ConfigureAwait(false);
         }
 
         var planPath = Path.Combine(outputDirectory, ReleaseArtifact.PlanFileName);
         await File.WriteAllTextAsync(planPath, planJson, cancellationToken).ConfigureAwait(false);
 
-        foreach (var set in plan.Value.Sets)
+        foreach (var set in plan.Sets)
         {
-            var integrity = StagedSetIntegrity.ValidateStaged(
+            StagedSetIntegrity.ValidateStaged(
                 set,
                 ReleaseArtifact.ReadPackageHashes(
                     Path.Combine(outputDirectory, set.ArtifactName)));
-            if (integrity.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, integrity.Errors);
-            }
         }
 
-        ConsoleReporting.WriteSummary(console, plan.Value);
-        console.WriteLine(string.Empty);
-        console.WriteLine($"Wrote {planPath}.");
-        console.WriteLine($"Release plan SHA-256: {ReleasePlanSerializer.ComputeHash(planJson)}");
-
-        return ExitCodes.Success;
+        ReleaseOutput.WriteReleasePlan(outputWriter, plan);
+        outputWriter.WriteLine();
+        outputWriter.WriteLine($"Wrote {planPath}.");
+        outputWriter.WriteLine($"Release plan SHA-256: {ReleasePlanSerializer.ComputeHash(planJson)}");
     }
 
     internal static List<string> FindShippingPackages(string dropDirectory)
@@ -187,7 +155,7 @@ internal static class StageCommand
             : [];
     }
 
-    private static Result<IReadOnlyDictionary<string, string>> IndexPackageFiles(
+    private static IReadOnlyDictionary<string, string> IndexPackageFiles(
         IReadOnlyList<string> packageFiles)
     {
         var indexed = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -197,13 +165,13 @@ internal static class StageCommand
             var name = Path.GetFileName(file);
             if (!indexed.TryAdd(name, file))
             {
-                return Result<IReadOnlyDictionary<string, string>>.Failure(
-                    ErrorCodes.PackageDuplicateFileName,
+                throw new DotNetReleaseException(
                     $"The gathered drop contains more than one '{name}': " +
                     $"'{indexed[name]}' and '{file}'.");
             }
         }
 
-        return Result<IReadOnlyDictionary<string, string>>.Success(indexed);
+        return indexed;
     }
+
 }

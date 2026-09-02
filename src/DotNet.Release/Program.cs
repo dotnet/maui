@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Reflection;
 
 namespace DotNet.Release;
@@ -11,20 +12,37 @@ internal static class Program
             ?.InformationalVersion
         ?? "0.0.0";
 
-    public static Task<int> Main(string[] args) =>
-        BuildRootCommand().Parse(args).InvokeAsync();
+    public static async Task<int> Main(string[] args)
+    {
+        try
+        {
+            var invocationConfiguration = new InvocationConfiguration
+            {
+                EnableDefaultExceptionHandler = false,
+            };
+
+            return await BuildRootCommand()
+                .Parse(args)
+                .InvokeAsync(invocationConfiguration)
+                .ConfigureAwait(false);
+        }
+        catch (DotNetReleaseException ex)
+        {
+            await Console.Error.WriteLineAsync($"error: {ex.Message}").ConfigureAwait(false);
+            return 1;
+        }
+    }
 
     internal static RootCommand BuildRootCommand()
     {
-        var console = new SystemConsole();
         var root = new RootCommand(
             "Prepares and verifies a .NET package release from a BAR build. " +
             "1ES.PublishNuget performs every package upload.");
 
-        root.Subcommands.Add(PlanCommand.Build(console, ToolVersion));
-        root.Subcommands.Add(StageCommand.Build(console, ToolVersion));
-        root.Subcommands.Add(PrunePublishedCommand.Build(console));
-        root.Subcommands.Add(VerifyCommand.Build(console));
+        root.Subcommands.Add(PlanCommand.Build(Console.Out, ToolVersion));
+        root.Subcommands.Add(StageCommand.Build(Console.Out, ToolVersion));
+        root.Subcommands.Add(PrunePublishedCommand.Build(Console.Out));
+        root.Subcommands.Add(VerifyCommand.Build(Console.Out));
 
         return root;
     }

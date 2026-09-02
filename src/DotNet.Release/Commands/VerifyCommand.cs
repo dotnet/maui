@@ -4,7 +4,7 @@ namespace DotNet.Release;
 
 internal static class VerifyCommand
 {
-    public static Command Build(IReleaseConsole console)
+    public static Command Build(TextWriter outputWriter)
     {
         var plan = new Option<FileInfo>("--plan")
         {
@@ -35,33 +35,27 @@ internal static class VerifyCommand
             Description = "The SHA-256 emitted by the prepare stage.",
             Required = true,
         };
-        var stage = new Option<DirectoryInfo?>("--stage")
-        {
-            Description = "Release artifact directory. Defaults to the plan directory.",
-        };
-
         var command = new Command(
             "verify",
             "Poll until every package in the set is indexed on NuGet.org.")
         {
-            plan, maxDuration, interval, feed, set, stage, expectedHash,
+            plan, maxDuration, interval, feed, set, expectedHash,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
             var planFile = parse.GetValue(plan)!;
-            using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
+            using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
             return ExecuteAsync(
-                console,
-                new PackageAvailabilityProbe(checker),
+                outputWriter,
+                lookup,
                 File.ReadAllText(planFile.FullName),
                 TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
                 () => DateTimeOffset.UtcNow,
                 Task.Delay,
                 parse.GetValue(set),
-                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
                 parse.GetValue(expectedHash)!,
                 cancellationToken);
         });
@@ -69,51 +63,21 @@ internal static class VerifyCommand
         return command;
     }
 
-    public static async Task<int> ExecuteAsync(
-        IReleaseConsole console,
-        IPackageAvailabilityProbe probe,
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter,
+        INuGetPackageLookup lookup,
         string planJson,
         TimeSpan maxDuration,
         TimeSpan pollInterval,
         Func<DateTimeOffset> clock,
         Func<TimeSpan, CancellationToken, Task> delay,
         string? setName,
-        string stageDirectory,
         string expectedPlanHash,
         CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
-        if (plan.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, plan.Errors);
-        }
-
-        var sets = ReleaseArtifact.SelectSets(plan.Value, setName);
-        if (sets.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, sets.Errors);
-        }
-
-        foreach (var set in sets.Value)
-        {
-            var setDirectory = ReleaseArtifact.GetSetDirectory(stageDirectory, set);
-            if (setDirectory.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, setDirectory.Errors);
-            }
-
-            var marker = ReleaseArtifact.ValidateSetMarker(
-                setDirectory.Value,
-                set,
-                plan.Value.Source,
-                setName);
-            if (marker.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, marker.Errors);
-            }
-        }
-
-        var packages = sets.Value.SelectMany(set => set.Packages).ToList();
+        var sets = ReleaseArtifact.SelectSets(plan, setName);
+        var packages = sets.SelectMany(set => set.Packages).ToList();
         var deadline = clock() + maxDuration;
         IReadOnlyList<PlannedPackage> missing = packages;
 
@@ -121,34 +85,55 @@ internal static class VerifyCommand
         {
             try
             {
-                var availability = await probe
+                var availability = await lookup
                     .GetAvailabilityAsync(packages, cancellationToken)
                     .ConfigureAwait(false);
-                missing = VerificationEvaluator.GetMissing(packages, availability);
+                missing = GetMissing(packages, availability);
 
                 if (missing.Count == 0)
                 {
-                    console.WriteLine(
+                    outputWriter.WriteLine(
                         $"Verified all {packages.Count} packages on NuGet.org.");
-                    return ExitCodes.Success;
+                    return;
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                console.WriteError(
+                outputWriter.WriteLine(
                     $"warning: NuGet.org query failed, will retry: {ex.Message}");
             }
 
             if (clock() + pollInterval >= deadline)
             {
-                return ConsoleReporting.Fail(console, [new ReleaseError(
-                    ErrorCodes.PackageFileMissing,
-                    VerificationEvaluator.DescribeMissing(missing))]);
+                throw new DotNetReleaseException(DescribeMissing(missing));
             }
 
-            console.WriteLine(
+            outputWriter.WriteLine(
                 $"Waiting for {missing.Count} package(s) to become available on NuGet.org.");
             await delay(pollInterval, cancellationToken).ConfigureAwait(false);
         }
     }
+
+    internal static IReadOnlyList<PlannedPackage> GetMissing(
+        IEnumerable<PlannedPackage> packages,
+        IReadOnlyDictionary<string, bool> availability)
+    {
+        ArgumentNullException.ThrowIfNull(packages);
+        ArgumentNullException.ThrowIfNull(availability);
+
+        return
+        [
+            .. packages.Where(package =>
+                !availability.TryGetValue(package.IdentityKey, out var isPublished) ||
+                !isPublished)
+        ];
+    }
+
+    internal static string DescribeMissing(IReadOnlyList<PlannedPackage> missing) =>
+        "The following packages are not available from NuGet.org: " +
+        string.Join(
+            ", ",
+            missing
+                .Select(package => $"{package.Id} {package.Version}")
+                .Order(StringComparer.Ordinal));
 }

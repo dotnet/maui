@@ -9,8 +9,8 @@
 # repository as a template and no other repository copies it: releasing repositories do not
 # change, they are named by parameter.
 #
-#   Run pipeline -> choose the repository, give it a commit (or a BAR ID), review the audit
-#   at the manual gate, approve, done.
+#   Run pipeline -> choose the repository, give it a commit (or a BAR ID), review the
+#   human-readable preflight log at the manual gate, approve, done.
 #
 # What it does, in order:
 #   1. build the C# tool once into the Release artifact
@@ -21,8 +21,8 @@
 #   6. production release job -> refresh prune -> optional `1ES.PublishNuget@1` -> verification
 #
 # Safety properties worth knowing before you press Run:
-#   - `publishPackages` defaults to FALSE. The default run is a dry run that publishes
-#     nothing while still exercising package stages, approvals, and production release jobs.
+#   - `releaseMode` defaults to a package preview. The default run publishes nothing while
+#     still exercising package stages, approvals, and production release jobs.
 #   - The tool cannot push. `1ES.PublishNuget@1` performs every upload.
 #   - Workload repositories publish packs and manifests as two separately gated stages, in
 #     that order, because manifests reference packs and NuGet.org packages are immutable.
@@ -64,15 +64,15 @@ parameters:
   default: skip
 
 # ---- what to actually do --------------------------------------------------------------------
-- name: publishPackages
-  displayName: "PUBLISH to NuGet.org. Leave unchecked for a dry run."
-  type: boolean
-  default: false
-
-- name: promoteWorkloadSet
-  displayName: "Workload repos only: promote the build to its workload-set channel"
-  type: boolean
-  default: false
+- name: releaseMode
+  displayName: What should this release run do?
+  type: string
+  default: Preview the package release without making changes
+  values:
+  - Preview the package release without making changes
+  - Preview packages and workload promotion without making changes
+  - Publish packages to NuGet.org
+  - Publish packages and promote the workload build
 
 # ---- selection and recovery -----------------------------------------------------------------
 - name: includeFilters
@@ -101,6 +101,24 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+- ${{ if in(parameters.releaseMode, 'Publish packages to NuGet.org', 'Publish packages and promote the workload build') }}:
+  - name: publishPackages
+    value: true
+- ${{ else }}:
+  - name: publishPackages
+    value: false
+- ${{ if in(parameters.releaseMode, 'Preview packages and workload promotion without making changes', 'Publish packages and promote the workload build') }}:
+  - name: includePromotion
+    value: true
+- ${{ else }}:
+  - name: includePromotion
+    value: false
+- ${{ if eq(parameters.releaseMode, 'Publish packages and promote the workload build') }}:
+  - name: promoteWorkloadSet
+    value: true
+- ${{ else }}:
+  - name: promoteWorkloadSet
+    value: false
 
 resources:
   repositories:
@@ -161,33 +179,27 @@ extends:
             useGlobalJson: true
 
         # Build once before any task acquires the Maestro production identity. Publish jobs
-        # execute this exact tool directory from the immutable Release artifact without rebuilding.
+        # execute this exact tool bundle from the immutable Release artifact without rebuilding.
         - pwsh: |
             $artifactDirectory = "$(Build.ArtifactStagingDirectory)"
-            $infraDirectory = Join-Path $artifactDirectory '_infra'
-            New-Item -ItemType Directory -Path $infraDirectory -Force | Out-Null
-
-            $globalJsonPath = Join-Path $artifactDirectory 'global.json'
-            $directoryHashScriptPath = Join-Path $infraDirectory 'Get-DirectoryHash.ps1'
-            Copy-Item -LiteralPath "$(Build.SourcesDirectory)/global.json" -Destination $globalJsonPath
-            Copy-Item `
-              -LiteralPath "$(Build.SourcesDirectory)/eng/scripts/Get-DirectoryHash.ps1" `
-              -Destination $directoryHashScriptPath
-
-            $toolDirectory = "$(Build.ArtifactStagingDirectory)/_tool"
+            $toolDirectory = Join-Path $artifactDirectory '_tool'
             dotnet build "$(Build.SourcesDirectory)/src/DotNet.Release/DotNet.Release.csproj" `
               --configuration Release `
               --output $toolDirectory
             if ($LASTEXITCODE -ne 0) { throw 'Failed to build the release tool.' }
 
+            $bundleDirectory = "$(Agent.TempDirectory)/release-tool"
+            New-Item -ItemType Directory -Path $bundleDirectory -Force | Out-Null
+            Copy-Item -LiteralPath "$(Build.SourcesDirectory)/global.json" -Destination $bundleDirectory
+            Copy-Item -LiteralPath $toolDirectory -Destination $bundleDirectory -Recurse
+
+            $bundlePath = Join-Path $artifactDirectory 'release-tool.zip'
+            Compress-Archive -Path "$bundleDirectory/*" -DestinationPath $bundlePath -CompressionLevel Optimal
+
             $toolPath = Join-Path $toolDirectory 'release.dll'
-            $toolHash = & $directoryHashScriptPath -Path $toolDirectory
-            $globalJsonHash = (Get-FileHash -LiteralPath $globalJsonPath -Algorithm SHA256).Hash.ToLowerInvariant()
-            $directoryHashScriptHash = (Get-FileHash -LiteralPath $directoryHashScriptPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $bundleHash = (Get-FileHash -LiteralPath $bundlePath -Algorithm SHA256).Hash.ToLowerInvariant()
             Write-Host "##vso[task.setvariable variable=ToolPath]$toolPath"
-            Write-Host "##vso[task.setvariable variable=ToolHash;isOutput=true]$toolHash"
-            Write-Host "##vso[task.setvariable variable=GlobalJsonHash;isOutput=true]$globalJsonHash"
-            Write-Host "##vso[task.setvariable variable=DirectoryHashScriptHash;isOutput=true]$directoryHashScriptHash"
+            Write-Host "##vso[task.setvariable variable=ToolBundleHash;isOutput=true]$bundleHash"
           name: buildTool
           displayName: Build the release tool
 
@@ -311,20 +323,11 @@ extends:
           displayName: Pin the release plan hash
 
         # Record release intent as a build tag. The run name is already fixed at queue time.
-        - ${{ if eq(parameters.publishPackages, true) }}:
+        - ${{ if eq(variables.publishPackages, 'true') }}:
           - pwsh: Write-Host '##vso[build.addbuildtag]PUBLISH'
             displayName: Tag this run as PUBLISH
 
-          - ${{ if eq(parameters.promoteWorkloadSet, true) }}:
-            - pwsh: |
-                if ($env:IS_WORKLOAD -ne 'true') {
-                  Write-Host '##vso[task.logissue type=warning]promoteWorkloadSet applies only to workload repositories and will be skipped.'
-                }
-              displayName: Check promotion applicability
-              env:
-                IS_WORKLOAD: $(releasePlan.IsWorkload)
-
-        - ${{ if eq(parameters.publishPackages, false) }}:
+        - ${{ if eq(variables.publishPackages, 'false') }}:
           - pwsh: |
               Write-Host '##vso[build.addbuildtag]DRY-RUN'
               Write-Host 'DRY RUN. Package approval and production release jobs will run.'
@@ -332,35 +335,50 @@ extends:
               Write-Host 'Review the staged artifacts and release-plan.json above.'
             displayName: Dry run - nothing will be published
 
-          # Report that promotion is inactive when publishing is disabled.
-          - ${{ if eq(parameters.promoteWorkloadSet, true) }}:
-            - pwsh: |
-                Write-Host '##vso[task.logissue type=warning]promoteWorkloadSet was requested but is ignored on a dry run. Re-run with publishPackages enabled to promote.'
-              displayName: Warn - promotion ignored on a dry run
+        - ${{ if eq(variables.includePromotion, 'true') }}:
+          - pwsh: |
+              if ($env:IS_WORKLOAD -ne 'true') {
+                throw 'The selected release mode includes workload promotion, but the repository policy classifies this as a package-only repository.'
+              }
+            displayName: Validate workload promotion mode
+            env:
+              IS_WORKLOAD: $(releasePlan.IsWorkload)
 
     # -----------------------------------------------------------------------------------------
     # Promote to the workload-set channel. A BAR mutation, so it stays an explicit darc step.
     # -----------------------------------------------------------------------------------------
-    - ${{ if and(eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
+    - ${{ if eq(variables.includePromotion, 'true') }}:
       - stage: promote_workload_set
-        displayName: Promote to workload set channel
+        ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
+          displayName: Promote to workload set channel
+        ${{ else }}:
+          displayName: Preview workload set promotion
         dependsOn: prepare_release
         condition: and(succeeded(), eq(dependencies.prepare_release.outputs['prepare_release.releasePlan.IsWorkload'], 'true'))
         jobs:
         # Promotion mutates BAR and therefore requires explicit approval of the staged plan.
         - job: promote_approval
-          displayName: Wait to promote
+          ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
+            displayName: Approve workload promotion
+          ${{ else }}:
+            displayName: Review workload promotion preview
           timeoutInMinutes: 240
           pool: server
           steps:
           - task: ManualValidation@0
             timeoutInMinutes: 120
             inputs:
-              instructions: 'Review release-plan.json, then press "Resume" to add this build to its workload-set channel. This mutates BAR.'
+              ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
+                instructions: 'Review the resolved workload target printed by Prepare release, then press "Resume" to add this build to that channel. This mutates BAR.'
+              ${{ else }}:
+                instructions: 'DRY RUN: Review the workload target printed by Prepare release, then press "Resume" to validate the promotion job without changing BAR.'
               onTimeout: reject
 
         - job: promote
-          displayName: Add build to workload set channel
+          ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
+            displayName: Add build to workload set channel
+          ${{ else }}:
+            displayName: Validate workload promotion job
           timeoutInMinutes: 60
           dependsOn: promote_approval
           condition: eq(dependencies.promote_approval.result, 'Succeeded')
@@ -386,29 +404,47 @@ extends:
             env:
               EXPECTED_PLAN_HASH: $(ReleasePlanHash)
 
-          - task: AzureCLI@2
-            displayName: Add build to channel
-            inputs:
-              azureSubscription: "Darc: Maestro Production"
-              scriptType: pscore
-              scriptLocation: inlineScript
-              # Channel and feed are read from the plan, so there is one source of truth.
-              inlineScript: |
-                $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
-                . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
-                $darc = Get-Darc
-                if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
-                  throw 'Arcade failed to install the Darc CLI.'
-                }
+          - ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
+            - task: AzureCLI@2
+              displayName: Add build to channel
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: pscore
+                scriptLocation: inlineScript
+                # Channel and feed are read from the plan, so there is one source of truth.
+                inlineScript: |
+                  $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
+                  . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+                  $darc = Get-Darc
+                  if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
+                    throw 'Arcade failed to install the Darc CLI.'
+                  }
 
-                & $darc add-build-to-channel --ci `
-                  --channel "$($plan.workloadSet.channel)" `
-                  --id "$($plan.source.barBuildId)" `
-                  --skip-assets-publishing `
-                  --azdev-pat $env:AZDO_TOKEN --verbose
-                if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
-            env:
-              AZDO_TOKEN: $(System.AccessToken)
+                  & $darc add-build-to-channel --ci `
+                    --channel "$($plan.workloadSet.channel)" `
+                    --id "$($plan.source.barBuildId)" `
+                    --skip-assets-publishing `
+                    --azdev-pat $env:AZDO_TOKEN --verbose
+                  if ($LASTEXITCODE -ne 0) { throw 'darc add-build-to-channel failed.' }
+              env:
+                AZDO_TOKEN: $(System.AccessToken)
+
+          - ${{ else }}:
+            - task: AzureCLI@2
+              displayName: Validate promotion tooling
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $plan = Get-Content "$(Pipeline.Workspace)/Release/release-plan.json" -Raw | ConvertFrom-Json
+                  . "$(Build.SourcesDirectory)/eng/common/tools.ps1"
+                  $darc = Get-Darc
+                  if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $darc -PathType Leaf)) {
+                    throw 'Arcade failed to install the Darc CLI.'
+                  }
+
+                  Write-Host "DRY RUN. BAR build $($plan.source.barBuildId) would be added to '$($plan.workloadSet.channel)'."
 
     # -----------------------------------------------------------------------------------------
     # Validate package-set jobs, approval, and artifact wiring on every run. The internal
@@ -421,13 +457,13 @@ extends:
         setName: ReleasePacks
         preparedArtifactName: PreparedReleasePacks
         expectedWorkload: 'true'
-        publishPackages: ${{ parameters.publishPackages }}
-        ${{ if and(eq(parameters.promoteWorkloadSet, true), eq(parameters.publishPackages, true)) }}:
+        publishPackages: ${{ eq(variables.publishPackages, 'true') }}
+        ${{ if eq(variables.includePromotion, 'true') }}:
           dependsOn: [prepare_release, promote_workload_set]
         ${{ else }}:
           dependsOn: [prepare_release]
-        approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to publish them.'
-        dryRunApprovalInstructions: 'DRY RUN: Review release-prune.json and the exact nupkgs in PreparedReleasePacks, then press "Resume" to rehearse the production release job. Nothing will be published.'
+        approvalInstructions: 'Review every package and disposition printed by the preceding preflight job, then press "Resume" to publish the pending workload packs.'
+        dryRunApprovalInstructions: 'DRY RUN: Review every package and disposition printed by the preceding preflight job, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     # Manifests reference packs, so manifest approval is unreachable until the pack stage
@@ -439,10 +475,10 @@ extends:
         setName: ReleaseManifests
         preparedArtifactName: PreparedReleaseManifests
         expectedWorkload: 'true'
-        publishPackages: ${{ parameters.publishPackages }}
+        publishPackages: ${{ eq(variables.publishPackages, 'true') }}
         dependsOn: [prepare_release, publish_packs]
-        approvalInstructions: 'Packs are verified. Review release-prune.json and the exact nupkgs in PreparedReleaseManifests, then press "Resume".'
-        dryRunApprovalInstructions: 'DRY RUN: The pack rehearsal succeeded. Review release-prune.json and the exact nupkgs in PreparedReleaseManifests, then press "Resume" to rehearse the manifest release job. Nothing will be published.'
+        approvalInstructions: 'Packs are verified. Review every manifest and disposition printed by the preceding preflight job, then press "Resume".'
+        dryRunApprovalInstructions: 'DRY RUN: The pack rehearsal succeeded. Review every manifest and disposition printed by the preceding preflight job, then press "Resume" to rehearse the manifest release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     - template: /eng/pipelines/stages/publish-set.yml@self
@@ -452,10 +488,10 @@ extends:
         setName: ReleasePackages
         preparedArtifactName: PreparedReleasePackages
         expectedWorkload: 'false'
-        publishPackages: ${{ parameters.publishPackages }}
+        publishPackages: ${{ eq(variables.publishPackages, 'true') }}
         dependsOn: [prepare_release]
-        approvalInstructions: 'Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to publish them.'
-        dryRunApprovalInstructions: 'DRY RUN: Review release-prune.json and the exact nupkgs in PreparedReleasePackages, then press "Resume" to rehearse the production release job. Nothing will be published.'
+        approvalInstructions: 'Review every package and disposition printed by the preceding preflight job, then press "Resume" to publish the pending packages.'
+        dryRunApprovalInstructions: 'DRY RUN: Review every package and disposition printed by the preceding preflight job, then press "Resume" to rehearse the production release job. Nothing will be published.'
         recoveryFilters: ${{ parameters.recoveryFilters }}
 
     # If the workload output is missing or invalid, all release stages skip. Turn that

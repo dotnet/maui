@@ -6,7 +6,7 @@ internal static class PrunePublishedCommand
 {
     public const string ReportFileName = "release-prune.json";
 
-    public static Command Build(IReleaseConsole console)
+    public static Command Build(TextWriter outputWriter)
     {
         var plan = new Option<FileInfo>("--plan")
         {
@@ -46,11 +46,11 @@ internal static class PrunePublishedCommand
         command.SetAction((parse, cancellationToken) =>
         {
             var planFile = parse.GetValue(plan)!;
-            using var checker = new FlatContainerExistenceChecker(parse.GetValue(feed));
+            using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
             return ExecuteAsync(
-                console,
-                new PackageAvailabilityProbe(checker),
+                outputWriter,
+                lookup,
                 File.ReadAllText(planFile.FullName),
                 parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
                 PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
@@ -62,9 +62,9 @@ internal static class PrunePublishedCommand
         return command;
     }
 
-    public static async Task<int> ExecuteAsync(
-        IReleaseConsole console,
-        IPackageAvailabilityProbe probe,
+    public static async Task ExecuteAsync(
+        TextWriter outputWriter,
+        INuGetPackageLookup lookup,
         string planJson,
         string stageDirectory,
         IReadOnlyList<string> recoveryPatterns,
@@ -73,91 +73,56 @@ internal static class PrunePublishedCommand
         CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
-        if (plan.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, plan.Errors);
-        }
+        var sets = ReleaseArtifact.SelectSets(plan, setName);
 
-        var sets = ReleaseArtifact.SelectSets(plan.Value, setName);
-        if (sets.IsFailure)
-        {
-            return ConsoleReporting.Fail(console, sets.Errors);
-        }
-
+        ReleaseOutput.WriteSelectedRelease(outputWriter, plan, sets, expectedPlanHash);
         var pending = 0;
 
-        foreach (var set in sets.Value)
+        foreach (var set in sets)
         {
             var setDirectory = ReleaseArtifact.GetSetDirectory(stageDirectory, set);
-            if (setDirectory.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, setDirectory.Errors);
-            }
 
-            var marker = ReleaseArtifact.ValidateSetMarker(
-                setDirectory.Value,
-                set,
-                plan.Value.Source,
-                setName);
-            if (marker.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, marker.Errors);
-            }
-
-            var availability = await probe
+            var availability = await lookup
                 .GetAvailabilityAsync(set.Packages, cancellationToken)
                 .ConfigureAwait(false);
             var report = PrunePublishedPlanner.Plan(
                 set,
-                plan.Value.AllPackages,
+                plan.AllPackages,
                 recoveryPatterns,
                 availability);
-            if (report.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, report.Errors);
-            }
-
-            var invalidFileName = report.Value.FilesToRemove
+            var invalidFileName = report.FilesToRemove
                 .FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
             if (invalidFileName is not null)
             {
-                return ConsoleReporting.Fail(console, [new ReleaseError(
-                    ErrorCodes.PlanSchemaInvalid,
-                    $"Package file name '{invalidFileName}' must not contain a directory.")]);
+                throw new DotNetReleaseException(
+                    $"Package file name '{invalidFileName}' must not contain a directory.");
             }
 
-            foreach (var fileName in report.Value.FilesToRemove)
+            foreach (var fileName in report.FilesToRemove)
             {
-                var path = Path.Combine(setDirectory.Value, fileName);
+                var path = Path.Combine(setDirectory, fileName);
                 if (File.Exists(path))
                 {
                     File.Delete(path);
                 }
 
-                console.WriteLine($"Withheld {fileName}.");
+                outputWriter.WriteLine($"Withheld {fileName}.");
             }
 
-            var integrity = StagedSetIntegrity.ValidateFiltered(
+            StagedSetIntegrity.ValidateFiltered(
                 set,
-                ReleaseArtifact.ReadPackageHashes(setDirectory.Value),
-                report.Value);
-            if (integrity.IsFailure)
-            {
-                return ConsoleReporting.Fail(console, integrity.Errors);
-            }
+                ReleaseArtifact.ReadPackageHashes(setDirectory),
+                report);
 
             await File.WriteAllTextAsync(
-                Path.Combine(setDirectory.Value, ReportFileName),
-                ReleasePlanSerializer.Serialize(report.Value),
+                Path.Combine(setDirectory, ReportFileName),
+                ReleasePlanSerializer.Serialize(report),
                 cancellationToken).ConfigureAwait(false);
 
-            console.WriteLine(
-                $"{set.Name}: {report.Value.PendingCount} of " +
-                $"{set.Packages.Count} remain to publish.");
-            pending += report.Value.PendingCount;
+            ReleaseOutput.WritePruneReport(outputWriter, set, report);
+            pending += report.PendingCount;
         }
 
-        console.WriteLine(AzurePipelineCommand.SetPackagesToPublish(pending > 0));
-        return ExitCodes.Success;
+        outputWriter.WriteLine(AzurePipelineCommand.SetPackagesToPublish(pending > 0));
     }
 }

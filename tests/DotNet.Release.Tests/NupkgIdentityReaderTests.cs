@@ -17,11 +17,10 @@ public class NupkgIdentityReaderTests : IDisposable
 
         var result = await _reader.ReadAsync(path, CancellationToken.None);
 
-        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
-        Assert.Equal("SkiaSharp", result.Value.Id);
-        Assert.Equal("3.119.0", result.Value.Version);
-        Assert.Equal("3.119.0", result.Value.NormalizedVersion);
-        Assert.Equal("SkiaSharp.3.119.0.nupkg", result.Value.FileName);
+        Assert.Equal("SkiaSharp", result.Id);
+        Assert.Equal("3.119.0", result.Version);
+        Assert.Equal("3.119.0", result.NormalizedVersion);
+        Assert.Equal("SkiaSharp.3.119.0.nupkg", result.FileName);
     }
 
     /// <summary>
@@ -35,12 +34,11 @@ public class NupkgIdentityReaderTests : IDisposable
 
         var result = await _reader.ReadAsync(path, CancellationToken.None);
 
-        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
-        Assert.Equal("SkiaSharp", result.Value.Id);
-        Assert.Equal("3.119.0", result.Value.Version);
+        Assert.Equal("SkiaSharp", result.Id);
+        Assert.Equal("3.119.0", result.Version);
 
         // The reader reports metadata as-is; StagePlanner applies filename policy.
-        Assert.Equal("totally-different-name.nupkg", result.Value.FileName);
+        Assert.Equal("totally-different-name.nupkg", result.FileName);
     }
 
     [Theory]
@@ -54,8 +52,7 @@ public class NupkgIdentityReaderTests : IDisposable
 
         var result = await _reader.ReadAsync(path, CancellationToken.None);
 
-        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
-        Assert.Equal(expected, result.Value.NormalizedVersion);
+        Assert.Equal(expected, result.NormalizedVersion);
     }
 
     [Fact]
@@ -66,7 +63,7 @@ public class NupkgIdentityReaderTests : IDisposable
         var result = await _reader.ReadAsync(path, CancellationToken.None);
 
         var expected = Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(path, CancellationToken.None)));
-        Assert.Equal(expected, result.Value.Sha256);
+        Assert.Equal(expected, result.Sha256);
     }
 
     [Fact]
@@ -75,25 +72,21 @@ public class NupkgIdentityReaderTests : IDisposable
         var a = await _reader.ReadAsync(_fixture.WritePackage("A", "1.0.0"), CancellationToken.None);
         var b = await _reader.ReadAsync(_fixture.WritePackage("B", "1.0.0"), CancellationToken.None);
 
-        Assert.NotEqual(a.Value.Sha256, b.Value.Sha256);
+        Assert.NotEqual(a.Sha256, b.Sha256);
     }
 
     [Fact]
     public async Task Missing_file_fails_closed()
     {
-        var result = await _reader.ReadAsync(Path.Combine(_fixture.Root, "nope.nupkg"), CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageFileMissing));
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => _reader.ReadAsync(Path.Combine(_fixture.Root, "nope.nupkg"), CancellationToken.None));
     }
 
     [Fact]
-    public async Task Corrupt_archive_fails_closed_rather_than_throwing()
+    public async Task Corrupt_archive_fails_with_a_release_exception()
     {
-        var result = await _reader.ReadAsync(_fixture.WriteCorruptPackage(), CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => _reader.ReadAsync(_fixture.WriteCorruptPackage(), CancellationToken.None));
     }
 
     [Fact]
@@ -101,10 +94,8 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage(nuspecEntryName: "not-a-nuspec.txt");
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => _reader.ReadAsync(path, CancellationToken.None));
     }
 
     [Fact]
@@ -112,10 +103,8 @@ public class NupkgIdentityReaderTests : IDisposable
     {
         var path = _fixture.WritePackage(nuspecOverride: "<package><metadata><id>Broken");
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => _reader.ReadAsync(path, CancellationToken.None));
     }
 
     [Fact]
@@ -132,10 +121,8 @@ public class NupkgIdentityReaderTests : IDisposable
             </package>
             """);
 
-        var result = await _reader.ReadAsync(path, CancellationToken.None);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => _reader.ReadAsync(path, CancellationToken.None));
     }
 
     /// <summary>
@@ -150,11 +137,9 @@ public class NupkgIdentityReaderTests : IDisposable
           "schemaVersion": 1,
           "repositories": { "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } } }
         }
-        """).Value;
+        """);
 
         var read = await _reader.ReadAsync(_fixture.WritePackage("SkiaSharp", "3.119.0.0", fileName: "SkiaSharp.3.119.0.nupkg"), CancellationToken.None);
-        Assert.True(read.IsSuccess, string.Join("; ", read.Errors));
-
         var resolved = new ResolvedRelease
         {
             ToolVersion = "1.0.0-test",
@@ -169,13 +154,11 @@ public class NupkgIdentityReaderTests : IDisposable
         };
 
         var plan = StagePlanner.Create(
-            resolved, policy, [read.Value], new StageOptions(),
+            resolved, policy, [read], new StageOptions(),
             DateTimeOffset.UnixEpoch, "1.0.0-test");
-
-        Assert.True(plan.IsSuccess, string.Join("; ", plan.Errors));
 
         // The nuspec said 3.119.0.0; NuGet normalizes it to 3.119.0, which is what the
         // availability query will use.
-        Assert.Equal("3.119.0", plan.Value.Sets[0].Packages[0].NormalizedVersion);
+        Assert.Equal("3.119.0", plan.Sets[0].Packages[0].NormalizedVersion);
     }
 }

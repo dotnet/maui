@@ -14,10 +14,9 @@ public class PrunePublishedPlannerTests
     {
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
-        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
-        Assert.Equal(2, report.Value.PendingCount);
-        Assert.True(report.Value.HasPackagesToPublish);
-        Assert.Empty(report.Value.FilesToRemove);
+        Assert.Equal(2, report.PendingCount);
+        Assert.True(report.HasPackagesToPublish);
+        Assert.Empty(report.FilesToRemove);
     }
 
     /// <summary>
@@ -29,13 +28,12 @@ public class PrunePublishedPlannerTests
     {
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
-        Assert.Equal(1, report.Value.PendingCount);
-        Assert.Equal([Skia.FileName], report.Value.FilesToRemove);
+        Assert.Equal(1, report.PendingCount);
+        Assert.Equal([Skia.FileName], report.FilesToRemove);
 
         Assert.Equal(
             PackageDisposition.AlreadyPublished,
-            report.Value.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
+            report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
     }
 
     [Fact]
@@ -43,9 +41,8 @@ public class PrunePublishedPlannerTests
     {
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, true)));
 
-        Assert.True(report.IsSuccess);
-        Assert.Equal(0, report.Value.PendingCount);
-        Assert.False(report.Value.HasPackagesToPublish);
+        Assert.Equal(0, report.PendingCount);
+        Assert.False(report.HasPackagesToPublish);
     }
 
     /// <summary>
@@ -61,11 +58,10 @@ public class PrunePublishedPlannerTests
             [Skia.FileName],
             TestData.Availability((Skia, false), (HarfBuzz, false)));
 
-        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
         Assert.Equal(
             PackageDisposition.PreviouslyAttempted,
-            report.Value.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
-        Assert.Equal(1, report.Value.PendingCount);
+            report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
+        Assert.Equal(1, report.PendingCount);
     }
 
     [Fact]
@@ -77,8 +73,7 @@ public class PrunePublishedPlannerTests
             ["SkiaSharp.*"],
             TestData.Availability((Skia, false), (HarfBuzz, false)));
 
-        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
-        Assert.Equal([Skia.FileName], report.Value.FilesToRemove);
+        Assert.Equal([Skia.FileName], report.FilesToRemove);
     }
 
     /// <summary>
@@ -88,23 +83,20 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filter_matching_nothing_fails_closed()
     {
-        var report = PrunePublishedPlanner.Plan(
+        var exception = Assert.Throws<DotNetReleaseException>(() => PrunePublishedPlanner.Plan(
             Set,
             Set.Packages,
             ["Typo.*"],
-            TestData.Availability((Skia, false), (HarfBuzz, false)));
+            TestData.Availability((Skia, false), (HarfBuzz, false))));
 
-        Assert.True(report.IsFailure);
-        Assert.True(report.HasError(ErrorCodes.FilterUnmatched));
-        Assert.Contains("Typo.*", report.Errors[0].Message, StringComparison.Ordinal);
+        Assert.Contains("Typo.*", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
     public void Missing_availability_is_never_treated_as_unpublished()
     {
-        var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false)));
-
-        Assert.True(report.IsFailure);
+        Assert.Throws<DotNetReleaseException>(() =>
+            PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false))));
     }
 
     [Fact]
@@ -120,7 +112,7 @@ public class PrunePublishedPlannerTests
     {
         var report = PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        Assert.Equal(Set.Packages.Count, report.Value.Decisions.Count);
+        Assert.Equal(Set.Packages.Count, report.Decisions.Count);
     }
 
     [Fact]
@@ -136,8 +128,7 @@ public class PrunePublishedPlannerTests
             [manifest.FileName],
             TestData.Availability((Skia, false), (HarfBuzz, false)));
 
-        Assert.True(report.IsSuccess, string.Join("; ", report.Errors));
-        Assert.Equal(2, report.Value.PendingCount);
-        Assert.Empty(report.Value.FilesToRemove);
+        Assert.Equal(2, report.PendingCount);
+        Assert.Empty(report.FilesToRemove);
     }
 }

@@ -16,7 +16,6 @@
         Model/       the data those decisions operate on, and its serialization
         Adapters/    the only I/O: read-only BAR and NuGet access, reading .nupkg files
         project root   verbs and argument parsing
-        Abstractions/ the interfaces Policy and Cli depend on, so tests never touch a network
 
       Dependencies are chosen for what they can do, not just what they provide:
 

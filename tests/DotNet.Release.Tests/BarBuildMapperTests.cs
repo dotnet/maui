@@ -60,7 +60,7 @@ public class BarBuildMapperTests
         Assert.Null(mapped.GitHubRepository);
 
         // Identity is still established, from the mirror name, and still verifiable.
-        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).Value.FullName);
+        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).FullName);
         Assert.Equal(new ChannelReference(".NET Libraries", 1648), Assert.Single(mapped.Channels));
     }
 
@@ -75,7 +75,7 @@ public class BarBuildMapperTests
         Assert.Equal("https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", mapped.AzureDevOpsRepository);
 
         // End to end: the mapped build must resolve through the mirror convention.
-        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).Value.FullName);
+        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).FullName);
     }
 
     [Theory]

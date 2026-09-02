@@ -16,15 +16,14 @@ public class PackageVersionsTests
     {
         var normalized = PackageVersions.Normalize(version);
 
-        Assert.True(normalized.IsSuccess, string.Join("; ", normalized.Errors));
-        Assert.Equal(expected, normalized.Value);
+        Assert.Equal(expected, normalized);
     }
 
     [Fact]
     public void Trailing_zero_components_are_dropped()
     {
-        Assert.Equal("3.119.0", PackageVersions.Normalize("3.119.0.0").Value);
-        Assert.Equal("8.3.1.5", PackageVersions.Normalize("8.3.1.5").Value);
+        Assert.Equal("3.119.0", PackageVersions.Normalize("3.119.0.0"));
+        Assert.Equal("8.3.1.5", PackageVersions.Normalize("8.3.1.5"));
     }
 
     [Theory]
@@ -33,10 +32,7 @@ public class PackageVersionsTests
     [InlineData("not-a-version")]
     public void Invalid_versions_fail_closed(string? version)
     {
-        var result = PackageVersions.Normalize(version);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageMalformed));
+        Assert.Throws<DotNetReleaseException>(() => PackageVersions.Normalize(version));
     }
 
     [Fact]

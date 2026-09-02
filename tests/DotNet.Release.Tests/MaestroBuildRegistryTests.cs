@@ -4,7 +4,7 @@ namespace DotNet.Release.Tests;
 
 public class MaestroBuildRegistryTests
 {
-    private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp").Value;
+    private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp");
 
     // ---- resolution by BAR ID ----
 
@@ -127,7 +127,7 @@ public class MaestroBuildRegistryTests
             "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
           }
         }
-        """).Value;
+        """);
 
         var fake = new FakeBuilds(list: (_, _) => [BuildFactory.Create(channels: [(1648, ".NET Libraries")])]);
 
@@ -135,13 +135,12 @@ public class MaestroBuildRegistryTests
 
         var resolved = BuildResolver.Resolve(
             new ReleaseRequest(Skia, BuildFactory.Commit, null),
-            policy.GetRepository(Skia).Value,
+            policy.GetRepository(Skia),
             builds,
             DateTimeOffset.UnixEpoch,
             "1.0.0-test");
 
-        Assert.True(resolved.IsSuccess, string.Join("; ", resolved.Errors));
-        Assert.Equal(new ChannelReference(".NET Libraries", 1648), resolved.Value.Channel);
+        Assert.Equal(new ChannelReference(".NET Libraries", 1648), resolved.Channel);
     }
 
     [Fact]
@@ -188,7 +187,7 @@ public class MaestroBuildRegistryTests
             "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
           }
         }
-        """).Value;
+        """);
 
         var fake = new FakeBuilds(getById: id => BuildFactory.Create(
             id: id,
@@ -200,15 +199,14 @@ public class MaestroBuildRegistryTests
 
         var resolved = BuildResolver.Resolve(
             new ReleaseRequest(Skia, BuildFactory.Commit, BarBuildId: 328857),
-            policy.GetRepository(Skia).Value,
+            policy.GetRepository(Skia),
             builds,
             DateTimeOffset.UnixEpoch,
             "1.0.0-test");
 
-        Assert.True(resolved.IsSuccess, string.Join("; ", resolved.Errors));
-        Assert.Equal("dotnet/skiasharp", resolved.Value.Repository);
-        Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.Value.RepositoryOrigin);
-        Assert.Equal(328857, resolved.Value.BarBuildId);
+        Assert.Equal("dotnet/skiasharp", resolved.Repository);
+        Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
+        Assert.Equal(328857, resolved.BarBuildId);
     }
 
     [Fact]

@@ -30,12 +30,12 @@ internal static class StagedSetIntegrity
     /// <b>Contract:</b> this must contain <i>only</i> the directory's <c>.nupkg</c> files.
     /// The unexpected-file rule is scoped by extension at the point of enumeration, never by
     /// allow-listing companion file names here. Companion files — <c>release-plan.json</c>,
-    /// <c>release-set.json</c>, and anything added later — are simply never observed, so
+    /// and anything added later — are simply never observed, so
     /// adding one requires no allow-list update. The invariant remains scoped to every
     /// <c>.nupkg</c> file in the directory tree.
     /// </para>
     /// </param>
-    public static Result<bool> ValidateStaged(
+    public static void ValidateStaged(
         ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed) =>
         Validate(set, observed, _ => PackageDisposition.Pending);
@@ -44,7 +44,7 @@ internal static class StagedSetIntegrity
     /// Validates the staging directory after pruning, using the recorded
     /// dispositions.
     /// </summary>
-    public static Result<bool> ValidateFiltered(
+    public static void ValidateFiltered(
         ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed,
         PruneReport report)
@@ -56,13 +56,13 @@ internal static class StagedSetIntegrity
             d => d.Disposition,
             StringComparer.OrdinalIgnoreCase);
 
-        return Validate(
+        Validate(
             set,
             observed,
             fileName => dispositions.TryGetValue(fileName, out var d) ? d : PackageDisposition.Pending);
     }
 
-    private static Result<bool> Validate(
+    private static void Validate(
         ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed,
         Func<string, PackageDisposition> dispositionOf)
@@ -70,7 +70,7 @@ internal static class StagedSetIntegrity
         ArgumentNullException.ThrowIfNull(set);
         ArgumentNullException.ThrowIfNull(observed);
 
-        var errors = new List<ReleaseError>();
+        var errors = new List<string>();
         var planned = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var package in set.Packages)
@@ -82,40 +82,39 @@ internal static class StagedSetIntegrity
 
             if (shouldBePresent && !isPresent)
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageFileMissing,
+                errors.Add(
                     $"'{set.Name}' expects '{package.FileName}' to be staged for publication, " +
-                    "but it is not present."));
+                    "but it is not present.");
                 continue;
             }
 
             if (!shouldBePresent && isPresent)
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageFileUnexpected,
+                errors.Add(
                     $"'{package.FileName}' was withheld from publication but is still staged; " +
-                    "it would be pushed by the publish glob."));
+                    "it would be pushed by the publish glob.");
                 continue;
             }
 
             if (isPresent && !string.Equals(actualHash, package.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageHashMismatch,
+                errors.Add(
                     $"'{package.FileName}' has hash '{actualHash}' but the plan recorded " +
-                    $"'{package.Sha256}'. It is not the file that was validated."));
+                    $"'{package.Sha256}'. It is not the file that was validated.");
             }
         }
 
         // Anything in the directory the plan does not mention would be published unreviewed.
         foreach (var fileName in observed.Keys.Where(f => !planned.Contains(f)).Order(StringComparer.Ordinal))
         {
-            errors.Add(new ReleaseError(
-                ErrorCodes.PackageFileUnexpected,
+            errors.Add(
                 $"Staging directory for '{set.Name}' contains '{fileName}', which the release " +
-                "plan does not list."));
+                "plan does not list.");
         }
 
-        return errors.Count > 0 ? Result<bool>.Failure(errors) : Result<bool>.Success(true);
+        if (errors.Count > 0)
+        {
+            throw new DotNetReleaseException(errors);
+        }
     }
 }

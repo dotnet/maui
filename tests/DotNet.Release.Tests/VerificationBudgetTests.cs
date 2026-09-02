@@ -9,7 +9,7 @@ public class VerificationBudgetTests : IDisposable
     private const int DefaultPollSeconds = 20;
 
     private readonly Workspace _workspace = new();
-    private readonly RecordingConsole _console = new();
+    private readonly RecordingWriter _output = new();
 
     private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
 
@@ -26,7 +26,7 @@ public class VerificationBudgetTests : IDisposable
             Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
 
         await PlanCommand.ExecuteAsync(
-            _console,
+            _output,
             registry,
             Workspace.PolicyJson,
             "dotnet/skiasharp",
@@ -37,8 +37,8 @@ public class VerificationBudgetTests : IDisposable
             "1.0.0-test",
             CancellationToken.None);
 
-        Assert.Equal(ExitCodes.Success, await StageCommand.ExecuteAsync(
-            _console,
+        await StageCommand.ExecuteAsync(
+            _output,
             Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop,
@@ -46,18 +46,18 @@ public class VerificationBudgetTests : IDisposable
             new StageOptions(),
             Workspace.Now,
             "1.0.0-test",
-            CancellationToken.None));
+            CancellationToken.None);
     }
 
-    private Task<int> Verify(
-        IPackageAvailabilityProbe probe,
+    private Task Verify(
+        INuGetPackageLookup probe,
         int deadlineMinutes,
         int pollSeconds = DefaultPollSeconds)
     {
         var now = Workspace.Now;
 
         return VerifyCommand.ExecuteAsync(
-            _console,
+            _output,
             probe,
             _workspace.ReadPlan(),
             TimeSpan.FromMinutes(deadlineMinutes),
@@ -69,7 +69,6 @@ public class VerificationBudgetTests : IDisposable
                 return Task.CompletedTask;
             },
             null,
-            _workspace.Out,
             PlanHash,
             CancellationToken.None);
     }
@@ -81,7 +80,7 @@ public class VerificationBudgetTests : IDisposable
 
         var probe = new FakeProbe { AllAvailableAfterCall = 29 };
 
-        Assert.Equal(ExitCodes.Success, await Verify(probe, DefaultDeadlineMinutes));
+        await Verify(probe, DefaultDeadlineMinutes);
         Assert.Equal(29, probe.Calls);
     }
 
@@ -92,7 +91,7 @@ public class VerificationBudgetTests : IDisposable
 
         var probe = new FakeProbe { AllAvailableAfterCall = 89 };
 
-        Assert.Equal(ExitCodes.Success, await Verify(probe, DefaultDeadlineMinutes));
+        await Verify(probe, DefaultDeadlineMinutes);
         Assert.Equal(89, probe.Calls);
     }
 
@@ -101,11 +100,9 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(41);
 
-        var exit = await Verify(
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Verify(
             new FakeProbe { AllAvailableAfterCall = 29 },
-            deadlineMinutes: 5);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
+            deadlineMinutes: 5));
     }
 
     [Fact]
@@ -115,7 +112,6 @@ public class VerificationBudgetTests : IDisposable
 
         var straggler = ReleasePlanSerializer
             .DeserializePlan(_workspace.ReadPlan())
-            .Value
             .AllPackages
             .Last();
 
@@ -125,7 +121,7 @@ public class VerificationBudgetTests : IDisposable
             AvailableAfterCall = { [straggler.IdentityKey] = 29 },
         };
 
-        Assert.Equal(ExitCodes.Success, await Verify(probe, DefaultDeadlineMinutes));
+        await Verify(probe, DefaultDeadlineMinutes);
         Assert.Equal(29, probe.Calls);
     }
 
@@ -134,17 +130,41 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(3);
 
-        var exit = await Verify(new FakeProbe(), deadlineMinutes: 1);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Verify(new FakeProbe(), deadlineMinutes: 1));
+        Assert.Contains("not available from NuGet.org", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Package00 1.0.0", exception.Message, StringComparison.Ordinal);
+    }
 
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains("not available from NuGet.org", _console.AllErrors, StringComparison.Ordinal);
-        Assert.Contains("Package00 1.0.0", _console.AllErrors, StringComparison.Ordinal);
+    [Fact]
+    public void Verification_treats_false_and_unknown_identities_as_missing()
+    {
+        var skia = TestData.Planned("SkiaSharp", "3.119.0");
+        var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+
+        var missing = VerifyCommand.GetMissing(
+            [skia, harfBuzz],
+            TestData.Availability((skia, false)));
+
+        Assert.Equal(["SkiaSharp", "HarfBuzzSharp"], missing.Select(package => package.Id));
+    }
+
+    [Fact]
+    public void Verification_failure_message_has_a_stable_identity_order()
+    {
+        var skia = TestData.Planned("SkiaSharp", "3.119.0");
+        var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
+
+        Assert.Equal(
+            "The following packages are not available from NuGet.org: " +
+            "HarfBuzzSharp 8.3.1, SkiaSharp 3.119.0",
+            VerifyCommand.DescribeMissing([skia, harfBuzz]));
     }
 }
 
 internal sealed class FlakyProbe(
     int failUntilCall,
-    string[] published) : IPackageAvailabilityProbe
+    string[] published) : INuGetPackageLookup
 {
     private readonly HashSet<string> _published =
         new(published, StringComparer.OrdinalIgnoreCase);

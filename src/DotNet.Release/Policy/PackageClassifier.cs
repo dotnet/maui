@@ -14,14 +14,13 @@ internal static partial class PackageClassifier
     /// Derives the single .NET band shared by every manifest from the
     /// <c>.Manifest-&lt;major&gt;.</c> filename segment.
     /// </summary>
-    public static Result<int> GetWorkloadBand(IReadOnlyList<string> manifestFileNames)
+    public static int GetWorkloadBand(IReadOnlyList<string> manifestFileNames)
     {
         ArgumentNullException.ThrowIfNull(manifestFileNames);
 
         if (manifestFileNames.Count == 0)
         {
-            return Result<int>.Failure(
-                ErrorCodes.WorkloadBandUnresolved,
+            throw new DotNetReleaseException(
                 "A workload release must contain at least one manifest to derive the .NET band from.");
         }
 
@@ -31,8 +30,7 @@ internal static partial class PackageClassifier
             var match = BandPattern().Match(fileName);
             if (!match.Success)
             {
-                return Result<int>.Failure(
-                    ErrorCodes.WorkloadBandUnresolved,
+                throw new DotNetReleaseException(
                     $"Could not determine the workload band from manifest '{fileName}'; " +
                     "expected a '.Manifest-<major>.' segment.");
             }
@@ -40,11 +38,13 @@ internal static partial class PackageClassifier
             bands.Add(int.Parse(match.Groups["major"].ValueSpan));
         }
 
-        return bands.Count == 1
-            ? Result<int>.Success(bands.Min)
-            : Result<int>.Failure(
-                ErrorCodes.WorkloadBandAmbiguous,
+        if (bands.Count != 1)
+        {
+            throw new DotNetReleaseException(
                 $"Expected one workload major version, found: {string.Join(", ", bands)}.");
+        }
+
+        return bands.Min;
     }
 
     [GeneratedRegex(@"\.Manifest-(?<major>\d+)\.", RegexOptions.IgnoreCase)]

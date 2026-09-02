@@ -13,7 +13,7 @@ namespace DotNet.Release;
 internal sealed class NupkgIdentityReader
 {
     /// <inheritdoc />
-    public async Task<Result<DropPackage>> ReadAsync(string packageFilePath, CancellationToken cancellationToken)
+    public async Task<DropPackage> ReadAsync(string packageFilePath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageFilePath);
 
@@ -21,9 +21,7 @@ internal sealed class NupkgIdentityReader
 
         if (!File.Exists(packageFilePath))
         {
-            return Result<DropPackage>.Failure(
-                ErrorCodes.PackageFileMissing,
-                $"Package file '{packageFilePath}' was not found.");
+            throw new DotNetReleaseException($"Package file '{packageFilePath}' was not found.");
         }
 
         string id;
@@ -36,9 +34,7 @@ internal sealed class NupkgIdentityReader
 
             if (identity is null || string.IsNullOrWhiteSpace(identity.Id) || identity.Version is null)
             {
-                return Result<DropPackage>.Failure(
-                    ErrorCodes.PackageMalformed,
-                    $"Package '{fileName}' has no ID or version.");
+                throw new DotNetReleaseException($"Package '{fileName}' has no ID or version.");
             }
 
             id = identity.Id.Trim();
@@ -51,20 +47,14 @@ internal sealed class NupkgIdentityReader
             or global::NuGet.Packaging.Core.PackagingException
             or System.Xml.XmlException)
         {
-            return Result<DropPackage>.Failure(
-                ErrorCodes.PackageMalformed,
+            throw new DotNetReleaseException(
                 $"Package '{fileName}' could not be read: {ex.Message}");
         }
 
         var normalized = PackageVersions.Normalize(version);
-        if (normalized.IsFailure)
-        {
-            return normalized.ToFailure<DropPackage>();
-        }
-
         var sha256 = await ComputeSha256Async(packageFilePath, cancellationToken).ConfigureAwait(false);
 
-        return Result<DropPackage>.Success(new DropPackage(fileName, id, version, normalized.Value, sha256));
+        return new DropPackage(fileName, id, version, normalized, sha256);
     }
 
     private static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)

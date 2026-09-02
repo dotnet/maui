@@ -14,7 +14,7 @@ public class StagedSetIntegrityTests
     [Fact]
     public void Freshly_staged_directory_matching_the_plan_is_valid()
     {
-        Assert.True(StagedSetIntegrity.ValidateStaged(Set, Files(Skia, HarfBuzz)).IsSuccess);
+        StagedSetIntegrity.ValidateStaged(Set, Files(Skia, HarfBuzz));
     }
 
     [Fact]
@@ -22,12 +22,7 @@ public class StagedSetIntegrityTests
     {
         var files = Files(Skia, HarfBuzz);
         files["release-plan.json"] = TestData.Hash("plan");
-        files["release-set.json"] = TestData.Hash("marker");
-
-        var result = StagedSetIntegrity.ValidateStaged(Set, files);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageFileUnexpected));
+        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
     }
 
     [Fact]
@@ -36,18 +31,14 @@ public class StagedSetIntegrityTests
         var files = Files(Skia, HarfBuzz);
         files["Sneaky.1.0.0.nupkg"] = TestData.Hash("sneaky");
 
-        Assert.True(
-            StagedSetIntegrity.ValidateStaged(Set, files)
-                .HasError(ErrorCodes.PackageFileUnexpected));
+        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
     }
 
     [Fact]
     public void Missing_pending_file_fails_closed()
     {
-        var result = StagedSetIntegrity.ValidateStaged(Set, Files(Skia));
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageFileMissing));
+        Assert.Throws<DotNetReleaseException>(
+            () => StagedSetIntegrity.ValidateStaged(Set, Files(Skia)));
     }
 
     [Fact]
@@ -56,10 +47,7 @@ public class StagedSetIntegrityTests
         var files = Files(Skia, HarfBuzz);
         files[Skia.FileName] = TestData.Hash("tampered");
 
-        var result = StagedSetIntegrity.ValidateStaged(Set, files);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageHashMismatch));
+        Assert.Throws<DotNetReleaseException>(() => StagedSetIntegrity.ValidateStaged(Set, files));
     }
 
     [Fact]
@@ -69,9 +57,9 @@ public class StagedSetIntegrityTests
             Set,
             Set.Packages,
             [],
-            TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
+            TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        Assert.True(StagedSetIntegrity.ValidateFiltered(Set, Files(HarfBuzz), report).IsSuccess);
+        StagedSetIntegrity.ValidateFiltered(Set, Files(HarfBuzz), report);
     }
 
     [Fact]
@@ -81,12 +69,10 @@ public class StagedSetIntegrityTests
             Set,
             Set.Packages,
             [],
-            TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
+            TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        var result = StagedSetIntegrity.ValidateFiltered(Set, Files(Skia, HarfBuzz), report);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PackageFileUnexpected));
+        Assert.Throws<DotNetReleaseException>(
+            () => StagedSetIntegrity.ValidateFiltered(Set, Files(Skia, HarfBuzz), report));
     }
 
     [Fact]
@@ -96,13 +82,26 @@ public class StagedSetIntegrityTests
             Set,
             Set.Packages,
             [HarfBuzz.FileName],
-            TestData.Availability((Skia, true), (HarfBuzz, false))).Value;
+            TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        Assert.True(
-            StagedSetIntegrity.ValidateFiltered(
-                Set,
-                new Dictionary<string, string>(),
-                report).IsSuccess);
+        StagedSetIntegrity.ValidateFiltered(
+            Set,
+            new Dictionary<string, string>(),
+            report);
         Assert.Equal(0, report.PendingCount);
+    }
+
+    [Fact]
+    public void Package_hash_enumeration_is_extension_scoped()
+    {
+        using var workspace = new Workspace();
+        var directory = workspace.StagedSet(StagePlanner.PackagesArtifactName);
+        Directory.CreateDirectory(Path.Combine(directory, "diagnostics"));
+        File.WriteAllText(Path.Combine(directory, Skia.FileName), "package");
+        File.WriteAllText(Path.Combine(directory, "release-audit.md"), "companion");
+        File.WriteAllText(Path.Combine(directory, "diagnostics", "release.log"), "companion");
+        File.WriteAllText(Path.Combine(directory, "nupkg-lookalike.nupkg.txt"), "companion");
+
+        Assert.Equal([Skia.FileName], ReleaseArtifact.ReadPackageHashes(directory).Keys);
     }
 }

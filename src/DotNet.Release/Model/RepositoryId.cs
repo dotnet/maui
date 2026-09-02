@@ -25,25 +25,20 @@ internal readonly record struct RepositoryId
     public string GitHubUrl => $"https://github.com/{Owner}/{Name}";
 
     /// <summary>Parses the <c>owner/name</c> form used by the policy file and the CLI.</summary>
-    public static Result<RepositoryId> Parse(string? value)
+    public static RepositoryId Parse(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.RepositoryUnparseable,
-                "A repository must be supplied as 'owner/name'.");
+            throw new DotNetReleaseException("A repository must be supplied as 'owner/name'.");
         }
 
         var parts = value.Trim().Split('/');
         if (parts.Length != 2 || parts.Any(string.IsNullOrWhiteSpace))
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.RepositoryUnparseable,
-                $"Repository '{value}' is not in 'owner/name' form.");
+            throw new DotNetReleaseException($"Repository '{value}' is not in 'owner/name' form.");
         }
 
-        return Result<RepositoryId>.Success(
-            new RepositoryId(Normalize(parts[0]), Normalize(parts[1])));
+        return new RepositoryId(Normalize(parts[0]), Normalize(parts[1]));
     }
 
     /// <summary>
@@ -51,22 +46,18 @@ internal readonly record struct RepositoryId
     /// stores: a trailing slash, a <c>.git</c> suffix, a <c>www.</c> host, and query or
     /// fragment noise.
     /// </summary>
-    public static Result<RepositoryId> FromGitHubUrl(string? url)
+    public static RepositoryId FromGitHubUrl(string? url)
     {
         if (string.IsNullOrWhiteSpace(url) ||
             !Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.RepositoryUnparseable,
-                $"'{url}' is not an absolute repository URL.");
+            throw new DotNetReleaseException($"'{url}' is not an absolute repository URL.");
         }
 
         var host = uri.Host.ToLowerInvariant();
         if (host is not ("github.com" or "www.github.com"))
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.RepositoryUnparseable,
-                $"Repository URL '{url}' is not hosted on github.com.");
+            throw new DotNetReleaseException($"Repository URL '{url}' is not hosted on github.com.");
         }
 
         var path = uri.GetLeftPart(UriPartial.Path)[uri.GetLeftPart(UriPartial.Authority).Length..]
@@ -90,12 +81,11 @@ internal readonly record struct RepositoryId
     /// a GitHub API 404). Such a build is reachable only by BAR ID, and its identity must
     /// still be established from the mirror identity.
     /// </remarks>
-    public static Result<RepositoryId> FromAzureDevOpsMirror(string? azureDevOpsRepository)
+    public static RepositoryId FromAzureDevOpsMirror(string? azureDevOpsRepository)
     {
         if (string.IsNullOrWhiteSpace(azureDevOpsRepository))
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.BarMirrorNameInvalid,
+            throw new DotNetReleaseException(
                 "The build has neither a GitHub repository nor an Azure DevOps repository.");
         }
 
@@ -103,14 +93,12 @@ internal readonly record struct RepositoryId
         var separator = mirrorName.IndexOf('-', StringComparison.Ordinal);
         if (separator <= 0 || separator == mirrorName.Length - 1)
         {
-            return Result<RepositoryId>.Failure(
-                ErrorCodes.BarMirrorNameInvalid,
+            throw new DotNetReleaseException(
                 $"The build has no GitHub repository and mirror name '{mirrorName}' does not " +
                 "follow the '<owner>-<name>' convention, so its identity cannot be established.");
         }
 
-        return Result<RepositoryId>.Success(
-            new RepositoryId(mirrorName[..separator], mirrorName[(separator + 1)..]));
+        return new RepositoryId(mirrorName[..separator], mirrorName[(separator + 1)..]);
     }
 
     private static string Normalize(string value) => value.Trim().ToLowerInvariant();

@@ -5,18 +5,17 @@ internal static class ReleaseArtifact
 {
     public const string PlanFileName = "release-plan.json";
 
-    internal static Result<string> GetSetDirectory(
+    internal static string GetSetDirectory(
         string stageDirectory,
         ReleasePackageSet set)
     {
         if (!IsSinglePathComponent(set.ArtifactName))
         {
-            return Result<string>.Failure(
-                ErrorCodes.PlanSchemaInvalid,
+            throw new DotNetReleaseException(
                 $"Package set artifact name '{set.ArtifactName}' must be one directory name.");
         }
 
-        return Result<string>.Success(Path.Combine(stageDirectory, set.ArtifactName));
+        return Path.Combine(stageDirectory, set.ArtifactName);
     }
 
     internal static bool IsSinglePathComponent(string value) =>
@@ -45,30 +44,7 @@ internal static class ReleaseArtifact
         return hashes;
     }
 
-    internal static Result<bool> ValidateSetMarker(
-        string setDirectory,
-        ReleasePackageSet set,
-        ResolvedRelease source,
-        string? requestedSetName)
-    {
-        if (string.IsNullOrWhiteSpace(requestedSetName))
-        {
-            return Result<bool>.Success(true);
-        }
-
-        var markerPath = Path.Combine(setDirectory, ReleaseSetMarker.FileName);
-        if (!File.Exists(markerPath))
-        {
-            return ReleaseSetMarker.Validate(null, set, source);
-        }
-
-        var marker = ReleasePlanSerializer.DeserializeSetMarker(File.ReadAllText(markerPath));
-        return marker.IsFailure
-            ? marker.ToFailure<bool>()
-            : ReleaseSetMarker.Validate(marker.Value, set, source);
-    }
-
-    internal static Result<IReadOnlyList<ReleasePackageSet>> SelectSets(
+    internal static IReadOnlyList<ReleasePackageSet> SelectSets(
         ReleasePlan plan,
         string? setName)
     {
@@ -76,7 +52,7 @@ internal static class ReleaseArtifact
 
         if (string.IsNullOrWhiteSpace(setName))
         {
-            return Result<IReadOnlyList<ReleasePackageSet>>.Success(ordered);
+            return ordered;
         }
 
         var matched = ordered
@@ -86,11 +62,13 @@ internal static class ReleaseArtifact
                 StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        return matched.Count > 0
-            ? Result<IReadOnlyList<ReleasePackageSet>>.Success(matched)
-            : Result<IReadOnlyList<ReleasePackageSet>>.Failure(
-                ErrorCodes.PackageSetNotFound,
+        if (matched.Count == 0)
+        {
+            throw new DotNetReleaseException(
                 $"The release plan has no package set named '{setName}'. It contains: " +
                 $"{string.Join(", ", ordered.Select(set => set.ArtifactName))}.");
+        }
+
+        return matched;
     }
 }

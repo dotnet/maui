@@ -7,21 +7,21 @@ public class VerbsTests : IDisposable
     private static readonly ChannelReference Libraries = new(".NET Libraries", 1648);
 
     private readonly Workspace _workspace = new();
-    private readonly RecordingConsole _console = new();
+    private readonly RecordingWriter _output = new();
 
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
     private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task<int> Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
+    private Task Plan(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) =>
         PlanCommand.ExecuteAsync(
-            _console, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId,
+            _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
-    private Task<int> Stage(StageOptions? options = null) =>
+    private Task Stage(StageOptions? options = null) =>
         StageCommand.ExecuteAsync(
-            _console, Workspace.PolicyJson,
+            _output, Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop, _workspace.Out, options ?? new StageOptions(),
             Workspace.Now, "1.0.0-test", CancellationToken.None);
@@ -31,13 +31,26 @@ public class VerbsTests : IDisposable
     [Fact]
     public async Task Plan_writes_the_resolved_release_and_emits_pipeline_outputs()
     {
-        var exit = await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
-
-        Assert.Equal(ExitCodes.Success, exit);
+        await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
         Assert.True(File.Exists(Path.Combine(_workspace.Out, PlanCommand.FileName)));
 
-        Assert.Contains("##vso[task.setvariable variable=BarId;isOutput=true]4242", _console.Output);
-        Assert.Contains("##vso[task.setvariable variable=IsWorkload;isOutput=true]false", _console.Output);
+        var output = _output.AllOutput;
+        Assert.Contains("Schema version    : 1", output, StringComparison.Ordinal);
+        Assert.Contains("Tool version      : 1.0.0-test", output, StringComparison.Ordinal);
+        Assert.Contains($"Created UTC       : {Workspace.Now:O}", output, StringComparison.Ordinal);
+        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains(
+            "Repository URL    : https://github.com/dotnet/skiasharp",
+            output,
+            StringComparison.Ordinal);
+        Assert.Contains($"Commit            : {Workspace.Commit}", output, StringComparison.Ordinal);
+        Assert.Contains("BAR build ID      : 4242", output, StringComparison.Ordinal);
+        Assert.Contains("Repository origin : GitHubRepository", output, StringComparison.Ordinal);
+        Assert.Contains("Workload          : False", output, StringComparison.Ordinal);
+        Assert.Contains("Channel name      : .NET Libraries", output, StringComparison.Ordinal);
+        Assert.Contains("Channel ID        : 1648", output, StringComparison.Ordinal);
+        Assert.Contains("##vso[task.setvariable variable=BarId;isOutput=true]4242", _output.Output);
+        Assert.Contains("##vso[task.setvariable variable=IsWorkload;isOutput=true]false", _output.Output);
     }
 
     [Fact]
@@ -45,26 +58,23 @@ public class VerbsTests : IDisposable
     {
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        Assert.Equal(2, _console.Output.Count(l => l.StartsWith("##vso[", StringComparison.Ordinal)));
+        Assert.Equal(2, _output.Output.Count(l => l.StartsWith("##vso[", StringComparison.Ordinal)));
     }
 
     [Fact]
     public async Task Plan_fails_closed_for_a_repository_outside_the_policy()
     {
-        var exit = await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)), repo: "dotnet/runtime");
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.RepositoryNotAllowed, _console.AllErrors, StringComparison.Ordinal);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Plan(new FakeRegistry(Workspace.Build(channels: Libraries)), repo: "dotnet/runtime"));
+        Assert.Contains("not enabled for release", exception.Message, StringComparison.Ordinal);
         Assert.False(File.Exists(Path.Combine(_workspace.Out, PlanCommand.FileName)));
     }
 
     [Fact]
     public async Task Plan_fails_closed_when_the_channel_is_missing()
     {
-        var exit = await Plan(new FakeRegistry(Workspace.Build()));
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.BarChannelMissing, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Plan(new FakeRegistry(Workspace.Build())));
     }
 
     [Fact]
@@ -85,8 +95,8 @@ public class VerbsTests : IDisposable
             4242, Workspace.Commit, null,
             "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]));
 
-        Assert.Equal(ExitCodes.Success, await Plan(registry, barId: 4242));
-        Assert.Contains("AzureDevOpsMirrorConvention", _console.AllOutput, StringComparison.Ordinal);
+        await Plan(registry, barId: 4242);
+        Assert.Contains("AzureDevOpsMirrorConvention", _output.AllOutput, StringComparison.Ordinal);
     }
 
     // ---- stage ----
@@ -94,19 +104,35 @@ public class VerbsTests : IDisposable
     [Fact]
     public async Task Stage_validates_the_drop_and_writes_the_release_plan()
     {
-        _workspace.WritePackage("SkiaSharp", "3.119.0");
+        _workspace.WritePackage("SkiaSharp", "3.119.0.0");
         _workspace.WritePackage("HarfBuzzSharp", "8.3.1.5");
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
+        _output.Output.Clear();
 
-        var exit = await Stage();
+        await Stage();
 
-        Assert.Equal(ExitCodes.Success, exit);
-
-        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
+        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
+        var skia = plan.AllPackages.Single(package => package.Id == "SkiaSharp");
         Assert.Equal(2, plan.Sets[0].Packages.Count);
         // The staged directory is what 1ES will glob.
         var staged = Directory.GetFiles(_workspace.StagedSet(StagePlanner.PackagesArtifactName), "*.nupkg");
         Assert.Equal(2, staged.Length);
+
+        var output = _output.AllOutput;
+        Assert.Contains("Release plan:", output, StringComparison.Ordinal);
+        Assert.Contains("Schema version : 1", output, StringComparison.Ordinal);
+        Assert.Contains("Tool version   : 1.0.0-test", output, StringComparison.Ordinal);
+        Assert.Contains($"Created UTC    : {Workspace.Now:O}", output, StringComparison.Ordinal);
+        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains("Workload target : (none)", output, StringComparison.Ordinal);
+        Assert.Contains("Name          : NuGet packages", output, StringComparison.Ordinal);
+        Assert.Contains("Order         : 0", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name : {StagePlanner.PackagesArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains("ID                 : SkiaSharp", output, StringComparison.Ordinal);
+        Assert.Contains($"Raw version        : {skia.Version}", output, StringComparison.Ordinal);
+        Assert.Contains($"Normalized version : {skia.NormalizedVersion}", output, StringComparison.Ordinal);
+        Assert.Contains("File name          : SkiaSharp.3.119.0.0.nupkg", output, StringComparison.Ordinal);
+        Assert.Contains($"SHA-256            : {skia.Sha256}", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -117,7 +143,7 @@ public class VerbsTests : IDisposable
         await Stage();
 
         var expected = ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
-        Assert.Contains($"Release plan SHA-256: {expected}", _console.AllOutput, StringComparison.Ordinal);
+        Assert.Contains($"Release plan SHA-256: {expected}", _output.AllOutput, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -125,10 +151,7 @@ public class VerbsTests : IDisposable
     {
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        var exit = await Stage();
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageSetEmpty, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage());
     }
 
     [Fact]
@@ -140,10 +163,7 @@ public class VerbsTests : IDisposable
         Directory.Delete(Path.Combine(_workspace.Drop, "shipping"), recursive: true);
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        var exit = await Stage();
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageSetEmpty, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage());
     }
 
     [Fact]
@@ -155,7 +175,7 @@ public class VerbsTests : IDisposable
 
         await Stage(new StageOptions { Exclude = ["HarfBuzz*"] });
 
-        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
+        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
         Assert.Equal("SkiaSharp", Assert.Single(plan.Sets[0].Packages).Id);
     }
 
@@ -166,10 +186,7 @@ public class VerbsTests : IDisposable
         _workspace.WritePackage("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0");
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        var exit = await Stage();
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.ManifestInNonWorkload, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage());
     }
 
     // ---- prune-published ----
@@ -186,7 +203,7 @@ public class VerbsTests : IDisposable
 
     [Theory]
     [InlineData("SkiaSharp.3.119.0.nupkg")]
-    [InlineData("release-set.json")]
+    [InlineData("release-prune.json")]
     public void A_single_path_component_is_accepted(string value)
     {
         Assert.True(ReleaseArtifact.IsSinglePathComponent(value));
@@ -200,29 +217,70 @@ public class VerbsTests : IDisposable
         }
 
         await Plan(new FakeRegistry(Workspace.Build(channels: Libraries)));
-        Assert.Equal(ExitCodes.Success, await Stage());
+        await Stage();
 
-        return ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
+        return ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
     }
 
-    private Task<int> Filter(IPackageAvailabilityProbe probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
+    private Task Filter(INuGetPackageLookup probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
         PrunePublishedCommand.ExecuteAsync(
-            _console, probe, _workspace.ReadPlan(), _workspace.Out, recovery ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
+            _output, probe, _workspace.ReadPlan(), _workspace.Out, recovery ?? [], expectedHash ?? PlanHash, set, CancellationToken.None);
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
 
-        var exit = await Filter(new FakeProbe("skiasharp/3.119.0"));
-
-        Assert.Equal(ExitCodes.Success, exit);
+        await Filter(new FakeProbe("skiasharp/3.119.0"));
 
         var directory = _workspace.StagedSet(StagePlanner.PackagesArtifactName);
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
         Assert.True(File.Exists(Path.Combine(directory, "HarfBuzzSharp.8.3.1.5.nupkg")));
 
-        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]true", _console.Output);
+        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]true", _output.Output);
+    }
+
+    [Fact]
+    public async Task Prune_logs_release_identity_and_every_decision_field_and_disposition()
+    {
+        await StagedPlanAsync(
+            ("SkiaSharp", "3.119.0"),
+            ("HarfBuzzSharp", "8.3.1.5"),
+            ("Pending.Package", "1.2.3"));
+        _output.Output.Clear();
+
+        await Filter(
+            new FakeProbe("skiasharp/3.119.0"),
+            recovery: ["HarfBuzzSharp.*"]);
+
+        var output = _output.AllOutput;
+        Assert.Contains("Selected release:", output, StringComparison.Ordinal);
+        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains($"Commit            : {Workspace.Commit}", output, StringComparison.Ordinal);
+        Assert.Contains("BAR build ID      : 4242", output, StringComparison.Ordinal);
+        Assert.Contains($"Plan SHA-256 : {PlanHash}", output, StringComparison.Ordinal);
+        Assert.Contains("Schema version : 1", output, StringComparison.Ordinal);
+        Assert.Contains("Set name       : NuGet packages", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name  : {StagePlanner.PackagesArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains("ID                 : SkiaSharp", output, StringComparison.Ordinal);
+        Assert.Contains("Normalized version : 3.119.0", output, StringComparison.Ordinal);
+        Assert.Contains("File name          : SkiaSharp.3.119.0.nupkg", output, StringComparison.Ordinal);
+        Assert.Contains("Disposition        : AlreadyPublished", output, StringComparison.Ordinal);
+        Assert.Contains("ID                 : HarfBuzzSharp", output, StringComparison.Ordinal);
+        Assert.Contains("Normalized version : 8.3.1.5", output, StringComparison.Ordinal);
+        Assert.Contains("File name          : HarfBuzzSharp.8.3.1.5.nupkg", output, StringComparison.Ordinal);
+        Assert.Contains("Disposition        : PreviouslyAttempted", output, StringComparison.Ordinal);
+        Assert.Contains("ID                 : Pending.Package", output, StringComparison.Ordinal);
+        Assert.Contains("Raw version        : 1.2.3", output, StringComparison.Ordinal);
+        Assert.Contains("Normalized version : 1.2.3", output, StringComparison.Ordinal);
+        Assert.Contains("File name          : Pending.Package.1.2.3.nupkg", output, StringComparison.Ordinal);
+        var pendingPackage = ReleasePlanSerializer
+            .DeserializePlan(_workspace.ReadPlan())
+            .AllPackages
+            .Single(package => package.Id == "Pending.Package");
+        Assert.Contains($"SHA-256            : {pendingPackage.Sha256}", output, StringComparison.Ordinal);
+        Assert.Contains("Disposition        : Pending", output, StringComparison.Ordinal);
+        Assert.Contains("Pending count : 1", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -245,13 +303,27 @@ public class VerbsTests : IDisposable
     }
 
     [Fact]
+    public async Task Filter_can_run_twice_without_restaging()
+    {
+        await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
+        var lookup = new FakeProbe("skiasharp/3.119.0");
+
+        await Filter(lookup);
+        await Filter(lookup);
+
+        var directory = _workspace.StagedSet(StagePlanner.PackagesArtifactName);
+        Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
+        Assert.True(File.Exists(Path.Combine(directory, "HarfBuzzSharp.8.3.1.5.nupkg")));
+    }
+
+    [Fact]
     public async Task Filter_reports_nothing_to_publish_when_everything_is_live()
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
         await Filter(new FakeProbe("skiasharp/3.119.0"));
 
-        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]false", _console.Output);
+        Assert.Contains("##vso[task.setvariable variable=NuGetPackagesToPublish]false", _output.Output);
     }
 
     [Fact]
@@ -274,10 +346,8 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
-        var exit = await Filter(new FakeProbe(), recovery: ["Typo.*"]);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.FilterUnmatched, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Filter(new FakeProbe(), recovery: ["Typo.*"]));
     }
 
     [Fact]
@@ -285,10 +355,8 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
-        var exit = await Filter(new FakeProbe(), expectedHash: new string('0', 64));
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PlanHashMismatch, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Filter(new FakeProbe(), expectedHash: new string('0', 64)));
     }
 
     [Fact]
@@ -297,7 +365,7 @@ public class VerbsTests : IDisposable
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
         var hash = ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
 
-        Assert.Equal(ExitCodes.Success, await Filter(new FakeProbe(), expectedHash: hash));
+        await Filter(new FakeProbe(), expectedHash: hash);
     }
 
     /// <summary>
@@ -312,10 +380,7 @@ public class VerbsTests : IDisposable
             Path.Combine(_workspace.StagedSet(StagePlanner.PackagesArtifactName), "Sneaky.1.0.0.nupkg"),
             "not reviewed");
 
-        var exit = await Filter(new FakeProbe());
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageFileUnexpected, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Filter(new FakeProbe()));
     }
 
     [Fact]
@@ -326,20 +391,17 @@ public class VerbsTests : IDisposable
             Path.Combine(_workspace.StagedSet(StagePlanner.PackagesArtifactName), "SkiaSharp.3.119.0.nupkg"),
             "swapped");
 
-        var exit = await Filter(new FakeProbe());
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageHashMismatch, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Filter(new FakeProbe()));
     }
 
     // ---- verify ----
 
-    private Task<int> Verify(IPackageAvailabilityProbe probe, int maxMinutes = 30, string? set = null, int pollSeconds = 20)
+    private Task Verify(INuGetPackageLookup probe, int maxMinutes = 30, string? set = null, int pollSeconds = 20)
     {
         var now = Workspace.Now;
 
         return VerifyCommand.ExecuteAsync(
-            _console, probe, _workspace.ReadPlan(),
+            _output, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) =>
@@ -348,7 +410,6 @@ public class VerbsTests : IDisposable
                 return Task.CompletedTask;
             },
             set,
-            _workspace.Out,
             PlanHash,
             CancellationToken.None);
     }
@@ -358,7 +419,7 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"));
 
-        Assert.Equal(ExitCodes.Success, await Verify(new FakeProbe("skiasharp/3.119.0")));
+        await Verify(new FakeProbe("skiasharp/3.119.0"));
     }
 
     [Fact]
@@ -368,7 +429,7 @@ public class VerbsTests : IDisposable
 
         var probe = new FakeProbe { AvailableAfterCall = { ["skiasharp/3.119.0"] = 3 } };
 
-        Assert.Equal(ExitCodes.Success, await Verify(probe));
+        await Verify(probe);
         Assert.Equal(3, probe.Calls);
     }
 
@@ -377,11 +438,10 @@ public class VerbsTests : IDisposable
     {
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
 
-        var exit = await Verify(new FakeProbe("skiasharp/3.119.0"), maxMinutes: 1);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains("HarfBuzzSharp 8.3.1.5", _console.AllErrors, StringComparison.Ordinal);
-        Assert.DoesNotContain("SkiaSharp 3.119.0,", _console.AllErrors, StringComparison.Ordinal);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Verify(new FakeProbe("skiasharp/3.119.0"), maxMinutes: 1));
+        Assert.Contains("HarfBuzzSharp 8.3.1.5", exception.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("SkiaSharp 3.119.0,", exception.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -394,9 +454,8 @@ public class VerbsTests : IDisposable
         await StagedPlanAsync(("SkiaSharp", "3.119.0"), ("HarfBuzzSharp", "8.3.1.5"));
         await Filter(new FakeProbe("skiasharp/3.119.0"));
 
-        var exit = await Verify(new FakeProbe("harfbuzzsharp/8.3.1.5"), maxMinutes: 1);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains("SkiaSharp 3.119.0", _console.AllErrors, StringComparison.Ordinal);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Verify(new FakeProbe("harfbuzzsharp/8.3.1.5"), maxMinutes: 1));
+        Assert.Contains("SkiaSharp 3.119.0", exception.Message, StringComparison.Ordinal);
     }
 }

@@ -10,7 +10,7 @@ public class ReleasePlanSerializerTests
         [TestData.Drop("SkiaSharp", "3.119.0"), TestData.Drop("HarfBuzzSharp", "8.3.1")],
         new StageOptions(),
         TestData.Now,
-        TestData.ToolVersion).Value;
+        TestData.ToolVersion);
 
     [Fact]
     public void Round_trips_without_losing_anything()
@@ -19,18 +19,16 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(original);
 
         var restored = ReleasePlanSerializer.DeserializePlan(json);
-        Assert.True(restored.IsSuccess, string.Join("; ", restored.Errors));
-
         // Compared through the serialized form rather than record equality: a record's
         // synthesized Equals uses reference equality for its IReadOnlyList members, so
         // Assert.Equal on the plans would compare list identities, not contents. The JSON is
         // the actual contract crossing the job boundary, so it is the right thing to assert.
-        Assert.Equal(json, ReleasePlanSerializer.Serialize(restored.Value));
+        Assert.Equal(json, ReleasePlanSerializer.Serialize(restored));
 
-        Assert.Equal(original.Source, restored.Value.Source);
+        Assert.Equal(original.Source, restored.Source);
         Assert.Equal(
             original.AllPackages.Select(p => (p.Id, p.Version, p.NormalizedVersion, p.FileName, p.Sha256)),
-            restored.Value.AllPackages.Select(p => (p.Id, p.Version, p.NormalizedVersion, p.FileName, p.Sha256)));
+            restored.AllPackages.Select(p => (p.Id, p.Version, p.NormalizedVersion, p.FileName, p.Sha256)));
     }
 
     /// <summary>
@@ -64,9 +62,11 @@ public class ReleasePlanSerializerTests
     {
         var json = ReleasePlanSerializer.Serialize(Plan());
 
-        var result = ReleasePlanSerializer.VerifyAndDeserialize(json, ReleasePlanSerializer.ComputeHash(json));
-
-        Assert.True(result.IsSuccess, string.Join("; ", result.Errors));
+        Assert.Equal(
+            Plan().Source,
+            ReleasePlanSerializer.VerifyAndDeserialize(
+                json,
+                ReleasePlanSerializer.ComputeHash(json)).Source);
     }
 
     [Fact]
@@ -75,12 +75,9 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(Plan());
         var hash = ReleasePlanSerializer.ComputeHash(json);
 
-        var result = ReleasePlanSerializer.VerifyAndDeserialize(
+        Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.VerifyAndDeserialize(
             json.Replace("SkiaSharp", "EvilSharp", StringComparison.Ordinal),
-            hash);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PlanHashMismatch));
+            hash));
     }
 
     [Fact]
@@ -89,7 +86,7 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(Plan());
         var hash = ReleasePlanSerializer.ComputeHash(json);
 
-        Assert.True(ReleasePlanSerializer.VerifyAndDeserialize(json, $"  {hash.ToUpperInvariant()}  ").IsSuccess);
+        Assert.NotNull(ReleasePlanSerializer.VerifyAndDeserialize(json, $"  {hash.ToUpperInvariant()}  "));
     }
 
     [Fact]
@@ -107,8 +104,7 @@ public class ReleasePlanSerializerTests
 
         var restored = ReleasePlanSerializer.DeserializeResolved(ReleasePlanSerializer.Serialize(original));
 
-        Assert.True(restored.IsSuccess, string.Join("; ", restored.Errors));
-        Assert.Equal(original, restored.Value);
+        Assert.Equal(original, restored);
     }
 
     /// <summary>
@@ -121,10 +117,7 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(Plan())
             .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal);
 
-        var result = ReleasePlanSerializer.DeserializePlan(json);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PlanSchemaInvalid));
+        Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.DeserializePlan(json));
     }
 
     [Fact]
@@ -133,19 +126,14 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(TestData.Resolved())
             .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 99", StringComparison.Ordinal);
 
-        var result = ReleasePlanSerializer.DeserializeResolved(json);
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PlanSchemaInvalid));
+        Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.DeserializeResolved(json));
     }
 
     [Fact]
     public void Malformed_plan_json_fails_closed()
     {
-        var result = ReleasePlanSerializer.DeserializePlan("{ not json");
-
-        Assert.True(result.IsFailure);
-        Assert.True(result.HasError(ErrorCodes.PlanSchemaInvalid));
+        Assert.Throws<DotNetReleaseException>(
+            () => ReleasePlanSerializer.DeserializePlan("{ not json"));
     }
 
     [Fact]
@@ -160,7 +148,7 @@ public class ReleasePlanSerializerTests
             ],
             new StageOptions(),
             TestData.Now,
-            TestData.ToolVersion).Value;
+            TestData.ToolVersion);
 
         Assert.Equal(
             ["Microsoft.Maui.Controls", "Microsoft.NET.Sdk.Maui.Manifest-10.0.100"],

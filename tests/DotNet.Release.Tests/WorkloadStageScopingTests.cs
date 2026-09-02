@@ -15,7 +15,7 @@ namespace DotNet.Release.Tests;
 public class WorkloadStageScopingTests : IDisposable
 {
     private readonly Workspace _workspace = new();
-    private readonly RecordingConsole _console = new();
+    private readonly RecordingWriter _output = new();
 
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
     private string PlanHash => ReleasePlanSerializer.ComputeHash(_workspace.ReadPlan());
@@ -33,17 +33,17 @@ public class WorkloadStageScopingTests : IDisposable
 
         var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
 
-        Assert.Equal(ExitCodes.Success, await PlanCommand.ExecuteAsync(
-            _console, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
-            _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None));
+        await PlanCommand.ExecuteAsync(
+            _output, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
+            _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
-        Assert.Equal(ExitCodes.Success, await StageCommand.ExecuteAsync(
-            _console, Workspace.PolicyJson,
+        await StageCommand.ExecuteAsync(
+            _output, Workspace.PolicyJson,
             File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
             _workspace.Drop, _workspace.Out, new StageOptions(),
-            Workspace.Now, "1.0.0-test", CancellationToken.None));
+            Workspace.Now, "1.0.0-test", CancellationToken.None);
 
-        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).Value;
+        var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
         Assert.Equal(2, plan.Sets.Count);
         return plan;
     }
@@ -60,9 +60,9 @@ public class WorkloadStageScopingTests : IDisposable
         }
     }
 
-    private Task<int> Filter(string? set, IPackageAvailabilityProbe probe) =>
+    private Task Filter(string? set, INuGetPackageLookup probe) =>
         PrunePublishedCommand.ExecuteAsync(
-            _console,
+            _output,
             probe,
             _workspace.ReadPlan(),
             _workspace.Out,
@@ -71,19 +71,39 @@ public class WorkloadStageScopingTests : IDisposable
             set,
             CancellationToken.None);
 
-    private Task<int> Verify(string? set, IPackageAvailabilityProbe probe, int maxMinutes = 30)
+    private Task Verify(string? set, INuGetPackageLookup probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 
         return VerifyCommand.ExecuteAsync(
-            _console, probe, _workspace.ReadPlan(),
+            _output, probe, _workspace.ReadPlan(),
             TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
             () => now,
             (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
             set,
-            _workspace.Out,
             PlanHash,
             CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task Stage_logs_the_workload_target_sets_and_package_hashes()
+    {
+        var plan = await StageWorkloadAsync();
+        var package = plan.AllPackages.First();
+        var output = _output.AllOutput;
+
+        Assert.Contains("Workload target:", output, StringComparison.Ordinal);
+        Assert.Contains("Band    : 10", output, StringComparison.Ordinal);
+        Assert.Contains("Channel : .NET 10 Workload Release", output, StringComparison.Ordinal);
+        Assert.Contains("Feed    : dotnet10-workloads", output, StringComparison.Ordinal);
+        Assert.Contains("Name          : Workload packs", output, StringComparison.Ordinal);
+        Assert.Contains("Order         : 0", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name : {StagePlanner.PacksArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains("Name          : Workload manifests", output, StringComparison.Ordinal);
+        Assert.Contains("Order         : 1", output, StringComparison.Ordinal);
+        Assert.Contains($"Artifact name : {StagePlanner.ManifestsArtifactName}", output, StringComparison.Ordinal);
+        Assert.Contains($"File name          : {package.FileName}", output, StringComparison.Ordinal);
+        Assert.Contains($"SHA-256            : {package.Sha256}", output, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -93,13 +113,11 @@ public class WorkloadStageScopingTests : IDisposable
         KeepOnly(StagePlanner.PacksArtifactName);
 
         // Staging logged both set names, so inspect only the prune command output.
-        _console.Output.Clear();
+        _output.Output.Clear();
 
-        var exit = await Filter(StagePlanner.PacksArtifactName, new FakeProbe());
-
-        Assert.Equal(ExitCodes.Success, exit);
-        Assert.Contains("Workload packs: 1 of 1", _console.AllOutput, StringComparison.Ordinal);
-        Assert.DoesNotContain("Workload manifests", _console.AllOutput, StringComparison.Ordinal);
+        await Filter(StagePlanner.PacksArtifactName, new FakeProbe());
+        Assert.Contains("Set name       : Workload packs", _output.AllOutput, StringComparison.Ordinal);
+        Assert.DoesNotContain("Workload manifests", _output.AllOutput, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -112,10 +130,8 @@ public class WorkloadStageScopingTests : IDisposable
         await StageWorkloadAsync();
         KeepOnly(StagePlanner.PacksArtifactName);
 
-        var exit = await Filter(set: null, new FakeProbe());
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageFileMissing, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Filter(set: null, new FakeProbe()));
     }
 
     [Fact]
@@ -126,7 +142,7 @@ public class WorkloadStageScopingTests : IDisposable
         // Packs are live; manifests have not been pushed yet, which is correct at this point.
         var probe = new FakeProbe($"{Pack.ToLowerInvariant()}/10.0.0");
 
-        Assert.Equal(ExitCodes.Success, await Verify(StagePlanner.PacksArtifactName, probe));
+        await Verify(StagePlanner.PacksArtifactName, probe);
     }
 
     /// <summary>
@@ -140,10 +156,9 @@ public class WorkloadStageScopingTests : IDisposable
 
         var probe = new FakeProbe($"{Pack.ToLowerInvariant()}/10.0.0");
 
-        var exit = await Verify(set: null, probe, maxMinutes: 1);
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(Manifest, _console.AllErrors, StringComparison.Ordinal);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Verify(set: null, probe, maxMinutes: 1));
+        Assert.Contains(Manifest, exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -153,7 +168,7 @@ public class WorkloadStageScopingTests : IDisposable
 
         var probe = new FakeProbe($"{Manifest.ToLowerInvariant()}/10.0.0");
 
-        Assert.Equal(ExitCodes.Success, await Verify(StagePlanner.ManifestsArtifactName, probe));
+        await Verify(StagePlanner.ManifestsArtifactName, probe);
     }
 
     /// <summary>
@@ -165,11 +180,9 @@ public class WorkloadStageScopingTests : IDisposable
     {
         await StageWorkloadAsync();
 
-        var exit = await Verify("MauiPacksForNuGet", new FakeProbe());
-
-        Assert.Equal(ExitCodes.ReleaseError, exit);
-        Assert.Contains(ErrorCodes.PackageSetNotFound, _console.AllErrors, StringComparison.Ordinal);
-        Assert.Contains(StagePlanner.PacksArtifactName, _console.AllErrors, StringComparison.Ordinal);
+        var exception = await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Verify("MauiPacksForNuGet", new FakeProbe()));
+        Assert.Contains(StagePlanner.PacksArtifactName, exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -177,8 +190,8 @@ public class WorkloadStageScopingTests : IDisposable
     {
         await StageWorkloadAsync();
 
-        Assert.Equal(ExitCodes.ReleaseError, await Filter("NotASet", new FakeProbe()));
-        Assert.Contains(ErrorCodes.PackageSetNotFound, _console.AllErrors, StringComparison.Ordinal);
+        await Assert.ThrowsAsync<DotNetReleaseException>(
+            () => Filter("NotASet", new FakeProbe()));
     }
 
     /// <summary>
@@ -193,7 +206,7 @@ public class WorkloadStageScopingTests : IDisposable
 
         var probe = new FlakyProbe(failUntilCall: 3, published: [$"{Pack.ToLowerInvariant()}/10.0.0"]);
 
-        Assert.Equal(ExitCodes.Success, await Verify(StagePlanner.PacksArtifactName, probe));
+        await Verify(StagePlanner.PacksArtifactName, probe);
         Assert.True(probe.Calls >= 3);
     }
 

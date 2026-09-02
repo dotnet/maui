@@ -17,7 +17,7 @@ internal static class PrunePublishedPlanner
     /// waiting for visibility.
     /// </param>
     /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
-    public static Result<PruneReport> Plan(
+    public static PruneReport Plan(
         ReleasePackageSet set,
         IEnumerable<PlannedPackage> releasePackages,
         IReadOnlyList<string> recoveryPatterns,
@@ -40,14 +40,13 @@ internal static class PrunePublishedPlanner
 
         if (unmatched.Count > 0)
         {
-            return Result<PruneReport>.Failure(
-                ErrorCodes.FilterUnmatched,
+            throw new DotNetReleaseException(
                 $"Recovery filters matched no expected packages in " +
                 $"the release: {string.Join(", ", unmatched)}.");
         }
 
         var decisions = new List<PruneDecision>(set.Packages.Count);
-        var missingAvailability = new List<ReleaseError>();
+        var missingAvailability = new List<string>();
 
         foreach (var package in set.Packages)
         {
@@ -61,9 +60,8 @@ internal static class PrunePublishedPlanner
 
             if (!availability.TryGetValue(package.IdentityKey, out var isPublished))
             {
-                missingAvailability.Add(new ReleaseError(
-                    ErrorCodes.PackageFileMissing,
-                    $"No NuGet.org availability was determined for {package.Id} {package.Version}."));
+                missingAvailability.Add(
+                    $"No NuGet.org availability was determined for {package.Id} {package.Version}.");
                 continue;
             }
 
@@ -72,9 +70,12 @@ internal static class PrunePublishedPlanner
                 isPublished ? PackageDisposition.AlreadyPublished : PackageDisposition.Pending));
         }
 
-        return missingAvailability.Count > 0
-            ? Result<PruneReport>.Failure(missingAvailability)
-            : Result<PruneReport>.Success(new PruneReport { SetName = set.Name, Decisions = decisions });
+        if (missingAvailability.Count > 0)
+        {
+            throw new DotNetReleaseException(missingAvailability);
+        }
+
+        return new PruneReport { SetName = set.Name, Decisions = decisions };
     }
 
     private static PruneDecision Decide(PlannedPackage package, PackageDisposition disposition) =>

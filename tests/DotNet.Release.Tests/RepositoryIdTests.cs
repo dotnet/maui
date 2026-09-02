@@ -13,9 +13,8 @@ public class RepositoryIdTests
     {
         var id = RepositoryId.Parse(value);
 
-        Assert.True(id.IsSuccess);
-        Assert.Equal(owner, id.Value.Owner);
-        Assert.Equal(name, id.Value.Name);
+        Assert.Equal(owner, id.Owner);
+        Assert.Equal(name, id.Name);
     }
 
     [Theory]
@@ -28,10 +27,7 @@ public class RepositoryIdTests
     [InlineData("/maui")]
     public void Parse_rejects_malformed_input(string? value)
     {
-        var id = RepositoryId.Parse(value);
-
-        Assert.True(id.IsFailure);
-        Assert.True(id.HasError(ErrorCodes.RepositoryUnparseable));
+        Assert.Throws<DotNetReleaseException>(() => RepositoryId.Parse(value));
     }
 
     [Theory]
@@ -46,8 +42,7 @@ public class RepositoryIdTests
     {
         var id = RepositoryId.FromGitHubUrl(url);
 
-        Assert.True(id.IsSuccess, string.Join("; ", id.Errors));
-        Assert.Equal("dotnet/skiasharp", id.Value.FullName);
+        Assert.Equal("dotnet/skiasharp", id.FullName);
     }
 
     [Theory]
@@ -56,7 +51,7 @@ public class RepositoryIdTests
     [InlineData(null)]
     public void FromGitHubUrl_rejects_non_github_sources(string? url)
     {
-        Assert.True(RepositoryId.FromGitHubUrl(url).IsFailure);
+        Assert.Throws<DotNetReleaseException>(() => RepositoryId.FromGitHubUrl(url));
     }
 
     [Theory]
@@ -68,11 +63,10 @@ public class RepositoryIdTests
     {
         var id = RepositoryId.FromAzureDevOpsMirror(mirror);
 
-        Assert.True(id.IsSuccess, string.Join("; ", id.Errors));
-        Assert.Equal(expected, id.Value.FullName);
+        Assert.Equal(expected, id.FullName);
 
         // Only the first '-' separates owner from name; the rest belong to the name.
-        Assert.Equal("dotnet", id.Value.Owner);
+        Assert.Equal("dotnet", id.Owner);
     }
 
     [Theory]
@@ -83,17 +77,14 @@ public class RepositoryIdTests
     [InlineData(null)]
     public void FromAzureDevOpsMirror_refuses_to_guess(string? mirror)
     {
-        var id = RepositoryId.FromAzureDevOpsMirror(mirror);
-
-        Assert.True(id.IsFailure);
-        Assert.True(id.HasError(ErrorCodes.BarMirrorNameInvalid));
+        Assert.Throws<DotNetReleaseException>(() => RepositoryId.FromAzureDevOpsMirror(mirror));
     }
 
     [Fact]
     public void GitHubUrl_round_trips_through_FromGitHubUrl()
     {
-        var original = RepositoryId.Parse("dotnet/android-libraries").Value;
+        var original = RepositoryId.Parse("dotnet/android-libraries");
 
-        Assert.Equal(original, RepositoryId.FromGitHubUrl(original.GitHubUrl).Value);
+        Assert.Equal(original, RepositoryId.FromGitHubUrl(original.GitHubUrl));
     }
 }

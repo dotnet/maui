@@ -76,35 +76,3 @@ internal sealed class PackageFixture : IDisposable
         }
     }
 }
-
-/// <summary>A feed whose answers are decided by the test, so no network is involved.</summary>
-internal sealed class FakeExistenceChecker(params string[] published) : IPackageExistenceChecker
-{
-    private readonly HashSet<string> _published =
-        new(published.Select(p => p.ToLowerInvariant()), StringComparer.Ordinal);
-
-    private int _calls;
-
-    public int Calls => _calls;
-
-    public List<string> Queried { get; } = [];
-
-    public Func<string, string, bool>? Throw { get; init; }
-
-    public Task<bool> ExistsAsync(string id, string normalizedVersion, CancellationToken cancellationToken)
-    {
-        Interlocked.Increment(ref _calls);
-
-        lock (Queried)
-        {
-            Queried.Add($"{id}/{normalizedVersion}");
-        }
-
-        if (Throw?.Invoke(id, normalizedVersion) == true)
-        {
-            throw new HttpRequestException("feed unavailable");
-        }
-
-        return Task.FromResult(_published.Contains($"{id}/{normalizedVersion}".ToLowerInvariant()));
-    }
-}

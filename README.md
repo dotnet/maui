@@ -19,8 +19,7 @@ Releasing repositories do not change. They are named by parameter.
    | **GitHub owner** / **GitHub repository** | What to release. Replace the fail-closed `select-repository` sentinel with a repository enabled in `config/repositories.json`. |
    | **Commit** | The full SHA, as registered in BAR. Required. |
    | **BAR build ID** | Only when direct BAR lookup is needed. Otherwise leave `skip`. |
-   | **PUBLISH to NuGet.org** | **Off by default.** Leave it off for a dry run. |
-   | **Promote to workload-set channel** | Workload repositories only. |
+   | **What should this release run do?** | Choose a plain-language preview or publish mode. Modes that mention workload promotion are valid only for workload repositories. |
    | Include / exclude filters | Optional package selection; leave `skip` when unused. |
    | Recovery filters | Only when resuming a partially-completed release; leave `skip` otherwise. |
 
@@ -29,12 +28,13 @@ no default exists. The repository therefore defaults to `select-repository`, whi
 rejects, while optional strings use `skip`. The commit has no default and must be entered.
 
 3. The run prepares the release and validates the matching package-set jobs.
-4. Review `release-plan.json` in the published artifact — it lists every package that will be
-   pushed, with its exact version and content hash.
+4. Review the human-readable package summary printed by the preflight job. It lists every
+   package, version, hash, and final disposition. JSON files in the artifact are transport
+   contracts for later jobs, not the approval interface.
 5. Approve the matching gate. A dry run rehearses the production release job; a publish run
    pushes and verifies the packages.
 
-**The default run publishes nothing.** `PUBLISH to NuGet.org` is off, and on a dry run the
+**The default run publishes nothing.** The default mode previews the package release, and the
 package-set stages download, prune, validate, pause for approval, and run the production
 release job. The 1ES upload and post-publish verification steps do not exist in the expanded
 pipeline.
@@ -73,9 +73,10 @@ The boundary is narrower and more important:
   files so the dry-run artifact is the exact set that would need publication. The
   `nuget.org (dotnetframework)` service connection, `1ES.PublishNuget@1`, BAR promotion, and
   NuGet.org verification exist only when publishing is enabled.
-- **A dry run does not mutate BAR or GitHub.** `darc add-build-to-channel` is also compile-time
-  excluded unless `publishPackages` and `promoteWorkloadSet` are both true, and it has its own
-  manual gate. Preparation uses read-only BAR methods and `darc gather-drop`.
+- **A preview does not mutate BAR or GitHub.** The workload-promotion preview includes its
+  approval and job setup, but `darc add-build-to-channel` exists only in the mode explicitly
+  named **Publish packages and promote the workload build**. Preparation uses read-only BAR
+  methods and `darc gather-drop`.
 - **The release tool itself never pushes anything.** There is no push verb, no `--push` flag,
   and no upload code path. The load-bearing property is that **the tool is never given a
   NuGet.org credential**: Azure DevOps injects the service-connection secret only into
@@ -84,7 +85,7 @@ The boundary is narrower and more important:
   DevOps owns the exit code and the log. (Authentication does start `az` transitively via
   `Azure.Identity`; the codebase itself starts no process.)
 - **Everything fails closed.** Unknown repository, wrong commit, missing channel, duplicate
-  package, or tampered artifact — all are errors with stable codes.
+  package, or tampered artifact stops the release with an explicit error.
 
 ## Before first production use
 
@@ -160,7 +161,7 @@ audit trail refers to them.
 release plan   --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --out ./stage
 release stage  --plan ./stage/plan.json --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
 release prune-published --plan <release-plan.json> --stage <artifactDir> --set <setName> --expected-plan-hash <sha256> [--recovery-filters '…']
-release verify --plan <release-plan.json> --stage <artifactDir> --set <setName> --expected-plan-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
+release verify --plan <release-plan.json> --set <setName> --expected-plan-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.

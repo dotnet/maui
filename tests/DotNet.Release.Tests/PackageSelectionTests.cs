@@ -63,20 +63,16 @@ public class PackageSelectionTests
             "Microsoft.NET.Sdk.Maui.Manifest-10.0.200.10.0.0.nupkg",
         ]);
 
-        Assert.True(band.IsSuccess, string.Join("; ", band.Errors));
-        Assert.Equal(10, band.Value);
+        Assert.Equal(10, band);
     }
 
     [Fact]
     public void Mixed_workload_bands_fail_closed()
     {
-        var band = PackageClassifier.GetWorkloadBand([
+        Assert.Throws<DotNetReleaseException>(() => PackageClassifier.GetWorkloadBand([
             "Microsoft.NET.Sdk.Maui.Manifest-10.0.100.10.0.0.nupkg",
             "Microsoft.NET.Sdk.Maui.Manifest-11.0.100.11.0.0.nupkg",
-        ]);
-
-        Assert.True(band.IsFailure);
-        Assert.True(band.HasError(ErrorCodes.WorkloadBandAmbiguous));
+        ]));
     }
 
     [Theory]
@@ -84,15 +80,12 @@ public class PackageSelectionTests
     [InlineData("Manifest.nupkg")]
     public void Unparseable_manifest_name_fails_closed(string name)
     {
-        var band = PackageClassifier.GetWorkloadBand([name]);
-
-        Assert.True(band.IsFailure);
-        Assert.True(band.HasError(ErrorCodes.WorkloadBandUnresolved));
+        Assert.Throws<DotNetReleaseException>(() => PackageClassifier.GetWorkloadBand([name]));
     }
 
     [Fact]
     public void No_manifests_fails_closed()
     {
-        Assert.True(PackageClassifier.GetWorkloadBand([]).HasError(ErrorCodes.WorkloadBandUnresolved));
+        Assert.Throws<DotNetReleaseException>(() => PackageClassifier.GetWorkloadBand([]));
     }
 }

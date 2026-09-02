@@ -19,7 +19,7 @@ internal static class StagePlanner
     public const string ManifestsArtifactName = "ReleaseManifests";
     public const string PackagesArtifactName = "ReleasePackages";
 
-    public static Result<ReleasePlan> Create(
+    public static ReleasePlan Create(
         ResolvedRelease source,
         ReleasePolicy policy,
         IReadOnlyList<DropPackage> drop,
@@ -34,15 +34,14 @@ internal static class StagePlanner
 
         if (drop.Count == 0)
         {
-            return Result<ReleasePlan>.Failure(
-                ErrorCodes.PackageSetEmpty,
+            throw new DotNetReleaseException(
                 "The gathered drop contains no shipping NuGet packages.");
         }
 
         var malformed = ValidateIdentities(drop);
         if (malformed.Count > 0)
         {
-            return Result<ReleasePlan>.Failure(malformed);
+            throw new DotNetReleaseException(malformed);
         }
 
         return source.Workload
@@ -50,7 +49,7 @@ internal static class StagePlanner
             : CreateNonWorkloadPlan(source, drop, options, createdUtc, toolVersion);
     }
 
-    private static Result<ReleasePlan> CreateWorkloadPlan(
+    private static ReleasePlan CreateWorkloadPlan(
         ResolvedRelease source,
         ReleasePolicy policy,
         IReadOnlyList<DropPackage> drop,
@@ -73,8 +72,7 @@ internal static class StagePlanner
 
         if (packs.Count == 0 || manifests.Count == 0)
         {
-            return Result<ReleasePlan>.Failure(
-                ErrorCodes.PackageSetEmpty,
+            throw new DotNetReleaseException(
                 $"Package filtering must select both workload packs and manifests, but selected " +
                 $"{packs.Count} pack(s) and {manifests.Count} manifest(s).");
         }
@@ -82,46 +80,36 @@ internal static class StagePlanner
         var duplicateIdentities = GetDuplicateIdentities([.. packs, .. manifests]);
         if (duplicateIdentities.Count > 0)
         {
-            return Result<ReleasePlan>.Failure(
-                ErrorCodes.PackageDuplicateIdentity,
+            throw new DotNetReleaseException(
                 $"Workload release contains duplicate package identities: " +
                 $"{string.Join(", ", duplicateIdentities)}.");
         }
 
         var band = PackageClassifier.GetWorkloadBand([.. manifests.Select(m => m.FileName)]);
-        if (band.IsFailure)
+        var workloadSet = policy.GetWorkloadSet(band);
+        var errors = new List<string>();
+        var packSet = BuildSet("Workload packs", order: 0, PacksArtifactName, packs, errors);
+        var manifestSet = BuildSet("Workload manifests", order: 1, ManifestsArtifactName, manifests, errors);
+
+        if (errors.Count > 0)
         {
-            return band.ToFailure<ReleasePlan>();
+            throw new DotNetReleaseException(errors);
         }
 
-        var workloadSet = policy.GetWorkloadSet(band.Value);
-        if (workloadSet.IsFailure)
-        {
-            return workloadSet.ToFailure<ReleasePlan>();
-        }
-
-        var packSet = BuildSet("Workload packs", order: 0, PacksArtifactName, packs);
-        var manifestSet = BuildSet("Workload manifests", order: 1, ManifestsArtifactName, manifests);
-
-        if (packSet.IsFailure || manifestSet.IsFailure)
-        {
-            return Result<ReleasePlan>.Failure([.. packSet.Errors, .. manifestSet.Errors]);
-        }
-
-        return Result<ReleasePlan>.Success(new ReleasePlan
+        return new ReleasePlan
         {
             ToolVersion = toolVersion,
             CreatedUtc = createdUtc.ToUniversalTime(),
             Source = source,
             WorkloadSet = new WorkloadSetTarget(
-                workloadSet.Value.Band,
-                workloadSet.Value.Channel,
-                workloadSet.Value.Feed),
-            Sets = [packSet.Value, manifestSet.Value],
-        });
+                workloadSet.Band,
+                workloadSet.Channel,
+                workloadSet.Feed),
+            Sets = [packSet, manifestSet],
+        };
     }
 
-    private static Result<ReleasePlan> CreateNonWorkloadPlan(
+    private static ReleasePlan CreateNonWorkloadPlan(
         ResolvedRelease source,
         IReadOnlyList<DropPackage> drop,
         StageOptions options,
@@ -137,43 +125,41 @@ internal static class StagePlanner
         var manifests = selected.Where(p => PackageClassifier.IsWorkloadManifest(p.FileName)).ToList();
         if (manifests.Count > 0)
         {
-            return Result<ReleasePlan>.Failure(
-                ErrorCodes.ManifestInNonWorkload,
+            throw new DotNetReleaseException(
                 $"A non-workload release cannot contain workload manifest packages: " +
                 $"{string.Join(", ", manifests.Select(m => m.FileName).Order(StringComparer.Ordinal))}.");
         }
 
         if (selected.Count == 0)
         {
-            return Result<ReleasePlan>.Failure(
-                ErrorCodes.PackageSetEmpty,
+            throw new DotNetReleaseException(
                 "Package filtering selected no non-workload NuGet packages.");
         }
 
-        var set = BuildSet("NuGet packages", order: 0, PackagesArtifactName, selected);
-        if (set.IsFailure)
+        var errors = new List<string>();
+        var set = BuildSet("NuGet packages", order: 0, PackagesArtifactName, selected, errors);
+        if (errors.Count > 0)
         {
-            return set.ToFailure<ReleasePlan>();
+            throw new DotNetReleaseException(errors);
         }
 
-        return Result<ReleasePlan>.Success(new ReleasePlan
+        return new ReleasePlan
         {
             ToolVersion = toolVersion,
             CreatedUtc = createdUtc.ToUniversalTime(),
             Source = source,
             WorkloadSet = null,
-            Sets = [set.Value],
-        });
+            Sets = [set],
+        };
     }
 
-    private static Result<ReleasePackageSet> BuildSet(
+    private static ReleasePackageSet BuildSet(
         string name,
         int order,
         string artifactName,
-        IReadOnlyList<DropPackage> packages)
+        IReadOnlyList<DropPackage> packages,
+        List<string> errors)
     {
-        var errors = new List<ReleaseError>();
-
         var duplicateFileNames = packages
             .GroupBy(p => p.FileName, StringComparer.OrdinalIgnoreCase)
             .Where(g => g.Count() > 1)
@@ -183,9 +169,8 @@ internal static class StagePlanner
 
         if (duplicateFileNames.Count > 0)
         {
-            errors.Add(new ReleaseError(
-                ErrorCodes.PackageDuplicateFileName,
-                $"{name} contains duplicate package file names: {string.Join(", ", duplicateFileNames)}."));
+            errors.Add(
+                $"{name} contains duplicate package file names: {string.Join(", ", duplicateFileNames)}.");
         }
 
         // Two different files can still carry the same identity, which NuGet.org would
@@ -194,17 +179,11 @@ internal static class StagePlanner
 
         if (duplicateIdentities.Count > 0)
         {
-            errors.Add(new ReleaseError(
-                ErrorCodes.PackageDuplicateIdentity,
-                $"{name} contains duplicate package identities: {string.Join(", ", duplicateIdentities)}."));
+            errors.Add(
+                $"{name} contains duplicate package identities: {string.Join(", ", duplicateIdentities)}.");
         }
 
-        if (errors.Count > 0)
-        {
-            return Result<ReleasePackageSet>.Failure(errors);
-        }
-
-        return Result<ReleasePackageSet>.Success(new ReleasePackageSet
+        return new ReleasePackageSet
         {
             Name = name,
             Order = order,
@@ -220,7 +199,7 @@ internal static class StagePlanner
                     FileName = p.FileName,
                     Sha256 = p.Sha256,
                 })],
-        });
+        };
     }
 
     private static List<string> GetDuplicateIdentities(IReadOnlyList<DropPackage> packages) =>
@@ -231,9 +210,9 @@ internal static class StagePlanner
             .Order(StringComparer.Ordinal)
             .ToList();
 
-    private static List<ReleaseError> ValidateIdentities(IReadOnlyList<DropPackage> drop)
+    private static List<string> ValidateIdentities(IReadOnlyList<DropPackage> drop)
     {
-        var errors = new List<ReleaseError>();
+        var errors = new List<string>();
 
         foreach (var package in drop)
         {
@@ -241,43 +220,36 @@ internal static class StagePlanner
                 string.IsNullOrWhiteSpace(package.Version) ||
                 string.IsNullOrWhiteSpace(package.NormalizedVersion))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageMalformed,
-                    $"Package '{package.FileName}' has no ID or version."));
+                errors.Add($"Package '{package.FileName}' has no ID or version.");
                 continue;
             }
 
             if (string.IsNullOrWhiteSpace(package.Sha256))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageMalformed,
-                    $"Package '{package.FileName}' was staged without a content hash."));
+                errors.Add($"Package '{package.FileName}' was staged without a content hash.");
             }
 
             // The availability query NuGet.org is asked is built from the normalized version,
             // so a reader that got it wrong would report published packages as missing.
             if (!PackageVersions.IsNormalizedForm(package.Version, package.NormalizedVersion))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageMalformed,
+                errors.Add(
                     $"Package '{package.FileName}' declares version '{package.Version}' but " +
-                    $"normalized version '{package.NormalizedVersion}'."));
+                    $"normalized version '{package.NormalizedVersion}'.");
             }
 
             // A file whose name disagrees with its nuspec identity would be pushed under one
             // name and indexed under another, so the mismatch is rejected rather than resolved.
             if (!package.FileName.StartsWith($"{package.Id}.", StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageMalformed,
-                    $"Package file '{package.FileName}' does not start with its ID '{package.Id}'."));
+                errors.Add(
+                    $"Package file '{package.FileName}' does not start with its ID '{package.Id}'.");
             }
 
             if (Path.GetFileName(package.FileName) != package.FileName)
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PackageMalformed,
-                    $"Package file name '{package.FileName}' must not contain a directory."));
+                errors.Add(
+                    $"Package file name '{package.FileName}' must not contain a directory.");
             }
         }
 

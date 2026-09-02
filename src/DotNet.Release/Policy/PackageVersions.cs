@@ -14,28 +14,28 @@ namespace DotNet.Release;
 internal static class PackageVersions
 {
     /// <summary>Parses a nuspec version and returns its NuGet-normalized form.</summary>
-    public static Result<string> Normalize(string? version)
+    public static string Normalize(string? version)
     {
         if (string.IsNullOrWhiteSpace(version))
         {
-            return Result<string>.Failure(ErrorCodes.PackageMalformed, "The package version is empty.");
+            throw new DotNetReleaseException("The package version is empty.");
         }
 
         if (!NuGetVersion.TryParse(version.Trim(), out var parsed))
         {
-            return Result<string>.Failure(
-                ErrorCodes.PackageMalformed,
-                $"Package version '{version}' is not a valid NuGet version.");
+            throw new DotNetReleaseException($"Package version '{version}' is not a valid NuGet version.");
         }
 
-        return Result<string>.Success(parsed.ToNormalizedString());
+        return parsed.ToNormalizedString();
     }
 
     /// <summary>True when <paramref name="normalized"/> is the normalized form of <paramref name="version"/>.</summary>
     public static bool IsNormalizedForm(string? version, string? normalized)
     {
-        var expected = Normalize(version);
-        return expected.IsSuccess &&
-            string.Equals(expected.Value, normalized?.Trim(), StringComparison.OrdinalIgnoreCase);
+        return NuGetVersion.TryParse(version?.Trim(), out var parsed) &&
+            string.Equals(
+                parsed.ToNormalizedString(),
+                normalized?.Trim(),
+                StringComparison.OrdinalIgnoreCase);
     }
 }

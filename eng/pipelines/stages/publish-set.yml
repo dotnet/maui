@@ -62,9 +62,7 @@ stages:
       clean: all
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
-      ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
-      GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
-      DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
+      ReleaseToolBundleHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolBundleHash'] ]
     templateContext:
       inputs:
       - input: pipelineArtifact
@@ -79,46 +77,31 @@ stages:
 
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
-        $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
-          throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
+        $bundlePath = "$root/release-tool.zip"
+        $bundleHash = (Get-FileHash -LiteralPath $bundlePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($bundleHash -ne $env:EXPECTED_TOOL_BUNDLE_HASH) {
+          throw "Release tool bundle hash '$bundleHash' does not match '$env:EXPECTED_TOOL_BUNDLE_HASH'."
         }
 
-        $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
-        $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
-          throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
+        $planPath = "$root/release-plan.json"
+        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+          throw "Release plan hash '$planHash' does not match '$env:EXPECTED_PLAN_HASH'."
         }
-      displayName: Verify release infrastructure
+
+        $expanded = "$(Agent.TempDirectory)/release-tool"
+        Remove-Item -LiteralPath $expanded -Recurse -Force -ErrorAction Ignore
+        Expand-Archive -LiteralPath $bundlePath -DestinationPath $expanded
+      displayName: Verify and expand release tool
       env:
-        EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
-        EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_TOOL_BUNDLE_HASH: $(ReleaseToolBundleHash)
 
     - task: UseDotNet@2
       displayName: Install the .NET SDK
       inputs:
         useGlobalJson: true
-        workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-
-    - pwsh: |
-        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
-        $planPath = "$root/release-plan.json"
-        $toolPath = "$root/_tool/release.dll"
-
-        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-          throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
-        }
-
-        $toolHash = & "$root/_infra/Get-DirectoryHash.ps1" `
-          -Path (Split-Path -Parent $toolPath)
-        if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
-          throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
-        }
-      displayName: Verify artifact integrity
-      env:
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-        EXPECTED_TOOL_HASH: $(ReleaseToolHash)
+        workingDirectory: $(Agent.TempDirectory)/release-tool
 
     - pwsh: |
         $ErrorActionPreference = 'Stop'
@@ -138,7 +121,7 @@ stages:
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Prune versions already published on NuGet.org
       env:
-        RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+        RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
@@ -149,9 +132,7 @@ stages:
         $prepared = "$(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}"
         New-Item -ItemType Directory -Path $prepared -Force | Out-Null
         Copy-Item -LiteralPath "$source/release-plan.json" -Destination $prepared
-        Copy-Item -LiteralPath "$source/global.json" -Destination $prepared
-        Copy-Item -LiteralPath "$source/_infra" -Destination $prepared -Recurse
-        Copy-Item -LiteralPath "$source/_tool" -Destination $prepared -Recurse
+        Copy-Item -LiteralPath "$source/release-tool.zip" -Destination $prepared
         Copy-Item -LiteralPath "$source/${{ parameters.setName }}" -Destination $prepared -Recurse
       displayName: Create exact approval artifact
 
@@ -183,9 +164,7 @@ stages:
     condition: eq(dependencies.approval.result, 'Succeeded')
     variables:
       ReleasePlanHash: $[ stageDependencies.prepare_release.prepare_release.outputs['pinPlan.ReleasePlanHash'] ]
-      ReleaseToolHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolHash'] ]
-      GlobalJsonHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.GlobalJsonHash'] ]
-      DirectoryHashScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.DirectoryHashScriptHash'] ]
+      ReleaseToolBundleHash: $[ stageDependencies.prepare_release.prepare_release.outputs['buildTool.ToolBundleHash'] ]
     templateContext:
       type: releaseJob
       isProduction: true
@@ -198,46 +177,31 @@ stages:
 
     - pwsh: |
         $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
-        $globalJsonHash = (Get-FileHash -LiteralPath "$root/global.json" -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($globalJsonHash -ne $env:EXPECTED_GLOBAL_JSON_HASH) {
-          throw "global.json hash '$globalJsonHash' does not match '$env:EXPECTED_GLOBAL_JSON_HASH'."
+        $bundlePath = "$root/release-tool.zip"
+        $bundleHash = (Get-FileHash -LiteralPath $bundlePath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($bundleHash -ne $env:EXPECTED_TOOL_BUNDLE_HASH) {
+          throw "Release tool bundle hash '$bundleHash' does not match '$env:EXPECTED_TOOL_BUNDLE_HASH'."
         }
 
-        $hashScript = "$root/_infra/Get-DirectoryHash.ps1"
-        $hashScriptHash = (Get-FileHash -LiteralPath $hashScript -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($hashScriptHash -ne $env:EXPECTED_HASH_SCRIPT_HASH) {
-          throw "Directory hash script hash '$hashScriptHash' does not match '$env:EXPECTED_HASH_SCRIPT_HASH'."
+        $planPath = "$root/release-plan.json"
+        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
+          throw "Release plan hash '$planHash' does not match '$env:EXPECTED_PLAN_HASH'."
         }
-      displayName: Verify release infrastructure
+
+        $expanded = "$(Agent.TempDirectory)/release-tool"
+        Remove-Item -LiteralPath $expanded -Recurse -Force -ErrorAction Ignore
+        Expand-Archive -LiteralPath $bundlePath -DestinationPath $expanded
+      displayName: Verify and expand approved release tool
       env:
-        EXPECTED_GLOBAL_JSON_HASH: $(GlobalJsonHash)
-        EXPECTED_HASH_SCRIPT_HASH: $(DirectoryHashScriptHash)
+        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
+        EXPECTED_TOOL_BUNDLE_HASH: $(ReleaseToolBundleHash)
 
     - task: UseDotNet@2
       displayName: Install the .NET SDK
       inputs:
         useGlobalJson: true
-        workingDirectory: $(Pipeline.Workspace)/${{ parameters.artifactName }}
-
-    - pwsh: |
-        $root = "$(Pipeline.Workspace)/${{ parameters.artifactName }}"
-        $planPath = "$root/release-plan.json"
-        $toolPath = "$root/_tool/release.dll"
-
-        $planHash = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($planHash -ne $env:EXPECTED_PLAN_HASH) {
-          throw "Release plan hash '$planHash' does not match the prepared hash '$env:EXPECTED_PLAN_HASH'."
-        }
-
-        $toolHash = & "$root/_infra/Get-DirectoryHash.ps1" `
-          -Path (Split-Path -Parent $toolPath)
-        if ($toolHash -ne $env:EXPECTED_TOOL_HASH) {
-          throw "Release tool hash '$toolHash' does not match the prepared hash '$env:EXPECTED_TOOL_HASH'."
-        }
-      displayName: Verify approved artifact integrity
-      env:
-        EXPECTED_PLAN_HASH: $(ReleasePlanHash)
-        EXPECTED_TOOL_HASH: $(ReleaseToolHash)
+        workingDirectory: $(Agent.TempDirectory)/release-tool
 
     # Approval can remain open while another run publishes one of the same versions. This
     # recheck may only remove files from the approved set; it can never add a package.
@@ -259,7 +223,7 @@ stages:
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       displayName: Refresh already-published versions
       env:
-        RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+        RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
         ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
         SET_NAME: ${{ parameters.setName }}
         EXPECTED_PLAN_HASH: $(ReleasePlanHash)
@@ -282,14 +246,13 @@ stages:
             verify `
             --plan "$env:ARTIFACT_DIR/release-plan.json" `
             --set "$env:SET_NAME" `
-            --stage "$env:ARTIFACT_DIR" `
             --expected-plan-hash "$env:EXPECTED_PLAN_HASH" `
             --max-duration-minutes 30 `
             --poll-seconds 20
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         displayName: Verify packages on NuGet.org
         env:
-          RELEASE_TOOL: $(Pipeline.Workspace)/${{ parameters.artifactName }}/_tool/release.dll
+          RELEASE_TOOL: $(Agent.TempDirectory)/release-tool/_tool/release.dll
           ARTIFACT_DIR: $(Pipeline.Workspace)/${{ parameters.artifactName }}
           SET_NAME: ${{ parameters.setName }}
           EXPECTED_PLAN_HASH: $(ReleasePlanHash)

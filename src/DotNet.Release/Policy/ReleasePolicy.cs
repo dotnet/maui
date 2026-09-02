@@ -32,48 +32,52 @@ internal sealed class ReleasePolicy
     public IReadOnlyCollection<RepositoryPolicy> Repositories => (IReadOnlyCollection<RepositoryPolicy>)_repositories.Values;
 
     /// <summary>Parses policy JSON. Pure: the caller owns reading the file.</summary>
-    public static Result<ReleasePolicy> Parse(string json)
+    public static ReleasePolicy Parse(string json)
     {
         PolicyDocument? document;
         try
         {
-            document = JsonSerializer.Deserialize(json, PolicyJsonContext.Default.PolicyDocument);
+            document = JsonSerializer.Deserialize<PolicyDocument>(json, new JsonSerializerOptions
+            {
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true,
+            });
         }
         catch (JsonException ex)
         {
-            return Result<ReleasePolicy>.Failure(
-                ErrorCodes.PolicyInvalid,
-                $"The release policy is not valid JSON: {ex.Message}");
+            throw new DotNetReleaseException($"The release policy is not valid JSON: {ex.Message}");
         }
 
         if (document is null)
         {
-            return Result<ReleasePolicy>.Failure(ErrorCodes.PolicyInvalid, "The release policy is empty.");
+            throw new DotNetReleaseException("The release policy is empty.");
         }
 
         if (document.SchemaVersion != 1)
         {
-            return Result<ReleasePolicy>.Failure(
-                ErrorCodes.PolicyInvalid,
+            throw new DotNetReleaseException(
                 $"Unsupported release policy schemaVersion '{document.SchemaVersion}'; expected 1.");
         }
 
         if (document.Repositories is not { Count: > 0 })
         {
-            return Result<ReleasePolicy>.Failure(
-                ErrorCodes.PolicyInvalid,
+            throw new DotNetReleaseException(
                 "The release policy lists no repositories, so every release would fail closed.");
         }
 
-        var errors = new List<ReleaseError>();
+        var errors = new List<string>();
         var repositories = new Dictionary<string, RepositoryPolicy>(StringComparer.Ordinal);
 
         foreach (var (key, entry) in document.Repositories)
         {
-            var id = RepositoryId.Parse(key);
-            if (id.IsFailure)
+            RepositoryId id;
+            try
             {
-                errors.AddRange(id.Errors);
+                id = RepositoryId.Parse(key);
+            }
+            catch (DotNetReleaseException ex)
+            {
+                errors.Add(ex.Message);
                 continue;
             }
 
@@ -82,20 +86,16 @@ internal sealed class ReleasePolicy
             {
                 if (string.IsNullOrWhiteSpace(entry.Channel.Name) || entry.Channel.Id <= 0)
                 {
-                    errors.Add(new ReleaseError(
-                        ErrorCodes.PolicyInvalid,
-                        $"Repository '{key}' has a channel without a name or a positive ID."));
+                    errors.Add($"Repository '{key}' has a channel without a name or a positive ID.");
                     continue;
                 }
 
                 channel = new ChannelReference(entry.Channel.Name.Trim(), entry.Channel.Id);
             }
 
-            if (!repositories.TryAdd(id.Value.FullName, new RepositoryPolicy(id.Value, entry.Workload, channel)))
+            if (!repositories.TryAdd(id.FullName, new RepositoryPolicy(id, entry.Workload, channel)))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PolicyInvalid,
-                    $"Repository '{id.Value.FullName}' is listed more than once."));
+                errors.Add($"Repository '{id.FullName}' is listed more than once.");
             }
         }
 
@@ -104,43 +104,40 @@ internal sealed class ReleasePolicy
         {
             if (!int.TryParse(key, out var band) || band <= 0)
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PolicyInvalid,
-                    $"Workload set key '{key}' is not a positive .NET band number."));
+                errors.Add($"Workload set key '{key}' is not a positive .NET band number.");
                 continue;
             }
 
             if (string.IsNullOrWhiteSpace(entry.Channel) || string.IsNullOrWhiteSpace(entry.Feed))
             {
-                errors.Add(new ReleaseError(
-                    ErrorCodes.PolicyInvalid,
-                    $"Workload set '{key}' must declare both a channel and a feed."));
+                errors.Add($"Workload set '{key}' must declare both a channel and a feed.");
                 continue;
             }
 
             workloadSets[band] = new WorkloadSetPolicy(band, entry.Channel.Trim(), entry.Feed.Trim());
         }
 
-        return errors.Count > 0
-            ? Result<ReleasePolicy>.Failure(errors)
-            : Result<ReleasePolicy>.Success(new ReleasePolicy(repositories, workloadSets));
+        if (errors.Count > 0)
+        {
+            throw new DotNetReleaseException(errors);
+        }
+
+        return new ReleasePolicy(repositories, workloadSets);
     }
 
     /// <summary>Looks up a repository. An unlisted repository is an error, never a default.</summary>
-    public Result<RepositoryPolicy> GetRepository(RepositoryId repository) =>
+    public RepositoryPolicy GetRepository(RepositoryId repository) =>
         _repositories.TryGetValue(repository.FullName, out var policy)
-            ? Result<RepositoryPolicy>.Success(policy)
-            : Result<RepositoryPolicy>.Failure(
-                ErrorCodes.RepositoryNotAllowed,
+            ? policy
+            : throw new DotNetReleaseException(
                 $"Repository '{repository.FullName}' is not enabled for release. " +
                 $"Enabled repositories: {string.Join(", ", _repositories.Keys.Order(StringComparer.Ordinal))}.");
 
     /// <summary>Looks up the workload-set target for a .NET band.</summary>
-    public Result<WorkloadSetPolicy> GetWorkloadSet(int band) =>
+    public WorkloadSetPolicy GetWorkloadSet(int band) =>
         _workloadSets.TryGetValue(band, out var policy)
-            ? Result<WorkloadSetPolicy>.Success(policy)
-            : Result<WorkloadSetPolicy>.Failure(
-                ErrorCodes.WorkloadSetNotConfigured,
+            ? policy
+            : throw new DotNetReleaseException(
                 $"No workload set channel is configured for .NET {band}.");
 
     internal sealed class PolicyDocument
@@ -182,7 +179,3 @@ internal sealed class ReleasePolicy
         public string? Feed { get; init; }
     }
 }
-
-[JsonSourceGenerationOptions(ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true)]
-[JsonSerializable(typeof(ReleasePolicy.PolicyDocument))]
-internal sealed partial class PolicyJsonContext : JsonSerializerContext;

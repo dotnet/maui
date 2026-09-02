@@ -24,12 +24,12 @@ internal static class TestData
     }
     """;
 
-    public static RepositoryId Repo(string fullName) => RepositoryId.Parse(fullName).Value;
+    public static RepositoryId Repo(string fullName) => RepositoryId.Parse(fullName);
 
-    public static ReleasePolicy Policy(string? json = null) => ReleasePolicy.Parse(json ?? PolicyJson).Value;
+    public static ReleasePolicy Policy(string? json = null) => ReleasePolicy.Parse(json ?? PolicyJson);
 
     public static RepositoryPolicy RepoPolicy(string fullName) =>
-        Policy().GetRepository(Repo(fullName)).Value;
+        Policy().GetRepository(Repo(fullName));
 
     /// <summary>A stable fake content hash, so expectations stay readable.</summary>
     public static string Hash(string seed) =>
@@ -40,7 +40,7 @@ internal static class TestData
             fileName ?? $"{id}.{version}.nupkg",
             id,
             version,
-            PackageVersions.Normalize(version).IsSuccess ? PackageVersions.Normalize(version).Value : version,
+            PackageVersions.Normalize(version),
             Hash($"{id}/{version}"));
 
     public static BarBuild Build(
@@ -79,7 +79,7 @@ internal static class TestData
     {
         Id = id,
         Version = version,
-        NormalizedVersion = PackageVersions.Normalize(version).Value,
+        NormalizedVersion = PackageVersions.Normalize(version),
         FileName = $"{id}.{version}.nupkg",
         Sha256 = Hash($"{id}/{version}"),
     };

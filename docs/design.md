@@ -81,15 +81,14 @@ reflection or arbitrary HTTP code. Credential scoping is authoritative.
 
 ### Dry-run contract
 
-`publishPackages` defaults to `false`.
+`releaseMode` defaults to **Preview the package release without making changes**.
 
-For a dry run, the expanded pipeline MUST NOT contain:
+For either preview mode, the expanded pipeline MUST NOT contain:
 
 - `1ES.PublishNuget@1`;
 - the `nuget.org (dotnetframework)` service connection;
 - `release verify`;
 - `darc add-build-to-channel`;
-- a promotion gate.
 
 The matching package-set stage remains present. Its `preflight` job downloads the `Release`
 artifact, verifies plan/tool integrity, queries NuGet.org read-only, prunes already-published
@@ -109,11 +108,15 @@ The dry run DOES:
 - download assets from Azure DevOps feeds or blob storage;
 - read repository dependency metadata when Darc requires it;
 - write and copy files on the disposable agent;
-- upload plans, packages, markers, and the release executable as Azure DevOps artifacts;
+- upload plans, packages, and the release-tool bundle as Azure DevOps artifacts;
 - pause at the same package-set `ManualValidation@0` gates used by a publish run;
 - run the same production `releaseJob`, including approved-artifact download, integrity
   validation, and the final read-only prune;
 - produce logs, build tags, audit records, and mandatory 1ES compliance output.
+
+The workload-promotion preview additionally runs its approval and normal agent job, obtains
+Darc through Arcade, and reports the BAR build and channel it would use. The
+`add-build-to-channel` command is absent.
 
 The 1ES pipeline template is external code. Component-governance tooling may perform
 public-registry metadata lookups. If policy requires a literal network-level prohibition on
@@ -122,8 +125,9 @@ pipeline's exclusion of all NuGet.org release operations.
 
 ### Compile-time exclusion
 
-Mutating publish steps and the promotion stage are selected with Azure DevOps template
-expressions:
+The root maps the human-readable `releaseMode` dropdown onto booleans once. The package-set
+template accepts only the derived `publishPackages` boolean; it does not compare display
+strings. Mutating publish steps are selected with:
 
 ```yaml
 - ${{ if eq(parameters.publishPackages, true) }}:
@@ -137,12 +141,11 @@ integrity checks, and final prune.
 The package-set stages themselves always exist so a dry run validates stage selection,
 artifact download, SDK setup, tool execution, and local integrity.
 
-Workload-set promotion is compile-time excluded unless both operator opt-ins are true:
+The promotion stage is present only in the two modes that mention promotion. Its mutation
+step is present only in **Publish packages and promote the workload build**:
 
 ```yaml
-and(
-  eq(parameters.promoteWorkloadSet, true),
-  eq(parameters.publishPackages, true))
+- ${{ if eq(variables.promoteWorkloadSet, 'true') }}:
 ```
 
 Its runtime condition additionally requires the `IsWorkload` output emitted by
@@ -181,9 +184,8 @@ eng/pipelines/stages/publish-set.yml   internal reusable publish-stage definitio
 src/DotNet.Release/
   Program.cs                           CLI entry point
   Commands/                            handlers and shared artifact validation
-  ConsoleReporting.cs                  command output and exit codes
   Policy/                              pure release decisions
-  Model/                               plan, policy, marker, and result types
+  Model/                               transport models and release exception
   Adapters/                            read-only interfaces and implementations
   Pipeline/                            Azure DevOps logging-command formatting
 
@@ -195,19 +197,20 @@ The implementation is one executable project. Interfaces are retained where they
 remote reads testable:
 
 - `IBuildRegistry`;
-- `IPackageAvailabilityProbe`.
+- `INuGetPackageLookup`.
 
-NuGet availability has one additional internal seam:
-
-- `IPackageExistenceChecker` models the per-identity NuGet protocol call;
-- `IPackageAvailabilityProbe` models the batched operation consumed by prune and verify.
-
-The distinction is intentional. Probe tests substitute the per-identity checker to validate
-deduplication, concurrency, and exception behavior. Verb tests substitute the batch probe to
-model poll-level availability and transient failures.
+`NuGetPackageLookup` owns the NuGet protocol call, identity deduplication, and bounded
+concurrency behind that one batch-facing interface. Tests inject a delegate into the
+implementation when they need to observe individual lookups; there is no second production
+abstraction.
 
 No dependency-injection container is required. The CLI composition root constructs the
 production adapters directly.
+
+Expected release failures throw `DotNetReleaseException`, which `Program.Main` reports once
+with exit code 1. Validation that can find several actionable problems still aggregates
+their messages into one exception. Successful command output uses `TextWriter` so tests can
+capture the exact human-readable audit without a custom console or logging framework.
 
 ## Pipeline inputs
 
@@ -217,8 +220,7 @@ production adapters directly.
 | `ghRepo` | yes | `select-repository` | Fail-closed sentinel that the operator replaces with an enabled repository |
 | `commitHash` | yes | none | Exact full commit registered in BAR |
 | `barBuildId` | no | `skip` | Direct BAR lookup when commit lookup is insufficient |
-| `publishPackages` | yes | `false` | Include gated NuGet.org jobs in matching set stages |
-| `promoteWorkloadSet` | yes | `false` | Emit the gated BAR channel-promotion stage |
+| `releaseMode` | yes | Preview the package release without making changes | Select package preview/publication, with optional workload-promotion preview/publication |
 | `includeFilters` | no | `skip` | Semicolon-separated package filename globs |
 | `excludeFilters` | no | `skip` | Semicolon-separated package filename globs |
 | `recoveryFilters` | no | `skip` | Packages already submitted by this release |
@@ -233,8 +235,15 @@ Runs are tagged `DRY-RUN` or `PUBLISH`. After BAR resolution they also receive A
 established `BAR ID - <id>` tag and a matching `REPO - <owner/name>` tag, so release history
 can be filtered by either resolved identity.
 
-If `promoteWorkloadSet=true` and `publishPackages=false`, promotion is omitted and the run
-logs a warning.
+The four values are deliberately descriptive:
+
+- **Preview the package release without making changes**
+- **Preview packages and workload promotion without making changes**
+- **Publish packages to NuGet.org**
+- **Publish packages and promote the workload build**
+
+A promotion mode on a package-only repository fails instead of silently ignoring the
+operator's selection.
 
 ## Pipeline topology
 
@@ -256,23 +265,23 @@ checkout release-system source
 The gathered drop is placed under `Agent.TempDirectory`, not the artifact staging root.
 
 The prepare job builds the framework-dependent tool once with `dotnet build`, before any
-task acquires the Maestro production identity. The complete build output is hashed and
-stored in the immutable `Release` artifact. Publish jobs verify and execute that exact tool
-directory after approval without restoring or rebuilding it.
+task acquires the Maestro production identity. The uncompressed output remains in the
+initial artifact staging directory for 1ES binary scanning. `global.json` and that output
+are also compressed into one `release-tool.zip`; later jobs verify and execute that exact
+bundle after approval without restoring or rebuilding it.
 
 ### Workload-set promotion stage
 
-When requested for a workload repository:
+When a promotion mode is requested for a workload repository:
 
 1. an agentless `ManualValidation@0` job displays the plan for review;
-2. after approval, `darc add-build-to-channel --skip-assets-publishing` adds the BAR build
-   to the workload-set channel recorded in the plan.
+2. a normal agent job verifies the plan and obtains Darc through Arcade;
+3. a preview reports what would change, while the publishing mode runs
+   `darc add-build-to-channel --skip-assets-publishing`.
 
-Promotion is excluded from dry runs.
-
-When both promotion and package publishing are requested, `publish_packs` depends on
-successful promotion. Promotion therefore completes before the first NuGet.org approval;
-manifests remain ordered after verified packs.
+Whenever promotion is included, `publish_packs` depends on successful completion of that
+stage. The preview therefore exercises the same ordering as publication. Manifests remain
+ordered after verified packs.
 
 ### Package-set stages
 
@@ -291,7 +300,7 @@ ManualValidation@0
     -> verify plan and tool hashes
     -> refresh prune
 
-when publishPackages=true:
+when the selected mode publishes packages:
     -> 1ES.PublishNuget@1
     -> release verify
 
@@ -330,7 +339,7 @@ Non-workload releases produce one `publish_packages` stage.
 ## Repository policy
 
 `config/repositories.json` is authoritative. Repositories not listed in the file MUST fail
-with `REPO_NOT_ALLOWED`.
+before BAR or package work begins.
 
 ```jsonc
 {
@@ -417,7 +426,7 @@ dotnet-SkiaSharp -> dotnet/skiasharp
 ```
 
 The first hyphen separates owner and repository. A value that does not follow this
-convention fails with `BAR_MIRROR_NAME_INVALID`.
+convention fails with an explicit mirror-identity error.
 
 The plan records whether identity came from `GitHubRepository` or
 `AzureDevOpsMirrorConvention`.
@@ -506,12 +515,15 @@ All manifests must resolve to one configured band.
 
 ### Non-workload package set
 
-A non-workload release produces one package set and rejects any workload manifest with
-`MANIFEST_IN_NON_WORKLOAD`.
+A non-workload release produces one package set and explicitly rejects workload manifests.
 
 ## Release plan contract
 
 `release-plan.json` is the immutable contract crossing the prepare/publish job boundary.
+It is a machine transport object, not the human approval interface. The CLI MUST print every
+field in the resolved release, final plan, and prune report in a readable summary. In
+particular, the preflight log immediately before approval lists every package's identity,
+file name, hash, and final disposition.
 
 ```jsonc
 {
@@ -548,7 +560,7 @@ A non-workload release produces one package set and rejects any workload manifes
 }
 ```
 
-Unknown schema versions fail with `PLAN_SCHEMA_INVALID`.
+Unknown schema versions fail before the plan is used.
 
 ## Artifact contract
 
@@ -566,66 +578,45 @@ The artifact layout is:
 ```
 Release/
   release-plan.json
-  global.json
-  _infra/
-    Get-DirectoryHash.ps1
+  release-tool.zip
   _tool/
     release.dll
     release.deps.json
     <runtime dependencies>
   ReleasePackages/
     *.nupkg
-    release-set.json
 ```
 
 Workload releases contain `ReleasePacks/` and `ReleaseManifests/` instead of
 `ReleasePackages/`. There is one authoritative `release-plan.json` at the artifact root.
 
 Each matching preflight publishes a prepared artifact containing the pinned root plan,
-`global.json`, the pinned integrity helper and tool directory, and only that stage's pruned
-package-set directory. The approval artifact therefore cannot contain an unpruned sibling
-workload set and the release job needs no source checkout.
-
-### Set marker
-
-`release-set.json` declares:
-
-- schema version;
-- set display name;
-- artifact name;
-- BAR build ID;
-- commit.
-
-`prune-published` and `verify` require `--set` and check the marker before using the directory. A
-valid but wrong artifact therefore fails with `PACKAGE_SET_MISMATCH` instead of a misleading
-missing-file error.
-
-The marker does not source package identities. A missing, changed, or swapped marker can
-only fail the release; it cannot cause a different package to publish.
+the pinned tool bundle, and only that stage's pruned package-set directory. The approval
+artifact therefore cannot contain an unpruned sibling workload set and the release job
+needs no source checkout.
 
 ## Integrity chain
 
 The prepare stage:
 
-1. builds the C# project into `Release/_tool`;
-2. computes a deterministic hash over every file and relative path in `_tool` as `ToolHash`;
-3. copies `global.json` and `Get-DirectoryHash.ps1` into the artifact and hashes both;
+1. builds the C# project into `Release/_tool` for execution and binary scanning;
+2. bundles `global.json` and `_tool` into `release-tool.zip`;
+3. hashes that bundle once as `ToolBundleHash`;
 4. executes `_tool/release.dll` for `plan` and `stage`;
 5. records every package SHA-256 in the plan;
 6. writes one authoritative plan into the release artifact root;
 7. computes the plan hash independently with `Get-FileHash`;
-8. exports all infrastructure, tool, and plan hashes.
+8. exports `ToolBundleHash` and `ReleasePlanHash`.
 
 The publish job:
 
 1. downloads the stage's exact prepared artifact without checking out source;
-2. verifies the copied `global.json` and integrity-helper hashes;
-3. installs the SDK selected by the copied `global.json`;
+2. verifies `release-tool.zip` with `ToolBundleHash`;
+3. expands it and installs the SDK selected by its `global.json`;
 4. compares raw plan bytes with `ReleasePlanHash`;
-5. recomputes the complete `_tool` directory hash and compares it with `ToolHash`;
-6. executes that DLL for `prune-published`;
-7. validates all pending package hashes before invoking 1ES;
-8. executes the same DLL for `verify` with the same expected plan hash.
+5. executes the bundled DLL for `prune-published`;
+6. validates all pending package hashes before invoking 1ES;
+7. executes the same DLL for `verify` with the same expected plan hash.
 
 Unexpected `.nupkg` files, missing pending files, and changed package bytes fail closed.
 Companion JSON and executable files are excluded by the `.nupkg` enumeration.
@@ -687,8 +678,7 @@ For partial publication:
 2. `prune-published` removes packages already visible on NuGet.org;
 3. if NuGet.org accepted a package but it is not yet visible, add its filename to
    `recoveryFilters`;
-4. each recovery filter must match a package anywhere in the release plan or the run fails with
-   `FILTER_UNMATCHED`;
+4. each recovery filter must match a package anywhere in the release plan or the run fails;
 5. verification still requires every planned package, including recovered packages.
 
 Recovery filters are release-scoped. A pack-only filter remains valid while the manifest
@@ -752,7 +742,7 @@ package-publication result.
 
 Before using the system for a production push:
 
-1. queue a dry run with `publishPackages=false`;
+1. queue **Preview the package release without making changes**;
 2. confirm matching preflight jobs query NuGet.org and produce pruned artifacts;
 3. complete the package-set approval and confirm the production release job runs;
 4. confirm no 1ES push, verification, or BAR mutation step exists;
@@ -778,17 +768,16 @@ Tests MUST fail when:
 
 - the pipeline repository dropdown differs from policy;
 - workload and non-workload stages do not use the `release plan` classification output;
-- a remote publish operation is not structurally nested beneath `publishPackages=true`;
-- package-set local validation is nested beneath `publishPackages=true`;
-- BAR promotion is not nested beneath both publish and promotion opt-ins;
+- a remote publish operation is not structurally nested beneath the derived publish boolean;
+- package-set local validation is nested beneath the derived publish boolean;
+- BAR mutation is not structurally nested beneath the derived promotion boolean;
 - queue-time parameters appear in executable PowerShell text;
 - the NuGet.org task, connection, or known push mechanisms appear in the root dry-run graph;
-- Darc is not installed, pinned, carried, hashed, and invoked by exact path;
+- Darc is not obtained through Arcade in normal jobs or appears in package release artifacts;
 - `ManualValidation@0` is not an agentless predecessor of the mutating job;
 - pack/manifests stage ordering is broken;
 - the tool references NuGet's push API;
 - the tool references `System.Diagnostics.Process`;
-- the plan, marker, package, or executable hash chain is inconsistent;
+- the plan, package, or executable hash chain is inconsistent;
 - a future plan schema is read by an older tool;
-- a package-set marker does not match its directory;
 - an unexpected or changed `.nupkg` enters the publish set.

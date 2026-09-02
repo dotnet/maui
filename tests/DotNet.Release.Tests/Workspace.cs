@@ -3,19 +3,15 @@ using System.Text;
 
 namespace DotNet.Release.Tests;
 
-internal sealed class RecordingConsole : IReleaseConsole
+internal sealed class RecordingWriter : TextWriter
 {
+    public override Encoding Encoding => Encoding.UTF8;
+
     public List<string> Output { get; } = [];
 
-    public List<string> Errors { get; } = [];
+    public string AllOutput => string.Join(Environment.NewLine, Output);
 
-    public string AllOutput => string.Join("\n", Output);
-
-    public string AllErrors => string.Join("\n", Errors);
-
-    public void WriteLine(string message) => Output.Add(message);
-
-    public void WriteError(string message) => Errors.Add(message);
+    public override void WriteLine(string? value) => Output.Add(value ?? string.Empty);
 }
 
 internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
@@ -37,7 +33,7 @@ internal sealed class FakeRegistry(params BarBuild[] builds) : IBuildRegistry
     }
 }
 
-internal sealed class FakeProbe(params string[] published) : IPackageAvailabilityProbe
+internal sealed class FakeProbe(params string[] published) : INuGetPackageLookup
 {
     private readonly HashSet<string> _published = new(published, StringComparer.OrdinalIgnoreCase);
 
