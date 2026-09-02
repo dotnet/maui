@@ -1586,6 +1586,16 @@ static class UpdateComponentCodeWriter
 			// Step 1: CreateValue — resolves type, handles early extensions (DynamicResource, x:Static, etc.)
 			CreateValuesVisitor.CreateValue(elementNode, captureWriter, ctx.Variables, compilation, xmlnsCache, ctx);
 
+			var referenceExtensionType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension");
+			foreach (var propertyNode in elementNode.Properties.Values.OfType<ElementNode>())
+			{
+				var isReferenceExtension = referenceExtensionType is not null
+					&& propertyNode.XmlType.TryResolveTypeSymbol(null, compilation, xmlnsCache, typeCache, out var propertyType)
+					&& SymbolEqualityComparer.Default.Equals(propertyType, referenceExtensionType);
+				if (!isReferenceExtension)
+					CreateValuesVisitor.CreateValue(propertyNode, captureWriter, ctx.Variables, compilation, xmlnsCache, ctx);
+			}
+
 			// Step 2: SetPropertiesVisitor — sets properties on the extension object
 			var setPropsVisitor = new SetPropertiesVisitor(ctx);
 			foreach (var kvp in elementNode.Properties)
@@ -1604,7 +1614,6 @@ static class UpdateComponentCodeWriter
 			if (ctx.Variables.TryGetValue(elementNode, out var extVar))
 			{
 				var elementType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element");
-				var referenceExtensionType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ReferenceExtension");
 
 				foreach (var kvp in elementNode.Properties)
 				{
@@ -1747,14 +1756,12 @@ static class UpdateComponentCodeWriter
 
 	static bool TryGetReferenceName(ElementNode referenceElement, out string referenceName)
 	{
-		foreach (var property in referenceElement.Properties)
+		if ((referenceElement.Properties.TryGetValue(new XmlName("", "Name"), out var nameNode)
+				|| referenceElement.Properties.TryGetValue(new XmlName(null, "Name"), out nameNode))
+			&& nameNode is ValueNode { Value: string name })
 		{
-			if (property.Key.LocalName == "Name"
-				&& property.Value is ValueNode { Value: string name })
-			{
-				referenceName = name;
-				return true;
-			}
+			referenceName = name;
+			return true;
 		}
 
 		if (referenceElement.CollectionItems.Count == 1

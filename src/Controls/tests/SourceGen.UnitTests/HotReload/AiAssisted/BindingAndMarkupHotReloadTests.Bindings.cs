@@ -85,6 +85,114 @@ public partial class BindingAndMarkupHotReloadTests
 	}
 
 	[MetadataUpdateFact]
+	public void XReferenceBinding_RetargetsToAnotherLiveName()
+	{
+		const string pageStub = """
+			namespace TestAiAssisted;
+
+			public partial class MainPage : global::Microsoft.Maui.Controls.ContentPage
+			{
+				internal global::Microsoft.Maui.Controls.Label CaptionLabel = null!;
+				internal global::Microsoft.Maui.Controls.Label SubtitleLabel = null!;
+
+				private partial void InitializeComponent();
+
+				public MainPage()
+				{
+					InitializeComponent();
+				}
+			}
+			""";
+		const string xamlV0 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption" />
+			    <Label x:Name="SubtitleLabel" Text="Subtitle" />
+			    <Label Text="{Binding Source={x:Reference Name=CaptionLabel}, Path=Text, StringFormat='echo {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption" />
+			    <Label x:Name="SubtitleLabel" Text="Subtitle" />
+			    <Label Text="{Binding Source={x:Reference Name=SubtitleLabel}, Path=Text, StringFormat='mirror {0}'}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = new XamlHotReloadTestHarness(
+			nameof(XReferenceBinding_RetargetsToAnotherLiveName),
+			PageClass,
+			pageStub,
+			BindingAndMarkupSource);
+		var generation = harness.Generate(xamlV0, xamlV1);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var layout = Assert.IsType<VerticalStackLayout>(page.Content);
+			var caption = Assert.IsType<Label>(layout.Children[0]);
+			var subtitle = Assert.IsType<Label>(layout.Children[1]);
+			var formatted = Assert.IsType<Label>(layout.Children[2]);
+
+			Assert.Equal("echo Caption", formatted.Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Same(caption, layout.Children[0]);
+			Assert.Same(subtitle, layout.Children[1]);
+			Assert.Same(formatted, layout.Children[2]);
+			Assert.Equal("mirror Subtitle", formatted.Text);
+
+			var registration = GetTextRegistration(formatted);
+			var binding = Assert.IsAssignableFrom<BindingBase>(registration.Binding);
+			Assert.Same(subtitle, binding.GetType().GetProperty("Source")!.GetValue(binding));
+
+			subtitle.Text = "Subtitle V1";
+			Assert.Equal("mirror Subtitle V1", formatted.Text);
+		});
+	}
+
+	[Fact]
+	public void XReferenceBinding_NamespacedNameDoesNotOverrideReferenceName()
+	{
+		const string xamlV0 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption" />
+			    <Label x:Name="SubtitleLabel" Text="Subtitle" />
+			    <Label Text="{Binding Source={x:Reference CaptionLabel}, Path=Text}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+		const string xamlV1 = """
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			             x:Class="TestAiAssisted.MainPage">
+			  <VerticalStackLayout>
+			    <Label x:Name="CaptionLabel" Text="Caption" />
+			    <Label x:Name="SubtitleLabel" Text="Subtitle" />
+			    <Label Text="{Binding Source={x:Reference x:Name=CaptionLabel, Name=SubtitleLabel}, Path=Text}" />
+			  </VerticalStackLayout>
+			</ContentPage>
+			""";
+
+		using var harness = CreateHarness();
+		var generation = harness.Generate(xamlV0, xamlV1);
+		var updateSource = Assert.IsType<string>(generation[1].UpdateComponentSource);
+
+		Assert.Contains("FindByName(\"SubtitleLabel\")", updateSource, StringComparison.Ordinal);
+		Assert.DoesNotContain("FindByName(\"CaptionLabel\")", updateSource, StringComparison.Ordinal);
+	}
+
+	[MetadataUpdateFact]
 	public void XReferenceBinding_RenamedUnregisteredName_DoesNotClearExistingSource()
 	{
 		const string pageStub = """
@@ -175,6 +283,17 @@ public partial class BindingAndMarkupHotReloadTests
 			"FindByName(\"Custom\")",
 			Assert.IsType<string>(generation[1].UpdateComponentSource),
 			StringComparison.Ordinal);
+
+		harness.RunLive(generation, live =>
+		{
+			var page = live.GetInstance<ContentPage>();
+			var label = Assert.IsType<Label>(page.Content);
+			Assert.Equal("echo Custom", label.Text);
+
+			Assert.Same(page, live.ApplyUpdate<ContentPage>(1));
+			Assert.Same(label, page.Content);
+			Assert.Equal("mirror Custom", label.Text);
+		});
 	}
 
 	[MetadataUpdateFact]
