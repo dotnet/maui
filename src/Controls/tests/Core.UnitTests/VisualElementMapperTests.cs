@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -257,6 +258,194 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, semanticsCalls);
 		}
 
+		// Reproduces a mapper that runs *later* in the same bulk connect pass than BackgroundColor's own
+		// turn and legitimately changes BackgroundColor, forcing a further, explicit re-entrant
+		// UpdateValue call. That call must not be suppressed just because BackgroundColor's own turn
+		// already ran (and was a no-op) earlier in the very same pass.
+		[Fact]
+		public void Connect_LaterMapperChangesBackgroundColor_ReentrantUpdateStillApplies()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			// A brand new key is guaranteed to be enumerated after every key RemapForControls/the real
+			// ViewHandler.ViewMapper already registers (including BackgroundColor), simulating a mapper
+			// that legitimately runs later in the same bulk pass.
+			mapper.Add("__LaterMapperReentry", (h, v) =>
+			{
+				((VisualElement)v).BackgroundColor = Colors.Green;
+				h.UpdateValue(nameof(VisualElement.BackgroundColor));
+			});
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handlerStub.SetVirtualView(button);
+
+			// Once for the natural Background key entry (BackgroundColor's own turn is then a no-op and
+			// is skipped), once more for the later mapper's explicit re-entrant call after BackgroundColor
+			// legitimately changed.
+			Assert.Equal(2, backgroundCalls);
+			Assert.Equal(Colors.Green, button.BackgroundColor);
+		}
+
+		// Same as above, but for handler reuse/reconnect: the later-mapper re-entrant call must still not
+		// be suppressed on a reused handler.
+		[Fact]
+		public void Reconnect_LaterMapperChangesBackgroundColor_ReentrantUpdateStillApplies()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			mapper.Add("__LaterMapperReentry", (h, v) =>
+			{
+				((VisualElement)v).BackgroundColor = Colors.Purple;
+				h.UpdateValue(nameof(VisualElement.BackgroundColor));
+			});
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var firstView = new Button { BackgroundColor = Colors.Red };
+			handlerStub.SetVirtualView(firstView);
+
+			Assert.Equal(2, backgroundCalls);
+			Assert.Equal(Colors.Purple, firstView.BackgroundColor);
+
+			backgroundCalls = 0;
+			var secondView = new Button { BackgroundColor = Colors.Blue };
+			handlerStub.SetVirtualView(secondView);
+
+			Assert.Equal(2, backgroundCalls);
+			Assert.Equal(Colors.Purple, secondView.BackgroundColor);
+		}
+
+		// Same reasoning as Connect_LaterMapperChangesBackgroundColor_ReentrantUpdateStillApplies, but for
+		// the SemanticProperties.Description redirect.
+		[Fact]
+		public void Connect_LaterMapperChangesSemanticDescription_ReentrantUpdateStillApplies()
+		{
+			int semanticsCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Semantics)] = (h, v) => semanticsCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			mapper.Add("__LaterMapperReentry", (h, v) =>
+			{
+				SemanticProperties.SetDescription((VisualElement)v, "Changed later");
+				h.UpdateValue(SemanticProperties.DescriptionProperty.PropertyName);
+			});
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button();
+			SemanticProperties.SetDescription(button, "Initial");
+
+			handlerStub.SetVirtualView(button);
+
+			Assert.Equal(2, semanticsCalls);
+			Assert.Equal("Changed later", SemanticProperties.GetDescription(button));
+		}
+
+		// Reproduces a handler that explicitly primes BackgroundColor from within ConnectHandler - i.e.
+		// before the Background key has ever been mapped for this element/handler. That explicit call must
+		// not be suppressed just because the handler is in the Connecting state.
+		[Fact]
+		public void ConnectHandler_ExplicitEarlyBackgroundColorUpdate_IsNotSuppressed()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new EarlyBackgroundColorConnectHandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handlerStub.SetVirtualView(button);
+
+			// One call from ConnectHandler's explicit early UpdateValue(BackgroundColor) - which must not
+			// be suppressed, since Background has never been mapped for this element yet - and one more
+			// from the bulk pass's own, always-unconditional Background key entry. BackgroundColor's own
+			// turn later in that same bulk pass is then a genuine no-op and is skipped.
+			Assert.Equal(2, backgroundCalls);
+		}
+
+		// A consumer fully replacing the BackgroundColor mapping via ReplaceMapping must run their own
+		// logic instead of MapBackgroundColorForControls; our de-duplication logic must not interfere.
+		[Fact]
+		public void ReplaceMapping_UserReplacesBackgroundColorMapping_UserMappingRunsInstead()
+		{
+			bool userMappingRan = false;
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) => backgroundCalls++,
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			mapper.ReplaceMapping<IView, IViewHandler>(nameof(VisualElement.BackgroundColor), (h, v) => userMappingRan = true);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handlerStub.SetVirtualView(button);
+
+			Assert.True(userMappingRan);
+			// Only the natural Background key entry runs; MapBackgroundColorForControls (and our
+			// de-dup logic) isn't reachable anymore since ReplaceMapping fully discarded it.
+			Assert.Equal(1, backgroundCalls);
+		}
+
+		// A consumer using PrependToMapping on the Background key itself must have their mapping run
+		// before the canonical mapping, and our de-duplication must keep working correctly afterward.
+		[Fact]
+		public void PrependToMapping_UserPrependsToBackgroundMapping_RunsBeforeCanonicalMappingAndDedupStillWorks()
+		{
+			var order = new List<string>();
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper)
+			{
+				[nameof(IView.Background)] = (h, v) =>
+				{
+					order.Add("canonical");
+					backgroundCalls++;
+				},
+			};
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			mapper.PrependToMapping<IView, IViewHandler>(nameof(IView.Background), (h, v) => order.Add("prepend"));
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handlerStub.SetVirtualView(button);
+
+			Assert.Equal(new[] { "prepend", "canonical" }, order);
+			// The redirect is still correctly deduplicated even with the user's prepended mapping.
+			Assert.Equal(1, backgroundCalls);
+		}
+
 		class PageHandlerStub : ViewHandler<ContentPage, object>
 		{
 			public PageHandlerStub(IPropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
@@ -264,6 +453,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			protected override object CreatePlatformView() => new object();
+		}
+
+		class EarlyBackgroundColorConnectHandlerStub : ViewHandler<Button, object>
+		{
+			public EarlyBackgroundColorConnectHandlerStub(IPropertyMapper mapper, CommandMapper commandMapper = null) : base(mapper, commandMapper)
+			{
+			}
+
+			protected override object CreatePlatformView() => new object();
+
+			protected override void ConnectHandler(object platformView)
+			{
+				base.ConnectHandler(platformView);
+
+				// Simulate a handler that explicitly primes BackgroundColor from within ConnectHandler,
+				// before the Background key has ever been mapped for this element/handler.
+				UpdateValue(nameof(VisualElement.BackgroundColor));
+			}
 		}
 	}
 }
