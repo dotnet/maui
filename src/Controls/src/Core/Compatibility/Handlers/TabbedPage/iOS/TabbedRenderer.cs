@@ -376,6 +376,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return GetViewController(current);
 		}
 
+#if !MACCATALYST
+		public override UIViewController ChildViewControllerForStatusBarStyle() =>
+			ChildViewControllerForStatusBarHidden();
+#endif
+
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
 		{
 			if (Page is Page page)

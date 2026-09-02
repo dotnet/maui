@@ -4,10 +4,16 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform
 {
-	// TODO: Make this class public in .NET11.0. Issue Link: https://github.com/dotnet/maui/issues/30205
-	internal partial class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
+	/// <summary>
+	/// Provides automation peer behavior for a .NET MAUI border on Windows.
+	/// </summary>
+	public partial class MauiBorderAutomationPeer : FrameworkElementAutomationPeer
 	{
-		internal MauiBorderAutomationPeer(ContentPanel owner) : base(owner) { }
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MauiBorderAutomationPeer"/> class.
+		/// </summary>
+		/// <param name="owner">The content panel associated with the border.</param>
+		public MauiBorderAutomationPeer(ContentPanel owner) : base(owner) { }
 
 		protected override AutomationControlType GetAutomationControlTypeCore()
 		{

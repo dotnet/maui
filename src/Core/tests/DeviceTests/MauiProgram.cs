@@ -14,10 +14,19 @@ namespace Microsoft.Maui.DeviceTests
 		public static UI.Xaml.Window DefaultWindow => MauiProgramDefaults.DefaultWindow;
 #endif
 
+		/// <summary>
+		/// Records platform lifecycle event names in the order they fire during app startup.
+		/// Used by LifecycleEventOrderTests to validate event ordering.
+		/// </summary>
+		public static List<string> LifecycleEventLog { get; } = new();
+
 		public static IApplication DefaultTestApp { get; private set; }
 
-		public static MauiApp CreateMauiApp() =>
-			MauiProgramDefaults.CreateMauiApp((sp) =>
+		public static MauiApp CreateMauiApp()
+		{
+			LifecycleEventLog.Clear();
+
+			return MauiProgramDefaults.CreateMauiApp((sp) =>
 			{
 				var options = new TestOptions
 				{
@@ -29,6 +38,29 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				return options;
+			},
+			configureBuilder: builder =>
+			{
+#if WINDOWS
+				builder.ConfigureLifecycleEvents(life =>
+				{
+					life.AddWindows(windows =>
+					{
+						windows.OnAppInstanceActivated((app, args) =>
+						{
+							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnAppInstanceActivated));
+							return false;
+						});
+						windows.OnLaunching((app, args) =>
+							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnLaunching)));
+						windows.OnLaunched((app, args) =>
+							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnLaunched)));
+						windows.OnWindowCreated(w =>
+							LifecycleEventLog.Add(nameof(WindowsLifecycle.OnWindowCreated)));
+					});
+				});
+#endif
 			});
+		}
 	}
 }

@@ -15,7 +15,14 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 {
-	//This set of tests is for validating Microsoft.Maui.Controls.targets
+	// This set of tests is for validating Microsoft.Maui.Controls.targets.
+	//
+	// Contract under test: SourceGen is the default XAML inflator, and the legacy
+	// `XamlC` MSBuild target must NOT run on a default build. Tests verify:
+	//   1. XamlC is SKIPPED when all XAML uses SourceGen (BuildAProject, LinkedFile,
+	//      RandomXml, RandomEmbeddedResource, NoXamlFiles).
+	//   2. XamlC DOES run when files use the XamlC or Runtime inflator
+	//      (XamlCRunsWhenDeprecatedInflatorUsed, covering both gate branches).
 	[Trait("Category", "LongRunning")]
 	public class MSBuildTests : IDisposable
 	{
@@ -24,6 +31,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			"Microsoft.Maui.Controls.Xaml.dll",
 			"Microsoft.Maui.dll",
 		};
+
+		/// <summary>
+		/// Opts a test into the XamlC inflator — for tests whose subject is the XamlC build target,
+		/// which is gated off under the SourceGen default. Bare "XamlC" (not "SourceGen,XamlC")
+		/// avoids two traps: commas in -p: values split as CLI switches, and the combo produces a
+		/// duplicate InitializeComponent (CS0111). WarningsNotAsErrors=MAUI1001 silences the
+		/// inflator-deprecation warning.
+		/// </summary>
+		private const string XamlCOptIn = "-p:MauiXamlInflator=XamlC -p:WarningsNotAsErrors=MAUI1001";
 
 		class Xaml
 		{
@@ -167,8 +183,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 			project.Add(itemGroup);
 
-			//Let's enable XamlC assembly-wide
-			project.Add(AddFile("AssemblyInfo.cs", "Compile", "[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
+			// Legacy assembly-wide XamlC attribute. The inflator is now chosen by MauiXamlInflator,
+			// so this is a no-op — the skip tests rely on it NOT forcing the XamlC target.
+			project.Add(AddFile("AssemblyInfo.cs", "Compile", "#pragma warning disable CS0618\n[assembly: Microsoft.Maui.Controls.Xaml.XamlCompilation (Microsoft.Maui.Controls.Xaml.XamlCompilationOptions.Compile)]"));
 
 			//Add a single CSS file
 			project.Add(AddFile("Foo.css", "MauiCss", Css.Foo));
@@ -186,14 +203,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			return itemGroup;
 		}
 
-		void WriteFile(string name, string contents)
-		{
-			var filePath = IOPath.Combine(tempDirectory, name.Replace('\\', IOPath.DirectorySeparatorChar).Replace('/', IOPath.DirectorySeparatorChar));
-			Directory.CreateDirectory(IOPath.GetDirectoryName(filePath));
-			File.WriteAllText(filePath, contents);
-		}
-
-		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true)
+		string Build(string projectFile, string target = "Build", string verbosity = "normal", string additionalArgs = "", bool shouldSucceed = true, string command = "build")
 		{
 			var builder = new StringBuilder();
 			void onData(object s, DataReceivedEventArgs e)
@@ -226,7 +236,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var psi = new ProcessStartInfo
 			{
 				FileName = dotnet,
-				Arguments = $"build -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
+				Arguments = $"{command} -v:{verbosity} -nologo {projectFile} -t:{target} -bl {additionalArgs}",
 				CreateNoWindow = true,
 				WindowStyle = ProcessWindowStyle.Hidden,
 				UseShellExecute = false,
@@ -273,6 +283,13 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.False(File.Exists(path), $"{path} should *not* exist!");
 		}
 
+		void WriteFile(string name, string contents)
+		{
+			var filePath = IOPath.Combine(tempDirectory, name.Replace('\\', IOPath.DirectorySeparatorChar).Replace('/', IOPath.DirectorySeparatorChar));
+			Directory.CreateDirectory(IOPath.GetDirectoryName(filePath));
+			File.WriteAllText(filePath, contents);
+		}
+
 		void AssertTypeExists(string assemblyPath, string fullTypeName)
 		{
 			using var assembly = AssemblyDefinition.ReadAssembly(assemblyPath);
@@ -299,7 +316,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			// Assign the synthetic TargetPlatformIdentifier from a private test-only property
 			// inside a target rather than as a global 'dotnet build' property. Passing a platform
 			// TPI globally makes the SDK attempt workload resolution during evaluation for what is a
-			// plain net10.0 (non-platform) project, which fails on CI agents without that workload
+			// plain net11.0 (non-platform) project, which fails on CI agents without that workload
 			// (NETSDK1208 / NETSDK1178) before the SingleProject targets under test ever run. Setting
 			// it here — after SDK evaluation but before the SingleProject compile-filtering targets —
 			// keeps the tests workload-neutral while still exercising the TPI-dependent logic (the
@@ -342,7 +359,58 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+		}
+
+		[Theory]
+		[InlineData(null, true)]
+		[InlineData("false", true)]
+		[InlineData("true", false)]
+		public void MauiEnableFullReadyToRunControlsPartialR2RAndPgo(string enableFullReadyToRun, bool expectPartialReadyToRun)
+		{
+			SetUp();
+
+			var targetsDirectory = IOPath.Combine(tempDirectory, "targets");
+			var targetsPath = IOPath.Combine(targetsDirectory, "Microsoft.Maui.Controls.targets");
+			Directory.CreateDirectory(IOPath.Combine(targetsDirectory, "mibc", "android"));
+			File.Copy(
+				AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "src", "Build.Tasks", "nuget", "buildTransitive", "netstandard2.0", "Microsoft.Maui.Controls.targets")),
+				targetsPath);
+			File.WriteAllText(IOPath.Combine(targetsDirectory, "mibc", "android", "test.mibc"), "");
+
+			var project = NewElement("Project");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetPlatformIdentifier").WithValue("android"));
+			propertyGroup.Add(NewElement("UseMonoRuntime").WithValue("false"));
+			propertyGroup.Add(NewElement("Configuration").WithValue("Release"));
+			propertyGroup.Add(NewElement("PublishReadyToRun").WithValue("true"));
+			propertyGroup.Add(NewElement("PublishReadyToRunCrossgen2ExtraArgs").WithValue("existing"));
+			if (enableFullReadyToRun is not null)
+				propertyGroup.Add(NewElement("MauiEnableFullReadyToRun").WithValue(enableFullReadyToRun));
+			project.Add(propertyGroup);
+			project.Add(NewElement("Import").WithAttribute("Project", targetsPath));
+
+			var reportTarget = NewElement("Target").WithAttribute("Name", "ReportReadyToRun");
+			reportTarget.Add(NewElement("Message").WithAttribute("Importance", "High").WithAttribute("Text", "R2R_ARGS=$(PublishReadyToRunCrossgen2ExtraArgs)"));
+			reportTarget.Add(NewElement("Message").WithAttribute("Importance", "High").WithAttribute("Text", "R2R_PGO=@(_ReadyToRunPgoFiles)"));
+			project.Add(reportTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.proj");
+			project.Save(projectFile);
+			var log = Build(projectFile, target: "ReportReadyToRun", command: "msbuild");
+
+			if (expectPartialReadyToRun)
+			{
+				Assert.Contains("R2R_ARGS=existing;--partial", log, StringComparison.Ordinal);
+				Assert.Contains("test.mibc", log, StringComparison.Ordinal);
+			}
+			else
+			{
+				Assert.Contains("R2R_ARGS=existing", log, StringComparison.Ordinal);
+				Assert.DoesNotContain("--partial", log, StringComparison.Ordinal);
+				Assert.DoesNotContain("test.mibc", log, StringComparison.Ordinal);
+			}
 		}
 
 		[Theory]
@@ -355,12 +423,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
+			// Pin XIHR off: this test covers the legacy ResourceProvider2 hot-reload fallback
+			// (InitializeComponentRuntime), which XAML Incremental Hot Reload intentionally supersedes
+			// when enabled (on by default in Debug). See dotnet/maui#36682.
+			Build(projectFile, additionalArgs: $"-c {configuration} -p:MauiXamlInflator=SourceGen -p:EnableMauiIncrementalHotReload=false -p:EmitCompilerGeneratedFiles=True -p:CompilerGeneratedFilesOutputPath=Generated");
 
 			var generatorDirectory = IOPath.Combine(tempDirectory, "Generated", "Microsoft.Maui.Controls.SourceGen", "Microsoft.Maui.Controls.SourceGen.XamlGenerator");
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"), nonEmpty: true);
 			AssertExists(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"), nonEmpty: true);
-			
+
 			var sg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.sg.cs"));
 			var xsg = File.ReadAllText(IOPath.Combine(generatorDirectory, "MainPage.xaml.xsg.cs"));
 			if (configuration == "Debug")
@@ -369,14 +440,14 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 				Assert.Contains("InitializeComponentRuntime", xsg, StringComparison.Ordinal);
 			}
 			else
-            {
+			{
 				Assert.DoesNotContain("InitializeComponentRuntime", sg, StringComparison.Ordinal);
 				Assert.DoesNotContain("InitializeComponentRuntime", xsg, StringComparison.Ordinal);
-            }
+			}
 
 		}
 
-		// Tests the MauiXamlCValidateOnly=True MSBuild property
+		// Tests the default build behavior with SourceGen inflator
 		[Theory]
 		[InlineData("Debug")]
 		[InlineData("Release")]
@@ -395,16 +466,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(testDll, nonEmpty: true);
 			using var assembly = AssemblyDefinition.ReadAssembly(testDll);
 			var resources = assembly.MainModule.Resources.OfType<EmbeddedResource>().Select(e => e.Name).ToArray();
-			if (configuration == "Debug")
-			{
-				// XAML files should remain as EmbeddedResource
-				Assert.Contains("test.MainPage.xaml", resources);
-			}
-			else
-			{
-				// XAML files should *not* remain as EmbeddedResource
-				Assert.DoesNotContain("test.MainPage.xaml", resources);
-			}
+			// With SourceGen as default inflator, XAML files are not embedded as resources
+			Assert.DoesNotContain("test.MainPage.xaml", resources);
 		}
 
 		[Fact(Skip = "source gen changes")]
@@ -431,7 +494,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC subject test — see XamlCOptIn doc
+			Build(projectFile, additionalArgs: XamlCOptIn);
 
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 			AssertExists(xamlCStamp);
@@ -439,7 +503,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var expectedXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
 
 			//Build again
-			Build(projectFile);
+			Build(projectFile, additionalArgs: XamlCOptIn);
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
@@ -457,7 +521,9 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC subject test — see XamlCOptIn doc.
+			// Clean keys off <FileWrites> recorded during this build, so the Clean invocation below does not need it.
+			Build(projectFile, additionalArgs: XamlCOptIn);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
 			var fooCssG = IOPath.Combine(intermediateDirectory, "Foo.css.g.cs");
@@ -490,7 +556,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		//https://github.com/dotnet/project-system/blob/master/docs/design-time-builds.md
@@ -508,20 +575,19 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			if (File.Exists(xamlCStamp))
 				System.IO.File.Delete(xamlCStamp);
-			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
+			AssertDoesNotExist(xamlCStamp); // precondition: stamp cleared before DTB build
 
-			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True");
-
+			Build(projectFile, "Compile", additionalArgs: "-p:DesignTimeBuild=True -p:BuildingInsideVisualStudio=True -p:SkipCompilerExecution=True -p:ProvideCommandLineArgs=True " + XamlCOptIn);
 
 			//The assembly should not be compiled
 			//AssertDoesNotExist(assembly);
 			AssertDoesNotExist(xamlCStamp); //XamlC should be skipped
 
 			//Build again, a full build
-			Build(projectFile);
+			// XamlC subject test — see XamlCOptIn doc
+			Build(projectFile, additionalArgs: XamlCOptIn);
 			AssertExists(assembly, nonEmpty: true);
 			AssertExists(xamlCStamp);
-
 		}
 
 		[Fact]
@@ -532,7 +598,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC subject test — see XamlCOptIn doc
+			Build(projectFile, additionalArgs: XamlCOptIn);
 
 			var xamlCStamp = IOPath.Combine(intermediateDirectory, "XamlC.stamp");
 			AssertExists(xamlCStamp);
@@ -542,7 +609,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			//Build again, after adding a file, this triggers a full XamlG and XamlC -- *not* CssG
 			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
 			project.Save(projectFile);
-			Build(projectFile);
+			Build(projectFile, additionalArgs: XamlCOptIn);
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
@@ -558,7 +625,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Add(AddFile("CustomView.xaml", "MauiXaml", Xaml.CustomView));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
-			Build(projectFile);
+			// XamlC subject test — see XamlCOptIn doc. (Test currently skipped; opt-in kept for future-proofing.)
+			Build(projectFile, additionalArgs: XamlCOptIn);
 
 			var mainPageXamlG = IOPath.Combine(intermediateDirectory, "MainPage.xaml.g.cs");
 			var customViewXamlG = IOPath.Combine(intermediateDirectory, "CustomView.xaml.g.cs");
@@ -570,7 +638,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			//Build again, after modifying the timestamp on a Xaml file, should trigger a partial XamlG and full XamlC
 			//https://github.com/xamarin/xamarin-android/blob/61851599fb1999964bd200ec1c373b6e395933f3/src/Microsoft.Maui.Controls.Android.Build.Tasks/Utilities/MonoAndroidHelper.cs#L342
-			Build(projectFile);
+			Build(projectFile, additionalArgs: XamlCOptIn);
 			AssertExists(xamlCStamp);
 
 			var actualXamlC = new FileInfo(xamlCStamp).LastWriteTimeUtc;
@@ -588,7 +656,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Build(projectFile);
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		// [Fact]
@@ -615,7 +684,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 
 			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
 			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "MainPage.txt.g.cs"));
-			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
+			// Default inflator is SourceGen, so the XamlC target is skipped and no stamp is produced.
+			AssertDoesNotExist(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		[Fact]
@@ -629,388 +699,29 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Assert.False(log.Contains("Building target \"XamlC\"", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
 
+		/// <summary>
+		/// Positive counterpart to BuildAProject: XamlC runs when a deprecated inflator is selected.
+		/// Covers both gate branches — _MauiXaml_XC (XamlC) and _MauiXaml_RT (Runtime) — so neither
+		/// can be dropped without failing a test.
+		/// </summary>
 		[Theory]
-		[InlineData("ios", "ios;maccatalyst", true)]
-		[InlineData("maccatalyst", "ios;maccatalyst", true)]
-		[InlineData("android", "ios;maccatalyst", false)]
-		[InlineData("ios", "ios; maccatalyst", true)]
-		[InlineData("maccatalyst", "ios; maccatalyst", true)]
-		[InlineData("android", "ios; maccatalyst", false)]
-		// Tab and mixed whitespace in the list — see Regex.Replace(\s+, '') in
-		// _MauiCollectPlatformSpecificCompileItems. ASCII-space-only stripping
-		// (.Replace(' ', '')) would silently miss these and break shared folders.
-		[InlineData("ios", "ios;\tmaccatalyst", true)]
-		[InlineData("maccatalyst", "ios;\tmaccatalyst", true)]
-		[InlineData("ios", "ios; \t maccatalyst", true)]
-		[InlineData("maccatalyst", "ios; \t maccatalyst", true)]
-		public void SingleProject_SharedPlatformFolderMappingsAreRespected(string targetPlatformIdentifier, string targetPlatformIdentifiers, bool shouldIncludeAppleSharedFile)
+		[InlineData("XamlC")]
+		[InlineData("Runtime")]
+		public void XamlCRunsWhenDeprecatedInflatorUsed(string inflator)
 		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			var customMappings = NewElement("ItemGroup");
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Apple\\")
-				.WithAttribute("TargetPlatformIdentifiers", targetPlatformIdentifiers));
-			project.Add(customMappings);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static partial class CurrentPlatform
-{
-}
-
-public static class Entry
-{
-	public static string Value => CurrentPlatform.Name;
-}");
-
-			WriteFile("Platforms\\iOS\\CurrentPlatform.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static partial class CurrentPlatform
-{
-	public static string Name => ""iOS"";
-}");
-
-			WriteFile("Platforms\\MacCatalyst\\CurrentPlatform.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static partial class CurrentPlatform
-{
-	public static string Name => ""MacCatalyst"";
-}");
-
-			WriteFile("Platforms\\Android\\CurrentPlatform.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static partial class CurrentPlatform
-{
-	public static string Name => ""Android"";
-}");
-
-			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class AppleSharedMarker
-{
-	public static string Value => ""Apple"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
+			// Per-inflator directory so the two Theory rows can't leak a stale XamlC.stamp between them.
+			SetUp($"{nameof(XamlCRunsWhenDeprecatedInflatorUsed)}_{inflator}");
+			var project = NewProject();
+			project.Add(AddFile("MainPage.xaml", "MauiXaml", Xaml.MainPage));
 			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
 			project.Save(projectFile);
+			// WarningsNotAsErrors silences the MAUI1001 inflator-deprecation warning. The older
+			// "-warnaserror-:" syntax is rejected by newer MSBuild, so use the property form.
+			Build(projectFile, additionalArgs: $"-p:MauiXamlInflator={inflator} -p:WarningsNotAsErrors=MAUI1001");
 
-			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-
-			if (shouldIncludeAppleSharedFile)
-				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
-			else
-				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
-		}
-
-		[Fact]
-		public void SingleProject_BuiltInPlatformFoldersCanBeExtended()
-		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			// Real users author this as a Target rather than an inline ItemGroup.
-			// In a normal SDK-style csproj, the user's project body is evaluated
-			// before NuGet imports the SingleProject SDK targets, so an inline
-			// <MauiPlatformSpecificFolder Update="$(iOSProjectFolder)" .../> would
-			// silently no-op: $(iOSProjectFolder) is empty at evaluation time and
-			// the built-in items don't exist yet. Hooking _MauiNormalizePlatformSpecificFolders
-			// guarantees the Update runs after the SDK has populated both the
-			// built-in items and $(iOSProjectFolder).
-			var extendTarget = NewElement("Target")
-				.WithAttribute("Name", "MauiExtendIosToMacCatalyst")
-				.WithAttribute("BeforeTargets", "_MauiNormalizePlatformSpecificFolders");
-			var extendItemGroup = NewElement("ItemGroup");
-			var update = NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Update", "$(iOSProjectFolder)");
-			update.Add(NewElement("TargetPlatformIdentifiers").WithValue("ios;maccatalyst"));
-			extendItemGroup.Add(update);
-			extendTarget.Add(extendItemGroup);
-			project.Add(extendTarget);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class Entry
-{
-	public static string Value => ExtendedIosMarker.Value;
-}");
-
-			WriteFile("Platforms\\iOS\\ExtendedIosMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class ExtendedIosMarker
-{
-	public static string Value => ""SharedWithCatalyst"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-
-			Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=maccatalyst");
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExtendedIosMarker");
-		}
-
-		// Regression test: a user-supplied folder declared without a trailing slash
-		// must NOT match sibling folders sharing a common prefix. Without
-		// EnsureTrailingSlash() in _MauiCollectPlatformSpecificCompileItems, the
-		// glob "Platforms\Apple**/*.cs" would silently include AppleX/AppleLegacy.
-		[Theory]
-		[InlineData("Platforms\\Apple", "ios")]
-		[InlineData("Platforms\\Apple\\", "ios")]
-		[InlineData("Platforms\\Apple", "maccatalyst")]
-		[InlineData("Platforms\\Apple\\", "maccatalyst")]
-		public void SingleProject_PlatformFolderWithoutTrailingSlashDoesNotMatchSiblingFolders(string includePath, string targetPlatformIdentifier)
-		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			var customMappings = NewElement("ItemGroup");
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", includePath)
-				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
-			project.Add(customMappings);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class Entry
-{
-	public static string Value => ""ok"";
-}");
-
-			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class AppleSharedMarker
-{
-	public static string Value => ""Apple"";
-}");
-
-			// Sibling folder with a common prefix — must NOT be picked up by the
-			// "Apple" mapping regardless of trailing-slash authoring.
-			WriteFile("Platforms\\AppleX\\AppleXMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class AppleXMarker
-{
-	public static string Value => ""AppleX"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-
-			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
-			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleXMarker");
-		}
-
-		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
-		// or netstandard TFM) must keep removing platform folders that declare a
-		// non-empty TargetPlatformIdentifiers. Condition-gated folders with empty
-		// TargetPlatformIdentifiers must still participate when their condition
-		// evaluates to true — locks in the "empty TPI = always include" branch.
-		[Fact]
-		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsConditionGated()
-		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			var customMappings = NewElement("ItemGroup");
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Apple\\")
-				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Shared\\"));
-			project.Add(customMappings);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class Entry
-{
-	public static string Value => ""ok"";
-}");
-
-			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class AppleSharedMarker
-{
-	public static string Value => ""Apple"";
-}");
-
-			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class SharedMarker
-{
-	public static string Value => ""Shared"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-
-			// No -p:TargetPlatformIdentifier — simulates the non-platform TFM /
-			// design-time evaluation scenario.
-			Build(projectFile);
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
-			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
-		}
-
-		[Theory]
-		[InlineData("ios", true)]
-		[InlineData("maccatalyst", false)]
-		[InlineData("android", false)]
-		public void SingleProject_SingularPlatformFolderMetadataRemainsBackwardCompatible(string targetPlatformIdentifier, bool shouldIncludeLegacyFile)
-		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			var customMappings = NewElement("ItemGroup");
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\LegacyiOS\\")
-				.WithAttribute("TargetPlatformIdentifier", "ios"));
-			project.Add(customMappings);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class Entry
-{
-	public static string Value => ""ok"";
-}");
-
-			WriteFile("Platforms\\LegacyiOS\\LegacyIosMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class LegacyIosMarker
-{
-	public static string Value => ""LegacyiOS"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-
-			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-
-			if (shouldIncludeLegacyFile)
-				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
-			else
-				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
-		}
-
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public void SingleProject_ConditionGatedPlatformFoldersCanParticipateWithoutATargetPlatformIdentifier(bool useLinuxFolder)
-		{
-			SetUp();
-			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
-			var propertyGroup = NewElement("PropertyGroup");
-			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
-			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
-			project.Add(propertyGroup);
-			AddMauiReferences(project);
-			AddSingleProjectBeforeTargetsImport(project);
-
-			var customMappings = NewElement("ItemGroup");
-			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
-				.WithAttribute("Include", "Platforms\\Linux\\")
-				.WithAttribute("Condition", " '$(UseLinuxFolder)' == 'true' "));
-			project.Add(customMappings);
-
-			WriteFile("Entry.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class Entry
-{
-	public static string Value => ""ok"";
-}");
-
-			WriteFile("Platforms\\Linux\\LinuxMarker.cs", @"
-namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class LinuxMarker
-{
-	public static string Value => ""Linux"";
-}");
-
-			AddSingleProjectTargetsImport(project);
-
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-
-			Build(projectFile, additionalArgs: $"-p:UseLinuxFolder={useLinuxFolder.ToString().ToLowerInvariant()}");
-
-			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
-			AssertExists(testDll, nonEmpty: true);
-
-			if (useLinuxFolder)
-				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LinuxMarker");
-			else
-				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LinuxMarker");
+			AssertExists(IOPath.Combine(intermediateDirectory, "test.dll"), nonEmpty: true);
+			// XamlC or Runtime populates _MauiXaml_XC/_RT, so the XamlC target runs.
+			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
 		/// <summary>
@@ -1116,6 +827,1338 @@ public static class LinuxMarker
 			Assert.True(log.Contains("CodesignEntitlements = Platforms/iOS/Entitlements.plist", StringComparison.Ordinal) ||
 						  log.Contains("CodesignEntitlements = Platforms\\iOS\\Entitlements.plist", StringComparison.Ordinal),
 				"Default Entitlements.plist should be used when no custom CodesignEntitlements is set");
+		}
+
+		// These tests exercise the data-driven MauiPlatformSpecificFolder compile
+		// selection contract: recognized TargetPlatformIdentifier(s) matching, shared
+		// folders, backward-compatible singular metadata, condition-gated folders, and
+		// the neutral-TFM backend activation added for external backends (Part of
+		// #35021 / Part of #36650). They build a minimal SingleProject csproj that
+		// imports the real SingleProject Before/After targets so the actual shipping
+		// logic is under test rather than a copy.
+
+		[Theory]
+		[InlineData("ios", "ios;maccatalyst", true)]
+		[InlineData("maccatalyst", "ios;maccatalyst", true)]
+		[InlineData("android", "ios;maccatalyst", false)]
+		[InlineData("ios", "ios; maccatalyst", true)]
+		[InlineData("maccatalyst", "ios; maccatalyst", true)]
+		[InlineData("android", "ios; maccatalyst", false)]
+		// Tab and mixed whitespace in the list — see Regex.Replace(\s+, '') in
+		// _MauiCollectPlatformSpecificCompileItems. ASCII-space-only stripping
+		// (.Replace(' ', '')) would silently miss these and break shared folders.
+		[InlineData("ios", "ios;\tmaccatalyst", true)]
+		[InlineData("maccatalyst", "ios;\tmaccatalyst", true)]
+		[InlineData("ios", "ios; \t maccatalyst", true)]
+		[InlineData("maccatalyst", "ios; \t maccatalyst", true)]
+		public void SingleProject_SharedPlatformFolderMappingsAreRespected(string targetPlatformIdentifier, string targetPlatformIdentifiers, bool shouldIncludeAppleSharedFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Apple\\")
+				.WithAttribute("TargetPlatformIdentifiers", targetPlatformIdentifiers));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeAppleSharedFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+		}
+
+		// Regression test: a user-supplied folder declared without a trailing slash
+		// must NOT match sibling folders sharing a common prefix. Without
+		// EnsureTrailingSlash() in _MauiCollectPlatformSpecificCompileItems, the
+		// glob "Platforms\Apple**/*.cs" would silently include AppleX/AppleLegacy.
+		[Theory]
+		[InlineData("Platforms\\Apple", "ios")]
+		[InlineData("Platforms\\Apple\\", "ios")]
+		[InlineData("Platforms\\Apple", "maccatalyst")]
+		[InlineData("Platforms\\Apple\\", "maccatalyst")]
+		public void SingleProject_PlatformFolderWithoutTrailingSlashDoesNotMatchSiblingFolders(string includePath, string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", includePath)
+				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			// Sibling folder with a common prefix — must NOT be picked up by the
+			// "Apple" mapping regardless of trailing-slash authoring.
+			WriteFile("Platforms\\AppleX\\AppleXMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleXMarker
+{
+	public static string Value => ""AppleX"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleXMarker");
+		}
+
+		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
+		// or netstandard TFM) must keep removing platform folders that declare a
+		// non-empty TargetPlatformIdentifiers. An unconditioned shared folder with
+		// empty TargetPlatformIdentifiers and no authored ActivationValue must still
+		// participate — locks in the legacy "empty TPI + empty ActivationValue =
+		// always include" branch of _MauiCollectPlatformSpecificCompileItems.
+		// (Genuine item-Condition gating — where the mapping carries its own Condition —
+		// is covered separately by
+		// SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue.)
+		[Fact]
+		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsSharedFolder()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Apple\\")
+				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// No -p:_SingleProjectTestTargetPlatformIdentifier — simulates the
+			// non-platform TFM / design-time evaluation scenario.
+			Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+		}
+
+		// A bare ActivationValue that expands to empty during project evaluation is
+		// indistinguishable from a legacy shared-folder mapping by the time the
+		// normalization target runs. Preserve that compatibility behavior on neutral
+		// and recognized TFMs; conditional backends must also declare an
+		// ActivationProperty or BackendIdentity so malformed metadata fails closed.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_BareUnresolvedActivationValueUsesLegacySharedFolderBehavior(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\BareUnresolved\\")
+				.WithAttribute("ActivationValue", "$(SomeUnsetProperty)"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\BareUnresolved\\BareUnresolvedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class BareUnresolvedMarker
+{
+	public static string Value => ""BareUnresolved"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.BareUnresolvedMarker");
+		}
+
+		// Authored activation metadata that normalizes to empty is invalid backend
+		// configuration, not a legacy shared folder. Fail closed on neutral and
+		// recognized TFMs so backend-only sources cannot leak into every inner build.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_WhitespaceActivationValueIsExcluded(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Whitespace\\")
+				.WithAttribute("ActivationValue", "   "));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Whitespace\\WhitespaceMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class WhitespaceMarker
+{
+	public static string Value => ""Whitespace"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WhitespaceMarker");
+		}
+
+		// An authored activation property whose value expands to empty is malformed
+		// backend metadata, not a legacy shared-folder mapping. Fail closed on both
+		// neutral and recognized TFMs instead of leaking its sources into every build.
+		[Theory]
+		[InlineData("")]
+		[InlineData("ios")]
+		public void SingleProject_UnresolvedActivationValueWithBackendMetadataIsExcluded(string targetPlatformIdentifier)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Unresolved\\")
+				.WithAttribute("ActivationProperty", "MyBackendSwitch")
+				.WithAttribute("ActivationValue", "$(SomeUnsetProperty)"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Unresolved\\UnresolvedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class UnresolvedMarker
+{
+	public static string Value => ""Unresolved"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(targetPlatformIdentifier)
+				? ""
+				: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.UnresolvedMarker");
+		}
+
+		// Genuine item-Condition gating: a MauiPlatformSpecificFolder mapping may
+		// carry its own MSBuild item Condition that decides participation at
+		// evaluation time. When the Condition is true the item materializes and —
+		// declaring neither TargetPlatformIdentifiers nor an ActivationValue — is
+		// kept via the "always include" branch of
+		// _MauiCollectPlatformSpecificCompileItems, so its Platforms/<Folder>/**/*.cs
+		// compile even on a non-platform build. When the Condition is false the item
+		// never exists and _MauiRemovePlatformCompileItems strips the folder like any
+		// other Platforms/** content. Exercises both branches through the actual
+		// shipping SingleProject targets.
+		[Theory]
+		[InlineData("true", "", true)]
+		[InlineData("false", "", false)]
+		[InlineData("true", "android", true)]
+		[InlineData("false", "android", false)]
+		public void SingleProject_ConditionGatedFolderParticipatesOnlyWhenConditionIsTrue(
+			string conditionValue,
+			string targetPlatformIdentifier,
+			bool shouldIncludeConditionalFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			// An unconditioned shared folder guarantees @(MauiPlatformSpecificFolder)
+			// is non-empty in both branches, so the false case still flows through the
+			// collect/remove pipeline rather than short-circuiting on an empty list.
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Conditional\\")
+				.WithAttribute("Condition", " '$(IncludeConditionalBackend)' == 'true' "));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			WriteFile("Platforms\\Conditional\\ConditionalMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ConditionalMarker
+{
+	public static string Value => ""Conditional"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Exercise both neutral and recognized-platform builds. The property toggles
+			// the mapping's item Condition to true/false, while the unconditioned shared
+			// folder must remain included in every case.
+			var additionalArgs = $"-p:IncludeConditionalBackend={conditionValue}";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				additionalArgs += $" -p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			Build(projectFile, additionalArgs: additionalArgs);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			// The unconditioned shared folder is always kept regardless of the gate.
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+
+			if (shouldIncludeConditionalFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ConditionalMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ConditionalMarker");
+		}
+
+		// Design-time metadata contract for _MauiUnflipKeptCompileItemMetadata.
+		// The blanket <Compile Update> marks every Platforms/** file
+		// ExcludeFromCurrentConfiguration=true, and the per-TPI flips only cover the
+		// built-in $(<TPI>ProjectFolder) paths. A kept shared folder (empty TPI +
+		// empty ActivationValue, so it survives the blanket removal) therefore relies
+		// on _MauiUnflipKeptCompileItemMetadata to flip its Compile item back to
+		// ExcludeFromCurrentConfiguration=false so Visual Studio does not grey it out.
+		// This asserts the actual metadata value on the kept item via a diagnostic
+		// Message target that runs after the shipping unflip target on a non-platform
+		// (design-time-style) build.
+		[Fact]
+		public void SingleProject_UnflipKeptCompileItemMetadata_SetsExcludeFromCurrentConfigurationFalseForKeptSharedFolder()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			project.Add(customMappings);
+
+			var unrelatedCompileMetadata = NewElement("ItemGroup");
+			var unrelatedCompile = NewElement("Compile").WithAttribute("Update", "Entry.cs");
+			unrelatedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("true"));
+			unrelatedCompileMetadata.Add(unrelatedCompile);
+			project.Add(unrelatedCompileMetadata);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Diagnostic target: after the shipping unflip target runs, emit the
+			// ExcludeFromCurrentConfiguration metadata for each surviving Compile item
+			// (one Message per item via cross-item batching) so the test can assert the
+			// kept shared file was flipped back to false.
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpExcludeFromCurrentConfiguration")
+				.WithAttribute("AfterTargets", "_MauiUnflipKeptCompileItemMetadata");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Condition", " '%(Compile.Identity)' != '' ")
+				.WithAttribute("Text", "COMPILE_META: %(Compile.Identity)|ExcludeFromCurrentConfiguration=%(Compile.ExcludeFromCurrentConfiguration)"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Non-platform build (no _SingleProjectTestTargetPlatformIdentifier) mirrors
+			// the design-time evaluation where the IDE would otherwise grey out the file.
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+
+			// The kept shared file must carry ExcludeFromCurrentConfiguration=false; the
+			// pipe format keeps the identity (which may use either path separator) and
+			// the metadata on the same emitted line.
+			Assert.True(
+				log.Contains("SharedMarker.cs|ExcludeFromCurrentConfiguration=false", StringComparison.OrdinalIgnoreCase),
+				"_MauiUnflipKeptCompileItemMetadata should flip ExcludeFromCurrentConfiguration back to false " +
+				"on the kept shared folder's Compile item. Build log:\n" + log);
+			Assert.True(
+				log.Contains("Entry.cs|ExcludeFromCurrentConfiguration=true", StringComparison.OrdinalIgnoreCase),
+				"_MauiUnflipKeptCompileItemMetadata must preserve unrelated Compile metadata. Build log:\n" + log);
+		}
+
+		[Fact]
+		public void SingleProject_UnflipKeptCompileItemMetadata_PreservesAlreadyActiveCompileItemOrder()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Before.cs"));
+			var activePlatformCompile = NewElement("Compile").WithAttribute("Include", "Platforms\\Windows\\WindowsMarker.cs");
+			activePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			compileItems.Add(activePlatformCompile);
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "After.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Before.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Before
+{
+	public static string Value => ""Before"";
+}");
+
+			WriteFile("Platforms\\Windows\\WindowsMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class WindowsMarker
+{
+	public static string Value => ""Windows"";
+}");
+
+			WriteFile("After.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class After
+{
+	public static string Value => ""After"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// The synthetic TPI is assigned during target execution, after the
+			// evaluation-time built-in folder metadata flips have already run.
+			// Model the resulting active-platform metadata before the shipping
+			// unflip target so this test covers its ordering behavior.
+			var markActivePlatformItemTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestMarkActivePlatformCompile")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems")
+				.WithAttribute("BeforeTargets", "_MauiUnflipKeptCompileItemMetadata");
+			var markActivePlatformItemGroup = NewElement("ItemGroup");
+			var markActivePlatformCompile = NewElement("Compile")
+				.WithAttribute("Update", "Platforms\\Windows\\WindowsMarker.cs");
+			markActivePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			markActivePlatformItemGroup.Add(markActivePlatformCompile);
+			markActivePlatformItemTarget.Add(markActivePlatformItemGroup);
+			project.Add(markActivePlatformItemTarget);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileOrder")
+				.WithAttribute("AfterTargets", "_MauiUnflipKeptCompileItemMetadata");
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ORDER: @(Compile->'%(Filename)', '|')"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=windows");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.Before");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.WindowsMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.After");
+			Assert.Contains(
+				"COMPILE_ORDER: Before|WindowsMarker|After",
+				log,
+				StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_RemovesOnlyCompileItemsMarkedExcluded()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Platforms\\ExternalTrue\\ExcludedMarker.cs"));
+			project.Add(compileItems);
+
+			WriteFile("Platforms\\ExternalFalse\\ExplicitFalseMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExplicitFalseMarker
+{
+	public static string Value => ""False"";
+}");
+
+			WriteFile("Platforms\\ExternalTrue\\ExcludedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExcludedMarker
+{
+	public static string Value => ""True"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			// Model a downstream SDK target that explicitly keeps one physical Platforms/**
+			// Compile item without registering a folder allow-list.
+			var downstreamCompileTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestMarkCompileIncluded")
+				.WithAttribute("BeforeTargets", "_MauiRemovePlatformCompileItems");
+			var downstreamCompileMetadata = NewElement("ItemGroup");
+			downstreamCompileMetadata.Add(NewElement("Compile")
+				.WithAttribute("Remove", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs"));
+			var explicitlyIncludedCompile = NewElement("Compile")
+				.WithAttribute("Include", "Platforms\\ExternalFalse\\ExplicitFalseMarker.cs");
+			explicitlyIncludedCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("false"));
+			explicitlyIncludedCompile.Add(NewElement("TestMetadata").WithValue("preserved"));
+			downstreamCompileMetadata.Add(explicitlyIncludedCompile);
+			downstreamCompileTarget.Add(downstreamCompileMetadata);
+			project.Add(downstreamCompileTarget);
+
+			var dumpTarget = NewElement("Target")
+				.WithAttribute("Name", "_TestDumpCompileItems")
+				.WithAttribute("AfterTargets", "_MauiRemovePlatformCompileItems");
+			var dumpItems = NewElement("ItemGroup");
+			dumpItems.Add(NewElement("_TestKeptCompile")
+				.WithAttribute("Include", "@(Compile)")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'ExplicitFalseMarker' "));
+			dumpTarget.Add(dumpItems);
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "COMPILE_ITEMS: @(Compile->'%(Filename)', '|')"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Condition", " '%(Compile.Filename)' == 'ExplicitFalseMarker' ")
+				.WithAttribute("Text", "KEEP_META: %(Compile.ExcludeFromCurrentConfiguration)|%(Compile.TestMetadata)"));
+			dumpTarget.Add(NewElement("Message")
+				.WithAttribute("Importance", "high")
+				.WithAttribute("Text", "KEEP_COUNT: @(_TestKeptCompile->Count())"));
+			project.Add(dumpTarget);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var log = Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExplicitFalseMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExcludedMarker");
+			Assert.Contains("COMPILE_ITEMS: ExplicitFalseMarker", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_META: false|preserved", log, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("KEEP_COUNT: 1", log, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Fact]
+		public void SingleProject_RemovePlatformCompileItems_MatchesAbsoluteCompilePath()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			propertyGroup.Add(NewElement("EnableDefaultCompileItems").WithValue("false"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""Entry"";
+}");
+
+			WriteFile("Platforms\\Absolute\\AbsoluteMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AbsoluteMarker
+{
+	public static string Value => ""Absolute"";
+}");
+
+			var compileItems = NewElement("ItemGroup");
+			compileItems.Add(NewElement("Compile").WithAttribute("Include", "Entry.cs"));
+			var absolutePlatformCompile = NewElement("Compile")
+				.WithAttribute("Include", IOPath.Combine(tempDirectory, "Platforms", "Absolute", "AbsoluteMarker.cs"));
+			absolutePlatformCompile.Add(NewElement("ExcludeFromCurrentConfiguration").WithValue("true"));
+			compileItems.Add(absolutePlatformCompile);
+			project.Add(compileItems);
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.Entry");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AbsoluteMarker");
+		}
+
+		// Backward compatibility: a folder that declares only the legacy singular
+		// TargetPlatformIdentifier metadata must continue to match exactly that TPI.
+		[Theory]
+		[InlineData("ios", true)]
+		[InlineData("maccatalyst", false)]
+		[InlineData("android", false)]
+		public void SingleProject_SingularPlatformFolderMetadataRemainsBackwardCompatible(string targetPlatformIdentifier, bool shouldIncludeLegacyFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\LegacyiOS\\")
+				.WithAttribute("TargetPlatformIdentifier", "ios"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\LegacyiOS\\LegacyIosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class LegacyIosMarker
+{
+	public static string Value => ""LegacyiOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: $"-p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeLegacyFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LegacyIosMarker");
+		}
+
+		[Fact]
+		public void SingleProject_BuiltInPlatformFoldersCanBeExtended()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			// Real users author this as a Target rather than an inline ItemGroup.
+			// In a normal SDK-style csproj, the user's project body is evaluated
+			// before NuGet imports the SingleProject SDK targets, so an inline
+			// <MauiPlatformSpecificFolder Update="$(iOSProjectFolder)" .../> would
+			// silently no-op: $(iOSProjectFolder) is empty at evaluation time and
+			// the built-in items don't exist yet. Hooking _MauiNormalizePlatformSpecificFolders
+			// guarantees the Update runs after the SDK has populated both the
+			// built-in items and $(iOSProjectFolder).
+			var extendTarget = NewElement("Target")
+				.WithAttribute("Name", "MauiExtendIosToMacCatalyst")
+				.WithAttribute("BeforeTargets", "_MauiNormalizePlatformSpecificFolders");
+			var extendItemGroup = NewElement("ItemGroup");
+			var update = NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Update", "$(iOSProjectFolder)");
+			update.Add(NewElement("TargetPlatformIdentifiers").WithValue("ios;maccatalyst"));
+			extendItemGroup.Add(update);
+			extendTarget.Add(extendItemGroup);
+			project.Add(extendTarget);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ExtendedIosMarker.Value;
+}");
+
+			WriteFile("Platforms\\iOS\\ExtendedIosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class ExtendedIosMarker
+{
+	public static string Value => ""SharedWithCatalyst"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=maccatalyst");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.ExtendedIosMarker");
+		}
+
+		// Non-platform builds (TargetPlatformIdentifier empty, e.g. design-time
+		// or netstandard TFM) must keep removing platform folders that declare a
+		// non-empty TargetPlatformIdentifiers. Condition-gated folders with empty
+		// TargetPlatformIdentifiers must still participate when their condition
+		// evaluates to true — locks in the "empty TPI = always include" branch.
+		[Fact]
+		public void SingleProject_NonPlatformBuildExcludesPlatformSpecificFoldersButKeepsConditionGated()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Apple\\")
+				.WithAttribute("TargetPlatformIdentifiers", "ios;maccatalyst"));
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Shared\\"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Apple\\AppleSharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AppleSharedMarker
+{
+	public static string Value => ""Apple"";
+}");
+
+			WriteFile("Platforms\\Shared\\SharedMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class SharedMarker
+{
+	public static string Value => ""Shared"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// No -p:TargetPlatformIdentifier — simulates the non-platform TFM /
+			// design-time evaluation scenario.
+			Build(projectFile);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AppleSharedMarker");
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.SharedMarker");
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void SingleProject_ConditionGatedPlatformFoldersCanParticipateWithoutATargetPlatformIdentifier(bool useLinuxFolder)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Linux\\")
+				.WithAttribute("Condition", " '$(UseLinuxFolder)' == 'true' "));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Linux\\LinuxMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class LinuxMarker
+{
+	public static string Value => ""Linux"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: $"-p:UseLinuxFolder={useLinuxFolder.ToString().ToLowerInvariant()}");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (useLinuxFolder)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LinuxMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.LinuxMarker");
+		}
+
+		[Theory]
+		[InlineData("macos", "", true)]
+		[InlineData("", "macos", true)]
+		[InlineData("android", "macos", false)]
+		[InlineData("", "cocoa", false)]
+		public void SingleProject_BackendIdentitySupportsRecognizedAndNeutralActivation(
+			string targetPlatformIdentifier,
+			string activeBackend,
+			bool shouldIncludeMacosFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\MacOS\\")
+				.WithAttribute("TargetPlatformIdentifiers", "macos")
+				.WithAttribute("BackendIdentity", "macos"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\MacOS\\MacosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class MacosMarker
+{
+	public static string Value => ""MacOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var additionalArgs = "";
+			if (!string.IsNullOrEmpty(targetPlatformIdentifier))
+				additionalArgs += $" -p:_SingleProjectTestTargetPlatformIdentifier={targetPlatformIdentifier}";
+			if (!string.IsNullOrEmpty(activeBackend))
+				additionalArgs += $" -p:MauiActiveBackend={activeBackend}";
+			Build(projectFile, additionalArgs: additionalArgs);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeMacosFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.MacosMarker");
+		}
+
+		[Fact]
+		public void SingleProject_NeutralTfmCanActivateBuiltInBackendByIdentity()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Android\\AndroidMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AndroidMarker
+{
+	public static string Value => ""Android"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:MauiActiveBackend=android");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AndroidMarker");
+		}
+
+		// Neutral-TFM activation (the GTK scenario from #35021/#36650). On a plain
+		// net11.0 inner build no TargetPlatformIdentifier is recognized; a backend
+		// declares a stable BackendIdentity and is activated via the well-known
+		// MauiActiveBackend selector. Only the activated backend's Platforms/<Backend>
+		// files compile; a recognized built-in folder (iOS) stays excluded because
+		// its TPI does not match the (empty) neutral TPI.
+		[Fact]
+		public void SingleProject_NeutralTfmActivatesBackendByIdentity()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Gtk\\")
+				.WithAttribute("BackendIdentity", "gtk"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Gtk\\GtkMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class GtkMarker
+{
+	public static string Value => ""Gtk"";
+}");
+
+			// A built-in recognized folder (iOS) that must NOT come in on a neutral
+			// build — proves activation is exclusive to the selected backend.
+			WriteFile("Platforms\\iOS\\IosMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class IosMarker
+{
+	public static string Value => ""iOS"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			// Neutral TFM (no _SingleProjectTestTargetPlatformIdentifier) + backend selector.
+			Build(projectFile, additionalArgs: "-p:MauiActiveBackend=gtk");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.GtkMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.IosMarker");
+		}
+
+		// The neutral backend selector must not add backend files to a recognized
+		// platform inner build. Android remains the only active platform here even
+		// when MauiActiveBackend names GTK.
+		[Fact]
+		public void SingleProject_RecognizedTfmIgnoresNeutralBackendSelector()
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Gtk\\")
+				.WithAttribute("BackendIdentity", "gtk"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Android\\AndroidMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class AndroidMarker
+{
+	public static string Value => ""Android"";
+}");
+
+			WriteFile("Platforms\\Gtk\\GtkMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class GtkMarker
+{
+	public static string Value => ""Gtk"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			Build(projectFile, additionalArgs: "-p:_SingleProjectTestTargetPlatformIdentifier=android -p:MauiActiveBackend=gtk");
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.AndroidMarker");
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.GtkMarker");
+		}
+
+		// A backend that is registered but not selected must be excluded: either
+		// MauiActiveBackend names a different backend, or it is unset entirely.
+		[Theory]
+		[InlineData("cocoa")]
+		[InlineData("")]
+		public void SingleProject_NonMatchingBackendIsExcludedOnNeutralTfm(string activeBackend)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Gtk\\")
+				.WithAttribute("BackendIdentity", "gtk"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Gtk\\GtkMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class GtkMarker
+{
+	public static string Value => ""Gtk"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(activeBackend) ? "" : $"-p:MauiActiveBackend={activeBackend}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+			AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.GtkMarker");
+		}
+
+		// A backend may name a custom activation property instead of the default
+		// MauiActiveBackend selector. The folder compiles only when the named
+		// property equals the declared ActivationValue.
+		[Theory]
+		[InlineData("on", true)]
+		[InlineData("off", false)]
+		[InlineData("", false)]
+		public void SingleProject_CustomActivationPropertyAndValueActivateBackend(string switchValue, bool shouldIncludeFooFile)
+		{
+			SetUp();
+			var project = NewElement("Project").WithAttribute("Sdk", "Microsoft.NET.Sdk");
+			var propertyGroup = NewElement("PropertyGroup");
+			propertyGroup.Add(NewElement("TargetFramework").WithValue(GetTfm()));
+			propertyGroup.Add(NewElement("SingleProject").WithValue("true"));
+			project.Add(propertyGroup);
+			AddMauiReferences(project);
+			AddSingleProjectBeforeTargetsImport(project);
+
+			var customMappings = NewElement("ItemGroup");
+			customMappings.Add(NewElement("MauiPlatformSpecificFolder")
+				.WithAttribute("Include", "Platforms\\Foo\\")
+				.WithAttribute("BackendIdentity", "foo")
+				.WithAttribute("ActivationProperty", "MyBackendSwitch")
+				.WithAttribute("ActivationValue", "on"));
+			project.Add(customMappings);
+
+			WriteFile("Entry.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class Entry
+{
+	public static string Value => ""ok"";
+}");
+
+			WriteFile("Platforms\\Foo\\FooMarker.cs", @"
+namespace Microsoft.Maui.Controls.Xaml.UnitTests;
+
+public static class FooMarker
+{
+	public static string Value => ""Foo"";
+}");
+
+			AddSingleProjectTargetsImport(project);
+
+			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+			project.Save(projectFile);
+
+			var args = string.IsNullOrEmpty(switchValue) ? "" : $"-p:MyBackendSwitch={switchValue}";
+			Build(projectFile, additionalArgs: args);
+
+			var testDll = IOPath.Combine(intermediateDirectory, "test.dll");
+			AssertExists(testDll, nonEmpty: true);
+
+			if (shouldIncludeFooFile)
+				AssertTypeExists(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.FooMarker");
+			else
+				AssertTypeDoesNotExist(testDll, "Microsoft.Maui.Controls.Xaml.UnitTests.FooMarker");
 		}
 	}
 }

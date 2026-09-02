@@ -1,10 +1,10 @@
 ---
 name: release-readiness
-description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews. Surveys CI pipelines, computes what's actually NEW in the branch (commits + source PRs with revert detection), and cross-references open `regressed-in-*` issues against branch contents to identify port candidates, rejected backports, and unresolved regressions. Supports both in-flight and pre-cut (candidate) modes for SR and Preview branches.
+description: Assesses ship-readiness for .NET MAUI release branches — Servicing Releases (SR) and Previews — and produces public-safe, copy-ready release handoffs or Loop-page drafts from the resulting evidence. Use for readiness verdicts, release blockers, Preview/SR status, release handoff pages, manual validation instructions, or "make the SR10/Preview N release page." Surveys CI and release delta, classifies regressions, and keeps Preview and servicing semantics distinct.
 metadata:
   author: dotnet-maui
   version: "2.0"
-compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. `az` CLI is optional but recommended for internal pipeline status. Preview installability uses NuGet v3 feeds; an optional short-lived Azure DevOps PAT with Packaging Read scope may be needed for an authenticated shipping feed. Run from a checkout of `dotnet/maui`.
+compatibility: Requires `gh` CLI authenticated with `repo` + `read:org` scopes. Local net11 enrichment also uses `az` CLI with access to dnceng/internal; it fails open when unavailable and is always skipped in GitHub Actions. Preview installability uses NuGet v3 feeds; an optional short-lived Azure DevOps PAT with Packaging Read scope may be needed for an authenticated shipping feed. Run from a checkout of `dotnet/maui`.
 ---
 
 # Release Readiness
@@ -29,14 +29,15 @@ This skill **reports**. It does **not** execute release operations against dotne
 
 ## Architecture
 
-This skill has **three** PowerShell entry points, one Preview helper, and one workflow:
+This skill has **four** PowerShell entry points, one Preview helper, and one workflow:
 
 | Script | Branch type | Purpose |
 |--------|-------------|---------|
-| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | both | Detects active in-flight & candidate trackers (SR and Preview) across all active majors using a four-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
+| [`Find-ReleaseReadinessTrackers.ps1`](scripts/Find-ReleaseReadinessTrackers.ps1) | all | Detects active in-flight & candidate trackers (SR, Preview, and RC) across all active majors using a five-lane algorithm and the **tag-existence rule** ("a release is in flight unless its tag already exists"). Emits a single tracker JSON consumed by the workflow. |
 | [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) | SR | Full readiness report for a single SR branch (in-flight, `-Candidate`, or `-Shipped`). `-Shipped` surveys the same branch with post-ship verdict, carry-forward, and hotfix-vs-next-SR guidance semantics. |
-| [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview | Full readiness report for a single Preview branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`), including consumer-installability evidence. |
+| [`Get-PreviewReadiness.ps1`](scripts/Get-PreviewReadiness.ps1) | Preview / RC | Full readiness report for a single prerelease branch (in-flight or candidate via `-Mode candidate -SurveyRef net<major>.0`). Preview reports include consumer-installability evidence; RC reports retain that check as `UNKNOWN` until RC workload-set package resolution is supported. |
 | [`PreviewInstallability.ps1`](scripts/PreviewInstallability.ps1) | Preview helper | Resolves the workload-set package, validates branch-pin coherence, probes manifest and representative pack availability, extracts platform prerequisites, and emits an isolated NuGet configuration for local validation. |
+| [`New-ReleaseHandoff.ps1`](scripts/New-ReleaseHandoff.ps1) | all | Projects existing readiness JSON plus separately verified public release evidence into copy-ready Markdown and normalized JSON. Missing facts remain `TBD`; it never selects builds or mutates release state. |
 | [`release-readiness.yml`](../../workflows/release-readiness.yml) | both | Three-hourly daytime UTC schedule + event-driven refreshes + manual dispatch + PR validation. Non-PR triggers run `Find-Trackers -AllActiveMajors`, fan out a matrix job per tracker, and write idempotent `[Release Readiness]` issues; PR triggers validate outputs only. |
 
 Shared support code lives in [`PublicReportSanitizer.ps1`](scripts/PublicReportSanitizer.ps1) for public Markdown/JSON redaction and [`TrackerIssueLifecycle.sh`](scripts/TrackerIssueLifecycle.sh) for tested issue-selection and race-compensation primitives.
@@ -47,6 +48,7 @@ The trackers detector is grounded in **tag existence as the source of truth for 
 
 - SR shipped tag pattern: `<major>.0.<patch>` (e.g. `10.0.71` shipped → SR7 retired, no longer produces a tracker)
 - Preview shipped tag pattern: `<major>.0.0-preview.<N>.<date>[.<build>]` (e.g. `11.0.0-preview.5.26304.4` shipped → preview5 no longer produces a tracker)
+- RC shipped tag pattern: `<major>.0.0-rc.<N>.<date>[.<build>]` (e.g. `11.0.0-rc.1.26425.128` shipped → RC1 no longer produces a tracker)
 
 **Post-ship lifecycle (`shipped` mode).** Most shipped SRs are retired the moment their tag exists. The **one exception** is the *most-recently-shipped* SR (highest shipped patch), which keeps emitting as `mode='shipped'` so its tracker issue stays useful through post-ship follow-up — adding the new build to the GitHub issue version dropdown, publishing release notes, closing out the milestone. Shipped reports never retroactively return `Not Ready`: unresolved work is split into urgent hotfix-vs-next-SR follow-ups and structured carry-forward items. Each immutable shipped tag is **create-once**: if it was never tracked (for example, the tag appeared before a scheduled updater ran), the workflow creates it; once a human closes that exact tagged generation, scheduled runs do not resurrect it. An untagged hotfix is explicitly marked `hotfixInProgress=true`, forces a yellow follow-up verdict, and is likewise create-once. Hotfix closure is scoped to the live version **and branch commit**: the same generation stays closed, while new commits or a new version can create fresh evidence. Workflow decisions use the generated report markers, not detector-time hotfix fields, so tag/commit changes between detection and reporting cannot apply stale lifecycle state. Older shipped SRs remain retired.
 
@@ -66,14 +68,14 @@ pwsh .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 
   -OutputJson trackers.json
 
 # Emits a JSON envelope with one tracker per active branch, each carrying:
-#   branchType:    'sr' | 'preview'
+#   branchType:    'sr' | 'preview' | 'rc'
 #   branchName:    canonical proposed branch slug (always populated)
 #   branchExists:  true if the branch is on origin, false for candidates
 #   mode:          'in-flight' | 'candidate' | 'shipped'
 #   hotfixInProgress: true only when the latest shipped SR branch is ahead of its stable tag
 #   hotfixVersion/hotfixCommit: mutable hotfix generation used for close/recreate idempotency
 #   surveyRef:     ref to actually survey (branch itself, or net<major>.0 for candidates)
-#   canonicalKey:  stable join key (e.g. net10-sr8, net11-preview6)
+#   canonicalKey:  stable join key (e.g. net10-sr8, net11-preview6, net11-rc1)
 #   issueTitle:    title for the maintained tracker issue
 #   regressionLabels: list of regressed-in-* labels relevant to this branch
 ```
@@ -104,6 +106,7 @@ pwsh .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
 pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode in-flight \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6
 
@@ -112,14 +115,99 @@ pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
   -Branch release/11.0.1xx-preview6 \
   -Mode candidate \
   -SurveyRef net11.0 \
+  '-PublicSafe:$false' \
   -TrackerKey net11-preview6 \
   -OutputDir CustomAgentLogsTmp/release-readiness/preview6-candidate
+```
+
+### Release Candidate
+
+```bash
+pwsh .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+  -Branch release/11.0.1xx-rc1 \
+  -Mode in-flight \
+  '-PublicSafe:$false' \
+  -TrackerKey net11-rc1 \
+  -OutputDir CustomAgentLogsTmp/release-readiness/rc1
 ```
 
 The unattended public survey does not know the release-owner-confirmed workload-set
 version or private shipping source. It therefore keeps **Consumer installability**
 `UNKNOWN` rather than guessing that the newest coherent package is the blessed one.
 Complete the local gate below before declaring a Preview ready.
+
+### Copy-ready release handoff / Loop draft
+
+Generate the appropriate Preview or SR readiness JSON first. Then follow
+[`references/release-handoff.md`](references/release-handoff.md) to gather
+separately verified public build, test, assessment, rollback, and workload-set
+evidence and render it:
+
+```bash
+pwsh .github/skills/release-readiness/scripts/New-ReleaseHandoff.ps1 \
+  -ReadinessJson ./release-readiness.json \
+  -EvidenceJson ./release-evidence.json \
+  -OutputDir ./release-handoff
+```
+
+This is a deterministic projection of the readiness report, not a second survey.
+It supports Preview and SR (including SR10) through one editorial renderer while
+preserving their different readiness semantics. It does not read or write Loop
+or SharePoint. Do not copy private source-page content into the evidence file;
+unknown fields must remain `TBD`.
+
+### Preview: local net11 official-build health
+
+For net11 preview runs through this skill from a local checkout, invoke
+`Get-PreviewReadiness.ps1 '-PublicSafe:$false'`. The script then automatically
+queries the internal official `dotnet-maui` pipeline (Azure DevOps definition
+`1095`, org `dnceng`, project `internal`) when the current Azure CLI identity has
+access. No build ID is required. It independently checks:
+
+1. `refs/heads/net11.0` — the inflight source/survey lane.
+2. `refs/heads/release/11.0.1xx-previewN` — the evaluated release branch, when
+   that branch exists.
+
+Candidate mode still checks `net11.0`; it adds the prospective release ref only
+after that ref exists. Identical refs are queried once. The local report includes
+each branch's health classification, build ID and number, pipeline status/result,
+source SHA, and internal build URL. A failed or canceled current build is `red`;
+a partially successful build is `partial-success`; a build behind the newest
+trigger-eligible commit is `stale`; a queued/running build is `in-progress`;
+missing or malformed evidence is `unknown`.
+
+Discovery examines a bounded five-build window. It prefers a build at exact branch
+HEAD, then scans by queue time and skips only candidates proven stale before
+accepting one proven current. Indeterminate candidates are buffered: disagreeing
+possible outcomes remain `unknown`, while a later proven-current failure remains
+`red` only when every buffered candidate is also a completed failure/cancellation.
+A terminal window containing only same-branch failed/canceled indeterminate builds
+also remains blocking as `failed-or-stale` because every candidate is either red
+or stale. Its rendering preserves that uncertainty and requires restoring currency
+evidence before choosing failure repair versus a current-HEAD rerun. This prevents
+both false readiness upgrades and loss of certain blocking evidence.
+
+The internal check is intentionally fail-open:
+
+- `GITHUB_ACTIONS=true` skips it before any Azure command runs.
+- Missing Azure CLI, expired login, or inaccessible dnceng/internal access yields
+  `skipped` and does not downgrade the public-data verdict.
+- Azure CLI and GitHub branch queries have bounded execution; a timeout yields
+  `unknown` rather than hanging the local readiness run.
+- Local `red`/`stale`/`failed-or-stale` maps to `BLOCKED`,
+  `in-progress`/`partial-success` to `WATCH`, and `unknown` to `UNKNOWN`.
+  For `failed-or-stale`, restore build-currency evidence first; then either repair
+  the failed build if it is current or run the official build at current HEAD if
+  it is stale.
+- `-PublicSafe:$true` omits all internal IDs, SHAs, URLs, and branch rows. The
+  public workflow uses this behavior and never receives internal credentials.
+
+The script remains public-safe by default. This skill and the release-readiness
+agent explicitly pass `'-PublicSafe:$false'` for enriched local net11 reports;
+never reuse those artifacts in a public tracker issue. `-IncludeInternal`
+remains an explicit compatibility override when a caller requests a sanitized
+internal classification, and `-InternalBuildId` remains a diagnostic override
+for the evaluated release branch.
 
 ### Preview: authoritative blessed-build source (.NET Release Tracker)
 
@@ -259,19 +347,19 @@ inferred ✅ but the sub points at the wrong channel, or inferred ⚠️/❌ con
 real gap with the missing source repos named. When the local check simply agrees with
 the inferred signal, report it conversationally and leave the tracker to the CI body.
 
-### Preview action ordering (newly cut branch)
+### Prerelease action ordering (newly cut Preview or RC branch)
 
 When the preview branch exists but its plumbing is incomplete, present the remediation
 as a dependency-ordered sequence. Do **not** sort unrelated `BLOCKED`/`WATCH` rows ahead
 of these prerequisites:
 
-1. Add the Preview N default-channel mapping.
+1. Add the matching Preview/RC default-channel mapping for MAUI's outward build flow.
 2. Add the baseline Android and macOS/iOS subscriptions. Wait for the
    `maestro-configuration` PR to merge into `production`, then verify BAR ingestion
    with `darc get-subscriptions --target-repo https://github.com/dotnet/maui --target-branch <preview-branch>`.
-3. Reconcile MAUI's SDK/VMR pin **locally** with the official Preview N build and
+3. Reconcile MAUI's SDK/VMR pin **locally** with the official Preview/RC build and
    open the resulting focused component-bump PR. Do not add a VMR subscription.
-4. Build branch HEAD and promote the resulting MAUI build to the Preview N channel.
+4. Build branch HEAD and promote the resulting MAUI build to the matching Preview/RC channel.
 5. Clear current-preview CI/device/UI failures and finish release validation.
 
 Keep the report scoped to Preview N. Do **not** mention the `netN.0` Preview N+1
@@ -317,19 +405,20 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `-IncludeInternal` | No | off | Release-captain only — augments the local survey with internal pipeline status when AzDO auth is available. |
 | `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from SR Markdown and JSON. Set false only for local artifacts that will not be posted publicly. |
 
-### `Get-PreviewReadiness.ps1` (Preview)
+### `Get-PreviewReadiness.ps1` (Preview / RC)
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `-Branch` | Yes | — | Preview branch name (e.g. `release/11.0.1xx-preview6`). Required even for candidate runs — used to derive milestone, tracker key, and regression labels. |
+| `-Branch` | Yes | — | Preview or RC branch name (e.g. `release/11.0.1xx-preview6` or `release/11.0.1xx-rc1`). Required even for candidate runs — used to derive milestone, tracker key, and regression labels. |
 | `-Mode` | No | `in-flight` | `in-flight` (survey the preview branch itself) or `candidate` (survey `-SurveyRef` instead — typically `net<major>.0`). |
 | `-SurveyRef` | No | computed | Ref to actually survey. Defaults to `$Branch` for in-flight; `net<major>.0` for candidate. |
 | `-Repository` | No | `dotnet/maui` | Repository in `owner/name` form. |
-| `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>`) embedded for idempotent issue lookup. |
+| `-TrackerKey` | No | derived | Canonical key (default: `net<major>-preview<N>` or `net<major>-rc<N>`) embedded for idempotent issue lookup. |
 | `-OutputDir` | No | — | If set, writes `preview-readiness.{json,md}`. |
 | `-OutputFormat` | No | `markdown` | `markdown`, `json`, or `both`. |
-| `-IncludeInternal`, `-InternalBuildId` | No | — | Release-captain only — augments report with internal pipeline status when AzDO auth is available. |
-| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON. |
+| `-IncludeInternal` | No | off | Compatibility override that requests sanitized internal classification even with `-PublicSafe`; enriched local skill/agent runs pass `'-PublicSafe:$false'`. GitHub Actions still skips. |
+| `-InternalBuildId` | No | — | Diagnostic override for the evaluated release branch. Normal runs discover the latest definition-1095 build for each branch. |
+| `-PublicSafe` | No | `$true` | Sanitizes private/internal coordinates from Preview Markdown and JSON, including internal IDs, SHAs, URLs, and branch rows. The local skill/agent explicitly sets `$false` for enriched net11 reports that will remain local. |
 | `-ConfirmedWorkloadSetVersion` | No | — | Exact release-owner-confirmed workload-set CLI version. Required before Consumer installability can become `READY`. |
 | `-AdditionalPackageSource` | No | — | Repeatable `name=https://...` authenticated dnceng Azure Artifacts source without user information, query parameters, or fragments. Credentials come from `NuGetPackageSourceCredentials_<name>`, never from the argument, and must explicitly select `ValidAuthenticationTypes=Basic`. |
 
@@ -341,7 +430,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 | `release-readiness.{json,md}` | Get-ReleaseReadiness | Full SR readiness report |
 | `sr-source-prs.txt` | Get-ReleaseReadiness | Flat newline-delimited source PR list; use `grep -qxF NNNNN file` for instant cherry-pick verification |
 | `sr-commits.json` | Get-ReleaseReadiness | Raw SR-only commit metadata |
-| `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview readiness report |
+| `preview-readiness.{json,md}` | Get-PreviewReadiness | Full Preview/RC readiness report. Local non-public-safe net11 JSON includes `InternalOfficialBuilds`; public-safe JSON omits that property. |
 
 ## Tracker refresh workflow
 
@@ -349,7 +438,7 @@ work. Those belong only in the Preview N+1 candidate/in-flight readiness report.
 
 1. **`detect-trackers`** — runs `Find-Trackers -AllActiveMajors`, emits a matrix of tracker descriptors.
 2. **`per-tracker-report`** — matrix-expanded job per tracker:
-   - Dispatches to `Get-ReleaseReadiness.ps1` (SR) or `Get-PreviewReadiness.ps1` (Preview) based on `branchType`.
+   - Dispatches to `Get-ReleaseReadiness.ps1` (SR) or `Get-PreviewReadiness.ps1` (Preview/RC) based on `branchType`.
    - Looks for an open tracker issue by the canonical marker `<!-- release-readiness-tracker: <key> -->`.
      - **Refresh path**: in shipped mode, prefer an open issue carrying the exact current shipped/hotfix generation marker; otherwise refresh the oldest labeled tracker in place so Release Captain Notes and subscriptions survive commit-to-commit generation changes. If the exact generation was intentionally closed, retire any stale generic opens and do not recreate it. For non-shipped trackers, adopt the oldest labeled tracker issue and close remaining duplicates.
      - **Create path**: open a new issue with the mandatory `area-infrastructure` ownership label (creation fails rather than producing a tracker the lifecycle lookup cannot recognize); attach `report` / `s/triaged` best-effort.
@@ -488,7 +577,7 @@ Two consequences the report must get right:
 1. **Roll-forward milestone.** The cycle after `preview7` is `.NET <major>.0-rc1`, *not* `.NET <major>.0-preview8`. `Get-PreviewTrainMilestoneTitle` in [`Get-ReleaseReadiness.ps1`](scripts/Get-ReleaseReadiness.ps1) owns this mapping (ordinals `1..7` → previews, `8` → rc1, `9` → rc2, `10+` → `$null`); `$script:FinalPreviewNumber` is the single constant to change if the cadence ever moves. (.NET 5 shipped 8 previews; the 7-preview cadence has held for every major since .NET 6.)
 2. **`preview7` is the feature/API-lock gate.** Because no eighth preview exists, work that misses the `preview7` cut does **not** roll into "the next preview" — RC is normally API-locked and go-live-licensed, so in practice it slips to the **next major**. When reporting on a `preview7` branch or candidate, say so explicitly: public-API PRs still open at the `preview7` cut are a *decide-now* item, not a defer-later one.
 
-> **Where the `rc` mapping actually fires (and where it doesn't).** `Get-MilestoneHygieneChecks` lives only in the **SR lane** (`Get-ReleaseReadiness.ps1`); the automated preview lane (`Get-PreviewReadiness.ps1` → `Test-PreviewMilestoneExists`) validates only the *current* preview's own milestone and never derives a next-cycle title. So an `rc`-shaped milestone title is produced **only** when the SR-lane hygiene check is driven with a preview-shaped branch — an ad-hoc `Get-ReleaseReadiness.ps1 -SrBranch release/<major>.0.1xx-preview7` run, or candidate mode off `preview7`. An **in-flight survey of an actual `release/*-rc1` branch produces no milestone checks at all**: rc-shaped branches match neither the SR nor the preview shape, so the parser skips them (scenario M15). Treat the `preview→rc` mapping as defensive normalization for preview-lane inputs, **not** a live milestone gate on cut `rc` branches.
+> **RC is a first-class tracker lane.** `Find-ReleaseReadinessTrackers.ps1` discovers strict `release/<major>.0.<band>xx-rc<N>` branches and RC tags independently of Preview. `Get-PreviewReadiness.ps1` validates the current `.NET <major>.0-rc<N>` milestone, expected `rc/N` version metadata, the outward MAUI default-channel mapping, Android/macOS-iOS inbound subscriptions, and the no-VMR-subscription reconciliation model.
 
 ### Maestro / BAR check gating
 
@@ -496,7 +585,7 @@ The BAR checks shell out to `darc` (cached probe via `Get-Command darc`). When d
 
 ## Methodology
 
-Seven critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
+Eight critical gotchas this skill encodes — see [references/methodology.md](references/methodology.md) for the full discussion:
 
 1. **Cherry-pick number swap**: SR backports get NEW PR numbers (e.g. main #35356 → SR7 #35428). Cannot naively grep source PR numbers; must walk SR-only commits and extract refs from commit bodies.
 
@@ -511,6 +600,13 @@ Seven critical gotchas this skill encodes — see [references/methodology.md](re
 6. **Next-cycle main bump workflow**: After an SR branch is cut, `main` advances through a separate one-line `PatchVersion` PR. The report emits the exact old/new XML and title while preserving `SdkBandVersion` and CI prerelease settings.
 
 7. **Default-channel → per-build feed → ship Assessment**: An SR branch needs a BAR default-channel mapping so its build is promoted and generates the per-build `darc-pub-dotnet-maui-<sha8>` NuGet feed. The DevDiv ship **Assessment** must link that feed so CSI/customers can validate the exact candidate packages; without the mapping + promotion the feed never exists and the Assessment ships incomplete (the SR9 miss). The report derives and surfaces the exact feed URL once a promoted build exists.
+
+8. **Local internal official-build evidence stays local**: net11 readiness needs the
+   latest definition-1095 build for both `net11.0` and the evaluated release
+   branch, but GitHub Actions cannot access dnceng/internal. The preview engine
+   auto-queries both only in eligible local runs, compares each build SHA to
+   the newest trigger-eligible commit, fails open on unavailable auth, and
+   removes all internal identifiers from public-safe output.
 
 ## Shared module
 

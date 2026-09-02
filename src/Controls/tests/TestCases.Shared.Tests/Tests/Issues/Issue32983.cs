@@ -8,6 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue32983 : _IssuesUITest
 {
+	protected override bool ResetAfterEachTest => true;
+
 	public override string Issue => "CollectionView messes up Measure operation on Views";
 
 	public Issue32983(TestDevice device) : base(device) { }
