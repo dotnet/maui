@@ -97,7 +97,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		handler.UpdatePlatformSelection();
 		handler.UpdateMultiSelectContentMargin();
-		handler.UpdateItemContainerSelectionModes();
+		handler.UpdateItemContainerSelectionCheckboxes();
 		// The margin change affects item sizes, so invalidate the MeasureFirstItem cache
 		// to avoid stale sizes being applied to items realized after the mode switch.
 		handler.InvalidateFirstItemSize();
@@ -126,14 +126,17 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		}
 	}
 
-	void UpdateItemContainerSelectionModes()
+	void UpdateItemContainerSelectionCheckboxes()
 	{
-		if (PlatformView is null)
+		if (PlatformView is null || ItemsView is null)
 			return;
 
-		foreach (var container in PlatformView.GetChildren<MauiItemContainer>())
+		foreach (var container in PlatformView.GetChildren<ItemContainer>())
 		{
-			container.UpdateSelectionMode();
+			if (container is not null)
+			{
+				ItemFactory.UpdateSelectionCheckboxVisibility(container, ItemsView);
+			}
 		}
 	}
 

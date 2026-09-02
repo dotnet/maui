@@ -1,0 +1,48 @@
+<ContentPage xmlns:pageModels="clr-namespace:SampleTest.PageModels"
+             xmlns:models="clr-namespace:SampleTest.Models"
+             xmlns:controls="clr-namespace:SampleTest.Pages.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="SampleTest.Pages.ProjectListPage"
+             x:Name="ProjectList"
+             x:DataType="pageModels:ProjectListPageModel"
+             Title="Projects">
+
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+                x:Name="AppearingBehavior"
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference ProjectList}, x:DataType=ContentPage}"
+                EventName="Appearing"                
+                Command="{Binding AppearingCommand}" />
+    </ContentPage.Behaviors>
+    <Grid>
+        <CollectionView ItemsSource="{Binding Projects}"
+            Margin="{StaticResource LayoutPadding}"
+            x:Name="ProjectsCollectionView"
+            SelectionMode="Single"
+            SelectedItem="{Binding SelectedProject}"
+            SelectionChangedCommand="{Binding NavigateToProjectCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectListPageModel}}, x:DataType=pageModels:ProjectListPageModel}"
+            SelectionChangedCommandParameter="{Binding SelectedProject}">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="7.5"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Project">
+                    <Border 
+                        Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}"
+                        SemanticProperties.Description="{Binding Name, StringFormat='{0}'}">
+                        <VerticalStackLayout Padding="10">
+                            <Label Text="{Binding Name}" FontSize="24" />
+                            <Label Text="{Binding Description}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <controls:AddButton
+        Command="{Binding AddProjectCommand}"
+        SemanticProperties.Description="Add project" 
+        ToolTipProperties.Text="Add project" />
+    </Grid>
+</ContentPage>

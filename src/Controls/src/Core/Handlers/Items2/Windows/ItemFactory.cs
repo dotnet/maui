@@ -5,6 +5,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
+using WCheckBox = Microsoft.UI.Xaml.Controls.CheckBox;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -134,7 +135,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 			}
 
-			container ??= new MauiItemContainer(_view)
+			container ??= new ItemContainer()
 			{
 				Child = wrapper,
 				VerticalAlignment = VerticalAlignment.Stretch,
@@ -192,10 +193,43 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 					}
 				}
 			}
+
+			container.Loaded -= OnItemContainerLoaded;
+			if (!UpdateSelectionCheckboxVisibility(container, _view))
+			{
+				container.Loaded += OnItemContainerLoaded;
+			}
+
 			return container;
 		}
 
 		return null;
+	}
+
+	void OnItemContainerLoaded(object sender, RoutedEventArgs e)
+	{
+		if (sender is ItemContainer container)
+		{
+			container.Loaded -= OnItemContainerLoaded;
+			UpdateSelectionCheckboxVisibility(container, _view);
+		}
+	}
+
+	internal static bool UpdateSelectionCheckboxVisibility(ItemContainer container, ItemsView itemsView)
+	{
+		foreach (var checkbox in container.GetChildren<WCheckBox>())
+		{
+			if (checkbox?.Name == "PART_SelectionCheckbox")
+			{
+				checkbox.Visibility = itemsView is SelectableItemsView { SelectionMode: SelectionMode.Multiple }
+					? Microsoft.UI.Xaml.Visibility.Visible
+					: Microsoft.UI.Xaml.Visibility.Collapsed;
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -273,38 +307,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 		}
 
 		_recyclePool.Clear();
-	}
-}
-
-internal sealed class MauiItemContainer : ItemContainer
-{
-	readonly ItemsView _itemsView;
-
-	public MauiItemContainer(ItemsView itemsView)
-	{
-		_itemsView = itemsView;
-		Loaded += OnLoaded;
-	}
-
-	protected override void OnApplyTemplate()
-	{
-		base.OnApplyTemplate();
-		UpdateSelectionMode();
-	}
-
-	void OnLoaded(object sender, RoutedEventArgs e) => UpdateSelectionMode();
-
-	internal void UpdateSelectionMode()
-	{
-		var isMultiple = _itemsView is SelectableItemsView { SelectionMode: SelectionMode.Multiple };
-		var state = isMultiple
-			? "Multiple"
-			: "Single";
-
-		VisualStateManager.GoToState(this, state, false);
-
-		if (GetTemplateChild("PART_SelectionCheckbox") is FrameworkElement selectionCheckbox)
-			selectionCheckbox.Visibility = isMultiple ? Visibility.Visible : Visibility.Collapsed;
 	}
 }
 
