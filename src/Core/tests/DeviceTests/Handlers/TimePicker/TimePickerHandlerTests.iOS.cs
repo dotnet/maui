@@ -1,6 +1,8 @@
 ﻿#if !MACCATALYST
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -13,6 +15,41 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TimePickerHandlerTests
 	{
+		[Fact(DisplayName = "Format 't' Uses Current Culture")]
+		public Task FormatTUsesCurrentCulture()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var originalCulture = CultureInfo.CurrentCulture;
+				var originalUICulture = CultureInfo.CurrentUICulture;
+
+				try
+				{
+					var culture = CultureInfo.GetCultureInfo("en-GB");
+					CultureInfo.CurrentCulture = culture;
+					CultureInfo.CurrentUICulture = culture;
+
+					var time = new TimeSpan(14, 30, 0);
+					var timePicker = new TimePickerStub
+					{
+						Format = "t",
+						Time = time
+					};
+					var handler = CreateHandler(timePicker);
+					var platformView = GetNativeTimePicker(handler);
+					var expectedLocale = new NSLocale(culture.Name);
+
+					Assert.Equal(time.ToFormattedString("t", culture), platformView.Text);
+					Assert.Equal(expectedLocale.LocaleIdentifier, platformView.Picker.Locale.LocaleIdentifier);
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = originalCulture;
+					CultureInfo.CurrentUICulture = originalUICulture;
+				}
+			});
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
