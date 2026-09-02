@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		bool _emptyViewDisplayed;
 		bool _disposed;
 		bool _isRotating;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.CarouselViewController2ControllerDoesNotLeakAfterNavigationPop")]
 		NSObject _orientationObserver;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
