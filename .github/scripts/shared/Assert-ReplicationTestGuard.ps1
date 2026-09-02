@@ -7191,7 +7191,15 @@ function New-ReplicationControlVariant {
                     'only the exact protected generic one-arity immutable ' +
                     'ControlsHandlerTestBase.CreateHandlerAndAddToWindow<THandler>(' +
                     'IElement, Func<THandler, Task>) definition constructed with ' +
-                    'the external WindowHandlerStub is trusted.')
+                    'the external WindowHandlerStub is trusted. Use the ' +
+                    'already-proven narrow shape: directly await it as a ' +
+                    'top-level statement with new Window(navigationPage), ' +
+                    'then use one async block callback containing direct ' +
+                    'PushAsync, a pure expression AssertEventually ' +
+                    '(CurrentPage == destination), and the native oracle. ' +
+                    'Do not use SetupBuilder, OnNavigatedToAsync, ' +
+                    'HasNavigatedTo, event subscriptions, GetPlatformToolbar, ' +
+                    'or block-bodied AssertEventually predicates.')
         }
         $isTrustedAssertEventually =
             $awaitedMethod -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
