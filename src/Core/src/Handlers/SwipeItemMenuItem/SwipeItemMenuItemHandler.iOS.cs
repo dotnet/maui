@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Handlers
 				RestorationIdentifier = VirtualView.Text,
 				UserInteractionEnabled = false
 			};
-			swipeItemButton.SetTitleColor(UIColor.Label, UIControlState.Normal);
 
 			return swipeItemButton;
 		}

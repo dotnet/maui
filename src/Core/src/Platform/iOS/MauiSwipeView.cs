@@ -298,6 +298,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItemsRect = new List<CGRect>();
 			_swipeItems.Clear();
+			_swipeItemWidths.Clear();
 
 			double swipeItemsWidth;
 
@@ -713,6 +714,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_isOpen = false;
 			_swipeItems.Clear();
+			_swipeItemWidths.Clear();
 			_swipeOpenDistance = 0;
 			_swipeOffset = 0;
 			_originalBounds = CGRect.Empty;
@@ -952,7 +954,12 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var swipeItem in swipeItems)
 			{
-				if (swipeItem is ISwipeItemView)
+				// Execute mode sizes each menu item to its measured native content width
+				// (see GetSwipeItemSize) instead of a fixed contentWidth * 0.8 open distance,
+				// so the swipe/open threshold must be computed from that same per-item sizing
+				// below — otherwise the drag can end far short of (or past) the rendered
+				// SwipeItem(s), leaving a dead gap during the swipe.
+				if (swipeItem is ISwipeItemView || (swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
 					useSwipeItemsSize = true;
 
 				if (GetIsVisible(swipeItem))
