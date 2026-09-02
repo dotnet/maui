@@ -2,6 +2,10 @@ using System.CommandLine;
 
 namespace DotNet.Release;
 
+/// <summary>
+/// Implements <c>release verify</c>, which waits for every package in a manifest set to
+/// become available on the target feed.
+/// </summary>
 internal static class VerifyCommand
 {
     public static Command Build(TextWriter outputWriter)

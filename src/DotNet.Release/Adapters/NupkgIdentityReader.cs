@@ -12,7 +12,7 @@ namespace DotNet.Release;
 /// </remarks>
 internal sealed class NupkgIdentityReader
 {
-    /// <inheritdoc />
+    /// <summary>Reads and validates one package archive.</summary>
     public async Task<DropPackage> ReadAsync(string packageFilePath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(packageFilePath);

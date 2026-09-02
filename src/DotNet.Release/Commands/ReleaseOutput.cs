@@ -1,5 +1,6 @@
 namespace DotNet.Release;
 
+/// <summary>Writes the human-readable BAR, manifest, and pruning audit shown in pipeline logs.</summary>
 internal static class ReleaseOutput
 {
     public static void WriteResolvedBuild(TextWriter writer, ResolvedBuild build)

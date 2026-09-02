@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace DotNet.Release;
 
+/// <summary>Composes the release CLI and reports expected release failures without a stack trace.</summary>
 internal static class Program
 {
     private static string ToolVersion => typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()

@@ -2,6 +2,10 @@ using System.CommandLine;
 
 namespace DotNet.Release;
 
+/// <summary>
+/// Implements <c>release prune-published</c>, which removes already-published or recovered
+/// packages from a local staged set without changing the release manifest.
+/// </summary>
 internal static class PrunePublishedCommand
 {
     public static Command Build(TextWriter outputWriter)

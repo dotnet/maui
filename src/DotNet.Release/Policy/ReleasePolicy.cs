@@ -130,6 +130,7 @@ internal sealed class ReleasePolicy
     public WorkloadSetPolicy GetWorkloadSet(int band) => _workloadSets.TryGetValue(band, out var policy) ? policy : throw new DotNetReleaseException(
                 $"No workload set channel is configured for .NET {band}.");
 
+    /// <summary>Raw JSON representation of the repository and workload-set policy document.</summary>
     internal sealed class PolicyDocument
     {
         [JsonPropertyName("schemaVersion")]
@@ -142,6 +143,7 @@ internal sealed class ReleasePolicy
         public Dictionary<string, WorkloadSetEntry>? WorkloadSets { get; init; }
     }
 
+    /// <summary>Raw JSON policy for one repository.</summary>
     internal sealed class RepositoryEntry
     {
         [JsonPropertyName("workload")]
@@ -151,6 +153,7 @@ internal sealed class ReleasePolicy
         public ChannelEntry? Channel { get; init; }
     }
 
+    /// <summary>Raw JSON reference to a required BAR channel.</summary>
     internal sealed class ChannelEntry
     {
         [JsonPropertyName("name")]
@@ -160,6 +163,7 @@ internal sealed class ReleasePolicy
         public int Id { get; init; }
     }
 
+    /// <summary>Raw JSON workload-set channel and feed entry.</summary>
     internal sealed class WorkloadSetEntry
     {
         [JsonPropertyName("channel")]

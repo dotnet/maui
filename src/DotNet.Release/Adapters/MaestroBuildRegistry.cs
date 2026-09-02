@@ -5,8 +5,10 @@ namespace DotNet.Release;
 /// <summary>Read-only access to BAR builds used by release resolution.</summary>
 internal interface IBuildRegistry
 {
+    /// <summary>Gets the build with the exact BAR ID, or an empty list when it does not exist.</summary>
     Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);
 
+    /// <summary>Gets every BAR build registered at the exact commit.</summary>
     Task<IReadOnlyList<BarBuild>> GetBuildsAsync(string commit, CancellationToken cancellationToken);
 }
 

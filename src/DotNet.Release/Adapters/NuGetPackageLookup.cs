@@ -5,11 +5,17 @@ using NuGet.Versioning;
 
 namespace DotNet.Release;
 
+/// <summary>Provides read-only availability for a batch of exact NuGet package identities.</summary>
 internal interface INuGetPackageLookup
 {
+    /// <summary>Returns feed availability keyed by normalized package identity.</summary>
     Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Queries package availability through <c>NuGet.Protocol</c> with no caching and bounded
+/// concurrency.
+/// </summary>
 internal sealed class NuGetPackageLookup : INuGetPackageLookup, IDisposable
 {
     public const string NuGetOrgIndex = "https://api.nuget.org/v3/index.json";

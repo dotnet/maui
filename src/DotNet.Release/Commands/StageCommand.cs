@@ -4,6 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace DotNet.Release;
 
+/// <summary>
+/// Implements <c>release stage</c>, which validates gathered packages and creates the
+/// immutable release manifest and package-set directories.
+/// </summary>
 internal static class StageCommand
 {
     private static readonly JsonSerializerOptions ResolvedBuildJsonOptions = new(JsonSerializerDefaults.Web)

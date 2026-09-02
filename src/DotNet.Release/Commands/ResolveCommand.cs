@@ -5,6 +5,10 @@ using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
+/// <summary>
+/// Implements <c>release resolve</c>, which validates a BAR ID or commit selector and writes
+/// the verified build metadata consumed by gathering and staging.
+/// </summary>
 internal static class ResolveCommand
 {
     private static readonly JsonSerializerOptions OutputJsonOptions = new(JsonSerializerDefaults.Web)

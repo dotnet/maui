@@ -1,12 +1,19 @@
 namespace DotNet.Release;
 
+/// <summary>Describes why a manifest package is retained for publishing or withheld.</summary>
 internal enum PackageDisposition
 {
+    /// <summary>The package is not visible on the feed and remains in the publish set.</summary>
     Pending,
+
+    /// <summary>The exact package identity is already visible on the feed.</summary>
     AlreadyPublished,
+
+    /// <summary>An operator recovery filter identifies the package as previously submitted.</summary>
     PreviouslyAttempted,
 }
 
+/// <summary>The publication disposition calculated for one package in a manifest set.</summary>
 internal sealed record PruneDecision(
     string FileName,
     string Id,
