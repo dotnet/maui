@@ -71,14 +71,14 @@ internal static class PrunePublishedCommand
         string? setName,
         CancellationToken cancellationToken)
     {
-        var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
-        var sets = ReleaseArtifact.SelectSets(manifest, setName);
+        var manifest = ReleaseManifest.Deserialize(manifestJson, expectedManifestHash);
+        var sets = manifest.SelectSets(setName);
 
         ReleaseOutput.WriteSelectedRelease(outputWriter, manifest, sets, expectedManifestHash);
 
         foreach (var set in sets)
         {
-            var setDirectory = ReleaseArtifact.GetSetDirectory(stageDirectory, set);
+            var setDirectory = set.GetDirectory(stageDirectory);
 
             var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
             var report = PrunePublishedPlanner.Plan(set, manifest.AllPackages, recoveryPatterns, availability);

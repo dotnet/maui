@@ -2,7 +2,7 @@ using Xunit;
 
 namespace DotNet.Release.Tests;
 
-public class ReleaseManifestSerializerTests
+public class ReleaseManifestTests
 {
     private static ReleaseManifest Manifest() => ReleaseManifestBuilder.Build(
         TestData.Source(),
@@ -16,14 +16,14 @@ public class ReleaseManifestSerializerTests
     public void Round_trips_without_losing_anything()
     {
         var original = Manifest();
-        var json = ReleaseManifestSerializer.Serialize(original);
+        var json = original.Serialize();
 
-        var restored = ReleaseManifestSerializer.DeserializeManifest(json);
+        var restored = ReleaseManifest.Deserialize(json);
         // Compared through the serialized form rather than record equality: a record's
         // synthesized Equals uses reference equality for its IReadOnlyList members, so
         // Assert.Equal on the manifests would compare list identities, not contents. The JSON is
         // the actual contract crossing the job boundary, so it is the right thing to assert.
-        Assert.Equal(json, ReleaseManifestSerializer.Serialize(restored));
+        Assert.Equal(json, restored.Serialize());
 
         Assert.Equal(original.Source, restored.Source);
         Assert.Equal(
@@ -38,8 +38,8 @@ public class ReleaseManifestSerializerTests
     [Fact]
     public void Serialization_is_deterministic()
     {
-        Assert.Equal(ReleaseManifestSerializer.Serialize(Manifest()), ReleaseManifestSerializer.Serialize(Manifest()));
-        Assert.Equal(ReleaseManifestSerializer.ComputeHash(Manifest()), ReleaseManifestSerializer.ComputeHash(Manifest()));
+        Assert.Equal(Manifest().Serialize(), Manifest().Serialize());
+        Assert.Equal(Manifest().ComputeHash(), Manifest().ComputeHash());
     }
 
     [Fact]
@@ -54,41 +54,54 @@ public class ReleaseManifestSerializerTests
             }],
         };
 
-        Assert.NotEqual(ReleaseManifestSerializer.ComputeHash(original), ReleaseManifestSerializer.ComputeHash(tampered));
+        Assert.NotEqual(original.ComputeHash(), tampered.ComputeHash());
     }
 
     [Fact]
     public void VerifyAndDeserialize_accepts_the_matching_hash()
     {
-        var json = ReleaseManifestSerializer.Serialize(Manifest());
+        var manifest = Manifest();
+        var json = manifest.Serialize();
 
-        Assert.Equal(Manifest().Source, ReleaseManifestSerializer.VerifyAndDeserialize(json, ReleaseManifestSerializer.ComputeHash(json)).Source);
+        Assert.Equal(manifest.Source, ReleaseManifest.Deserialize(json, manifest.ComputeHash()).Source);
     }
 
     [Fact]
     public void VerifyAndDeserialize_rejects_a_tampered_manifest()
     {
-        var json = ReleaseManifestSerializer.Serialize(Manifest());
-        var hash = ReleaseManifestSerializer.ComputeHash(json);
+        var manifest = Manifest();
+        var json = manifest.Serialize();
+        var hash = manifest.ComputeHash();
 
-        Assert.Throws<DotNetReleaseException>(() => ReleaseManifestSerializer.VerifyAndDeserialize(
+        Assert.Throws<DotNetReleaseException>(() => ReleaseManifest.Deserialize(
             json.Replace("SkiaSharp", "EvilSharp", StringComparison.Ordinal), hash));
+    }
+
+    [Fact]
+    public void Verified_deserialization_hashes_the_exact_input_bytes()
+    {
+        var manifest = Manifest();
+        var json = manifest.Serialize();
+
+        Assert.Throws<DotNetReleaseException>(() =>
+            ReleaseManifest.Deserialize(json + Environment.NewLine, manifest.ComputeHash()));
     }
 
     [Fact]
     public void Hash_comparison_ignores_case_and_surrounding_whitespace()
     {
-        var json = ReleaseManifestSerializer.Serialize(Manifest());
-        var hash = ReleaseManifestSerializer.ComputeHash(json);
+        var manifest = Manifest();
+        var json = manifest.Serialize();
+        var hash = manifest.ComputeHash();
 
-        Assert.NotNull(ReleaseManifestSerializer.VerifyAndDeserialize(json, $"  {hash.ToUpperInvariant()}  "));
+        Assert.NotNull(ReleaseManifest.Deserialize(json, $"  {hash.ToUpperInvariant()}  "));
     }
 
     [Fact]
     public void Malformed_manifest_json_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(
-            () => ReleaseManifestSerializer.DeserializeManifest("{ not json"));
+            () => ReleaseManifest.Deserialize("{ not json"));
     }
 
     [Fact]

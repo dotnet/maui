@@ -184,7 +184,7 @@ src/DotNet.Release/
   Program.cs                           CLI entry point
   DotNetReleaseException.cs            expected CLI failure
   Cli/                                 command handlers and human-readable output
-  Artifact/                            artifact layout, serialization, and hashing
+  Artifact/                            filesystem layout and package hashing
   Policy/                              pure release decisions
   Model/                               transport and value models
   Adapters/                            read-only interfaces and implementations

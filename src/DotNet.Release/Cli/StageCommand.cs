@@ -126,7 +126,7 @@ internal static class StageCommand
         var manifest = ReleaseManifestBuilder.Build(source, policy, packages, options, now, toolVersion);
         var sourceFiles = IndexPackageFiles(packageFiles);
         Directory.CreateDirectory(outputDirectory);
-        var manifestJson = ReleaseManifestSerializer.Serialize(manifest);
+        var manifestJson = manifest.Serialize();
 
         foreach (var set in manifest.Sets.OrderBy(set => set.Order))
         {
@@ -150,7 +150,7 @@ internal static class StageCommand
         ReleaseOutput.WriteReleaseManifest(outputWriter, manifest);
         outputWriter.WriteLine();
         outputWriter.WriteLine($"Wrote {manifestPath}.");
-        outputWriter.WriteLine($"Release manifest SHA-256: {ReleaseManifestSerializer.ComputeHash(manifestJson)}");
+        outputWriter.WriteLine($"Release manifest SHA-256: {manifest.ComputeHash()}");
     }
 
     internal static List<string> FindShippingPackages(string dropDirectory)

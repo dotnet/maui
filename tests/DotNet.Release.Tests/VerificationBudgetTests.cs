@@ -11,7 +11,7 @@ public class VerificationBudgetTests : IDisposable
     private readonly Workspace _workspace = new();
     private readonly RecordingWriter _output = new();
 
-    private string ManifestHash => ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
+    private string ManifestHash => ReleaseManifest.Deserialize(_workspace.ReadManifest()).ComputeHash();
 
     public void Dispose() => _workspace.Dispose();
 
@@ -90,7 +90,7 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(41);
 
-        var straggler = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest()).AllPackages.Last();
+        var straggler = ReleaseManifest.Deserialize(_workspace.ReadManifest()).AllPackages.Last();
 
         var probe = new FakeProbe
         {

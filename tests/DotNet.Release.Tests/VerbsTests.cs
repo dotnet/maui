@@ -11,7 +11,7 @@ public class VerbsTests : IDisposable
     private readonly RecordingWriter _output = new();
 
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
-    private string ManifestHash => ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
+    private string ManifestHash => ReleaseManifest.Deserialize(_workspace.ReadManifest()).ComputeHash();
 
     public void Dispose() => _workspace.Dispose();
 
@@ -116,7 +116,7 @@ public class VerbsTests : IDisposable
         _workspace.WritePackage("HarfBuzzSharp", "8.3.1.5");
         await Stage();
 
-        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        var manifest = ReleaseManifest.Deserialize(_workspace.ReadManifest());
         var skia = manifest.AllPackages.Single(package => package.Id == "SkiaSharp");
         Assert.Equal(2, manifest.Sets[0].Packages.Count);
         // The staged directory is what 1ES will glob.
@@ -153,7 +153,7 @@ public class VerbsTests : IDisposable
         _workspace.WritePackage("SkiaSharp", "3.119.0");
         await Stage();
 
-        var expected = ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
+        var expected = ReleaseManifest.Deserialize(_workspace.ReadManifest()).ComputeHash();
         Assert.Contains($"Release manifest SHA-256: {expected}", _output.AllOutput, StringComparison.Ordinal);
     }
 
@@ -180,7 +180,7 @@ public class VerbsTests : IDisposable
         _workspace.WritePackage("HarfBuzzSharp", "8.3.1.5");
         await Stage(new StageOptions { Exclude = ["HarfBuzz*"] });
 
-        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        var manifest = ReleaseManifest.Deserialize(_workspace.ReadManifest());
         Assert.Equal("SkiaSharp", Assert.Single(manifest.Sets[0].Packages).Id);
     }
 
@@ -201,7 +201,7 @@ public class VerbsTests : IDisposable
 
         await Stage(resolvedBuildJson: ResolvedBuildJson(build));
 
-        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        var manifest = ReleaseManifest.Deserialize(_workspace.ReadManifest());
         Assert.Equal(commit, manifest.Source.Commit);
     }
 
@@ -244,7 +244,7 @@ public class VerbsTests : IDisposable
 
         await Stage();
 
-        return ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        return ReleaseManifest.Deserialize(_workspace.ReadManifest());
     }
 
     private Task Filter(INuGetClient probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
@@ -293,7 +293,7 @@ public class VerbsTests : IDisposable
         Assert.Contains("Raw version        : 1.2.3", output, StringComparison.Ordinal);
         Assert.Contains("Normalized version : 1.2.3", output, StringComparison.Ordinal);
         Assert.Contains("File name          : Pending.Package.1.2.3.nupkg", output, StringComparison.Ordinal);
-        var pendingPackage = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest()).AllPackages
+        var pendingPackage = ReleaseManifest.Deserialize(_workspace.ReadManifest()).AllPackages
             .Single(package => package.Id == "Pending.Package");
         Assert.Contains($"SHA-256            : {pendingPackage.Sha256}", output, StringComparison.Ordinal);
         Assert.Contains("Disposition        : Pending", output, StringComparison.Ordinal);
@@ -371,7 +371,7 @@ public class VerbsTests : IDisposable
     public async Task Filter_accepts_the_matching_manifest_hash()
     {
         await StagedManifestAsync(("SkiaSharp", "3.119.0"));
-        var hash = ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
+        var hash = ReleaseManifest.Deserialize(_workspace.ReadManifest()).ComputeHash();
 
         await Filter(new FakeProbe(), expectedHash: hash);
     }

@@ -62,8 +62,8 @@ internal static class VerifyCommand
         string expectedManifestHash,
         CancellationToken cancellationToken)
     {
-        var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
-        var sets = ReleaseArtifact.SelectSets(manifest, setName);
+        var manifest = ReleaseManifest.Deserialize(manifestJson, expectedManifestHash);
+        var sets = manifest.SelectSets(setName);
         var packages = sets.SelectMany(set => set.Packages).ToList();
         var deadline = clock() + maxDuration;
         IReadOnlyList<ReleasePackage> missing = packages;

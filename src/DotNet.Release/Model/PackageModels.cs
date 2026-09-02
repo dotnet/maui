@@ -38,4 +38,15 @@ internal sealed record ReleasePackageSet
 
     [JsonPropertyName("packages")]
     public required IReadOnlyList<ReleasePackage> Packages { get; init; }
+
+    /// <summary>Gets this set's validated directory beneath a release staging directory.</summary>
+    public string GetDirectory(string stageDirectory)
+    {
+        if (!ReleaseArtifact.IsSinglePathComponent(ArtifactName))
+        {
+            throw new DotNetReleaseException($"Package set artifact name '{ArtifactName}' must be one directory name.");
+        }
+
+        return Path.Combine(stageDirectory, ArtifactName);
+    }
 }

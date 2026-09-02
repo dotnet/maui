@@ -18,7 +18,7 @@ public class WorkloadStageScopingTests : IDisposable
     private readonly RecordingWriter _output = new();
 
     /// <summary>The pin the preparing stage computes. Production always supplies it.</summary>
-    private string ManifestHash => ReleaseManifestSerializer.ComputeHash(_workspace.ReadManifest());
+    private string ManifestHash => ReleaseManifest.Deserialize(_workspace.ReadManifest()).ComputeHash();
 
     public void Dispose() => _workspace.Dispose();
 
@@ -42,7 +42,7 @@ public class WorkloadStageScopingTests : IDisposable
             "1.0.0-test",
             CancellationToken.None);
 
-        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        var manifest = ReleaseManifest.Deserialize(_workspace.ReadManifest());
         Assert.Equal(2, manifest.Sets.Count);
         return manifest;
     }
