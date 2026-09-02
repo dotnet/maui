@@ -339,6 +339,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+				return;
+
+			if (_flyoutView is ShellFlyoutRenderer shellFlyoutRenderer)
+				shellFlyoutRenderer.ReleaseDrawerCallbackBeforePageChange();
+		}
+
 		void IElementHandler.DisconnectHandler()
 		{
 			if (_disposed)
