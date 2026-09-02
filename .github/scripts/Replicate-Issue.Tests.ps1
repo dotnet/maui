@@ -9824,6 +9824,79 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
             '*generated helper callbacks may not return*')
     }
 
+    It 'allows layout-bearing pages in the captured Catalyst reproduction shape' {
+        $layoutSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = new global::Microsoft.Maui.Controls.VerticalStackLayout
+            {
+                Padding = 24,
+                Spacing = 18,
+                Children =
+                {
+                    new global::Microsoft.Maui.Controls.Label { Text = "a" },
+                    new global::Microsoft.Maui.Controls.Button { Text = "b" }
+                }
+            }
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $layoutSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'still rejects non-contract construction inside the Window content flow' {
+        $foreignSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = new global::Microsoft.Maui.Controls.VerticalStackLayout
+            {
+                Children =
+                {
+                    (global::Microsoft.Maui.Controls.Label)
+                        (object)new System.Text.StringBuilder()
+                }
+            }
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $foreignSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*Window content is not safe closed test-local dataflow*')
+    }
+
+    It 'rejects a visibility-style callback oracle in place of the text oracle' {
+        $visibilitySource = $script:TrustedWindowHelperBase.Replace(
+            'Assert.Equal("Main", nativeTitle.Text);',
+            @'
+            Assert.True(
+                !nativeTitle.Hidden &&
+                nativeTitle.Alpha > 0 &&
+                nativeTitle.Bounds.Width > 0,
+                $"back title not visible: {nativeTitle.Text}");
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $visibilitySource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*no trusted assertion after the trigger*')
+    }
+
     It 'rejects a generated shadow of the immutable Window attachment helper' {
         $shadow = $script:TrustedWindowHelperBase.Replace(
             @'
