@@ -149,6 +149,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var appXamlContent = File.ReadAllText(appXamlFile);
 		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		var projectContent = File.ReadAllText(projectFile);
+		AssertContains("Margin = new Thickness(0, 20, 0, 0)", mainPageContent);
+		AssertContains("SemanticProperties.SetDescription(logo, \"dot net bot riding a rocket\")", mainPageContent);
 		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"Headline\")", mainPageContent);
 		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"SubHeadline\")", mainPageContent);
 		AssertDoesNotContain("HorizontalOptions = LayoutOptions.Center", mainPageContent);

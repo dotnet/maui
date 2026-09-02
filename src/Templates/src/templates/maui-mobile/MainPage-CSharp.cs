@@ -13,9 +13,10 @@ public class MainPage : ContentPage
 		{
 			Source = "dotnet_bot.png",
 			HeightRequest = 185,
+			Margin = new Thickness(0, 20, 0, 0),
 			Aspect = Aspect.AspectFit
 		};
-		SemanticProperties.SetDescription(logo, "dot net bot in a submarine number ten");
+		SemanticProperties.SetDescription(logo, "dot net bot riding a rocket");
 
 		var headline = new Label
 		{
