@@ -271,6 +271,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData(true, true, false, false)]
+		[InlineData(true, false, true, false)]
+		[InlineData(true, false, false, true)]
+		[InlineData(false, true, false, false)]
+		[InlineData(false, false, true, false)]
+		[InlineData(false, false, false, true)]
+		public async Task InteractivePopGestureRespectsBackButtonPressed(bool navBarVisible, bool shellHandled, bool pageHandled, bool expectedShouldBegin)
+		{
+			SetupBuilder();
+			var backPressOrder = new List<string>();
+			var shell = new BackHandlingShell(shellHandled, () => backPressOrder.Add("Shell"))
+			{
+				CurrentItem = new ContentPage()
+			};
+			var backHandlingPage = new BackHandlingPage(pageHandled, () => backPressOrder.Add("Page"));
+			Shell.SetNavBarIsVisible(backHandlingPage, navBarVisible);
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async handler =>
+			{
+				await shell.Navigation.PushAsync(backHandlingPage).WaitAsync(TimeSpan.FromSeconds(2));
+
+				IShellContext shellContext = handler;
+				var sectionRenderer = Assert.IsType<ShellSectionRenderer>(
+					Assert.IsType<ShellItemRenderer>(shellContext.CurrentShellItemRenderer).CurrentRenderer);
+				var recognizer = sectionRenderer.InteractivePopGestureRecognizer;
+
+				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				Assert.Equal(shellHandled ? 0 : 1, backHandlingPage.BackButtonPressedCount);
+				Assert.Equal(shellHandled ? new[] { "Shell" } : new[] { "Shell", "Page" }, backPressOrder);
+			});
+		}
+
 		[Fact(DisplayName = "Cancel BackButton Navigation")]
 		public async Task CancelBackButtonNavigation()
 		{
@@ -436,11 +469,11 @@ namespace Microsoft.Maui.DeviceTests
 				UIView titleView = Shell.GetTitleView(_context.Shell.CurrentPage)?.Handler?.PlatformView as UIView ?? Shell.GetTitleView(_context.Shell)?.Handler?.PlatformView as UIView;
 
 				UIView parentView = GetParentByType(titleView, typeof(UIKit.UIControl));
-				
+
 				if (parentView != null)
 				{
 					handler.PreviousFrame = parentView.Frame;
-					
+
 					// height constraint
 					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Bottom, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Bottom, 1.0f, 0.0f).Active = true;
 					NSLayoutConstraint.Create(parentView, NSLayoutAttribute.Top, NSLayoutRelation.Equal, parentView.Superview, NSLayoutAttribute.Top, 1.0f, 0.0f).Active = true;
@@ -617,6 +650,45 @@ namespace Microsoft.Maui.DeviceTests
 			rootHeader.ItemSelected(rootHeader.CollectionView, NSIndexPath.FromItemSection((int)newIndex, 0));
 
 			await OnNavigatedToAsync(page);
+		}
+
+		sealed class BackHandlingPage : ContentPage
+		{
+			readonly Action _onBackButtonPressed;
+			readonly bool _backHandled;
+
+			public BackHandlingPage(bool backHandled, Action onBackButtonPressed)
+			{
+				_backHandled = backHandled;
+				_onBackButtonPressed = onBackButtonPressed;
+			}
+
+			public int BackButtonPressedCount { get; private set; }
+
+			protected override bool OnBackButtonPressed()
+			{
+				BackButtonPressedCount++;
+				_onBackButtonPressed();
+				return _backHandled;
+			}
+		}
+
+		sealed class BackHandlingShell : Shell
+		{
+			readonly Action _onBackButtonPressed;
+			readonly bool _backHandled;
+
+			public BackHandlingShell(bool backHandled, Action onBackButtonPressed)
+			{
+				_backHandled = backHandled;
+				_onBackButtonPressed = onBackButtonPressed;
+			}
+
+			protected override bool OnBackButtonPressed()
+			{
+				_onBackButtonPressed();
+				return _backHandled || base.OnBackButtonPressed();
+			}
 		}
 
 		[Fact(DisplayName = "Shell Flyout Table View Has ScrollsToTop Disabled")]

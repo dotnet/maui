@@ -242,23 +242,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePopGesture);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldPopCurrentPage);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
-		}
-
-		bool ShouldBeginInteractivePopGesture()
-		{
-			var currentPage = NavPage?.CurrentPage;
-			if (currentPage is not null && !NavigationPage.GetHasNavigationBar(currentPage))
-			{
-				return ShouldPopCurrentPage();
-			}
-
-			_uiRequestedPop = true;
-			return true;
 		}
 
 		bool ShouldPopCurrentPage()
