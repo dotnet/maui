@@ -3976,12 +3976,20 @@ namespace Microsoft.Maui.Controls
     {
         public event System.EventHandler NavigatedTo;
     }
-    public class ContentPage : Page { }
+    public class ContentPage : Page
+    {
+        public View Content { get; set; }
+    }
     public class Label : View
     {
         public static BindableProperty BackgroundColorProperty { get; }
         public static BindableProperty TextColorProperty { get; }
         public int MaxLines { get; set; }
+        public string Text { get; set; }
+    }
+
+    public class Button : View
+    {
         public string Text { get; set; }
     }
 
@@ -4082,7 +4090,23 @@ namespace Microsoft.Maui.Controls
         System.Threading.Tasks.Task PushAsync(Page page);
         System.Threading.Tasks.Task<Page> PopAsync();
     }
-    public class Layout : View { }
+    // Padding is modelled as double rather than the real Thickness because the
+    // guard rejects user-defined conversions in trusted dataflow; a numeric
+    // property binds the same literals without introducing one.
+    public class Layout : View
+    {
+        public double Padding { get; set; }
+        public System.Collections.Generic.IList<View> Children { get; } =
+            new System.Collections.Generic.List<View>();
+    }
+
+    public abstract class StackBase : Layout
+    {
+        public double Spacing { get; set; }
+    }
+
+    public class VerticalStackLayout : StackBase { }
+    public class HorizontalStackLayout : StackBase { }
     public class Toolbar : View { }
     public class Window : Element, global::Microsoft.Maui.IElement
     {
@@ -4120,6 +4144,7 @@ namespace Microsoft.Maui.Graphics
 
 namespace Microsoft.Maui.Controls.Handlers
 {
+    public class ButtonHandler { }
     public class LabelHandler { }
     public class LayoutHandler { }
     public class PageHandler { }
