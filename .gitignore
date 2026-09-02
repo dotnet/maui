@@ -5,6 +5,7 @@ artifacts/
 .tools/
 .vs/
 .idea/
+.playwright-mcp/
 
 # Build intermediates for any project not covered by Arcade's artifacts layout
 [Bb]in/

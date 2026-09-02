@@ -679,15 +679,16 @@ poll interval: 20 seconds
 
 The deadline applies to the set, not to each package.
 
-The NuGet client uses `NoCache=true`. A cached negative could cause a retry to re-submit a
-package that already landed, and the publish task treats HTTP 409 as fatal.
+The NuGet client uses `NoCache=true` for HTTP/disk caching and `RefreshMemoryCache=true` for
+NuGet.Protocol's per-ID version-list cache. Without both, the first negative result can remain
+cached for the entire verification loop even after the package is indexed.
 
 Transient query failures are logged and retried until the deadline. Cancellation still
 terminates immediately.
 
 For partial publication:
 
-1. queue the same repository, commit, filters, and BAR build;
+1. queue the same repository, build selector, and filters;
 2. `prune-published` removes packages already visible on NuGet.org;
 3. if NuGet.org accepted a package but it is not yet visible, add its filename to
    `recoveryFilters`;

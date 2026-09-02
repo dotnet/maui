@@ -31,7 +31,14 @@ internal sealed class NuGetClient : INuGetClient, IDisposable
         ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrency, 1);
 
         _maxConcurrency = maxConcurrency;
-        _cache = new SourceCacheContext { NoCache = true, DirectDownload = true };
+        _cache = new SourceCacheContext
+        {
+            NoCache = true,
+            DirectDownload = true,
+            // FindPackageByIdResource caches each ID's version list independently of the
+            // HTTP cache. Verification must refresh that list after an initial miss.
+            RefreshMemoryCache = true,
+        };
         var resource = Repository.Factory.GetCoreV3(sourceIndexUrl ?? NuGetOrgIndex).GetResourceAsync<FindPackageByIdResource>();
         var actualLogger = logger ?? NullLogger.Instance;
 
