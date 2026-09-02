@@ -17,6 +17,7 @@ using AColor = Android.Graphics.Color;
 using AndroidUri = Android.Net.Uri;
 using JavaBoolean = Java.Lang.Boolean;
 using JavaList = Android.Runtime.JavaList;
+using MauiPlatform = Microsoft.Maui.ApplicationModel.Platform;
 
 namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 {
@@ -1016,7 +1017,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				.GetField("_pendingRequests", BindingFlags.Instance | BindingFlags.NonPublic);
 			var pendingRequests = Assert.IsType<System.Runtime.CompilerServices.ConditionalWeakTable<AndroidX.Activity.ComponentActivity, TaskCompletionSource<JavaBoolean>>>(
 				pendingRequestsField?.GetValue(captureForResult));
-			var currentActivity = Assert.IsAssignableFrom<AndroidX.Activity.ComponentActivity>(Platform.CurrentActivity);
+			var currentActivity = Assert.IsAssignableFrom<AndroidX.Activity.ComponentActivity>(MauiPlatform.CurrentActivity);
 
 			// Seed the base request as if Launch already has one in-process activity result pending.
 			pendingRequests.Add(currentActivity, activeTaskCompletionSource);
