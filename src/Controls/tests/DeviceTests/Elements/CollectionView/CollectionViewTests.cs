@@ -234,10 +234,10 @@ Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 #pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 #endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
 #if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			{
 				collectionView.ScrollTo(index: 24, animate: false); // Item "x"
 
 				int retryCount = 3;
@@ -320,10 +320,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 #pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 #endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
 #if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			{
 				collectionView.ScrollTo(index: 4, groupIndex: 13, animate: false); // Item "N_4"
 
 				int retryCount = 3;
@@ -570,10 +570,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 #pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 #endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
 #if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			{
 				await WaitForUIUpdate(frame, collectionView);
 
 				var labels = collectionView.LogicalChildrenInternal;
@@ -615,10 +615,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 #pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 #endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
 #if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			{
 				await WaitForUIUpdate(collectionView.Frame, collectionView);
 
 				Assert.NotNull(handler.PlatformView);
@@ -680,10 +680,10 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 #pragma warning disable CS0618 // Windows coverage intentionally exercises the legacy CollectionView handler.
 #endif
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
 #if WINDOWS
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
-			{
 				var data = new ObservableCollection<MyRecord>()
 				{
 					new MyRecord("Item 1"),
