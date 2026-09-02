@@ -188,6 +188,20 @@ public class Issue33037NonShell : _IssuesUITest
 				App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.05);
 				AssertValidReporterTitleGeometry(title, expandedTitleRect, collapsedScrollerRect);
 			}
+
+			var centerX = expandedScrollerRect.X + expandedScrollerRect.Width / 2;
+			var startY = expandedTitleRect.Bottom + 50;
+			var endY = expandedScrollerRect.Bottom - 50;
+			App.DragCoordinates(centerX, startY, centerX, endY);
+			App.DragCoordinates(centerX, startY, centerX, endY);
+			App.WaitForElement("Item 0");
+
+			var restoredTitleRect = GetNavigationTitleRect(title);
+			var stableRestoredTitleRect = GetNavigationTitleRect(title);
+			Assert.That(restoredTitleRect.Height, Is.EqualTo(expandedTitleRect.Height).Within(2),
+				"The reporter's large title should fully restore after reversing across the threshold.");
+			Assert.That(stableRestoredTitleRect.Height, Is.EqualTo(restoredTitleRect.Height).Within(2),
+				"The restored large title should remain stable after the reverse transition completes.");
 		}
 		finally
 		{

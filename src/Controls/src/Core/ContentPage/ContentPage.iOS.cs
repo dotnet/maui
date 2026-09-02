@@ -53,6 +53,7 @@ public partial class ContentPage
 			content,
 			content,
 			platformBounds,
+			topSafeArea,
 			topSafeArea);
 	}
 }

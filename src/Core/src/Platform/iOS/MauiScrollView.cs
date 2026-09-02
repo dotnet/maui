@@ -301,6 +301,9 @@ namespace Microsoft.Maui.Platform
 		void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset)
 		{
 			var isFirstDelegation = !_isTopSafeAreaDelegated;
+			var delegatedInsetChanged =
+				isFirstDelegation ||
+				Math.Abs(_delegatedTopInset - topInset) > 0.5;
 			var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
 			var contentInset = ContentInset;
 			var indicatorInsets = VerticalScrollIndicatorInsets;
@@ -326,7 +329,7 @@ namespace Microsoft.Maui.Platform
 				indicatorInsets.Bottom,
 				indicatorInsets.Right);
 
-			if (!Dragging && !Decelerating)
+			if (delegatedInsetChanged && !Tracking && !Dragging && !Decelerating)
 			{
 				ContentOffset = new CGPoint(
 					ContentOffset.X,
@@ -365,7 +368,7 @@ namespace Microsoft.Maui.Platform
 				_safeAreaInvalidated = true;
 			}
 
-			if (!Dragging && !Decelerating)
+			if (!Tracking && !Dragging && !Decelerating)
 			{
 				ContentOffset = new CGPoint(
 					ContentOffset.X,

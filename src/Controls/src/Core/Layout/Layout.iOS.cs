@@ -64,7 +64,8 @@ namespace Microsoft.Maui.Controls
 				scrollHost,
 				scrollContent,
 				bounds,
-				contentTopInset);
+				contentTopInset,
+				safeArea.Top);
 
 			return arranged;
 		}

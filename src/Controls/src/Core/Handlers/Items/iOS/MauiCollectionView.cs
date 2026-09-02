@@ -274,6 +274,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset)
 	{
 		var isFirstDelegation = !_isTopSafeAreaDelegated;
+		var delegatedInsetChanged =
+			isFirstDelegation ||
+			Math.Abs(_delegatedTopInset - topInset) > 0.5;
 		var wasAtTop = ContentOffset.Y <= 0;
 		var distanceFromTop = ContentOffset.Y + AdjustedContentInset.Top;
 		var contentInset = ContentInset;
@@ -299,7 +302,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 			indicatorInsets.Bottom,
 			indicatorInsets.Right);
 
-		if (!Dragging && !Decelerating)
+		if (delegatedInsetChanged && !Tracking && !Dragging && !Decelerating)
 		{
 			ContentOffset = new CGPoint(
 				ContentOffset.X,
@@ -340,7 +343,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_delegatedTopInset = 0;
 		_delegatedScrollIndicatorTopInset = 0;
 
-		if (!Dragging && !Decelerating)
+		if (!Tracking && !Dragging && !Decelerating)
 		{
 			ContentOffset = new CGPoint(
 				ContentOffset.X,

@@ -12,10 +12,20 @@ sealed class SafeAreaScrollViewCoordinator
 	WeakReference<UIScrollView> _delegatedNativeScrollView;
 	WeakReference<ISafeAreaScrollViewContainer> _delegatedScrollContainer;
 	UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
+	nfloat _delegatedSystemTopInset;
 	nfloat _delegatedTopInset;
 	nfloat _delegatedScrollIndicatorTopInset;
+	double _delegatedBoundsWidth = -1;
+	double _delegatedBoundsHeight = -1;
+	nfloat _delegatedStatusBarHeight = -1;
+	string _delegatedContentSizeCategory;
 
-	public bool TryDelegate(IView scrollHost, IView scrollContent, Rect bounds, double contentTopInset)
+	public bool TryDelegate(
+		IView scrollHost,
+		IView scrollContent,
+		Rect bounds,
+		double contentTopInset,
+		double systemTopInset)
 	{
 		var nativeScrollView = ResolveNativeScrollView(scrollContent);
 		if (nativeScrollView is null)
@@ -31,7 +41,11 @@ sealed class SafeAreaScrollViewCoordinator
 			scrollFrame.Width,
 			scrollFrame.Bottom - bounds.Top);
 
-		TransferNativeScrollInsetOwnership(nativeScrollView, contentTopInset);
+		TransferNativeScrollInsetOwnership(
+			nativeScrollView,
+			contentTopInset,
+			systemTopInset,
+			bounds);
 
 		if (scrollHost.Handler is ISafeAreaScrollViewContainer scrollContainer &&
 			scrollHost.Handler.PlatformView == nativeScrollView &&
@@ -86,7 +100,9 @@ sealed class SafeAreaScrollViewCoordinator
 				indicatorInsets.Right);
 			delegatedScrollView.ContentInsetAdjustmentBehavior = _previousInsetAdjustmentBehavior;
 
-			if (!delegatedScrollView.Dragging && !delegatedScrollView.Decelerating)
+			if (!delegatedScrollView.Tracking &&
+				!delegatedScrollView.Dragging &&
+				!delegatedScrollView.Decelerating)
 			{
 				delegatedScrollView.ContentOffset = new CGPoint(
 					delegatedScrollView.ContentOffset.X,
@@ -162,7 +178,11 @@ sealed class SafeAreaScrollViewCoordinator
 			FindNativeScrollView(platformView, verticallyScrollableOnly: false) is not null;
 	}
 
-	void TransferNativeScrollInsetOwnership(UIScrollView nativeScrollView, double topInset)
+	void TransferNativeScrollInsetOwnership(
+		UIScrollView nativeScrollView,
+		double topInset,
+		double systemTopInset,
+		Rect bounds)
 	{
 		var isFirstDelegation =
 			_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) != true ||
@@ -177,9 +197,26 @@ sealed class SafeAreaScrollViewCoordinator
 				_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
 		}
 
+		UpdateLayoutEpoch(nativeScrollView, bounds, systemTopInset);
+		// The navigation bar derives its large-title state from this scroll geometry.
+		// Keep the system contribution stable so that state cannot feed back into its own threshold.
+		_delegatedSystemTopInset = (nfloat)Math.Max(_delegatedSystemTopInset, systemTopInset);
+		var additionalTopInset = (nfloat)Math.Max(0, topInset - systemTopInset);
+		var requestedTopInset = _delegatedSystemTopInset + additionalTopInset;
+		var stableTopInset =
+			!isFirstDelegation &&
+			(nativeScrollView.Tracking || nativeScrollView.Dragging || nativeScrollView.Decelerating)
+				? (nfloat)Math.Max(_delegatedTopInset, requestedTopInset)
+				: requestedTopInset;
+		var delegatedInsetChanged =
+			isFirstDelegation ||
+			Math.Abs(_delegatedTopInset - stableTopInset) > 0.5;
+
 		if (nativeScrollView is ISafeAreaScrollView safeAreaScrollView)
 		{
-			safeAreaScrollView.ApplyDelegatedTopInset(topInset);
+			_delegatedTopInset = stableTopInset;
+			_delegatedScrollIndicatorTopInset = stableTopInset;
+			safeAreaScrollView.ApplyDelegatedTopInset(stableTopInset);
 			return;
 		}
 
@@ -189,8 +226,8 @@ sealed class SafeAreaScrollViewCoordinator
 		var baseContentTop = contentInset.Top - _delegatedTopInset;
 		var baseIndicatorTop = indicatorInsets.Top - _delegatedScrollIndicatorTopInset;
 
-		_delegatedTopInset = (nfloat)topInset;
-		_delegatedScrollIndicatorTopInset = (nfloat)topInset;
+		_delegatedTopInset = stableTopInset;
+		_delegatedScrollIndicatorTopInset = stableTopInset;
 		nativeScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 		nativeScrollView.ContentInset = new UIEdgeInsets(
 			baseContentTop + _delegatedTopInset,
@@ -203,7 +240,10 @@ sealed class SafeAreaScrollViewCoordinator
 			indicatorInsets.Bottom,
 			indicatorInsets.Right);
 
-		if (!nativeScrollView.Dragging && !nativeScrollView.Decelerating)
+		if (delegatedInsetChanged &&
+			!nativeScrollView.Tracking &&
+			!nativeScrollView.Dragging &&
+			!nativeScrollView.Decelerating)
 		{
 			nativeScrollView.ContentOffset = new CGPoint(
 				nativeScrollView.ContentOffset.X,
@@ -211,6 +251,31 @@ sealed class SafeAreaScrollViewCoordinator
 					? -nativeScrollView.AdjustedContentInset.Top
 					: distanceFromTop - nativeScrollView.AdjustedContentInset.Top);
 		}
+	}
+
+	void UpdateLayoutEpoch(UIScrollView nativeScrollView, Rect bounds, double systemTopInset)
+	{
+		var statusBarHeight =
+			nativeScrollView.Window?.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? -1;
+		var contentSizeCategory =
+			nativeScrollView.TraitCollection.PreferredContentSizeCategory;
+		var layoutEnvironmentChanged =
+			(_delegatedBoundsWidth >= 0 &&
+				(Math.Abs(_delegatedBoundsWidth - bounds.Width) > 1 ||
+				Math.Abs(_delegatedBoundsHeight - bounds.Height) > 1)) ||
+			(_delegatedStatusBarHeight >= 0 && statusBarHeight >= 0 &&
+				Math.Abs(_delegatedStatusBarHeight - statusBarHeight) > 0.5) ||
+			(_delegatedContentSizeCategory is not null &&
+				_delegatedContentSizeCategory != contentSizeCategory);
+
+		if (layoutEnvironmentChanged)
+			_delegatedSystemTopInset = (nfloat)systemTopInset;
+
+		_delegatedBoundsWidth = bounds.Width;
+		_delegatedBoundsHeight = bounds.Height;
+		if (statusBarHeight >= 0)
+			_delegatedStatusBarHeight = statusBarHeight;
+		_delegatedContentSizeCategory = contentSizeCategory;
 	}
 
 	void ResetNativeScrollFrameOwnership(ISafeAreaScrollViewContainer currentContainer = null)
@@ -226,8 +291,13 @@ sealed class SafeAreaScrollViewCoordinator
 	void ClearNativeScrollInsetOwnership()
 	{
 		_delegatedNativeScrollView = null;
+		_delegatedSystemTopInset = 0;
 		_delegatedTopInset = 0;
 		_delegatedScrollIndicatorTopInset = 0;
+		_delegatedBoundsWidth = -1;
+		_delegatedBoundsHeight = -1;
+		_delegatedStatusBarHeight = -1;
+		_delegatedContentSizeCategory = null;
 	}
 
 	static UIScrollView ResolveNativeScrollView(IView view)
