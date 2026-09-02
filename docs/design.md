@@ -540,7 +540,6 @@ package's identity, file name, hash, and final disposition.
 
 ```jsonc
 {
-  "schemaVersion": 1,
   "toolVersion": "1.0.0",
   "createdUtc": "2026-08-28T00:00:00Z",
   "source": {
@@ -793,5 +792,4 @@ Tests MUST fail when:
 - the tool references NuGet's push API;
 - the tool references `System.Diagnostics.Process`;
 - the manifest, package, or executable hash chain is inconsistent;
-- a future manifest schema is read by an older tool;
 - an unexpected or changed `.nupkg` enters the publish set.

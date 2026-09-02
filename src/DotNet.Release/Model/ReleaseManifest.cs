@@ -35,9 +35,6 @@ internal sealed record ReleaseSource
 /// <summary>The immutable contract artifact serialized as <c>release-manifest.json</c>.</summary>
 internal sealed record ReleaseManifest
 {
-    [JsonPropertyName("schemaVersion")]
-    public int SchemaVersion { get; init; } = 1;
-
     [JsonPropertyName("toolVersion")]
     public required string ToolVersion { get; init; }
 

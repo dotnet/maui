@@ -84,18 +84,6 @@ public class ReleaseManifestSerializerTests
         Assert.NotNull(ReleaseManifestSerializer.VerifyAndDeserialize(json, $"  {hash.ToUpperInvariant()}  "));
     }
 
-    /// <summary>
-    /// The manifest gates a production push, so an unrecognised schema must fail rather than be
-    /// silently reinterpreted by an older tool.
-    /// </summary>
-    [Fact]
-    public void An_unsupported_manifest_schema_version_fails_closed()
-    {
-        var json = ReleaseManifestSerializer.Serialize(Manifest()).Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal);
-
-        Assert.Throws<DotNetReleaseException>(() => ReleaseManifestSerializer.DeserializeManifest(json));
-    }
-
     [Fact]
     public void Malformed_manifest_json_fails_closed()
     {

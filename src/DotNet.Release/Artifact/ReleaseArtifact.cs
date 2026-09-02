@@ -15,7 +15,9 @@ internal static class ReleaseArtifact
         return Path.Combine(stageDirectory, set.ArtifactName);
     }
 
-    internal static bool IsSinglePathComponent(string value) => !string.IsNullOrWhiteSpace(value) && !Path.IsPathRooted(value) &&
+    internal static bool IsSinglePathComponent(string value) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        !Path.IsPathRooted(value) &&
         Path.GetFileName(value) == value;
 
     internal static Dictionary<string, string> ReadPackageHashes(string directory)
@@ -29,7 +31,8 @@ internal static class ReleaseArtifact
 
         foreach (var file in Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.AllDirectories))
         {
-            hashes[Path.GetRelativePath(directory, file)] = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
+            var hash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
+            hashes[Path.GetRelativePath(directory, file)] = hash;
         }
 
         return hashes;

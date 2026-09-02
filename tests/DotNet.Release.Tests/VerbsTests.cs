@@ -127,7 +127,6 @@ public class VerbsTests : IDisposable
         Assert.Contains("Release manifest:", output, StringComparison.Ordinal);
         Assert.Contains("Resolved build:", output, StringComparison.Ordinal);
         Assert.Contains("Repository origin : GitHubRepository", output, StringComparison.Ordinal);
-        Assert.Contains("Schema version : 1", output, StringComparison.Ordinal);
         Assert.Contains("Tool version   : 1.0.0-test", output, StringComparison.Ordinal);
         Assert.Contains($"Created UTC    : {Workspace.Now:O}", output, StringComparison.Ordinal);
         Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);

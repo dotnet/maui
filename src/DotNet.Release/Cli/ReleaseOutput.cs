@@ -49,7 +49,6 @@ internal static class ReleaseOutput
         ArgumentNullException.ThrowIfNull(manifest);
 
         writer.WriteLine("Release manifest:");
-        writer.WriteLine($"  Schema version : {manifest.SchemaVersion}");
         writer.WriteLine($"  Tool version   : {manifest.ToolVersion}");
         writer.WriteLine($"  Created UTC    : {manifest.CreatedUtc:O}");
         WriteReleaseSource(writer, manifest.Source, "Source", "  ");

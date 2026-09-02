@@ -27,24 +27,8 @@ internal static class ReleaseManifestSerializer
         return JsonSerializer.Serialize(manifest, Options);
     }
 
-    /// <summary>The only manifest schema this tool understands.</summary>
-    public const int SupportedSchemaVersion = 1;
-
-    public static ReleaseManifest DeserializeManifest(string json)
-    {
-        var manifest = Deserialize<ReleaseManifest>(json, "release manifest");
-
-        // Fail closed on a schema this tool does not understand. Without this an older tool
-        // reading a future manifest would silently reinterpret the one file that gates a
-        // production push.
-        if (manifest.SchemaVersion != SupportedSchemaVersion)
-        {
-            throw new DotNetReleaseException($"Unsupported release manifest schemaVersion '{manifest.SchemaVersion}'; " +
-                $"this tool understands {SupportedSchemaVersion}.");
-        }
-
-        return manifest;
-    }
+    public static ReleaseManifest DeserializeManifest(string json) =>
+        Deserialize<ReleaseManifest>(json, "release manifest");
 
     private static T Deserialize<T>(string json, string what)
         where T : class
