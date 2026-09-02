@@ -33,6 +33,9 @@ namespace Microsoft.Maui
 		[DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
 		static extern void objc_msgSend_void(IntPtr receiver, IntPtr selector);
 
+		[DllImport("/usr/lib/libobjc.dylib")]
+		static extern IntPtr objc_getClass(string name);
+
 		[DllImport("/usr/lib/libSystem.dylib")]
 		static extern IntPtr dlopen(string path, int mode);
 
@@ -56,7 +59,7 @@ namespace Microsoft.Maui
 					return false;
 				}
 
-				_helperClass = Class.GetHandle("MauiWidgetHelper");
+				_helperClass = objc_getClass("MauiWidgetHelper");
 				if (_helperClass == IntPtr.Zero)
 				{
 					_initialized = true;
