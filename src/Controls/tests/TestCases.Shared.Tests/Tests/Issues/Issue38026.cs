@@ -14,7 +14,7 @@ public class Issue38026 : _IssuesUITest
 	public override string Issue => "Navigation stops working after changing Window.Page from Shell";
 
 	[Test]
-	[Category(UITestCategories.Navigation)]
+	[Category(UITestCategories.SafeAreaEdges)]
 	public void BackWorksAfterReplacingShellWithNavigationPage()
 	{
 		App.WaitForElement("InstallNavigationPageButton");
