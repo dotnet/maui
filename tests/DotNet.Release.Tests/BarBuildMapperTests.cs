@@ -11,9 +11,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Maps_the_fields_the_release_depends_on()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(
-            id: 328857,
-            channels: [(1648, ".NET Libraries")]));
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(id: 328857, channels: [(1648, ".NET Libraries")]));
 
         Assert.Equal(328857, mapped.Id);
         Assert.Equal(BuildFactory.Commit, mapped.Commit);
@@ -50,9 +48,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Production_build_328857_has_a_null_github_repository()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(
-            id: 328857,
-            gitHubRepository: null,
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(id: 328857, gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp",
             channels: [(1648, ".NET Libraries")]));
 
@@ -67,8 +63,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Null_github_repository_still_carries_the_azdo_mirror_for_identity_recovery()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(
-            gitHubRepository: null,
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp"));
 
         Assert.Null(mapped.GitHubRepository);
@@ -90,8 +85,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Values_are_trimmed()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(
-            commit: $"  {BuildFactory.Commit}  ",
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(commit: $"  {BuildFactory.Commit}  ",
             gitHubRepository: "  https://github.com/dotnet/skiasharp  ",
             channels: [(1648, "  .NET Libraries  ")]));
 
@@ -134,8 +128,7 @@ public class BarBuildMapperTests
     [Fact]
     public void Multiple_channels_are_all_preserved_with_id_and_name()
     {
-        var mapped = BarBuildMapper.Map(BuildFactory.Create(
-            channels: [(1648, ".NET Libraries"), (5172, ".NET 10")]));
+        var mapped = BarBuildMapper.Map(BuildFactory.Create(channels: [(1648, ".NET Libraries"), (5172, ".NET 10")]));
 
         Assert.Equal(
             [(".NET Libraries", 1648), (".NET 10", 5172)],

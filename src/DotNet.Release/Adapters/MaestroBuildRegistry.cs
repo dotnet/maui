@@ -5,14 +5,9 @@ namespace DotNet.Release;
 /// <summary>Read-only access to BAR builds used by release planning.</summary>
 internal interface IBuildRegistry
 {
-    Task<IReadOnlyList<BarBuild>> GetBuildAsync(
-        int barBuildId,
-        CancellationToken cancellationToken);
+    Task<IReadOnlyList<BarBuild>> GetBuildAsync(int barBuildId, CancellationToken cancellationToken);
 
-    Task<IReadOnlyList<BarBuild>> GetBuildsAsync(
-        RepositoryId repository,
-        string commit,
-        CancellationToken cancellationToken);
+    Task<IReadOnlyList<BarBuild>> GetBuildsAsync(RepositoryId repository, string commit, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -67,9 +62,7 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
         {
             // Asset locations are not needed: the drop is gathered by `darc gather-drop`,
             // and asking for them makes the response substantially larger.
-            var build = await _builds
-                .GetBuildAsync(barBuildId, includeAssetLocation: false, cancellationToken)
-                .ConfigureAwait(false);
+            var build = await _builds.GetBuildAsync(barBuildId, includeAssetLocation: false, cancellationToken).ConfigureAwait(false);
 
             return build is null ? [] : [BarBuildMapper.Map(build)];
         }
@@ -83,10 +76,7 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<BarBuild>> GetBuildsAsync(
-        RepositoryId repository,
-        string commit,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<BarBuild>> GetBuildsAsync(RepositoryId repository, string commit, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(commit))
         {
@@ -106,10 +96,7 @@ internal sealed class MaestroBuildRegistry : IBuildRegistry
         // fails with BAR_CHANNEL_MISSING while BAR shows the build correctly assigned. It is
         // a separate concern from includeAssetLocation on GetBuildAsync, which stays false
         // because `darc gather-drop` downloads the assets.
-        var page = _builds.ListBuildsAsync(
-            commit: commit.Trim(),
-            repository: repository.GitHubUrl,
-            loadCollections: true,
+        var page = _builds.ListBuildsAsync(commit: commit.Trim(), repository: repository.GitHubUrl, loadCollections: true,
             cancellationToken: cancellationToken);
 
         await foreach (var build in page.ConfigureAwait(false))

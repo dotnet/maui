@@ -4,13 +4,8 @@ namespace DotNet.Release.Tests;
 
 public class ReleasePlanSerializerTests
 {
-    private static ReleasePlan Plan() => StagePlanner.Create(
-        TestData.Resolved(),
-        TestData.Policy(),
-        [TestData.Drop("SkiaSharp", "3.119.0"), TestData.Drop("HarfBuzzSharp", "8.3.1")],
-        new StageOptions(),
-        TestData.Now,
-        TestData.ToolVersion);
+    private static ReleasePlan Plan() => StagePlanner.Create(TestData.Resolved(), TestData.Policy(),
+        [TestData.Drop("SkiaSharp", "3.119.0"), TestData.Drop("HarfBuzzSharp", "8.3.1")], new StageOptions(), TestData.Now, TestData.ToolVersion);
 
     [Fact]
     public void Round_trips_without_losing_anything()
@@ -62,11 +57,7 @@ public class ReleasePlanSerializerTests
     {
         var json = ReleasePlanSerializer.Serialize(Plan());
 
-        Assert.Equal(
-            Plan().Source,
-            ReleasePlanSerializer.VerifyAndDeserialize(
-                json,
-                ReleasePlanSerializer.ComputeHash(json)).Source);
+        Assert.Equal(Plan().Source, ReleasePlanSerializer.VerifyAndDeserialize(json, ReleasePlanSerializer.ComputeHash(json)).Source);
     }
 
     [Fact]
@@ -75,8 +66,7 @@ public class ReleasePlanSerializerTests
         var json = ReleasePlanSerializer.Serialize(Plan());
         var hash = ReleasePlanSerializer.ComputeHash(json);
 
-        Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.VerifyAndDeserialize(
-            json.Replace("SkiaSharp", "EvilSharp", StringComparison.Ordinal),
+        Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.VerifyAndDeserialize(json.Replace("SkiaSharp", "EvilSharp", StringComparison.Ordinal),
             hash));
     }
 
@@ -114,8 +104,7 @@ public class ReleasePlanSerializerTests
     [Fact]
     public void An_unsupported_plan_schema_version_fails_closed()
     {
-        var json = ReleasePlanSerializer.Serialize(Plan())
-            .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal);
+        var json = ReleasePlanSerializer.Serialize(Plan()).Replace("\"schemaVersion\": 1", "\"schemaVersion\": 2", StringComparison.Ordinal);
 
         Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.DeserializePlan(json));
     }
@@ -123,8 +112,7 @@ public class ReleasePlanSerializerTests
     [Fact]
     public void An_unsupported_resolved_schema_version_fails_closed()
     {
-        var json = ReleasePlanSerializer.Serialize(TestData.Resolved())
-            .Replace("\"schemaVersion\": 1", "\"schemaVersion\": 99", StringComparison.Ordinal);
+        var json = ReleasePlanSerializer.Serialize(TestData.Resolved()).Replace("\"schemaVersion\": 1", "\"schemaVersion\": 99", StringComparison.Ordinal);
 
         Assert.Throws<DotNetReleaseException>(() => ReleasePlanSerializer.DeserializeResolved(json));
     }
@@ -139,16 +127,11 @@ public class ReleasePlanSerializerTests
     [Fact]
     public void AllPackages_enumerates_sets_in_publication_order()
     {
-        var plan = StagePlanner.Create(
-            TestData.Resolved(workload: true, "dotnet/maui"),
-            TestData.Policy(),
+        var plan = StagePlanner.Create(TestData.Resolved(workload: true, "dotnet/maui"), TestData.Policy(),
             [
                 TestData.Drop("Microsoft.Maui.Controls", "10.0.0"),
                 TestData.Drop("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0"),
-            ],
-            new StageOptions(),
-            TestData.Now,
-            TestData.ToolVersion);
+            ], new StageOptions(), TestData.Now, TestData.ToolVersion);
 
         Assert.Equal(
             ["Microsoft.Maui.Controls", "Microsoft.NET.Sdk.Maui.Manifest-10.0.100"],

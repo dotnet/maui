@@ -35,8 +35,7 @@ internal static class StagedSetIntegrity
     /// <c>.nupkg</c> file in the directory tree.
     /// </para>
     /// </param>
-    public static void ValidateStaged(
-        ReleasePackageSet set,
+    public static void ValidateStaged(ReleasePackageSet set,
         IReadOnlyDictionary<string, string> observed) =>
         Validate(set, observed, _ => PackageDisposition.Pending);
 
@@ -44,28 +43,19 @@ internal static class StagedSetIntegrity
     /// Validates the staging directory after pruning, using the recorded
     /// dispositions.
     /// </summary>
-    public static void ValidateFiltered(
-        ReleasePackageSet set,
-        IReadOnlyDictionary<string, string> observed,
-        PruneReport report)
+    public static void ValidateFiltered(ReleasePackageSet set, IReadOnlyDictionary<string, string> observed, PruneReport report)
     {
         ArgumentNullException.ThrowIfNull(report);
 
         var dispositions = report.Decisions.ToDictionary(
             d => d.FileName,
-            d => d.Disposition,
-            StringComparer.OrdinalIgnoreCase);
+            d => d.Disposition, StringComparer.OrdinalIgnoreCase);
 
-        Validate(
-            set,
-            observed,
+        Validate(set, observed,
             fileName => dispositions.TryGetValue(fileName, out var d) ? d : PackageDisposition.Pending);
     }
 
-    private static void Validate(
-        ReleasePackageSet set,
-        IReadOnlyDictionary<string, string> observed,
-        Func<string, PackageDisposition> dispositionOf)
+    private static void Validate(ReleasePackageSet set, IReadOnlyDictionary<string, string> observed, Func<string, PackageDisposition> dispositionOf)
     {
         ArgumentNullException.ThrowIfNull(set);
         ArgumentNullException.ThrowIfNull(observed);
@@ -82,24 +72,19 @@ internal static class StagedSetIntegrity
 
             if (shouldBePresent && !isPresent)
             {
-                errors.Add(
-                    $"'{set.Name}' expects '{package.FileName}' to be staged for publication, " +
-                    "but it is not present.");
+                errors.Add($"'{set.Name}' expects '{package.FileName}' to be staged for publication, " + "but it is not present.");
                 continue;
             }
 
             if (!shouldBePresent && isPresent)
             {
-                errors.Add(
-                    $"'{package.FileName}' was withheld from publication but is still staged; " +
-                    "it would be pushed by the publish glob.");
+                errors.Add($"'{package.FileName}' was withheld from publication but is still staged; " + "it would be pushed by the publish glob.");
                 continue;
             }
 
             if (isPresent && !string.Equals(actualHash, package.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add(
-                    $"'{package.FileName}' has hash '{actualHash}' but the plan recorded " +
+                errors.Add($"'{package.FileName}' has hash '{actualHash}' but the plan recorded " +
                     $"'{package.Sha256}'. It is not the file that was validated.");
             }
         }
@@ -107,9 +92,7 @@ internal static class StagedSetIntegrity
         // Anything in the directory the plan does not mention would be published unreviewed.
         foreach (var fileName in observed.Keys.Where(f => !planned.Contains(f)).Order(StringComparer.Ordinal))
         {
-            errors.Add(
-                $"Staging directory for '{set.Name}' contains '{fileName}', which the release " +
-                "plan does not list.");
+            errors.Add($"Staging directory for '{set.Name}' contains '{fileName}', which the release " + "plan does not list.");
         }
 
         if (errors.Count > 0)

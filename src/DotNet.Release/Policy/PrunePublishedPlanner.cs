@@ -17,10 +17,7 @@ internal static class PrunePublishedPlanner
     /// waiting for visibility.
     /// </param>
     /// <param name="availability">Availability keyed by <see cref="PlannedPackage.IdentityKey"/>.</param>
-    public static PruneReport Plan(
-        ReleasePackageSet set,
-        IEnumerable<PlannedPackage> releasePackages,
-        IReadOnlyList<string> recoveryPatterns,
+    public static PruneReport Plan(ReleasePackageSet set, IEnumerable<PlannedPackage> releasePackages, IReadOnlyList<string> recoveryPatterns,
         IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(set);
@@ -35,14 +32,11 @@ internal static class PrunePublishedPlanner
         // the filter exists to prevent. Match against the complete release so a pack-only
         // filter remains valid when the manifest set is processed, and vice versa.
         var unmatched = recoveryPatterns
-            .Where(pattern => !allPackages.Any(p => PackageGlob.IsMatch(p.FileName, pattern)))
-            .ToList();
+            .Where(pattern => !allPackages.Any(p => PackageGlob.IsMatch(p.FileName, pattern))).ToList();
 
         if (unmatched.Count > 0)
         {
-            throw new DotNetReleaseException(
-                $"Recovery filters matched no expected packages in " +
-                $"the release: {string.Join(", ", unmatched)}.");
+            throw new DotNetReleaseException($"Recovery filters matched no expected packages in " + $"the release: {string.Join(", ", unmatched)}.");
         }
 
         var decisions = new List<PruneDecision>(set.Packages.Count);
@@ -60,14 +54,11 @@ internal static class PrunePublishedPlanner
 
             if (!availability.TryGetValue(package.IdentityKey, out var isPublished))
             {
-                missingAvailability.Add(
-                    $"No NuGet.org availability was determined for {package.Id} {package.Version}.");
+                missingAvailability.Add($"No NuGet.org availability was determined for {package.Id} {package.Version}.");
                 continue;
             }
 
-            decisions.Add(Decide(
-                package,
-                isPublished ? PackageDisposition.AlreadyPublished : PackageDisposition.Pending));
+            decisions.Add(Decide(package, isPublished ? PackageDisposition.AlreadyPublished : PackageDisposition.Pending));
         }
 
         if (missingAvailability.Count > 0)

@@ -21,9 +21,7 @@ internal sealed class ReleasePolicy
     private readonly IReadOnlyDictionary<string, RepositoryPolicy> _repositories;
     private readonly IReadOnlyDictionary<int, WorkloadSetPolicy> _workloadSets;
 
-    private ReleasePolicy(
-        IReadOnlyDictionary<string, RepositoryPolicy> repositories,
-        IReadOnlyDictionary<int, WorkloadSetPolicy> workloadSets)
+    private ReleasePolicy(IReadOnlyDictionary<string, RepositoryPolicy> repositories, IReadOnlyDictionary<int, WorkloadSetPolicy> workloadSets)
     {
         _repositories = repositories;
         _workloadSets = workloadSets;
@@ -55,14 +53,12 @@ internal sealed class ReleasePolicy
 
         if (document.SchemaVersion != 1)
         {
-            throw new DotNetReleaseException(
-                $"Unsupported release policy schemaVersion '{document.SchemaVersion}'; expected 1.");
+            throw new DotNetReleaseException($"Unsupported release policy schemaVersion '{document.SchemaVersion}'; expected 1.");
         }
 
         if (document.Repositories is not { Count: > 0 })
         {
-            throw new DotNetReleaseException(
-                "The release policy lists no repositories, so every release would fail closed.");
+            throw new DotNetReleaseException("The release policy lists no repositories, so every release would fail closed.");
         }
 
         var errors = new List<string>();
@@ -126,18 +122,12 @@ internal sealed class ReleasePolicy
     }
 
     /// <summary>Looks up a repository. An unlisted repository is an error, never a default.</summary>
-    public RepositoryPolicy GetRepository(RepositoryId repository) =>
-        _repositories.TryGetValue(repository.FullName, out var policy)
-            ? policy
-            : throw new DotNetReleaseException(
-                $"Repository '{repository.FullName}' is not enabled for release. " +
+    public RepositoryPolicy GetRepository(RepositoryId repository) => _repositories.TryGetValue(repository.FullName, out var policy) ? policy
+            : throw new DotNetReleaseException($"Repository '{repository.FullName}' is not enabled for release. " +
                 $"Enabled repositories: {string.Join(", ", _repositories.Keys.Order(StringComparer.Ordinal))}.");
 
     /// <summary>Looks up the workload-set target for a .NET band.</summary>
-    public WorkloadSetPolicy GetWorkloadSet(int band) =>
-        _workloadSets.TryGetValue(band, out var policy)
-            ? policy
-            : throw new DotNetReleaseException(
+    public WorkloadSetPolicy GetWorkloadSet(int band) => _workloadSets.TryGetValue(band, out var policy) ? policy : throw new DotNetReleaseException(
                 $"No workload set channel is configured for .NET {band}.");
 
     internal sealed class PolicyDocument

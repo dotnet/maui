@@ -10,9 +10,7 @@ public class PackageVersionsTests
     [InlineData("1.0", "1.0.0")]
     [InlineData("10.0.0-preview.1.25123.4", "10.0.0-preview.1.25123.4")]
     [InlineData("1.0.0+build.5", "1.0.0")]
-    public void Normalize_produces_the_form_NuGet_org_indexes_under(
-        string version,
-        string expected)
+    public void Normalize_produces_the_form_NuGet_org_indexes_under(string version, string expected)
     {
         var normalized = PackageVersions.Normalize(version);
 

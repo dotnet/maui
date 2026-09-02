@@ -7,9 +7,7 @@ namespace DotNet.Release;
 
 internal interface INuGetPackageLookup
 {
-    Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
-        IReadOnlyList<PlannedPackage> packages,
-        CancellationToken cancellationToken);
+    Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken);
 }
 
 internal sealed class NuGetPackageLookup : INuGetPackageLookup, IDisposable
@@ -20,29 +18,20 @@ internal sealed class NuGetPackageLookup : INuGetPackageLookup, IDisposable
     private readonly int _maxConcurrency;
     private readonly Func<string, NuGetVersion, CancellationToken, Task<bool>> _lookup;
 
-    public NuGetPackageLookup(
-        string? sourceIndexUrl = null,
-        ILogger? logger = null,
-        int maxConcurrency = 8)
+    public NuGetPackageLookup(string? sourceIndexUrl = null, ILogger? logger = null, int maxConcurrency = 8)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrency, 1);
 
         _maxConcurrency = maxConcurrency;
         _cache = new SourceCacheContext { NoCache = true, DirectDownload = true };
-        var resource = Repository.Factory
-            .GetCoreV3(sourceIndexUrl ?? NuGetOrgIndex)
-            .GetResourceAsync<FindPackageByIdResource>();
+        var resource = Repository.Factory.GetCoreV3(sourceIndexUrl ?? NuGetOrgIndex).GetResourceAsync<FindPackageByIdResource>();
         var actualLogger = logger ?? NullLogger.Instance;
 
-        _lookup = async (id, version, cancellationToken) =>
-            await (await resource.ConfigureAwait(false))
-                .DoesPackageExistAsync(id, version, _cache, actualLogger, cancellationToken)
-                .ConfigureAwait(false);
+        _lookup = async (id, version, cancellationToken) => await (await resource.ConfigureAwait(false))
+                .DoesPackageExistAsync(id, version, _cache, actualLogger, cancellationToken).ConfigureAwait(false);
     }
 
-    internal NuGetPackageLookup(
-        Func<string, NuGetVersion, CancellationToken, Task<bool>> lookup,
-        int maxConcurrency = 8)
+    internal NuGetPackageLookup(Func<string, NuGetVersion, CancellationToken, Task<bool>> lookup, int maxConcurrency = 8)
     {
         ArgumentNullException.ThrowIfNull(lookup);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxConcurrency, 1);
@@ -51,24 +40,20 @@ internal sealed class NuGetPackageLookup : INuGetPackageLookup, IDisposable
         _maxConcurrency = maxConcurrency;
     }
 
-    public async Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
-        IReadOnlyList<PlannedPackage> packages,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(packages);
 
         var distinct = packages
             .GroupBy(package => package.IdentityKey, StringComparer.Ordinal)
-            .Select(group => group.First())
-            .ToList();
+            .Select(group => group.First()).ToList();
 
         using var throttle = new SemaphoreSlim(_maxConcurrency);
         var lookups = distinct.Select(async package =>
         {
             if (!NuGetVersion.TryParse(package.NormalizedVersion, out var version))
             {
-                throw new DotNetReleaseException(
-                    $"Package version '{package.NormalizedVersion}' is not a valid NuGet version.");
+                throw new DotNetReleaseException($"Package version '{package.NormalizedVersion}' is not a valid NuGet version.");
             }
 
             await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);

@@ -153,9 +153,7 @@ public class NupkgIdentityReaderTests : IDisposable
             Channel = new ChannelReference(".NET Libraries", 1648),
         };
 
-        var plan = StagePlanner.Create(
-            resolved, policy, [read], new StageOptions(),
-            DateTimeOffset.UnixEpoch, "1.0.0-test");
+        var plan = StagePlanner.Create(resolved, policy, [read], new StageOptions(), DateTimeOffset.UnixEpoch, "1.0.0-test");
 
         // The nuspec said 3.119.0.0; NuGet normalizes it to 3.119.0, which is what the
         // availability query will use.

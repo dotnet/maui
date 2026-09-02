@@ -133,11 +133,7 @@ public class MaestroBuildRegistryTests
 
         var builds = await new MaestroBuildRegistry(fake).GetBuildsAsync(Skia, BuildFactory.Commit, CancellationToken.None);
 
-        var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(Skia, BuildFactory.Commit, null),
-            policy.GetRepository(Skia),
-            builds,
-            DateTimeOffset.UnixEpoch,
+        var resolved = BuildResolver.Resolve(new ReleaseRequest(Skia, BuildFactory.Commit, null), policy.GetRepository(Skia), builds, DateTimeOffset.UnixEpoch,
             "1.0.0-test");
 
         Assert.Equal(new ChannelReference(".NET Libraries", 1648), resolved.Channel);
@@ -189,20 +185,14 @@ public class MaestroBuildRegistryTests
         }
         """);
 
-        var fake = new FakeBuilds(getById: id => BuildFactory.Create(
-            id: id,
-            gitHubRepository: null,
+        var fake = new FakeBuilds(getById: id => BuildFactory.Create(id: id, gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp",
             channels: [(1648, ".NET Libraries")]));
 
         var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
 
-        var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(Skia, BuildFactory.Commit, BarBuildId: 328857),
-            policy.GetRepository(Skia),
-            builds,
-            DateTimeOffset.UnixEpoch,
-            "1.0.0-test");
+        var resolved = BuildResolver.Resolve(new ReleaseRequest(Skia, BuildFactory.Commit, BarBuildId: 328857), policy.GetRepository(Skia), builds,
+            DateTimeOffset.UnixEpoch, "1.0.0-test");
 
         Assert.Equal("dotnet/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);

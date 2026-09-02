@@ -45,9 +45,7 @@ internal sealed class FakeProbe(params string[] published) : INuGetPackageLookup
     /// <summary>Every identity becomes available once this many calls have been made.</summary>
     public int? AllAvailableAfterCall { get; init; }
 
-    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
-        IReadOnlyList<PlannedPackage> packages,
-        CancellationToken cancellationToken)
+    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
     {
         Calls++;
 
@@ -68,8 +66,7 @@ internal sealed class FakeProbe(params string[] published) : INuGetPackageLookup
                 }
 
                 return AllAvailableAfterCall is { } all && Calls >= all;
-            },
-            StringComparer.Ordinal);
+            }, StringComparer.Ordinal);
 
         return Task.FromResult(result);
     }
@@ -110,8 +107,7 @@ internal sealed class Workspace : IDisposable
 
     public static BarBuild Build(
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
-        params ChannelReference[] channels) =>
-        new(4242, Commit, gitHubRepository, null, channels);
+        params ChannelReference[] channels) => new(4242, Commit, gitHubRepository, null, channels);
 
     /// <summary>Writes a real .nupkg into the simulated gather-drop output.</summary>
     public string WritePackage(string id, string version)
@@ -137,8 +133,7 @@ internal sealed class Workspace : IDisposable
         return path;
     }
 
-    public string ReadPlan() =>
-        File.ReadAllText(Path.Combine(Out, ReleaseArtifact.PlanFileName));
+    public string ReadPlan() => File.ReadAllText(Path.Combine(Out, ReleaseArtifact.PlanFileName));
 
     public string StagedSet(string artifactName) => Path.Combine(Out, artifactName);
 

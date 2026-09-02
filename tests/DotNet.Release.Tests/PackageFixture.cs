@@ -20,11 +20,7 @@ internal sealed class PackageFixture : IDisposable
     public string Root { get; }
 
     /// <summary>Writes a well-formed package and returns its path.</summary>
-    public string WritePackage(
-        string id = "SkiaSharp",
-        string version = "3.119.0",
-        string? fileName = null,
-        string? nuspecOverride = null,
+    public string WritePackage(string id = "SkiaSharp", string version = "3.119.0", string? fileName = null, string? nuspecOverride = null,
         string nuspecEntryName = "SkiaSharp.nuspec")
     {
         var nuspec = nuspecOverride ?? $"""

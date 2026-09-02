@@ -22,55 +22,26 @@ public class VerificationBudgetTests : IDisposable
             _workspace.WritePackage($"Package{i:D2}", "1.0.0");
         }
 
-        var registry = new FakeRegistry(
-            Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
+        var registry = new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648)));
 
-        await PlanCommand.ExecuteAsync(
-            _output,
-            registry,
-            Workspace.PolicyJson,
-            "dotnet/skiasharp",
-            Workspace.Commit,
-            null,
-            _workspace.Out,
-            Workspace.Now,
-            "1.0.0-test",
-            CancellationToken.None);
+        await PlanCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, "dotnet/skiasharp", Workspace.Commit, null, _workspace.Out, Workspace.Now,
+            "1.0.0-test", CancellationToken.None);
 
-        await StageCommand.ExecuteAsync(
-            _output,
-            Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
-            _workspace.Drop,
-            _workspace.Out,
-            new StageOptions(),
-            Workspace.Now,
-            "1.0.0-test",
-            CancellationToken.None);
+        await StageCommand.ExecuteAsync(_output, Workspace.PolicyJson, File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)), _workspace.Drop,
+            _workspace.Out, new StageOptions(), Workspace.Now, "1.0.0-test", CancellationToken.None);
     }
 
-    private Task Verify(
-        INuGetPackageLookup probe,
-        int deadlineMinutes,
-        int pollSeconds = DefaultPollSeconds)
+    private Task Verify(INuGetPackageLookup probe, int deadlineMinutes, int pollSeconds = DefaultPollSeconds)
     {
         var now = Workspace.Now;
 
-        return VerifyCommand.ExecuteAsync(
-            _output,
-            probe,
-            _workspace.ReadPlan(),
-            TimeSpan.FromMinutes(deadlineMinutes),
-            TimeSpan.FromSeconds(pollSeconds),
+        return VerifyCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), TimeSpan.FromMinutes(deadlineMinutes), TimeSpan.FromSeconds(pollSeconds),
             () => now,
             (delay, _) =>
             {
                 now = now.Add(delay);
                 return Task.CompletedTask;
-            },
-            null,
-            PlanHash,
-            CancellationToken.None);
+            }, null, PlanHash, CancellationToken.None);
     }
 
     [Fact]
@@ -100,9 +71,7 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(41);
 
-        await Assert.ThrowsAsync<DotNetReleaseException>(() => Verify(
-            new FakeProbe { AllAvailableAfterCall = 29 },
-            deadlineMinutes: 5));
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => Verify(new FakeProbe { AllAvailableAfterCall = 29 }, deadlineMinutes: 5));
     }
 
     [Fact]
@@ -110,10 +79,7 @@ public class VerificationBudgetTests : IDisposable
     {
         await StageManyAsync(41);
 
-        var straggler = ReleasePlanSerializer
-            .DeserializePlan(_workspace.ReadPlan())
-            .AllPackages
-            .Last();
+        var straggler = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan()).AllPackages.Last();
 
         var probe = new FakeProbe
         {
@@ -143,8 +109,7 @@ public class VerificationBudgetTests : IDisposable
         var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
 
         var missing = VerifyCommand.GetMissing(
-            [skia, harfBuzz],
-            TestData.Availability((skia, false)));
+            [skia, harfBuzz], TestData.Availability((skia, false)));
 
         Assert.Equal(["SkiaSharp", "HarfBuzzSharp"], missing.Select(package => package.Id));
     }
@@ -155,25 +120,18 @@ public class VerificationBudgetTests : IDisposable
         var skia = TestData.Planned("SkiaSharp", "3.119.0");
         var harfBuzz = TestData.Planned("HarfBuzzSharp", "8.3.1");
 
-        Assert.Equal(
-            "The following packages are not available from NuGet.org: " +
-            "HarfBuzzSharp 8.3.1, SkiaSharp 3.119.0",
+        Assert.Equal("The following packages are not available from NuGet.org: " + "HarfBuzzSharp 8.3.1, SkiaSharp 3.119.0",
             VerifyCommand.DescribeMissing([skia, harfBuzz]));
     }
 }
 
-internal sealed class FlakyProbe(
-    int failUntilCall,
-    string[] published) : INuGetPackageLookup
+internal sealed class FlakyProbe(int failUntilCall, string[] published) : INuGetPackageLookup
 {
-    private readonly HashSet<string> _published =
-        new(published, StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _published = new(published, StringComparer.OrdinalIgnoreCase);
 
     public int Calls { get; private set; }
 
-    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(
-        IReadOnlyList<PlannedPackage> packages,
-        CancellationToken cancellationToken)
+    public Task<IReadOnlyDictionary<string, bool>> GetAvailabilityAsync(IReadOnlyList<PlannedPackage> packages, CancellationToken cancellationToken)
     {
         Calls++;
 
@@ -184,8 +142,7 @@ internal sealed class FlakyProbe(
 
         IReadOnlyDictionary<string, bool> result = packages.ToDictionary(
             package => package.IdentityKey,
-            package => _published.Contains(package.IdentityKey),
-            StringComparer.Ordinal);
+            package => _published.Contains(package.IdentityKey), StringComparer.Ordinal);
 
         return Task.FromResult(result);
     }

@@ -50,9 +50,7 @@ public class ArchitectureTests
         var metadata = peReader.GetMetadataReader();
 
         return
-        [
-            .. metadata.TypeReferences
-                .Select(metadata.GetTypeReference)
+        [.. metadata.TypeReferences.Select(metadata.GetTypeReference)
                 .Select(t => $"{metadata.GetString(t.Namespace)}.{metadata.GetString(t.Name)}")
         ];
     }
@@ -63,14 +61,9 @@ public class ArchitectureTests
         var referenced = ReferencedTypes().ToHashSet(StringComparer.Ordinal);
 
         var offenders = Forbidden
-            .Select(t => $"{t.Namespace}.{t.Name}")
-            .Where(referenced.Contains)
-            .ToList();
+            .Select(t => $"{t.Namespace}.{t.Name}").Where(referenced.Contains).ToList();
 
-        Assert.True(
-            offenders.Count == 0,
-            "The tool source must not reference package-push, process-execution, or " +
-            "hand-rolled HTTP APIs: " +
+        Assert.True(offenders.Count == 0, "The tool source must not reference package-push, process-execution, or " + "hand-rolled HTTP APIs: " +
             string.Join(", ", offenders));
     }
 
@@ -84,8 +77,7 @@ public class ArchitectureTests
         var protocol = Directory.GetFiles(AppContext.BaseDirectory, "NuGet.Protocol.dll").SingleOrDefault();
 
         Assert.NotNull(protocol);
-        Assert.Contains(
-            Assembly.LoadFrom(protocol).GetExportedTypes(),
+        Assert.Contains(Assembly.LoadFrom(protocol).GetExportedTypes(),
             t => t.Name == "PackageUpdateResource");
     }
 

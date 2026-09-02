@@ -27,8 +27,7 @@ public class PipelineDefinitionTests
         }
     }
 
-    private static string PipelinePath =>
-        Path.Combine(RepoRoot, "eng", "pipelines", "ci-official-release.yml");
+    private static string PipelinePath => Path.Combine(RepoRoot, "eng", "pipelines", "ci-official-release.yml");
 
     private static YamlMappingNode Pipeline
     {
@@ -41,12 +40,9 @@ public class PipelineDefinitionTests
         }
     }
 
-    private static ReleasePolicy Policy =>
-        ReleasePolicy.Parse(File.ReadAllText(Path.Combine(RepoRoot, "config", "repositories.json")));
+    private static ReleasePolicy Policy => ReleasePolicy.Parse(File.ReadAllText(Path.Combine(RepoRoot, "config", "repositories.json")));
 
-    private static YamlMappingNode Parameter(string name) =>
-        ((YamlSequenceNode)Pipeline["parameters"])
-            .Cast<YamlMappingNode>()
+    private static YamlMappingNode Parameter(string name) => ((YamlSequenceNode)Pipeline["parameters"]).Cast<YamlMappingNode>()
             .Single(p => ((YamlScalarNode)p["name"]).Value == name);
 
     // ---- it must actually be a runnable pipeline, not a template fragment ----
@@ -77,8 +73,7 @@ public class PipelineDefinitionTests
     [Fact]
     public void It_extends_the_1ES_template_which_owns_publishing()
     {
-        var repositories = ((YamlSequenceNode)Pipeline["resources"]["repositories"])
-            .Cast<YamlMappingNode>()
+        var repositories = ((YamlSequenceNode)Pipeline["resources"]["repositories"]).Cast<YamlMappingNode>()
             .Select(r => ((YamlScalarNode)r["repository"]).Value);
 
         Assert.Contains("1ESPipelineTemplates", repositories);
@@ -94,8 +89,7 @@ public class PipelineDefinitionTests
     [Fact]
     public void The_repository_dropdown_matches_the_release_policy()
     {
-        var offered = ((YamlSequenceNode)Parameter("ghRepo")["values"])
-            .Cast<YamlScalarNode>()
+        var offered = ((YamlSequenceNode)Parameter("ghRepo")["values"]).Cast<YamlScalarNode>()
             .Where(v => v.Value != "select-repository")
             .Select(v => $"dotnet/{v.Value}")
             .OrderBy(v => v, StringComparer.Ordinal);
@@ -111,30 +105,22 @@ public class PipelineDefinitionTests
     public void Workload_classification_comes_only_from_repository_policy()
     {
         var pipeline = File.ReadAllText(PipelinePath);
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
         Assert.DoesNotContain("- name: isWorkload", pipeline, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(pipeline, @"expectedWorkload:\s*'true'").Count);
         Assert.Single(Regex.Matches(pipeline, @"expectedWorkload:\s*'false'").Cast<Match>());
         Assert.Contains("releasePlan.IsWorkload", publish, StringComparison.Ordinal);
         Assert.Contains("expectedWorkload", publish, StringComparison.Ordinal);
-        Assert.Contains(
-            "${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg",
-            publish,
-            StringComparison.Ordinal);
+        Assert.Contains("${{ parameters.artifactName }}/${{ parameters.setName }}/*.nupkg", publish, StringComparison.Ordinal);
     }
 
     [Fact]
     public void Workload_stage_conditions_resolve_the_plan_output()
     {
         var root = File.ReadAllText(PipelinePath);
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
-        var references = Regex.Matches(
-                root + "\n" + publish,
-                @"dependencies\.(?<stage>\w+)\.outputs\['(?<job>\w+)\.(?<step>\w+)\.IsWorkload'\]")
-            .Cast<Match>()
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var references = Regex.Matches(root + "\n" + publish, @"dependencies\.(?<stage>\w+)\.outputs\['(?<job>\w+)\.(?<step>\w+)\.IsWorkload'\]").Cast<Match>()
             .ToList();
 
         Assert.NotEmpty(references);
@@ -146,8 +132,7 @@ public class PipelineDefinitionTests
             Assert.Contains($"name: {reference.Groups["step"].Value}", root, StringComparison.Ordinal);
         }
 
-        var verbs = File.ReadAllText(
-            Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "PlanCommand.cs"));
+        var verbs = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "PlanCommand.cs"));
         Assert.Contains("SetIsWorkload(resolved.Workload)", verbs, StringComparison.Ordinal);
     }
 
@@ -179,25 +164,21 @@ public class PipelineDefinitionTests
         Assert.Equal(4, values.Count);
         Assert.Equal(2, values.Count(value => value!.Contains("without making changes", StringComparison.Ordinal)));
         Assert.Equal(2, values.Count(value => value!.StartsWith("Publish", StringComparison.Ordinal)));
-        Assert.DoesNotContain(
-            ((YamlSequenceNode)Pipeline["parameters"]).Cast<YamlMappingNode>(),
+        Assert.DoesNotContain(((YamlSequenceNode)Pipeline["parameters"]).Cast<YamlMappingNode>(),
             parameter => ((YamlScalarNode)parameter["name"]).Value is "publishPackages" or "promoteWorkloadSet");
     }
 
     [Fact]
     public void Every_release_mode_comparison_uses_a_declared_dropdown_value()
     {
-        var declared = ((YamlSequenceNode)Parameter("releaseMode")["values"])
-            .Cast<YamlScalarNode>()
-            .Select(value => value.Value!)
-            .ToHashSet(StringComparer.Ordinal);
+        var declared = ((YamlSequenceNode)Parameter("releaseMode")["values"]).Cast<YamlScalarNode>()
+            .Select(value => value.Value!).ToHashSet(StringComparer.Ordinal);
         var pipeline = File.ReadAllLines(PipelinePath);
 
         var compared = pipeline
             .Where(line => line.Contains("parameters.releaseMode", StringComparison.Ordinal))
             .SelectMany(line => Regex.Matches(line, "'(?<value>[^']+)'").Cast<Match>())
-            .Select(match => match.Groups["value"].Value)
-            .ToList();
+            .Select(match => match.Groups["value"].Value).ToList();
 
         Assert.NotEmpty(compared);
         Assert.All(compared, value => Assert.Contains(value, declared));
@@ -210,11 +191,8 @@ public class PipelineDefinitionTests
     [Fact]
     public void Release_identity_must_be_supplied_for_every_run()
     {
-        Assert.Equal(
-            "select-repository",
-            ((YamlScalarNode)Parameter("ghRepo")["default"]).Value);
-        Assert.DoesNotContain(
-            Policy.Repositories,
+        Assert.Equal("select-repository", ((YamlScalarNode)Parameter("ghRepo")["default"]).Value);
+        Assert.DoesNotContain(Policy.Repositories,
             repository => repository.Repository.Name == "select-repository");
         Assert.False(Parameter("commitHash").Children.ContainsKey("default"));
     }
@@ -233,22 +211,18 @@ public class PipelineDefinitionTests
     public void Optional_parameter_sentinels_are_not_forwarded_to_commands()
     {
         var root = File.ReadAllText(PipelinePath);
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
         Assert.Contains("$env:BAR_BUILD_ID -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Contains("$env:INCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Contains("$env:EXCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
-        Assert.Equal(
-            2,
-            Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'skip'").Count);
+        Assert.Equal(2, Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'skip'").Count);
     }
 
     [Fact]
     public void Every_operator_facing_parameter_is_labelled()
     {
-        var unlabelled = ((YamlSequenceNode)Pipeline["parameters"])
-            .Cast<YamlMappingNode>()
+        var unlabelled = ((YamlSequenceNode)Pipeline["parameters"]).Cast<YamlMappingNode>()
             .Where(p => ((YamlScalarNode)p["type"]).Value != "object")
             .Where(p => !p.Children.ContainsKey("displayName"))
             .Select(p => ((YamlScalarNode)p["name"]).Value);
@@ -266,9 +240,7 @@ public class PipelineDefinitionTests
         foreach (Match match in Regex.Matches(text, @"- template:\s*(?<path>/[^\s@]+)"))
         {
             var relative = match.Groups["path"].Value.TrimStart('/');
-            Assert.True(
-                File.Exists(Path.Combine(RepoRoot, relative)),
-                $"release.yml references '{relative}', which does not exist.");
+            Assert.True(File.Exists(Path.Combine(RepoRoot, relative)), $"release.yml references '{relative}', which does not exist.");
         }
     }
 
@@ -283,10 +255,7 @@ public class PipelineDefinitionTests
     {
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        var references = Regex.Matches(
-            publish,
-            @"stageDependencies\.(?<stage>\w+)\.(?<job>\w+)\.outputs\['(?<step>\w+)\.(?<variable>\w+)'\]")
-            .Cast<Match>()
+        var references = Regex.Matches(publish, @"stageDependencies\.(?<stage>\w+)\.(?<job>\w+)\.outputs\['(?<step>\w+)\.(?<variable>\w+)'\]").Cast<Match>()
             .ToList();
 
         Assert.NotEmpty(references);
@@ -309,8 +278,7 @@ public class PipelineDefinitionTests
     public void The_tool_is_built_once_before_credentials_and_carried_in_the_artifact()
     {
         var root = File.ReadAllText(PipelinePath);
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
         var build = root.IndexOf("dotnet build", StringComparison.Ordinal);
         var authenticatedTask = root.IndexOf("azureSubscription:", StringComparison.Ordinal);
@@ -366,41 +334,24 @@ public class PipelineDefinitionTests
     [Fact]
     public void Preflight_publishes_the_exact_pruned_set_before_approval()
     {
-        var path = Path.Combine(
-            RepoRoot,
-            "eng",
-            "pipelines",
-            "stages",
-            "publish-set.yml");
+        var path = Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml");
         var lines = File.ReadAllLines(path);
         var text = string.Join("\n", lines);
 
         Assert.Contains("job: preflight", text, StringComparison.Ordinal);
-        Assert.Contains(
-            "artifactName: ${{ parameters.preparedArtifactName }}",
-            text,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "targetPath: $(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}",
-            text,
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "Copy-Item -LiteralPath \"$source/${{ parameters.setName }}\"",
-            text,
-            StringComparison.Ordinal);
+        Assert.Contains("artifactName: ${{ parameters.preparedArtifactName }}", text, StringComparison.Ordinal);
+        Assert.Contains("targetPath: $(Pipeline.Workspace)/${{ parameters.preparedArtifactName }}", text, StringComparison.Ordinal);
+        Assert.Contains("Copy-Item -LiteralPath \"$source/${{ parameters.setName }}\"", text, StringComparison.Ordinal);
         Assert.Contains("Copy-Item -LiteralPath \"$source/release-tool.zip\"", text, StringComparison.Ordinal);
         Assert.Contains("dependsOn: preflight", text, StringComparison.Ordinal);
 
         var pruneSteps = Enumerable.Range(0, lines.Length)
-            .Where(index => lines[index].Trim() == "prune-published `")
-            .ToList();
+            .Where(index => lines[index].Trim() == "prune-published `").ToList();
         Assert.Collection(pruneSteps, _ => { }, _ => { });
 
-        Assert.DoesNotContain(
-            EnclosingConditions(lines, pruneSteps[0]),
+        Assert.DoesNotContain(EnclosingConditions(lines, pruneSteps[0]),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            EnclosingConditions(lines, pruneSteps[1]),
+        Assert.DoesNotContain(EnclosingConditions(lines, pruneSteps[1]),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
     }
 
@@ -419,20 +370,15 @@ public class PipelineDefinitionTests
         var lines = File.ReadAllLines(path);
 
         var operations = Enumerable.Range(0, lines.Length)
-            .Where(i =>
-                lines[i].Contains("1ES.PublishNuget@1", StringComparison.Ordinal) ||
-                lines[i].Trim() == "verify `")
-            .ToList();
+            .Where(i => lines[i].Contains("1ES.PublishNuget@1", StringComparison.Ordinal) || lines[i].Trim() == "verify `").ToList();
 
         Assert.Collection(operations, _ => { }, _ => { });
 
         foreach (var operation in operations)
         {
             Assert.True(
-                EnclosingConditions(lines, operation).Any(c =>
-                    c.Contains("parameters.publishPackages, true", StringComparison.Ordinal)),
-                $"publish-set.yml line {operation + 1} contains a remote release operation " +
-                $"outside the publishPackages guard: {lines[operation].Trim()}");
+                EnclosingConditions(lines, operation).Any(c => c.Contains("parameters.publishPackages, true", StringComparison.Ordinal)),
+                $"publish-set.yml line {operation + 1} contains a remote release operation " + $"outside the publishPackages guard: {lines[operation].Trim()}");
         }
     }
 
@@ -447,11 +393,9 @@ public class PipelineDefinitionTests
 
         Assert.True(approval >= 0);
         Assert.True(releaseJob >= 0);
-        Assert.DoesNotContain(
-            EnclosingConditions(lines, approval),
+        Assert.DoesNotContain(EnclosingConditions(lines, approval),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            EnclosingConditions(lines, releaseJob),
+        Assert.DoesNotContain(EnclosingConditions(lines, releaseJob),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
         Assert.Contains("Review dry-run package set", text, StringComparison.Ordinal);
         Assert.Contains("Rehearse production release job", text, StringComparison.Ordinal);
@@ -461,31 +405,21 @@ public class PipelineDefinitionTests
     [Fact]
     public void Dry_run_executes_package_set_preflight_outside_the_publish_guard()
     {
-        var publishPath = Path.Combine(
-            RepoRoot,
-            "eng",
-            "pipelines",
-            "stages",
-            "publish-set.yml");
+        var publishPath = Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml");
         var publishLines = File.ReadAllLines(publishPath);
-        var preflight = Array.FindIndex(
-            publishLines,
+        var preflight = Array.FindIndex(publishLines,
             line => line.Trim() == "prune-published `");
 
         Assert.True(preflight >= 0);
-        Assert.DoesNotContain(
-            EnclosingConditions(publishLines, preflight),
+        Assert.DoesNotContain(EnclosingConditions(publishLines, preflight),
             condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal));
 
         var rootLines = File.ReadAllLines(PipelinePath);
         var includes = Enumerable.Range(0, rootLines.Length)
-            .Where(i => rootLines[i].Contains("publish-set.yml", StringComparison.Ordinal))
-            .ToList();
+            .Where(i => rootLines[i].Contains("publish-set.yml", StringComparison.Ordinal)).ToList();
         Assert.Collection(includes, _ => { }, _ => { }, _ => { });
-        Assert.All(
-            includes,
-            include => Assert.DoesNotContain(
-                EnclosingConditions(rootLines, include),
+        Assert.All(includes,
+            include => Assert.DoesNotContain(EnclosingConditions(rootLines, include),
                 condition => condition.Contains("parameters.publishPackages, true", StringComparison.Ordinal)));
     }
 
@@ -555,9 +489,7 @@ public class PipelineDefinitionTests
 
             foreach (var i in ScriptLines(lines))
             {
-                Assert.DoesNotContain(
-                    reference,
-                    lines[i]);
+                Assert.DoesNotContain(reference, lines[i]);
             }
         }
     }
@@ -578,8 +510,7 @@ public class PipelineDefinitionTests
         for (var i = 0; i < lines.Length; i++)
         {
             var trimmed = lines[i].TrimEnd();
-            if (!trimmed.EndsWith("inlineScript: |", StringComparison.Ordinal) &&
-                !trimmed.EndsWith("- pwsh: |", StringComparison.Ordinal) &&
+            if (!trimmed.EndsWith("inlineScript: |", StringComparison.Ordinal) && !trimmed.EndsWith("- pwsh: |", StringComparison.Ordinal) &&
                 !trimmed.EndsWith("script: |", StringComparison.Ordinal))
             {
                 continue;
@@ -636,10 +567,8 @@ public class PipelineDefinitionTests
     public void Prepared_artifact_names_are_distinct_for_each_package_set()
     {
         var text = File.ReadAllText(PipelinePath);
-        var names = Regex.Matches(text, @"preparedArtifactName:\s*(?<name>\S+)")
-            .Cast<Match>()
-            .Select(match => match.Groups["name"].Value)
-            .ToList();
+        var names = Regex.Matches(text, @"preparedArtifactName:\s*(?<name>\S+)").Cast<Match>()
+            .Select(match => match.Groups["name"].Value).ToList();
 
         Assert.Equal(3, names.Count);
         Assert.Equal(3, names.Distinct(StringComparer.Ordinal).Count());
@@ -688,12 +617,9 @@ public class PipelineDefinitionTests
     [Fact]
     public void A_dry_run_contains_no_NuGet_org_mutation()
     {
-        var root = string.Join(
-            "\n",
-            File.ReadAllLines(PipelinePath)
+        var root = string.Join("\n", File.ReadAllLines(PipelinePath)
                 .Where(line => !line.TrimStart().StartsWith('#')));
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
         Assert.DoesNotContain("1ES.PublishNuget@1", root, StringComparison.Ordinal);
         Assert.DoesNotContain("nuget.org (dotnetframework)", root, StringComparison.Ordinal);
@@ -714,13 +640,11 @@ public class PipelineDefinitionTests
     public void Prepare_stage_invokes_only_plan_gather_and_stage()
     {
         var lines = File.ReadAllLines(PipelinePath);
-        var promotionStage = Array.FindIndex(
-            lines,
+        var promotionStage = Array.FindIndex(lines,
             line => line.Contains("- stage: promote_workload_set", StringComparison.Ordinal));
         var scripts = ScriptLines(lines)
             .Where(i => i < promotionStage)
-            .Select(i => lines[i])
-            .ToList();
+            .Select(i => lines[i]).ToList();
 
         Assert.Contains(scripts, line => line.Trim() == "plan `");
         Assert.Contains(scripts, line => line.Contains("gather-drop", StringComparison.Ordinal));
@@ -739,20 +663,15 @@ public class PipelineDefinitionTests
     public void BAR_mutation_is_compile_time_excluded_from_promotion_previews()
     {
         var lines = File.ReadAllLines(PipelinePath);
-        var mutation = Array.FindIndex(
-            lines,
+        var mutation = Array.FindIndex(lines,
             line => line.Contains("& $darc add-build-to-channel", StringComparison.Ordinal));
 
         Assert.True(mutation >= 0, "The workload promotion command was not found.");
 
         var conditions = EnclosingConditions(lines, mutation);
-        Assert.Contains(
-            conditions,
+        Assert.Contains(conditions,
             condition => condition.Contains("variables.promoteWorkloadSet, 'true'", StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            File.ReadAllText(PipelinePath),
-            "ne(parameters.releaseMode",
-            StringComparison.Ordinal);
+        Assert.DoesNotContain(File.ReadAllText(PipelinePath), "ne(parameters.releaseMode", StringComparison.Ordinal);
     }
 
     /// <summary>Only normal jobs obtain Darc through Arcade; release artifacts never carry it.</summary>
@@ -760,8 +679,7 @@ public class PipelineDefinitionTests
     public void Darc_is_provisioned_per_normal_job_and_excluded_from_release_artifacts()
     {
         var pipeline = File.ReadAllText(PipelinePath);
-        var publish = File.ReadAllText(
-            Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
+        var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
         var globalJson = File.ReadAllText(Path.Combine(RepoRoot, "global.json"));
         var versionDetails = File.ReadAllText(Path.Combine(RepoRoot, "eng", "Version.Details.xml"));
 

@@ -66,8 +66,7 @@ public class NuGetPackageLookupTests
         });
 
         var availability = await lookup.GetAvailabilityAsync(
-            [Skia, Skia, Package("SKIASHARP", "3.119.0")],
-            CancellationToken.None);
+            [Skia, Skia, Package("SKIASHARP", "3.119.0")], CancellationToken.None);
 
         Assert.Equal(1, calls);
         Assert.Single(availability);
@@ -76,9 +75,7 @@ public class NuGetPackageLookupTests
     [Fact]
     public async Task A_feed_failure_surfaces_rather_than_becoming_not_published()
     {
-        using var lookup = new NuGetPackageLookup((id, _, _) =>
-            id == "SkiaSharp"
-                ? Task.FromException<bool>(new HttpRequestException("feed unavailable"))
+        using var lookup = new NuGetPackageLookup((id, _, _) => id == "SkiaSharp" ? Task.FromException<bool>(new HttpRequestException("feed unavailable"))
                 : Task.FromResult(false));
 
         await Assert.ThrowsAsync<HttpRequestException>(
@@ -103,8 +100,7 @@ public class NuGetPackageLookupTests
     public async Task Concurrency_is_bounded()
     {
         var packages = Enumerable.Range(0, 50)
-            .Select(index => Package($"Package{index}", "1.0.0"))
-            .ToList();
+            .Select(index => Package($"Package{index}", "1.0.0")).ToList();
         var active = 0;
         var peak = 0;
         using var lookup = new NuGetPackageLookup(async (_, _, cancellationToken) =>
@@ -146,8 +142,7 @@ public class NuGetPackageLookupTests
     public void A_lookup_delegate_is_required()
     {
         Assert.Throws<ArgumentNullException>(
-            () => new NuGetPackageLookup(
-                (Func<string, NuGetVersion, CancellationToken, Task<bool>>)null!));
+            () => new NuGetPackageLookup((Func<string, NuGetVersion, CancellationToken, Task<bool>>)null!));
     }
 
     [Fact]

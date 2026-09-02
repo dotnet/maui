@@ -5,22 +5,17 @@ internal static class ReleaseArtifact
 {
     public const string PlanFileName = "release-plan.json";
 
-    internal static string GetSetDirectory(
-        string stageDirectory,
-        ReleasePackageSet set)
+    internal static string GetSetDirectory(string stageDirectory, ReleasePackageSet set)
     {
         if (!IsSinglePathComponent(set.ArtifactName))
         {
-            throw new DotNetReleaseException(
-                $"Package set artifact name '{set.ArtifactName}' must be one directory name.");
+            throw new DotNetReleaseException($"Package set artifact name '{set.ArtifactName}' must be one directory name.");
         }
 
         return Path.Combine(stageDirectory, set.ArtifactName);
     }
 
-    internal static bool IsSinglePathComponent(string value) =>
-        !string.IsNullOrWhiteSpace(value) &&
-        !Path.IsPathRooted(value) &&
+    internal static bool IsSinglePathComponent(string value) => !string.IsNullOrWhiteSpace(value) && !Path.IsPathRooted(value) &&
         Path.GetFileName(value) == value;
 
     internal static Dictionary<string, string> ReadPackageHashes(string directory)
@@ -32,21 +27,15 @@ internal static class ReleaseArtifact
             return hashes;
         }
 
-        foreach (var file in Directory.EnumerateFiles(
-            directory,
-            "*.nupkg",
-            SearchOption.AllDirectories))
+        foreach (var file in Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.AllDirectories))
         {
-            hashes[Path.GetRelativePath(directory, file)] = Convert.ToHexStringLower(
-                System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
+            hashes[Path.GetRelativePath(directory, file)] = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
         }
 
         return hashes;
     }
 
-    internal static IReadOnlyList<ReleasePackageSet> SelectSets(
-        ReleasePlan plan,
-        string? setName)
+    internal static IReadOnlyList<ReleasePackageSet> SelectSets(ReleasePlan plan, string? setName)
     {
         var ordered = plan.Sets.OrderBy(set => set.Order).ToList();
 
@@ -56,16 +45,11 @@ internal static class ReleaseArtifact
         }
 
         var matched = ordered
-            .Where(set => string.Equals(
-                set.ArtifactName,
-                setName.Trim(),
-                StringComparison.OrdinalIgnoreCase))
-            .ToList();
+            .Where(set => string.Equals(set.ArtifactName, setName.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
 
         if (matched.Count == 0)
         {
-            throw new DotNetReleaseException(
-                $"The release plan has no package set named '{setName}'. It contains: " +
+            throw new DotNetReleaseException($"The release plan has no package set named '{setName}'. It contains: " +
                 $"{string.Join(", ", ordered.Select(set => set.ArtifactName))}.");
         }
 

@@ -46,73 +46,37 @@ internal static class PlanCommand
             Description = "Managed identity client ID.",
         };
 
-        var command = new Command(
-            "plan",
-            "Resolve and verify the BAR build, then write plan.json.")
+        var command = new Command("plan", "Resolve and verify the BAR build, then write plan.json.")
         {
             config, repo, commit, barId, output, barUri, token, managedIdentity,
         };
 
         command.SetAction((parse, cancellationToken) =>
         {
-            var api = CreateApi(
-                parse.GetValue(barUri),
-                parse.GetValue(token),
-                parse.GetValue(managedIdentity));
+            var api = CreateApi(parse.GetValue(barUri), parse.GetValue(token), parse.GetValue(managedIdentity));
 
-            return ExecuteAsync(
-                outputWriter,
-                MaestroBuildRegistry.Create(api),
-                File.ReadAllText(parse.GetValue(config)!.FullName),
-                parse.GetValue(repo)!,
-                parse.GetValue(commit)!,
-                parse.GetValue(barId),
-                parse.GetValue(output)!.FullName,
-                DateTimeOffset.UtcNow,
-                toolVersion,
-                cancellationToken);
+            return ExecuteAsync(outputWriter, MaestroBuildRegistry.Create(api), File.ReadAllText(parse.GetValue(config)!.FullName), parse.GetValue(repo)!,
+                parse.GetValue(commit)!, parse.GetValue(barId), parse.GetValue(output)!.FullName, DateTimeOffset.UtcNow, toolVersion, cancellationToken);
         });
 
         return command;
     }
 
-    public static async Task ExecuteAsync(
-        TextWriter outputWriter,
-        IBuildRegistry registry,
-        string policyJson,
-        string repository,
-        string commit,
-        int? barBuildId,
-        string outputDirectory,
-        DateTimeOffset now,
-        string toolVersion,
-        CancellationToken cancellationToken)
+    public static async Task ExecuteAsync(TextWriter outputWriter, IBuildRegistry registry, string policyJson, string repository,
+        string commit, int? barBuildId, string outputDirectory, DateTimeOffset now, string toolVersion, CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
         var repositoryId = RepositoryId.Parse(repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
         var request = new ReleaseRequest(repositoryId, commit, barBuildId);
-        var candidates = barBuildId is { } id
-            ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
-            : await registry
-                .GetBuildsAsync(repositoryId, commit, cancellationToken)
-                .ConfigureAwait(false);
+        var candidates = barBuildId is { } id ? await registry.GetBuildAsync(id, cancellationToken).ConfigureAwait(false)
+            : await registry.GetBuildsAsync(repositoryId, commit, cancellationToken).ConfigureAwait(false);
 
-        var resolved = BuildResolver.Resolve(
-            request,
-            repositoryPolicy,
-            candidates,
-            now,
-            toolVersion);
+        var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates, now, toolVersion);
         Directory.CreateDirectory(outputDirectory);
         var planPath = Path.Combine(outputDirectory, FileName);
-        await File
-            .WriteAllTextAsync(
-                planPath,
-                ReleasePlanSerializer.Serialize(resolved),
-                cancellationToken)
-            .ConfigureAwait(false);
+        await File.WriteAllTextAsync(planPath, ReleasePlanSerializer.Serialize(resolved), cancellationToken).ConfigureAwait(false);
 
         ReleaseOutput.WriteResolvedRelease(outputWriter, resolved);
         outputWriter.WriteLine($"Wrote {planPath}.");
@@ -120,18 +84,7 @@ internal static class PlanCommand
         outputWriter.WriteLine(AzurePipelineCommand.SetIsWorkload(resolved.Workload));
     }
 
-    private static IProductConstructionServiceApi CreateApi(
-        string? baseUri,
-        string? token,
-        string? managedIdentityId) =>
-        baseUri is { Length: > 0 }
-            ? PcsApiFactory.GetAuthenticated(
-                baseUri,
-                token!,
-                managedIdentityId!,
-                disableInteractiveAuth: true)
-            : PcsApiFactory.GetAuthenticated(
-                token!,
-                managedIdentityId!,
-                disableInteractiveAuth: true);
+    private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) => baseUri is { Length: > 0 }
+            ? PcsApiFactory.GetAuthenticated(baseUri, token!, managedIdentityId!, disableInteractiveAuth: true)
+            : PcsApiFactory.GetAuthenticated(token!, managedIdentityId!, disableInteractiveAuth: true);
 }

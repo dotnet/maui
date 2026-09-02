@@ -29,8 +29,7 @@ internal sealed record PruneReport
 
     [JsonIgnore]
     public IReadOnlyList<string> FilesToRemove =>
-    [
-        .. Decisions
+    [.. Decisions
             .Where(decision => decision.Disposition != PackageDisposition.Pending)
             .Select(decision => decision.FileName)
     ];

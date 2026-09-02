@@ -6,11 +6,8 @@ namespace DotNet.Release;
 
 internal static class Program
 {
-    private static string ToolVersion =>
-        typeof(Program).Assembly
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-            ?.InformationalVersion
-        ?? "0.0.0";
+    private static string ToolVersion => typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion ?? "0.0.0";
 
     public static async Task<int> Main(string[] args)
     {
@@ -21,10 +18,7 @@ internal static class Program
                 EnableDefaultExceptionHandler = false,
             };
 
-            return await BuildRootCommand()
-                .Parse(args)
-                .InvokeAsync(invocationConfiguration)
-                .ConfigureAwait(false);
+            return await BuildRootCommand().Parse(args).InvokeAsync(invocationConfiguration).ConfigureAwait(false);
         }
         catch (DotNetReleaseException ex)
         {
@@ -35,9 +29,7 @@ internal static class Program
 
     internal static RootCommand BuildRootCommand()
     {
-        var root = new RootCommand(
-            "Prepares and verifies a .NET package release from a BAR build. " +
-            "1ES.PublishNuget performs every package upload.");
+        var root = new RootCommand("Prepares and verifies a .NET package release from a BAR build. " + "1ES.PublishNuget performs every package upload.");
 
         root.Subcommands.Add(PlanCommand.Build(Console.Out, ToolVersion));
         root.Subcommands.Add(StageCommand.Build(Console.Out, ToolVersion));

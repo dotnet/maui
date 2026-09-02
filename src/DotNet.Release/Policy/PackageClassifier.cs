@@ -6,8 +6,7 @@ namespace DotNet.Release;
 internal static partial class PackageClassifier
 {
     /// <summary>True when the package filename identifies a workload manifest.</summary>
-    public static bool IsWorkloadManifest(string fileName) =>
-        fileName.Contains("Manifest", StringComparison.OrdinalIgnoreCase) &&
+    public static bool IsWorkloadManifest(string fileName) => fileName.Contains("Manifest", StringComparison.OrdinalIgnoreCase) &&
         fileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
@@ -20,8 +19,7 @@ internal static partial class PackageClassifier
 
         if (manifestFileNames.Count == 0)
         {
-            throw new DotNetReleaseException(
-                "A workload release must contain at least one manifest to derive the .NET band from.");
+            throw new DotNetReleaseException("A workload release must contain at least one manifest to derive the .NET band from.");
         }
 
         var bands = new SortedSet<int>();
@@ -30,8 +28,7 @@ internal static partial class PackageClassifier
             var match = BandPattern().Match(fileName);
             if (!match.Success)
             {
-                throw new DotNetReleaseException(
-                    $"Could not determine the workload band from manifest '{fileName}'; " +
+                throw new DotNetReleaseException($"Could not determine the workload band from manifest '{fileName}'; " +
                     "expected a '.Manifest-<major>.' segment.");
             }
 
@@ -40,8 +37,7 @@ internal static partial class PackageClassifier
 
         if (bands.Count != 1)
         {
-            throw new DotNetReleaseException(
-                $"Expected one workload major version, found: {string.Join(", ", bands)}.");
+            throw new DotNetReleaseException($"Expected one workload major version, found: {string.Join(", ", bands)}.");
         }
 
         return bands.Min;

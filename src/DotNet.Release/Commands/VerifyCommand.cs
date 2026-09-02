@@ -35,9 +35,7 @@ internal static class VerifyCommand
             Description = "The SHA-256 emitted by the prepare stage.",
             Required = true,
         };
-        var command = new Command(
-            "verify",
-            "Poll until every package in the set is indexed on NuGet.org.")
+        var command = new Command("verify", "Poll until every package in the set is indexed on NuGet.org.")
         {
             plan, maxDuration, interval, feed, set, expectedHash,
         };
@@ -47,32 +45,16 @@ internal static class VerifyCommand
             var planFile = parse.GetValue(plan)!;
             using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
-            return ExecuteAsync(
-                outputWriter,
-                lookup,
-                File.ReadAllText(planFile.FullName),
-                TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
+            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(planFile.FullName), TimeSpan.FromMinutes(parse.GetValue(maxDuration)),
                 TimeSpan.FromSeconds(parse.GetValue(interval)),
-                () => DateTimeOffset.UtcNow,
-                Task.Delay,
-                parse.GetValue(set),
-                parse.GetValue(expectedHash)!,
-                cancellationToken);
+                () => DateTimeOffset.UtcNow, Task.Delay, parse.GetValue(set), parse.GetValue(expectedHash)!, cancellationToken);
         });
 
         return command;
     }
 
-    public static async Task ExecuteAsync(
-        TextWriter outputWriter,
-        INuGetPackageLookup lookup,
-        string planJson,
-        TimeSpan maxDuration,
-        TimeSpan pollInterval,
-        Func<DateTimeOffset> clock,
-        Func<TimeSpan, CancellationToken, Task> delay,
-        string? setName,
-        string expectedPlanHash,
+    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetPackageLookup lookup, string planJson, TimeSpan maxDuration, TimeSpan pollInterval,
+        Func<DateTimeOffset> clock, Func<TimeSpan, CancellationToken, Task> delay, string? setName, string expectedPlanHash,
         CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
@@ -85,22 +67,18 @@ internal static class VerifyCommand
         {
             try
             {
-                var availability = await lookup
-                    .GetAvailabilityAsync(packages, cancellationToken)
-                    .ConfigureAwait(false);
+                var availability = await lookup.GetAvailabilityAsync(packages, cancellationToken).ConfigureAwait(false);
                 missing = GetMissing(packages, availability);
 
                 if (missing.Count == 0)
                 {
-                    outputWriter.WriteLine(
-                        $"Verified all {packages.Count} packages on NuGet.org.");
+                    outputWriter.WriteLine($"Verified all {packages.Count} packages on NuGet.org.");
                     return;
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                outputWriter.WriteLine(
-                    $"warning: NuGet.org query failed, will retry: {ex.Message}");
+                outputWriter.WriteLine($"warning: NuGet.org query failed, will retry: {ex.Message}");
             }
 
             if (clock() + pollInterval >= deadline)
@@ -108,32 +86,23 @@ internal static class VerifyCommand
                 throw new DotNetReleaseException(DescribeMissing(missing));
             }
 
-            outputWriter.WriteLine(
-                $"Waiting for {missing.Count} package(s) to become available on NuGet.org.");
+            outputWriter.WriteLine($"Waiting for {missing.Count} package(s) to become available on NuGet.org.");
             await delay(pollInterval, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    internal static IReadOnlyList<PlannedPackage> GetMissing(
-        IEnumerable<PlannedPackage> packages,
-        IReadOnlyDictionary<string, bool> availability)
+    internal static IReadOnlyList<PlannedPackage> GetMissing(IEnumerable<PlannedPackage> packages, IReadOnlyDictionary<string, bool> availability)
     {
         ArgumentNullException.ThrowIfNull(packages);
         ArgumentNullException.ThrowIfNull(availability);
 
         return
         [
-            .. packages.Where(package =>
-                !availability.TryGetValue(package.IdentityKey, out var isPublished) ||
-                !isPublished)
+            .. packages.Where(package => !availability.TryGetValue(package.IdentityKey, out var isPublished) || !isPublished)
         ];
     }
 
-    internal static string DescribeMissing(IReadOnlyList<PlannedPackage> missing) =>
-        "The following packages are not available from NuGet.org: " +
-        string.Join(
-            ", ",
-            missing
-                .Select(package => $"{package.Id} {package.Version}")
-                .Order(StringComparer.Ordinal));
+    internal static string DescribeMissing(IReadOnlyList<PlannedPackage> missing) => "The following packages are not available from NuGet.org: " + string.Join(
+            ", ", missing
+                .Select(package => $"{package.Id} {package.Version}").Order(StringComparer.Ordinal));
 }

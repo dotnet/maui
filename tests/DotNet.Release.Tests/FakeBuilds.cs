@@ -20,9 +20,7 @@ internal sealed class FakeBuilds : IBuilds
     private readonly Func<string?, string?, IReadOnlyList<PcsModels.Build>>? _list;
     private readonly Exception? _throwOnGet;
 
-    public FakeBuilds(
-        Func<int, PcsModels.Build?>? getById = null,
-        Func<string?, string?, IReadOnlyList<PcsModels.Build>>? list = null,
+    public FakeBuilds(Func<int, PcsModels.Build?>? getById = null, Func<string?, string?, IReadOnlyList<PcsModels.Build>>? list = null,
         Exception? throwOnGet = null)
     {
         _getById = getById;
@@ -56,18 +54,9 @@ internal sealed class FakeBuilds : IBuilds
         return Task.FromResult(_getById?.Invoke(id)!);
     }
 
-    public AsyncPageable<PcsModels.Build> ListBuildsAsync(
-        string? azdoAccount = null,
-        int? azdoBuildId = null,
-        string? azdoProject = null,
-        string? buildNumber = null,
-        string? commit = null,
-        int? channelId = null,
-        bool? loadCollections = null,
-        DateTimeOffset? notAfter = null,
-        DateTimeOffset? notBefore = null,
-        string? repository = null,
-        CancellationToken cancellationToken = default)
+    public AsyncPageable<PcsModels.Build> ListBuildsAsync(string? azdoAccount = null, int? azdoBuildId = null, string? azdoProject = null,
+        string? buildNumber = null, string? commit = null, int? channelId = null, bool? loadCollections = null, DateTimeOffset? notAfter = null,
+        DateTimeOffset? notBefore = null, string? repository = null, CancellationToken cancellationToken = default)
     {
         LastCommit = commit;
         LastRepository = repository;
@@ -95,14 +84,11 @@ internal sealed class FakeBuilds : IBuilds
         string? azdoAccount = null, int? azdoBuildId = null, string? azdoProject = null, string? buildNumber = null,
         string? commit = null, int? channelId = null, bool? loadCollections = null, DateTimeOffset? notAfter = null,
         DateTimeOffset? notBefore = null, int? page = null, int? perPage = null, string? repository = null,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException(nameof(ListBuildsPageAsync));
+        CancellationToken cancellationToken = default) => throw new NotSupportedException(nameof(ListBuildsPageAsync));
 
-    public Task<PcsModels.Build> GetLatestAsync(
-        string? buildNumber = null, string? commit = null, int? channelId = null, bool? loadCollections = null,
+    public Task<PcsModels.Build> GetLatestAsync(string? buildNumber = null, string? commit = null, int? channelId = null, bool? loadCollections = null,
         DateTimeOffset? notAfter = null, DateTimeOffset? notBefore = null, string? repository = null,
-        CancellationToken cancellationToken = default) =>
-        throw new NotSupportedException(nameof(GetLatestAsync));
+        CancellationToken cancellationToken = default) => throw new NotSupportedException(nameof(GetLatestAsync));
 
     public Task<PcsModels.Commit> GetCommitAsync(int buildId, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException(nameof(GetCommitAsync));
@@ -186,24 +172,12 @@ internal static class BuildFactory
     /// <c>azureDevOpsRepository</c> are settable <c>string</c> properties with no nullable
     /// annotation, which is exactly why the mapper normalizes them.
     /// </summary>
-    public static PcsModels.Build Create(
-        int id = 4242,
-        string? commit = Commit,
+    public static PcsModels.Build Create(int id = 4242, string? commit = Commit,
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
-        string? azureDevOpsRepository = null,
-        params (int Id, string? Name)[] channels)
+        string? azureDevOpsRepository = null, params (int Id, string? Name)[] channels)
     {
-        var build = new PcsModels.Build(
-            id,
-            DateTimeOffset.UnixEpoch,
-            staleness: 0,
-            released: false,
-            stable: true,
-            commit!,
-            [.. channels.Select(c => new PcsModels.Channel(c.Id, c.Name!, "product"))],
-            assets: [],
-            dependencies: [],
-            incoherencies: [])
+        var build = new PcsModels.Build(id, DateTimeOffset.UnixEpoch, staleness: 0, released: false, stable: true, commit!,
+            [.. channels.Select(c => new PcsModels.Channel(c.Id, c.Name!, "product"))], assets: [], dependencies: [], incoherencies: [])
         {
             GitHubRepository = gitHubRepository!,
             AzureDevOpsRepository = azureDevOpsRepository!,
@@ -212,9 +186,7 @@ internal static class BuildFactory
         return build;
     }
 
-    public static RestApiException NotFound() =>
-        new(new FakeRequest(), new FakeResponse(404), "{}");
+    public static RestApiException NotFound() => new(new FakeRequest(), new FakeResponse(404), "{}");
 
-    public static RestApiException ServerError() =>
-        new(new FakeRequest(), new FakeResponse(500), "{}");
+    public static RestApiException ServerError() => new(new FakeRequest(), new FakeResponse(500), "{}");
 }

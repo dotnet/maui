@@ -48,8 +48,7 @@ internal readonly record struct RepositoryId
     /// </summary>
     public static RepositoryId FromGitHubUrl(string? url)
     {
-        if (string.IsNullOrWhiteSpace(url) ||
-            !Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
+        if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
         {
             throw new DotNetReleaseException($"'{url}' is not an absolute repository URL.");
         }
@@ -60,8 +59,7 @@ internal readonly record struct RepositoryId
             throw new DotNetReleaseException($"Repository URL '{url}' is not hosted on github.com.");
         }
 
-        var path = uri.GetLeftPart(UriPartial.Path)[uri.GetLeftPart(UriPartial.Authority).Length..]
-            .Trim('/');
+        var path = uri.GetLeftPart(UriPartial.Path)[uri.GetLeftPart(UriPartial.Authority).Length..].Trim('/');
 
         if (path.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
         {
@@ -85,16 +83,14 @@ internal readonly record struct RepositoryId
     {
         if (string.IsNullOrWhiteSpace(azureDevOpsRepository))
         {
-            throw new DotNetReleaseException(
-                "The build has neither a GitHub repository nor an Azure DevOps repository.");
+            throw new DotNetReleaseException("The build has neither a GitHub repository nor an Azure DevOps repository.");
         }
 
         var mirrorName = azureDevOpsRepository.Trim().TrimEnd('/').Split('/')[^1].ToLowerInvariant();
         var separator = mirrorName.IndexOf('-', StringComparison.Ordinal);
         if (separator <= 0 || separator == mirrorName.Length - 1)
         {
-            throw new DotNetReleaseException(
-                $"The build has no GitHub repository and mirror name '{mirrorName}' does not " +
+            throw new DotNetReleaseException($"The build has no GitHub repository and mirror name '{mirrorName}' does not " +
                 "follow the '<owner>-<name>' convention, so its identity cannot be established.");
         }
 

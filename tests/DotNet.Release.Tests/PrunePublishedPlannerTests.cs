@@ -31,8 +31,7 @@ public class PrunePublishedPlannerTests
         Assert.Equal(1, report.PendingCount);
         Assert.Equal([Skia.FileName], report.FilesToRemove);
 
-        Assert.Equal(
-            PackageDisposition.AlreadyPublished,
+        Assert.Equal(PackageDisposition.AlreadyPublished,
             report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
     }
 
@@ -52,14 +51,10 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filters_win_over_the_feed_query()
     {
-        var report = PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            [Skia.FileName],
-            TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
+            [Skia.FileName], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
-        Assert.Equal(
-            PackageDisposition.PreviouslyAttempted,
+        Assert.Equal(PackageDisposition.PreviouslyAttempted,
             report.Decisions.Single(d => d.FileName == Skia.FileName).Disposition);
         Assert.Equal(1, report.PendingCount);
     }
@@ -67,11 +62,8 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filters_support_wildcards()
     {
-        var report = PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            ["SkiaSharp.*"],
-            TestData.Availability((Skia, false), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
+            ["SkiaSharp.*"], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.Equal([Skia.FileName], report.FilesToRemove);
     }
@@ -83,11 +75,8 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filter_matching_nothing_fails_closed()
     {
-        var exception = Assert.Throws<DotNetReleaseException>(() => PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            ["Typo.*"],
-            TestData.Availability((Skia, false), (HarfBuzz, false))));
+        var exception = Assert.Throws<DotNetReleaseException>(() => PrunePublishedPlanner.Plan(Set, Set.Packages,
+            ["Typo.*"], TestData.Availability((Skia, false), (HarfBuzz, false))));
 
         Assert.Contains("Typo.*", exception.Message, StringComparison.Ordinal);
     }
@@ -95,8 +84,7 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Missing_availability_is_never_treated_as_unpublished()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false))));
+        Assert.Throws<DotNetReleaseException>(() => PrunePublishedPlanner.Plan(Set, Set.Packages, [], TestData.Availability((Skia, false))));
     }
 
     [Fact]
@@ -118,15 +106,11 @@ public class PrunePublishedPlannerTests
     [Fact]
     public void Recovery_filter_for_another_release_set_is_valid_but_does_not_prune_this_set()
     {
-        var manifest = TestData.Planned(
-            "Microsoft.NET.Sdk.Maui.Manifest-10.0.100",
-            "10.0.0");
+        var manifest = TestData.Planned("Microsoft.NET.Sdk.Maui.Manifest-10.0.100", "10.0.0");
 
-        var report = PrunePublishedPlanner.Plan(
-            Set,
+        var report = PrunePublishedPlanner.Plan(Set,
             [.. Set.Packages, manifest],
-            [manifest.FileName],
-            TestData.Availability((Skia, false), (HarfBuzz, false)));
+            [manifest.FileName], TestData.Availability((Skia, false), (HarfBuzz, false)));
 
         Assert.Equal(2, report.PendingCount);
         Assert.Empty(report.FilesToRemove);

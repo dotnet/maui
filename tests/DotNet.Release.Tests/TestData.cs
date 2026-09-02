@@ -28,28 +28,18 @@ internal static class TestData
 
     public static ReleasePolicy Policy(string? json = null) => ReleasePolicy.Parse(json ?? PolicyJson);
 
-    public static RepositoryPolicy RepoPolicy(string fullName) =>
-        Policy().GetRepository(Repo(fullName));
+    public static RepositoryPolicy RepoPolicy(string fullName) => Policy().GetRepository(Repo(fullName));
 
     /// <summary>A stable fake content hash, so expectations stay readable.</summary>
-    public static string Hash(string seed) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(seed)));
+    public static string Hash(string seed) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(seed)));
 
-    public static DropPackage Drop(string id, string version, string? fileName = null) =>
-        new(
-            fileName ?? $"{id}.{version}.nupkg",
-            id,
-            version,
-            PackageVersions.Normalize(version),
-            Hash($"{id}/{version}"));
+    public static DropPackage Drop(string id, string version, string? fileName = null) => new(fileName ?? $"{id}.{version}.nupkg", id, version,
+            PackageVersions.Normalize(version), Hash($"{id}/{version}"));
 
-    public static BarBuild Build(
-        int id = 4242,
-        string? commit = null,
+    public static BarBuild Build(int id = 4242, string? commit = null,
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
         string? azureDevOpsRepository = null,
-        params ChannelReference[] channels) =>
-        new(id, commit ?? Commit, gitHubRepository, azureDevOpsRepository, channels);
+        params ChannelReference[] channels) => new(id, commit ?? Commit, gitHubRepository, azureDevOpsRepository, channels);
 
     public static ReleaseRequest Request(string repo = "dotnet/skiasharp", string? commit = null, int? barId = null) =>
         new(Repo(repo), commit ?? Commit, barId);

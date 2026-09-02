@@ -2,11 +2,7 @@ namespace DotNet.Release;
 
 internal static class ReleaseOutput
 {
-    public static void WriteResolvedRelease(
-        TextWriter writer,
-        ResolvedRelease release,
-        string heading = "Resolved release",
-        string indent = "")
+    public static void WriteResolvedRelease(TextWriter writer, ResolvedRelease release, string heading = "Resolved release", string indent = "")
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(release);
@@ -77,11 +73,7 @@ internal static class ReleaseOutput
         }
     }
 
-    public static void WriteSelectedRelease(
-        TextWriter writer,
-        ReleasePlan plan,
-        IReadOnlyList<ReleasePackageSet> sets,
-        string expectedPlanHash)
+    public static void WriteSelectedRelease(TextWriter writer, ReleasePlan plan, IReadOnlyList<ReleasePackageSet> sets, string expectedPlanHash)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(plan);
@@ -92,8 +84,7 @@ internal static class ReleaseOutput
 
         if (plan.WorkloadSet is { } target)
         {
-            writer.WriteLine(
-                $"Workload target: .NET {target.Band}, channel '{target.Channel}', feed '{target.Feed}'");
+            writer.WriteLine($"Workload target: .NET {target.Band}, channel '{target.Channel}', feed '{target.Feed}'");
         }
         else
         {
@@ -104,10 +95,7 @@ internal static class ReleaseOutput
             $"Selected package set(s): {string.Join(", ", sets.Select(set => set.ArtifactName))}");
     }
 
-    public static void WritePruneReport(
-        TextWriter writer,
-        ReleasePackageSet set,
-        PruneReport report)
+    public static void WritePruneReport(TextWriter writer, ReleasePackageSet set, PruneReport report)
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(set);
@@ -120,8 +108,7 @@ internal static class ReleaseOutput
         writer.WriteLine($"  Artifact name  : {set.ArtifactName}");
         writer.WriteLine("  Decisions:");
         var packages = set.Packages.ToDictionary(
-            package => package.FileName,
-            StringComparer.OrdinalIgnoreCase);
+            package => package.FileName, StringComparer.OrdinalIgnoreCase);
 
         foreach (var decision in report.Decisions)
         {

@@ -35,41 +35,23 @@ internal static class StageCommand
             Description = "Semicolon-separated exclude filters.",
         };
 
-        var command = new Command(
-            "stage",
-            "Read the gathered drop, validate it, and write release-plan.json.")
+        var command = new Command("stage", "Read the gathered drop, validate it, and write release-plan.json.")
         {
             config, plan, drop, output, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) => ExecuteAsync(
-            outputWriter,
-            File.ReadAllText(parse.GetValue(config)!.FullName),
-            File.ReadAllText(parse.GetValue(plan)!.FullName),
-            parse.GetValue(drop)!.FullName,
-            parse.GetValue(output)!.FullName,
-            new StageOptions
+        command.SetAction((parse, cancellationToken) => ExecuteAsync(outputWriter, File.ReadAllText(parse.GetValue(config)!.FullName),
+            File.ReadAllText(parse.GetValue(plan)!.FullName), parse.GetValue(drop)!.FullName, parse.GetValue(output)!.FullName, new StageOptions
             {
                 Include = PackageGlob.ParseList(parse.GetValue(include)),
                 Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
-            },
-            DateTimeOffset.UtcNow,
-            toolVersion,
-            cancellationToken));
+            }, DateTimeOffset.UtcNow, toolVersion, cancellationToken));
 
         return command;
     }
 
-    public static async Task ExecuteAsync(
-        TextWriter outputWriter,
-        string policyJson,
-        string resolvedPlanJson,
-        string dropDirectory,
-        string outputDirectory,
-        StageOptions options,
-        DateTimeOffset now,
-        string toolVersion,
-        CancellationToken cancellationToken)
+    public static async Task ExecuteAsync(TextWriter outputWriter, string policyJson, string resolvedPlanJson, string dropDirectory, string outputDirectory,
+        StageOptions options, DateTimeOffset now, string toolVersion, CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
         var resolved = ReleasePlanSerializer.DeserializeResolved(resolvedPlanJson);
@@ -77,8 +59,7 @@ internal static class StageCommand
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
         {
-            throw new DotNetReleaseException(
-                $"No shipping nupkgs were found under '{dropDirectory}'.");
+            throw new DotNetReleaseException($"No shipping nupkgs were found under '{dropDirectory}'.");
         }
 
         var reader = new NupkgIdentityReader();
@@ -102,13 +83,7 @@ internal static class StageCommand
             throw new DotNetReleaseException(readErrors);
         }
 
-        var plan = StagePlanner.Create(
-            resolved,
-            policy,
-            packages,
-            options,
-            now,
-            toolVersion);
+        var plan = StagePlanner.Create(resolved, policy, packages, options, now, toolVersion);
         var sourceFiles = IndexPackageFiles(packageFiles);
         Directory.CreateDirectory(outputDirectory);
         var planJson = ReleasePlanSerializer.Serialize(plan);
@@ -120,10 +95,7 @@ internal static class StageCommand
 
             foreach (var package in set.Packages)
             {
-                File.Copy(
-                    sourceFiles[package.FileName],
-                    Path.Combine(setDirectory, package.FileName),
-                    overwrite: true);
+                File.Copy(sourceFiles[package.FileName], Path.Combine(setDirectory, package.FileName), overwrite: true);
             }
         }
 
@@ -132,10 +104,7 @@ internal static class StageCommand
 
         foreach (var set in plan.Sets)
         {
-            StagedSetIntegrity.ValidateStaged(
-                set,
-                ReleaseArtifact.ReadPackageHashes(
-                    Path.Combine(outputDirectory, set.ArtifactName)));
+            StagedSetIntegrity.ValidateStaged(set, ReleaseArtifact.ReadPackageHashes(Path.Combine(outputDirectory, set.ArtifactName)));
         }
 
         ReleaseOutput.WriteReleasePlan(outputWriter, plan);
@@ -148,15 +117,10 @@ internal static class StageCommand
     {
         var shipping = Path.Combine(dropDirectory, "shipping", "packages");
 
-        return Directory.Exists(shipping)
-            ? [.. Directory
-                .EnumerateFiles(shipping, "*.nupkg", SearchOption.AllDirectories)
-                .Order(StringComparer.Ordinal)]
-            : [];
+        return Directory.Exists(shipping) ? [.. Directory.EnumerateFiles(shipping, "*.nupkg", SearchOption.AllDirectories).Order(StringComparer.Ordinal)] : [];
     }
 
-    private static IReadOnlyDictionary<string, string> IndexPackageFiles(
-        IReadOnlyList<string> packageFiles)
+    private static IReadOnlyDictionary<string, string> IndexPackageFiles(IReadOnlyList<string> packageFiles)
     {
         var indexed = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -165,9 +129,7 @@ internal static class StageCommand
             var name = Path.GetFileName(file);
             if (!indexed.TryAdd(name, file))
             {
-                throw new DotNetReleaseException(
-                    $"The gathered drop contains more than one '{name}': " +
-                    $"'{indexed[name]}' and '{file}'.");
+                throw new DotNetReleaseException($"The gathered drop contains more than one '{name}': " + $"'{indexed[name]}' and '{file}'.");
             }
         }
 

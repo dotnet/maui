@@ -4,18 +4,9 @@ namespace DotNet.Release.Tests;
 
 public class StagePlannerTests
 {
-    private static ReleasePlan Plan(
-        IReadOnlyList<DropPackage> drop,
-        bool workload = false,
-        StageOptions? options = null,
-        string repo = "dotnet/skiasharp") =>
-        StagePlanner.Create(
-            TestData.Resolved(workload, repo),
-            TestData.Policy(),
-            drop,
-            options ?? new StageOptions(),
-            TestData.Now,
-            TestData.ToolVersion);
+    private static ReleasePlan Plan(IReadOnlyList<DropPackage> drop, bool workload = false, StageOptions? options = null,
+        string repo = "dotnet/skiasharp") => StagePlanner.Create(TestData.Resolved(workload, repo), TestData.Policy(), drop, options ?? new StageOptions(),
+            TestData.Now, TestData.ToolVersion);
 
     private static DropPackage Manifest(string band = "10", string version = "10.0.0") =>
         TestData.Drop($"Microsoft.NET.Sdk.Maui.Manifest-{band}.0.100", version);
@@ -47,8 +38,7 @@ public class StagePlannerTests
     public void Non_workload_release_can_exclude_a_manifest_from_the_selected_set()
     {
         var plan = Plan(
-            [TestData.Drop("SkiaSharp", "3.119.0"), Manifest()],
-            options: new StageOptions { Exclude = ["*Manifest*"] });
+            [TestData.Drop("SkiaSharp", "3.119.0"), Manifest()], options: new StageOptions { Exclude = ["*Manifest*"] });
 
         Assert.Equal("SkiaSharp", Assert.Single(plan.AllPackages).Id);
     }
@@ -57,8 +47,7 @@ public class StagePlannerTests
     public void Filters_selecting_nothing_fail_closed()
     {
         Assert.Throws<DotNetReleaseException>(() => Plan(
-            [TestData.Drop("SkiaSharp", "3.119.0")],
-            options: new StageOptions { Include = ["NothingMatches*"] }));
+            [TestData.Drop("SkiaSharp", "3.119.0")], options: new StageOptions { Include = ["NothingMatches*"] }));
     }
 
     [Fact]
@@ -73,9 +62,7 @@ public class StagePlannerTests
     public void Workload_release_splits_packs_and_manifests_in_publication_order()
     {
         var plan = Plan(
-            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest()],
-            workload: true,
-            repo: "dotnet/maui");
+            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest()], workload: true, repo: "dotnet/maui");
 
         Assert.Equal(2, plan.Sets.Count);
 
@@ -94,9 +81,7 @@ public class StagePlannerTests
     public void Workload_release_resolves_the_workload_set_from_the_manifest_band()
     {
         var plan = Plan(
-            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest("10")],
-            workload: true,
-            repo: "dotnet/maui");
+            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest("10")], workload: true, repo: "dotnet/maui");
 
         Assert.Equal(new WorkloadSetTarget(10, ".NET 10 Workload Release", "dotnet10-workloads"), plan.WorkloadSet);
     }
@@ -105,9 +90,7 @@ public class StagePlannerTests
     public void Workload_release_with_an_unconfigured_band_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(() => Plan(
-            [TestData.Drop("Microsoft.Maui.Controls", "12.0.0"), Manifest("12", "12.0.0")],
-            workload: true,
-            repo: "dotnet/maui"));
+            [TestData.Drop("Microsoft.Maui.Controls", "12.0.0"), Manifest("12", "12.0.0")], workload: true, repo: "dotnet/maui"));
     }
 
     [Theory]
@@ -142,10 +125,7 @@ public class StagePlannerTests
                 TestData.Drop("Microsoft.Maui.Controls", "10.0.0"),
                 TestData.Drop("Microsoft.Maui.Essentials", "10.0.0"),
                 Manifest(),
-            ],
-            workload: true,
-            options: new StageOptions { Include = ["Microsoft.Maui.Controls.*"] },
-            repo: "dotnet/maui");
+            ], workload: true, options: new StageOptions { Include = ["Microsoft.Maui.Controls.*"] }, repo: "dotnet/maui");
 
         Assert.Equal("Microsoft.Maui.Controls", Assert.Single(plan.Sets[0].Packages).Id);
         Assert.Single(plan.Sets[1].Packages);
@@ -155,9 +135,7 @@ public class StagePlannerTests
     public void Exclude_filters_apply_to_manifests_too()
     {
         Assert.Throws<DotNetReleaseException>(() => Plan(
-            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest()],
-            workload: true,
-            options: new StageOptions { Exclude = ["*Manifest*"] },
+            [TestData.Drop("Microsoft.Maui.Controls", "10.0.0"), Manifest()], workload: true, options: new StageOptions { Exclude = ["*Manifest*"] },
             repo: "dotnet/maui"));
     }
 
@@ -195,16 +173,13 @@ public class StagePlannerTests
             [
                 TestData.Drop("Shared", "1.0", fileName: "Shared.1.0.nupkg"),
                 TestData.Drop("Shared", "1.0.0", fileName: "Shared.Manifest-10.1.0.0.nupkg"),
-            ],
-            workload: true,
-            repo: "dotnet/maui"));
+            ], workload: true, repo: "dotnet/maui"));
     }
 
     [Fact]
     public void Package_without_an_id_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Plan([new DropPackage("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]));
+        Assert.Throws<DotNetReleaseException>(() => Plan([new DropPackage("broken.nupkg", "", "1.0.0", "1.0.0", TestData.Hash("x"))]));
     }
 
     [Fact]
@@ -224,8 +199,7 @@ public class StagePlannerTests
     [Fact]
     public void Package_staged_without_a_content_hash_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Plan([new DropPackage("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]));
+        Assert.Throws<DotNetReleaseException>(() => Plan([new DropPackage("SkiaSharp.3.119.0.nupkg", "SkiaSharp", "3.119.0", "3.119.0", "")]));
     }
 
     [Fact]

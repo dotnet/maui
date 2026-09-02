@@ -36,9 +36,7 @@ internal static class PrunePublishedCommand
             Required = true,
         };
 
-        var command = new Command(
-            "prune-published",
-            "Remove package versions already published on the target feed.")
+        var command = new Command("prune-published", "Remove package versions already published on the target feed.")
         {
             plan, stage, recoveryFilters, expectedHash, feed, set,
         };
@@ -48,29 +46,15 @@ internal static class PrunePublishedCommand
             var planFile = parse.GetValue(plan)!;
             using var lookup = new NuGetPackageLookup(parse.GetValue(feed));
 
-            return ExecuteAsync(
-                outputWriter,
-                lookup,
-                File.ReadAllText(planFile.FullName),
-                parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
-                PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
-                parse.GetValue(expectedHash)!,
-                parse.GetValue(set),
-                cancellationToken);
+            return ExecuteAsync(outputWriter, lookup, File.ReadAllText(planFile.FullName), parse.GetValue(stage)?.FullName ?? planFile.DirectoryName!,
+                PackageGlob.ParseList(parse.GetValue(recoveryFilters)), parse.GetValue(expectedHash)!, parse.GetValue(set), cancellationToken);
         });
 
         return command;
     }
 
-    public static async Task ExecuteAsync(
-        TextWriter outputWriter,
-        INuGetPackageLookup lookup,
-        string planJson,
-        string stageDirectory,
-        IReadOnlyList<string> recoveryPatterns,
-        string expectedPlanHash,
-        string? setName,
-        CancellationToken cancellationToken)
+    public static async Task ExecuteAsync(TextWriter outputWriter, INuGetPackageLookup lookup, string planJson, string stageDirectory,
+        IReadOnlyList<string> recoveryPatterns, string expectedPlanHash, string? setName, CancellationToken cancellationToken)
     {
         var plan = ReleasePlanSerializer.VerifyAndDeserialize(planJson, expectedPlanHash);
         var sets = ReleaseArtifact.SelectSets(plan, setName);
@@ -82,20 +66,13 @@ internal static class PrunePublishedCommand
         {
             var setDirectory = ReleaseArtifact.GetSetDirectory(stageDirectory, set);
 
-            var availability = await lookup
-                .GetAvailabilityAsync(set.Packages, cancellationToken)
-                .ConfigureAwait(false);
-            var report = PrunePublishedPlanner.Plan(
-                set,
-                plan.AllPackages,
-                recoveryPatterns,
-                availability);
+            var availability = await lookup.GetAvailabilityAsync(set.Packages, cancellationToken).ConfigureAwait(false);
+            var report = PrunePublishedPlanner.Plan(set, plan.AllPackages, recoveryPatterns, availability);
             var invalidFileName = report.FilesToRemove
                 .FirstOrDefault(fileName => !ReleaseArtifact.IsSinglePathComponent(fileName));
             if (invalidFileName is not null)
             {
-                throw new DotNetReleaseException(
-                    $"Package file name '{invalidFileName}' must not contain a directory.");
+                throw new DotNetReleaseException($"Package file name '{invalidFileName}' must not contain a directory.");
             }
 
             foreach (var fileName in report.FilesToRemove)
@@ -109,14 +86,9 @@ internal static class PrunePublishedCommand
                 outputWriter.WriteLine($"Withheld {fileName}.");
             }
 
-            StagedSetIntegrity.ValidateFiltered(
-                set,
-                ReleaseArtifact.ReadPackageHashes(setDirectory),
-                report);
+            StagedSetIntegrity.ValidateFiltered(set, ReleaseArtifact.ReadPackageHashes(setDirectory), report);
 
-            await File.WriteAllTextAsync(
-                Path.Combine(setDirectory, ReportFileName),
-                ReleasePlanSerializer.Serialize(report),
+            await File.WriteAllTextAsync(Path.Combine(setDirectory, ReportFileName), ReleasePlanSerializer.Serialize(report),
                 cancellationToken).ConfigureAwait(false);
 
             ReleaseOutput.WritePruneReport(outputWriter, set, report);

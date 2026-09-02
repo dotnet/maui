@@ -29,8 +29,7 @@ internal static class PackageGlob
         return value.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     }
 
-    public static bool IsMatch(string fileName, string pattern) =>
-        FileSystemName.MatchesSimpleExpression(pattern, fileName, ignoreCase: true);
+    public static bool IsMatch(string fileName, string pattern) => FileSystemName.MatchesSimpleExpression(pattern, fileName, ignoreCase: true);
 
     public static bool IsAnyMatch(string fileName, IReadOnlyList<string> patterns)
     {
@@ -50,6 +49,5 @@ internal static class PackageGlob
     /// exclude always wins.
     /// </summary>
     public static bool IsSelected(string fileName, IReadOnlyList<string> include, IReadOnlyList<string> exclude) =>
-        (include.Count == 0 || IsAnyMatch(fileName, include)) &&
-        !(exclude.Count > 0 && IsAnyMatch(fileName, exclude));
+        (include.Count == 0 || IsAnyMatch(fileName, include)) && !(exclude.Count > 0 && IsAnyMatch(fileName, exclude));
 }

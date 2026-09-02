@@ -27,11 +27,7 @@ internal static class BarBuildMapper
     {
         ArgumentNullException.ThrowIfNull(build);
 
-        return new BarBuild(
-            build.Id,
-            NullIfBlank(build.Commit) ?? string.Empty,
-            NullIfBlank(build.GitHubRepository),
-            NullIfBlank(build.AzureDevOpsRepository),
+        return new BarBuild(build.Id, NullIfBlank(build.Commit) ?? string.Empty, NullIfBlank(build.GitHubRepository), NullIfBlank(build.AzureDevOpsRepository),
             MapChannels(build.Channels));
     }
 
@@ -54,6 +50,5 @@ internal static class BarBuildMapper
     /// Collapses null and whitespace to null, so downstream code has one empty case to
     /// handle rather than three.
     /// </summary>
-    private static string? NullIfBlank(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

@@ -4,15 +4,8 @@ namespace DotNet.Release.Tests;
 
 public class BuildResolverTests
 {
-    private static ResolvedRelease Resolve(
-        IReadOnlyList<BarBuild> candidates,
-        ReleaseRequest? request = null,
-        string repo = "dotnet/skiasharp") =>
-        BuildResolver.Resolve(
-            request ?? TestData.Request(repo),
-            TestData.RepoPolicy(repo),
-            candidates,
-            TestData.Now,
+    private static ResolvedRelease Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
+        string repo = "dotnet/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates, TestData.Now,
             TestData.ToolVersion);
 
     private static readonly ChannelReference Libraries = new(".NET Libraries", 1648);
@@ -50,8 +43,7 @@ public class BuildResolverTests
     [Fact]
     public void Wrong_commit_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Resolve([TestData.Build(commit: "0000000000000000000000000000000000000000", channels: Libraries)]));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(commit: "0000000000000000000000000000000000000000", channels: Libraries)]));
     }
 
     [Fact]
@@ -64,23 +56,20 @@ public class BuildResolverTests
     [Fact]
     public void Missing_required_channel_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Resolve([TestData.Build(channels: new ChannelReference(".NET 10", 5172))]));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: new ChannelReference(".NET 10", 5172))]));
     }
 
     [Fact]
     public void Channel_with_the_right_name_but_the_wrong_id_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Resolve([TestData.Build(channels: new ChannelReference(".NET Libraries", 9999))]));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: new ChannelReference(".NET Libraries", 9999))]));
     }
 
     [Fact]
     public void Channel_name_comparison_is_case_sensitive()
     {
         // Channel policy binds both the exact display name and numeric ID.
-        Assert.Throws<DotNetReleaseException>(() =>
-            Resolve([TestData.Build(channels: new ChannelReference(".net libraries", 1648))]));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: new ChannelReference(".net libraries", 1648))]));
     }
 
     [Fact]
@@ -88,8 +77,7 @@ public class BuildResolverTests
     {
         var result = Resolve(
             [TestData.Build(gitHubRepository: "https://github.com/dotnet/maui")],
-            TestData.Request("dotnet/maui"),
-            "dotnet/maui");
+            TestData.Request("dotnet/maui"), "dotnet/maui");
 
         Assert.True(result.Workload);
         Assert.Null(result.Channel);
@@ -102,8 +90,7 @@ public class BuildResolverTests
     [Fact]
     public void Null_github_repository_falls_back_to_the_mirror_convention()
     {
-        var result = Resolve([TestData.Build(
-            gitHubRepository: null,
+        var result = Resolve([TestData.Build(gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp",
             channels: Libraries)]);
 
@@ -116,8 +103,7 @@ public class BuildResolverTests
     [Fact]
     public void Mirror_fallback_still_verifies_the_repository()
     {
-        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(
-            gitHubRepository: null,
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(gitHubRepository: null,
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-maui",
             channels: Libraries)]));
     }
@@ -126,34 +112,25 @@ public class BuildResolverTests
     public void Resolution_by_bar_id_still_verifies_the_commit()
     {
         Assert.Throws<DotNetReleaseException>(() => Resolve(
-            [TestData.Build(commit: "1111111111111111111111111111111111111111", channels: Libraries)],
-            TestData.Request(barId: 4242)));
+            [TestData.Build(commit: "1111111111111111111111111111111111111111", channels: Libraries)], TestData.Request(barId: 4242)));
     }
 
     [Fact]
     public void Build_with_no_usable_identity_fails_closed()
     {
-        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(
-            gitHubRepository: null,
-            azureDevOpsRepository: null,
-            channels: Libraries)]));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(gitHubRepository: null, azureDevOpsRepository: null, channels: Libraries)]));
     }
 
     [Fact]
     public void Policy_for_a_different_repository_is_rejected()
     {
-        Assert.Throws<DotNetReleaseException>(() => BuildResolver.Resolve(
-            TestData.Request("dotnet/skiasharp"),
-            TestData.RepoPolicy("dotnet/maui"),
-            [TestData.Build(channels: Libraries)],
-            TestData.Now,
-            TestData.ToolVersion));
+        Assert.Throws<DotNetReleaseException>(() => BuildResolver.Resolve(TestData.Request("dotnet/skiasharp"), TestData.RepoPolicy("dotnet/maui"),
+            [TestData.Build(channels: Libraries)], TestData.Now, TestData.ToolVersion));
     }
 
     [Fact]
     public void Empty_commit_is_rejected()
     {
-        Assert.Throws<DotNetReleaseException>(() =>
-            Resolve([TestData.Build(channels: Libraries)], TestData.Request(commit: "  ")));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: Libraries)], TestData.Request(commit: "  ")));
     }
 }

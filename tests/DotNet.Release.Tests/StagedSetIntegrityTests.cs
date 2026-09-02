@@ -53,11 +53,8 @@ public class StagedSetIntegrityTests
     [Fact]
     public void Removed_files_are_absent_after_pruning()
     {
-        var report = PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            [],
-            TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
+            [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         StagedSetIntegrity.ValidateFiltered(Set, Files(HarfBuzz), report);
     }
@@ -65,11 +62,8 @@ public class StagedSetIntegrityTests
     [Fact]
     public void A_withheld_package_still_on_disk_fails_closed()
     {
-        var report = PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            [],
-            TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
+            [], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
         Assert.Throws<DotNetReleaseException>(
             () => StagedSetIntegrity.ValidateFiltered(Set, Files(Skia, HarfBuzz), report));
@@ -78,16 +72,10 @@ public class StagedSetIntegrityTests
     [Fact]
     public void The_invariant_holds_for_every_disposition()
     {
-        var report = PrunePublishedPlanner.Plan(
-            Set,
-            Set.Packages,
-            [HarfBuzz.FileName],
-            TestData.Availability((Skia, true), (HarfBuzz, false)));
+        var report = PrunePublishedPlanner.Plan(Set, Set.Packages,
+            [HarfBuzz.FileName], TestData.Availability((Skia, true), (HarfBuzz, false)));
 
-        StagedSetIntegrity.ValidateFiltered(
-            Set,
-            new Dictionary<string, string>(),
-            report);
+        StagedSetIntegrity.ValidateFiltered(Set, new Dictionary<string, string>(), report);
         Assert.Equal(0, report.PendingCount);
     }
 

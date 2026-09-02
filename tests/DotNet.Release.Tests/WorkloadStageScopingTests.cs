@@ -33,15 +33,11 @@ public class WorkloadStageScopingTests : IDisposable
 
         var registry = new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui"));
 
-        await PlanCommand.ExecuteAsync(
-            _output, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
+        await PlanCommand.ExecuteAsync(_output, registry, Workspace.PolicyJson, "dotnet/maui", Workspace.Commit, null,
             _workspace.Out, Workspace.Now, "1.0.0-test", CancellationToken.None);
 
-        await StageCommand.ExecuteAsync(
-            _output, Workspace.PolicyJson,
-            File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
-            _workspace.Drop, _workspace.Out, new StageOptions(),
-            Workspace.Now, "1.0.0-test", CancellationToken.None);
+        await StageCommand.ExecuteAsync(_output, Workspace.PolicyJson, File.ReadAllText(Path.Combine(_workspace.Out, PlanCommand.FileName)),
+            _workspace.Drop, _workspace.Out, new StageOptions(), Workspace.Now, "1.0.0-test", CancellationToken.None);
 
         var plan = ReleasePlanSerializer.DeserializePlan(_workspace.ReadPlan());
         Assert.Equal(2, plan.Sets.Count);
@@ -60,29 +56,16 @@ public class WorkloadStageScopingTests : IDisposable
         }
     }
 
-    private Task Filter(string? set, INuGetPackageLookup probe) =>
-        PrunePublishedCommand.ExecuteAsync(
-            _output,
-            probe,
-            _workspace.ReadPlan(),
-            _workspace.Out,
-            [],
-            PlanHash,
-            set,
-            CancellationToken.None);
+    private Task Filter(string? set, INuGetPackageLookup probe) => PrunePublishedCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), _workspace.Out,
+            [], PlanHash, set, CancellationToken.None);
 
     private Task Verify(string? set, INuGetPackageLookup probe, int maxMinutes = 30)
     {
         var now = Workspace.Now;
 
-        return VerifyCommand.ExecuteAsync(
-            _output, probe, _workspace.ReadPlan(),
-            TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
+        return VerifyCommand.ExecuteAsync(_output, probe, _workspace.ReadPlan(), TimeSpan.FromMinutes(maxMinutes), TimeSpan.FromSeconds(20),
             () => now,
-            (delay, _) => { now = now.Add(delay); return Task.CompletedTask; },
-            set,
-            PlanHash,
-            CancellationToken.None);
+            (delay, _) => { now = now.Add(delay); return Task.CompletedTask; }, set, PlanHash, CancellationToken.None);
     }
 
     [Fact]

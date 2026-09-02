@@ -47,8 +47,7 @@ internal sealed class NupkgIdentityReader
             or global::NuGet.Packaging.Core.PackagingException
             or System.Xml.XmlException)
         {
-            throw new DotNetReleaseException(
-                $"Package '{fileName}' could not be read: {ex.Message}");
+            throw new DotNetReleaseException($"Package '{fileName}' could not be read: {ex.Message}");
         }
 
         var normalized = PackageVersions.Normalize(version);

@@ -17,8 +17,7 @@ public class PackageSelectionTests
     public void ParseList_splits_trims_and_drops_empties()
     {
         Assert.Equal(
-            ["a.nupkg", "b*.nupkg"],
-            PackageGlob.ParseList(" a.nupkg ; ; b*.nupkg ;"));
+            ["a.nupkg", "b*.nupkg"], PackageGlob.ParseList(" a.nupkg ; ; b*.nupkg ;"));
     }
 
     [Theory]

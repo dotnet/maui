@@ -51,8 +51,7 @@ internal static class ReleasePlanSerializer
         // production push.
         if (plan.SchemaVersion != SupportedSchemaVersion)
         {
-            throw new DotNetReleaseException(
-                $"Unsupported release plan schemaVersion '{plan.SchemaVersion}'; " +
+            throw new DotNetReleaseException($"Unsupported release plan schemaVersion '{plan.SchemaVersion}'; " +
                 $"this tool understands {SupportedSchemaVersion}.");
         }
 
@@ -65,8 +64,7 @@ internal static class ReleasePlanSerializer
 
         if (resolved.SchemaVersion != SupportedSchemaVersion)
         {
-            throw new DotNetReleaseException(
-                $"Unsupported resolved release schemaVersion '{resolved.SchemaVersion}'; " +
+            throw new DotNetReleaseException($"Unsupported resolved release schemaVersion '{resolved.SchemaVersion}'; " +
                 $"this tool understands {SupportedSchemaVersion}.");
         }
 
@@ -78,8 +76,7 @@ internal static class ReleasePlanSerializer
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(json, Options)
-                ?? throw new DotNetReleaseException($"The {what} is empty.");
+            return JsonSerializer.Deserialize<T>(json, Options) ?? throw new DotNetReleaseException($"The {what} is empty.");
         }
         catch (JsonException ex)
         {
@@ -94,8 +91,7 @@ internal static class ReleasePlanSerializer
     /// SHA-256 of UTF-8 text, as lower-case hex.
     /// </summary>
     /// <remarks>The serializer writes UTF-8 without a byte-order mark.</remarks>
-    public static string ComputeHash(string content) =>
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
+    public static string ComputeHash(string content) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(content)));
 
     /// <summary>
     /// Verifies that plan content matches the hash pinned by the preparing stage.
@@ -105,8 +101,7 @@ internal static class ReleasePlanSerializer
         var actual = ComputeHash(json);
         if (!string.Equals(actual, expectedHash?.Trim(), StringComparison.OrdinalIgnoreCase))
         {
-            throw new DotNetReleaseException(
-                $"Release plan hash '{actual}' does not match the prepared hash '{expectedHash}'.");
+            throw new DotNetReleaseException($"Release plan hash '{actual}' does not match the prepared hash '{expectedHash}'.");
         }
 
         return DeserializePlan(json);

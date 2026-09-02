@@ -37,9 +37,7 @@ public class ReleasePolicyTests
     [Fact]
     public void Repository_lookup_is_case_insensitive()
     {
-        Assert.Equal(
-            "dotnet/skiasharp",
-            TestData.Policy().GetRepository(TestData.Repo("DotNet/SkiaSharp")).Repository.FullName);
+        Assert.Equal("dotnet/skiasharp", TestData.Policy().GetRepository(TestData.Repo("DotNet/SkiaSharp")).Repository.FullName);
     }
 
     [Fact]
@@ -128,13 +126,9 @@ public class ReleasePolicyTests
             Assert.True(policy.GetRepository(TestData.Repo(repo)).Workload);
         }
 
-        Assert.Equal(
-            new ChannelReference(".NET 10", 5172),
-            policy.GetRepository(TestData.Repo("dotnet/android-libraries")).Channel);
+        Assert.Equal(new ChannelReference(".NET 10", 5172), policy.GetRepository(TestData.Repo("dotnet/android-libraries")).Channel);
 
-        Assert.Equal(
-            new ChannelReference(".NET Libraries", 1648),
-            policy.GetRepository(TestData.Repo("dotnet/skiasharp")).Channel);
+        Assert.Equal(new ChannelReference(".NET Libraries", 1648), policy.GetRepository(TestData.Repo("dotnet/skiasharp")).Channel);
 
         foreach (var band in new[] { 8, 9, 10, 11 })
         {
