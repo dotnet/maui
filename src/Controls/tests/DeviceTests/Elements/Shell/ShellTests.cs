@@ -9,7 +9,11 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -45,7 +49,13 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 				});
 			});
 		}

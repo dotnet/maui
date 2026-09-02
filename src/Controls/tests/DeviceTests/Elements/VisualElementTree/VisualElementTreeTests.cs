@@ -3,7 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -37,7 +41,13 @@ namespace Microsoft.Maui.DeviceTests
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
