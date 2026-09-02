@@ -204,24 +204,11 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		static bool useSyncContext;
 
-		// Accelerometer.Default is an app-lifetime singleton, so events are backed by
-		// weak event sources to avoid leaking subscribers that forget to unsubscribe.
-		readonly WeakEventSource<AccelerometerChangedEventArgs> readingChangedSource = new();
-		readonly WeakEventSource shakeDetectedSource = new();
+		/// <inheritdoc/>
+		public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged;
 
 		/// <inheritdoc/>
-		public event EventHandler<AccelerometerChangedEventArgs>? ReadingChanged
-		{
-			add => readingChangedSource.Subscribe(value);
-			remove => readingChangedSource.Unsubscribe(value);
-		}
-
-		/// <inheritdoc/>
-		public event EventHandler? ShakeDetected
-		{
-			add => shakeDetectedSource.Subscribe(value);
-			remove => shakeDetectedSource.Unsubscribe(value);
-		}
+		public event EventHandler? ShakeDetected;
 
 		/// <inheritdoc/>
 		public bool IsMonitoring { get; private set; }
@@ -280,18 +267,12 @@ namespace Microsoft.Maui.Devices.Sensors
 		internal void OnChanged(AccelerometerChangedEventArgs e)
 		{
 			if (useSyncContext)
-			{
-				MainThread.BeginInvokeOnMainThread(() => readingChangedSource.Raise(null, e));
-			}
+				MainThread.BeginInvokeOnMainThread(() => ReadingChanged?.Invoke(null, e));
 			else
-			{
-				readingChangedSource.Raise(null, e);
-			}
+				ReadingChanged?.Invoke(null, e);
 
-			if (shakeDetectedSource.HasHandlers)
-			{
+			if (ShakeDetected != null)
 				ProcessShakeEvent(e.Reading.Acceleration);
-			}
 		}
 
 		void ProcessShakeEvent(Vector3 acceleration)
@@ -311,13 +292,9 @@ namespace Microsoft.Maui.Devices.Sensors
 				var args = new EventArgs();
 
 				if (useSyncContext)
-				{
-					MainThread.BeginInvokeOnMainThread(() => shakeDetectedSource.Raise(null, args));
-				}
+					MainThread.BeginInvokeOnMainThread(() => ShakeDetected?.Invoke(null, args));
 				else
-				{
-					shakeDetectedSource.Raise(null, args);
-				}
+					ShakeDetected?.Invoke(null, args);
 			}
 
 			static long Nanoseconds(DateTime time) =>
