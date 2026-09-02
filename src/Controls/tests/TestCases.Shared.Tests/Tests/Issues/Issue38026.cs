@@ -1,4 +1,4 @@
-#if ANDROID
+#if ANDROID     // This issue is reproduced only on Android API 36, so added an Android-specific test and restricted it from running on other platforms, also categorized the test under SafeAreaEdges.                                                                                                                                                                                                  
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
