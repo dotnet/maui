@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.Controls
         {
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The child PropertyChanged subscription is replaced in this setter and removed in Dispose.")]
         public Page? Child
         {
             get => _childRef?.TryGetTarget(out var p) == true ? p : null;
@@ -64,6 +66,7 @@ namespace Microsoft.Maui.Controls
             }
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The toolbar tracker CollectionChanged subscription is removed in Dispose.")]
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
@@ -817,6 +820,7 @@ namespace Microsoft.Maui.Controls
             _trackedToolbarItems.Clear();
         }
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar item PropertyChanged subscriptions are removed before replacement and in Dispose.")]
         void UpdateToolbarItems()
         {
             CleanToolbarItems();
@@ -952,10 +956,13 @@ namespace Microsoft.Maui.Controls
     sealed class TitleViewContainer : UIView
     {
         View? _view;
+        [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title view handler is owned while hosted and disconnected and released in Dispose.")]
         IPlatformViewHandler? _child;
+        [UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title icon is an owned subview that is disposed and released in Dispose.")]
         UIImageView? _icon;
         bool _disposed;
 
+        [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The pending ParentSet subscription is removed after setup and in Dispose.")]
         internal TitleViewContainer(View? view, UINavigationBar bar) : base(bar.Bounds)
         {
             if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
