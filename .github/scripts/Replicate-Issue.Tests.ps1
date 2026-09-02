@@ -9830,6 +9830,7 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
             @'
         var rootPage = new global::Microsoft.Maui.Controls.ContentPage
         {
+            Title = "Root Page",
             Content = new global::Microsoft.Maui.Controls.VerticalStackLayout
             {
                 Padding = 24,

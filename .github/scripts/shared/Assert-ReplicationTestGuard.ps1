@@ -3975,6 +3975,7 @@ namespace Microsoft.Maui.Controls
     public class Page : VisualElement
     {
         public event System.EventHandler NavigatedTo;
+        public string Title { get; set; }
     }
     public class ContentPage : Page
     {
@@ -7216,10 +7217,11 @@ function New-ReplicationControlVariant {
                     'only the exact protected generic one-arity immutable ' +
                     'ControlsHandlerTestBase.CreateHandlerAndAddToWindow<THandler>(' +
                     'IElement, Func<THandler, Task>) definition constructed with ' +
-                    'the external WindowHandlerStub is trusted. Use the ' +
-                    'already-proven narrow shape: directly await it as a ' +
-                    'top-level statement with new Window(navigationPage), ' +
-                    'then use one async block callback containing direct ' +
+                    'the external WindowHandlerStub is trusted. Use the exact ' +
+                    'already-proven call: await CreateHandlerAndAddToWindow<' +
+                    'global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(' +
+                    'new Window(navigationPage), async _ => { ... }); as a ' +
+                    'top-level statement. Its one async block callback contains direct ' +
                     'PushAsync, a pure expression AssertEventually ' +
                     '(CurrentPage == destination), and the native oracle. ' +
                     'Do not use SetupBuilder, OnNavigatedToAsync, ' +
