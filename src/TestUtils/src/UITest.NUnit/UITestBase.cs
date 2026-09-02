@@ -42,25 +42,30 @@ namespace UITest.Appium.NUnit
 		public virtual void TestTearDown()
 		{
 			RecordTestTeardown();
-			UITestBaseTearDown();
-
-			// If the fixture setup failed, re-attach diagnostic files to each individual test
-			// so they appear in Azure DevOps test results (NUnit doesn't do this automatically
-			// for files attached during OneTimeSetUp)
-			if (_fixtureSetupFailed)
+			try
 			{
-				foreach (var filePath in _fixtureSetupDiagnosticFiles)
+				UITestBaseTearDown();
+
+				// If the fixture setup failed, re-attach diagnostic files to each individual test
+				// so they appear in Azure DevOps test results (NUnit doesn't do this automatically
+				// for files attached during OneTimeSetUp)
+				if (_fixtureSetupFailed)
 				{
-					if (File.Exists(filePath))
+					foreach (var filePath in _fixtureSetupDiagnosticFiles)
 					{
-						AddTestAttachment(filePath, $"[FixtureSetup] {Path.GetFileName(filePath)}");
+						if (File.Exists(filePath))
+						{
+							AddTestAttachment(filePath, $"[FixtureSetup] {Path.GetFileName(filePath)}");
+						}
 					}
 				}
 			}
-
-			if (ResetAfterEachTest)
+			finally
 			{
-				Reset();
+				if (ResetAfterEachTest)
+				{
+					Reset();
+				}
 			}
 		}
 
