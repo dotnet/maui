@@ -432,6 +432,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellContext = null;
 		}
 
+		internal void ReleaseDrawerCallbackBeforePageChange()
+		{
+			if (_flyoutContent?.AndroidView is AView flyoutView)
+			{
+				if (IsDrawerOpen(flyoutView))
+					CloseDrawer(flyoutView, false);
+			}
+
+			SetDrawerLockMode(LockModeLockedClosed);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
