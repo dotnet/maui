@@ -84,14 +84,21 @@ namespace Microsoft.Maui.Layouts
 				desiredWidth = IsExplicitSet(view.Width) ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
 			}
 
-			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
+			var clampMarginOverflow = view.Parent is not IFlexLayout;
+
+			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment, clampMarginOverflow);
 		}
 
 		static double AlignHorizontal(double startX, double startMargin, double endMargin, double boundsWidth,
-			double desiredWidth, LayoutAlignment horizontalLayoutAlignment)
+			double desiredWidth, LayoutAlignment horizontalLayoutAlignment, bool clampMarginOverflow)
 		{
 			double frameX = startX + startMargin;
-			var availableWidth = Math.Max(0, boundsWidth - desiredWidth);
+			var availableWidth = boundsWidth - desiredWidth;
+
+			if (clampMarginOverflow && availableWidth < 0 && startMargin > 0 && desiredWidth - startMargin - endMargin <= boundsWidth)
+			{
+				availableWidth = 0;
+			}
 
 			switch (horizontalLayoutAlignment)
 			{
@@ -123,7 +130,13 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			double frameY = bounds.Y + margin.Top;
-			var availableHeight = Math.Max(0, bounds.Height - desiredHeight);
+			var availableHeight = bounds.Height - desiredHeight;
+
+			if (view.Parent is not IFlexLayout && availableHeight < 0 && margin.Top > 0 &&
+				desiredHeight - margin.VerticalThickness <= bounds.Height)
+			{
+				availableHeight = 0;
+			}
 
 			switch (alignment)
 			{
