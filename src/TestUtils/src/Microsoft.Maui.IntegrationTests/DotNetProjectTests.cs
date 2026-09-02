@@ -19,7 +19,8 @@ public class DotNetProjectTests
 			"DotNet",
 			"DotNet.csproj");
 		var sdkVersion = DotnetInternal.RunForOutput(
-			new[] { "--version" },
+			"--version",
+			string.Empty,
 			out var exitCode,
 			timeoutInSeconds: 60,
 			output: _output).Trim();
@@ -74,18 +75,12 @@ public class DotNetProjectTests
 
 	string GetProjectProperty(string projectFile, string propertyName, string? extensionsPath = null)
 	{
-		var arguments = new List<string>
-		{
-			"msbuild",
-			projectFile,
-			"-nologo",
-			"-verbosity:quiet",
-			$"-getProperty:{propertyName}",
-		};
+		var arguments = $"\"{projectFile}\" -nologo -verbosity:quiet -getProperty:{propertyName}";
 		if (extensionsPath is not null)
-			arguments.Add($"-p:MSBuildExtensionsPath={extensionsPath}");
+			arguments += $" -p:MSBuildExtensionsPath=\"{extensionsPath}\"";
 
 		var output = DotnetInternal.RunForOutput(
+			"msbuild",
 			arguments,
 			out var exitCode,
 			timeoutInSeconds: 60,
