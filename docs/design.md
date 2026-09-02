@@ -182,9 +182,11 @@ eng/pipelines/stages/publish-set.yml   internal reusable publish-stage definitio
 
 src/DotNet.Release/
   Program.cs                           CLI entry point
-  Commands/                            handlers and shared artifact validation
+  DotNetReleaseException.cs            expected CLI failure
+  Cli/                                 command handlers and human-readable output
+  Artifact/                            artifact layout, serialization, and hashing
   Policy/                              pure release decisions
-  Model/                               transport models and release exception
+  Model/                               transport and value models
   Adapters/                            read-only interfaces and implementations
 
 tests/DotNet.Release.Tests/            unit, contract, architecture, and pipeline tests

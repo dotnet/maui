@@ -151,8 +151,8 @@ public class PipelineDefinitionTests
     {
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
-        var resolve = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "ResolveCommand.cs"));
-        var stage = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Commands", "StageCommand.cs"));
+        var resolve = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Cli", "ResolveCommand.cs"));
+        var stage = File.ReadAllText(Path.Combine(RepoRoot, "src", "DotNet.Release", "Cli", "StageCommand.cs"));
 
         Assert.Contains("--build \"$env:BUILD_IDENTIFIER\"", root, StringComparison.Ordinal);
         Assert.Contains("--output \"$env:RESOLVED_BUILD\"", root, StringComparison.Ordinal);
