@@ -36,6 +36,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.Disconnect();
 
+			if (!IsHorizontal &&
+				CollectionView is not null &&
+				CollectionView.Handle != IntPtr.Zero &&
+				(_headerContentInset != 0 || _footerContentInset != 0))
+			{
+				var contentInset = CollectionView.ContentInset;
+				CollectionView.ContentInset = new UIEdgeInsets(
+					contentInset.Top - _headerContentInset,
+					contentInset.Left,
+					contentInset.Bottom - _footerContentInset,
+					contentInset.Right);
+			}
+
+			_headerContentInset = 0;
+			_footerContentInset = 0;
 			_headerUIView = null;
 			_headerViewFormsElement = null;
 			_footerUIView = null;
