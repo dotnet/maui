@@ -28,6 +28,10 @@ namespace Microsoft.Maui.DeviceTests
 	// NavigationViewHandler instead, so every test below runs against both variants.
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_FlyoutViewHandler subclass overrides registration to exercise
+	// FlyoutViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
@@ -38,6 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					RegisterNavigationPageHandlers(handlers);
+					RegisterFlyoutPageHandler(handlers);
 					RegisterCommonHandlers(handlers);
 				});
 			});
@@ -56,11 +61,21 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
+		}
+
 		// Handlers shared by every NavigationPage test variant, regardless of which
-		// NavigationPage/TabbedPage handler mapping is registered above.
+		// NavigationPage/TabbedPage or FlyoutPage handler mapping is registered above.
 		protected static void RegisterCommonHandlers(IMauiHandlersCollection handlers)
 		{
-			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 			handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 			handlers.AddHandler<Border, BorderHandler>();
 			handlers.AddHandler<Button, ButtonHandler>();

@@ -18,7 +18,6 @@ using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using TabbedRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
 
@@ -27,6 +26,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Toolbar)]
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// ToolbarTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
@@ -38,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					RegisterFlyoutPageHandler(handlers);
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
@@ -62,6 +65,17 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationRenderer));
 #else
 			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// ToolbarTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #endif
 		}
 

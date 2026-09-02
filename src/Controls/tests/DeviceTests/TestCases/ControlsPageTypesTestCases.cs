@@ -11,10 +11,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
-#if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests.TestCases
 {
 	public enum ControlsPageTypesTestCase
@@ -94,7 +90,11 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 
 				handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 				handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
 				handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(NavigationPage), includeNavigationViewHandler ? typeof(NavigationViewHandler) : typeof(NavigationRenderer));
 #else

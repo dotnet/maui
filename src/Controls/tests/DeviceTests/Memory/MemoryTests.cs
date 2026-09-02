@@ -25,9 +25,14 @@ using Xunit.Sdk;
 namespace Microsoft.Maui.DeviceTests.Memory;
 
 [Category(TestCategory.Memory)]
+#if IOS || MACCATALYST
+// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+// MemoryTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler.
+[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
 public class MemoryTests : ControlsHandlerTestBase
 {
-	void SetupBuilder(bool includeNavigationViewHandler = true)
+	protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -96,15 +101,25 @@ public class MemoryTests : ControlsHandlerTestBase
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
+				RegisterFlyoutPageHandler(handlers);
 #if IOS || MACCATALYST
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
-				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
 #else
 				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
-				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
 			});
 		});
+	}
+
+	// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; MemoryTests_FlyoutViewHandler
+	// overrides this to exercise FlyoutViewHandler instead.
+	protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
+#else
+		handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
 	}
 
 	[Theory("Pages Do Not Leak")]

@@ -38,6 +38,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// WindowTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
@@ -50,12 +54,11 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 
 					RegisterNavigationPageHandler(handlers);
+					RegisterFlyoutPageHandler(handlers);
 #if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #else
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
 
 					handlers.AddHandler<IContentView, ContentViewHandler>();
@@ -77,6 +80,17 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// WindowTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if ANDROID || WINDOWS
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
 		}
 

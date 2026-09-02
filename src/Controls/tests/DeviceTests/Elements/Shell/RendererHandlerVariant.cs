@@ -2,8 +2,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	/// <summary>
 	/// Trait key/values used by xUnitCustomizations.cs to prefix test DisplayNames as
-	/// "[Renderer]"/"[Handler]". Shared by Android Shell/Modal/Window and, via the separate
-	/// NavigationView* key below, by iOS/MacCatalyst NavigationPage tests.
+	/// "[Renderer]"/"[Handler]". Shared by Android Shell/Modal/Window, with separate keys for
+	/// iOS/MacCatalyst NavigationPage and FlyoutPage variants.
 	/// </summary>
 	public static class RendererHandlerVariant
 	{
@@ -11,12 +11,20 @@ namespace Microsoft.Maui.DeviceTests
 		public const string AndroidShellRenderer = "Renderer";
 		public const string AndroidShellHandler = "Handler";
 
-		// Distinct trait key (not reused/collided with TraitName above) for the iOS/MacCatalyst
+		// Distinct trait key for the iOS/MacCatalyst
 		// NavigationPage renderer/handler duality, so tests can be searched/filtered by
 		// "[NavigationRenderer]"/"[NavigationViewHandler]" independently of the unrelated Android
 		// Shell/Modal/Window "Variant" axis. See xUnitCustomizations.cs GetReuseVariantPrefix().
 		public const string NavigationViewVariantTraitName = "NavigationViewVariant";
 		public const string NavigationRenderer = "NavigationRenderer";
 		public const string NavigationViewHandler = "NavigationViewHandler";
+
+		// Distinct trait key for the iOS/MacCatalyst
+		// FlyoutPage renderer/handler duality, so tests can be searched/filtered by
+		// "[PhoneFlyoutPageRenderer]"/"[FlyoutViewHandler]" independently of the unrelated Android
+		// Shell/Modal/Window "Variant" axis. See xUnitCustomizations.cs GetReuseVariantPrefix().
+		public const string FlyoutViewVariantTraitName = "FlyoutViewVariant";
+		public const string PhoneFlyoutPageRenderer = "PhoneFlyoutPageRenderer";
+		public const string FlyoutViewHandler = "FlyoutViewHandler";
 	}
 }
