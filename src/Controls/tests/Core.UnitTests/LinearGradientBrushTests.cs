@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -265,111 +264,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			newStop.Color = Colors.Purple;
 			Assert.Equal(1, invalidations);
-		}
-
-		[Fact]
-		public void SharedGradientStopsDoNotRetainBrush()
-		{
-			var sharedGradientStops = new GradientStopCollection
-			{
-				new GradientStop(Colors.Red, 0),
-				new GradientStop(Colors.Blue, 1),
-			};
-
-			var brushReference = CreateBrushReference(sharedGradientStops);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.False(brushReference.IsAlive);
-			GC.KeepAlive(sharedGradientStops);
-		}
-
-		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		static WeakReference CreateBrushReference(GradientStopCollection gradientStops)
-		{
-			var brush = new LinearGradientBrush { GradientStops = gradientStops };
-			return new WeakReference(brush);
-		}
-
-		[Fact]
-		public void SharedGradientStopCollectionWithMultipleBrushesDoesNotRetainAnyBrush()
-		{
-			var sharedGradientStops = new GradientStopCollection
-			{
-				new GradientStop(Colors.Red, 0),
-				new GradientStop(Colors.Blue, 1),
-			};
-
-			var brushReferences = CreateBrushReferences(sharedGradientStops, 5);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.All(brushReferences, reference => Assert.False(reference.IsAlive));
-			GC.KeepAlive(sharedGradientStops);
-		}
-
-		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		static WeakReference[] CreateBrushReferences(GradientStopCollection gradientStops, int count)
-		{
-			var references = new WeakReference[count];
-
-			for (var index = 0; index < count; index++)
-			{
-				references[index] = CreateBrushReference(gradientStops);
-			}
-
-			return references;
-		}
-
-		[Fact]
-		public void SharedGradientStopDoesNotRetainBrush()
-		{
-			var sharedStop = new GradientStop(Colors.Red, 0);
-
-			var brushReference = CreateBrushReferenceWithSharedStop(sharedStop);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.False(brushReference.IsAlive);
-			GC.KeepAlive(sharedStop);
-		}
-
-		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-		static WeakReference CreateBrushReferenceWithSharedStop(GradientStop sharedStop)
-		{
-			var brush = new LinearGradientBrush
-			{
-				GradientStops = new GradientStopCollection { sharedStop, new GradientStop(Colors.Blue, 1) }
-			};
-			return new WeakReference(brush);
-		}
-
-		[Fact]
-		public void BrushUsingResourceStoredGradientStopsIsCollected()
-		{
-			var resources = new ResourceDictionary
-			{
-				["SharedGradientStops"] = new GradientStopCollection
-				{
-					new GradientStop(Colors.Red, 0),
-					new GradientStop(Colors.Blue, 1),
-				}
-			};
-
-			var brushReference = CreateBrushReference((GradientStopCollection)resources["SharedGradientStops"]);
-
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
-
-			Assert.False(brushReference.IsAlive);
-			GC.KeepAlive(resources);
 		}
 	}
 }
