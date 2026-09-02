@@ -32,7 +32,10 @@ internal sealed record ReleaseSource
     public ChannelReference? Channel { get; init; }
 }
 
-/// <summary>The immutable contract artifact serialized as <c>release-manifest.json</c>.</summary>
+/// <summary>
+/// The release contract serialized as <c>release-manifest.json</c>. Resolve initializes it,
+/// stage completes it, and the pipeline then pins it as immutable.
+/// </summary>
 internal sealed record ReleaseManifest
 {
     [JsonPropertyName("schemaVersion")]

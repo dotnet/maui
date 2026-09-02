@@ -149,7 +149,7 @@ step is present only in **Publish packages and promote the workload build**:
 ```
 
 Its runtime condition additionally requires the `IsWorkload` output that the pipeline
-loads from the transient `release resolve` JSON result.
+loads from `release-manifest.json`.
 
 ### Queue-parameter safety
 
@@ -255,9 +255,10 @@ The prepare stage always runs, including on a dry run:
 checkout release-system source
   -> install pinned .NET SDK
   -> build and pin Release/_tool
-  -> release resolve and load its transient JSON result
+  -> release resolve initializes release-manifest.json
+  -> load resolved BAR identity from release-manifest.json
   -> darc gather-drop
-  -> release stage
+  -> release stage completes release-manifest.json
   -> pin release-manifest.json
   -> publish Azure DevOps artifacts
 ```
@@ -291,14 +292,16 @@ Every package set uses the same internal stage definition:
 preflight
   -> download Release artifact
   -> verify manifest and tool hashes
-  -> release prune-published and load its transient JSON result
+  -> release prune-published
+  -> count the validated remaining nupkgs
   -> publish exact pruned artifact for review
 
 ManualValidation@0
   -> production releaseJob
     -> download approved artifact
     -> verify manifest and tool hashes
-    -> refresh prune and load its transient JSON result
+    -> refresh prune
+    -> count the validated remaining nupkgs
 
 when the selected mode publishes packages:
     -> 1ES.PublishNuget@1
@@ -372,11 +375,12 @@ Channel verification establishes a property distinct from source identity:
 
 `config/repositories.json` is the only source of workload classification.
 
-`release resolve` writes a transient JSON result containing `barBuildId` and `workload`.
-The following PowerShell step reads that file and emits the Azure DevOps variables needed
-by Darc and the stage conditions. When publishing is enabled, the pipeline contains the
-workload and non-workload stage shapes, and each stage uses a runtime condition against
-the loaded `IsWorkload` output:
+`release resolve` initializes `release-manifest.json` with the verified source build,
+including `barBuildId` and `workload`. The following PowerShell step reads that manifest
+and emits the Azure DevOps variables needed by Darc and the stage conditions. `release
+stage` later completes the same manifest with package sets and hashes. When publishing is
+enabled, the pipeline contains the workload and non-workload stage shapes, and each stage
+uses a runtime condition against the loaded `IsWorkload` output:
 
 - `publish_packs` and `publish_manifests` require `IsWorkload=true`;
 - `publish_packages` requires `IsWorkload=false`;
@@ -521,11 +525,15 @@ A non-workload release produces one package set and explicitly rejects workload 
 
 ## Release manifest contract
 
-`release-manifest.json` is the immutable contract crossing the prepare/publish job boundary.
-It is a machine transport object, not the human approval interface. The CLI MUST print every
-field in the resolved build, final manifest, and in-memory prune result in a readable summary. In
-particular, the preflight log immediately before approval lists every package's identity,
-file name, hash, and final disposition.
+`release-manifest.json` is the only dynamic JSON file in the release flow. `release resolve`
+initializes its source section, then `release stage` replaces it with the completed package
+manifest. PowerShell pins the completed bytes before the file crosses the prepare/publish
+job boundary; it is immutable after that point.
+
+The manifest is a machine transport object, not the human approval interface. The CLI MUST
+print every field in the resolved build, final manifest, and in-memory prune result in a
+readable summary. In particular, the preflight log immediately before approval lists every
+package's identity, file name, hash, and final disposition.
 
 ```jsonc
 {
@@ -533,12 +541,10 @@ file name, hash, and final disposition.
   "toolVersion": "1.0.0",
   "createdUtc": "2026-08-28T00:00:00Z",
   "source": {
-    "schemaVersion": 1,
     "repository": "dotnet/skiasharp",
     "repositoryUrl": "https://github.com/dotnet/skiasharp",
     "commit": "<full-sha>",
     "barBuildId": 328857,
-    "repositoryOrigin": "AzureDevOpsMirrorConvention",
     "workload": false,
     "channel": { "name": ".NET Libraries", "id": 1648 }
   },
@@ -636,8 +642,8 @@ For each manifest package it records one disposition:
 | `PreviouslyAttempted` | Matched an operator recovery filter | removed |
 
 The immutable manifest is not rewritten. Dispositions are printed in full to the job log.
-The command writes only a transient JSON result containing the pending package count; it
-is read from `Agent.TempDirectory` and is not included in any release artifact.
+The following PowerShell step counts the validated `.nupkg` files that remain in the package
+set directory; pruning produces no JSON sidecar.
 
 Before deleting anything, all artifact and package names are revalidated as a single
 relative path component.
@@ -648,8 +654,8 @@ After pruning, the invariant is:
 file is present <=> disposition is Pending
 ```
 
-The pipeline translates a zero pending count into `NuGetPackagesToPublish=false`, which
-skips `1ES.PublishNuget@1`.
+The pipeline translates an empty validated package-set directory into
+`NuGetPackagesToPublish=false`, which skips `1ES.PublishNuget@1`.
 
 `1ES.PublishNuget@1` globs only top-level `.nupkg` files and publishes through
 `nuget.org (dotnetframework)`.
@@ -771,8 +777,8 @@ against the live service.
 Tests MUST fail when:
 
 - the pipeline repository dropdown differs from policy;
-- workload and non-workload stages do not use the classification loaded from the
-  `release resolve` JSON result;
+- workload and non-workload stages do not use the classification loaded from
+  `release-manifest.json`;
 - a remote publish operation is not structurally nested beneath the derived publish boolean;
 - package-set local validation is nested beneath the derived publish boolean;
 - BAR mutation is not structurally nested beneath the derived promotion boolean;

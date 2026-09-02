@@ -235,7 +235,7 @@ extends:
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
                 --commit $env:COMMIT_HASH `
-                --result "$env:RESULT_PATH" `
+                --manifest "$env:MANIFEST_PATH" `
                 @barId
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
@@ -245,19 +245,19 @@ extends:
             GH_REPO: ${{ parameters.ghRepo }}
             COMMIT_HASH: ${{ parameters.commitHash }}
             BAR_BUILD_ID: ${{ parameters.barBuildId }}
-            RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json
+            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
 
         - pwsh: |
-            $result = Get-Content -LiteralPath $env:RESULT_PATH -Raw | ConvertFrom-Json
+            $manifest = Get-Content -LiteralPath $env:MANIFEST_PATH -Raw | ConvertFrom-Json
             $barId = 0
-            if (-not [int]::TryParse([string]$result.barBuildId, [ref]$barId) -or $barId -le 0) {
-              throw "The resolved-build result contains invalid BAR build ID '$($result.barBuildId)'."
+            if (-not [int]::TryParse([string]$manifest.source.barBuildId, [ref]$barId) -or $barId -le 0) {
+              throw "The release manifest contains invalid BAR build ID '$($manifest.source.barBuildId)'."
             }
-            if ($result.workload -isnot [bool]) {
-              throw "The resolved-build result contains invalid workload classification '$($result.workload)'."
+            if ($manifest.source.workload -isnot [bool]) {
+              throw "The release manifest contains invalid workload classification '$($manifest.source.workload)'."
             }
 
-            $isWorkload = $result.workload.ToString().ToLowerInvariant()
+            $isWorkload = $manifest.source.workload.ToString().ToLowerInvariant()
             Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
             Write-Host "##vso[task.setvariable variable=IsWorkload;isOutput=true]$isWorkload"
 
@@ -265,9 +265,9 @@ extends:
             Write-Host "##vso[build.addbuildtag]BAR ID - $barId"
             Write-Host "##vso[build.addbuildtag]REPO - $env:REPOSITORY"
           name: loadResolvedBuild
-          displayName: Load resolved build result
+          displayName: Load resolved release manifest
           env:
-            RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json
+            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
             REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
 
         - task: AzureCLI@2
@@ -310,23 +310,16 @@ extends:
             dotnet "$env:RELEASE_TOOL" `
               stage `
               --config "$env:CONFIG_PATH" `
-              --repo "$env:GH_OWNER/$env:GH_REPO" `
-              --commit "$env:COMMIT_HASH" `
-              --bar-id "$env:BAR_ID" `
+              --manifest "$env:MANIFEST_PATH" `
               --drop "$env:DROP_DIR" `
-              --out "$env:ARTIFACT_DIR" `
               @filters
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: Validate and stage packages
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
+            MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json
             DROP_DIR: $(Agent.TempDirectory)/drop
-            ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
-            GH_OWNER: ${{ parameters.ghOwner }}
-            GH_REPO: ${{ parameters.ghRepo }}
-            COMMIT_HASH: ${{ parameters.commitHash }}
-            BAR_ID: $(loadResolvedBuild.BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}
 

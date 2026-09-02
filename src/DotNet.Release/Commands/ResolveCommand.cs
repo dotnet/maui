@@ -1,14 +1,11 @@
 using System.CommandLine;
-using System.Text.Json;
 using Microsoft.DotNet.ProductConstructionService.Client;
 
 namespace DotNet.Release;
 
 internal static class ResolveCommand
 {
-    private static readonly JsonSerializerOptions ResultJsonOptions = new() { WriteIndented = true };
-
-    public static Command Build(TextWriter outputWriter)
+    public static Command Build(TextWriter outputWriter, string toolVersion)
     {
         var config = new Option<FileInfo>("--config")
         {
@@ -41,15 +38,15 @@ internal static class ResolveCommand
         {
             Description = "Managed identity client ID.",
         };
-        var result = new Option<FileInfo>("--result")
+        var manifest = new Option<FileInfo>("--manifest")
         {
-            Description = "Path for the transient resolved-build JSON result.",
+            Description = "Path for release-manifest.json.",
             Required = true,
         };
 
         var command = new Command("resolve", "Resolve and verify the BAR build.")
         {
-            config, repo, commit, barId, barUri, token, managedIdentity, result,
+            config, repo, commit, barId, barUri, token, managedIdentity, manifest,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -63,7 +60,9 @@ internal static class ResolveCommand
                 parse.GetValue(repo)!,
                 parse.GetValue(commit)!,
                 parse.GetValue(barId),
-                parse.GetValue(result)!.FullName,
+                parse.GetValue(manifest)!.FullName,
+                DateTimeOffset.UtcNow,
+                toolVersion,
                 cancellationToken);
         });
 
@@ -71,7 +70,7 @@ internal static class ResolveCommand
     }
 
     public static async Task ExecuteAsync(TextWriter outputWriter, IBuildRegistry registry, string policyJson, string repository,
-        string commit, int? barBuildId, string resultPath, CancellationToken cancellationToken)
+        string commit, int? barBuildId, string manifestPath, DateTimeOffset now, string toolVersion, CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
         var repositoryId = RepositoryId.Parse(repository);
@@ -86,8 +85,27 @@ internal static class ResolveCommand
 
         ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);
 
-        var resultJson = JsonSerializer.Serialize(new ResolveResult(resolved.BarBuildId, resolved.Workload), ResultJsonOptions);
-        await File.WriteAllTextAsync(resultPath, resultJson, cancellationToken).ConfigureAwait(false);
+        var manifest = new ReleaseManifest
+        {
+            ToolVersion = toolVersion,
+            CreatedUtc = now.ToUniversalTime(),
+            Source = new ReleaseSource
+            {
+                Repository = resolved.Repository,
+                RepositoryUrl = resolved.RepositoryUrl,
+                Commit = resolved.Commit,
+                BarBuildId = resolved.BarBuildId,
+                Workload = resolved.Workload,
+                Channel = resolved.Channel,
+            },
+            WorkloadSet = null,
+            Sets = [],
+        };
+
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+        await File.WriteAllTextAsync(manifestPath, ReleaseManifestSerializer.Serialize(manifest), cancellationToken).ConfigureAwait(false);
+        outputWriter.WriteLine();
+        outputWriter.WriteLine($"Initialized {manifestPath}.");
     }
 
     private static IProductConstructionServiceApi CreateApi(string? baseUri, string? token, string? managedIdentityId) =>

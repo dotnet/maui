@@ -4,36 +4,21 @@ namespace DotNet.Release;
 
 internal static class StageCommand
 {
-    public static Command Build(TextWriter outputWriter, string toolVersion)
+    public static Command Build(TextWriter outputWriter)
     {
         var config = new Option<FileInfo>("--config")
         {
             Description = "Release policy JSON.",
             Required = true,
         };
-        var repo = new Option<string>("--repo")
+        var manifest = new Option<FileInfo>("--manifest")
         {
-            Description = "Repository as 'owner/name'.",
-            Required = true,
-        };
-        var commit = new Option<string>("--commit")
-        {
-            Description = "Exact source commit verified by release resolve.",
-            Required = true,
-        };
-        var barId = new Option<int>("--bar-id")
-        {
-            Description = "Positive BAR build ID verified by release resolve.",
+            Description = "Manifest initialized by release resolve.",
             Required = true,
         };
         var drop = new Option<DirectoryInfo>("--drop")
         {
             Description = "Directory produced by darc gather-drop.",
-            Required = true,
-        };
-        var output = new Option<DirectoryInfo>("--out")
-        {
-            Description = "Output directory.",
             Required = true,
         };
         var include = new Option<string?>("--include")
@@ -47,25 +32,26 @@ internal static class StageCommand
 
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-manifest.json.")
         {
-            config, repo, commit, barId, drop, output, include, exclude,
+            config, manifest, drop, include, exclude,
         };
 
-        command.SetAction((parse, cancellationToken) => ExecuteAsync(
-            outputWriter,
-            File.ReadAllText(parse.GetValue(config)!.FullName),
-            parse.GetValue(repo)!,
-            parse.GetValue(commit)!,
-            parse.GetValue(barId),
-            parse.GetValue(drop)!.FullName,
-            parse.GetValue(output)!.FullName,
-            new StageOptions
-            {
-                Include = PackageGlob.ParseList(parse.GetValue(include)),
-                Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
-            },
-            DateTimeOffset.UtcNow,
-            toolVersion,
-            cancellationToken));
+        command.SetAction((parse, cancellationToken) =>
+        {
+            var manifestFile = parse.GetValue(manifest)!;
+
+            return ExecuteAsync(
+                outputWriter,
+                File.ReadAllText(parse.GetValue(config)!.FullName),
+                File.ReadAllText(manifestFile.FullName),
+                manifestFile.FullName,
+                parse.GetValue(drop)!.FullName,
+                new StageOptions
+                {
+                    Include = PackageGlob.ParseList(parse.GetValue(include)),
+                    Exclude = PackageGlob.ParseList(parse.GetValue(exclude)),
+                },
+                cancellationToken);
+        });
 
         return command;
     }
@@ -73,39 +59,36 @@ internal static class StageCommand
     public static async Task ExecuteAsync(
         TextWriter outputWriter,
         string policyJson,
-        string repository,
-        string commit,
-        int barBuildId,
+        string resolvedManifestJson,
+        string manifestPath,
         string dropDirectory,
-        string outputDirectory,
         StageOptions options,
-        DateTimeOffset now,
-        string toolVersion,
         CancellationToken cancellationToken)
     {
         var policy = ReleasePolicy.Parse(policyJson);
-        var repositoryId = RepositoryId.Parse(repository);
+        var resolvedManifest = ReleaseManifestSerializer.DeserializeManifest(resolvedManifestJson);
+        var source = resolvedManifest.Source;
+        var repositoryId = RepositoryId.Parse(source.Repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
-        if (string.IsNullOrWhiteSpace(commit))
+        if (resolvedManifest.Sets.Count != 0 || resolvedManifest.WorkloadSet is not null)
         {
-            throw new DotNetReleaseException("A commit must be supplied; a release is always pinned to an exact commit.");
+            throw new DotNetReleaseException("The manifest supplied to release stage has already been staged.");
         }
 
-        if (barBuildId <= 0)
+        if (string.IsNullOrWhiteSpace(resolvedManifest.ToolVersion) || resolvedManifest.CreatedUtc == default)
         {
-            throw new DotNetReleaseException($"BAR build ID '{barBuildId}' must be positive.");
+            throw new DotNetReleaseException("The resolved release manifest is missing tool identity or creation time.");
         }
 
-        var source = new ReleaseSource
+        if (!string.Equals(source.RepositoryUrl, repositoryId.GitHubUrl, StringComparison.Ordinal) ||
+            string.IsNullOrWhiteSpace(source.Commit) ||
+            source.BarBuildId <= 0 ||
+            source.Workload != repositoryPolicy.Workload ||
+            source.Channel != repositoryPolicy.Channel)
         {
-            Repository = repositoryId.FullName,
-            RepositoryUrl = repositoryId.GitHubUrl,
-            Commit = commit.Trim(),
-            BarBuildId = barBuildId,
-            Workload = repositoryPolicy.Workload,
-            Channel = repositoryPolicy.Channel,
-        };
+            throw new DotNetReleaseException("The resolved release manifest does not match current repository policy or has incomplete source identity.");
+        }
 
         var packageFiles = FindShippingPackages(dropDirectory);
         if (packageFiles.Count == 0)
@@ -134,8 +117,10 @@ internal static class StageCommand
             throw new DotNetReleaseException(readErrors);
         }
 
-        var manifest = ReleaseManifestBuilder.Build(source, policy, packages, options, now, toolVersion);
+        var manifest = ReleaseManifestBuilder.Build(
+            source, policy, packages, options, resolvedManifest.CreatedUtc, resolvedManifest.ToolVersion);
         var sourceFiles = IndexPackageFiles(packageFiles);
+        var outputDirectory = Path.GetDirectoryName(manifestPath)!;
         Directory.CreateDirectory(outputDirectory);
         var manifestJson = ReleaseManifestSerializer.Serialize(manifest);
 
@@ -150,13 +135,12 @@ internal static class StageCommand
             }
         }
 
-        var manifestPath = Path.Combine(outputDirectory, ReleaseArtifact.ManifestFileName);
-        await File.WriteAllTextAsync(manifestPath, manifestJson, cancellationToken).ConfigureAwait(false);
-
         foreach (var set in manifest.Sets)
         {
             StagedSetIntegrity.ValidateStaged(set, ReleaseArtifact.ReadPackageHashes(Path.Combine(outputDirectory, set.ArtifactName)));
         }
+
+        await File.WriteAllTextAsync(manifestPath, manifestJson, cancellationToken).ConfigureAwait(false);
 
         ReleaseOutput.WriteReleaseManifest(outputWriter, manifest);
         outputWriter.WriteLine();

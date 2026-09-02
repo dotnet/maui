@@ -158,15 +158,15 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --result <resolved-build.json>
-release stage --config config/repositories.json --repo <owner/name> --commit <sha> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out ./stage
-release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> --result <prune-result.json> [--recovery-filters '…']
+release resolve --config config/repositories.json --repo <owner/name> --commit <sha> [--bar-id N] --manifest <release-manifest.json>
+release stage --config config/repositories.json --manifest <release-manifest.json> --drop <dropPath> [--include '…'] [--exclude '…']
+release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
 release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
 
-The result files are transient command outputs. The pipeline reads them from the current
-agent's temporary directory and translates their values into Azure DevOps variables.
-They are not release artifacts.
+`resolve` initializes `release-manifest.json` with the verified source build. `stage`
+completes that same file with package sets and hashes. The pipeline pins it only after
+staging; from that point onward it is immutable and every later stage reads it.
 
 For a failed or partially completed publish, use **Rerun failed jobs** on the publish job.
 Do not rerun the whole stage: the immutable prepared artifact already exists for that run.

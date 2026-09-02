@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace DotNet.Release;
 
 /// <summary>The repository, commit, and optional BAR build selected by the operator.</summary>
@@ -25,8 +23,3 @@ internal sealed record ResolvedBuild
 
     public ChannelReference? Channel { get; init; }
 }
-
-/// <summary>Transient machine output from <c>release resolve</c>.</summary>
-internal sealed record ResolveResult(
-    [property: JsonPropertyName("barBuildId")] int BarBuildId,
-    [property: JsonPropertyName("workload")] bool Workload);

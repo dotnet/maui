@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace DotNet.Release;
 
 internal enum PackageDisposition
@@ -33,7 +31,3 @@ internal sealed record PruneReport
 
     public bool HasPackagesToPublish => PendingCount > 0;
 }
-
-/// <summary>Transient machine output from <c>release prune-published</c>.</summary>
-internal sealed record PrunePublishedResult(
-    [property: JsonPropertyName("pendingPackageCount")] int PendingPackageCount);

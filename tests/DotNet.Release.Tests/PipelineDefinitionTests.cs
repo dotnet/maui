@@ -147,19 +147,38 @@ public class PipelineDefinitionTests
     }
 
     [Fact]
-    public void Pipeline_translates_transient_command_results_into_Azure_variables()
+    public void Pipeline_reads_one_manifest_and_derives_the_publish_condition_from_packages()
     {
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        Assert.Contains("RESULT_PATH: $(Agent.TempDirectory)/resolved-build.json", root, StringComparison.Ordinal);
+        Assert.Contains("MANIFEST_PATH: $(Build.ArtifactStagingDirectory)/release-manifest.json", root, StringComparison.Ordinal);
         Assert.Contains("name: loadResolvedBuild", root, StringComparison.Ordinal);
         Assert.Contains("variable=BarId;isOutput=true", root, StringComparison.Ordinal);
         Assert.Contains("variable=IsWorkload;isOutput=true", root, StringComparison.Ordinal);
 
-        Assert.Equal(4, Regex.Matches(publish, @"RESULT_PATH: \$\(Agent\.TempDirectory\)/prune-result\.json").Count);
-        Assert.Contains("$result.pendingPackageCount", publish, StringComparison.Ordinal);
+        Assert.DoesNotContain("resolved-build.json", root, StringComparison.Ordinal);
+        Assert.DoesNotContain("prune-result.json", publish, StringComparison.Ordinal);
+        Assert.DoesNotContain("--result", root + publish, StringComparison.Ordinal);
+        Assert.Contains("Get-ChildItem -LiteralPath $setDirectory -Filter '*.nupkg' -File", publish, StringComparison.Ordinal);
         Assert.Contains("variable=NuGetPackagesToPublish", publish, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Prepare_completes_the_manifest_before_pinning_it()
+    {
+        var root = File.ReadAllText(PipelinePath);
+        var resolve = root.IndexOf("resolve `", StringComparison.Ordinal);
+        var load = root.IndexOf("name: loadResolvedBuild", StringComparison.Ordinal);
+        var gather = root.IndexOf("& $darc gather-drop", StringComparison.Ordinal);
+        var stage = root.IndexOf("stage `", StringComparison.Ordinal);
+        var pin = root.IndexOf("name: pinManifest", StringComparison.Ordinal);
+
+        Assert.True(resolve >= 0);
+        Assert.True(load > resolve);
+        Assert.True(gather > load);
+        Assert.True(stage > gather);
+        Assert.True(pin > stage);
     }
 
     [Fact]

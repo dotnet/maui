@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Xunit;
 
 namespace DotNet.Release.Tests;
@@ -16,30 +15,31 @@ public class VerbsTests : IDisposable
     public void Dispose() => _workspace.Dispose();
 
     private Task Resolve(FakeRegistry registry, string repo = "dotnet/skiasharp", int? barId = null) => ResolveCommand.ExecuteAsync(
-        _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, _workspace.ResolveResult, CancellationToken.None);
+        _output, registry, Workspace.PolicyJson, repo, Workspace.Commit, barId, _workspace.ManifestPath, Workspace.Now, "1.0.0-test",
+        CancellationToken.None);
 
-    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242) =>
-        StageCommand.ExecuteAsync(
+    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242)
+    {
+        _workspace.WriteResolvedManifest(repo, commit, barId);
+
+        return StageCommand.ExecuteAsync(
             _output,
             Workspace.PolicyJson,
-            repo,
-            commit ?? Workspace.Commit,
-            barId,
+            _workspace.ReadManifest(),
+            _workspace.ManifestPath,
             _workspace.Drop,
-            _workspace.Out,
             options ?? new StageOptions(),
-            Workspace.Now,
-            "1.0.0-test",
             CancellationToken.None);
+    }
 
     // ---- resolve ----
 
     [Fact]
-    public async Task Resolve_prints_the_resolved_build_and_writes_its_machine_result()
+    public async Task Resolve_prints_the_resolved_build_and_initializes_the_release_manifest()
     {
         await Resolve(new FakeRegistry(Workspace.Build(channels: Libraries)));
 
-        Assert.False(Directory.Exists(_workspace.Out));
+        Assert.True(Directory.Exists(_workspace.Out));
         var output = _output.AllOutput;
         Assert.Contains("Resolved build:", output, StringComparison.Ordinal);
         Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
@@ -53,19 +53,20 @@ public class VerbsTests : IDisposable
         Assert.Contains("Channel name      : .NET Libraries", output, StringComparison.Ordinal);
         Assert.Contains("Channel ID        : 1648", output, StringComparison.Ordinal);
 
-        var result = JsonSerializer.Deserialize<ResolveResult>(File.ReadAllText(_workspace.ResolveResult));
-        Assert.NotNull(result);
-        Assert.Equal(4242, result.BarBuildId);
-        Assert.False(result.Workload);
+        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        Assert.Equal(4242, manifest.Source.BarBuildId);
+        Assert.False(manifest.Source.Workload);
+        Assert.Empty(manifest.Sets);
     }
 
     [Fact]
-    public void Resolve_command_has_a_transient_result_but_no_release_plan_output()
+    public void Resolve_command_writes_the_release_manifest_directly()
     {
-        var command = ResolveCommand.Build(TextWriter.Null);
+        var command = ResolveCommand.Build(TextWriter.Null, "1.0.0-test");
 
         Assert.Equal("resolve", command.Name);
-        Assert.Contains(command.Options, option => option.Name == "--result");
+        Assert.Contains(command.Options, option => option.Name == "--manifest");
+        Assert.DoesNotContain(command.Options, option => option.Name == "--result");
         Assert.DoesNotContain(command.Options, option => option.Name == "--out");
     }
 
@@ -207,6 +208,24 @@ public class VerbsTests : IDisposable
         await Assert.ThrowsAsync<DotNetReleaseException>(() => Stage(barId: barId));
     }
 
+    [Fact]
+    public async Task Stage_rejects_a_resolved_manifest_that_conflicts_with_repository_policy()
+    {
+        _workspace.WritePackage("SkiaSharp", "3.119.0");
+        _workspace.WriteResolvedManifest();
+        var resolved = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        var tampered = resolved with { Source = resolved.Source with { Workload = true } };
+
+        await Assert.ThrowsAsync<DotNetReleaseException>(() => StageCommand.ExecuteAsync(
+            _output,
+            Workspace.PolicyJson,
+            ReleaseManifestSerializer.Serialize(tampered),
+            _workspace.ManifestPath,
+            _workspace.Drop,
+            new StageOptions(),
+            CancellationToken.None));
+    }
+
     // ---- prune-published ----
 
     [Theory]
@@ -241,8 +260,7 @@ public class VerbsTests : IDisposable
 
     private Task Filter(INuGetPackageLookup probe, string[]? recovery = null, string? expectedHash = null, string? set = null) =>
         PrunePublishedCommand.ExecuteAsync(
-            _output, probe, _workspace.ReadManifest(), _workspace.Out, recovery ?? [], expectedHash ?? ManifestHash, set, _workspace.PruneResult,
-            CancellationToken.None);
+            _output, probe, _workspace.ReadManifest(), _workspace.Out, recovery ?? [], expectedHash ?? ManifestHash, set, CancellationToken.None);
 
     [Fact]
     public async Task Filter_removes_already_published_packages_from_the_push_set()
@@ -255,9 +273,7 @@ public class VerbsTests : IDisposable
         Assert.False(File.Exists(Path.Combine(directory, "SkiaSharp.3.119.0.nupkg")));
         Assert.True(File.Exists(Path.Combine(directory, "HarfBuzzSharp.8.3.1.5.nupkg")));
 
-        var result = JsonSerializer.Deserialize<PrunePublishedResult>(File.ReadAllText(_workspace.PruneResult));
-        Assert.NotNull(result);
-        Assert.Equal(1, result.PendingPackageCount);
+        Assert.Single(Directory.GetFiles(directory, "*.nupkg"));
     }
 
     [Fact]
@@ -328,9 +344,7 @@ public class VerbsTests : IDisposable
 
         await Filter(new FakeProbe("skiasharp/3.119.0"));
 
-        var result = JsonSerializer.Deserialize<PrunePublishedResult>(File.ReadAllText(_workspace.PruneResult));
-        Assert.NotNull(result);
-        Assert.Equal(0, result.PendingPackageCount);
+        Assert.Empty(Directory.GetFiles(_workspace.StagedSet(ReleaseManifestBuilder.PackagesArtifactName), "*.nupkg"));
         Assert.DoesNotContain(_output.Output, line => line.StartsWith("##vso[", StringComparison.Ordinal));
     }
 

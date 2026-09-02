@@ -30,18 +30,15 @@ public class WorkloadStageScopingTests : IDisposable
     {
         _workspace.WritePackage(Pack, "10.0.0");
         _workspace.WritePackage(Manifest, "10.0.0");
+        _workspace.WriteResolvedManifest("dotnet/maui");
 
         await StageCommand.ExecuteAsync(
             _output,
             Workspace.PolicyJson,
-            "dotnet/maui",
-            Workspace.Commit,
-            4242,
+            _workspace.ReadManifest(),
+            _workspace.ManifestPath,
             _workspace.Drop,
-            _workspace.Out,
             new StageOptions(),
-            Workspace.Now,
-            "1.0.0-test",
             CancellationToken.None);
 
         var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
@@ -62,7 +59,7 @@ public class WorkloadStageScopingTests : IDisposable
     }
 
     private Task Filter(string? set, INuGetPackageLookup probe) => PrunePublishedCommand.ExecuteAsync(
-        _output, probe, _workspace.ReadManifest(), _workspace.Out, [], ManifestHash, set, _workspace.PruneResult, CancellationToken.None);
+        _output, probe, _workspace.ReadManifest(), _workspace.Out, [], ManifestHash, set, CancellationToken.None);
 
     private Task Verify(string? set, INuGetPackageLookup probe, int maxMinutes = 30)
     {

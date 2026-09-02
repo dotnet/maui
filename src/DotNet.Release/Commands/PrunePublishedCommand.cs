@@ -1,12 +1,9 @@
 using System.CommandLine;
-using System.Text.Json;
 
 namespace DotNet.Release;
 
 internal static class PrunePublishedCommand
 {
-    private static readonly JsonSerializerOptions ResultJsonOptions = new() { WriteIndented = true };
-
     public static Command Build(TextWriter outputWriter)
     {
         var manifest = new Option<FileInfo>("--manifest")
@@ -36,15 +33,9 @@ internal static class PrunePublishedCommand
             Description = "Package-set directory name.",
             Required = true,
         };
-        var result = new Option<FileInfo>("--result")
-        {
-            Description = "Path for the transient prune JSON result.",
-            Required = true,
-        };
-
         var command = new Command("prune-published", "Remove package versions already published on the target feed.")
         {
-            manifest, stage, recoveryFilters, expectedHash, feed, set, result,
+            manifest, stage, recoveryFilters, expectedHash, feed, set,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -60,7 +51,6 @@ internal static class PrunePublishedCommand
                 PackageGlob.ParseList(parse.GetValue(recoveryFilters)),
                 parse.GetValue(expectedHash)!,
                 parse.GetValue(set),
-                parse.GetValue(result)!.FullName,
                 cancellationToken);
         });
 
@@ -75,14 +65,12 @@ internal static class PrunePublishedCommand
         IReadOnlyList<string> recoveryPatterns,
         string expectedManifestHash,
         string? setName,
-        string resultPath,
         CancellationToken cancellationToken)
     {
         var manifest = ReleaseManifestSerializer.VerifyAndDeserialize(manifestJson, expectedManifestHash);
         var sets = ReleaseArtifact.SelectSets(manifest, setName);
 
         ReleaseOutput.WriteSelectedRelease(outputWriter, manifest, sets, expectedManifestHash);
-        var pending = 0;
 
         foreach (var set in sets)
         {
@@ -110,10 +98,6 @@ internal static class PrunePublishedCommand
             StagedSetIntegrity.ValidateFiltered(set, ReleaseArtifact.ReadPackageHashes(setDirectory), report);
 
             ReleaseOutput.WritePruneReport(outputWriter, set, report);
-            pending += report.PendingCount;
         }
-
-        var resultJson = JsonSerializer.Serialize(new PrunePublishedResult(pending), ResultJsonOptions);
-        await File.WriteAllTextAsync(resultPath, resultJson, cancellationToken).ConfigureAwait(false);
     }
 }

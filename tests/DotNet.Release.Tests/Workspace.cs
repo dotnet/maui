@@ -103,15 +103,39 @@ internal sealed class Workspace : IDisposable
 
     public string DropPackages => Path.Combine(Drop, "shipping", "packages");
 
-    public string ResolveResult => Path.Combine(Root, "resolved-build.json");
-
-    public string PruneResult => Path.Combine(Root, "prune-result.json");
+    public string ManifestPath => Path.Combine(Out, ReleaseArtifact.ManifestFileName);
 
     public static readonly DateTimeOffset Now = new(2026, 8, 27, 18, 0, 0, TimeSpan.Zero);
 
     public static BarBuild Build(
         string? gitHubRepository = "https://github.com/dotnet/skiasharp",
         params ChannelReference[] channels) => new(4242, Commit, gitHubRepository, null, channels);
+
+    public void WriteResolvedManifest(string repository = "dotnet/skiasharp", string? commit = null, int barBuildId = 4242)
+    {
+        var policy = ReleasePolicy.Parse(PolicyJson);
+        var repositoryId = RepositoryId.Parse(repository);
+        var repositoryPolicy = policy.GetRepository(repositoryId);
+        var manifest = new ReleaseManifest
+        {
+            ToolVersion = "1.0.0-test",
+            CreatedUtc = Now,
+            Source = new ReleaseSource
+            {
+                Repository = repositoryId.FullName,
+                RepositoryUrl = repositoryId.GitHubUrl,
+                Commit = commit ?? Commit,
+                BarBuildId = barBuildId,
+                Workload = repositoryPolicy.Workload,
+                Channel = repositoryPolicy.Channel,
+            },
+            WorkloadSet = null,
+            Sets = [],
+        };
+
+        Directory.CreateDirectory(Out);
+        File.WriteAllText(ManifestPath, ReleaseManifestSerializer.Serialize(manifest));
+    }
 
     /// <summary>Writes a real .nupkg into the simulated gather-drop output.</summary>
     public string WritePackage(string id, string version)
@@ -137,7 +161,7 @@ internal sealed class Workspace : IDisposable
         return path;
     }
 
-    public string ReadManifest() => File.ReadAllText(Path.Combine(Out, ReleaseArtifact.ManifestFileName));
+    public string ReadManifest() => File.ReadAllText(ManifestPath);
 
     public string StagedSet(string artifactName) => Path.Combine(Out, artifactName);
 
