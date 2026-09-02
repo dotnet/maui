@@ -27,7 +27,6 @@ public class VerificationBudgetTests : IDisposable
             new FakeRegistry(Workspace.Build(channels: new ChannelReference(".NET Libraries", 1648))),
             Workspace.PolicyJson,
             "dotnet/skiasharp",
-            Workspace.Commit,
             4242,
             _workspace.Drop,
             _workspace.Out,

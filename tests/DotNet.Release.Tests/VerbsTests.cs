@@ -14,14 +14,12 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", string? commit = null, int barId = 4242,
-        IBuildRegistry? registry = null) =>
+    private Task Stage(StageOptions? options = null, string repo = "dotnet/skiasharp", int barId = 4242, IBuildRegistry? registry = null) =>
         StageCommand.ExecuteAsync(
             _output,
             registry ?? new FakeRegistry(Workspace.Build(channels: Libraries)),
             Workspace.PolicyJson,
             repo,
-            commit ?? Workspace.Commit,
             barId,
             _workspace.Drop,
             _workspace.Out,
@@ -135,6 +133,19 @@ public class VerbsTests : IDisposable
         await Stage(registry: registry);
 
         Assert.Equal(4242, registry.RequestedBarId);
+    }
+
+    [Fact]
+    public async Task Stage_records_the_commit_returned_by_BAR()
+    {
+        _workspace.WritePackage("SkiaSharp", "3.119.0");
+        const string commit = "1111111111111111111111111111111111111111";
+        var build = Workspace.Build(channels: Libraries) with { Commit = commit };
+
+        await Stage(registry: new FakeRegistry(build));
+
+        var manifest = ReleaseManifestSerializer.DeserializeManifest(_workspace.ReadManifest());
+        Assert.Equal(commit, manifest.Source.Commit);
     }
 
     [Fact]

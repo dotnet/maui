@@ -25,36 +25,34 @@ internal static class BuildResolver
             throw new DotNetReleaseException($"Policy for '{policy.Repository}' was supplied for a release of '{request.Repository}'.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Commit))
+        if (request.BarBuildId <= 0)
         {
-            throw new DotNetReleaseException("A commit must be supplied; a release is always pinned to an exact commit.");
+            throw new DotNetReleaseException($"BAR build ID '{request.BarBuildId}' must be positive.");
         }
 
         if (candidates.Count == 0)
         {
-            throw new DotNetReleaseException(
-                request.BarBuildId is { } id
-                    ? $"BAR has no build with ID {id}."
-                    : $"BAR has no build for '{request.Repository}' at commit '{request.Commit}'. " +
-                    $"If the build predates a verified AzDO-to-GitHub mapping it has no GitHub " +
-                    $"URL and must be resolved with --bar-id.");
+            throw new DotNetReleaseException($"BAR has no build with ID {request.BarBuildId}.");
         }
 
         if (candidates.Count > 1)
         {
             throw new DotNetReleaseException(
-                $"Expected exactly one BAR build for '{request.Repository}' at commit " +
-                $"'{request.Commit}', found {candidates.Count}: " +
+                $"Expected exactly one BAR build for ID {request.BarBuildId}, found {candidates.Count}: " +
                 $"{string.Join(", ", candidates.Select(b => b.Id))}.");
         }
 
         var build = candidates[0];
 
-        // A build resolved by ID has not been matched against the requested repository or
-        // commit yet, so both are verified on every resolution path.
-        if (!string.Equals(build.Commit?.Trim(), request.Commit.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (build.Id != request.BarBuildId)
         {
-            throw new DotNetReleaseException($"BAR build {build.Id} is for commit '{build.Commit}', not the requested '{request.Commit}'.");
+            throw new DotNetReleaseException($"BAR returned build {build.Id} for requested build ID {request.BarBuildId}.");
+        }
+
+        var commit = build.Commit?.Trim();
+        if (commit is not { Length: 40 } || !commit.All(Uri.IsHexDigit))
+        {
+            throw new DotNetReleaseException($"BAR build {build.Id} has invalid commit '{build.Commit}'; expected a full 40-character SHA.");
         }
 
         var (identity, origin) = ResolveIdentity(build);
@@ -86,7 +84,7 @@ internal static class BuildResolver
         {
             Repository = request.Repository.FullName,
             RepositoryUrl = request.Repository.GitHubUrl,
-            Commit = request.Commit.Trim(),
+            Commit = commit,
             BarBuildId = build.Id,
             RepositoryOrigin = origin,
             Workload = policy.Workload,

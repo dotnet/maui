@@ -9,16 +9,17 @@
 # repository as a template and no other repository copies it: releasing repositories do not
 # change, they are named by parameter.
 #
-#   Run pipeline -> choose the repository, give it a commit and optional BAR ID, review each
+#   Run pipeline -> choose the repository, give it a BAR ID or commit SHA, review each
 #   applicable human-readable preflight log at its manual gate, then approve or reject.
 #
 # What it does, in order:
 #   1. Prepare the release.
 #      1.1. Build and pin the C# tool bundle.
-#      1.2. Darc resolves a candidate BAR ID and gathers its shipping packages.
-#      1.3. `release stage` verifies the BAR build, validates the packages, and creates
+#      1.2. Use the supplied BAR ID or resolve the commit to a candidate ID with Darc.
+#      1.3. `darc gather-drop` downloads the candidate's shipping packages.
+#      1.4. `release stage` verifies the BAR build, validates the packages, and creates
 #           `release-manifest.json`.
-#      1.4. Pin the manifest and publish the Release artifact.
+#      1.5. Pin the manifest and publish the Release artifact.
 #   2. When requested for a workload release, run the separately approved promotion stage.
 #   3. Release each applicable package set; workload packs complete before manifests begin.
 #      3.1. Verify the pinned artifact and run `release prune-published`.
@@ -62,14 +63,10 @@ parameters:
   - android-libraries
   - skiasharp
 
-- name: commitHash
-  displayName: Commit to release (full SHA, as registered in BAR)
+- name: buildIdentifier
+  displayName: BAR build ID or full commit SHA
   type: string
-
-- name: barBuildId
-  displayName: "[OPTIONAL] BAR build ID, or 'skip'"
-  type: string
-  default: skip
+  default: enter-bar-id-or-commit-sha
 
 # ---- what to actually do --------------------------------------------------------------------
 - name: releaseMode
@@ -224,10 +221,6 @@ extends:
             inlineScript: |
               $ErrorActionPreference = 'Stop'
 
-              if ($env:COMMIT_HASH -notmatch '^[0-9a-fA-F]{40}$') {
-                throw "Commit '$env:COMMIT_HASH' is not a 40-character hexadecimal SHA."
-              }
-
               if ($env:GH_OWNER -notmatch '^[A-Za-z0-9\-]+$' -or $env:GH_REPO -notmatch '^[A-Za-z0-9\-\._]+$') {
                 throw "Repository '$env:GH_OWNER/$env:GH_REPO' contains unexpected characters."
               }
@@ -239,15 +232,12 @@ extends:
               }
 
               $barId = 0
-              if ($env:BAR_BUILD_ID -ne 'skip') {
-                if (-not [int]::TryParse($env:BAR_BUILD_ID, [ref]$barId) -or $barId -le 0) {
-                  throw "BAR build ID '$env:BAR_BUILD_ID' is not a positive integer."
-                }
-              } else {
+              $selector = $env:BUILD_IDENTIFIER.Trim()
+              if ($selector -match '^[0-9a-fA-F]{40}$') {
                 $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
                 $buildJson = & $darc get-build --ci `
                   --repo $sourceRepository `
-                  --commit $env:COMMIT_HASH `
+                  --commit $selector `
                   --extended `
                   --output-format json `
                   --azdev-pat $env:AZDO_TOKEN
@@ -258,11 +248,20 @@ extends:
                 $parsedBuilds = $buildJson | ConvertFrom-Json
                 $builds = @($parsedBuilds)
                 if ($builds.Count -ne 1) {
-                  throw "Expected exactly one BAR build for '$sourceRepository' at commit '$env:COMMIT_HASH', found $($builds.Count)."
+                  throw "Expected exactly one BAR build for '$sourceRepository' at commit '$selector', found $($builds.Count)."
+                }
+                if (([string]$builds[0].commit).Trim() -ine $selector) {
+                  throw "Darc returned commit '$($builds[0].commit)' for requested commit '$selector'."
                 }
                 if (-not [int]::TryParse([string]$builds[0].id, [ref]$barId) -or $barId -le 0) {
                   throw "Darc returned invalid BAR build ID '$($builds[0].id)'."
                 }
+              } elseif ($selector -match '^[0-9]+$') {
+                if (-not [int]::TryParse($selector, [ref]$barId) -or $barId -le 0) {
+                  throw "BAR build ID '$selector' is not a positive 32-bit integer."
+                }
+              } else {
+                throw "Build identifier '$selector' must be a positive BAR build ID or full 40-character commit SHA."
               }
 
               Write-Host "Candidate BAR build ID: $barId"
@@ -281,8 +280,7 @@ extends:
             AZDO_TOKEN: $(System.AccessToken)
             GH_OWNER: ${{ parameters.ghOwner }}
             GH_REPO: ${{ parameters.ghRepo }}
-            COMMIT_HASH: ${{ parameters.commitHash }}
-            BAR_BUILD_ID: ${{ parameters.barBuildId }}
+            BUILD_IDENTIFIER: ${{ parameters.buildIdentifier }}
 
         - task: AzureCLI@2
           displayName: Validate BAR build and stage packages
@@ -305,7 +303,6 @@ extends:
                 stage `
                 --config "$env:CONFIG_PATH" `
                 --repo "$env:GH_OWNER/$env:GH_REPO" `
-                --commit "$env:COMMIT_HASH" `
                 --bar-id "$env:BAR_ID" `
                 --drop "$env:DROP_DIR" `
                 --out "$env:ARTIFACT_DIR" `
@@ -318,7 +315,6 @@ extends:
             ARTIFACT_DIR: $(Build.ArtifactStagingDirectory)
             GH_OWNER: ${{ parameters.ghOwner }}
             GH_REPO: ${{ parameters.ghRepo }}
-            COMMIT_HASH: ${{ parameters.commitHash }}
             BAR_ID: $(BarId)
             INCLUDE_FILTERS: ${{ parameters.includeFilters }}
             EXCLUDE_FILTERS: ${{ parameters.excludeFilters }}

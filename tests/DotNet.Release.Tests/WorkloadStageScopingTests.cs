@@ -36,7 +36,6 @@ public class WorkloadStageScopingTests : IDisposable
             new FakeRegistry(Workspace.Build("https://github.com/dotnet/maui")),
             Workspace.PolicyJson,
             "dotnet/maui",
-            Workspace.Commit,
             4242,
             _workspace.Drop,
             _workspace.Out,

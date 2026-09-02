@@ -23,10 +23,16 @@ public class BuildResolverTests
     }
 
     [Fact]
-    public void No_build_fails_closed_and_points_at_the_bar_id_workaround()
+    public void No_build_fails_closed_and_names_the_BAR_ID()
     {
         var exception = Assert.Throws<DotNetReleaseException>(() => Resolve([]));
-        Assert.Contains("--bar-id", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("4242", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Non_positive_requested_BAR_ID_fails_closed()
+    {
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: Libraries)], TestData.Request(barId: 0)));
     }
 
     [Fact]
@@ -40,9 +46,11 @@ public class BuildResolverTests
     }
 
     [Fact]
-    public void Wrong_commit_fails_closed()
+    public void Commit_is_taken_from_the_BAR_build()
     {
-        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(commit: "0000000000000000000000000000000000000000", channels: Libraries)]));
+        const string commit = "0000000000000000000000000000000000000000";
+
+        Assert.Equal(commit, Resolve([TestData.Build(commit: commit, channels: Libraries)]).Commit);
     }
 
     [Fact]
@@ -119,10 +127,10 @@ public class BuildResolverTests
     }
 
     [Fact]
-    public void Resolution_by_bar_id_still_verifies_the_commit()
+    public void A_mismatched_returned_BAR_ID_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(() => Resolve(
-            [TestData.Build(commit: "1111111111111111111111111111111111111111", channels: Libraries)], TestData.Request(barId: 4242)));
+            [TestData.Build(id: 9999, channels: Libraries)], TestData.Request(barId: 4242)));
     }
 
     [Fact]
@@ -139,8 +147,8 @@ public class BuildResolverTests
     }
 
     [Fact]
-    public void Empty_commit_is_rejected()
+    public void Invalid_BAR_commit_is_rejected()
     {
-        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: Libraries)], TestData.Request(commit: "  ")));
+        Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(commit: "not-a-full-sha", channels: Libraries)]));
     }
 }

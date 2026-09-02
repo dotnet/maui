@@ -41,8 +41,8 @@ internal static class TestData
         string? azureDevOpsRepository = null,
         params ChannelReference[] channels) => new(id, commit ?? Commit, gitHubRepository, azureDevOpsRepository, channels);
 
-    public static ReleaseRequest Request(string repo = "dotnet/skiasharp", string? commit = null, int? barId = null) =>
-        new(Repo(repo), commit ?? Commit, barId);
+    public static ReleaseRequest Request(string repo = "dotnet/skiasharp", int barId = 4242) =>
+        new(Repo(repo), barId);
 
     public static ReleaseSource Source(bool workload = false, string repo = "dotnet/skiasharp") => new()
     {

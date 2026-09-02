@@ -159,8 +159,7 @@ PowerShell text.
 Every queue-time string enters scripts through an `env:` binding and is read through
 `$env:...`. The pipeline validates:
 
-- `commitHash` as exactly 40 hexadecimal characters;
-- `barBuildId`, when present, as a positive decimal integer;
+- `buildIdentifier` as either a full 40-character commit SHA or a positive BAR build ID;
 - GitHub owner and repository names against a restricted character set.
 
 This validation runs before the release tool authenticates.
@@ -187,7 +186,6 @@ src/DotNet.Release/
   Policy/                              pure release decisions
   Model/                               transport models and release exception
   Adapters/                            read-only interfaces and implementations
-  Pipeline/                            Azure DevOps logging-command formatting
 
 tests/DotNet.Release.Tests/            unit, contract, architecture, and pipeline tests
 config/repositories.json               release policy
@@ -218,8 +216,7 @@ capture the exact human-readable audit without a custom console or logging frame
 |---|---:|---|---|
 | `ghOwner` | yes | `dotnet` | GitHub repository owner |
 | `ghRepo` | yes | `select-repository` | Fail-closed sentinel that the operator replaces with an enabled repository |
-| `commitHash` | yes | none | Exact full commit registered in BAR |
-| `barBuildId` | no | `skip` | Direct BAR lookup when commit lookup is insufficient |
+| `buildIdentifier` | yes | `enter-bar-id-or-commit-sha` | Full commit SHA to resolve, or an exact BAR build ID |
 | `releaseMode` | yes | Preview the package release without making changes | Select package preview/publication, with optional workload-promotion preview/publication |
 | `includeFilters` | no | `skip` | Semicolon-separated package filename globs |
 | `excludeFilters` | no | `skip` | Semicolon-separated package filename globs |
@@ -229,7 +226,8 @@ capture the exact human-readable audit without a custom console or logging frame
 Azure DevOps runtime parameters cannot be optional. An omitted parameter either uses a
 default or, for an allowed-values list, silently selects its first value. Explicit sentinels
 make that platform behavior visible and safe: `select-repository` fails repository policy,
-and `skip` is normalized to no optional argument before the CLI is invoked.
+`enter-bar-id-or-commit-sha` fails build-identifier validation, and `skip` is normalized to
+no optional filter before the CLI is invoked.
 
 Runs are tagged `DRY-RUN` or `PUBLISH`. After BAR resolution they also receive Arcade's
 established `BAR ID - <id>` tag and a matching `REPO - <owner/name>` tag, so release history
@@ -255,7 +253,7 @@ The prepare stage always runs, including on a dry run:
 checkout release-system source
   -> install pinned .NET SDK
   -> build and pin Release/_tool
-  -> darc get-build resolves a candidate BAR ID
+  -> use the supplied BAR ID or resolve the commit with darc get-build
   -> darc gather-drop downloads that candidate
   -> release stage verifies BAR and creates release-manifest.json
   -> pin release-manifest.json

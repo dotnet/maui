@@ -17,11 +17,6 @@ internal static class StageCommand
             Description = "Repository as 'owner/name'.",
             Required = true,
         };
-        var commit = new Option<string>("--commit")
-        {
-            Description = "Exact source commit to verify against BAR.",
-            Required = true,
-        };
         var barId = new Option<int>("--bar-id")
         {
             Description = "Candidate BAR build ID resolved by Darc.",
@@ -60,7 +55,7 @@ internal static class StageCommand
 
         var command = new Command("stage", "Read the gathered drop, validate it, and write release-manifest.json.")
         {
-            config, repo, commit, barId, drop, output, include, exclude, barUri, token, managedIdentity,
+            config, repo, barId, drop, output, include, exclude, barUri, token, managedIdentity,
         };
 
         command.SetAction((parse, cancellationToken) =>
@@ -72,7 +67,6 @@ internal static class StageCommand
                 MaestroBuildRegistry.Create(api),
                 File.ReadAllText(parse.GetValue(config)!.FullName),
                 parse.GetValue(repo)!,
-                parse.GetValue(commit)!,
                 parse.GetValue(barId),
                 parse.GetValue(drop)!.FullName,
                 parse.GetValue(output)!.FullName,
@@ -94,7 +88,6 @@ internal static class StageCommand
         IBuildRegistry registry,
         string policyJson,
         string repository,
-        string commit,
         int barBuildId,
         string dropDirectory,
         string outputDirectory,
@@ -107,17 +100,12 @@ internal static class StageCommand
         var repositoryId = RepositoryId.Parse(repository);
         var repositoryPolicy = policy.GetRepository(repositoryId);
 
-        if (string.IsNullOrWhiteSpace(commit))
-        {
-            throw new DotNetReleaseException("A commit must be supplied; a release is always pinned to an exact commit.");
-        }
-
         if (barBuildId <= 0)
         {
             throw new DotNetReleaseException($"BAR build ID '{barBuildId}' must be positive.");
         }
 
-        var request = new ReleaseRequest(repositoryId, commit, barBuildId);
+        var request = new ReleaseRequest(repositoryId, barBuildId);
         var candidates = await registry.GetBuildAsync(barBuildId, cancellationToken).ConfigureAwait(false);
         var resolved = BuildResolver.Resolve(request, repositoryPolicy, candidates);
         ReleaseOutput.WriteResolvedBuild(outputWriter, resolved);

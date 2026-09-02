@@ -97,7 +97,7 @@ public class MaestroBuildRegistryTests
         var builds = await new MaestroBuildRegistry(fake).GetBuildAsync(328857, CancellationToken.None);
 
         var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(skia, BuildFactory.Commit, BarBuildId: 328857), policy.GetRepository(skia), builds);
+            new ReleaseRequest(skia, BarBuildId: 328857), policy.GetRepository(skia), builds);
 
         Assert.Equal("dotnet/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);

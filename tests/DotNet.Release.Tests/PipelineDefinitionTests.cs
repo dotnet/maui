@@ -156,6 +156,9 @@ public class PipelineDefinitionTests
         Assert.Contains("$darc get-build --ci", root, StringComparison.Ordinal);
         Assert.Contains("--output-format json", root, StringComparison.Ordinal);
         Assert.Contains("$buildJson | ConvertFrom-Json", root, StringComparison.Ordinal);
+        Assert.Contains("$selector -match '^[0-9a-fA-F]{40}$'", root, StringComparison.Ordinal);
+        Assert.Contains("$selector -match '^[0-9]+$'", root, StringComparison.Ordinal);
+        Assert.Contains("$builds[0].commit", root, StringComparison.Ordinal);
         Assert.Contains("variable=BarId]", root, StringComparison.Ordinal);
         Assert.Contains("registry.GetBuildAsync(barBuildId", stage, StringComparison.Ordinal);
         Assert.Contains("BuildResolver.Resolve", stage, StringComparison.Ordinal);
@@ -234,7 +237,7 @@ public class PipelineDefinitionTests
     }
 
     /// <summary>
-    /// The repository sentinel fails policy validation, and the commit must be supplied.
+    /// Both repository and build selectors use fail-closed sentinels.
     /// </summary>
     [Fact]
     public void Release_identity_must_be_supplied_for_every_run()
@@ -242,11 +245,10 @@ public class PipelineDefinitionTests
         Assert.Equal("select-repository", ((YamlScalarNode)Parameter("ghRepo")["default"]).Value);
         Assert.DoesNotContain(Policy.Repositories,
             repository => repository.Repository.Name == "select-repository");
-        Assert.False(Parameter("commitHash").Children.ContainsKey("default"));
+        Assert.Equal("enter-bar-id-or-commit-sha", ((YamlScalarNode)Parameter("buildIdentifier")["default"]).Value);
     }
 
     [Theory]
-    [InlineData("barBuildId")]
     [InlineData("includeFilters")]
     [InlineData("excludeFilters")]
     [InlineData("recoveryFilters")]
@@ -261,7 +263,6 @@ public class PipelineDefinitionTests
         var root = File.ReadAllText(PipelinePath);
         var publish = File.ReadAllText(Path.Combine(RepoRoot, "eng", "pipelines", "stages", "publish-set.yml"));
 
-        Assert.Contains("$env:BAR_BUILD_ID -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Contains("$env:INCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Contains("$env:EXCLUDE_FILTERS -ne 'skip'", root, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(publish, @"\$env:RECOVERY_FILTERS -ne 'skip'").Count);
@@ -516,8 +517,7 @@ public class PipelineDefinitionTests
     /// the argument and run arbitrary commands. They must be passed as environment variables.
     /// </summary>
     [Theory]
-    [InlineData("commitHash")]
-    [InlineData("barBuildId")]
+    [InlineData("buildIdentifier")]
     [InlineData("includeFilters")]
     [InlineData("excludeFilters")]
     [InlineData("ghOwner")]

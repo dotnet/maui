@@ -17,15 +17,13 @@ Releasing repositories do not change. They are named by parameter.
    | Parameter | Meaning |
    |---|---|
    | **GitHub owner** / **GitHub repository** | What to release. Replace the fail-closed `select-repository` sentinel with a repository enabled in `config/repositories.json`. |
-   | **Commit** | The full SHA, as registered in BAR. Required. |
-   | **BAR build ID** | Only when direct BAR lookup is needed. Otherwise leave `skip`. |
+   | **BAR build ID or full commit SHA** | Enter either an exact BAR build ID or the full commit SHA to resolve within the selected repository. |
    | **What should this release run do?** | Choose a plain-language preview or publish mode. Modes that mention workload promotion are valid only for workload repositories. |
    | Include / exclude filters | Optional package selection; leave `skip` when unused. |
    | Recovery filters | Only when resuming a partially-completed release; leave `skip` otherwise. |
 
-Azure DevOps runtime parameters cannot be optional and chooses the first allowed value when
-no default exists. The repository therefore defaults to `select-repository`, which policy
-rejects, while optional strings use `skip`. The commit has no default and must be entered.
+Azure DevOps runtime parameters cannot be optional. Repository and build identity therefore
+use explicit fail-closed sentinels, while optional filters use `skip`.
 
 3. The run prepares the release and validates the matching package-set jobs.
 4. Review the human-readable package summary printed by the preflight job. It lists every
@@ -159,7 +157,7 @@ You will not normally run these by hand — the pipeline does. They are document
 audit trail refers to them.
 
 ```
-release stage --config config/repositories.json --repo <owner/name> --commit <sha> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out <artifactDir>
+release stage --config config/repositories.json --repo <owner/name> --bar-id N --drop <dropPath> [--include '…'] [--exclude '…'] --out <artifactDir>
 release prune-published --manifest <release-manifest.json> --stage <artifactDir> --set <setName> --expected-manifest-hash <sha256> [--recovery-filters '…']
 release verify --manifest <release-manifest.json> --set <setName> --expected-manifest-hash <sha256> [--max-duration-minutes 30] [--poll-seconds 20]
 ```
