@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _disposed;
 		ColorStateList _itemTextColor;
 		ColorStateList _itemIconTint;
-		Brush _lastAppliedBrush;
 
 		public ShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
 		{
@@ -86,19 +85,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (brush is GradientBrush)
 			{
-				// Skip rebuilding the drawable when the same gradient is re-applied on a tab/section switch.
-				if (ReferenceEquals(brush, _lastAppliedBrush))
-					return;
-
-				_lastAppliedBrush = brush;
-
 				// Gradients render through GradientStrokeDrawable and intentionally skip the Material
 				// elevation overlay so the user's gradient isn't tinted by the dark-theme surface overlay.
 				bottomView.UpdateBackground(brush);
 				return;
 			}
-
-			_lastAppliedBrush = null;
 
 			// Route solid/null through SetBackgroundColor so existing subclass overrides still run.
 			SetBackgroundColor(bottomView, (brush as SolidColorBrush)?.Color);
