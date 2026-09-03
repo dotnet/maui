@@ -20,17 +20,16 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiSwipeView : ContentViewGroup
 	{
-		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
 		const long SwipeAnimationDuration = 200;
 
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
 
-		// Caches the flat-average Execute-mode width (totalMeasuredWidth / visibleItemCount)
-		// for every visible SwipeItem, so that GetSwipeItemSize (called once per item, per
+		// Caches the shared Execute-mode width for every visible SwipeItem, so that
+		// GetSwipeItemSize (called once per item, per
 		// layout/threshold pass) doesn't re-measure every native view and re-sum the results
 		// on every single call. Populated together for all visible items on first access after
-		// a rebuild, and cleared whenever the SwipeItems are rebuilt (DisposeSwipeItems) so
-		// stale widths are never reused after content changes.
+		// a rebuild, and cleared whenever the SwipeItems are rebuilt or visibility changes so
+		// stale widths are never reused after the visible item set changes.
 		readonly Dictionary<ISwipeItem, double> _executeModeItemWidths;
 		readonly Context _context;
 		SwipeViewPager? _viewPagerParent;
@@ -44,6 +43,8 @@ namespace Microsoft.Maui.Platform
 		SwipeDirection? _swipeDirection;
 		float _swipeOffset;
 		float _swipeOpenDistance;
+		int _swipeItemMeasurementWidth;
+		int _swipeItemMeasurementHeight;
 		bool _isSwipeEnabled;
 		bool _isResettingSwipe;
 		bool _isOpen;
@@ -92,7 +93,14 @@ namespace Microsoft.Maui.Platform
 			if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not { Count: > 0 } swipeItems)
 				return;
 
+			bool measurementSizeChanged =
+				_swipeItemMeasurementWidth != _contentView.Width ||
+				_swipeItemMeasurementHeight != _contentView.Height;
+
 			LayoutSwipeItems(swipeItems);
+
+			if (_isOpen && measurementSizeChanged)
+				SwipeToThreshold(false);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)
@@ -636,6 +644,14 @@ namespace Microsoft.Maui.Platform
 			if (_actionView == null || childs == null || _contentView == null)
 				return;
 
+			if (_swipeItemMeasurementWidth != _contentView.Width || _swipeItemMeasurementHeight != _contentView.Height)
+			{
+				_executeModeItemWidths.Clear();
+				_swipeOpenDistance = 0;
+				_swipeItemMeasurementWidth = _contentView.Width;
+				_swipeItemMeasurementHeight = _contentView.Height;
+			}
+
 			var items = GetSwipeItemsByDirection();
 
 			if (items == null || items.Count == 0)
@@ -707,17 +723,18 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
-			if (!_isOpen)
+			UpdateSwipeItemSize(item);
+		}
+
+		internal void UpdateSwipeItemSize(ISwipeItem item)
+		{
+			if (!_isOpen || !_swipeItems.ContainsKey(item))
 				return;
 
-			_swipeItems.TryGetValue(item, out object? view);
-
-			if (view != null && view is AView platformView)
-			{
-				_swipeOpenDistance = 0;
-				LayoutSwipeItems(GetNativeSwipeItems());
-				SwipeToThreshold(false);
-			}
+			_executeModeItemWidths.Clear();
+			_swipeOpenDistance = 0;
+			LayoutSwipeItems(GetNativeSwipeItems());
+			SwipeToThreshold(false);
 		}
 
 		List<AView> GetNativeSwipeItems()
@@ -774,6 +791,8 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.Clear();
 			_executeModeItemWidths.Clear();
+			_swipeItemMeasurementWidth = 0;
+			_swipeItemMeasurementHeight = 0;
 
 			if (_actionView != null)
 			{
@@ -1024,10 +1043,8 @@ namespace Microsoft.Maui.Platform
 
 			float triggerThreshold;
 
-			if (Element != null && Element.Threshold > 0)
-				triggerThreshold = Math.Min((float)Element.Threshold, GetSwipeOpenDistance());
-			else
-				triggerThreshold = OpenSwipeThresholdPercentage * GetSwipeOpenDistance();
+			triggerThreshold = (float)SwipeViewExtensions.GetSwipeTriggerThreshold(
+				GetSwipeOpenDistance(), Element?.Threshold ?? 0);
 
 			if (Math.Abs(_swipeOffset) >= triggerThreshold)
 			{
@@ -1243,18 +1260,16 @@ namespace Microsoft.Maui.Platform
 			return Size.Zero;
 		}
 
-		// Returns the flat average width across all currently-visible Execute-mode items
-		// (totalMeasuredWidth / visibleItemCount, clamped to contentWidth), matching the
-		// original sizing behavior. Widths are measured once and cached for every visible
-		// item together the first time any of them is requested, so a full layout/threshold
-		// pass only measures each native view once instead of re-measuring and re-summing on
-		// every single GetSwipeItemSize call (avoiding O(n^2) native measurements).
+		// Returns a shared width large enough for the widest currently-visible Execute-mode
+		// item, capped so all visible items fit within the content width. Widths are measured
+		// once and cached for every visible item together the first time any of them is
+		// requested, so a full layout/threshold pass only measures each native view once.
 		double GetExecuteModeItemWidth(ISwipeItem swipeItem, double contentWidth, double contentHeight)
 		{
 			if (_executeModeItemWidths.TryGetValue(swipeItem, out var cachedWidth))
 				return cachedWidth;
 
-			double totalWidth = 0;
+			double maximumWidth = 0;
 			var visibleItems = new List<ISwipeItem>();
 
 			foreach (var pair in _swipeItems)
@@ -1268,15 +1283,15 @@ namespace Microsoft.Maui.Platform
 
 				double measuredWidth = _context.FromPixels(view.MeasuredWidth);
 				visibleItems.Add(pair.Key);
-				totalWidth += measuredWidth;
+				maximumWidth = Math.Max(maximumWidth, measuredWidth);
 			}
 
-			double averageWidth = visibleItems.Count == 0
+			double itemWidth = visibleItems.Count == 0
 				? SwipeViewExtensions.SwipeItemWidth
-				: totalWidth > contentWidth ? contentWidth / visibleItems.Count : totalWidth / visibleItems.Count;
+				: Math.Min(maximumWidth, contentWidth / visibleItems.Count);
 
 			foreach (var item in visibleItems)
-				_executeModeItemWidths[item] = averageWidth;
+				_executeModeItemWidths[item] = itemWidth;
 
 			return _executeModeItemWidths.TryGetValue(swipeItem, out var width) ? width : SwipeViewExtensions.SwipeItemWidth;
 		}
@@ -1478,9 +1493,8 @@ namespace Microsoft.Maui.Platform
 
 			bool isOpen = false;
 
-			float triggerThreshold = (Element != null && Element.Threshold > 0)
-				? Math.Min((float)Element.Threshold, GetSwipeOpenDistance())
-				: OpenSwipeThresholdPercentage * GetSwipeOpenDistance();
+			float triggerThreshold = (float)SwipeViewExtensions.GetSwipeTriggerThreshold(
+				GetSwipeOpenDistance(), Element?.Threshold ?? 0);
 
 			if (Math.Abs(_swipeOffset) >= triggerThreshold)
 				isOpen = true;

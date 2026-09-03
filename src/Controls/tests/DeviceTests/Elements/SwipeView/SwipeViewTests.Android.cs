@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Android.Views;
+using Android.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -132,6 +133,261 @@ namespace Microsoft.Maui.DeviceTests
 					$"than the full SwipeView content width ({contentWidthPixels}px), matching the native " +
 					$"button's measured content size instead of the entire SwipeView width.");
 			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Shared Width Fits Unequal Item Content (Issue 37700)")]
+		public async Task ExecuteModeSharedWidthFitsUnequalItemContent()
+		{
+			SetupBuilder();
+
+			var swipeItems = new SwipeItems
+			{
+				new SwipeItem { Text = "OK" },
+				new SwipeItem { Text = "Long action" },
+				new SwipeItem
+				{
+					Text = "This hidden action must not affect visible widths",
+					IsVisible = false
+				}
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems,
+				Content = new Grid()
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() =>
+					actionView.ChildCount == 3 &&
+					actionView.GetChildAt(0)?.Width > 0 &&
+					actionView.GetChildAt(1)?.Width > 0);
+
+				var firstNativeSwipeItem = actionView.GetChildAt(0);
+				var longerNativeSwipeItem = actionView.GetChildAt(1);
+				var hiddenNativeSwipeItem = actionView.GetChildAt(2);
+				Assert.NotNull(firstNativeSwipeItem);
+				Assert.NotNull(longerNativeSwipeItem);
+				Assert.NotNull(hiddenNativeSwipeItem);
+				Assert.Equal(ViewStates.Gone, hiddenNativeSwipeItem.Visibility);
+
+				Assert.Equal(firstNativeSwipeItem.Width, longerNativeSwipeItem.Width);
+
+				int assignedWidth = longerNativeSwipeItem.Width;
+				longerNativeSwipeItem.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(longerNativeSwipeItem.Height, MeasureSpecMode.Exactly));
+
+				Assert.True(assignedWidth + 1 >= longerNativeSwipeItem.MeasuredWidth,
+					$"Expected the shared width ({assignedWidth}px) to fit the longer item's " +
+					$"measured content width ({longerNativeSwipeItem.MeasuredWidth}px).");
+
+				hiddenNativeSwipeItem.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(longerNativeSwipeItem.Height, MeasureSpecMode.Exactly));
+
+				Assert.True(assignedWidth < hiddenNativeSwipeItem.MeasuredWidth,
+					"Expected hidden item content to be excluded from the shared width.");
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Visibility Change Uses Consistent Item Widths (Issue 37700)")]
+		public async Task ExecuteModeVisibilityChangeUsesConsistentItemWidths()
+		{
+			SetupBuilder();
+
+			var firstSwipeItem = new SwipeItem
+			{
+				Text = "OK"
+			};
+
+			var secondSwipeItem = new SwipeItem
+			{
+				Text = "A substantially longer swipe action",
+				IsVisible = false
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				firstSwipeItem,
+				secondSwipeItem
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems,
+				Content = new Grid()
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount == 2 && actionView.GetChildAt(0)?.Width > 0);
+
+				secondSwipeItem.IsVisible = true;
+
+				var firstNativeSwipeItem = actionView.GetChildAt(0);
+				var secondNativeSwipeItem = actionView.GetChildAt(1);
+				Assert.NotNull(firstNativeSwipeItem);
+				Assert.NotNull(secondNativeSwipeItem);
+
+				await AssertEventually(() =>
+					secondNativeSwipeItem.Visibility == ViewStates.Visible &&
+					secondNativeSwipeItem.Width > 0);
+
+				Assert.Equal(firstNativeSwipeItem.Width, secondNativeSwipeItem.Width);
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Remeasures Item When Text Changes (Issue 37700)")]
+		public async Task ExecuteModeRemeasuresItemWhenTextChanges()
+		{
+			SetupBuilder();
+
+			var firstSwipeItem = new SwipeItem { Text = "OK" };
+			var secondSwipeItem = new SwipeItem { Text = "Go" };
+			var swipeItems = new SwipeItems
+			{
+				firstSwipeItem,
+				secondSwipeItem
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 500,
+				LeftItems = swipeItems,
+				Content = new Grid()
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() =>
+					actionView.ChildCount == 2 &&
+					actionView.GetChildAt(1)?.Width > 0);
+
+				var firstNativeSwipeItem = actionView.GetChildAt(0)!;
+				var secondNativeSwipeItem = actionView.GetChildAt(1)!;
+				int initialWidth = secondNativeSwipeItem.Width;
+				secondSwipeItem.Text = "Delete permanently and archive";
+
+				await AssertEventually(() =>
+					(secondNativeSwipeItem as TextView)?.Text == secondSwipeItem.Text);
+
+				secondNativeSwipeItem.Measure(
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified),
+					global::Android.Views.View.MeasureSpec.MakeMeasureSpec(secondNativeSwipeItem.Height, MeasureSpecMode.Exactly));
+
+				int expectedWidth = global::System.Math.Min(
+					secondNativeSwipeItem.MeasuredWidth,
+					platformView.Width / 2);
+				Assert.True(expectedWidth > initialWidth);
+
+				await AssertEventually(() =>
+					secondNativeSwipeItem.Width == expectedWidth &&
+					firstNativeSwipeItem.Width == expectedWidth,
+					message: $"Expected both items to resize from {initialWidth}px to {expectedWidth}px; " +
+						$"actual widths were {firstNativeSwipeItem.Width}px and {secondNativeSwipeItem.Width}px.");
+			});
+		}
+
+		[Fact(DisplayName = "Execute Mode Uses Action Extent For Trigger Distance (Issue 37700)")]
+		public async Task ExecuteModeUsesActionExtentForTriggerDistance()
+		{
+			SetupBuilder();
+
+			int invokedCount = 0;
+			var swipeItem = new SwipeItem { Text = "OK" };
+			swipeItem.Invoked += (_, _) => invokedCount++;
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+			swipeItems.Mode = SwipeMode.Execute;
+
+			var swipeView = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems,
+				Content = new Grid()
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+				await AssertEventually(() => actionView.GetChildAt(0)?.Width > 0);
+
+				float actionExtent = actionView.GetChildAt(0)!.Width;
+				swipeView.Close(false);
+				await AssertEventually(() => platformView.ChildCount == 2);
+
+				SendHorizontalSwipe(platformView, actionExtent * 0.5f);
+				Assert.Equal(0, invokedCount);
+				await AssertEventually(() => platformView.ChildCount == 2);
+
+				SendHorizontalSwipe(platformView, actionExtent * 0.7f);
+				await AssertEventually(() => invokedCount == 1);
+			});
+		}
+
+		static void SendHorizontalSwipe(MauiSwipeView platformView, float distance)
+		{
+			float startX = 10;
+			float y = platformView.Height / 2f;
+			long downTime = global::Android.OS.SystemClock.UptimeMillis();
+
+			var down = MotionEvent.Obtain(downTime, downTime, MotionEventActions.Down, startX, y, 0);
+			platformView.OnTouchEvent(down);
+			down.Recycle();
+
+			var move = MotionEvent.Obtain(downTime, downTime + 100, MotionEventActions.Move, startX + distance, y, 0);
+			platformView.OnTouchEvent(move);
+			move.Recycle();
+
+			var up = MotionEvent.Obtain(downTime, downTime + 200, MotionEventActions.Up, startX + distance, y, 0);
+			platformView.OnTouchEvent(up);
+			up.Recycle();
 		}
 
 		[Fact]

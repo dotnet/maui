@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
@@ -6,6 +7,14 @@ namespace Microsoft.Maui.Platform
 	{
 		internal const int SwipeThreshold = 250;
 		internal const int SwipeItemWidth = 100;
+		const double OpenSwipeThresholdPercentage = 0.6;
+
+		internal static double GetSwipeTriggerThreshold(double openDistance, double requestedThreshold)
+		{
+			return requestedThreshold > 0
+				? Math.Min(requestedThreshold, openDistance)
+				: OpenSwipeThresholdPercentage * openDistance;
+		}
 
 		public static Color? GetTextColor(this ISwipeItemMenuItem swipeItemMenuItem)
 		{
