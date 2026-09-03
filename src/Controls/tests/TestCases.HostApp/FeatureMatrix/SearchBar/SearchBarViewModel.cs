@@ -189,6 +189,37 @@ public class SearchBarViewModel : INotifyPropertyChanged
 		set { _background = value; OnPropertyChanged(); }
 	}
 
+	public void Reset()
+	{
+		CancelButtonColor = null;
+		CharacterSpacing = 0;
+		FlowDirection = FlowDirection.MatchParent;
+		FontAttributes = FontAttributes.None;
+		FontFamily = string.Empty;
+		FontSize = 14;
+		HorizontalTextAlignment = TextAlignment.Start;
+		IsEnabled = true;
+		IsVisible = true;
+		IsReadOnly = false;
+		IsSpellCheckEnabled = true;
+		IsTextPredictionEnabled = true;
+		Keyboard = Keyboard.Default;
+		MaxLength = 100;
+		Placeholder = string.Empty;
+		PlaceholderColor = null;
+		SelectionLength = 0;
+		Text = string.Empty;
+		TextColor = null;
+		Shadow = null;
+		TextTransform = TextTransform.Default;
+		VerticalTextAlignment = TextAlignment.Center;
+		CursorPosition = 0;
+		FontAutoScalingEnabled = true;
+		SearchIconColor = null;
+		ReturnType = ReturnType.Default;
+		Background = null;
+	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
