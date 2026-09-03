@@ -56,6 +56,8 @@ namespace Microsoft.Maui.Controls.Handlers
         // Pending fragment transaction (from RunOrWaitForResume, same as FlyoutViewHandler)
         IDisposable? _pendingFragment;
 
+        bool _releasingDrawerCallback;
+
         protected override MauiDrawerLayout CreatePlatformView()
         {
             // Create MauiDrawerLayout (same as FlyoutViewHandler)
@@ -157,8 +159,33 @@ namespace Microsoft.Maui.Controls.Handlers
             base.DisconnectHandler(platformView);
         }
 
+        internal void ReleaseDrawerCallbackBeforePageChange()
+        {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(36))
+            {
+                return;
+            }
+
+            _pendingFragment?.Dispose();
+            _pendingFragment = null;
+
+            if (PlatformView is MauiDrawerLayout drawerLayout)
+            {
+                _releasingDrawerCallback = true;
+                drawerLayout.CloseFlyout(false);
+                _releasingDrawerCallback = false;
+
+                drawerLayout.SetDrawerLockMode(MauiDrawerLayout.LockModeLockedClosed);
+            }
+        }
+
         void OnFlyoutPresentedChanged(bool isPresented)
         {
+            if (_releasingDrawerCallback)
+            {
+                return;
+            }
+
             // Sync the Shell's FlyoutIsPresented property with actual drawer state
             if (_currentBehavior == FlyoutBehavior.Flyout)
             {

@@ -688,9 +688,15 @@ namespace Microsoft.Maui.Controls
 		// the FlyoutPage) and the nested case (e.g. NavigationPage wrapping a FlyoutPage).
 		static void ReleaseFlyoutDrawerCallbacks(Page page)
 		{
-			if (page.Handler is Handlers.Compatibility.ShellRenderer shellHandler)
+			if (page.Handler is Handlers.ShellHandler shellHandler)
 			{
 				shellHandler.ReleaseDrawerCallbackBeforePageChange();
+				return;
+			}
+
+			if (page.Handler is Handlers.Compatibility.ShellRenderer compatibilityShellRenderer)
+			{
+				compatibilityShellRenderer.ReleaseDrawerCallbackBeforePageChange();
 				return;
 			}
 

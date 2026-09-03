@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnDrawerStateChanged(object sender, DrawerStateChangedEventArgs e)
 		{
-			if (_flyoutContent?.AndroidView == null)
+			if (_releasingDrawerCallback || _flyoutContent?.AndroidView == null)
 				return;
 
 			if (DrawerLayout.StateIdle == e.NewState)
@@ -95,6 +95,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnDrawerClosed(object sender, DrawerClosedEventArgs e)
 		{
+			if (_releasingDrawerCallback)
+				return;
+
 			Shell.SetValueFromRenderer(Shell.FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 		}
 
@@ -129,6 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal bool FlyoutFirstDrawPassFinished { get; private set; }
 		int _currentLockMode;
 		bool _disposed;
+		bool _releasingDrawerCallback;
 		Brush _scrimBrush;
 		Paint _scrimPaint;
 		int _previousHeight;
@@ -434,13 +438,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void ReleaseDrawerCallbackBeforePageChange()
 		{
-			if (_flyoutContent?.AndroidView is AView flyoutView)
+			_releasingDrawerCallback = true;
+
+			if (_flyoutContent?.AndroidView is AView flyoutView && IsDrawerOpen(flyoutView))
 			{
-				if (IsDrawerOpen(flyoutView))
-					CloseDrawer(flyoutView, false);
+				CloseDrawer(flyoutView, false);
 			}
 
 			SetDrawerLockMode(LockModeLockedClosed);
+			_releasingDrawerCallback = false;
 		}
 
 		protected override void Dispose(bool disposing)
