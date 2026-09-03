@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -59,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
@@ -100,8 +102,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			_nativeNavigationRegistrations.Clear();
 			(this as IElementHandler).SetVirtualView(element);
 			_element = element is null ? null : new(element);
+			if (element is NavigationPage navigationPage)
+			{
+				_nativeNavigationRegistrations.Register(
+					navigationPage,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
 		}
 
 		public UIViewController ViewController
@@ -283,6 +294,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				_nativeNavigationRegistrations.Clear();
 				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
@@ -1400,6 +1412,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			readonly NativeElementRegistrationSet _nativeToolbarRegistrations = new NativeElementRegistrationSet();
 			bool _toolbarUpdatePending = false;
 
 			public ParentingViewController(NavigationRenderer navigation)
@@ -1589,6 +1602,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
 
@@ -2042,6 +2056,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Disconnect.")]
 			void UpdateToolbarItems()
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from previous toolbar item property changes
 				CleanToolbarItems();
 
@@ -2073,11 +2088,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 
@@ -2110,6 +2137,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries ??= [];
 
 					primaries.Insert(0, menuButton);
+					if (Child is Page child)
+					{
+						_nativeToolbarRegistrations.Register(
+							child,
+							menu,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+						_nativeToolbarRegistrations.Register(
+							child,
+							menuButton,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+					}
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
