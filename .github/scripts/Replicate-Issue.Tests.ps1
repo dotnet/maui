@@ -9842,6 +9842,19 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 }
             }
         };
+'@).Replace(
+            'var destination = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var destination = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = new global::Microsoft.Maui.Controls.VerticalStackLayout
+            {
+                Children =
+                {
+                    new global::Microsoft.Maui.Controls.Label { Text = "destination" }
+                }
+            }
+        };
 '@)
 
         {
@@ -9850,6 +9863,155 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Edits @($script:GateEdit) `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
         } | Should -Not -Throw
+    }
+
+    It 'rejects Grid-only Window content with the safe layout repair shape' {
+        $gridSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = new global::Microsoft.Maui.Controls.Grid()
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $gridSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*do not use Grid or factory-created replacement state*')
+    }
+
+    It 'rejects late member mutation through an alias in the closed Window graph' {
+        $mutatedSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();
+        var rootAlias = rootPage;
+        rootAlias.Content =
+            new global::Microsoft.Maui.Controls.VerticalStackLayout();
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $mutatedSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*closed Window helper contract forbids post-construction assignments*')
+    }
+
+    It 'rejects Window graph mutation inside synchronous trusted setup lambdas' {
+        $lambdaMutationSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();
+        EnsureHandlerCreated(_ =>
+        {
+            rootPage.Content =
+                new global::Microsoft.Maui.Controls.VerticalStackLayout();
+        });
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $lambdaMutationSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*closed Window helper contract forbids post-construction assignments*')
+    }
+
+    It 'rejects nested assignments concealed by complex collection initializers' {
+        $complexInitializerSource = $script:TrustedWindowHelperBase.Replace(
+            'var navigationPage =',
+            @'
+        var carrier = new global::Microsoft.Maui.Controls.VerticalStackLayout
+        {
+            Resources =
+            {
+                {
+                    "payload",
+                    destination.IsVisible =
+                        titleView is { Parent: not null } ? false : true
+                }
+            }
+        };
+        var navigationPage =
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $complexInitializerSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*closed Window helper contract forbids post-construction assignments*')
+    }
+
+    It 'rejects a separately constructed Grid assigned through a Window-content alias' {
+        $aliasedGridSource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage();
+        var rootAlias = rootPage;
+        var forbiddenGrid = new global::Microsoft.Maui.Controls.Grid();
+        rootAlias.Content = forbiddenGrid;
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasedGridSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*do not use Grid or factory-created replacement state*')
+    }
+
+    It 'rejects arrays even when their initial Window content uses allowed controls' {
+        $arraySource = $script:TrustedWindowHelperBase.Replace(
+            'var rootPage = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        global::Microsoft.Maui.Controls.View[] hidden =
+            new global::Microsoft.Maui.Controls.View[]
+        {
+            new global::Microsoft.Maui.Controls.Label()
+        };
+        hidden[0] = new global::Microsoft.Maui.Controls.Grid();
+        var rootPage = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = hidden[0]
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $arraySource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*closed Window helper contract may not allocate arrays*')
+    }
+
+    It 'rejects Grid content on the Page attached later by PushAsync' {
+        $pushedGridSource = $script:TrustedWindowHelperBase.Replace(
+            'var destination = new global::Microsoft.Maui.Controls.ContentPage();',
+            @'
+        var destination = new global::Microsoft.Maui.Controls.ContentPage
+        {
+            Content = new global::Microsoft.Maui.Controls.Grid()
+        };
+'@)
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $pushedGridSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*do not use Grid or factory-created replacement state*')
     }
 
     It 'still rejects non-contract construction inside the Window content flow' {
