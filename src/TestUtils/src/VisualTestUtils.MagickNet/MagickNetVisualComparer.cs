@@ -2,19 +2,16 @@ using ImageMagick;
 
 namespace VisualTestUtils.MagickNet
 {
-     
     public class MagickNetVisualComparer : IVisualComparer
     {
         private ErrorMetric _errorMetric;
         private double _differenceThreshold;
 
-        
         public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.RootMeanSquared, double differenceThreshold = 0.005)
         {
             _errorMetric = errorMetric;
             _differenceThreshold = differenceThreshold;
         }
-
 
         public ImageDifference? Compare(ImageSnapshot baselineImage, ImageSnapshot actualImage)
         {
@@ -29,7 +26,8 @@ namespace VisualTestUtils.MagickNet
             if (distortionDifference > this._differenceThreshold)
                 return new ImagePercentageDifference(distortionDifference);
 
-            return null;
+            
+            return null!;
         }
     }
 }
