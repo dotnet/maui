@@ -59,6 +59,10 @@ namespace Microsoft.Maui.DeviceTests
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
 			});
@@ -81,6 +85,10 @@ namespace Microsoft.Maui.DeviceTests
 				var recognizer = navController.InteractivePopGestureRecognizer;
 
 				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
 				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
 				await Task.CompletedTask;
 			});

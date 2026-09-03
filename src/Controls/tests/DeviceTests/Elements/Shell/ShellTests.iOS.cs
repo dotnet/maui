@@ -304,6 +304,37 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task InteractivePopGestureStateIsResetWhenRendererDisappears()
+		{
+			SetupBuilder();
+			var backPressOrder = new List<string>();
+			var shell = new BackHandlingShell(false, () => backPressOrder.Add("Shell"))
+			{
+				CurrentItem = new ContentPage()
+			};
+			var backHandlingPage = new BackHandlingPage(false, () => backPressOrder.Add("Page"));
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async handler =>
+			{
+				await shell.Navigation.PushAsync(backHandlingPage).WaitAsync(TimeSpan.FromSeconds(2));
+
+				IShellContext shellContext = handler;
+				var sectionRenderer = Assert.IsType<ShellSectionRenderer>(
+					Assert.IsType<ShellItemRenderer>(shellContext.CurrentShellItemRenderer).CurrentRenderer);
+				var recognizer = sectionRenderer.InteractivePopGestureRecognizer;
+
+				Assert.True(recognizer.Delegate.ShouldBegin(recognizer));
+				backHandlingPage.BackHandled = true;
+				sectionRenderer.BeginAppearanceTransition(false, false);
+				sectionRenderer.EndAppearanceTransition();
+
+				Assert.False(sectionRenderer.ShouldPopItem(sectionRenderer.NavigationBar, sectionRenderer.NavigationBar.TopItem));
+				Assert.Equal(2, backHandlingPage.BackButtonPressedCount);
+				Assert.Equal(new[] { "Shell", "Page", "Shell", "Page" }, backPressOrder);
+			});
+		}
+
 		[Fact(DisplayName = "Cancel BackButton Navigation")]
 		public async Task CancelBackButtonNavigation()
 		{
@@ -655,21 +686,21 @@ namespace Microsoft.Maui.DeviceTests
 		sealed class BackHandlingPage : ContentPage
 		{
 			readonly Action _onBackButtonPressed;
-			readonly bool _backHandled;
 
 			public BackHandlingPage(bool backHandled, Action onBackButtonPressed)
 			{
-				_backHandled = backHandled;
+				BackHandled = backHandled;
 				_onBackButtonPressed = onBackButtonPressed;
 			}
 
+			public bool BackHandled { get; set; }
 			public int BackButtonPressedCount { get; private set; }
 
 			protected override bool OnBackButtonPressed()
 			{
 				BackButtonPressedCount++;
 				_onBackButtonPressed();
-				return _backHandled;
+				return BackHandled;
 			}
 		}
 

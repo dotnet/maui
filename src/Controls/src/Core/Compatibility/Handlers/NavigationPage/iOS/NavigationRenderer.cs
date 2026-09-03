@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		bool _interactivePopGesturePending;
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
@@ -167,6 +168,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
 
 			base.ViewDidDisappear(animated);
@@ -242,11 +244,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldPopCurrentPage);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePop);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
+		}
+
+		bool ShouldBeginInteractivePop()
+		{
+			_interactivePopGesturePending = ShouldPopCurrentPage();
+			return _interactivePopGesturePending;
 		}
 
 		bool ShouldPopCurrentPage()
@@ -1143,6 +1151,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
+			// UIKit invokes ShouldBegin before ShouldPopItem for an interactive pop.
+			// The application back callback was already evaluated while admitting the gesture.
+			if (_interactivePopGesturePending)
+			{
+				return true;
+			}
+
 			return ShouldPopCurrentPage();
 		}
 
@@ -1361,6 +1376,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					r._interactivePopGesturePending = false;
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{

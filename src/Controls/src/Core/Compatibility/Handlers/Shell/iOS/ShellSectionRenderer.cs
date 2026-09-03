@@ -245,6 +245,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
+
 			// If this page is removed from the View Hierarchy we need to resolve any
 			// pending navigation operations
 			var sourcesToComplete = new List<TaskCompletionSource<bool>>();
@@ -397,6 +399,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (_disposed)
 				return;
+
+			_interactivePopGesturePending = false;
 
 			if (disposing)
 			{
