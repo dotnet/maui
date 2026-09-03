@@ -38,33 +38,42 @@ public class Issue37427 : _IssuesUITest
 			"Expected at least one card realized beyond the initial viewport.");
 
 		using var screenshot = new MagickImage(App.Screenshot());
-		// iOS screenshots use native pixels while Appium rectangles use points.
-		// Mac2 returns both in screen coordinates.
-#if IOS
-		var scale = (double)screenshot.Width / window.Width;
-#else
-		const double scale = 1;
-#endif
+		// Screenshots use native pixels while Appium rectangles use points.
+		var scaleX = (double)screenshot.Width / window.Width;
+		var scaleY = (double)screenshot.Height / window.Height;
+		Assert.That(scaleX, Is.EqualTo(scaleY).Within(0.05),
+			$"Expected the Appium window to use the screenshot's full-screen coordinate space, but got " +
+			$"window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
 		using var pixels = screenshot.GetPixels();
 
 		foreach (var (card, preview) in previews)
 		{
 			for (var column = 0; column < 5; column++)
 			{
-				var x = (int)((preview.X + preview.Width * (column + 0.5) / 5) * scale);
-				var y = (int)((preview.Y + preview.Height / 2) * scale);
+				var x = (int)((preview.X + preview.Width * (column + 0.5) / 5) * scaleX);
+				var y = (int)((preview.Y + preview.Height / 2) * scaleY);
 				Assert.That(x, Is.InRange(0, (int)screenshot.Width - 1));
 				Assert.That(y, Is.InRange(0, (int)screenshot.Height - 1));
 
 				var color = pixels.GetPixel(x, y).ToColor();
 				Assert.That(color, Is.Not.Null);
 
-				var channelRange = Math.Max(color!.R, Math.Max(color.G, color.B)) -
-					Math.Min(color.R, Math.Min(color.G, color.B));
+				var red = (int)color!.R;
+				var green = (int)color.G;
+				var blue = (int)color.B;
+				var isExpectedColor = column switch
+				{
+					0 => red - green > 40 && red - blue > 40,
+					1 => red - green > 40 && green - blue > 40,
+					2 => red - green > 15 && green - blue > 40,
+					3 => green - red > 20 && green - blue > 20,
+					4 => blue - red > 40 && blue - green > 40,
+					_ => false,
+				};
 
-				Assert.That(channelRange, Is.GreaterThan(100),
-					$"Card {card}, preview column {column} should contain a rendered color, but sampled {color} at ({x},{y}); " +
-					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scale}.");
+				Assert.That(isExpectedColor, Is.True,
+					$"Card {card}, preview column {column} should contain its expected rendered color, but sampled {color} at ({x},{y}); " +
+					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
 
 				var colorBounds = App.WaitForElement($"37427Card{card}Color{column}").GetRect();
 				Assert.That(colorBounds.Width, Is.GreaterThan(0));
