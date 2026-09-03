@@ -233,10 +233,16 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
-		if (PlatformView is null)
+		if (_ignorePlatformSelectionChange || PlatformView is null)
 			return;
 
-		UpdateVirtualSelection();
+		sender.DispatcherQueue.TryEnqueue(() =>
+		{
+			if (ReferenceEquals(PlatformView, sender))
+			{
+				UpdateVirtualSelection();
+			}
+		});
 	}
 
 	/// <summary>

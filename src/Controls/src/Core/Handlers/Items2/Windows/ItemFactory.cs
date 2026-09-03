@@ -141,6 +141,8 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
+			container.UseSystemFocusVisuals = true;
+			
 			// Prevent group headers/footers from being selectable by swapping
 			// the ItemContainer's ControlTemplate to one that has no checkbox
 			// or selection visuals. This is stable across all selection modes
