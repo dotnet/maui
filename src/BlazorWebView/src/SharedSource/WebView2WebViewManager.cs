@@ -28,7 +28,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.IWebView2;
 using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 					_logger.NavigatingToUri(absoluteUri);
 					_webview.Source = absoluteUri;
 				}
-			});
+			}).ObserveExceptionsAsync(_logger);
 		}
 
 		/// <inheritdoc />

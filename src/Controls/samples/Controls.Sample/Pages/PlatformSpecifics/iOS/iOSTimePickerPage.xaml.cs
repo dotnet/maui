@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnButtonClicked(object sender, EventArgs e)
+		void OnButtonClicked(object? sender, EventArgs e)
 		{
 			switch (timePicker.On<iOS>().UpdateMode())
 			{

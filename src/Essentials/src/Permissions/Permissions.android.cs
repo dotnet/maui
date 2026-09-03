@@ -64,7 +64,6 @@ namespace Microsoft.Maui.ApplicationModel
 				new Dictionary<int, TaskCompletionSource<PermissionResult>>();
 
 			static readonly object locker = new object();
-			static int requestCode;
 
 			public virtual (string androidPermission, bool isRuntime)[] RequiredPermissions { get; }
 
@@ -112,21 +111,39 @@ namespace Microsoft.Maui.ApplicationModel
 
 			protected virtual async Task<PermissionResult> DoRequest(string[] permissions)
 			{
-				TaskCompletionSource<PermissionResult> tcs;
-
-				lock (locker)
-				{
-					tcs = new TaskCompletionSource<PermissionResult>();
-
-					requestCode = PlatformUtils.NextRequestCode();
-
-					requests.Add(requestCode, tcs);
-				}
-
 				if (!MainThread.IsMainThread)
 					throw new PermissionException("Permission request must be invoked on main thread.");
 
-				ActivityCompat.RequestPermissions(ActivityStateManager.Default.GetCurrentActivity(true), permissions.ToArray(), requestCode);
+				var activity = ActivityStateManager.Default.GetCurrentActivity(true);
+				var tcs = new TaskCompletionSource<PermissionResult>();
+				int currentRequestCode;
+
+				lock (locker)
+				{
+					currentRequestCode = PlatformUtils.NextRequestCode();
+					requests.Add(currentRequestCode, tcs);
+				}
+
+				try
+				{
+					ActivityCompat.RequestPermissions(
+						activity,
+						permissions,
+						currentRequestCode);
+				}
+				catch
+				{
+					lock (locker)
+					{
+						if (requests.TryGetValue(currentRequestCode, out var pendingRequest) &&
+							ReferenceEquals(pendingRequest, tcs))
+						{
+							requests.Remove(currentRequestCode);
+						}
+					}
+
+					throw;
+				}
 
 				var result = await tcs.Task;
 				return result;
@@ -194,15 +211,18 @@ namespace Microsoft.Maui.ApplicationModel
 
 			internal static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
 			{
+				TaskCompletionSource<PermissionResult> tcs;
+
 				lock (locker)
 				{
-					if (requests.ContainsKey(requestCode))
-					{
-						var result = new PermissionResult(permissions, grantResults);
-						requests[requestCode].TrySetResult(result);
-						requests.Remove(requestCode);
-					}
+					if (!requests.TryGetValue(requestCode, out tcs))
+						return;
+
+					requests.Remove(requestCode);
 				}
+
+				var result = new PermissionResult(permissions, grantResults);
+				tcs.TrySetResult(result);
 			}
 		}
 
@@ -280,12 +300,22 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Flashlight : BasePlatformPermission
 		{
-			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
-				new (string, bool)[]
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
 				{
-					(Manifest.Permission.Camera, true),
-					(Manifest.Permission.Flashlight, false)
-				};
+					var permissions = new List<(string, bool)>
+					{
+						(Manifest.Permission.Camera, true),
+					};
+
+					// Manifest.Permission.Flashlight is unsupported on Android 24+.
+					if (!OperatingSystem.IsAndroidVersionAtLeast(24))
+						permissions.Add((Manifest.Permission.Flashlight, false));
+
+					return permissions.ToArray();
+				}
+			}
 		}
 
 		public partial class LaunchApp : BasePlatformPermission

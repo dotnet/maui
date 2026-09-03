@@ -7,8 +7,6 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class DropCompletedEventArgs : EventArgs
 	{
-		DataPackageOperation DropResult { get; }
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DropCompletedEventArgs"/> class.
 		/// </summary>

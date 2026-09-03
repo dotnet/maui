@@ -20,7 +20,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -111,7 +111,46 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
+	}
+
+	[Fact]
+	public void GeneratedHintNameDoesNotIncludeSourceFilePath()
+	{
+		var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+		var filePath = @"E:\GitHub\Esri\arcgis-toolkit-dotnet\src\Toolkit\Toolkit.Maui\Toolkit\UI\Controls\OfflineMapAreas\OfflineMapAreasView.Maui.cs";
+
+		var result = SourceGenHelpers.Run(new Dictionary<string, string> { { filePath, source } });
+		var generatedFile = SourceGenHelpers.GetGeneratedBindingFile(result);
+		var stableLocationId = SourceGenHelpers.GetStableBindingId(result.Binding);
+
+		AssertExtensions.AssertNoDiagnostics(result);
+		Assert.StartsWith(SourceGenHelpers.BindingGeneratedSourceHintNamePrefix, generatedFile.Key, StringComparison.Ordinal);
+		Assert.Contains(stableLocationId, generatedFile.Key, StringComparison.Ordinal);
+		Assert.EndsWith("-3-7.g.cs", generatedFile.Key, StringComparison.Ordinal);
+		Assert.DoesNotContain("OfflineMapAreasView", generatedFile.Key, StringComparison.Ordinal);
+		Assert.DoesNotContain("GitHub", generatedFile.Key, StringComparison.Ordinal);
+		Assert.True(generatedFile.Key.Length < 80);
+	}
+
+	[Fact]
+	public void GeneratedMethodNameUsesStableLocationId()
+	{
+		var source = """
+        using Microsoft.Maui.Controls;
+        var label = new Label();
+        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
+        """;
+
+		var result = SourceGenHelpers.Run(source);
+		var stableLocationId = SourceGenHelpers.GetStableBindingId(result.Binding);
+
+		AssertExtensions.AssertNoDiagnostics(result);
+		Assert.Contains($"public static void SetBinding{stableLocationId}(", SourceGenHelpers.GetGeneratedBindingSource(result), StringComparison.Ordinal);
 	}
 
 	[Fact]
@@ -126,7 +165,7 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -213,7 +252,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-2-27.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -302,7 +341,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -397,7 +437,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-6-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -427,7 +467,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -525,7 +566,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-7-7.g.cs"]);
+							SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	public static IEnumerable<object[]> GenerateSimpleBindingWhenNullableDisabledAndPropertyNullableData =>
@@ -658,7 +699,8 @@ public class IntegrationTests
 	public void GenerateSimpleBindingWhenNullableDisabledAndPropertyNullable(string source)
 	{
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -753,7 +795,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-7-7.g.cs"]);
+							SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -797,7 +839,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -893,7 +936,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-7-7.g.cs"]);
+							SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Theory]
@@ -936,7 +979,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1040,7 +1084,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-4-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1081,7 +1125,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1181,7 +1226,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-4-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1213,7 +1258,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1308,7 +1354,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1344,7 +1390,8 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1449,7 +1496,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-6-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1479,7 +1526,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1575,7 +1623,7 @@ public class IntegrationTests
                 }
             }
             """,
-	result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
+	SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1605,7 +1653,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1700,7 +1749,7 @@ public class IntegrationTests
                 }
             }
             """,
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1730,7 +1779,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1824,7 +1874,7 @@ public class IntegrationTests
                 }
             }
             """,
-	result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
+	SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1854,7 +1904,8 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1949,7 +2000,7 @@ public class IntegrationTests
                 }
             }
             """,
-	result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
+	SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -1973,10 +2024,11 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source);
-		var actual = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-5-7.g.cs"];
+		var actual = SourceGenHelpers.GetGeneratedBindingSource(result);
 		AssertExtensions.AssertNoDiagnostics(result);
 
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -2092,7 +2144,8 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2182,7 +2235,7 @@ public class IntegrationTests
 				}
 			}
 			""",
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-13-13.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]
@@ -2209,7 +2262,8 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
+		Assert.NotNull(result.Binding);
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2301,7 +2355,7 @@ public class IntegrationTests
 				}
 			}
 			""",
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-14-11.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Theory]
@@ -2337,10 +2391,9 @@ public class IntegrationTests
 
 		var result = SourceGenHelpers.Run(source);
 		AssertExtensions.AssertNoDiagnostics(result);
-		
-		// Find the interceptor file (not the common helper file)
-		var generatedCode = result.GeneratedFiles.First(kvp => kvp.Key.Contains("Path-To-Program", StringComparison.Ordinal)).Value;
-		
+
+		var generatedCode = SourceGenHelpers.GetGeneratedBindingSource(result);
+
 		if (shouldUseUnsafeAccessor)
 		{
 			// Verify that UnsafeAccessor is generated for the setter and is called correctly
@@ -2377,7 +2430,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
+		var id = SourceGenHelpers.GetStableBindingId(result.Binding);
 
 		// The key assertion: no CS8603 errors should be present
 		AssertExtensions.AssertNoDiagnostics(result);
@@ -2468,7 +2521,7 @@ public class IntegrationTests
 			    }
 			}
 			""",
-			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-3-7.g.cs"]);
+			SourceGenHelpers.GetGeneratedBindingSource(result));
 	}
 
 	[Fact]

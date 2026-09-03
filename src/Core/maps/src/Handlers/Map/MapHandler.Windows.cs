@@ -10,8 +10,6 @@ using Windows.Devices.Geolocation;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	// TODO: For .NET 11, refactor setup/cleanup into ConnectHandler/DisconnectHandler overrides
-	// to match the iOS/Android handler pattern. Avoided for now to prevent new PublicAPI entries.
 	/// <summary>
 	/// Handler for the Map control on Windows using the WinUI 3 MapControl backed by Azure Maps.
 	/// </summary>
@@ -66,7 +64,6 @@ namespace Microsoft.Maui.Maps.Handlers
 			_mapControl.InteractiveControlsVisible = true;
 
 			_mapControl.Loaded += OnMapControlLoaded;
-			_mapControl.Unloaded += OnMapControlUnloaded;
 
 			_pinsLayer = new MapElementsLayer();
 			_pinsLayer.MapElementClick += OnPinLayerElementClick;
@@ -89,6 +86,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			{
 				// WebView2 child may not be available yet during complex initialization.
 				// Retry on LayoutUpdated until found.
+				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
 				_mapControl.LayoutUpdated += OnMapControlLayoutUpdated;
 			}
 		}
@@ -110,6 +108,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				VisualTreeHelper.GetChild(_mapControl, 0) is WebView2 webView)
 			{
 				_webView = webView;
+				_webView.NavigationStarting += OnWebViewNavigationStarting;
 				_webView.NavigationCompleted += OnWebViewNavigationCompleted;
 				return true;
 			}
@@ -117,12 +116,18 @@ namespace Microsoft.Maui.Maps.Handlers
 			return false;
 		}
 
+		void OnWebViewNavigationStarting(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs args)
+		{
+			_webViewReady = false;
+		}
+
 		void OnWebViewNavigationCompleted(WebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs args)
 		{
-			sender.NavigationCompleted -= OnWebViewNavigationCompleted;
+			if (!args.IsSuccess)
+				return;
+
 			_webViewReady = true;
 
-			// Apply any pending state that was queued before the WebView was ready
 			if (_pendingSpan != null)
 			{
 				var span = _pendingSpan;
@@ -211,38 +216,35 @@ namespace Microsoft.Maui.Maps.Handlers
 			return Math.Clamp(Math.Min(zoomLat, zoomLon), 0, 24);
 		}
 
-		void OnMapControlUnloaded(object sender, RoutedEventArgs e)
+		/// <inheritdoc/>
+		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
 			if (_mapControl != null)
 			{
 				_mapControl.Loaded -= OnMapControlLoaded;
 				_mapControl.LayoutUpdated -= OnMapControlLayoutUpdated;
-				_mapControl.Unloaded -= OnMapControlUnloaded;
-
-				if (_pinsLayer != null)
-				{
-					_pinsLayer.MapElementClick -= OnPinLayerElementClick;
-					_mapControl.Layers.Remove(_pinsLayer);
-					_pinsLayer = null;
-				}
-
-				if (_mapElementsLayer != null)
-				{
-					_mapControl.Layers.Remove(_mapElementsLayer);
-					_mapElementsLayer = null;
-				}
 			}
 
-			_mapIcons.Clear();
-			_pendingSpan = null;
+			if (_pinsLayer != null)
+			{
+				_pinsLayer.MapElementClick -= OnPinLayerElementClick;
+			}
 
 			if (_webView != null)
 			{
+				_webView.NavigationStarting -= OnWebViewNavigationStarting;
 				_webView.NavigationCompleted -= OnWebViewNavigationCompleted;
 			}
 
+			_pinsLayer = null;
+			_mapElementsLayer = null;
 			_webView = null;
 			_webViewReady = false;
+			_mapIcons.Clear();
+			_pendingSpan = null;
+			_mapControl = null;
+
+			base.DisconnectHandler(platformView);
 		}
 
 		void OnPinLayerElementClick(MapElementsLayer sender, MapElementClickEventArgs args)
@@ -289,6 +291,13 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 
 		/// <summary>
+		/// Maps <see cref="IMap.MapStyle"/>. Custom JSON map styles are not supported by the WinUI 3 MapControl.
+		/// </summary>
+		public static void MapMapStyle(IMapHandler handler, IMap map)
+		{
+		}
+
+		/// <summary>
 		/// Maps <see cref="IMap.IsZoomEnabled"/> via the Azure Maps JS <c>map.setUserInteraction()</c> API.
 		/// </summary>
 		/// <remarks>
@@ -306,6 +315,13 @@ namespace Microsoft.Maui.Maps.Handlers
 					_ = mapHandler.ApplyUserInteractionAsync(map.IsScrollEnabled, map.IsZoomEnabled);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Maps <see cref="IMap.IsClusteringEnabled"/>. Pin clustering is not supported by the WinUI 3 MapControl.
+		/// </summary>
+		public static void MapIsClusteringEnabled(IMapHandler handler, IMap map)
+		{
 		}
 
 		/// <summary>
@@ -455,6 +471,14 @@ namespace Microsoft.Maui.Maps.Handlers
 		public void UpdateMapElement(IMapElement element)
 		{
 			// No-op: shape rendering is not supported by the WinUI 3 MapControl.
+		}
+
+		void ShowInfoWindow(IMapPin pin)
+		{
+		}
+
+		void HideInfoWindow(IMapPin pin)
+		{
 		}
 	}
 }

@@ -154,6 +154,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ReplacingGroupUpdatesVisualStateAndValidationSubscription()
+		{
+			var label = new Label();
+			var originalMargin = new Thickness(1);
+			var replacementMargin = new Thickness(2);
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							Setters =
+							{
+								new Setter { Property = View.MarginProperty, Value = originalMargin }
+							}
+						}
+					}
+				}
+			};
+
+			VisualStateManager.SetVisualStateGroups(label, groups);
+			Assert.Equal(originalMargin, label.Margin);
+
+			var replacementGroup = new VisualStateGroup
+			{
+				States =
+				{
+					new VisualState
+					{
+						Name = NormalStateName,
+						Setters =
+						{
+							new Setter { Property = View.MarginProperty, Value = replacementMargin }
+						}
+					}
+				}
+			};
+
+			groups[0] = replacementGroup;
+
+			Assert.Equal(replacementMargin, label.Margin);
+			Assert.Throws<InvalidOperationException>(() => replacementGroup.States.Add(new VisualState { Name = NormalStateName }));
+		}
+
+		[Fact]
 		public void StateNamesInGroupMayNotBeNull()
 		{
 			IList<VisualStateGroup> vsgs = CreateTestStateGroups();
@@ -650,7 +698,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.GoToState(button, customStateName);
 			Assert.Equal(localColor, button.BackgroundColor);
 		}
-
 		[Fact]
 		// https://github.com/dotnet/maui/issues/35399
 		public void SelectHoverDeselectRestoresPointerOverState()
@@ -782,6 +829,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var field = typeof(VisualElement).GetField("_isPointerOver", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 			field!.SetValue(element, value);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesReappliesMutatedSetter()
+		{
+			var label = new Label();
+			var normalState = new VisualState { Name = NormalStateName };
+			normalState.Setters.Add(new Setter { Property = Label.TextProperty, Value = "original" });
+
+			var group = new VisualStateGroup { Name = CommonStatesGroupName };
+			group.States.Add(normalState);
+
+			var groups = new VisualStateGroupList { group };
+			VisualStateManager.SetVisualStateGroups(label, groups);
+
+			// Initial state should be applied
+			Assert.Equal("original", label.Text);
+
+			// Mutate the setter in-place — the label should NOT update yet
+			normalState.Setters[0].Value = "mutated";
+			Assert.Equal("original", label.Text);
+
+			// After InvalidateVisualStates, the new value should be applied
+			VisualStateManager.InvalidateVisualStates(label);
+			Assert.Equal("mutated", label.Text);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesWithNoGroupsDoesNotThrow()
+		{
+			var label = new Label();
+			var exception = Record.Exception(() => VisualStateManager.InvalidateVisualStates(label));
+			Assert.Null(exception);
+		}
+
+		[Fact]
+		public void InvalidateVisualStatesWithNoCurrentStateDoesNotThrow()
+		{
+			var label = new Label();
+			var groups = CreateStateGroupsWithoutNormalState();
+			VisualStateManager.SetVisualStateGroups(label, groups);
+
+			// No current state is set (no Normal state)
+			var exception = Record.Exception(() => VisualStateManager.InvalidateVisualStates(label));
+			Assert.Null(exception);
 		}
 	}
 }

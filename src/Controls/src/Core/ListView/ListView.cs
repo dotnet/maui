@@ -97,6 +97,8 @@ namespace Microsoft.Maui.Controls
 		int _previousGroupSelected = -1;
 		int _previousRowSelected = -1;
 
+		WeakCommandSubscription _refreshCommandSubscription;
+
 		/// <summary>
 		///     Controls whether anything happens in BeginRefresh(), is set based on RefreshCommand.CanExecute
 		/// </summary>
@@ -682,7 +684,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupHeaderTemplate != null)
 			{
 				lv.GroupHeaderTemplate = null;
-				Application.Current?.FindMauiContext()?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
+				MauiLogger<ListView>.Log(LogLevel.Warning, "GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupHeaderTemplate to null");
 			}
 		}
 
@@ -692,7 +694,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null && lv.GroupDisplayBinding != null)
 			{
 				lv.GroupDisplayBinding = null;
-				Application.Current?.FindMauiContext()?.CreateLogger<ListView>()?.LogWarning("GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
+				MauiLogger<ListView>.Log(LogLevel.Warning, "GroupHeaderTemplate and GroupDisplayBinding cannot be set at the same time, setting GroupDisplayBinding to null");
 			}
 		}
 
@@ -763,12 +765,13 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldCommand != null)
 			{
-				oldCommand.CanExecuteChanged -= OnCommandCanExecuteChanged;
+				_refreshCommandSubscription?.Dispose();
+				_refreshCommandSubscription = null;
 			}
 
 			if (newCommand != null)
 			{
-				newCommand.CanExecuteChanged += OnCommandCanExecuteChanged;
+				_refreshCommandSubscription = new WeakCommandSubscription(this, newCommand, OnCommandCanExecuteChanged);
 				RefreshAllowed = newCommand.CanExecute(null);
 			}
 			else

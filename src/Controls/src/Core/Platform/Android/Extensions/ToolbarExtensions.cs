@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -13,9 +14,11 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Microsoft.Maui.Controls.Diagnostics;
+using Google.Android.Material.AppBar;
+using Google.Android.Material.Badge;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
-using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -25,12 +28,12 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
-		static ColorStateList? _defaultTitleTextColor;
-		static int? _defaultNavigationIconColor;
-		
 		// Track which ToolbarItem should currently be associated with each MenuItem ID to prevent race conditions
 		// This prevents stale async icon loading callbacks from updating the wrong toolbar items during navigation
 		static readonly ConcurrentDictionary<int, WeakReference<ToolbarItem>> _menuItemToolbarItemMap = new();
+
+		// Track badge drawables per menu item ID for lifecycle management
+		static readonly ConcurrentDictionary<int, BadgeDrawable> _badgeDrawables = new();
 
 		public static void UpdateIsVisible(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
@@ -106,21 +109,27 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
+			var context =
+				nativeToolbar.Context?.GetThemedContext() ??
+				nativeToolbar.Context ??
+				toolbar.Handler?.MauiContext?.Context;
+
 			if (toolbar.BackButtonVisible)
 			{
-				var context =
-					nativeToolbar.Context?.GetThemedContext() ??
-					nativeToolbar.Context ??
-					toolbar.Handler?.MauiContext?.Context;
-
 				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 					iconDrawable.Progress = 1;
 
+				var backButtonAccessibilityLabel = toolbar.BackButtonAccessibilityLabel;
 				var backButtonTitle = toolbar.BackButtonTitle;
 				ImageSource image = toolbar.TitleIcon;
 
-				if (!string.IsNullOrEmpty(backButtonTitle))
+				if (!string.IsNullOrEmpty(backButtonAccessibilityLabel))
+				{
+					// Accessibility label takes priority — TalkBack reads this instead of the title.
+					nativeToolbar.NavigationContentDescription = backButtonAccessibilityLabel;
+				}
+				else if (!string.IsNullOrEmpty(backButtonTitle))
 				{
 					nativeToolbar.NavigationContentDescription = backButtonTitle;
 				}
@@ -138,8 +147,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
+					// Preserve any custom flyout icon assigned by ShellToolbarTracker.
+					// Only create a default drawer arrow when no navigation icon exists.
+					nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
+
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					{
 						iconDrawable.Progress = 0;
+					}
 
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
@@ -168,32 +183,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
+				nativeToolbar.BackgroundTintMode = null;
+				nativeToolbar.BackgroundTintList = null;
 				nativeToolbar.UpdateBackground(barBackground);
-
-				if (Brush.IsNullOrEmpty(barBackground))
-					nativeToolbar.BackgroundTintMode = null;
 			}
+			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var navIconColor = toolbar.IconColor;
-			if (navIconColor is null)
-				return;
-
-			var platformColor = navIconColor.ToPlatform();
-			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
-			{
-				if (navigationIcon is DrawerArrowDrawable dad)
-					dad.Color = AGraphics.Color.White;
-
-				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
-			if (nativeToolbar.OverflowIcon is Drawable overflowIcon)
-			{
-				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -202,34 +203,108 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
 			// We need to reset the toolbar text color to the default color when it's unset
-			if (_defaultTitleTextColor == null)
-			{
-				var context = nativeToolbar.Context?.GetThemedContext();
-				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
-					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
-			}
-
 			if (textColor != null)
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else if (_defaultTitleTextColor != null)
+			else if (GetDefaultTitleTextColor(nativeToolbar) is { } defaultTitleTextColor)
 			{
-				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
+				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
 			}
 
-			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
+		}
+
+		static void UpdateNavigationIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.NavigationIcon is not Drawable navigationIcon)
 			{
+				return;
+			}
+
+			if (toolbar.IconColor is not null)
+			{
+				if (navigationIcon is DrawerArrowDrawable dad)
+					dad.Color = global::Android.Graphics.Color.White;
+
+				navigationIcon.SetColorFilter(toolbar.IconColor.ToPlatform(), FilterMode.SrcAtop);
+				return;
+			}
+
+			navigationIcon.ClearColorFilter();
+
+			if (navigationIcon is DrawerArrowDrawable icon)
+			{
+				var textColor = toolbar.BarTextColor;
 				if (textColor != null)
 				{
-					_defaultNavigationIconColor = icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (_defaultNavigationIconColor != null)
+				else if (GetDefaultNavigationIconColor(nativeToolbar) is int defaultNavigationIconColor)
 				{
-					icon.Color = _defaultNavigationIconColor.Value;
+					icon.Color = defaultNavigationIconColor;
 				}
 			}
+		}
+
+		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext();
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				var colorContext = context is null
+				 ? null
+				 : ColorStateList.ValueOf(new global::Android.Graphics.Color(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface)));
+				return colorContext;
+			}
+			else
+			{
+				return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
+				 Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			}
+		}
+
+		static int? GetDefaultNavigationIconColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext() ?? nativeToolbar.Context;
+			if (context is null)
+			{
+				return null;
+			}
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				return context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+			}
+
+			using var icon = new DrawerArrowDrawable(context);
+			return icon.Color;
+		}
+
+		static void UpdateOverflowIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.OverflowIcon is not Drawable overflowIcon)
+			{
+				return;
+			}
+
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
+			if (iconColor is null)
+			{
+				overflowIcon.ClearColorFilter();
+			}
+			else
+			{
+				overflowIcon.SetColorFilter(iconColor.ToPlatform(), FilterMode.SrcAtop);
+			}
+		}
+
+		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			AndroidSystemChrome.UpdateTopChrome(nativeToolbar, toolbar.BarBackground);
 		}
 
 		class ToolbarTitleIconImageView : AppCompatImageView
@@ -247,6 +322,119 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (var item in toolbarItems)
 				item.PropertyChanged -= toolbarItemChanged;
+
+			// Clean up badge drawables for this toolbar's menu items only
+			if (toolbar?.Menu is { } menu)
+			{
+				for (int i = 0; i < menu.Size(); i++)
+				{
+					var menuItem = menu.GetItem(i);
+					if (menuItem != null)
+					{
+						CleanupBadgeDrawable(menuItem.ItemId);
+						_menuItemToolbarItemMap.TryRemove(menuItem.ItemId, out _);
+					}
+				}
+			}
+		}
+
+		internal static void UpdateToolbarItemBadge(AToolbar toolbar, IMenuItem menuItem, ToolbarItem toolbarItem)
+		{
+			var context = toolbar.Context;
+			if (context == null)
+				return;
+
+			var badgeText = toolbarItem.BadgeText;
+			var menuItemId = menuItem.ItemId;
+
+			if (badgeText is null)
+			{
+				CleanupBadgeDrawable(toolbar, menuItemId);
+				return;
+			}
+
+			// Capture the expected text to guard against rapid updates
+			var expectedBadgeText = badgeText;
+
+			// Defer badge attachment until the view is laid out
+			toolbar.Post(() =>
+			{
+				if (!toolbar.IsAttachedToWindow)
+					return;
+
+				// Race condition guard: if badge text changed since we posted,
+				// skip this update — a newer callback will handle it
+				if (toolbarItem.BadgeText != expectedBadgeText)
+					return;
+
+				// Guard against recycled menu items: verify this menuItemId still
+				// maps to the same ToolbarItem we intended to update
+				if (_menuItemToolbarItemMap.TryGetValue(menuItemId, out var weakRef) &&
+					weakRef.TryGetTarget(out var currentToolbarItem) &&
+					!ReferenceEquals(currentToolbarItem, toolbarItem))
+					return;
+
+				var anchorView = toolbar.FindViewById(menuItemId);
+				if (anchorView == null)
+					return;
+
+				// Remove existing badge first
+				CleanupBadgeDrawable(toolbar, menuItemId);
+
+				var badge = BadgeDrawable.Create(context);
+				if (badgeText.Length > 0)
+					badge.Text = badgeText;
+				else
+					badge.ClearNumber(); // Empty string shows as dot indicator
+
+				var badgeColor = toolbarItem.BadgeColor;
+				if (badgeColor is not null)
+					badge.BackgroundColor = badgeColor.ToPlatform();
+
+				var badgeTextColor = toolbarItem.BadgeTextColor;
+				if (badgeTextColor is not null)
+					badge.BadgeTextColor = badgeTextColor.ToPlatform();
+
+				try
+				{
+					BadgeUtils.AttachBadgeDrawable(badge, toolbar, menuItemId);
+				}
+				catch (Java.Lang.Exception)
+				{
+					// BadgeUtils may fail if the view is not properly attached;
+					// fall back to direct overlay attachment
+					badge.UpdateBadgeCoordinates(anchorView, null);
+					anchorView.Overlay?.Add(badge);
+				}
+
+				_badgeDrawables[menuItemId] = badge;
+			});
+		}
+
+		static void CleanupBadgeDrawable(AToolbar toolbar, int menuItemId)
+		{
+			if (_badgeDrawables.TryRemove(menuItemId, out var existingBadge))
+			{
+				var anchorView = toolbar.FindViewById(menuItemId);
+				if (anchorView != null)
+				{
+					try
+					{
+						BadgeUtils.DetachBadgeDrawable(existingBadge, toolbar, menuItemId);
+					}
+					catch (Java.Lang.Exception)
+					{
+						anchorView.Overlay?.Remove(existingBadge);
+					}
+				}
+				existingBadge.Dispose();
+			}
+		}
+
+		static void CleanupBadgeDrawable(int menuItemId)
+		{
+			if (_badgeDrawables.TryRemove(menuItemId, out var existingBadge))
+				existingBadge.Dispose();
 		}
 
 		public static void UpdateMenuItems(this AToolbar toolbar,
@@ -256,10 +444,36 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null,
+			NativeElementRegistrationSet? nativeElementRegistrations = null,
+			object? nativeToolbarOwner = null)
 		{
-			if (sortedToolbarItems == null || previousMenuItems == null)
+			if (previousMenuItems == null)
 				return;
+
+			if (nativeElementRegistrations is not null)
+			{
+				if (nativeToolbarOwner is null)
+					nativeElementRegistrations.Clear();
+				else
+				{
+					nativeElementRegistrations.AdvanceLifecycle();
+					RegisterToolbarChrome(toolbar, nativeToolbarOwner, nativeElementRegistrations);
+				}
+			}
+
+			var currentToolbarItems = sortedToolbarItems?.ToList() ?? new List<ToolbarItem>();
+			foreach (var previousToolbarItem in previousToolBarItems)
+			{
+				if (!currentToolbarItems.Any(item => ReferenceEquals(item, previousToolbarItem)))
+					nativeElementRegistrations?.UnregisterOwner(previousToolbarItem);
+			}
+			var sharedItemCount = Math.Min(previousToolBarItems.Count, currentToolbarItems.Count);
+			for (var itemIndex = 0; itemIndex < sharedItemCount; itemIndex++)
+			{
+				if (!ReferenceEquals(previousToolBarItems[itemIndex], currentToolbarItems[itemIndex]))
+					nativeElementRegistrations?.UnregisterOwner(previousToolBarItems[itemIndex]);
+			}
 
 			var menu = toolbar.Menu;
 
@@ -271,9 +485,12 @@ namespace Microsoft.Maui.Controls.Platform
 					var previousMenuItem = previousMenuItems[j];
 					if (menu.FindItem(previousMenuItem.ItemId) == null)
 					{
+						nativeElementRegistrations?.Unregister(previousMenuItem);
+
 						// Clean up the mapping for disposed MenuItems
 						_menuItemToolbarItemMap.TryRemove(previousMenuItem.ItemId, out _);
-						
+						CleanupBadgeDrawable(previousMenuItem.ItemId);
+
 						previousMenuItem.Dispose();
 						previousMenuItems.RemoveAt(j);
 					}
@@ -284,9 +501,19 @@ namespace Microsoft.Maui.Controls.Platform
 				toolbarItem.PropertyChanged -= toolbarItemChanged;
 
 			int i = 0;
-			foreach (var item in sortedToolbarItems)
+			foreach (var item in currentToolbarItems)
 			{
-				UpdateMenuItem(toolbar, item, i, mauiContext, tintColor, toolbarItemChanged, previousMenuItems, previousToolBarItems, updateMenuItemIcon);
+				UpdateMenuItem(
+					toolbar,
+					item,
+					i,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					previousMenuItems,
+					previousToolBarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations);
 				i++;
 			}
 
@@ -294,17 +521,19 @@ namespace Microsoft.Maui.Controls.Platform
 			while (toolBarItemCount < previousMenuItems.Count)
 			{
 				var menuItemToRemove = previousMenuItems[toolBarItemCount];
+				nativeElementRegistrations?.Unregister(menuItemToRemove);
 				menu?.RemoveItem(menuItemToRemove.ItemId);
-				
+
 				// Clean up the mapping for disposed MenuItems
 				_menuItemToolbarItemMap.TryRemove(menuItemToRemove.ItemId, out _);
-				
+				CleanupBadgeDrawable(menuItemToRemove.ItemId);
+
 				menuItemToRemove.Dispose();
 				previousMenuItems.RemoveAt(toolBarItemCount);
 			}
 
 			previousToolBarItems.Clear();
-			previousToolBarItems.AddRange(sortedToolbarItems);
+			previousToolBarItems.AddRange(currentToolbarItems);
 		}
 
 		static void UpdateMenuItem(AToolbar toolbar,
@@ -315,7 +544,8 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> previousMenuItems,
 			List<ToolbarItem> previousToolBarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon,
+			NativeElementRegistrationSet? nativeElementRegistrations)
 		{
 			var context = mauiContext?.Context ??
 					throw new ArgumentNullException($"{nameof(mauiContext.Context)}");
@@ -374,7 +604,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Track which ToolbarItem should be associated with this MenuItem to prevent race conditions
 			_menuItemToolbarItemMap[menuitem.ItemId] = new WeakReference<ToolbarItem>(item);
-			
+
 			// NOTE: Custom updateMenuItemIcon callbacks are responsible for their own
 			// race condition handling. The _menuItemToolbarItemMap guard only applies
 			// to the default UpdateMenuItemIcon path.
@@ -389,6 +619,23 @@ namespace Microsoft.Maui.Controls.Platform
 				menuitem.SetShowAsAction(ShowAsAction.Never);
 
 			menuitem.SetOnMenuItemClickListener(new GenericMenuClickListener(((IMenuItemController)item).Activate));
+			var role = item.Order == ToolbarItemOrder.Secondary
+				? NativeElementRoles.ToolbarOverflow
+				: NativeElementRoles.ToolbarItem;
+			if (nativeElementRegistrations is not null)
+			{
+				nativeElementRegistrations.Register(
+					item,
+					menuitem,
+					role,
+					NativeElementDiscriminators.LogicalModel);
+				RegisterRealizedMenuItem(
+					toolbar,
+					menuitem,
+					item,
+					role,
+					nativeElementRegistrations);
+			}
 
 			if (item.Order != ToolbarItemOrder.Secondary && !OperatingSystem.IsAndroidVersionAtLeast(26) && (tintColor != null && tintColor != null))
 			{
@@ -403,6 +650,157 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			SetSemanticProperties(item, toolbar.FindViewById(menuitem.ItemId));
+
+			if (item.Order != ToolbarItemOrder.Secondary && item.BadgeText is not null)
+				UpdateToolbarItemBadge(toolbar, menuitem, item);
+		}
+
+		static void RegisterRealizedMenuItem(
+			AToolbar toolbar,
+			IMenuItem menuItem,
+			ToolbarItem toolbarItem,
+			string role,
+			NativeElementRegistrationSet nativeElementRegistrations)
+		{
+			var itemId = menuItem.ItemId;
+			var lifecycleEpoch = nativeElementRegistrations.LifecycleEpoch;
+			void RegisterCurrentView()
+			{
+				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive() ||
+					!menuItem.IsAlive() ||
+					!_menuItemToolbarItemMap.TryGetValue(itemId, out var currentOwner) ||
+					!currentOwner.TryGetTarget(out var owner) ||
+					!ReferenceEquals(owner, toolbarItem))
+				{
+					return;
+				}
+
+				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
+					return;
+				}
+
+				if (toolbar.FindViewById(itemId) is AView view && view.IsAlive())
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						toolbarItem,
+						view,
+						role,
+						NativeElementDiscriminators.RealizedView);
+				}
+			}
+
+			RegisterCurrentView();
+			toolbar.Post(RegisterCurrentView);
+		}
+
+		internal static void RegisterToolbarChrome(
+			AToolbar toolbar,
+			object owner,
+			NativeElementRegistrationSet nativeElementRegistrations)
+		{
+			var lifecycleEpoch = nativeElementRegistrations.LifecycleEpoch;
+			void RegisterCurrentViews()
+			{
+				if (!nativeElementRegistrations.IsCurrent(lifecycleEpoch) ||
+					!toolbar.IsAlive())
+					return;
+
+				nativeElementRegistrations.RegisterExclusive(
+					owner,
+					toolbar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.ToolbarContainer);
+
+				if (toolbar.HasExpandedActionView)
+				{
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.TitleView);
+					nativeElementRegistrations.UnregisterDiscriminator(
+						NativeElementDiscriminators.RealizedView);
+					return;
+				}
+
+				global::Android.Widget.TextView? titleView = null;
+				for (var index = 0; index < toolbar.ChildCount; index++)
+				{
+					if (toolbar.GetChildAt(index) is global::Android.Widget.TextView textView &&
+						textView.IsAlive())
+					{
+						titleView = textView;
+						break;
+					}
+				}
+
+				if (titleView is null)
+				{
+					nativeElementRegistrations.UnregisterOwner(
+						owner,
+						NativeElementDiscriminators.TitleView);
+				}
+				else
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						owner,
+						titleView,
+						NativeElementRoles.ToolbarTitle,
+						NativeElementDiscriminators.TitleView);
+				}
+
+				var overflowButton = FindToolbarOverflowButton(toolbar);
+				if (overflowButton is null)
+				{
+					nativeElementRegistrations.UnregisterOwner(
+						owner,
+						NativeElementDiscriminators.RealizedView);
+				}
+				else
+				{
+					nativeElementRegistrations.RegisterExclusive(
+						owner,
+						overflowButton,
+						NativeElementRoles.ToolbarOverflow,
+						NativeElementDiscriminators.RealizedView);
+				}
+			}
+
+			RegisterCurrentViews();
+			toolbar.Post(RegisterCurrentViews);
+			toolbar.PostDelayed(RegisterCurrentViews, 100);
+			toolbar.PostDelayed(RegisterCurrentViews, 500);
+		}
+
+		static AView? FindToolbarOverflowButton(AView view)
+		{
+			if (!view.IsAlive())
+				return null;
+
+			var typeName = view.GetType().Name;
+			if (view.Parent is ActionMenuView
+				&& view.Clickable
+				&& (typeName.Contains("Overflow", StringComparison.Ordinal)
+					|| (!string.IsNullOrWhiteSpace(view.ContentDescription)
+						&& typeName.Contains("Image", StringComparison.OrdinalIgnoreCase))))
+			{
+				return view;
+			}
+
+			if (view is not ViewGroup group)
+				return null;
+
+			for (var index = 0; index < group.ChildCount; index++)
+			{
+				if (group.GetChildAt(index) is AView child
+					&& FindToolbarOverflowButton(child) is { } overflowButton)
+				{
+					return overflowButton;
+				}
+			}
+
+			return null;
 		}
 
 		static void SetSemanticProperties(ToolbarItem menuItem, AView? view)
@@ -507,10 +905,28 @@ namespace Microsoft.Maui.Controls.Platform
 			PropertyChangedEventHandler toolbarItemChanged,
 			List<IMenuItem> currentMenuItems,
 			List<ToolbarItem> currentToolbarItems,
-			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null)
+			Action<Context, IMenuItem, ToolbarItem>? updateMenuItemIcon = null,
+			NativeElementRegistrationSet? nativeElementRegistrations = null,
+			object? nativeToolbarOwner = null)
 		{
 			if (toolbarItems == null)
 				return;
+
+			// Handle badge property changes without rebuilding the menu item
+			if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+			{
+				int badgeIndex = 0;
+				foreach (var ti in toolbarItems)
+				{
+					if (ti == toolbarItem)
+						break;
+					badgeIndex++;
+				}
+
+				if (badgeIndex < currentMenuItems.Count && currentMenuItems[badgeIndex].IsAlive())
+					UpdateToolbarItemBadge(toolbar, currentMenuItems[badgeIndex], toolbarItem);
+				return;
+			}
 
 			if (!e.IsOneOf(MenuItem.TextProperty, MenuItem.IconImageSourceProperty, MenuItem.IsEnabledProperty))
 				return;
@@ -531,9 +947,29 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			if (currentMenuItems[index].IsAlive())
-				UpdateMenuItem(toolbar, toolbarItem, index, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+				UpdateMenuItem(
+					toolbar,
+					toolbarItem,
+					index,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					currentMenuItems,
+					currentToolbarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations);
 			else
-				UpdateMenuItems(toolbar, toolbarItems, mauiContext, tintColor, toolbarItemChanged, currentMenuItems, currentToolbarItems, updateMenuItemIcon);
+				UpdateMenuItems(
+					toolbar,
+					toolbarItems,
+					mauiContext,
+					tintColor,
+					toolbarItemChanged,
+					currentMenuItems,
+					currentToolbarItems,
+					updateMenuItemIcon,
+					nativeElementRegistrations,
+					nativeToolbarOwner);
 		}
 	}
 }

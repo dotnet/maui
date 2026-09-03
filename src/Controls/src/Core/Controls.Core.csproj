@@ -6,7 +6,6 @@
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
     <Nullable>enable</Nullable>
-    <IsTrimmable>false</IsTrimmable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
@@ -62,9 +61,14 @@
       Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
+    <ProjectReference
+      Include="..\..\..\Core\src\HybridWebViewSourceGen\Core.HybridWebViewSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MemoryAnalyzers" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />

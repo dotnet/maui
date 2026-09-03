@@ -373,7 +373,7 @@ public class BindingRepresentationGenTests
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
 					new MemberAccess("Items"),
-					new IndexAccess("Item", 0),
+					new IndexAccess("Item", 0, IsArrayElement: true),
 					new MemberAccess("Length", IsValueType: true),
 				]),
 				SetterOptions: new(IsWritable: false),
@@ -558,7 +558,7 @@ public class BindingRepresentationGenTests
 				new EquatableArray<IPathPart>([
 				new IndexAccess("Item", 12),
 				new ConditionalAccess(new IndexAccess("Indexer", "Abc")),
-				new IndexAccess("Item", 0),
+				new IndexAccess("Item", 0, IsArrayElement: true),
 			]),
 			SetterOptions: new(IsWritable: true),
 			NullableContextEnabled: true,
@@ -967,7 +967,7 @@ public class BindingRepresentationGenTests
 			new TypeDescription("char", IsValueType: true),
 			new EquatableArray<IPathPart>([
 				new MemberAccess("S"),
-				new IndexAccess("Item", 0, IsValueType: true),
+				new IndexAccess("Item", 0, IsValueType: true, IsArrayElement: true),
 			]),
 			SetterOptions: new(IsWritable: true),
 			NullableContextEnabled: true,
@@ -1099,8 +1099,8 @@ public class BindingRepresentationGenTests
 					ContainingType: new TypeDescription("global::Foo"),
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Field,
-					IsGetterInaccessible: true,
-					IsSetterInaccessible: true
+					IsGetterAccessible: false,
+					IsSetterAccessible: false
 				)
 			]),
 			SetterOptions: new(IsWritable: true),
@@ -1143,8 +1143,8 @@ public class BindingRepresentationGenTests
 					ContainingType: new TypeDescription("global::Foo"),
 					MemberType: new TypeDescription("int", IsValueType: true),
 					Kind: AccessorKind.Property,
-					IsGetterInaccessible: true,
-					IsSetterInaccessible: true
+					IsGetterAccessible: false,
+					IsSetterAccessible: false
 				)
 			]),
 			SetterOptions: new(IsWritable: true),

@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Android.Views;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -12,6 +15,151 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
+		// Issue #23478: TalkBack's "double tap to activate" invokes View.PerformAccessibilityAction(ACTION_CLICK)
+		// on the focused SwipeItem, a code path distinct from the manual touch hit-testing SwipeView normally
+		// relies on to execute commands. This verifies the accessibility action reaches the bound Command.
+		[Fact(DisplayName = "SwipeItem Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.Red,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					// A real accessibility service (TalkBack) only dispatches ACTION_CLICK to nodes
+					// that actually advertise the action. Assert discoverability, not just dispatch,
+					// so this test would fail if the node never exposed ACTION_CLICK in the first place.
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
+		// Issue #23478 (SwipeItemView variant): SwipeItemView's platform view is a plain ContentViewGroup,
+		// which — unlike SwipeItem's AppCompatButton — is not inherently clickable. This verifies the
+		// accessibility action still reaches the bound Command for custom-content swipe items.
+		[Fact(DisplayName = "SwipeItemView Command Executes Via Accessibility ACTION_CLICK")]
+		public async Task SwipeItemViewCommandExecutesViaAccessibilityActionClick()
+		{
+			SetupBuilder();
+
+			bool commandExecuted = false;
+			ICommand command = new Command(() => commandExecuted = true);
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItemContent = new Grid
+			{
+				BackgroundColor = Colors.Red,
+				WidthRequest = 60,
+			};
+
+			var swipeItemView = new SwipeItemView
+			{
+				Content = swipeItemContent,
+				Command = command
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItemView
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 60,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// The SwipeView adds the action-item container as a child dynamically when opened.
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeItemPlatformView = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItemPlatformView);
+
+				await InvokeOnMainThreadAsync(() =>
+				{
+					var nodeInfo = AccessibilityNodeInfoCompat.Wrap(swipeItemPlatformView.CreateAccessibilityNodeInfo());
+					Assert.Contains(nodeInfo.ActionList, action => action.Id == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id);
+
+					var actionClickId = AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick.Id;
+#pragma warning disable CS0618 // ViewCompat.PerformAccessibilityAction is obsolete but is the correct API for simulating an accessibility-service action in a test
+					ViewCompat.PerformAccessibilityAction(swipeItemPlatformView, actionClickId, null);
+#pragma warning restore CS0618
+				});
+
+				await AssertEventually(() => commandExecuted);
+				Assert.True(commandExecuted);
+			});
+		}
+
 		[Fact(DisplayName = "SwipeItem Size Initializes Correctly")]
 		public async Task SwipeItemSizeInitializesCorrectly()
 		{
@@ -225,6 +373,77 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.Enabled;
 				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
+		[Fact]
+		[Description("SwipeItem icon and text should be vertically aligned when SwipeView has large content")]
+		public async Task SwipeItemIconAndTextVerticallyAligned()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/36736
+			// When SwipeView wraps tall content (e.g., CollectionView), the SwipeItem button
+			// should self-size its content (AtMost height) rather than being forced to fill
+			// the entire content area (Exactly height), which would misalign icon and text.
+			SetupBuilder();
+
+			var content = new VerticalStackLayout
+			{
+				HeightRequest = 300,
+				Background = new SolidColorBrush(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				Text = "Delete",
+				BackgroundColor = Colors.Red,
+				IconImageSource = new FontImageSource
+				{
+					Glyph = "X",
+					FontFamily = "Arial",
+					Size = 20
+				}
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				HeightRequest = 300,
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await AttachAndRun(swipeView, async (handler) =>
+			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
+
+				// Wait for SwipeView to create action view with children
+				await AssertEventually(() => platformView.ChildCount > 1);
+
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
+
+				await AssertEventually(() => actionView.ChildCount > 0);
+
+				var swipeButton = actionView.GetChildAt(0);
+				Assert.NotNull(swipeButton);
+
+				// Wait for button to be laid out
+				await AssertEventually(() => swipeButton.Height > 0);
+
+				// The button's MeasuredHeight should be LESS than its layout height.
+				// This proves it was measured with AtMost (self-sizing) rather than
+				// Exactly (forced to fill), which keeps icon+text vertically aligned.
+				Assert.True(
+					swipeButton.MeasuredHeight < swipeButton.Height,
+					$"SwipeItem button should self-size (MeasuredHeight={swipeButton.MeasuredHeight}) " +
+					$"rather than fill entire area (Height={swipeButton.Height}). " +
+					$"If MeasuredHeight equals Height, the button is forced to fill, " +
+					$"causing icon and text to misalign.");
 			});
 		}
 	}

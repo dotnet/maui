@@ -160,7 +160,7 @@ stimuli:
       max_duration: 5m
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally uses the
   # unweighted mean of the three graders' [0,1] scores. The structural floor
   # and guidance-read check are necessary but insufficient. Threshold 0.8
   # keeps the judge load-bearing: a partial regression (`no`, guidance read,

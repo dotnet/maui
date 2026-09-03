@@ -98,6 +98,9 @@
         <!-- String interpolation with method call -->
         <Label x:Name="interpolationMethodLabel" Text="{$'Result: {GetText()}'}" />
         
+        <!-- Ternary directly inside an interpolation hole (issue #36155) -->
+        <Label x:Name="interpolationTernaryLabel" Text="{$'You clicked {Count} {Count == 1 ? 'time' : 'times'}.'}" />
+        
         <!-- TYPED BINDING TESTS (using separate x:DataType) -->
         <VerticalStackLayout x:DataType="local:SimpleViewModel">
             <!-- Simple binding expression: property only on x:DataType -->
@@ -145,6 +148,14 @@
             
             <!-- Two-way binding: Entry.Text (string) to decimal property via C# expression -->
             <Entry x:Name="twoWayDecimalEntry" Text="{Price}" />
+
+            <!-- Nested struct property binding: Thickness.Top via C# expression.
+                 Source gen emits a copy-modify-writeback setter when the binding mode writes to the source;
+                 HeightRequest remains a one-way target, so this verifies getter updates. -->
+            <Grid x:Name="thicknessSubGrid" HeightRequest="{Margin.Top}" />
+
+            <!-- Two-way target exercises the copy-modify-writeback setter and preserves the other Thickness edges. -->
+            <Slider x:Name="marginTopSlider" Minimum="0" Maximum="100" Value="{Margin.Top}" />
         </VerticalStackLayout>
         
         <!-- CDATA EXPRESSION TESTS -->
@@ -172,6 +183,19 @@
         
         <!-- Test nested this. - method that takes another this. value -->
         <Label x:Name="nestedThisLabel" Text="{this.CalculateWithRate(this.TaxRate).ToString()}" />
+        
+        <!-- XMLNS PREFIX IN EXPRESSIONS -->
+        
+        <!-- xmlns prefix: call static method on type via local: prefix -->
+        <Label x:Name="xmlnsPrefixMethodLabel" Text="{local:ExprHelper.GetStaticValue()}" />
+        
+        <!-- ATTACHED BINDABLE PROPERTY TESTS -->
+        
+        <!-- ABP: read Grid.Row from a named element -->
+        <Grid>
+            <Button x:Name="gridChild" Grid.Row="2" />
+        </Grid>
+        <Label x:Name="abpNamedElementLabel" Text="{$'{gridChild.(Grid.Row)}'}" />
         
         <!-- CODE REVIEW EDGE CASE TESTS -->
         

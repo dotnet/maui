@@ -4,6 +4,10 @@
 		<TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
 		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
+<!--#if (UseAvaloniaHandlers) -->
+		<!-- Avalonia desktop head (Windows, macOS, and Linux) -->
+		<TargetFrameworks>DOTNET_TFM;$(TargetFrameworks)</TargetFrameworks>
+<!--#endif -->
 
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
@@ -19,13 +23,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<!-- Enable XAML source generation for faster build times and improved performance.
-		     This generates C# code from XAML at compile time instead of runtime inflation.
-		     To disable, remove this line.
-		     For individual files, you can override by setting Inflator metadata:
-		       <MauiXaml Update="MyPage.xaml" Inflator="Default" /> (reverts to defaults: Runtime for Debug, XamlC for Release)
-		       <MauiXaml Update="MyPage.xaml" Inflator="Runtime" /> (force runtime inflation) -->
-		<MauiXamlInflator>SourceGen</MauiXamlInflator>
+<!--#if (UseAvaloniaHandlers) -->
+		<AvaloniaControlsMauiGenerateBootstrap>true</AvaloniaControlsMauiGenerateBootstrap>
+<!--#endif -->
+
 <!--#if (IncludeSampleContent) -->
 		<MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
 <!--#endif -->
@@ -44,8 +45,8 @@
 		<WindowsPackageType>None</WindowsPackageType>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 	</PropertyGroup>
@@ -70,7 +71,7 @@
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
 <!--#if (!IncludeSampleContent) -->
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" BaseSize="222,185" />
 		
 <!--#endif -->
 		<!-- Custom Fonts -->
@@ -84,6 +85,14 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
 	</ItemGroup>
+
+<!--#if (UseAvaloniaHandlers) -->
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
+		<PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="AVALONIA_CONTROLS_MAUI_VERSION" Condition="'$(TargetFramework)' == 'DOTNET_TFM'" />
+	</ItemGroup>
+
+<!--#endif -->
 
 <!--#if (IncludeSampleContent) -->
 	<ItemGroup>

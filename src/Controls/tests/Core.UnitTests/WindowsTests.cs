@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -918,17 +919,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var rootServiceProvider = serviceCollection.BuildServiceProvider();
 
 			var appContext = new MauiContext(rootServiceProvider);
-			
+
 			// Simulate the window creation flow
 			var windowContext = appContext.MakeWindowScope(new object(), out var scope);
-			
+
 			// Verify we can get scoped services
 			var service1 = windowContext.Services.GetRequiredService<TestScopedService>();
 			var service2 = windowContext.Services.GetRequiredService<TestScopedService>();
-			
+
 			// Should be the same instance since it's scoped
 			Assert.Same(service1, service2);
-			
+
 			// Create window and set up handler
 			var window = new TestWindow(new ContentPage());
 			var handler = new WindowHandlerStub();
@@ -945,6 +946,101 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		private class TestScopedService
 		{
 			public string TestProperty { get; set; } = "test";
+		}
+
+		[Fact]
+		public void StatusBarThemeDefaultValue()
+		{
+			var window = new Window();
+			Assert.Equal(StatusBarTheme.Default, window.StatusBarTheme);
+		}
+
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeCanBeSetToAllValues(StatusBarTheme theme)
+		{
+			var window = new Window
+			{
+				StatusBarTheme = theme
+			};
+			Assert.Equal(theme, window.StatusBarTheme);
+		}
+
+		[Theory]
+		[InlineData(StatusBarTheme.Default)]
+		[InlineData(StatusBarTheme.Light)]
+		[InlineData(StatusBarTheme.Dark)]
+		public void StatusBarThemeIsBindableForAllValues(StatusBarTheme theme)
+		{
+			var window = new Window();
+			window.SetValue(Window.StatusBarThemeProperty, theme);
+			Assert.Equal(theme, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeIsStyleable()
+		{
+			var style = new Style(typeof(Window))
+			{
+				Setters =
+				{
+					new Setter { Property = Window.StatusBarThemeProperty, Value = StatusBarTheme.Dark }
+				},
+			};
+
+			var app = new TestApp();
+			app.Resources.Add(style);
+
+			var window = app.CreateWindow();
+			Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+		}
+
+		[Fact]
+		public void StatusBarThemeChangesWithAppThemeBinding()
+		{
+			AppInfo.SetCurrent(new MockAppInfo() { RequestedTheme = AppTheme.Light });
+			var app = new Application();
+			Application.Current = app;
+
+			try
+			{
+				var window = app.LoadPage(new ContentPage());
+
+				window.SetBinding(Window.StatusBarThemeProperty, new AppThemeBinding
+				{
+					Light = StatusBarTheme.Light,
+					Dark = StatusBarTheme.Dark
+				});
+
+				Assert.Equal(StatusBarTheme.Light, window.StatusBarTheme);
+
+				((MockAppInfo)AppInfo.Current).RequestedTheme = AppTheme.Dark;
+				((IApplication)app).ThemeChanged();
+
+				Assert.Equal(StatusBarTheme.Dark, window.StatusBarTheme);
+			}
+			finally
+			{
+				Application.Current = null;
+			}
+		}
+
+		[Fact]
+		public void StatusBarThemePropertyChangedDoesNotFireForSameValue()
+		{
+			var window = new Window { StatusBarTheme = StatusBarTheme.Dark };
+			var changeCount = 0;
+
+			window.PropertyChanged += (s, e) =>
+			{
+				if (e.PropertyName == nameof(Window.StatusBarTheme))
+					changeCount++;
+			};
+
+			window.StatusBarTheme = StatusBarTheme.Dark;
+			Assert.Equal(0, changeCount);
 		}
 	}
 
@@ -966,6 +1062,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// A plain ContentPage with no navigation stack → cannot consume back.
 			var page = new ContentPage();
 			Assert.False(Window.CanConsumeBackNavigation(page));
+		}
+
+		[Fact]
+		public void DerivedContentPageWithoutOverride_ReturnsFalse()
+		{
+			Assert.False(Window.CanConsumeBackNavigation(new DerivedContentPage()));
+		}
+
+		[Fact]
+		public void ContentPageWithBackButtonOverride_ReturnsTrue()
+		{
+			Assert.True(Window.CanConsumeBackNavigation(new ContentPageWithBackButtonOverride()));
+		}
+
+		[Fact]
+		public void NavigationPageWithBackButtonOverride_ReturnsTrue()
+		{
+			var nav = new NavigationPageWithBackButtonOverride(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(nav));
 		}
 
 		[Fact]
@@ -1119,6 +1234,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			item.Items.Add(section);
 			shell.Items.Add(item);
 			return shell;
+		}
+
+		class DerivedContentPage : ContentPage
+		{
+		}
+
+		class ContentPageWithBackButtonOverride : ContentPage
+		{
+			protected override bool OnBackButtonPressed() => true;
+		}
+
+		class NavigationPageWithBackButtonOverride : NavigationPage
+		{
+			public NavigationPageWithBackButtonOverride(Page root) : base(root)
+			{
+			}
+
+			protected override bool OnBackButtonPressed() => true;
 		}
 	}
 }

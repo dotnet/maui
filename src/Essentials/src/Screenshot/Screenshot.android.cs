@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -14,8 +15,11 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Media
 {
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
 	{
+		static readonly Lazy<Handler> PixelCopyCallbackHandler =
+			new(CreatePixelCopyCallbackHandler, LazyThreadSafetyMode.ExecutionAndPublication);
+
 		static IWindowManager? WindowManager =>
 			Application.Context.GetSystemService(Context.WindowService) as IWindowManager;
 
@@ -56,13 +60,20 @@ namespace Microsoft.Maui.Media
 			return bitmap is null ? null : new ScreenshotResult(bitmap);
 		}
 
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is View view ? CaptureAsync(view)! : Task.FromResult<IScreenshotResult?>(null);
+
 		static async Task<Bitmap?> RenderAsync(View view, Window? window)
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
-				var bitmap = await RenderUsingPixelCopyAsync(view, window);
+				var bitmap = await RenderUsingPixelCopyAsync(view, window).ConfigureAwait(false);
 				if (bitmap is not null)
 					return bitmap;
+
+				// PixelCopy may complete off the UI thread, where view-based fallbacks are unsafe.
+				if (!MainThread.IsMainThread)
+					return null;
 			}
 
 			return RenderUsingCanvasDrawing(view) ?? RenderUsingDrawingCache(view);
@@ -93,13 +104,11 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				var listener = new PixelCopyFinishedListener(tcs, bitmap);
-				PixelCopy.Request(window, rect, bitmap,
-					listener,
-					new Handler(Looper.MainLooper!));
+				PixelCopy.Request(window, rect, bitmap, listener, PixelCopyCallbackHandler.Value);
 
 				try
 				{
-					return await tcs.Task.ConfigureAwait(true);
+					return await tcs.Task.ConfigureAwait(false);
 				}
 				finally
 				{
@@ -111,6 +120,17 @@ namespace Microsoft.Maui.Media
 				bitmap.Dispose();
 				return null;
 			}
+		}
+
+		static Handler CreatePixelCopyCallbackHandler()
+		{
+			var thread = new HandlerThread("Microsoft.Maui.Screenshot.PixelCopy");
+			thread.Start();
+
+			var looper = thread.Looper
+				?? throw new InvalidOperationException("Unable to create the PixelCopy callback looper.");
+
+			return new Handler(looper);
 		}
 
 		static Activity? GetActivity(Context? context)

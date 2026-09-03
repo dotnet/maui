@@ -26,8 +26,15 @@ namespace Microsoft.Maui.ApplicationModel
 				options.Name = string.Empty;
 
 			NSDictionary dictionary = null;
+
+			// MKPlacemark is deprecated on iOS 26+ (bound as [UnsupportedOSPlatform("ios26.0")]) in favor of
+			// MKAddress / MKMapItem(location:address:), but it remains functional at runtime. Suppressing the
+			// analyzer here keeps the MKMapItem.OpenMaps launch — and with it MapLaunchOptions.Name and
+			// NavigationMode — behaving exactly as before. Migration is tracked by https://github.com/dotnet/maui/issues/36845.
+#pragma warning disable CA1416 // Validate platform compatibility
 			var placemark = new MKPlacemark(new CLLocationCoordinate2D(latitude, longitude), dictionary);
 			return OpenPlacemark(placemark, options);
+#pragma warning restore CA1416
 		}
 
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios11.0")]
@@ -113,31 +120,36 @@ namespace Microsoft.Maui.ApplicationModel
 			MKLaunchOptions launchOptions = null;
 			if (options.NavigationMode != NavigationMode.None)
 			{
-				var mode = MKDirectionsMode.Default;
-
-				switch (options.NavigationMode)
-				{
-					case NavigationMode.Driving:
-						mode = MKDirectionsMode.Driving;
-						break;
-					case NavigationMode.Transit:
-						mode = MKDirectionsMode.Transit;
-						break;
-					case NavigationMode.Walking:
-						mode = MKDirectionsMode.Walking;
-						break;
-					case NavigationMode.Default:
-						mode = MKDirectionsMode.Default;
-						break;
-				}
 				launchOptions = new MKLaunchOptions
 				{
-					DirectionsMode = mode
+					DirectionsMode = GetDirectionsMode(options.NavigationMode)
 				};
 			}
 
 			var mapItems = new[] { mapItem };
 			return Task.FromResult(MKMapItem.OpenMaps(mapItems, launchOptions));
 		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode)
+		{
+#if IOS || MACCATALYST
+			var isCyclingAvailable =
+				OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14);
+#else
+			const bool isCyclingAvailable = false;
+#endif
+
+			return GetDirectionsMode(navigationMode, isCyclingAvailable);
+		}
+
+		internal static MKDirectionsMode GetDirectionsMode(NavigationMode navigationMode, bool isCyclingAvailable) =>
+			navigationMode switch
+			{
+				NavigationMode.Bicycling when isCyclingAvailable => MKDirectionsMode.Cycling,
+				NavigationMode.Driving => MKDirectionsMode.Driving,
+				NavigationMode.Transit => MKDirectionsMode.Transit,
+				NavigationMode.Walking => MKDirectionsMode.Walking,
+				_ => MKDirectionsMode.Default,
+			};
 	}
 }

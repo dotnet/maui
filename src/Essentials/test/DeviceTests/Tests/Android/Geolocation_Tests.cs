@@ -1,13 +1,156 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
 using AndroidLocation = Android.Locations.Location;
+using AndroidLocationManager = Android.Locations.LocationManager;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
 	[Category("Geolocation")]
 	public class Android_Geolocation_Tests
 	{
+		const string FusedProvider = "fused";
+
+		public static IEnumerable<object[]> AccuracyDistances =>
+			new[]
+			{
+				new object[] { GeolocationAccuracy.Lowest, 500f },
+				new object[] { GeolocationAccuracy.Low, 500f },
+				new object[] { GeolocationAccuracy.Default, 250f },
+				new object[] { GeolocationAccuracy.Medium, 250f },
+				new object[] { GeolocationAccuracy.High, 100f },
+				new object[] { GeolocationAccuracy.Best, 50f },
+			};
+
+		public static IEnumerable<object[]> StandardProviderPreferences =>
+			new[]
+			{
+				new object[] { GeolocationAccuracy.Lowest, AndroidLocationManager.NetworkProvider },
+				new object[] { GeolocationAccuracy.Low, AndroidLocationManager.NetworkProvider },
+				new object[] { GeolocationAccuracy.Default, AndroidLocationManager.NetworkProvider },
+				new object[] { GeolocationAccuracy.Medium, AndroidLocationManager.NetworkProvider },
+				new object[] { GeolocationAccuracy.High, AndroidLocationManager.GpsProvider },
+				new object[] { GeolocationAccuracy.Best, AndroidLocationManager.GpsProvider },
+			};
+
+		[Theory]
+		[MemberData(nameof(AccuracyDistances))]
+		public void GetAccuracyDistance_ReturnsExpectedDistance(GeolocationAccuracy accuracy, float expectedDistance)
+		{
+			Assert.Equal(expectedDistance, GeolocationImplementation.GetAccuracyDistance(accuracy));
+		}
+
+		[Theory]
+		[MemberData(nameof(StandardProviderPreferences))]
+		public void SelectProvider_UsesAccuracyPreferenceWhenFusedIsUnavailable(GeolocationAccuracy accuracy, string expectedProvider)
+		{
+			var enabledProviders = new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider };
+
+			var provider = GeolocationImplementation.SelectProvider(enabledProviders, accuracy);
+
+			Assert.Equal(expectedProvider, provider);
+		}
+
+		[Fact]
+		public void SelectProvider_PrefersFusedProvider()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider, FusedProvider };
+
+			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Best);
+
+			Assert.Equal(FusedProvider, provider);
+		}
+
+		[Fact]
+		public void SelectProvider_FallsBackToFirstNonPassiveProvider()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.PassiveProvider, "local_database", "custom" };
+
+			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Default);
+
+			Assert.Equal("custom", provider);
+		}
+
+		[Fact]
+		public void SelectFallbackProvider_IgnoresPassiveAndLocalDatabaseProviders()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.PassiveProvider, "local_database", "custom" };
+
+			var provider = GeolocationImplementation.SelectFallbackProvider(enabledProviders);
+
+			Assert.Equal("custom", provider);
+		}
+
+		[Theory]
+		[InlineData(GeolocationAccuracy.Best, AndroidLocationManager.NetworkProvider)]
+		[InlineData(GeolocationAccuracy.Lowest, AndroidLocationManager.GpsProvider)]
+		public void SelectProvider_UsesAlternateStandardProvider(GeolocationAccuracy accuracy, string enabledProvider)
+		{
+			var provider = GeolocationImplementation.SelectProvider(new[] { enabledProvider }, accuracy);
+
+			Assert.Equal(enabledProvider, provider);
+		}
+
+		[Fact]
+		public void SelectProvider_ReturnsNullWhenOnlyIgnoredProvidersAreEnabled()
+		{
+			var enabledProviders = new[] { AndroidLocationManager.PassiveProvider, "local_database" };
+
+			var provider = GeolocationImplementation.SelectProvider(enabledProviders, GeolocationAccuracy.Default);
+
+			Assert.Null(provider);
+		}
+
+		[Fact]
+		public void SelectProvider_ReturnsNullWhenProvidersAreUnavailable()
+		{
+			var provider = GeolocationImplementation.SelectProvider(null, GeolocationAccuracy.Default);
+
+			Assert.Null(provider);
+		}
+
+		[Fact]
+		public void GetProviders_UsesGpsAndNetworkForLegacySelection()
+		{
+			var allProviders = new[] { "custom", AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
+
+			var providers = GeolocationImplementation.GetProviders(allProviders, "custom", useExplicitProvider: false);
+
+			Assert.Equal(new[] { AndroidLocationManager.GpsProvider, AndroidLocationManager.NetworkProvider }, providers);
+		}
+
+		[Theory]
+		[InlineData(FusedProvider)]
+		[InlineData(AndroidLocationManager.GpsProvider)]
+		[InlineData(AndroidLocationManager.NetworkProvider)]
+		public void GetProviders_UsesOnlyExplicitProvider(string selectedProvider)
+		{
+			var enabledProviders = new[] { FusedProvider, AndroidLocationManager.NetworkProvider, AndroidLocationManager.GpsProvider };
+
+			var providers = GeolocationImplementation.GetProviders(enabledProviders, selectedProvider, useExplicitProvider: true);
+
+			Assert.Equal(new[] { selectedProvider }, providers);
+		}
+
+		[Fact]
+		public void GetProviders_UsesLegacyFallbackWhenStandardProvidersAreUnavailable()
+		{
+			var providers = GeolocationImplementation.GetProviders(new[] { "custom" }, "custom", useExplicitProvider: false);
+
+			Assert.Equal(new[] { "custom" }, providers);
+		}
+
+		[Theory]
+		[InlineData(FusedProvider)]
+		[InlineData("custom")]
+		public void GetProviders_UsesFallbackWhenStandardProvidersAreUnavailable(string fallbackProvider)
+		{
+			var providers = GeolocationImplementation.GetProviders(new[] { fallbackProvider }, fallbackProvider, useExplicitProvider: true);
+
+			Assert.Equal(new[] { fallbackProvider }, providers);
+		}
+
 		[Fact]
 		public void ToLocation_NoAltitude_UsesUnspecifiedReferenceSystem()
 		{
