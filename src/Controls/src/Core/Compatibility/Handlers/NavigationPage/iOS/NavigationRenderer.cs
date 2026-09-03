@@ -1037,8 +1037,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetStatusBarStyle()
 		{
-			// NavPage resolves Element through a weak reference on every access, so it can
-			// become null between the guard and the uses below. Read it once.
 			var navPage = NavPage;
 
 			if (navPage is null)
