@@ -70,7 +70,7 @@ pushPackages: false
 
 The preparation stage resolves the BAR build once and runs one `darc gather-drop`, filtered to BAR NuGet package assets. Symbol and other path-based blob assets are not NuGet.org release inputs and are not downloaded. Workload releases gather fail-fast, apply the include and exclude filters, and require non-empty pack and manifest sets. Non-workload releases use the single package set described above; gathering continues on individual download errors, then preparation rejects every selected package that is neither gathered nor already available on NuGet.org.
 
-For every selected package, the stage reads the package ID and version from its nuspec and reports the selected identities and counts. Workload releases publish two 1ES pipeline outputs:
+For every gathered package, the stage reads the package ID and version from its nuspec. If a selected non-workload package was not gathered, its ID and version come from the BAR asset metadata and that exact identity must already be available on NuGet.org. The stage reports the selected identities and counts. Workload releases publish two 1ES pipeline outputs:
 
 - `MauiPacksForNuGet`
 - `MauiManifestsForNuGet`

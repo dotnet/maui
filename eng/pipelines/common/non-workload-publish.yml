@@ -11,7 +11,7 @@ stages:
     - task: ManualValidation@0
       timeoutInMinutes: 120
       inputs:
-        instructions: 'Review NuGetReleaseAudit, then press "Resume" to publish its exact staged package list.'
+        instructions: 'Review NuGetReleaseAudit, then press "Resume" to publish packages from its staged list. Packages that have appeared on NuGet.org since preparation are skipped, so the pushed set may be smaller.'
         onTimeout: reject
 
   - job: publish
