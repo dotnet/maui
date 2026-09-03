@@ -4583,7 +4583,8 @@ function Confirm-ReplicationTrustedOracleExpression {
         [Microsoft.CodeAnalysis.SemanticModel]$SemanticModel,
         [Parameter(Mandatory = $true)]
         [Microsoft.CodeAnalysis.SyntaxNode]$Root,
-        [Collections.Generic.HashSet[string]]$VisitedLocals
+        [Collections.Generic.HashSet[string]]$VisitedLocals,
+        [AllowEmptyCollection()][string[]]$AllowedConstructedTypes = @()
     )
 
     if ($null -eq $VisitedLocals) {
@@ -4591,6 +4592,31 @@ function Confirm-ReplicationTrustedOracleExpression {
             [StringComparer]::Ordinal)
     }
     $nodes = @($Expression.DescendantNodesAndSelf())
+    $usesClosedConstructedTypes = $AllowedConstructedTypes.Count -ne 0
+    if ($usesClosedConstructedTypes) {
+        $unsupportedAllocations = @($nodes | Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ArrayCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitArrayCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.StackAllocArrayCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitStackAllocArrayCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousObjectCreationExpressionSyntax] -or
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.CollectionExpressionSyntax] -or
+                ($_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] -and
+                    $SemanticModel.GetTypeInfo($_).Type -is
+                        [Microsoft.CodeAnalysis.IArrayTypeSymbol])
+            })
+        if ($unsupportedAllocations.Count -ne 0) {
+            throw (
+                'Closed trusted helper dataflow may not allocate arrays, anonymous ' +
+                'objects, stack storage, or collection expressions.')
+        }
+    }
     if (@($nodes | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThisExpressionSyntax] -or
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseExpressionSyntax]
@@ -4633,6 +4659,11 @@ function Confirm-ReplicationTrustedOracleExpression {
     foreach ($call in @($nodes | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
             })) {
+        if ($usesClosedConstructedTypes) {
+            throw (
+                'Closed trusted helper dataflow may not call factories or collection ' +
+                'operators; use direct allowlisted object/collection initializers.')
+        }
         $callSymbol = $SemanticModel.GetSymbolInfo($call).Symbol
         if ($callSymbol -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
             @($callSymbol.Locations | Where-Object {
@@ -4689,11 +4720,23 @@ function Confirm-ReplicationTrustedOracleExpression {
                 'Trusted assertion dataflow may construct only explicitly ' +
                 'allowlisted deterministic contract types.')
         }
+        $constructedType = $constructor.ContainingType.ToString()
+        if ($AllowedConstructedTypes.Count -ne 0 -and
+            $constructedType -cnotin $AllowedConstructedTypes) {
+            throw (
+                "Trusted assertion dataflow may not construct '$constructedType' " +
+                'in this closed helper contract.')
+        }
     }
     foreach ($member in @($nodes | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
                 $_.Parent -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
             })) {
+        if ($usesClosedConstructedTypes) {
+            throw (
+                'Closed trusted helper dataflow may not read ambient or mutable ' +
+                'members; use literals and traced initializer locals only.')
+        }
         $memberSymbol = $SemanticModel.GetSymbolInfo($member).Symbol
         if ($memberSymbol -is [Microsoft.CodeAnalysis.INamespaceSymbol]) {
             continue
@@ -4825,10 +4868,16 @@ function Confirm-ReplicationTrustedOracleExpression {
                 -Expression $declarations[0].Initializer.Value `
                 -SemanticModel $SemanticModel `
                 -Root $Root `
-                -VisitedLocals $VisitedLocals
+                -VisitedLocals $VisitedLocals `
+                -AllowedConstructedTypes $AllowedConstructedTypes
             continue
         }
         if ($identifierSymbol -is [Microsoft.CodeAnalysis.IParameterSymbol]) {
+            if ($usesClosedConstructedTypes) {
+                throw (
+                    'Closed trusted helper dataflow may not depend on callback or ' +
+                    'method parameters.')
+            }
             if ($identifierSymbol.Type.TypeKind -eq
                     [Microsoft.CodeAnalysis.TypeKind]::Error -or
                 @($identifierSymbol.Type.Locations | Where-Object {
@@ -4841,6 +4890,18 @@ function Confirm-ReplicationTrustedOracleExpression {
         if ($identifierSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
             $identifierSymbol -is [Microsoft.CodeAnalysis.IFieldSymbol] -or
             $identifierSymbol -is [Microsoft.CodeAnalysis.IEventSymbol]) {
+            $isInitializerMember = (
+                $identifier.Parent -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                $identifier.Parent.Left -eq $identifier -and
+                $identifier.Parent.Parent -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax]
+            )
+            if ($usesClosedConstructedTypes -and -not $isInitializerMember) {
+                throw (
+                    'Closed trusted helper dataflow may set allowlisted initializer ' +
+                    'members but may not read ambient properties, fields, or events.')
+            }
             if ($identifierSymbol -is [Microsoft.CodeAnalysis.IEventSymbol]) {
                 throw 'Trusted assertion dataflow may not read events.'
             }
@@ -6034,6 +6095,169 @@ function New-ReplicationControlVariant {
                     'the exact immutable ControlsHandlerTestBase source location ' +
                     'and hash were not established.')
         }
+        $trustedWindowContentTypes = @(
+            'Microsoft.Maui.Controls.Button',
+            'Microsoft.Maui.Controls.ContentPage',
+            'Microsoft.Maui.Controls.Label',
+            'Microsoft.Maui.Controls.NavigationPage',
+            'Microsoft.Maui.Controls.VerticalStackLayout'
+        )
+        $unsupportedWindowAllocations = @(
+            $testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_.SpanStart -ge $Invocation.SpanStart) {
+                        return $false
+                    }
+                    if ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]) {
+                        $local = $semanticModel.GetDeclaredSymbol($_)
+                        return $local -is [Microsoft.CodeAnalysis.ILocalSymbol] -and
+                            $local.Type -is [Microsoft.CodeAnalysis.IArrayTypeSymbol]
+                    }
+                    return (
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ArrayCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitArrayCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.StackAllocArrayCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitStackAllocArrayCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AnonymousObjectCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.CollectionExpressionSyntax])
+                })
+        if ($unsupportedWindowAllocations.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $unsupportedWindowAllocations[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the closed Window helper contract may not allocate arrays, ' +
+                    'anonymous objects, stack storage, or collection expressions. ' +
+                    'Use only direct ContentPage, NavigationPage, ' +
+                    'VerticalStackLayout, Label, and Button object/collection initializers.')
+        }
+        foreach ($creation in @($testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    $_.SpanStart -lt $Invocation.SpanStart -and
+                    ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ImplicitObjectCreationExpressionSyntax])
+                })) {
+            $constructor = $semanticModel.GetSymbolInfo($creation).Symbol
+            $containingAssignment = @($creation.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]
+                } | Select-Object -First 1)
+            $assignedProperty = if ($containingAssignment.Count -eq 1) {
+                $semanticModel.GetSymbolInfo($containingAssignment[0].Left).Symbol
+            } else {
+                $null
+            }
+            if ($assignedProperty -is
+                    [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                $assignedProperty.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                $assignedProperty.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.Controls.Element' -and
+                $assignedProperty.Name -ceq 'Handler') {
+                continue
+            }
+            $constructedType = if ($constructor -is
+                [Microsoft.CodeAnalysis.IMethodSymbol]) {
+                $constructor.ContainingType.ToString()
+            } else {
+                '<unresolved>'
+            }
+            if ($constructor -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $constructor.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                $constructedType -cnotin $trustedWindowContentTypes) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $creation `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "constructed type '$constructedType' is outside the closed " +
+                        'Window helper contract. Build the scenario only from Window, ' +
+                        'ContentPage, NavigationPage, VerticalStackLayout, Label, and ' +
+                        'Button; do not use Grid or factory-created replacement state.')
+            }
+        }
+        $postConstructionWrites = @(
+            $testMethod[0].Body.DescendantNodes() |
+                Where-Object {
+                    if ($_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                        if ($_.SpanStart -ge $Invocation.SpanStart) {
+                            return $false
+                        }
+                        $assignedSymbol =
+                            $semanticModel.GetSymbolInfo($_.Left).Symbol
+                        $isDirectContractObjectInitializer = (
+                            $_.Parent.RawKind -eq
+                                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::ObjectInitializerExpression -and
+                            $_.Left -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                            ($assignedSymbol -is
+                                    [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                                $assignedSymbol -is
+                                    [Microsoft.CodeAnalysis.IFieldSymbol]) -and
+                            $assignedSymbol.ContainingAssembly.Name -ceq
+                                'Microsoft.Maui.Controls.ReplicationControlContract'
+                        )
+                        if ($isDirectContractObjectInitializer) {
+                            return $false
+                        }
+                        if ($assignedSymbol -is
+                            [Microsoft.CodeAnalysis.IEventSymbol]) {
+                            return $false
+                        }
+                        $containingEventSubscription = @(
+                            $_.Ancestors() |
+                                Where-Object {
+                                    if ($_ -isnot
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                                        return $false
+                                    }
+                                    return $semanticModel.GetSymbolInfo($_.Left).Symbol -is
+                                        [Microsoft.CodeAnalysis.IEventSymbol]
+                                } |
+                                Select-Object -First 1)
+                        if ($containingEventSubscription.Count -ne 0) {
+                            return $false
+                        }
+                        return -not (
+                            $assignedSymbol -is
+                                [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                            $assignedSymbol.ContainingAssembly.Name -ceq
+                                'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                            $assignedSymbol.ContainingType.ToString() -ceq
+                                'Microsoft.Maui.Controls.Element' -and
+                            $assignedSymbol.Name -ceq 'Handler')
+                    }
+                    if ($_.RawKind -in @(
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)) {
+                        return $_.SpanStart -lt $Invocation.SpanStart
+                    }
+                    return (
+                        $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+                        $_.SpanStart -lt $Invocation.SpanStart -and
+                        $_.RefKindKeyword.RawKind -ne 0)
+                })
+        if ($postConstructionWrites.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $postConstructionWrites[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the closed Window helper contract forbids post-construction ' +
+                    'assignments, increments, and by-reference mutation. Put all ' +
+                    'safe UI state in direct object/collection initializers.')
+        }
         $statement = $AwaitExpression.Parent
         if ($statement -isnot
                 [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
@@ -6137,7 +6361,8 @@ function New-ReplicationControlVariant {
             Confirm-ReplicationTrustedOracleExpression `
                 -Expression $windowContent `
                 -SemanticModel $semanticModel `
-                -Root $root
+                -Root $root `
+                -AllowedConstructedTypes $trustedWindowContentTypes
         }
         catch {
             & $throwTrustedWindowHelperViolation `
@@ -6145,7 +6370,10 @@ function New-ReplicationControlVariant {
                 -HelperSymbol $HelperMethod `
                 -Reason (
                     'the Window content is not safe closed test-local dataflow: ' +
-                    $_.Exception.Message)
+                    $_.Exception.Message + ' Build Window content only from ' +
+                    'ContentPage, NavigationPage, VerticalStackLayout, Label, ' +
+                    'and Button object/collection initializers; do not use Grid, ' +
+                    'RowDefinition, RowDefinitions, GridLength, or Grid.Add.')
         }
 
         $navigationCreation =
@@ -6946,8 +7174,10 @@ function New-ReplicationControlVariant {
             if ($lifecycleKey.EndsWith(
                     '.PushAsync',
                     [StringComparison]::Ordinal)) {
-                $pushedSymbol = $semanticModel.GetSymbolInfo(
-                    $lifecycleCall.ArgumentList.Arguments[0].Expression).Symbol
+                $pushedExpression =
+                    $lifecycleCall.ArgumentList.Arguments[0].Expression
+                $pushedSymbol =
+                    $semanticModel.GetSymbolInfo($pushedExpression).Symbol
                 if ($pushedSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -and
                     $pushedSymbol -isnot
                         [Microsoft.CodeAnalysis.IParameterSymbol]) {
@@ -6957,6 +7187,25 @@ function New-ReplicationControlVariant {
                         -Reason (
                             'PushAsync must receive one directly traceable ' +
                             'selected-test Page local.') `
+                        -Callback
+                }
+                try {
+                    Confirm-ReplicationTrustedOracleExpression `
+                        -Expression $pushedExpression `
+                        -SemanticModel $semanticModel `
+                        -Root $root `
+                        -AllowedConstructedTypes $trustedWindowContentTypes
+                }
+                catch {
+                    & $throwTrustedWindowHelperViolation `
+                        -Node $pushedExpression `
+                        -HelperSymbol $HelperMethod `
+                        -Reason (
+                            'the pushed Page is not safe closed test-local dataflow: ' +
+                            $_.Exception.Message + ' Build pushed content only from ' +
+                            'ContentPage, NavigationPage, VerticalStackLayout, Label, ' +
+                            'and Button object/collection initializers; do not use Grid, ' +
+                            'arrays, factories, ambient members, or later mutation.') `
                         -Callback
                 }
                 $activePushedPages.Add($pushedSymbol)
@@ -7224,6 +7473,9 @@ function New-ReplicationControlVariant {
                     'top-level statement. Its one async block callback contains direct ' +
                     'PushAsync, a pure expression AssertEventually ' +
                     '(CurrentPage == destination), and the native oracle. ' +
+                    'Build Window content only from ContentPage, NavigationPage, ' +
+                    'VerticalStackLayout, Label, and Button object/collection ' +
+                    'initializers; do not use Grid, RowDefinition, or Grid.Add. ' +
                     'Do not use SetupBuilder, OnNavigatedToAsync, ' +
                     'HasNavigatedTo, event subscriptions, GetPlatformToolbar, ' +
                     'or block-bodied AssertEventually predicates.')
