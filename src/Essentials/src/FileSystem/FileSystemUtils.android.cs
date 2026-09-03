@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Storage
 		public static Task<string> EnsurePhysicalPathAsync(AndroidUri uri, bool requireExtendedAccess = true)
 			=> Task.Run(() => EnsurePhysicalPath(uri, requireExtendedAccess));
 
-		static bool TryGetValidatedPhysicalPath(string path, out string validatedPath)
+		internal static bool TryGetValidatedPhysicalPath(string path, out string validatedPath)
 		{
 			validatedPath = null;
 
