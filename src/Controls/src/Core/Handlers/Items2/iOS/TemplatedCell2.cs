@@ -537,7 +537,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_measureInvalidated && _bound)
 			{
-				// Any external invalidation wins over an already-pending arrange invalidation.
+				// Keep this true only when every coalesced invalidation occurred during Arrange.
 				_invalidatedDuringArrange &= _isArranging;
 			}
 
