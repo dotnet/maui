@@ -89,7 +89,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 			var disabledColor = appearanceElement.EffectiveTabBarDisabledColor;
 
-			controller.TabBar
+			var tabBar = controller.TabBar;
+
+			// Shell owns the layer created for its gradient. Clear it before every update so a
+			// transition to a solid or default background cannot leave it behind.
+			Microsoft.Maui.Platform.LayerExtensions.RemoveBackgroundLayer(tabBar);
+
+			tabBar
 				.UpdateiOS15TabBarAppearance(
 					ref _tabBarAppearance,
 					null,
