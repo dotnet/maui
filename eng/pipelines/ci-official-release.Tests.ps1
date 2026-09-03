@@ -81,8 +81,10 @@ Describe 'ci-official-release.yml' {
     $pipeline | Should -Match '(?s)- name: ghOwner.*?default: dotnet'
     $pipeline | Should -Not -Match '(?s)- name: ghRepo.*?values:'
     $pipeline | Should -Match 'Repository.*is not enabled for this release pipeline'
-    $pipeline | Should -Match 'https://github\.com/dotnet/android'
-    $pipeline | Should -Match 'https://github\.com/dotnet/macios'
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/maui',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/macios',\r?$"
+    $pipeline | Should -Match "(?m)^\s*'https://github\.com/dotnet/android-libraries'\r?$"
     $pipeline | Should -Match 'non-workload release cannot contain workload manifest'
     $pipeline | Should -Match '(?s)Name = ''NuGet packages''.*?Packages = \$selectedPackages.*?Identities = \$selectedIdentities'
     $pipeline | Should -Match '(?s)-Action FilterExisting.*?selectedPackages.*?stagedPackages'
