@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IPlatformViewHandler _renderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Binding context is unsubscribed from PropertyChanged and cleared in Disconnect.")]
 		object _bindingContext;
+		readonly NativeElementRegistrationSet _nativeElementRegistrations = new NativeElementRegistrationSet();
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Resources changed listener is removed and the reference cleared in Disconnect.")]
 		IElementDefinition _viewResource;
 
@@ -59,6 +61,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ContentView.ClipsToBounds = true;
 
 			BindingContext = context;
+			if (context is Element owner)
+			{
+				_nativeElementRegistrations.Register(
+					owner,
+					this,
+					NativeElementRoles.ShellFlyout,
+					NativeElementDiscriminators.RealizedView);
+			}
 
 			if (BindingContext is BaseShellItem bsi)
 				bsi.AddLogicalChild(View);
@@ -85,6 +95,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect(Shell shell = null, bool keepRenderer = false)
 		{
+			_nativeElementRegistrations.Clear();
+			if (View is null)
+				return;
+
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
 			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
