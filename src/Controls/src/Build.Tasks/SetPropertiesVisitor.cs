@@ -244,6 +244,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 															ModuleDefinition module, ElementNode node, FieldReference bpRef = null,
 															PropertyReference propertyRef = null, TypeReference propertyDeclaringTypeRef = null)
 		{
+			if (node.IsOnPlatformDefaultValue)
+				yield break;
+
 			if (vardefref.VariableDefinition.VariableType.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension" &&
 				vardefref.VariableDefinition.VariableType.ImplementsGenericInterface(context.Cache, "Microsoft.Maui.Controls.Xaml.IMarkupExtension`1",
 					out GenericInstanceType markupExtension, out IList<TypeReference> genericArguments))
