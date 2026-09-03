@@ -23,6 +23,9 @@ public class Bugzilla40955 : _IssuesUITest
 	public override string Issue => "Memory leak with FormsAppCompatActivity and NavigationPage";
 
 	[Test]
+#if ANDROID
+	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
+#endif
 	[Category(UITestCategories.Performance)]
 	public void MemoryLeakInFormsAppCompatActivity()
 	{

@@ -113,14 +113,16 @@ public class Issue35890 : _IssuesUITest
 				"stack had HideSoftInputOnTapped = True.");
 		}
 		finally
-		{
-			// Pop back to the HomePage so the shared Shell instance is left in a consistent
-			// state for any other test that runs afterwards in this fixture.
-			App.DismissKeyboard();
-			this.Back();
-			this.Back();
-			App.WaitForElement("HomePageLabel");
-		}
+        {
+            // Pop back to the HomePage so the shared Shell instance is left in a consistent
+            // state for any other test that runs afterwards in this fixture. Wait for each
+            // pop to complete before initiating the next one.
+            App.DismissKeyboard();
+            App.Back();
+            App.WaitForElement("NavPageALabel");
+            App.Back();
+            App.WaitForElement("HomePageLabel");
+        }
 	}
 }
 #endif

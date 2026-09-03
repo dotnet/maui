@@ -105,6 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
+#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/38098
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
@@ -114,6 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC([.. weakReferences]);
 		}
+#endif
 
 		// Extracted into its own non-inlineable method so the entire stack frame - including the
 		// async state machine's hoisted locals and the lambda's closure (labels, collectionView,
