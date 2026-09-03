@@ -540,6 +540,9 @@ static class NodeSGExtensions
 
 	public static bool TryProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, GetNodeValueDelegate? getNodeValue)
 	{
+		if (node.IsOnPlatformDefaultValue)
+			return false;
+
 		if (!context.Variables.TryGetValue(node, out var variable))
 			return false;
 
