@@ -5,10 +5,8 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	class AppInfoImplementation : IAppInfo
 	{
-		public string PackageName => GetDefaultPackageName();
-
-		internal static string GetDefaultPackageName() =>
-			Application.Current.ApplicationInfo.PackageId;
+		public string PackageName
+			=> Application.Current.ApplicationInfo.PackageId;
 
 		public string Name
 			=> Application.Current.ApplicationInfo.Label;

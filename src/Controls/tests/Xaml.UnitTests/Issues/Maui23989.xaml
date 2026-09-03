@@ -4,8 +4,9 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
 		xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
 		x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui23989" >
-    <StackLayout x:DataType="local:MockViewModel">
+    <cmp:StackLayout x:DataType="local:MockViewModel">
         <Picker
             ItemsSource="{Binding Items}"
             ItemDisplayBinding="{Binding Title}"
@@ -14,5 +15,5 @@
             ItemsSource="{Binding Items}"
             ItemDisplayBinding="{Binding Title, x:DataType=local:MockItemViewModel}"
             x:Name="picker1" />
-    </StackLayout>
+    </cmp:StackLayout>
 </ContentPage>

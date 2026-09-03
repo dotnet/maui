@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
     <Nullable>enable</Nullable>
+    <IsTrimmable>false</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
@@ -50,7 +51,6 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <ProjectReference Include="..\..\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
   </ItemGroup>
@@ -100,10 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Platform\iOS\CALayerAutosizeObserver.cs" />
-    <Compile Remove="HybridWebViewSourceGen\**" />
   </ItemGroup>
 
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build" Condition="'$(BuildTaskOnlyBuild)' == 'true' or '$(TF_BUILD)' != 'true'">
+  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />
       <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />

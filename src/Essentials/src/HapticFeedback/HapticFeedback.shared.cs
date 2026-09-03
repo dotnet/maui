@@ -45,9 +45,9 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IHapticFeedback Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new HapticFeedbackImplementation());
+			defaultImplementation ??= new HapticFeedbackImplementation();
 
 		internal static void SetDefault(IHapticFeedback? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 }

@@ -6,7 +6,8 @@ using Google.Android.Material.ProgressIndicator;
 
 namespace Microsoft.Maui.Platform;
 
-public class MaterialActivityIndicator : CircularProgressIndicator
+// TODO: material3 - make it public in .net 11
+internal class MaterialActivityIndicator : CircularProgressIndicator
 {
     public MaterialActivityIndicator(Context context)
      : base(MauiMaterialContextThemeWrapper.Create(context))

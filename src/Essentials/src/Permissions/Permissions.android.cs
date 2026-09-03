@@ -280,22 +280,12 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Flashlight : BasePlatformPermission
 		{
-			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
-			{
-				get
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions =>
+				new (string, bool)[]
 				{
-					var permissions = new List<(string, bool)>
-					{
-						(Manifest.Permission.Camera, true),
-					};
-
-					// Manifest.Permission.Flashlight is unsupported on Android 24+.
-					if (!OperatingSystem.IsAndroidVersionAtLeast(24))
-						permissions.Add((Manifest.Permission.Flashlight, false));
-
-					return permissions.ToArray();
-				}
-			}
+					(Manifest.Permission.Camera, true),
+					(Manifest.Permission.Flashlight, false)
+				};
 		}
 
 		public partial class LaunchApp : BasePlatformPermission

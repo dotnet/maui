@@ -128,21 +128,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapStatusBarTheme(IWindowHandler handler, IWindow window)
-		{
-#if !MACCATALYST
-			var rootVc = handler.PlatformView.RootViewController;
-			if (rootVc is null)
-				return;
-
-			// Walk to the topmost presented view controller
-			while (rootVc.PresentedViewController is not null)
-				rootVc = rootVc.PresentedViewController;
-
-			rootVc.SetNeedsStatusBarAppearanceUpdate();
-#endif
-		}
-
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
 			VirtualView.FrameChanged(window.Bounds.ToRectangle());

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
 using Android.App;
 using Microsoft.Maui.Storage;
 using Xunit;
@@ -30,20 +29,20 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public Task EnsurePhysicalPath_Rejects_FileUri_Inside_AppDataDirectory()
+		public void EnsurePhysicalPath_Rejects_FileUri_Inside_AppDataDirectory()
 			=> AssertFileUriRejected(FileSystem.AppDataDirectory);
 
 		[Fact]
-		public Task EnsurePhysicalPath_Rejects_FileUri_Inside_DeviceProtectedStorage()
+		public void EnsurePhysicalPath_Rejects_FileUri_Inside_DeviceProtectedStorage()
 		{
 			var deviceProtectedContext = Application.Context.CreateDeviceProtectedStorageContext();
 			var filesDirectory = deviceProtectedContext.FilesDir ??
 				throw new InvalidOperationException("Device-protected files directory is not available.");
 
-			return AssertFileUriRejected(filesDirectory.CanonicalPath);
+			AssertFileUriRejected(filesDirectory.CanonicalPath);
 		}
 
-		static async Task AssertFileUriRejected(string directory)
+		static void AssertFileUriRejected(string directory)
 		{
 			var filePath = Path.Combine(directory, $"picker_private_{Guid.NewGuid():N}.txt");
 			File.WriteAllText(filePath, "private app data");
@@ -54,7 +53,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				using var uri = AndroidUri.FromFile(file);
 
 				Assert.Throws<FileNotFoundException>(() => FileSystemUtils.EnsurePhysicalPath(uri));
-				await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystemUtils.EnsurePhysicalPathAsync(uri));
 			}
 			finally
 			{
@@ -66,7 +64,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public async Task EnsurePhysicalPath_Allows_FileUri_Outside_AppDataDirectory()
+		public void EnsurePhysicalPath_Allows_FileUri_Outside_AppDataDirectory()
 		{
 			var externalCacheDirectory = Application.Context.ExternalCacheDir;
 			Assert.NotNull(externalCacheDirectory);
@@ -80,7 +78,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				using var uri = AndroidUri.FromFile(file);
 
 				Assert.Equal(file.CanonicalPath, FileSystemUtils.EnsurePhysicalPath(uri));
-				Assert.Equal(file.CanonicalPath, await FileSystemUtils.EnsurePhysicalPathAsync(uri));
 			}
 			finally
 			{

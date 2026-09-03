@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Invoke(() => _promptHandler(sender, arguments), arguments.Result);
 		}
 
-		[Obsolete("Page busy notifications are obsolete and have no replacement. Remove usage or leave an empty implementation. This method will be removed in a future release.")]
+		[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
 		public void OnPageBusy(Page sender, bool enabled)
 		{
 			// OnPageBusy is obsolete and is not part of the delegate convention - always

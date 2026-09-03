@@ -16,7 +16,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 #if IOS
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -43,22 +42,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 
 #if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
-
-#if IOS || MACCATALYST
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 				});
 
@@ -235,86 +223,7 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
-
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
-
-#if IOS || MACCATALYST
-			// Use setForMaui:false to force old event-based NavigationImpl path.
-			// NavigationRenderer doesn't implement RequestNavigation, causing hangs.
-			var firstPage = new NavigationPage(false, new ContentPage()
-			{
-				Content = new VerticalStackLayout()
-				{
-					new Label()
-					{
-						Text = "Page one",
-						Background = Colors.Purple
-					}
-				}
-			})
-			{
-				Title = "First Page"
-			};
-#else
-			var firstPage = new NavigationPage(new ContentPage()
-			{
-				Content = new VerticalStackLayout()
-				{
-					new Label()
-					{
-						Text = "Page one",
-						Background = Colors.Purple
-					}
-				}
-			})
-			{
-				Title = "First Page"
-			};
-#endif
-
-			tabbedPage.Children.Insert(0, firstPage);
-			tabbedPage.CurrentPage = firstPage;
-			var secondPage = tabbedPage.Children[1];
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
-			{
-				await OnNavigatedToAsync(firstPage);
-				tabbedPage.Children.Remove(firstPage);
-				await OnNavigatedToAsync(secondPage);
-				await OnUnloadedAsync(firstPage);
-				// Validate that the second page becomes the current active page
-				Assert.Equal(secondPage, tabbedPage.CurrentPage);
-
-				// add the removed page back
-				tabbedPage.Children.Insert(0, firstPage);
-				// Validate that the second page is still the current active page
-				Assert.Equal(secondPage, tabbedPage.CurrentPage);
-
-				// Validate that we can navigate back to the first page
-				tabbedPage.CurrentPage = firstPage;
-				await OnNavigatedToAsync(firstPage);
-			});
-		}
-
-#if IOS || MACCATALYST
-		[Theory("Handler: Remove CurrentPage And Then Re-Add Doesnt Crash")]
-		[ClassData(typeof(TabbedPagePivots))]
-		public async Task Handler_RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-				});
-			});
+			SetupBuilder();
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
@@ -356,7 +265,6 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(firstPage);
 			});
 		}
-#endif
 
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
@@ -380,7 +288,7 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+			SetupBuilder();
 
 			var pages = new NavigationPage[5];
 
@@ -396,20 +304,10 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				};
 
-#if IOS || MACCATALYST
-				// Use setForMaui:false to force old event-based NavigationImpl path.
-				// NavigationRenderer doesn't implement RequestNavigation,
-				// causing PushAsync/PopAsync to hang.
-				pages[i] = new NavigationPage(false, contentPage)
-				{
-					Title = title
-				};
-#else
 				pages[i] = new NavigationPage(contentPage)
 				{
 					Title = title
 				};
-#endif
 			}
 			;
 
@@ -446,92 +344,13 @@ namespace Microsoft.Maui.DeviceTests
 					tabbedPage.CurrentPage = navigationPage;
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
+					await Task.Delay(200);
 					await navigationPage.PopAsync();
 					await OnNavigatedToAsync(navigationPage.CurrentPage);
 					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
 				}
 			});
 		}
-
-#if IOS || MACCATALYST
-		[Theory]
-		[ClassData(typeof(TabbedPagePivots))]
-		public async Task Handler_MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
-					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-				});
-			});
-
-			var pages = new NavigationPage[5];
-
-			for (var i = 0; i < pages.Length; i++)
-			{
-				string title = $"Tab {i} Root Page";
-				var contentPage = new ContentPage()
-				{
-					Title = title,
-					Content = new Button()
-					{
-						Text = title
-					}
-				};
-
-				pages[i] = new NavigationPage(contentPage)
-				{
-					Title = title
-				};
-			}
-
-			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
-			{
-				await OnNavigatedToAsync(pages[0].CurrentPage);
-				await OnLoadedAsync((pages[0].CurrentPage as ContentPage).Content);
-
-				for (var i = 0; i < pages.Length; i++)
-				{
-					NavigationPage navigationPage = pages[i];
-					tabbedPage.CurrentPage = navigationPage;
-					await OnNavigatedToAsync(navigationPage.CurrentPage);
-					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-
-					var nextPage = new ContentPage()
-					{
-						Content = new Button()
-						{
-							Text = $"Tab {i} Next Page"
-						}
-					};
-					await navigationPage.PushAsync(nextPage);
-					await OnNavigatedToAsync(nextPage);
-					await OnLoadedAsync(nextPage.Content);
-				}
-
-				foreach (var navigationPage in pages)
-				{
-					tabbedPage.CurrentPage = navigationPage;
-					await OnNavigatedToAsync(navigationPage.CurrentPage);
-					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-					await AssertEventually(() => navigationPage.Navigation.NavigationStack.Count > 1);
-					await navigationPage.PopAsync();
-					await OnNavigatedToAsync(navigationPage.CurrentPage);
-					await OnLoadedAsync((navigationPage.CurrentPage as ContentPage).Content);
-				}
-			});
-		}
-#endif
 
 #if !WINDOWS
 		[Theory]

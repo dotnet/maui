@@ -35,11 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.UpdateTitleIcon(toolbar, toolbar.BeginNavigationIconUpdate());
-		}
-
-		static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar, int generation)
-		{
 			_ = toolbar?.Handler?.MauiContext ?? throw new ArgumentNullException(nameof(toolbar.Handler.MauiContext));
 
 			ImageSource source = toolbar.TitleIcon;
@@ -55,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			source.LoadImage(toolbar.Handler.MauiContext, (result) =>
 			{
-				if (result?.Value != null && toolbar.IsCurrentTitleIconUpdate(generation, source))
+				if (result?.Value != null)
 				{
 					var image = new TImage
 					{
@@ -68,23 +63,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			var generation = toolbar.BeginNavigationIconUpdate();
-
-			if (toolbar.NavigationIconKind == ToolbarNavigationIconKind.BackButton)
+			if (toolbar.BackButtonVisible)
 			{
 				var backButton = CreateBackButton(platformToolbar, toolbar);
 				backButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
 				platformToolbar.Icon = backButton;
 			}
-			else if (toolbar.NavigationIconKind == ToolbarNavigationIconKind.DrawerToggle)
+			else if (toolbar.DrawerToggleVisible)
 			{
 				var menuButton = CreateMenuButton(platformToolbar, toolbar);
 				menuButton.Clicked += (s, e) => platformToolbar.SendIconPressed();
 				platformToolbar.Icon = menuButton;
 			}
-			else
+			else if (toolbar.TitleIcon == null)
 			{
-				platformToolbar.UpdateTitleIcon(toolbar, generation);
+				platformToolbar.Icon = null;
 			}
 		}
 

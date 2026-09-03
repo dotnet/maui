@@ -15,9 +15,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
-		public string PackageName => GetDefaultPackageName();
-
-		internal static string GetDefaultPackageName() => GetBundleValue("CFBundleIdentifier");
+		public string PackageName => GetBundleValue("CFBundleIdentifier");
 
 		public string Name => GetBundleValue("CFBundleDisplayName") ?? GetBundleValue("CFBundleName");
 
@@ -27,7 +25,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public string BuildString => GetBundleValue("CFBundleVersion");
 
-		static string GetBundleValue(string key)
+		string GetBundleValue(string key)
 			=> NSBundle.MainBundle.ObjectForInfoDictionary(key)?.ToString();
 
 #if __IOS__ || __TVOS__
@@ -128,7 +126,7 @@ namespace Microsoft.Maui.ApplicationModel
 			var schemes = new List<string>();
 
 			NSObject nsobj = null;
-			if (NSBundle.MainBundle.InfoDictionary is null || !NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
+			if (!NSBundle.MainBundle.InfoDictionary.TryGetValue((NSString)"CFBundleURLTypes", out nsobj))
 				return schemes;
 
 			var array = nsobj as NSArray;

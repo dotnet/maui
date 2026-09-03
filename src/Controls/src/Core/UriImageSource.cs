@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			}
 			catch (Exception ex)
 			{
-				MauiLogger<UriImageSource>.Log(LogLevel.Warning, ex, $"Error getting stream for {Uri}");
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				throw;
 			}
 
@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls
 			catch (Exception ex)
 			{
 
-				MauiLogger<UriImageSource>.Log(LogLevel.Warning, ex, $"Error getting stream for {Uri}");
+				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				return null;
 			}
 		}

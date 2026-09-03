@@ -7,7 +7,8 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers;
 
-public class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
+// TODO: Material3 - make it public in .net 11
+internal class EditorHandler2 : ViewHandler<IEditor, MauiMaterialEditText>
 {
 	bool _set;
 

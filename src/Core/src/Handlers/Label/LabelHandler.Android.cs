@@ -144,7 +144,8 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public class LabelHandler2 : LabelHandler
+	// TODO: Material3 - make it public in .net 11
+	internal class LabelHandler2 : LabelHandler
 	{
 		protected override MauiMaterialTextView CreatePlatformView()
 		{

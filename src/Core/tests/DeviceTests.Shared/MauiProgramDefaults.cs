@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		public static MauiApp CreateMauiApp(Func<IServiceProvider, TestOptions> options, Action<MauiAppBuilder> configureBuilder = null)
+		public static MauiApp CreateMauiApp(Func<IServiceProvider, TestOptions> options)
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
@@ -94,8 +94,6 @@ namespace Microsoft.Maui.DeviceTests
 				ValidateOnBuild = true,
 				ValidateScopes = true,
 			}));
-
-			configureBuilder?.Invoke(appBuilder);
 
 			var mauiApp = appBuilder.Build();
 

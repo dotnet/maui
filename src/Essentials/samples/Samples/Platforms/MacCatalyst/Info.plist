@@ -23,7 +23,6 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
-	<!-- Custom-scheme callback. HTTPS callbacks require Mac Catalyst 17.4+ and Associated Domains. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

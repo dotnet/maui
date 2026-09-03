@@ -5,9 +5,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// </summary>
 	public enum UIModalPresentationStyle
 	{
-		// Empty remarks clear legacy field remarks when mdoc imports the compiler XML.
-		/// <summary>The content is displayed in a manner that covers the screen. The views belonging to the presenting view controller are removed after the presentation completes.</summary>
-		/// <remarks />
+		/// <summary>The content is displayed in a manner that covers the screen.</summary>
+		/// <remarks>The views belonging to the presenting view controller are removed after the presentation completes.</remarks>
 		FullScreen,
 
 		/// <summary>The content is displayed in the center of the screen.</summary>
@@ -16,8 +15,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>The system selects an appropriate presentation style for the view controller.</summary>
 		Automatic,
 
-		/// <summary>The content is displayed in a manner that covers the screen. The views belonging to the presenting view controller are not removed after the presentation completes.</summary>
-		/// <remarks />
+		/// <summary>The content is displayed in a manner that covers the screen.</summary>
+		/// <remarks>The views belonging to the presenting view controller are not removed after the presentation completes.</remarks>
 		OverFullScreen,
 
 		/// <summary>The content is displayed in a popover view.</summary>

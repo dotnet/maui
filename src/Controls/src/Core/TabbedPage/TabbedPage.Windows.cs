@@ -398,9 +398,6 @@ namespace Microsoft.Maui.Controls
 						vm.IconColor = (page.IconImageSource as FontImageSource)?.Color?.AsPaint()?.ToPlatform();
 						vm.Content = page.Title;
 						vm.Data = page;
-						vm.BadgeText = GetBadgeText(page);
-						vm.BadgeBackground = GetBadgeColor(page)?.ToPlatform();
-						vm.BadgeForeground = GetBadgeTextColor(page)?.ToPlatform();
 						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();

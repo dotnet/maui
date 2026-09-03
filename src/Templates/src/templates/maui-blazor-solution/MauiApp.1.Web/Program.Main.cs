@@ -93,10 +93,15 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-#if (IndividualLocalAuth)
+#if (UseWebAssembly || IndividualLocalAuth)
         if (app.Environment.IsDevelopment())
         {
+#if (UseWebAssembly)
+            app.UseWebAssemblyDebugging();
+#endif
+#if (IndividualLocalAuth)
             app.UseMigrationsEndPoint();
+#endif
         }
         else
 #else

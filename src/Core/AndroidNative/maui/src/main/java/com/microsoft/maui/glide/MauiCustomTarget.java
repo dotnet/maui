@@ -20,7 +20,6 @@ import com.microsoft.maui.glide.MauiTarget;
 
 public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarget {
     private static final PlatformLogger logger = new PlatformLogger("MauiCustomTarget");
-    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
 
     private final Context context;
     private final ImageLoaderCallback callback;
@@ -71,34 +70,30 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         if (logger.isVerboseLoggable) logger.v("onLoadCleared: " + resourceLogIdentifier);
     }
 
+    private void post(Runnable runnable) {
+        Looper looper = Looper.getMainLooper();
+        if (looper.isCurrentThread()) {
+            runnable.run();
+            return;
+        }
+
+        Handler handler = new Handler(looper);
+        handler.post(runnable);
+    }
+
     private void clear() {
         // TODO: it looks like no one is really disposing the result on C# side
         // we must fix it there to release the Glide cache entry properly
-
-        // Always enqueued, never run inline: clear() is handed to the C# side from inside
-        // onResourceReady, and Glide rejects a clear() issued from one of its own target callbacks
-        // (SingleRequest.assertNotCallingCallbacks). A consumer disposing the result in its await
-        // continuation is still on that callback stack, so running here would throw.
-        MAIN_HANDLER.post(() -> {
-            // Deferring took this body out of the disposer's stack, so nothing catches it any more
-            // and a throw here would reach the looper as an unhandled exception. Releasing a cache
-            // entry must not be able to take the process down: fail as quietly as the inline path
-            // did, where the C# disposer logged and swallowed it.
-            try {
-                if (PlatformInterop.isContextDestroyed(context)) {
-                    if (logger.isVerboseLoggable) {
-                        logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
-                    }
-                    return;
-                }
-                Glide
-                    .with(context)
-                    .clear(this);
-            } catch (Throwable t) {
+        post(() -> {
+            if (PlatformInterop.isContextDestroyed(context)) {
                 if (logger.isVerboseLoggable) {
-                    logger.v("clear() failed: " + resourceLogIdentifier);
+                    logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
                 }
+                return;
             }
+            Glide
+                .with(context)
+                .clear(this);
         });
     }
 }
