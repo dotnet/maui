@@ -10,7 +10,8 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiMaterialTimePicker : TextInputEditText, IOnClickListener
+// TODO: material3 - make it public in .net 11
+internal class MauiMaterialTimePicker : TextInputEditText, IOnClickListener
 {
     public MauiMaterialTimePicker(Context context) : base(MauiMaterialContextThemeWrapper.Create(context))
     {

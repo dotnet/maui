@@ -18,7 +18,6 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
-      - 'eng/scripts/Set-ScreenResolution.ps1'
       - 'eng/pipelines/ci-official-release.yml'
       - 'eng/pipelines/ci-official-release.Tests.ps1'
       - 'eng/scripts/nuget_release_packages.ps1'

@@ -178,7 +178,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
+		// TODO: Make public for .NET 11.
+		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateFlowDirection(stepper);
 		}

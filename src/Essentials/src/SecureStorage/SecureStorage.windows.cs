@@ -1,11 +1,9 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
@@ -17,15 +15,13 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		ISecureStorageImplementation _secureStorage = null!;
+		readonly ISecureStorageImplementation _secureStorage;
 
-		partial void InitializePlatform()
+		public SecureStorageImplementation()
 		{
 			_secureStorage = AppInfoUtils.IsPackagedApp
-				? new PackagedSecureStorageImplementation(Alias)
-				: new UnpackagedSecureStorageImplementation(
-					UnpackagedAppDataDirectory ?? FileSystem.AppDataDirectory,
-					NamespaceUnpackagedStorageByAlias ? Alias : null);
+				? new PackagedSecureStorageImplementation()
+				: new UnpackagedSecureStorageImplementation();
 		}
 
 		async Task<string> PlatformGetAsync(string key)
@@ -44,7 +40,6 @@ namespace Microsoft.Maui.Storage
 
 		async Task PlatformSetAsync(string key, string data)
 		{
-			var writePath = _secureStorage.CaptureWritePath();
 			var bytes = Encoding.UTF8.GetBytes(data);
 
 			// LOCAL=user and LOCAL=machine do not require enterprise auth capability
@@ -54,7 +49,7 @@ namespace Microsoft.Maui.Storage
 
 			var encBytes = buffer.ToArray();
 
-			await _secureStorage.SetAsync(key, encBytes, writePath);
+			await _secureStorage.SetAsync(key, encBytes);
 		}
 
 		bool PlatformRemove(string key) =>
@@ -66,19 +61,9 @@ namespace Microsoft.Maui.Storage
 
 	interface ISecureStorageImplementation
 	{
-		// Returns the file path a write should target, or null for packaged apps, which persist via
-		// ApplicationData settings and have no path. Callers must treat the result as optional: the
-		// packaged SetAsync ignores writePath, while the unpackaged implementation always returns a
-		// non-null path and rejects a null one.
-#nullable enable annotations
-		string? CaptureWritePath();
-#nullable restore
-
 		Task<byte[]> GetAsync(string key);
 
-#nullable enable annotations
-		Task SetAsync(string key, byte[] value, string? writePath);
-#nullable restore
+		Task SetAsync(string key, byte[] value);
 
 		bool Remove(string key);
 
@@ -87,43 +72,29 @@ namespace Microsoft.Maui.Storage
 
 	class PackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
-		readonly string _alias;
-
-		public PackagedSecureStorageImplementation(string alias)
-		{
-			_alias = alias;
-		}
-
-		// Packaged apps persist via ApplicationData settings, so there is no file path to capture.
-#nullable enable annotations
-		public string? CaptureWritePath() => null;
-#nullable restore
-
 		public Task<byte[]> GetAsync(string key)
 		{
-			var settings = GetSettings(_alias);
+			var settings = GetSettings(SecureStorageImplementation.Alias);
 			var encBytes = settings.Values[key] as byte[];
 			return Task.FromResult(encBytes);
 		}
 
-#nullable enable annotations
-		public Task SetAsync(string key, byte[] data, string? writePath)
+		public Task SetAsync(string key, byte[] data)
 		{
-			var settings = GetSettings(_alias);
+			var settings = GetSettings(SecureStorageImplementation.Alias);
 			settings.Values[key] = data;
 			return Task.CompletedTask;
 		}
-#nullable restore
 
 		public bool Remove(string key)
 		{
-			var settings = GetSettings(_alias);
+			var settings = GetSettings(SecureStorageImplementation.Alias);
 			return settings.Values.Remove(key);
 		}
 
 		public void RemoveAll()
 		{
-			var settings = GetSettings(_alias);
+			var settings = GetSettings(SecureStorageImplementation.Alias);
 			settings.Values.Clear();
 		}
 
@@ -138,220 +109,75 @@ namespace Microsoft.Maui.Storage
 
 	class UnpackagedSecureStorageImplementation : ISecureStorageImplementation
 	{
-		static readonly object Sync = new();
-		readonly string _path;
-		readonly string _legacyPath;
+		static readonly string AppSecureStoragePath = Path.Combine(FileSystem.AppDataDirectory, "..", "Settings", "securestorage.dat");
+
+		readonly SecureStorageDictionary _secureStorage = new();
 
 		public UnpackagedSecureStorageImplementation()
-			: this(FileSystem.AppDataDirectory, alias: null)
 		{
+			Load();
 		}
 
-		internal UnpackagedSecureStorageImplementation(
-			string appDataDirectory,
-			string alias = null)
+		void Load()
 		{
-			if (appDataDirectory is null)
-				throw new ArgumentNullException(nameof(appDataDirectory));
-
-			var settingsDirectory = Path.Combine(appDataDirectory, "..", "Settings");
-			_legacyPath = Path.Combine(settingsDirectory, "securestorage.dat");
-			_path = alias is null
-				? _legacyPath
-				: Path.Combine(settingsDirectory, GetAliasPathSegment(alias), "securestorage.dat");
-		}
-
-		public string CaptureWritePath() => _path;
-
-		static string GetAliasPathSegment(string alias) =>
-			Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(alias)));
-
-		// Caller must hold Sync and the process lock for path.
-		SecureStorageDictionary GetSecureStorage(out string path)
-		{
-			path = _path;
-			return GetSecureStorage(
-				path,
-				string.Equals(path, _legacyPath, StringComparison.OrdinalIgnoreCase)
-					? null
-					: _legacyPath);
-		}
-
-		// Caller must hold Sync and the process lock for path. Reload on every operation so a
-		// process never writes a stale snapshot after another process updates the file.
-		static SecureStorageDictionary GetSecureStorage(
-			string path,
-			string fallbackPath = null)
-		{
-			// Copy legacy shared data forward on first alias-scoped access. Keep the legacy
-			// file intact so unbridged/default callers preserve their historical store.
-			if (!File.Exists(path) && fallbackPath is not null)
-			{
-				using var fallbackProcessLock = AcquireProcessLock(fallbackPath);
-				if (File.Exists(fallbackPath))
-				{
-					var migratedStorage = Load(fallbackPath);
-					Save(path, migratedStorage);
-					return migratedStorage;
-				}
-			}
-
-			return Load(path);
-		}
-
-		internal static IDisposable AcquireProcessLock(string path)
-		{
-			var normalizedPath = Path.GetFullPath(path).ToUpperInvariant();
-			var mutexName =
-				$@"Local\Microsoft.Maui.SecureStorage.{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalizedPath)))}";
-			var mutex = new Mutex(initiallyOwned: false, mutexName);
-			try
-			{
-				try
-				{
-					mutex.WaitOne();
-				}
-				catch (AbandonedMutexException)
-				{
-					// Ownership is granted when an abandoned mutex is observed.
-				}
-
-				return new ProcessLock(mutex);
-			}
-			catch
-			{
-				mutex.Dispose();
-				throw;
-			}
-		}
-
-		static SecureStorageDictionary Load(string path)
-		{
-			var secureStorage = new SecureStorageDictionary();
-			if (!File.Exists(path))
-				return secureStorage;
+			if (!File.Exists(AppSecureStoragePath))
+				return;
 
 			try
 			{
-				using var stream = File.OpenRead(path);
+				using var stream = File.OpenRead(AppSecureStoragePath);
 
 				SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 
 				if (readPreferences != null)
 				{
+					_secureStorage.Clear();
 					foreach (var pair in readPreferences)
-						secureStorage.TryAdd(pair.Key, pair.Value);
+						_secureStorage.TryAdd(pair.Key, pair.Value);
 				}
 			}
 			catch (JsonException)
 			{
 				// if deserialization fails proceed with empty settings
 			}
-
-			return secureStorage;
 		}
 
-		static void Save(string path, SecureStorageDictionary secureStorage)
+		void Save()
 		{
-			var dir = Path.GetDirectoryName(path);
+			var dir = Path.GetDirectoryName(AppSecureStoragePath);
 			Directory.CreateDirectory(dir);
 
-			var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
-			try
-			{
-				using (var stream = File.Create(temporaryPath))
-					JsonSerializer.Serialize(stream, secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
-
-				File.Move(temporaryPath, path, overwrite: true);
-			}
-			finally
-			{
-				if (File.Exists(temporaryPath))
-					File.Delete(temporaryPath);
-			}
+			using var stream = File.Create(AppSecureStoragePath);
+			JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 		}
 
 		public Task<byte[]> GetAsync(string key)
 		{
-			lock (Sync)
-			{
-				using var processLock = AcquireProcessLock(_path);
-				var secureStorage = GetSecureStorage(out _);
-				secureStorage.TryGetValue(key, out var value);
-				return Task.FromResult(value);
-			}
+			_secureStorage.TryGetValue(key, out var value);
+			return Task.FromResult(value);
 		}
 
-		public Task SetAsync(string key, byte[] value) =>
-			SetAsync(key, value, CaptureWritePath());
-
-#nullable enable annotations
-		public Task SetAsync(string key, byte[] value, string? writePath)
+		public Task SetAsync(string key, byte[] value)
 		{
-			if (writePath is null)
-				throw new ArgumentNullException(nameof(writePath));
-
-			lock (Sync)
-			{
-				using var processLock = AcquireProcessLock(writePath);
-				var secureStorage = GetSecureStorage(
-					writePath,
-					string.Equals(writePath, _path, StringComparison.OrdinalIgnoreCase)
-						? _legacyPath
-						: null);
-				if (value is null)
-					secureStorage.TryRemove(key, out _);
-				else
-					secureStorage[key] = value;
-				Save(writePath, secureStorage);
-				return Task.CompletedTask;
-			}
+			if (value is null)
+				_secureStorage.TryRemove(key, out _);
+			else
+				_secureStorage[key] = value;
+			Save();
+			return Task.CompletedTask;
 		}
-#nullable restore
 
 		public bool Remove(string key)
 		{
-			lock (Sync)
-			{
-				using var processLock = AcquireProcessLock(_path);
-				var secureStorage = GetSecureStorage(out var path);
-				var result = secureStorage.TryRemove(key, out _);
-				Save(path, secureStorage);
-				return result;
-			}
+			var result = _secureStorage.TryRemove(key, out _);
+			Save();
+			return result;
 		}
 
 		public void RemoveAll()
 		{
-			lock (Sync)
-			{
-				using var processLock = AcquireProcessLock(_path);
-				var secureStorage = GetSecureStorage(out var path);
-				secureStorage.Clear();
-				Save(path, secureStorage);
-			}
-		}
-
-		sealed class ProcessLock : IDisposable
-		{
-			readonly Mutex _mutex;
-
-			public ProcessLock(Mutex mutex)
-			{
-				_mutex = mutex;
-			}
-
-			public void Dispose()
-			{
-				try
-				{
-					_mutex.ReleaseMutex();
-				}
-				finally
-				{
-					_mutex.Dispose();
-				}
-			}
+			_secureStorage.Clear();
+			Save();
 		}
 	}
 }

@@ -1,155 +1,137 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Converters;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Shapes;
-
-[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StrokeShapeTypeConverter")]
-public class StrokeShapeTypeConverter : TypeConverter
+namespace Microsoft.Maui.Controls.Shapes
 {
-	public const string Ellipse = nameof(Ellipse);
-	public const string Line = nameof(Line);
-	public const string Path = nameof(Path);
-	public const string Polygon = nameof(Polygon);
-	public const string Polyline = nameof(Polyline);
-	public const string Rectangle = nameof(Rectangle);
-	public const string RoundRectangle = nameof(RoundRectangle);
-
-	internal static readonly char[] Delimiter = [' '];
-
-	public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
-		   => sourceType == typeof(string);
-
-	public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.StrokeShapeTypeConverter")]
+	public class StrokeShapeTypeConverter : TypeConverter
 	{
-		var strValue = value?.ToString();
+		public const string Ellipse = nameof(Ellipse);
+		public const string Line = nameof(Line);
+		public const string Path = nameof(Path);
+		public const string Polygon = nameof(Polygon);
+		public const string Polyline = nameof(Polyline);
+		public const string Rectangle = nameof(Rectangle);
+		public const string RoundRectangle = nameof(RoundRectangle);
 
-		if (strValue is not null)
+		internal static readonly char[] Delimiter = { ' ' };
+
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			   => sourceType == typeof(string);
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			strValue = strValue.Trim();
-			culture ??= CultureInfo.CurrentCulture;
+			var strValue = value?.ToString();
 
-			if (strValue.StartsWith(Ellipse, true, culture))
+			if (strValue != null)
 			{
-				return new Ellipse();
-			}
+				strValue = strValue.Trim();
 
-			if (strValue.StartsWith(Line, true, culture))
-			{
-				var parts = strValue.Split(Delimiter, 2);
-				if (parts.Length != 2)
+				if (strValue.StartsWith(Ellipse, true, culture))
 				{
-					return new Line();
+					return new Ellipse();
 				}
 
-				PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-
-				if (pointCollectionConverter.ConvertFromString(parts[1]) is not PointCollection points || points.Count == 0)
+				if (strValue.StartsWith(Line, true, culture))
 				{
-					return new Line();
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Line();
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+						return new Line();
+
+					Point p1 = points[0];
+
+					if (points.Count == 1)
+						return new Line { X1 = p1.X, Y1 = p1.Y };
+
+					Point p2 = points[1];
+
+					return new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
 				}
 
-				Point p1 = points[0];
-
-				if (points.Count == 1)
+				if (strValue.StartsWith(Path, true, culture))
 				{
-					return new Line { X1 = p1.X, Y1 = p1.Y };
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Path();
+
+					PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
+					Geometry pathGeometry = pathGeometryConverter.ConvertFromInvariantString(parts[1]) as Geometry;
+
+					if (pathGeometry == null)
+						return new Path();
+
+					return new Path { Data = pathGeometry };
 				}
 
-				Point p2 = points[1];
-
-				return new Line { X1 = p1.X, Y1 = p1.Y, X2 = p2.X, Y2 = p2.Y };
-			}
-
-			if (strValue.StartsWith(Path, true, culture))
-			{
-				var parts = strValue.Split(Delimiter, 2);
-				if (parts.Length != 2)
+				if (strValue.StartsWith(Polygon, true, culture))
 				{
-					return new Path();
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Polygon();
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+						return new Polygon();
+
+					return new Polygon { Points = points };
 				}
 
-				PathGeometryConverter pathGeometryConverter = new PathGeometryConverter();
-
-				if (pathGeometryConverter.ConvertFromInvariantString(parts[1]) is not Geometry pathGeometry)
+				if (strValue.StartsWith(Polyline, true, culture))
 				{
-					return new Path();
+					var parts = strValue.Split(Delimiter, 2);
+					if (parts.Length != 2)
+						return new Polyline();
+
+					PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
+					PointCollection points = pointCollectionConverter.ConvertFromString(parts[1]) as PointCollection;
+
+					if (points == null || points.Count == 0)
+						return new Polyline();
+
+					return new Polyline { Points = points };
 				}
 
-				return new Path { Data = pathGeometry };
-			}
-
-			if (strValue.StartsWith(Polygon, true, culture))
-			{
-				var parts = strValue.Split(Delimiter, 2);
-				if (parts.Length != 2)
+				if (strValue.StartsWith(Rectangle, true, culture))
 				{
-					return new Polygon();
+					return new Rectangle();
 				}
 
-				PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-
-				if (pointCollectionConverter.ConvertFromString(parts[1]) is not PointCollection points || points.Count == 0)
+				if (strValue.StartsWith(RoundRectangle, true, culture))
 				{
-					return new Polygon();
-				}
+					var parts = strValue.Split(Delimiter, 2);
 
-				return new Polygon { Points = points };
-			}
+					CornerRadius cornerRadius = new CornerRadius();
 
-			if (strValue.StartsWith(Polyline, true, culture))
-			{
-				var parts = strValue.Split(Delimiter, 2);
-				if (parts.Length != 2)
-				{
-					return new Polyline();
-				}
-
-				PointCollectionConverter pointCollectionConverter = new PointCollectionConverter();
-
-				if (pointCollectionConverter.ConvertFromString(parts[1]) is not PointCollection points || points.Count == 0)
-				{
-					return new Polyline();
-				}
-
-				return new Polyline { Points = points };
-			}
-
-			if (strValue.StartsWith(Rectangle, true, culture))
-			{
-				return new Rectangle();
-			}
-
-			if (strValue.StartsWith(RoundRectangle, true, culture))
-			{
-				var parts = strValue.Split(Delimiter, 2);
-
-				CornerRadius cornerRadius = new CornerRadius();
-
-				if (parts.Length > 1)
-				{
-					CornerRadiusTypeConverter cornerRadiusTypeConverter = new CornerRadiusTypeConverter();
-					var convertedCornerRadius = cornerRadiusTypeConverter.ConvertFromString(parts[1]);
-					if (convertedCornerRadius is not null)
+					if (parts.Length > 1)
 					{
-						cornerRadius = (CornerRadius)convertedCornerRadius;
+						CornerRadiusTypeConverter cornerRadiusTypeConverter = new CornerRadiusTypeConverter();
+						cornerRadius = (CornerRadius)cornerRadiusTypeConverter.ConvertFromString(parts[1]);
 					}
+
+					return new RoundRectangle { CornerRadius = cornerRadius };
 				}
 
-				return new RoundRectangle { CornerRadius = cornerRadius };
+				// Support for providing a double. This handles Border CSS support.
+				if (double.TryParse(strValue, out double radius))
+				{
+					return new RoundRectangle { CornerRadius = new CornerRadius(radius) };
+				}
 			}
 
-			// Support for providing a double. This handles Border CSS support.
-			// Direct TypeConverter callers supply the culture; invariant XAML paths pass InvariantCulture.
-			if (double.TryParse(strValue, NumberStyles.Float | NumberStyles.AllowThousands, culture, out double radius))
-			{
-				return new RoundRectangle { CornerRadius = new CornerRadius(radius) };
-			}
+			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shape)}");
 		}
-
-		throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shape)}");
 	}
 }

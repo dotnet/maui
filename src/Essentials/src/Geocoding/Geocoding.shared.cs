@@ -78,10 +78,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IGeocoding Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new GeocodingImplementation());
+			defaultImplementation ??= new GeocodingImplementation();
 
 		internal static void SetCurrent(IGeocoding? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	/// <summary>

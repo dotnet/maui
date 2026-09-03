@@ -78,14 +78,16 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// from the user.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
-		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="request"/> contains a negative minimum time or distance.</exception>
 		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ValidateListeningRequest(request);
+			ArgumentNullException.ThrowIfNull(request);
+
+			if (request.MinimumTime.TotalMilliseconds < 0)
+				throw new ArgumentOutOfRangeException(nameof(request), "MinimumTime must be positive.");
 
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location updates.");
@@ -96,7 +98,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				DesiredAccuracyInMeters = request.PlatformDesiredAccuracy,
 				ReportInterval = (uint)request.MinimumTime.TotalMilliseconds,
-				MovementThreshold = request.MinimumDistance,
+				MovementThreshold = request.PlatformDesiredAccuracy,
 			};
 
 			CheckStatus(listeningGeolocator.LocationStatus);

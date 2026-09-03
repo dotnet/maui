@@ -31,11 +31,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			if (_webviewManager != null)
 			{
-				if (_webviewManager is WinUIWebViewManager winUIWebViewManager)
-				{
-					winUIWebViewManager.ClearStaticContentCache();
-				}
-
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()

@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		protected virtual async Task RunShellTabBarTests(Action<Shell> setup, Func<Shell, Task> runTest)
+		async Task RunShellTabBarTests(Action<Shell> setup, Func<Shell, Task> runTest)
 		{
 			SetupBuilder();
 
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			setup.Invoke(shell);
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				await runTest(shell);
 			});
