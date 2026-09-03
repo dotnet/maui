@@ -4,7 +4,7 @@
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
     <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
     <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
-    <MicrosoftDotNetN1PackageVersion>11.0.0-preview.7.26381.103</MicrosoftDotNetN1PackageVersion>
+    <MicrosoftDotNetN1PackageVersion>11.0.0-rc.2.26452.108</MicrosoftDotNetN1PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftDotNetNPackageVersion.Contains('-'))">
