@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -31,28 +30,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override bool PrefersStatusBarHidden()
 			=> Shell?.CurrentPage?.OnThisPlatform()?.PrefersStatusBarHidden() == StatusBarHiddenMode.True;
-
-#if !MACCATALYST
-		public override UIViewController ChildViewControllerForStatusBarStyle()
-		{
-			if (Shell?.Window?.StatusBarTheme == StatusBarTheme.Default)
-				return base.ChildViewControllerForStatusBarStyle();
-
-			return null;
-		}
-
-		public override UIStatusBarStyle PreferredStatusBarStyle()
-		{
-			var theme = Shell?.Window?.StatusBarTheme ?? StatusBarTheme.Default;
-
-			return theme switch
-			{
-				StatusBarTheme.Light => UIStatusBarStyle.DarkContent,
-				StatusBarTheme.Dark => UIStatusBarStyle.LightContent,
-				_ => base.PreferredStatusBarStyle()
-			};
-		}
-#endif
 
 		public override UIKit.UIStatusBarAnimation PreferredStatusBarUpdateAnimation
 		{

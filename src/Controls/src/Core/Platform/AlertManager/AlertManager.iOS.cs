@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public UIWindow PlatformView { get; }
 
-			// TODO: Remove this obsolete method in a future release.
+			// TODO: This method is obsolete in .NET 10 and will be removed in .NET 11.
 			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);

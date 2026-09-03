@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			=> new Dictionary<string, string>(StringComparer.Ordinal)
 			{
 				{ "Content-Type", contentType },
-				{ "Cache-Control", StaticContentCacheControl.Default },
+				{ "Cache-Control", "no-cache, max-age=0, must-revalidate, no-store" },
 			};
 
 		internal class FileExtensionContentTypeProvider
@@ -464,24 +464,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return Mappings.TryGetValue(extension, out contentType);
 			}
 
-		private static string GetExtension(string path)
-		{
-			// Don't use Path.GetExtension as that may throw an exception if there are
-			// invalid characters in the path. Invalid characters should be handled
-			// by the FileProviders
-
-			if (string.IsNullOrWhiteSpace(path))
+			private static string GetExtension(string path)
 			{
-				return null;
-			}
+				// Don't use Path.GetExtension as that may throw an exception if there are
+				// invalid characters in the path. Invalid characters should be handled
+				// by the FileProviders
 
-#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
-			int index = path.LastIndexOf('.');
-#pragma warning restore CA1307 // Specify StringComparison for clarity
-			if (index < 0)
-			{
-				return null;
-			}				return path.Substring(index);
+				if (string.IsNullOrWhiteSpace(path))
+				{
+					return null;
+				}
+
+				int index = path.LastIndexOf('.');
+				if (index < 0)
+				{
+					return null;
+				}
+
+				return path.Substring(index);
 			}
 		}
 	}

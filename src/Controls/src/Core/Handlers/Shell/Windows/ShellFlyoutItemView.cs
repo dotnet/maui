@@ -66,13 +66,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var element = bo as Element;
 			_shell = element?.FindParentOfType<Shell>();
-
-			// Resolve the application supplied template through the same public contract external backends use.
-			// A null result means the application did not supply one, so fall back to the default flyout item cell.
-			DataTemplate dataTemplate = null;
-
-			if (bo != null && _shell != null)
-				dataTemplate = Shell.ResolveFlyoutItemTemplate(_shell, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
+			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);
 
 			if (bo != null)
 				bo.PropertyChanged += ShellElementPropertyChanged;

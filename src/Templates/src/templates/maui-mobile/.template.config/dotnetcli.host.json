@@ -11,13 +11,6 @@
       "longName": "sample-content",
       "shortName": "sc"
     },
-    "WithAvalonia": {
-      "longName": "with-avalonia",
-      "shortName": ""
-    },
-    "avaloniaControlsMauiVersion": {
-      "isHidden": true
-    },
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""

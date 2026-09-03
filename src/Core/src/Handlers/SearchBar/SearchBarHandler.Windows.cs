@@ -115,7 +115,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
-		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		// make it public in .net 11
+		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
 			{
@@ -123,7 +124,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		// make it public in .net 11
+		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			if (handler is SearchBarHandler searchBarHandler && searchBarHandler._queryTextBox is TextBox textBox)
 			{

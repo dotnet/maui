@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ElementHandler<TVirtualView, TPlatformView> : ElementHandler, IElementHandler, IElementHandler<TVirtualView, TPlatformView>
+	public abstract partial class ElementHandler<TVirtualView, TPlatformView> : ElementHandler, IElementHandler
 		where TVirtualView : class, IElement
 		where TPlatformView : class
 	{

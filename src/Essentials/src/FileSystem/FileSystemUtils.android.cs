@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Provider;
 using Android.Webkit;
@@ -53,40 +52,6 @@ namespace Microsoft.Maui.Storage
 			return tmpFile;
 		}
 
-		// Determines whether a path is a temporary file that MAUI itself created via
-		// GetTemporaryFile - i.e. one that lives under the "<cache>/<EssentialsFolderHash>/"
-		// folder that only GetTemporaryFile ever creates. This is a reliable ownership marker:
-		// files picked from the gallery, an SD card, another app's shared storage, or resolved
-		// to a raw physical path are never located under that folder, so callers can safely
-		// clean up an owned temporary input without any risk of touching a user-owned source.
-		internal static bool IsMauiOwnedTemporaryFile(string path)
-		{
-			if (string.IsNullOrEmpty(path))
-				return false;
-
-			try
-			{
-				var canonicalPath = new Java.IO.File(path).CanonicalPath;
-
-				foreach (var root in new[] { Application.Context.CacheDir, Application.Context.ExternalCacheDir })
-				{
-					if (root is null)
-						continue;
-
-					var ownedRoot = new Java.IO.File(root, EssentialsFolderHash).CanonicalPath + Java.IO.File.Separator;
-					if (canonicalPath.StartsWith(ownedRoot, StringComparison.Ordinal))
-						return true;
-				}
-			}
-			catch
-			{
-				// If the path cannot be canonicalized, err on the side of caution and never treat
-				// it as owned - callers use this to decide whether to delete, so false is the safe default.
-			}
-
-			return false;
-		}
-
 		public static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
 		{
 			// if this is a file, use that
@@ -114,17 +79,6 @@ namespace Microsoft.Maui.Storage
 		{
 			using var file = new Java.IO.File(path);
 			return file.IsFile && file.CanRead();
-		}
-
-		public static Task<string> EnsurePhysicalPathAsync(AndroidUri uri, bool requireExtendedAccess = true)
-		{
-			// file:// URIs do not need provider queries or stream copies.
-			if (string.Equals(uri.Scheme, UriSchemeFile, StringComparison.OrdinalIgnoreCase))
-			{
-				return Task.FromResult(uri.Path);
-			}
-
-			return Task.Run(() => EnsurePhysicalPath(uri, requireExtendedAccess));
 		}
 
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)

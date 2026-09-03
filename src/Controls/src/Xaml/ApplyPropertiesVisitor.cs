@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				if (TrySetRuntimeName(propertyName, source, value, node))
 					return;
-				if (propertyName == XmlName.xShared)
-					throw new XamlParseException("x:Shared is only supported with SourceGen inflator. Remove the attribute or switch to SourceGen.", node);
 				if (Skips.Contains(propertyName))
 					return;
 				if (parentElement.SkipProperties.Contains(propertyName))
@@ -555,9 +553,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return false;
 			}
 
-			bindable.RemoveBinding(property);
 			bindable.SetDynamicResource(property, dynamicResource.Key);
-			bindable.ClearValue(property);
 			return true;
 		}
 

@@ -321,12 +321,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var nativeImage = result?.Value;
 
 				if (_disposed || View is null || nativeImage is null)
+				{
+					result?.Dispose();
 					return;
+				}
 
 				int previousIndex = GetPreviousIndex(_bgImage);
 				if (nativeImage is null ||
 					_shellContext.Shell.FlyoutBackgroundImage != imageSource)
 				{
+					result?.Dispose();
 					_bgImage?.RemoveFromSuperview();
 					return;
 				}

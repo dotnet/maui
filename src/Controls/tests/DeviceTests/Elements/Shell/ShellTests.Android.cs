@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Views;
@@ -67,9 +67,8 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await OnLoadedAsync(page1);
 				await shell.GoToAsync("//Item2");
 				await shell.GoToAsync("..");
@@ -104,12 +103,11 @@ namespace Microsoft.Maui.DeviceTests
 				Shell.SetNavBarHasShadow(contentPage, navBarHasShadow);
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await Task.Delay(100);
 
-				var platformToolbar = GetPlatformToolbar((IPlatformViewHandler)shell.Handler);
+				var platformToolbar = GetPlatformToolbar(handler);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 
 				if (navBarHasShadow)
@@ -119,9 +117,9 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected virtual async Task CheckFlyoutState(IShellContext shellContext, bool desiredState)
+		protected async Task CheckFlyoutState(ShellRenderer handler, bool desiredState)
 		{
-			var drawerLayout = GetDrawerLayout(shellContext);
+			var drawerLayout = GetDrawerLayout(handler);
 			var flyout = drawerLayout.GetChildAt(1);
 
 			if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
@@ -167,12 +165,11 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutBehavior = FlyoutBehavior.Locked;
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await Task.Delay(100);
-				var dl = GetDrawerLayout(shellContext);
-				var flyoutContainer = GetFlyoutMenuReyclerView(shellContext);
+				var dl = GetDrawerLayout(handler);
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
 
 				Assert.True(flyoutContainer.MeasuredWidth > 0);
 				Assert.True(flyoutContainer.MeasuredHeight > 0);
@@ -191,10 +188,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
 
-			await CreateHandlerAndAddToWindow(shell, () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
-				var dl = GetDrawerLayout(shellContext);
+				var dl = GetDrawerLayout(handler);
 				Assert.Equal(1, dl.ChildCount);
 				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
 				Assert.Equal(2, dl.ChildCount);
@@ -219,9 +215,8 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutFooter = footer;
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await OnFrameSetToNotEmpty(footer);
 				Assert.True(Math.Abs(20 - footer.Frame.Width) < 1);
 				Assert.True(footer.Frame.Height > 0);
@@ -243,14 +238,13 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutFooter = footer;
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await Task.Delay(100);
-				var dl = GetDrawerLayout(shellContext);
-				await OpenFlyout(shellContext);
+				var dl = GetDrawerLayout(handler);
+				await OpenFlyout(handler);
 
-				var flyoutContainer = GetFlyoutMenuReyclerView(shellContext);
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
 
 				Assert.True(flyoutContainer.MeasuredWidth > 0);
 				Assert.True(flyoutContainer.MeasuredHeight > 0);
@@ -272,14 +266,13 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutHeader = header;
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await Task.Delay(100);
-				var dl = GetDrawerLayout(shellContext);
-				await OpenFlyout(shellContext);
+				var dl = GetDrawerLayout(handler);
+				await OpenFlyout(handler);
 
-				var flyoutContainer = GetFlyoutMenuReyclerView(shellContext);
+				var flyoutContainer = GetFlyoutMenuReyclerView(handler);
 
 				Assert.True(flyoutContainer.MeasuredWidth > 0);
 				Assert.True(flyoutContainer.MeasuredHeight > 0);
@@ -311,9 +304,8 @@ namespace Microsoft.Maui.DeviceTests
 				};
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await Task.Delay(100);
 				var headerPlatformView = header.ToPlatform();
 				var appBar = headerPlatformView.GetParentOfType<AppBarLayout>();
@@ -366,10 +358,9 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "red.png" });
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
-				var menu = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>().Menu;
+				var menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
 				var menuItem1 = menu.GetItem(0);
 				var menuItem2 = menu.GetItem(1);
 				var icon1 = menuItem1.Icon;
@@ -386,7 +377,7 @@ namespace Microsoft.Maui.DeviceTests
 				// let the icon and title propagate
 				await AssertEventually(() => menuItem1.Icon != icon1);
 
-				menu = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>().Menu;
+				menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
@@ -412,10 +403,9 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
-				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
+				var bottomView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
 				var menu = bottomView.Menu;
 				var menuItem1 = menu.GetItem(0);
 				var menuItem2 = menu.GetItem(1);
@@ -442,10 +432,9 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
-				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
+				var bottomView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
 				var menu = bottomView.Menu;
 				var menuItem1 = menu.GetItem(0);
 				var menuItem2 = menu.GetItem(1);
@@ -465,80 +454,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
-		public async Task ReusedBottomTabReappliesEnabledState()
-		{
-			SetupBuilder();
-
-			var shell = await CreateShellAsync(shell =>
-			{
-				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
-				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "red.png", IsEnabled = false });
-				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
-			});
-
-			await CreateHandlerAndAddToWindow(shell, async () =>
-			{
-				var shellContext = (IShellContext)shell.Handler;
-				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
-				var menu = bottomView.Menu;
-				var menuItem2 = menu.GetItem(1);
-
-				Assert.False(menuItem2.IsEnabled);
-
-				// Remove an unrelated tab so SetupMenu re-runs and this position-stable
-				// item goes through the reused-item branch — it must reapply the
-				// disabled state on reuse, not silently reset it to enabled.
-				shell.CurrentItem.Items.RemoveAt(2);
-
-				// let the change propagate
-				await AssertEventually(() => bottomView.Menu.Size() == 2);
-
-				menu = bottomView.Menu;
-				Assert.Equal(menuItem2, menu.GetItem(1));
-				Assert.False(menuItem2.IsEnabled);
-			});
-		}
-
-		[Fact]
-		public async Task MoreOverflowItemIsReusedNotRecreated()
-		{
-			SetupBuilder();
-
-			var shell = await CreateShellAsync(shell =>
-			{
-				for (int i = 1; i <= 7; i++)
-				{
-					shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = $"Tab {i}", Icon = "red.png" });
-				}
-			});
-
-			await CreateHandlerAndAddToWindow(shell, async () =>
-			{
-				var shellContext = (IShellContext)shell.Handler;
-				var bottomView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
-				var menu = bottomView.Menu;
-
-				// 4 regular tabs + "More" overflow item covering the remaining 3
-				Assert.Equal(5, menu.Size());
-				var moreItem = menu.GetItem(4);
-				Assert.Equal(BottomNavigationViewUtils.MoreTabId, moreItem.ItemId);
-
-				// Remove one of the overflowed tabs while overflow is still active
-				// (6 tabs remain, still over the 5-item max) — the "More" IMenuItem
-				// must be reused, not recreated, since it's not structurally changing.
-				shell.CurrentItem.Items.RemoveAt(6);
-
-				// let the change propagate
-				await AssertEventually(() => shell.CurrentItem.Items.Count == 6);
-
-				menu = bottomView.Menu;
-				Assert.Equal(5, menu.Size());
-				Assert.Equal(moreItem, menu.GetItem(4));
-				Assert.Equal(BottomNavigationViewUtils.MoreTabId, menu.GetItem(4).ItemId);
-			});
-		}
-
 		//src/Compatibility/Core/tests/Android/ShellTests.cs
 		[Fact(DisplayName = "Flyout Header Changes When Updated")]
 		public async Task FlyoutHeaderReactsToChanges()
@@ -554,9 +469,8 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutHeader = initialHeader;
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				var initialHeaderPlatformView = initialHeader.ToPlatform();
 				Assert.NotNull(initialHeaderPlatformView);
 				Assert.NotNull(initialHeader.Handler);
@@ -569,7 +483,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Null(initialHeader.Handler);
 
-				await OpenFlyout(shellContext);
+				await OpenFlyout(handler);
 
 				var appBar = newHeaderPlatformView.GetParentOfType<AppBarLayout>();
 				Assert.NotNull(appBar);
@@ -585,13 +499,11 @@ namespace Microsoft.Maui.DeviceTests
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
-				SetupShellTabColorsTest(shell);
 			});
 
-			await CreateHandlerAndAddToWindow(shell, () =>
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
-				var bottomNavigationView = GetDrawerLayout(shellContext).GetFirstChildOfType<BottomNavigationView>();
+				var bottomNavigationView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
 				Assert.NotNull(bottomNavigationView);
 
 				var background = bottomNavigationView.Background;
@@ -602,10 +514,6 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
 				}
 			});
-		}
-
-		protected virtual void SetupShellTabColorsTest(Shell shell)
-		{
 		}
 
 		[Fact(DisplayName = "ShellContentFragment.Destroy handles null _shellContext gracefully")]
@@ -633,9 +541,8 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow(shell, async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var shellContext = (IShellContext)shell.Handler;
 				await OnLoadedAsync(shell.CurrentPage);
 				await OnNavigatedToAsync(shell.CurrentPage);
 
@@ -664,15 +571,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected virtual AView GetFlyoutPlatformView(IShellContext shellContext)
+		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
 		{
-			var drawerLayout = GetDrawerLayout(shellContext);
+			var drawerLayout = GetDrawerLayout(shellRenderer);
 			return drawerLayout.GetChildrenOfType<ShellFlyoutLayout>().First();
 		}
 
-		internal virtual Graphics.Rect GetFlyoutFrame(IShellContext shellContext)
+		internal Graphics.Rect GetFlyoutFrame(ShellRenderer shellRenderer)
 		{
-			var platformView = GetFlyoutPlatformView(shellContext);
+			var platformView = GetFlyoutPlatformView(shellRenderer);
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
@@ -680,22 +587,22 @@ namespace Microsoft.Maui.DeviceTests
 				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 
-		internal virtual Graphics.Rect GetFrameRelativeToFlyout(IShellContext shellContext, IView view)
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)
 		{
 			var platformView = (view.Handler as IPlatformViewHandler).PlatformView;
-			return platformView.GetFrameRelativeTo(GetFlyoutPlatformView(shellContext));
+			return platformView.GetFrameRelativeTo(GetFlyoutPlatformView(shellRenderer));
 		}
 
-		protected virtual async Task OpenFlyout(IShellContext shellContext, TimeSpan? timeOut = null)
+		protected async Task OpenFlyout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)
 		{
-			var flyoutView = GetFlyoutPlatformView(shellContext);
-			var drawerLayout = GetDrawerLayout(shellContext);
+			var flyoutView = GetFlyoutPlatformView(shellRenderer);
+			var drawerLayout = GetDrawerLayout(shellRenderer);
 
-			if (drawerLayout is ShellFlyoutRenderer sfr && !sfr.FlyoutFirstDrawPassFinished)
+			if (!drawerLayout.FlyoutFirstDrawPassFinished)
 				await Task.Delay(10);
 
 			var hamburger =
-				GetPlatformToolbar((IPlatformViewHandler)shellContext).GetChildrenOfType<AppCompatImageButton>().FirstOrDefault() ??
+				GetPlatformToolbar((IPlatformViewHandler)shellRenderer).GetChildrenOfType<AppCompatImageButton>().FirstOrDefault() ??
 				throw new InvalidOperationException("Unable to find Drawer Button");
 
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
@@ -713,8 +620,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected virtual async Task<double> ScrollFlyoutToBottom(IShellContext shellContext)
+		protected async Task<double> ScrollFlyoutToBottom(ShellRenderer shellRenderer)
 		{
+			IShellContext shellContext = shellRenderer;
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
 			var viewGroup = dl.GetChildAt(1) as ViewGroup;
 			var scrollView = viewGroup?.GetChildAt(0);
@@ -797,13 +705,15 @@ namespace Microsoft.Maui.DeviceTests
 			return verticalOffset;
 		}
 
-		protected virtual DrawerLayout GetDrawerLayout(IShellContext shellContext)
+		ShellFlyoutRenderer GetDrawerLayout(ShellRenderer shellRenderer)
 		{
-			return shellContext.CurrentDrawerLayout;
+			IShellContext shellContext = shellRenderer;
+			return (ShellFlyoutRenderer)shellContext.CurrentDrawerLayout;
 		}
 
-		protected virtual RecyclerView GetFlyoutMenuReyclerView(IShellContext shellContext)
+		RecyclerView GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
 		{
+			IShellContext shellContext = shellRenderer;
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
 
 			var flyout = dl.GetChildAt(0);

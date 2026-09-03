@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.Devices.Sensors
@@ -38,7 +37,6 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// <summary>
 	/// Represents a physical location with the latitude, longitude, altitude and time information reported by the device.
 	/// </summary>
-	[TypeConverter(typeof(LocationTypeConverter))]
 	public class Location
 	{
 		/// <summary>

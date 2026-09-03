@@ -512,9 +512,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				primaries.Reverse();
 			}
 
-			// UIBarButtonItem(UIImage, UIMenu) is only available on iOS/MacCatalyst 14.0+.
-			if (secondaries is not null && secondaries.Count > 0 &&
-				(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)))
+			if (secondaries is not null && secondaries.Count > 0)
 			{
 				UIImage? secondaryIcon = null;
 				if (ViewController?.ParentViewController is ShellSectionRenderer ssr)
@@ -632,11 +630,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			image.LoadImage(mauiContext, result =>
 			{
 				if (_disposed ||
+					trackedViewController is null ||
 					registrationGeneration != _leftToolbarRegistrationGeneration ||
 					!ReferenceEquals(Page, trackedPage) ||
 					!ReferenceEquals(NavigationItem, trackedNavigationItem) ||
 					!ReferenceEquals(ViewController, trackedViewController))
 				{
+					result?.Dispose();
 					return;
 				}
 
@@ -707,46 +707,26 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (NavigationItem.LeftBarButtonItem != null)
 				{
-					var customAccessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
-					bool hasCustomLabel = !string.IsNullOrEmpty(customAccessibilityLabel);
-
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage)
 						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
-							NavigationItem.LeftBarButtonItem.AccessibilityLabel = hasCustomLabel ? customAccessibilityLabel : "Menu";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
 						}
 						else
-						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
-							if (hasCustomLabel)
-							{
-								NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
-							}
-							else
-							{
-								NavigationItem.LeftBarButtonItem.AccessibilityLabel = null;
-							}
-						}
 					}
 					else
 					{
 						NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = image.AutomationId;
-						if (hasCustomLabel)
-						{
-							NavigationItem.LeftBarButtonItem.AccessibilityLabel = customAccessibilityLabel;
-						}
 					}
 
 					if (image != null)
 					{
 #pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
-						if (!hasCustomLabel)
-						{
-							NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
-						}
+						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
 
@@ -772,7 +752,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var behavior = BackButtonBehavior;
 			var text = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.TextOverrideProperty, null);
-			var accessibilityLabel = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.AccessibilityLabelProperty, null);
 
 			var navController = ViewController?.NavigationController;
 
@@ -789,30 +768,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						var previousNavItem = viewControllers[count - 2].NavigationItem;
 						if (previousNavItem != null)
 						{
-							if (text is not null || !string.IsNullOrEmpty(accessibilityLabel))
+							if (text is not null)
 							{
 								var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
-								if (text is not null)
-								{
-									barButtonItem.Title = text;
-								}
-								else if (barButtonItem.Title is null)
-								{
-									// Preserve default back button title when only accessibility label is set
-									barButtonItem.Title = previousNavItem.Title;
-								}
-								if (!string.IsNullOrEmpty(accessibilityLabel))
-								{
-									barButtonItem.AccessibilityLabel = accessibilityLabel;
-								}
-								else
-								{
-									barButtonItem.AccessibilityLabel = null;
-								}
+								barButtonItem.Title = text;
 							}
 							else if (previousNavItem.BackBarButtonItem != null)
 							{
-								previousNavItem.BackBarButtonItem.AccessibilityLabel = null;
 								previousNavItem.BackBarButtonItem = null;
 							}
 						}
@@ -1302,12 +1264,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (result != null)
 				{
 					var newResult = result.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Normal);
-					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Highlighted);
-					searchBar.SetImageForSearchBarIcon(newResult, icon, UIControlState.Selected);
+					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Normal);
+					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Highlighted);
+					searchBar.SetImageforSearchBarIcon(newResult, icon, UIControlState.Selected);
 
 					// iOS caches the clear button image once it has been shown. After the button
-					// has appeared (user typed text), SetImageForSearchBarIcon alone won't refresh
+					// has appeared (user typed text), SetImageforSearchBarIcon alone won't refresh
 					// it. Directly update the button subview so dynamic changes are reflected.
 					if (icon is UISearchBarIcon.Clear)
 					{
@@ -1318,7 +1280,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		// Directly updates the clear button (X) inside UISearchBar's UITextField subview.
-		// This is required because iOS does not re-apply SetImageForSearchBarIcon to a
+		// This is required because iOS does not re-apply SetImageforSearchBarIcon to a
 		// clear button that is already visible on screen.
 		//
 		// NOTE: "searchField" and "clearButton" are private UIKit KVC keys. Apple does not
@@ -1343,14 +1305,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				// Reset to default system icon by clearing the custom image
-				searchBar.SetImageForSearchBarIcon(null, icon, UIControlState.Normal);
-				searchBar.SetImageForSearchBarIcon(null, icon, UIControlState.Highlighted);
-				searchBar.SetImageForSearchBarIcon(null, icon, UIControlState.Selected);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Normal);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Highlighted);
+				searchBar.SetImageforSearchBarIcon(null, icon, UIControlState.Selected);
 
 				if (icon is UISearchBarIcon.Clear)
 				{
 					// UIKit caches the clear button image once it is on-screen, so
-					// SetImageForSearchBarIcon(null, ...) alone will not update the visible
+					// SetImageforSearchBarIcon(null, ...) alone will not update the visible
 					// button. Restore the system default SF Symbol so the button shows the
 					// standard 'X' instead of becoming imageless.
 					UpdateClearButtonImage(searchBar, UIImage.GetSystemImage("multiply.circle.fill"));

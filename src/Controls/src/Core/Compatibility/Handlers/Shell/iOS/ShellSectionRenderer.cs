@@ -17,11 +17,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellSectionRenderer : UINavigationController, IShellSectionRenderer, IAppearanceObserver, IDisconnectable
 	{
-#if !MACCATALYST
-		public override UIViewController ChildViewControllerForStatusBarStyle()
-			=> TopViewController;
-#endif
-
 		#region IShellContentRenderer
 
 		public bool IsInMoreTab { get; set; }
@@ -666,6 +661,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					registrationGeneration != _tabRegistrationGeneration ||
 					!ReferenceEquals(ShellSection, shellSection))
 				{
+					icon?.Dispose();
 					return;
 				}
 
@@ -674,7 +670,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
-				ShellItemRenderer.UpdateTabBarItemBadge(TabBarItem, ShellSection);
 				_nativeTabRegistrations.Register(
 					shellSection,
 					TabBarItem,
@@ -761,11 +756,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
-				// UINavigationItem.BackAction requires iOS 16.0+; UIAction.Create requires iOS 14.0+.
-				if (OperatingSystem.IsIOSVersionAtLeast(16) || OperatingSystem.IsMacCatalystVersionAtLeast(16))
-				{
-					viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
-				}
+				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
 				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else

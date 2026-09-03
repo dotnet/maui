@@ -140,10 +140,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ICompass Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new CompassImplementation());
+			defaultImplementation ??= new CompassImplementation();
 
 		internal static void SetDefault(ICompass? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	/// <summary>

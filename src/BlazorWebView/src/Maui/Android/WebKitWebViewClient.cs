@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System;
 using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
@@ -23,9 +21,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private static readonly Uri AppOriginUri = new(AppOrigin);
 
 		private readonly BlazorWebViewHandler? _webViewHandler;
-		// Android does not store WebResourceResponse instances returned from ShouldInterceptRequest in Chromium's
-		// HTTP cache. Keep explicitly cacheable static responses in a bounded per-WebView cache instead.
-		private readonly StaticContentResponseCache _staticContentResponseCache = new();
 
 		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
 		{
@@ -105,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				// 2. Check if the request is for a Blazor resource
-				response = GetResponse(request, requestUri, _webViewHandler?.Logger);
+				response = GetResponse(requestUri, _webViewHandler?.Logger);
 				if (response is not null)
 				{
 					return response;
@@ -118,33 +113,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? GetResponse(IWebResourceRequest request, string requestUri, ILogger? logger)
+		private WebResourceResponse? GetResponse(string requestUri, ILogger? logger)
 		{
-			if (!Uri.TryCreate(requestUri, UriKind.Absolute, out var uri) || !AppOriginUri.IsBaseOf(uri))
-			{
-				return null;
-			}
-
-			StaticContentCacheRequestBehavior? cacheRequestBehavior = null;
-			if (_staticContentResponseCache.TryGet(requestUri, out var cachedResponse))
-			{
-				cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(request.Method, request.RequestHeaders);
-				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
-				{
-					var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
-					logger?.HandlingWebRequest(cachedRequestUri);
-					logger?.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
-					return CreateWebResourceResponse(cachedResponse);
-				}
-
-				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
-				{
-					_staticContentResponseCache.Remove(requestUri);
-				}
-			}
-
 			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
-			var originalRequestUri = requestUri;
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			logger?.HandlingWebRequest(requestUri);
@@ -156,42 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
-				// By default local caching is disabled so that user scripts are always re-executed. Applications can
-				// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
-				// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
-				// See https://github.com/dotnet/maui/issues/8279
-				var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_webViewHandler?.VirtualView, originalRequestUri, contentType, logger);
-				if (cacheControlOverride is not null)
-				{
-					headers["Cache-Control"] = cacheControlOverride;
-				}
-
 				logger?.ResponseContentBeingSent(requestUri, statusCode);
-
-				if (statusCode == 200 &&
-					headers.TryGetValue("Cache-Control", out var cacheControl) &&
-					StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
-				{
-					cacheRequestBehavior ??= StaticContentResponseCachePolicy.GetRequestBehavior(request.Method, request.RequestHeaders);
-					if (cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled)
-					{
-						if (StaticContentResponseBuffer.TryBuffer(content, originalRequestUri, logger, out var cachedContent, out var responseContent))
-						{
-							var responseToCache = new StaticContentResponse(
-								originalRequestUri,
-								contentType,
-								statusCode,
-								statusMessage,
-								headers,
-								cachedContent,
-								StaticContentResponseCachePolicy.GetExpiration(cacheLifetime));
-
-							_staticContentResponseCache.Set(responseToCache);
-						}
-
-						return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, responseContent);
-					}
-				}
 
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
 			}
@@ -202,15 +138,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			return null;
 		}
-
-		private static WebResourceResponse CreateWebResourceResponse(StaticContentResponse response)
-			=> new(
-				response.ContentType,
-				"UTF-8",
-				response.StatusCode,
-				response.StatusMessage,
-				new Dictionary<string, string>(response.Headers, StringComparer.OrdinalIgnoreCase),
-				new MemoryStream(response.Content, writable: false));
 
 		public override void OnPageFinished(AWebView? view, string? url)
 		{
@@ -307,12 +234,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		protected override void Dispose(bool disposing)
 		{
+			base.Dispose(disposing);
 			if (disposing)
 			{
-				_staticContentResponseCache.Clear();
+				//_webViewManager = null;
 			}
-
-			base.Dispose(disposing);
 		}
 
 		private class JavaScriptValueCallback : Java.Lang.Object, IValueCallback

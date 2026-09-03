@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Resizetizer
 		SKSvg svg;
 
 		public SkiaSharpSvgTools(ResizeImageInfo info, ILogger logger)
-			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, info.Quality, logger)
+			: this(info.Filename, info.BaseSize, info.Color, info.TintColor, logger)
 		{
 		}
 
-		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ResizeQuality quality, ILogger logger)
-			: base(filename, baseSize, backgroundColor, tintColor, quality, logger)
+		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
+			: base(filename, baseSize, backgroundColor, tintColor, logger)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -35,38 +35,33 @@ namespace Microsoft.Maui.Resizetizer
 
 		public override void DrawUnscaled(SKCanvas canvas, float scale)
 		{
-			var size = GetOriginalSize();
-			if (scale >= 1 && (Quality != ResizeQuality.Fastest || size.IsEmpty))
+			if (scale >= 1)
 			{
-				// Draw vectors directly for Auto/back-compat and Best/highest fidelity. Empty SVGs
-				// can have document dimensions but no drawn bounds; direct drawing is a no-op.
+				// draw using default scaling
 				canvas.DrawPicture(svg.Picture, Paint);
 			}
 			else
 			{
+				var size = GetOriginalSize();
 				if (size.IsEmpty)
 				{
 					throw new InvalidOperationException($"Cannot draw SVG file '{Filename}'. The SVG has no size. Ensure the SVG includes a viewBox attribute or both width and height attributes with valid dimensions.");
 				}
 
-				// Rasterize first so the final draw honors the selected sampling options.
-				var info = new SKImageInfo(
-					Math.Max(1, (int)Math.Ceiling(size.Width)),
-					Math.Max(1, (int)Math.Ceiling(size.Height)));
+				// vector scaling has rounding issues, so first draw as intended
+				var info = new SKImageInfo((int)size.Width, (int)size.Height);
 				using var surface = SKSurface.Create(info);
 				var cvn = surface.Canvas;
 
+				// draw to a larger canvas first
 				cvn.Clear(SKColors.Transparent);
-				if (Quality == ResizeQuality.Auto)
-					cvn.DrawPicture(svg.Picture, Paint);
-				else
-					cvn.DrawPicture(svg.Picture);
+				cvn.DrawPicture(svg.Picture, Paint);
 
 				// convert it all into an image
 				using var img = surface.Snapshot();
 
 				// draw to the main canvas using the correct quality settings
-				canvas.DrawImage(img, SKRect.Create(size.Width, size.Height), SamplingOptions, Paint);
+				canvas.DrawImage(img, 0, 0, SamplingOptions, Paint);
 			}
 		}
 

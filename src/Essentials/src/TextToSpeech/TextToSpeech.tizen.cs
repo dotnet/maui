@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Media
 
 			var language = "en_US";
 			var voiceType = Voice.Auto;
-			if (!string.IsNullOrWhiteSpace(options?.Locale?.Language))
+			if (options?.Locale.Language != null)
 			{
 				foreach (var voice in tts.GetSupportedVoices())
 				{

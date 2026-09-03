@@ -21,6 +21,10 @@ public partial class GlobalXmlnsWithStyle : ContentPage
 			if (inflator == XamlInflator.SourceGen)
 			{
 				var compilation = MockSourceGenerator.CreateMauiCompilation();
+				compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
+	"""
+[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]
+"""));
 				compilation.RunMauiSourceGenerator(typeof(GlobalXmlnsWithStyle));
 			}
 

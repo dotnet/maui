@@ -58,9 +58,9 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IFlashlight Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new FlashlightImplementation());
+			defaultImplementation ??= new FlashlightImplementation();
 
 		internal static void SetDefault(IFlashlight? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 }

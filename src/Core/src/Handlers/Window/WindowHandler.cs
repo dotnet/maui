@@ -22,9 +22,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.Y)] = MapY,
 			[nameof(IWindow.Width)] = MapWidth,
 			[nameof(IWindow.Height)] = MapHeight,
-#if ANDROID || __IOS__
-			[nameof(IWindow.StatusBarTheme)] = MapStatusBarTheme,
-#endif
 #if WINDOWS || MACCATALYST
 			[nameof(IWindow.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IWindow.MaximumHeight)] = MapMaximumHeight,
