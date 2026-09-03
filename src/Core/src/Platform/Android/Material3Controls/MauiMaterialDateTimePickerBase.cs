@@ -97,14 +97,19 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
             ClearBackgroundDrawable();
             SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(_defaultBoxBackgroundColor, _defaultBoxBackgroundColor));
         }
-        else if (view.Background.ToDrawable(Context) is Drawable backgroundDrawable)
+        else
         {
             ClearBackgroundDrawable();
-            var transparent = global::Android.Graphics.Color.Transparent.ToArgb();
-            SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(transparent, transparent));
+            SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(_defaultBoxBackgroundColor, _defaultBoxBackgroundColor));
 
-            _backgroundDrawable = backgroundDrawable;
-            Background = _backgroundDrawable;
+            if (view.Background.ToDrawable(Context) is Drawable backgroundDrawable)
+            {
+                var transparent = global::Android.Graphics.Color.Transparent.ToArgb();
+                SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(transparent, transparent));
+
+                _backgroundDrawable = backgroundDrawable;
+                Background = _backgroundDrawable;
+            }
         }
     }
 
