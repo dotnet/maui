@@ -30,8 +30,15 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 // MemoryTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler.
 [Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
+// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+// MemoryTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+// instead, so PagesDoNotLeak(typeof(TabbedPage)) runs against both variants.
+[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 public class MemoryTests : ControlsHandlerTestBase
 {
+	// Subclasses used to enable memory tests for CV2 handlers
+	public class CollectionView2 : CollectionView { }
+	public class CarouselView2 : CarouselView { }
 	protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
@@ -102,11 +109,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
 				RegisterFlyoutPageHandler(handlers);
-#if IOS || MACCATALYST
-				handlers.AddHandler<TabbedPage, TabbedRenderer>();
-#else
-				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
-#endif
+				RegisterTabbedPageHandler(handlers);
 			});
 		});
 	}
@@ -119,6 +122,17 @@ public class MemoryTests : ControlsHandlerTestBase
 		handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
 #else
 		handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
+	}
+
+	// The base class exercises TabbedRenderer on iOS/MacCatalyst; MemoryTests_TabbedViewHandler
+	// overrides this to exercise TabbedViewHandler instead.
+	protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<TabbedPage, TabbedRenderer>();
+#else
+		handlers.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
 	}
 
