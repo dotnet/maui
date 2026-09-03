@@ -162,6 +162,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 		if (PlatformView is not null)
 		{
+			PlatformView.IsTabStop = false;
 			PlatformView.SetBinding(WItemsView.SelectionModeProperty,
 					new UI.Xaml.Data.Binding
 					{
@@ -178,14 +179,25 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	void OnPlatformViewLoaded(object? sender, UI.Xaml.RoutedEventArgs e)
 	{
-		// Re-sync visual states to MAUI selection whenever the view re-enters the visual tree.
-		// This is the fix for the stale selection highlight on navigation back
-		if (_selectionDirty)
+		if (sender is not MauiItemsView platformView)
+			return;
+
+		void OnReady()
 		{
-			_selectionDirty = false;
-			UpdatePlatformSelection();
+			platformView.ContainerPrepared -= OnContainerPrepared;
+			platformView.IsTabStop = true;
+			if (_selectionDirty)
+			{
+				_selectionDirty = false;
+				UpdatePlatformSelection();
+			}
 		}
+
+		void OnContainerPrepared(int index) => OnReady();
+		platformView.ContainerPrepared += OnContainerPrepared;
+		platformView.DispatcherQueue.TryEnqueue(OnReady);
 	}
+
 
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
@@ -459,7 +471,10 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
 
-				for (int index = 0; index < itemList.Count; index++)
+				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
+				int index = 0;
+
+				foreach (var nativeItem in itemList)
 				{
 					var nativeItem = itemList[index];
 					if (nativeItem is ItemTemplateContext2 itemPair && ItemsView.SelectedItems.Contains(itemPair.Item))
