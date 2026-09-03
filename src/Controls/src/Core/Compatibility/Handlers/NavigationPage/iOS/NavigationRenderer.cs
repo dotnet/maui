@@ -1037,13 +1037,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetStatusBarStyle()
 		{
-			if (NavPage is null)
+			// NavPage resolves Element through a weak reference on every access, so it can
+			// become null between the guard and the uses below. Read it once.
+			var navPage = NavPage;
+
+			if (navPage is null)
 			{
 				return;
 			}
 
-			var barTextColor = NavPage.BarTextColor;
-			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
+			var barTextColor = navPage.BarTextColor;
+			var statusBarColorMode = navPage.OnThisPlatform().GetStatusBarTextColorMode();
 
 #pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
