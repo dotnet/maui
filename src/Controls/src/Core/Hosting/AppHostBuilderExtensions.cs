@@ -17,7 +17,6 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
-using Microsoft.Maui.Controls.Handlers.Items2;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -67,16 +66,6 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
-#elif WINDOWS
-		if (RuntimeFeature.IsWindowsCollectionView2HandlerEnabled)
-		{
-			handlersCollection.AddHandler<CollectionView, CollectionViewHandler2>();
-		}
-		else
-		{
-			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
-		}
-		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #else
 		handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
@@ -96,7 +85,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler2>();
 			handlersCollection.AddHandler<Slider, SliderHandler2>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler2>();
-			handlersCollection.AddHandler<Entry, EntryHandler2>();
+            handlersCollection.AddHandler<Entry, EntryHandler2>();
 		}
 		else
 		{
@@ -112,7 +101,7 @@ public static partial class AppHostBuilderExtensions
 			handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 			handlersCollection.AddHandler<Slider, SliderHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-			handlersCollection.AddHandler<Entry, EntryHandler>();
+            handlersCollection.AddHandler<Entry, EntryHandler>();
 		}
 #else
 		handlersCollection.AddHandler<Label, LabelHandler>();
@@ -127,19 +116,28 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
-		handlersCollection.AddHandler<Entry, EntryHandler>();
+        handlersCollection.AddHandler<Entry, EntryHandler>();
 #endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<ScrollView, ScrollViewHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
+			// IL2026/IL3050 are suppressed because the RuntimeFeature.IsHybridWebViewSupported guard
+			// has [FeatureGuard(RequiresUnreferencedCodeAttribute)] and [FeatureGuard(RequiresDynamicCodeAttribute)]
+			// annotations that should suppress these warnings. The Android NativeAOT ILC does not honor
+			// [FeatureGuard] for warning suppression (unlike the iOS/macCatalyst ILC), so we suppress explicitly.
+#pragma warning disable IL2026, IL3050
+			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+#pragma warning restore IL2026, IL3050
+		}
 
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
@@ -203,26 +201,22 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
-		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
-		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
+		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
+		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
+		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
 #if ANDROID || IOS || MACCATALYST || TIZEN
 		handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #endif
 
-#if IOS || MACCATALYST
+#if ANDROID || IOS || MACCATALYST
 		handlersCollection.AddHandler<Shell, ShellRenderer>();
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#elif ANDROID
-		handlersCollection.AddHandler<Shell, ShellHandler>();
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #elif TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
@@ -259,7 +253,11 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
-		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		}
 
 		builder.ConfigureMauiControlsDiagnostics();
 
@@ -335,11 +333,6 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
-
-#if IOS || MACCATALYST
-		NavigationPage.RemapForControls();
-#endif
-
 		return builder;
 	}
 }

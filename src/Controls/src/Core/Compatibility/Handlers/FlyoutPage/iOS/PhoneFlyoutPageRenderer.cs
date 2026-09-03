@@ -669,11 +669,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return base.ChildViewControllerForStatusBarHidden();
 		}
 
-#if !MACCATALYST
-		public override UIViewController ChildViewControllerForStatusBarStyle() =>
-			ChildViewControllerForStatusBarHidden();
-#endif
-
 		public override UIViewController ChildViewControllerForHomeIndicatorAutoHidden
 		{
 			get

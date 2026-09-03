@@ -286,20 +286,9 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == WindowProperty.PropertyName)
 			{
 				if (_contentCache?.IsLoaded == true)
-				{
 					return;
-				}
 
 				EvaluateDisconnect();
-			}
-			else if (propertyName == TitleProperty.PropertyName)
-			{
-				// Propagate child Title change to parent ShellSection's handler
-				// so the mapper can update platform tab titles.
-				if (Parent is ShellSection section)
-				{
-					section.Handler?.UpdateValue(nameof(Title));
-				}
 			}
 		}
 
@@ -432,7 +421,7 @@ namespace Microsoft.Maui.Controls
 							{
 								// Handle nullable types
 								Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-
+								
 								if (value == null)
 								{
 									prop.SetValue(content, null);
@@ -465,16 +454,16 @@ namespace Microsoft.Maui.Controls
 					query.ResetToQueryParameters();
 			}
 		}
-#nullable enable
+
 		private sealed class ShellContentConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 				=> sourceType == typeof(TemplatedPage);
 
-			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 				=> false;
 
-			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
 			{
 				if (value is TemplatedPage templatedPage)
 				{
@@ -484,7 +473,7 @@ namespace Microsoft.Maui.Controls
 				throw new NotSupportedException();
 			}
 
-			public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
+			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
 			{
 				throw new NotSupportedException();
 			}

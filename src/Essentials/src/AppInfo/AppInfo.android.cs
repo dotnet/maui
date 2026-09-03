@@ -17,9 +17,7 @@ namespace Microsoft.Maui.ApplicationModel
 		static readonly Lazy<PackageInfo> _packageInfo = new Lazy<PackageInfo>(() => Application.Context.PackageManager.GetPackageInfo(_packageName.Value, PackageInfoFlags.MetaData));
 #pragma warning restore CS0618, CA1416, CA1422
 
-		public string PackageName => GetDefaultPackageName();
-
-		internal static string GetDefaultPackageName() => _packageName.Value;
+		public string PackageName => _packageName.Value;
 
 		public string Name => _name.Value;
 

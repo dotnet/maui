@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Accessibility
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static ISemanticScreenReader Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new SemanticScreenReaderImplementation());
+			defaultImplementation ??= new SemanticScreenReaderImplementation();
 
 		internal static void SetDefault(ISemanticScreenReader? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 }

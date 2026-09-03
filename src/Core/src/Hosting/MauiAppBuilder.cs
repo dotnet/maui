@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Hosting
 			Services.AddSingleton<IConfiguration>(sp => configuration.Value);
 			Services.AddSingleton<IHostEnvironment>(sp => hostEnvironment.Value);
 			Services.AddSingleton<IMetricsBuilder>(sp => metricsBuilder.Value);
-			Services.AddSingleton<MauiAppInitializationState>();
 
 			_configuration = configuration;
 			_hostEnvironment = hostEnvironment;
@@ -195,27 +194,8 @@ namespace Microsoft.Maui.Hosting
 
 			MauiApp builtApplication = new MauiApp(serviceProvider);
 
-			try
-			{
-				// Initialize any singleton/app services, for example the OS hooks
-				builtApplication.InitializeAppServices();
-			}
-			catch (Exception initializationException)
-			{
-				try
-				{
-					builtApplication.Dispose();
-				}
-				catch (Exception disposalException)
-				{
-					throw new AggregateException(
-						"MauiApp initialization and cleanup both failed.",
-						initializationException,
-						disposalException);
-				}
-
-				throw;
-			}
+			// Initialize any singleton/app services, for example the OS hooks
+			builtApplication.InitializeAppServices();
 
 			return builtApplication;
 		}

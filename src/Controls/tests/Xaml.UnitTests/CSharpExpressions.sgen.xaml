@@ -98,9 +98,6 @@
         <!-- String interpolation with method call -->
         <Label x:Name="interpolationMethodLabel" Text="{$'Result: {GetText()}'}" />
         
-        <!-- Ternary directly inside an interpolation hole (issue #36155) -->
-        <Label x:Name="interpolationTernaryLabel" Text="{$'You clicked {Count} {Count == 1 ? 'time' : 'times'}.'}" />
-        
         <!-- TYPED BINDING TESTS (using separate x:DataType) -->
         <VerticalStackLayout x:DataType="local:SimpleViewModel">
             <!-- Simple binding expression: property only on x:DataType -->

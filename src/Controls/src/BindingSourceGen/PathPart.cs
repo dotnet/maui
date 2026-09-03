@@ -11,8 +11,8 @@ public record MemberAccess(
 	TypeDescription? ContainingType = null,
 	TypeDescription? MemberType = null,
 	AccessorKind? Kind = null,
-	bool IsGetterAccessible = true,
-	bool IsSetterAccessible = true) : IPathPart
+	bool IsGetterInaccessible = false,
+	bool IsSetterInaccessible = false) : IPathPart
 {
 	public string PropertyName => MemberName;
 	
@@ -20,7 +20,7 @@ public record MemberAccess(
 	/// Indicates whether this member has any inaccessible accessor (getter or setter).
 	/// Used to determine if UnsafeAccessor methods need to be generated.
 	/// </summary>
-	public bool HasInaccessibleAccessor => !IsGetterAccessible || !IsSetterAccessible;
+	public bool HasInaccessibleAccessor => IsGetterInaccessible || IsSetterInaccessible;
 	
 	/// <summary>
 	/// Compares this MemberAccess with another IPathPart for equality.
@@ -53,8 +53,8 @@ public record MemberAccess(
 			return ContainingType == memberAccess.ContainingType
 				&& MemberType == memberAccess.MemberType
 				&& Kind == memberAccess.Kind
-				&& IsGetterAccessible == memberAccess.IsGetterAccessible
-				&& IsSetterAccessible == memberAccess.IsSetterAccessible;
+				&& IsGetterInaccessible == memberAccess.IsGetterInaccessible
+				&& IsSetterInaccessible == memberAccess.IsSetterInaccessible;
 		}
 		
 		return true;

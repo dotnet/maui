@@ -99,8 +99,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		internal sealed class WebViewUIDelegate : WKUIDelegate
 		{
-			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("OK") ?? "OK";
-			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit")?.GetLocalizedString("Cancel") ?? "Cancel";
+			private static readonly string LocalOK = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("OK");
+			private static readonly string LocalCancel = NSBundle.FromIdentifier("com.apple.UIKit").GetLocalizedString("Cancel");
 			private readonly BlazorWebViewHandler _webView;
 
 			public WebViewUIDelegate(BlazorWebViewHandler webView)
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						return null;
 					}
 
-					var del = GetExistingManagedDelegate(block) as Action<string?>;
+					var del = (Action<string?>)GetExistingManagedDelegate(block);
 					return del ?? new ActionStringTrampolineBlock((BlockLiteral*)block).Invoke;
 				}
 
@@ -266,12 +266,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
 				var requestUrl = navigationAction.Request.Url;
-				if (requestUrl?.ToString() is not string requestUrlString)
-				{
-					decisionHandler(WKNavigationActionPolicy.Cancel);
-					return;
-				}
-				var uri = new Uri(requestUrlString);
+				var uri = new Uri(requestUrl.ToString());
 
 				UrlLoadingStrategy strategy;
 

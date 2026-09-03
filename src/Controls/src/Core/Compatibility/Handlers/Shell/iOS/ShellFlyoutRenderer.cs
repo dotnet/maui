@@ -48,10 +48,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override bool PrefersStatusBarHidden() => Detail.PrefersStatusBarHidden();
 
-#if !MACCATALYST
-		public override UIViewController ChildViewControllerForStatusBarStyle() => Detail;
-#endif
-
 		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation => Detail.PreferredStatusBarUpdateAnimation;
 
 		void IShellFlyoutRenderer.AttachFlyout(IShellContext context, UIViewController content)

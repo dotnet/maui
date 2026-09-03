@@ -18,15 +18,12 @@ public partial class Gh3606 : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
-		internal void BindingsWithXReferenceSourceResolveAgainstReferencedType(XamlInflator inflator)
+		internal void BindingsWithSourceAndInvalidPathAreNotCompiled(XamlInflator inflator)
 		{
-			// Source={x:Reference page} points to ContentPage, which has a Content property.
-			// The binding path "Content" resolves against ContentPage, so the source generator
-			// compiles it instead of falling back to runtime Binding.
 			var view = new Gh3606(inflator);
 
 			var binding = view.Label.GetContext(Label.TextProperty).Bindings.GetValue();
-			Assert.IsAssignableFrom<BindingBase>(binding);
+			Assert.IsType<Binding>(binding);
 		}
 	}
 }

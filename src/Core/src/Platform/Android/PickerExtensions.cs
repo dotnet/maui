@@ -43,17 +43,20 @@ namespace Microsoft.Maui.Platform
 			alertDialog.UpdateFlowDirectionCore(platformPicker);
 		}
 
-		public static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdateTitle(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
 		}
 
-		public static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdateTitleColor(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			platformPicker.UpdateTitleColorCore(picker);
 		}
 
-		public static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdateSelectedIndex(this MauiMaterialPicker platformPicker, IPicker picker)
 		{
 			UpdatePicker(platformPicker, picker);
 		}
@@ -68,7 +71,8 @@ namespace Microsoft.Maui.Platform
 			alertDialog.UpdateFlowDirectionCore(platformPicker);
 		}
 
-		public static void UpdateTitleColorCore(this AppCompatEditText platformPicker, IPicker picker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdateTitleColorCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			var titleColor = picker.TitleColor;
 
@@ -85,7 +89,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdatePickerCore(this AppCompatEditText platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;
 
@@ -99,7 +104,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateFlowDirectionCore(this AppCompatAlertDialog alertDialog, AppCompatEditText platformPicker)
+		// TODO: Material3 - make it public in .net 11
+		internal static void UpdateFlowDirectionCore(this AppCompatAlertDialog alertDialog, AppCompatEditText platformPicker)
 		{
 			var platformLayoutDirection = platformPicker.LayoutDirection;
 

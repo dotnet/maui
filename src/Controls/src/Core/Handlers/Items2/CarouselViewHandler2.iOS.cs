@@ -75,7 +75,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 		}
 
-		public static void MapIsEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void MapIsEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
 		}
@@ -97,9 +98,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
 		}
 
-		public static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
+		// TODO: Change the modifier to public in .NET 10.
+		internal static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.UpdateLayout();
+			handler?.UpdateLayout();
 			(handler.Controller as CarouselViewController2)?.UpdateScrollingConstraints();
 		}
 

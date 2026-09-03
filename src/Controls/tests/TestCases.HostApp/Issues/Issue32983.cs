@@ -100,7 +100,7 @@ public class Issue32983BottomSheetContentView : Microsoft.Maui.Controls.ContentV
     {
         BackgroundColor = Colors.AliceBlue;
 
-        var collectionView = new CollectionView2
+        var collectionView = new CollectionView
         {
             SelectionMode = SelectionMode.Single,
             VerticalOptions = LayoutOptions.Start,

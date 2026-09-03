@@ -80,8 +80,8 @@ namespace UITest.Appium
 		/// <summary>
 		/// Closes a picker dialog using platform-specific dismiss actions.
 		/// For Android, taps the "Cancel" button.
+		/// For iOS/MacCatalyst, taps the "Done" button.
 		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
-		/// For iOS, taps the "selected" button on iOS 26+, otherwise taps the "Done" button. For MacCatalyst, taps the "Done" button.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
@@ -91,10 +91,6 @@ namespace UITest.Appium
 			if (app is AppiumAndroidApp)
 			{
 				app.Tap("Cancel");
-			}
-			else if (app is AppiumIOSApp iosApp && IsIOS26OrHigher(iosApp))
-			{
-				app.Tap("selected");
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
 			{
@@ -1054,54 +1050,30 @@ namespace UITest.Appium
 		}
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
-			=> app.WaitForText(automationId, text, s => s.Contains(text, StringComparison.OrdinalIgnoreCase), timeout);
-
-		/// <summary>
-		/// Waits until the element's text is exactly equal to <paramref name="text"/> (ordinal), rather
-		/// than merely containing it. Use this when the element's placeholder/initial text already
-		/// contains the expected value as a substring, which would make a Contains-based wait pass
-		/// prematurely on the placeholder.
-		/// </summary>
-		public static bool WaitForTextEqualToElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
-			=> app.WaitForText(automationId, text, s => string.Equals(s, text, StringComparison.Ordinal), timeout);
-
-		/// <summary>
-		/// Shared polling loop for the text-wait helpers. Repeatedly reads the element's text and
-		/// returns <see langword="true"/> as soon as <paramref name="matches"/> is satisfied. On
-		/// timeout it logs the last observed text (and the expected value) so a stalled or
-		/// placeholder-stuck label is distinguishable from a text-read failure, then returns
-		/// <see langword="false"/>.
-		/// </summary>
-		static bool WaitForText(this IApp app, string automationId, string expected, Func<string, bool> matches, TimeSpan? timeout)
 		{
 			timeout ??= DefaultTimeout;
 			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
 
 			DateTime start = DateTime.Now;
-			string? lastObservedText = null;
 
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
 
-				if (element is not null && element.TryGetText(out var s))
+				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
-					lastObservedText = s;
-					if (matches(s))
-					{
-						return true;
-					}
+					return true;
 				}
 
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
 				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}; last observed text for '{automationId}' was '{lastObservedText ?? "<unavailable>"}', expected '{expected}'");
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
 
 					return false;
 				}
 
-				Task.Delay(retryFrequency).Wait();
+				Task.Delay(retryFrequency.Milliseconds).Wait();
 			}
 		}
 
