@@ -9898,6 +9898,33 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
             '*no trusted assertion after the trigger*')
     }
 
+    It 'rejects nullable and fabricated callback label oracles' {
+        $nullableSource = $script:TrustedWindowHelperBase.Replace(
+            'Assert.Equal("Main", nativeTitle.Text);',
+            'Assert.Equal("Main", nativeTitle?.Text);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nullableSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*no trusted assertion after the trigger*')
+
+        $fabricatedSource = $script:TrustedWindowHelperBase.Replace(
+            '            Assert.Equal("Main", nativeTitle.Text);',
+            @'
+            nativeTitle ??= new UIKit.UILabel();
+            Assert.Equal("Main", nativeTitle.Text);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $fabricatedSource `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/NavigationPage/Issue35511.iOS.cs'
+        } | Should -Throw (
+            '*generated helper callbacks may not assign*')
+    }
+
     It 'rejects a generated shadow of the immutable Window attachment helper' {
         $shadow = $script:TrustedWindowHelperBase.Replace(
             @'
