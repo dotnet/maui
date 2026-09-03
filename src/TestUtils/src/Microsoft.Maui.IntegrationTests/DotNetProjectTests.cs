@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -18,13 +20,13 @@ public class DotNetProjectTests
 			"src",
 			"DotNet",
 			"DotNet.csproj");
-		var sdkVersion = DotnetInternal.RunForOutput(
-			"--version",
-			string.Empty,
-			out var exitCode,
-			timeoutInSeconds: 60,
-			output: _output).Trim();
-		Assert.True(exitCode == 0, "Unable to determine the .NET SDK version.");
+		var globalJson = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			"global.json")));
+		var sdkVersion = globalJson.RootElement
+			.GetProperty("tools")
+			.GetProperty("dotnet")
+			.GetString();
 		Assert.False(string.IsNullOrEmpty(sdkVersion), "The .NET SDK version was empty.");
 
 		var extensionsPathWithoutSeparator = Path.Combine(
@@ -32,6 +34,9 @@ public class DotNetProjectTests
 			".dotnet",
 			"sdk",
 			sdkVersion);
+		Assert.True(
+			Directory.Exists(extensionsPathWithoutSeparator),
+			$"The repo-local .NET SDK directory does not exist: {extensionsPathWithoutSeparator}");
 		var extensionsPathWithSeparator = extensionsPathWithoutSeparator + Path.DirectorySeparatorChar;
 
 		var withoutSeparator = GetWorkloadPaths(projectFile, extensionsPathWithoutSeparator);
