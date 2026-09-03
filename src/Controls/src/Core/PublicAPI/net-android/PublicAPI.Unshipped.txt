@@ -28,3 +28,4 @@ override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAd
 Microsoft.Maui.Controls.Picker.~Picker() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
