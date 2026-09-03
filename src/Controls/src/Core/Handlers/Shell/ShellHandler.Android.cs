@@ -172,10 +172,15 @@ namespace Microsoft.Maui.Controls.Handlers
             if (PlatformView is MauiDrawerLayout drawerLayout)
             {
                 _releasingDrawerCallback = true;
-                drawerLayout.CloseFlyout(false);
-                _releasingDrawerCallback = false;
-
-                drawerLayout.SetDrawerLockMode(MauiDrawerLayout.LockModeLockedClosed);
+                try
+                {
+                    drawerLayout.CloseFlyout(false);
+                    drawerLayout.SetDrawerLockMode(MauiDrawerLayout.LockModeLockedClosed);
+                }
+                finally
+                {
+                    _releasingDrawerCallback = false;
+                }
             }
         }
 

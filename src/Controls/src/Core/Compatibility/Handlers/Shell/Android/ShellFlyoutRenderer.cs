@@ -439,14 +439,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void ReleaseDrawerCallbackBeforePageChange()
 		{
 			_releasingDrawerCallback = true;
-
-			if (_flyoutContent?.AndroidView is AView flyoutView && IsDrawerOpen(flyoutView))
+			try
 			{
-				CloseDrawer(flyoutView, false);
-			}
+				if (_flyoutContent?.AndroidView is AView flyoutView && flyoutView.Parent == this)
+				{
+					CloseDrawer(flyoutView, false);
+				}
 
-			SetDrawerLockMode(LockModeLockedClosed);
-			_releasingDrawerCallback = false;
+				SetDrawerLockMode(LockModeLockedClosed);
+			}
+			finally
+			{
+				_releasingDrawerCallback = false;
+			}
 		}
 
 		protected override void Dispose(bool disposing)
