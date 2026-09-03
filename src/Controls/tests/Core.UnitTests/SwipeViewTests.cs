@@ -1029,6 +1029,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
+		[Fact]
+		public void SharedContentDoesNotKeepSwipeViewsAlive()
+		{
+			var sharedContent = new BoxView();
+			var swipeViewRefs = CreateSwipeViewsSharingContent(sharedContent, 20);
+
+			ForceFullGC();
+
+			GC.KeepAlive(sharedContent);
+
+			Assert.All(swipeViewRefs, reference => Assert.False(reference.IsAlive,
+				"SwipeView was kept alive by shared content."));
+		}
+
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+		static List<WeakReference> CreateSwipeViewsSharingContent(View sharedContent, int count)
+		{
+			var references = new List<WeakReference>(count);
+			for (int i = 0; i < count; i++)
+			{
+				var swipeView = new SwipeView { Content = sharedContent };
+				references.Add(new WeakReference(swipeView));
+			}
+
+			return references;
+		}
+
 		// A custom ImageSource that implements IFontImageSource without being the concrete
 		// FontImageSource, used to verify the icon-tint guard keys off the interface, not the type.
 		sealed class CustomFontImageSource : ImageSource, IFontImageSource

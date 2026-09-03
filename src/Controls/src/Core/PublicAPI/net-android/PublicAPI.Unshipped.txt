@@ -281,6 +281,7 @@ virtual Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedConte
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
 ~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
 ~static Microsoft.Maui.Controls.Editor.MapText(Microsoft.Maui.Handlers.EditorHandler2 handler, Microsoft.Maui.Controls.Editor editor) -> void
 ~static Microsoft.Maui.Controls.Entry.MapImeOptions(Microsoft.Maui.Handlers.EntryHandler2 handler, Microsoft.Maui.Controls.Entry entry) -> void

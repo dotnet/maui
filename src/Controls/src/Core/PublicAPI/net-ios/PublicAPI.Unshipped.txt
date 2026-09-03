@@ -211,6 +211,7 @@ virtual Microsoft.Maui.Controls.LongPressingEventArgs.GetPosition(Microsoft.Maui
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.DidMoveToParentViewController(UIKit.UIViewController parent) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
