@@ -1,8 +1,10 @@
- using ImageMagick;
+using ImageMagick;
 
 namespace VisualTestUtils.MagickNet
 {
-  
+    /// <summary>
+    /// Verify images using ImageMagick.
+    /// </summary>
     public class MagickNetVisualComparer : IVisualComparer
     {
         private ErrorMetric _errorMetric;
@@ -11,8 +13,8 @@ namespace VisualTestUtils.MagickNet
         /// <summary>
         /// Initializes a new instance of the <see cref="MagickNetVisualComparer"/> class.
         /// </summary>
-        /// <param name="errorMetric">The error metric to use.</param>
-        /// <param name="differenceThreshold">The difference threshold.</param>
+        /// <param name="errorMetric">The error metric to use (defaults to RootMeanSquared).</param>
+        /// <param name="differenceThreshold">The difference threshold above which images are considered different (defaults to 0.005).</param>
         public MagickNetVisualComparer(ErrorMetric errorMetric = ErrorMetric.RootMeanSquared, double differenceThreshold = 0.005)
         {
             _errorMetric = errorMetric;
