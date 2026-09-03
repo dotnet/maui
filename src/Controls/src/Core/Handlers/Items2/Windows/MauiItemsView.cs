@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -16,8 +15,6 @@ using WRectangle = Microsoft.UI.Xaml.Shapes.Rectangle;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 using WStackPanel = Microsoft.UI.Xaml.Controls.StackPanel;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
-using WCoreVirtualKeyStates = Windows.UI.Core.CoreVirtualKeyStates;
-using WVirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
 /// <summary>
@@ -51,11 +48,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		// This control is transparent to Tab (not a stop itself) so the single item
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
-		// or out of the collection; no extra intermediate stop on the owner itself.
+		// the collection.
 		IsTabStop = false;
-		// WinUI's Once path casts a selected source item to UIElement; MAUI source items are data objects.
 		TabNavigation = KeyboardNavigationMode.Local;
-		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
+
+		// Arrow-key (Up/Down/Left/Right) focus movement between items is not supported;
+		// only Tab/Shift+Tab and native WinUI defaults apply.
+		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Disabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
 		// staggered top-to-bottom cascade animation as virtualized items enter the
@@ -69,8 +68,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
 
 	// Exposes exactly one candidate (the current, or first, item container) so Tab treats
-	// the whole collection as a single stop. Up/Down arrow navigation between items is
-	// handled natively via directional focus, independent of this Tab-specific order.
+	// the whole collection as a single stop.
 	protected override IEnumerable<DependencyObject> GetChildrenInTabFocusOrder()
 	{
 		if (ItemsRepeaterControl is not ItemsRepeater repeater)
@@ -110,200 +108,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 
 		return selectedContainer ?? firstContainer;
-	}
-
-	/// <summary>
-	/// Fallback for the rare case this control receives focus directly (e.g. programmatic
-	/// Focus() or pointer interaction on its chrome) rather than via Tab: redirect to the
-	/// current item so arrow keys can navigate/interact immediately. Overridden rather than
-	/// subscribed to the GotFocus event so there is no handler to unsubscribe/leak.
-	/// </summary>
-	protected override void OnGotFocus(RoutedEventArgs e)
-	{
-		base.OnGotFocus(e);
-
-		if (!ReferenceEquals(e.OriginalSource, this) || ItemsRepeaterControl is not ItemsRepeater repeater)
-		{
-			return;
-		}
-
-		ItemContainer? firstContainer = null;
-		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
-		for (var childIndex = 0; childIndex < childCount; childIndex++)
-		{
-			if (VisualTreeHelper.GetChild(repeater, childIndex) is not ItemContainer container ||
-				!container.IsEnabled || container.Visibility != WVisibility.Visible ||
-				container.Child is not ElementWrapper wrapper || wrapper.IsHeaderOrFooter)
-			{
-				continue;
-			}
-
-			if (SelectionMode == ItemsViewSelectionMode.Single && container.IsSelected)
-			{
-				container.Focus(FocusState.Keyboard);
-				return;
-			}
-
-			firstContainer ??= container;
-		}
-
-		firstContainer?.Focus(FocusState.Keyboard);
-	}
-
-	protected override void OnPreviewKeyDown(KeyRoutedEventArgs e)
-	{
-		if (e.Key == WVirtualKey.Tab &&
-			e.OriginalSource is DependencyObject source &&
-			FindAncestor<ItemContainer>(source) is ItemContainer container)
-		{
-			var reverse = InputKeyboardSource.GetKeyStateForCurrentThread(WVirtualKey.Shift).HasFlag(WCoreVirtualKeyStates.Down);
-			if (QueueFocusWithinItem(container, source, reverse))
-			{
-				e.Handled = true;
-				return;
-			}
-
-			if (TryFocusOutsideCollection(reverse))
-			{
-				e.Handled = true;
-				return;
-			}
-		}
-
-		base.OnPreviewKeyDown(e);
-	}
-
-	bool QueueFocusWithinItem(ItemContainer container, DependencyObject focusedElement, bool reverse)
-	{
-		if (container.Child is not ElementWrapper { VirtualView: IVisualTreeElement content })
-		{
-			return false;
-		}
-
-		var candidates = new List<Control>();
-		CollectFocusableControls(content, candidates);
-		if (candidates.Count == 0)
-		{
-			return false;
-		}
-
-		var focusedControl = FindAncestor<Control>(focusedElement);
-		var focusedIndex = focusedControl is null ? -1 : candidates.IndexOf(focusedControl);
-		var targetIndex = reverse
-			? (focusedIndex < 0 ? candidates.Count - 1 : focusedIndex - 1)
-			: focusedIndex + 1;
-
-		if (targetIndex < 0 || targetIndex >= candidates.Count)
-		{
-			return false;
-		}
-
-		var target = candidates[targetIndex];
-		return DispatcherQueue.TryEnqueue(() =>
-		{
-			if (target.IsLoaded && target.XamlRoot is not null)
-			{
-				_ = FocusManager.TryFocusAsync(target, FocusState.Keyboard);
-			}
-		});
-	}
-
-	bool TryFocusOutsideCollection(bool reverse)
-	{
-		if (_mauiVirtualView is not Element branch)
-		{
-			return false;
-		}
-
-		while (branch.Parent is Element parent)
-		{
-			var children = ((IVisualTreeElement)parent).GetVisualChildren();
-			var branchIndex = -1;
-			for (var childIndex = 0; childIndex < children.Count; childIndex++)
-			{
-				if (ReferenceEquals(children[childIndex], branch))
-				{
-					branchIndex = childIndex;
-					break;
-				}
-			}
-
-			for (var siblingIndex = branchIndex + (reverse ? -1 : 1);
-				siblingIndex >= 0 && siblingIndex < children.Count;
-				siblingIndex += reverse ? -1 : 1)
-			{
-				if (TryFocusInBranch(children[siblingIndex], reverse))
-				{
-					return true;
-				}
-			}
-
-			branch = parent;
-		}
-
-		return false;
-	}
-
-	static bool TryFocusInBranch(IVisualTreeElement branch, bool reverse)
-	{
-		if (branch is ItemsView { Handler.PlatformView: MauiItemsView itemsView } &&
-			itemsView.ItemsRepeaterControl is ItemsRepeater repeater &&
-			itemsView.GetItemInTabFocusOrder(repeater) is ItemContainer itemContainer)
-		{
-			return itemContainer.Focus(FocusState.Keyboard);
-		}
-
-		if (!reverse && TryFocus(branch))
-		{
-			return true;
-		}
-
-		var children = branch.GetVisualChildren();
-		for (var childIndex = reverse ? children.Count - 1 : 0;
-			childIndex >= 0 && childIndex < children.Count;
-			childIndex += reverse ? -1 : 1)
-		{
-			if (TryFocusInBranch(children[childIndex], reverse))
-			{
-				return true;
-			}
-		}
-
-		return reverse && TryFocus(branch);
-	}
-
-	static bool TryFocus(IVisualTreeElement element) =>
-		element is VisualElement { Handler.PlatformView: Control control } &&
-		IsFocusable(control) && control.Focus(FocusState.Keyboard);
-
-	static void CollectFocusableControls(IVisualTreeElement parent, List<Control> candidates)
-	{
-		if (parent is VisualElement { Handler.PlatformView: Control control } && IsFocusable(control))
-		{
-			candidates.Add(control);
-		}
-
-		var children = parent.GetVisualChildren();
-		for (var childIndex = 0; childIndex < children.Count; childIndex++)
-		{
-			CollectFocusableControls(children[childIndex], candidates);
-		}
-	}
-
-	static bool IsFocusable(Control control) =>
-		control.IsTabStop && control.IsEnabled && control.Visibility == WVisibility.Visible;
-
-	static T? FindAncestor<T>(DependencyObject child) where T : DependencyObject
-	{
-		for (var current = child; current is not null; current = VisualTreeHelper.GetParent(current))
-		{
-			if (current is T ancestor)
-			{
-				return ancestor;
-			}
-		}
-
-		return null;
 	}
 
 	/// <summary>
