@@ -21,6 +21,26 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				});
 		}
 
+		public static async Task WaitForDocumentReady(AWebView webview)
+		{
+			await Retry(
+				async () =>
+				{
+					var documentReady = await ExecuteScriptAsync(
+						webview,
+						"""
+						(document.readyState === 'interactive' || document.readyState === 'complete') &&
+						document.head !== null &&
+						document.head.getAttribute('testhtmlloaded') === 'true'
+						""");
+					return documentReady == "true";
+				},
+				timeoutInMS =>
+				{
+					return Task.FromResult(new Exception($"Waited {timeoutInMS}ms but the test document never became ready."));
+				});
+		}
+
 		public static Task<string> ExecuteScriptAsync(AWebView webview, string script)
 		{
 			var jsResult = new JavascriptResult();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -90,6 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void LayoutOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
 			HandlePropertyChanged(propertyChanged);

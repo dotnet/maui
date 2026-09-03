@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -27,13 +28,11 @@ namespace Microsoft.Maui.Authentication
 
 			// read the values
 			launched = extras.GetBoolean(LaunchedExtra, false);
-#pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/android/os/Bundle#getParcelable(java.lang.String,%20java.lang.Class%3CT%3E)
-#pragma warning disable CA1422 // Validate platform compatibility
-#pragma warning disable CA1416 // Validate platform compatibility
-			actualIntent = extras.GetParcelable(ActualIntentExtra) as Intent;
-#pragma warning restore CA1422 // Validate platform compatibility
-#pragma warning restore CA1416 // Validate platform compatibility
-#pragma warning restore 618
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+				actualIntent = extras.GetParcelable(ActualIntentExtra, Java.Lang.Class.FromType(typeof(Intent))) as Intent;
+			else
+				actualIntent = extras.GetParcelable(ActualIntentExtra) as Intent;
 		}
 
 		protected override void OnResume()

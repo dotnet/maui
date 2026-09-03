@@ -52,6 +52,33 @@ namespace Microsoft.Maui.Storage
 			return tmpFile;
 		}
 
+		internal static bool IsMauiOwnedTemporaryFile(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+				return false;
+
+			try
+			{
+				var canonicalPath = new Java.IO.File(path).CanonicalPath;
+
+				foreach (var root in new[] { Application.Context.CacheDir, Application.Context.ExternalCacheDir })
+				{
+					if (root is null)
+						continue;
+
+					var ownedRoot = new Java.IO.File(root, EssentialsFolderHash).CanonicalPath + Java.IO.File.Separator;
+					if (canonicalPath.StartsWith(ownedRoot, StringComparison.Ordinal))
+						return true;
+				}
+			}
+			catch
+			{
+				// Paths that cannot be canonicalized must not be treated as MAUI-owned.
+			}
+
+			return false;
+		}
+
 		// Picker results may resolve to shared files, but must not point back into the
 		// receiving app's private storage.
 		public static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
