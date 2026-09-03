@@ -268,6 +268,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			[SupportedOSPlatform("ios11.0")]
 			public void StartUrlSchemeTask(WKWebView webView, IWKUrlSchemeTask urlSchemeTask)
 			{
+				if (_webViewHandler is null || _webViewHandler is IViewHandler ivh && ivh.VirtualView is null)
+				{
+					return;
+				}
+				
 				var url = urlSchemeTask.Request.Url.AbsoluteString;
 				if (string.IsNullOrEmpty(url))
 				{
@@ -314,6 +319,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			private byte[] GetResponseBytes(string? url, out string contentType, out int statusCode)
 			{
+			    if (_webViewHandler.Handler is null || _webViewHandler.Handler.VirtualView is null || _webViewHandler._webviewManager is null)
+			    {
+			        statusCode = 404;
+			        contentType = string.Empty;
+			        return Array.Empty<byte>();
+			    }
+
 				var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(url);
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 
