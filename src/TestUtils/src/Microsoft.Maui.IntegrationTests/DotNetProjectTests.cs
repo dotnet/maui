@@ -13,6 +13,20 @@ public class DotNetProjectTests
 	}
 
 	[Fact]
+	public void ToolRunnerCapturesFastProcessOutput()
+	{
+		var output = DotnetInternal.RunForOutput(
+			"--version",
+			string.Empty,
+			out var exitCode,
+			timeoutInSeconds: 60,
+			output: _output);
+
+		Assert.Equal(0, exitCode);
+		Assert.False(string.IsNullOrWhiteSpace(output));
+	}
+
+	[Fact]
 	public void WorkloadInstallPathsAreIndependentOfTrailingSeparator()
 	{
 		var projectFile = Path.Combine(
