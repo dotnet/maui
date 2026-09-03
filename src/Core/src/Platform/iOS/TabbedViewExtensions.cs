@@ -75,9 +75,9 @@ namespace Microsoft.Maui.Platform
 					tabBar.BackgroundColor = effectiveBarColor;
 				}
 			}
-			else
+			else if (barBackground is not GradientPaint)
 			{
-				// Clear any native color (a solid color, or the gradient's transparent) applied during a previous update.
+				// Clear any native solid color applied during a previous update.
 				tabBar.BackgroundColor = null;
 			}
 
