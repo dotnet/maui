@@ -1105,6 +1105,93 @@ namespace Microsoft.Maui.DeviceTests
 			await OnNavigatedToAsync(page);
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(true, true)]
+		public async Task FlyoutContentDisconnectsWithOptionalHeaderAndFooter(bool includeHeader, bool includeFooter)
+		{
+			SetupBuilder();
+			var header = includeHeader ? new Label() : null;
+			var footer = includeFooter ? new Label() : null;
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+				shell.FlyoutHeader = header;
+				shell.FlyoutFooter = footer;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, handler =>
+			{
+				var flyoutContent = handler.ViewController
+					.ChildViewControllers
+					.OfType<ShellFlyoutContentRenderer>()
+					.First();
+
+				flyoutContent.Disconnect();
+				flyoutContent.Disconnect();
+
+				Assert.Null(header?.Handler);
+				Assert.Null(footer?.Handler);
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(RejectedImageTarget.FlyoutBackground)]
+		[InlineData(RejectedImageTarget.BackButton)]
+		[InlineData(RejectedImageTarget.Tab)]
+		public async Task RejectedImageResultIsDisposed(RejectedImageTarget target)
+		{
+			var imageService = new RejectedImageSourceService();
+			SetupBuilder(builder => builder.ConfigureImageSources(
+				services => services.AddService<RejectedImageSource>(_ => imageService)));
+
+			var imageSource = new RejectedImageSource();
+			var page = new ContentPage();
+			var tab = new Tab
+			{
+				Items =
+				{
+					new ShellContent { Content = page }
+				}
+			};
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new FlyoutItem { Items = { tab } });
+
+				switch (target)
+				{
+					case RejectedImageTarget.FlyoutBackground:
+						shell.FlyoutBackgroundImage = imageSource;
+						break;
+					case RejectedImageTarget.BackButton:
+						Shell.SetBackButtonBehavior(page, new BackButtonBehavior { IconOverride = imageSource });
+						break;
+					case RejectedImageTarget.Tab:
+						tab.Icon = imageSource;
+						break;
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async handler =>
+			{
+				await imageService.Started.WaitAsync(TimeSpan.FromSeconds(5));
+
+				var window = shell.Window;
+				Assert.NotNull(window);
+				window.Page = new Microsoft.Maui.Controls.NavigationPage(new ContentPage());
+				await AssertEventually(() => shell.Handler is null, timeout: 5000);
+
+				imageService.Complete();
+
+				await imageService.Disposed.WaitAsync(TimeSpan.FromSeconds(5));
+				Assert.Equal(1, imageService.DisposeCount);
+			});
+		}
+
 		[Fact(DisplayName = "Shell Flyout Table View Has ScrollsToTop Disabled")]
 		public async Task ShellFlyoutTableViewScrollsToTopIsDisabled()
 		{
@@ -1131,6 +1218,55 @@ namespace Microsoft.Maui.DeviceTests
 
 				return Task.CompletedTask;
 			});
+		}
+
+		public enum RejectedImageTarget
+		{
+			FlyoutBackground,
+			BackButton,
+			Tab
+		}
+
+		sealed class RejectedImageSource : ImageSource
+		{
+		}
+
+		sealed class RejectedImageSourceService : IImageSourceService<RejectedImageSource>
+		{
+			readonly TaskCompletionSource<IImageSourceServiceResult<UIImage>> _result =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+			readonly TaskCompletionSource<bool> _started =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+			readonly TaskCompletionSource<bool> _disposed =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+			int _disposeCount;
+
+			public Task Started => _started.Task;
+
+			public Task Disposed => _disposed.Task;
+
+			public int DisposeCount => Volatile.Read(ref _disposeCount);
+
+			public Task<IImageSourceServiceResult<UIImage>> GetImageAsync(
+				IImageSource imageSource,
+				float scale = 1,
+				CancellationToken cancellationToken = default)
+			{
+				_started.TrySetResult(true);
+				return _result.Task;
+			}
+
+			public void Complete()
+			{
+				using var renderer = new UIGraphicsImageRenderer(new CGSize(1, 1));
+				var image = renderer.CreateImage(_ => { });
+				_result.TrySetResult(new ImageSourceServiceResult(image, () =>
+				{
+					image.Dispose();
+					Interlocked.Increment(ref _disposeCount);
+					_disposed.TrySetResult(true);
+				}));
+			}
 		}
 
 		class ModalShellPage : ContentPage

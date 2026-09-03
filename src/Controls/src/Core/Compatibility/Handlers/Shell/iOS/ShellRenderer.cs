@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
@@ -108,6 +109,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IShellItemRenderer _outgoingRenderer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Pending item renderers are disposed when superseded or when ShellRenderer disconnects.")]
 		readonly HashSet<IShellItemRenderer> _pendingRenderers = new(ReferenceEqualityComparer.Instance);
+		readonly HashSet<IShellItemRenderer> _ownedRenderers =
+			new HashSet<IShellItemRenderer>(ReferenceEqualityComparer.Instance);
+		readonly ConditionalWeakTable<IShellItemRenderer, object> _disconnectedRenderers =
+			new ConditionalWeakTable<IShellItemRenderer, object>();
+		readonly ConditionalWeakTable<IShellItemRenderer, object> _disposedRenderers =
+			new ConditionalWeakTable<IShellItemRenderer, object>();
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "MauiContext is provided by the handler and cleared when ShellRenderer is disposed.")]
 		IMauiContext _mauiContext;
 
@@ -117,6 +124,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (_flyoutRenderer == null)
 				{
+					if (_disposed)
+						return null;
+
 					FlyoutRenderer = CreateFlyoutRenderer();
 					FlyoutRenderer.AttachFlyout(this, this);
 				}
@@ -129,13 +139,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 		public VisualElement Element { get; private set; }
-		public UIView NativeView => FlyoutRenderer.View;
+		public UIView NativeView => FlyoutRenderer?.View;
 		public Shell Shell => (Shell)Element;
-		public UIViewController ViewController => FlyoutRenderer.ViewController;
+		public UIViewController ViewController => FlyoutRenderer?.ViewController;
 
 		public void SetElement(VisualElement element)
 		{
-			if (Element != null)
+			if (_disposed || Element != null)
 				throw new NotSupportedException("Reuse of the Shell Renderer is not supported");
 			Element = element;
 			OnElementSet((Shell)Element);
@@ -152,7 +162,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			if (_currentShellItemRenderer != null)
+			if (!_disposed && _currentShellItemRenderer != null)
 				_currentShellItemRenderer.ViewController.View.Frame = View.Bounds;
 		}
 
@@ -217,12 +227,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
-				DisconnectHandler();
+				Disconnect();
 
 			base.Dispose(disposing);
 		}
 
-		void DisconnectHandler()
+		void Disconnect()
 		{
 			if (_disposed)
 				return;
@@ -230,61 +240,62 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_disposed = true;
 
 			var element = Element;
-			if (element != null)
-				element.PropertyChanged -= OnElementPropertyChanged;
+			if (element is Shell shell)
+				shell.PropertyChanged -= OnElementPropertyChanged;
 
 			ElementChanged = null;
 			CancelActiveTransition();
 
+			if (_currentShellItemRenderer is not null)
+				_ownedRenderers.Add(_currentShellItemRenderer);
+			if (_incomingRenderer is not null)
+				_ownedRenderers.Add(_incomingRenderer);
+			if (_outgoingRenderer is not null)
+				_ownedRenderers.Add(_outgoingRenderer);
 			foreach (var pendingRenderer in _pendingRenderers)
-			{
-				if (!ReferenceEquals(pendingRenderer, _currentShellItemRenderer))
-					DisconnectAndDispose(pendingRenderer);
-			}
+				_ownedRenderers.Add(pendingRenderer);
 
-			_pendingRenderers.Clear();
-			var outgoingRenderer = _outgoingRenderer;
+			_currentShellItemRenderer = null;
+			_incomingRenderer = null;
 			_outgoingRenderer = null;
-			if (outgoingRenderer is not null &&
-				!ReferenceEquals(outgoingRenderer, _currentShellItemRenderer))
-			{
-				DetachAndDispose(outgoingRenderer);
-			}
+			_pendingRenderers.Clear();
 
-			DisconnectAndDispose(_currentShellItemRenderer);
+			// Child renderers read IShellContext.Shell while removing their observers.
+			foreach (var renderer in new List<IShellItemRenderer>(_ownedRenderers))
+				DisposeRendererOnce(renderer);
+
 			_flyoutRenderer?.Dispose();
-
+			_flyoutRenderer = null;
 			_activeTransition = Task.CompletedTask;
 			_activeTransitionCancellation = null;
-			_incomingRenderer = null;
-			_currentShellItemRenderer = null;
-			_flyoutRenderer = null;
-			_mauiContext = null;
-
-			if (element is IElement shell && ReferenceEquals(shell.Handler, this))
-				shell.Handler = null;
-
 			Element = null;
+			if (ReferenceEquals(element?.Handler, this))
+				element.Handler = null;
+			_mauiContext = null;
 		}
 
-		static void DisconnectAndDispose(IShellItemRenderer renderer)
+		void DisposeRendererOnce(IShellItemRenderer renderer)
 		{
-			DetachRenderer(renderer);
-			(renderer as IDisconnectable)?.Disconnect();
-			renderer?.Dispose();
-		}
+			if (renderer is null || _disposedRenderers.TryGetValue(renderer, out _))
+				return;
 
-		static void DetachAndDispose(IShellItemRenderer renderer)
-		{
-			DetachRenderer(renderer);
-			renderer?.Dispose();
-		}
-
-		static void DetachRenderer(IShellItemRenderer renderer)
-		{
-			var viewController = renderer?.ViewController;
+			_disposedRenderers.Add(renderer, new object());
+			_ownedRenderers.Remove(renderer);
+			_pendingRenderers.Remove(renderer);
+			var viewController = renderer.ViewController;
 			viewController?.ViewIfLoaded?.RemoveFromSuperview();
 			viewController?.RemoveFromParentViewController();
+			DisconnectRendererOnce(renderer);
+			renderer.Dispose();
+		}
+
+		void DisconnectRendererOnce(IShellItemRenderer renderer)
+		{
+			if (renderer is null || _disconnectedRenderers.TryGetValue(renderer, out _))
+				return;
+
+			_disconnectedRenderers.Add(renderer, new object());
+			(renderer as IDisconnectable)?.Disconnect();
 		}
 
 		void CancelActiveTransition()
@@ -418,19 +429,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (_disposed)
 			{
-				DisconnectAndDispose(value);
+				DisposeRendererOnce(value);
 				return;
 			}
 
 			_pendingRenderers.Add(value);
 			_incomingRenderer = value;
+			_ownedRenderers.Add(value);
 			await _activeTransition;
-
 			if (_disposed)
 			{
-				if (_pendingRenderers.Remove(value))
-					DisconnectAndDispose(value);
-
+				DisposeRendererOnce(value);
 				return;
 			}
 
@@ -444,14 +453,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (ReferenceEquals(_incomingRenderer, value))
 					_incomingRenderer = null;
 
-				if (_pendingRenderers.Remove(value))
-					DisconnectAndDispose(value);
-
+				DisposeRendererOnce(value);
 				return;
 			}
 
 			var oldRenderer = _currentShellItemRenderer;
-			(oldRenderer as IDisconnectable)?.Disconnect();
+			DisconnectRendererOnce(oldRenderer);
 			var newRenderer = value;
 
 			_pendingRenderers.Remove(value);
@@ -488,7 +495,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (ReferenceEquals(_outgoingRenderer, oldRenderer))
 					{
 						_outgoingRenderer = null;
-						DetachAndDispose(oldRenderer);
+						DisposeRendererOnce(oldRenderer);
 					}
 				}
 
@@ -510,7 +517,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void UpdateBackgroundColor()
 		{
-			if (_disposed || Element == null)
+			if (_disposed || Element is null || FlyoutRenderer is null)
 				return;
 
 			var color = Shell.BackgroundColor?.ToPlatform();
@@ -574,17 +581,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.UpdateValue(string property)
 		{
+			if (_disposed || Element is null)
+				return;
+
 			Mapper.UpdateProperty(this, Element, property);
 		}
 
 		void IElementHandler.Invoke(string command, object args)
 		{
+			if (_disposed || Element is null)
+				return;
+
 			CommandMapper.Invoke(this, Element, command, args);
 		}
 
 		void IElementHandler.DisconnectHandler()
 		{
-			DisconnectHandler();
+			Disconnect();
 		}
 	}
 }
