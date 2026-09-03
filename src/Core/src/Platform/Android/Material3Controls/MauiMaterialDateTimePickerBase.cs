@@ -1,5 +1,6 @@
 using System;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Text;
 using Android.Text.Method;
@@ -19,6 +20,8 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
 {
     MauiMaterialEditText? _inputEditText;
     PickerClickListener? _clickListener;
+    Drawable? _backgroundDrawable;
+    int _defaultBoxBackgroundColor;
 
     protected MauiMaterialDateTimePickerBase(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
     {
@@ -27,10 +30,12 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     // The derived picker constructors (MauiMaterialDatePicker/MauiMaterialTimePicker) theme-wrap the
     // context via MauiMaterialContextThemeWrapper.Create before calling base; the wrapped context then
     // propagates to the inner edit text created below.
-    protected MauiMaterialDateTimePickerBase(Context context, int endIconResource) : base(context)
+    protected MauiMaterialDateTimePickerBase(Context context, int endIconResource)
+        : base(context, null, Resource.Attribute.textInputOutlinedStyle)
     {
         // Outlined box is the Material 3 resting-state appearance for date/time fields.
         BoxBackgroundMode = BoxBackgroundOutline;
+        _defaultBoxBackgroundColor = BoxBackgroundColor;
         _inputEditText = new MauiMaterialDateTimePickerEditText(Context!);
         AddView(_inputEditText);
 
@@ -39,6 +44,7 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         _inputEditText.InputType = InputTypes.Null;
         _inputEditText.KeyListener = null;
         _inputEditText.SetCursorVisible(false);
+        _inputEditText.UpdateVerticalAlignment(global::Microsoft.Maui.TextAlignment.Center);
 
         // Keep the field non-focusable at rest so it is never an initial-focus candidate; focusability
         // is enabled only while the picker dialog is open (see RequestInputFocus).
@@ -55,6 +61,7 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         // and the accessibility tree, so UI automation and screen readers cannot locate it.
         EndIconVisible = true;
     }
+
 
     /// <summary>
     /// The readonly edit text hosted inside the outlined layout. Handlers use this to update the
@@ -75,22 +82,46 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
         SetEndIconOnClickListener(_clickListener);
     }
 
-    // Applies IView.Background to the outlined box fill. In BoxBackgroundOutline mode the visible fill/stroke
-    // are drawn on the inner edit text, so setting the outer ViewGroup background (the generic handler path)
-    // would render behind the box; target the box color instead (matching the Material SearchBar).
+    // Solid colors use TextInputLayout's box API; other paints are layered beneath its transparent
+    // outlined box so that they fill the complete field.
     internal void UpdateBoxBackground(IView view)
     {
         if (view.Background is SolidPaint solidPaint)
         {
+            ClearBackgroundDrawable();
             var colorInt = (int)solidPaint.Color.ToPlatform();
             SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(colorInt, colorInt));
         }
         else if (view.Background is null)
         {
-            // Restore the outlined default (transparent box fill) if a color was previously applied.
+            ClearBackgroundDrawable();
+            SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(_defaultBoxBackgroundColor, _defaultBoxBackgroundColor));
+        }
+        else if (view.Background.ToDrawable(Context) is Drawable backgroundDrawable)
+        {
+            ClearBackgroundDrawable();
             var transparent = global::Android.Graphics.Color.Transparent.ToArgb();
             SetBoxBackgroundColorStateList(ColorStateListExtensions.CreateEditText(transparent, transparent));
+
+            _backgroundDrawable = backgroundDrawable;
+            Background = _backgroundDrawable;
         }
+    }
+
+    void ClearBackgroundDrawable()
+    {
+        if (_backgroundDrawable is null)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(Background, _backgroundDrawable))
+        {
+            Background = null;
+        }
+
+        _backgroundDrawable.Dispose();
+        _backgroundDrawable = null;
     }
 
     /// <summary>Removes and disposes the end-icon tap listener. Called from the handler's DisconnectHandler.</summary>
@@ -160,10 +191,17 @@ public class MauiMaterialDateTimePickerBase : MauiMaterialTextInputLayout
     {
         if (MeasureSpec.GetMode(heightMeasureSpec) == MeasureSpecMode.AtMost)
         {
-            // A Material outlined field has a fixed minimum height (box + label + text). Measure at the
-            // intrinsic height and keep it even when the AtMost constraint is smaller, so the value is
-            // never clipped; a too-small constraint is exceeded rather than hiding the field's content.
-            base.OnMeasure(widthMeasureSpec, MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+            base.OnMeasure(
+                widthMeasureSpec,
+                MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
+
+            var height = Math.Min(
+                MeasuredHeight,
+                MeasureSpec.GetSize(heightMeasureSpec));
+
+            base.OnMeasure(
+                widthMeasureSpec,
+                MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
             return;
         }
 

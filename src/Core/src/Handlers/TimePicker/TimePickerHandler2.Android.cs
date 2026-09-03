@@ -74,11 +74,11 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         platformView.HidePicker = null;
         platformView.DisconnectClickListener();
 
-        platformView.InputEditText?.FocusChange -= OnInputFocusChange;
-
         // Reset focusability enabled by RequestInputFocus/FocusInput; the platform view can be reused
         // across reconnects, so a leftover focusable read-only field could become an initial-focus candidate.
+        // Clear focus while the listener is still attached so VirtualView.IsFocused is also reset.
         platformView.ClearInputFocus();
+        platformView.InputEditText?.FocusChange -= OnInputFocusChange;
 
         base.DisconnectHandler(platformView);
     }
@@ -165,7 +165,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         }
 
         var fragmentManager = fragmentActivity.SupportFragmentManager;
-        if (fragmentManager is null)
+        if (fragmentManager is null || fragmentManager.IsStateSaved)
         {
             return;
         }
@@ -194,7 +194,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         {
             _dialog.Show(fragmentManager, "MaterialTimePicker");
         }
-        catch
+        catch (Java.Lang.IllegalStateException)
         {
             // A rejected fragment transaction (e.g. state saved in a race after the guard above) must not
             // strand the field focused with no dialog; restore the resting state and abort the open.

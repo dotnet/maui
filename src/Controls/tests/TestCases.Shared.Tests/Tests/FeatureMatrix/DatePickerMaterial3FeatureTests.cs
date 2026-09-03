@@ -16,7 +16,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	void OpenDatePickerDialog()
 	{
 		App.WaitForElement("DatePickerControl");
-		var endIcon = AppiumQuery.ByAccessibilityId("Open date picker");
+		var endIcon = AppiumQuery.ById("text_input_end_icon");
 		App.WaitForElement(endIcon);
 		App.Tap(endIcon);
 	}

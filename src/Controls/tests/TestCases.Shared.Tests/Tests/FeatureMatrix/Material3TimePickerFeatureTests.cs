@@ -21,7 +21,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	void OpenTimePickerDialog()
 	{
 		App.WaitForElement("TimePickerControl");
-		var endIcon = AppiumQuery.ByAccessibilityId("Open time picker");
+		var endIcon = AppiumQuery.ById("text_input_end_icon");
 		App.WaitForElement(endIcon);
 		App.Tap(endIcon);
 	}
