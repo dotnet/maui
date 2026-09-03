@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -25,33 +24,21 @@ namespace Microsoft.Maui.Platform
 
 					if (items.Mode == SwipeMode.Execute)
 					{
-						double maximumWidth = 0;
-						int visibleItemCount = 0;
-
+						double totalWidth = 0;
 						foreach (var item in swipeItems)
 						{
-							if (item.Value is not UIView platformItem || platformItem.Hidden)
-								continue;
-
-							bool cacheHit = swipeItemWidths.TryGetValue(item.Key, out var measuredWidth);
-							if (!cacheHit)
+							if (!swipeItemWidths.TryGetValue(item.Key, out var measuredWidth))
 							{
-								var measuredSize = platformItem.SizeThatFits(
+								var measuredSize = ((UIView)item.Value).SizeThatFits(
 									new CGSize(contentWidth, contentHeight));
 								measuredWidth = measuredSize.Width;
-
-								if (platformItem is Microsoft.Maui.Handlers.SwipeItemButton { OriginalImage: not null } button)
-									measuredWidth = Math.Max(measuredWidth, button.OriginalImage.Size.Width);
-
 								swipeItemWidths[item.Key] = measuredWidth;
 							}
 
-							maximumWidth = Math.Max(maximumWidth, measuredWidth);
-							visibleItemCount++;
+							totalWidth += measuredWidth;
 						}
 
-						if (visibleItemCount > 0)
-							swipeItemWidth = Math.Min(maximumWidth, contentWidth / visibleItemCount);
+						swipeItemWidth = totalWidth > contentWidth ? contentWidth / items.Count : totalWidth / items.Count;
 					}
 
 					return new Size(

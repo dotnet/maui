@@ -37,11 +37,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
 		{
 			(handler.PlatformView as TextView)?.UpdateCharacterSpacing(view);
-
-			if (handler is SwipeItemMenuItemHandler platformHandler)
-				platformHandler.UpdateSize();
-
-			InvalidateSwipeItemSize(handler);
 		}
 
 		public static void MapFont(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -49,11 +44,6 @@ namespace Microsoft.Maui.Handlers
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			(handler.PlatformView as TextView)?.UpdateFont(view, fontManager);
-
-			if (handler is SwipeItemMenuItemHandler platformHandler)
-				platformHandler.UpdateSize();
-
-			InvalidateSwipeItemSize(handler);
 		}
 
 		public static void MapText(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -63,8 +53,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler is SwipeItemMenuItemHandler platformHandler)
 				platformHandler.UpdateSize();
-
-			InvalidateSwipeItemSize(handler);
 		}
 
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -90,15 +78,6 @@ namespace Microsoft.Maui.Handlers
 
 			var swipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 			swipeView?.UpdateIsVisibleSwipeItem(view);
-		}
-
-		static void InvalidateSwipeItemSize(ISwipeItemMenuItemHandler? handler)
-		{
-			if (handler?.PlatformView is not AView platformView)
-				return;
-
-			var swipeView = platformView.Parent.GetParentOfType<MauiSwipeView>();
-			swipeView?.UpdateSwipeItemSize(handler.VirtualView);
 		}
 
 		protected override AView CreatePlatformElement()
@@ -211,7 +190,6 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				button.SetCompoundDrawables(null, platformImage, null, null);
-				InvalidateSwipeItemSize(Handler);
 			}
 		}
 	}
