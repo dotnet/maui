@@ -195,5 +195,6 @@ steps:
       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
       $(System.DefaultWorkingDirectory)/eng/scripts/enable-notification-center.sh
     displayName: 'Enable Notification Center'
+    condition: always()
     continueOnError: true
     timeoutInMinutes: 60

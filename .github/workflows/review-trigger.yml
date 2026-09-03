@@ -25,6 +25,12 @@ on:
         description: 'AzDO pipeline branch (default: main)'
         required: false
         default: 'main'
+      source_comment_id:
+        description: 'Internal recovery source comment database ID'
+        required: false
+      source_comment_node_id:
+        description: 'Internal recovery source comment node ID'
+        required: false
 
 jobs:
   # Lightweight pre-flight gate that matches the command and checks permission
@@ -32,9 +38,16 @@ jobs:
   match:
     if: github.event_name == 'workflow_dispatch' || github.event.issue.pull_request
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    # The actual work (a bash regex match + a permission lookup) takes <1s, but
+    # GitHub-hosted runner provisioning ("Set up job") can take ~2 min under load. A
+    # 2-minute cap let that provisioning latency cancel the whole job mid-setup, skipping
+    # trigger-review so the AzDO pipeline never queued (e.g. dotnet/maui#36307 comment
+    # 4925414214). Give the runner ample headroom — the trivial steps can't themselves
+    # hang for minutes.
+    timeout-minutes: 10
     permissions:
       contents: read
+      issues: read
       pull-requests: read
     outputs:
       matched: ${{ steps.check.outputs.matched }}
@@ -77,17 +90,126 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ACTOR: ${{ github.actor }}
+          COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id || inputs.source_comment_node_id }}
+          PR_NUMBER: ${{ github.event.issue.number || inputs.pr_number }}
           REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
+          is_recoverable_review_command() {
+            NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+            [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
+              [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+          }
+
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
-            echo "workflow_dispatch — skipping collaborator check"
-            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            if [ -z "${COMMENT_ID}" ] && [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "Manual workflow_dispatch — skipping source-comment dedupe and collaborator check"
+              echo "proceed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "::warning::Recovery source comment inputs are invalid; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            if ! SOURCE_COMMENT=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}" 2>/dev/null); then
+              echo "::warning::Could not read recovery source comment ${COMMENT_ID}; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
+            ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
+            SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
+            SOURCE_ACTOR=$(echo "${SOURCE_COMMENT}" | jq -r '.user.login // ""')
+            if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
+               [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
+               [ -z "${SOURCE_ACTOR}" ] ||
+               ! is_recoverable_review_command "${SOURCE_BODY}"; then
+              echo "::warning::Recovery source comment identity or command validation failed; skipping dispatch."
+              echo "proceed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            ACTOR="${SOURCE_ACTOR}"
+          fi
+
+          # The scheduled recovery workflow adds a rocket reaction and minimizes
+          # the source comment after it dispatches a missed command. If the
+          # original webhook is delivered later, refuse to trigger the same
+          # review a second time. Retry transient reads before failing closed;
+          # the recovery workflow remains the backstop for a skipped command.
+          REACTIONS_READ=false
+          for attempt in 1 2 3; do
+            if REACTIONS=$(gh api --paginate --slurp "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions?per_page=100" 2>/dev/null); then
+              REACTIONS_READ=true
+              break
+            fi
+            sleep "${attempt}"
+          done
+          if [ "${REACTIONS_READ}" != "true" ]; then
+            echo "::warning::Could not check whether /review comment ${COMMENT_ID} was already recovered; skipping so the recovery workflow can retry safely."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if ! PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>/dev/null); then
-            echo "::warning::Permission lookup failed for ${ACTOR}; treating the caller as unauthorized."
-            PERMISSION="none"
+          if echo "${REACTIONS}" | jq -e '.[][] | select(.content == "rocket" and .user.login == "github-actions[bot]")' >/dev/null; then
+            echo "::notice::Review comment ${COMMENT_ID} was already recovered; skipping delayed duplicate delivery."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MINIMIZED_READ=false
+          for attempt in 1 2 3; do
+            if IS_MINIMIZED=$(gh api graphql \
+              -f query='query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' \
+              -f id="${COMMENT_NODE_ID}" \
+              --jq '.data.node.isMinimized' 2>/dev/null); then
+              MINIMIZED_READ=true
+              break
+            fi
+            sleep "${attempt}"
+          done
+          if [ "${MINIMIZED_READ}" != "true" ]; then
+            echo "::warning::Could not check whether /review comment ${COMMENT_ID} was minimized; skipping so the recovery workflow can retry safely."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${IS_MINIMIZED}" = "true" ]; then
+            echo "::notice::Review comment ${COMMENT_ID} was already minimized by recovery; skipping delayed duplicate delivery."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "Recovery source comment is still unacknowledged; revalidating ${ACTOR}'s current permission."
+          fi
+
+          PERMISSION=""
+          PERMISSION_READ=false
+          PERMISSION_ERROR_FILE=$(mktemp)
+          trap 'rm -f "${PERMISSION_ERROR_FILE}"' EXIT
+          for attempt in 1 2 3 4; do
+            : > "${PERMISSION_ERROR_FILE}"
+            if PERMISSION=$(gh api "repos/${REPO}/collaborators/${ACTOR}/permission" --jq '.permission' 2>"${PERMISSION_ERROR_FILE}"); then
+              case "${PERMISSION}" in
+                admin|maintain|write|triage|read|none)
+                  PERMISSION_READ=true
+                  break
+                  ;;
+              esac
+            elif grep -Eq 'HTTP 404\b' "${PERMISSION_ERROR_FILE}"; then
+              PERMISSION="none"
+              PERMISSION_READ=true
+              break
+            fi
+
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${PERMISSION_READ}" != "true" ]; then
+            echo "::warning::Permission lookup failed for ${ACTOR} after 4 attempts; leaving the /review command unacknowledged so scheduled recovery can retry it."
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
           echo "User ${ACTOR} has permission: ${PERMISSION}"
           # write, maintain, and admin can all trigger /review
@@ -126,6 +248,24 @@ jobs:
           # Valid platforms (from AzDO pipeline definition)
           VALID_PLATFORMS="android ios catalyst windows"
 
+          # Normalize a user-supplied platform token to the canonical AzDO value.
+          # Accepts friendly aliases (macos / maccatalyst / mac -> catalyst,
+          # win -> windows) so an explicit '-p macos' is not silently dropped —
+          # a dropped token falls through to label inference and can pick the
+          # wrong platform (e.g. 'ios' on a dual iOS/MacCatalyst PR). Prints the
+          # canonical token and returns 0 on success; returns 1 if unrecognized.
+          normalize_platform() {
+            _cand=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+            case "${_cand}" in
+              macos|maccatalyst|mac) _cand="catalyst" ;;
+              win) _cand="windows" ;;
+            esac
+            for _p in ${VALID_PLATFORMS}; do
+              if [ "${_cand}" = "${_p}" ]; then printf '%s' "${_cand}"; return 0; fi
+            done
+            return 1
+          }
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${INPUT_PR_NUMBER}"
             PLATFORM="${INPUT_PLATFORM}"
@@ -137,6 +277,7 @@ jobs:
             # prefix and parse remaining args.
             TRIMMED_BODY=$(printf '%s' "${COMMENT_BODY}" | sed -e 's/^[[:space:]]*//')
             ARGS=$(echo "${TRIMMED_BODY}" | sed -n 's|^/review[[:space:]]*||p' | tr -s ' ')
+
             PLATFORM=""
             PIPELINE_REF="main"
             # Parse args: positional platform, --branch <ref>, --platform <name>
@@ -155,34 +296,28 @@ jobs:
                   fi
                   ;;
                 --platform=*|-p=*)
-                  CANDIDATE=$(echo "${1#*=}" | tr '[:upper:]' '[:lower:]')
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "${CANDIDATE}" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  if _NORM=$(normalize_platform "${1#*=}"); then
+                    PLATFORM="${_NORM}"
+                  else
+                    echo "::warning::Ignoring unrecognized platform '${1#*=}' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                  fi
                   ;;
                 --platform|-p)
                   shift
                   if [ $# -gt 0 ] && [[ "$1" != --* ]]; then
-                    CANDIDATE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-                    for p in ${VALID_PLATFORMS}; do
-                      if [ "${CANDIDATE}" = "${p}" ]; then
-                        PLATFORM="${p}"
-                        break
-                      fi
-                    done
+                    if _NORM=$(normalize_platform "$1"); then
+                      PLATFORM="${_NORM}"
+                    else
+                      echo "::warning::Ignoring unrecognized platform '$1' (valid: ${VALID_PLATFORMS}; aliases: macos/maccatalyst=catalyst)."
+                    fi
                   fi
                   ;;
                 *)
-                  # Check if it's a valid platform name
-                  for p in ${VALID_PLATFORMS}; do
-                    if [ "$(echo "$1" | tr '[:upper:]' '[:lower:]')" = "${p}" ]; then
-                      PLATFORM="${p}"
-                      break
-                    fi
-                  done
+                  # Accept a bare positional platform token (incl. aliases);
+                  # silently ignore anything that isn't a platform.
+                  if _NORM=$(normalize_platform "$1"); then
+                    PLATFORM="${_NORM}"
+                  fi
                   ;;
               esac
               shift || true
@@ -219,7 +354,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
-          PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}")
+          PR_JSON=""
+          PR_READ=false
+          PR_ERROR_FILE=$(mktemp)
+          trap 'rm -f "${PR_ERROR_FILE}"' EXIT
+          for attempt in 1 2 3 4; do
+            : > "${PR_ERROR_FILE}"
+            if PR_JSON=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" 2>"${PR_ERROR_FILE}") &&
+               echo "${PR_JSON}" | jq -e '.state and .title' >/dev/null; then
+              PR_READ=true
+              break
+            fi
+
+            if grep -Eq 'HTTP 404\b' "${PR_ERROR_FILE}"; then
+              echo "::error::PR #${PR_NUMBER} was not found (GitHub returned HTTP 404)."
+              exit 1
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${PR_READ}" != "true" ]; then
+            echo "::error::GitHub API did not return valid metadata for PR #${PR_NUMBER} after 4 attempts."
+            exit 1
+          fi
+
           PR_STATE=$(echo "${PR_JSON}" | jq -r '.state')
           if [ "${PR_STATE}" != "open" ]; then
             echo "::error::PR #${PR_NUMBER} is not open (state: ${PR_STATE})"
@@ -230,10 +389,41 @@ jobs:
           echo "### Reviewing PR #${PR_NUMBER}" >> "$GITHUB_STEP_SUMMARY"
           echo "${PR_TITLE}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Checkout repository scripts
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+      # The trigger only needs two trusted helpers from the workflow revision. Cloning the entire
+      # MAUI repository just for these files occasionally hangs in `git fetch` until the job's
+      # 10-minute timeout, silently losing the /review command. Fetch the immutable file directly
+      # from GitHub instead and retry transient API failures.
+      - name: Download trusted label helper
+        id: label_helper
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HELPER_PATH: ${{ runner.temp }}/Update-AgentLabels.ps1
+          RETRY_HELPER_PATH: ${{ runner.temp }}/Invoke-GhCommandWithRetry.ps1
+        run: |
+          for attempt in 1 2 3; do
+            if gh api \
+              -H "Accept: application/vnd.github.raw+json" \
+              "repos/${{ github.repository }}/contents/.github/scripts/shared/Update-AgentLabels.ps1?ref=${GITHUB_SHA}" \
+              > "${HELPER_PATH}" &&
+              gh api \
+                -H "Accept: application/vnd.github.raw+json" \
+                "repos/${{ github.repository }}/contents/.github/scripts/shared/Invoke-GhCommandWithRetry.ps1?ref=${GITHUB_SHA}" \
+                > "${RETRY_HELPER_PATH}" &&
+              grep -q '^function Set-AgentReviewInProgress' "${HELPER_PATH}" &&
+              grep -q '^function Invoke-GhCommandWithRetry' "${RETRY_HELPER_PATH}"; then
+              echo "path=${HELPER_PATH}" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            rm -f "${HELPER_PATH}" "${RETRY_HELPER_PATH}"
+            if [ "${attempt}" -lt 3 ]; then
+              sleep $((attempt * 5))
+            fi
+          done
+
+          echo "::error::Could not download the trusted review-label helpers from ${GITHUB_SHA}."
+          exit 1
 
       - name: Set review in-progress lock
         id: review_lock
@@ -241,16 +431,115 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          LABEL_HELPER_PATH: ${{ steps.label_helper.outputs.path }}
+          EVENT_NAME: ${{ github.event_name }}
+          COMMENT_ID: ${{ inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ inputs.source_comment_node_id }}
+          REPO: ${{ github.repository }}
         run: |
-          . .github/scripts/shared/Update-AgentLabels.ps1
+          . $env:LABEL_HELPER_PATH
+
+          # The job concurrency group serializes recovery dispatches for this PR.
+          # Re-check the durable acknowledgement here, after serialization and
+          # immediately before taking the review lock, so a second queued recovery
+          # cannot trigger AzDO after the first run acknowledged the same comment.
+          if ($env:EVENT_NAME -eq 'workflow_dispatch' -and
+              -not [string]::IsNullOrWhiteSpace($env:COMMENT_ID) -and
+              -not [string]::IsNullOrWhiteSpace($env:COMMENT_NODE_ID)) {
+            $reactionsRead = $false
+            $hasRecoveryMarker = $false
+            foreach ($attempt in 1..3) {
+              $markerText = gh api --paginate --slurp `
+                "repos/$($env:REPO)/issues/comments/$($env:COMMENT_ID)/reactions?per_page=100" `
+                --jq 'any(.[][]; .content == "rocket" and .user.login == "github-actions[bot]")' 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $reactionsRead = $true
+                $hasRecoveryMarker = ([string]$markerText).Trim() -eq 'true'
+                break
+              }
+              Start-Sleep -Seconds $attempt
+            }
+
+            $minimizedRead = $false
+            $isMinimized = $false
+            foreach ($attempt in 1..3) {
+              $minimizedText = gh api graphql `
+                -f 'query=query($id:ID!){node(id:$id){... on IssueComment{isMinimized}}}' `
+                -f "id=$($env:COMMENT_NODE_ID)" `
+                --jq '.data.node.isMinimized' 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $minimizedRead = $true
+                $isMinimized = ([string]$minimizedText).Trim() -eq 'true'
+                break
+              }
+              Start-Sleep -Seconds $attempt
+            }
+
+            if (-not $reactionsRead -or -not $minimizedRead) {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "state=recheck-failed" >> $env:GITHUB_OUTPUT
+              "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
+              "Could not safely re-check acknowledgement for source comment $($env:COMMENT_ID); leaving it unacknowledged so recovery retries it." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+            if ($hasRecoveryMarker -or $isMinimized) {
+              "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-acknowledged" >> $env:GITHUB_OUTPUT
+              "### Recovery dispatch skipped" >> $env:GITHUB_STEP_SUMMARY
+              "Source comment $($env:COMMENT_ID) was already acknowledged by an earlier serialized run." >> $env:GITHUB_STEP_SUMMARY
+              exit 0
+            }
+          }
+
           $labels = Get-AgentLabels -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
           if ($labels -contains 's/agent-review-in-progress') {
             if (Test-AgentReviewInProgressIsStale -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}') {
               Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
             } else {
               "locked=true" >> $env:GITHUB_OUTPUT
+              "state=already-running" >> $env:GITHUB_OUTPUT
               "### /review skipped" >> $env:GITHUB_STEP_SUMMARY
               "PR #$($env:PR_NUMBER) already has ``s/agent-review-in-progress``." >> $env:GITHUB_STEP_SUMMARY
+
+              # Make the skip VISIBLE to the maintainer. Previously this path only
+              # wrote to the (invisible) job step-summary, so re-commenting /review
+              # while a review is in flight — which can now run for hours once the
+              # deep UI-test stage queues — looked like it silently did nothing.
+              # Post ONE concise, AI-attributed notice per in-progress cycle, deduped
+              # against the current lock's applied time so repeat /review comments
+              # during the same run don't spam the PR.
+              try {
+                $skipMarker = '<!-- copilot-review-inprogress-skip -->'
+                $appliedAt = Get-AgentReviewInProgressAppliedAt -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}'
+                $alreadyNoticed = $false
+                if ($appliedAt) {
+                  # Fetch only comments created/updated since the lock was applied
+                  # (GitHub's default comment order is OLDEST-first, so a plain
+                  # per_page window would miss the newest notice on a busy PR);
+                  # `since` + --paginate reliably surfaces our marker comment.
+                  $sinceIso = $appliedAt.UtcDateTime.ToString('o')
+                  $noticeTimes = @(gh api --paginate "repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/issues/$($env:PR_NUMBER)/comments?per_page=100&since=$sinceIso" --jq ".[] | select(.body | contains(`"$skipMarker`")) | .created_at" 2>$null)
+                  foreach ($t in $noticeTimes) {
+                    if ([datetimeoffset]::Parse([string]$t, [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::AssumeUniversal) -gt $appliedAt) { $alreadyNoticed = $true; break }
+                  }
+                }
+                if (-not $alreadyNoticed) {
+                  $skipBody = @(
+                    $skipMarker,
+                    '> [!NOTE]',
+                    '> ### 🔍 `/review` skipped — a review is already running',
+                    '>',
+                    '> This PR already holds the `s/agent-review-in-progress` lock, so a new review was **not** started (only one review runs at a time to avoid duplicate, racing reviews). The in-flight run must finish first — this can take a while when the deep UI-test stage is queued.',
+                    '>',
+                    '> Re-comment `/review` once it completes to start a fresh run.',
+                    '>',
+                    '> <sub>🔍 Automated message from the .NET MAUI Copilot reviewer pipeline.</sub>'
+                  ) -join "`n"
+                  $skipBody | gh pr comment $env:PR_NUMBER --repo '${{ github.repository_owner }}/${{ github.event.repository.name }}' --body-file - | Out-Null
+                }
+              } catch {
+                Write-Host "  ⚠️  Could not post in-progress skip notice: $($_.Exception.Message)"
+              }
               exit 0
             }
           }
@@ -267,6 +556,7 @@ jobs:
             }
           }
           "locked=false" >> $env:GITHUB_OUTPUT
+          "state=acquired" >> $env:GITHUB_OUTPUT
 
       - name: Infer platform
         if: steps.review_lock.outputs.locked != 'true'
@@ -287,8 +577,24 @@ jobs:
           echo "No platform specified — inferring from PR #${PR_NUMBER} labels..."
           echo "(File-based detection is handled by the agentic-labeler.md workflow on PR open/reopen.)"
 
-          # Check PR labels applied by agentic-labeler.md or manually
-          LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null || true)
+          # Check PR labels applied by agentic-labeler.md or manually. Do not
+          # silently default to Android when GitHub is temporarily unavailable.
+          LABELS=""
+          LABELS_READ=false
+          for attempt in 1 2 3 4; do
+            if LABELS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.labels[].name' 2>/dev/null); then
+              LABELS_READ=true
+              break
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${LABELS_READ}" != "true" ]; then
+            echo "::error::Could not read PR #${PR_NUMBER} labels after 4 attempts; refusing to infer the wrong platform."
+            exit 1
+          fi
+
           LABELS_LOWER=$(echo "${LABELS}" | tr '[:upper:]' '[:lower:]')
           echo "PR labels: ${LABELS_LOWER:-<none>}"
 
@@ -324,6 +630,8 @@ jobs:
           PLATFORM: ${{ steps.infer.outputs.platform }}
           AZDO_TENANT_ID: ${{ secrets.AZDO_TRIGGER_TENANT_ID }}
           AZDO_CLIENT_ID: ${{ secrets.AZDO_TRIGGER_CLIENT_ID }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           # 1. Get GitHub OIDC token
           OIDC_TOKEN=$(curl -s -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
@@ -359,6 +667,38 @@ jobs:
           # 3. Trigger the pipeline
           echo "Triggering maui-copilot pipeline for PR #${PR_NUMBER} (platform: ${PLATFORM}, ref: ${PIPELINE_REF})..."
 
+          # Guard against a common mistake: a `--branch` that does not exist (an old/renamed
+          # branch, e.g. `feature/enhanced-reviewer` after it became `improved-reviewer`).
+          # AzDO otherwise returns an opaque error and the /review fails SILENTLY on the PR —
+          # the commenter gets no feedback. Validate the branch exists first and record a
+          # specific reason so the failure-feedback step can tell them exactly what to fix.
+          BRANCH_HTTP="000"
+          for attempt in 1 2 3 4; do
+            BRANCH_HTTP=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GH_REPO}/branches/${PIPELINE_REF}" || true)
+            if [ -z "${BRANCH_HTTP}" ]; then
+              BRANCH_HTTP="000"
+            fi
+            if [ "${BRANCH_HTTP}" = "200" ] || [ "${BRANCH_HTTP}" = "404" ]; then
+              break
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          if [ "${BRANCH_HTTP}" = "404" ]; then
+            echo "fail_reason=branch-missing" >> "$GITHUB_OUTPUT"
+            echo "::error::Pipeline branch '${PIPELINE_REF}' does not exist in ${GH_REPO} (HTTP ${BRANCH_HTTP})."
+            unset AZDO_TOKEN
+            exit 1
+          elif [ "${BRANCH_HTTP}" != "200" ]; then
+            echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
+            echo "::error::Could not validate pipeline branch '${PIPELINE_REF}' after 4 attempts (HTTP ${BRANCH_HTTP})."
+            unset AZDO_TOKEN
+            exit 1
+          fi
+
           # Platform is always resolved at this point (inferred or explicit).
           # Build JSON payload safely with jq to avoid injection.
           PAYLOAD=$(jq -n \
@@ -384,13 +724,83 @@ jobs:
           if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
             RUN_ID=$(echo "${RESPONSE_BODY}" | jq -r '.id')
             PIPELINE_NAME=$(echo "${RESPONSE_BODY}" | jq -r '.pipeline.name')
+            if ! [[ "${RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+              echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
+              echo "::error::Pipeline trigger returned an invalid run id: '${RUN_ID}'"
+              exit 1
+            fi
+            echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
             echo "Pipeline '${PIPELINE_NAME}' triggered! Run ID: ${RUN_ID}"
             echo "View: https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}"
           else
+            echo "fail_reason=api-error" >> "$GITHUB_OUTPUT"
             echo "::error::Failed to trigger pipeline. HTTP ${HTTP_CODE}"
             echo "${RESPONSE_BODY}" | jq . 2>/dev/null || echo "${RESPONSE_BODY}"
             exit 1
           fi
+
+      # A successful command used to leave only two subtle signals: a label and a rocket
+      # reaction on a comment that was immediately minimized. On busy PRs that looked like
+      # the command vanished, prompting duplicate /review comments while the first run was
+      # already active. Post one durable start notice with the exact AzDO build instead.
+      - name: Report /review start to the PR
+        if: steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PLATFORM: ${{ steps.infer.outputs.platform }}
+          RUN_ID: ${{ steps.trigger_azdo.outputs.run_id }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if ! [[ "${RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::warning::Could not post /review start notice because the AzDO run id is invalid."
+            exit 0
+          fi
+
+          BODY_FILE=$(mktemp)
+          trap 'rm -f "${BODY_FILE}"' EXIT
+          cat > "${BODY_FILE}" <<EOF
+          <!-- copilot-review-started:${RUN_ID} -->
+          > [!NOTE]
+          > ### 🔍 \`/review\` started
+          >
+          > [AzDO build **${RUN_ID}**](https://devdiv.visualstudio.com/DevDiv/_build/results?buildId=${RUN_ID}) is running for **${PLATFORM}**.
+          >
+          > The \`s/agent-review-in-progress\` label stays on this PR while the run is active. The final recommendation and outcome labels are posted only after Gate, expert review, and Deep UI tests finish.
+          EOF
+
+          if ! gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body-file "${BODY_FILE}"; then
+            echo "::warning::Could not post the /review start notice for AzDO build ${RUN_ID}."
+          fi
+
+      # Never let a /review fail silently: when the trigger step failed (bad branch or a
+      # transient AzDO error), tell the commenter on the PR exactly what happened and how to
+      # fix it. issue_comment-only (a user typed /review); skipped on the automatic paths.
+      - name: Report /review trigger failure to the PR
+        if: always() && github.event_name == 'issue_comment' && steps.review_lock.outputs.locked != 'true' && steps.trigger_azdo.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          PIPELINE_REF: ${{ steps.params.outputs.pipeline_ref }}
+          FAIL_REASON: ${{ steps.trigger_azdo.outputs.fail_reason }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "${FAIL_REASON}" = "branch-missing" ]; then
+            BODY="> [!WARNING]
+          > Your \`/review\` couldn't start: the pipeline branch \`${PIPELINE_REF}\` doesn't exist. Use \`--branch improved-reviewer\` (the current reviewer branch), or omit \`--branch\` to run on \`main\`. Valid platforms: \`android\`, \`ios\`, \`catalyst\`, \`windows\` (e.g. \`/review android --branch improved-reviewer\`)."
+          else
+            BODY="> [!WARNING]
+          > Your \`/review\` couldn't start due to a transient error triggering the pipeline. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again in a minute."
+          fi
+          for attempt in 1 2 3 4; do
+            if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          echo "::warning::Could not post the /review trigger failure notice after 4 attempts."
 
       - name: Clear review lock on trigger failure
         if: always() && steps.review_lock.outputs.locked == 'false' && steps.trigger_azdo.outcome != 'success'
@@ -398,25 +808,97 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.params.outputs.pr_number }}
+          LABEL_HELPER_PATH: ${{ steps.label_helper.outputs.path }}
         run: |
-          . .github/scripts/shared/Update-AgentLabels.ps1
+          . $env:LABEL_HELPER_PATH
           Clear-AgentReviewInProgress -PRNumber $env:PR_NUMBER -Owner '${{ github.repository_owner }}' -Repo '${{ github.event.repository.name }}' | Out-Null
 
-      - name: Hide the /review command comment as resolved
-        if: ${{ !cancelled() && github.event_name == 'issue_comment' }}
+      # Catch failures before the AzDO trigger step (PR metadata, helper download,
+      # lock acquisition, or platform inference). Keep the command unacknowledged
+      # so Review Trigger Recovery can safely replay it.
+      - name: Report trigger setup failure to the PR
+        if: always() && failure() && github.event_name == 'issue_comment' && steps.review_lock.outputs.locked != 'true' && steps.trigger_azdo.outcome != 'failure' && steps.trigger_azdo.outcome != 'success'
         env:
           GH_TOKEN: ${{ github.token }}
-          COMMENT_NODE_ID: ${{ github.event.comment.node_id }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          BODY="> [!WARNING]
+          > Your \`/review\` couldn't start because the trusted trigger setup hit a transient infrastructure failure. The command was left unacknowledged so scheduled recovery can retry it automatically; you can also comment \`/review\` again."
+          for attempt in 1 2 3 4; do
+            if gh pr comment "${PR_NUMBER}" --repo "${GH_REPO}" --body "${BODY}"; then
+              exit 0
+            fi
+            if [ "${attempt}" -lt 4 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+          echo "::warning::Could not post the trigger setup failure notice after 4 attempts."
+
+      - name: Acknowledge and hide the /review command comment
+        if: ${{ !cancelled() && steps.review_lock.outputs.state != 'recheck-failed' && (github.event_name == 'issue_comment' || (github.event_name == 'workflow_dispatch' && inputs.source_comment_id != '' && inputs.source_comment_node_id != '')) && (steps.trigger_azdo.outcome == 'success' || steps.review_lock.outputs.locked == 'true' || steps.trigger_azdo.outputs.fail_reason == 'branch-missing') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ github.event.comment.id || inputs.source_comment_id }}
+          COMMENT_NODE_ID: ${{ github.event.comment.node_id || inputs.source_comment_node_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ steps.params.outputs.pr_number }}
         run: |
           # This job only runs after the pre-flight authorization gate succeeds, so
-          # collapse the recognized command no matter the trigger outcome, including
-          # a lock-skip (locked == 'true') or a failed AzDO trigger. Unauthorized
-          # commenters never enter this job, leaving their comments fully visible.
+          # collapse the recognized command only after the review was queued, a
+          # lock-skip handled it, or the requested branch was deterministically
+          # missing. Transient failures stay visible and unacknowledged so the
+          # scheduled recovery workflow can retry them. Unauthorized commenters
+          # never enter this job, leaving their comments fully visible.
           #
           # We MINIMIZE (hide as resolved) rather than delete so the command — and its
           # --branch/--platform options — survives in the REST comment history that the rerun
           # scanner replays. Minimized comments are still returned by the REST list endpoint;
           # only collapsed in the web UI. A failed hide must never fail the review trigger.
+          #
+          # The rocket reaction and minimized state are durable idempotency
+          # signals for the scheduled recovery workflow. Either one prevents a
+          # delayed issue_comment webhook from double-triggering a recovered command.
+          #
+          # A workflow_dispatch recovery carries the source comment identity so this
+          # trusted workflow can retry acknowledgement if the scheduled scanner's
+          # immediate marker/minimize calls failed. Revalidate that identity before
+          # mutating the comment so manual dispatch inputs cannot target arbitrary text.
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            is_recoverable_review_command() {
+              NORMALIZED_BODY=$(printf '%s' "$1" | jq -Rrs 'gsub("^\\s+|\\s+$"; "") | ascii_downcase')
+              [[ "${NORMALIZED_BODY}" =~ ^/review([[:space:]]|$) ]] &&
+                [[ ! "${NORMALIZED_BODY}" =~ ^/review[[:space:]]+(tests|rerun)([[:space:]]|$) ]]
+            }
+
+            if ! [[ "${COMMENT_ID}" =~ ^[1-9][0-9]*$ ]] || [ -z "${COMMENT_NODE_ID}" ]; then
+              echo "::warning::Recovery acknowledgement inputs are invalid; leaving the comment unchanged."
+              exit 0
+            fi
+            if ! SOURCE_COMMENT=$(gh api "repos/${REPO}/issues/comments/${COMMENT_ID}" 2>/dev/null); then
+              echo "::warning::Could not read recovery source comment ${COMMENT_ID}; leaving it unchanged."
+              exit 0
+            fi
+            ACTUAL_NODE_ID=$(echo "${SOURCE_COMMENT}" | jq -r '.node_id // ""')
+            ACTUAL_ISSUE_URL=$(echo "${SOURCE_COMMENT}" | jq -r '.issue_url // ""')
+            SOURCE_BODY=$(echo "${SOURCE_COMMENT}" | jq -r '.body // ""')
+            if [ "${ACTUAL_NODE_ID}" != "${COMMENT_NODE_ID}" ] ||
+               [ "${ACTUAL_ISSUE_URL##*/}" != "${PR_NUMBER}" ] ||
+               ! is_recoverable_review_command "${SOURCE_BODY}"; then
+              echo "::warning::Recovery source comment identity or command validation failed; leaving it unchanged."
+              exit 0
+            fi
+          fi
+
+          if gh api "repos/${REPO}/issues/comments/${COMMENT_ID}/reactions" \
+            --method POST \
+            -f content='rocket' \
+            --silent; then
+            echo "Acknowledged /review command comment ${COMMENT_ID}"
+          else
+            echo "::warning::Could not acknowledge /review command comment ${COMMENT_ID}"
+          fi
+
           if gh api graphql -f query='mutation($id:ID!){minimizeComment(input:{subjectId:$id,classifier:RESOLVED}){minimizedComment{isMinimized}}}' -f id="$COMMENT_NODE_ID" --silent; then
             echo "Hid /review command comment ${COMMENT_NODE_ID} as resolved"
           else

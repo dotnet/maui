@@ -110,9 +110,16 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 	: "${RUNNER_TEMP:?RUNNER_TEMP is required on GitHub Actions}"
 	command -v sudo >/dev/null
 	command -v useradd >/dev/null
+	missing_packages=()
 	if ! command -v bwrap >/dev/null; then
+		missing_packages+=(bubblewrap)
+	fi
+	if ! command -v setfacl >/dev/null; then
+		missing_packages+=(acl)
+	fi
+	if [ "${#missing_packages[@]}" -gt 0 ]; then
 		sudo -n apt-get update -qq
-		sudo -n apt-get install -y -qq bubblewrap
+		sudo -n apt-get install -y -qq "${missing_packages[@]}"
 	fi
 
 	eval_user="vally$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
@@ -128,6 +135,18 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 		"$eval_home" "$eval_home/tmp"
 	sudo -n install -d -o "$(id -un)" -g "$eval_user" -m 2770 \
 		"$eval_results_root"
+
+	# The hosted runner's home is private, so the isolated user cannot even
+	# traverse to GITHUB_WORKSPACE by default. Grant that one user execute-only
+	# access to the parent chain and read/execute access to the checkout root.
+	# Candidate files remain read-only, and sibling paths under the runner home
+	# remain inaccessible because their own permissions are unchanged.
+	workspace_parent=$(dirname "$GITHUB_WORKSPACE")
+	while [ "$workspace_parent" != "/" ]; do
+		sudo -n setfacl -m "u:$eval_user:--x" "$workspace_parent"
+		workspace_parent=$(dirname "$workspace_parent")
+	done
+	sudo -n setfacl -m "u:$eval_user:r-x" "$GITHUB_WORKSPACE"
 
 	# Vally creates detached worktrees outside the checkout. Grant its no-sudo
 	# user write access only to Git's private worktree metadata and the dedicated
@@ -174,6 +193,10 @@ if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
 			exit 1
 		fi
 	done
+	if ! sudo -n -u "$eval_user" /usr/bin/test -r "$GITHUB_WORKSPACE/.git/HEAD"; then
+		echo "Isolated Vally user cannot read the candidate checkout" >&2
+		exit 1
+	fi
 	worktree_probe="$eval_home/worktree-probe"
 	sudo -n -u "$eval_user" env \
 		HOME="$eval_home" \

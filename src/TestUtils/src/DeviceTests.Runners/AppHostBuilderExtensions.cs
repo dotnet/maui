@@ -50,6 +50,22 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					svc.GetRequiredService<TestOptions>()));
 #endif
 
+#if WINDOWS
+			// Also register the discovery/index-capable runner so a single-category run
+			// ("App.exe <resultsFile> <categoryIndex>", e.g. how the Copilot review gate
+			// verifies just the changed test category) works for ANY Windows device-test
+			// app — not only Controls. HomePage resolves this runner solely when a
+			// category-index CLI arg is supplied; the default full-suite run
+			// ("App.exe <resultsFile>") still resolves HeadlessTestRunner, so the behavior
+			// of the real device-test pipeline (which never passes a category index) is
+			// unchanged. This lets the gate filter Core/Essentials/Graphics/BlazorWebView
+			// Windows device tests instead of running the whole app (which can crash and
+			// yield empty results, forcing an inconclusive gate).
+			appHostBuilder.Services.AddTransient(svc => new ControlsHeadlessTestRunner(
+					svc.GetRequiredService<HeadlessRunnerOptions>(),
+					svc.GetRequiredService<TestOptions>()));
+#endif
+
 			appHostBuilder.Logging.AddConsole();
 
 			return appHostBuilder;

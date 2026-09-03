@@ -1,4 +1,5 @@
-# Pester regression gate for `.github/scripts/**` and release-critical helpers.
+# Pester regression gate for reviewer scripts, release-critical helpers, and
+# their coupled pipeline assets.
 #
 # Why this exists: repository automation ships Pester suites for transport
 # gating, release publishing, safe-output expectation reconciliation, milestone
@@ -18,11 +19,17 @@ on:
   pull_request:
     paths:
       - '.github/scripts/**'
+      - '.github/patches/**'
+      - '.github/skills/run-device-tests/scripts/*.ps1'
+      - '.github/skills/verify-tests-fail-without-fix/scripts/*.ps1'
+      - '.github/workflows/**'
+      - 'eng/scripts/**'
+      - 'eng/pipelines/ci-copilot.yml'
       - 'eng/pipelines/ci-official-release.yml'
       - 'eng/pipelines/ci-official-release.Tests.ps1'
-      - 'eng/scripts/nuget_release_packages.ps1'
-      - 'eng/scripts/nuget_release_packages.Tests.ps1'
-      - '.github/workflows/powershell-script-tests.yml'
+      - 'eng/pipelines/common/provision.yml'
+      - 'eng/pipelines/common/ui-tests-steps.yml'
+      - 'src/Controls/tests/TestCases.Shared.Tests/UITest.cs'
   workflow_dispatch:
 
 concurrency:
@@ -67,6 +74,8 @@ jobs:
           $config = New-PesterConfiguration
           $config.Run.Path = @(
             '.github/scripts'
+            '.github/skills/run-device-tests/scripts'
+            '.github/skills/verify-tests-fail-without-fix/scripts'
             'eng/pipelines/ci-official-release.Tests.ps1'
             'eng/scripts/nuget_release_packages.Tests.ps1'
           )

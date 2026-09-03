@@ -82,7 +82,7 @@ jobs:
             "${{ steps.vally-runtime.outputs.copilot_home }}" \
             "$RUNNER_TEMP/model-probe" \
             gpt-5.6-sol \
-            claude-opus-5
+            gpt-5.3-codex
 
       - name: Run live soak
         id: soak

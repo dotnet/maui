@@ -77,6 +77,31 @@ function Normalize-ReviewPipelineRef {
     return $pipelineRef
 }
 
+function Normalize-ReviewPlatform {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return ''
+    }
+
+    $platform = $Value.Trim().ToLowerInvariant()
+    $aliases = @{
+        macos       = 'catalyst'
+        maccatalyst = 'catalyst'
+        mac         = 'catalyst'
+        win         = 'windows'
+    }
+    if ($aliases.ContainsKey($platform)) {
+        $platform = $aliases[$platform]
+    }
+
+    if ($platform -in @('android', 'ios', 'catalyst', 'windows')) {
+        return $platform
+    }
+
+    return ''
+}
+
 function ConvertFrom-ReviewCommand {
     param([string]$Body)
 
@@ -88,7 +113,6 @@ function ConvertFrom-ReviewCommand {
         return $null
     }
 
-    $validPlatforms = @('android', 'ios', 'catalyst', 'windows')
     $argsText = [regex]::Replace($trimmed, '(?i)^/review\s*', '')
     $tokens = @()
     if (-not [string]::IsNullOrWhiteSpace($argsText)) {
@@ -111,16 +135,16 @@ function ConvertFrom-ReviewCommand {
             continue
         }
         if ($token -match '^(--platform|-p)=(.*)$') {
-            $candidate = $Matches[2].ToLowerInvariant()
-            if ($validPlatforms -contains $candidate) {
+            $candidate = Normalize-ReviewPlatform $Matches[2]
+            if ($candidate) {
                 $platform = $candidate
             }
             continue
         }
         if ($token -match '^(--platform|-p)$') {
             if ($i + 1 -lt $tokens.Count -and -not ([string]$tokens[$i + 1]).StartsWith('--')) {
-                $candidate = ([string]$tokens[$i + 1]).ToLowerInvariant()
-                if ($validPlatforms -contains $candidate) {
+                $candidate = Normalize-ReviewPlatform $tokens[$i + 1]
+                if ($candidate) {
                     $platform = $candidate
                 }
                 $i++
@@ -128,8 +152,8 @@ function ConvertFrom-ReviewCommand {
             continue
         }
 
-        $candidate = $token.ToLowerInvariant()
-        if (-not $platform -and $validPlatforms -contains $candidate) {
+        $candidate = Normalize-ReviewPlatform $token
+        if (-not $platform -and $candidate) {
             $platform = $candidate
         }
     }
@@ -705,7 +729,21 @@ $issueComments = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/comments?per_page
 $reviews = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/reviews?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review' })
 $reviewComments = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/comments?per_page=100" --paginate --jq '.[]' | ForEach-Object { ConvertTo-RerunActivityItem -Item ($_ | ConvertFrom-Json) -Kind 'review-comment' })
 $comments = @($issueComments + $reviews + $reviewComments)
-$pr = gh api "repos/$Owner/$Repo/pulls/$PRNumber" | ConvertFrom-Json
+# Fetch the PR object defensively. This script runs directly in the pipeline to resolve
+# rerun eligibility; a transient gh-api HTML error page (rate-limit / 5xx) would otherwise
+# make ConvertFrom-Json fail and leave $pr null, producing the misleading "PR is not open
+# (state: )" throw below. Retry a few times and validate the payload is a JSON object.
+$pr = $null
+for ($prAttempt = 1; $prAttempt -le 3; $prAttempt++) {
+    $prRaw = (gh api "repos/$Owner/$Repo/pulls/$PRNumber" 2>$null | Out-String).Trim()
+    if ($prRaw.StartsWith('{')) {
+        try { $pr = $prRaw | ConvertFrom-Json; break } catch { $pr = $null }
+    }
+    if ($prAttempt -lt 3) { Start-Sleep -Seconds ($prAttempt * 2) }
+}
+if (-not $pr) {
+    throw "Could not fetch PR #$PRNumber from GitHub API after 3 attempts (transient API error?)."
+}
 $commits = @(gh api "repos/$Owner/$Repo/pulls/$PRNumber/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
 $labels = @(gh api "repos/$Owner/$Repo/issues/$PRNumber/labels" --jq '.[].name' 2>$null)
 
