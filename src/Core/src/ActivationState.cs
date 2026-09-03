@@ -67,9 +67,10 @@ namespace Microsoft.Maui
 			{
 				foreach (var k in keyset)
 				{
-#pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/kotlin/android/os/BaseBundle?hl=en#get
+					// There is no type-safe replacement when the Bundle value's type is unknown.
+#pragma warning disable CS0618 // Preserve the existing behavior of converting arbitrary Bundle values to strings.
 					dict[k] = state?.Get(k)?.ToString();
-#pragma warning restore 618
+#pragma warning restore CS0618
 				}
 			}
 
@@ -86,10 +87,12 @@ namespace Microsoft.Maui
 				{
 					foreach (var k in s.Keys)
 					{
-						var key = k.ToString();
-						var val = s?[k]?.ToString();
+						if (k is null)
+							continue;
 
-						state[key] = val;
+						var key = k.ToString();
+						if (key is not null)
+							state[key] = s?[k]?.ToString();
 					}
 				}
 			}

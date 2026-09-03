@@ -5,6 +5,7 @@ using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Google.Android.Material.AppBar;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 		Container? _platformTitleView;
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
+		readonly NativeElementRegistrationSet _nativeMenuRegistrations = new NativeElementRegistrationSet();
 
 		Brush? _currentBarBackground;
 		private int? _defaultStartInset;
@@ -29,10 +31,15 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler)
 		{
+			if (newHandler is null ||
+				!ReferenceEquals(oldHandler?.PlatformView, newHandler.PlatformView))
+			{
+				_nativeMenuRegistrations.Clear();
+			}
+
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
@@ -65,7 +72,18 @@ namespace Microsoft.Maui.Controls
 				newToolBarItems.AddRange(toolbarItems);
 
 			if (sender is ToolbarItem ti)
-				PlatformView.OnToolbarItemPropertyChanged(e, ti, newToolBarItems, MauiContext!, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+				PlatformView.OnToolbarItemPropertyChanged(
+					e,
+					ti,
+					newToolBarItems,
+					MauiContext!,
+					BarTextColor,
+					OnToolbarItemPropertyChanged,
+					_currentMenuItems,
+					_currentToolbarItems,
+					updateMenuItemIcon: UpdateMenuItemIcon,
+					nativeElementRegistrations: _nativeMenuRegistrations,
+					nativeToolbarOwner: Parent);
 		}
 
 		void UpdateMenuItemIcon(Context context, IMenuItem menuItem, ToolbarItem toolBarItem)
@@ -81,7 +99,37 @@ namespace Microsoft.Maui.Controls
 			if (_currentMenuItems == null)
 				return;
 
-			PlatformView.UpdateMenuItems(ToolbarItems, MauiContext, BarTextColor, OnToolbarItemPropertyChanged, _currentMenuItems, _currentToolbarItems, UpdateMenuItemIcon);
+			PlatformView.UpdateMenuItems(
+				ToolbarItems,
+				MauiContext,
+				BarTextColor,
+				OnToolbarItemPropertyChanged,
+				_currentMenuItems,
+				_currentToolbarItems,
+				updateMenuItemIcon: UpdateMenuItemIcon,
+				nativeElementRegistrations: _nativeMenuRegistrations,
+				nativeToolbarOwner: Parent);
+		}
+
+		internal void RefreshNativeElementRegistrationsForSearch(bool searchExpanded)
+		{
+			if (searchExpanded)
+			{
+				_nativeMenuRegistrations.UnregisterDiscriminator(
+					NativeElementDiscriminators.TitleView);
+				_nativeMenuRegistrations.UnregisterDiscriminator(
+					NativeElementDiscriminators.RealizedView);
+				return;
+			}
+
+			if (Parent is null || Handler?.PlatformView is not AToolbar toolbar)
+				return;
+
+			_nativeMenuRegistrations.AdvanceLifecycle();
+			Controls.Platform.ToolbarExtensions.RegisterToolbarChrome(
+				toolbar,
+				Parent,
+				_nativeMenuRegistrations);
 		}
 
 		void UpdateTitleView()
@@ -160,6 +208,11 @@ namespace Microsoft.Maui.Controls
 			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
+
+				if (this is NavigationPageToolbar { Parent: Window })
+				{
+					AndroidSystemChrome.UpdateBottomChrome(materialToolbar, _currentBarBackground);
+				}
 			}
 		}
 
@@ -171,6 +224,9 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonAccessibilityLabel(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonAccessibilityLabel((IToolbarHandler)arg1, arg2);
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
 			MapToolbarItems((IToolbarHandler)arg1, arg2);
@@ -193,6 +249,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
 			MapIsVisible((IToolbarHandler)arg1, arg2);
 
+		public static void MapDrawerToggleVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapDrawerToggleVisible((IToolbarHandler)arg1, arg2);
+
 
 
 		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
@@ -211,6 +270,11 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
+		public static void MapBackButtonAccessibilityLabel(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
 		public static void MapToolbarItems(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateMenu();
@@ -219,6 +283,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapTitle(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateTitle(arg2);
+			arg2.UpdateMenu();
 		}
 
 		public static void MapIconColor(IToolbarHandler arg1, Toolbar arg2)
@@ -229,6 +294,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapTitleView(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg2.UpdateTitleView();
+			arg2.UpdateMenu();
 		}
 
 		public static void MapTitleIcon(IToolbarHandler arg1, Toolbar arg2)
@@ -244,6 +310,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIsVisible(arg2);
+		}
+
+		public static void MapDrawerToggleVisible(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 

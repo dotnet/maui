@@ -11,7 +11,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Media
 {
-	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot
+	partial class ScreenshotImplementation : IPlatformScreenshot, IScreenshot, IViewScreenshot
 	{
 		public bool IsCaptureSupported =>
 			true;
@@ -57,6 +57,11 @@ namespace Microsoft.Maui.Media
 				return new ScreenshotResult(width, height, pixels);
 			}
 		}
+
+#nullable enable annotations
+		public Task<IScreenshotResult?> CaptureViewAsync(object platformView) =>
+			platformView is UIElement element ? CaptureAsync(element)! : Task.FromResult<IScreenshotResult?>(null);
+#nullable restore
 	}
 
 	partial class ScreenshotResult

@@ -105,6 +105,11 @@ namespace Microsoft.Maui.Media
 			}
 			else
 			{
+				if (!pickExisting && options?.SaveToGallery == true)
+				{
+					await Permissions.EnsureGrantedAsync<Permissions.PhotosAddOnly>();
+				}
+
 				var sourceType = pickExisting
 					? UIImagePickerControllerSourceType.PhotoLibrary
 					: UIImagePickerControllerSourceType.Camera;
@@ -164,7 +169,14 @@ namespace Microsoft.Maui.Media
 			try
 			{
 				await vc.PresentViewControllerAsync(pickerRef, true);
-				return await tcs.Task;
+				var result = await tcs.Task;
+
+				if (!pickExisting && result is not null && options?.SaveToGallery == true)
+				{
+					await SaveToPhotoLibraryAsync(result);
+				}
+
+				return result;
 			}
 			finally
 			{
@@ -269,22 +281,44 @@ namespace Microsoft.Maui.Media
 			if (results == null || results.Length == 0)
 				return [];
 
-			var fileResults = new List<FileResult>(results.Length);
-			PHPickerFileResult fileResult = null;
+			// PHPickerResult.ItemProvider is a UIKit call and must be read on the main thread.
+			// This method is invoked from the picker delegate, so we are on the main thread here,
+			// but awaiting below resumes on the thread pool. Read every ItemProvider up front,
+			// before the first await, so no read is left straddling a continuation.
+			var pickerResults = new List<PHPickerFileResult>(results.Length);
 			try
 			{
 				foreach (var file in results)
 				{
-					fileResult = new PHPickerFileResult(file.ItemProvider);
-					await fileResult.LoadFileRepresentationAsync().ConfigureAwait(false);
-					fileResults.Add(fileResult);
-					fileResult = null;
+					pickerResults.Add(new PHPickerFileResult(file.ItemProvider));
 				}
 			}
 			catch
 			{
-				fileResult?.Dispose();
+				foreach (var pickerResult in pickerResults)
+				{
+					pickerResult.Dispose();
+				}
+				throw;
+			}
+
+			var fileResults = new List<FileResult>(pickerResults.Count);
+			try
+			{
+				foreach (var pickerResult in pickerResults)
+				{
+					await pickerResult.LoadFileRepresentationAsync().ConfigureAwait(false);
+					fileResults.Add(pickerResult);
+				}
+			}
+			catch
+			{
+				// Dispose the loaded results, then the ones left unloaded by the failure.
 				DisposeFileResults(fileResults);
+				for (var i = fileResults.Count; i < pickerResults.Count; i++)
+				{
+					pickerResults[i].Dispose();
+				}
 				throw;
 			}
 
@@ -529,6 +563,88 @@ namespace Microsoft.Maui.Media
 			{
 				System.Diagnostics.Debug.WriteLine($"Error rotating image: {ex.Message}");
 				return original;
+			}
+		}
+		
+		/// <summary>
+		/// Saves the captured media file to the device's photo library using PHPhotoLibrary.
+		/// </summary>
+		static async Task SaveToPhotoLibraryAsync(FileResult fileResult)
+		{
+			string tempPath = null;
+
+			try
+			{
+				using var stream = await fileResult.OpenReadAsync();
+				var extension = System.IO.Path.GetExtension(fileResult.FileName);
+				tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{Guid.NewGuid()}{extension}");
+				using (var fileStream = File.Create(tempPath))
+				{
+					if (stream.CanSeek)
+					{
+						stream.Position = 0;
+					}
+
+					await stream.CopyToAsync(fileStream);
+				}
+
+				using var url = NSUrl.FromFilename(tempPath);
+
+				await PerformPhotoLibraryChangesAsync(() =>
+				{
+					if (IsImageFile(fileResult.FileName))
+					{
+						PHAssetChangeRequest.FromImage(url);
+					}
+					else
+					{
+						PHAssetChangeRequest.FromVideo(url);
+					}
+				});
+			}
+			finally
+			{
+				DeleteTemporaryPhotoLibraryFile(tempPath);
+			}
+		}
+
+		static Task PerformPhotoLibraryChangesAsync(Action changeHandler)
+		{
+			var tcs = new TaskCompletionSource<bool>();
+
+			PHPhotoLibrary.SharedPhotoLibrary.PerformChanges(changeHandler, (success, error) =>
+			{
+				if (success)
+				{
+					tcs.TrySetResult(true);
+				}
+				else if (error is not null)
+				{
+					tcs.TrySetException(new NSErrorException(error));
+				}
+				else
+				{
+					tcs.TrySetException(new InvalidOperationException("Unable to save the captured media to the photo library."));
+				}
+			});
+
+			return tcs.Task;
+		}
+
+		static void DeleteTemporaryPhotoLibraryFile(string tempPath)
+		{
+			if (string.IsNullOrEmpty(tempPath))
+			{
+				return;
+			}
+
+			try
+			{
+				File.Delete(tempPath);
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Failed to delete temporary photo library file: {ex.Message}");
 			}
 		}
 
@@ -1046,11 +1162,16 @@ namespace Microsoft.Maui.Media
 
 				if (newSize.Width != originalSize.Width || newSize.Height != originalSize.Height)
 				{
-					// Resize the image
-					UIGraphics.BeginImageContextWithOptions(newSize, false, normalizedImage.CurrentScale);
-					normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize));
-					workingImage = UIGraphics.GetImageFromCurrentImageContext();
-					UIGraphics.EndImageContext();
+					// Resize the image. UIGraphicsImageRenderer (iOS 10+) replaces the
+					// UIGraphics.BeginImageContext* APIs that are unsupported on iOS 17+.
+					var rendererFormat = new UIGraphicsImageRendererFormat
+					{
+						Opaque = false,
+						Scale = normalizedImage.CurrentScale,
+					};
+					var renderer = new UIGraphicsImageRenderer(newSize, rendererFormat);
+					workingImage = renderer.CreateImage(_ =>
+						normalizedImage.Draw(new CoreGraphics.CGRect(CoreGraphics.CGPoint.Empty, newSize)));
 				}
 
 				// Then determine output format and apply compression

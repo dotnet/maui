@@ -273,6 +273,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
+		bool _isVisibleCumulative = (bool)IsVisibleProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
@@ -717,7 +719,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that determines whether this element will be visible on screen and take up space in layouts. This is a bindable property.
 		/// </summary>
-		/// <remarks>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		/// <remarks>
+		/// <para>This property represents the visibility set directly on the element. The effective visibility, available through <see cref="IView.Visibility"/>, also depends on the visibility of the element's ancestors.</para>
+		/// <para>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</para>
+		/// </remarks>
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
@@ -1185,7 +1190,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
+				OnResourcesChangedKeys(
+					value?.MergedResourcesKeys,
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1505,7 +1513,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
 		{
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			MeasureInvalidated?.Invoke(this, InvalidationEventArgs.GetCached(trigger));
 		}
 
 		/// <summary>
@@ -1589,12 +1597,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
-			if (this is IView fe)
-			{
-				fe.Handler?.UpdateValue(nameof(IView.Visibility));
-			}
-
-			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 		}
 
 		internal override void OnParentResourcesChanged(IEnumerable<KeyValuePair<string, object>> values)
@@ -1610,8 +1613,9 @@ namespace Microsoft.Maui.Controls
 
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
@@ -1625,6 +1629,116 @@ namespace Microsoft.Maui.Controls
 			}
 			if (changedResources.Count != 0)
 				OnResourcesChanged(changedResources);
+		}
+
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					// For the keys-only path, we need to look up the parent's styles
+					var childStyles = Resources[key] as List<Style>;
+					if (childStyles != null && this.TryGetResource(key, out var parentValue) && parentValue is List<Style> parentStyles)
+					{
+						// Only merge if parent actually has different styles
+						// The parent's styles come from the merged resources lookup
+						var mergedClassStyles = new List<Style>(childStyles);
+						// Get styles from parent chain (excluding our own resources)
+						var parent = ((IElementDefinition)this).Parent;
+						if (parent?.TryGetResource(key, out var pValue) == true && pValue is List<Style> pStyles)
+						{
+							mergedClassStyles.AddRange(pStyles);
+							mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+						}
+					}
+				}
+			}
+
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys);
+		}
+
+		internal override void OnParentResourcesChangedKeys(IEnumerable<string> keys, Func<string, object> resolver)
+		{
+			if (keys == null)
+				return;
+
+			if (!((IResourcesProvider)this).IsResourcesCreated || Resources.Count == 0)
+			{
+				base.OnParentResourcesChangedKeys(keys, resolver);
+				return;
+			}
+
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
+
+			// Filter parent keys - only include keys we don't have, except style classes which get merged
+			var filteredKeys = new List<string>();
+			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
+
+			foreach (string key in keys)
+			{
+				if (innerKeys.Add(key))
+				{
+					// Key doesn't exist in our resources, include it
+					filteredKeys.Add(key);
+				}
+				else if (key.StartsWith(Style.StyleClassPrefix, StringComparison.Ordinal))
+				{
+					// Style classes need to be merged - child's styles combined with parent's styles
+					var parentStyles = resolver?.Invoke(key) as List<Style>;
+					var childStyles = Resources[key] as List<Style>;
+					if (parentStyles != null && childStyles != null)
+					{
+						var mergedClassStyles = new List<Style>(childStyles);
+						mergedClassStyles.AddRange(parentStyles);
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, mergedClassStyles));
+					}
+					else if (parentStyles != null)
+					{
+						// Child has the key but it's not a style list - just include parent styles
+						mergedStyleClasses.Add(new KeyValuePair<string, object>(key, parentStyles));
+					}
+				}
+			}
+
+			if (mergedStyleClasses.Count > 0)
+				OnResourcesChanged(mergedStyleClasses);
+
+			if (filteredKeys.Count != 0)
+				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
 
 		internal void UnmockBounds() => _mockX = _mockY = _mockWidth = _mockHeight = -1;
@@ -1859,7 +1973,28 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
+			var effectiveVisibilityChanged = false;
+			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
+				effectiveVisibilityChanged = UpdateEffectiveVisibility();
+
+			if (propertyName == IsVisibleProperty.PropertyName && !effectiveVisibilityChanged)
+				return;
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+
+			if (effectiveVisibilityChanged)
+				InvalidateMeasureInternal(InvalidationTrigger.Undefined);
+		}
+
+		bool UpdateEffectiveVisibility()
+		{
+			var isVisible = IsVisible && (Parent is not VisualElement parent || parent._isVisibleCumulative);
+			if (_isVisibleCumulative == isVisible)
+				return false;
+
+			_isVisibleCumulative = isVisible;
+			Handler?.UpdateValue(nameof(IView.Visibility));
+			return true;
 		}
 
 		/// <summary>
@@ -2112,7 +2247,7 @@ namespace Microsoft.Maui.Controls
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
 		/// <inheritdoc/>
-		Visibility IView.Visibility => IsVisible.ToVisibility();
+		Visibility IView.Visibility => _isVisibleCumulative.ToVisibility();
 
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
@@ -2490,6 +2625,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Re-evaluates the platform loaded/unloaded state for this element.
+		/// Called by handlers when the platform view enters the window asynchronously
+		/// (e.g., UINavigationController.ViewDidAppear under UITabBarController)
+		/// and the initial KVO-based loaded watcher may not have fired.
+		/// </summary>
+		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+#endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
 #nullable disable

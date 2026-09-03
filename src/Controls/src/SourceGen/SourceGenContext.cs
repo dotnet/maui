@@ -9,9 +9,12 @@ using static Microsoft.Maui.Controls.SourceGen.NodeSGExtensions;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
-class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem)
+class SourceGenContext(IndentedTextWriter writer, Compilation compilation, SourceProductionContext sourceProductionContext, AssemblyAttributes assemblyCaches, IDictionary<XmlType, INamedTypeSymbol> typeCache, ITypeSymbol rootType, ITypeSymbol? baseType, ProjectItem projectItem, Action<Diagnostic> diagnosticReporter)
 {
-	internal static SourceGenContext CreateNewForTests() => new SourceGenContext(
+	static readonly Action<Diagnostic> s_noOpDiagnosticReporter = static _ => { };
+	List<Diagnostic>? _bufferedDiagnostics;
+
+	internal static SourceGenContext CreateNewForTests(Action<Diagnostic>? diagnosticReporter = null) => new SourceGenContext(
 		null!,
 		null!,
 		default,
@@ -19,7 +22,8 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 		new Dictionary<XmlType, INamedTypeSymbol>(),
 		null!,
 		null,
-		null!);
+		null!,
+		diagnosticReporter ?? s_noOpDiagnosticReporter);
 
 	public SourceProductionContext SourceProductionContext => sourceProductionContext;
 	public IndentedTextWriter Writer => writer;
@@ -34,21 +38,65 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 	public IDictionary<INode, ILocalValue> Variables { get; } = new Dictionary<INode, ILocalValue>();
 	public void ReportDiagnostic(Diagnostic diagnostic)
 	{
+		if (ParentContext is not null)
+		{
+			ParentContext.ReportDiagnostic(diagnostic);
+			return;
+		}
+
 		// Check if this diagnostic should be suppressed based on NoWarn
 		var noWarn = ProjectItem?.NoWarn;
 		if (!string.IsNullOrEmpty(noWarn))
 		{
-			var suppressedIds = noWarn!.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+			var suppressedIds = noWarn!.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (var id in suppressedIds)
 			{
-				if (diagnostic.Id.Equals(id.Trim(), StringComparison.OrdinalIgnoreCase))
+				var code = id.Trim();
+				// Match full ID (e.g., "MAUIX2015") or bare numeric suffix (e.g., "2015")
+				if (code.Equals(diagnostic.Id, StringComparison.OrdinalIgnoreCase) ||
+					(diagnostic.Id.StartsWith("MAUIX", StringComparison.OrdinalIgnoreCase) &&
+					 code == diagnostic.Id.Substring("MAUIX".Length)))
 				{
 					return; // Suppress this diagnostic
 				}
 			}
 		}
-		sourceProductionContext.ReportDiagnostic(diagnostic);
+
+		if (_bufferedDiagnostics is not null)
+		{
+			_bufferedDiagnostics.Add(diagnostic);
+			return;
+		}
+
+		ReportDiagnosticCore(diagnostic);
 	}
+
+	internal int BufferedDiagnosticCount => _bufferedDiagnostics?.Count ?? 0;
+
+	internal void BeginDiagnosticBuffering()
+	{
+		if (_bufferedDiagnostics is not null)
+			throw new InvalidOperationException("Diagnostic buffering is already active.");
+
+		_bufferedDiagnostics = [];
+	}
+
+	internal void FlushBufferedDiagnostics()
+	{
+		if (_bufferedDiagnostics is null)
+			throw new InvalidOperationException("Diagnostic buffering is not active.");
+
+		var diagnostics = _bufferedDiagnostics;
+		_bufferedDiagnostics = null;
+		foreach (var diagnostic in diagnostics)
+			ReportDiagnosticCore(diagnostic);
+	}
+
+	internal void DiscardBufferedDiagnostics() => _bufferedDiagnostics = null;
+
+	void ReportDiagnosticCore(Diagnostic diagnostic)
+		=> diagnosticReporter(diagnostic);
+
 	public IDictionary<INode, ILocalValue> ServiceProviders { get; } = new Dictionary<INode, ILocalValue>();
 	public IDictionary<INode, (ILocalValue namescope, IDictionary<string, ILocalValue> namesInScope)> Scopes = new Dictionary<INode, (ILocalValue, IDictionary<string, ILocalValue>)>();
 	public SourceGenContext? ParentContext { get; set; }
@@ -72,6 +120,15 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 			LocalMethods.Add(code);
 		}
 	}
+
+	readonly HashSet<string> _emittedTemplateMethods = new HashSet<string>();
+
+	// Reserves a generated DataTemplate LoadTemplate method name once per compilation unit, so a
+	// template whose value is set more than once in the same scope (e.g. a `required` property set
+	// in the object initializer AND as an assignment) emits the local function only once instead of
+	// redeclaring it. Returns true the first time a name is seen, false afterwards. See dotnet/maui#36682.
+	public bool TryReserveTemplateMethod(string name)
+		=> ParentContext != null ? ParentContext.TryReserveTemplateMethod(name) : _emittedTemplateMethods.Add(name);
 
 	internal Dictionary<ITypeSymbol, (ConverterDelegate, ITypeSymbol)>? knownSGTypeConverters;
 	internal Dictionary<ITypeSymbol, IKnownMarkupValueProvider>? knownSGValueProviders;

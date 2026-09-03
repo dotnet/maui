@@ -23,7 +23,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override WebView2Control CreatePlatformView()
 		{
-			return new WebView2Control();
+			return new WebView2Control
+			{
+				AllowDrop = true,
+			};
 		}
 
 		/// <inheritdoc />
@@ -31,6 +34,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			if (_webviewManager != null)
 			{
+				if (_webviewManager is WinUIWebViewManager winUIWebViewManager)
+				{
+					winUIWebViewManager.ClearStaticContentCache();
+				}
+
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()

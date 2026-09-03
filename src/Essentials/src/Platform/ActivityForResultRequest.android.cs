@@ -1,16 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using AndroidX.Activity;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
+using AndroidX.SavedState;
+using AndroidBundle = Android.OS.Bundle;
 using JavaObject = Java.Lang.Object;
 
 namespace Microsoft.Maui.ApplicationModel;
 
 /// <summary>
 /// Represents a request for an activity result.
-/// Provides a type-safe mechanism for registering and launching 
+/// Provides a type-safe mechanism for registering and launching
 /// activity result requests using the specified contract and callback.
 /// </summary>
 /// <typeparam name="TContract">The type of the activity result contract.</typeparam>
@@ -19,40 +24,140 @@ namespace Microsoft.Maui.ApplicationModel;
 /// <para>
 /// <see href="https://developer.android.com/training/basics/intents/result">Google docs</see>
 /// </para>
-/// This must be unconditionally registered every time our activity is created.
+/// <para>
+/// Each <see cref="ComponentActivity"/> instance gets its own registered launcher and its
+/// own pending <see cref="TaskCompletionSource{TResult}"/> entry so that child activities
+/// can use MediaPicker independently of the main activity, and so that two activities with
+/// concurrent in-flight requests cannot clobber each other.
+/// </para>
+/// <para>
+/// The result callback closes over the specific <see cref="ComponentActivity"/> instance
+/// that was passed to <see cref="Register"/> and resolves the pending TCS using THAT
+/// instance as the lookup key. Result delivery therefore does NOT depend on whichever
+/// activity is "current" at delivery time — which is critical because the launching
+/// activity may have been destroyed and recreated (rotation/config change) before the
+/// picker returns.
+/// </para>
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
 	where TContract : ActivityResultContract, new()
 	where TResult : JavaObject
 {
-	protected ActivityResultLauncher launcher;
-	protected TaskCompletionSource<TResult> tcs = null;
-	protected WeakReference<ComponentActivity> registeredActivity = null;
+	const string ActivityIdentityValueKey = "activityIdentity";
+	static readonly string ActivityIdentitySavedStateKey =
+		$"Microsoft.Maui.ApplicationModel.ActivityForResultRequest.{typeof(TContract).FullName}.{typeof(TResult).FullName}";
+
+	readonly Lock activeLaunchLock = new();
+
+	// Tracks one ActivityResultLauncher per ComponentActivity instance.
+	// ConditionalWeakTable holds weak references to keys, so entries are automatically
+	// eligible for collection when the activity is no longer referenced.
+	readonly ConditionalWeakTable<ComponentActivity, ActivityResultLauncher> _activityLaunchers = new();
+
+	// Saved-state registration gives each logical activity a stable identity across
+	// configuration recreation without conflating concurrent instances of the same type.
+	readonly ConditionalWeakTable<ComponentActivity, ActivityRegistrationState> _activityRegistrationStates = new();
+
+	// Tracks pending TaskCompletionSource per ComponentActivity to prevent race conditions.
+	// This prevents Activity B from overwriting Activity A's pending request.
+	readonly ConditionalWeakTable<ComponentActivity, TaskCompletionSource<TResult>> _pendingRequests = new();
+
+	// Keep every activity with an active request alive until completion so a recreated
+	// instance can migrate the matching request without breaking concurrent child activities.
+	readonly HashSet<ComponentActivity> _inFlightActivities = new(ReferenceEqualityComparer.Instance);
 
 	/// <summary>
-	/// Gets a value indicating whether the request is registered.
+	/// Gets a value indicating whether the request has a launcher registered for the
+	/// currently focused activity.
 	/// </summary>
-	protected bool IsRegistered => launcher is not null;
+	protected bool HasLauncherForCurrentActivity => GetLauncherForCurrentActivity() is not null;
 
 	/// <summary>
 	/// Registers this request to start an activity for a result.
+	/// Each <see cref="ComponentActivity"/> instance receives its own launcher so child
+	/// activities can use MediaPicker independently of the main activity.
 	/// </summary>
 	/// <param name="componentActivity">The component activity to register the request with.</param>
 	public void Register(ComponentActivity componentActivity)
 	{
-		// Only register if we don't have a valid registration already
-		// This prevents temporary activities from invalidating the launcher registered with the main activity
-		if (registeredActivity?.TryGetTarget(out var existingActivity) == true &&
-			!existingActivity.IsDestroyed && !existingActivity.IsFinishing)
+		if (componentActivity is null)
+			throw new ArgumentNullException(nameof(componentActivity));
+
+		// Skip if already registered for this specific activity instance (e.g. called again
+		// after a no-op restart). Calling RegisterForActivityResult twice on the same
+		// activity is not legal — must happen once during onCreate.
+		if (_activityLaunchers.TryGetValue(componentActivity, out _))
+			return;
+
+		var registrationState = GetOrCreateActivityRegistrationState(componentActivity);
+
+		// Migrate pending TCS from the old activity to the new one on config change (e.g. rotation).
+		MigratePendingRequests(componentActivity, registrationState.Identity);
+
+		var contract = new TContract();
+
+		// CRITICAL: capture the same `componentActivity` instance the launcher is being
+		// registered for. The callback resolves the pending TCS for THIS specific activity,
+		// NOT for whatever ActivityStateManager.Default.GetCurrentActivity() happens to be
+		// at delivery time. That makes delivery invariant under rotation / config changes —
+		// even if the activity is destroyed/recreated, the captured reference remains valid
+		// for the duration of the in-flight callback (Android keeps the registered activity
+		// alive long enough to deliver its own result).
+		var registeredActivity = componentActivity;
+		var callback = new ActivityResultCallback<TResult>(result => HandleActivityResult(registeredActivity, result));
+
+		var launcher = componentActivity.RegisterForActivityResult(contract, callback);
+		_activityLaunchers.Add(componentActivity, launcher);
+	}
+
+	/// <summary>
+	/// Routes an AndroidX result that has no associated in-process activity to orphaned-result handling.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	/// <remarks>
+	/// This entry point is used when AndroidX replays a pending result after process recreation.
+	/// </remarks>
+	protected void HandleActivityResult(TResult result)
+		=> OnActivityResultForOrphanedLaunch(result);
+
+	/// <summary>
+	/// Handles a result delivered for an active launch request before the launch task is completed.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	protected virtual void OnActivityResultForActiveLaunch(TResult result)
+	{
+	}
+
+	/// <summary>
+	/// Handles a result delivered when there is no active launch request in this process.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	/// <remarks>
+	/// AndroidX may deliver a pending result after the app process was recreated. In that case, the original
+	/// launch task is gone and callers that persisted enough request state can reconcile the result here.
+	/// </remarks>
+	protected virtual void OnActivityResultForOrphanedLaunch(TResult result)
+	{
+	}
+
+	void HandleActivityResult(ComponentActivity registeredActivity, TResult result)
+	{
+		var completionSource = TakePendingRequest(registeredActivity);
+		if (completionSource is null)
 		{
+			OnActivityResultForOrphanedLaunch(result);
 			return;
 		}
 
-		var contract = new TContract();
-		var callback = new ActivityResultCallback<TResult>(result => tcs?.SetResult(result));
-
-		launcher = componentActivity.RegisterForActivityResult(contract, callback);
-		registeredActivity = new WeakReference<ComponentActivity>(componentActivity);
+		try
+		{
+			OnActivityResultForActiveLaunch(result);
+			completionSource.TrySetResult(result);
+		}
+		catch (Exception ex)
+		{
+			completionSource.TrySetException(ex);
+		}
 	}
 
 	/// <summary>
@@ -66,16 +171,58 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 	public Task<TResult> Launch<T>(T input)
 		where T : JavaObject
 	{
-		tcs = new TaskCompletionSource<TResult>();
-
-		if (!IsRegistered)
+		var launchingActivity = ActivityStateManager.Default.GetCurrentActivity() as ComponentActivity;
+		if (launchingActivity is null)
 		{
 			Trace.WriteLine("""
-			                ActivityForResultRequest is not registered; cancelling the request. 
+			                ActivityForResultRequest.Launch() called but current activity is null or not a ComponentActivity.
 			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
 			                """);
-			tcs.SetCanceled();
-			return tcs.Task;
+			var canceledTcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+			canceledTcs.SetCanceled();
+			return canceledTcs.Task;
+		}
+
+		return Launch(launchingActivity, input);
+	}
+
+	/// <summary>
+	/// Launches the activity result request for a specific activity instance.
+	/// </summary>
+	/// <typeparam name="T">The type of the input parameter.</typeparam>
+	/// <param name="launchingActivity">The activity that owns the request lifecycle and launcher.</param>
+	/// <param name="input">The input parameter to launch the request with.</param>
+	/// <returns>
+	/// A task that represents the asynchronous operation, containing the result of the activity.
+	/// </returns>
+	public Task<TResult> Launch<T>(ComponentActivity launchingActivity, T input)
+		where T : JavaObject
+	{
+		if (launchingActivity is null)
+			throw new ArgumentNullException(nameof(launchingActivity));
+
+		var completionSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+		lock (activeLaunchLock)
+		{
+			if (_pendingRequests.TryGetValue(launchingActivity, out _))
+			{
+				return Task.FromException<TResult>(new InvalidOperationException("An activity result request is already in progress."));
+			}
+
+			_pendingRequests.Add(launchingActivity, completionSource);
+			_inFlightActivities.Add(launchingActivity);
+		}
+
+		// Get the launcher for this specific activity
+		if (!_activityLaunchers.TryGetValue(launchingActivity, out var launcher))
+		{
+			Trace.WriteLine("""
+			                ActivityForResultRequest is not registered for the launching activity; cancelling the request.
+			                Ensure your Activity inherits from ComponentActivity and call Microsoft.Maui.ApplicationModel.Platform.Init(Activity, Bundle) in OnCreate.
+			                """);
+			RemovePendingRequest(launchingActivity, completionSource);
+			completionSource.TrySetCanceled();
+			return completionSource.Task;
 		}
 
 		try
@@ -84,9 +231,129 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		}
 		catch (Exception ex)
 		{
-			tcs.SetException(ex);
+			RemovePendingRequest(launchingActivity, completionSource);
+			completionSource.TrySetException(ex);
 		}
 
-		return tcs.Task;
+		return completionSource.Task;
+	}
+
+	/// <summary>
+	/// Cancels any pending request for the specified activity.
+	/// This should be called from the activity's OnDestroy() or when the activity is being destroyed
+	/// to ensure the pending task is completed rather than hanging indefinitely.
+	/// </summary>
+	/// <param name="componentActivity">The activity whose pending request should be cancelled.</param>
+	internal void CancelPendingRequest(ComponentActivity componentActivity)
+	{
+		var completionSource = TakePendingRequest(componentActivity);
+		completionSource?.TrySetCanceled();
+	}
+
+	TaskCompletionSource<TResult> TakePendingRequest(ComponentActivity componentActivity)
+	{
+		lock (activeLaunchLock)
+		{
+			if (!_pendingRequests.TryGetValue(componentActivity, out var completionSource))
+				return null;
+
+			_pendingRequests.Remove(componentActivity);
+			_inFlightActivities.Remove(componentActivity);
+			return completionSource;
+		}
+	}
+
+	void RemovePendingRequest(ComponentActivity componentActivity, TaskCompletionSource<TResult> completionSource)
+	{
+		lock (activeLaunchLock)
+		{
+			if (_pendingRequests.TryGetValue(componentActivity, out var activeCompletionSource) &&
+				ReferenceEquals(activeCompletionSource, completionSource))
+			{
+				_pendingRequests.Remove(componentActivity);
+				_inFlightActivities.Remove(componentActivity);
+			}
+		}
+	}
+
+	ActivityResultLauncher GetLauncherForCurrentActivity()
+	{
+		if (ActivityStateManager.Default.GetCurrentActivity() is ComponentActivity currentActivity &&
+			_activityLaunchers.TryGetValue(currentActivity, out var launcher))
+		{
+			return launcher;
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Migrates any pending TCS from the old (destroyed) activity to the new activity
+	/// during a configuration change, so the result callback can find the TCS under the
+	/// new activity's key.
+	/// </summary>
+	void MigratePendingRequests(ComponentActivity newActivity, string activityIdentity)
+	{
+		lock (activeLaunchLock)
+		{
+			ComponentActivity oldActivity = null;
+			TaskCompletionSource<TResult> completionSource = null;
+
+			foreach (var candidate in _inFlightActivities)
+			{
+				if (ReferenceEquals(candidate, newActivity) ||
+					!candidate.IsChangingConfigurations ||
+					!_activityRegistrationStates.TryGetValue(candidate, out var candidateRegistrationState) ||
+					!string.Equals(candidateRegistrationState.Identity, activityIdentity, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				if (_pendingRequests.TryGetValue(candidate, out completionSource))
+				{
+					oldActivity = candidate;
+					break;
+				}
+			}
+
+			if (oldActivity is null)
+				return;
+
+			_pendingRequests.Remove(oldActivity);
+			_pendingRequests.Add(newActivity, completionSource);
+			_inFlightActivities.Remove(oldActivity);
+			_inFlightActivities.Add(newActivity);
+		}
+	}
+
+	ActivityRegistrationState GetOrCreateActivityRegistrationState(ComponentActivity componentActivity)
+	{
+		if (_activityRegistrationStates.TryGetValue(componentActivity, out var registrationState))
+			return registrationState;
+
+		var restoredState = componentActivity.SavedStateRegistry.ConsumeRestoredStateForKey(ActivityIdentitySavedStateKey);
+		var activityIdentity = restoredState?.GetString(ActivityIdentityValueKey);
+		if (string.IsNullOrEmpty(activityIdentity))
+			activityIdentity = Guid.NewGuid().ToString("N");
+
+		registrationState = new ActivityRegistrationState(activityIdentity);
+		_activityRegistrationStates.Add(componentActivity, registrationState);
+		componentActivity.SavedStateRegistry.RegisterSavedStateProvider(ActivityIdentitySavedStateKey, registrationState);
+		return registrationState;
+	}
+
+	sealed class ActivityRegistrationState : JavaObject, SavedStateRegistry.ISavedStateProvider
+	{
+		public ActivityRegistrationState(string identity)
+			=> Identity = identity;
+
+		public string Identity { get; }
+
+		public AndroidBundle SaveState()
+		{
+			var state = new AndroidBundle();
+			state.PutString(ActivityIdentityValueKey, Identity);
+			return state;
+		}
 	}
 }

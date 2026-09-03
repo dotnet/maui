@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -105,6 +106,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 				Clicked += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
+				UpdateBadge(item);
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
@@ -125,11 +127,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && _item.TryGetTarget(out var item))
-					item.PropertyChanged -= OnPropertyChanged;
+				if (disposing)
+				{
+					if (_item.TryGetTarget(out var item))
+						item.PropertyChanged -= OnPropertyChanged;
+				}
 				base.Dispose(disposing);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ToolbarItem PropertyChanged subscription is removed in Dispose.")]
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (!_item.TryGetTarget(out var item))
@@ -152,6 +158,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 							UpdateTextAndStyle(item);
 					}
 				}
+				else if (e.PropertyName == nameof(ToolbarItem.BadgeText) || e.PropertyName == nameof(ToolbarItem.BadgeColor) || e.PropertyName == nameof(ToolbarItem.BadgeTextColor))
+					UpdateBadge(item);
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(item);
@@ -194,6 +202,41 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Style = UIBarButtonItemStyle.Bordered;
 #pragma warning restore CA1416, CA1422
 				Image = null;
+			}
+
+			void UpdateBadge(ToolbarItem item)
+			{
+				// UIBarButtonItem.Badge is only available on iOS 26+ / MacCatalyst 26+
+				if (!OperatingSystem.IsIOSVersionAtLeast(26) && !OperatingSystem.IsMacCatalystVersionAtLeast(26))
+					return;
+
+				var badgeText = item.BadgeText;
+
+				if (badgeText is null)
+				{
+#pragma warning disable CA1416 // Validate platform compatibility
+					this.Badge = null;
+#pragma warning restore CA1416
+					return;
+				}
+
+#pragma warning disable CA1416 // Validate platform compatibility
+				UIBarButtonItemBadge badge;
+				if (badgeText.Length == 0)
+					badge = UIBarButtonItemBadge.CreateIndicatorBadge();
+				else if (int.TryParse(badgeText, out var count) && count >= 0)
+					badge = UIBarButtonItemBadge.Create((nuint)count);
+				else
+					badge = UIBarButtonItemBadge.Create(badgeText);
+
+				if (item.BadgeColor is not null)
+					badge.BackgroundColor = item.BadgeColor.ToPlatform();
+
+				if (item.BadgeTextColor is not null)
+					badge.ForegroundColor = item.BadgeTextColor.ToPlatform();
+
+				this.Badge = badge;
+#pragma warning restore CA1416
 			}
 		}
 
@@ -276,16 +319,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		sealed class SecondaryToolbarItem : UIBarButtonItem
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The content view is owned by this toolbar item and released after its TouchUpInside subscription is removed in Dispose.")]
+			SecondaryToolbarItemContent _content;
 			readonly WeakReference<ToolbarItem> _item;
 
 			public SecondaryToolbarItem(ToolbarItem item) : base(new SecondaryToolbarItemContent())
 			{
+				_content = (SecondaryToolbarItemContent)CustomView;
 				_item = new(item);
 				UpdateText(item);
 				UpdateIcon(item);
 				UpdateIsEnabled(item);
 
-				((SecondaryToolbarItemContent)CustomView).TouchUpInside += OnClicked;
+				_content.TouchUpInside += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
 
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
@@ -296,6 +342,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The TouchUpInside subscription is removed in Dispose.")]
 			void OnClicked(object sender, EventArgs e)
 			{
 				if (_item.TryGetTarget(out var item))
@@ -306,14 +353,23 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			protected override void Dispose(bool disposing)
 			{
-				if (disposing && _item.TryGetTarget(out var item))
-					item.PropertyChanged -= OnPropertyChanged;
+				if (disposing)
+				{
+					_content?.TouchUpInside -= OnClicked;
+					_content = null;
+
+					if (_item.TryGetTarget(out var item))
+						item.PropertyChanged -= OnPropertyChanged;
+				}
 				base.Dispose(disposing);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ToolbarItem PropertyChanged subscription is removed in Dispose.")]
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (!_item.TryGetTarget(out var item))
+				if (!_item.TryGetTarget(out var item) ||
+					_content is null ||
+					!ReferenceEquals(CustomView, _content))
 					return;
 
 				if (e.PropertyName == MenuItem.TextProperty.PropertyName)
@@ -336,28 +392,34 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				{
 					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
 					{
-						((SecondaryToolbarItemContent)CustomView).Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
+						if (_content is not null)
+							_content.Image = ScaleImageToSystemDefaults(item.IconImageSource, result?.Value);
 					});
 				}
 				else
 				{
-					((SecondaryToolbarItemContent)CustomView).Image = null;
+					if (_content is not null)
+						_content.Image = null;
 				}
 			}
 
 			void UpdateIsEnabled(ToolbarItem item)
 			{
-				((UIControl)CustomView).Enabled = item.IsEnabled;
+				if (_content is not null)
+					_content.Enabled = item.IsEnabled;
 			}
 
 			void UpdateText(ToolbarItem item)
 			{
-				((SecondaryToolbarItemContent)CustomView).Text = item.Text;
+				if (_content is not null)
+					_content.Text = item.Text;
 			}
 
 			sealed class SecondaryToolbarItemContent : UIControl
 			{
+				[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The image view is a child view owned by SecondaryToolbarItemContent for its UIControl lifetime.")]
 				readonly UIImageView _imageView;
+				[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The label is a child view owned by SecondaryToolbarItemContent for its UIControl lifetime.")]
 				readonly UILabel _label;
 
 				public SecondaryToolbarItemContent()

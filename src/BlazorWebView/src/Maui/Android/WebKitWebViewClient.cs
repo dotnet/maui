@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Versioning;
 using Android.Content;
 using Android.Runtime;
@@ -20,7 +22,82 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private static readonly Uri AppOriginUri = new(AppOrigin);
 
+		// Single startup script that:
+		//  - Is idempotent (guarded by window.__BlazorStarting) so duplicate OnPageFinished calls are safe.
+		//  - Sets up window.external.sendMessage/receiveMessage for the Blazor interop bridge.
+		//  - Listens for the native 'capturePort' message that delivers the native WebMessagePort.
+		//  - Calls Blazor.start() only after the native port is captured, ensuring window.external.sendMessage
+		//    has a live port before Blazor sends any messages.
+		//  - Sets window.__BlazorStarted after the Blazor.start() Promise resolves (used by test helpers as a readiness signal).
+		//  - Logs startup failures without discarding the captured native port because Blazor may already be attached.
+		//  - Dispatches native→JS messages (arriving via PostWebMessage) directly to window.external.__callback.
+		//  - Validates message origin: only processes messages from the native PostWebMessage API
+		//    (event.source === null), skipping messages from subframes or other JS contexts.
+		private const string BlazorInitScript = """
+			(function () {
+				if (window.__BlazorStarting) { return 'false'; }
+				window.__BlazorStarting = true;
+
+				window.external = window.external || {};
+				window.external.sendMessage = function (message) {
+					if (window.__nativePort) {
+						window.__nativePort.postMessage(message);
+					}
+				};
+				window.external.receiveMessage = function (callback) {
+					window.external.__callback = callback;
+				};
+
+				if (window.__BlazorMessageHandler) {
+					window.removeEventListener('message', window.__BlazorMessageHandler, false);
+				}
+
+				window.__BlazorMessageHandler = function (event) {
+					// Only process messages from the native PostWebMessage API.
+					// Native messages have event.source === null; messages from subframes
+					// or other JS contexts have event.source set to the sending window.
+					if (event.source !== null) { return; }
+
+					if (event.data === 'capturePort') {
+						if (event.ports && event.ports[0] && !window.__nativePort) {
+							window.__nativePort = event.ports[0];
+							Promise.resolve().then(function () {
+								return Blazor.start();
+							}).then(function () {
+								window.__BlazorStarted = true;
+							}, function (err) {
+								console.error('Blazor.start() failed:', err);
+							});
+						}
+						return;
+					}
+
+					if (window.external.__callback) {
+						window.external.__callback(event.data);
+					}
+				};
+
+				window.addEventListener('message', window.__BlazorMessageHandler, false);
+
+				return 'true';
+			})();
+			""";
+
+		private const ActivityFlags AllowedIntentFlags =
+			ActivityFlags.ExcludeStoppedPackages |
+			ActivityFlags.ClearTop |
+			ActivityFlags.SingleTop |
+			ActivityFlags.MatchExternal |
+			ActivityFlags.NewTask |
+			ActivityFlags.MultipleTask |
+			ActivityFlags.NewDocument |
+			ActivityFlags.RetainInRecents |
+			ActivityFlags.LaunchAdjacent;
+
 		private readonly BlazorWebViewHandler? _webViewHandler;
+		// Android does not store WebResourceResponse instances returned from ShouldInterceptRequest in Chromium's
+		// HTTP cache. Keep explicitly cacheable static responses in a bounded per-WebView cache instead.
+		private readonly StaticContentResponseCache _staticContentResponseCache = new();
 
 		public WebKitWebViewClient(BlazorWebViewHandler webViewHandler)
 		{
@@ -58,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webViewHandler.Logger.LaunchExternalBrowser(uri);
 				try
 				{
-					var intent = Intent.ParseUri(uri.OriginalString, IntentUriType.Scheme);
+					var intent = CreateIntentForExternalUri(uri);
 					_webViewHandler.Context.StartActivity(intent);
 				}
 				catch (URISyntaxException)
@@ -75,6 +152,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 			return callbackArgs.UrlLoadingStrategy != UrlLoadingStrategy.OpenInWebView;
+		}
+
+		internal static Intent CreateIntentForExternalUri(Uri uri)
+		{
+			var intent = Intent.ParseUri(uri.OriginalString, IntentUriType.Scheme) ??
+				throw new URISyntaxException(uri.OriginalString, "Unable to create an intent from the URI.");
+
+			if (uri.Scheme.Equals("intent", StringComparison.OrdinalIgnoreCase) ||
+				uri.Scheme.Equals("android-app", StringComparison.OrdinalIgnoreCase))
+			{
+				// Keep structured intent URIs implicit and limited to handlers that accept browser navigation.
+				intent.AddCategory(Intent.CategoryBrowsable);
+				intent.SetComponent(null);
+				intent.Selector = null;
+				intent.SetFlags(intent.Flags & AllowedIntentFlags);
+			}
+
+			return intent;
 		}
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
@@ -100,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 
 				// 2. Check if the request is for a Blazor resource
-				response = GetResponse(requestUri, _webViewHandler?.Logger);
+				response = GetResponse(request, requestUri, _webViewHandler?.Logger);
 				if (response is not null)
 				{
 					return response;
@@ -113,9 +208,33 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? GetResponse(string requestUri, ILogger? logger)
+		private WebResourceResponse? GetResponse(IWebResourceRequest request, string requestUri, ILogger? logger)
 		{
+			if (!Uri.TryCreate(requestUri, UriKind.Absolute, out var uri) || !AppOriginUri.IsBaseOf(uri))
+			{
+				return null;
+			}
+
+			StaticContentCacheRequestBehavior? cacheRequestBehavior = null;
+			if (_staticContentResponseCache.TryGet(requestUri, out var cachedResponse))
+			{
+				cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(request.Method, request.RequestHeaders);
+				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
+				{
+					var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
+					logger?.HandlingWebRequest(cachedRequestUri);
+					logger?.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
+					return CreateWebResourceResponse(cachedResponse);
+				}
+
+				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
+				{
+					_staticContentResponseCache.Remove(requestUri);
+				}
+			}
+
 			var allowFallbackOnHostPage = AppOriginUri.IsBaseOfPage(requestUri);
+			var originalRequestUri = requestUri;
 			requestUri = QueryStringHelper.RemovePossibleQueryString(requestUri);
 
 			logger?.HandlingWebRequest(requestUri);
@@ -127,7 +246,42 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				var contentType = headers["Content-Type"];
 
+				// By default local caching is disabled so that user scripts are always re-executed. Applications can
+				// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+				// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
+				// See https://github.com/dotnet/maui/issues/8279
+				var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_webViewHandler?.VirtualView, originalRequestUri, contentType, logger);
+				if (cacheControlOverride is not null)
+				{
+					headers["Cache-Control"] = cacheControlOverride;
+				}
+
 				logger?.ResponseContentBeingSent(requestUri, statusCode);
+
+				if (statusCode == 200 &&
+					headers.TryGetValue("Cache-Control", out var cacheControl) &&
+					StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
+				{
+					cacheRequestBehavior ??= StaticContentResponseCachePolicy.GetRequestBehavior(request.Method, request.RequestHeaders);
+					if (cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled)
+					{
+						if (StaticContentResponseBuffer.TryBuffer(content, originalRequestUri, logger, out var cachedContent, out var responseContent))
+						{
+							var responseToCache = new StaticContentResponse(
+								originalRequestUri,
+								contentType,
+								statusCode,
+								statusMessage,
+								headers,
+								cachedContent,
+								StaticContentResponseCachePolicy.GetExpiration(cacheLifetime));
+
+							_staticContentResponseCache.Set(responseToCache);
+						}
+
+						return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, responseContent);
+					}
+				}
 
 				return new WebResourceResponse(contentType, "UTF-8", statusCode, statusMessage, headers, content);
 			}
@@ -138,6 +292,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			return null;
 		}
+
+		private static WebResourceResponse CreateWebResourceResponse(StaticContentResponse response)
+			=> new(
+				response.ContentType,
+				"UTF-8",
+				response.StatusCode,
+				response.StatusMessage,
+				new Dictionary<string, string>(response.Headers, StringComparer.OrdinalIgnoreCase),
+				new MemoryStream(response.Content, writable: false));
 
 		public override void OnPageFinished(AWebView? view, string? url)
 		{
@@ -166,79 +329,27 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			_webViewHandler?.Logger.RunningBlazorStartupScripts();
 
-			// Confirm Blazor hasn't already initialized
-			view.EvaluateJavascript(@"
-				(function() { return typeof(window.__BlazorStarted); })();
-			", new JavaScriptValueCallback(blazorStarted =>
+			view.EvaluateJavascript(BlazorInitScript, new JavaScriptValueCallback(result =>
 			{
-				if (blazorStarted?.ToString() != "\"undefined\"")
+				// The init script returns 'true' if it performed first-time setup, or
+				// 'false' if it was a no-op (duplicate OnPageFinished). Only create the
+				// native MessageChannel when setup actually ran.
+				if (result?.ToString() == "\"true\"")
 				{
-					// Blazor has already started, we can just abort startup process
-					return;
+					_webViewHandler?.WebviewManager?.SetUpMessageChannel();
+					_webViewHandler?.Logger.BlazorStartupScriptsSubmitted();
 				}
-
-				// Set up JS ports
-				view.EvaluateJavascript(@"
-
-		const channel = new MessageChannel();
-		var nativeJsPortOne = channel.port1;
-		var nativeJsPortTwo = channel.port2;
-		window.addEventListener('message', function (event) {
-			if (event.data != 'capturePort') {
-				nativeJsPortOne.postMessage(event.data)
-			}
-			else if (event.data == 'capturePort') {
-				if (event.ports[0] != null) {
-					nativeJsPortTwo = event.ports[0]
-				}
-			}
-		}, false);
-
-		nativeJsPortOne.addEventListener('message', function (event) {
-		}, false);
-
-		nativeJsPortTwo.addEventListener('message', function (event) {
-			// data from native code to JS
-			if (window.external.__callback) {
-				window.external.__callback(event.data);
-			}
-		}, false);
-		nativeJsPortOne.start();
-		nativeJsPortTwo.start();
-
-		window.external.sendMessage = function (message) {
-			// data from JS to native code
-			nativeJsPortTwo.postMessage(message);
-		};
-
-		window.external.receiveMessage = function (callback) {
-			window.external.__callback = callback;
-		}
-				", new JavaScriptValueCallback(_ =>
-					{
-						// Set up Server ports
-						_webViewHandler?.WebviewManager?.SetUpMessageChannel();
-
-						// Start Blazor
-						view.EvaluateJavascript(@"
-							Blazor.start();
-							window.__BlazorStarted = true;
-						", new JavaScriptValueCallback(_ =>
-						{
-							// Done; no more action required
-							_webViewHandler?.Logger.BlazorStartupScriptsFinished();
-						}));
-					}));
 			}));
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
 			if (disposing)
 			{
-				//_webViewManager = null;
+				_staticContentResponseCache.Clear();
 			}
+
+			base.Dispose(disposing);
 		}
 
 		private class JavaScriptValueCallback : Java.Lang.Object, IValueCallback

@@ -20,6 +20,15 @@ public static class ITypeSymbolExtensions
 		return typeInfo.IsNullableValueType() || typeInfo.IsNullableReferenceType();
 	}
 
+	/// <summary>
+	/// Determines whether a value of this type can be <see langword="null"/> at runtime, ignoring
+	/// nullable reference type annotations. Reference types can always be null at runtime regardless
+	/// of their annotation, so intermediate members of a binding path must use null-conditional
+	/// access to remain null-tolerant (matching the behavior of runtime and XamlC compiled bindings).
+	/// </summary>
+	public static bool CanBeNullAtRuntime(this ITypeSymbol typeInfo) =>
+		typeInfo.IsTypeNullable(enabledNullable: false);
+
 	public static TypeDescription CreateTypeDescription(this ITypeSymbol typeSymbol, bool enabledNullable)
 	{
 		var isNullable = IsTypeNullable(typeSymbol, enabledNullable);
@@ -63,7 +72,7 @@ public static class ITypeSymbolExtensions
 	/// <param name="symbol">The type to search</param>
 	/// <param name="propertyName">The name of the property to find (should end with "Command")</param>
 	/// <param name="compilation">The compilation (can be null)</param>
-	/// <param name="commandType">The inferred ICommand type if a RelayCommand method is found</param>
+	/// <param name="commandType">The inferred command interface type if a RelayCommand method is found</param>
 	/// <returns>True if a RelayCommand method was found that would generate this property</returns>
 	public static bool TryGetRelayCommandPropertyType(this ITypeSymbol symbol, string propertyName, Compilation? compilation, out ITypeSymbol? commandType)
 	{
@@ -96,18 +105,53 @@ public static class ITypeSymbolExtensions
 
 				if (hasRelayCommand)
 				{
-					// Try to find the ICommand interface type
-					var icommandType = compilation.GetTypeByMetadataName("System.Windows.Input.ICommand");
-					if (icommandType != null)
+					foreach (var metadataName in GetRelayCommandInterfaceMetadataNames(method))
 					{
-						commandType = icommandType;
-						return true;
+						commandType = compilation.GetTypeByMetadataName(metadataName);
+						if (commandType != null)
+						{
+							return true;
+						}
 					}
 				}
 			}
 		}
 
 		return false;
+	}
+
+	private static string[] GetRelayCommandInterfaceMetadataNames(IMethodSymbol method)
+	{
+		if (IsAsyncRelayCommandMethod(method))
+		{
+			return new[]
+			{
+				"CommunityToolkit.Mvvm.Input.IAsyncRelayCommand",
+				"CommunityToolkit.Mvvm.Input.IRelayCommand",
+				"System.Windows.Input.ICommand",
+			};
+		}
+
+		return new[]
+		{
+			"CommunityToolkit.Mvvm.Input.IRelayCommand",
+			"System.Windows.Input.ICommand",
+		};
+	}
+
+	private static bool IsAsyncRelayCommandMethod(IMethodSymbol method)
+	{
+		if (method.ReturnType is not INamedTypeSymbol returnType)
+			return false;
+
+		var originalDefinition = returnType.OriginalDefinition;
+		if (originalDefinition.ContainingNamespace.ToDisplayString() != "System.Threading.Tasks")
+			return false;
+
+		return originalDefinition.MetadataName == "Task"
+			|| originalDefinition.MetadataName == "Task`1"
+			|| originalDefinition.MetadataName == "ValueTask"
+			|| originalDefinition.MetadataName == "ValueTask`1";
 	}
 
 	private static System.Collections.Generic.IEnumerable<string> GetRelayCommandMethodNameCandidates(string methodName)

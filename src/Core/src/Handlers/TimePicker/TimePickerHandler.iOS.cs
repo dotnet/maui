@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -62,8 +63,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
-		// Make it public in .NET 11 and remove the concrete TimePickerHandler overload.
-		internal static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		// TODO: Remove the concrete TimePickerHandler overload above.
+		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			if (handler.PlatformView is not null)
 			{
@@ -154,6 +155,31 @@ namespace Microsoft.Maui.Handlers
 					handler.SetVirtualViewTime();
 					handler.PlatformView?.ResignFirstResponder();
 				}
+			}
+		}
+
+		//TODO: Make it public in .NET 11.
+		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not MauiTimePicker platformView)
+			{
+				return;
+			}
+
+			if (timePicker.Background is ImageSourcePaint image)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+					.FireAndForget(handler);
+			}
+			else if (timePicker.Background.IsNullOrEmpty())
+			{
+				platformView.RemoveBackgroundLayer();
+				platformView.BackgroundColor = null;
+			}
+			else
+			{
+				platformView.UpdateBackground(timePicker);
 			}
 		}
 	}

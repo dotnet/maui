@@ -63,6 +63,18 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
 			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
+		/// <summary>Bindable property for <see cref="BadgeText"/>.</summary>
+		public static readonly BindableProperty BadgeTextProperty =
+			BindableProperty.Create(nameof(BadgeText), typeof(string), typeof(BaseShellItem), null, BindingMode.OneWay);
+
+		/// <summary>Bindable property for <see cref="BadgeColor"/>.</summary>
+		public static readonly BindableProperty BadgeColorProperty =
+			BindableProperty.Create(nameof(BadgeColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
+
+		/// <summary>Bindable property for <see cref="BadgeTextColor"/>.</summary>
+		public static readonly BindableProperty BadgeTextColorProperty =
+			BindableProperty.Create(nameof(BadgeTextColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
+
 		public BaseShellItem()
 		{
 			DeclaredChildren.CollectionChanged += (_, args) =>
@@ -147,6 +159,51 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
 			set => SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(value));
+		}
+
+		/// <summary>
+		/// Gets or sets the badge text displayed on this Shell navigation item. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Setting this property to a non-null, non-empty value will display a badge on the tab item.
+		/// Set to an empty string to show a dot indicator (small badge with no text).
+		/// Set to <see langword="null"/> to hide the badge.
+		/// On Windows, only numeric values are displayed as numbers; non-numeric text (e.g., "New") shows as a dot indicator.
+		/// </remarks>
+		public string BadgeText
+		{
+			get => (string)GetValue(BadgeTextProperty);
+			set => SetValue(BadgeTextProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the background color of the badge displayed on this Shell navigation item. This is a bindable property.
+		/// </summary>
+		public Color BadgeColor
+		{
+			get => (Color)GetValue(BadgeColorProperty);
+			set => SetValue(BadgeColorProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the foreground (text) color of the badge displayed on this Shell navigation item.
+		/// When set to <see langword="null"/>, the platform default text color is used (typically white).
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Platform support:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description><b>Android</b>: Maps to <c>BadgeDrawable.BadgeTextColor</c>.</description></item>
+		/// <item><description><b>iOS/MacCatalyst</b>: Maps to <c>UITabBarItem.SetBadgeTextAttributes</c>.</description></item>
+		/// <item><description><b>Windows</b>: Maps to <c>InfoBadge.Foreground</c>.</description></item>
+		/// </list>
+		/// </remarks>
+		public Color BadgeTextColor
+		{
+			get => (Color)GetValue(BadgeTextColorProperty);
+			set => SetValue(BadgeTextColorProperty, value);
 		}
 
 
@@ -510,21 +567,25 @@ namespace Microsoft.Maui.Controls
 
 				if (OperatingSystem.IsAndroid())
 				{
-					object textColor;
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 
+					// Apply the default flyout item text color at the lowest specificity (like a stylesheet default)
+					// instead of through the "Default_FlyoutItemLabelStyle" class, which is applied at StyleLocal
+					// specificity. This lets a user-provided implicit "Style TargetType=Label" (or any explicit style)
+					// override the flyout item text color, matching iOS/Windows where no default color is set.
 					if (Application.Current == null)
 					{
-						textColor = Colors.Black.MultiplyAlpha(0.87f);
+						label.SetValue(Label.TextColorProperty, Colors.Black.MultiplyAlpha(0.87f), new SetterSpecificity());
 					}
 					else
 					{
-						textColor = new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White };
+						label.SetBinding(
+							Label.TextColorProperty,
+							new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White },
+							new SetterSpecificity());
 					}
-
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = textColor });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
 				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 				{

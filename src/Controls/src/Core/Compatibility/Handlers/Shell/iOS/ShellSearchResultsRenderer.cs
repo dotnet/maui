@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Specialized;
 using Foundation;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IShellSearchResultsRenderer
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Shell context is required for the search results renderer lifetime.")]
 		readonly IShellContext _context;
 		DataTemplate _defaultTemplate;
 
@@ -56,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning disable CS0618
 							if (SearchHandler.DisplayMemberName is not null)
 							{
-								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								MauiLogger<ShellSearchResultsRenderer>.Log(LogLevel.Error, $"{TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning}");
 								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
 #pragma warning restore CS0618
@@ -72,6 +74,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is cleared in Dispose(bool) when the search results renderer is released.")]
 		public event EventHandler<object> ItemSelected;
 
 		public ShellSearchResultsRenderer(IShellContext context)
@@ -100,6 +103,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					SearchController.ListProxyChanged -= OnListProxyChanged;
 				}
 
+				ItemSelected = null;
 				SearchHandler = null;
 			}
 
@@ -164,6 +168,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return paths;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ListProxy CollectionChanged subscription is removed when the proxy changes and in Dispose(bool).")]
 		void OnListProxyChanged(object sender, ListProxyChangedEventArgs e)
 		{
 			if (e.OldList != null)
@@ -266,6 +271,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ListProxyChanged subscription is removed in Dispose(bool).")]
 		void OnSearchHandlerSet()
 		{
 			SearchController.ListProxyChanged += OnListProxyChanged;

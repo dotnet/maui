@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -98,6 +97,13 @@ namespace Microsoft.Maui.Handlers
 
 		private void OnWebMessageReceived(WebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
 		{
+			if (!Uri.TryCreate(args.Source, UriKind.Absolute, out var sourceUri) ||
+				!AppOriginUri.IsBaseOf(sourceUri))
+			{
+				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from an unrecognized source.");
+				return;
+			}
+
 			// The JS transport URL-encodes messages so embedded NUL characters survive WebView2's
 			// null-terminated string marshalling (TryGetWebMessageAsString returns an LPWSTR). Decode
 			// the payload before dispatching it.
@@ -284,10 +290,6 @@ namespace Microsoft.Maui.Handlers
 			return ras;
 		}
 
-		[RequiresUnreferencedCode(DynamicFeatures)]
-#if !NETSTANDARD
-		[RequiresDynamicCode(DynamicFeatures)]
-#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

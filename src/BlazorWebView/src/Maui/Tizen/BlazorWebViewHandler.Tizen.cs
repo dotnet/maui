@@ -4,6 +4,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
@@ -48,6 +50,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new(StringComparer.Ordinal);
 
 		private TizenWebViewManager? _webviewManager;
+		private readonly StaticContentResponseCache _staticContentResponseCache = new();
+
+		private ILogger? _logger;
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
 		private bool RequiredStartupPropertiesSet =>
 			//_webview != null &&
@@ -80,6 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			platformView.PageLoadFinished -= OnLoadFinished;
 			base.DisconnectHandler(platformView);
 			s_webviewHandlerTable.Remove(GetHashCode().ToString());
+			_staticContentResponseCache.Clear();
 		}
 
 
@@ -121,23 +128,81 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var url = interceptor.Url;
 			if (url.StartsWith(AppOrigin))
 			{
+				var cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(interceptor.Method, interceptor.Headers);
+				if (_staticContentResponseCache.TryGet(url, out var cachedResponse))
+				{
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
+					{
+						var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(url);
+						Logger.HandlingWebRequest(cachedRequestUri);
+						Logger.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
+						interceptor.SetResponse(GetHeaderString(cachedResponse), cachedResponse.Content);
+						return;
+					}
+
+					if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
+					{
+						_staticContentResponseCache.Remove(url);
+					}
+				}
+
 				var allowFallbackOnHostPage = url.EndsWith("/");
+				var originalUrl = url;
 				url = QueryStringHelper.RemovePossibleQueryString(url);
 				if (_webviewManager!.TryGetResponseContentInternal(url, allowFallbackOnHostPage, out var statusCode, out var statusMessage, out var content, out var headers))
 				{
-					var header = $"HTTP/1.0 200 OK\r\n";
-					foreach (var item in headers)
+					// By default local caching is disabled so that user scripts are always re-executed. Applications can
+					// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
+					// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
+					// See https://github.com/dotnet/maui/issues/8279
+					var contentType = headers.TryGetValue("Content-Type", out var resolvedContentType) ? resolvedContentType : string.Empty;
+					var cacheControlOverride = StaticContentCacheControl.ResolveOverride(VirtualView, originalUrl, contentType, Logger);
+					if (cacheControlOverride is not null)
 					{
-						header += $"{item.Key}:{item.Value}\r\n";
+						headers["Cache-Control"] = cacheControlOverride;
 					}
-					header += "\r\n";
-					MemoryStream memstream = new MemoryStream();
-					content.CopyTo(memstream);
-					interceptor.SetResponse(header, memstream.ToArray());
+
+					using var memstream = new MemoryStream();
+					using (content)
+					{
+						content.CopyTo(memstream);
+					}
+					var contentBytes = memstream.ToArray();
+					if (statusCode == 200 &&
+						cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled &&
+						contentBytes.Length <= StaticContentResponseCache.MaxEntrySize &&
+						headers.TryGetValue("Cache-Control", out var cacheControl) &&
+						StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
+					{
+						_staticContentResponseCache.Set(new StaticContentResponse(
+							originalUrl,
+							contentType,
+							statusCode,
+							statusMessage,
+							headers,
+							contentBytes,
+							StaticContentResponseCachePolicy.GetExpiration(cacheLifetime)));
+					}
+
+					interceptor.SetResponse(GetHeaderString(statusCode, statusMessage, headers), contentBytes);
 					return;
 				}
 			}
 			interceptor.Ignore();
+		}
+
+		private static string GetHeaderString(StaticContentResponse response)
+			=> GetHeaderString(response.StatusCode, response.StatusMessage, response.Headers);
+
+		private static string GetHeaderString(int statusCode, string statusMessage, IDictionary<string, string> headers)
+		{
+			var header = $"HTTP/1.0 {statusCode} {statusMessage}\r\n";
+			foreach (var item in headers)
+			{
+				header += $"{item.Key}:{item.Value}\r\n";
+			}
+
+			return header + "\r\n";
 		}
 
 		private void StartWebViewCoreIfPossible()

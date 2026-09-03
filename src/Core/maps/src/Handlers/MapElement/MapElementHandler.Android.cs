@@ -117,5 +117,19 @@ namespace Microsoft.Maui.Maps.Handlers
 				circleOptions.InvokeCenter(new LatLng(circleMapElement.Center.Latitude, circleMapElement.Center.Longitude));
 
 		}
+
+		public static void MapIsVisible(IMapElementHandler handler, IMapElement mapElement)
+		{
+			// Visibility is applied on the native object after it is added to the map,
+			// via the UpdateMapElement path in MapHandler.Android.cs.
+			// PolygonOptions/PolylineOptions/CircleOptions don't expose a Visible setter.
+		}
+
+		public static void MapZIndex(IMapElementHandler handler, IMapElement mapElement)
+		{
+			// ZIndex is applied on the native object after it is added to the map,
+			// via the UpdateMapElement path in MapHandler.Android.cs.
+			// PolygonOptions/PolylineOptions/CircleOptions don't expose a ZIndex setter.
+		}
 	}
 }

@@ -1,6 +1,75 @@
 #nullable enable
+Microsoft.Maui.Animations.PlatformTicker.Dispose() -> void
+Microsoft.Maui.HybridWebViewInvoker
+Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScriptTarget, System.Type? invokeJavaScriptType) -> void
+Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
+Microsoft.Maui.IHybridWebView.Invoker.set -> void
+Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.ITab
+Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.ITab.IsEnabled.get -> bool
+Microsoft.Maui.ITab.Title.get -> string!
+Microsoft.Maui.IWindow.StatusBarTheme.get -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated
+Microsoft.Maui.Platform.MauiBorderAutomationPeer
+Microsoft.Maui.Platform.MauiBorderAutomationPeer.MauiBorderAutomationPeer(Microsoft.Maui.Platform.ContentPanel! owner) -> void
+Microsoft.Maui.Platform.MauiLayoutAutomationPeer
+Microsoft.Maui.Platform.MauiLayoutAutomationPeer.MauiLayoutAutomationPeer(Microsoft.Maui.Platform.LayoutPanel! owner) -> void
+Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer
+Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.MauiPasswordTextBoxAutomationPeer(Microsoft.Maui.Platform.MauiPasswordTextBox! owner) -> void
+Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Dark = 2 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Default = 0 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.StatusBarTheme.Light = 1 -> Microsoft.Maui.StatusBarTheme
+Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Bottom = 1 -> Microsoft.Maui.TabBarPlacement
+Microsoft.Maui.TabBarPlacement.Top = 0 -> Microsoft.Maui.TabBarPlacement
+abstract Microsoft.Maui.HybridWebViewInvoker.InvokeMethodAsync(string! methodName, string![]? paramJsonValues) -> System.Threading.Tasks.Task<string?>!
 override Microsoft.Maui.Animations.PlatformTicker.IsRunning.get -> bool
-override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
-override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
 override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.Platform.ContentPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+override Microsoft.Maui.Platform.LayoutPanel.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.GetAutomationControlTypeCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationControlType
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.GetClassNameCore() -> string!
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.IsContentElementCore() -> bool
+override Microsoft.Maui.Platform.MauiBorderAutomationPeer.IsControlElementCore() -> bool
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetAutomationControlTypeCore() -> Microsoft.UI.Xaml.Automation.Peers.AutomationControlType
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetClassNameCore() -> string!
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.GetLocalizedControlTypeCore() -> string!
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsContentElementCore() -> bool
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsControlElementCore() -> bool
+override Microsoft.Maui.Platform.MauiLayoutAutomationPeer.IsKeyboardFocusableCore() -> bool
+override Microsoft.Maui.Platform.MauiPasswordTextBox.OnCreateAutomationPeer() -> Microsoft.UI.Xaml.Automation.Peers.AutomationPeer!
+override Microsoft.Maui.Platform.MauiPasswordTextBoxAutomationPeer.IsPasswordCore() -> bool
+static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(string! value) -> Microsoft.Maui.GridLength
+static Microsoft.Maui.Handlers.SearchBarHandler.MapCursorPosition(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.SearchBarHandler.MapSelectionLength(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.ShapeViewHandler.MapFlowDirection(Microsoft.Maui.Handlers.IShapeViewHandler! handler, Microsoft.Maui.IShapeView! shapeView) -> void
+static Microsoft.Maui.Handlers.SwitchHandler.MapSwitchMinimumWidth(Microsoft.Maui.Handlers.ISwitchHandler! handler, Microsoft.Maui.ISwitch! view) -> void
+static Microsoft.Maui.Handlers.WebViewHandler.MapBackground(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.LifecycleEvents.WindowsLifecycleBuilderExtensions.OnAppInstanceActivated(this Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated! del) -> Microsoft.Maui.LifecycleEvents.IWindowsLifecycleBuilder!
+static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
+virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
+virtual Microsoft.Maui.LifecycleEvents.WindowsLifecycle.OnAppInstanceActivated.Invoke(Microsoft.UI.Xaml.Application! application, Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+virtual Microsoft.Maui.MauiWinUIApplication.OnAppInstanceActivated(Microsoft.Windows.AppLifecycle.AppActivationArguments! args) -> bool
+Microsoft.Maui.ISwipeItemMenuItemIconColor
+Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
+static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.PlatformView.get -> TPlatformView!
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
+Microsoft.Maui.ILayoutHandler<TPlatformView>
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Add(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Clear() -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Insert(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Remove(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Update(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.UpdateZIndex(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(Microsoft.UI.Xaml.FrameworkElement? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(Microsoft.UI.Xaml.FrameworkElement! containerView) -> void

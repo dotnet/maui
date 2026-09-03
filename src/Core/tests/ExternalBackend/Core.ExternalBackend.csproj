@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Mirrors Microsoft.Maui.Core's own TargetFrameworks exactly. The failure the platform-neutral
+      handler contracts guard against is target-framework specific:
+
+        * On a platform TFM the aliased handler interfaces pin PlatformView to one of .NET MAUI's own
+          native types, so an external native type produces CS0738.
+        * On the platform-neutral and netstandard TFMs the alias is a non-nullable System.Object,
+          producing CS9333 (and CS8766, since ViewHandler.PlatformView is object?).
+
+      Compiling the same external-backend sources against every one of them is the only way to prove
+      the contracts actually close the gap on all of them. Because both this list and Core's expand the
+      same $(MauiPlatforms), the platform set - including whether Tizen is present - can never drift
+      between the two. ExternalBackendTargetFrameworkTests asserts that.
+    -->
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <!--
+      This assembly deliberately mimics a platform backend that ships outside of dotnet/maui.
+      It must NOT be listed in src/Core/src/Properties/AssemblyInfo.cs, otherwise the tests that
+      consume it would no longer prove that the APIs it exercises - the container view surface and the
+      platform-neutral handler contracts alike - are reachable from a non-friend assembly.
+    -->
+    <AssemblyName>Microsoft.Maui.Core.ExternalBackend.TestSupport</AssemblyName>
+    <RootNamespace>Microsoft.Maui.Core.ExternalBackend.TestSupport</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
+    <Nullable>enable</Nullable>
+    <!--
+      Warnings are errors here on purpose: an external backend must be able to implement the handler
+      contracts without nullability mismatches such as CS8766.
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+  </ItemGroup>
+
+  <!--
+    The container view sources model an external backend using platform-agnostic native types, which
+    only satisfy ViewHandler<,>'s TPlatformView constraint where that constraint is 'class' - the
+    platform-neutral and netstandard target frameworks. On a platform TFM the constraint is that
+    platform's own base view type, and ValidateContainerView's parameter is the PlatformView alias
+    rather than object, so these sources are scoped to the target frameworks they were written for.
+    That is exactly the set they were compiled against before this project became multi-targeted, so
+    the container view proof is unchanged.
+  -->
+  <ItemGroup Condition="'$(_MauiNoTargetPlatform)' != 'True'">
+    <Compile Remove="ExternalBackendViewHandler.cs" />
+    <Compile Remove="ExternalPlatformViews.cs" />
+    <None Include="ExternalBackendViewHandler.cs" />
+    <None Include="ExternalPlatformViews.cs" />
+  </ItemGroup>
+
+</Project>
