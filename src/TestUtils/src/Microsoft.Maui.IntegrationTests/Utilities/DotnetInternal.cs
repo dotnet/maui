@@ -184,6 +184,5 @@ namespace Microsoft.Maui.IntegrationTests
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds, output: output);
 		}
-
 	}
 }
