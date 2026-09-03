@@ -11,10 +11,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 
-#if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-#endif
-
 namespace Microsoft.Maui.DeviceTests.TestCases
 {
 	public enum ControlsPageTypesTestCase
@@ -86,7 +82,10 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 
 		public static Page CreatePageType(ControlsPageTypesTestCase name) => CreatePageType(name, new ContentPage());
 
-		public static void Setup(MauiAppBuilder builder, bool includeNavigationViewHandler = true)
+		public static void Setup(
+			MauiAppBuilder builder,
+			bool includeNavigationViewHandler = true,
+			bool useTabbedViewHandler = false)
 		{
 			builder.ConfigureMauiHandlers(handlers =>
 			{
@@ -94,14 +93,21 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 
 				handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 				handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
 				handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(NavigationPage), includeNavigationViewHandler ? typeof(NavigationViewHandler) : typeof(NavigationRenderer));
 #else
 				handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 #if IOS || MACCATALYST
-				handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+				// The default (useTabbedViewHandler: false) exercises TabbedRenderer, matching the
+				// legacy iOS/MacCatalyst behavior; callers that want to exercise the migrated
+				// TabbedViewHandler pass useTabbedViewHandler: true. See RendererHandlerVariant.cs.
+				handlers.AddHandler(typeof(TabbedPage), useTabbedViewHandler ? typeof(TabbedViewHandler) : typeof(TabbedRenderer));
 #else
 				handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif

@@ -25,6 +25,15 @@ using Xunit.Sdk;
 namespace Microsoft.Maui.DeviceTests.Memory;
 
 [Category(TestCategory.Memory)]
+#if IOS || MACCATALYST
+// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+// MemoryTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler.
+[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+// MemoryTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+// instead, so PagesDoNotLeak(typeof(TabbedPage)) runs against both variants.
+[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 public class MemoryTests : ControlsHandlerTestBase
 {
 	void SetupBuilder(bool includeNavigationViewHandler = true)
@@ -96,15 +105,32 @@ public class MemoryTests : ControlsHandlerTestBase
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
-#if IOS || MACCATALYST
-				handlers.AddHandler<TabbedPage, TabbedRenderer>();
-				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
-#else
-				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
-				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
-#endif
+				RegisterFlyoutPageHandler(handlers);
+				RegisterTabbedPageHandler(handlers);
 			});
 		});
+	}
+
+	// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; MemoryTests_FlyoutViewHandler
+	// overrides this to exercise FlyoutViewHandler instead.
+	protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
+#else
+		handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
+	}
+
+	// The base class exercises TabbedRenderer on iOS/MacCatalyst; MemoryTests_TabbedViewHandler
+	// overrides this to exercise TabbedViewHandler instead.
+	protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<TabbedPage, TabbedRenderer>();
+#else
+		handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+#endif
 	}
 
 	[Theory("Pages Do Not Leak")]

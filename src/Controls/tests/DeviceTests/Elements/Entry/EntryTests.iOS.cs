@@ -252,6 +252,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.Entry)]
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		// This base class exercises TabbedRenderer (via ControlsPageTypesTestCases.Setup) on
+		// iOS/MacCatalyst for the TabbedPage/TabbedPageWithNavigationPage cases; the
+		// EntryTestsWithWindow_TabbedViewHandler subclass overrides registration to exercise
+		// TabbedViewHandler instead, so those cases run against both variants.
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 		public partial class EntryTestsWithWindow : ControlsHandlerTestBase
 		{
 			[Theory]
@@ -271,7 +276,7 @@ namespace Microsoft.Maui.DeviceTests
 				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
 				{
-					ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler);
+					RegisterPageTypeHandlers(builder, includeNavigationViewHandler);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -310,6 +315,21 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
+
+			// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+			// EntryTestsWithWindow_TabbedViewHandler overrides this to exercise TabbedViewHandler
+			// instead.
+			protected virtual void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler);
+		}
+
+		[Category(TestCategory.Entry)]
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedViewHandler)] // See RendererHandlerVariant.cs
+		public class EntryTestsWithWindow_TabbedViewHandler : EntryTestsWithWindow
+		{
+			protected override void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler, useTabbedViewHandler: true);
 		}
 
 		[Category(TestCategory.Entry)]

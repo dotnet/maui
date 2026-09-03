@@ -215,11 +215,11 @@ namespace Microsoft.Maui
 
 		string? _reuseVariantPrefix;
 
-		// Renderer/handler subclass pairs (Android Shell/Modal/Window; iOS/MacCatalyst
-		// NavigationPage-related tests) reuse the same test bodies, so DisplayName alone can't
-		// distinguish variants. The Android axis uses the "Variant" trait ("[Renderer]"/"[Handler]");
-		// the iOS/MacCatalyst axis uses the distinct "NavigationViewVariant" trait
-		// ("[NavigationRenderer]"/"[NavigationViewHandler]"), so the two never collide.
+		// Renderer/handler subclass pairs reuse the same test bodies, so DisplayName alone can't
+		// distinguish variants. Android uses the "Variant" trait ("[Renderer]"/"[Handler]"),
+		// NavigationPage uses "NavigationViewVariant" ("[NavigationRenderer]"/"[NavigationViewHandler]"),
+		// FlyoutPage uses "FlyoutViewVariant" ("[PhoneFlyoutPageRenderer]"/"[FlyoutViewHandler]"),
+		// and TabbedPage uses "TabbedViewVariant" ("[TabbedRenderer]"/"[TabbedViewHandler]").
 		string GetReuseVariantPrefix()
 		{
 			if (_reuseVariantPrefix == null)
@@ -228,6 +228,7 @@ namespace Microsoft.Maui
 				try
 				{
 					// These literals must stay in sync with RendererHandlerVariant.cs (Controls.DeviceTests).
+#if IOS || MACCATALYST
 					if (Traits.TryGetValue("NavigationViewVariant", out var navigationViewVariants) && navigationViewVariants is not null)
 					{
 						// Check Handler first: a Handler subclass also inherits the base class's
@@ -242,7 +243,37 @@ namespace Microsoft.Maui
 						}
 					}
 
-					if (_reuseVariantPrefix == null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
+					if (Traits.TryGetValue("FlyoutViewVariant", out var flyoutViewVariants) && flyoutViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "PhoneFlyoutPageRenderer" trait, so Traits may contain both values for this key.
+						if (flyoutViewVariants.Contains("FlyoutViewHandler"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[FlyoutViewHandler] ";
+						}
+						else if (flyoutViewVariants.Contains("PhoneFlyoutPageRenderer"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[PhoneFlyoutPageRenderer] ";
+						}
+					}
+
+					if (Traits.TryGetValue("TabbedViewVariant", out var tabbedViewVariants) && tabbedViewVariants is not null)
+					{
+						// Check Handler first: a Handler subclass also inherits the base class's
+						// "TabbedRenderer" trait, so Traits may contain both values for this key.
+						if (tabbedViewVariants.Contains("TabbedViewHandler"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedViewHandler] ";
+						}
+						else if (tabbedViewVariants.Contains("TabbedRenderer"))
+						{
+							_reuseVariantPrefix = (_reuseVariantPrefix ?? string.Empty) + "[TabbedRenderer] ";
+						}
+					}
+#endif
+
+#if ANDROID
+					if (_reuseVariantPrefix is null && Traits.TryGetValue("Variant", out var variants) && variants is not null)
 					{
 						// Check Handler first: a Handler subclass also inherits the base class's
 						// "Renderer" trait, so Traits may contain both values for this key.
@@ -255,6 +286,7 @@ namespace Microsoft.Maui
 							_reuseVariantPrefix = "[Renderer] ";
 						}
 					}
+#endif
 
 					_reuseVariantPrefix ??= string.Empty;
 				}
