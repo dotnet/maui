@@ -157,17 +157,21 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>813f634ceb016018f5acc9bd3c2b16e17dff4686</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26428.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26064.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>b355c0507b19670c2d386677d7f99260f07cefa5</Sha>
+      <Sha>31e0b8e08f57890f7b7004b93361d69cd4b21079</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26428.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26064.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>b355c0507b19670c2d386677d7f99260f07cefa5</Sha>
+      <Sha>31e0b8e08f57890f7b7004b93361d69cd4b21079</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="11.0.0-prerelease.26428.1">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="11.0.0-prerelease.26064.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>b355c0507b19670c2d386677d7f99260f07cefa5</Sha>
+      <Sha>31e0b8e08f57890f7b7004b93361d69cd4b21079</Sha>
+    </Dependency>
+    <Dependency Name="optimization.android-x64.MIBC.Runtime" Version="1.0.0-prerelease.26420.2">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
+      <Sha>eb2e9a7ebf54cdb4bc0ade04a042a23ee1568a6f</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
