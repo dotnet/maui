@@ -17,6 +17,14 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
+		// Content.PropertyChanged used to be subscribed to with a plain (strong) event handler,
+		// which kept this SwipeView alive for as long as a shared/long-lived Content instance was
+		// alive. Route the subscription through a weak-event proxy instead. Allocated lazily
+		// (only once Content is actually set) to avoid the allocation for SwipeViews that never
+		// set Content.
+		WeakNotifyPropertyChangedProxy _contentPropertyChangedProxy;
+		PropertyChangedEventHandler _contentPropertyChanged;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SwipeView"/> class.
 		/// </summary>
@@ -33,6 +41,11 @@ namespace Microsoft.Maui.Controls
 			AddLogicalChild(LeftItems);
 			AddLogicalChild(TopItems);
 			AddLogicalChild(BottomItems);
+		}
+
+		~SwipeView()
+		{
+			_contentPropertyChangedProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
@@ -278,7 +291,9 @@ namespace Microsoft.Maui.Controls
 			// potentially cached/long-lived SwipeItems back to this SwipeView.
 			if (child is not SwipeItems)
 			{
-				child.PropertyChanged += OnPropertyChanged;
+				_contentPropertyChanged ??= OnPropertyChanged;
+				_contentPropertyChangedProxy ??= new();
+				_contentPropertyChangedProxy.Subscribe(child, _contentPropertyChanged);
 			}
 		}
 
@@ -286,9 +301,15 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnChildRemoved(child, oldLogicalIndex);
 
+			//only unsubscribe if the removed child is still the proxy's
+			// tracked source — guards against unsubscribing a subscription for a newer Content.
 			if (child is not SwipeItems)
 			{
-				child.PropertyChanged -= OnPropertyChanged;
+				if (_contentPropertyChangedProxy is not null &&
+					_contentPropertyChangedProxy.TryGetSource(out var source) && ReferenceEquals(source, child))
+				{
+					_contentPropertyChangedProxy.Unsubscribe();
+				}
 			}
 		}
 
