@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using CoreGraphics;
@@ -18,6 +19,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellItemRenderer : UITabBarController, IShellItemRenderer, IAppearanceObserver, IUINavigationControllerDelegate, IDisconnectable
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "This is a shared static Array.Empty cache and is not renderer-owned NSObject state.")]
+		readonly static UITableViewCell[] EmptyUITableViewCellArray = Array.Empty<UITableViewCell>();
+
 		#region IShellItemRenderer
 
 		public ShellItem ShellItem
@@ -48,8 +52,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IAppearanceObserver
 
-		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The shell context is retained for the tab renderer lifetime and released in Dispose after observers are removed.")]
+		IShellContext _context;
 		readonly Dictionary<UIViewController, IShellSectionRenderer> _sectionRenderers = new Dictionary<UIViewController, IShellSectionRenderer>();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The appearance tracker is owned by this renderer and disposed in Dispose.")]
 		IShellTabBarAppearanceTracker _appearanceTracker;
 		ShellSection _currentSection;
 		Page _displayedPage;
@@ -60,10 +66,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		readonly NativeElementRegistrationSet _nativeTabBarRegistrations = new NativeElementRegistrationSet();
 		readonly NativeElementRegistrationSet _nativeVisibleTabRegistrations = new NativeElementRegistrationSet();
 		readonly NativeElementRegistrationSet _nativeMoreRegistrations = new NativeElementRegistrationSet();
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The More table view is retained only while observed and cleared in Disconnect.")]
 		UITableView _moreTableView;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The content offset observer is disposed when the More table changes and in Disconnect.")]
 		IDisposable _moreContentOffsetObserver;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The diagnostics subscription watcher is disposed and cleared in Disconnect.")]
 		IDisposable _nativeSubscriptionWatcher;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current section renderer is tracked while selected and cleared in Dispose or when removed.")]
 		internal IShellSectionRenderer CurrentRenderer { get; private set; }
 
 		public ShellItemRenderer(IShellContext context)
@@ -315,6 +325,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CurrentRenderer = null;
 				_appearanceTracker?.Dispose();
 				_appearanceTracker = null;
+				_context = null;
 				_shellItem = null;
 				_currentSection = null;
 				_displayedPage = null;
@@ -323,6 +334,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.Dispose(disposing);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItem.PropertyChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == ShellItem.CurrentItemProperty.PropertyName)
@@ -331,6 +343,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The ShellItemController.ItemsCollectionChanged subscription is removed in Disconnect before the shell item is released.")]
 		protected virtual void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			_nativeMoreRegistrations.Clear();
@@ -406,6 +419,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			ShellItemController.ItemsCollectionChanged += OnItemsCollectionChanged;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Each ShellSection.PropertyChanged subscription is removed in Disconnect and RemoveRenderer.")]
 		protected virtual void OnShellSectionPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
@@ -710,6 +724,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The displayed page PropertyChanged subscription is removed in Disconnect and when the displayed page changes.")]
 		void OnDisplayedPagePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.TabBarIsVisibleProperty.PropertyName)

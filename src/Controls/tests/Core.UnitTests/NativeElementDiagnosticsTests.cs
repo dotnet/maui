@@ -58,6 +58,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(expectedHasMore, hasMore);
 		}
 
+		[Theory]
+		[InlineData(-1, 6, 5, -1)]
+		[InlineData(0, 6, 5, 0)]
+		[InlineData(3, 6, 5, 3)]
+		[InlineData(4, 6, 5, 99)]
+		[InlineData(5, 6, 5, 99)]
+		[InlineData(4, 5, 5, 4)]
+		[InlineData(6, 6, 5, -1)]
+		public void BottomNavigationSelectionMapsOnlyHiddenItemsToMore(
+			int selectedIndex,
+			int itemCount,
+			int maxVisibleItems,
+			int expectedItemId)
+		{
+			var itemId = NativeBottomNavigationSelection.GetMenuItemId(
+				selectedIndex,
+				itemCount,
+				maxVisibleItems,
+				99);
+
+			Assert.Equal(expectedItemId, itemId);
+		}
+
 		[Fact]
 		public void RegisterEmitsVersionedLifecycleWithReferenceIdentity()
 		{

@@ -15,8 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		public void SoftInputExtensionsPageTest()
 		{
-			// Make sure the buttons appear on the screen.
-			Task.Delay(1000).Wait();
+			// Wait for the buttons to appear before interacting, rather than relying on a fixed delay
+			// that can be too short on slower devices (e.g. the Android API 30 emulator).
+			App.WaitForElement("ShowKeyboard");
 			App.Tap("ShowKeyboard");
 			ClassicAssert.IsTrue(App.WaitForTextToBePresentInElement("Result", "True"));
 			App.Tap("HideKeyboard");
