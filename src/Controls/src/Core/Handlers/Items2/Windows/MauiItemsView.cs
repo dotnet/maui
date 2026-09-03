@@ -42,6 +42,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
 
+	internal event Action<int>? ContainerPrepared;
+
 	public MauiItemsView()
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
@@ -50,6 +52,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
 		// or out of the collection; no extra intermediate stop on the owner itself.
 		IsTabStop = false;
+		TabFocusNavigation = KeyboardNavigationMode.Local;
 		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
 		// Disable WinUI's default ItemCollectionTransitionProvider which plays a
@@ -59,6 +62,12 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ItemTransitionProvider = null;
 
 		ApplyItemContainerResourceOverrides();
+	}
+
+	void ItemsRepeater_AutomationElementPrepaed(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+	{
+		UpdateAutomationSetProperties(sender, args.Element , args.Index);
+		ContainerPrepared?.Invoke(args.Index);
 	}
 
 	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
