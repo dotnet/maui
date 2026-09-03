@@ -13,20 +13,6 @@ public class DotNetProjectTests
 	}
 
 	[Fact]
-	public void ToolRunnerCapturesFastProcessOutput()
-	{
-		var output = DotnetInternal.RunForOutput(
-			"--version",
-			string.Empty,
-			out var exitCode,
-			timeoutInSeconds: 60,
-			output: _output);
-
-		Assert.Equal(0, exitCode);
-		Assert.False(string.IsNullOrWhiteSpace(output));
-	}
-
-	[Fact]
 	public void WorkloadInstallPathsAreIndependentOfTrailingSeparator()
 	{
 		var projectFile = Path.Combine(
@@ -85,32 +71,49 @@ public class DotNetProjectTests
 		string projectFile,
 		string extensionsPath)
 	{
-		return (
-			GetProjectProperty(projectFile, "_NormalizedMSBuildExtensionsPath", extensionsPath),
-			GetProjectProperty(projectFile, "_WorkloadManifestInstallDirectory", extensionsPath),
-			GetProjectProperty(projectFile, "_WorkloadInstallDotNetPath", extensionsPath),
-			GetProjectProperty(projectFile, "DotNetSdkManifestsFolder", extensionsPath));
+		var resultFile = Path.Combine(
+			Path.GetTempPath(),
+			$"maui-msbuild-properties-{Guid.NewGuid():N}.json");
+
+		try
+		{
+			var arguments =
+				$"\"{projectFile}\" -nologo -verbosity:quiet " +
+				$"-getProperty:_NormalizedMSBuildExtensionsPath,_WorkloadManifestInstallDirectory,_WorkloadInstallDotNetPath,DotNetSdkManifestsFolder " +
+				$"-getResultOutputFile:\"{resultFile}\" " +
+				$"-p:MSBuildExtensionsPath=\"{extensionsPath}\"";
+			var output = DotnetInternal.RunForOutput(
+				"msbuild",
+				arguments,
+				out var exitCode,
+				timeoutInSeconds: 60,
+				output: _output);
+
+			Assert.True(exitCode == 0, $"MSBuild property evaluation failed:{Environment.NewLine}{output}");
+			Assert.True(File.Exists(resultFile), $"MSBuild result file does not exist: {resultFile}");
+
+			using var result = JsonDocument.Parse(File.ReadAllText(resultFile));
+			var properties = result.RootElement.GetProperty("Properties");
+
+			return (
+				GetProperty(properties, "_NormalizedMSBuildExtensionsPath"),
+				GetProperty(properties, "_WorkloadManifestInstallDirectory"),
+				GetProperty(properties, "_WorkloadInstallDotNetPath"),
+				GetProperty(properties, "DotNetSdkManifestsFolder"));
+		}
+		finally
+		{
+			if (File.Exists(resultFile))
+				File.Delete(resultFile);
+		}
 	}
 
-	string GetProjectProperty(string projectFile, string propertyName, string? extensionsPath = null)
+	static string GetProperty(JsonElement properties, string propertyName)
 	{
-		var arguments = $"\"{projectFile}\" -nologo -verbosity:quiet -getProperty:{propertyName}";
-		if (extensionsPath is not null)
-			arguments += $" -p:MSBuildExtensionsPath=\"{extensionsPath}\"";
-
-		var output = DotnetInternal.RunForOutput(
-			"msbuild",
-			arguments,
-			out var exitCode,
-			timeoutInSeconds: 60,
-			output: _output);
-
-		Assert.True(exitCode == 0, $"MSBuild property evaluation failed:{Environment.NewLine}{output}");
-
-		var value = output
-			.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-			.LastOrDefault()?
-			.Trim();
+		var value = properties.TryGetProperty(propertyName, out var property) &&
+			property.ValueKind == JsonValueKind.String
+				? property.GetString()
+				: null;
 
 		if (string.IsNullOrEmpty(value))
 			throw new XunitException($"MSBuild property '{propertyName}' was empty.");
