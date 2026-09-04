@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls
 			if (!fromTarget && this.GetRealizedMode(_targetProperty) == BindingMode.OneWayToSource)
 				return;
 
-			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var targetObject))
+			if (_weakTarget is null || !_weakTarget.TryGetTarget(out var targetObject))
 				return;
 
 			if (!fromTarget)
