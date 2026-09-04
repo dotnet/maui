@@ -47,7 +47,9 @@ public class Issue38080 : NavigationPage
 				Text = "Page loaded — no crash"
 			});
 
-			AddFiller(stack, FillerRows);
+			// The first/last rows are sentinels the UITest asserts on to prove the scroll
+			// actually reached the top/bottom extreme.
+			AddFiller(stack, FillerRows, sentinelRow: 1, sentinelId: "Issue38080TopSentinel");
 
 			// Single fixed-size WebView mid-list, so it is off-screen at both extremes.
 			stack.Children.Add(new WebView
@@ -59,7 +61,7 @@ public class Issue38080 : NavigationPage
 				}
 			});
 
-			AddFiller(stack, FillerRows);
+			AddFiller(stack, FillerRows, sentinelRow: FillerRows, sentinelId: "Issue38080BottomSentinel");
 
 			Content = new ScrollView
 			{
@@ -68,11 +70,16 @@ public class Issue38080 : NavigationPage
 			};
 		}
 
-		static void AddFiller(VerticalStackLayout stack, int rows)
+		static void AddFiller(VerticalStackLayout stack, int rows, int sentinelRow, string sentinelId)
 		{
 			for (int i = 1; i <= rows; i++)
 			{
-				stack.Children.Add(new Label { Text = $"Filler row {i}", FontSize = 20 });
+				stack.Children.Add(new Label
+				{
+					AutomationId = i == sentinelRow ? sentinelId : null,
+					Text = $"Filler row {i}",
+					FontSize = 20
+				});
 			}
 		}
 	}
