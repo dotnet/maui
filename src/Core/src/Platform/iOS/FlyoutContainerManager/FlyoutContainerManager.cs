@@ -337,6 +337,7 @@ internal class FlyoutContainerManager
 		{
 			LayoutPanes(animated: true);
 			UpdateClickOffView();
+			ToggleAccessibilityElementsHidden();
 		}
 
 		// Only update the bar button when behavior or presented state actually changed.
@@ -1057,9 +1058,12 @@ internal class FlyoutContainerManager
 
 	void ToggleAccessibilityElementsHidden()
 	{
+		bool isModalFlyout = _isPresented && !ShouldShowSplitMode && _flyoutOverlapsDetail;
+
 		if (_flyoutContainerView is not null)
 		{
 			_flyoutContainerView.AccessibilityElementsHidden = !_isPresented;
+			_flyoutContainerView.AccessibilityViewIsModal = isModalFlyout;
 		}
 
 		if (_detailContainerView is not null)
