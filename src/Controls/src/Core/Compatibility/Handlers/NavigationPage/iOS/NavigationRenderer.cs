@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		bool _interactivePopGesturePending;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -185,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
 
 			base.ViewDidDisappear(animated);
@@ -261,11 +263,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePop);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
+		}
+
+		bool ShouldBeginInteractivePop()
+		{
+			_interactivePopGesturePending = ShouldPopCurrentPage();
+			return _interactivePopGesturePending;
+		}
+
+		bool ShouldPopCurrentPage()
+		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
+			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
+			// returns true for both "page handled it" and "SafePop handled it", making it
+			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
+
+			_uiRequestedPop = true;
+			return true;
 		}
 
 		class GestureDelegate : UIGestureRecognizerDelegate
@@ -1153,21 +1181,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
-			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
-			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
-			// causing a UIKit VC / MAUI navigation stack desync.
-			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
-			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
-			// returns true for both "page handled it" and "SafePop handled it", making it
-			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
-			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			// UIKit invokes ShouldBegin before ShouldPopItem for an interactive pop.
+			// The application back callback was already evaluated while admitting the gesture.
+			if (_interactivePopGesturePending)
 			{
-				_uiRequestedPop = false;
-				return false;
+				return true;
 			}
-			_uiRequestedPop = true;
-			return true;
+
+			return ShouldPopCurrentPage();
 		}
 
 		[Export("navigationBar:didPopItem:")]
@@ -1385,6 +1406,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					r._interactivePopGesturePending = false;
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
