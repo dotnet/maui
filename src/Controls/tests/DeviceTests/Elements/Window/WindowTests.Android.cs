@@ -64,6 +64,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The last window is kept around so it can be re-attached on relaunch.
 				Assert.Contains(window, application.Windows);
+
+				// Relaunch should reuse the existing destroyed window instead of creating a new one.
+				var relaunchedWindow = application.CreateWindow(null);
+				Assert.Same(window, relaunchedWindow);
 			});
 		}
 	}

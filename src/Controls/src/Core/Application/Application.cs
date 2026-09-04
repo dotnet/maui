@@ -535,9 +535,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 #if ANDROID
-			// Keep the last window on relaunch (back-to-home then reopened) so it can be
+			// Keep the last tracked window on relaunch (back-to-home then reopened) so it can be
 			// re-attached instead of recreated, preserving the app's state.
-			if (_windows.Count == 1)
+			if (_windows.Count == 1 && ReferenceEquals(_windows[0], window))
 				return;
 #endif
 
