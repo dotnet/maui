@@ -94,8 +94,8 @@ permissions:
 
 env:
   # Vally CLI is run via npx from npm. Pinned for reproducibility.
-  # Vally 0.12 requires Node >=22, so we pin Node 22 on the runners.
-  VALLY_VERSION: "0.12.0"
+  # Vally requires Node >=22.12, so we pin Node 22 on the runners.
+  VALLY_VERSION: "0.14.0"
   NODE_VERSION: "22"
 
 jobs:

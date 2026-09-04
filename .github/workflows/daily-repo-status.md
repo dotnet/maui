@@ -24,6 +24,8 @@ on:
   workflow_dispatch:
   permissions: {}
 
+if: github.repository == 'dotnet/maui'
+
 permissions:
   contents: read
   issues: read

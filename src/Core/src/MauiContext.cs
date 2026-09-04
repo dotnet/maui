@@ -57,12 +57,22 @@ namespace Microsoft.Maui
 		internal void SetWindowScope(IServiceScope scope)
 		{
 			_windowScope = scope;
+			IsWindowScopeDisposed = false;
 		}
+
+		internal bool IsWindowScopeDisposed { get; private set; }
 
 		internal void DisposeWindowScope()
 		{
-			_windowScope?.Dispose();
-			_windowScope = null;
+			IsWindowScopeDisposed = true;
+			try
+			{
+				_windowScope?.Dispose();
+			}
+			finally 
+			{
+				_windowScope = null;
+			}
 		}
 
 		class WrappedServiceProvider : IServiceProvider
