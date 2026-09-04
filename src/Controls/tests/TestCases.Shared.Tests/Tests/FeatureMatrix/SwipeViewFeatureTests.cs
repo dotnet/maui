@@ -1002,7 +1002,80 @@ public class SwipeViewFeatureTests : _GalleryUITest
 		App.WaitForElement("Label");
 		Assert.That(App.WaitForElement("SwipeStartedLabel").GetText(), Is.EqualTo("Swipe Started: Right"));
 	}
+
+	[Test, Order(60)]
+	public void VerifyMultipleSwipeItemsOnAllSides()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("UseMultipleSwipeItemsCheckBox");
+		App.Tap("UseMultipleSwipeItemsCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+
+		App.SwipeLeftToRight("SwipeViewControl");
+		VerifyMultipleSwipeItems("Right");
+		CloseSwipeView();
+
+		App.SwipeRightToLeft("SwipeViewControl");
+		VerifyMultipleSwipeItems("Left");
+		CloseSwipeView();
+
+		var swipeViewRect = App.WaitForElement("SwipeViewControl").GetRect();
+		App.DragCoordinates(
+			swipeViewRect.CenterX(), swipeViewRect.Y + 10,
+			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height * 0.9f);
+		VerifyMultipleSwipeItems("Down");
+		CloseSwipeView();
+
+		App.DragCoordinates(
+			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height - 10,
+			swipeViewRect.CenterX(), swipeViewRect.Y + swipeViewRect.Height * 0.1f);
+		VerifyMultipleSwipeItems("Up");
+	}
+
+	[Test, Order(61)]
+	public void VerifyDisabledSwipeItemDoesNotExecuteBoundCommand()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("DisableSwipeItemCheckBox");
+		App.Tap("DisableSwipeItemCheckBox");
+		App.WaitForElement("UseCommandBindingCheckBox");
+		App.Tap("UseCommandBindingCheckBox");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("SwipeViewControl");
+		App.SwipeLeftToRight("SwipeViewControl");
+
+		var disabledItem = App.WaitForElement("Label").GetRect();
+		App.TapCoordinates(disabledItem.CenterX(), disabledItem.CenterY());
+
+		Assert.That(
+			App.WaitForElement("EventInvokedLabel").GetText(),
+			Is.EqualTo("Event not invoked yet"));
+	}
 #endif
+
+	private void VerifyMultipleSwipeItems(string expectedDirection)
+	{
+		App.WaitForElement("Label");
+		App.WaitForElement("Label2");
+		Assert.That(
+			App.WaitForTextToBePresentInElement(
+				"SwipeEndedLabel",
+				$"Swipe Ended: {expectedDirection}",
+				timeout: TimeSpan.FromSeconds(3)),
+			Is.True,
+			$"The {expectedDirection} swipe did not reveal its two SwipeItems.");
+	}
+
+	private void CloseSwipeView()
+	{
+		App.Tap("CloseSwipeViewButton");
+		App.WaitForNoElement("Label2");
+	}
 
 	private void VerifySwipeViewScreenshot()
 	{

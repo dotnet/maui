@@ -296,8 +296,8 @@ public class SwipeViewControlMainPage : ContentPage
 	{
 		var leftItems = CreateSwipeItems(swipeItemType, "Left_", allowMultiple: true);
 		var rightItems = CreateSwipeItems(swipeItemType, "Right_", allowMultiple: true);
-		var topItems = CreateSwipeItems(swipeItemType, "Top_");
-		var bottomItems = CreateSwipeItems(swipeItemType, "Bottom_");
+		var topItems = CreateSwipeItems(swipeItemType, "Top_", allowMultiple: true);
+		var bottomItems = CreateSwipeItems(swipeItemType, "Bottom_", allowMultiple: true);
 		var swipeView = new SwipeView
 		{
 			Content = contentView,
