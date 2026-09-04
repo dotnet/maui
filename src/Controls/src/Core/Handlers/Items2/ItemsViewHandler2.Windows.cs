@@ -248,6 +248,11 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 	protected override void DisconnectHandler(WItemsView platformView)
 	{
 		// Phase 1: Unsubscribe ALL events first to prevent callbacks during cleanup
+		if (platformView is MauiItemsView mauiItemsView)
+		{
+			mauiItemsView.CleanUpAutomationEvents();
+		}
+
 		if (_collectionViewSource?.Source is INotifyCollectionChanged incc)
 		{
 			incc.CollectionChanged -= ItemsChanged;
@@ -555,6 +560,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		UpdateEmptyViewVisibility();
+		(PlatformView as MauiItemsView)?.InvalidateAutomationSetProperties();
 
 		if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Reset)
 		{

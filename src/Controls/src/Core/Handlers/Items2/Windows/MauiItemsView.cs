@@ -39,10 +39,9 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _isHorizontalLayout;
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
+	bool _automationSetUpdateQueued;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
-
-	internal event Action<int>? ContainerPrepared;
 
 	public MauiItemsView()
 	{
@@ -64,12 +63,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		ApplyItemContainerResourceOverrides();
 	}
 
-	void ItemsRepeater_AutomationElementPrepaed(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
-	{
-		UpdateAutomationSetProperties(sender, args.Element , args.Index);
-		ContainerPrepared?.Invoke(args.Index);
-	}
-
 	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
 
 	// Exposes exactly one candidate (the current, or first, item container) so Tab treats
@@ -82,6 +75,14 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			return base.GetChildrenInTabFocusOrder();
 		}
 
+		var tabCandidate = FindTargetContainer(repeater);
+		return tabCandidate is not null
+			? new DependencyObject[] { tabCandidate }
+			: base.GetChildrenInTabFocusOrder();
+	}
+
+	ItemContainer? FindTargetContainer(ItemsRepeater repeater)
+	{
 		ItemContainer? firstContainer = null;
 		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
 		for (var childIndex = 0; childIndex < childCount; childIndex++)
@@ -95,15 +96,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 			if (repeater.GetElementIndex(container) == CurrentItemIndex)
 			{
-				return new DependencyObject[] { container };
+				return container;
 			}
 
 			firstContainer ??= container;
 		}
 
-		return firstContainer is not null
-			? new DependencyObject[] { firstContainer }
-			: base.GetChildrenInTabFocusOrder();
+		return firstContainer;
 	}
 
 	/// <summary>
@@ -121,27 +120,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			return;
 		}
 
-		ItemContainer? firstContainer = null;
-		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
-		for (var childIndex = 0; childIndex < childCount; childIndex++)
-		{
-			if (VisualTreeHelper.GetChild(repeater, childIndex) is not ItemContainer container ||
-				!container.IsEnabled || container.Visibility != WVisibility.Visible ||
-				container.Child is not ElementWrapper wrapper || wrapper.IsHeaderOrFooter)
-			{
-				continue;
-			}
-
-			if (repeater.GetElementIndex(container) == CurrentItemIndex)
-			{
-				container.Focus(FocusState.Keyboard);
-				return;
-			}
-
-			firstContainer ??= container;
-		}
-
-		firstContainer?.Focus(FocusState.Keyboard);
+		FindTargetContainer(repeater)?.Focus(FocusState.Keyboard);
 	}
 
 	/// <summary>
@@ -291,11 +270,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override void OnApplyTemplate()
 	{
-		if (_itemsRepeater is ItemsRepeater previousRepeater)
-		{
-			previousRepeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;
-			previousRepeater.ElementIndexChanged -= ItemsRepeater_AutomationElementIndexChanged;
-		}
+		CleanUpAutomationEvents();
 
 		base.OnApplyTemplate();
 
@@ -322,6 +297,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			repeater.ItemTransitionProvider = null;
 			repeater.ElementPrepared += ItemsRepeater_AutomationElementPrepared;
 			repeater.ElementIndexChanged += ItemsRepeater_AutomationElementIndexChanged;
+			repeater.ElementClearing += ItemsRepeater_AutomationElementClearing;
 		}
 
 		if (_emptyViewContentControl is not null)
@@ -355,39 +331,90 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	}
 
 	void ItemsRepeater_AutomationElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args) =>
-		UpdateAutomationSetProperties(sender, args.Element, args.Index);
+		QueueAutomationSetPropertiesUpdate(sender);
 
 	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
-		UpdateAutomationSetProperties(sender, args.Element, args.NewIndex);
+		QueueAutomationSetPropertiesUpdate(sender);
 
-	static void UpdateAutomationSetProperties(ItemsRepeater repeater, UIElement element, int index)
+	void ItemsRepeater_AutomationElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args) =>
+		ClearAutomationSetProperties(args.Element);
+
+	internal void InvalidateAutomationSetProperties()
 	{
-		if (index < 0 || index >= repeater.ItemsSourceView.Count ||
-			!IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index)))
+		if (ItemsRepeaterControl is ItemsRepeater repeater)
 		{
-			element.ClearValue(WAutomationProperties.PositionInSetProperty);
-			element.ClearValue(WAutomationProperties.SizeOfSetProperty);
+			QueueAutomationSetPropertiesUpdate(repeater);
+		}
+	}
+
+	void QueueAutomationSetPropertiesUpdate(ItemsRepeater repeater)
+	{
+		if (_automationSetUpdateQueued || !ReferenceEquals(repeater, ItemsRepeaterControl))
+		{
 			return;
 		}
 
-		var position = 0;
-		var size = 0;
-		for (var sourceIndex = 0; sourceIndex < repeater.ItemsSourceView.Count; sourceIndex++)
+		_automationSetUpdateQueued = true;
+		if (!DispatcherQueue.TryEnqueue(() =>
 		{
-			if (!IsAutomationDataItem(repeater.ItemsSourceView.GetAt(sourceIndex)))
+			if (!_automationSetUpdateQueued || !ReferenceEquals(repeater, ItemsRepeaterControl))
+				return;
+
+			_automationSetUpdateQueued = false;
+			UpdateAutomationSetProperties(repeater);
+		}))
+		{
+			_automationSetUpdateQueued = false;
+		}
+	}
+
+	static void UpdateAutomationSetProperties(ItemsRepeater repeater)
+	{
+		var realizedDataItems = new List<UIElement>();
+		var size = 0;
+		for (var index = 0; index < repeater.ItemsSourceView.Count; index++)
+		{
+			var isDataItem = IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index));
+			if (isDataItem)
 			{
+				size++;
+			}
+
+			if (repeater.TryGetElement(index) is not UIElement element)
+				continue;
+
+			if (!isDataItem)
+			{
+				ClearAutomationSetProperties(element);
 				continue;
 			}
 
-			size++;
-			if (sourceIndex <= index)
-			{
-				position++;
-			}
+			WAutomationProperties.SetPositionInSet(element, size);
+			realizedDataItems.Add(element);
 		}
 
-		WAutomationProperties.SetPositionInSet(element, position);
-		WAutomationProperties.SetSizeOfSet(element, size);
+		foreach (var element in realizedDataItems)
+		{
+			WAutomationProperties.SetSizeOfSet(element, size);
+		}
+	}
+
+	static void ClearAutomationSetProperties(UIElement element)
+	{
+		element.ClearValue(WAutomationProperties.PositionInSetProperty);
+		element.ClearValue(WAutomationProperties.SizeOfSetProperty);
+	}
+
+	internal void CleanUpAutomationEvents()
+	{
+		if (_itemsRepeater is ItemsRepeater repeater)
+		{
+			repeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;
+			repeater.ElementIndexChanged -= ItemsRepeater_AutomationElementIndexChanged;
+			repeater.ElementClearing -= ItemsRepeater_AutomationElementClearing;
+		}
+
+		_automationSetUpdateQueued = false;
 	}
 
 	static bool IsAutomationDataItem(object? item) =>
