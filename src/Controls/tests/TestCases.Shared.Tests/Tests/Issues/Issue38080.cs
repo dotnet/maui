@@ -21,6 +21,10 @@ public class Issue38080 : _IssuesUITest
 		App.Tap("Issue38080NavigateButton");
 		App.WaitForElement("Issue38080Ready");
 
+		// ScrollUp/ScrollDown silently no-op when the element lookup returns null, which would
+		// turn this regression test into a false positive. Wait so a failed lookup fails the test.
+		App.WaitForElement("Issue38080ScrollView");
+
 		// Overscroll at the top extreme: the WebView is off-screen below the fold and the
 		// ScrollView overscrolls past its top edge.
 		for (int i = 0; i < 6; i++)
