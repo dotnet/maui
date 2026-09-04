@@ -75,6 +75,7 @@
     <EmbeddedResource Include="Resources\Images\img_0111.heic" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
     <MauiImage Include="Resources\Images\subfolder\dotnet_bot_red.png" Resize="True" BaseSize="300,185"/>
+    <MauiAsset Include="wwwroot\**" LogicalName="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
