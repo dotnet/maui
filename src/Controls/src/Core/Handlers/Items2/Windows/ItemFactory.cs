@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WAccessibilityView = Microsoft.UI.Xaml.Automation.Peers.AccessibilityView;
 using WAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2;
@@ -111,6 +112,7 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				view.BindingContext = (templateContext.IsHeader || templateContext.IsFooter)
 					? (templateContext.Item ?? _view.BindingContext)
 					: templateContext.Item;
+				wrapper.UpdateAccessibilityView();
 				_view.AddLogicalChild(view);
 
 				// Sync the CommonStates VSM group to match actual selection state on every
@@ -292,6 +294,7 @@ internal partial class ElementWrapper : ContentControl
 	// Stored so RecycleElement can unsubscribe without a flag — mirrors iOS prepareForReuse.
 	SizeChangedEventHandler? _contentSizeChangedHandler;
 	FrameworkElement? _observedContent;
+	WAccessibilityView? _defaultAccessibilityView;
 
 	/// <summary>
 	/// Unsubscribes the first-item SizeChanged observer wired during MeasureOverride.
@@ -347,18 +350,26 @@ internal partial class ElementWrapper : ContentControl
 			}
 
 			var platformView = VirtualView.ToPlatform(_context);
-			var semantics = VirtualView.Semantics;
-			if (!string.IsNullOrWhiteSpace(semantics?.Description) ||
-				!string.IsNullOrWhiteSpace(semantics?.Hint))
-			{
-				// The ItemContainer already exposes the root view's semantics. Keep the
-				// native root out of the content view so Narrator does not announce it twice.
-				platformView.SetAutomationPropertiesAccessibilityView(
-					VirtualView as Element,
-					Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
-			}
+			_defaultAccessibilityView = WAutomationProperties.GetAccessibilityView(platformView);
 			Content = platformView;
+			UpdateAccessibilityView();
 		}
+	}
+
+	internal void UpdateAccessibilityView()
+	{
+		if (Content is not FrameworkElement platformView || VirtualView is not Element element)
+		{
+			return;
+		}
+
+		var semantics = VirtualView.Semantics;
+		var accessibilityView = !string.IsNullOrWhiteSpace(semantics?.Description) ||
+			!string.IsNullOrWhiteSpace(semantics?.Hint)
+				? WAccessibilityView.Raw
+				: _defaultAccessibilityView;
+
+		platformView.SetAutomationPropertiesAccessibilityView(element, accessibilityView);
 	}
 
 	void OnLoadedCreatePlatformView(object sender, RoutedEventArgs e)
