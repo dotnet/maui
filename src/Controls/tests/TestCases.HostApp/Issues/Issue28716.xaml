@@ -32,7 +32,7 @@
             </local:CollectionView2.ItemsLayout>
             <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding . ,StringFormat='{0}cv2'}"/>
+                    <Label Text="{Binding . ,StringFormat='{0}view2'}"/>
                 </DataTemplate>
             </local:CollectionView2.ItemTemplate>
         </local:CollectionView2>
@@ -46,7 +46,7 @@
             </local:CollectionView2.ItemsLayout>
             <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding . ,StringFormat='{0}cv3'}"/>
+                    <Label Text="{Binding . ,StringFormat='{0}view3'}"/>
                 </DataTemplate>
             </local:CollectionView2.ItemTemplate>
         </local:CollectionView2>

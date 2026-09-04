@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override bool ResetAfterEachTest => true;
 
+		// Items2 still fails initial position and orientation preservation on Apple; Android Items coverage remains.
 #if !IOS && !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
