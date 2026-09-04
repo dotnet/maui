@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Platform
 
 		readonly SwipeRecognizerProxy _proxy;
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
-		readonly Dictionary<ISwipeItem, double> _swipeItemWidths;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UITapGestureRecognizer _tapGestureRecognizer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
@@ -50,7 +49,6 @@ namespace Microsoft.Maui.Platform
 			_contentView = new UIView();
 			_actionView = new UIStackView();
 			_swipeItems = new Dictionary<ISwipeItem, object>();
-			_swipeItemWidths = new Dictionary<ISwipeItem, double>();
 			_isScrollEnabled = true;
 
 			_tapGestureRecognizer = new UITapGestureRecognizer(_proxy.HandleTap)
@@ -298,7 +296,6 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItemsRect = new List<CGRect>();
 			_swipeItems.Clear();
-			_swipeItemWidths.Clear();
 
 			double swipeItemsWidth;
 
@@ -316,6 +313,15 @@ namespace Microsoft.Maui.Platform
 			foreach (var item in items)
 			{
 				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
+
+				// Recreate a menu item's native button when it is still owned by a
+				// previous action view, matching the Android shared-item behavior.
+				if (swipeItem.Superview != null && item is ISwipeItemMenuItem && item is IElement element)
+				{
+					element.Handler?.DisconnectHandler();
+					swipeItem = item.ToPlatform(Element.Handler.MauiContext);
+				}
+
 				swipeItem.Hidden = !GetIsVisible(item);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
@@ -355,7 +361,7 @@ namespace Microsoft.Maui.Platform
 				if (!child.Hidden)
 				{
 					var item = items[i];
-					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
+					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, _swipeItems);
 
 					float swipeItemHeight = (float)swipeItemSize.Height;
 					float swipeItemWidth = (float)swipeItemSize.Width;
@@ -401,15 +407,17 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
-			if (!_isOpen)
+			UpdateSwipeItemSize(item);
+		}
+
+		internal void UpdateSwipeItemSize(ISwipeItem item)
+		{
+			if (!_isOpen || !_swipeItems.ContainsKey(item))
 				return;
 
-			if (item?.Handler?.PlatformView is UIView platformView)
-			{
-				_swipeOpenDistance = 0;
-				LayoutSwipeItems(GetNativeSwipeItems());
-				SwipeToThreshold(false);
-			}
+			_swipeOpenDistance = 0;
+			LayoutSwipeItems(GetNativeSwipeItems());
+			SwipeToThreshold(false);
 		}
 
 		internal void UpdateSwipeTransitionMode(SwipeTransitionMode swipeTransitionMode)
@@ -714,7 +722,6 @@ namespace Microsoft.Maui.Platform
 		{
 			_isOpen = false;
 			_swipeItems.Clear();
-			_swipeItemWidths.Clear();
 			_swipeOpenDistance = 0;
 			_swipeOffset = 0;
 			_originalBounds = CGRect.Empty;
@@ -928,7 +935,7 @@ namespace Microsoft.Maui.Platform
 						if (GetIsVisible(swipeItem))
 						{
 							_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
+							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
 							swipeThreshold += swipeItemSize.Width;
 						}
 					}
@@ -965,7 +972,7 @@ namespace Microsoft.Maui.Platform
 				if (GetIsVisible(swipeItem))
 				{
 					_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems, _swipeItemWidths);
+					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
 					swipeItemsHeight += (float)swipeItemSize.Height;
 					swipeItemsWidth += (float)swipeItemSize.Width;
 				}

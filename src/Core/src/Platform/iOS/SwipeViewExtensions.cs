@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SwipeViewExtensions
 	{
-		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, Dictionary<ISwipeItem, object> swipeItems, Dictionary<ISwipeItem, double> swipeItemWidths)
+		internal static Size GetSwipeItemSize(this ISwipeView swipeView, ISwipeItem swipeItem, UIView contentView, SwipeDirection? swipeDirection, Dictionary<ISwipeItem, object> swipeItems)
 		{
 			var items = GetSwipeItemsByDirection(swipeView, swipeDirection);
 			if (items == null)
@@ -25,20 +25,25 @@ namespace Microsoft.Maui.Platform
 					if (items.Mode == SwipeMode.Execute)
 					{
 						double totalWidth = 0;
-						foreach (var item in swipeItems)
-						{
-							if (!swipeItemWidths.TryGetValue(item.Key, out var measuredWidth))
-							{
-								var measuredSize = ((UIView)item.Value).SizeThatFits(
-									new CGSize(contentWidth, contentHeight));
-								measuredWidth = measuredSize.Width;
-								swipeItemWidths[item.Key] = measuredWidth;
-							}
+						int visibleItemCount = 0;
 
-							totalWidth += measuredWidth;
+						foreach (var  item in swipeItems)
+						{
+							if (item.Value is not UIView platformItem || platformItem.Hidden)
+								continue;
+
+							var measuredSize = platformItem.SizeThatFits(
+								new CGSize(contentWidth, contentHeight));
+							totalWidth += measuredSize.Width;
+							visibleItemCount++;
 						}
 
-						swipeItemWidth = totalWidth > contentWidth ? contentWidth / items.Count : totalWidth / items.Count;
+						if (visibleItemCount > 0)
+						{
+							swipeItemWidth = totalWidth > contentWidth
+								? contentWidth / visibleItemCount
+								: totalWidth / visibleItemCount;
+						}
 					}
 
 					return new Size(
