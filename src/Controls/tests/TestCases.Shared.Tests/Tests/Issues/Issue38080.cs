@@ -21,16 +21,15 @@ public class Issue38080 : _IssuesUITest
 		App.Tap("Issue38080NavigateButton");
 		App.WaitForElement("Issue38080Ready");
 
-		// Fling to the top extreme: the WebView is off-screen below the fold and the
+		// Overscroll at the top extreme: the WebView is off-screen below the fold and the
 		// ScrollView overscrolls past its top edge.
 		for (int i = 0; i < 6; i++)
-			App.ScrollDown("Issue38080ScrollView", ScrollStrategy.Gesture, 0.9, 100);
-
-		// Fling to the bottom extreme: the WebView is off-screen above the fold and the
-		// ScrollView overscrolls past its bottom edge.
-		for (int i = 0; i < 15; i++)
 			App.ScrollUp("Issue38080ScrollView", ScrollStrategy.Gesture, 0.9, 100);
 
+		// Scroll/overscroll at the bottom extreme: the WebView is off-screen above the fold and the
+		// ScrollView overscrolls past its bottom edge.
+		for (int i = 0; i < 15; i++)
+			App.ScrollDown("Issue38080ScrollView", ScrollStrategy.Gesture, 0.9, 100);
 		// The WebView is now off-screen at the bottom; back navigation also reproduced the
 		// RenderThread crash while compositing. Assert we returned to the home page alive.
 		App.Back();
