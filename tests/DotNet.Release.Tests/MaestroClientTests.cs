@@ -96,8 +96,8 @@ public class MaestroClientTests
     // ---- end-to-end through build resolution ----
 
     /// <summary>
-    /// The production shape for SkiaSharp build 328857: BAR has no GitHub URL, and identity
-    /// is still established and verified from the Azure DevOps mirror.
+    /// BAR may have no GitHub URL, so the current renamed identity must still be established
+    /// and verified from the Azure DevOps mirror.
     /// </summary>
     [Fact]
     public async Task Null_github_repository_resolves_and_verifies_end_to_end()
@@ -107,11 +107,7 @@ public class MaestroClientTests
         {
           "schemaVersion": 1,
           "repositories": {
-            "mono/skiasharp": {
-              "workload": false,
-              "barRepositoryAliases": [ "dotnet/skiasharp" ],
-              "channel": { "name": ".NET Libraries", "id": 1648 }
-            }
+            "mono/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
           }
         }
         """);
@@ -120,14 +116,14 @@ public class MaestroClientTests
             azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp",
             channels: [(1648, ".NET Libraries")]));
 
-        var builds = await new MaestroClient(fake).GetBuildAsync(328857, CancellationToken.None);
+        var builds = await new MaestroClient(fake).GetBuildAsync(4242, CancellationToken.None);
 
         var resolved = BuildResolver.Resolve(
-            new ReleaseRequest(skia, Commit: null, BarBuildId: 328857), policy.GetRepository(skia), builds);
+            new ReleaseRequest(skia, Commit: null, BarBuildId: 4242), policy.GetRepository(skia), builds);
 
         Assert.Equal("mono/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
-        Assert.Equal(328857, resolved.BarBuildId);
+        Assert.Equal(4242, resolved.BarBuildId);
     }
 
     [Fact]

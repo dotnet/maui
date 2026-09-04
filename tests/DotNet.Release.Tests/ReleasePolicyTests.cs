@@ -41,16 +41,6 @@ public class ReleasePolicyTests
     }
 
     [Fact]
-    public void Historical_BAR_repository_alias_is_not_a_separate_releasable_repository()
-    {
-        var policy = TestData.Policy().GetRepository(TestData.Repo("mono/skiasharp"));
-
-        Assert.Equal([TestData.Repo("dotnet/skiasharp")], policy.BarRepositoryAliases);
-        Assert.True(policy.MatchesBarRepository(TestData.Repo("dotnet/skiasharp")));
-        Assert.Throws<DotNetReleaseException>(() => TestData.Policy().GetRepository(TestData.Repo("dotnet/skiasharp")));
-    }
-
-    [Fact]
     public void Unconfigured_workload_band_fails_closed()
     {
         Assert.Throws<DotNetReleaseException>(() => TestData.Policy().GetWorkloadSet(99));
@@ -140,54 +130,10 @@ public class ReleasePolicyTests
 
         var skiaSharp = policy.GetRepository(TestData.Repo("mono/skiasharp"));
         Assert.Equal(new ChannelReference(".NET Libraries", 1648), skiaSharp.Channel);
-        Assert.True(skiaSharp.MatchesBarRepository(TestData.Repo("dotnet/skiasharp")));
 
         foreach (var band in new[] { 8, 9, 10, 11 })
         {
             Assert.Equal(band, policy.GetWorkloadSet(band).Band);
         }
-    }
-
-    [Theory]
-    [InlineData("mono/skiasharp")]
-    [InlineData("not-a-repository")]
-    public void Invalid_BAR_repository_alias_is_rejected(string alias)
-    {
-        var exception = Assert.Throws<DotNetReleaseException>(() => ReleasePolicy.Parse($$"""
-        {
-          "schemaVersion": 1,
-          "repositories": {
-            "mono/skiasharp": {
-              "workload": false,
-              "barRepositoryAliases": [ "{{alias}}" ],
-              "channel": { "name": ".NET Libraries", "id": 1648 }
-            }
-          }
-        }
-        """));
-
-        Assert.Contains("alias", exception.Message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public void BAR_repository_alias_cannot_belong_to_multiple_policies()
-    {
-        var exception = Assert.Throws<DotNetReleaseException>(() => ReleasePolicy.Parse("""
-        {
-          "schemaVersion": 1,
-          "repositories": {
-            "mono/skiasharp": {
-              "workload": false,
-              "barRepositoryAliases": [ "dotnet/skiasharp" ]
-            },
-            "dotnet/other": {
-              "workload": false,
-              "barRepositoryAliases": [ "dotnet/skiasharp" ]
-            }
-          }
-        }
-        """));
-
-        Assert.Contains("assigned to both", exception.Message, StringComparison.Ordinal);
     }
 }

@@ -14,7 +14,6 @@
     },
     "mono/skiasharp": {
       "workload": false,
-      "barRepositoryAliases": [ "dotnet/skiasharp" ],
       "channel": { "name": ".NET Libraries", "id": 1648 }
     }
   },

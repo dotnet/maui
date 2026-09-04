@@ -84,11 +84,7 @@ internal sealed class Workspace : IDisposable
       "schemaVersion": 1,
       "repositories": {
         "dotnet/maui": { "workload": true },
-        "mono/skiasharp": {
-          "workload": false,
-          "barRepositoryAliases": [ "dotnet/skiasharp" ],
-          "channel": { "name": ".NET Libraries", "id": 1648 }
-        }
+        "mono/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
       },
       "workloadSets": {
         "10": { "channel": ".NET 10 Workload Release", "feed": "dotnet10-workloads" }

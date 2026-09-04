@@ -16,11 +16,7 @@ internal static class TestData
       "repositories": {
         "dotnet/maui": { "workload": true },
         "dotnet/android-libraries": { "workload": false, "channel": { "name": ".NET 10", "id": 5172 } },
-        "mono/skiasharp": {
-          "workload": false,
-          "barRepositoryAliases": [ "dotnet/skiasharp" ],
-          "channel": { "name": ".NET Libraries", "id": 1648 }
-        }
+        "mono/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
       },
       "workloadSets": {
         "10": { "channel": ".NET 10 Workload Release", "feed": "dotnet10-workloads" }

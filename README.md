@@ -43,10 +43,6 @@ Add it to `config/repositories.json` and to the full-name `repository` dropdown 
 `eng/pipelines/ci-official-release.yml`. Workload classification comes only from the config.
 A test fails the build if the dropdown and policy disagree.
 
-When BAR may report an older repository identity after a rename, list it under
-`barRepositoryAliases` on the canonical policy entry. Aliases are accepted only while
-validating BAR results; they are not separate choices in the run dialog.
-
 ## How it works
 
 ```

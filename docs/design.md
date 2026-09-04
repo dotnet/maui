@@ -348,7 +348,6 @@ before BAR or package work begins.
     "dotnet/maui": { "workload": true },
     "mono/skiasharp": {
       "workload": false,
-      "barRepositoryAliases": [ "dotnet/skiasharp" ],
       "channel": { "name": ".NET Libraries", "id": 1648 }
     }
   },
@@ -363,11 +362,6 @@ before BAR or package work begins.
 
 For repositories with a required channel, both the case-sensitive channel name and numeric
 ID MUST match exactly once.
-
-`barRepositoryAliases` handles repository renames without exposing stale identities as
-separate release choices. The selected repository and release manifest always use the
-canonical policy key; aliases are accepted only when matching the repository identity returned
-by BAR. An alias cannot duplicate a canonical repository or belong to multiple policies.
 
 Channel verification establishes a property distinct from source identity:
 
@@ -431,19 +425,15 @@ URL. Accepted variations include:
 
 Other hosts are rejected.
 
-BAR can store `gitHubRepository: null`. This is a real production shape, including
-SkiaSharp BAR build 328857. In that case, identity is derived from the Azure DevOps mirror
-name using Arcade's convention:
+BAR can store `gitHubRepository: null`. In that case, identity is derived from the Azure
+DevOps mirror name using Arcade's convention:
 
 ```text
-mono-SkiaSharp   -> mono/skiasharp
-dotnet-SkiaSharp -> dotnet/skiasharp (historical policy alias)
+mono-SkiaSharp -> mono/skiasharp
 ```
 
 The first hyphen separates owner and repository. A value that does not follow this
-convention fails with an explicit mirror-identity error. Policy maps the historical
-`dotnet/skiasharp` identity to canonical `mono/skiasharp`, so BAR builds from either side of
-the mirror rename can be released through the single `mono/skiasharp` picker entry.
+convention fails with an explicit mirror-identity error.
 
 The resolve log records whether identity came from `GitHubRepository` or
 `AzureDevOpsMirrorConvention`; this diagnostic does not need to cross job boundaries.
@@ -554,7 +544,7 @@ package's identity, file name, hash, and final disposition.
     "repository": "mono/skiasharp",
     "repositoryUrl": "https://github.com/mono/skiasharp",
     "commit": "<full-sha>",
-    "barBuildId": 328857,
+    "barBuildId": 123456,
     "repositoryOrigin": "AzureDevOpsMirrorConvention",
     "workload": false,
     "channel": { "name": ".NET Libraries", "id": 1648 }

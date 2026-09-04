@@ -129,32 +129,6 @@ public class BuildResolverTests
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, result.RepositoryOrigin);
     }
 
-    [Theory]
-    [InlineData("https://github.com/dotnet/skiasharp", null)]
-    [InlineData(null, "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp")]
-    public void Historical_repository_identity_resolves_to_the_canonical_repository(string? gitHubRepository, string? azureDevOpsRepository)
-    {
-        var result = Resolve([TestData.Build(
-            gitHubRepository: gitHubRepository,
-            azureDevOpsRepository: azureDevOpsRepository,
-            channels: Libraries)]);
-
-        Assert.Equal("mono/skiasharp", result.Repository);
-        Assert.Equal("https://github.com/mono/skiasharp", result.RepositoryUrl);
-    }
-
-    [Fact]
-    public void Historical_mirror_alias_can_be_selected_by_commit()
-    {
-        var request = new ReleaseRequest(TestData.Repo("mono/skiasharp"), TestData.Commit, BarBuildId: null);
-        var result = Resolve([TestData.Build(gitHubRepository: null,
-            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp",
-            channels: Libraries)], request);
-
-        Assert.Equal(4242, result.BarBuildId);
-        Assert.Equal("mono/skiasharp", result.Repository);
-    }
-
     [Fact]
     public void Mirror_fallback_still_verifies_the_repository()
     {
