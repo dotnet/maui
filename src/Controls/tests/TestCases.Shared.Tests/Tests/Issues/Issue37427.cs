@@ -37,23 +37,69 @@ public class Issue37427 : _IssuesUITest
 		Assert.That(previews.Select(preview => preview.card), Has.Some.GreaterThanOrEqualTo(7),
 			"Expected at least one card realized beyond the initial viewport.");
 
+		foreach (var (card, _) in previews)
+		{
+			for (var column = 0; column < 5; column++)
+			{
+				var colorBounds = App.WaitForElement($"37427Card{card}Color{column}").GetRect();
+				Assert.That(colorBounds.Width, Is.GreaterThan(0),
+					$"Card {card}, preview column {column} should have positive width.");
+				Assert.That(colorBounds.Height, Is.GreaterThan(0),
+					$"Card {card}, preview column {column} should have positive height.");
+			}
+		}
+
+		previews = previews
+			.Select(preview => (preview.card, rect: App.WaitForElement($"37427Card{preview.card}PreviewColors").GetRect()))
+			.ToArray();
+
 		using var screenshot = new MagickImage(App.Screenshot());
-		// Screenshots use native pixels while Appium rectangles use points.
-		var scaleX = (double)screenshot.Width / window.Width;
-		var scaleY = (double)screenshot.Height / window.Height;
+		double scaleX;
+		double scaleY;
+#if MACCATALYST
+		// The Mac2 driver captures the desktop and reports absolute desktop coordinates.
+		scaleX = 1;
+		scaleY = 1;
+		Assert.That(
+			window.X >= 0 &&
+			window.Y >= 0 &&
+			window.X + window.Width <= screenshot.Width &&
+			window.Y + window.Height <= screenshot.Height,
+			Is.True,
+			$"Expected the Appium window to fit inside the desktop screenshot, but got " +
+			$"window={window}, image={screenshot.Width}x{screenshot.Height}.");
+#else
+		// iOS screenshots use native pixels while Appium rectangles use full-screen points.
+		Assert.That(window.X, Is.Zero);
+		Assert.That(window.Y, Is.Zero);
+		scaleX = (double)screenshot.Width / window.Width;
+		scaleY = (double)screenshot.Height / window.Height;
 		Assert.That(scaleX, Is.EqualTo(scaleY).Within(0.05),
 			$"Expected the Appium window to use the screenshot's full-screen coordinate space, but got " +
 			$"window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
+#endif
 		using var pixels = screenshot.GetPixels();
 
 		foreach (var (card, preview) in previews)
 		{
+			Assert.That(
+				preview.X >= window.X &&
+				preview.Y >= window.Y &&
+				preview.X + preview.Width <= window.X + window.Width &&
+				preview.Y + preview.Height <= window.Y + window.Height,
+				Is.True,
+				$"Card {card} preview {preview} should be contained in the Appium window {window}.");
+
 			for (var column = 0; column < 5; column++)
 			{
 				var x = (int)((preview.X + preview.Width * (column + 0.5) / 5) * scaleX);
 				var y = (int)((preview.Y + preview.Height / 2) * scaleY);
-				Assert.That(x, Is.InRange(0, (int)screenshot.Width - 1));
-				Assert.That(y, Is.InRange(0, (int)screenshot.Height - 1));
+				Assert.That(x, Is.InRange(0, (int)screenshot.Width - 1),
+					$"Card {card}, preview column {column} mapped outside screenshot width; " +
+					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
+				Assert.That(y, Is.InRange(0, (int)screenshot.Height - 1),
+					$"Card {card}, preview column {column} mapped outside screenshot height; " +
+					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
 
 				var color = pixels.GetPixel(x, y).ToColor();
 				Assert.That(color, Is.Not.Null);
@@ -74,10 +120,6 @@ public class Issue37427 : _IssuesUITest
 				Assert.That(isExpectedColor, Is.True,
 					$"Card {card}, preview column {column} should contain its expected rendered color, but sampled {color} at ({x},{y}); " +
 					$"preview={preview}, window={window}, image={screenshot.Width}x{screenshot.Height}, scale={scaleX}x{scaleY}.");
-
-				var colorBounds = App.WaitForElement($"37427Card{card}Color{column}").GetRect();
-				Assert.That(colorBounds.Width, Is.GreaterThan(0));
-				Assert.That(colorBounds.Height, Is.GreaterThan(0));
 			}
 		}
 	}
