@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	/// <summary>
-	/// Regression tests for the initial-connect/reconnect de-duplication of the
-	/// <c>BackgroundColor</c>, <c>BackgroundImageSource</c>, and <c>SemanticProperties.*</c> mapper
-	/// entries in <see cref="VisualElement"/>.RemapForControls (see VisualElement.Mapper.cs). The
-	/// de-duplication is scoped to one specific bulk <c>UpdateProperties</c> pass - identified via
-	/// <see cref="Microsoft.Maui.PropertyMapperPassScope"/>'s per-handler pass id, not merely to "the next
-	/// time this key happens to run" - so it never suppresses an explicit/reentrant call, a same-value
-	/// call, a call made before the canonical `Background`/`Semantics` mapping has ever run, a call made on
-	/// a subsequent connect/reconnect, a call triggered by `Background`/`Semantics` running *outside* of any
-	/// bulk pass (e.g. a platform mapper reacting to some unrelated property by directly calling
-	/// `Handler.UpdateValue(nameof(Background))`/`nameof(Semantics))`, mirroring
-	/// `PickerHandler.Windows.MapTitle`), or a call whose armed pass was aborted by an exception.
+	/// Regression tests for the bulk-pass de-duplication of the <c>BackgroundColor</c>,
+	/// <c>BackgroundImageSource</c>, and <c>SemanticProperties.*</c> mapper entries in
+	/// <see cref="VisualElement"/>.RemapForControls (see VisualElement.Mapper.cs). Each of those keys is a
+	/// pure redirect into the canonical <c>Background</c>/<c>Semantics</c> key, and is registered after it,
+	/// so its own step of a bulk <c>UpdateProperties</c> pass is provably redundant. Exactly that one step
+	/// is skipped, via <see cref="Microsoft.Maui.PropertyMapperPassScope"/>.
+	/// <para>
+	/// The de-duplication is deliberately independent of <em>which</em> mapping the canonical key resolves
+	/// to, so it behaves identically when a real derived handler (ButtonHandler, PageHandler, ...) owns and
+	/// overrides that key. And it never suppresses anything else: not an explicit or re-entrant call, a
+	/// same-value call, a call made before the canonical mapping has ever run, a call made while a nested
+	/// pass is on top, a call triggered by `Background`/`Semantics` running outside of any bulk pass (e.g.
+	/// `PickerHandler.Windows.MapTitle`), nor a call made after a pass was aborted by an exception.
+	/// </para>
 	/// </summary>
 	public class VisualElementMapperTests : BaseTestFixture
 	{
@@ -506,9 +510,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		// De-duplication must be scoped to *this specific* bulk UpdateProperties pass, not to "the next
 		// time Background happens to run" regardless of context. If Background is (re)mapped by something
 		// standalone, entirely outside of any bulk pass (e.g. a direct Handler.UpdateValue(nameof(Background))
-		// call made well after connect has finished), that must not arm a pending skip at all - there is no
-		// guarantee whatsoever that BackgroundColor's own redirect turn is still coming, so a later,
-		// completely unrelated BackgroundColor update must still apply.
+		// call made well after connect has finished), nothing becomes skippable - there is no bulk pass in
+		// which BackgroundColor's own redirect turn is still coming, so a later, completely unrelated
+		// BackgroundColor update must still apply.
 		[Fact]
 		public void DirectBackgroundUpdateOutsideBulkPass_DoesNotSuppressLaterUnrelatedBackgroundColorUpdate()
 		{
@@ -581,12 +585,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, semanticsCalls);
 		}
 
-		// If a bulk UpdateProperties pass is aborted by an exception after Background has armed a pending
-		// skip but before BackgroundColor's redirect has had a chance to consume it, that pending mark must
-		// become permanently inert - it must never be honored by a later, unrelated BackgroundColor update
-		// made outside of the (now-ended) pass that armed it.
+		// If a bulk UpdateProperties pass is aborted by an exception after Background has been mapped but
+		// before BackgroundColor's redirect turn is ever reached, the pass must be popped on the way out -
+		// so a later, unrelated BackgroundColor update made outside of that (now-ended) pass can never be
+		// mistaken for its skippable turn.
 		[Fact]
-		public void ExceptionDuringBulkPass_DoesNotLeaveStalePendingSkipForLaterUnrelatedUpdate()
+		public void ExceptionDuringBulkPass_DoesNotLeaveAStaleActivePassForLaterUnrelatedUpdate()
 		{
 			int backgroundCalls = 0;
 
@@ -607,18 +611,273 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var handlerStub = new HandlerStub(mapper, commandMapper);
 			var button = new Button { BackgroundColor = Colors.Red };
 
-			// The bulk pass aborts partway through: Background has already mapped (and armed
-			// BackgroundColor/BackgroundImageSource's pending skip for this pass), but the pass ends -
+			// The bulk pass aborts partway through: Background has already been mapped, but the pass ends -
 			// via PropertyMapper.UpdateProperties' finally - before BackgroundColor's own redirect turn is
 			// ever reached.
 			Assert.Throws<InvalidOperationException>(() => handlerStub.SetVirtualView(button));
 			Assert.Equal(1, backgroundCalls);
 
 			// A later, unrelated explicit BackgroundColor update - entirely outside of the aborted pass -
-			// must still apply. The pending mark armed by the aborted pass can never match again, since
-			// PropertyMapperPassScope no longer reports that pass as current for this handler.
+			// must still apply, since PropertyMapperPassScope no longer reports any pass as current for
+			// this handler.
 			handlerStub.UpdateValue(nameof(VisualElement.BackgroundColor));
 			Assert.Equal(2, backgroundCalls);
+		}
+
+		// Most real handlers (ButtonHandler, PageHandler/ContentViewHandler, LabelHandler, EntryHandler,
+		// LayoutHandler, ...) declare their *own* `Background` key, which shadows ViewHandler.ViewMapper's
+		// entry entirely. The de-duplication must therefore never depend on wrapping/observing the
+		// canonical mapping itself - it only depends on the canonical key having already had its turn
+		// earlier in the same bulk pass, whichever mapping that key resolves to.
+		//
+		// Note that VisualElement.RemapForControls is deliberately *not* applied to the mappers built
+		// below: the Controls redirect keys reach them through the chained, globally-remapped
+		// ViewHandler.ViewMapper, exactly as they do for every real handler at runtime.
+
+		[Fact]
+		public void RealDerivedHandlerMappers_MapCanonicalKeysBeforeTheControlsRedirectKeys()
+		{
+			var mappers = new (string Name, IPropertyMapper Mapper)[]
+			{
+				(nameof(ButtonHandler), ButtonHandler.Mapper),
+				(nameof(PageHandler), PageHandler.Mapper),
+				(nameof(ContentViewHandler), ContentViewHandler.Mapper),
+				(nameof(LabelHandler), LabelHandler.Mapper),
+				(nameof(EntryHandler), EntryHandler.Mapper),
+				(nameof(LayoutHandler), LayoutHandler.Mapper),
+				(nameof(ImageHandler), ImageHandler.Mapper),
+			};
+
+			foreach (var (name, mapper) in mappers)
+			{
+				var keys = mapper.GetKeys().Distinct().ToList();
+
+				var backgroundIndex = keys.IndexOf(nameof(IView.Background));
+				var semanticsIndex = keys.IndexOf(nameof(IView.Semantics));
+
+				Assert.True(backgroundIndex >= 0, $"{name} is missing the Background key.");
+				Assert.True(semanticsIndex >= 0, $"{name} is missing the Semantics key.");
+
+				foreach (var redirectKey in new[] { nameof(VisualElement.BackgroundColor), nameof(Page.BackgroundImageSource) })
+				{
+					var redirectIndex = keys.IndexOf(redirectKey);
+					Assert.True(redirectIndex >= 0, $"{name} is missing the {redirectKey} key.");
+					Assert.True(backgroundIndex < redirectIndex, $"{name} maps {redirectKey} before Background.");
+				}
+
+				foreach (var redirectKey in new[]
+				{
+					SemanticProperties.DescriptionProperty.PropertyName,
+					SemanticProperties.HintProperty.PropertyName,
+					SemanticProperties.HeadingLevelProperty.PropertyName,
+				})
+				{
+					var redirectIndex = keys.IndexOf(redirectKey);
+					Assert.True(redirectIndex >= 0, $"{name} is missing the {redirectKey} key.");
+					Assert.True(semanticsIndex < redirectIndex, $"{name} maps {redirectKey} before Semantics.");
+				}
+			}
+		}
+
+		[Fact]
+		public void RealDerivedButtonHandler_OwningBackgroundMapping_MapsBackgroundExactlyOnceOnConnect()
+		{
+			int backgroundCalls = 0;
+			Paint capturedBackground = null;
+
+			var mapper = new PropertyMapper<IButton, IButtonHandler>(ButtonHandler.Mapper)
+			{
+				[nameof(IButton.Background)] = (h, v) =>
+				{
+					backgroundCalls++;
+					capturedBackground = v.Background;
+				},
+			};
+
+			var handler = new DerivedButtonHandlerStub(mapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+
+			handler.SetVirtualView(button);
+
+			Assert.Equal(1, backgroundCalls);
+			var paint = Assert.IsType<SolidPaint>(capturedBackground);
+			Assert.Equal(Colors.Red, paint.Color);
+		}
+
+		[Fact]
+		public void RealDerivedButtonHandler_OwningBackgroundMapping_MapsSemanticsExactlyOnceOnConnect()
+		{
+			int semanticsCalls = 0;
+			Semantics capturedSemantics = null;
+
+			var mapper = new PropertyMapper<IButton, IButtonHandler>(ButtonHandler.Mapper)
+			{
+				[nameof(IButton.Background)] = (h, v) => { },
+				[nameof(IView.Semantics)] = (h, v) =>
+				{
+					semanticsCalls++;
+					capturedSemantics = v.Semantics;
+				},
+			};
+
+			var handler = new DerivedButtonHandlerStub(mapper);
+			var button = new Button();
+			SemanticProperties.SetDescription(button, "Submit order");
+
+			handler.SetVirtualView(button);
+
+			Assert.Equal(1, semanticsCalls);
+			Assert.Equal("Submit order", capturedSemantics?.Description);
+		}
+
+		[Fact]
+		public void RealDerivedPageHandler_OwningBackgroundMapping_MapsBackgroundExactlyOnceOnConnect()
+		{
+			int backgroundCalls = 0;
+			Paint capturedBackground = null;
+
+			// Mirrors PageHandler on iOS/Tizen, where the page handler's own mapper owns Background.
+			var mapper = new PropertyMapper<IContentView, IPageHandler>(PageHandler.Mapper)
+			{
+				[nameof(IContentView.Background)] = (h, v) =>
+				{
+					backgroundCalls++;
+					capturedBackground = v.Background;
+				},
+			};
+
+			var handler = new DerivedPageHandlerStub(mapper);
+
+			// ContentPage.RemapForControls registers a HideSoftInputOnTapped mapping on PageHandler.Mapper
+			// that resolves a service off the handler, so a real page handler needs a MauiContext.
+			handler.SetMauiContext(new MauiContext(MauiApp.CreateBuilder().Build().Services));
+
+			var page = new ContentPage { BackgroundImageSource = ImageSource.FromFile("some_image.png") };
+
+			handler.SetVirtualView(page);
+
+			Assert.Equal(1, backgroundCalls);
+			Assert.IsType<ImageSourcePaint>(capturedBackground);
+		}
+
+		[Fact]
+		public void RealDerivedButtonHandler_Reconnect_MapsBackgroundExactlyOncePerPass()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IButton, IButtonHandler>(ButtonHandler.Mapper)
+			{
+				[nameof(IButton.Background)] = (h, v) => backgroundCalls++,
+			};
+
+			var handler = new DerivedButtonHandlerStub(mapper);
+			handler.SetVirtualView(new Button { BackgroundColor = Colors.Red });
+			Assert.Equal(1, backgroundCalls);
+
+			// Handler reuse (CollectionView/CarouselView recycling, Shell tab switching): the same handler
+			// instance, whose platform view already exists, is bound to a new virtual view.
+			backgroundCalls = 0;
+			handler.SetVirtualView(new Button { BackgroundColor = Colors.Green });
+			Assert.Equal(1, backgroundCalls);
+		}
+
+		[Fact]
+		public void RealDerivedButtonHandler_DynamicBackgroundColorChangeAfterConnect_StillApplies()
+		{
+			int backgroundCalls = 0;
+
+			var mapper = new PropertyMapper<IButton, IButtonHandler>(ButtonHandler.Mapper)
+			{
+				[nameof(IButton.Background)] = (h, v) => backgroundCalls++,
+			};
+
+			var handler = new DerivedButtonHandlerStub(mapper);
+			var button = new Button { BackgroundColor = Colors.Red };
+			handler.SetVirtualView(button);
+
+			// The handler is fully connected now, so a dynamic change - and an explicit same-value update
+			// after it - must both still reach the derived handler's own Background mapping.
+			backgroundCalls = 0;
+			button.BackgroundColor = Colors.Purple;
+			Assert.Equal(1, backgroundCalls);
+
+			handler.UpdateValue(nameof(VisualElement.BackgroundColor));
+			Assert.Equal(2, backgroundCalls);
+		}
+
+		// A mapper that runs a *nested* bulk pass on the same handler (mid-pass) must not destroy the outer
+		// pass's scope: once the nested pass ends, the outer pass's remaining redirect turns are still
+		// provably redundant and must still be skipped.
+		[Fact]
+		public void NestedSameHandlerPass_RestoresOuterPassScope_AndOuterRedirectsStayDeduplicated()
+		{
+			int outerBackgroundCalls = 0;
+			int nestedBackgroundCalls = 0;
+
+			var nestedCommandMapper = new CommandMapper<IView, IViewHandler>();
+			var nestedMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, v) => nestedBackgroundCalls++,
+			};
+			VisualElement.RemapForControls(nestedMapper, nestedCommandMapper);
+
+			// "__NestedPass" is inserted (via the object initializer, before RemapForControls runs) between
+			// Background and the redirect keys RemapForControls appends afterwards, so the nested pass runs
+			// *inside* the outer one - after Background has had its turn, but before BackgroundColor gets
+			// its own.
+			var commandMapper = new CommandMapper<IView, IViewHandler>();
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, v) => outerBackgroundCalls++,
+				["__NestedPass"] = (h, v) => nestedMapper.UpdateProperties(h, v),
+			};
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			handlerStub.SetVirtualView(new Button { BackgroundColor = Colors.Red });
+
+			// The nested pass deduplicates within itself, and the outer pass's own BackgroundColor/
+			// BackgroundImageSource turns are still skipped after it returns.
+			Assert.Equal(1, nestedBackgroundCalls);
+			Assert.Equal(1, outerBackgroundCalls);
+		}
+
+		// While a nested bulk pass for a *different* handler is on top, a redirect update targeting the
+		// outer handler is not that handler's own pass turn and must therefore still be applied.
+		[Fact]
+		public void NestedPassForAnotherHandler_DoesNotSuppressOuterHandlersRedirectUpdate()
+		{
+			int outerBackgroundCalls = 0;
+
+			var otherCommandMapper = new CommandMapper<IView, IViewHandler>();
+			var otherMapper = new PropertyMapper<IView, IViewHandler>();
+			var otherHandler = new HandlerStub(otherMapper, otherCommandMapper);
+			otherHandler.SetVirtualView(new Button());
+
+			var commandMapper = new CommandMapper<IView, IViewHandler>();
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				[nameof(IView.Background)] = (h, v) => outerBackgroundCalls++,
+			};
+			VisualElement.RemapForControls(mapper, commandMapper);
+
+			// Runs after every key RemapForControls appends, so the outer pass has already skipped its own
+			// BackgroundColor turn by the time this runs.
+			mapper.Add("__NestedPassForAnotherHandler", (h, v) =>
+			{
+				otherMapper.UpdateProperties(otherHandler, otherHandler.VirtualView);
+
+				// An explicit redirect update for *our* handler, issued from a step that is not that
+				// redirect key's own turn, must be honored - the nested pass must not have left anything
+				// behind that makes it look skippable.
+				h.UpdateValue(nameof(VisualElement.BackgroundColor));
+			});
+
+			var handlerStub = new HandlerStub(mapper, commandMapper);
+			handlerStub.SetVirtualView(new Button { BackgroundColor = Colors.Red });
+
+			// Once for the canonical Background key, once for the explicit redirect update above.
+			Assert.Equal(2, outerBackgroundCalls);
 		}
 
 		class PageHandlerStub : ViewHandler<ContentPage, object>
@@ -646,6 +905,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				// before the Background key has ever been mapped for this element/handler.
 				UpdateValue(nameof(VisualElement.BackgroundColor));
 			}
+		}
+
+		class DerivedButtonHandlerStub : ButtonHandler
+		{
+			public DerivedButtonHandlerStub(IPropertyMapper mapper) : base(mapper)
+			{
+			}
+
+			protected override object CreatePlatformView() => new object();
+		}
+
+		class DerivedPageHandlerStub : PageHandler
+		{
+			public DerivedPageHandlerStub(IPropertyMapper mapper) : base(mapper)
+			{
+			}
+
+			protected override object CreatePlatformView() => new object();
 		}
 	}
 }

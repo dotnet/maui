@@ -87,10 +87,8 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotEqual(passIdDuringA, passIdDuringSecondPass);
 		}
 
-		// Even if a mapper throws partway through a bulk pass, the pass must be considered over - so any
-		// pass-scoped state a mapper implementation recorded against that pass's id (e.g. a "skip the next
-		// redundant redirected call" mark) can never again be matched once the pass has ended, whether it
-		// ended normally or via exception.
+		// Even if a mapper throws partway through a bulk pass, the pass must be popped on the way out, so
+		// nothing that ran within it can ever again be mistaken for a step of a still-running pass.
 		[Fact]
 		public void UpdatePropertiesPassScopeIsClearedInFinallyWhenAMapperThrows()
 		{
@@ -110,6 +108,269 @@ namespace Microsoft.Maui.UnitTests
 			Assert.NotEqual(0, passIdBeforeThrow);
 
 			// The aborted pass must not be left "active" - a later caller must see no active pass.
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+		}
+
+		// The pass scope is a stack: a nested UpdateProperties pass - on the same handler or on another
+		// one - must restore the pass that enclosed it when it ends, so the outer pass keeps running with
+		// its own identity and its own "current key" position.
+		[Fact]
+		public void NestedPassOnTheSameHandlerRestoresTheOuterPassWhenItEnds()
+		{
+			var handler = new HandlerStub();
+			var view = new Button();
+
+			int outerPassId = 0;
+			int innerPassId = 0;
+			int outerPassIdAfterNesting = 0;
+
+			var innerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["Inner"] = (h, v) => innerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+
+			var outerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["Nest"] = (h, v) => innerMapper.UpdateProperties(h, v),
+				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+
+			outerMapper.UpdateProperties(handler, view);
+
+			Assert.NotEqual(0, outerPassId);
+			Assert.NotEqual(0, innerPassId);
+			Assert.NotEqual(outerPassId, innerPassId);
+
+			// The outer pass must be exactly the same pass it was before the nested one ran.
+			Assert.Equal(outerPassId, outerPassIdAfterNesting);
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+		}
+
+		// A nested pass on a *different* handler must not make the outer handler's pass look current while
+		// it runs, and must restore it once it is done.
+		[Fact]
+		public void NestedPassOnAnotherHandlerDoesNotLeakOrClobberTheOuterHandlersPass()
+		{
+			var outerHandler = new HandlerStub();
+			var innerHandler = new HandlerStub();
+			var view = new Button();
+
+			int outerPassId = 0;
+			int outerPassIdSeenFromInnerPass = -1;
+			int outerPassIdAfterNesting = 0;
+
+			var innerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["Inner"] = (h, v) => outerPassIdSeenFromInnerPass = PropertyMapperPassScope.GetCurrentPassId(outerHandler),
+			};
+
+			var outerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["Nest"] = (h, v) => innerMapper.UpdateProperties(innerHandler, v),
+				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+
+			outerMapper.UpdateProperties(outerHandler, view);
+
+			Assert.NotEqual(0, outerPassId);
+			Assert.Equal(0, outerPassIdSeenFromInnerPass);
+			Assert.Equal(outerPassId, outerPassIdAfterNesting);
+		}
+
+		// A nested pass aborted by an exception must still restore the enclosing pass on the way out.
+		[Fact]
+		public void NestedPassThatThrowsStillRestoresTheOuterPass()
+		{
+			var handler = new HandlerStub();
+			var view = new Button();
+
+			int outerPassId = 0;
+			int outerPassIdAfterNesting = 0;
+
+			var innerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["Throws"] = (h, v) => throw new InvalidOperationException("Simulated nested mapper failure"),
+			};
+
+			var outerMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["Nest"] = (h, v) =>
+				{
+					Assert.Throws<InvalidOperationException>(() => innerMapper.UpdateProperties(h, v));
+				},
+				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
+			};
+
+			outerMapper.UpdateProperties(handler, view);
+
+			Assert.NotEqual(0, outerPassId);
+			Assert.Equal(outerPassId, outerPassIdAfterNesting);
+			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+		}
+
+		// A bulk pass must report the key it is currently mapping, which is what lets a redirect mapping
+		// recognize its own - provably redundant - turn within the pass.
+		[Fact]
+		public void BulkPassReportsTheKeyCurrentlyBeingMapped()
+		{
+			var handler = new HandlerStub();
+			var view = new Button();
+			var observed = new List<string>();
+
+			var mapper = new PropertyMapper<IView, IViewHandler>();
+			foreach (var key in new[] { "A", "B", "C" })
+			{
+				mapper.Add(key, (h, v) =>
+				{
+					var pass = PropertyMapperPassScope.Current;
+					observed.Add(pass!.Keys![pass.CurrentKeyIndex]);
+				});
+			}
+
+			mapper.UpdateProperties(handler, view);
+
+			Assert.Equal(new[] { "A", "B", "C" }, observed);
+			Assert.Null(PropertyMapperPassScope.Current);
+		}
+
+		// IsRedundantBulkPassRedirect is the primitive the Controls-side redirects are built on: it must be
+		// true *only* on the redirect key's own step of a bulk pass for that same handler, and only when
+		// the canonical key already had its turn earlier in the very same pass.
+		[Fact]
+		public void IsRedundantBulkPassRedirectIsTrueOnlyOnTheRedirectKeysOwnStepAfterTheCanonicalKey()
+		{
+			var handler = new HandlerStub();
+			var otherHandler = new HandlerStub();
+			var view = new Button();
+
+			var results = new List<bool>();
+			bool onRedirectStepForAnotherHandler = true;
+			bool onALaterUnrelatedStep = true;
+
+			PropertyMapper<IView, IViewHandler> mapper = null;
+			mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["Canonical"] = (h, v) => results.Add(PropertyMapperPassScope.IsRedundantBulkPassRedirect(h, "Redirect", "Canonical")),
+				["Redirect"] = (h, v) =>
+				{
+					results.Add(PropertyMapperPassScope.IsRedundantBulkPassRedirect(h, "Redirect", "Canonical"));
+					onRedirectStepForAnotherHandler = PropertyMapperPassScope.IsRedundantBulkPassRedirect(otherHandler, "Redirect", "Canonical");
+				},
+				["Later"] = (h, v) =>
+				{
+					onALaterUnrelatedStep = PropertyMapperPassScope.IsRedundantBulkPassRedirect(h, "Redirect", "Canonical");
+
+					// A re-entrant single-key update raised by a mapper running later in the same pass is
+					// not the redirect key's own pass step, so it must be honored.
+					mapper.UpdateProperty(h, v, "Redirect");
+				},
+			};
+
+			mapper.UpdateProperties(handler, view);
+
+			// Canonical's own step, Redirect's own step (redundant), and Redirect re-entered from Later.
+			Assert.Equal(new[] { false, true, false }, results);
+			Assert.False(onRedirectStepForAnotherHandler);
+			Assert.False(onALaterUnrelatedStep);
+
+			// Outside of any bulk pass there is nothing redundant to skip.
+			Assert.False(PropertyMapperPassScope.IsRedundantBulkPassRedirect(handler, "Redirect", "Canonical"));
+			Assert.False(PropertyMapperPassScope.IsRedundantBulkPassRedirect(null, "Redirect", "Canonical"));
+		}
+
+		// If the canonical key runs *after* the redirect key (or is missing entirely), the redirect is not
+		// redundant and must be applied - the de-duplication must never be able to drop the only chance a
+		// value had to reach the platform.
+		[Fact]
+		public void IsRedundantBulkPassRedirectIsFalseWhenTheCanonicalKeyDoesNotPrecedeTheRedirectKey()
+		{
+			var handler = new HandlerStub();
+			var view = new Button();
+
+			bool canonicalAfterRedirect = true;
+			bool canonicalMissing = true;
+
+			var reorderedMapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["Redirect"] = (h, v) => canonicalAfterRedirect = PropertyMapperPassScope.IsRedundantBulkPassRedirect(h, "Redirect", "Canonical"),
+				["Canonical"] = (h, v) => { },
+			};
+			reorderedMapper.UpdateProperties(handler, view);
+
+			var mapperWithoutCanonical = new PropertyMapper<IView, IViewHandler>
+			{
+				["Redirect"] = (h, v) => canonicalMissing = PropertyMapperPassScope.IsRedundantBulkPassRedirect(h, "Redirect", "Canonical"),
+			};
+			mapperWithoutCanonical.UpdateProperties(handler, view);
+
+			Assert.False(canonicalAfterRedirect);
+			Assert.False(canonicalMissing);
+		}
+
+		// Pass tracking is per-thread, so concurrent bulk passes - even for the very same handler - can
+		// never corrupt each other's state or throw. (The previous ConditionalWeakTable Remove/Add
+		// implementation could throw when two passes for one handler raced.)
+		[Fact]
+		public void ConcurrentBulkPassesForTheSameHandlerAreIndependentAndDoNotThrow()
+		{
+			var handler = new HandlerStub();
+			const int threadCount = 8;
+			const int iterations = 200;
+
+			var observedPassIds = new System.Collections.Concurrent.ConcurrentBag<int>();
+			var failures = new System.Collections.Concurrent.ConcurrentBag<Exception>();
+
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["A"] = (h, v) =>
+				{
+					var passId = PropertyMapperPassScope.GetCurrentPassId(h);
+					if (passId == 0)
+					{
+						throw new InvalidOperationException("A bulk pass must always be current while its own mappers run.");
+					}
+
+					observedPassIds.Add(passId);
+				},
+				["B"] = (h, v) => Assert.NotEqual(0, PropertyMapperPassScope.GetCurrentPassId(h)),
+			};
+
+			var threads = new System.Threading.Thread[threadCount];
+			for (int t = 0; t < threadCount; t++)
+			{
+				threads[t] = new System.Threading.Thread(() =>
+				{
+					try
+					{
+						// Each thread uses its own virtual view; only the handler (and therefore the pass
+						// bookkeeping that used to be keyed on it) is shared.
+						var view = new Button();
+						for (int i = 0; i < iterations; i++)
+						{
+							mapper.UpdateProperties(handler, view);
+						}
+					}
+					catch (Exception ex)
+					{
+						failures.Add(ex);
+					}
+				});
+				threads[t].Start();
+			}
+
+			foreach (var thread in threads)
+			{
+				thread.Join();
+			}
+
+			Assert.Empty(failures);
+
+			// Every pass got its own id, and none of them is left current on this thread.
+			Assert.Equal(threadCount * iterations, observedPassIds.Count);
+			Assert.Equal(threadCount * iterations, observedPassIds.Distinct().Count());
 			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
 		}
 
