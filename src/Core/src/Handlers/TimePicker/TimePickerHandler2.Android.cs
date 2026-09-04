@@ -167,6 +167,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
         var fragmentManager = fragmentActivity.SupportFragmentManager;
         if (fragmentManager is null || fragmentManager.IsStateSaved)
         {
+            UpdateIsOpenState(false);
             return;
         }
 
@@ -200,6 +201,7 @@ public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialT
             // strand the field focused with no dialog; restore the resting state and abort the open.
             _dialog = null;
             PlatformView?.ClearInputFocus();
+            UpdateIsOpenState(false);
             return;
         }
 

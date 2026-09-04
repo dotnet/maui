@@ -134,7 +134,6 @@ Microsoft.Maui.Platform.MauiMaterialTimePicker
 Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(Android.Content.Context! context) -> void
 Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.Platform.MauiShapeableImageView.MauiShapeableImageView(Android.Content.Context? context, bool useMaterial3) -> void
-Microsoft.Maui.Platform.MauiMaterialTimePicker.MauiMaterialTimePicker(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 Microsoft.Maui.PlatformDrawable
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformDrawable.PlatformDrawable(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void

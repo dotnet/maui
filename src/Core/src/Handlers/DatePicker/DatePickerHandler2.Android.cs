@@ -301,6 +301,7 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
             // strand the field focused with no dialog; restore the resting state and abort the open.
             _dialog = null;
             PlatformView?.ClearInputFocus();
+            UpdateIsOpenState(false);
             return;
         }
 
