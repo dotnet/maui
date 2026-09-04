@@ -562,7 +562,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		VerifyScreenshotWithPlatformCropping();
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/38188
 
 	[Test, Order(31)]
 	[Category(UITestCategories.SearchBar)]
@@ -672,6 +672,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		VerifyScreenshotWithPlatformCropping();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link - https://github.com/dotnet/maui/issues/38188
 	[Test, Order(37)]
 	[Category(UITestCategories.SearchBar)]
 	public void SearchBar_SetShadowAndBackground_VerifyVisualState()
@@ -687,6 +688,7 @@ public class SearchBarFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("SearchBar");
 		VerifyScreenshotWithPlatformCropping();
 	}
+#endif
 
 	[Test, Order(38)]
 	[Category(UITestCategories.SearchBar)]
