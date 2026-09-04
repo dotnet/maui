@@ -41,50 +41,57 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Equal(insertedProperties, updatedProperties);
 		}
 
-		// Regression test for PropertyMapperPassScope, the pass/generation-scoped tracking used by
-		// VisualElement's BackgroundColor/BackgroundImageSource/SemanticProperties mapper redirects to
-		// distinguish a genuine step of *this* bulk UpdateProperties pass from an unrelated single-key
-		// UpdateProperty call that merely happens to touch the same handler at a different time.
+		// Regression test for PropertyMapperPassScope, the bulk-pass tracking used by VisualElement's
+		// BackgroundColor/BackgroundImageSource/SemanticProperties mapper redirects to distinguish a
+		// genuine step of *this* bulk UpdateProperties pass from an unrelated single-key UpdateProperty
+		// call that merely happens to touch the same handler at a different time.
 		[Fact]
 		public void UpdatePropertiesPassScopeIsActiveDuringBulkPassAndClearedAfterward()
 		{
 			var handler = new HandlerStub();
-			int? passIdDuringA = null;
-			int? passIdDuringB = null;
+			var view = new ViewStub();
 
+			PropertyMapperPass passDuringA = null;
+			PropertyMapperPass passDuringB = null;
+			PropertyMapperPass passDuringStandaloneUpdate = null;
+			IElementHandler handlerDuringA = null;
+			int depthDuringA = -1;
+
+			// Frames are pooled and cleared when a pass ends, so anything other than their identity has to
+			// be read while the pass is still running.
 			var mapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["A"] = (h, v) => passIdDuringA = PropertyMapperPassScope.GetCurrentPassId(h),
-				["B"] = (h, v) => passIdDuringB = PropertyMapperPassScope.GetCurrentPassId(h),
+				["A"] = (h, v) =>
+				{
+					passDuringA = PropertyMapperPassScope.Current;
+					handlerDuringA = passDuringA.Handler;
+					depthDuringA = passDuringA.Depth;
+				},
+				["B"] = (h, v) => passDuringB = PropertyMapperPassScope.Current,
 			};
 
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			Assert.Null(PropertyMapperPassScope.Current);
 
-			mapper.UpdateProperties(handler, new Button());
+			mapper.UpdateProperties(handler, view);
 
-			// Both mappers ran as part of the very same bulk pass, so they must have observed the same,
-			// non-zero pass id.
-			Assert.NotNull(passIdDuringA);
-			Assert.NotEqual(0, passIdDuringA);
-			Assert.Equal(passIdDuringA, passIdDuringB);
+			// Both mappers ran as steps of the very same bulk pass, for this handler, at the outermost
+			// depth - so they must have observed one and the same live frame.
+			Assert.NotNull(passDuringA);
+			Assert.Same(passDuringA, passDuringB);
+			Assert.Same(handler, handlerDuringA);
+			Assert.Equal(0, depthDuringA);
 
-			// The pass must be considered over once UpdateProperties has returned.
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			// The pass must be over once UpdateProperties has returned, and the frame it used must no
+			// longer reference anything.
+			Assert.Null(PropertyMapperPassScope.Current);
+			Assert.Null(passDuringA.Handler);
+			Assert.Null(passDuringA.Keys);
 
-			// A later, standalone single-key update is not part of a bulk pass, so it must report no
-			// active pass at all - and must get a fresh id from a subsequent bulk pass, never reusing
-			// (or being confused with) the earlier one.
-			mapper.UpdateProperty(handler, new Button(), "A");
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
-
-			int? passIdDuringSecondPass = null;
-			var mapper2 = new PropertyMapper<IView, IViewHandler>
-			{
-				["A"] = (h, v) => passIdDuringSecondPass = PropertyMapperPassScope.GetCurrentPassId(h),
-			};
-			mapper2.UpdateProperties(handler, new Button());
-			Assert.NotNull(passIdDuringSecondPass);
-			Assert.NotEqual(passIdDuringA, passIdDuringSecondPass);
+			// A later, standalone single-key update is not part of a bulk pass at all.
+			mapper.Add("Standalone", (h, v) => passDuringStandaloneUpdate = PropertyMapperPassScope.Current);
+			mapper.UpdateProperty(handler, view, "Standalone");
+			Assert.Null(passDuringStandaloneUpdate);
+			Assert.Null(PropertyMapperPassScope.Current);
 		}
 
 		// Even if a mapper throws partway through a bulk pass, the pass must be popped on the way out, so
@@ -93,58 +100,79 @@ namespace Microsoft.Maui.UnitTests
 		public void UpdatePropertiesPassScopeIsClearedInFinallyWhenAMapperThrows()
 		{
 			var handler = new HandlerStub();
-			int? passIdBeforeThrow = null;
+			PropertyMapperPass passBeforeThrow = null;
 
 			var mapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["A"] = (h, v) => passIdBeforeThrow = PropertyMapperPassScope.GetCurrentPassId(h),
+				["A"] = (h, v) => passBeforeThrow = PropertyMapperPassScope.Current,
 				["Throws"] = (h, v) => throw new InvalidOperationException("Simulated mapper failure"),
 				["C"] = (h, v) => Assert.Fail("Should not run - the pass was aborted by an earlier mapper throwing"),
 			};
 
-			Assert.Throws<InvalidOperationException>(() => mapper.UpdateProperties(handler, new Button()));
+			Assert.Throws<InvalidOperationException>(() => mapper.UpdateProperties(handler, new ViewStub()));
 
-			Assert.NotNull(passIdBeforeThrow);
-			Assert.NotEqual(0, passIdBeforeThrow);
+			Assert.NotNull(passBeforeThrow);
 
-			// The aborted pass must not be left "active" - a later caller must see no active pass.
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			// The aborted pass must not be left "active" - a later caller must see no active pass, and the
+			// frame must have been cleared so it cannot keep the handler alive.
+			Assert.Null(PropertyMapperPassScope.Current);
+			Assert.Null(passBeforeThrow.Handler);
 		}
 
 		// The pass scope is a stack: a nested UpdateProperties pass - on the same handler or on another
 		// one - must restore the pass that enclosed it when it ends, so the outer pass keeps running with
-		// its own identity and its own "current key" position.
+		// its own frame and its own "current key" position.
 		[Fact]
 		public void NestedPassOnTheSameHandlerRestoresTheOuterPassWhenItEnds()
 		{
 			var handler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 
-			int outerPassId = 0;
-			int innerPassId = 0;
-			int outerPassIdAfterNesting = 0;
+			PropertyMapperPass outerPass = null;
+			PropertyMapperPass innerPass = null;
+			PropertyMapperPass outerPassAfterNesting = null;
+			int outerDepth = -1;
+			int innerDepth = -1;
+			int outerKeyIndexAfterNesting = -1;
 
 			var innerMapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["Inner"] = (h, v) => innerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["Inner"] = (h, v) =>
+				{
+					innerPass = PropertyMapperPassScope.Current;
+					innerDepth = innerPass.Depth;
+				},
 			};
 
 			var outerMapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["BeforeNesting"] = (h, v) =>
+				{
+					outerPass = PropertyMapperPassScope.Current;
+					outerDepth = outerPass.Depth;
+				},
 				["Nest"] = (h, v) => innerMapper.UpdateProperties(h, v),
-				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
+				["AfterNesting"] = (h, v) =>
+				{
+					outerPassAfterNesting = PropertyMapperPassScope.Current;
+					outerKeyIndexAfterNesting = outerPassAfterNesting.CurrentKeyIndex;
+				},
 			};
 
 			outerMapper.UpdateProperties(handler, view);
 
-			Assert.NotEqual(0, outerPassId);
-			Assert.NotEqual(0, innerPassId);
-			Assert.NotEqual(outerPassId, innerPassId);
+			// The nested pass is a distinct frame, one level deeper.
+			Assert.NotNull(outerPass);
+			Assert.NotNull(innerPass);
+			Assert.NotSame(outerPass, innerPass);
+			Assert.Equal(0, outerDepth);
+			Assert.Equal(1, innerDepth);
 
-			// The outer pass must be exactly the same pass it was before the nested one ran.
-			Assert.Equal(outerPassId, outerPassIdAfterNesting);
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			// ... and the outer pass is exactly the frame it was before the nested one ran, still tracking
+			// its own position in its own key list.
+			Assert.Same(outerPass, outerPassAfterNesting);
+			Assert.Equal(2, outerKeyIndexAfterNesting);
+			Assert.Null(PropertyMapperPassScope.Current);
 		}
 
 		// A nested pass on a *different* handler must not make the outer handler's pass look current while
@@ -154,29 +182,52 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var outerHandler = new HandlerStub();
 			var innerHandler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 
-			int outerPassId = 0;
-			int outerPassIdSeenFromInnerPass = -1;
-			int outerPassIdAfterNesting = 0;
+			PropertyMapperPass outerPass = null;
+			PropertyMapperPass currentPassSeenFromInnerPass = null;
+			PropertyMapperPass outerPassAfterNesting = null;
+			IElementHandler handlerDuringOuterPass = null;
+			IElementHandler handlerSeenFromInnerPass = null;
+			IElementHandler handlerAfterNesting = null;
 
 			var innerMapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["Inner"] = (h, v) => outerPassIdSeenFromInnerPass = PropertyMapperPassScope.GetCurrentPassId(outerHandler),
+				["Inner"] = (h, v) =>
+				{
+					currentPassSeenFromInnerPass = PropertyMapperPassScope.Current;
+					handlerSeenFromInnerPass = currentPassSeenFromInnerPass.Handler;
+				},
 			};
 
 			var outerMapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
+				["BeforeNesting"] = (h, v) =>
+				{
+					outerPass = PropertyMapperPassScope.Current;
+					handlerDuringOuterPass = outerPass.Handler;
+				},
 				["Nest"] = (h, v) => innerMapper.UpdateProperties(innerHandler, v),
-				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
+				["AfterNesting"] = (h, v) =>
+				{
+					outerPassAfterNesting = PropertyMapperPassScope.Current;
+					handlerAfterNesting = outerPassAfterNesting.Handler;
+				},
 			};
 
 			outerMapper.UpdateProperties(outerHandler, view);
 
-			Assert.NotEqual(0, outerPassId);
-			Assert.Equal(0, outerPassIdSeenFromInnerPass);
-			Assert.Equal(outerPassId, outerPassIdAfterNesting);
+			Assert.NotNull(outerPass);
+			Assert.Same(outerHandler, handlerDuringOuterPass);
+
+			// While the nested pass runs, the current pass is the inner handler's - the outer handler's is
+			// no longer the innermost one.
+			Assert.NotNull(currentPassSeenFromInnerPass);
+			Assert.NotSame(outerPass, currentPassSeenFromInnerPass);
+			Assert.Same(innerHandler, handlerSeenFromInnerPass);
+
+			Assert.Same(outerPass, outerPassAfterNesting);
+			Assert.Same(outerHandler, handlerAfterNesting);
 		}
 
 		// A nested pass aborted by an exception must still restore the enclosing pass on the way out.
@@ -184,10 +235,12 @@ namespace Microsoft.Maui.UnitTests
 		public void NestedPassThatThrowsStillRestoresTheOuterPass()
 		{
 			var handler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 
-			int outerPassId = 0;
-			int outerPassIdAfterNesting = 0;
+			PropertyMapperPass outerPass = null;
+			PropertyMapperPass outerPassAfterNesting = null;
+			IElementHandler handlerAfterNesting = null;
+			int depthAfterNesting = -1;
 
 			var innerMapper = new PropertyMapper<IView, IViewHandler>
 			{
@@ -196,19 +249,23 @@ namespace Microsoft.Maui.UnitTests
 
 			var outerMapper = new PropertyMapper<IView, IViewHandler>
 			{
-				["BeforeNesting"] = (h, v) => outerPassId = PropertyMapperPassScope.GetCurrentPassId(h),
-				["Nest"] = (h, v) =>
+				["BeforeNesting"] = (h, v) => outerPass = PropertyMapperPassScope.Current,
+				["Nest"] = (h, v) => Assert.Throws<InvalidOperationException>(() => innerMapper.UpdateProperties(h, v)),
+				["AfterNesting"] = (h, v) =>
 				{
-					Assert.Throws<InvalidOperationException>(() => innerMapper.UpdateProperties(h, v));
+					outerPassAfterNesting = PropertyMapperPassScope.Current;
+					handlerAfterNesting = outerPassAfterNesting.Handler;
+					depthAfterNesting = outerPassAfterNesting.Depth;
 				},
-				["AfterNesting"] = (h, v) => outerPassIdAfterNesting = PropertyMapperPassScope.GetCurrentPassId(h),
 			};
 
 			outerMapper.UpdateProperties(handler, view);
 
-			Assert.NotEqual(0, outerPassId);
-			Assert.Equal(outerPassId, outerPassIdAfterNesting);
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			Assert.NotNull(outerPass);
+			Assert.Same(outerPass, outerPassAfterNesting);
+			Assert.Same(handler, handlerAfterNesting);
+			Assert.Equal(0, depthAfterNesting);
+			Assert.Null(PropertyMapperPassScope.Current);
 		}
 
 		// A bulk pass must report the key it is currently mapping, which is what lets a redirect mapping
@@ -217,7 +274,7 @@ namespace Microsoft.Maui.UnitTests
 		public void BulkPassReportsTheKeyCurrentlyBeingMapped()
 		{
 			var handler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 			var observed = new List<string>();
 
 			var mapper = new PropertyMapper<IView, IViewHandler>();
@@ -236,6 +293,52 @@ namespace Microsoft.Maui.UnitTests
 			Assert.Null(PropertyMapperPassScope.Current);
 		}
 
+		// The merged keys and mappings are published as a single reference, so a running pass can never
+		// observe a mix of two different merges - `keys[i]` is always the key whose mapping is `mappers[i]`,
+		// which is what the redirect de-duplication relies on. A mapper mutating its own mapper mid-pass
+		// exercises exactly that: the pass keeps enumerating - and keeps reporting - the merge it started
+		// with, and the next pass picks the new one up.
+		[Fact]
+		public void MutatingTheMapperDuringABulkPassDoesNotChangeTheRunningPassSnapshot()
+		{
+			var handler = new HandlerStub();
+			var view = new ViewStub();
+			var observed = new List<string>();
+
+			List<string> keysAtFirstStep = null;
+			List<string> keysAtLastStep = null;
+			bool addedKeyRan = false;
+
+			PropertyMapper<IView, IViewHandler> mapper = null;
+			mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["A"] = (h, v) =>
+				{
+					observed.Add("A");
+					keysAtFirstStep = PropertyMapperPassScope.Current.Keys;
+
+					// Drops the published merge; the running pass must not notice.
+					mapper.Add("AddedMidPass", (h2, v2) => addedKeyRan = true);
+				},
+				["B"] = (h, v) =>
+				{
+					observed.Add("B");
+					keysAtLastStep = PropertyMapperPassScope.Current.Keys;
+				},
+			};
+
+			mapper.UpdateProperties(handler, view);
+
+			Assert.Equal(new[] { "A", "B" }, observed);
+			Assert.Same(keysAtFirstStep, keysAtLastStep);
+			Assert.Equal(new[] { "A", "B" }, keysAtFirstStep);
+			Assert.False(addedKeyRan);
+
+			// The next pass re-merges and does include the key added above.
+			mapper.UpdateProperties(handler, view);
+			Assert.True(addedKeyRan);
+		}
+
 		// IsRedundantBulkPassRedirect is the primitive the Controls-side redirects are built on: it must be
 		// true *only* on the redirect key's own step of a bulk pass for that same handler, and only when
 		// the canonical key already had its turn earlier in the very same pass.
@@ -244,7 +347,7 @@ namespace Microsoft.Maui.UnitTests
 		{
 			var handler = new HandlerStub();
 			var otherHandler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 
 			var results = new List<bool>();
 			bool onRedirectStepForAnotherHandler = true;
@@ -288,7 +391,7 @@ namespace Microsoft.Maui.UnitTests
 		public void IsRedundantBulkPassRedirectIsFalseWhenTheCanonicalKeyDoesNotPrecedeTheRedirectKey()
 		{
 			var handler = new HandlerStub();
-			var view = new Button();
+			var view = new ViewStub();
 
 			bool canonicalAfterRedirect = true;
 			bool canonicalMissing = true;
@@ -320,23 +423,34 @@ namespace Microsoft.Maui.UnitTests
 			const int threadCount = 8;
 			const int iterations = 200;
 
-			var observedPassIds = new System.Collections.Concurrent.ConcurrentBag<int>();
+			var passesPerThread = new System.Collections.Concurrent.ConcurrentDictionary<int, PropertyMapperPass>();
 			var failures = new System.Collections.Concurrent.ConcurrentBag<Exception>();
+			var observedSteps = 0;
 
 			var mapper = new PropertyMapper<IView, IViewHandler>
 			{
 				["A"] = (h, v) =>
 				{
-					var passId = PropertyMapperPassScope.GetCurrentPassId(h);
-					if (passId == 0)
+					var pass = PropertyMapperPassScope.Current;
+
+					if (pass is null || !ReferenceEquals(pass.Handler, h) || pass.Depth != 0)
 					{
-						throw new InvalidOperationException("A bulk pass must always be current while its own mappers run.");
+						throw new InvalidOperationException("A bulk pass for this handler must be the current, outermost pass while its own mappers run.");
 					}
 
-					observedPassIds.Add(passId);
+					// Record the frame this thread is using; per-thread pooling means it must be stable
+					// across that thread's passes, and never shared with another thread.
+					passesPerThread[Environment.CurrentManagedThreadId] = pass;
+					System.Threading.Interlocked.Increment(ref observedSteps);
 				},
-				["B"] = (h, v) => Assert.NotEqual(0, PropertyMapperPassScope.GetCurrentPassId(h)),
+				["B"] = (h, v) => Assert.Same(handler, PropertyMapperPassScope.Current?.Handler),
 			};
+
+			// Warm the merged snapshot (and each thread's first frame is allocated on demand) so the
+			// threads below exercise the steady-state, lock-free path rather than racing the first merge.
+			mapper.UpdateProperties(handler, new ViewStub());
+			passesPerThread.Clear();
+			observedSteps = 0;
 
 			var threads = new System.Threading.Thread[threadCount];
 			for (int t = 0; t < threadCount; t++)
@@ -345,9 +459,9 @@ namespace Microsoft.Maui.UnitTests
 				{
 					try
 					{
-						// Each thread uses its own virtual view; only the handler (and therefore the pass
-						// bookkeeping that used to be keyed on it) is shared.
-						var view = new Button();
+						// Each thread uses its own virtual view; only the handler - and therefore the pass
+						// bookkeeping that used to be keyed on it - is shared.
+						var view = new ViewStub();
 						for (int i = 0; i < iterations; i++)
 						{
 							mapper.UpdateProperties(handler, view);
@@ -367,11 +481,13 @@ namespace Microsoft.Maui.UnitTests
 			}
 
 			Assert.Empty(failures);
+			Assert.Equal(threadCount * iterations, observedSteps);
 
-			// Every pass got its own id, and none of them is left current on this thread.
-			Assert.Equal(threadCount * iterations, observedPassIds.Count);
-			Assert.Equal(threadCount * iterations, observedPassIds.Distinct().Count());
-			Assert.Equal(0, PropertyMapperPassScope.GetCurrentPassId(handler));
+			// Every thread ran its passes on its own frame - no two threads ever shared one.
+			Assert.Equal(threadCount, passesPerThread.Count);
+			Assert.Equal(threadCount, passesPerThread.Values.Distinct().Count());
+
+			Assert.Null(PropertyMapperPassScope.Current);
 		}
 
 		[Fact]

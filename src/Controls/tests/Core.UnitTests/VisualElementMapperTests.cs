@@ -843,40 +843,56 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		// While a nested bulk pass for a *different* handler is on top, a redirect update targeting the
-		// outer handler is not that handler's own pass turn and must therefore still be applied.
+		// outer handler is not that handler's own pass turn and must therefore still be applied - and the
+		// outer pass's own redirect turn, which comes later, must still be skipped.
 		[Fact]
 		public void NestedPassForAnotherHandler_DoesNotSuppressOuterHandlersRedirectUpdate()
 		{
 			int outerBackgroundCalls = 0;
+			HandlerStub outerHandler = null;
 
+			// A non-empty mapper: its single key runs as a genuine step of the other handler's nested pass,
+			// and from there issues an explicit redirect update targeting the *outer* handler.
 			var otherCommandMapper = new CommandMapper<IView, IViewHandler>();
 			var otherMapper = new PropertyMapper<IView, IViewHandler>();
 			var otherHandler = new HandlerStub(otherMapper, otherCommandMapper);
+
+			otherMapper.Add("__OuterHandlerRedirectUpdate", (h, v) =>
+			{
+				if (outerHandler is null)
+				{
+					return;
+				}
+
+				// Guards the premise of this test: the other handler's pass really is the innermost one at
+				// this point, so the update below is issued from *inside* it.
+				Assert.Same(otherHandler, Maui.PropertyMapperPassScope.Current?.Handler);
+
+				outerHandler.UpdateValue(nameof(VisualElement.BackgroundColor));
+			});
+
+			// Connects while `outerHandler` is still null, so this pass is a no-op for the assertion below.
 			otherHandler.SetVirtualView(new Button());
 
+			// "__NestedPassForAnotherHandler" is inserted (via the object initializer, before
+			// RemapForControls runs) between Background and the redirect keys RemapForControls appends, so
+			// the nested pass - and the explicit update it issues - happen after Background has had its
+			// turn but before the outer pass reaches its own BackgroundColor turn.
 			var commandMapper = new CommandMapper<IView, IViewHandler>();
 			var mapper = new PropertyMapper<IView, IViewHandler>
 			{
 				[nameof(IView.Background)] = (h, v) => outerBackgroundCalls++,
+				["__NestedPassForAnotherHandler"] = (h, v) => otherMapper.UpdateProperties(otherHandler, otherHandler.VirtualView),
 			};
 			VisualElement.RemapForControls(mapper, commandMapper);
 
-			// Runs after every key RemapForControls appends, so the outer pass has already skipped its own
-			// BackgroundColor turn by the time this runs.
-			mapper.Add("__NestedPassForAnotherHandler", (h, v) =>
-			{
-				otherMapper.UpdateProperties(otherHandler, otherHandler.VirtualView);
+			outerHandler = new HandlerStub(mapper, commandMapper);
+			outerHandler.SetVirtualView(new Button { BackgroundColor = Colors.Red });
 
-				// An explicit redirect update for *our* handler, issued from a step that is not that
-				// redirect key's own turn, must be honored - the nested pass must not have left anything
-				// behind that makes it look skippable.
-				h.UpdateValue(nameof(VisualElement.BackgroundColor));
-			});
-
-			var handlerStub = new HandlerStub(mapper, commandMapper);
-			handlerStub.SetVirtualView(new Button { BackgroundColor = Colors.Red });
-
-			// Once for the canonical Background key, once for the explicit redirect update above.
+			// Once for the canonical Background key, and once for the explicit BackgroundColor update
+			// issued from inside the nested other-handler pass. The outer pass's own BackgroundColor and
+			// BackgroundImageSource turns, which run after the nested pass has been popped, are still
+			// correctly skipped.
 			Assert.Equal(2, outerBackgroundCalls);
 		}
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,11 +19,15 @@ namespace Microsoft.Maui
 		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 		IPropertyMapper[]? _chained;
 
-		List<string>? _updatePropertiesKeys;
-		List<Action<IElementHandler, IElement>>? _updatePropertiesMappers;
-		Dictionary<string, Action<IElementHandler, IElement>?>? _cachedMappers;
+		// The merged view of this mapper (and its chain) is published as a single reference so that
+		// everything derived from one merge - the keys, the mappings, and the key->mapping cache - is
+		// always read as a matched set. Mutating the mapper (SetPropertyCore/Chained) drops the reference;
+		// the next reader merges again. Readers must therefore snapshot it into a local exactly once.
+		// Volatile so a reader on another thread can never see the reference before the merge it points at
+		// is fully built.
+		volatile MergedMappers? _merged;
 
-		Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers => _cachedMappers ?? SnapshotMappers().CachedMappers;
+		MergedMappers Merged => _merged ?? SnapshotMappers();
 
 		public PropertyMapper()
 		{
@@ -54,7 +57,7 @@ namespace Microsoft.Maui
 
 		internal bool TryUpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
-			var cachedMappers = CachedMappers;
+			var cachedMappers = Merged.CachedMappers;
 			if (cachedMappers.TryGetValue(key, out var action))
 			{
 				if (action is not null)
@@ -120,7 +123,12 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			var (keys, mappers) = GetUpdatePropertiesSnapshot();
+			// One read of the merged reference: `keys[i]` is then guaranteed to be the key whose mapping is
+			// `mappers[i]`, even if another thread replaces the merge (with a same-sized one or not) while
+			// this pass is running.
+			var merged = Merged;
+			var keys = merged.Keys;
+			var mappers = merged.Mappers;
 
 			// Scope this bulk enumeration as a single "pass" for viewHandler (see PropertyMapperPassScope)
 			// so mapper implementations can tell a genuine step of *this* bulk pass apart from an unrelated
@@ -142,28 +150,6 @@ namespace Microsoft.Maui
 			}
 		}
 
-		/// <summary>
-		/// Returns the current keys/mappers snapshot as a matched pair. Both lists are produced by the same
-		/// <see cref="SnapshotMappers"/> call, so <c>keys[i]</c> is always the key whose mapping is
-		/// <c>mappers[i]</c> - which is what lets a bulk pass report the key it is currently running.
-		/// </summary>
-		(List<string> Keys, List<Action<IElementHandler, IElement>> Mappers) GetUpdatePropertiesSnapshot()
-		{
-			// Read both fields into locals before validating them: another thread mutating this mapper
-			// (SetPropertyCore/Chained) clears them, and we must not end up with two lists coming from
-			// different snapshots.
-			var keys = _updatePropertiesKeys;
-			var mappers = _updatePropertiesMappers;
-
-			if (keys is null || mappers is null || keys.Count != mappers.Count)
-			{
-				var snapshot = SnapshotMappers();
-				return (snapshot.UpdatePropertiesKeys, snapshot.UpdatePropertiesMappers);
-			}
-
-			return (keys, mappers);
-		}
-
 		public IPropertyMapper[]? Chained
 		{
 			get => _chained;
@@ -174,12 +160,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void ClearMergedMappers()
-		{
-			_updatePropertiesMappers = null;
-			_updatePropertiesKeys = null;
-			_cachedMappers = null;
-		}
+		void ClearMergedMappers() => _merged = null;
 
 		public virtual IEnumerable<string> GetKeys()
 		{
@@ -206,24 +187,50 @@ namespace Microsoft.Maui
 			}
 		}
 
-		private (List<string> UpdatePropertiesKeys, List<Action<IElementHandler, IElement>> UpdatePropertiesMappers, Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers) SnapshotMappers()
+		MergedMappers SnapshotMappers()
 		{
-			var updatePropertiesKeys = GetKeys().Distinct().ToList();
-			var updatePropertiesMappers = new List<Action<IElementHandler, IElement>>(updatePropertiesKeys.Count);
-			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(updatePropertiesKeys.Count);
+			var keys = GetKeys().Distinct().ToList();
+			var mappers = new List<Action<IElementHandler, IElement>>(keys.Count);
+			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(keys.Count);
 
-			foreach (var key in updatePropertiesKeys)
+			foreach (var key in keys)
 			{
 				var mapper = GetProperty(key)!;
-				updatePropertiesMappers.Add(mapper);
+				mappers.Add(mapper);
 				cachedMappers[key] = mapper;
 			}
 
-			_updatePropertiesKeys = updatePropertiesKeys;
-			_updatePropertiesMappers = updatePropertiesMappers;
-			_cachedMappers = cachedMappers;
+			var merged = new MergedMappers(keys, mappers, cachedMappers);
+			_merged = merged;
 
-			return (updatePropertiesKeys, updatePropertiesMappers, cachedMappers);
+			return merged;
+		}
+
+		/// <summary>
+		/// The result of merging a mapper with its chain: the keys to enumerate, their mappings in the very
+		/// same order, and the key-to-mapping lookup used by single-key updates. Published as one reference
+		/// so readers can never observe a mix of two different merges.
+		/// </summary>
+		sealed class MergedMappers
+		{
+			public readonly List<string> Keys;
+
+			public readonly List<Action<IElementHandler, IElement>> Mappers;
+
+			/// <summary>
+			/// Lazily grown by <see cref="TryUpdatePropertyCore"/> for keys outside <see cref="Keys"/>.
+			/// </summary>
+			public readonly Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers;
+
+			public MergedMappers(
+				List<string> keys,
+				List<Action<IElementHandler, IElement>> mappers,
+				Dictionary<string, Action<IElementHandler, IElement>?> cachedMappers)
+			{
+				Keys = keys;
+				Mappers = mappers;
+				CachedMappers = cachedMappers;
+			}
 		}
 	}
 
@@ -253,8 +260,6 @@ namespace Microsoft.Maui
 		[ThreadStatic]
 		static int t_depth;
 
-		static int s_nextPassId;
-
 		/// <summary>
 		/// Marks the start of a new bulk mapping pass for <paramref name="handler"/> over
 		/// <paramref name="keys"/> (the keys of the mapping snapshot being enumerated, in enumeration
@@ -281,9 +286,6 @@ namespace Microsoft.Maui
 			// Frames are reused across passes on this thread, so a steady-state pass allocates nothing.
 			var pass = passes[depth] ??= new PropertyMapperPass();
 
-			// 0 means "no pass", so skip it in the (astronomically unlikely) event the counter wraps.
-			var id = Interlocked.Increment(ref s_nextPassId);
-			pass.Id = id != 0 ? id : Interlocked.Increment(ref s_nextPassId);
 			pass.Depth = depth;
 			pass.Handler = handler;
 			pass.Keys = keys;
@@ -319,17 +321,6 @@ namespace Microsoft.Maui
 				var depth = t_depth;
 				return depth > 0 ? t_passes![depth - 1] : null;
 			}
-		}
-
-		/// <summary>
-		/// Returns the id of the innermost bulk mapping pass currently in progress for
-		/// <paramref name="handler"/> on this thread, or <c>0</c> if the innermost pass is not for that
-		/// handler (or there is no pass in progress at all).
-		/// </summary>
-		public static int GetCurrentPassId(IElementHandler? handler)
-		{
-			var pass = Current;
-			return pass is not null && handler is not null && ReferenceEquals(pass.Handler, handler) ? pass.Id : 0;
 		}
 
 		/// <summary>
@@ -397,9 +388,6 @@ namespace Microsoft.Maui
 	/// </summary>
 	internal sealed class PropertyMapperPass
 	{
-		/// <summary>A process-unique, non-zero id for this pass.</summary>
-		public int Id;
-
 		/// <summary>This pass's index in its thread's pass stack; restored as the depth when it ends.</summary>
 		public int Depth;
 
