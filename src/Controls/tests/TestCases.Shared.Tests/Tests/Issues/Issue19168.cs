@@ -16,9 +16,11 @@ public class Issue19168 : _IssuesUITest
 	public void PickerShouldDismissWhenClickOnOutside()
 	{
 		App.WaitForElement("Picker");
-		App.Tap("Picker");
 #if MACCATALYST
 		var pickerRect = App.WaitForElement("Picker").GetRect();
+#endif
+		App.Tap("Picker");
+#if MACCATALYST
 		App.TapCoordinates(pickerRect.X + 1, pickerRect.Y + 1);
 		App.WaitForElement("Button");
 #elif ANDROID
