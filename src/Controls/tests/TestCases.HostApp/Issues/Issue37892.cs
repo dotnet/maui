@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 37892, "ScrollView enters an infinite measure loop near the scrollability boundary", PlatformAffected.All)]
+[Issue(IssueTracker.Github, 37892, "ScrollView enters an infinite measure loop near the scrollability boundary", PlatformAffected.iOS)]
 public class Issue37892 : ContentPage
 {
 	public Issue37892()
