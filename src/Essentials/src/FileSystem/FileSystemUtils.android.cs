@@ -79,11 +79,17 @@ namespace Microsoft.Maui.Storage
 			return false;
 		}
 
+		// Picker results may resolve to shared files, but must not point back into the
+		// receiving app's private storage.
 		public static string EnsurePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
 		{
-			// if this is a file, use that
 			if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
-				return uri.Path;
+			{
+				if (TryGetValidatedPhysicalPath(uri.Path, out var filePath))
+					return filePath;
+
+				throw new FileNotFoundException($"Unable to resolve absolute path or retrieve contents of URI '{uri}'.");
+			}
 
 			// try resolve using the content provider
 			var absolute = ResolvePhysicalPath(uri, requireExtendedAccess);
@@ -91,8 +97,8 @@ namespace Microsoft.Maui.Storage
 			// File.Exists() but lacks read permission, causing UnauthorizedAccessException.
 			// IsFileReadable uses Java.IO.File.canRead() to verify actual read access before using the path.
 			// On API 29+, ResolvePhysicalPath typically returns null for content URIs, so the fallback path is used instead.
-			if (!string.IsNullOrWhiteSpace(absolute) && Path.IsPathRooted(absolute) && IsFileReadable(absolute))
-				return absolute;
+			if (TryGetValidatedPhysicalPath(absolute, out var resolvedPath))
+				return resolvedPath;
 
 			// fall back to just copying it
 			var cached = CacheContentFile(uri);
@@ -108,17 +114,49 @@ namespace Microsoft.Maui.Storage
 			return file.IsFile && file.CanRead();
 		}
 
+		internal static bool TryGetValidatedPhysicalPath(string path, out string validatedPath)
+		{
+			validatedPath = null;
+
+			if (string.IsNullOrWhiteSpace(path) || !Path.IsPathRooted(path))
+				return false;
+
+			try
+			{
+				using var file = new Java.IO.File(path);
+				var canonicalPath = file.CanonicalPath;
+
+				if (IsPathWithinRoot(canonicalPath, Application.Context.DataDir?.CanonicalPath))
+					return false;
+
+				var deviceProtectedContext = Application.Context.CreateDeviceProtectedStorageContext();
+				if (IsPathWithinRoot(canonicalPath, deviceProtectedContext?.DataDir?.CanonicalPath))
+					return false;
+
+				if (!file.IsFile || !file.CanRead())
+					return false;
+
+				validatedPath = canonicalPath;
+				return true;
+			}
+			catch (Java.IO.IOException)
+			{
+				return false;
+			}
+		}
+
+		static bool IsPathWithinRoot(string path, string root)
+		{
+			if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(root))
+				return false;
+
+			return string.Equals(path, root, StringComparison.Ordinal) ||
+				path.StartsWith(root + Java.IO.File.Separator, StringComparison.Ordinal);
+		}
+
 		static string ResolvePhysicalPath(AndroidUri uri, bool requireExtendedAccess = true)
 		{
-			if (uri.Scheme.Equals(UriSchemeFile, StringComparison.OrdinalIgnoreCase))
-			{
-				// if it is a file, then return directly
-
-				var resolved = uri.Path;
-				if (File.Exists(resolved))
-					return resolved;
-			}
-			else if (!requireExtendedAccess || !OperatingSystem.IsAndroidVersionAtLeast(29))
+			if (!requireExtendedAccess || !OperatingSystem.IsAndroidVersionAtLeast(29))
 			{
 				// if this is on an older OS version, or we just need it now
 

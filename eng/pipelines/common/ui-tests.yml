@@ -29,7 +29,6 @@ parameters:
     - 'Label'
     - 'Layout'
     - 'Lifecycle,ManualReview,Maps'
-    - 'ListView'
     - 'Navigation'
     - 'Page,Performance,Picker,ProgressBar'
     - 'RadioButton,RefreshView'

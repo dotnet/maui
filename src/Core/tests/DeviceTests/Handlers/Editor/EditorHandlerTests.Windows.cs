@@ -7,15 +7,69 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
-
 using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EditorHandlerTests
 	{
+		const string ContentElementName = "ContentElement";
+
+		[Fact(DisplayName = "Content element cache is reused and invalidated with template changes")]
+		public async Task ContentElementCacheIsReusedAndInvalidatedWithTemplateChanges()
+		{
+			var editor = new EditorStub();
+
+			await AttachAndRun(editor, handler =>
+			{
+				var textBox = GetNativeEditor(handler);
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Bottom);
+
+				var previousContentElement = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
+				Assert.NotNull(previousContentElement);
+				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
+
+				var cachedSearchCount = MauiTextBox.GetContentElementSearchCount(textBox);
+				Assert.True(cachedSearchCount > 0);
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Top);
+				Assert.Equal(cachedSearchCount, MauiTextBox.GetContentElementSearchCount(textBox));
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Bottom);
+				Assert.Equal(cachedSearchCount, MauiTextBox.GetContentElementSearchCount(textBox));
+
+				textBox.Template = CreateTextBoxTemplate();
+				textBox.ApplyTemplate();
+
+				var currentContentElement = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
+				Assert.NotNull(currentContentElement);
+				Assert.NotSame(previousContentElement, currentContentElement);
+
+				MauiTextBox.SetVerticalTextAlignment(textBox, NativeVerticalAlignment.Top);
+
+				Assert.True(MauiTextBox.GetContentElementSearchCount(textBox) > cachedSearchCount);
+				Assert.Equal(NativeVerticalAlignment.Top, currentContentElement.VerticalAlignment);
+				Assert.Equal(NativeVerticalAlignment.Bottom, previousContentElement.VerticalAlignment);
+			});
+		}
+
+		static ControlTemplate CreateTextBoxTemplate() =>
+			(ControlTemplate)XamlReader.Load(
+				"""
+				<ControlTemplate
+					xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					TargetType="TextBox">
+					<Grid>
+						<ScrollViewer x:Name="ContentElement" />
+						<TextBlock x:Name="PlaceholderTextContentPresenter" />
+					</Grid>
+				</ControlTemplate>
+				""");
+
 		static TextBox GetNativeEditor(EditorHandler editorHandler) =>
 			editorHandler.PlatformView;
 
@@ -62,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var textBox = GetNativeEditor(editorHandler);
 
-			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var sv = textBox.GetDescendantByName<ScrollViewer>(ContentElementName);
 			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
 
 			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);

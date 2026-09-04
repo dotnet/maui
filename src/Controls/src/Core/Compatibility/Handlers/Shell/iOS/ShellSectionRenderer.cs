@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -98,6 +99,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// Once a back-navigation dispatch is in flight, all subsequent calls are blocked
 		// until it completes (success or cancel).
 		bool _sendPopPending;
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeTabRegistrations = new NativeElementRegistrationSet();
+		int _tabRegistrationGeneration;
 
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
@@ -350,6 +354,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			base.ViewDidLoad();
+			if (ShellSection is not null)
+			{
+				_nativeNavigationRegistrations.Register(
+					ShellSection,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
 			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(this);
 			UpdateFlowDirection();
 		}
@@ -367,6 +379,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void IDisconnectable.Disconnect()
 		{
+			_tabRegistrationGeneration++;
+			_nativeNavigationRegistrations.Clear();
+			_nativeTabRegistrations.Clear();
 			(_renderer as IDisconnectable)?.Disconnect();
 
 			if (_displayedPage != null)
@@ -646,12 +661,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateTabBarItem()
 		{
 			Title = ShellSection.Title;
+			var registrationGeneration = ++_tabRegistrationGeneration;
+			var shellSection = ShellSection;
 
 			ShellSection.Icon.LoadImage(ShellSection.FindMauiContext(), icon =>
 			{
+				if (_disposed ||
+					registrationGeneration != _tabRegistrationGeneration ||
+					!ReferenceEquals(ShellSection, shellSection))
+				{
+					icon?.Dispose();
+					return;
+				}
+
+				_nativeTabRegistrations.Clear();
+
 				var image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, icon?.Value);
 				TabBarItem = new UITabBarItem(ShellSection.Title, image, null);
 				TabBarItem.AccessibilityIdentifier = ShellSection.AutomationId ?? ShellSection.Title;
+				_nativeTabRegistrations.Register(
+					shellSection,
+					TabBarItem,
+					NativeElementRoles.ShellTab,
+					NativeElementDiscriminators.TabBarItem);
 			});
 		}
 
