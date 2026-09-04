@@ -82,9 +82,7 @@ namespace Microsoft.Maui.Platform
 				_contentView.Frame = Bounds;
 
 			if (_isOpen)
-			{
 				Swipe(animated: false);
-			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
@@ -314,14 +312,6 @@ namespace Microsoft.Maui.Platform
 			{
 				UIView swipeItem = item.ToPlatform(Element.Handler.MauiContext);
 
-				// Recreate a menu item's native button when it is still owned by a
-				// previous action view, matching the Android shared-item behavior.
-				if (swipeItem.Superview != null && item is ISwipeItemMenuItem && item is IElement element)
-				{
-					element.Handler?.DisconnectHandler();
-					swipeItem = item.ToPlatform(Element.Handler.MauiContext);
-				}
-
 				swipeItem.Hidden = !GetIsVisible(item);
 				_actionView.AddSubview(swipeItem);
 				_swipeItems.Add(item, swipeItem);
@@ -350,6 +340,23 @@ namespace Microsoft.Maui.Platform
 
 			int i = 0;
 			float previousWidth = 0;
+			double? executeModeItemWidth = null;
+
+			if (items.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				foreach (var child in childs)
+				{
+					if (child.Hidden || child is not UIButton button)
+						continue;
+
+					button.Frame = new CGRect(0, 0, SwipeViewExtensions.SwipeItemWidth, _contentView.Frame.Height);
+
+					UpdateSwipeItemInsets(button);
+					UpdateSwipeItemContentAlignment(button);
+				}
+
+				executeModeItemWidth = Element.GetExecuteModeItemWidth(_contentView, _swipeDirection, childs);
+			}
 
 			foreach (var child in childs)
 			{
@@ -361,7 +368,8 @@ namespace Microsoft.Maui.Platform
 				if (!child.Hidden)
 				{
 					var item = items[i];
-					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, _swipeItems);
+
+					var swipeItemSize = Element.GetSwipeItemSize(item, _contentView, _swipeDirection, executeModeItemWidth);
 
 					float swipeItemHeight = (float)swipeItemSize.Height;
 					float swipeItemWidth = (float)swipeItemSize.Width;
@@ -382,17 +390,27 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
-					if (child is UIButton button)
-					{
-						UpdateSwipeItemInsets(button);
-					}
-
 					previousWidth += swipeItemWidth;
 				}
 
 				i++;
 				_swipeItemsRect.Add(child.Frame);
 			}
+
+			if (items.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				_actionView.Frame = new CGRect(
+					_actionView.Frame.X,
+					_actionView.Frame.Y,
+					previousWidth,
+					_actionView.Frame.Height);
+			}
+		}
+
+		static void UpdateSwipeItemContentAlignment(UIButton button)
+		{
+			button.HorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+			button.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 		}
 
 		List<UIView> GetNativeSwipeItems()
@@ -406,6 +424,11 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
+		{
+			UpdateSwipeItemSize(item);
+		}
+
+		internal void UpdateSwipeItemSize(ISwipeItem item)
 		{
 			if (!_isOpen)
 				return;
@@ -932,8 +955,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (GetIsVisible(swipeItem))
 						{
-							_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
+							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, null);
 							swipeThreshold += swipeItemSize.Width;
 						}
 					}
@@ -956,21 +978,27 @@ namespace Microsoft.Maui.Platform
 			float swipeItemsHeight = 0;
 			float swipeItemsWidth = 0;
 			bool useSwipeItemsSize = false;
+			double? executeModeItemWidth = null;
+
+			if (swipeItems.Mode == SwipeMode.Execute && IsHorizontalSwipe())
+			{
+				executeModeItemWidth = Element.GetExecuteModeItemWidth(
+					_contentView,
+					_swipeDirection,
+					GetNativeSwipeItems());
+			}
 
 			foreach (var swipeItem in swipeItems)
 			{
-				// Execute mode sizes each menu item to its measured native content width
-				// (see GetSwipeItemSize) instead of a fixed contentWidth * 0.8 open distance,
-				// so the swipe/open threshold must be computed from that same per-item sizing
-				// below — otherwise the drag can end far short of (or past) the rendered
-				// SwipeItem(s), leaving a dead gap during the swipe.
-				if (swipeItem is ISwipeItemView || (swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
+				if (swipeItem is ISwipeItemView ||
+					(IsHorizontalSwipe() && swipeItem is ISwipeItemMenuItem && swipeItems.Mode == SwipeMode.Execute))
+				{
 					useSwipeItemsSize = true;
+				}
 
 				if (GetIsVisible(swipeItem))
 				{
-					_swipeItems.TryGetValue(swipeItem, out var platformSwipeItem);
-					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, _swipeItems);
+					var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, executeModeItemWidth);
 					swipeItemsHeight += (float)swipeItemSize.Height;
 					swipeItemsWidth += (float)swipeItemSize.Width;
 				}
@@ -979,19 +1007,11 @@ namespace Microsoft.Maui.Platform
 			if (useSwipeItemsSize)
 			{
 				var isHorizontalSwipe = IsHorizontalSwipe();
-
 				return isHorizontalSwipe ? swipeItemsWidth : swipeItemsHeight;
 			}
-			else
-			{
-				if (_contentView != null)
-				{
-					var contentWidth = _contentView.Frame.Width;
-					var contentWidthSwipeThreshold = contentWidth * 0.8f;
 
-					return contentWidthSwipeThreshold;
-				}
-			}
+			if (_contentView != null)
+				return _contentView.Frame.Width * 0.8f;
 
 			return SwipeViewExtensions.SwipeThreshold;
 		}
