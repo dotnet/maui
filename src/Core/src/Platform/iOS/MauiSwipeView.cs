@@ -407,17 +407,15 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIsVisibleSwipeItem(ISwipeItem item)
 		{
-			UpdateSwipeItemSize(item);
-		}
-
-		internal void UpdateSwipeItemSize(ISwipeItem item)
-		{
-			if (!_isOpen || !_swipeItems.ContainsKey(item))
+			if (!_isOpen)
 				return;
 
-			_swipeOpenDistance = 0;
-			LayoutSwipeItems(GetNativeSwipeItems());
-			SwipeToThreshold(false);
+			if (item?.Handler?.PlatformView is UIView platformView)
+			{
+				_swipeOpenDistance = 0;
+				LayoutSwipeItems(GetNativeSwipeItems());
+				SwipeToThreshold(false);
+			}
 		}
 
 		internal void UpdateSwipeTransitionMode(SwipeTransitionMode swipeTransitionMode)
