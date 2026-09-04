@@ -29,11 +29,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "All event subscribers are cleared by Disconnect when ShellTableViewController is disposed.")]
 		public event EventHandler<UIScrollView> ScrolledEvent;
 
-		internal void Disconnect()
-		{
-			ScrolledEvent = null;
-		}
-
 		public List<List<Element>> Groups
 		{
 			get
@@ -108,6 +103,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				_cells = new Dictionary<Element, UIContainerCell>();
 			}
+		}
+
+		internal void Disconnect()
+		{
+			ScrolledEvent = null;
+
+			if (_cells is not null)
+			{
+				foreach (var cell in _cells.Values)
+					cell.Disconnect(_context.Shell);
+				_cells.Clear();
+			}
+
+			_groups = null;
 		}
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
