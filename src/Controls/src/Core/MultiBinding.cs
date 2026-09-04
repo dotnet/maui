@@ -165,18 +165,19 @@ namespace Microsoft.Maui.Controls
 				_targetProperty = targetProperty;
 
 				if (_bpProxies == null)
-					_bpProxies = new BindableProperty[Bindings.Count];
-
-				_applying = true;
-				var bindingMode = Mode == BindingMode.Default ? targetProperty.DefaultBindingMode : Mode;
-				for (var i = 0; i < Bindings.Count; i++)
 				{
-					var binding = Bindings[i];
-					binding.RelativeSourceTargetOverride = targetObject as Element;
-					var bp = _bpProxies[i] ??= BindableProperty.Create($"mb-proxy{i}", typeof(object), typeof(MultiBinding), null, bindingMode, propertyChanged: OnBindingChanged);
-					_proxyObject.SetBinding(bp, binding);
+					_bpProxies = new BindableProperty[Bindings.Count];
+					_applying = true;
+					var bindingMode = Mode == BindingMode.Default ? targetProperty.DefaultBindingMode : Mode;
+					for (var i = 0; i < Bindings.Count; i++)
+					{
+						var binding = Bindings[i];
+						binding.RelativeSourceTargetOverride = targetObject as Element;
+						var bp = _bpProxies[i] = BindableProperty.Create($"mb-proxy{i}", typeof(object), typeof(MultiBinding), null, bindingMode, propertyChanged: OnBindingChanged);
+						_proxyObject.SetBinding(bp, binding);
+					}
+					_applying = false;
 				}
-				_applying = false;
 			}
 			_proxyObject.BindingContext = context;
 
