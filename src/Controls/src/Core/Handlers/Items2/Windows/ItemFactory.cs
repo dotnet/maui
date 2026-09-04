@@ -141,8 +141,6 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 				HorizontalAlignment = HorizontalAlignment.Stretch
 			};
 
-			container.UseSystemFocusVisuals = true;
-			
 			// Prevent group headers/footers from being selectable by swapping
 			// the ItemContainer's ControlTemplate to one that has no checkbox
 			// or selection visuals. This is stable across all selection modes
@@ -349,6 +347,16 @@ internal partial class ElementWrapper : ContentControl
 			}
 
 			var platformView = VirtualView.ToPlatform(_context);
+			var semantics = VirtualView.Semantics;
+			if (!string.IsNullOrWhiteSpace(semantics?.Description) ||
+				!string.IsNullOrWhiteSpace(semantics?.Hint))
+			{
+				// The ItemContainer already exposes the root view's semantics. Keep the
+				// native root out of the content view so Narrator does not announce it twice.
+				platformView.SetAutomationPropertiesAccessibilityView(
+					VirtualView as Element,
+					Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Raw);
+			}
 			Content = platformView;
 		}
 	}
