@@ -17,7 +17,7 @@ public class Issue28716 : _IssuesUITest
 	{
 		App.WaitForElement("AddItemButton");
 		App.Click("AddItemButton");
-		App.WaitForElement("Item20cv1");
+		App.WaitForElement("Item20view1");
 		App.WaitForElement("Item20cv2");
 		App.WaitForElement("Item20cv3");
 	}

@@ -36,10 +36,7 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 [Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 public class MemoryTests : ControlsHandlerTestBase
 {
-	// Subclasses used to enable memory tests for CV2 handlers
-	public class CollectionView2 : CollectionView { }
-	public class CarouselView2 : CarouselView { }
-	protected virtual void SetupBuilder(bool includeNavigationViewHandler = true)
+	void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
 		{
