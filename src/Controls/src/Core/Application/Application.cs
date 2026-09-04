@@ -480,10 +480,20 @@ namespace Microsoft.Maui.Controls
 			// create a new one if there is no pending windows
 			if (window == null)
 			{
-				window = CreateWindow(activationState);
+#if ANDROID
+				// Reuse the existing (destroyed) single window on relaunch (back-to-home
+				// then reopened) so the app's state is preserved instead of recreated.
+				if (_windows.Count == 1 && _windows[0].IsDestroyed)
+					window = _windows[0];
+#endif
 
-				if (_singleWindowMainPage != null && window.Page != null && window.Page != _singleWindowMainPage)
-					throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
+				if (window == null)
+				{
+					window = CreateWindow(activationState);
+
+					if (_singleWindowMainPage != null && window.Page != null && window.Page != _singleWindowMainPage)
+						throw new InvalidOperationException($"Both {nameof(MainPage)} was set and {nameof(Application.CreateWindow)} was overridden to provide a page.");
+				}
 			}
 
 			// make sure it is added to the windows list
@@ -523,6 +533,13 @@ namespace Microsoft.Maui.Controls
 			// Window was closed, stop tracking it
 			if (window is null)
 				return;
+
+#if ANDROID
+			// Keep the last window on relaunch (back-to-home then reopened) so it can be
+			// re-attached instead of recreated, preserving the app's state.
+			if (_windows.Count == 1)
+				return;
+#endif
 
 			if (window is NavigableElement ne)
 				ne.NavigationProxy.Inner = null;
