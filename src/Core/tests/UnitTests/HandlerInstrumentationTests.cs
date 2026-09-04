@@ -127,6 +127,43 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void UpdatePropertiesEmitsOneMapPropertyActivityPerMappedKeyWhenListening()
+		{
+			var mapper = new PropertyMapper<IView, IViewHandler>
+			{
+				["InstrumentedPropertyOne"] = (h, v) => { },
+				["InstrumentedPropertyTwo"] = (h, v) => { },
+			};
+
+			var handler = new HandlerStub(mapper);
+			var button = new Maui.Controls.Button();
+
+			var activities = ListenForActivities();
+			handler.SetVirtualView(button);
+
+			var mappedProperties = activities
+				.Where(a => a.OperationName == "MapProperty")
+				.Select(a => a.GetTagItem("mapper.property"))
+				.ToList();
+
+			// The UpdateProperties loop checks HasListeners once and then uses
+			// HandlerInstrumentation.StartWhenListening for every key, so each mapped key must still
+			// produce exactly one tagged MapProperty activity.
+			Assert.Single(mappedProperties, p => Equals(p, "InstrumentedPropertyOne"));
+			Assert.Single(mappedProperties, p => Equals(p, "InstrumentedPropertyTwo"));
+		}
+
+		[Fact]
+		public void StartWhenListeningReturnsNullWithoutAListener()
+		{
+			Assert.False(HandlerInstrumentation.HasListeners);
+
+			// StartWhenListening skips the HasListeners pre-check on purpose; it must still be safe to
+			// call when the last listener went away between the caller's check and this call.
+			Assert.Null(HandlerInstrumentation.StartWhenListening("MapProperty", new HandlerStub(), new Maui.Controls.Button(), "Background"));
+		}
+
+		[Fact]
 		public void NoActivitiesAreEmittedWithoutAListener()
 		{
 			Assert.False(HandlerInstrumentation.HasListeners);

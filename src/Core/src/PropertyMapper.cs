@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 						return true;
 					}
 
-					using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, key))
+					using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
 					{
 						action(viewHandler, virtualView);
 					}
@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 					return true;
 				}
 
-				using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, key))
+				using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
 				{
 					mapper(viewHandler, virtualView);
 				}
@@ -155,8 +155,9 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			// Captured once so `keys`/`mappers` always come from the same generation, even if another
-			// thread mutates this mapper (and clears the merged snapshot) while this call is in flight.
+			// Captured once so the mappers (and, when instrumenting, the matching keys) always come from
+			// the same generation, even if another thread mutates this mapper (and clears the merged
+			// snapshot) while this call is in flight.
 			var mergedMappers = GetMergedMappers();
 
 #if HANDLER_INSTRUMENTATION
@@ -174,7 +175,9 @@ namespace Microsoft.Maui
 			var mappers = mergedMappers.Mappers;
 			for (int i = 0; i < mappers.Count; i++)
 			{
-				using (HandlerInstrumentation.Start("MapProperty", viewHandler, virtualView, keys[i]))
+				// HasListeners was already checked above for this whole loop, so use the variant that
+				// doesn't re-check it for every property.
+				using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, keys[i]))
 				{
 					mappers[i](viewHandler, virtualView);
 				}
@@ -243,9 +246,13 @@ namespace Microsoft.Maui
 			return mergedMappers;
 		}
 
-		// Immutable snapshot of one generation of the merged mapper graph: Keys[i] always corresponds to
-		// Mappers[i], and CachedMappers is populated from the very same pass, so consumers can never
-		// observe a mix of two different generations.
+		// A single generation of the merged mapper graph: Keys[i] always corresponds to Mappers[i], and
+		// CachedMappers is populated from the very same pass, so consumers can never observe a mix of two
+		// different generations - a new generation is published by replacing the whole instance
+		// (see ClearMergedMappers/CreateMergedMappers), never by mutating this one.
+		// The collections are plain List/Dictionary types (kept as-is to avoid extra indirection on the
+		// mapper hot path): Keys and Mappers are never modified after construction, while CachedMappers is
+		// intentionally extended in place by TryUpdatePropertyCore for keys that GetKeys() didn't return.
 		sealed class MergedMappers(List<string> keys, List<Action<IElementHandler, IElement>> mappers, Dictionary<string, Action<IElementHandler, IElement>?> cachedMappers)
 		{
 			public List<string> Keys { get; } = keys;

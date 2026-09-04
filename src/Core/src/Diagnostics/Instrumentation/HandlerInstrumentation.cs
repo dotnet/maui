@@ -35,6 +35,21 @@ internal static class HandlerInstrumentation
 			return null;
 		}
 
+		return StartWhenListening(name, handler, element, property);
+	}
+
+	/// <summary>
+	/// Same as <see cref="Start"/>, but without the <see cref="HasListeners"/> pre-check, for callers that
+	/// already checked it once for a whole batch (for example the <c>PropertyMapper.UpdateProperties</c>
+	/// loop, which would otherwise re-check it for every mapped property).
+	/// </summary>
+	/// <remarks>
+	/// This is still safe when the last listener is detached in between: <see cref="ActivitySource.StartActivity(string, ActivityKind)"/>
+	/// returns <see langword="null"/> when nothing is listening, so the only effect is the (rare) cost of
+	/// the failed <c>StartActivity</c> call.
+	/// </remarks>
+	public static Activity? StartWhenListening(string name, IElementHandler? handler, IElement? element, string? property = null)
+	{
 		var activity = s_activitySource.StartActivity(name, ActivityKind.Internal);
 		if (activity is not null)
 		{
