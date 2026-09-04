@@ -18,6 +18,22 @@ The following switches are toggled for applications running on Mono for `TrimMod
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
+## Runtime settings
+
+The following runtime settings accept values other than `true` or `false`.
+
+| MSBuild Property Name | AppContext Setting | Default | Description |
+|-|-|-|-|
+| MauiUriImageSourceMaxResponseContentBufferSize | Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize | 52428800 bytes (50 MiB) | Maximum number of response content bytes buffered when downloading a `UriImageSource`. |
+
+Set the maximum `UriImageSource` download size in the app project:
+
+```xml
+<PropertyGroup>
+  <MauiUriImageSourceMaxResponseContentBufferSize>104857600</MauiUriImageSourceMaxResponseContentBufferSize>
+</PropertyGroup>
+```
+
 ## MauiEnableIVisualAssemblyScanning
 
 When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registered.

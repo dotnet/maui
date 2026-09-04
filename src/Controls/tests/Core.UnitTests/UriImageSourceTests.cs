@@ -108,6 +108,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void MaxResponseContentBufferSizeDefaultsTo50MiB()
+		{
+			var originalValue = AppContext.GetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey);
+
+			try
+			{
+				AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, null);
+
+				Assert.Equal(50 * 1024 * 1024, UriImageSource.GetMaxResponseContentBufferSize());
+			}
+			finally
+			{
+				AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, originalValue);
+			}
+		}
+
+		[Fact]
+		public void MaxResponseContentBufferSizeCanBeConfigured()
+		{
+			var originalValue = AppContext.GetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey);
+
+			try
+			{
+				foreach (var configuredValue in new object[] { 1024, 2048L, "4096" })
+				{
+					AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, configuredValue);
+
+					Assert.Equal(Convert.ToInt32(configuredValue), UriImageSource.GetMaxResponseContentBufferSize());
+				}
+			}
+			finally
+			{
+				AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, originalValue);
+			}
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(-1)]
+		[InlineData(2147483648L)]
+		[InlineData("invalid")]
+		public void MaxResponseContentBufferSizeRejectsInvalidValues(object configuredValue)
+		{
+			var originalValue = AppContext.GetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey);
+
+			try
+			{
+				AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, configuredValue);
+
+				Assert.Throws<InvalidOperationException>(() => UriImageSource.GetMaxResponseContentBufferSize());
+			}
+			finally
+			{
+				AppContext.SetData(UriImageSource.MaxResponseContentBufferSizeAppContextKey, originalValue);
+			}
+		}
+
+		[Fact]
 		public void UrlHashKeyAreTheSame()
 		{
 			var urlHash1 = Crc64.ComputeHashString("http://www.optipess.com/wp-content/uploads/2010/08/02_Bad-Comics6-10.png?a=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbasdasdasdasdasasdasdasdasdasd");
