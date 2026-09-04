@@ -261,6 +261,21 @@ namespace Microsoft.Maui.Controls
 
 		private static readonly ConcurrentDictionary<string, PropertyChangedEventArgs> s_changedArgsCache = new();
 		private static readonly ConcurrentDictionary<string, PropertyChangingEventArgs> s_changingArgsCache = new();
+		/// <summary>The <see cref="PropertyChangedEventArgs"/> to raise for this property.</summary>
+		/// <remarks>
+		/// A <see cref="BindableProperty"/> is registered once and lives for the life of the process, so it is the
+		/// natural owner of the args for its own name: one pair per property, created on first use, and bounded by
+		/// how many properties exist rather than by any cache policy. Two threads racing to initialize this produce
+		/// interchangeable instances and publish them with a single reference store, so the race is harmless.
+		/// </remarks>
+		internal PropertyChangedEventArgs ChangedEventArgs
+			=> _changedEventArgs ??= new PropertyChangedEventArgs(PropertyName);
+
+		/// <summary>The <see cref="PropertyChangingEventArgs"/> to raise for this property.</summary>
+		/// <remarks>See <see cref="ChangedEventArgs"/>.</remarks>
+		internal PropertyChangingEventArgs ChangingEventArgs
+			=> _changingEventArgs ??= new PropertyChangingEventArgs(PropertyName);
+
 
 		internal static PropertyChangedEventArgs GetCachedPropertyChangedEventArgs(string propertyName)
 			=> s_changedArgsCache.GetOrAdd(propertyName, static name => new PropertyChangedEventArgs(name));
