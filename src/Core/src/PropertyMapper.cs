@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if HANDLER_INSTRUMENTATION
+using Microsoft.Maui.Diagnostics;
+#endif
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -19,13 +22,16 @@ namespace Microsoft.Maui
 		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 		IPropertyMapper[]? _chained;
 
-		List<string>? _updatePropertiesKeys;
-		List<Action<IElementHandler, IElement>>? _updatePropertiesMappers;
-		Dictionary<string, Action<IElementHandler, IElement>?>? _cachedMappers;
+		// Keys, Mappers and CachedMappers must always come from the same generation of the merged mapper
+		// graph. They are captured together in a single MergedMappers instance behind one volatile field so
+		// that a concurrent mutation (AppendToMapping/PrependToMapping/Chained, which call ClearMergedMappers)
+		// can never be observed as a torn read across two of those collections (e.g. Keys.Count no longer
+		// matching Mappers.Count).
+		volatile MergedMappers? _mergedMappers;
 
-		List<string> UpdatePropertiesKeys => _updatePropertiesKeys ?? SnapshotMappers().UpdatePropertiesKeys;
-		List<Action<IElementHandler, IElement>> UpdatePropertiesMappers => _updatePropertiesMappers ?? SnapshotMappers().UpdatePropertiesMappers;
-		Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers => _cachedMappers ?? SnapshotMappers().CachedMappers;
+		MergedMappers GetMergedMappers() => _mergedMappers ?? CreateMergedMappers();
+
+		Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers => GetMergedMappers().CachedMappers;
 
 		public PropertyMapper()
 		{
@@ -60,7 +66,21 @@ namespace Microsoft.Maui
 			{
 				if (action is not null)
 				{
+#if HANDLER_INSTRUMENTATION
+					if (!HandlerInstrumentation.HasListeners)
+					{
+						action(viewHandler, virtualView);
+						return true;
+					}
+
+					using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
+					{
+						action(viewHandler, virtualView);
+					}
+#else
 					action(viewHandler, virtualView);
+#endif
+
 					return true;
 				}
 
@@ -74,7 +94,21 @@ namespace Microsoft.Maui
 
 			if (mapper is not null)
 			{
+#if HANDLER_INSTRUMENTATION
+				if (!HandlerInstrumentation.HasListeners)
+				{
+					mapper(viewHandler, virtualView);
+					return true;
+				}
+
+				using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
+				{
+					mapper(viewHandler, virtualView);
+				}
+#else
 				mapper(viewHandler, virtualView);
+#endif
+
 				return true;
 			}
 
@@ -121,10 +155,39 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			foreach (var mapper in UpdatePropertiesMappers)
+			// Captured once so the mappers (and, when instrumenting, the matching keys) always come from
+			// the same generation, even if another thread mutates this mapper (and clears the merged
+			// snapshot) while this call is in flight.
+			var mergedMappers = GetMergedMappers();
+
+#if HANDLER_INSTRUMENTATION
+			if (!HandlerInstrumentation.HasListeners)
+			{
+				foreach (var mapper in mergedMappers.Mappers)
+				{
+					mapper(viewHandler, virtualView);
+				}
+
+				return;
+			}
+
+			var keys = mergedMappers.Keys;
+			var mappers = mergedMappers.Mappers;
+			for (int i = 0; i < mappers.Count; i++)
+			{
+				// HasListeners was already checked above for this whole loop, so use the variant that
+				// doesn't re-check it for every property.
+				using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, keys[i]))
+				{
+					mappers[i](viewHandler, virtualView);
+				}
+			}
+#else
+			foreach (var mapper in mergedMappers.Mappers)
 			{
 				mapper(viewHandler, virtualView);
 			}
+#endif
 		}
 
 		public IPropertyMapper[]? Chained
@@ -137,12 +200,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		void ClearMergedMappers()
-		{
-			_updatePropertiesMappers = null;
-			_updatePropertiesKeys = null;
-			_cachedMappers = null;
-		}
+		void ClearMergedMappers() => _mergedMappers = null;
 
 		public virtual IEnumerable<string> GetKeys()
 		{
@@ -169,24 +227,39 @@ namespace Microsoft.Maui
 			}
 		}
 
-		private (List<string> UpdatePropertiesKeys, List<Action<IElementHandler, IElement>> UpdatePropertiesMappers, Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers) SnapshotMappers()
+		MergedMappers CreateMergedMappers()
 		{
-			var updatePropertiesKeys = GetKeys().Distinct().ToList();
-			var updatePropertiesMappers = new List<Action<IElementHandler, IElement>>(updatePropertiesKeys.Count);
-			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(updatePropertiesKeys.Count);
+			var keys = GetKeys().Distinct().ToList();
+			var mappers = new List<Action<IElementHandler, IElement>>(keys.Count);
+			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(keys.Count);
 
-			foreach (var key in updatePropertiesKeys)
+			foreach (var key in keys)
 			{
 				var mapper = GetProperty(key)!;
-				updatePropertiesMappers.Add(mapper);
+				mappers.Add(mapper);
 				cachedMappers[key] = mapper;
 			}
 
-			_updatePropertiesKeys = updatePropertiesKeys;
-			_updatePropertiesMappers = updatePropertiesMappers;
-			_cachedMappers = cachedMappers;
+			var mergedMappers = new MergedMappers(keys, mappers, cachedMappers);
+			_mergedMappers = mergedMappers;
 
-			return (updatePropertiesKeys, updatePropertiesMappers, cachedMappers);
+			return mergedMappers;
+		}
+
+		// A single generation of the merged mapper graph: Keys[i] always corresponds to Mappers[i], and
+		// CachedMappers is populated from the very same pass, so consumers can never observe a mix of two
+		// different generations - a new generation is published by replacing the whole instance
+		// (see ClearMergedMappers/CreateMergedMappers), never by mutating this one.
+		// The collections are plain List/Dictionary types (kept as-is to avoid extra indirection on the
+		// mapper hot path): Keys and Mappers are never modified after construction, while CachedMappers is
+		// intentionally extended in place by TryUpdatePropertyCore for keys that GetKeys() didn't return.
+		sealed class MergedMappers(List<string> keys, List<Action<IElementHandler, IElement>> mappers, Dictionary<string, Action<IElementHandler, IElement>?> cachedMappers)
+		{
+			public List<string> Keys { get; } = keys;
+
+			public List<Action<IElementHandler, IElement>> Mappers { get; } = mappers;
+
+			public Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers { get; } = cachedMappers;
 		}
 	}
 

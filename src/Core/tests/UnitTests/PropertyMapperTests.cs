@@ -247,6 +247,41 @@ namespace Microsoft.Maui.UnitTests
 			Assert.True(wasMapper2Called);
 		}
 
+		[Fact]
+		public void UpdatePropertiesUsesConsistentSnapshotWhenMapperIsMutatedDuringIteration()
+		{
+			// Regression test: Keys/Mappers/CachedMappers used to be cached behind three independently
+			// lazy-initialized fields. A mutation (AppendToMapping/PrependToMapping/Chained) landing
+			// between reading two of them could produce a torn read across two different generations of
+			// the merged mapper graph, which could misattribute instrumentation tags or throw
+			// ArgumentOutOfRangeException. They must now come from a single atomically-captured snapshot.
+
+			var executedKeys = new List<string>();
+			var mapper = new PropertyMapper<IView, IViewHandler>();
+
+			mapper[nameof(IView.Background)] = (h, v) =>
+			{
+				executedKeys.Add(nameof(IView.Background));
+
+				// Mutate the mapper mid-iteration: this clears the merged snapshot the in-flight
+				// UpdateProperties call already captured.
+				mapper.AppendToMapping(nameof(IView.Opacity), (h2, v2) => executedKeys.Add(nameof(IView.Opacity)));
+			};
+			mapper[nameof(IView.Scale)] = (h, v) => executedKeys.Add(nameof(IView.Scale));
+
+			var exception = Record.Exception(() => mapper.UpdateProperties(null, new Button()));
+
+			Assert.Null(exception);
+			// The in-flight call must finish running every mapper from the snapshot it started with,
+			// unaffected by the concurrent mutation.
+			Assert.Equal(new[] { nameof(IView.Background), nameof(IView.Scale) }, executedKeys);
+
+			// The mutation is only observed once a new snapshot is created on a subsequent call.
+			executedKeys.Clear();
+			mapper.UpdateProperties(null, new Button());
+			Assert.Contains(nameof(IView.Opacity), executedKeys);
+		}
+
 		class SkippingPropertyMapper<T> : PropertyMapper<T>
 			where T : IElement
 		{
