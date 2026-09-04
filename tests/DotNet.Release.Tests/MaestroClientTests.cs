@@ -4,7 +4,7 @@ namespace DotNet.Release.Tests;
 
 public class MaestroClientTests
 {
-    private static readonly RepositoryId Skia = RepositoryId.Parse("dotnet/skiasharp");
+    private static readonly RepositoryId Skia = RepositoryId.Parse("mono/skiasharp");
 
     // ---- resolution by BAR ID ----
 
@@ -102,18 +102,22 @@ public class MaestroClientTests
     [Fact]
     public async Task Null_github_repository_resolves_and_verifies_end_to_end()
     {
-        var skia = RepositoryId.Parse("dotnet/skiasharp");
+        var skia = RepositoryId.Parse("mono/skiasharp");
         var policy = ReleasePolicy.Parse("""
         {
           "schemaVersion": 1,
           "repositories": {
-            "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
+            "mono/skiasharp": {
+              "workload": false,
+              "barRepositoryAliases": [ "dotnet/skiasharp" ],
+              "channel": { "name": ".NET Libraries", "id": 1648 }
+            }
           }
         }
         """);
 
         var fake = new FakeBuilds(getById: id => BuildFactory.Create(id: id, gitHubRepository: null,
-            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp",
+            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp",
             channels: [(1648, ".NET Libraries")]));
 
         var builds = await new MaestroClient(fake).GetBuildAsync(328857, CancellationToken.None);
@@ -121,7 +125,7 @@ public class MaestroClientTests
         var resolved = BuildResolver.Resolve(
             new ReleaseRequest(skia, Commit: null, BarBuildId: 328857), policy.GetRepository(skia), builds);
 
-        Assert.Equal("dotnet/skiasharp", resolved.Repository);
+        Assert.Equal("mono/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
         Assert.Equal(328857, resolved.BarBuildId);
     }

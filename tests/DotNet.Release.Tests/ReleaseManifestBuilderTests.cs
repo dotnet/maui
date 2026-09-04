@@ -5,7 +5,7 @@ namespace DotNet.Release.Tests;
 public class ReleaseManifestBuilderTests
 {
     private static ReleaseManifest Manifest(IReadOnlyList<ReleasePackage> drop, bool workload = false, StageOptions? options = null,
-        string repo = "dotnet/skiasharp") => ReleaseManifestBuilder.Build(
+        string repo = "mono/skiasharp") => ReleaseManifestBuilder.Build(
             TestData.Source(workload, repo), TestData.Policy(), drop, options ?? new StageOptions(), TestData.Now, TestData.ToolVersion);
 
     private static ReleasePackage WorkloadManifest(string band = "10", string version = "10.0.0") =>

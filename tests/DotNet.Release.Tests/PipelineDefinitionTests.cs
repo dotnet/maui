@@ -89,9 +89,9 @@ public class PipelineDefinitionTests
     [Fact]
     public void The_repository_dropdown_matches_the_release_policy()
     {
-        var offered = ((YamlSequenceNode)Parameter("ghRepo")["values"]).Cast<YamlScalarNode>()
+        var offered = ((YamlSequenceNode)Parameter("repository")["values"]).Cast<YamlScalarNode>()
             .Where(v => v.Value != "select-repository")
-            .Select(v => $"dotnet/{v.Value}")
+            .Select(v => v.Value)
             .OrderBy(v => v, StringComparer.Ordinal);
 
         var allowed = Policy.Repositories
@@ -99,6 +99,14 @@ public class PipelineDefinitionTests
             .OrderBy(v => v, StringComparer.Ordinal);
 
         Assert.Equal(allowed, offered);
+    }
+
+    [Fact]
+    public void The_run_name_uses_the_full_repository_without_a_path_separator()
+    {
+        var name = ((YamlScalarNode)Pipeline["name"]).Value;
+
+        Assert.Contains("replace(parameters.repository, '/', '-')", name, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -243,7 +251,7 @@ public class PipelineDefinitionTests
     [Fact]
     public void Release_identity_must_be_supplied_for_every_run()
     {
-        Assert.Equal("select-repository", ((YamlScalarNode)Parameter("ghRepo")["default"]).Value);
+        Assert.Equal("select-repository", ((YamlScalarNode)Parameter("repository")["default"]).Value);
         Assert.DoesNotContain(Policy.Repositories,
             repository => repository.Repository.Name == "select-repository");
         Assert.Equal("enter-bar-id-or-commit-sha", ((YamlScalarNode)Parameter("buildIdentifier")["default"]).Value);
@@ -521,8 +529,7 @@ public class PipelineDefinitionTests
     [InlineData("buildIdentifier")]
     [InlineData("includeFilters")]
     [InlineData("excludeFilters")]
-    [InlineData("ghOwner")]
-    [InlineData("ghRepo")]
+    [InlineData("repository")]
     [InlineData("recoveryFilters")]
     public void Queue_time_parameters_are_never_spliced_into_script_text(string parameterName)
     {

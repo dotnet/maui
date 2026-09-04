@@ -134,7 +134,7 @@ public class NuGetClientPackageTests : IDisposable
         var policy = ReleasePolicy.Parse("""
         {
           "schemaVersion": 1,
-          "repositories": { "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } } }
+          "repositories": { "mono/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } } }
         }
         """);
 
@@ -143,8 +143,8 @@ public class NuGetClientPackageTests : IDisposable
             CancellationToken.None);
         var source = new ReleaseSource
         {
-            Repository = "dotnet/skiasharp",
-            RepositoryUrl = "https://github.com/dotnet/skiasharp",
+            Repository = "mono/skiasharp",
+            RepositoryUrl = "https://github.com/mono/skiasharp",
             Commit = new string('a', 40),
             BarBuildId = 4242,
             RepositoryOrigin = RepositoryOrigin.GitHubRepository,

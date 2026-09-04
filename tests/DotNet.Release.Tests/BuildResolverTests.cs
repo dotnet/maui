@@ -5,7 +5,7 @@ namespace DotNet.Release.Tests;
 public class BuildResolverTests
 {
     private static ReleaseSource Resolve(IReadOnlyList<BarBuild> candidates, ReleaseRequest? request = null,
-        string repo = "dotnet/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates);
+        string repo = "mono/skiasharp") => BuildResolver.Resolve(request ?? TestData.Request(repo), TestData.RepoPolicy(repo), candidates);
 
     private static readonly ChannelReference Libraries = new(".NET Libraries", 1648);
 
@@ -15,7 +15,7 @@ public class BuildResolverTests
         var result = Resolve([TestData.Build(channels: Libraries)]);
 
         Assert.Equal(4242, result.BarBuildId);
-        Assert.Equal("dotnet/skiasharp", result.Repository);
+        Assert.Equal("mono/skiasharp", result.Repository);
         Assert.Equal(TestData.Commit, result.Commit);
         Assert.Equal(RepositoryOrigin.GitHubRepository, result.RepositoryOrigin);
         Assert.False(result.Workload);
@@ -56,7 +56,7 @@ public class BuildResolverTests
     [Fact]
     public void Commit_selection_must_match_the_BAR_build()
     {
-        var request = new ReleaseRequest(TestData.Repo("dotnet/skiasharp"), TestData.Commit, BarBuildId: null);
+        var request = new ReleaseRequest(TestData.Repo("mono/skiasharp"), TestData.Commit, BarBuildId: null);
 
         Assert.Equal(TestData.Commit, Resolve([TestData.Build(channels: Libraries)], request).Commit);
         Assert.Throws<DotNetReleaseException>(() => Resolve(
@@ -120,13 +120,39 @@ public class BuildResolverTests
     public void Null_github_repository_falls_back_to_the_mirror_convention()
     {
         var result = Resolve([TestData.Build(gitHubRepository: null,
-            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp",
+            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp",
             channels: Libraries)]);
 
-        Assert.Equal("dotnet/skiasharp", result.Repository);
+        Assert.Equal("mono/skiasharp", result.Repository);
 
         // The audit trail must state which path established identity.
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, result.RepositoryOrigin);
+    }
+
+    [Theory]
+    [InlineData("https://github.com/dotnet/skiasharp", null)]
+    [InlineData(null, "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp")]
+    public void Historical_repository_identity_resolves_to_the_canonical_repository(string? gitHubRepository, string? azureDevOpsRepository)
+    {
+        var result = Resolve([TestData.Build(
+            gitHubRepository: gitHubRepository,
+            azureDevOpsRepository: azureDevOpsRepository,
+            channels: Libraries)]);
+
+        Assert.Equal("mono/skiasharp", result.Repository);
+        Assert.Equal("https://github.com/mono/skiasharp", result.RepositoryUrl);
+    }
+
+    [Fact]
+    public void Historical_mirror_alias_can_be_selected_by_commit()
+    {
+        var request = new ReleaseRequest(TestData.Repo("mono/skiasharp"), TestData.Commit, BarBuildId: null);
+        var result = Resolve([TestData.Build(gitHubRepository: null,
+            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-SkiaSharp",
+            channels: Libraries)], request);
+
+        Assert.Equal(4242, result.BarBuildId);
+        Assert.Equal("mono/skiasharp", result.Repository);
     }
 
     [Fact]
@@ -153,7 +179,7 @@ public class BuildResolverTests
     [Fact]
     public void Policy_for_a_different_repository_is_rejected()
     {
-        Assert.Throws<DotNetReleaseException>(() => BuildResolver.Resolve(TestData.Request("dotnet/skiasharp"), TestData.RepoPolicy("dotnet/maui"),
+        Assert.Throws<DotNetReleaseException>(() => BuildResolver.Resolve(TestData.Request("mono/skiasharp"), TestData.RepoPolicy("dotnet/maui"),
             [TestData.Build(channels: Libraries)]));
     }
 
@@ -166,7 +192,7 @@ public class BuildResolverTests
     [Fact]
     public void A_request_without_BAR_ID_or_commit_is_rejected()
     {
-        var request = new ReleaseRequest(TestData.Repo("dotnet/skiasharp"), Commit: null, BarBuildId: null);
+        var request = new ReleaseRequest(TestData.Repo("mono/skiasharp"), Commit: null, BarBuildId: null);
 
         Assert.Throws<DotNetReleaseException>(() => Resolve([TestData.Build(channels: Libraries)], request));
     }

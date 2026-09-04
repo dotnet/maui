@@ -16,7 +16,11 @@ internal static class TestData
       "repositories": {
         "dotnet/maui": { "workload": true },
         "dotnet/android-libraries": { "workload": false, "channel": { "name": ".NET 10", "id": 5172 } },
-        "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
+        "mono/skiasharp": {
+          "workload": false,
+          "barRepositoryAliases": [ "dotnet/skiasharp" ],
+          "channel": { "name": ".NET Libraries", "id": 1648 }
+        }
       },
       "workloadSets": {
         "10": { "channel": ".NET 10 Workload Release", "feed": "dotnet10-workloads" }
@@ -43,14 +47,14 @@ internal static class TestData
     };
 
     public static BarBuild Build(int id = 4242, string? commit = null,
-        string? gitHubRepository = "https://github.com/dotnet/skiasharp",
+        string? gitHubRepository = "https://github.com/mono/skiasharp",
         string? azureDevOpsRepository = null,
         params ChannelReference[] channels) => new(id, commit ?? Commit, gitHubRepository, azureDevOpsRepository, channels);
 
-    public static ReleaseRequest Request(string repo = "dotnet/skiasharp", int barId = 4242) =>
+    public static ReleaseRequest Request(string repo = "mono/skiasharp", int barId = 4242) =>
         new(Repo(repo), Commit: null, BarBuildId: barId);
 
-    public static string ResolvedBuildJson(BarBuild build, string repo = "dotnet/skiasharp")
+    public static string ResolvedBuildJson(BarBuild build, string repo = "mono/skiasharp")
     {
         var repository = Repo(repo);
         var resolved = BuildResolver.Resolve(
@@ -60,7 +64,7 @@ internal static class TestData
         return ResolveCommand.SerializeOutput(resolved);
     }
 
-    public static ReleaseSource Source(bool workload = false, string repo = "dotnet/skiasharp") => new()
+    public static ReleaseSource Source(bool workload = false, string repo = "mono/skiasharp") => new()
     {
         Repository = repo,
         RepositoryUrl = $"https://github.com/{repo}",

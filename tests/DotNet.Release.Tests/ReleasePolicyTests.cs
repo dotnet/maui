@@ -11,7 +11,7 @@ public class ReleasePolicyTests
             () => TestData.Policy().GetRepository(TestData.Repo("dotnet/runtime")));
 
         // The message must name the allowed set, or an operator cannot act on the failure.
-        Assert.Contains("dotnet/skiasharp", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("mono/skiasharp", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class ReleasePolicyTests
     }
 
     [Theory]
-    [InlineData("dotnet/skiasharp", ".NET Libraries", 1648)]
+    [InlineData("mono/skiasharp", ".NET Libraries", 1648)]
     [InlineData("dotnet/android-libraries", ".NET 10", 5172)]
     public void Non_workload_repository_carries_its_required_channel(string repo, string channel, int id)
     {
@@ -37,7 +37,17 @@ public class ReleasePolicyTests
     [Fact]
     public void Repository_lookup_is_case_insensitive()
     {
-        Assert.Equal("dotnet/skiasharp", TestData.Policy().GetRepository(TestData.Repo("DotNet/SkiaSharp")).Repository.FullName);
+        Assert.Equal("mono/skiasharp", TestData.Policy().GetRepository(TestData.Repo("Mono/SkiaSharp")).Repository.FullName);
+    }
+
+    [Fact]
+    public void Historical_BAR_repository_alias_is_not_a_separate_releasable_repository()
+    {
+        var policy = TestData.Policy().GetRepository(TestData.Repo("mono/skiasharp"));
+
+        Assert.Equal([TestData.Repo("dotnet/skiasharp")], policy.BarRepositoryAliases);
+        Assert.True(policy.MatchesBarRepository(TestData.Repo("dotnet/skiasharp")));
+        Assert.Throws<DotNetReleaseException>(() => TestData.Policy().GetRepository(TestData.Repo("dotnet/skiasharp")));
     }
 
     [Fact]
@@ -71,7 +81,7 @@ public class ReleasePolicyTests
         Assert.Throws<DotNetReleaseException>(() => ReleasePolicy.Parse("""
         {
           "schemaVersion": 1,
-          "repositories": { "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries" } } }
+          "repositories": { "mono/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries" } } }
         }
         """));
     }
@@ -95,7 +105,7 @@ public class ReleasePolicyTests
         {
           "schemaVersion": 1,
           "repositories": {
-            "dotnet/skiasharp": { "workload": false, "channel": { "name": "", "id": 0 } },
+            "mono/skiasharp": { "workload": false, "channel": { "name": "", "id": 0 } },
             "not-a-repository": { "workload": false }
           },
           "workloadSets": {
@@ -105,7 +115,7 @@ public class ReleasePolicyTests
         }
         """));
 
-        Assert.Contains("dotnet/skiasharp", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("mono/skiasharp", exception.Message, StringComparison.Ordinal);
         Assert.Contains("not-a-repository", exception.Message, StringComparison.Ordinal);
         Assert.Contains("bad-band", exception.Message, StringComparison.Ordinal);
         Assert.Contains("Workload set '10'", exception.Message, StringComparison.Ordinal);
@@ -128,11 +138,56 @@ public class ReleasePolicyTests
 
         Assert.Equal(new ChannelReference(".NET 10", 5172), policy.GetRepository(TestData.Repo("dotnet/android-libraries")).Channel);
 
-        Assert.Equal(new ChannelReference(".NET Libraries", 1648), policy.GetRepository(TestData.Repo("dotnet/skiasharp")).Channel);
+        var skiaSharp = policy.GetRepository(TestData.Repo("mono/skiasharp"));
+        Assert.Equal(new ChannelReference(".NET Libraries", 1648), skiaSharp.Channel);
+        Assert.True(skiaSharp.MatchesBarRepository(TestData.Repo("dotnet/skiasharp")));
 
         foreach (var band in new[] { 8, 9, 10, 11 })
         {
             Assert.Equal(band, policy.GetWorkloadSet(band).Band);
         }
+    }
+
+    [Theory]
+    [InlineData("mono/skiasharp")]
+    [InlineData("not-a-repository")]
+    public void Invalid_BAR_repository_alias_is_rejected(string alias)
+    {
+        var exception = Assert.Throws<DotNetReleaseException>(() => ReleasePolicy.Parse($$"""
+        {
+          "schemaVersion": 1,
+          "repositories": {
+            "mono/skiasharp": {
+              "workload": false,
+              "barRepositoryAliases": [ "{{alias}}" ],
+              "channel": { "name": ".NET Libraries", "id": 1648 }
+            }
+          }
+        }
+        """));
+
+        Assert.Contains("alias", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BAR_repository_alias_cannot_belong_to_multiple_policies()
+    {
+        var exception = Assert.Throws<DotNetReleaseException>(() => ReleasePolicy.Parse("""
+        {
+          "schemaVersion": 1,
+          "repositories": {
+            "mono/skiasharp": {
+              "workload": false,
+              "barRepositoryAliases": [ "dotnet/skiasharp" ]
+            },
+            "dotnet/other": {
+              "workload": false,
+              "barRepositoryAliases": [ "dotnet/skiasharp" ]
+            }
+          }
+        }
+        """));
+
+        Assert.Contains("assigned to both", exception.Message, StringComparison.Ordinal);
     }
 }

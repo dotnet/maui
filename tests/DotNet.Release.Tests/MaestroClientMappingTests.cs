@@ -15,7 +15,7 @@ public class MaestroClientMappingTests
 
         Assert.Equal(328857, mapped.Id);
         Assert.Equal(BuildFactory.Commit, mapped.Commit);
-        Assert.Equal("https://github.com/dotnet/skiasharp", mapped.GitHubRepository);
+        Assert.Equal("https://github.com/mono/skiasharp", mapped.GitHubRepository);
         Assert.Equal(new ChannelReference(".NET Libraries", 1648), Assert.Single(mapped.Channels));
     }
 
@@ -64,13 +64,13 @@ public class MaestroClientMappingTests
     public void Null_github_repository_still_carries_the_azdo_mirror_for_identity_recovery()
     {
         var mapped = MaestroClient.Map(BuildFactory.Create(gitHubRepository: null,
-            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp"));
+            azureDevOpsRepository: "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp"));
 
         Assert.Null(mapped.GitHubRepository);
-        Assert.Equal("https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", mapped.AzureDevOpsRepository);
+        Assert.Equal("https://dev.azure.com/dnceng/internal/_git/mono-skiasharp", mapped.AzureDevOpsRepository);
 
         // End to end: the mapped build must resolve through the mirror convention.
-        Assert.Equal("dotnet/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).FullName);
+        Assert.Equal("mono/skiasharp", RepositoryId.FromAzureDevOpsMirror(mapped.AzureDevOpsRepository).FullName);
     }
 
     [Theory]
@@ -86,11 +86,11 @@ public class MaestroClientMappingTests
     public void Values_are_trimmed()
     {
         var mapped = MaestroClient.Map(BuildFactory.Create(commit: $"  {BuildFactory.Commit}  ",
-            gitHubRepository: "  https://github.com/dotnet/skiasharp  ",
+            gitHubRepository: "  https://github.com/mono/skiasharp  ",
             channels: [(1648, "  .NET Libraries  ")]));
 
         Assert.Equal(BuildFactory.Commit, mapped.Commit);
-        Assert.Equal("https://github.com/dotnet/skiasharp", mapped.GitHubRepository);
+        Assert.Equal("https://github.com/mono/skiasharp", mapped.GitHubRepository);
         Assert.Equal(".NET Libraries", mapped.Channels[0].Name);
     }
 

@@ -15,10 +15,10 @@ public class VerbsTests : IDisposable
 
     public void Dispose() => _workspace.Dispose();
 
-    private Task<ReleaseSource> Resolve(FakeMaestroClient maestro, string build = Workspace.Commit, string repo = "dotnet/skiasharp") =>
+    private Task<ReleaseSource> Resolve(FakeMaestroClient maestro, string build = Workspace.Commit, string repo = "mono/skiasharp") =>
         ResolveCommand.ExecuteAsync(_output, maestro, Workspace.PolicyJson, repo, build, CancellationToken.None);
 
-    private static string ResolvedBuildJson(BarBuild? build = null, string repo = "dotnet/skiasharp")
+    private static string ResolvedBuildJson(BarBuild? build = null, string repo = "mono/skiasharp")
         => TestData.ResolvedBuildJson(build ?? Workspace.Build(channels: Libraries), repo);
 
     private Task Stage(StageOptions? options = null, string? resolvedBuildJson = null) =>
@@ -64,11 +64,11 @@ public class VerbsTests : IDisposable
     public async Task Resolve_supports_the_Azure_DevOps_mirror_identity_fallback()
     {
         var build = new BarBuild(4242, Workspace.Commit, null,
-            "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
+            "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp", [Libraries]);
 
         var resolved = await Resolve(new FakeMaestroClient(build), build: "4242");
 
-        Assert.Equal("dotnet/skiasharp", resolved.Repository);
+        Assert.Equal("mono/skiasharp", resolved.Repository);
         Assert.Equal(RepositoryOrigin.AzureDevOpsMirrorConvention, resolved.RepositoryOrigin);
     }
 
@@ -76,7 +76,7 @@ public class VerbsTests : IDisposable
     public async Task Resolve_can_find_a_mirror_only_build_by_commit()
     {
         var mirrorBuild = new BarBuild(4242, Workspace.Commit, null,
-            "https://dev.azure.com/dnceng/internal/_git/dotnet-skiasharp", [Libraries]);
+            "https://dev.azure.com/dnceng/internal/_git/mono-skiasharp", [Libraries]);
         var unrelatedBuild = Workspace.Build("https://github.com/dotnet/maui");
 
         var resolved = await Resolve(new FakeMaestroClient(mirrorBuild, unrelatedBuild));
@@ -104,7 +104,7 @@ public class VerbsTests : IDisposable
 
         Assert.Equal(4242, document.RootElement.GetProperty("barBuildId").GetInt32());
         Assert.Equal(Workspace.Commit, document.RootElement.GetProperty("commit").GetString());
-        Assert.Equal("dotnet/skiasharp", document.RootElement.GetProperty("repository").GetString());
+        Assert.Equal("mono/skiasharp", document.RootElement.GetProperty("repository").GetString());
     }
 
     // ---- stage ----
@@ -129,8 +129,8 @@ public class VerbsTests : IDisposable
         Assert.Contains("Repository origin : GitHubRepository", output, StringComparison.Ordinal);
         Assert.Contains("Tool version   : 1.0.0-test", output, StringComparison.Ordinal);
         Assert.Contains($"Created UTC    : {Workspace.Now:O}", output, StringComparison.Ordinal);
-        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
-        Assert.Contains("Repository URL    : https://github.com/dotnet/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains("Repository        : mono/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains("Repository URL    : https://github.com/mono/skiasharp", output, StringComparison.Ordinal);
         Assert.Contains($"Commit            : {Workspace.Commit}", output, StringComparison.Ordinal);
         Assert.Contains("BAR build ID      : 4242", output, StringComparison.Ordinal);
         Assert.Contains("Workload          : False", output, StringComparison.Ordinal);
@@ -290,7 +290,7 @@ public class VerbsTests : IDisposable
 
         var output = _output.AllOutput;
         Assert.Contains("Selected release:", output, StringComparison.Ordinal);
-        Assert.Contains("Repository        : dotnet/skiasharp", output, StringComparison.Ordinal);
+        Assert.Contains("Repository        : mono/skiasharp", output, StringComparison.Ordinal);
         Assert.Contains($"Commit            : {Workspace.Commit}", output, StringComparison.Ordinal);
         Assert.Contains("BAR build ID      : 4242", output, StringComparison.Ordinal);
         Assert.Contains($"Manifest SHA-256 : {ManifestHash}", output, StringComparison.Ordinal);

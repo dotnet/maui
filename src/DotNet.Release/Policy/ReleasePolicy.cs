@@ -3,15 +3,25 @@ using System.Text.Json.Serialization;
 
 namespace DotNet.Release;
 
-/// <summary>Policy for one releasable repository.</summary>
-internal sealed record RepositoryPolicy(RepositoryId Repository, bool Workload, ChannelReference? Channel);
+/// <summary>Policy for one releasable repository and any historical identities BAR may report for it.</summary>
+internal sealed record RepositoryPolicy(
+    RepositoryId Repository,
+    bool Workload,
+    ChannelReference? Channel,
+    IReadOnlyList<RepositoryId> BarRepositoryAliases)
+{
+    /// <summary>Whether a repository identity reported by BAR belongs to this policy.</summary>
+    public bool MatchesBarRepository(RepositoryId repository) =>
+        repository == Repository || BarRepositoryAliases.Contains(repository);
+}
 
 /// <summary>
 /// The declarative, checked-in release policy. Anything not listed fails closed.
 /// </summary>
 /// <remarks>
-/// Repository enablement, workload classification, channel requirements, and workload-set
-/// targets are versioned together in <c>config/repositories.json</c>.
+/// Repository enablement, historical BAR identities, workload classification, channel
+/// requirements, and workload-set targets are versioned together in
+/// <c>config/repositories.json</c>.
 /// </remarks>
 internal sealed class ReleasePolicy
 {
@@ -87,9 +97,53 @@ internal sealed class ReleasePolicy
                 channel = new ChannelReference(entry.Channel.Name.Trim(), entry.Channel.Id);
             }
 
-            if (!repositories.TryAdd(id.FullName, new RepositoryPolicy(id, entry.Workload, channel)))
+            var aliases = new List<RepositoryId>();
+            foreach (var value in entry.BarRepositoryAliases ?? [])
+            {
+                RepositoryId alias;
+                try
+                {
+                    alias = RepositoryId.Parse(value);
+                }
+                catch (DotNetReleaseException ex)
+                {
+                    errors.Add($"Repository '{id.FullName}' has invalid BAR repository alias: {ex.Message}");
+                    continue;
+                }
+
+                if (alias == id)
+                {
+                    errors.Add($"Repository '{id.FullName}' lists itself as a BAR repository alias.");
+                }
+                else if (aliases.Contains(alias))
+                {
+                    errors.Add($"Repository '{id.FullName}' lists BAR repository alias '{alias}' more than once.");
+                }
+                else
+                {
+                    aliases.Add(alias);
+                }
+            }
+
+            if (!repositories.TryAdd(id.FullName, new RepositoryPolicy(id, entry.Workload, channel, [.. aliases])))
             {
                 errors.Add($"Repository '{id.FullName}' is listed more than once.");
+            }
+        }
+
+        var repositoryOwners = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var repository in repositories.Values)
+        {
+            foreach (var identity in repository.BarRepositoryAliases.Prepend(repository.Repository))
+            {
+                if (repositoryOwners.TryGetValue(identity.FullName, out var owner))
+                {
+                    errors.Add($"BAR repository identity '{identity}' is assigned to both '{owner}' and '{repository.Repository}'.");
+                }
+                else
+                {
+                    repositoryOwners.Add(identity.FullName, repository.Repository.FullName);
+                }
             }
         }
 
@@ -149,6 +203,9 @@ internal sealed class ReleasePolicy
 
         [JsonPropertyName("channel")]
         public ChannelEntry? Channel { get; init; }
+
+        [JsonPropertyName("barRepositoryAliases")]
+        public List<string>? BarRepositoryAliases { get; init; }
     }
 
     /// <summary>Raw JSON reference to a required BAR channel.</summary>

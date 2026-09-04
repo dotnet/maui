@@ -167,7 +167,7 @@ internal static class BuildFactory
     /// annotation, which is exactly why the mapper normalizes them.
     /// </summary>
     public static PcsModels.Build Create(int id = 4242, string? commit = Commit,
-        string? gitHubRepository = "https://github.com/dotnet/skiasharp",
+        string? gitHubRepository = "https://github.com/mono/skiasharp",
         string? azureDevOpsRepository = null, params (int Id, string? Name)[] channels)
     {
         var build = new PcsModels.Build(id, DateTimeOffset.UnixEpoch, staleness: 0, released: false, stable: true, commit!,

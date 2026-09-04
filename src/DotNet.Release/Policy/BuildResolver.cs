@@ -44,7 +44,7 @@ internal static class BuildResolver
             : candidates.Where(candidate =>
                     string.Equals(candidate.Commit?.Trim(), request.Commit, StringComparison.OrdinalIgnoreCase) &&
                     TryResolveIdentity(candidate, out var identity, out _) &&
-                    identity == request.Repository)
+                    policy.MatchesBarRepository(identity))
                 .ToList();
 
         if (matchingBuilds.Count == 0)
@@ -83,7 +83,7 @@ internal static class BuildResolver
 
         var (identity, origin) = ResolveIdentity(build);
 
-        if (identity != request.Repository)
+        if (!policy.MatchesBarRepository(identity))
         {
             throw new DotNetReleaseException($"BAR build {build.Id} belongs to '{identity}', not '{request.Repository}'.");
         }

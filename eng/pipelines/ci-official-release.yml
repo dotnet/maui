@@ -39,29 +39,24 @@
 # See docs/design.md for the full rationale.
 # =============================================================================================
 
-name: $(Date:yyyyMMdd)$(Rev:.r)-${{ parameters.ghOwner }}-${{ parameters.ghRepo }}
+name: $(Date:yyyyMMdd)$(Rev:.r)-${{ replace(parameters.repository, '/', '-') }}
 
 trigger: none
 pr: none
 
 parameters:
 # ---- what to release -----------------------------------------------------------------------
-- name: ghOwner
-  displayName: GitHub owner
-  type: string
-  default: dotnet
-
-- name: ghRepo
+- name: repository
   displayName: GitHub repository (must be enabled in config/repositories.json)
   type: string
   default: select-repository
   values:
   - select-repository
-  - maui
-  - android
-  - macios
-  - android-libraries
-  - skiasharp
+  - dotnet/maui
+  - dotnet/android
+  - dotnet/macios
+  - dotnet/android-libraries
+  - mono/skiasharp
 
 - name: buildIdentifier
   displayName: BAR build ID or full commit SHA
@@ -223,15 +218,14 @@ extends:
               dotnet "$env:RELEASE_TOOL" `
                 resolve `
                 --config "$env:CONFIG_PATH" `
-                --repo "$env:GH_OWNER/$env:GH_REPO" `
+                --repo "$env:REPOSITORY" `
                 --build "$env:BUILD_IDENTIFIER" `
                 --output "$env:RESOLVED_BUILD"
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           env:
             RELEASE_TOOL: $(ToolPath)
             CONFIG_PATH: $(Build.SourcesDirectory)/config/repositories.json
-            GH_OWNER: ${{ parameters.ghOwner }}
-            GH_REPO: ${{ parameters.ghRepo }}
+            REPOSITORY: ${{ parameters.repository }}
             BUILD_IDENTIFIER: ${{ parameters.buildIdentifier }}
             RESOLVED_BUILD: $(Agent.TempDirectory)/resolved-build.json
 
@@ -250,7 +244,7 @@ extends:
           displayName: Load resolved build
           env:
             RESOLVED_BUILD: $(Agent.TempDirectory)/resolved-build.json
-            REPOSITORY: ${{ parameters.ghOwner }}/${{ parameters.ghRepo }}
+            REPOSITORY: ${{ parameters.repository }}
 
         - task: AzureCLI@2
           displayName: Gather the verified drop

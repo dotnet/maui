@@ -215,8 +215,7 @@ capture the exact human-readable audit without a custom console or logging frame
 
 | Parameter | Required | Default | Purpose |
 |---|---:|---|---|
-| `ghOwner` | yes | `dotnet` | GitHub repository owner |
-| `ghRepo` | yes | `select-repository` | Fail-closed sentinel that the operator replaces with an enabled repository |
+| `repository` | yes | `select-repository` | Full `owner/name` picker containing exactly the enabled repositories |
 | `buildIdentifier` | yes | `enter-bar-id-or-commit-sha` | Full commit SHA to resolve, or an exact BAR build ID |
 | `releaseMode` | yes | Preview the package release without making changes | Select package preview/publication, with optional workload-promotion preview/publication |
 | `includeFilters` | no | `skip` | Semicolon-separated package filename globs |
@@ -347,8 +346,9 @@ before BAR or package work begins.
   "schemaVersion": 1,
   "repositories": {
     "dotnet/maui": { "workload": true },
-    "dotnet/skiasharp": {
+    "mono/skiasharp": {
       "workload": false,
+      "barRepositoryAliases": [ "dotnet/skiasharp" ],
       "channel": { "name": ".NET Libraries", "id": 1648 }
     }
   },
@@ -363,6 +363,11 @@ before BAR or package work begins.
 
 For repositories with a required channel, both the case-sensitive channel name and numeric
 ID MUST match exactly once.
+
+`barRepositoryAliases` handles repository renames without exposing stale identities as
+separate release choices. The selected repository and release manifest always use the
+canonical policy key; aliases are accepted only when matching the repository identity returned
+by BAR. An alias cannot duplicate a canonical repository or belong to multiple policies.
 
 Channel verification establishes a property distinct from source identity:
 
@@ -431,11 +436,14 @@ SkiaSharp BAR build 328857. In that case, identity is derived from the Azure Dev
 name using Arcade's convention:
 
 ```text
-dotnet-SkiaSharp -> dotnet/skiasharp
+mono-SkiaSharp   -> mono/skiasharp
+dotnet-SkiaSharp -> dotnet/skiasharp (historical policy alias)
 ```
 
 The first hyphen separates owner and repository. A value that does not follow this
-convention fails with an explicit mirror-identity error.
+convention fails with an explicit mirror-identity error. Policy maps the historical
+`dotnet/skiasharp` identity to canonical `mono/skiasharp`, so BAR builds from either side of
+the mirror rename can be released through the single `mono/skiasharp` picker entry.
 
 The resolve log records whether identity came from `GitHubRepository` or
 `AzureDevOpsMirrorConvention`; this diagnostic does not need to cross job boundaries.
@@ -543,8 +551,8 @@ package's identity, file name, hash, and final disposition.
   "toolVersion": "1.0.0",
   "createdUtc": "2026-08-28T00:00:00Z",
   "source": {
-    "repository": "dotnet/skiasharp",
-    "repositoryUrl": "https://github.com/dotnet/skiasharp",
+    "repository": "mono/skiasharp",
+    "repositoryUrl": "https://github.com/mono/skiasharp",
     "commit": "<full-sha>",
     "barBuildId": 328857,
     "repositoryOrigin": "AzureDevOpsMirrorConvention",

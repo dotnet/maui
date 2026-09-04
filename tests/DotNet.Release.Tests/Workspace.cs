@@ -84,7 +84,11 @@ internal sealed class Workspace : IDisposable
       "schemaVersion": 1,
       "repositories": {
         "dotnet/maui": { "workload": true },
-        "dotnet/skiasharp": { "workload": false, "channel": { "name": ".NET Libraries", "id": 1648 } }
+        "mono/skiasharp": {
+          "workload": false,
+          "barRepositoryAliases": [ "dotnet/skiasharp" ],
+          "channel": { "name": ".NET Libraries", "id": 1648 }
+        }
       },
       "workloadSets": {
         "10": { "channel": ".NET 10 Workload Release", "feed": "dotnet10-workloads" }
@@ -111,7 +115,7 @@ internal sealed class Workspace : IDisposable
     public static readonly DateTimeOffset Now = new(2026, 8, 27, 18, 0, 0, TimeSpan.Zero);
 
     public static BarBuild Build(
-        string? gitHubRepository = "https://github.com/dotnet/skiasharp",
+        string? gitHubRepository = "https://github.com/mono/skiasharp",
         params ChannelReference[] channels) => new(4242, Commit, gitHubRepository, null, channels);
 
     /// <summary>Writes a real .nupkg into the simulated gather-drop output.</summary>
