@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample
 	public static partial class CollectionViewHostBuilderExtensions
 	{
 		/// <summary>
-		/// Registers explicit Items2 handlers for the test-only CollectionView2 and CarouselView2 controls.
+		/// On iOS and Mac Catalyst, registers explicit Items2 handlers for the test-only CollectionView2 and CarouselView2 controls.
 		/// </summary>
 		public static MauiAppBuilder ConfigureCollectionViewHandlers(this MauiAppBuilder builder)
 		{
