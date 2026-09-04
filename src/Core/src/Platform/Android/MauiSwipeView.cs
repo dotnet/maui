@@ -763,7 +763,6 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 			_swipeItems.Clear();
-			_swipeItems.Clear();
 
 			if (_actionView != null)
 			{
