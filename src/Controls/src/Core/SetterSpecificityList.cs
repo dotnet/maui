@@ -97,6 +97,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
+		/// Gets the value at <paramref name="index"/>, ordered from lowest to highest specificity.
+		/// </summary>
+		public T GetValueAt(int index) => _values[index];
+
+		/// <summary>
+		/// Gets the specificity at <paramref name="index"/>, ordered from lowest to highest.
+		/// </summary>
+		public SetterSpecificity GetSpecificityAt(int index) => _keys[index];
+
+		/// <summary>
 		/// Gets the highest specificity and value
 		/// </summary>
 		/// <returns></returns>
