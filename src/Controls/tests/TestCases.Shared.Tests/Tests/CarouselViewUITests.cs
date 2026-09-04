@@ -18,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		protected override bool ResetAfterEachTest => true;
 
-		// Items2 still fails initial position and orientation preservation on Apple; Android Items coverage remains.
-#if !IOS && !MACCATALYST
+		// Items2 still fails initial position on iOS; Android Items and Mac Catalyst Items2 coverage remain.
+#if !IOS
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewSetPosition()
@@ -68,6 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
+		// Items2 does not preserve position on iOS, and Mac Catalyst does not support orientation changes.
 #if !IOS && !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
