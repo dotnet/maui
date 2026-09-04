@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -13,6 +14,9 @@ namespace Microsoft.Maui.Controls
 	/// <summary>An <see cref="ImageSource"/> that loads an image from a URI, with caching support.</summary>
 	public sealed partial class UriImageSource : ImageSource, IStreamImageSource
 	{
+		internal const int DefaultMaxResponseContentBufferSize = 50 * 1024 * 1024;
+		internal const string MaxResponseContentBufferSizeAppContextKey = "Microsoft.Maui.Controls.UriImageSource.MaxResponseContentBufferSize";
+
 		/// <summary>Bindable property for <see cref="Uri"/>.</summary>
 		public static readonly BindableProperty UriProperty = BindableProperty.Create(
 			nameof(Uri), typeof(Uri), typeof(UriImageSource), default(Uri),
@@ -116,6 +120,7 @@ namespace Microsoft.Maui.Controls
 			try
 			{
 				using var client = new HttpClient();
+				client.MaxResponseContentBufferSize = GetMaxResponseContentBufferSize();
 
 				// Do not remove this await otherwise the client will dispose before
 				// the stream even starts
@@ -127,6 +132,43 @@ namespace Microsoft.Maui.Controls
 				Application.Current?.FindMauiContext()?.CreateLogger<UriImageSource>()?.LogWarning(ex, "Error getting stream for {Uri}", Uri);
 				return null;
 			}
+		}
+
+		internal static int GetMaxResponseContentBufferSize()
+		{
+			var configuredValue = AppContext.GetData(MaxResponseContentBufferSizeAppContextKey);
+			if (configuredValue is null)
+				return DefaultMaxResponseContentBufferSize;
+
+			int maxResponseContentBufferSize;
+			if (configuredValue is int intValue)
+			{
+				maxResponseContentBufferSize = intValue;
+			}
+			else if (configuredValue is long longValue &&
+				longValue >= int.MinValue &&
+				longValue <= int.MaxValue)
+			{
+				maxResponseContentBufferSize = (int)longValue;
+			}
+			else if (configuredValue is string stringValue &&
+				int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
+			{
+				maxResponseContentBufferSize = parsedValue;
+			}
+			else
+			{
+				throw new InvalidOperationException(
+					$"The AppContext value '{MaxResponseContentBufferSizeAppContextKey}' must be an integer number of bytes.");
+			}
+
+			if (maxResponseContentBufferSize <= 0)
+			{
+				throw new InvalidOperationException(
+					$"The AppContext value '{MaxResponseContentBufferSizeAppContextKey}' must be between 1 and {int.MaxValue} bytes.");
+			}
+
+			return maxResponseContentBufferSize;
 		}
 
 		void OnUriChanged()
