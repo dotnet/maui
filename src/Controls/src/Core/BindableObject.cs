@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls
 			if (changed)
 			{
 				property.PropertyChanging?.Invoke(this, original.Value, newValue);
-				OnPropertyChanging(property.PropertyName);
+				NotifyPropertyChanging(property);
 			}
 
 			bpcontext.Values.Remove(specificity);
@@ -423,14 +423,73 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="propertyName">The name of the property that has changed.</param>
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-			=> PropertyChanged?.Invoke(this, BindableProperty.GetCachedPropertyChangedEventArgs(propertyName));
+			=> PropertyChanged?.Invoke(this, ChangedEventArgsFor(propertyName));
 
 		/// <summary>
 		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
-			=> PropertyChanging?.Invoke(this, BindableProperty.GetCachedPropertyChangingEventArgs(propertyName));
+			=> PropertyChanging?.Invoke(this, ChangingEventArgsFor(propertyName));
+
+		// The BindableProperty currently being notified, if any. OnPropertyChanged/OnPropertyChanging take a name
+		// rather than a property, and they are public API that dozens of controls override, so the property cannot
+		// simply be passed down as an argument. Parking it here instead lets the args come straight off the property
+		// while the virtual is still dispatched exactly as before, so every override keeps working.
+		BindableProperty _notifyingProperty;
+
+		void NotifyPropertyChanged(BindableProperty property)
+		{
+			// Saved and restored rather than cleared, because a handler is free to set another property from inside
+			// this notification, and the outer one has to still be parked when that nested call returns.
+			var previous = _notifyingProperty;
+			_notifyingProperty = property;
+
+			try
+			{
+				OnPropertyChanged(property.PropertyName);
+			}
+			finally
+			{
+				_notifyingProperty = previous;
+			}
+		}
+
+		void NotifyPropertyChanging(BindableProperty property)
+		{
+			var previous = _notifyingProperty;
+			_notifyingProperty = property;
+
+			try
+			{
+				OnPropertyChanging(property.PropertyName);
+			}
+			finally
+			{
+				_notifyingProperty = previous;
+			}
+		}
+
+		// All three notification sites pass property.PropertyName itself, so the parked property is the right one
+		// exactly when the reference matches. An override that calls base.OnPropertyChanged with some other name —
+		// or any notification that never came from a BindableProperty at all — falls through to the keyed cache.
+		PropertyChangedEventArgs ChangedEventArgsFor(string propertyName)
+		{
+			var property = _notifyingProperty;
+
+			return property is not null && ReferenceEquals(property.PropertyName, propertyName)
+				? property.ChangedEventArgs
+				: BindableProperty.GetCachedPropertyChangedEventArgs(propertyName);
+		}
+
+		PropertyChangingEventArgs ChangingEventArgsFor(string propertyName)
+		{
+			var property = _notifyingProperty;
+
+			return property is not null && ReferenceEquals(property.PropertyName, propertyName)
+				? property.ChangingEventArgs
+				: BindableProperty.GetCachedPropertyChangingEventArgs(propertyName);
+		}
 
 		/// <summary>
 		/// Removes all current bindings from the current context.
@@ -676,7 +735,7 @@ namespace Microsoft.Maui.Controls
 			{
 				property.PropertyChanging?.Invoke(this, original, value);
 
-				OnPropertyChanging(property.PropertyName);
+				NotifyPropertyChanging(property);
 			}
 
 			context.Values.SetValue(specificity, value);
@@ -709,7 +768,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (willFirePropertyChanged)
 			{
-				OnPropertyChanged(property.PropertyName);
+				NotifyPropertyChanged(property);
 				property.PropertyChanged?.Invoke(this, original, value);
 			}
 		}
