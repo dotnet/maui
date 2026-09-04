@@ -457,8 +457,9 @@ namespace Microsoft.Maui.Controls
 			ApplyBinding(bpcontext, fromBindingContextChanged: false);
 		}
 
-		internal virtual void OnRemoveDynamicResource(BindableProperty property)
+		internal virtual bool OnRemoveDynamicResource(BindableProperty property, SetterSpecificity specificity)
 		{
+			return true;
 		}
 
 		internal virtual void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
@@ -473,9 +474,13 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
-			OnRemoveDynamicResource(property);
-			BindablePropertyContext context = GetOrCreateContext(property);
-			context.Attributes &= ~BindableContextAttributes.IsDynamicResource;
+			// A lower-specificity registration may still be live for this property (a style's,
+			// under a visual state's); only clear the flag once the last one is gone.
+			if (OnRemoveDynamicResource(property, specificity))
+			{
+				BindablePropertyContext context = GetOrCreateContext(property);
+				context.Attributes &= ~BindableContextAttributes.IsDynamicResource;
+			}
 		}
 
 		void IDynamicResourceHandler.SetDynamicResource(BindableProperty property, string key)
