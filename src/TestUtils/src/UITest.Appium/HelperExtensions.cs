@@ -793,6 +793,7 @@ namespace UITest.Appium
 		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static IUIElement WaitForElement(this IApp app, string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("wait_for_element", marked);
 			IUIElement result() => FindElement(app, marked);
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
 
