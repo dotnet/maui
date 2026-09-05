@@ -6,7 +6,6 @@ parameters:
   pool: ''
 
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
-  CeapexServiceConnection: ''
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
   SourcesDirectory: $(System.DefaultWorkingDirectory)
@@ -23,6 +22,7 @@ parameters:
   GitHubOrg: dotnet
   MirrorRepo: ''
   MirrorBranch: main
+  xLocCustomPowerShellScript: ''
   condition: ''
   JobNameSuffix: ''
   is1ESPipeline: ''
@@ -53,13 +53,13 @@ jobs:
       # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
       ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
         name: AzurePipelines-EO
-        image: 1ESPT-Windows2022
+        image: 1ESPT-Windows2025
         demands: Cmd
         os: windows
       # If it's not devdiv, it's dnceng
       ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
         name: $(DncEngInternalBuildPool)
-        image: 1es-windows-2022
+        image: windows.vs2026.amd64
         os: windows
 
   steps:
@@ -73,14 +73,6 @@ jobs:
           arguments: $(_GenerateLocProjectArguments)
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
-
-    - ${{ if and(ne(parameters.CeapexServiceConnection, ''), or(eq(variables['System.TeamProject'], 'internal'), eq(variables['System.TeamProject'], 'DevDiv'))) }}:
-      - template: /eng/common/core-templates/steps/get-federated-access-token.yml
-        parameters:
-          federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
-          outputVariableName: CeapexEntraToken
-          is1ESPipeline: ${{ parameters.is1ESPipeline }}
-          condition: ${{ parameters.condition }}
 
     - task: OneLocBuild@2
       displayName: OneLocBuild
@@ -97,10 +89,7 @@ jobs:
           isUseLfLineEndingsSelected: ${{ parameters.UseLfLineEndings }}
           isShouldReusePrSelected: ${{ parameters.ReusePr }}
         packageSourceAuth: patAuth
-        ${{ if and(ne(parameters.CeapexServiceConnection, ''), or(eq(variables['System.TeamProject'], 'internal'), eq(variables['System.TeamProject'], 'DevDiv'))) }}:
-          patVariable: $(CeapexEntraToken)
-        ${{ if or(eq(parameters.CeapexServiceConnection, ''), and(ne(variables['System.TeamProject'], 'internal'), ne(variables['System.TeamProject'], 'DevDiv'))) }}:
-          patVariable: ${{ parameters.CeapexPat }}
+        patVariable: ${{ parameters.CeapexPat }}
         ${{ if eq(parameters.RepoType, 'gitHub') }}:
           repoType: ${{ parameters.RepoType }}
           gitHubPatVariable: "${{ parameters.GithubPat }}"
@@ -109,6 +98,8 @@ jobs:
           gitHubOrganization: ${{ parameters.GitHubOrg }}
           mirrorRepo: ${{ parameters.MirrorRepo }}
           mirrorBranch: ${{ parameters.MirrorBranch }}
+        ${{ if ne(parameters.xLocCustomPowerShellScript, '') }}:
+          xLocCustomPowerShellScript: ${{ parameters.xLocCustomPowerShellScript }}
       condition: ${{ parameters.condition }}
 
     # Copy the locProject.json to the root of the Loc directory, then publish a pipeline artifact
