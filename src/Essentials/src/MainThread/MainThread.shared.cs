@@ -9,6 +9,49 @@ namespace Microsoft.Maui.ApplicationModel
 	/// </summary>
 	public static partial class MainThread
 	{
+		// Internal backing for custom platform backends and dispatcher fallback.
+		// On supported platforms (Android, iOS, Windows), the Platform* methods are used directly.
+		// On netstandard/external TFMs, this provides the implementation as a single atomic state object.
+		//
+		// Host integrations can capture and restore this state when multiple MauiApp instances
+		// overlap. Direct callers can still replace or clear the current implementation atomically.
+#nullable enable
+		static MainThreadImplementation? s_mainThreadImplementation;
+
+		internal sealed class MainThreadImplementation
+		{
+			readonly Func<bool> _isMainThread;
+			readonly Action<Action> _beginInvokeOnMainThread;
+
+			public MainThreadImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread)
+			{
+				_isMainThread = isMainThread;
+				_beginInvokeOnMainThread = beginInvokeOnMainThread;
+			}
+
+			public bool IsMainThread() => _isMainThread();
+
+			public void BeginInvokeOnMainThread(Action action) => _beginInvokeOnMainThread(action);
+		}
+
+		internal static MainThreadImplementation CreateCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread) =>
+			new(
+				isMainThread ?? throw new ArgumentNullException(nameof(isMainThread)),
+				beginInvokeOnMainThread ?? throw new ArgumentNullException(nameof(beginInvokeOnMainThread)));
+
+		internal static MainThreadImplementation? GetCustomImplementation() =>
+			Volatile.Read(ref s_mainThreadImplementation);
+
+		internal static void SetCustomImplementation(MainThreadImplementation? implementation) =>
+			EssentialsImplementation.Set(ref s_mainThreadImplementation, implementation);
+
+		internal static void SetCustomImplementation(Func<bool> isMainThread, Action<Action> beginInvokeOnMainThread) =>
+			SetCustomImplementation(CreateCustomImplementation(isMainThread, beginInvokeOnMainThread));
+
+		internal static void ClearCustomImplementation() =>
+			SetCustomImplementation((MainThreadImplementation?)null);
+#nullable restore
+
 		/// <summary>
 		/// True if the current thread is the UI thread.
 		/// </summary>

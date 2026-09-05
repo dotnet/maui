@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElementController, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -289,12 +289,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this scroll view.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.Default (platform-specific).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the scroll view should obey safe area insets.
-		/// Use SafeAreaEdges.None for edge-to-edge content, SafeAreaEdges.All to obey all safe area insets, 
-		/// SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaEdges.SoftInput for keyboard-aware behavior.
+		/// Use SafeAreaEdges.None for edge-to-edge content or SafeAreaEdges.Container for content that flows under keyboard but stays out of bars/notch.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -551,7 +550,7 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
 		}
@@ -565,6 +564,9 @@ namespace Microsoft.Maui.Controls
 				// The platform-specific MauiScrollView handles this
 			}
 		}
+
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

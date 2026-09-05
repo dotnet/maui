@@ -252,16 +252,31 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.Entry)]
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		// This base class exercises TabbedRenderer (via ControlsPageTypesTestCases.Setup) on
+		// iOS/MacCatalyst for the TabbedPage/TabbedPageWithNavigationPage cases; the
+		// EntryTestsWithWindow_TabbedViewHandler subclass overrides registration to exercise
+		// TabbedViewHandler instead, so those cases run against both variants.
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 		public partial class EntryTestsWithWindow : ControlsHandlerTestBase
 		{
 			[Theory]
 			[ClassData(typeof(ControlsPageTypesTestCases))]
-			public async Task NextMovesToNextEntry(ControlsPageTypesTestCase page)
+			public Task NextMovesToNextEntry(ControlsPageTypesTestCase page) =>
+				NextMovesToNextEntryCore(page, includeNavigationViewHandler: true);
+
+			// Also verify NavigationPage doesn't break entry focus advancement when using the
+			// legacy NavigationRenderer, not just the NavigationViewHandler above.
+			// See RendererHandlerVariant.cs.
+			[Fact]
+			public Task NextMovesToNextEntry_NavigationPageRenderer() =>
+				NextMovesToNextEntryCore(ControlsPageTypesTestCase.NavigationPage, includeNavigationViewHandler: false);
+
+			async Task NextMovesToNextEntryCore(ControlsPageTypesTestCase page, bool includeNavigationViewHandler)
 			{
 				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
 				{
-					ControlsPageTypesTestCases.Setup(builder);
+					RegisterPageTypeHandlers(builder, includeNavigationViewHandler);
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -300,6 +315,21 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
+
+			// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+			// EntryTestsWithWindow_TabbedViewHandler overrides this to exercise TabbedViewHandler
+			// instead.
+			protected virtual void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler);
+		}
+
+		[Category(TestCategory.Entry)]
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedViewHandler)] // See RendererHandlerVariant.cs
+		public class EntryTestsWithWindow_TabbedViewHandler : EntryTestsWithWindow
+		{
+			protected override void RegisterPageTypeHandlers(MauiAppBuilder builder, bool includeNavigationViewHandler) =>
+				ControlsPageTypesTestCases.Setup(builder, includeNavigationViewHandler, useTabbedViewHandler: true);
 		}
 
 		[Category(TestCategory.Entry)]
@@ -373,6 +403,49 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expectedAlignment, nativeAlignment);
+		}
+
+		[Fact]
+		public async Task IsPasswordTogglePreservesText()
+		{
+			// https://github.com/dotnet/maui/issues/30085
+			var entry = new Entry
+			{
+				Text = "secret123",
+				IsPassword = false,
+			};
+
+			SetupBuilder();
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+				var platformControl = GetPlatformControl(handler);
+
+				// Simulate the field being focused (first responder)
+				platformControl.BecomeFirstResponder();
+
+				// Toggle IsPassword on — iOS internally clears SecureTextEntry text
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				var platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				// Toggle IsPassword off and back on again
+				entry.IsPassword = false;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				entry.IsPassword = true;
+				handler.UpdateValue(nameof(IEntry.IsPassword));
+
+				platformText = platformControl.Text;
+				Assert.Equal("secret123", platformText);
+				Assert.Equal("secret123", entry.Text);
+
+				platformControl.ResignFirstResponder();
+			});
 		}
 	}
 }

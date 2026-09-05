@@ -94,11 +94,11 @@ static class CSharpExpressionHelpers
 	{
 		if (string.IsNullOrEmpty(value))
 			return false;
-		
+
 		var trimmed = value!.Trim();
-		return trimmed.Length > 3 
-			&& trimmed[0] == '{' 
-			&& trimmed[1] == '=' 
+		return trimmed.Length > 3
+			&& trimmed[0] == '{'
+			&& trimmed[1] == '='
 			&& trimmed[trimmed.Length - 1] == '}';
 	}
 
@@ -147,8 +147,8 @@ static class CSharpExpressionHelpers
 		foreach (var op in CSharpOperators)
 		{
 			// Use case-insensitive for word-based aliases (AND, OR, LT, GT, LTE, GTE)
-			var comparison = (op == " AND " || op == " OR " || op == " LT " || op == " GT " || op == " LTE " || op == " GTE ") 
-				? StringComparison.OrdinalIgnoreCase 
+			var comparison = (op == " AND " || op == " OR " || op == " LT " || op == " GT " || op == " LTE " || op == " GTE ")
+				? StringComparison.OrdinalIgnoreCase
 				: StringComparison.Ordinal;
 			if (trimmed.IndexOf(op, comparison) >= 0)
 				return true;
@@ -176,7 +176,7 @@ static class CSharpExpressionHelpers
 			return false;
 
 		var identifier = trimmed.Substring(start, end - start);
-		
+
 		// Handle prefixed identifiers like x:Type or local:MyExtension
 		var colonIndex = identifier.IndexOf(':');
 		if (colonIndex >= 0)
@@ -187,7 +187,7 @@ static class CSharpExpressionHelpers
 		}
 
 		// Check known extensions first (fast path)
-		if (IsKnownMarkupExtension(identifier))
+		if (IsKnownMarkupExtensionName(identifier))
 			return true;
 
 		// Check if the type can be resolved as a markup extension via semantic lookup
@@ -210,10 +210,10 @@ static class CSharpExpressionHelpers
 	{
 		/// <summary>True if should be treated as C# expression, false for markup extension.</summary>
 		public bool IsExpression { get; init; }
-		
+
 		/// <summary>True if both markup extension and property exist (ambiguous).</summary>
 		public bool IsAmbiguous { get; init; }
-		
+
 		/// <summary>The bare identifier name (for diagnostic reporting).</summary>
 		public string? Name { get; init; }
 	}
@@ -274,11 +274,11 @@ static class CSharpExpressionHelpers
 			if (isMarkup)
 			{
 				// Markup extension wins (backward compatible), but check for ambiguity
-				return new BareIdentifierResult 
-				{ 
-					IsExpression = false, 
-					IsAmbiguous = isProperty, 
-					Name = name 
+				return new BareIdentifierResult
+				{
+					IsExpression = false,
+					IsAmbiguous = isProperty,
+					Name = name
 				};
 			}
 
@@ -315,7 +315,7 @@ static class CSharpExpressionHelpers
 		var match = BareIdentifierPattern.Match(value.Trim());
 		if (!match.Success)
 			return (null, value);
-		
+
 		var prefix = match.Groups[1].Success ? match.Groups[1].Value : null;
 		var name = match.Groups[2].Value;
 		return (prefix, name);
@@ -348,9 +348,9 @@ static class CSharpExpressionHelpers
 		"FontImage",
 	};
 
-	static bool IsKnownMarkupExtension(string name)
+	internal static bool IsKnownMarkupExtensionName(string name)
 	{
-		return KnownMarkupExtensions.Contains(name) 
+		return KnownMarkupExtensions.Contains(name)
 			|| KnownMarkupExtensions.Contains(name + "Extension");
 	}
 
@@ -363,7 +363,7 @@ static class CSharpExpressionHelpers
 	public static string GetExpressionCode(string value)
 	{
 		var trimmed = value.Trim();
-		
+
 		// Remove outer braces
 		string code;
 		if (IsExplicitExpression(value))
@@ -380,6 +380,14 @@ static class CSharpExpressionHelpers
 		// Transform operator aliases (AND -> &&, OR -> ||) to avoid XML escaping
 		code = TransformOperatorAliases(code);
 
+		// Parenthesize ternary expressions that sit directly inside a string
+		// interpolation hole. In C#, the first top-level ':' inside a hole starts the
+		// format specifier, so `$"{cond ? a : b}"` is invalid (CS8361). Wrapping the
+		// conditional in parentheses (`$"{(cond ? a : b)}"`) keeps the ':' inside the
+		// expression. This runs before quote translation so it can operate on the
+		// single-quoted source. (issue #36155)
+		code = ParenthesizeInterpolationTernaries(code);
+
 		// Always transform single-quoted strings to double-quoted strings
 		// C# doesn't support single-quoted strings, only char literals
 		// TransformQuotesWithSemantics will later convert back to char where appropriate
@@ -394,18 +402,312 @@ static class CSharpExpressionHelpers
 	{
 		// Replace word-based aliases with C# operators (case-insensitive, with spaces)
 		var result = code;
-		
+
 		// Logical operators
 		result = ReplaceWordOperator(result, " AND ", " && ");
 		result = ReplaceWordOperator(result, " OR ", " || ");
-		
+
 		// Comparison operators (must do multi-char first to avoid partial replacements)
 		result = ReplaceWordOperator(result, " LTE ", " <= ");
 		result = ReplaceWordOperator(result, " GTE ", " >= ");
 		result = ReplaceWordOperator(result, " LT ", " < ");
 		result = ReplaceWordOperator(result, " GT ", " > ");
-		
+
 		return result;
+	}
+
+	/// <summary>
+	/// Walks the expression and parenthesizes any ternary/conditional expression that
+	/// appears directly inside a string interpolation hole. Without parentheses, the C#
+	/// compiler treats the first top-level ':' inside a hole as the start of a format
+	/// specifier, so `$"{cond ? a : b}"` fails to compile (CS8361/CS8076). Wrapping the
+	/// conditional — `$"{(cond ? a : b)}"` — keeps the ':' part of the expression.
+	/// Format specifiers (`{value:F2}`), null-coalescing (`??`), null-conditional (`?.`,
+	/// `?[`) and ternaries outside interpolation holes are left untouched.
+	/// </summary>
+	static string ParenthesizeInterpolationTernaries(string code)
+	{
+		var result = new StringBuilder(code.Length);
+		int i = 0;
+
+		while (i < code.Length)
+		{
+			// Interpolated string: '$' immediately followed by a quote delimiter.
+			if (code[i] == '$' && i + 1 < code.Length && (code[i + 1] == '\'' || code[i + 1] == '"'))
+			{
+				char delimiter = code[i + 1];
+				result.Append(code[i]);     // $
+				result.Append(code[i + 1]); // opening delimiter
+				i += 2;
+
+				// Walk the interpolated string body until the closing delimiter.
+				while (i < code.Length)
+				{
+					char c = code[i];
+
+					// Escape sequence in literal text - copy verbatim.
+					if (c == '\\' && i + 1 < code.Length)
+					{
+						result.Append(c);
+						result.Append(code[i + 1]);
+						i += 2;
+						continue;
+					}
+
+					// Closing delimiter ends the interpolated string.
+					if (c == delimiter)
+					{
+						result.Append(c);
+						i++;
+						break;
+					}
+
+					if (c == '{')
+					{
+						// Escaped brace '{{' is literal text, not a hole.
+						if (i + 1 < code.Length && code[i + 1] == '{')
+						{
+							result.Append("{{");
+							i += 2;
+							continue;
+						}
+
+						// Capture the hole content up to its matching '}'.
+						int holeStart = i + 1;
+						int j = FindHoleEnd(code, holeStart);
+						string holeContent = code.Substring(holeStart, j - holeStart);
+
+						// Recurse so nested interpolated strings are handled too,
+						// then wrap a hole-level ternary in parentheses.
+						holeContent = ParenthesizeInterpolationTernaries(holeContent);
+						holeContent = WrapHoleTernary(holeContent);
+
+						result.Append('{');
+						result.Append(holeContent);
+						if (j < code.Length && code[j] == '}')
+						{
+							result.Append('}');
+							i = j + 1;
+						}
+						else
+						{
+							// Unterminated hole - leave as-is.
+							i = j;
+						}
+						continue;
+					}
+
+					if (c == '}')
+					{
+						// Escaped brace '}}'.
+						if (i + 1 < code.Length && code[i + 1] == '}')
+						{
+							result.Append("}}");
+							i += 2;
+							continue;
+						}
+						result.Append(c);
+						i++;
+						continue;
+					}
+
+					result.Append(c);
+					i++;
+				}
+
+				continue;
+			}
+
+			// Skip non-interpolated string literals so their contents are never
+			// mistaken for interpolation structure.
+			if (code[i] == '\'' || code[i] == '"')
+			{
+				char quote = code[i];
+				result.Append(code[i]);
+				i++;
+				while (i < code.Length)
+				{
+					if (code[i] == '\\' && i + 1 < code.Length)
+					{
+						result.Append(code[i]);
+						result.Append(code[i + 1]);
+						i += 2;
+						continue;
+					}
+					result.Append(code[i]);
+					if (code[i] == quote)
+					{
+						i++;
+						break;
+					}
+					i++;
+				}
+				continue;
+			}
+
+			result.Append(code[i]);
+			i++;
+		}
+
+		return result.ToString();
+	}
+
+	/// <summary>
+	/// Returns the index of the '}' that closes the interpolation hole starting at
+	/// <paramref name="start"/>, tracking nested braces and skipping string literals.
+	/// </summary>
+	static int FindHoleEnd(string code, int start)
+	{
+		int depth = 1;
+		int j = start;
+		while (j < code.Length)
+		{
+			char c = code[j];
+			if (c == '\\' && j + 1 < code.Length)
+			{
+				j += 2;
+				continue;
+			}
+			if (c == '\'' || c == '"')
+			{
+				char quote = c;
+				j++;
+				while (j < code.Length)
+				{
+					if (code[j] == '\\' && j + 1 < code.Length)
+					{
+						j += 2;
+						continue;
+					}
+					if (code[j] == quote)
+					{
+						j++;
+						break;
+					}
+					j++;
+				}
+				continue;
+			}
+			if (c == '{')
+			{
+				depth++;
+				j++;
+				continue;
+			}
+			if (c == '}')
+			{
+				depth--;
+				if (depth == 0)
+					return j;
+				j++;
+				continue;
+			}
+			j++;
+		}
+		return j;
+	}
+
+	/// <summary>
+	/// Wraps the content of an interpolation hole in parentheses when it contains a
+	/// top-level ternary conditional. Detection skips string literals, nested
+	/// parentheses/brackets/braces and the non-ternary '?' forms ('??', '?.', '?[').
+	/// </summary>
+	static string WrapHoleTernary(string holeContent)
+	{
+		if (!ContainsTopLevelTernary(holeContent))
+			return holeContent;
+
+		// Preserve leading/trailing whitespace outside the parentheses for readability.
+		int startTrim = 0;
+		while (startTrim < holeContent.Length && char.IsWhiteSpace(holeContent[startTrim]))
+			startTrim++;
+		int endTrim = holeContent.Length;
+		while (endTrim > startTrim && char.IsWhiteSpace(holeContent[endTrim - 1]))
+			endTrim--;
+
+		var leading = holeContent.Substring(0, startTrim);
+		var inner = holeContent.Substring(startTrim, endTrim - startTrim);
+		var trailing = holeContent.Substring(endTrim);
+
+		return leading + "(" + inner + ")" + trailing;
+	}
+
+	/// <summary>
+	/// Determines whether the expression contains a ternary '?' at the top nesting level
+	/// (outside strings, parentheses, brackets and braces). Returns false for '??', '?.'
+	/// and '?[' which are not conditional expressions.
+	/// </summary>
+	static bool ContainsTopLevelTernary(string expr)
+	{
+		int depth = 0;
+		int i = 0;
+		while (i < expr.Length)
+		{
+			char c = expr[i];
+
+			if (c == '\\' && i + 1 < expr.Length)
+			{
+				i += 2;
+				continue;
+			}
+
+			if (c == '\'' || c == '"')
+			{
+				char quote = c;
+				i++;
+				while (i < expr.Length)
+				{
+					if (expr[i] == '\\' && i + 1 < expr.Length)
+					{
+						i += 2;
+						continue;
+					}
+					if (expr[i] == quote)
+					{
+						i++;
+						break;
+					}
+					i++;
+				}
+				continue;
+			}
+
+			if (c == '(' || c == '[' || c == '{')
+			{
+				depth++;
+				i++;
+				continue;
+			}
+
+			if (c == ')' || c == ']' || c == '}')
+			{
+				if (depth > 0)
+					depth--;
+				i++;
+				continue;
+			}
+
+			if (c == '?' && depth == 0)
+			{
+				char next = i + 1 < expr.Length ? expr[i + 1] : '\0';
+				// Skip '??' (null-coalescing), '?.' and '?[' (null-conditional).
+				if (next == '?')
+				{
+					i += 2;
+					continue;
+				}
+				if (next == '.' || next == '[')
+				{
+					i++;
+					continue;
+				}
+				return true;
+			}
+
+			i++;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -415,7 +717,7 @@ static class CSharpExpressionHelpers
 	{
 		var result = new StringBuilder();
 		int i = 0;
-		
+
 		while (i < code.Length)
 		{
 			// Skip string literals (single or double quoted)
@@ -445,7 +747,7 @@ static class CSharpExpressionHelpers
 				}
 				continue;
 			}
-			
+
 			// Check for word match (case-insensitive)
 			if (i + word.Length <= code.Length)
 			{
@@ -457,11 +759,11 @@ static class CSharpExpressionHelpers
 					continue;
 				}
 			}
-			
+
 			result.Append(code[i]);
 			i++;
 		}
-		
+
 		return result.ToString();
 	}
 
@@ -523,7 +825,7 @@ static class CSharpExpressionHelpers
 				if (i < code.Length && code[i] == '\'')
 				{
 					i++; // Skip closing quote
-					
+
 					var contentStr = content.ToString();
 
 					// Always convert to string literal (double quotes)
@@ -542,7 +844,7 @@ static class CSharpExpressionHelpers
 							{
 								backslashCount++;
 							}
-							
+
 							if (backslashCount % 2 == 1)
 							{
 								// Odd backslashes: quote is already escaped
@@ -609,10 +911,10 @@ static class CSharpExpressionHelpers
 		foreach (var literal in stringLiterals)
 		{
 			var expectedType = DetermineExpectedType(literal, compilation, contextTypes);
-			
+
 			// If expected type is char, convert back to char literal
 			bool shouldBeChar = expectedType?.SpecialType == SpecialType.System_Char;
-			
+
 			if (shouldBeChar)
 			{
 				// Get the string content and create a char literal
@@ -648,7 +950,7 @@ static class CSharpExpressionHelpers
 	{
 		if (value.Length != 1)
 			return value;
-		
+
 		return value[0] switch
 		{
 			'\'' => "\\'",
@@ -668,7 +970,7 @@ static class CSharpExpressionHelpers
 	{
 		// Walk up to find the context
 		var parent = literal.Parent;
-		
+
 		while (parent != null)
 		{
 			switch (parent)
@@ -766,19 +1068,31 @@ static class CSharpExpressionHelpers
 	/// <summary>
 	/// Escapes a string for use in a C# string literal.
 	/// </summary>
-	static string EscapeForString(string value)
+	internal static string EscapeForString(string value)
 	{
 		var sb = new StringBuilder();
 		foreach (var c in value)
 		{
 			switch (c)
 			{
-				case '"': sb.Append("\\\""); break;
-				case '\\': sb.Append("\\\\"); break;
-				case '\n': sb.Append("\\n"); break;
-				case '\r': sb.Append("\\r"); break;
-				case '\t': sb.Append("\\t"); break;
-				default: sb.Append(c); break;
+				case '"':
+					sb.Append("\\\"");
+					break;
+				case '\\':
+					sb.Append("\\\\");
+					break;
+				case '\n':
+					sb.Append("\\n");
+					break;
+				case '\r':
+					sb.Append("\\r");
+					break;
+				case '\t':
+					sb.Append("\\t");
+					break;
+				default:
+					sb.Append(c);
+					break;
 			}
 		}
 		return sb.ToString();

@@ -10,11 +10,24 @@ namespace MauiApp._1;
 
 public static class MauiProgram
 {
+#if (UseAvaloniaHandlers)
+	public static MauiApp CreateMauiApp(bool useSingleViewLifetime = false)
+#else
 	public static MauiApp CreateMauiApp()
+#endif
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+#if (UseAvaloniaHandlers)
+//-:cnd:noEmit
+#if !IOS && !MACCATALYST && !ANDROID && !WINDOWS
+			.UseAvaloniaApp(useSingleViewLifetime)
+#else
+			.UseAvaloniaEmbedding<AvaloniaApp>()
+#endif
+//+:cnd:noEmit
+#endif
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
@@ -22,11 +35,6 @@ public static class MauiProgram
 			.ConfigureMauiHandlers(handlers =>
 			{
 #if WINDOWS
-				Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
-				{
-					handler.PlatformView.SingleSelectionFollowsFocus = false;
-				});
-
 				Microsoft.Maui.Handlers.ContentViewHandler.Mapper.AppendToMapping(nameof(Pages.Controls.CategoryChart), (handler, view) =>
 				{
 					if (view is Pages.Controls.CategoryChart && handler.PlatformView is Microsoft.Maui.Platform.ContentPanel contentPanel)

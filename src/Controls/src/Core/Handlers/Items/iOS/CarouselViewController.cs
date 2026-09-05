@@ -13,6 +13,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 instead.")]
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		[Obsolete("Use ItemsView property instead")]
@@ -238,6 +239,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
+			UpdateScrollBarVisibility();
 			return itemsSource;
 		}
 
@@ -465,6 +467,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -477,14 +484,48 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
+			UpdateScrollBarVisibility();
 			CollectionView.ReloadData();
+			ScrollToOriginalPosition(carouselPosition, false);
+		}
 
-			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				// When Loop is enabled, hide scrollbars for cross-platform parity with Windows.
+				// When Loop is disabled, restore the user-specified ScrollBarVisibility values
+				// instead of forcing them to Always.
+				var horizontalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.HorizontalScrollBarVisibility;
+				var verticalVisibility = carousel.Loop ? ScrollBarVisibility.Never : carousel.VerticalScrollBarVisibility;
+				CollectionView.UpdateHorizontalScrollBarVisibility(horizontalVisibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(verticalVisibility);
+			}
+		}
+
+		void ScrollToOriginalPosition(int position, bool animate)
+		{
+			if (ItemsView is not CarouselView carousel)
+        		return;
+
+			if (position < 0 || position >= ItemsSource.ItemCount)
+				return;
+
+			var targetIndexPath = GetScrollToIndexPath(position);
+			var scrollPosition = IsHorizontal
+				? UICollectionViewScrollPosition.CenteredHorizontally
+				: UICollectionViewScrollPosition.CenteredVertically;
+			CollectionView.ScrollToItem(targetIndexPath, scrollPosition, animate);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
 		{
 			if (ItemsView is not CarouselView carousel)
+			{
+				return;
+			}
+
+			if (ItemsSource is null || ItemsSource.ItemCount == 0 || goToPosition >= ItemsSource.ItemCount)
 			{
 				return;
 			}
@@ -555,9 +596,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			if (currentItemIndex.Row < 0)
+			{
+				return;
+			}
 
-			ScrollToPosition(currentItemPosition, carousel.Position, carousel.AnimateCurrentItemChanges);
+			ScrollToPosition(currentItemIndex.Row, carousel.Position, carousel.AnimateCurrentItemChanges);
 
 			UpdateVisualStates();
 		}
@@ -580,7 +625,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var currentItemPosition = GetIndexForItem(carousel.CurrentItem).Row;
+			var currentItemIndex = GetIndexForItem(carousel.CurrentItem);
+			var currentItemPosition = currentItemIndex.Row;
 			var carouselPosition = carousel.Position;
 			if (carouselPosition == _gotoPosition)
 			{

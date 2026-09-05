@@ -9,10 +9,6 @@ This example shows a PR description optimized for future agent success.
 
 ## Description
 ```markdown
-> [!NOTE]
-> Are you waiting for the changes in this PR to be merged?
-> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
-
 ### Root Cause
 
 In `MauiView.GetAdjustedSafeAreaInsets()` on iOS, views that don't implement `ISafeAreaView` or `ISafeAreaView2` (such as `ContentPresenter`, `Border`) were falling through to return `baseSafeArea`. This applied full device safe area insets to views that never opted into safe area handling, causing double-padding when used inside ControlTemplates.

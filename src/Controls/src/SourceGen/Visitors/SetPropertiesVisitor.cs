@@ -1,3 +1,4 @@
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,12 @@ namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
 
-class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false) : IXamlNodeVisitor
+// valuePrecomputePass: set by CreateValuesVisitor when this visitor is run only to precompute a
+// value (e.g. a `required` property's value for the object initializer, or an x:Array element)
+// before namescopes are registered. In that pass, DataTemplate LoadTemplate emission under
+// Incremental Hot Reload is deferred to the main pass so x:Reference/bindings resolve against the
+// outer scope at compile time rather than falling back to runtime resolution. See dotnet/maui#36683.
+class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictionary = false, bool valuePrecomputePass = false) : IXamlNodeVisitor
 {
 	SourceGenContext Context => context;
 	IndentedTextWriter Writer => Context.Writer;
@@ -35,11 +41,70 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	public bool SkipChildren(INode node, INode parentNode) => node is ElementNode en && en.IsLazyResource(parentNode, Context);
 	public bool IsResourceDictionary(ElementNode node) => node.IsResourceDictionary(Context);
 
+	// Track properties that have been set to detect duplicates
+	readonly Dictionary<ElementNode, HashSet<XmlName>> setProperties = new Dictionary<ElementNode, HashSet<XmlName>>();
+
+	// Stable, unique name for a DataTemplate's generated LoadTemplate method. Derived from the
+	// template content root's source position so it stays constant across successive property-value
+	// edits (keeping the Edit-and-Continue identity stable); distinct templates have distinct
+	// positions. See dotnet/maui#36482.
+	static string TemplateLoadMethodName(INode node)
+	{
+		var line = node is IXmlLineInfo li && li.HasLineInfo() ? li.LineNumber : 0;
+		var pos = node is IXmlLineInfo li2 && li2.HasLineInfo() ? li2.LinePosition : 0;
+		return $"LoadTemplate_{line}_{pos}";
+	}
+
+	void CheckForDuplicateProperty(ElementNode parentNode, XmlName propertyName, IXmlLineInfo lineInfo)
+	{
+		if (!setProperties.TryGetValue(parentNode, out var props))
+		{
+			props = new HashSet<XmlName>();
+			setProperties[parentNode] = props;
+		}
+
+		if (!props.Add(propertyName))
+		{
+			var propertyDisplayName = $"{parentNode.XmlType.Name}.{propertyName.LocalName}";
+			var location = LocationCreate(Context.ProjectItem.RelativePath!, lineInfo, propertyDisplayName);
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicatePropertyAssignment, location, propertyDisplayName));
+		}
+	}
+
+	/// <summary>
+	/// Resolves the type of an implicit content property and, when the property is a non-collection
+	/// non-Object type, calls <see cref="CheckForDuplicateProperty"/> to emit a diagnostic if it has
+	/// already been assigned.
+	/// </summary>
+	/// <param name="lookupName">XmlName used for the <c>GetBindableProperty</c> lookup (namespace may differ from <paramref name="trackingName"/>).</param>
+	/// <param name="trackingName">XmlName used as the deduplication key (always uses the parent element's namespace).</param>
+	void CheckImplicitContentForDuplicate(
+		ILocalValue parentVar,
+		ElementNode parentNode,
+		XmlName lookupName,
+		XmlName trackingName,
+		IXmlLineInfo lineInfo)
+	{
+		bool attached = false;
+		var localName = lookupName.LocalName;
+		var bpFieldSymbol = parentVar.Type.GetBindableProperty(lookupName.NamespaceURI, ref localName, out attached, context, lineInfo);
+		ITypeSymbol? propertyType = null;
+
+		bool hasProperty = (bpFieldSymbol != null && SetPropertyHelpers.CanGetValue(parentVar, bpFieldSymbol, attached, context, out propertyType))
+			|| SetPropertyHelpers.CanGet(parentVar, localName, context, out propertyType, out _);
+
+		bool isObject = propertyType != null && propertyType.SpecialType == SpecialType.System_Object;
+		if (hasProperty && propertyType != null && !isObject && !propertyType.CanAdd(context))
+			CheckForDuplicateProperty(parentNode, trackingName, lineInfo);
+	}
+
 	public void Visit(ValueNode node, INode parentNode)
 	{
 		//TODO support Label text as element
 
 		// if it's implicit content property, get the content property name
+		bool isImplicitContentProperty = false;
+		ILocalValue? parentVar = null;
 		if (!node.TryGetPropertyName(parentNode, out XmlName propertyName))
 		{
 			if (!parentNode.IsCollectionItem(node))
@@ -47,9 +112,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 			string? contentProperty;
 			if (!Context.Variables.ContainsKey((ElementNode)parentNode))
 				return;
-			var parentVariable = Context.Variables[(ElementNode)parentNode];
-			if ((contentProperty = parentVariable.Type.GetContentPropertyName(context)) != null)
+			parentVar = Context.Variables[(ElementNode)parentNode];
+			if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
+			{
 				propertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				isImplicitContentProperty = true;
+			}
 			else
 				return;
 		}
@@ -63,13 +131,12 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		if (propertyName.Equals(XmlName.mcIgnorable))
 			return;
 
-		// Check that parent has a variable before accessing
-		var parentElement = (ElementNode)parentNode;
-		if (!Context.Variables.TryGetValue(parentElement, out var parentVar))
-		{
-			var parentKey = parentElement.Properties.TryGetValue(XmlName.xKey, out var keyNode) && keyNode is ValueNode vn ? vn.Value?.ToString() : "(none)";
-			throw new System.InvalidOperationException($"SetPropertiesVisitor.Visit(ValueNode): Parent '{parentElement.XmlType.Name}' x:Key='{parentKey}' not in Variables for propertyName='{propertyName}'");
-		}
+		parentVar ??= Context.Variables.TryGetValue((ElementNode)parentNode, out var pv) ? pv : null;
+		// Parent element not yet in Variables — can occur for markup extensions or nodes
+		// processed before their parent is fully initialized. Silently skip; the assignment
+		// will be handled through another visitor pass.
+		if (parentVar == null)
+			return;
 
 		// Try to set runtime name (for x:Name with RuntimeNameProperty attribute)
 		if (TrySetRuntimeName(propertyName, parentVar, node))
@@ -78,6 +145,10 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		// Skip x:Name after TrySetRuntimeName has had a chance to process it
 		if (propertyName == XmlName.xName)
 			return;
+
+		// Check for duplicate property assignment for implicit content properties
+		if (isImplicitContentProperty)
+			CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, propertyName, propertyName, node);
 
 		SetPropertyHelpers.SetPropertyValue(Writer, parentVar, propertyName, node, Context);
 	}
@@ -102,7 +173,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) => 
+		NodeSGExtensions.GetNodeValueDelegate getNodeValue = (n, type) =>
 		{
 			if (!context.Variables.TryGetValue(n, out var val))
 			{
@@ -134,7 +205,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 		{
 			// Find the ResourceDictionary parent
 			ILocalValue? rdVar = null;
-			
+
 			if (parentNode is ElementNode parentElement && Context.Variables.TryGetValue(parentElement, out var pVar))
 			{
 				var rdType = Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
@@ -173,11 +244,74 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 		if (propertyName == XmlName._CreateContent)
 		{
+			// Under Incremental Hot Reload, defer DataTemplate LoadTemplate emission from a
+			// value-precompute prepass (required-property/x:Array) to the main SetPropertiesVisitor
+			// pass. The main pass runs after namescope registration, so it resolves x:Reference and
+			// bindings against the outer scope at compile time; the prepass runs earlier and would
+			// emit a slower runtime-resolved body that first-wins dedup would then keep
+			// (dotnet/maui#36683). Non-HR builds keep their existing prepass behavior.
+			if (valuePrecomputePass && Context.ProjectItem.EnableIncrementalHotReload)
+				return;
+
 			var variable = Context.Variables[parentNode];
+
+			// Under XAML Incremental Hot Reload, emit the template content as a stably-named local
+			// function rather than an anonymous lambda. On each edit the source generator regenerates
+			// InitializeComponent; an anonymous `LoadTemplate = () => { ... }` lambda has an unstable
+			// synthesized-closure identity across regenerations, so successive edits to a control
+			// inside a DataTemplate produce invalid Edit-and-Continue deltas (deleted/renamed
+			// synthesized closure methods) that crash the app, poison Hot Reload, or kill the
+			// watcher (dotnet/maui#36482). A named local function gives EnC a stable name anchor.
+			//
+			// The function is emitted INLINE at the point of use (not hoisted to the top of the
+			// method) so its body keeps the exact lexical scope the lambda had — references to
+			// enclosing locals (the DataTemplate variable, name scopes, resources) resolve the same
+			// way. It is emitted at most once per template: a template value can be set more than
+			// once in the same scope (e.g. a `required` property set both in the object initializer
+			// and as an assignment), and redeclaring the local function would not compile
+			// (dotnet/maui#36682). Non-HR builds keep the anonymous lambda.
+			if (Context.ProjectItem.EnableIncrementalHotReload)
+			{
+				var methodName = TemplateLoadMethodName(node);
+				if (Context.TryReserveTemplateMethod(methodName))
+				{
+					Writer.WriteLine($"object {methodName}()");
+					using (PrePost.NewBlock(Writer, begin: "{", end: "}"))
+					{
+						var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
+						{
+							ParentContext = context,
+						};
+
+						node.Accept(new CreateValuesVisitor(templateContext), null);
+						node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
+						node.Accept(new SetResourcesVisitor(templateContext), null);
+						node.Accept(new SetPropertiesVisitor(templateContext, stopOnResourceDictionary: true), null);
+						var templateRegistrations = new List<(string NodeId, ILocalValue Value)>();
+						foreach (var entry in templateContext.Variables)
+						{
+							if (entry.Key is ElementNode element
+								&& Context.TryGetNodeId(element, out var nodeId)
+								&& !string.IsNullOrEmpty(nodeId))
+							{
+								templateRegistrations.Add((nodeId, entry.Value));
+							}
+						}
+						templateRegistrations.Sort((left, right) => StringComparer.Ordinal.Compare(left.NodeId, right.NodeId));
+						foreach (var registration in templateRegistrations)
+							Writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.XamlComponentRegistry.RegisterTemplateComponent(this, \"{registration.NodeId}\", {registration.Value.ValueAccessor});");
+						Writer.WriteLine($"return {templateContext.Variables[node].ValueAccessor};");
+					}
+				}
+
+				Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = {methodName};");
+				return;
+			}
+
 			Writer.WriteLine($"{variable.ValueAccessor}.LoadTemplate = () =>");
 			using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
 			{
-				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem)
+				var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null, context.ProjectItem, context.ReportDiagnostic)
 				{
 					ParentContext = context,
 				};
@@ -207,6 +341,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var key1 = ((ElementNode)parentNode).Properties.TryGetValue(XmlName.xKey, out var kn1) && kn1 is ValueNode vn1 ? vn1.Value?.ToString() : "(none)";
 				throw new System.InvalidOperationException($"SetPropertiesVisitor.Visit(ElementNode) propertyName != Empty: Parent '{((ElementNode)parentNode).XmlType.Name}' x:Key='{key1}' not in Variables");
 			}
+
 			SetPropertyHelpers.SetPropertyValue(Writer, pVar1, propertyName, node, Context);
 		}
 		else if (parentNode.IsCollectionItem(node) && parentNode is ElementNode)
@@ -225,8 +360,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 				var name = new XmlName(node.NamespaceURI, contentProperty);
 				if (skips.Contains(name))
 					return;
-				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(propertyName))
+				if (parentNode is ElementNode node1 && node1.SkipProperties.Contains(name))
 					return;
+
+				// Only check for duplicate property assignment if the property is not a collection
+				// Use parent namespace for duplicate tracking to match how explicit property assignments are keyed
+				var contentPropertyName = new XmlName(((ElementNode)parentNode).NamespaceURI, contentProperty);
+				CheckImplicitContentForDuplicate(parentVar, (ElementNode)parentNode, name, contentPropertyName, node);
+
 				SetPropertyHelpers.SetPropertyValue(Writer, parentVar, name, node, Context);
 			}
 			else if (parentVar.Type.CanAdd(context))

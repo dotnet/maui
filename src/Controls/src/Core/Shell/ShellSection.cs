@@ -309,6 +309,9 @@ namespace Microsoft.Maui.Controls
 			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, BindingMode.OneWay, source: shellContent);
 			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextProperty, static (BaseShellItem item) => item.BadgeText, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeColorProperty, static (BaseShellItem item) => item.BadgeColor, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(BadgeTextColorProperty, static (BaseShellItem item) => item.BadgeTextColor, BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}
@@ -328,7 +331,7 @@ namespace Microsoft.Maui.Controls
 			return (ShellSection)(ShellContent)page;
 		}
 
-		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, bool isRelativePopping)
+		async Task PrepareCurrentStackForBeingReplaced(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, List<string> globalRoutes, List<string> resolvedRoutes, bool isRelativePopping)
 		{
 			string route = "";
 			List<Page> navStack = null;
@@ -369,10 +372,14 @@ namespace Microsoft.Maui.Controls
 						// Routes match so don't do anything
 						if (navIndex < _navStack.Count && Routing.GetRoute(_navStack[navIndex]) == globalRoutes[i])
 						{
+							// Update ResolvedRoute in case the resolved value changed
+							// (e.g. navigating from product/apple to product/banana)
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(globalRoutes[i]))
+								Routing.SetResolvedRoute(_navStack[navIndex], resolvedRoutes[i]);
 							continue;
 						}
 
-						var page = GetOrCreateFromRoute(globalRoutes[i], queryData, services, i == globalRoutes.Count - 1, false);
+						var page = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, i == globalRoutes.Count - 1, false);
 						if (IsModal(page))
 						{
 							await PushModalAsync(page, IsNavigationAnimated(page));
@@ -416,6 +423,10 @@ namespace Microsoft.Maui.Controls
 							// pop everything after this route
 							popCount = i + 2;
 							ShellNavigationManager.ApplyQueryAttributes(navPage, queryData, isLast, isRelativePopping);
+
+							// Update ResolvedRoute for reused template pages
+							if (resolvedRoutes?.Count > i && Routing.IsTemplateRoute(route))
+								Routing.SetResolvedRoute(navPage, resolvedRoutes[i]);
 
 							// If we're not on the last loop of the stack then continue
 							// otherwise pop the rest of the stack
@@ -506,12 +517,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		Page GetOrCreateFromRoute(string route, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
+		Page GetOrCreateFromRoute(string route, string resolvedRoute, ShellRouteParameters queryData, IServiceProvider services, bool isLast, bool isPopping)
 		{
 			var content = Routing.GetOrCreateContent(route, services) as Page;
 			if (content == null)
 			{
 				MauiLogger<ShellSection>.Log(LogLevel.Warning, $"Failed to Create Content For: {route}");
+			}
+
+			// For template routes (e.g. "product/{sku}"), store the resolved value
+			// (e.g. "product/seed-tomato") in a separate attached property. The
+			// page's Route stays as the registered template key so factory
+			// lookups and stack-reuse comparisons still work.
+			if (content != null && resolvedRoute != null && resolvedRoute != route
+				&& Routing.IsTemplateRoute(route))
+			{
+				Routing.SetResolvedRoute(content, resolvedRoute);
 			}
 
 			ShellNavigationManager.ApplyQueryAttributes(content, queryData, isLast, isPopping);
@@ -521,17 +542,18 @@ namespace Microsoft.Maui.Controls
 		internal async Task GoToAsync(ShellNavigationRequest request, ShellRouteParameters queryData, IServiceProvider services, bool? animate, bool isRelativePopping)
 		{
 			List<string> globalRoutes = request.Request.GlobalRoutes;
+			List<string> resolvedRoutes = request.Request.ResolvedGlobalRoutes;
 			if (globalRoutes == null || globalRoutes.Count == 0)
 			{
 				if (_navStack.Count == 2)
-					await OnPopAsync(animate ?? false);
+					await OnPopAsync(animate ?? true);
 				else
-					await OnPopToRootAsync(animate ?? false);
+					await OnPopToRootAsync(animate ?? true);
 
 				return;
 			}
 
-			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, isRelativePopping);
+			await PrepareCurrentStackForBeingReplaced(request, queryData, services, animate, globalRoutes, resolvedRoutes, isRelativePopping);
 
 			List<Page> modalPageStacks = new List<Page>();
 			List<Page> nonModalPageStacks = new List<Page>();
@@ -549,7 +571,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = whereToStartNavigation; i < globalRoutes.Count; i++)
 			{
 				bool isLast = i == globalRoutes.Count - 1;
-				var content = GetOrCreateFromRoute(globalRoutes[i], queryData, services, isLast, false);
+				var content = GetOrCreateFromRoute(globalRoutes[i], resolvedRoutes?.Count > i ? resolvedRoutes[i] : null, queryData, services, isLast, false);
 				if (content == null)
 				{
 					break;
@@ -844,9 +866,20 @@ namespace Microsoft.Maui.Controls
 				RequestType = NavigationRequestType.PopToRoot
 			};
 
-			InvokeNavigationRequest(args);
+			PresentedPageDisappearing();
 			var oldStack = _navStack;
 			_navStack = new List<Page> { null };
+
+			// NOTE:
+			// We intentionally raise PresentedPageAppearing (and thus SendPageAppearing/OnAppearing)
+			// before issuing the platform navigation request and awaiting its completion. This matches
+			// the behavior used for single-level Pop navigation and keeps Shell lifecycle events
+			// consistent across navigation patterns. At this point the root page may not yet be
+			// visually presented by the native stack (the pop-to-root animation can still be in
+			// progress), but Shell-level state (e.g., tab bar visibility) must already be updated
+			// so the platform reads the correct value when it commits the native navigation.
+			PresentedPageAppearing();
+			InvokeNavigationRequest(args);
 
 			if (args.Task != null)
 				await args.Task;
@@ -856,11 +889,14 @@ namespace Microsoft.Maui.Controls
 
 			for (int i = 1; i < oldStack.Count; i++)
 			{
-				oldStack[i].SendDisappearing();
+				// RemovePage is called for all pages. SendDisappearing is only called for
+				// intermediate pages; the top page's disappearing event was already fired
+				// by PresentedPageDisappearing() above to avoid duplicate lifecycle events.
+				if (i < oldStack.Count - 1)
+					oldStack[i].SendDisappearing();
 				RemovePage(oldStack[i]);
 			}
 
-			PresentedPageAppearing();
 		}
 
 		protected virtual Task OnPushAsync(Page page, bool animated)
@@ -958,7 +994,6 @@ namespace Microsoft.Maui.Controls
 				PresentedPageAppearing();
 
 			RemovePage(page);
-			page?.DisconnectHandlers();
 			var args = new NavigationRequestedEventArgs(page, false)
 			{
 				RequestType = NavigationRequestType.Remove
@@ -1019,18 +1054,35 @@ namespace Microsoft.Maui.Controls
 		{
 			var shellSection = (ShellSection)bindable;
 
+			var isFromHandler =
+				shellSection.GetContext(CurrentItemProperty)?.Values.GetSpecificity() == SetterSpecificity.FromHandler;
+
+			if (!isFromHandler &&
+				newValue is ShellContent newContent &&
+				shellSection.Parent?.Parent is Shell parentShell &&
+				shellSection.IsVisibleSection)
+			{
+				parentShell.NavigationManager.ProposeNavigationOutsideGotoAsync(
+					ShellNavigationSource.ShellContentChanged,
+					parentShell.CurrentItem,
+					shellSection,
+					newContent,
+					shellSection.Stack,
+					canCancel: false,
+					isAnimated: true);
+			}
+
 			if (oldValue is ShellContent oldShellItem)
 				oldShellItem.SendDisappearing();
 
 			if (newValue == null)
 				return;
 
+			((ShellContent)newValue).ApplyQueryAttributesFromSelection();
 			shellSection.PresentedPageAppearing();
 
 			if (shellSection.Parent?.Parent is IShellController shell && shellSection.IsVisibleSection)
-			{
 				shell.UpdateCurrentState(ShellNavigationSource.ShellContentChanged);
-			}
 
 			shellSection.SendStructureChanged();
 
@@ -1048,6 +1100,7 @@ namespace Microsoft.Maui.Controls
 		void RemovePage(Page page)
 		{
 			RemoveLogicalChild(page);
+			page?.DisconnectHandlers();
 		}
 
 		void SendAppearanceChanged() => ((IShellController)Parent?.Parent)?.AppearanceChanged(this, false);
@@ -1278,16 +1331,16 @@ namespace Microsoft.Maui.Controls
 			_handlerBasedNavigationCompletionSource = null;
 			source?.SetResult(true);
 		}
-#nullable disable
+
 
 		private sealed class ShellSectionTypeConverter : TypeConverter
 		{
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => false;
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? cultureInfo, object? value, Type destinationType) => throw new NotSupportedException();
 
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(ShellContent) || sourceType == typeof(TemplatedPage);
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 				=> value switch
 				{
 					ShellContent shellContent => (ShellSection)shellContent,
@@ -1295,7 +1348,7 @@ namespace Microsoft.Maui.Controls
 					_ => throw new NotSupportedException(),
 				};
 		}
-
+#nullable disable
 		/// <summary>
 		/// Provides a debug view for the <see cref="ShellSection"/> class.
 		/// </summary>

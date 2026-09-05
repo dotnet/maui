@@ -6,7 +6,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	internal sealed class HorizontalDefaultCell : DefaultCell
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		public static NSString ReuseId = new NSString("Microsoft.Maui.Controls.HorizontalDefaultCell");
 

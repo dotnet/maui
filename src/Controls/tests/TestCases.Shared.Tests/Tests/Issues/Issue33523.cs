@@ -1,5 +1,3 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue: https://github.com/dotnet/maui/issues/34190
-
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -26,19 +24,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Verify initial state
 			var statusLabel = App.WaitForElement("StatusLabel");
 			Assert.That(statusLabel.GetText(), Is.EqualTo("OnBackButtonPressed not called"));
-
-			// Tap the navigation bar back button
-			// Note: This uses the Shell's navigation bar back button, not the system back button
-			App.TapBackArrow();
-
-			// Wait a moment for the event to fire
+			if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
+			{
+				App.TapBackArrow(); // In iOS 26, the previous page title is not shown along with the back arrow, so we use the default back arrow
+			}
+			else
+			{
+				App.TapBackArrow(Device is TestDevice.iOS or TestDevice.Mac ? "Main Page" : "");
+			}
 			App.WaitForElement("StatusLabel");
 
 			// Verify OnBackButtonPressed was called
 			statusLabel = App.FindElement("StatusLabel");
-			Assert.That(statusLabel.GetText(), Is.EqualTo("OnBackButtonPressed was called"), 
+			Assert.That(statusLabel.GetText(), Is.EqualTo("OnBackButtonPressed was called"),
 				"OnBackButtonPressed should be called when tapping the Shell Navigation Bar back button");
 		}
 	}
 }
-#endif

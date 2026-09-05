@@ -96,6 +96,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateUserAgent(webView);
 		}
 
+		public static void MapBackground(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateBackground(webView);
+		}
+
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack && handler is WebViewHandler w)
@@ -386,6 +391,7 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
+					sender.UpdateBackground(handler.VirtualView);
 					if (sender.Source is not null)
 					{
 						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();

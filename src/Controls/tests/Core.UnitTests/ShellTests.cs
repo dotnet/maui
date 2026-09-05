@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using NSubstitute;
 using Xunit;
 
@@ -442,6 +445,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shell = new TestShell(new TestFlyoutItem(new TestShellSection(shellContent)));
 			await shell.GoToAsync(nameof(DotDotAdheresToAnimationParameter));
 			await shell.GoToAsync("..", true);
+			Assert.True(shell.LastPopWasAnimated);
+		}
+
+		[Fact]
+		public async Task BackNavigationDefaultsToAnimatedWhenNotSpecified()
+		{
+			Routing.RegisterRoute(nameof(BackNavigationDefaultsToAnimatedWhenNotSpecified), typeof(ContentPage));
+			var shellContent = new ShellContent();
+			var shell = new TestShell(new TestFlyoutItem(new TestShellSection(shellContent)));
+			await shell.GoToAsync(nameof(BackNavigationDefaultsToAnimatedWhenNotSpecified));
+			
+			// Navigate back without specifying animate parameter (null)
+			await shell.GoToAsync("..");
+			
+			// Should default to animated (true) to match other navigation methods
 			Assert.True(shell.LastPopWasAnimated);
 		}
 
@@ -1538,6 +1556,94 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await testShell.CurrentSection.Navigation.PopAsync();
 			Assert.Equal("Shell Content Title", shellToolBar.Title);
+		}
+
+		[Fact]
+		public async Task PoppedShellPageDisconnectsHandlers()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage, HandlerStub>();
+					handlers.AddHandler<Button, HandlerStub>();
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var shellContent = CreateShellContent();
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var testShell = new TestShell(shellSection);
+
+			var button = new Button();
+			var pushedPage = new ContentPage
+			{
+				Content = button
+			};
+
+			pushedPage.ToHandler(mauiContext);
+			button.ToHandler(mauiContext);
+
+			await testShell.CurrentSection.Navigation.PushAsync(pushedPage);
+
+			Assert.NotNull(pushedPage.Handler);
+			Assert.NotNull(button.Handler);
+
+			await testShell.CurrentSection.Navigation.PopAsync();
+
+			Assert.Null(pushedPage.Handler);
+			Assert.Null(button.Handler);
+		}
+
+		[Fact]
+		public async Task PopToRootShellPagesDisconnectHandlers()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<ContentPage, HandlerStub>();
+					handlers.AddHandler<Button, HandlerStub>();
+				})
+				.Build();
+
+			var mauiContext = new MauiContext(mauiApp.Services);
+			var shellContent = CreateShellContent();
+			var shellSection = new ShellSection();
+			shellSection.Items.Add(shellContent);
+			var testShell = new TestShell(shellSection);
+
+			var firstButton = new Button();
+			var firstPushedPage = new ContentPage
+			{
+				Content = firstButton
+			};
+			var secondButton = new Button();
+			var secondPushedPage = new ContentPage
+			{
+				Content = secondButton
+			};
+
+			firstPushedPage.ToHandler(mauiContext);
+			firstButton.ToHandler(mauiContext);
+			secondPushedPage.ToHandler(mauiContext);
+			secondButton.ToHandler(mauiContext);
+
+			await testShell.CurrentSection.Navigation.PushAsync(firstPushedPage);
+			await testShell.CurrentSection.Navigation.PushAsync(secondPushedPage);
+
+			Assert.NotNull(firstPushedPage.Handler);
+			Assert.NotNull(firstButton.Handler);
+			Assert.NotNull(secondPushedPage.Handler);
+			Assert.NotNull(secondButton.Handler);
+
+			await testShell.CurrentSection.Navigation.PopToRootAsync();
+
+			Assert.Null(firstPushedPage.Handler);
+			Assert.Null(firstButton.Handler);
+			Assert.Null(secondPushedPage.Handler);
+			Assert.Null(secondButton.Handler);
 		}
 
 		[Fact]

@@ -388,6 +388,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 					case TestDevice.Windows:
 						environmentName = "windows";
+						
+						// Check if the Windows CV1 handler is selected via TEST_CONFIGURATION_ARGS.
+						// This uses a separate snapshot directory for visual regression testing
+						var testConfigurationArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+						if (testConfigurationArgs.Contains("UseWindowsCV1:true", StringComparison.OrdinalIgnoreCase))
+						{
+							environmentName = "windows-cv1";
+						}
 						break;
 
 					case TestDevice.Mac:

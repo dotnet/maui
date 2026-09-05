@@ -31,6 +31,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ContentTemplateProperty =
 			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
 
+		/// <summary>Bindable property for <see cref="QueryString"/>.</summary>
+		public static readonly BindableProperty QueryStringProperty =
+			BindableProperty.Create(nameof(QueryString), typeof(string), typeof(ShellContent), default(string), propertyChanged: OnQueryStringChanged);
+
 		internal static readonly BindableProperty QueryAttributesProperty =
 			BindableProperty.CreateAttached("QueryAttributes", typeof(ShellRouteParameters), typeof(ShellContent), defaultValue: null, propertyChanged: OnQueryAttributesPropertyChanged);
 
@@ -56,6 +60,39 @@ namespace Microsoft.Maui.Controls
 			get => (DataTemplate)GetValue(ContentTemplateProperty);
 			set => SetValue(ContentTemplateProperty, value);
 		}
+
+		/// <summary>
+		/// Gets or sets an encoded query string supplied to this content's page when the content is selected.
+		/// </summary>
+		/// <remarks>
+		/// The leading <c>?</c> is optional. The query string is URI-decoded once. Values from
+		/// <see cref="QueryParameters"/> take precedence over values in this query string. Parameters supplied
+		/// to Shell navigation take precedence for that navigation; selecting the content again reapplies its
+		/// declarative parameters. For compatibility, existing Shell navigation retains its historical decoding
+		/// and culture behavior, so moving the same encoded text from navigation to this property can produce
+		/// a different result.
+		/// </remarks>
+#nullable enable
+		public string? QueryString
+		{
+			get => (string?)GetValue(QueryStringProperty);
+			set => SetValue(QueryStringProperty, value);
+		}
+#nullable disable
+
+		/// <summary>
+		/// Gets the query parameters supplied to this content's page when the content is selected.
+		/// </summary>
+		/// <remarks>
+		/// Changes to this collection or its parameters are applied immediately when this content is selected,
+		/// or the next time it is selected otherwise. Values in this collection take precedence over
+		/// <see cref="QueryString"/>. Parameters supplied to Shell navigation take precedence for that
+		/// navigation; selecting the content again reapplies its declarative parameters. Parameters are logical
+		/// children of this content, so they support inherited binding contexts, dynamic resources, relative-source
+		/// ancestor bindings, and parent-scoped XAML references. A parameter instance can occur more than once in
+		/// this collection, but it cannot be shared with another <see cref="ShellContent"/>.
+		/// </remarks>
+		public IList<ShellContentQueryParameter> QueryParameters { get; }
 
 		Page IShellContentController.Page => ContentCache;
 
@@ -97,6 +134,12 @@ namespace Microsoft.Maui.Controls
 				}
 
 				result = ContentCache ?? (Page)template.CreateContent(content, this);
+
+				if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
+				{
+					result?.SetValue(QueryAttributesProperty, delayedQueryParams);
+				}
+
 				ContentCache = result;
 			}
 
@@ -112,9 +155,6 @@ namespace Microsoft.Maui.Controls
 			if (result is NavigationPage)
 				throw new NotSupportedException("Shell is currently not compatible with NavigationPage. Shell has Navigation built in and doesn't require a NavigationPage.");
 
-			if (GetValue(QueryAttributesProperty) is ShellRouteParameters delayedQueryParams)
-				result.SetValue(QueryAttributesProperty, delayedQueryParams);
-
 			return result;
 		}
 
@@ -123,6 +163,37 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Page _contentCache;
+		readonly HashSet<ShellContentQueryParameter> _trackedQueryParameters = new();
+		readonly HashSet<string> _lastAppliedContentParameterNames = new(StringComparer.Ordinal);
+		bool _hasAppliedQueryParameters;
+
+		sealed class ShellContentQueryParameterCollection : ObservableCollection<ShellContentQueryParameter>
+		{
+			readonly ShellContent _owner;
+
+			public ShellContentQueryParameterCollection(ShellContent owner)
+			{
+				_owner = owner;
+			}
+
+			protected override void InsertItem(int index, ShellContentQueryParameter item)
+			{
+				ValidateOwner(item);
+				base.InsertItem(index, item);
+			}
+
+			protected override void SetItem(int index, ShellContentQueryParameter item)
+			{
+				ValidateOwner(item);
+				base.SetItem(index, item);
+			}
+
+			void ValidateOwner(ShellContentQueryParameter parameter)
+			{
+				if (parameter?.Parent is Element parent && parent != _owner)
+					throw new InvalidOperationException($"{nameof(ShellContentQueryParameter)} instances cannot be shared across {nameof(ShellContent)} objects.");
+			}
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="ShellContent"/> class.
@@ -130,16 +201,21 @@ namespace Microsoft.Maui.Controls
 		public ShellContent()
 		{
 			((INotifyCollectionChanged)MenuItems).CollectionChanged += MenuItemsCollectionChanged;
+			QueryParameters = new ShellContentQueryParameterCollection(this);
+			((INotifyCollectionChanged)QueryParameters).CollectionChanged += QueryParametersCollectionChanged;
 		}
 
 		internal bool IsVisibleContent =>
-			Parent is ShellSection shellSection &&
-			shellSection.IsVisibleSection &&
-			shellSection.CurrentItem == this &&
+			IsSelectedContent &&
 			(
 				Navigation?.ModalStack is null ||
 				Navigation?.ModalStack?.Count == 0
 			);
+
+		bool IsSelectedContent =>
+			Parent is ShellSection shellSection &&
+			shellSection.IsVisibleSection &&
+			shellSection.CurrentItem == this;
 
 		internal override void SendDisappearing()
 		{
@@ -231,6 +307,9 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
+				if (value is not null && GetValue(QueryAttributesProperty) is ShellRouteParameters query)
+					value.SetValue(QueryAttributesProperty, query);
+
 				if (Parent is not null)
 				{
 					((ShellSection)Parent).UpdateDisplayedPage();
@@ -283,9 +362,20 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == WindowProperty.PropertyName)
 			{
 				if (_contentCache?.IsLoaded == true)
+				{
 					return;
+				}
 
 				EvaluateDisconnect();
+			}
+			else if (propertyName == TitleProperty.PropertyName)
+			{
+				// Propagate child Title change to parent ShellSection's handler
+				// so the mapper can update platform tab titles.
+				if (Parent is ShellSection section)
+				{
+					section.Handler?.UpdateValue(nameof(Title));
+				}
 			}
 		}
 
@@ -353,10 +443,128 @@ namespace Microsoft.Maui.Controls
 				}
 		}
 
+		void QueryParametersCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		{
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				foreach (var parameter in new List<ShellContentQueryParameter>(_trackedQueryParameters))
+					UntrackQueryParameter(parameter);
+			}
+			else if (e.OldItems is not null)
+			{
+				// An instance can appear more than once or be moved. Only detach it once it is absent.
+				var currentParameters = new HashSet<ShellContentQueryParameter>(QueryParameters);
+				foreach (ShellContentQueryParameter parameter in e.OldItems)
+					if (parameter is not null && !currentParameters.Contains(parameter))
+						UntrackQueryParameter(parameter);
+			}
+
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				foreach (var parameter in QueryParameters)
+					TrackQueryParameterIfNeeded(parameter);
+			}
+			else if (e.NewItems is not null)
+				foreach (ShellContentQueryParameter parameter in e.NewItems)
+					TrackQueryParameterIfNeeded(parameter);
+
+			ApplyQueryParametersIfVisible();
+		}
+
+		void TrackQueryParameterIfNeeded(ShellContentQueryParameter parameter)
+		{
+			if (parameter is not null && _trackedQueryParameters.Add(parameter))
+				TrackQueryParameter(parameter);
+		}
+
+		void TrackQueryParameter(ShellContentQueryParameter parameter)
+		{
+			parameter.PropertyChanged += OnQueryParameterPropertyChanged;
+			AddLogicalChild(parameter);
+		}
+
+		void UntrackQueryParameter(ShellContentQueryParameter parameter)
+		{
+			_trackedQueryParameters.Remove(parameter);
+			parameter.PropertyChanged -= OnQueryParameterPropertyChanged;
+			RemoveLogicalChild(parameter);
+		}
+
+		void OnQueryParameterPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == ShellContentQueryParameter.NameProperty.PropertyName ||
+				e.PropertyName == ShellContentQueryParameter.ValueProperty.PropertyName)
+			{
+				ApplyQueryParametersIfVisible();
+			}
+		}
+
+		void ApplyQueryParametersIfVisible()
+		{
+			if (IsSelectedContent)
+				ApplyQueryAttributesFromParameterChange();
+		}
+
+		static void OnQueryStringChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			((ShellContent)bindable).ApplyQueryParametersIfVisible();
+		}
+
+		internal void ApplyQueryAttributesFromSelection()
+		{
+			if (this.FindParentOfType<Shell>()?.NavigationManager.AccumulateNavigatedEvents == true)
+				return;
+
+			ApplyQueryAttributesFromSelectionCore(requireSelected: true);
+		}
+
+		internal void ApplyQueryAttributesFromIntermediateNavigation()
+		{
+			ApplyQueryAttributesFromSelectionCore(requireSelected: false);
+		}
+
+		void ApplyQueryAttributesFromSelectionCore(bool requireSelected)
+		{
+			if (requireSelected && !IsSelectedContent)
+				return;
+
+			var query = CreateSelectionQueryParameters(out bool hasQueryParameters);
+			if (!hasQueryParameters && !_hasAppliedQueryParameters)
+				return;
+
+			ApplyQueryAttributesCore(query);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
+		void ApplyQueryAttributesFromParameterChange()
+		{
+			var query = CreateParameterChangeQueryParameters(out bool hasQueryParameters);
+			if (!hasQueryParameters && !_hasAppliedQueryParameters)
+				return;
+
+			var currentQuery = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var currentContentQuery = (ContentCache as BindableObject)?.GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			if (query.IsEquivalentTo(currentQuery) &&
+				(ContentCache is null || query.IsEquivalentTo(currentContentQuery)))
+			{
+				return;
+			}
+
+			ApplyQueryAttributesCore(query);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
 		internal override void ApplyQueryAttributes(ShellRouteParameters query)
 		{
 			base.ApplyQueryAttributes(query);
 
+			var mergedQuery = CreateMergedQueryParameters(query, out bool hasQueryParameters);
+			ApplyQueryAttributesCore(mergedQuery);
+			_hasAppliedQueryParameters = hasQueryParameters;
+		}
+
+		void ApplyQueryAttributesCore(ShellRouteParameters query)
+		{
 			// If the query parameters are empty and this attribute wasn't previously set
 			// That means there's no work to be done here.
 			// An empty query is only valid if we've previously propagated
@@ -368,6 +576,123 @@ namespace Microsoft.Maui.Controls
 
 			if (ContentCache is BindableObject bindable)
 				bindable.SetValue(QueryAttributesProperty, query);
+		}
+
+		ShellRouteParameters CreateMergedQueryParameters(ShellRouteParameters navigationQuery, out bool hasQueryParameters)
+		{
+			var contentQuery = GetContentQueryParameters();
+			hasQueryParameters = contentQuery.Count > 0;
+
+			if (!hasQueryParameters)
+			{
+				_lastAppliedContentParameterNames.Clear();
+				return navigationQuery;
+			}
+
+			var query = new ShellRouteParameters(navigationQuery);
+			var appliedNames = new HashSet<string>(StringComparer.Ordinal);
+
+			foreach (var parameter in contentQuery)
+			{
+				if (!query.ContainsKey(parameter.Key) || query.IsShellContentParameter(parameter.Key))
+				{
+					SetContentQueryParameter(query, parameter.Key, parameter.Value);
+					appliedNames.Add(parameter.Key);
+				}
+			}
+
+			UpdateLastAppliedContentParameterNames(appliedNames);
+			return query;
+		}
+
+		ShellRouteParameters CreateSelectionQueryParameters(out bool hasQueryParameters)
+		{
+			var existing = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var query = existing is null ? new ShellRouteParameters() : new ShellRouteParameters(existing);
+			var contentQuery = GetContentQueryParameters();
+
+			foreach (var name in _lastAppliedContentParameterNames)
+				query.RemoveShellContentQueryParameter(name);
+
+			foreach (var parameter in contentQuery)
+				SetContentQueryParameter(query, parameter.Key, parameter.Value);
+
+			hasQueryParameters = contentQuery.Count > 0;
+			UpdateLastAppliedContentParameterNames(contentQuery.Keys);
+			return query;
+		}
+
+		ShellRouteParameters CreateParameterChangeQueryParameters(out bool hasQueryParameters)
+		{
+			var existing = GetValue(QueryAttributesProperty) as ShellRouteParameters;
+			var query = existing is null ? new ShellRouteParameters() : new ShellRouteParameters(existing);
+			var contentQuery = GetContentQueryParameters();
+			var previouslyAppliedNames = new HashSet<string>(_lastAppliedContentParameterNames, StringComparer.Ordinal);
+			var appliedNames = new HashSet<string>(StringComparer.Ordinal);
+
+			foreach (var name in previouslyAppliedNames)
+				query.RemoveShellContentQueryParameter(name);
+
+			foreach (var parameter in contentQuery)
+			{
+				if (previouslyAppliedNames.Contains(parameter.Key) || !query.ContainsKey(parameter.Key))
+				{
+					SetContentQueryParameter(query, parameter.Key, parameter.Value);
+					appliedNames.Add(parameter.Key);
+				}
+			}
+
+			hasQueryParameters = contentQuery.Count > 0;
+			UpdateLastAppliedContentParameterNames(appliedNames);
+			return query;
+		}
+
+		Dictionary<string, ContentQueryParameter> GetContentQueryParameters()
+		{
+			var contentQuery = new Dictionary<string, ContentQueryParameter>(StringComparer.Ordinal);
+			var queryStringParameters = new ShellRouteParameters();
+			queryStringParameters.SetQueryStringParameters(QueryString);
+
+			foreach (var parameter in queryStringParameters)
+			{
+				if (!string.IsNullOrEmpty(parameter.Key))
+					contentQuery[parameter.Key] = new ContentQueryParameter(parameter.Value, isQueryString: true);
+			}
+
+			foreach (var parameter in QueryParameters)
+			{
+				if (!string.IsNullOrEmpty(parameter?.Name))
+					contentQuery[parameter.Name] = new ContentQueryParameter(parameter.Value, isQueryString: false);
+			}
+
+			return contentQuery;
+		}
+
+		static void SetContentQueryParameter(ShellRouteParameters query, string name, ContentQueryParameter parameter)
+		{
+			if (parameter.IsQueryString)
+				query.SetShellContentQueryStringParameter(name, parameter.Value);
+			else
+				query.SetShellContentQueryParameter(name, parameter.Value);
+		}
+
+		void UpdateLastAppliedContentParameterNames(IEnumerable<string> names)
+		{
+			_lastAppliedContentParameterNames.Clear();
+			foreach (var name in names)
+				_lastAppliedContentParameterNames.Add(name);
+		}
+
+		readonly struct ContentQueryParameter
+		{
+			public ContentQueryParameter(object value, bool isQueryString)
+			{
+				Value = value;
+				IsQueryString = isQueryString;
+			}
+
+			public object Value { get; }
+			public bool IsQueryString { get; }
 		}
 
 		static void OnQueryAttributesPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -410,14 +735,32 @@ namespace Microsoft.Maui.Controls
 							if (prop.PropertyType == typeof(string))
 							{
 								if (value != null)
-									value = global::System.Net.WebUtility.UrlDecode((string)value);
+								{
+									if (query.IsShellContentQueryParameter(attrib.QueryId))
+										value = Convert.ToString(value, global::System.Globalization.CultureInfo.InvariantCulture);
+									else if (!query.IsShellContentQueryStringParameter(attrib.QueryId))
+										value = global::System.Net.WebUtility.UrlDecode((string)value);
+								}
 
 								prop.SetValue(content, value);
 							}
 							else
 							{
-								var castValue = Convert.ChangeType(value, prop.PropertyType);
-								prop.SetValue(content, castValue);
+								// Handle nullable types
+								Type targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+								if (value == null)
+								{
+									prop.SetValue(content, null);
+								}
+								else
+								{
+									var culture = query.IsShellContentParameter(attrib.QueryId)
+										? global::System.Globalization.CultureInfo.InvariantCulture
+										: global::System.Globalization.CultureInfo.CurrentCulture;
+									var castValue = Convert.ChangeType(value, targetType, culture);
+									prop.SetValue(content, castValue);
+								}
 							}
 						}
 					}
@@ -426,7 +769,13 @@ namespace Microsoft.Maui.Controls
 						PropertyInfo prop = type.GetRuntimeProperty(attrib.Name);
 
 						if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
-							prop.SetValue(content, null);
+						{
+							object defaultValue = prop.PropertyType.IsValueType &&
+								Nullable.GetUnderlyingType(prop.PropertyType) is null
+									? Activator.CreateInstance(prop.PropertyType)
+									: null;
+							prop.SetValue(content, defaultValue);
+						}
 					}
 				}
 			}
@@ -441,16 +790,16 @@ namespace Microsoft.Maui.Controls
 					query.ResetToQueryParameters();
 			}
 		}
-
+#nullable enable
 		private sealed class ShellContentConverter : TypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(TemplatedPage);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> false;
 
-			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+			public override object? ConvertFrom(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object value)
 			{
 				if (value is TemplatedPage templatedPage)
 				{
@@ -460,7 +809,7 @@ namespace Microsoft.Maui.Controls
 				throw new NotSupportedException();
 			}
 
-			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+			public override object? ConvertTo(ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, Type destinationType)
 			{
 				throw new NotSupportedException();
 			}

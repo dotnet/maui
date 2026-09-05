@@ -28,13 +28,17 @@ namespace Microsoft.Maui.Media
 
 			if (options != null)
 			{
-				// null voice if fine - it is the default
-				// select the voice by identifier else by Language, otherwise set for default
+				// Select the voice by identifier, else by language, otherwise use the default.
+				// Each step falls through when it yields no voice, including when a caller supplies
+				// an identifier this platform does not recognize.
 				speechUtterance.Voice =
-				    options.Locale?.Id != null
-				        ? AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id)
-				        : AVSpeechSynthesisVoice.FromLanguage(options.Locale?.Language)
-				        ?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
+					(string.IsNullOrWhiteSpace(options.Locale?.Id)
+						? null
+						: AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id))
+					?? (string.IsNullOrWhiteSpace(options.Locale?.Language)
+						? null
+						: AVSpeechSynthesisVoice.FromLanguage(options.Locale.Language))
+					?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
 
 				// the platform has a range of 0.5 - 2.0
 				// anything lower than 0.5 is set to 0.5
@@ -45,7 +49,7 @@ namespace Microsoft.Maui.Media
 					speechUtterance.Volume = options.Volume.Value;
 
 				if (options.Rate.HasValue)
-					speechUtterance.Rate = options.Rate.Value;
+					speechUtterance.Rate = NormalizeRate(options.Rate.Value);
 			}
 
 			return speechUtterance;
@@ -80,6 +84,12 @@ namespace Microsoft.Maui.Media
 					tcsUtterance?.TrySetResult(true);
 			}
 		}
+
+		static float NormalizeRate(float rate) =>
+			NormalizeRate(rate,
+				AVSpeechUtterance.MinimumSpeechRate,
+				AVSpeechUtterance.MaximumSpeechRate,
+				AVSpeechUtterance.DefaultSpeechRate);
 #pragma warning restore CA1416
 	}
 }

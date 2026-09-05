@@ -1717,5 +1717,60 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("manual", bindable.GetValue(prop));
 		}
 
+		// Regression test for https://github.com/dotnet/maui/issues/36744
+		[Fact]
+		public void DefaultValueCreatorThatMutatesOtherPropertiesDoesNotCorruptPropertyStore()
+		{
+			var mock = new MockBindable36744();
+
+			var triggerValue = mock.GetValue(MockBindable36744.TriggerProperty);
+			Assert.NotNull(triggerValue);
+			Assert.Same(triggerValue, mock.GetValue(MockBindable36744.TriggerProperty));
+
+			var exception = Record.Exception(() => mock.BindingContext = new object());
+			Assert.Null(exception);
+		}
+	}
+
+	internal class MockBindable36744 : BindableObject
+	{
+		public static readonly BindableProperty P0 = BindableProperty.Create("P0", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P1 = BindableProperty.Create("P1", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P2 = BindableProperty.Create("P2", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P3 = BindableProperty.Create("P3", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P4 = BindableProperty.Create("P4", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P5 = BindableProperty.Create("P5", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P6 = BindableProperty.Create("P6", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P7 = BindableProperty.Create("P7", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P8 = BindableProperty.Create("P8", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P9 = BindableProperty.Create("P9", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P10 = BindableProperty.Create("P10", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P11 = BindableProperty.Create("P11", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P12 = BindableProperty.Create("P12", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P13 = BindableProperty.Create("P13", typeof(int), typeof(MockBindable36744), 0);
+		public static readonly BindableProperty P14 = BindableProperty.Create("P14", typeof(int), typeof(MockBindable36744), 0);
+
+		public static readonly BindableProperty TriggerProperty = BindableProperty.Create(
+			"Trigger", typeof(object), typeof(MockBindable36744), null,
+			defaultValueCreator: b =>
+			{
+				var mb = (MockBindable36744)b;
+				mb.SetValue(P0, 1);
+				mb.SetValue(P1, 2);
+				mb.SetValue(P2, 3);
+				mb.SetValue(P3, 4);
+				mb.SetValue(P4, 5);
+				mb.SetValue(P5, 6);
+				mb.SetValue(P6, 7);
+				mb.SetValue(P7, 8);
+				mb.SetValue(P8, 9);
+				mb.SetValue(P9, 10);
+				mb.SetValue(P10, 11);
+				mb.SetValue(P11, 12);
+				mb.SetValue(P12, 13);
+				mb.SetValue(P13, 14);
+				mb.SetValue(P14, 15);
+				return new object();
+			});
 	}
 }

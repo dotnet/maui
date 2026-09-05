@@ -62,6 +62,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
+		// TODO: Remove the concrete TimePickerHandler overload above.
+		public static void MapFlowDirection(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			if (handler.PlatformView is not null)
+			{
+				handler.PlatformView.UpdateFlowDirection(timePicker);
+				handler.PlatformView.UpdateTextAlignment(timePicker);
+			}
+		}
+
 		internal static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateIsOpen(timePicker);

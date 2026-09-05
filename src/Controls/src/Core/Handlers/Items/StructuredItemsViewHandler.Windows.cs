@@ -12,6 +12,7 @@ using WStyle = Microsoft.UI.Xaml.Style;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on Windows. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> or a concrete Items2 handler instead.")]
 	public partial class StructuredItemsViewHandler<TItemsView> : ItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
 		View _currentHeader;
@@ -109,6 +110,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentHeader != null)
 			{
 				Element.RemoveLogicalChild(_currentHeader);
+				_currentHeader.Cleanup();
 				_currentHeader = null;
 			}
 
@@ -158,6 +160,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_currentFooter != null)
 			{
 				Element.RemoveLogicalChild(_currentFooter);
+				_currentFooter.Cleanup();
 				_currentFooter = null;
 			}
 
@@ -325,7 +328,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (ListViewBase)
 				{
 					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+						// Set the ItemContainerStyle based on the orientation
+						formsListView.ItemContainerStyle = (linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+							? GetHorizontalItemContainerStyle(linearItemsLayout)
+							: GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
 					case WListView listView:
 						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);

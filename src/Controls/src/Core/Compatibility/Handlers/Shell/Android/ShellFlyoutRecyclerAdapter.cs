@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void OnViewRecycled(Java.Lang.Object holder)
 		{
-			if (holder is ElementViewHolder evh)
+			if (holder is ElementViewHolder evh && _listItems is not null)
 			{
 				// only clear out the Element if the item has been removed
 				bool found = false;
@@ -208,7 +208,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			_disposed = true;
 
@@ -222,8 +224,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			if (_shellContext is null)
+			{
+				return;
+			}
+
 			if (Shell is IShellController scc)
+			{
 				scc.FlyoutItemsChanged -= OnFlyoutItemsChanged;
+			}
 
 			_listItems = null;
 			_selectedCallback = null;
@@ -274,16 +283,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				set
 				{
 					if (_element == value)
+					{
 						return;
+					}
 
-					if (View.Parent is BaseShellItem bsi)
-						bsi.RemoveLogicalChild(View);
+					if (View.Parent is BaseShellItem bsiParent)
+						bsiParent.RemoveLogicalChild(View);
 					else
 						_shell.RemoveLogicalChild(View);
 
-					if (_element != null && _element is BaseShellItem)
+					if (_element != null)
 					{
 						_element.PropertyChanged -= OnElementPropertyChanged;
+						((IElementDefinition)View)?.RemoveResourcesChangedListener(OnElementResourcesChanged);
 					}
 
 					_element = value;
@@ -299,6 +311,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							_shell.AddLogicalChild(View);
 
 						_element.PropertyChanged += OnElementPropertyChanged;
+						((IElementDefinition)View)?.AddResourcesChangedListener(OnElementResourcesChanged);
 						UpdateVisualState();
 					}
 				}
@@ -306,12 +319,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			void UpdateVisualState()
 			{
-				if (Element is BaseShellItem baseShellItem && baseShellItem != null)
+				if (Element is BaseShellItem baseShellItem)
 				{
-					if (baseShellItem.IsChecked)
-						VisualStateManager.GoToState(View, "Selected");
-					else
-						VisualStateManager.GoToState(View, "Normal");
+					VisualStateManager.GoToState(View, baseShellItem.IsChecked ? "Selected" : "Normal", force: true);
 				}
 			}
 
@@ -319,6 +329,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
 					UpdateVisualState();
+			}
+
+			void OnElementResourcesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				UpdateVisualState();
 			}
 
 			void OnClicked(object sender, EventArgs e)

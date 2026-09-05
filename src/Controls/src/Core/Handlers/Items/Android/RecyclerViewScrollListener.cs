@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		int _horizontalOffset, _verticalOffset;
 		TItemsView _itemsView;
+		bool _pendingRemainingItemsThresholdReached;
 		readonly bool _getCenteredItemOnXAndY = false;
 		bool _hasCompletedFirstLayout = false;
 
@@ -66,6 +67,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
+			_pendingRemainingItemsThresholdReached = false;
+
 			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
 			// This can also happen if a layout pass has not happened yet
 			if (Last == -1 || ItemsViewAdapter is null || _itemsView.RemainingItemsThreshold == -1)
@@ -91,8 +94,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (isThresholdReached)
 			{
-				_itemsView.SendRemainingItemsThresholdReached();
+				HandleRemainingItemsThresholdReached();
 			}
+		}
+
+		public override void OnScrollStateChanged(RecyclerView recyclerView, int newState)
+		{
+			base.OnScrollStateChanged(recyclerView, newState);
+
+			// If we have a pending threshold reached event and the RecyclerView is now idle,
+			// it's safe to trigger the event without the risk of modifying the adapter during a scroll callback
+			if (_pendingRemainingItemsThresholdReached && newState == RecyclerView.ScrollStateIdle)
+			{
+				_pendingRemainingItemsThresholdReached = false;
+				if (!_disposed && _itemsView is not null)
+				{
+					_itemsView.SendRemainingItemsThresholdReached();
+				}
+			}
+		}
+
+		void HandleRemainingItemsThresholdReached()
+		{
+			// Mark that we need to trigger the threshold reached event
+			// This will be handled when the RecyclerView transitions to idle state
+			// to avoid the "Cannot call this method in a scroll callback" exception
+			_pendingRemainingItemsThresholdReached = true;
 		}
 
 		protected virtual (int First, int Center, int Last) GetVisibleItemsIndex(RecyclerView recyclerView)
@@ -176,6 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_itemsView = null;
 				ItemsViewAdapter = null;
+				_pendingRemainingItemsThresholdReached = false;
 			}
 
 			_disposed = true;

@@ -259,5 +259,124 @@ namespace Tests
 		{
 			Assert.Equal(meters, UnitConverters.USSurveyFeetToMeters(usFeet));
 		}
+
+		[Theory]
+		[InlineData(32, 0)]
+		[InlineData(212, 100)]
+		[InlineData(98.6, 37)]
+		[InlineData(-40, -40)]
+		[InlineData(0, -17.7778)]
+		public void FahrenheitToCelsius(double fahrenheit, double celsius)
+		{
+			Assert.Equal(celsius, UnitConverters.FahrenheitToCelsius(fahrenheit), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 32)]
+		[InlineData(100, 212)]
+		[InlineData(37, 98.6)]
+		[InlineData(-40, -40)]
+		[InlineData(-17.7778, 0)]
+		public void CelsiusToFahrenheit(double celsius, double fahrenheit)
+		{
+			Assert.Equal(fahrenheit, UnitConverters.CelsiusToFahrenheit(celsius), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 273.15)]
+		[InlineData(100, 373.15)]
+		[InlineData(-273.15, 0)]
+		[InlineData(25, 298.15)]
+		public void CelsiusToKelvin(double celsius, double kelvin)
+		{
+			Assert.Equal(kelvin, UnitConverters.CelsiusToKelvin(celsius), 4);
+		}
+
+		[Theory]
+		[InlineData(273.15, 0)]
+		[InlineData(373.15, 100)]
+		[InlineData(0, -273.15)]
+		[InlineData(298.15, 25)]
+		public void KelvinToCelsius(double kelvin, double celsius)
+		{
+			Assert.Equal(celsius, UnitConverters.KelvinToCelsius(kelvin), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(1, 1609.344)]
+		[InlineData(0.5, 804.672)]
+		[InlineData(2, 3218.688)]
+		[InlineData(-1, -1609.344)]
+		public void MilesToMeters(double miles, double meters)
+		{
+			Assert.Equal(meters, UnitConverters.MilesToMeters(miles), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(360, 1)]
+		[InlineData(180, 0.5)]
+		[InlineData(720, 2)]
+		[InlineData(1, 0.0028)]
+		[InlineData(-360, -1)]
+		public void DegreesPerSecondToHertz(double degrees, double hertz)
+		{
+			Assert.Equal(hertz, UnitConverters.DegreesPerSecondToHertz(degrees), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(6.2832, 1.0000)]
+		[InlineData(3.1416, 0.5000)]
+		[InlineData(12.5664, 2.0000)]
+		[InlineData(-6.2832, -1.0000)]
+		public void RadiansPerSecondToHertz(double radians, double hertz)
+		{
+			Assert.Equal(hertz, UnitConverters.RadiansPerSecondToHertz(radians), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(1, 360)]
+		[InlineData(0.5, 180)]
+		[InlineData(2, 720)]
+		[InlineData(-1, -360)]
+		public void HertzToDegreesPerSecond(double hertz, double degrees)
+		{
+			Assert.Equal(degrees, UnitConverters.HertzToDegreesPerSecond(hertz), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(1, 6.2832)]
+		[InlineData(0.5, 3.1416)]
+		[InlineData(2, 12.5664)]
+		[InlineData(-1, -6.2832)]
+		public void HertzToRadiansPerSecond(double hertz, double radians)
+		{
+			Assert.Equal(radians, UnitConverters.HertzToRadiansPerSecond(hertz), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(1, 1000)]
+		[InlineData(2.5, 2500)]
+		[InlineData(-1, -1000)]
+		public void KilopascalsToPascals(double kpa, double pascals)
+		{
+			Assert.Equal(pascals, UnitConverters.KilopascalsToPascals(kpa), 4);
+		}
+
+		[Theory]
+		[InlineData(0, 0)]
+		[InlineData(1, 100)]
+		[InlineData(10, 1000)]
+		[InlineData(2.5, 250)]
+		[InlineData(-1, -100)]
+		public void HectopascalsToPascals(double hpa, double pascals)
+		{
+			Assert.Equal(pascals, UnitConverters.HectopascalsToPascals(hpa), 4);
+		}
 	}
 }

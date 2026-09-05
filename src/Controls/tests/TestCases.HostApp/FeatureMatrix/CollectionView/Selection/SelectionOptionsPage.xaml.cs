@@ -41,6 +41,139 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
+
+		private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (FlowDirectionLeftToRight.IsChecked)
+			{
+				_viewModel.FlowDirection = FlowDirection.LeftToRight;
+			}
+			else if (FlowDirectionRightToLeft.IsChecked)
+			{
+				_viewModel.FlowDirection = FlowDirection.RightToLeft;
+			}
+		}
+
+		private void OnHeaderChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (HeaderNone.IsChecked)
+			{
+				_viewModel.Header = null;
+			}
+			else if (HeaderString.IsChecked)
+			{
+				_viewModel.Header = "CollectionView Header(String)";
+			}
+			else if (HeaderGrid.IsChecked)
+			{
+				Grid grid = new Grid
+				{
+					BackgroundColor = Colors.LightGray,
+					Padding = new Thickness(10)
+				};
+				grid.Children.Add(new Label
+				{
+					Text = "CollectionView Header(Grid View)",
+					FontSize = 18,
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center,
+					TextColor = Colors.Blue,
+					AutomationId = "HeaderViewLabel"
+				});
+				_viewModel.Header = grid;
+			}
+		}
+
+		private void OnFooterChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (FooterNone.IsChecked)
+			{
+				_viewModel.Footer = null;
+			}
+			else if (FooterString.IsChecked)
+			{
+				_viewModel.Footer = "CollectionView Footer(String)";
+			}
+			else if (FooterGrid.IsChecked)
+			{
+				Grid grid = new Grid
+				{
+					BackgroundColor = Colors.LightGray,
+					Padding = new Thickness(10)
+				};
+				grid.Children.Add(new Label
+				{
+					Text = "CollectionView Footer(Grid View)",
+					FontSize = 18,
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center,
+					TextColor = Colors.Red,
+					AutomationId = "FooterViewLabel"
+				});
+				_viewModel.Footer = grid;
+			}
+		}
+
+		private void OnHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (HeaderTemplateNone.IsChecked)
+			{
+				_viewModel.HeaderTemplate = null;
+			}
+			else if (HeaderTemplateGrid.IsChecked)
+			{
+				_viewModel.HeaderTemplate = new DataTemplate(() =>
+				{
+					Grid grid = new Grid
+					{
+						BackgroundColor = Colors.LightGray,
+						Padding = new Thickness(10)
+					};
+					grid.Children.Add(new Label
+					{
+						Text = "Header Template(Grid View)",
+						FontSize = 18,
+						FontAttributes = FontAttributes.Bold,
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						TextColor = Colors.Blue,
+						AutomationId = "HeaderTemplateLabel"
+					});
+					return grid;
+				});
+			}
+		}
+
+		private void OnFooterTemplateChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (FooterTemplateNone.IsChecked)
+			{
+				_viewModel.FooterTemplate = null;
+			}
+			else if (FooterTemplateGrid.IsChecked)
+			{
+				_viewModel.FooterTemplate = new DataTemplate(() =>
+				{
+					Grid grid = new Grid
+					{
+						BackgroundColor = Colors.LightGray,
+						Padding = new Thickness(10)
+					};
+					grid.Children.Add(new Label
+					{
+						Text = "Footer Template(Grid View)",
+						FontSize = 18,
+						FontAttributes = FontAttributes.Bold,
+						HorizontalOptions = LayoutOptions.Center,
+						VerticalOptions = LayoutOptions.Center,
+						TextColor = Colors.Green,
+						AutomationId = "FooterTemplateLabel"
+					});
+					return grid;
+				});
+			}
+		}
+
 		private void OnIsGroupedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (IsGroupedFalse.IsChecked)

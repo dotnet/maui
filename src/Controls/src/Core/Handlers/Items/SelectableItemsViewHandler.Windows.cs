@@ -11,6 +11,7 @@ using WASDKSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChang
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on Windows. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView> or a concrete Items2 handler instead.")]
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
 		bool _ignorePlatformSelectionChange;
@@ -96,11 +97,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 								{
 									if (item is ItemTemplateContext itemPair)
 									{
-										return itemPair.Item == ItemsView.SelectedItem;
+										return object.Equals(itemPair.Item, ItemsView.SelectedItem);
 									}
 									else
 									{
-										return item == ItemsView.SelectedItem;
+										return object.Equals(item, ItemsView.SelectedItem);
 									}
 								});
 						}
@@ -209,7 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			foreach (var formsItemContentControl in formsItemContentControls)
 			{
-				bool isSelected = ItemsView.SelectedItem == formsItemContentControl.FormsDataContext || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
+				bool isSelected = object.Equals(ItemsView.SelectedItem, formsItemContentControl.FormsDataContext) || ItemsView.SelectedItems.Contains(formsItemContentControl.FormsDataContext);
 				formsItemContentControl.UpdateIsSelected(isSelected);
 			}
 		}

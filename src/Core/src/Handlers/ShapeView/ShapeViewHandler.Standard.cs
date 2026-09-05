@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView) { }
+
+		public static void MapFlowDirection(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView) { }
 		public static void MapFill(IShapeViewHandler handler, IShapeView shapeView) { }

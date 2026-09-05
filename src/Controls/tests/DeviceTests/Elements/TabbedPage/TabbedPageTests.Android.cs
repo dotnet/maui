@@ -5,26 +5,280 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.View;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
+using Google.Android.Material.AppBar;
+using Google.Android.Material.Badge;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgePropertiesUpdateNativeTab(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var secondPage = new ContentPage { Title = "Second" };
+			TabbedPage.SetBadgeText(firstPage, "7");
+			TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
+			TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage, secondPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0)?.Badge;
+
+				await AssertEventually(() => GetBadge()?.Text == "7", message: "Initial badge text was not applied.");
+				var badge = GetBadge();
+				Assert.Equal(Colors.Blue.ToPlatform(), badge.BackgroundColor);
+				Assert.Equal(Colors.Yellow.ToPlatform(), badge.BadgeTextColor);
+
+				TabbedPage.SetBadgeText(firstPage, "");
+				await AssertEventually(() => string.IsNullOrEmpty(badge.Text), message: "Badge did not change to a dot.");
+
+				TabbedPage.SetBadgeText(firstPage, "New");
+				TabbedPage.SetBadgeColor(firstPage, Colors.Orange);
+				TabbedPage.SetBadgeTextColor(firstPage, Colors.Black);
+				await AssertEventually(() =>
+					badge.Text == "New" &&
+					badge.BackgroundColor == Colors.Orange.ToPlatform() &&
+					badge.BadgeTextColor == Colors.Black.ToPlatform(),
+					message: "Badge text or colors did not update.");
+
+				TabbedPage.SetBadgeTextColor(firstPage, null);
+				await AssertEventually(() =>
+					GetBadge() is { } resetBadge &&
+					!ReferenceEquals(resetBadge, badge) &&
+					resetBadge.Text == "New" &&
+					resetBadge.BackgroundColor == Colors.Orange.ToPlatform(),
+					message: "Clearing the badge text color did not restore the platform default.");
+
+				TabbedPage.SetBadgeText(firstPage, null);
+				await AssertEventually(() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0) is null
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0) is { Badge: null },
+					message: "Badge was not removed.");
+			});
+		}
+
+		[Fact]
+		public async Task BottomBadgeUpdateCompletesWithNoPages()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(
+				bottomTabs: true,
+				pages: new[] { new ContentPage { Title = "Only page" } });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				tabbedPage.Children.Clear();
+				Assert.True(tabbedPage.TabbedPageManager.UpdateAllBadges());
+				return Task.CompletedTask;
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeTextUpdateDoesNotRecreateDefaultColoredBadge(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			TabbedPage.SetBadgeText(firstPage, "1");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge() => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(0)
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(0)?.Badge;
+
+				await AssertEventually(() => GetBadge()?.Text == "1");
+				var badge = GetBadge();
+
+				TabbedPage.SetBadgeText(firstPage, "2");
+
+				await AssertEventually(() => GetBadge()?.Text == "2");
+				Assert.Same(badge, GetBadge());
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeColorsDoNotTransferWhenTabIndexIsReused(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var coloredPage = new ContentPage { Title = "Colored" };
+			TabbedPage.SetBadgeText(coloredPage, "1");
+			TabbedPage.SetBadgeColor(coloredPage, Colors.Orange);
+			TabbedPage.SetBadgeTextColor(coloredPage, Colors.Black);
+			var defaultPage = new ContentPage { Title = "Default" };
+			TabbedPage.SetBadgeText(defaultPage, "2");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { coloredPage, defaultPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				BadgeDrawable GetBadge(int index) => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(index)
+					: tabbedPage.TabbedPageManager.TabLayout?.GetTabAt(index)?.Badge;
+
+				await AssertEventually(() => GetBadge(0)?.Text == "1");
+				var coloredBadge = GetBadge(0);
+
+				tabbedPage.Children.RemoveAt(0);
+
+				await AssertEventually(() => GetBadge(0)?.Text == "2");
+				var defaultBadge = GetBadge(0);
+				Assert.NotSame(coloredBadge, defaultBadge);
+				Assert.NotEqual(Colors.Orange.ToPlatform(), defaultBadge.BackgroundColor);
+				Assert.NotEqual(Colors.Black.ToPlatform(), defaultBadge.BadgeTextColor);
+			});
+		}
+
+		[Fact]
+		public async Task BottomBadgeColorsDoNotTransferWhenTrailingIndexIsReused()
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var coloredPage = new ContentPage { Title = "Colored" };
+			TabbedPage.SetBadgeText(coloredPage, "1");
+			TabbedPage.SetBadgeColor(coloredPage, Colors.Orange);
+			TabbedPage.SetBadgeTextColor(coloredPage, Colors.Black);
+			var tabbedPage = CreateBasicTabbedPage(
+				bottomTabs: true,
+				pages: new[] { firstPage, coloredPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavigationView = tabbedPage.TabbedPageManager.BottomNavigationView;
+				await AssertEventually(() => bottomNavigationView.GetBadge(1)?.Text == "1");
+				var coloredBadge = bottomNavigationView.GetBadge(1);
+
+				tabbedPage.Children.RemoveAt(1);
+
+				var defaultPage = new ContentPage { Title = "Default" };
+				TabbedPage.SetBadgeText(defaultPage, "2");
+				tabbedPage.Children.Add(defaultPage);
+
+				await AssertEventually(() => bottomNavigationView.GetBadge(1)?.Text == "2");
+				var defaultBadge = bottomNavigationView.GetBadge(1);
+				Assert.NotSame(coloredBadge, defaultBadge);
+				Assert.NotEqual(Colors.Orange.ToPlatform(), defaultBadge.BackgroundColor);
+				Assert.NotEqual(Colors.Black.ToPlatform(), defaultBadge.BadgeTextColor);
+			});
+		}
+
+		[Fact]
+		public async Task BottomTabBadgesRespectOverflow()
+		{
+			SetupBuilder();
+
+			var pages = Enumerable.Range(0, 6)
+				.Select(index =>
+				{
+					var page = new ContentPage { Title = $"Page {index}" };
+					TabbedPage.SetBadgeText(page, index.ToString());
+					return page;
+				})
+				.ToArray();
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs: true, pages: pages);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavigationView = tabbedPage.TabbedPageManager.BottomNavigationView;
+
+				await AssertEventually(() =>
+					Enumerable.Range(0, 4).All(index =>
+						bottomNavigationView.GetBadge(index)?.Text == index.ToString()),
+					message: "Visible bottom tabs did not receive their badges.");
+
+				Assert.Null(bottomNavigationView.GetBadge(4));
+				Assert.Null(bottomNavigationView.GetBadge(5));
+				Assert.Null(bottomNavigationView.GetBadge(BottomNavigationViewUtils.MoreTabId));
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task BadgeFollowsPageWhenTabIndexChanges(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var firstPage = new ContentPage { Title = "First" };
+			var badgedPage = new ContentPage { Title = "Badged" };
+			TabbedPage.SetBadgeText(badgedPage, "4");
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[] { firstPage, badgedPage });
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				string GetBadgeText(int index) => bottomTabs
+					? tabbedPage.TabbedPageManager.BottomNavigationView.GetBadge(index)?.Text
+					: tabbedPage.TabbedPageManager.TabLayout.GetTabAt(index)?.Badge?.Text;
+
+				await AssertEventually(() => GetBadgeText(1) == "4");
+
+				tabbedPage.Children.Insert(0, new ContentPage { Title = "Inserted" });
+				await AssertEventually(() =>
+					GetBadgeText(1) is null &&
+					GetBadgeText(2) == "4",
+					message: "The badge did not follow its page after inserting a tab.");
+			});
+		}
+
+		[Fact]
+		[Description("TabbedPage BarBackgroundColor should be applied to AppBar immediately after handler creation, before the fragment transaction completes")]
+		public async Task TopTabbedPageBarBackgroundColorAppliedOnInitialLoad()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			// Set BarBackgroundColor before the handler is created to exercise the path where
+			// UpdateTopChrome is called during initialization (async fragment transaction).
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = Colors.LightGreen;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				// The AppBar background must be applied even on initial load (timing race fix).
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == Colors.LightGreen.ToPlatform().ToArgb());
+			});
+		}
+
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
 		public async Task SelectedTabColorNoDoesntCrash()
 		{
@@ -209,12 +463,272 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackgroundColor should color the AppBar status bar area")]
+		public async Task TopTabbedPageBarBackgroundColorColorsAppBarStatusBarArea()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = firstColor;
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == firstColor.ToPlatform().ToArgb());
+
+				tabbedPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackground should restore the native AppBar drawable when changing from gradient to solid color")]
+		public async Task TopTabbedPageBarBackgroundRestoresNativeDrawableWhenChangingFromGradientToSolid()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var solidColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = Colors.Orange, Offset = 0 },
+					new GradientStop { Color = Colors.Purple, Offset = 1 },
+				}
+			};
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => appBar.Background is GradientStrokeDrawable);
+
+				tabbedPage.BarBackground = new SolidColorBrush(solidColor);
+
+				await AssertEventually(() =>
+					appBar.Background is not GradientStrokeDrawable &&
+					GetAppBarBackgroundColor(appBar) == solidColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("Top TabbedPage BarBackgroundColor should still update after the active AppBar background drawable state is disposed")]
+		public async Task TopTabbedPageBarBackgroundColorUpdatesAfterAppBarBackgroundStateDisposed()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds)
+				return;
+
+			SetupBuilder();
+
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackgroundColor = firstColor;
+			tabbedPage.BarTextColor = Colors.Black;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var appBar = GetAppBarLayout(handler);
+				Assert.NotNull(appBar);
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == firstColor.ToPlatform().ToArgb());
+
+				var activeBackground = appBar.Background;
+				var activeBackgroundState = activeBackground?.GetConstantState();
+				appBar.Background = null;
+				activeBackgroundState?.Dispose();
+				activeBackground?.Dispose();
+
+				tabbedPage.BarBackgroundColor = secondColor;
+
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
+			});
+		}
+
+		[Fact]
+		[Description("A bottom chrome update made before the native view is attached should be applied after attachment")]
+		public async Task BottomChromeUpdateBeforeAttachReplaysAfterAttachment()
+		{
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || OperatingSystem.IsAndroidVersionAtLeast(35))
+				return;
+
+			SetupBuilder();
+
+			var expectedColor = Colors.Green;
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(new ContentPage()), async handler =>
+			{
+				var platformWindow = handler.PlatformView.Window;
+				Assert.NotNull(platformWindow);
+				var content = handler.PlatformView.FindViewById<global::Android.Views.ViewGroup>(global::Android.Resource.Id.Content);
+				Assert.NotNull(content);
+				var chromeView = new BottomNavigationView(handler.PlatformView);
+
+#pragma warning disable CA1422 // This test only runs where Android still honors system bar color APIs.
+				var originalColor = platformWindow.NavigationBarColor;
+				platformWindow.SetNavigationBarColor(Colors.Red.ToPlatform());
+
+				try
+				{
+					AndroidSystemChrome.UpdateBottomChrome(chromeView, new SolidColorBrush(expectedColor));
+					Assert.Equal(Colors.Red.ToPlatform().ToArgb(), platformWindow.NavigationBarColor);
+
+					content.AddView(chromeView);
+					await AssertEventually(() => platformWindow.NavigationBarColor == expectedColor.ToPlatform().ToArgb());
+				}
+				finally
+				{
+					content.RemoveView(chromeView);
+					platformWindow.SetNavigationBarColor(new global::Android.Graphics.Color(originalColor));
+					chromeView.Dispose();
+				}
+#pragma warning restore CA1422
+			});
+		}
+
+		[Fact]
+		[Description("BottomNavigationView should extend to screen bottom in Edge-to-Edge mode (Issue 33344)")]
+		public async Task BottomNavigationViewExtendsToScreenBottom()
+		{
+			SetupBuilder();
+
+			var tabbedPage = new TabbedPage
+			{
+				Children =
+				{
+					new ContentPage() { Title = "Page1" },
+					new ContentPage() { Title = "Page2" }
+				},
+				BarBackgroundColor = Colors.Orange
+			};
+
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage
+				.SetToolbarPlacement(tabbedPage, Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ToolbarPlacement.Bottom);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				var bottomNavView = GetBottomNavigationView(handler);
+				Assert.NotNull(bottomNavView);
+
+				// Wait for layout to complete
+				await AssertEventually(() => bottomNavView.Height > 0);
+
+				var location = new int[2];
+				bottomNavView.GetLocationOnScreen(location);
+				var bottomNavBottom = location[1] + bottomNavView.Height;
+
+				var decorView = MauiContext.Context.GetActivity()?.Window?.DecorView;
+				Assert.NotNull(decorView);
+
+				decorView.GetLocationOnScreen(location);
+				var screenHeight = location[1] + decorView.Height;
+
+				Assert.True(Math.Abs(screenHeight - bottomNavBottom) < 2,
+					$"BottomNavigationView should extend to screen bottom. Expected bottom at {screenHeight}px, but was at {bottomNavBottom}px (gap of {screenHeight - bottomNavBottom}px)");
+			});
+		}
+
+		[Theory(DisplayName = "Back-to-back PushAsync does not leak tabs (Issue 35331)")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task BackToBackPushAsyncDoesNotLeakTabs(bool bottomTabs)
+		{
+			SetupBuilder();
+
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs, pages: new[]
+			{
+				new ContentPage() { Title = "Tab 1" },
+				new ContentPage() { Title = "Tab 2" }
+			});
+
+			var navPage = new NavigationPage(tabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Push two pages back-to-back. The first push triggers
+				// TabbedPage.Disappearing → RemoveTabs(). The second push
+				// must not break state even though _tabLayoutFragment is
+				// already null after the first RemoveTabs().
+				var page1 = new ContentPage { Title = "Detail 1" };
+				await navPage.PushAsync(page1);
+				await OnNavigatedToAsync(page1);
+
+				var page2 = new ContentPage { Title = "Detail 2" };
+				await navPage.PushAsync(page2);
+				await OnNavigatedToAsync(page2);
+
+				// Pop back to the first detail page
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(page1);
+
+				// Pop back to the TabbedPage — tabs should be restored
+				await navPage.PopAsync();
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				// Verify tabs are visible again
+				if (bottomTabs)
+				{
+					var bottomNav = GetBottomNavigationView(tabbedPage.Handler as IPlatformViewHandler);
+					Assert.NotNull(bottomNav);
+					Assert.True(bottomNav.Visibility == global::Android.Views.ViewStates.Visible,
+						"BottomNavigationView should be visible after popping back to TabbedPage");
+				}
+			});
+		}
+
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
 			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
 				as CoordinatorLayout;
 
 			return layout.GetFirstChildOfType<BottomNavigationView>();
+		}
+
+		AppBarLayout GetAppBarLayout(IPlatformViewHandler tabViewHandler)
+		{
+			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
+				as CoordinatorLayout;
+
+			return layout.GetFirstChildOfType<AppBarLayout>();
+		}
+
+		static int GetAppBarBackgroundColor(AppBarLayout appBar)
+		{
+			if (ViewCompat.GetBackgroundTintList(appBar) is { } backgroundTint)
+			{
+				return backgroundTint.GetColorForState(
+					appBar.GetDrawableState(),
+					new global::Android.Graphics.Color(backgroundTint.DefaultColor));
+			}
+
+			return appBar.Background switch
+			{
+				ColorDrawable colorDrawable => colorDrawable.Color.ToArgb(),
+				MaterialShapeDrawable materialShapeDrawable when materialShapeDrawable.FillColor is not null =>
+					materialShapeDrawable.FillColor.GetColorForState(
+						appBar.GetDrawableState(),
+						new global::Android.Graphics.Color(materialShapeDrawable.FillColor.DefaultColor)),
+				_ => throw new XunitException($"Expected AppBar background to be {nameof(ColorDrawable)} or {nameof(MaterialShapeDrawable)}, but was {appBar.Background?.GetType().FullName ?? "null"}.")
+			};
 		}
 
 		async Task ValidateTabBarIconColor(

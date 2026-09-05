@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.VisualStateManagerCheckBoxPage"
+             Title="VisualStateManagerCheckBoxPage">
+    <ContentPage.Resources>
+        <Style TargetType="CheckBox" x:Key="VsmCheckBoxStyle">
+            <Setter Property="Color" Value="#374151" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="1" />
+                                <Setter Property="Scale" Value="1.0" />
+                                <Setter Property="Color" Value="#FF1F64D4" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="Scale" Value="1.0" />
+                                <Setter Property="Color" Value="#FF9CA3AF" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="CheckStates">
+                        <VisualState x:Name="Checked">
+                            <VisualState.Setters>
+                                <Setter Property="Color" Value="#FF25DF2E" />
+                                <Setter Property="Scale" Value="1.5" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Unchecked">
+                            <VisualState.Setters>
+                                <Setter Property="Color" Value="#FFC9150B" />
+                                <Setter Property="Scale" Value="1.25" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+        <VerticalStackLayout Padding="20" Spacing="16">
+            <Label Text="VisualStateManager Feature Matrix" FontSize="20" />
+
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <Label Text="CheckBox States (Checked / Unchecked / Disabled)" FontAttributes="Bold" />
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <CheckBox x:Name="VSMCheckBox" AutomationId="VSMCheckBox" Style="{StaticResource VsmCheckBoxStyle}" CheckedChanged="OnCheckBoxCheckedChanged" />
+                    <Label x:Name="CheckBoxState" AutomationId="CheckBoxState" Text="State: Unchecked" VerticalOptions="Center" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10">
+                    <Button x:Name="CheckBoxDisableButton" Text="Disable" AutomationId="CheckBoxDisable" Clicked="OnToggleCheckBoxDisabled" />
+                    <Button Text="Reset" AutomationId="CheckBoxReset" Clicked="OnResetCheckBox" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+</ContentPage>
+

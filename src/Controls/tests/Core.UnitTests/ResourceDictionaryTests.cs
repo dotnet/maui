@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -169,6 +170,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AssigningResourcesToElementDoesNotResolveLazyResources()
+		{
+			var invokeCount = 0;
+			var resources = new ResourceDictionary();
+			resources.AddFactory("unused-local-lazy-resource", () =>
+			{
+				invokeCount++;
+				return new Label();
+			}, shared: true);
+
+			Assert.Equal(0, invokeCount);
+
+			var element = new VisualElement();
+
+			element.Resources = resources;
+
+			Assert.Equal(0, invokeCount);
+		}
+
+		[Fact]
+		public void ParentSetDoesNotResolveLocalLazyResources()
+		{
+			var invokeCount = 0;
+			var child = new VisualElement();
+			child.Resources.AddFactory("unused-local-lazy-resource", () =>
+			{
+				invokeCount++;
+				return new Label();
+			}, shared: true);
+
+			Assert.Equal(0, invokeCount);
+
+			var parent = new VisualElement
+			{
+				Resources = new ResourceDictionary {
+					{ "parent-resource", "PARENT" },
+				}
+			};
+
+			child.Parent = parent;
+
+			Assert.Equal(0, invokeCount);
+		}
+
+
+		[Fact]
 		public void ResourcesChangedNotRaisedIfKeyExistsInCurrent()
 		{
 			var elt = new VisualElement
@@ -310,12 +357,173 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void FilteredMergedResourcesMatchFullSnapshotForOrdinaryResources()
+		{
+			var previousApplication = Application.Current;
+			try
+			{
+				var app = new MockApplication
+				{
+					Resources = new ResourceDictionary {
+						{ "app-only", "APP" },
+						{ "duplicate", "APP-DUPLICATE" },
+					}
+				};
+				var grandparent = new ContentView
+				{
+					Resources = new ResourceDictionary {
+						{ "grandparent-only", "GRANDPARENT" },
+						{ "duplicate", "GRANDPARENT-DUPLICATE" },
+					},
+					Parent = app,
+				};
+				var parent = new ContentView
+				{
+					Resources = new ResourceDictionary {
+						new ResourceDictionary {
+							{ "merged-only", "MERGED" },
+							{ "duplicate", "MERGED-DUPLICATE" },
+						},
+						{ "parent-only", "PARENT" },
+						{ "duplicate", "PARENT-DUPLICATE" },
+					},
+					Parent = grandparent,
+				};
+
+				AssertFilteredResourcesMatchFullSnapshot(parent, "merged-only", "parent-only", "grandparent-only", "app-only", "duplicate", "missing");
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		}
+
+		[Fact]
+		public void FilteredMergedResourcesMatchFullSnapshotForSystemResources()
+		{
+			var previousApplication = Application.Current;
+			try
+			{
+				var app = new MockApplication();
+				var parent = new ContentView { Parent = app };
+
+				AssertFilteredResourcesMatchFullSnapshot(parent, Device.Styles.BodyStyleKey, Device.Styles.TitleStyleKey);
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		}
+
+		[Fact]
+		public void FilteredMergedResourcesMatchFullSnapshotForAppThemeResource()
+		{
+			var previousApplication = Application.Current;
+			try
+			{
+				var app = new MockApplication();
+				var parent = new ContentView
+				{
+					Resources = new ResourceDictionary {
+						{ "before-theme", "BEFORE" },
+						{ AppThemeBinding.AppThemeResource, AppTheme.Dark },
+						{ "after-theme", "AFTER" },
+					},
+					Parent = app,
+				};
+
+				AssertFilteredResourcesMatchFullSnapshot(parent, "before-theme", AppThemeBinding.AppThemeResource, "after-theme");
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		}
+
+		[Fact]
+		public void FilteredMergedResourcesMatchFullSnapshotForStyleClassResources()
+		{
+			var previousApplication = Application.Current;
+			try
+			{
+				var appStyle = new Style(typeof(Button)) { Class = "parity", ApplyToDerivedTypes = true };
+				var grandparentStyle = new Style(typeof(Button)) { Class = "parity", ApplyToDerivedTypes = true };
+				var parentMergedStyle = new Style(typeof(Button)) { Class = "parity", ApplyToDerivedTypes = true };
+				var parentLocalStyle = new Style(typeof(Button)) { Class = "parity", ApplyToDerivedTypes = true };
+				var app = new MockApplication
+				{
+					Resources = new ResourceDictionary { appStyle }
+				};
+				var grandparent = new ContentView
+				{
+					Resources = new ResourceDictionary { grandparentStyle },
+					Parent = app,
+				};
+				var parent = new ContentView
+				{
+					Resources = new ResourceDictionary {
+						new ResourceDictionary { parentMergedStyle },
+						parentLocalStyle,
+					},
+					Parent = grandparent,
+				};
+				var key = Style.StyleClassPrefix + "parity";
+
+				AssertFilteredResourcesMatchFullSnapshot(parent, key);
+			}
+			finally
+			{
+				Application.Current = previousApplication;
+			}
+		}
+
+		[Fact]
+		public void FilteredMergedResourcesReturnNullWhenNoRequestedKeysMatch()
+		{
+			var parent = new ContentView
+			{
+				Resources = new ResourceDictionary {
+					{ "available", "AVAILABLE" },
+				}
+			};
+
+			Assert.Null(((IElementDefinition)parent).GetMergedResourcesForKeys(new[] { "missing", "" }));
+		}
+
+		[Fact]
 		public void ShowKeyInExceptionIfNotFound()
 		{
 			var rd = new ResourceDictionary();
 			rd.Add("foo", "bar");
 			var ex = Assert.Throws<KeyNotFoundException>(() => { var foo = rd["test_invalid_key"]; });
 			Assert.Contains("test_invalid_key", ex.Message, StringComparison.InvariantCulture);
+		}
+
+		static void AssertFilteredResourcesMatchFullSnapshot(IElementDefinition element, params string[] keys)
+		{
+			var requestedKeys = new HashSet<string>(keys.Where(key => !string.IsNullOrEmpty(key)), StringComparer.Ordinal);
+			var expected = (element.GetMergedResources() ?? Enumerable.Empty<KeyValuePair<string, object>>())
+				.Where(resource => requestedKeys.Contains(resource.Key))
+				.ToList();
+			var actual = (element.GetMergedResourcesForKeys(keys) ?? Enumerable.Empty<KeyValuePair<string, object>>()).ToList();
+
+			Assert.Equal(expected.Select(resource => resource.Key), actual.Select(resource => resource.Key));
+			Assert.Equal(expected.Count, actual.Count);
+
+			for (var i = 0; i < expected.Count; i++)
+				AssertResourceValueEqual(expected[i].Value, actual[i].Value);
+		}
+
+		static void AssertResourceValueEqual(object expected, object actual)
+		{
+			if (expected is IList<Style> expectedStyles)
+			{
+				var actualStyles = Assert.IsAssignableFrom<IList<Style>>(actual);
+				Assert.Equal(expectedStyles, actualStyles);
+				return;
+			}
+
+			Assert.Equal(expected, actual);
 		}
 
 		class MyRD : ResourceDictionary
@@ -647,10 +855,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// The event value should be properly resolved
 			Assert.NotNull(eventValue);
-			
+
 			// The value should be the resolved color
 			Assert.Equal(Colors.Red, eventValue);
-			
+
 			// The value IS correct when accessed directly
 			Assert.Equal(Colors.Red, rd["myColor"]);
 		}
@@ -663,7 +871,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var rd = new ResourceDictionary();
 			var label = new Label();
-			
+
 			// Set up the page hierarchy so DynamicResource can find resources
 			var page = new ContentPage { Content = label };
 			page.Resources = rd;

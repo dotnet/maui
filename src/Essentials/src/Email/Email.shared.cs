@@ -121,10 +121,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IEmail Default =>
-			defaultImplementation ??= new EmailImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new EmailImplementation());
 
 		internal static void SetDefault(IEmail? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

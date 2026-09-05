@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.LabelClip"
+             Title="LabelClip">
+
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid RowDefinitions="*,Auto"
+        RowSpacing="15">
+    <Label Text="Sample Text for Clipping Test Multiple Lines To Show Clip Effect"
+           FontAttributes="Bold"
+           BackgroundColor="LightBlue"
+           HorizontalTextAlignment="Center"
+           VerticalTextAlignment="Center"
+           WidthRequest="300"
+           HeightRequest="300"
+           Clip="{Binding Clip}"
+           Rotation="{Binding ControlRotation}"
+           ScaleX="{Binding ControlScaleX}"
+           ScaleY="{Binding ControlScaleY}"
+           FormattedText="{Binding FormattedText}"
+           FontSize="{Binding FontSize}"
+           Shadow="{Binding Shadow}"
+           AutomationId="LabelControl"/>
+  </Grid>
+</ContentPage>

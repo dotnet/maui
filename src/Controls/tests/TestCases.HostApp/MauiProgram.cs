@@ -41,12 +41,14 @@ namespace Maui.Controls.Sample
 				.Issue18720DatePickerAddMappers()
 				.Issue18720TimePickerAddMappers()
 				.Issue28945AddMappers()
-				.Issue25436RegisterNavigationService();
+				.Issue25436RegisterNavigationService()
+				.Issue36853RegisterServices()
+				.Issue34392AddHandlers();
 
 #if IOS || MACCATALYST
 			appBuilder.ConfigureCollectionViewHandlers();
 #endif
-			
+
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
@@ -64,6 +66,12 @@ namespace Maui.Controls.Sample
 #endif
 #if IOS
 				handlers.AddHandler(typeof(Issue30147CustomScrollView), typeof(Issue30147CustomScrollViewHandler));
+#endif
+#if IOS || MACCATALYST || ANDROID || WINDOWS
+				handlers.AddHandler(typeof(Issue34310NativeHostView), typeof(Issue34310NativeHostViewHandler));
+#endif
+#if ANDROID
+				handlers.AddHandler(typeof(Issue7814TouchClaimView), typeof(Issue7814TouchClaimViewHandler));
 #endif
 			});
 

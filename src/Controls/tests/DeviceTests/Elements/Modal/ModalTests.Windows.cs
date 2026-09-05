@@ -151,5 +151,170 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(windowRootView.NavigationViewControl.ButtonHolderGrid.Visibility == UI.Xaml.Visibility.Visible);
 				}));
 		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ModalPageDisablesHitTestOnUnderlyingPage(bool useColor)
+		{
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage() { Content = new Label() { Text = "Root Page" } });
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					ContentPage modalPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
+
+					if (useColor)
+						modalPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
+					else
+						modalPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
+
+					var rootPageRootView = navPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var modalRootView = modalPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// The underlying page should have IsHitTestVisible disabled
+					Assert.False(rootPageRootView.IsHitTestVisible,
+						"Underlying page should have IsHitTestVisible=false when a modal is displayed");
+
+					// The modal page should have IsHitTestVisible enabled
+					Assert.True(modalRootView.IsHitTestVisible,
+						"Modal page should have IsHitTestVisible=true");
+
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					// After popping the modal, the underlying page should be interactive again
+					Assert.True(rootPageRootView.IsHitTestVisible,
+						"Underlying page should have IsHitTestVisible=true after modal is dismissed");
+				});
+		}
+
+		[Fact]
+		public async Task ModalPageFocusTrapsAndRestoresCorrectly()
+		{
+			SetupBuilder();
+
+			var button = new Button() { Text = "Test Button" };
+			var rootPage = new ContentPage() { Content = button };
+			var navPage = new NavigationPage(rootPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					var modalButton = new Button() { Text = "Modal Button" };
+					var modalPage = new ContentPage()
+					{
+						Content = modalButton,
+						BackgroundColor = Colors.Purple.WithAlpha(0.5f)
+					};
+
+					var container = (WindowRootViewContainer)handler.PlatformView.Content;
+
+					// Push modal
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var rootPageRootView = navPage.FindMauiContext().GetNavigationRootManager().RootView;
+					var modalRootView = modalPage.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// Underlying page should be non-interactive
+					Assert.False(rootPageRootView.IsHitTestVisible);
+
+					// Pop modal
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					// After pop, the root page should be fully interactive
+					Assert.True(rootPageRootView.IsHitTestVisible,
+						"Root page should be hit-test visible after modal pop");
+
+					// The root page should still be in the visual tree
+					Assert.Contains(rootPageRootView, container.CachedChildren);
+
+					// The modal should be removed
+					Assert.DoesNotContain(modalRootView, container.CachedChildren);
+				});
+		}
+
+		[Fact]
+		public async Task NestedModalPagesMaintainHitTestVisibilityAndFocusTrap()
+		{
+			SetupBuilder();
+
+			var button = new Button() { Text = "Root Button" };
+			var rootPage = new ContentPage() { Content = button };
+			var navPage = new NavigationPage(rootPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+				async (handler) =>
+				{
+					var modalButtonA = new Button() { Text = "Modal A Button" };
+					var modalPageA = new ContentPage()
+					{
+						Content = modalButtonA,
+						BackgroundColor = Colors.Green.WithAlpha(0.5f)
+					};
+
+					var modalButtonB = new Button() { Text = "Modal B Button" };
+					var modalPageB = new ContentPage()
+					{
+						Content = modalButtonB,
+						BackgroundColor = Colors.Red.WithAlpha(0.5f)
+					};
+
+					var container = (WindowRootViewContainer)handler.PlatformView.Content;
+
+					// Push first modal (A)
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPageA);
+					await OnLoadedAsync(modalPageA);
+
+					var rootPageRootView = navPage.FindMauiContext().GetNavigationRootManager().RootView;
+					var modalARootView = modalPageA.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// Underlying root page should be non-interactive while modal A is showing
+					Assert.False(rootPageRootView.IsHitTestVisible);
+					Assert.Contains(modalARootView, container.CachedChildren);
+
+					// Push second modal (B) on top of A
+					await navPage.CurrentPage.Navigation.PushModalAsync(modalPageB);
+					await OnLoadedAsync(modalPageB);
+
+					var modalBRootView = modalPageB.FindMauiContext().GetNavigationRootManager().RootView;
+
+					// Root should still be non-interactive with topmost modal B showing
+					Assert.False(rootPageRootView.IsHitTestVisible);
+					Assert.Contains(modalBRootView, container.CachedChildren);
+
+					// Pop topmost modal (B)
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPageB);
+
+					// After popping B, modal A is still visible, so the root page
+					// should remain non-interactive (focus trap still active)
+					Assert.False(rootPageRootView.IsHitTestVisible);
+					Assert.Contains(modalARootView, container.CachedChildren);
+					Assert.DoesNotContain(modalBRootView, container.CachedChildren);
+
+					// Now pop modal A
+					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPageA);
+
+					// After popping the last modal, the root page should be interactive again
+					Assert.True(rootPageRootView.IsHitTestVisible,
+						"Root page should be hit-test visible after all modals are popped");
+
+					// The root page should still be in the visual tree
+					Assert.Contains(rootPageRootView, container.CachedChildren);
+
+					// Modal A should now be removed from the visual tree
+					Assert.DoesNotContain(modalARootView, container.CachedChildren);
+				});
+		}
 	}
 }

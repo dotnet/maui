@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that displays a single view as its content.</summary>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElement, ISafeAreaView2
+	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView, ISafeAreaElementController, ISafeAreaView2
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentPage), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="HideSoftInputOnTapped"/>.</summary>
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
-			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
+			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="SafeAreaEdges"/>.</summary>
 		public static readonly BindableProperty SafeAreaEdgesProperty = SafeAreaElement.SafeAreaEdgesProperty;
@@ -38,12 +39,12 @@ namespace Microsoft.Maui.Controls
 		public bool HideSoftInputOnTapped
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
-			set { SetValue(HideSoftInputOnTappedProperty, value); }
+			set { SetValue(HideSoftInputOnTappedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this content page.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.None (edge-to-edge).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the content page should obey safe area insets.
@@ -170,6 +171,9 @@ namespace Microsoft.Maui.Controls
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
 
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)
 		{
@@ -202,7 +206,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}

@@ -2,7 +2,11 @@
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+#if IOS || MACCATALYST
+using CarouselViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -114,7 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !ANDROID //https://github.com/dotnet/maui/pull/24610
 		[Fact]
 		public async void DisconnectedCarouselViewDoesNotHookCollectionViewChanged()
 		{
@@ -154,7 +157,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}
-#endif
 	}
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector

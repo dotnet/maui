@@ -17,19 +17,22 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElementController, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
 
-		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
+		WeakNotifyPropertyChangedProxy? _strokeShapeProxy;
 		PropertyChangedEventHandler? _strokeShapeChanged;
-		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
+		WeakNotifyPropertyChangedProxy? _strokeProxy;
 		PropertyChangedEventHandler? _strokeChanged;
+		WeakNotifyCollectionChangedProxy? _strokeDashArrayProxy;
+		NotifyCollectionChangedEventHandler? _strokeDashArrayChanged;
 
 		~Border()
 		{
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
+			_strokeDashArrayProxy?.Unsubscribe();
 		}
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -63,12 +66,12 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this border.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.None (edge-to-edge).
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the border should obey safe area insets.
 		/// Use SafeAreaRegions.None for edge-to-edge content, SafeAreaRegions.All to obey all safe area insets, 
-		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.Keyboard for keyboard-aware behavior.
+		/// SafeAreaRegions.Container for content that flows under keyboard but stays out of bars/notch, or SafeAreaRegions.SoftInput for keyboard-aware behavior.
 		/// </remarks>
 		public SafeAreaEdges SafeAreaEdges
 		{
@@ -97,15 +100,8 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeChanged ??= (sender, e) =>
-				{
-					if (e.PropertyName != nameof(Window) &&
-						e.PropertyName != nameof(Parent))
-					{
-						OnPropertyChanged(nameof(StrokeShape));
-					}
-				};
-				_strokeShapeProxy ??= new();
+				_strokeShapeProxy ??= new WeakNotifyPropertyChangedProxy();
+				_strokeShapeChanged ??= OnStrokeShapePropertyChanged;
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
 		}
@@ -118,6 +114,15 @@ namespace Microsoft.Maui.Controls
 			{
 				RemoveLogicalChild(visualElement);
 				_strokeShapeProxy?.Unsubscribe();
+			}
+		}
+
+		void OnStrokeShapePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != nameof(Window) &&
+				e.PropertyName != nameof(Parent))
+			{
+				OnPropertyChanged(nameof(StrokeShape));
 			}
 		}
 
@@ -145,8 +150,8 @@ namespace Microsoft.Maui.Controls
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
-				_strokeProxy ??= new();
+				_strokeProxy ??= new WeakNotifyPropertyChangedProxy();
+				_strokeChanged ??= OnStrokePropertyChanged;
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
 
 				OnParentResourcesChanged(this.GetMergedResources());
@@ -170,6 +175,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		void OnStrokePropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(nameof(Stroke));
+		}
+
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
@@ -177,7 +187,30 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
-				defaultValueCreator: bindable => new DoubleCollection());
+				defaultValueCreator: bindable => new DoubleCollection(),
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					(bindable as Border)?.StopNotifyingStrokeDashArrayChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					(bindable as Border)?.NotifyStrokeDashArrayChanges();
+				});
+
+		void NotifyStrokeDashArrayChanges()
+		{
+			if (StrokeDashArray is INotifyCollectionChanged collection)
+			{
+				_strokeDashArrayProxy ??= new WeakNotifyCollectionChangedProxy();
+				_strokeDashArrayChanged ??= OnStrokeDashArrayChanged;
+				_strokeDashArrayProxy.Subscribe(collection, _strokeDashArrayChanged);
+			}
+		}
+
+		void StopNotifyingStrokeDashArrayChanges()
+		{
+			_strokeDashArrayProxy?.Unsubscribe();
+		}
 
 		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
@@ -310,14 +343,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (StrokeDashArray is INotifyCollectionChanged oldCollection)
-					oldCollection.CollectionChanged -= OnStrokeDashArrayChanged;
-
+				// Ensure we subscribe to the default collection from defaultValueCreator.
+				NotifyStrokeDashArrayChanges();
 				_strokeDashPattern = StrokeDashArray?.ToFloatArray();
-
-				if (StrokeDashArray is INotifyCollectionChanged newCollection)
-					newCollection.CollectionChanged += OnStrokeDashArrayChanged;
-
 				return _strokeDashPattern;
 			}
 		}
@@ -457,11 +485,14 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
 		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for borders
 
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
+
 		/// <summary>
 		/// Provides the default value for the <see cref="SafeAreaEdges"/> property.
 		/// </summary>
 		/// <returns>The default safe area edges of <see cref="SafeAreaEdges.None"/>.</returns>
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}

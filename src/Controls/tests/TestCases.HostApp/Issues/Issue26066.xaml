@@ -9,7 +9,7 @@
   <ContentPage.BindingContext>
     <local:Issue26066ViewModel/>
   </ContentPage.BindingContext>
-  <Grid RowDefinitions="Auto,*,Auto,*">
+  <Grid RowDefinitions="Auto,*">
     <Grid.Resources>
       <DataTemplate x:DataType="local:Issue22035Model"
           x:Key="template">
@@ -29,14 +29,6 @@
       Command="{Binding LoadCommandCV2}"/>
     <sample:CollectionView2  Grid.Row="1" BackgroundColor="LightBlue"
         ItemsSource="{Binding Images2}"
-        ItemTemplate="{StaticResource template}"/>
-    <Button BackgroundColor="LightGreen "
-      Grid.Row="2"
-      AutomationId="TestLoadButtonCV"
-      Text="Load Items CV1"
-      Command="{Binding LoadCommand}"/>
-    <sample:CollectionView1  Grid.Row="3" BackgroundColor="LightGreen"
-        ItemsSource="{Binding Images}"
         ItemTemplate="{StaticResource template}"/>
   </Grid>
 </ContentPage>

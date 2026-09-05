@@ -74,8 +74,8 @@ static class NodeSGExtensions
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PointCollectionConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.PointCollection"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TypeTypeConverter")!, (CreateLazyConverter<TypeTypeConverter>(), context.Compilation.GetTypeByMetadataName("System.Type")!) },
 		{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.ConstraintTypeConverter")!, (CreateLazyRegistryConverter("Microsoft.Maui.Controls.Compatibility.Constraint"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!) },
-        
-        // TODO: PathFigureCollectionConverter (used for PathGeometry and StrokeShape) is very complex, skipping for now, apart from that one all other shapes work though
+		// TODO: PathFigureCollectionConverter (used for PathGeometry and StrokeShape) is very complex, skipping for now, apart from that one all other shapes work though.
+		// Add StrokeShapeConverter's numeric RoundRectangle fallback before registering it here.
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometryConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Geometry"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Geometry")!) },
 			//{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (CreateRegistryConverter("Microsoft.Maui.Controls.Shapes.Shape"), context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 		};
@@ -181,7 +181,7 @@ static class NodeSGExtensions
 		// If we can't resolve the type, err on the side of caution and don't treat as lazy
 		if (!node.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache, out var typeSymbol) || typeSymbol == null)
 			return false;
-		
+
 		// Value types should not be lazy (no benefit - value types are copied anyway)
 		if (typeSymbol.IsValueType)
 			return false;
@@ -404,7 +404,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
-				return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
+				return $"(sbyte){SymbolDisplay.FormatPrimitive(sbyteValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -413,7 +413,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
-				return SymbolDisplay.FormatPrimitive(byteValue, true, false);
+				return $"(byte){SymbolDisplay.FormatPrimitive(byteValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -422,7 +422,7 @@ static class NodeSGExtensions
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
 			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
-				return SymbolDisplay.FormatPrimitive(shortValue, true, false);
+				return $"(short){SymbolDisplay.FormatPrimitive(shortValue, true, false)}";
 			else
 				reportDiagnostic();
 		}
@@ -430,8 +430,8 @@ static class NodeSGExtensions
 		{
 			if (string.IsNullOrEmpty(valueString))
 				return "default";
-			if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
-				return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
+			if (ushort.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
+				return $"(ushort){SymbolDisplay.FormatPrimitive(ushortValue, true, false)}";
 			else
 				reportDiagnostic();
 		}

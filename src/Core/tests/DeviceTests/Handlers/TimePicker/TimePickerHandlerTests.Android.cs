@@ -11,6 +11,24 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TimePickerHandlerTests
 	{
+		[Theory(DisplayName = "IsCustom24HourFormat detects HH patterns correctly")]
+		[InlineData("HH:mm", true)]
+		[InlineData("HH:mm:ss", true)]
+		[InlineData("HH.mm", true)]
+		[InlineData("HH-mm-ss", true)]
+		[InlineData("hh:mm", false)]
+		[InlineData("hh:mm tt", false)]
+		[InlineData("h:mm", false)]
+		[InlineData("H:mm", false)]
+		[InlineData("t", false)]
+		[InlineData("T", false)]
+		[InlineData("", false)]
+		[InlineData(null, false)]
+		public void IsCustom24HourFormatDetectsCorrectly(string format, bool expected)
+		{
+			Assert.Equal(expected, TimePickerHandler.IsCustom24HourFormat(format));
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{

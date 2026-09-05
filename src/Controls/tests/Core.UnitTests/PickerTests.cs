@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -108,6 +109,193 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			picker.SelectedIndex = 2;
 
 			Assert.Equal(-1, picker.SelectedIndex);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeItemsSourceAppliesAfterItemsSource()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 1;
+
+			Assert.Equal(-1, picker.SelectedIndex);
+
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsAppliesWhenIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+
+			picker.Items.Add("John");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesParentSetUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			var layout = new VerticalStackLayout();
+			layout.Children.Add(picker);
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeInlineItemsSurvivesHandlerAttachmentUntilIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.Items.Add("John");
+
+			picker.Handler = Substitute.For<IViewHandler>();
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			picker.Items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeItemsSourceClampsAfterItemsSource()
+		{
+			var selectedIndexChangedCount = 0;
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 42;
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
+		}
+
+		[Fact]
+		public void PendingSelectedIndexCanBeClearedBeforeItemsLoad()
+		{
+			var picker = new Picker();
+
+			picker.SelectedIndex = 2;
+			picker.SelectedIndex = -1;
+			picker.ItemsSource = new ObservableCollection<string>
+			{
+				"John",
+				"Paul",
+				"George"
+			};
+
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedItemSetAfterPendingSelectedIndexClearsPendingIndex()
+		{
+			var items = new ObservableCollection<string>();
+			var picker = new Picker
+			{
+				ItemsSource = items
+			};
+
+			picker.SelectedIndex = 2;
+
+			Assert.Equal(-1, picker.SelectedIndex);
+
+			picker.SelectedItem = "Paul";
+
+			items.Add("John");
+			items.Add("Paul");
+			items.Add("George");
+
+			Assert.Equal(1, picker.SelectedIndex);
+			Assert.Equal("Paul", picker.SelectedItem);
+		}
+
+		[Fact]
+		public void SelectedIndexSetBeforeEmptyItemsSourceAppliesWhenIndexBecomesValid()
+		{
+			var selectedIndexChangedCount = 0;
+			var items = new ObservableCollection<string>();
+			var picker = new Picker();
+			picker.SelectedIndexChanged += (sender, args) => selectedIndexChangedCount++;
+
+			picker.SelectedIndex = 2;
+			picker.ItemsSource = items;
+
+			items.Add("John");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			items.Add("Paul");
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+
+			items.Add("George");
+
+			Assert.Equal(2, picker.SelectedIndex);
+			Assert.Equal("George", picker.SelectedItem);
+			Assert.Equal(0, selectedIndexChangedCount);
 		}
 
 		[Fact]
@@ -471,8 +659,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			items.RemoveRange(4 - removeCount, removeCount);
 
 			Assert.Equal(4 - removeCount, picker.Items.Count);
-			Assert.Equal(items.Count - 1, picker.SelectedIndex);
-			Assert.Equal(items[^1], picker.SelectedItem);
+			// When the selected item is removed, selection should be cleared
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]
@@ -850,6 +1039,129 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Assert: SelectedItem should still be "Dog", and index should now be 2
 			Assert.Equal("Dog", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerClearsSelectionWhenSelectedItemIsRemovedFromItemsSource()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Remove the selected item
+			items.Remove("B");
+
+			// Assert: Selection should be cleared
+			Assert.Equal(-1, picker.SelectedIndex);
+			Assert.Null(picker.SelectedItem);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenUnselectedItemIsRemovedFromItemsSource()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "C"
+			};
+
+			Assert.Equal("C", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+
+			// Act: Remove an item that is not selected
+			items.Remove("A");
+
+			// Assert: SelectedItem should still be "C", index adjusted
+			Assert.Equal("C", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenItemsAreInsertedBeforeAndAfterSelection()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "X", "Y", "Z" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "Y"
+			};
+
+			Assert.Equal("Y", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Insert an item before the selected item
+			items.Insert(0, "W");
+
+			// Assert: SelectedItem should still be "Y", index shifted
+			Assert.Equal("Y", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+
+			// Act: Insert an item after the selected item
+			items.Insert(4, "V");
+
+			// Assert: SelectedItem and index remain unchanged
+			Assert.Equal("Y", picker.SelectedItem);
+			Assert.Equal(2, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenDuplicateSelectedItemIsRemoved()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "B" };
+
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Remove the first matching selected item
+			items.RemoveAt(1);
+
+			// Assert: Selection should remain because another equal item still exists
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+		}
+
+		// https://github.com/dotnet/maui/issues/33307
+		[Fact]
+		public void PickerRetainsSelectionWhenSelectedItemIsMoved()
+		{
+			// Arrange
+			var items = new ObservableCollection<string> { "A", "B", "C" };
+			var picker = new Picker
+			{
+				ItemsSource = items,
+				SelectedItem = "B"
+			};
+
+			Assert.Equal("B", picker.SelectedItem);
+			Assert.Equal(1, picker.SelectedIndex);
+
+			// Act: Move the selected item
+			items.Move(1, 2);
+
+			// Assert: SelectedItem should still be "B", index updated
+			Assert.Equal("B", picker.SelectedItem);
 			Assert.Equal(2, picker.SelectedIndex);
 		}
 	}

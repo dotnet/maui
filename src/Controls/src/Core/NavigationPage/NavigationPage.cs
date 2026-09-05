@@ -17,12 +17,15 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
+		/// <summary>Bindable property for attached property <c>BackButtonAccessibilityLabel</c>.</summary>
+		public static readonly BindableProperty BackButtonAccessibilityLabelProperty = BindableProperty.CreateAttached("BackButtonAccessibilityLabel", typeof(string), typeof(Page), null);
+
 		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
-			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
+			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for attached property <c>HasBackButton</c>.</summary>
-		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
+		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
@@ -57,7 +60,25 @@ namespace Microsoft.Maui.Controls
 
 		partial void Init();
 
+		// Deferred NavigatedTo support (iOS/MacCatalyst only):
+		// On iOS, the handler connects (OnHandlerChangedCore) before the Window parents
+		// the page, so NavigationProxy.Inner is null at that point. If NavigatedTo fires
+		// immediately, any PushModalAsync called from a NavigatedTo handler will silently
+		// fail (NavigationProxy queues the request and returns Task.CompletedTask).
+		// With the renderer, OnHandlerChangedCore was skipped (IsShimmed()=true) and
+		// NavigatedTo fired later from the renderer's ViewDidAppear.
+		// These partial methods let iOS defer SendNavigated to OnControllerAppeared
+		// (ViewDidAppear), when Inner is wired. On Android/Windows these are no-ops
+		// because Inner is already set before the handler connects.
+		partial void ShouldDeferNavigatedTo(ref bool defer);
+		partial void FireDeferredNavigatedTo();
+		partial void OnHandlerDisconnected();
+
 #if IOS || MACCATALYST
+		// On iOS/MacCatalyst, default to legacy NavigationImpl (event-based).
+		// UseHandlerNavigation() is called when NavigationViewHandler connects,
+		// enabling MauiNavigationImpl (RequestNavigation-based).
+		// This ensures the renderer fallback works without any special handling.
 		const bool UseMauiHandler = false;
 #else
 		const bool UseMauiHandler = true;
@@ -90,6 +111,36 @@ namespace Microsoft.Maui.Controls
 
 			if (root != null)
 				PushPage(root);
+		}
+
+		/// <summary>
+		/// Switches from legacy NavigationImpl to MauiNavigationImpl.
+		/// Called when NavigationViewHandler connects on iOS/MacCatalyst.
+		/// </summary>
+		internal void UseHandlerNavigation()
+		{
+			if (!_setForMaui)
+			{
+				_setForMaui = true;
+
+				var oldInner = NavigationProxy?.Inner;
+				Navigation = new MauiNavigationImpl(this);
+				if (oldInner is not null)
+				{
+					NavigationProxy.Inner = oldInner;
+				}
+
+				// Child pages' NavigationProxy.Inner still references the old proxy.
+				// Re-wire them to the new one so PushModalAsync etc. route correctly.
+				var newProxy = NavigationProxy;
+				foreach (var child in InternalChildren)
+				{
+					if (child is NavigableElement nav)
+					{
+						nav.NavigationProxy.Inner = newProxy;
+					}
+				}
+			}
 		}
 
 		/// <summary>Gets or sets the background color for the bar at the top of the NavigationPage. This is a bindable property.</summary>
@@ -174,6 +225,14 @@ namespace Microsoft.Maui.Controls
 		public static string GetBackButtonTitle(BindableObject page)
 		{
 			return (string)page.GetValue(BackButtonTitleProperty);
+		}
+
+		/// <summary>Gets the accessibility label for the back button of the specified <paramref name="page"/>.</summary>
+		/// <param name="page">The <see cref="Microsoft.Maui.Controls.Page"/> whose back-button's accessibility label is being requested.</param>
+		/// <returns>The accessibility label read by screen readers for the back button, or <see langword="null"/> if not set.</returns>
+		public static string GetBackButtonAccessibilityLabel(BindableObject page)
+		{
+			return (string)page.GetValue(BackButtonAccessibilityLabelProperty);
 		}
 
 		/// <summary>Returns a value that indicates whether <paramref name="page"/> has a back button.</summary>
@@ -355,6 +414,14 @@ namespace Microsoft.Maui.Controls
 			page.SetValue(BackButtonTitleProperty, value);
 		}
 
+		/// <summary>Sets the accessibility label for the back button of <paramref name="page"/>, allowing the text read by screen readers to differ from the visible back button title.</summary>
+		/// <param name="page">The page parameter.</param>
+		/// <param name="value">The accessibility label value to set.</param>
+		public static void SetBackButtonAccessibilityLabel(BindableObject page, string value)
+		{
+			page.SetValue(BackButtonAccessibilityLabelProperty, value);
+		}
+
 		/// <summary>Adds or removes a back button to <paramref name="page"/>, with optional animation.</summary>
 		/// <param name="page">The page parameter.</param>
 		/// <param name="value">The value to set.</param>
@@ -362,7 +429,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page == null)
 				throw new ArgumentNullException(nameof(page));
-			page.SetValue(HasBackButtonProperty, value);
+			page.SetValue(HasBackButtonProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets a value that indicates whether or not this <see cref="Microsoft.Maui.Controls.NavigationPage"/> element has a navigation bar.</summary>
@@ -370,7 +437,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The value to set.</param>
 		public static void SetHasNavigationBar(BindableObject page, bool value)
 		{
-			page.SetValue(HasNavigationBarProperty, value);
+			page.SetValue(HasNavigationBarProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <param name="bindable">The bindable parameter.</param>
@@ -415,9 +482,12 @@ namespace Microsoft.Maui.Controls
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom, Page destinationPage)
 		{
-			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+			var fromPage = navigatingFrom ?? CurrentPage;
+			var toPage = destinationPage;
+
+			fromPage?.SendNavigatingFrom(new NavigatingFromEventArgs(toPage, navigationType));
 		}
 
 
@@ -547,6 +617,9 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is Page newPage && ((NavigationPage)bindable).HasAppeared)
 				newPage.SendAppearing();
+
+			// Refresh Enabled on the predictive back callback when the active page changes.
+			(((NavigationPage)bindable).Window as Window)?.NotifyNavigationStateChanged();
 		}
 
 		internal IToolbar FindMyToolbar()
@@ -585,7 +658,7 @@ namespace Microsoft.Maui.Controls
 					}
 
 					var flyoutPage = _toolbar.FindParentOfType<FlyoutPage>();
-					if (flyoutPage != null && flyoutPage.Parent is IWindow && flyoutPage.Toolbar == _toolbar)
+					if (flyoutPage is not null && flyoutPage.Toolbar == _toolbar)
 					{
 						flyoutPage.Toolbar = null;
 					}
@@ -720,6 +793,19 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnHandlerChangedCore();
 
+#if IOS || MACCATALYST
+			// On iOS/MacCatalyst, enable handler-based navigation (MauiNavigationImpl)
+			// when NavigationViewHandler connects. Constructor defaults to legacy
+			// NavigationImpl on these platforms to support renderer fallback.
+			if (Handler is NavigationViewHandler && !_setForMaui)
+			{
+				UseHandlerNavigation();
+				// The legacy NavigationImpl may have set CurrentNavigationTask (e.g. PushAsync
+				// in a subclass constructor). Clear it so SendHandlerUpdateAsync can take over.
+				CurrentNavigationTask = null;
+			}
+#endif
+
 			if (Navigation is MauiNavigationImpl && InternalChildren.Count > 0)
 			{
 				var navStack = Navigation.NavigationStack;
@@ -729,12 +815,18 @@ namespace Microsoft.Maui.Controls
 
 				var navigationType = DetermineNavigationType();
 
+				// On iOS, ShouldDeferNavigatedTo sets defer=true when Inner is null.
+				// When deferred, SendNavigated is skipped here and fired later from
+				// OnControllerAppeared (ViewDidAppear) via FireDeferredNavigatedTo.
+				bool deferNavigatedTo = false;
+				ShouldDeferNavigatedTo(ref deferNavigatedTo);
+
 				SendHandlerUpdateAsync(false, null,
 				() =>
 				{
 					FireAppearing(CurrentPage);
 				},
-				() =>
+				deferNavigatedTo ? null : () =>
 				{
 					SendNavigated(null, navigationType);
 				})
@@ -743,9 +835,14 @@ namespace Microsoft.Maui.Controls
 
 			// If the handler is disconnected and we're still waiting for updates from the handler
 			// Just complete any waits
-			if (Handler == null && _waitingCount > 0)
+			if (Handler is null && _waitingCount > 0)
 			{
 				((IStackNavigation)this).NavigationFinished(this.NavigationStack);
+			}
+
+			if (Handler is null)
+			{
+				OnHandlerDisconnected();
 			}
 		}
 
@@ -817,7 +914,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// InsertPageBefore changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 
@@ -834,7 +933,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(NavigationType.Pop, currentPage);
+						Owner.SendNavigating(NavigationType.Pop, currentPage, newCurrentPage);
 						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
@@ -868,7 +967,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
-						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage, newPage);
 						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
@@ -905,7 +1004,7 @@ namespace Microsoft.Maui.Controls
 						Owner.NavigationType = navigationType;
 						// Move the SendNavigating here so that it's fired prior to the stack being modified
 						// This ensures consistent event ordering across all platforms (iOS, Catalyst, Android, Windows)
-						Owner.SendNavigating(navigationType, previousPage);
+						Owner.SendNavigating(navigationType, previousPage, root);
 						Owner.PushPage(root);
 					},
 					() =>
@@ -961,7 +1060,9 @@ namespace Microsoft.Maui.Controls
 						//// the current navigation stack
 						//if (Owner._waitingCount == 0)
 						//	Owner.UpdateToolbar();
-
+						// RemovePage changes the stack depth without triggering SendNavigated,
+						// so refresh the predictive back callback here.
+						(Owner.Window as Window)?.NotifyNavigationStateChanged();
 					}).FireAndForget();
 			}
 		}

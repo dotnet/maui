@@ -47,10 +47,14 @@ public partial class HotReloadStaticResourceException : ContentPage
 					handled = true;
 					Assert.Equal(13, xpe.XmlInfo.LinePosition);
 				}
-
 			};
+
+			// With the fix for #35018, missing resources during Hot Reload (handler set)
+			// no longer throw — the error is reported to the handler and the property is
+			// skipped, allowing the page to load with degraded styling.
 			var page = new HotReloadStaticResourceException(inflator);
-			Assert.True(handled, "Exception was not handled");
+			Assert.NotNull(page);
+			Assert.True(handled, "Exception handler was not invoked");
 		}
 #else
 		[Fact(Skip = "This test runs only in debug")]

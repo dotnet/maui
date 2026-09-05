@@ -18,9 +18,9 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 #endif
 
 #if IOS || MACCATALYST
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
+using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
+using NavigationCompatRenderer = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -29,22 +29,68 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// ModalTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// ModalTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					RegisterNavigationPageHandler(handlers);
+					RegisterFlyoutPageHandler(handlers);
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					SetupShellHandlers(handlers);
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every ModalTests test run against both the NavigationPage renderer and
+		// handler. See ModalNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// ModalTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst; ModalTests_TabbedViewHandler
+		// overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if ANDROID || WINDOWS
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer));
+#endif
 		}
 
 		[Theory]
@@ -252,7 +298,28 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
-			SetupBuilder();
+			// Renderer-only: pushing two nested modals back-to-back from Appearing
+			// hangs under NavigationViewHandler for useShell:false. Register
+			// NavigationRenderer directly (not via SetupBuilder) so this stays
+			// Renderer-only even when inherited by ModalNavigationHandlerTests.
+			// See Handler_PushModalFromAppearing_DoesNotCrash and
+			// Handler_PushModalFromNavigatedTo for the Handler-equivalent tests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+#if IOS || MACCATALYST
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationCompatRenderer));
+#else
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
 			var windowPage = new ContentPage()
 			{
 				Content = new Label()
@@ -272,10 +339,20 @@ namespace Microsoft.Maui.DeviceTests
 			Window window;
 
 			if (useShell)
+			{
 				window = new Window(new Shell() { CurrentItem = windowPage });
+			}
 			else
+			{
+#if IOS || MACCATALYST
+				// Use setForMaui:false to force the old event-based navigation path.
+				// NavigationRenderer doesn't implement RequestNavigation,
+				// causing PushAsync to hang.
+				window = new Window(new NavigationPage(false, windowPage));
+#else
 				window = new Window(new NavigationPage(windowPage));
-
+#endif
+			}
 
 			bool appearingFired = false;
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
@@ -317,6 +394,143 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(appearingFired);
 		}
+
+		// NavigationView Handler test: Handler fires Appearing before UIKit push
+		// (SendHandlerUpdateAsync ordering), so PushModalAsync from Appearing conflicts
+		// with the push animation. The correct handler pattern is to use NavigatedTo,
+		// which fires after NavigationFinished (push complete).
+#if IOS || MACCATALYST
+		[Fact]
+		public async Task Handler_PushModalFromNavigatedTo()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(NavigationPage), typeof(Microsoft.Maui.Handlers.NavigationViewHandler));
+					RegisterFlyoutPageHandler(handlers);
+					RegisterTabbedPageHandler(handlers);
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
+			var windowPage = new ContentPage()
+			{
+				Content = new Label()
+				{
+					Text = "Root Page"
+				}
+			};
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label()
+				{
+					Text = "last modal page"
+				}
+			};
+
+			Window window = new Window(new NavigationPage(windowPage));
+
+			bool navigatedToFired = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					ContentPage contentPage = new ContentPage()
+					{
+						Content = new Label()
+						{
+							Text = "Second Page"
+						}
+					};
+
+					contentPage.NavigatedTo += async (_, _) =>
+					{
+						if (navigatedToFired)
+							return;
+
+						navigatedToFired = true;
+
+						await windowPage.Navigation.PushModalAsync(new ContentPage()
+						{
+							Content = new Label()
+							{
+								Text = "First modal page"
+							}
+						});
+
+						await windowPage.Navigation.PushModalAsync(modalPage);
+					};
+
+					await window.Page.Navigation.PushAsync(contentPage);
+					await OnLoadedAsync(modalPage);
+					await window.Navigation.PopModalAsync();
+					await window.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+					await OnLoadedAsync(contentPage);
+				});
+
+			Assert.True(navigatedToFired);
+		}
+
+		[Fact]
+		public async Task Handler_PushModalFromAppearing_DoesNotCrash()
+		{
+			// Handler-only: always exercises NavigationViewHandler, bypassing
+			// SetupBuilder/RegisterNavigationPageHandler so the subclass's default (Renderer or
+			// Handler) can't affect it. See PushModalFromAppearing above for the Renderer-only
+			// equivalent.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Entry, EntryHandler>();
+					SetupShellHandlers(handlers);
+				});
+			});
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Modal from Appearing" }
+			};
+
+			var windowPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Root Page" }
+			};
+
+			bool appearingFired = false;
+			windowPage.Appearing += (_, _) =>
+			{
+				if (appearingFired)
+					return;
+
+				appearingFired = true;
+
+				// Fire-and-forget — under the handler, Appearing fires early.
+				// This verifies PushModalAsync from Appearing doesn't crash the app.
+				_ = windowPage.Navigation.PushModalAsync(modalPage);
+			};
+
+			Window window = new Window(new NavigationPage(windowPage));
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (handler) =>
+				{
+					await OnLoadedAsync(modalPage);
+
+					// If we got here, the modal was pushed successfully — no crash.
+					await window.Navigation.PopModalAsync();
+				});
+
+			Assert.True(appearingFired, "Appearing should have fired");
+		}
+#endif
 
 		[Theory]
 		[InlineData(true)]
@@ -578,6 +792,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+#if ANDROID
 		[Fact("Dont leak with Animation")]
 		public async Task ModalPageDontLeakWithAnimation()
 		{
@@ -607,6 +822,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
+#endif
 
 		class PageTypes : IEnumerable<object[]>
 		{

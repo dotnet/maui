@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	[ContentProperty(nameof(Children))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElement
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement, ISafeAreaView2, ISafeAreaElementController
 	{
 		protected ILayoutManager _layoutManager;
 
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
-			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
+			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), BooleanBoxes.FalseBox,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
 
 		/// <summary>
@@ -96,7 +97,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsClippedToBounds
 		{
 			get => (bool)GetValue(IsClippedToBoundsProperty);
-			set => SetValue(IsClippedToBoundsProperty, value);
+			set => SetValue(IsClippedToBoundsProperty, BooleanBoxes.Box(value));
 		}
 
 		static void IsClippedToBoundsPropertyChanged(BindableObject bindableObject, object oldValue, object newValue)
@@ -128,7 +129,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets or sets the safe area edges to obey for this layout.
-		/// The default value is SafeAreaEdges.Default (None - edge to edge).
+		/// The default value is SafeAreaEdges.Container.
 		/// </summary>
 		/// <remarks>
 		/// This property controls which edges of the layout should obey safe area insets.
@@ -369,7 +370,7 @@ namespace Microsoft.Maui.Controls
 			return new Thickness(0);
 		}
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Container;
 		}
@@ -399,7 +400,7 @@ namespace Microsoft.Maui.Controls
 		public bool CascadeInputTransparent
 		{
 			get => (bool)GetValue(CascadeInputTransparentProperty);
-			set => SetValue(CascadeInputTransparentProperty, value);
+			set => SetValue(CascadeInputTransparentProperty, BooleanBoxes.Box(value));
 		}
 
 		private protected override string GetDebuggerDisplay()
@@ -410,6 +411,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
 		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for layouts
+
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

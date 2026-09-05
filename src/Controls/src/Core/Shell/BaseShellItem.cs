@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
-			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
@@ -57,11 +57,23 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
-			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
+
+		/// <summary>Bindable property for <see cref="BadgeText"/>.</summary>
+		public static readonly BindableProperty BadgeTextProperty =
+			BindableProperty.Create(nameof(BadgeText), typeof(string), typeof(BaseShellItem), null, BindingMode.OneWay);
+
+		/// <summary>Bindable property for <see cref="BadgeColor"/>.</summary>
+		public static readonly BindableProperty BadgeColorProperty =
+			BindableProperty.Create(nameof(BadgeColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
+
+		/// <summary>Bindable property for <see cref="BadgeTextColor"/>.</summary>
+		public static readonly BindableProperty BadgeTextColorProperty =
+			BindableProperty.Create(nameof(BadgeTextColor), typeof(Color), typeof(BaseShellItem), null, BindingMode.OneWay);
 
 		public BaseShellItem()
 		{
@@ -106,7 +118,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -137,7 +149,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get => (bool)GetValue(IsVisibleProperty);
-			set => SetValue(IsVisibleProperty, value);
+			set => SetValue(IsVisibleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -146,7 +158,52 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
-			set => SetValue(FlyoutItemIsVisibleProperty, value);
+			set => SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(value));
+		}
+
+		/// <summary>
+		/// Gets or sets the badge text displayed on this Shell navigation item. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Setting this property to a non-null, non-empty value will display a badge on the tab item.
+		/// Set to an empty string to show a dot indicator (small badge with no text).
+		/// Set to <see langword="null"/> to hide the badge.
+		/// On Windows, only numeric values are displayed as numbers; non-numeric text (e.g., "New") shows as a dot indicator.
+		/// </remarks>
+		public string BadgeText
+		{
+			get => (string)GetValue(BadgeTextProperty);
+			set => SetValue(BadgeTextProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the background color of the badge displayed on this Shell navigation item. This is a bindable property.
+		/// </summary>
+		public Color BadgeColor
+		{
+			get => (Color)GetValue(BadgeColorProperty);
+			set => SetValue(BadgeColorProperty, value);
+		}
+
+		/// <summary>
+		/// Gets or sets the foreground (text) color of the badge displayed on this Shell navigation item.
+		/// When set to <see langword="null"/>, the platform default text color is used (typically white).
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Platform support:
+		/// </para>
+		/// <list type="bullet">
+		/// <item><description><b>Android</b>: Maps to <c>BadgeDrawable.BadgeTextColor</c>.</description></item>
+		/// <item><description><b>iOS/MacCatalyst</b>: Maps to <c>UITabBarItem.SetBadgeTextAttributes</c>.</description></item>
+		/// <item><description><b>Windows</b>: Maps to <c>InfoBadge.Foreground</c>.</description></item>
+		/// </list>
+		/// </remarks>
+		public Color BadgeTextColor
+		{
+			get => (Color)GetValue(BadgeTextColorProperty);
+			set => SetValue(BadgeTextColorProperty, value);
 		}
 
 
@@ -271,7 +328,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (me == null || me.Parent == null)
 				return;
-
 			Propagate(property, me.Parent, me, false);
 		}
 

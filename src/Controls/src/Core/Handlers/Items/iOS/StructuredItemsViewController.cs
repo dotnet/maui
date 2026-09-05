@@ -7,6 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView> instead.")]
 	public class StructuredItemsViewController<TItemsView> : ItemsViewController<TItemsView>
 		where TItemsView : StructuredItemsView
 	{

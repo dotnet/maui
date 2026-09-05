@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -41,6 +43,12 @@ namespace Microsoft.AspNetCore.Components.WebView
 			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(NotifyCssUpdatedScript)) }
 		};
 
+		private static readonly object _updatedContentLock = new();
+
+		private static readonly ConditionalWeakTable<WebViewManager, AttachmentState> s_attachmentStates = new();
+
+		private const string NotifierSelector = "body::after";
+
 		/// <summary>
 		/// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
 		/// </summary>
@@ -54,38 +62,226 @@ namespace Microsoft.AspNetCore.Components.WebView
 				assemblyName = ApplicationAssemblyName;
 			}
 
-			_updatedContent[(assemblyName, relativePath)] = (ContentType: null, Content: contents);
+			lock (_updatedContentLock)
+			{
+				_updatedContent[(assemblyName, relativePath)] = (ContentType: null, Content: contents);
+			}
+
 			OnContentUpdated?.Invoke(assemblyName, relativePath);
 		}
 
-		public static void AttachToWebViewManagerIfEnabled(WebViewManager manager)
+		public static Task? TryAttachToWebViewManager(WebViewManager manager)
 		{
-			if (MetadataUpdater.IsSupported)
+			if (!MetadataUpdater.IsSupported)
 			{
-				manager.AddRootComponentAsync(typeof(StaticContentChangeNotifier), "body::after", ParameterView.Empty);
+				return null;
 			}
+
+			// The value factory is deliberately side-effect free. ConditionalWeakTable may invoke it more
+			// than once for concurrent callers, while AttachmentState serializes the actual registration.
+			var state = s_attachmentStates.GetValue(
+				manager,
+				static m => new AttachmentState(
+					() => m.AddRootComponentAsync(typeof(StaticContentChangeNotifier), NotifierSelector, ParameterView.Empty),
+					() => m.RemoveRootComponentAsync(NotifierSelector)));
+			return state.Attach();
 		}
 
-		public static bool TryReplaceResponseContent(string contentRootRelativePath, string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		public static Task? TryDetachFromWebViewManager(WebViewManager manager)
+		{
+			if (!s_attachmentStates.TryGetValue(manager, out var state))
+			{
+				return null;
+			}
+
+			return state.Detach();
+		}
+
+		/// <summary>
+		/// Looks up hot-reloaded content for a request without taking ownership of any response state.
+		/// </summary>
+		public static bool TryGetUpdatedContent(string contentRootRelativePath, string requestAbsoluteUri, out byte[]? content, out string? contentType)
 		{
 			if (MetadataUpdater.IsSupported)
 			{
 				var (assemblyName, relativePath) = GetAssemblyNameAndRelativePath(requestAbsoluteUri, contentRootRelativePath);
-				if (_updatedContent.TryGetValue((assemblyName, relativePath), out var values))
+				lock (_updatedContentLock)
 				{
-					responseStatusCode = 200;
-					responseContent.Close();
-					responseContent = new MemoryStream(values.Content);
-					if (!string.IsNullOrEmpty(values.ContentType))
+					if (_updatedContent.TryGetValue((assemblyName, relativePath), out var values))
 					{
-						responseHeaders["Content-Type"] = values.ContentType;
+						content = values.Content;
+						contentType = string.IsNullOrEmpty(values.ContentType) ? null : values.ContentType;
+						return true;
 					}
-
-					return true;
 				}
 			}
 
+			content = null;
+			contentType = null;
 			return false;
+		}
+
+		public static bool TryReplaceResponseContent(string contentRootRelativePath, string requestAbsoluteUri, ref int responseStatusCode, ref Stream responseContent, IDictionary<string, string> responseHeaders)
+		{
+			if (TryGetUpdatedContent(contentRootRelativePath, requestAbsoluteUri, out var content, out var contentType))
+			{
+				responseStatusCode = 200;
+				responseContent.Close();
+				responseContent = new MemoryStream(content!);
+				if (contentType is not null)
+				{
+					responseHeaders["Content-Type"] = contentType;
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		internal sealed class AttachmentState
+		{
+			private readonly object _lock = new();
+			private readonly Func<Task> _addNotifier;
+			private readonly Func<Task> _removeNotifier;
+			private Task _lastOperation = Task.CompletedTask;
+			private Task? _attachTask;
+
+			public AttachmentState(Func<Task> addNotifier, Func<Task> removeNotifier)
+			{
+				_addNotifier = addNotifier;
+				_removeNotifier = removeNotifier;
+			}
+
+			public Task Attach()
+			{
+				lock (_lock)
+				{
+					if (_attachTask is not null)
+					{
+						return _attachTask;
+					}
+
+					var operation = _lastOperation.IsCompletedSuccessfully
+						? _addNotifier()
+						: AddNotifierAfterAsync(_lastOperation);
+					var attachTask = operation.IsCompletedSuccessfully
+						? operation
+						: CompleteAttachAsync(operation);
+
+					_attachTask = attachTask;
+					_lastOperation = attachTask;
+
+					if (!attachTask.IsCompletedSuccessfully)
+					{
+						_ = attachTask.ContinueWith(
+							static (completedTask, state) => ((AttachmentState)state!).OnAttachCompleted(completedTask),
+							this,
+							CancellationToken.None,
+							TaskContinuationOptions.ExecuteSynchronously,
+							TaskScheduler.Default);
+					}
+
+					return attachTask;
+				}
+			}
+
+			public Task? Detach()
+			{
+				lock (_lock)
+				{
+					if (_attachTask is null)
+					{
+						return null;
+					}
+
+					var detachTask = RemoveNotifierAsync(_attachTask);
+					_attachTask = null;
+					_lastOperation = detachTask;
+					return detachTask;
+				}
+			}
+
+			private async Task AddNotifierAfterAsync(Task precedingOperation)
+			{
+				await precedingOperation.ConfigureAwait(false);
+				await _addNotifier().ConfigureAwait(false);
+			}
+
+			private async Task CompleteAttachAsync(Task attachOperation)
+			{
+				try
+				{
+					await attachOperation.ConfigureAwait(false);
+				}
+				catch (Exception attachException)
+				{
+					try
+					{
+						// WebViewManager reserves the selector before its asynchronous render work.
+						// Remove that reservation before allowing a later attach to retry.
+						await RemoveNotifierAsync(Task.CompletedTask).ConfigureAwait(false);
+					}
+					catch (Exception cleanupException)
+					{
+						throw new AggregateException(
+							"The static content hot reload notifier failed to attach and could not be removed.",
+							attachException,
+							cleanupException);
+					}
+
+					throw;
+				}
+			}
+
+			private async Task RemoveNotifierAsync(Task attachTask)
+			{
+				try
+				{
+					await attachTask.ConfigureAwait(false);
+				}
+				catch (Exception)
+				{
+					// The attach task reports its own failure and CompleteAttachAsync already attempts
+					// cleanup. Detach only waits for that work to finish before ensuring removal.
+				}
+
+				try
+				{
+					await _removeNotifier().ConfigureAwait(false);
+				}
+				catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+				{
+					// The manager was disposed, or its renderer torn down, while this detach was in flight.
+					// Detaching only promises that the notifier is no longer registered, and a disposed manager
+					// satisfies that, so this completes successfully. Without this the caller would have to
+					// await the task purely to avoid an unobservable fault during teardown.
+				}
+			}
+
+			private void OnAttachCompleted(Task attachTask)
+			{
+				if (attachTask.IsCompletedSuccessfully)
+				{
+					return;
+				}
+
+				// Observe discarded failures and clear them so a later attach can retry.
+				_ = attachTask.Exception;
+
+				lock (_lock)
+				{
+					if (ReferenceEquals(_attachTask, attachTask))
+					{
+						_attachTask = null;
+					}
+
+					if (ReferenceEquals(_lastOperation, attachTask))
+					{
+						_lastOperation = Task.CompletedTask;
+					}
+				}
+			}
 		}
 
 		private static (string AssemblyName, string RelativePath) GetAssemblyNameAndRelativePath(string requestAbsoluteUri, string appContentRoot)

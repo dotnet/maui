@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -68,13 +69,13 @@ namespace Microsoft.Maui.Controls
 		/// Manages if the navigation bar is visible when a page is presented. 
 		/// </summary>
 		public static readonly BindableProperty NavBarIsVisibleProperty =
-			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnNavBarIsVisibleChanged);
+			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox, propertyChanged: OnNavBarIsVisibleChanged);
 
 		/// <summary>
 		/// Determines if the navigation bar visibility change should be animated.
 		/// </summary>
 		public static readonly BindableProperty NavBarVisibilityAnimationEnabledProperty =
-			BindableProperty.CreateAttached("NavBarVisibilityAnimationEnabled", typeof(bool), typeof(Shell), true);
+			BindableProperty.CreateAttached("NavBarVisibilityAnimationEnabled", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox);
 
 		private static void OnNavBarIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -83,7 +84,6 @@ namespace Microsoft.Maui.Controls
 			Shell shell = bindable as Shell
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
-
 			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls
 		/// Controls whether the navigation bar has a shadow.
 		/// </summary>
 		public static readonly BindableProperty NavBarHasShadowProperty =
-			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
+			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), BooleanBoxes.FalseBox,
 				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls
 		/// Flyout items are visible in the flyout by default.
 		/// </summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
-			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
+			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox, propertyChanged: OnFlyoutItemIsVisibleChanged);
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
 
 		/// <summary>
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that sets the visibility of flyout items.</param>
 		/// <param name="isVisible"><see langword="true"/> to set the flyout item as visible; otherwise, <see langword="false"/>.</param>
-		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, isVisible);
+		public static void SetFlyoutItemIsVisible(BindableObject obj, bool isVisible) => obj.SetValue(FlyoutItemIsVisibleProperty, BooleanBoxes.Box(isVisible));
 
 		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls
 		/// The tab bar and tabs are visible in <see cref = "Shell" /> applications by default. 
 		/// </remarks>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
-			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
+			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Enables any <see cref = "View" /> to be displayed in the navigation bar.
@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies the navigation bar visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the navigation bar as visible; otherwise, <see langword="false"/>.</param>
-		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, value);
+		public static void SetNavBarIsVisible(BindableObject obj, bool value) => obj.SetValue(NavBarIsVisibleProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets a value indicating whether the navigation bar visibility change is animated for the given <paramref name="obj"/>.
@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies the animation setting.</param>
 		/// <param name="value"><see langword="true"/> to enable animation; otherwise, <see langword="false"/>.</param>
-		public static void SetNavBarVisibilityAnimationEnabled(BindableObject obj, bool value) => obj.SetValue(NavBarVisibilityAnimationEnabledProperty, value);
+		public static void SetNavBarVisibilityAnimationEnabled(BindableObject obj, bool value) => obj.SetValue(NavBarVisibilityAnimationEnabledProperty, BooleanBoxes.Box(value));
 
 
 		/// <summary>
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="obj">The object that modifies if the navigation bar has a shadow.</param>
 		/// <param name="value">Manages if the navigation bar has a shadow.</param>
-		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, value);
+		public static void SetNavBarHasShadow(BindableObject obj, bool value) => obj.SetValue(NavBarHasShadowProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets the integrated search functionality.
@@ -382,7 +382,7 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
-		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
+		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, BooleanBoxes.Box(value));
 
 		/// <summary>
 		/// Gets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.
@@ -397,6 +397,27 @@ namespace Microsoft.Maui.Controls
 		/// <param name="obj">The object to which the TitleView is set.</param>
 		/// <param name="value">The View to be displayed in the navigation bar.</param>
 		public static void SetTitleView(BindableObject obj, View value) => obj.SetValue(TitleViewProperty, value);
+
+		// Determines whether the Shell's Title was set by the user (explicit code, style, or a binding)
+		// as opposed to being mirrored from the current page by the renderer (FromHandler) or never set
+		// at all (DefaultValue). This lets ShellToolbar mirror the page title into Shell.Title for
+		// TitleView bindings without clobbering a title the user set intentionally.
+		internal bool IsTitleSetByUser()
+		{
+			if (GetIsBound(TitleProperty))
+				return true;
+
+			var context = GetContext(TitleProperty);
+			if (context is null)
+				return false;
+
+			var specificity = context.Values.GetSpecificity();
+			return specificity != SetterSpecificity.DefaultValue && specificity != SetterSpecificity.FromHandler;
+		}
+
+		// Returns the Title only when it was set by the user. Used by the native window title
+		// fallback so that a renderer-mirrored page title never leaks into the platform chrome.
+		internal string GetUserSetTitle() => IsTitleSetByUser() ? Title : null;
 
 		static void OnFlyoutBehaviorChanged(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -477,6 +498,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public static readonly BindableProperty UnselectedColorProperty =
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), null,
+				propertyChanged: OnShellAppearanceValueChanged);
+
+		/// <summary>
+		/// Defines the background brush for the Shell toolbar. Supports gradient brushes.
+		/// </summary>
+		public static readonly new BindableProperty BackgroundProperty =
+			BindableProperty.CreateAttached("Background", typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
 		/// <summary>
@@ -663,6 +691,20 @@ namespace Microsoft.Maui.Controls
 		/// <param name="value">The brushed used in the backdrop of the flyout.</param>
 		public static void SetFlyoutBackdrop(BindableObject obj, Brush value) => obj.SetValue(FlyoutBackdropProperty, value);
 
+		/// <summary>
+		/// Gets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object from which to get the background brush.</param>
+		/// <returns>The background brush for the Shell toolbar.</returns>
+		public static Brush GetBackground(BindableObject obj) => (Brush)obj.GetValue(BackgroundProperty);
+
+		/// <summary>
+		/// Sets the background brush for the Shell toolbar.
+		/// </summary>
+		/// <param name="obj">The object on which to set the background brush.</param>
+		/// <param name="value">The brush to use as the Shell toolbar background.</param>
+		public static void SetBackground(BindableObject obj, Brush value) => obj.SetValue(BackgroundProperty, value);
+
 		static void OnShellAppearanceValueChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			var item = (Element)bindable;
@@ -689,6 +731,79 @@ namespace Microsoft.Maui.Controls
 		List<IFlyoutBehaviorObserver> _flyoutBehaviorObservers = new List<IFlyoutBehaviorObserver>();
 
 
+#nullable enable
+		/// <summary>
+		/// Resolves the application-defined flyout <see cref="DataTemplate"/> for a flyout item.
+		/// </summary>
+		/// <param name="shell">
+		/// The <see cref="Shell"/> that owns <paramref name="flyoutItem"/>. When <see langword="null"/>, the owning Shell is
+		/// resolved from <paramref name="flyoutItem"/>; if it cannot be resolved, only templates set on the item itself are considered.
+		/// </param>
+		/// <param name="flyoutItem">A flyout item produced by <see cref="IShellController.GenerateFlyoutGrouping"/>.</param>
+		/// <returns>
+		/// The application-defined <see cref="DataTemplate"/> for <paramref name="flyoutItem"/>, or <see langword="null"/> when the
+		/// application has not supplied one and the caller should use its own platform-native default flyout item presentation.
+		/// </returns>
+		/// <exception cref="ArgumentNullException"><paramref name="flyoutItem"/> is <see langword="null"/>.</exception>
+		/// <remarks>
+		/// <para>
+		/// This is the supported entry point for custom Shell backends. It applies the same precedence the built-in backends use:
+		/// a template set on the item wins over a template set on the Shell, <see cref="MenuItemTemplateProperty"/> is used for menu
+		/// items and <see cref="ItemTemplateProperty"/> for everything else, and the pair of objects that backs a menu item is
+		/// resolved internally so a template set on either one is found.
+		/// </para>
+		/// <para>
+		/// The returned value may be a <see cref="DataTemplateSelector"/>. Call
+		/// <see cref="Internals.DataTemplateExtensions.SelectDataTemplate(DataTemplate, object, BindableObject)"/> before creating
+		/// content. Bind the created content to <paramref name="flyoutItem"/>, which is what the built-in Android, iOS, and Windows
+		/// backends do.
+		/// </para>
+		/// </remarks>
+		/// <example>
+		/// <code><![CDATA[
+		/// View CreateFlyoutItemView(Shell shell, BindableObject flyoutItem)
+		/// {
+		///     var template = Shell.ResolveFlyoutItemTemplate(shell, flyoutItem);
+		///
+		///     if (template is null)
+		///         return CreatePlatformDefaultFlyoutItemView(flyoutItem);
+		///
+		///     var view = (View)template.SelectDataTemplate(flyoutItem, shell).CreateContent();
+		///     view.BindingContext = flyoutItem;
+		///     return view;
+		/// }
+		/// ]]></code>
+		/// </example>
+		public static DataTemplate? ResolveFlyoutItemTemplate(Shell? shell, BindableObject flyoutItem)
+		{
+			if (flyoutItem is null)
+				throw new ArgumentNullException(nameof(flyoutItem));
+
+			shell ??= (flyoutItem as Element)?.FindParentOfType<Shell>();
+
+			BindableProperty bp = flyoutItem is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
+
+			// An explicitly set template wins even when its value is null, which lets an application opt a single item
+			// out of a Shell level template. A null value is reported as "no template" so callers fall back safely.
+			BindableObject templateSource = GetBindableObjectWithFlyoutItemTemplate(flyoutItem);
+
+			if (templateSource.IsSet(bp))
+				return templateSource.GetValue(bp) as DataTemplate;
+
+			if (shell is not null && shell.IsSet(bp))
+				return shell.GetValue(bp) as DataTemplate;
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the object that carries the flyout template for <paramref name="bo"/>.
+		/// </summary>
+		/// <remarks>
+		/// A menu item in the flyout is backed by a pair of objects: the public <see cref="MenuItem"/> and the internal
+		/// <c>MenuShellItem</c> wrapper (or the item's parent for <c>ShellContent.MenuItems</c>). The template may be set on
+		/// either one, so this resolves whichever object actually holds it.
+		/// </remarks>
 		internal static BindableObject GetBindableObjectWithFlyoutItemTemplate(BindableObject bo)
 		{
 			if (bo is IMenuItemController)
@@ -701,24 +816,10 @@ namespace Microsoft.Maui.Controls
 
 			return bo;
 		}
+#nullable disable
 
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
-		{
-			BindableProperty bp = bo is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
-			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
-
-			if (bindableObjectWithTemplate.IsSet(bp))
-			{
-				return (DataTemplate)bindableObjectWithTemplate.GetValue(bp);
-			}
-
-			if (IsSet(bp))
-			{
-				return (DataTemplate)GetValue(bp);
-			}
-
-			return BaseShellItem.CreateDefaultFlyoutItemCell(bo);
-		}
+			=> ResolveFlyoutItemTemplate(this, bo) ?? BaseShellItem.CreateDefaultFlyoutItemCell(bo);
 
 		event EventHandler IShellController.StructureChanged
 		{
@@ -766,15 +867,28 @@ namespace Microsoft.Maui.Controls
 			{
 				appearance = appearance ?? GetAppearanceForPivot(pivot);
 				Toolbar.BarTextColor = appearance?.TitleColor ?? DefaultTitleColor;
-				Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				if (!Brush.IsNullOrEmpty(appearance?.Background))
+				{
+					Toolbar.BarBackground = appearance.Background;
+				}
+				else
+				{
+					Toolbar.BarBackground = appearance?.BackgroundColor ?? DefaultBackgroundColor;
+				}
 				Toolbar.IconColor = appearance?.ForegroundColor ?? DefaultForegroundColor;
 			}
 		}
 
 #if ANDROID
-		static Color DefaultBackgroundColor => ResolveThemeColor(Color.FromArgb("#2c3e50"), Color.FromArgb("#1B3147"));
-		static readonly Color DefaultForegroundColor = Colors.White;
-		static readonly Color DefaultTitleColor = Colors.White;
+		static Color DefaultBackgroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"),
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
+		static Color DefaultForegroundColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
+		static Color DefaultTitleColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White,
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 
 		static bool IsDarkTheme => (Application.Current?.RequestedTheme == AppTheme.Dark);
 
@@ -893,7 +1007,7 @@ namespace Microsoft.Maui.Controls
 			shellContent = shellContent ?? shellSection?.CurrentItem;
 
 			if (platformInitiated && FlyoutIsPresented && GetEffectiveFlyoutBehavior() != FlyoutBehavior.Locked)
-				SetValueFromRenderer(FlyoutIsPresentedProperty, false);
+				SetValueFromRenderer(FlyoutIsPresentedProperty, BooleanBoxes.FalseBox);
 
 			if (shellSection == null)
 				shellItem.PropertyChanged += OnShellItemPropertyChanged;
@@ -994,6 +1108,40 @@ namespace Microsoft.Maui.Controls
 			if (result?.Location != oldState?.Location)
 			{
 				SetValueFromRenderer(CurrentStatePropertyKey, result);
+
+				// Fire NavigatingFrom after state is updated so CurrentPage is the destination.
+				// _previousPage was captured in SendNavigating before navigation started.
+				if (_previousPage is not null)
+				{
+					NavigationType navigationType = NavigationType.Replace;
+
+					switch (source)
+					{
+						case ShellNavigationSource.Pop:
+							navigationType = NavigationType.Pop;
+							break;
+						case ShellNavigationSource.Push:
+							navigationType = NavigationType.Push;
+							break;
+						case ShellNavigationSource.PopToRoot:
+							navigationType = NavigationType.PopToRoot;
+							break;
+						case ShellNavigationSource.Insert:
+							navigationType = NavigationType.Insert;
+							break;
+						case ShellNavigationSource.Remove:
+							navigationType = NavigationType.Remove;
+							break;
+						case ShellNavigationSource.ShellItemChanged:
+						case ShellNavigationSource.ShellSectionChanged:
+						case ShellNavigationSource.ShellContentChanged:
+							navigationType = NavigationType.Replace;
+							break;
+					}
+
+					_previousPage.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+				}
+
 				_navigationManager.HandleNavigated(new ShellNavigatedEventArgs(oldState, CurrentState, source));
 			}
 		}
@@ -1196,7 +1344,7 @@ namespace Microsoft.Maui.Controls
 		/// The flyout can be programmatically opened and closed by setting the FlyoutIsPresented property to a boolean value that indicates whether the flyout is currently open.
 		/// </summary>
 		public static readonly BindableProperty FlyoutIsPresentedProperty =
-			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), false, BindingMode.TwoWay);
+			BindableProperty.Create(nameof(FlyoutIsPresented), typeof(bool), typeof(Shell), BooleanBoxes.FalseBox, BindingMode.TwoWay);
 
 		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
@@ -1220,8 +1368,20 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		NavigationType _navigationType;
+		Page _pendingPreviousPage;
+		NavigationType _pendingNavigationType;
 
 		/// <summary>Initializes a new instance of the <see cref="Shell"/> class.</summary>
+		// Preserve MenuShellItem which is reached through event-driven and interface-dispatch
+		// code paths that the trimmer cannot statically trace.
+		// The IL2026/IL2111/IL3050 diagnostics originate from the TypeConverter base class hierarchy
+		// (ShellItemConverter : TypeConverter) whose inherited members like GetProperties/GetEditor
+		// carry RequiresUnreferencedCode. These base methods are never called by MAUI.
+		[DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(MenuShellItem))]
+		[UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("Trimming", "IL2111:ReflectionToDynamicallyAccessedMembers", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
+		[UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "ShellItemConverter only overrides CanConvertFrom/To and ConvertFrom/To; the annotated TypeConverter base members are never called.")]
 		public Shell()
 		{
 			Toolbar = new ShellToolbar(this);
@@ -1235,10 +1395,29 @@ namespace Microsoft.Maui.Controls
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
 
-			if (Application.Current != null)
+			if (Application.Current is not null)
 			{
+				Color light;
+				Color dark;
+
+				if (DeviceInfo.Platform == DevicePlatform.Android && RuntimeFeature.IsMaterial3Enabled)
+				{
+					light = Color.FromArgb("#FEF7FF");
+					dark = Color.FromArgb("#141218");
+				}
+				else
+				{
+					light = Colors.White;
+					dark = Colors.Black;
+				}
+
 				this.SetBinding(Shell.FlyoutBackgroundColorProperty,
-					new AppThemeBinding { Light = Colors.White, Dark = Colors.Black, Mode = BindingMode.OneWay });
+					new AppThemeBinding
+					{
+						Light = light,
+						Dark = dark,
+						Mode = BindingMode.OneWay
+					});
 			}
 
 			ShellController.FlyoutItemsChanged += (_, __) => Handler?.UpdateValue(nameof(FlyoutItems));
@@ -1509,7 +1688,7 @@ namespace Microsoft.Maui.Controls
 		public bool FlyoutIsPresented
 		{
 			get => (bool)GetValue(FlyoutIsPresentedProperty);
-			set => SetValue(FlyoutIsPresentedProperty, value);
+			set => SetValue(FlyoutIsPresentedProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Gets the collection of <see cref="ShellItem"/> objects in the Shell. This is a bindable property.</summary>
@@ -1635,41 +1814,82 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.Replace;
+			_navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
 				case ShellNavigationSource.Pop:
-					navigationType = NavigationType.Pop;
+					_navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.Replace;
+					_navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
-					navigationType = NavigationType.Push;
+					_navigationType = NavigationType.Push;
 					break;
 				case ShellNavigationSource.PopToRoot:
-					navigationType = NavigationType.PopToRoot;
+					_navigationType = NavigationType.PopToRoot;
 					break;
 				case ShellNavigationSource.Insert:
-					navigationType = NavigationType.Insert;
+					_navigationType = NavigationType.Insert;
 					break;
 			}
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, _navigationType));
+			PropagateSendNavigatedTo();
 			_previousPage = null;
 
 			if (CurrentPage != null)
 				CurrentPage.PropertyChanged += OnCurrentPagePropertyChanged;
 
 			CurrentItem?.Handler?.UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			(this.Window as Window)?.NotifyNavigationStateChanged();
+		}
+
+		void OnCurrentPageLoaded(object sender, EventArgs e)
+		{
+			if (sender is Page page)
+			{
+				page.Loaded -= OnCurrentPageLoaded;
+				page.SendNavigatedTo(new NavigatedToEventArgs(_pendingPreviousPage, _pendingNavigationType));
+				_pendingPreviousPage = null;
+				_pendingNavigationType = default;
+#if ANDROID
+				// Restore flyout behavior observers after deferred NavigatedTo timing
+				// Android requires this call to maintain flyout functionality
+				CurrentContent?.EvaluateDisconnect();
+#endif
+			}
+		}
+
+		void PropagateSendNavigatedTo()
+		{
+			if (CurrentPage is null)
+			{
+				return;
+			}
+
+			// Check if the Loaded event has actually been fired (not just IsLoaded which checks platform attachment).
+			// On iOS 26.1+, IsLoaded (view attached) can be true before the Loaded event is dispatched.
+			// On Windows, the Loaded event fires synchronously so IsLoadedFired is already true here.
+			if (CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, _navigationType));
+			}
+			else
+			{
+				// Capture before _previousPage is nulled in SendNavigated() so OnCurrentPageLoaded
+				// receives the correct PreviousPage in NavigatedToEventArgs when it fires asynchronously.
+				_pendingPreviousPage = _previousPage;
+				_pendingNavigationType = _navigationType;
+				CurrentPage.Loaded += OnCurrentPageLoaded;
+			}
 		}
 
 		internal PropertyChangedEventHandler CurrentPagePropertyChanged;
@@ -1689,35 +1909,16 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
-				NavigationType navigationType = NavigationType.Replace;
-
-				switch (args.Source)
-				{
-					case ShellNavigationSource.Pop:
-						navigationType = NavigationType.Pop;
-						break;
-					case ShellNavigationSource.ShellItemChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellSectionChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.ShellContentChanged:
-						navigationType = NavigationType.Replace;
-						break;
-					case ShellNavigationSource.Push:
-						navigationType = NavigationType.Push;
-						break;
-					case ShellNavigationSource.PopToRoot:
-						navigationType = NavigationType.PopToRoot;
-						break;
-					case ShellNavigationSource.Insert:
-						navigationType = NavigationType.Insert;
-						break;
-				}
-
+				// Capture the current page now; SendNavigatingFrom will be called in
+				// UpdateCurrentState after the shell state is updated, ensuring CurrentPage
+				// correctly reflects the destination page at that point.
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
+			}
+
+			// Unsubscribe Loaded handler if navigating away before page loads to prevent memory leaks.
+			if (CurrentPage != null && !CurrentPage.IsLoadedFired)
+			{
+				CurrentPage.Loaded -= OnCurrentPageLoaded;
 			}
 		}
 
@@ -1767,6 +1968,7 @@ namespace Microsoft.Maui.Controls
 				ShellContent currentShellContent = shell.CurrentItem.CurrentItem?.CurrentItem;
 				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
 			}
+			shell.CurrentContent?.ApplyQueryAttributesFromSelection();
 
 			if (shell.CurrentItem?.CurrentItem != null)
 				shell.ShellController.AppearanceChanged(shell.CurrentItem.CurrentItem, false);
@@ -2105,7 +2307,11 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+				// Refresh Enabled on the predictive back callback; flyout state affects whether back is consumed here.
+				(this.Window as Window)?.NotifyNavigationStateChanged();
+			}
 		}
 
 		#region Shell Flyout Content

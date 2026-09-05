@@ -80,8 +80,8 @@ namespace UITest.Appium
 		/// <summary>
 		/// Closes a picker dialog using platform-specific dismiss actions.
 		/// For Android, taps the "Cancel" button.
-		/// For iOS/MacCatalyst, taps the "Done" button.
 		/// For Windows, either taps coordinates (if provided) or the "Cancel" button.
+		/// For iOS, taps the "selected" button on iOS 26+, otherwise taps the "Done" button. For MacCatalyst, taps the "Done" button.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">Optional X coordinate for Windows tap. Default is 0.</param>
@@ -91,6 +91,10 @@ namespace UITest.Appium
 			if (app is AppiumAndroidApp)
 			{
 				app.Tap("Cancel");
+			}
+			else if (app is AppiumIOSApp iosApp && IsIOS26OrHigher(iosApp))
+			{
+				app.Tap("selected");
 			}
 			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
 			{
@@ -1050,30 +1054,54 @@ namespace UITest.Appium
 		}
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
+			=> app.WaitForText(automationId, text, s => s.Contains(text, StringComparison.OrdinalIgnoreCase), timeout);
+
+		/// <summary>
+		/// Waits until the element's text is exactly equal to <paramref name="text"/> (ordinal), rather
+		/// than merely containing it. Use this when the element's placeholder/initial text already
+		/// contains the expected value as a substring, which would make a Contains-based wait pass
+		/// prematurely on the placeholder.
+		/// </summary>
+		public static bool WaitForTextEqualToElement(this IApp app, string automationId, string text, TimeSpan? timeout = null)
+			=> app.WaitForText(automationId, text, s => string.Equals(s, text, StringComparison.Ordinal), timeout);
+
+		/// <summary>
+		/// Shared polling loop for the text-wait helpers. Repeatedly reads the element's text and
+		/// returns <see langword="true"/> as soon as <paramref name="matches"/> is satisfied. On
+		/// timeout it logs the last observed text (and the expected value) so a stalled or
+		/// placeholder-stuck label is distinguishable from a text-read failure, then returns
+		/// <see langword="false"/>.
+		/// </summary>
+		static bool WaitForText(this IApp app, string automationId, string expected, Func<string, bool> matches, TimeSpan? timeout)
 		{
 			timeout ??= DefaultTimeout;
 			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
 
 			DateTime start = DateTime.Now;
+			string? lastObservedText = null;
 
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
 
-				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
+				if (element is not null && element.TryGetText(out var s))
 				{
-					return true;
+					lastObservedText = s;
+					if (matches(s))
+					{
+						return true;
+					}
 				}
 
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
 				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}; last observed text for '{automationId}' was '{lastObservedText ?? "<unavailable>"}', expected '{expected}'");
 
 					return false;
 				}
 
-				Task.Delay(retryFrequency.Milliseconds).Wait();
+				Task.Delay(retryFrequency).Wait();
 			}
 		}
 
@@ -2866,6 +2894,33 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Taps the clear button in a search bar control with platform-specific implementations.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="automationId">The automation ID of the search bar.</param>
+		/// <param name="timeout">Optional timeout for waiting for the clear button. Default is null, which uses the default timeout.</param>
+		public static void TapSearchBarClearButton(this IApp app, string automationId, TimeSpan? timeout = null)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"), timeout: timeout);
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc='Clear query']"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				app.WaitForElement("Clear text", timeout: timeout);
+				app.Tap("Clear text");
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				var searchBar = app.WaitForElement(AppiumQuery.ByAccessibilityId(automationId), timeout: timeout);
+				var rect = searchBar.GetRect();
+				app.Tap(automationId);
+				app.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
+			}
+		}
+
+		/// <summary>
 		/// Taps an element and retries until another element appears and is ready for interaction.
 		/// Sometimes elements may appear but are not yet ready for interaction; this helper method retries the tap until the target element is interactable or the retry limit is reached.
 		/// </summary>
@@ -2964,6 +3019,36 @@ namespace UITest.Appium
 			}
 
 			return 1.0;
+		}
+
+		/// Enters text into the search handler element for the shell.
+		/// This method is used to enter the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static void EnterTextInShellSearchHandler(this IApp app, string text)
+		{
+			if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("TextBox");
+				app.EnterText("TextBox", text);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
+			{
+				IQuery query;
+				if (app is AppiumAndroidApp)
+				{
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
+				}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
+
+				app.WaitForElement(query);
+				app.EnterText(query, text);
+			}
 		}
 
 		/// <summary>

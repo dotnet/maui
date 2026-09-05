@@ -1,4 +1,46 @@
 <Project>
+  <PropertyGroup>
+    <!-- Shipping projects use published N-1 packages during previews; tests use current N. At GA, all projects use stable N. -->
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == '' and ('$(IsTestProject)' == 'true' or '$(MauiTestProject)' == 'true')">false</UseN1PackageVersions>
+    <UseN1PackageVersions Condition="'$(UseN1PackageVersions)' == ''">true</UseN1PackageVersions>
+    <MicrosoftDotNetNPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftDotNetNPackageVersion>
+    <MicrosoftDotNetN1PackageVersion>11.0.0-preview.7.26381.103</MicrosoftDotNetN1PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseN1PackageVersions)' == 'true' and $(MicrosoftDotNetNPackageVersion.Contains('-'))">
+    <MicrosoftNETCoreAppRefPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftNETCoreAppRefPackageVersion>
+    <SystemTextJsonPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemTextJsonPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemTextEncodingsWebPackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftBclAsyncInterfacesPackageVersion>
+    <SystemCodeDomPackageVersion>$(MicrosoftDotNetN1PackageVersion)</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsConfigurationVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHttpVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsPrimitivesVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreComponentsFormsPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsFormsPackageVersion>
+    <MicrosoftAspNetCoreComponentsPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreMetadataPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftAspNetCoreMetadataPackageVersion>
+    <MicrosoftJSInteropPackageVersion>$(MicrosoftDotNetN1PackageVersion)</MicrosoftJSInteropPackageVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference
         Update="HarfBuzzSharp"
@@ -89,14 +131,6 @@
          Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)"
     />
     <PackageReference
-        Update="Microsoft.Extensions.AI"
-        Version="$(MicrosoftExtensionsAIVersion)"
-    />
-    <PackageReference
-        Update="Microsoft.Extensions.AI.Abstractions"
-        Version="$(MicrosoftExtensionsAIAbstractionsVersion)"
-    />
-    <PackageReference
         Update="Microsoft.Extensions.Configuration"
         Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
@@ -153,6 +187,10 @@
         Version="$(MicrosoftIoRecyclableMemoryStreamVersion)"
     />
     <PackageReference
+        Update="Microsoft.Windows.CsWin32"
+        Version="$(MicrosoftWindowsCsWin32PackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.WindowsAppSDK"
         Version="$(MicrosoftWindowsAppSDKPackageVersion)"
         NoWarn="NU1605"
@@ -165,6 +203,10 @@
     <PackageReference
         Update="Microsoft.Windows.SDK.BuildTools"
         Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools.WinApp"
+        Version="$(MicrosoftWindowsSDKBuildToolsWinAppPackageVersion)"
     />
     <PackageReference
         Update="Microsoft.Graphics.Win2D"
@@ -187,6 +229,18 @@
         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPackageVersion)"
     />
@@ -203,8 +257,20 @@
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPackageVersion)"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.JSInterop"
         Version="$(MicrosoftJSInteropPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+        Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.EntityFrameworkCore.Sqlite"
+        Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)"
     />
     <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
@@ -227,6 +293,21 @@
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
+        Update="Microsoft.AspNetCore.Components.Analyzers"
+        Version="$(MicrosoftAspNetCoreComponentsAnalyzersPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components.Forms"
+        Version="$(MicrosoftAspNetCoreComponentsFormsPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Components"
+        Version="$(MicrosoftAspNetCoreComponentsPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Components.WebView"
         Version="$(MicrosoftAspNetCoreComponentsWebViewPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
@@ -244,6 +325,11 @@
     <PackageReference
         Update="Microsoft.AspNetCore.Components.WebAssembly.Server"
         Version="$(MicrosoftAspNetCoreComponentsWebAssemblyServerPreviousPackageVersion)"
+        Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
+    />
+    <PackageReference
+        Update="Microsoft.AspNetCore.Metadata"
+        Version="$(MicrosoftAspNetCoreMetadataPreviousPackageVersion)"
         Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))"
     />
     <PackageReference
@@ -328,7 +414,12 @@
     />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
-    <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />
+    <!-- WiX 6 packages -->
+    <PackageReference Update="Microsoft.Wix" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixVersion)" />
+    <PackageReference Update="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixVersion)" />
     <PackageReference Update="MicroBuild.Plugins.SwixBuild.Dotnet" Version="$(MicroBuildPluginsSwixBuildDotnetPackageVersion)" />
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)"/>
   </ItemGroup>
