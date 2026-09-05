@@ -311,6 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+				handler.SetActivityRoot(FakeActivityRootView);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 #pragma warning disable XAOBS001 // Obsolete
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
