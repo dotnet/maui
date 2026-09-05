@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>An ImageSource that loads an image from a URI, caching the result.</summary>
-	public partial class UriImageSource : IUriImageSource, IStreamImageSource
+	public partial class UriImageSource : IUriImageSource, IStreamImageSourceWithCache
 	{
 	}
 

@@ -44,30 +44,39 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (imageLoader?.Uri == null)
 				return null;
 
-			Stream streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
+			using var streamImage = await ((IStreamImageSource)imageLoader).GetStreamAsync(cancellationToken);
 
 			if (streamImage == null || !streamImage.CanRead)
 			{
 				return null;
 			}
 
-			using (IRandomAccessStream stream = streamImage.AsRandomAccessStream())
+			var seekableStream = await streamImage.EnsureSeekableAsync(cancellationToken);
+			try
 			{
-				try
+				using (IRandomAccessStream stream = seekableStream.AsRandomAccessStream())
 				{
-					var image = new BitmapImage();
-					await image.SetSourceAsync(stream);
-					return image;
-				}
-				catch (Exception ex)
-				{
-					Application.Current?.FindMauiContext()?.CreateLogger<UriImageSourceHandler>()?.LogWarning(ex, "Could not load {uri}", imageLoader.Uri);
+					try
+					{
+						var image = new BitmapImage();
+						await image.SetSourceAsync(stream);
+						return image;
+					}
+					catch (Exception ex)
+					{
+						Application.Current?.FindMauiContext()?.CreateLogger<UriImageSourceHandler>()?.LogWarning(ex, "Could not load {uri}", imageLoader.Uri);
 
-					// According to https://msdn.microsoft.com/library/windows/apps/jj191522
-					// this can happen if the image data is bad or the app is close to its 
-					// memory limit
-					return null;
+						// According to https://msdn.microsoft.com/library/windows/apps/jj191522
+						// this can happen if the image data is bad or the app is close to its
+						// memory limit
+						return null;
+					}
 				}
+			}
+			finally
+			{
+				if (!ReferenceEquals(streamImage, seekableStream))
+					seekableStream.Dispose();
 			}
 		}
 	}
