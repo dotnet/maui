@@ -115,6 +115,71 @@ public class SimpleTemplateTest : BaseTemplateTests
 	}
 
 	[Theory]
+	[InlineData(DotNetCurrent, "Debug", "", "")]
+	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
+	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetNewParams, string additionalDotNetBuildParams)
+	{
+		SetTestIdentifier(framework, config, additionalDotNetNewParams, additionalDotNetBuildParams);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		var dotnetNewParams = $"--ui csharp --no-restore {additionalDotNetNewParams}".TrimEnd();
+		Assert.True(DotnetInternal.New("maui", projectDir, framework, dotnetNewParams, output: _output),
+			"Unable to create template maui with --ui csharp. Check test output for errors.");
+
+		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
+		var appFile = Path.Combine(projectDir, "App.cs");
+		var appXamlFile = Path.Combine(projectDir, "App.xaml");
+		var appShellFile = Path.Combine(projectDir, "AppShell.cs");
+		Assert.True(File.Exists(appFile));
+		Assert.True(File.Exists(appShellFile));
+		Assert.True(File.Exists(mainPageFile));
+		Assert.True(File.Exists(appXamlFile));
+		Assert.True(File.Exists(Path.Combine(projectDir, "Resources", "Images", "dotnet_bot.png")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "AppStyles.xaml")));
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+
+		var mainPageContent = File.ReadAllText(mainPageFile);
+		var appContent = File.ReadAllText(appFile);
+		var appShellContent = File.ReadAllText(appShellFile);
+		var appXamlContent = File.ReadAllText(appXamlFile);
+		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		var projectContent = File.ReadAllText(projectFile);
+		AssertContains("Margin = new Thickness(0, 20, 0, 0)", mainPageContent);
+		AssertContains("SemanticProperties.SetDescription(logo, \"dot net bot riding a rocket\")", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"Headline\")", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"SubHeadline\")", mainPageContent);
+		AssertDoesNotContain("HorizontalOptions = LayoutOptions.Center", mainPageContent);
+		AssertDoesNotContain("FontSize = 18", mainPageContent);
+		AssertDoesNotContain("FontAttributes = FontAttributes.Bold", mainPageContent);
+		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
+		AssertContains("InitializeComponent();", appContent);
+		AssertContains($"Title = \"{Path.GetFileName(projectDir)}\";", appShellContent);
+		AssertContains("Resources/Styles/Colors.xaml", appXamlContent);
+		AssertContains("Resources/Styles/Styles.xaml", appXamlContent);
+		AssertDoesNotContain("CommunityToolkit.Maui", projectContent);
+		AssertDoesNotContain("CommunityToolkit.Mvvm", projectContent);
+		AssertDoesNotContain("Syncfusion.Maui.Toolkit", projectContent);
+		AssertDoesNotContain("UseMauiCommunityToolkit", mauiProgramContent);
+		AssertDoesNotContain("ConfigureSyncfusionToolkit", mauiProgramContent);
+
+		var buildProps = BuildProps;
+
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Theory]
 	[InlineData("maui", DotNetPrevious, "Debug")]
 	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
 	{
@@ -475,7 +540,20 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content --no-restore", output: _output),
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} --with-avalonia --sample-content --no-restore",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The Avalonia option was not applied.", commandOutput);
+		AssertContains(
+			"Avalonia handlers do not currently support the XAML sample content. The generated project includes sample content without Avalonia.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The sample content option was not applied.", commandOutput);
+
+		Assert.True(File.Exists(projectFile),
 			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);
@@ -483,5 +561,69 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		AssertDoesNotContain("UseAvalonia", mauiProgram);
+
+		var appShell = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml"));
+		AssertContains("xmlns:sf=\"clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit\"", appShell);
+		AssertContains("ContentTemplate=\"{DataTemplate pages:MainPage}\"", appShell);
+		AssertDoesNotContain("ContentTemplate=\"{DataTemplate local:MainPage}\"", appShell);
+
+		var appShellCodeBehind = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml.cs"));
+		AssertContains("using CommunityToolkit.Maui.Alerts;", appShellCodeBehind);
+
+		var styles = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Styles.xaml"));
+		AssertContains("Syncfusion.Maui.Toolkit.Shimmer", styles);
+
+		var colors = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Colors.xaml"));
+		AssertContains("x:Key=\"DarkBackground\"", colors);
+	}
+
+	[Fact]
+	public void WithAvaloniaIsIncludedWithCSharpUI()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--ui csharp --with-avalonia --no-restore", output: _output),
+			"Unable to create template maui with --ui csharp --with-avalonia. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+		AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains(".UseAvaloniaApp(useSingleViewLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+	}
+
+	[Theory]
+	[InlineData("--ui csharp --sample-content --no-restore", false)]
+	[InlineData("--ui csharp --sample-content --with-avalonia --no-restore", true)]
+	public void SampleContentIgnoredWithCSharpUIIsReported(string options, bool expectAvalonia)
+	{
+		SetTestIdentifier(options);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} {options}",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The sample content option was not applied.", commandOutput);
+		AssertContains(
+			"Sample content is only available with XAML. The generated project uses C# UI without sample content.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The Avalonia option was not applied.", commandOutput);
+
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+
+		var csproj = File.ReadAllText(projectFile);
+		Assert.Equal(expectAvalonia, csproj.Contains("Avalonia.Controls.Maui", StringComparison.Ordinal));
 	}
 }

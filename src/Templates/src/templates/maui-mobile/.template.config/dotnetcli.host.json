@@ -7,7 +7,14 @@
     "Framework": {
       "longName": "framework"
     },
+    "UI": {
+      "longName": "ui",
+      "shortName": ""
+    },
     "IncludeSampleContent": {
+      "isHidden": true
+    },
+    "IncludeSampleContentCli": {
       "longName": "sample-content",
       "shortName": "sc"
     },
@@ -24,6 +31,7 @@
     }
   },
   "usageExamples": [
-    "--framework DOTNET_TFM_VALUE"
+    "--framework DOTNET_TFM_VALUE",
+    "--framework DOTNET_TFM_VALUE --ui csharp"
   ]
 }
