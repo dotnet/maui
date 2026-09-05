@@ -22,6 +22,7 @@ BeforeAll {
     if ($parseErrors -and $parseErrors.Count -gt 0) {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
+    $script:scriptText = Get-Content -LiteralPath $scriptPath -Raw
 
     $function = $ast.Find({
         $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
@@ -44,12 +45,40 @@ BeforeAll {
     if (-not $invokeTestRunFunction) { throw "Function 'Invoke-TestRun' not found" }
     $script:invokeTestRunText = $invokeTestRunFunction.Extent.Text
 
+    $script:UnitTestProjectMap = @{
+        "Controls.Core.UnitTests" = "src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj"
+    }
+    $script:DeviceTestProjectMap = @{
+        "Controls.DeviceTests" = "Controls"
+        "Core.DeviceTests" = "Core"
+    }
+
+    foreach ($helperName in @(
+        'Resolve-ExplicitTestProject',
+        'New-ExplicitTestEntry',
+        'Resolve-RepositoryRelativePath',
+        'Get-ChangedFilesWithoutRenameDetection',
+        'Test-GitTreeContainsPath',
+        'Set-WithoutFixFileState',
+        'Set-WithFixFileState'
+    )) {
+        $helper = $ast.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $helperName
+        }, $true)
+        if (-not $helper) { throw "Function '$helperName' not found" }
+        Invoke-Expression $helper.Extent.Text
+    }
+
+    function Write-Log { param([string]$Message) }
+
     function New-LogFile {
         param([string]$Content)
         $f = Join-Path ([System.IO.Path]::GetTempPath()) ("verifylog-" + [Guid]::NewGuid().ToString('N') + ".log")
         $Content | Set-Content -LiteralPath $f -Encoding UTF8
         return $f
     }
+
 }
 
 Describe 'Invoke-TestRun — host-only target frameworks' {
@@ -167,6 +196,76 @@ Describe 'Get-AutoDetectedTests — frozen worktree isolation' {
     }
 }
 
+Describe 'Full verification file-state transitions' {
+    It 'removes and restores a fix composed entirely of new committed files' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrepo-" + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repo | Out-Null
+
+        try {
+            Push-Location $repo
+            git init --quiet
+            git config user.email "verify-tests@example.invalid"
+            git config user.name "Verify Tests"
+            "baseline" | Set-Content baseline.txt
+            git add -- baseline.txt
+            git commit --quiet -m "baseline"
+            $mergeBase = (git rev-parse HEAD).Trim()
+
+            "new product implementation" | Set-Content new-fix.cs
+            git add -- new-fix.cs
+            git commit --quiet -m "add fix"
+
+            Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase -NewFiles @('new-fix.cs')
+            Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeFalse
+
+            Set-WithFixFileState -RepoRoot $repo -NewFiles @('new-fix.cs')
+            Test-Path (Join-Path $repo 'new-fix.cs') | Should -BeTrue
+            Get-Content (Join-Path $repo 'new-fix.cs') | Should -Be 'new product implementation'
+            git status --porcelain | Should -BeNullOrEmpty
+        } finally {
+            Pop-Location
+            Remove-Item -LiteralPath $repo -Recurse -Force
+        }
+    }
+
+    It 'restores both sides of a committed rename' {
+        $repo = Join-Path ([System.IO.Path]::GetTempPath()) ("verifyrename-" + [Guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $repo | Out-Null
+
+        try {
+            Push-Location $repo
+            git init --quiet
+            git config user.email "verify-tests@example.invalid"
+            git config user.name "Verify Tests"
+            "original" | Set-Content old-name.txt
+            git add -- old-name.txt
+            git commit --quiet -m "baseline"
+            $mergeBase = (git rev-parse HEAD).Trim()
+
+            git mv old-name.txt new-name.txt
+            git commit --quiet -m "rename"
+
+            $changedFiles = @(Get-ChangedFilesWithoutRenameDetection -MergeBase $mergeBase)
+            $changedFiles | Should -Contain 'old-name.txt'
+            $changedFiles | Should -Contain 'new-name.txt'
+
+            Set-WithoutFixFileState -RepoRoot $repo -MergeBase $mergeBase `
+                -RevertableFiles @('old-name.txt') -NewFiles @('new-name.txt')
+            Test-Path (Join-Path $repo 'old-name.txt') | Should -BeTrue
+            Test-Path (Join-Path $repo 'new-name.txt') | Should -BeFalse
+
+            Set-WithFixFileState -RepoRoot $repo -RevertableFiles @('old-name.txt') `
+                -DeletedByPrFiles @('old-name.txt') -NewFiles @('new-name.txt')
+            Test-Path (Join-Path $repo 'old-name.txt') | Should -BeFalse
+            Test-Path (Join-Path $repo 'new-name.txt') | Should -BeTrue
+            git status --porcelain | Should -BeNullOrEmpty
+        } finally {
+            Pop-Location
+            Remove-Item -LiteralPath $repo -Recurse -Force
+        }
+    }
+}
+
 Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
     It 'uses PR metadata when the explicit base is a branch name' {
         $detector = Join-Path ([System.IO.Path]::GetTempPath()) ("detect-" + [Guid]::NewGuid().ToString('N') + ".ps1")
@@ -190,5 +289,97 @@ Describe 'Get-AutoDetectedTests — ordinary PR metadata' {
         } finally {
             Remove-Item -LiteralPath $detector -Force -ErrorAction SilentlyContinue
         }
+    }
+}
+
+Describe 'Explicit test project resolution' {
+    It 'resolves a known unit test project key' {
+        $result = Resolve-ExplicitTestProject -TestType UnitTest `
+            -TestProject Controls.Core.UnitTests -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Controls.Core.UnitTests'
+        $result.ProjectPath | Should -Be 'src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj'
+    }
+
+    Describe 'FixFiles path validation' {
+        It 'rejects escaped and absolute paths without touching the target' {
+            $victim = Join-Path (Split-Path $TestDrive -Parent) (
+                "fix-victim-" + [Guid]::NewGuid().ToString('N') + ".txt")
+            'keep' | Set-Content -LiteralPath $victim
+
+            try {
+                $escape = [System.IO.Path]::GetRelativePath($TestDrive, $victim)
+                { Resolve-RepositoryRelativePath -RepoRoot $TestDrive -Path $escape `
+                    -ParameterName 'FixFiles entry' } | Should -Throw '*escapes the repository root*'
+                { Resolve-RepositoryRelativePath -RepoRoot $TestDrive -Path $victim `
+                    -ParameterName 'FixFiles entry' } | Should -Throw '*repo-relative path*'
+                Get-Content -LiteralPath $victim | Should -Be 'keep'
+            } finally {
+                Remove-Item -LiteralPath $victim -Force
+            }
+        }
+    }
+
+    Describe 'Pinned tooling root' {
+        It 'uses ToolRoot for tooling and RepoRoot for target projects' {
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/EstablishBrokenBaseline\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/shared/Detect-TestsInDiff\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/scripts/BuildAndRunHostApp\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$ToolRoot "\.github/skills/run-device-tests/scripts/Run-DeviceTests\.ps1"'
+            $script:scriptText | Should -Match 'Join-Path \$RepoRoot "src/Controls/tests/Xaml\.UnitTests/'
+        }
+    }
+
+    It 'resolves a repo-relative unit test project path' {
+        $projectPath = 'tests/Custom.UnitTests.csproj'
+        $fullPath = Join-Path $TestDrive $projectPath
+        New-Item -ItemType Directory -Path (Split-Path $fullPath) -Force | Out-Null
+        '<Project />' | Set-Content $fullPath
+
+        $result = Resolve-ExplicitTestProject -TestType UnitTest `
+            -TestProject $projectPath -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Custom.UnitTests'
+        $result.ProjectPath | Should -Be $projectPath
+    }
+
+    It 'requires an explicit project for unit and device tests' {
+        { Resolve-ExplicitTestProject -TestType UnitTest -RepoRoot $TestDrive } |
+            Should -Throw '*requires -TestProject*'
+        { Resolve-ExplicitTestProject -TestType DeviceTest -RepoRoot $TestDrive } |
+            Should -Throw '*requires -TestProject*'
+    }
+
+    It 'resolves a non-Controls device test project without defaulting' {
+        $result = Resolve-ExplicitTestProject -TestType DeviceTest `
+            -TestProject Core -RepoRoot $TestDrive
+        $result.Project | Should -Be 'Core'
+        $result.ProjectPath | Should -BeNullOrEmpty
+    }
+
+    It 'rejects absolute and traversal unit test project paths' {
+        $outsidePath = Join-Path (Split-Path $TestDrive -Parent) (
+            "outside-" + [Guid]::NewGuid().ToString('N') + ".csproj")
+        '<Project />' | Set-Content $outsidePath
+
+        try {
+            $relativeEscape = [System.IO.Path]::GetRelativePath($TestDrive, $outsidePath)
+            { Resolve-ExplicitTestProject -TestType UnitTest `
+                -TestProject $relativeEscape -RepoRoot $TestDrive } |
+                Should -Throw '*escapes the repository root*'
+
+            { Resolve-ExplicitTestProject -TestType UnitTest `
+                -TestProject $outsidePath -RepoRoot $TestDrive } |
+                Should -Throw '*must be repo-relative*'
+        } finally {
+            Remove-Item -LiteralPath $outsidePath -Force
+        }
+    }
+
+    It 'builds one explicit entry contract for both verification modes' {
+        $entry = New-ExplicitTestEntry -TestType DeviceTest -TestFilter 'Category=Core' `
+            -TestProject Core -RepoRoot $TestDrive
+        $entry.Type | Should -Be 'DeviceTest'
+        $entry.Project | Should -Be 'Core'
+        $entry.Filter | Should -Be 'Category=Core'
+        $entry.Runner | Should -Be 'Run-DeviceTests'
     }
 }
