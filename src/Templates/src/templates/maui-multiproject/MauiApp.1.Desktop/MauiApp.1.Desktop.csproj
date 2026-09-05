@@ -1,26 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>DOTNET_TFM-ios</TargetFramework>
-		<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+		<TargetFramework>DOTNET_TFM</TargetFramework>
 		<OutputType>Exe</OutputType>
-		<RootNamespace>MauiApp._1</RootNamespace>
+		<RootNamespace>MauiApp._1.Desktop</RootNamespace>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseMaui>true</UseMaui>
-<!--#if (avalonia) -->
-		<!-- Generates the Avalonia application class that UseAvaloniaEmbedding hosts. -->
+
+		<!-- Generates the Avalonia application class and the desktop Main entry point. -->
 		<AvaloniaControlsMauiGenerateBootstrap>true</AvaloniaControlsMauiGenerateBootstrap>
-<!--#endif -->
 
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
-<!--#if (avalonia) -->
 		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
-<!--#endif -->
+		<PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
 	</ItemGroup>
 
 	<ItemGroup>
