@@ -76,7 +76,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public void RunOniOS_Previous_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
 		// Individual test methods for each configuration to enable parallel CI runs
-		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
+		// CI uses --filter "FullyQualifiedName~TestMethodName" to run each test in a separate job
 		[Fact]
 		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
