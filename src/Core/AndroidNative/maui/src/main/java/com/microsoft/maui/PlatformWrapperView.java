@@ -17,6 +17,7 @@ import android.graphics.Shader;
 
 
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 
@@ -48,6 +49,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private Shader shadowShader;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
+    private boolean hasShadow = false;
 
     private float offsetX = 0;
     private float offsetY = 0;
@@ -97,7 +99,8 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void onShadowStyleChanged() {
-        if (this.shadowStyle.getPaintType() == PlatformPaintType.NONE) {
+        this.hasShadow = (this.shadowStyle.getPaintType() != PlatformPaintType.NONE);
+        if (!this.hasShadow) {
             this.shadowPaint = null;
             this.shadowCanvas = null;
             if (this.shadowBitmap != null) {
@@ -146,6 +149,33 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     public void invalidate() {
         super.invalidate();
         this.shadowInvalidated = true;
+    }
+
+    @Override
+    public void onDescendantInvalidated(@NonNull View child, @NonNull View target) {
+        super.onDescendantInvalidated(child, target);
+
+        if (shouldInvalidateShadow(child, target)) {
+            invalidate();
+        }
+    }
+
+    protected final boolean shouldInvalidateShadow(@NonNull View child, @NonNull View target) {
+        // Shadowed controls such as Switch need a wrapper redraw when the immediate child
+        // animates. Deeper descendants redraw through their own RenderNodes; invalidating the
+        // wrapper for them makes scrolling content redraw the entire shadowed container.
+        return this.hasShadow && child == target;
+    }
+
+    // API 25 and below: invalidateChildInParent() is the legacy path called when a
+    // descendant calls invalidate() in software or pre-26 hardware-accelerated mode.
+    // Same shadow-stale problem applies — force wrapper redraw when shadow is active.
+    @Override
+    public ViewParent invalidateChildInParent(int[] location, Rect dirty) {
+        if (this.hasShadow) {
+            invalidate();
+        }
+        return super.invalidateChildInParent(location, dirty);
     }
 
     @Override

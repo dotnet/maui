@@ -13,11 +13,11 @@ permissions:
 
 jobs:
   dotnet-format:
-    if: github.repository_owner == 'dotnet'
+    if: github.repository == 'dotnet/maui'
     runs-on: windows-latest
     strategy:
       matrix:
-        branch: [ main, net10.0, inflight/current ]
+        branch: [ main, inflight/current ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2

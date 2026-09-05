@@ -4,6 +4,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -193,6 +194,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatReturnType, values.ViewValue);
 			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
+		[Fact(DisplayName = "MauiSearchBar disables InsetsLayoutMarginsFromSafeArea to prevent double safe-area inset (#34551)")]
+		public async Task MauiSearchBarInsetsLayoutMarginsFromSafeAreaIsFalse()
+		{
+			var searchBar = new SearchBarStub();
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = CreateHandler(searchBar).PlatformView;
+				var mauiSearchBar = Assert.IsType<MauiSearchBar>(platformView);
+				Assert.False(mauiSearchBar.InsetsLayoutMarginsFromSafeArea);
+			});
 		}
 
 		[Fact]

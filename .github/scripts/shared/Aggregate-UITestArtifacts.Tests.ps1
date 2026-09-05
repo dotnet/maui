@@ -27,14 +27,19 @@ BeforeAll {
             [int]$Failed,
             [int]$Skipped = 0,
             [string[]]$PassedTests = @(),
-            [string[]]$FailedTests = @()
+            [string[]]$FailedTests = @(),
+            [string]$FailedMessage = 'boom',
+            [string]$FailedStack = ''
         )
         $executed = $Total - $Skipped
+        $failedMessageXml = [System.Security.SecurityElement]::Escape($FailedMessage)
+        $failedStackXml = [System.Security.SecurityElement]::Escape($FailedStack)
+        $stackXml = if ([string]::IsNullOrEmpty($FailedStack)) { '' } else { "<StackTrace>$failedStackXml</StackTrace>" }
         $passedXml = ($PassedTests | ForEach-Object {
             "    <UnitTestResult testName=`"$_`" duration=`"00:00:01.0`" outcome=`"Passed`" />"
         }) -join "`n"
         $failedXml = ($FailedTests | ForEach-Object {
-            "    <UnitTestResult testName=`"$_`" duration=`"00:00:02.0`" outcome=`"Failed`"><Output><ErrorInfo><Message>boom</Message></ErrorInfo></Output></UnitTestResult>"
+            "    <UnitTestResult testName=`"$_`" duration=`"00:00:02.0`" outcome=`"Failed`"><Output><ErrorInfo><Message>$failedMessageXml</Message>$stackXml</ErrorInfo></Output></UnitTestResult>"
         }) -join "`n"
         @"
 <?xml version="1.0" encoding="utf-8"?>
@@ -128,12 +133,67 @@ Describe 'Get-AggregatedTrxFromDirectory (TRX walk + merge)' {
         $r[$cvKey].Total  | Should -Be 619
         $r[$cvKey].Passed | Should -Be 75
         $r[$cvKey].Failed | Should -Be 544
+        $r[$cvKey].SetupFailure | Should -Be $false
 
         $edKey = $r.Keys | Where-Object { $_ -match 'Editor' } | Select-Object -First 1
         $edKey | Should -Not -BeNullOrEmpty
         $r[$edKey].Total  | Should -Be 119
         $r[$edKey].Passed | Should -Be 51
         $r[$edKey].Failed | Should -Be 68
+    }
+
+    It 'marks category-wide fixture setup failures without changing TRX counters' {
+        $setupRoot = Join-Path $script:fixtureRoot 'setup-failure-test'
+        New-Item -ItemType Directory -Path $setupRoot -Force | Out-Null
+        $catDir = Join-Path $setupRoot 'drop-android_ui_tests-controls-WebView'
+        New-Item -ItemType Directory -Path $catDir -Force | Out-Null
+        New-TrxFixture -Path (Join-Path $catDir 'webview.trx') `
+            -Total 2 -Passed 0 -Failed 2 `
+            -FailedTests @('WebViewTest1','WebViewTest2') `
+            -FailedMessage 'OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear' `
+            -FailedStack 'at Microsoft.Maui.TestUtils.DeviceTests.Runners.UITestBase.OneTimeSetup()'
+
+        $r = Get-AggregatedTrxFromDirectory -RootDir $setupRoot
+        $key = @($r.Keys)[0]
+
+        $r[$key].Total | Should -Be 2
+        $r[$key].Failed | Should -Be 2
+        $r[$key].SetupFailure | Should -Be $true
+        $r[$key].SetupFailureCount | Should -Be 2
+        $r[$key].SetupFailureMessage | Should -Match 'Go To Test button'
+        $r[$key].SetupFailureIsAppCrash | Should -Be $false
+    }
+
+    It 'classifies an app-crash cascade (crash teardown + Go-To-Test timeouts) as a setup failure flagged IsAppCrash' {
+        $crashRoot = Join-Path $script:fixtureRoot 'app-crash-test'
+        New-Item -ItemType Directory -Path $crashRoot -Force | Out-Null
+        $catDir = Join-Path $crashRoot 'drop-android_ui_tests-controls-Shell'
+        New-Item -ItemType Directory -Path $catDir -Force | Out-Null
+
+        # The two tests that were running when the HostApp died: the crash is
+        # detected in UITestBaseTearDown, not as a OneTimeSetUp timeout.
+        New-TrxFixture -Path (Join-Path $catDir 'shell-crash.trx') `
+            -Total 2 -Passed 0 -Failed 2 `
+            -FailedTests @('ShellOnBackButtonPressed','ValidateServiceLifetime') `
+            -FailedMessage 'The app was expected to be running still, investigate as possible crash' `
+            -FailedStack 'at UITest.Appium.NUnit.UITestBase.UITestBaseTearDown() in /_/src/TestUtils/src/UITest.NUnit/UITestBase.cs:line 159'
+
+        # Every subsequent fixture then times out waiting for the gallery.
+        New-TrxFixture -Path (Join-Path $catDir 'shell-cascade.trx') `
+            -Total 3 -Passed 0 -Failed 3 `
+            -FailedTests @('ShellFlyout1','ShellFlyout2','ShellInsets1') `
+            -FailedMessage 'OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear' `
+            -FailedStack 'at Microsoft.Maui.TestUtils.DeviceTests.Runners.UITestBase.OneTimeSetup()'
+
+        $r = Get-AggregatedTrxFromDirectory -RootDir $crashRoot
+        $key = @($r.Keys)[0]
+
+        $r[$key].Failed | Should -Be 5
+        $r[$key].SetupFailure | Should -Be $true
+        $r[$key].SetupFailureCount | Should -Be 5
+        $r[$key].SetupFailureIsAppCrash | Should -Be $true
+        # Representative sample prefers the crash signature over the cascade timeout.
+        $r[$key].SetupFailureMessage | Should -Match 'possible crash'
     }
 
     It 'sums multiple TRX files for the same category' {

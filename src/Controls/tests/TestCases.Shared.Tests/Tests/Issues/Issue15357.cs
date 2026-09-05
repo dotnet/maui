@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "IsVisible binding not showing items again if Shadow is set";
 
 		[Test]
-		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Shadow)]
 		public async Task WhenTapButtonThenListViewsChangesVisibility()
 		{
 			App.WaitForElement(buttonId);

@@ -118,6 +118,24 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Fact]
+			public void EmptySvgAppIconSucceeds_Issue35293()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/appicon_empty.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["Link"] = "appicon",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
 			public void GenerationSkippedOnIncrementalBuild()
 			{
 				var items = new[]
@@ -1029,6 +1047,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			//	AssertFileSize(DestinationFilename, exWidth, exHeight);
 			//}
+
 		}
 
 		public class ExecuteForiOS : ExecuteForPlatformApp

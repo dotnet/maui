@@ -24,7 +24,7 @@ public partial class RadioButtonControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new RadioButtonViewModel();
+		_viewModel.ResetToDefaults();
 		RadioButtonControlTwo.IsChecked = false;
 		RadioButtonControlThree.IsChecked = false;
 		RadioButtonControlFour.IsChecked = false;

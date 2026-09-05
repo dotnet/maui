@@ -12,8 +12,7 @@ pr: none  # Not triggered by PRs
 parameters:
   - name: PRNumber
     displayName: 'Pull Request Number'
-    type: string
-    default: ''
+    type: number
 
   - name: Platform
     displayName: 'Target Platform'
@@ -80,7 +79,10 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
-            persistCredentials: true
+            persistCredentials: false
+            # persistCredentials is false — tasks that need GitHub access
+            # (Setup, Post) use GH_TOKEN env var instead. This limits the
+            # blast radius: Gate and CopilotReview tasks cannot push to the repo.
 
           # Validate Parameters
           # PRNumber is received via env var to avoid compile-time shell injection.
@@ -102,10 +104,130 @@ stages:
             env:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
+          # ─────────────────────────────────────────────────────────
+          #  Fast-fail (clear, actionable) when the PR targets a base
+          #  branch the reviewer cannot support (anything other than
+          #  'main' or 'netN.0'). Done HERE — before the trusted-scripts
+          #  copy, workload provisioning and emulator setup — so an
+          #  unsupported-base PR (e.g. base 'inflight/current') fails in
+          #  seconds with a clear message instead of the confusing
+          #  3x-retried "Refusing to switch" failure deep in setup that
+          #  burns an agent slot.
+          #
+          #  BEST-EFFORT: if base detection itself fails (transient gh/
+          #  network, or gh missing on macOS this early), this step does
+          #  NOT fail — it exits 0 and the retried 'Resolve PR base
+          #  branch' step remains the authoritative allowlist guard.
+          #  Security: validate the ref with the allowlist BEFORE echoing
+          #  it (mirrors 'Resolve PR base branch'); never echo the raw ref
+          #  on the unsupported path.
+          - bash: |
+              set -uo pipefail
+              BASE_REF=""
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName 2>/dev/null || true)
+              fi
+              if [ -z "${BASE_REF}" ]; then
+                REPO=$(git config --get remote.origin.url 2>/dev/null | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "${REPO}" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" 2>/dev/null \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])" 2>/dev/null || true)
+              fi
+              if [ -z "${BASE_REF}" ]; then
+                echo "Could not determine the PR base branch here; it will be re-checked (with retries) in 'Resolve PR base branch'. Continuing."
+                exit 0
+              fi
+              # Validate BEFORE echoing/using to avoid any injection via the ref.
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]The Copilot PR reviewer only supports PRs targeting 'main' or a 'netN.0' branch. This PR's base branch is not supported, so the review cannot run: no workloads/SDK band or safe merge-base can be derived for that base. (Trigger the reviewer only on PRs whose base is 'main' or 'netN.0'.)"
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} base branch '${BASE_REF}' is supported by the reviewer."
+            displayName: 'Validate PR base branch (fast-fail unsupported)'
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+
           - bash: |
               echo "##vso[build.updatebuildnumber]PR ${PARAM_PR_NUMBER} ${{ parameters.Platform }}"
             displayName: 'Set Pipeline Run Title'
             env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          # ─────────────────────────────────────────────────────────
+          #  Resolve the PR's target (base) branch and switch the
+          #  worktree to it BEFORE installing workloads or merging.
+          #
+          #  This pipeline branch (self) may be based on net11.0 while
+          #  a PR targets main (net10), or vice-versa. Two things derive
+          #  from the checked-out tree and must follow the PR's REAL base:
+          #    1. Workloads / SDK band — build.ps1 --target=dotnet reads
+          #       global.json + eng/Versions.props from the worktree.
+          #    2. Merge base — Review-PR.ps1 -Phase Setup squash-merges
+          #       the PR onto the current HEAD in CI.
+          #  Running on the wrong base ⇒ wrong workloads + cross-branch
+          #  squash-merge conflicts. Switching to the PR's base fixes both,
+          #  so ONE pipeline branch handles main- and net11-targeting PRs.
+          #
+          #  Trusted scripts are captured HERE (from the pipeline ref,
+          #  before the base-branch checkout) so later tasks keep running
+          #  the reviewed pipeline-branch .github/scripts even though the
+          #  worktree is swapped to the base branch (security rule 3).
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              set -e
+
+              # Capture trusted scripts from the pipeline ref (self) BEFORE
+              # switching branches — later tasks invoke from $TRUSTED only.
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              chmod -R u+w "$TRUSTED" 2>/dev/null || true
+              rm -rf "$TRUSTED" 2>/dev/null || true
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts copied to $TRUSTED"
+
+              # PRNumber is validated upstream ('Validate Parameters'); re-guard
+              # before use in a gh call.
+              if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
+                exit 1
+              fi
+
+              # Detect the PR's base branch (GitHub-provided metadata). Prefer gh; fall back
+              # to the GitHub REST API because gh is not pre-installed on macOS (catalyst/ios)
+              # agents this early in the job.
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              else
+                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "$REPO" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+              fi
+
+              # Allowlist: only ever switch to a known protected base branch.
+              # Validate BEFORE echoing/using to avoid any injection via the ref.
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+
+              # Switch the worktree to the PR's base branch (detached, to avoid
+              # 'branch already checked out in another worktree' conflicts).
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF}) for workloads + merge base"
+            name: ResolveBaseBranch
+            displayName: 'Resolve PR base branch (workloads + merge base)'
+            retryCountOnTaskFailure: 2
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Enable KVM for Android emulator on Linux (same as ui-tests-steps.yml / device-tests-steps.yml)
@@ -122,7 +244,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -130,7 +255,7 @@ stages:
           # Install .NET and workloads via build.ps1
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
-            retryCountOnTaskFailure: 2
+            retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -288,7 +413,11 @@ stages:
 
                 timeout=120
                 waited=0
-                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                # timeout-wrap the PM query: 'adb shell' against a wedged/offline
+                # device can block indefinitely, which would otherwise hang this
+                # loop past the AzDO task timeout (the loop's own waited>=timeout
+                # check never runs while the command is blocked).
+                while ! timeout 30 adb shell pm list packages 2>/dev/null | grep -q "package:"; do
                   sleep 5
                   waited=$((waited + 5))
                   if [ $waited -ge $timeout ]; then
@@ -309,11 +438,22 @@ stages:
                 # Wait for device to stabilize after boot (transient offline state)
                 DEVICE_READY=false
                 for i in $(seq 1 20); do
-                  if adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
+                  if timeout 15 adb -s $DEVICE_ID shell echo ok 2>/dev/null | grep -q ok; then
                     DEVICE_READY=true
                     break
                   fi
                   echo "Device offline, retrying ($i/20)..."
+                  # Halfway through, restart the adb daemon and reconnect — a
+                  # transient "device offline" is usually an adb-server glitch
+                  # that self-heals on restart, avoiding a full step retry.
+                  if [ "$i" -eq 10 ]; then
+                    echo "Still offline at ~50s — restarting adb server and reconnecting..."
+                    adb kill-server 2>/dev/null || true
+                    sleep 2
+                    adb start-server 2>/dev/null || true
+                    timeout 15 adb reconnect offline 2>/dev/null || true
+                    timeout 60 adb wait-for-device 2>/dev/null || true
+                  fi
                   sleep 5
                 done
 
@@ -322,20 +462,22 @@ stages:
                   exit 1
                 fi
 
-                # Disable all animations (reduces CPU load and flakiness)
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                # Disable all animations (reduces CPU load and flakiness).
+                # timeout-wrap every 'adb shell': against a wedged device these
+                # can block with no per-command bound and hang the task.
+                timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
                 # Prevent screen from turning off (emulator simulates AC charging)
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
-                adb -s $DEVICE_ID shell svc power stayon true || true
+                timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
                 # Wake screen and dismiss any lock screen
-                adb -s $DEVICE_ID shell input keyevent 82 || true
+                timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
                 sleep 1
                 # Dismiss any "System UI has stopped" or crash dialogs
-                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                timeout 20 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
                 # Clear logcat buffer so agent sees only fresh logs
-                adb -s $DEVICE_ID logcat -c 2>/dev/null || true
+                timeout 20 adb -s $DEVICE_ID logcat -c 2>/dev/null || true
                 echo "Emulator preparation complete"
 
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
@@ -376,24 +518,11 @@ stages:
               echo "GitHub CLI ready"
             displayName: 'Install GitHub CLI'
 
-          - bash: |
-              echo "Authenticating with GitHub CLI..."
-              if [ -z "$GH_TOKEN" ]; then
-                echo "##vso[task.logissue type=error]GH_TOKEN env var (from pipeline variable GH_COMMENT_TOKEN) is not set. Please configure the pipeline variable."
-                exit 1
-              fi
-              gh auth status
-              if [ $? -ne 0 ]; then
-                echo "$GH_TOKEN" | gh auth login --with-token 2>/dev/null || true
-                if ! gh auth status; then
-                  echo "##vso[task.logissue type=error]GitHub CLI authentication failed"
-                  exit 1
-                fi
-              fi
-              echo "GitHub CLI authenticated successfully"
-            displayName: 'Authenticate GitHub CLI'
-            env:
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
+          # NOTE: Removed `gh auth login` step. With the phased task design,
+          # GH_TOKEN is passed as an env var only to Setup and Post tasks, and
+          # `gh` uses GH_TOKEN directly without needing `gh auth login`. This
+          # avoids persisting credentials in the agent's gh auth store where
+          # Gate and CopilotReview tasks could access them.
 
           - bash: |
               echo "Installing GitHub Copilot CLI..."
@@ -575,16 +704,16 @@ stages:
             timeoutInMinutes: 6
             retryCountOnTaskFailure: 2
 
+          # ─────────────────────────────────────────────────────────
+          #  Task 1 — SETUP: symlink copilot, git config, env prep,
+          #  copy trusted scripts, invoke Review-PR.ps1 -Phase Setup
+          #  env: GH_TOKEN (for branch checkout / PR merge)
+          # ─────────────────────────────────────────────────────────
           - bash: |
-              echo "Running Copilot PR Reviewer Agent via Review-PR.ps1..."
-              echo "Reviewing PR #${{ parameters.PRNumber }}..."
+              echo "═══ TASK 1: SETUP ═══"
+
               # Ensure copilot CLI is accessible to pwsh subprocess.
-              # npm global install on Linux goes to UseNode@1 toolcache path which may not
-              # be on PATH inside pwsh even when exported from bash. Create a symlink in
-              # /usr/local/bin (Unix) or verify PATH (Windows).
               if [[ "$(uname -o 2>/dev/null || uname -s)" == *"Msys"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"Windows"* ]] || [[ "$(uname -o 2>/dev/null || uname -s)" == *"MINGW"* ]]; then
-                # Windows (Git Bash): npm global bin is usually already on PATH
-                echo "Windows detected — verifying copilot is on PATH..."
                 COPILOT_PATH=$(which copilot 2>/dev/null || true)
                 echo "copilot location: ${COPILOT_PATH:-not found}"
                 if [ -z "$COPILOT_PATH" ]; then
@@ -592,7 +721,6 @@ stages:
                   exit 1
                 fi
               else
-                # Linux/macOS: symlink to /usr/local/bin
                 COPILOT_PATH=$(which copilot 2>/dev/null || find /opt/hostedtoolcache/node -name copilot -type f 2>/dev/null | head -1)
                 if [ -n "$COPILOT_PATH" ] && [ ! -f /usr/local/bin/copilot ]; then
                   sudo ln -sf "$COPILOT_PATH" /usr/local/bin/copilot
@@ -605,84 +733,171 @@ stages:
                   exit 1
                 fi
               fi
-              # Verify pwsh can find it
               pwsh -NoProfile -c 'Write-Host "pwsh sees copilot at: $(Get-Command copilot -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source)"'
-              
-              # Configure git identity (required for merge operations on self-hosted agents)
+
+              # Configure git identity
               git config user.email "copilot-ci@microsoft.com"
               git config user.name "Copilot CI"
-              echo "Git identity configured"
-              
-              # Create Directory.Build.Override.props to skip Xcode version check (not needed on Windows)
+
+              # Create Directory.Build.Override.props
               cp Directory.Build.Override.props.in Directory.Build.Override.props
               if [[ "$(uname)" == "Linux" ]]; then
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               elif [[ "$(uname)" == "Darwin" ]]; then
                 sed -i '' 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               else
-                # Windows (Git Bash) — GNU sed, same as Linux
                 sed -i 's|</Project>|  <PropertyGroup><ValidateXcodeVersion>false</ValidateXcodeVersion></PropertyGroup>\n</Project>|' Directory.Build.Override.props
               fi
-              
-              # Create artifacts directory for Copilot outputs
+
+              # Create artifacts directory
               mkdir -p $(Build.ArtifactStagingDirectory)/copilot-logs
-              
-              # Invoke the PR reviewer using our PowerShell script
-              # The script will merge the PR into the current branch
-              # -PostSummaryComment and -RunFinalize handle posting comments
-              echo "Review platform: ${{ parameters.Platform }}"
-              
+              mkdir -p $(Build.ArtifactStagingDirectory)/copilot-token-usage/raw
+
+              # Trusted scripts were already captured from the pipeline ref in the
+              # 'Resolve PR base branch' step (before the base-branch checkout), so
+              # later tasks keep running the reviewed pipeline-branch scripts even
+              # though the worktree is now on the PR's base branch (security rule 3).
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              # Run Setup phase (branch checkout + PR merge) from the trusted copy.
               set +e
-              pwsh -NoProfile .github/scripts/Review-PR.ps1 -PRNumber "${PARAM_PR_NUMBER}" -Platform "${{ parameters.Platform }}" -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
-              COPILOT_EXIT_CODE=$?
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Setup \
+                -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              SETUP_EXIT=$?
               set -e
-              
-              echo "Review-PR.ps1 exit code: $COPILOT_EXIT_CODE"
-              
-              # Terminate any orphaned copilot CLI processes that could hold this step's
-              # stdout fd open and prevent the bash step from exiting.
-              # Only target processes whose command line includes the copilot CLI path.
-              echo "Cleaning up orphaned copilot processes..."
-              SELF_PID=$$
-              for proc in $(pgrep -f "[c]opilot" 2>/dev/null || true); do
-                if [ -n "$proc" ] && [ "$proc" != "$SELF_PID" ]; then
-                  PROC_CMD=$(ps -p "$proc" -o args= 2>/dev/null || true)
-                  if echo "$PROC_CMD" | grep -q "copilot"; then
-                    echo "  Stopping copilot process $proc: $PROC_CMD"
-                    kill "$proc" 2>/dev/null || true
-                  fi
-                fi
-              done
-              
-              # Copy any Copilot session files (bash — works on Linux/macOS)
-              if [ -d "$HOME/.copilot" ]; then
-                echo "Copying Copilot session state..."
-                cp -r "$HOME/.copilot" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot-session-state || true
-              fi
-              
-              # Check for failure indicators in output
-              if [ $COPILOT_EXIT_CODE -ne 0 ]; then
-                echo "##vso[task.logissue type=error]Review-PR.ps1 exited with code $COPILOT_EXIT_CODE"
-                # Don't exit yet - let artifacts be published first
+
+              if [ $SETUP_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Setup phase failed with exit code $SETUP_EXIT"
                 echo "##vso[task.setvariable variable=CopilotFailed]true"
               fi
-              
-              # Check output for common failure patterns
-              if grep -qi "error\|failed\|exception" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                if grep -qi "simulator.*not\|emulator.*not\|workload.*not\|sdk.*not found" $(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md 2>/dev/null; then
-                  echo "##vso[task.logissue type=warning]Copilot encountered environment issues. Check artifacts for details."
-                fi
+            name: RunSetup
+            displayName: 'Task 1: Setup (branch + merge)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 2 — GATE: UI detection, test runs, regression,
+          #  gate verification. GH_TOKEN is read-only here — needed
+          #  by Detect-TestsInDiff.ps1 for PR metadata/label fetches.
+          #  No COPILOT_GITHUB_TOKEN — the agent can't run here.
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 2: GATE ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Gate \
+                -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              GATE_EXIT=$?
+              set -e
+
+              if [ $GATE_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=warning]Gate phase exited with code $GATE_EXIT"
+                echo "##vso[task.setvariable variable=GateFailed]true"
               fi
-              
-              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
-            name: RunReview                       # referenceable name so the new RunDeepUITests / UpdateAISummaryComment stages can read this step's output variables (detectedCategories, detectedPlatform) via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.<var>'])
-            displayName: 'Run PR Reviewer Agent'
+
+              # Publish the TRUSTED gate verdict for the cross-stage APPROVE veto. The Gate phase
+              # (trusted, runs BEFORE the untrusted CopilotReview phase in Task 3) wrote the verdict
+              # to the staging-root gate-result.txt; read it here in this pipeline-controlled wrapper
+              # and freeze it as an output variable. Once emitted, the value lives in the pipeline
+              # variable store — PR-controlled agent code in Task 3 cannot mutate it, unlike the
+              # gate-result.txt copy that ships inside the agent-writable PRAgent artifact.
+              GATE_VERDICT_FILE="$(Build.ArtifactStagingDirectory)/gate-result.txt"
+              GATE_VERDICT="INCONCLUSIVE"
+              if [ -f "$GATE_VERDICT_FILE" ]; then
+                RAW_VERDICT=$(tr -d '\r\n' < "$GATE_VERDICT_FILE" | tr '[:lower:]' '[:upper:]')
+                case "$RAW_VERDICT" in
+                  PASSED|SKIPPED|INCONCLUSIVE|FAILED) GATE_VERDICT="$RAW_VERDICT" ;;
+                  *) GATE_VERDICT="INCONCLUSIVE" ;;
+                esac
+              fi
+              # The process exit code is authoritative for FAILED (only a genuine FAILED gate exits
+              # non-zero — PASSED/SKIPPED/INCONCLUSIVE all exit 0), so it overrides the file read.
+              if [ $GATE_EXIT -ne 0 ]; then GATE_VERDICT="FAILED"; fi
+              echo "Trusted gate verdict: $GATE_VERDICT"
+              echo "##vso[task.setvariable variable=gateResult;isOutput=true]$GATE_VERDICT"
+            name: RunGate
+            displayName: 'Task 2: Gate (test verification)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 3 — COPILOT REVIEW: expert review + try-fix.
+          #  env: COPILOT_GITHUB_TOKEN (for copilot agent).
+          #  NO GH_TOKEN — the agent can't push or post comments.
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 3: COPILOT REVIEW ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              echo "Review platform: ${{ parameters.Platform }}"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase CopilotReview \
+                -TrustedScriptsDir "$TRUSTED" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              REVIEW_EXIT=$?
+              set -e
+
+              if [ $REVIEW_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]CopilotReview phase failed with exit code $REVIEW_EXIT"
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+            name: RunReview
+            displayName: 'Task 3: Copilot Review (expert review + try-fix)'
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
-              GH_TOKEN: $(GH_COMMENT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
+
+          # ─────────────────────────────────────────────────────────
+          #  Task 4 — POST: gate comment, AI summary, labels.
+          #  env: GH_TOKEN (for posting comments).
+          # ─────────────────────────────────────────────────────────
+          - bash: |
+              echo "═══ TASK 4: POST ═══"
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+
+              set +e
+              pwsh -NoProfile "$TRUSTED/scripts/Review-PR.ps1" \
+                -PRNumber "${PARAM_PR_NUMBER}" \
+                -Platform "${{ parameters.Platform }}" \
+                -Phase Post \
+                -TrustedScriptsDir "$TRUSTED" \
+                -TrustedGateResult "$(RunGate.gateResult)" \
+                -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" \
+                -LogFile "$(Build.ArtifactStagingDirectory)/copilot-logs/copilot_review_output.md"
+              POST_EXIT=$?
+              set -e
+
+              if [ $POST_EXIT -ne 0 ]; then
+                echo "##vso[task.logissue type=error]Post phase failed with exit code $POST_EXIT"
+                echo "##vso[task.setvariable variable=CopilotFailed]true"
+              fi
+
+              echo "Review output saved to $(Build.ArtifactStagingDirectory)/copilot-logs/"
+            name: RunPost                       # Stage 3 (UpdateAISummaryComment) reads aiSummaryReviewId via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId']). Note: detectedCategories comes from RunGate, not RunPost.
+            displayName: 'Task 4: Post (comments + labels)'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               DEFER_COMMENT_TO_STAGE3: "true"
 
           # Copy review artifacts into the CopilotLogs staging dir.
@@ -703,6 +918,13 @@ stages:
               if (Test-Path ".github/agent-pr-session") {
                 Write-Host "Copying agent-pr-session..."
                 Copy-Item -Path ".github/agent-pr-session" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
+              }
+
+              # Copilot token usage raw records
+              $tokenUsageDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              if (Test-Path $tokenUsageDir) {
+                Write-Host "Copying copilot-token-usage..."
+                Copy-Item -Path $tokenUsageDir -Destination (Join-Path $logsDir "copilot-token-usage") -Recurse -Force -ErrorAction SilentlyContinue
               }
 
               # Review_Feedback files
@@ -734,20 +956,26 @@ stages:
               publishLocation: 'pipeline'
             condition: and(succeededOrFailed(), ne(variables['LogDirectory'], ''))
 
-          # Fail the pipeline if Copilot failed
+          # Fail the pipeline if any phase failed
           - bash: |
+              FAILED=0
               if [ "$(CopilotFailed)" = "true" ]; then
                 echo "##vso[task.logissue type=error]Copilot PR review failed. Check CopilotLogs artifact for details."
-                exit 1
+                FAILED=1
               fi
-            displayName: 'Check Copilot Result'
+              if [ "$(GateFailed)" = "true" ]; then
+                echo "##vso[task.logissue type=warning]Gate phase failed — test verification did not pass."
+                FAILED=1
+              fi
+              exit $FAILED
+            displayName: 'Check Review Result'
             condition: succeededOrFailed()
 
   # ─────────────────────────────────────────────────────────────────────────────
   #  STAGE: RunDeepUITests
   # ─────────────────────────────────────────────────────────────────────────────
   # After the Copilot review agent has detected UI test categories and posted
-  # an initial AI summary comment with in-process per-category results, this
+  # an initial AI summary review with in-process per-category results, this
   # stage re-runs those same categories on a real platform-appropriate pool
   # (Tahoe iOS sim / Ubuntu Android emu / Windows-2022 / macOS-14) instead of
   # whatever VM the Copilot agent happened to land on. Each category becomes
@@ -767,12 +995,29 @@ stages:
   - stage: RunDeepUITests
     displayName: 'Deep UI Tests (platform pool)'
     dependsOn: ReviewPR
-    condition: and(in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], ''), ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], 'NONE'))
+    # Prefer AI-refreshed categories from CopilotReview (RunReview) when available,
+    # falling back to Gate-detected categories (RunGate). RunReview is only set when
+    # the Tier 3 AI refresh actually changed the categories; otherwise it's empty.
+    # ALL-mode (detectedCategories == 'ALL') is intentionally excluded: running
+    # the entire UI suite with no category filter cannot complete within this
+    # stage's time budget and empirically always hits the 220-min task timeout,
+    # producing zero usable TRX, a red build, and a 3.5h-orphaned agent. The
+    # in-process Stage-1 per-category results already posted in the AI summary
+    # remain the deliverable, and UpdateAISummaryComment handles a Skipped deep
+    # stage (its download step is continueOnError + the renderer keeps the
+    # in-process results when no deep artifact exists).
+    condition: >-
+      and(
+        in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), ''),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'NONE'),
+        ne(coalesce(dependencies.ReviewPR.outputs['CopilotReview.RunReview.detectedCategories'], dependencies.ReviewPR.outputs['CopilotReview.RunGate.detectedCategories']), 'ALL')
+      )
     jobs:
       - job: RunUITests
         displayName: 'Run detected UI test categories'
         variables:
-          detectedCategories: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'] ]
+          detectedCategories: $[ coalesce(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories'], stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']) ]
         # Use the SAME platform-pool selection logic as the CopilotReview
         # job — the deep-test agent should be the right OS for the
         # requested target platform.
@@ -790,6 +1035,55 @@ stages:
         steps:
           - checkout: self
             fetchDepth: 0
+            persistCredentials: false
+
+          # Switch the worktree to the PR's base branch before installing
+          # workloads and merging the PR for deep UI tests — same rationale as
+          # the CopilotReview stage's 'Resolve PR base branch' step (correct SDK
+          # band + conflict-free squash-merge regardless of the pipeline branch).
+          - bash: |
+              set -e
+              # Capture trusted scripts from the pipeline ref (self) BEFORE switching to the
+              # base branch, so the deep-UI test runner can be restored to the reviewed
+              # pipeline-branch scripts (branch-aware TFM selection) rather than the base
+              # branch's copies after the checkout below (security rule 3 + correctness).
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              chmod -R u+w "$TRUSTED" 2>/dev/null || true
+              rm -rf "$TRUSTED" 2>/dev/null || true
+              mkdir -p "$TRUSTED"
+              cp -r .github/scripts "$TRUSTED/scripts"
+              cp -r .github/skills  "$TRUSTED/skills"
+              cp -r eng/scripts     "$TRUSTED/eng-scripts"
+              chmod -R a-w "$TRUSTED"
+              echo "Trusted scripts copied to $TRUSTED"
+
+              if ! [[ "${PARAM_PR_NUMBER}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "##vso[task.logissue type=error]PRNumber must be a positive integer"
+                exit 1
+              fi
+              # Prefer gh; fall back to REST (gh isn't pre-installed on macOS agents this early).
+              if command -v gh >/dev/null 2>&1; then
+                BASE_REF=$(gh pr view "${PARAM_PR_NUMBER}" --json baseRefName -q .baseRefName)
+              else
+                REPO=$(git config --get remote.origin.url | sed -E 's#.*github\.com[:/]+([^/]+/[^/.]+)(\.git)?$#\1#')
+                [ -z "$REPO" ] && REPO="dotnet/maui"
+                BASE_REF=$(curl -fsSL -H "Authorization: Bearer ${GH_TOKEN}" -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${REPO}/pulls/${PARAM_PR_NUMBER}" \
+                  | python3 -c "import sys,json;print(json.load(sys.stdin)['base']['ref'])")
+              fi
+              if ! [[ "${BASE_REF}" =~ ^(main|net[0-9]+\.0)$ ]]; then
+                echo "##vso[task.logissue type=error]Unexpected PR base branch (expected main or netN.0). Refusing to switch."
+                exit 1
+              fi
+              echo "PR #${PARAM_PR_NUMBER} targets base branch: ${BASE_REF}"
+              git fetch origin "${BASE_REF}" --no-tags
+              git checkout --detach "origin/${BASE_REF}"
+              echo "Worktree now at $(git rev-parse --short HEAD) (origin/${BASE_REF})"
+            displayName: 'Resolve PR base branch (workloads + merge base)'
+            retryCountOnTaskFailure: 2
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
           # Bring in .NET + workloads + tasks DLL — same prerequisites the
           # CopilotReview job used. Reusing the install-dotnet template
@@ -803,7 +1097,10 @@ stages:
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
               skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
-              skipAndroidCreateAvds: ${{ ne(parameters.Platform, 'android') }}
+              # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
+              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
+              skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
               skipSimulatorSetup: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows'), eq(parameters.Platform, 'catalyst')) }}
               skipCertificates: true
@@ -874,7 +1171,9 @@ stages:
 
                 echo "Waiting for package manager..."
                 waited=0
-                while ! adb shell pm list packages 2>/dev/null | grep -q "package:"; do
+                # timeout-wrap: 'adb shell' on a wedged device can block past the
+                # task timeout (the waited>=120 check never runs while blocked).
+                while ! timeout 30 adb shell pm list packages 2>/dev/null | grep -q "package:"; do
                   sleep 5; waited=$((waited+5))
                   [ $waited -ge 120 ] && { echo "##[error]PM timeout"; exit 1; }
                 done
@@ -885,13 +1184,15 @@ stages:
                   echo "##[warning]Could not detect device ID, defaulting to $DEVICE_ID"
                 fi
                 echo "✅ Emulator booted: $DEVICE_ID"
-                adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
-                adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
-                adb -s $DEVICE_ID shell svc power stayon true || true
-                adb -s $DEVICE_ID shell input keyevent 82 || true
-                adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
+                # timeout-wrap every 'adb shell' (a wedged device can block with
+                # no per-command bound and hang the task).
+                timeout 20 adb -s $DEVICE_ID shell settings put global window_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global transition_animation_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put global animator_duration_scale 0.0 || true
+                timeout 20 adb -s $DEVICE_ID shell settings put system screen_off_timeout 2147483647 || true
+                timeout 20 adb -s $DEVICE_ID shell svc power stayon true || true
+                timeout 20 adb -s $DEVICE_ID shell input keyevent 82 || true
+                timeout 20 adb -s $DEVICE_ID shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS 2>/dev/null || true
                 echo "##vso[task.setvariable variable=DEVICE_UDID]$DEVICE_ID"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/platform-tools"
                 echo "##vso[task.prependpath]$ANDROID_SDK_ROOT/emulator"
@@ -980,7 +1281,7 @@ stages:
           # are not present after provision.yml (which only installs the SDK).
           - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
             displayName: 'Install .NET and workloads'
-            retryCountOnTaskFailure: 2
+            retryCountOnTaskFailure: 3
             env:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
@@ -1046,6 +1347,27 @@ stages:
               git commit -m "PR ${{ parameters.PRNumber }} merge for deep UI tests" --allow-empty || true
             displayName: 'Merge PR for testing'
 
+          # Run the deep-UI orchestration from the reviewed pipeline-branch scripts, not the
+          # base+PR worktree copies. Restores self's .github/scripts, .github/skills and
+          # eng/scripts (captured in 'Resolve PR base branch') over the worktree so the
+          # per-category loop's BuildAndRunHostApp.ps1 is branch-aware (builds the net11 TFM)
+          # and trusted (security rule 3). The src/ tree stays base + PR.
+          - bash: |
+              set -e
+              TRUSTED="$(Build.ArtifactStagingDirectory)/trusted-github"
+              if [ -d "$TRUSTED/scripts" ]; then
+                rm -rf .github/scripts .github/skills eng/scripts
+                cp -r "$TRUSTED/scripts"     .github/scripts
+                cp -r "$TRUSTED/skills"      .github/skills
+                cp -r "$TRUSTED/eng-scripts" eng/scripts
+                chmod -R u+w .github/scripts .github/skills eng/scripts
+                echo "Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree"
+              else
+                echo "##vso[task.logissue type=error]Trusted scripts not found at $TRUSTED/scripts — cannot run deep UI tests"
+                exit 1
+              fi
+            displayName: 'Restore trusted scripts for deep UI tests'
+
           # Bypass the iOS/MacCatalyst SDK's strict Xcode-version check.
           # Same patch the CopilotReview job performs (see lines ~571-580
           # of this file). Without it, .NET 10 iOS workload (which pins
@@ -1085,16 +1407,20 @@ stages:
 
               $isRunAll = ($cats -eq 'ALL')
               if ($isRunAll) {
-                Write-Host "Run-all mode detected — running without category filter"
-                # Single-element list with empty string triggers one iteration
-                # of the loop below without passing -Category to the runner.
-                $catList = @('')
-              } else {
-                # Same per-category loop the in-process STEP 3 does, only
-                # this time on a proper platform-pool agent. Each TRX lands
-                # in its own subdir so the aggregator can split per category.
-                $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                # Defense in depth: the RunDeepUITests stage condition already
+                # skips ALL-mode because the full no-filter suite cannot finish
+                # within this stage's budget and would hit the 220-min task
+                # timeout. If we somehow still reach here, do NOT run the
+                # unbounded full suite — keep the in-process Stage-1 results and
+                # exit cleanly so the build stays green.
+                Write-Host "##[warning]Run-all mode (detectedCategories=ALL) reached the deep stage; skipping the unbounded full-suite re-run to avoid the task timeout. In-process Stage-1 results are retained."
+                exit 0
               }
+
+              # Same per-category loop the in-process STEP 3 does, only this
+              # time on a proper platform-pool agent. Each TRX lands in its own
+              # subdir so the aggregator can split per category.
+              $catList = @($cats -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
               $outputRoot = "$(Build.ArtifactStagingDirectory)/deep-uitests"
               New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null
 
@@ -1103,8 +1429,27 @@ stages:
               $retryScript = ".github/scripts/shared/Invoke-UITestWithRetry.ps1"
               $hasRetryWrapper = Test-Path $retryScript
 
+              # Overall wall-clock budget for the per-category loop. A slow or
+              # hung category can otherwise push the task into the AzDO task
+              # timeout (220 min), which fails the build for an infra reason
+              # rather than a test reason. Stop STARTING new categories once the
+              # budget is exhausted (an already-running category finishes within
+              # the remaining 220-min headroom) and report the remainder as
+              # not-run. Tunable via DEEP_UITEST_BUDGET_MIN.
+              $budgetMin = 185
+              if ($env:DEEP_UITEST_BUDGET_MIN -and ($env:DEEP_UITEST_BUDGET_MIN -as [int])) { $budgetMin = [int]$env:DEEP_UITEST_BUDGET_MIN }
+              $loopDeadline = (Get-Date).AddMinutes($budgetMin)
+              Write-Host "Per-category loop budget: $budgetMin min (deadline: $($loopDeadline.ToUniversalTime().ToString('u')))"
+              $skippedCats = @()
+
               $hadFailure = $false
               foreach ($cat in $catList) {
+                if ((Get-Date) -gt $loopDeadline) {
+                  $skippedCats += $cat
+                  Write-Host "##[warning]Deep UI test time budget ($budgetMin min) exhausted — not starting category '$cat' (avoids the 220-min task timeout)."
+                  $hadFailure = $true
+                  continue
+                }
                 $safeCat = if ([string]::IsNullOrEmpty($cat)) { 'ALL' } else { $cat -replace '[^A-Za-z0-9_.-]', '_' }
                 $catDir = Join-Path $outputRoot "drop-${platform}_ui_tests-controls-$safeCat"
                 New-Item -ItemType Directory -Force -Path $catDir | Out-Null
@@ -1201,15 +1546,42 @@ stages:
                   Write-Host "Moving snapshot-diffs from $snapDiffSrc -> $snapDiffDest"
                   Move-Item -Path $snapDiffSrc -Destination $snapDiffDest -Force -ErrorAction SilentlyContinue
                 }
+
+                # Ship the UI-test failure diagnostics (screenshots + page source +
+                # appium/device logs) that BuildAndRunHostApp.ps1 writes to
+                # CustomAgentLogsTmp/UITests. Without these, a OneTimeSetUp /
+                # navigation failure (e.g. the "Go To Test button" timeout that
+                # currently fails the whole deep run) is a black box — the artifact
+                # otherwise ships only the TRX. Capturing the app's actual
+                # on-screen state at failure is what lets us root-cause why the
+                # deep-stage app doesn't render the gallery.
+                $uiDiagSrc = Join-Path (Get-Location).Path "CustomAgentLogsTmp/UITests"
+                if (Test-Path $uiDiagSrc) {
+                  $uiDiagDest = Join-Path $catDir "ui-diagnostics"
+                  New-Item -ItemType Directory -Force -Path $uiDiagDest | Out-Null
+                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Extension -in '.png', '.xml' -or $_.Name -in 'appium.log', 'android-device.log', 'test-output.log' } |
+                    ForEach-Object { Copy-Item $_.FullName $uiDiagDest -Force -ErrorAction SilentlyContinue }
+                  $diagCount = @(Get-ChildItem -Path $uiDiagDest -File -ErrorAction SilentlyContinue).Count
+                  Write-Host "Captured $diagCount UI-test diagnostic file(s) (screenshots/page-source/logs) into $uiDiagDest"
+                  # Clear per-test screenshots/page-source so the next category's
+                  # diagnostics don't accumulate into this one.
+                  Get-ChildItem -Path $uiDiagSrc -Recurse -File -Include '*.png', '*.xml' -ErrorAction SilentlyContinue |
+                    Remove-Item -Force -ErrorAction SilentlyContinue
+                }
               }
 
+              if ($skippedCats.Count -gt 0) {
+                Write-Host "##vso[task.logissue type=warning]$($skippedCats.Count) deep UI test categor$(if($skippedCats.Count -eq 1){'y was'}else{'ies were'}) not started due to the $budgetMin-min time budget: $($skippedCats -join ', ')"
+              }
               if ($hadFailure) {
-                # Don't fail the stage — the AI summary comment is the
+                # Don't fail the stage — the AI summary review is the
                 # deliverable; failed tests get reported there. Stage-level
                 # failure would prevent the UpdateAISummaryComment stage
                 # from running.
                 Write-Host "##vso[task.logissue type=warning]One or more deep UI test categories failed (see TRX in drop-deep-uitests artifact)"
               }
+              exit 0
             displayName: 'Run deep UI tests (per-category loop)'
             timeoutInMinutes: 220
 
@@ -1235,32 +1607,36 @@ stages:
   #  STAGE: PostAISummaryComment
   # ─────────────────────────────────────────────────────────────────────────────
   # Final stage. Depends on both ReviewPR (which posted the initial AI
-  # summary comment and emitted aiSummaryCommentId) and RunDeepUITests
+  # summary review and emitted aiSummaryReviewId) and RunDeepUITests
   # (which produced the TRX artifacts on the right pool). Downloads the
   # artifacts, parses them via Aggregate-UITestArtifacts.ps1, and edits
-  # the existing PR comment to replace the in-process STEP 3 section
+  # the existing PR review to replace the in-process STEP 3 section
   # with the deep-test results.
   - stage: UpdateAISummaryComment
-    displayName: 'Post AI Summary Comment'
+    displayName: 'Post AI Summary Review'
     dependsOn:
       - ReviewPR
       - RunDeepUITests
-    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunReview.aiSummaryCommentId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
+    condition: and(in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed', 'Skipped'), or(ne(dependencies.ReviewPR.outputs['CopilotReview.RunPost.aiSummaryReviewId'], ''), in(dependencies.RunDeepUITests.result, 'Succeeded', 'SucceededWithIssues', 'Failed')))
     jobs:
       - job: UpdateComment
-        displayName: 'Post AI summary with review + deep test results'
+        displayName: 'Post AI summary review with deep test results'
         # Job-level variables can use $[ stageDependencies... ] (cross-stage,
         # job context). The stage condition above already gated emptiness;
-        # this just makes the value available as $(aiSummaryCommentId)
+        # this just makes the value available as $(aiSummaryReviewId)
         # inside the steps.
         variables:
-          aiSummaryCommentId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.aiSummaryCommentId'] ]
+          aiSummaryReviewId: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunPost.aiSummaryReviewId'] ]
+          # Trusted gate verdict from the Gate task (frozen pre-agent). Passed to the post script
+          # so the APPROVE veto does not trust the agent-writable gate-result.txt in the artifact.
+          trustedGateResult: $[ stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.gateResult'] ]
         pool:
           name: Azure Pipelines
           vmImage: ubuntu-22.04
         timeoutInMinutes: 30
         steps:
           - checkout: self
+            persistCredentials: false
 
           - task: DownloadPipelineArtifact@2
             displayName: 'Download CopilotLogs'
@@ -1290,12 +1666,12 @@ stages:
               $artDir = "$(Pipeline.Workspace)/drop-deep-uitests"
               $copilotLogsDir = "$(Pipeline.Workspace)/CopilotLogs"
               $prNumber = "${{ parameters.PRNumber }}"
-              $commentId = "$(aiSummaryCommentId)"
-              $isDeferred = ($commentId -eq 'DEFERRED')
+              $reviewId = "$(aiSummaryReviewId)"
+              $isDeferred = ([string]::IsNullOrWhiteSpace($reviewId) -or $reviewId -eq 'DEFERRED')
 
               # Diagnostic logging for Stage 3 debugging
               Write-Host "=== Stage 3 Diagnostics ===" -ForegroundColor Cyan
-              Write-Host "  commentId: '$commentId'"
+              Write-Host "  reviewId: '$reviewId'"
               Write-Host "  isDeferred: $isDeferred"
               Write-Host "  artDir exists: $(Test-Path $artDir)"
               Write-Host "  copilotLogsDir exists: $(Test-Path $copilotLogsDir)"
@@ -1307,16 +1683,16 @@ stages:
                 }
               }
 
-              if ([string]::IsNullOrWhiteSpace($commentId)) {
-                # Reviewer crashed before posting the initial comment. If deep
+              if ([string]::IsNullOrWhiteSpace($reviewId)) {
+                # Reviewer crashed before posting the initial review. If deep
                 # tests produced results, fall back to DEFERRED mode to post
-                # a degraded comment with test results only.
+                # a degraded review with test results only.
                 if (Test-Path $artDir) {
-                  Write-Host "No AI summary comment ID but deep test artifacts exist — falling back to DEFERRED mode"
-                  $commentId = 'DEFERRED'
+                  Write-Host "No AI summary review ID but deep test artifacts exist — falling back to DEFERRED mode"
+                  $reviewId = 'DEFERRED'
                   $isDeferred = $true
                 } else {
-                  Write-Host "No AI summary comment ID and no deep test artifacts — nothing to do"
+                  Write-Host "No AI summary review ID and no deep test artifacts — nothing to do"
                   exit 0
                 }
               }
@@ -1343,6 +1719,7 @@ stages:
 
               # Render the new STEP 3 section.
               $totalPassed = 0; $totalFailed = 0
+              $setupFailureCategories = 0; $setupImpactedTests = 0; $emptyCategories = 0; $appCrashCategories = 0
               $sb = [System.Text.StringBuilder]::new()
               [void]$sb.AppendLine()
               [void]$sb.AppendLine("### 🧪 UI Test Execution Results (deep, platform pool)")
@@ -1350,6 +1727,7 @@ stages:
               [void]$sb.AppendLine("| Category | Tests | Snapshot diffs |")
               [void]$sb.AppendLine("|---|---|---|")
               $perCategoryFailures = [ordered]@{}
+              $perCategorySetupFailures = [ordered]@{}
               foreach ($k in ($byCat.Keys | Sort-Object)) {
                 $b = $byCat[$k]
                 $totalPassed += [int]$b.Passed
@@ -1357,7 +1735,19 @@ stages:
                 $tCount = [int]$b.Total
                 $tPass  = [int]$b.Passed
                 $tFail  = [int]$b.Failed
-                $col = if ($tCount -eq 0) { '—' }
+                $isSetupFailure = ($b.ContainsKey('SetupFailure') -and [bool]$b.SetupFailure)
+                $isAppCrash = ($b.ContainsKey('SetupFailureIsAppCrash') -and [bool]$b.SetupFailureIsAppCrash)
+                if ($isSetupFailure) {
+                  $setupFailureCategories++
+                  $setupImpactedTests += [int]$b.SetupFailureCount
+                  if ($isAppCrash) { $appCrashCategories++ }
+                }
+                if ($tCount -eq 0) {
+                  $emptyCategories++
+                }
+                $col = if ($tCount -eq 0) { '0 tests' }
+                       elseif ($isSetupFailure -and $isAppCrash) { "$tPass/$tCount (app crashed; $tFail couldn't complete)" }
+                       elseif ($isSetupFailure) { "$tPass/$tCount (setup failed; $tFail marked failed)" }
                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
                        else { "$tPass/$tCount ✓" }
                 # Count snapshot-diff PNGs we shipped in this artifact subdir
@@ -1372,6 +1762,16 @@ stages:
                 # Capture failed test entries from the parsed TRX so we can
                 # render a per-category disclosure section listing the actual
                 # failing test names + the first line of their error message.
+                if ($isSetupFailure) {
+                  $perCategorySetupFailures[$k] = [pscustomobject]@{
+                    Count          = [int]$b.SetupFailureCount
+                    Message        = $b.SetupFailureMessage -as [string]
+                    Stack          = $b.SetupFailureStack -as [string]
+                    SignatureCount = [int]$b.SetupFailureSignatureCount
+                    IsAppCrash     = $isAppCrash
+                  }
+                  continue
+                }
                 $catFailed = @()
                 foreach ($r in @($b.Results)) {
                   if ($r.status -eq 'Failed') {
@@ -1384,6 +1784,48 @@ stages:
                 }
                 if ($catFailed.Count -gt 0) {
                   $perCategoryFailures[$k] = $catFailed
+                }
+              }
+
+              # Fixture setup failures usually mark every test in the fixture as
+              # failed even though no individual test body ran. Render one
+              # representative setup error instead of dozens of duplicate tests.
+              if ($perCategorySetupFailures.Count -gt 0) {
+                [void]$sb.AppendLine()
+                foreach ($cat in $perCategorySetupFailures.Keys) {
+                  $info = $perCategorySetupFailures[$cat]
+                  $setupCount = [int]$info.Count
+                  $setupTestText = if ($setupCount -eq 1) { '1 test' } else { "$setupCount tests" }
+                  if ($info.IsAppCrash) {
+                    [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — app crashed mid-run; $setupTestText could not complete</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("The HostApp crashed during this category (a test failed in TearDown with ``investigate as possible crash``); every following ``OneTimeSetUp`` then timed out waiting for the test gallery to reappear. **This can be an emulator/infrastructure flake OR a regression introduced by this PR** — review the screenshots and ``logcat`` in the ``ui-diagnostics`` folder of the artifact before concluding.")
+                  } else {
+                    [void]$sb.AppendLine("<details><summary>⚠️ <code>$cat</code> — fixture setup failed for $setupTestText</summary>")
+                    [void]$sb.AppendLine("<br/>")
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("NUnit reported a `OneTimeSetUp`/fixture setup failure before test bodies ran; the TRX marked each affected test failed.")
+                  }
+                  if ([int]$info.SignatureCount -gt 1) {
+                    [void]$sb.AppendLine()
+                    [void]$sb.AppendLine("_Multiple setup failure signatures were present; showing the first one. See the TRX artifact for all details._")
+                  }
+                  $errText = if (-not [string]::IsNullOrWhiteSpace($info.Message)) { $info.Message.Trim() } else { '' }
+                  $stackText = if (-not [string]::IsNullOrWhiteSpace($info.Stack)) { $info.Stack.Trim() } else { '' }
+                  $combined = $errText
+                  if ($stackText) { $combined = $combined + [Environment]::NewLine + $stackText }
+                  if ($combined.Length -gt 1500) { $combined = $combined.Substring(0, 1500) + [Environment]::NewLine + '...' }
+                  if ($combined) {
+                    [void]$sb.AppendLine()
+                    $fence = [string]::new([char]96, 3)
+                    [void]$sb.AppendLine($fence)
+                    [void]$sb.AppendLine($combined)
+                    [void]$sb.AppendLine($fence)
+                  }
+                  [void]$sb.AppendLine()
+                  [void]$sb.AppendLine("</details>")
+                  [void]$sb.AppendLine()
                 }
               }
 
@@ -1433,8 +1875,50 @@ stages:
               [void]$sb.AppendLine("📎 [Download ``drop-deep-uitests`` artifact (TRX + snapshot diffs)]($artifactUrl)")
               [void]$sb.AppendLine()
 
-              $resultIcon = if ($totalFailed -gt 0) { '❌' } elseif ($totalPassed -gt 0) { '✅' } else { '⏭️' }
-              $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $($byCat.Count) categor$(if ($byCat.Count -eq 1) {'y'} else {'ies'}) on platform-pool agent (replaces in-process counts above)."
+              $categoryText = if ($byCat.Count -eq 1) { '1 category' } else { "$($byCat.Count) categories" }
+              $regularFailed = [Math]::Max(0, $totalFailed - $setupImpactedTests)
+              # A fixture / OneTimeSetUp ("category setup") failure means the tests
+              # could NOT be run — a harness/infra problem on the platform-pool
+              # agent (e.g. "Timed out waiting for Go To Test button" in
+              # NavigateToGallery), NOT the PR failing tests. So the deep verdict is
+              # a real ❌ only when there are REGULAR (non-setup) failures; pure
+              # setup failures are infrastructure-inconclusive (⚠️) so a good PR is
+              # never shown as "all failed".
+              if ($regularFailed -gt 0) {
+                $resultIcon = '❌'
+              } elseif ($setupFailureCategories -gt 0) {
+                $resultIcon = '⚠️'
+              } elseif ($totalPassed -gt 0) {
+                $resultIcon = '✅'
+              } else {
+                $resultIcon = '⏭️'
+              }
+              if ($setupFailureCategories -gt 0) {
+                $setupCategoryText = if ($setupFailureCategories -eq 1) { '1 category' } else { "$setupFailureCategories categories" }
+                $setupImpactedText = if ($setupImpactedTests -eq 1) { '1 test' } else { "$setupImpactedTests tests" }
+                $passNote = if ($totalPassed -gt 0) { "$totalPassed passed; " } else { '' }
+                if ($appCrashCategories -gt 0) {
+                  # The app crashed mid-run. This is genuinely ambiguous between
+                  # an emulator/infra flake and a regression introduced by the
+                  # PR, so NEVER claim "not a PR test failure" here — point the
+                  # reviewer at the diagnostics instead.
+                  if ($regularFailed -eq 0) {
+                    $headerLine = "$resultIcon **Deep UI tests** — ${passNote}the HostApp crashed mid-run, so $setupImpactedText could not complete. An app crash can be an infrastructure flake OR a regression introduced by this PR — review the screenshots + logcat in the ``drop-deep-uitests`` artifact before concluding."
+                  } else {
+                    $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus the HostApp crashed mid-run ($setupImpactedText could not complete — infra flake or possible PR regression; see screenshots + logcat in the artifact)."
+                  }
+                } elseif ($regularFailed -eq 0) {
+                  $headerLine = "$resultIcon **Deep UI tests** — ${passNote}$setupCategoryText ($setupImpactedText) could not run: OneTimeSetUp/fixture setup failure on the platform-pool agent — infrastructure, not a PR test failure (replaces in-process counts above)."
+                } else {
+                  $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $regularFailed failed; plus $setupCategoryText ($setupImpactedText) could not run (fixture/OneTimeSetUp setup failure — infrastructure) across $categoryText on platform-pool agent (replaces in-process counts above)."
+                }
+              } else {
+                $headerLine = "$resultIcon **Deep UI tests** — $totalPassed passed, $totalFailed failed across $categoryText on platform-pool agent (replaces in-process counts above)."
+              }
+              if ($emptyCategories -gt 0) {
+                $emptyText = if ($emptyCategories -eq 1) { '1 category reported 0 tests.' } else { "$emptyCategories categories reported 0 tests." }
+                $headerLine = "$headerLine $emptyText"
+              }
 
               $beginMarker = '<!-- DEEP_UITESTS_BEGIN -->'
               $endMarker   = '<!-- DEEP_UITESTS_END -->'
@@ -1442,19 +1926,14 @@ stages:
               } # end if ($byCat.Count -gt 0)
 
               if ($isDeferred) {
-                # ── DEFERRED MODE: Post full comment with deep results included ──
-                # Guard against duplicate comments on pipeline retry: check if
-                # an AI Summary comment already exists for this PR.
-                $existingComment = gh api "repos/dotnet/maui/issues/$prNumber/comments?per_page=100" --paginate --jq '.[] | select(.body | contains("<!-- AI Summary -->")) | .id' 2>$null | Select-Object -Last 1
-                if ($existingComment) {
-                  Write-Host "Existing AI Summary comment found ($existingComment) — will PATCH instead of creating new"
-                  $commentId = $existingComment
-                  $isDeferred = $false
-                }
+                # Keep deferred mode even if a prior AI Summary exists. The
+                # posting script preserves current-run artifacts, hides stale
+                # generated comments/reviews, then posts a fresh summary review.
+                Write-Host "Deferred AI Summary posting will hide stale generated artifacts before posting"
               }
 
               if ($isDeferred) {
-                # ── DEFERRED MODE (first run): Post full comment ──
+                # ── DEFERRED MODE (first run): Post full review ──
                 # Find the PRAgent content dir from CopilotLogs artifact
                 $prAgentDir = Get-ChildItem -Path $copilotLogsDir -Recurse -Directory -Filter "PRAgent" | Select-Object -First 1
                 if (-not $prAgentDir) {
@@ -1487,7 +1966,7 @@ stages:
                       Write-Host "Replaced in-process results with deep results"
                     }
                   } else {
-                    Write-Host "No deep results — posting review-only comment"
+                    Write-Host "No deep results — posting review-only summary"
                   }
 
                   # Copy PRAgent dir to expected location for post-ai-summary-comment.ps1
@@ -1495,13 +1974,17 @@ stages:
                   New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetDir) | Out-Null
                   Copy-Item -Path $prAgentDir.FullName -Destination $targetDir -Recurse -Force
 
-                  # Post the full comment
+                  # Post the full review. Pass the trusted gate verdict (Gate task output var)
+                  # so the APPROVE veto keys off it, not the agent-writable gate-result.txt. An
+                  # empty value (ReviewPR crashed before the gate) is the non-blocking sentinel.
                   $postScript = ".github/scripts/post-ai-summary-comment.ps1"
                   if (Test-Path $postScript) {
-                    Write-Host "Posting full AI summary comment with deep results..."
-                    $output = & $postScript -PRNumber $prNumber
+                    Write-Host "Posting full AI summary review with deep results..."
+                    $trustedGate = "$(trustedGateResult)"
+                    Write-Host "Trusted gate verdict for veto: '$trustedGate'"
+                    $output = & $postScript -PRNumber $prNumber -TrustedGateResult $trustedGate
                     $output | ForEach-Object { Write-Host $_ }
-                    Write-Host "✅ Full AI summary comment posted with deep results"
+                    Write-Host "✅ Full AI summary review posted with deep results"
                   }
 
                   # Apply labels
@@ -1517,14 +2000,14 @@ stages:
                   }
                 }
               } else {
-                # ── PATCH MODE: Update existing comment with deep results ──
+                # ── PATCH MODE: Update existing review with deep results ──
                 if (-not $deepBlock) {
-                  Write-Host "No deep results and comment already exists — nothing to patch"
+                  Write-Host "No deep results and review already exists — nothing to patch"
                   exit 0
                 }
-                $existing = (gh api "repos/dotnet/maui/issues/comments/$commentId" --jq '.body') -join [Environment]::NewLine
+                $existing = (gh api "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --jq '.body') -join [Environment]::NewLine
                 if ([string]::IsNullOrWhiteSpace($existing)) {
-                  Write-Host "Could not fetch comment body — aborting"
+                  Write-Host "Could not fetch review body — aborting"
                   exit 0
                 }
 
@@ -1550,9 +2033,184 @@ stages:
 
                 $tmp = New-TemporaryFile
                 @{ body = $newBody } | ConvertTo-Json -Depth 4 -Compress | Set-Content $tmp -Encoding UTF8
-                gh api -X PATCH "repos/dotnet/maui/issues/comments/$commentId" --input $tmp.FullName | Out-Null
-                Write-Host "✅ Patched comment $commentId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
+                gh api -X PATCH "repos/dotnet/maui/pulls/$prNumber/reviews/$reviewId" --input $tmp.FullName | Out-Null
+                Write-Host "✅ Patched review $reviewId with deep UI test results ($totalPassed/$($totalPassed + $totalFailed))"
               }
-            displayName: 'Post AI summary comment'
+            displayName: 'Post AI summary review'
             env:
               GH_TOKEN: $(GH_COMMENT_TOKEN)
+
+
+  - stage: CleanupReviewLock
+    displayName: 'Cleanup review lock'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    jobs:
+      - job: CleanupReviewLock
+        displayName: 'Remove PR review in-progress label'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 5
+        steps:
+          - bash: |
+              set -euo pipefail
+
+              PR_NUM="${PARAM_PR_NUMBER}"
+              if ! [[ "${PR_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+                echo "Skipping lock cleanup; invalid PR number: '${PR_NUM}'"
+                exit 0
+              fi
+
+              echo "Removing s/agent-review-in-progress from PR #${PR_NUM} if present..."
+              gh api \
+                --method DELETE \
+                "repos/dotnet/maui/issues/${PR_NUM}/labels/s%2Fagent-review-in-progress" >/dev/null 2>&1 || true
+            displayName: 'Remove in-progress label'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+
+  - stage: AnalyzeCopilotTokenUsage
+    displayName: 'Analyze Copilot token usage'
+    dependsOn:
+      - ReviewPR
+      - RunDeepUITests
+      - UpdateAISummaryComment
+    condition: always()
+    variables:
+      reviewPrResult: $[ dependencies.ReviewPR.result ]
+      runDeepUITestsResult: $[ dependencies.RunDeepUITests.result ]
+      updateAISummaryCommentResult: $[ dependencies.UpdateAISummaryComment.result ]
+    jobs:
+      - job: AnalyzeTokenUsage
+        displayName: 'Publish Copilot token usage artifact'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 10
+        steps:
+          - checkout: self
+            persistCredentials: false
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download CopilotLogs'
+            inputs:
+              buildType: 'current'
+              artifactName: 'CopilotLogs'
+              targetPath: '$(Pipeline.Workspace)/CopilotLogs'
+            continueOnError: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $inputRoot = "$(Pipeline.Workspace)/CopilotLogs"
+              $outputDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
+              $script = ".github/scripts/shared/Aggregate-CopilotTokenUsage.ps1"
+              if (-not (Test-Path $script)) { throw "$script missing" }
+
+              & $script `
+                -InputRoot $inputRoot `
+                -OutputDir $outputDir `
+                -PRNumber "${{ parameters.PRNumber }}" `
+                -ExpectedStages @(
+                  'ReviewPR',
+                  'RunDeepUITests',
+                  'UpdateAISummaryComment',
+                  'AnalyzeCopilotTokenUsage'
+                )
+            displayName: 'Aggregate Copilot token usage'
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish CopilotTokenUsage'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-token-usage'
+              artifact: 'CopilotTokenUsage'
+              publishLocation: 'pipeline'
+            condition: always()
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+
+              if ([string]::IsNullOrWhiteSpace($env:VIGILANT_GUIDE_DISPATCH_TOKEN)) {
+                Write-Host "##[warning]Agent statistics dispatch token is not configured; skipping update dispatch."
+                exit 0
+              }
+
+              $summaryPath = Join-Path "${env:BUILD_ARTIFACTSTAGINGDIRECTORY}/copilot-token-usage" "token-usage-summary.json"
+              if (-not (Test-Path $summaryPath)) {
+                Write-Host "##[warning]Copilot token usage summary was not produced at $summaryPath; skipping agent statistics dispatch."
+                exit 0
+              }
+
+              $summary = Get-Content -Path $summaryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+              $stageResults = [ordered]@{
+                ReviewPR               = "${env:REVIEW_PR_RESULT}"
+                RunDeepUITests         = "${env:RUN_DEEP_UI_TESTS_RESULT}"
+                UpdateAISummaryComment = "${env:UPDATE_AI_SUMMARY_COMMENT_RESULT}"
+                AnalyzeCopilotTokenUsage = "${env:AGENT_JOB_STATUS}"
+              }
+
+              $pipelineResult = 'succeeded'
+              if ($stageResults.Values -contains 'Failed') {
+                $pipelineResult = 'failed'
+              } elseif ($stageResults.Values -contains 'SucceededWithIssues') {
+                $pipelineResult = 'partiallySucceeded'
+              }
+
+              $payload = [ordered]@{
+                event_type = 'maui-copilot-token-usage'
+                client_payload = [ordered]@{
+                  schemaVersion = 1
+                  build = [ordered]@{
+                    id            = "${env:BUILD_BUILD_ID}"
+                    number        = "${env:BUILD_BUILD_NUMBER}"
+                    url           = "${env:SYSTEM_COLLECTION_URI}${env:SYSTEM_TEAM_PROJECT}/_build/results?buildId=${env:BUILD_BUILD_ID}"
+                    sourceBranch  = "${env:BUILD_SOURCE_BRANCH}"
+                    sourceVersion = "${env:BUILD_SOURCE_VERSION}"
+                    requestedFor  = "${env:BUILD_REQUESTED_FOR}"
+                    prNumber      = "${{ parameters.PRNumber }}"
+                    platform      = "${{ parameters.Platform }}"
+                    result        = $pipelineResult
+                    stageResults  = $stageResults
+                  }
+                  summary = $summary
+                }
+              }
+
+              $headers = @{
+                Authorization = "Bearer $env:VIGILANT_GUIDE_DISPATCH_TOKEN"
+                Accept = 'application/vnd.github+json'
+                'X-GitHub-Api-Version' = '2022-11-28'
+              }
+              $body = $payload | ConvertTo-Json -Depth 100 -Compress
+              Invoke-RestMethod `
+                -Method Post `
+                -Uri 'https://api.github.com/repos/dotnet/maui-vigilant-guide/dispatches' `
+                -Headers $headers `
+                -ContentType 'application/json' `
+                -Body $body | Out-Null
+
+              Write-Host "Dispatched Copilot token usage summary to dotnet/maui-vigilant-guide for build ${env:BUILD_BUILD_ID}."
+            displayName: 'Dispatch agent statistics update'
+            condition: always()
+            continueOnError: true
+            env:
+              VIGILANT_GUIDE_DISPATCH_TOKEN: $(VIGILANT_GUIDE_DISPATCH_TOKEN)
+              # Pass AzDO macros via env (runtime data) rather than inlining $(...) into the
+              # pwsh script, where a value containing a quote, $(...) or backtick could break
+              # out of the string literal and execute in a step holding the dispatch token.
+              BUILD_ARTIFACTSTAGINGDIRECTORY: $(Build.ArtifactStagingDirectory)
+              REVIEW_PR_RESULT: $(reviewPrResult)
+              RUN_DEEP_UI_TESTS_RESULT: $(runDeepUITestsResult)
+              UPDATE_AI_SUMMARY_COMMENT_RESULT: $(updateAISummaryCommentResult)
+              AGENT_JOB_STATUS: $(Agent.JobStatus)
+              BUILD_BUILD_ID: $(Build.BuildId)
+              BUILD_BUILD_NUMBER: $(Build.BuildNumber)
+              SYSTEM_COLLECTION_URI: $(System.CollectionUri)
+              SYSTEM_TEAM_PROJECT: $(System.TeamProject)
+              BUILD_SOURCE_BRANCH: $(Build.SourceBranch)
+              BUILD_SOURCE_VERSION: $(Build.SourceVersion)
+              BUILD_REQUESTED_FOR: $(Build.RequestedFor)

@@ -51,14 +51,14 @@ public partial class WebViewOptionsPage : ContentPage
 	{
 		_viewModel.Source = new UrlWebViewSource
 		{
-			Url = "https://www.microsoft.com"
+			Url = "https://www.example.com"
 		};
 	}
 	private void OnGithubUrlClicked(object sender, EventArgs e)
 	{
 		_viewModel.Source = new UrlWebViewSource
 		{
-			Url = "https://github.com/dotnet/maui"
+			Url = "https://www.example.com"
 		};
 	}
 	private void LoadMultiplePages_Clicked(object sender, EventArgs e)
@@ -88,8 +88,8 @@ public partial class WebViewOptionsPage : ContentPage
     <body>
         <h1>Welcome to Page 1</h1>
         <p>This is the first page.</p>
-        <p><a href='https://dotnet.microsoft.com'>Go to Page 2 (Microsoft)</a></p>
-        <p><a href='https://github.com/dotnet/maui'>Go to Page 3 (GitHub)</a></p>
+        <p><a href='https://www.example.com'>Go to Page 2 (Microsoft)</a></p>
+        <p><a href='https://www.example.com'>Go to Page 3 (GitHub)</a></p>
     </body>
     </html>"
 		};

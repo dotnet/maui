@@ -131,11 +131,24 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				case DragAction.Ended:
 					{
-						_currentCustomLocalStateData = null;
-						if (dragSourceElement is View vSource)
-						{
-							HandleDropCompleted(vSource, new PlatformDropCompletedEventArgs(v, e));
-						}
+							// DragAction.Ended may be raised by a non-source view on Android.
+							// Always target the actual drag source recognizer, but only once per drag.
+							if (dragSourceElement is View vSource && !localStateData.DropCompletedSent)
+							{
+								HandleDropCompleted(vSource, new PlatformDropCompletedEventArgs(v, e));
+								localStateData.DropCompletedSent = true;
+							}
+
+							// Unregister temporary source listener when the source view receives Ended.
+							if (dragSourceElement is View sourceView && GetView() == sourceView)
+							{
+								if (!HasAnyDropGestures())
+								{
+									GetControl()?.SetOnDragListener(null);
+								}
+							}
+
+							_currentCustomLocalStateData = null;
 					}
 					break;
 				case DragAction.Started:
@@ -348,6 +361,14 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 					dragFlags = 256 | 1; // use the value of enums since the enums are not supported here
 
+				// Register as OnDragListener BEFORE starting the drag so that this view receives
+				// DragAction.Ended and can fire DropCompleted. Only needed for drag-source-only
+				// views (no DropGestureRecognizer) since drop targets are already registered via
+				// SetupHandlerForDrop. Registering here (not in SetupHandlerForDrop) ensures
+				// sibling labels don't intercept drop events intended for the parent drop target.
+				if (!HasAnyDropGestures())
+					GetControl()?.SetOnDragListener(this);
+
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
 				else
@@ -382,6 +403,7 @@ namespace Microsoft.Maui.Controls.Platform
 			public DataPackage DataPackage { get; set; }
 			public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
 			public VisualElement SourceElement { get; set; }
+			public bool DropCompletedSent { get; set; }
 		}
 	}
 }

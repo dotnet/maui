@@ -11,10 +11,10 @@
          linked-issue label match).
       4. Pulls each fix PR's diff and collects lines it ADDED to that same file.
       5. Compares (whitespace-insensitive). If a removed line equals a line a fix PR
-         added → 🔴 REVERT. Same file but no line match → 🟡 OVERLAP. Otherwise → 🟢 CLEAN.
+         added → ● REVERT. Same file but no line match → ● OVERLAP. Otherwise → ● CLEAN.
 
     Outputs (when -OutputDir is provided):
-      - content.md       Markdown summary suitable for the wall-of-text PR comment.
+      - content.md       Markdown summary suitable for the wall-of-text PR review.
       - risks.json       Structured findings for downstream agents.
       - result.txt       One token: CLEAN | OVERLAP | REVERT (used by Review-PR.ps1
                          for branching).
@@ -340,10 +340,10 @@ if (-not $FilePaths -or $FilePaths.Count -eq 0) {
 }
 
 if ($FilePaths.Count -eq 0) {
-    Write-Host "🟢 No implementation files to check." -ForegroundColor Green
+    Write-Host "● No implementation files to check." -ForegroundColor Green
     if ($OutputDir) {
         New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
-        "🟢 No implementation files modified — skipping regression cross-reference." |
+        "● No implementation files modified — skipping regression cross-reference." |
             Set-Content (Join-Path $OutputDir "content.md") -Encoding UTF8
         '{ "pr_number": ' + $PRNumber + ', "result": "CLEAN", "risks": [] }' |
             Set-Content (Join-Path $OutputDir "risks.json") -Encoding UTF8
@@ -433,7 +433,7 @@ foreach ($filePath in $FilePaths) {
         $commitLog = git log --oneline --follow --since="$sinceDate" --all -- $filePath 2>$null
     }
     if (-not $commitLog) {
-        Write-Host "  🟢 No recent commits." -ForegroundColor Green
+        Write-Host "  ● No recent commits." -ForegroundColor Green
         continue
     }
 
@@ -450,7 +450,7 @@ foreach ($filePath in $FilePaths) {
     }
 
     if ($recentPRs.Count -eq 0) {
-        Write-Host "  🟢 No recent PRs reference this file." -ForegroundColor Green
+        Write-Host "  ● No recent PRs reference this file." -ForegroundColor Green
         continue
     }
 
@@ -554,7 +554,7 @@ foreach ($filePath in $FilePaths) {
         $revertedArr  = $reverted.ToArray()
 
         if ($revertCount -gt 0) {
-            Write-Host "    🔴 REVERT — $revertCount line(s) from #$recentPR being removed" -ForegroundColor Red
+            Write-Host "    ● REVERT — $revertCount line(s) from #$recentPR being removed" -ForegroundColor Red
             foreach ($rl in $reverted) { Write-Host "      - $($rl.Text.Trim())" -ForegroundColor Red }
             $riskEntry = [PSCustomObject]@{
                 File          = $filePath
@@ -650,7 +650,7 @@ $result   = if ($reverts.Count -gt 0) { 'REVERT' }
 
 switch ($result) {
     'REVERT' {
-        Write-Host "🔴 REVERT RISKS: $($reverts.Count)" -ForegroundColor Red
+        Write-Host "● REVERT RISKS: $($reverts.Count)" -ForegroundColor Red
         foreach ($r in $reverts) {
             Write-Host ""
             Write-Host "  File:         $($r.File)" -ForegroundColor Red
@@ -666,13 +666,13 @@ switch ($result) {
         }
     }
     'OVERLAP' {
-        Write-Host "🟡 OVERLAPS: $($overlaps.Count) (lower risk — same files, different lines)" -ForegroundColor Yellow
+        Write-Host "● OVERLAPS: $($overlaps.Count) (lower risk — same files, different lines)" -ForegroundColor Yellow
         foreach ($o in $overlaps) {
             Write-Host "  $($o.File) — fix PR #$($o.RecentPR) ($($o.FixedIssues))" -ForegroundColor Yellow
         }
     }
     'CLEAN' {
-        Write-Host "🟢 No regression risks detected." -ForegroundColor Green
+        Write-Host "● No regression risks detected." -ForegroundColor Green
     }
 }
 
@@ -726,20 +726,20 @@ if ($OutputDir) {
     } | ConvertTo-Json -Depth 6
     $payload | Set-Content (Join-Path $OutputDir 'risks.json') -Encoding UTF8
 
-    # content.md — markdown summary for the wall-of-text PR comment
+    # content.md — markdown summary for the wall-of-text PR review
     $md = New-Object System.Text.StringBuilder
     [void]$md.AppendLine("## 🔍 Regression Cross-Reference")
     [void]$md.AppendLine()
     switch ($result) {
         'REVERT' {
-            [void]$md.AppendLine("🔴 **Revert risks detected** — this PR removes $($reverts.Count) line(s) previously added by labeled bug-fix PRs.")
+            [void]$md.AppendLine("✗ **Revert risks detected** — this PR removes $($reverts.Count) line(s) previously added by labeled bug-fix PRs.")
             [void]$md.AppendLine()
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) | Risk | Reverted line |")
             [void]$md.AppendLine("|---|---|---|---|---|")
             foreach ($r in $reverts) {
                 $sample = @($r.RevertedLines) | Select-Object -First 1 | ForEach-Object { $_.Text.Trim() }
                 $sampleEsc = ($sample -replace '\|', '\|')
-                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | 🔴 REVERT | ``$sampleEsc`` |")
+                [void]$md.AppendLine("| ``$($r.File)`` | #$($r.RecentPR) | $($r.FixedIssues) | ✗ REVERT | ``$sampleEsc`` |")
             }
             $allIssues = @($reverts | ForEach-Object { $_.FixedIssues -split ',\s*' } |
                 Where-Object { $_ } | Select-Object -Unique | Sort-Object)
@@ -767,7 +767,7 @@ if ($OutputDir) {
             }
         }
         'OVERLAP' {
-            [void]$md.AppendLine("🟡 **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected.")
+            [void]$md.AppendLine("⚠ **Overlaps with prior bug-fix PRs** — same files modified, but no exact line revert detected.")
             [void]$md.AppendLine()
             [void]$md.AppendLine("| File | Fix PR | Fixed issue(s) |")
             [void]$md.AppendLine("|---|---|---|")
@@ -794,7 +794,7 @@ if ($OutputDir) {
             }
         }
         'CLEAN' {
-            [void]$md.AppendLine("🟢 No regression risks detected. No labeled bug-fix PRs in the last $MonthsBack months touched the modified files.")
+            [void]$md.AppendLine("● No regression risks detected. No labeled bug-fix PRs in the last $MonthsBack months touched the modified files.")
         }
     }
     $md.ToString() | Set-Content (Join-Path $OutputDir 'content.md') -Encoding UTF8
@@ -806,7 +806,7 @@ if ($OutputDir) {
         foreach ($r in $reverts) {
             foreach ($rl in @($r.RevertedLines)) {
                 $prUrl = "https://github.com/$Repo/pull/$($r.RecentPR)"
-                $body = "🔴 **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $($r.FixedIssues). Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
+                $body = "● **Regression risk** — this line was added by [#$($r.RecentPR)]($prUrl) to fix $($r.FixedIssues). Removing it may re-introduce the original bug. Please confirm this removal is intentional and that the previously-fixed issue is covered by another mechanism."
                 $inline += @{
                     path = $r.File
                     line = $rl.Line

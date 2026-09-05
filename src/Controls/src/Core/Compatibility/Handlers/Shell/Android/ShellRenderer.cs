@@ -6,6 +6,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.Platform;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.ApplicationModel;
@@ -95,7 +96,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public static Color DefaultBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#FEF7FF") : Color.FromArgb("#2c3e50"), RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#141218") : Color.FromArgb("#1B3147"));
 		public static Color DefaultForegroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.Black, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
 		public static Color DefaultTitleColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#E6E0E9") : Colors.White);
-		public static readonly Color DefaultUnselectedColor = Color.FromRgba(255, 255, 255, 180);
+		public static Color DefaultUnselectedColor => ResolveThemeColor(
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#49454F") : Color.FromRgba(255, 255, 255, 180),
+			RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#CAC4D0") : Color.FromRgba(255, 255, 255, 180));
 		internal static Color DefaultBottomNavigationViewBackgroundColor => ResolveThemeColor(RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#F3EDF7") : Colors.White, RuntimeFeature.IsMaterial3Enabled ? Color.FromArgb("#1D1B20") : Color.FromArgb("#1B3147"));
 		internal static bool IsDarkTheme => Application.Current?.RequestedTheme == AppTheme.Dark;
 
@@ -216,6 +219,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void SwitchFragment(FragmentManager manager, AView targetView, ShellItem newItem, bool animate = true)
 		{
+			if (animate && newItem?.CurrentItem?.CurrentItem is IShellContentController shellContent)
+			{
+				bool? isNavBarVisible = null;
+
+				if (shellContent is BindableObject bindable &&
+					bindable.IsSet(Shell.NavBarIsVisibleProperty))
+				{
+					isNavBarVisible = Shell.GetNavBarIsVisible(bindable);
+				}
+
+				if (isNavBarVisible == null)
+				{
+					var destinationPage = shellContent.GetOrCreateContent();
+
+					if (destinationPage != null)
+						isNavBarVisible = Shell.GetNavBarIsVisible(destinationPage);
+				}
+
+				if (isNavBarVisible == false)
+				{
+					var rootView = _flyoutView?.AndroidView;
+
+					if (rootView != null && rootView.IsSoftInputShowing())
+					{
+						rootView.HideSoftInput();
+					}
+				}
+			}
+
 			var previousView = _currentView;
 			_currentView = CreateShellItemRenderer(newItem);
 			_currentView.ShellItem = newItem;

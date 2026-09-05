@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
+		IElementDefinition _viewResource;
 
 		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
 		internal NSIndexPath IndexPath { get; set; }
@@ -18,6 +20,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal UIContainerCell(string cellId, View view, Shell shell, object context) : base(UITableViewCellStyle.Default, cellId)
 		{
 			View = view;
+			_viewResource = view as IElementDefinition;
+			_viewResource?.AddResourcesChangedListener(OnResourcesChanged);
 			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
@@ -75,6 +79,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			ViewMeasureInvalidated = null;
 			View.MeasureInvalidated -= MeasureInvalidated;
+			_viewResource?.RemoveResourcesChangedListener(OnResourcesChanged);
+			_viewResource = null;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
@@ -101,7 +107,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (value == _bindingContext)
+				{
 					return;
+				}
 
 				if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 					baseShell.PropertyChanged -= OnElementPropertyChanged;
@@ -129,21 +137,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateVisualState()
 		{
-			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
+			if (BindingContext is BaseShellItem bsi)
 			{
-				if (baseShellItem.IsChecked)
-					VisualStateManager.GoToState(View, "Selected");
-				else
-					VisualStateManager.GoToState(View, "Normal");
+				VisualStateManager.GoToState(View, bsi.IsChecked ? "Selected" : "Normal", force: true);
 			}
 		}
 
 		void OnElementPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == BaseShellItem.IsCheckedProperty.PropertyName)
-			{
 				UpdateVisualState();
-			}
+		}
+
+		void OnResourcesChanged(object sender, ResourcesChangedEventArgs e)
+		{
+			UpdateVisualState();
 		}
 	}
 }
