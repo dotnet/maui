@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -104,12 +105,28 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
-#if TEST_FAILS_ON_ANDROID && TESTS_FAILS_ON_WINDOWS && TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
 			SetupBuilder();
 
+			var weakReferences = await CreateAndTeardownCollectionViewWithItemsSourceAsync();
+
+			await AssertionExtensions.WaitForGC([.. weakReferences]);
+		}
+
+		// Extracted into its own non-inlineable method so the entire stack frame - including the
+		// async state machine's hoisted locals and the lambda's closure (labels, collectionView,
+		// navPage, logicalChildren, data, etc.) - is guaranteed to be torn down when this method
+		// returns. Keeping this setup/teardown logic inline in the test method risks the JIT
+		// leaving stale references to these objects live in the shared frame/registers past their
+		// last real use, which makes WaitForGC's outcome sensitive to unrelated code changes
+		// elsewhere in the method (e.g. adding/removing statements can shift whether those slots
+		// get reused in time). See MemoryTests.CreateAndDisconnectShapeWithReplacedPoints for the
+		// same pattern.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		async Task<List<WeakReference>> CreateAndTeardownCollectionViewWithItemsSourceAsync()
+		{
 			var weakReferences = new List<WeakReference>();
 
 			var labels = new List<Label>();
@@ -161,13 +178,11 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.PopAsync();
 			});
 
-
 			Assert.NotNull(logicalChildren);
 			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 
-			await AssertionExtensions.WaitForGC([.. weakReferences]);
+			return weakReferences;
 		}
-#endif
 
 		[Fact(
 #if IOS || MACCATALYST || WINDOWS

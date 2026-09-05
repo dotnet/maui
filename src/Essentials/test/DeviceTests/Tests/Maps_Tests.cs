@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices.Sensors;
 using Xunit;
+#if IOS || MACCATALYST
+using MapKit;
+#endif
 
 namespace Microsoft.Maui.Essentials.DeviceTests
 {
@@ -33,6 +36,32 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			};
 			await Map.OpenAsync(placemark, new MapLaunchOptions { Name = mapName }).ConfigureAwait(false);
 		}
+
+#if IOS || MACCATALYST
+		[Theory]
+		[InlineData(NavigationMode.None, MKDirectionsMode.Default)]
+		[InlineData(NavigationMode.Default, MKDirectionsMode.Default)]
+		[InlineData(NavigationMode.Bicycling, MKDirectionsMode.Cycling)]
+		[InlineData(NavigationMode.Driving, MKDirectionsMode.Driving)]
+		[InlineData(NavigationMode.Transit, MKDirectionsMode.Transit)]
+		[InlineData(NavigationMode.Walking, MKDirectionsMode.Walking)]
+		public void NavigationModeUsesExpectedDirectionsMode(NavigationMode navigationMode, MKDirectionsMode expected) =>
+			Assert.Equal(expected, MapImplementation.GetDirectionsMode(navigationMode, isCyclingAvailable: true));
+
+		[Fact]
+		public void BicyclingNavigationModeUsesExpectedDirectionsMode()
+		{
+			var expected = OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(14)
+				? MKDirectionsMode.Cycling
+				: MKDirectionsMode.Default;
+
+			Assert.Equal(expected, MapImplementation.GetDirectionsMode(NavigationMode.Bicycling));
+		}
+
+		[Fact]
+		public void BicyclingNavigationModeFallsBackWhenCyclingIsUnavailable() =>
+			Assert.Equal(MKDirectionsMode.Default, MapImplementation.GetDirectionsMode(NavigationMode.Bicycling, isCyclingAvailable: false));
+#endif
 
 		[Fact]
 		public async Task LaunchMap_NullLocation()
