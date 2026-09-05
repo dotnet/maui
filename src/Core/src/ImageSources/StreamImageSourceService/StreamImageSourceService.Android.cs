@@ -19,30 +19,22 @@ namespace Microsoft.Maui
 
 			if (!streamImageSource.IsEmpty)
 			{
-				Stream? stream = null;
 				try
 				{
-					stream = await streamImageSource.GetStreamAsync(cancellationToken);
+					byte[] bytes;
+					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken))
+						bytes = await GetStreamBytesAsync(stream, cancellationToken);
 
 					var callback = new ImageLoaderCallback();
 
-					PlatformInterop.LoadImageFromStream(imageView, stream, callback);
+					PlatformInterop.LoadImageFromBytes(imageView, bytes, callback);
 
-					var result = await callback.Result;
-
-					stream?.Dispose();
-
-					return result;
+					return await callback.Result;
 				}
 				catch (Exception ex)
 				{
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
-				}
-				finally
-				{
-					if (stream != null)
-						GC.KeepAlive(stream);
 				}
 			}
 
@@ -55,35 +47,33 @@ namespace Microsoft.Maui
 
 			if (!streamImageSource.IsEmpty)
 			{
-				Stream? stream = null;
-
 				try
 				{
-					stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					byte[] bytes;
+					using (var stream = await streamImageSource.GetStreamAsync(cancellationToken).ConfigureAwait(false))
+						bytes = await GetStreamBytesAsync(stream, cancellationToken).ConfigureAwait(false);
 
 					var drawableCallback = new ImageLoaderResultCallback();
 
-					PlatformInterop.LoadImageFromStream(context, stream, drawableCallback);
+					PlatformInterop.LoadImageFromBytes(context, bytes, drawableCallback);
 
-					var result = await drawableCallback.Result.ConfigureAwait(false);
-
-					stream?.Dispose();
-
-					return result;
+					return await drawableCallback.Result.ConfigureAwait(false);
 				}
 				catch (Exception ex)
 				{
 					Logger?.LogWarning(ex, "Unable to load image stream.");
 					throw;
 				}
-				finally
-				{
-					if (stream != null)
-						GC.KeepAlive(stream);
-				}
 			}
 
 			return null;
+		}
+
+		static async Task<byte[]> GetStreamBytesAsync(Stream stream, CancellationToken cancellationToken)
+		{
+			using var memoryStream = new MemoryStream();
+			await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+			return memoryStream.ToArray();
 		}
 	}
 }
