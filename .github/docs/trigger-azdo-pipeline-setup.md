@@ -170,7 +170,26 @@ In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions*
 
 ## Step 5: Create the GitHub Actions Workflow
 
-See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for a ready-to-use workflow.
+See [`.github/workflows/review-trigger.yml`](../workflows/review-trigger.yml) for the
+pull request review trigger and [`.github/workflows/fix-trigger.yml`](../workflows/fix-trigger.yml)
+for the issue replication trigger.
+
+### Issue replication command
+
+Maintainers with write, maintain, or admin permission can queue issue replication by
+commenting on an open issue:
+
+```text
+/fix -b <pipeline-branch>
+```
+
+`--branch <pipeline-branch>` is also accepted. The branch is required and selects the
+`dotnet/maui` repository ref used by Azure Pipelines, not a git base for the trigger
+workflow. The selected ref must exist and must expose the replicate-mode parameter
+contract (`Mode`, `IssueNumber`, `PRNumber`, and `Platform`) used by pipeline 27723.
+Use the implementation branch while replicate mode is under development, then use
+`main` after that support merges. The trigger never silently defaults the ref to
+`main`.
 
 ## How It Works (Token Flow)
 
