@@ -13,12 +13,20 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	{
 	}
 
+	void OpenDatePickerDialog()
+	{
+		App.WaitForElement("DatePickerControl");
+		var endIcon = AppiumQuery.ById("text_input_end_icon");
+		App.WaitForElement(endIcon);
+		App.Tap(endIcon);
+	}
+
 	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		// Snapshot the resting outlined field (dialog dismissed via OK); the platform Material dialog is intentionally not captured (platform component, non-deterministic).
+		OpenDatePickerDialog();
 		App.WaitForElement("OK");
 		App.Tap("OK");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
@@ -28,8 +36,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_ModifyOldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
@@ -40,14 +47,12 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_OldDateAndNewDate_VerifyVisualState()
 	{
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("26");
 		App.Tap("26");
 		App.WaitForElement("OK");
 		App.Tap("OK");
-		App.WaitForElement("DatePickerControl");
-		App.Tap("DatePickerControl");
+		OpenDatePickerDialog();
 		App.WaitForElement("28");
 		App.Tap("28");
 		App.WaitForElement("Cancel");
@@ -425,6 +430,22 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 		App.WaitForElement("CultureFormatLabel");
 		App.Tap("CultureFormatLabel");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.Material3)]
+	public void Material3DatePicker_TapTextArea_DoesNotOpenDialog()
+	{
+		App.WaitForElement("DatePickerControl");
+		// Material3 opens the dialog only via the trailing calendar icon; tapping the text area must not open it.
+		App.Tap("DatePickerControl");
+		// Bounded wait: the dialog must NOT appear within its normal inflation window.
+		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
+
+		// Positive control: the trailing icon DOES open the dialog, proving the field is interactive.
+		OpenDatePickerDialog();
+		App.WaitForElement("OK");
+		App.Tap("Cancel");
 	}
 }
 #endif

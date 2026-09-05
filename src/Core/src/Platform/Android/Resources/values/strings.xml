@@ -2,4 +2,6 @@
 <resources>
   <string name="indicator_item_accessible_description">Item %1$d of %2$d</string>
   <string name="indicator_item_accessible_description_selected">Item %1$d of %2$d, selected</string>
+  <string name="maui_date_picker_open">Open Date Picker</string>
+  <string name="maui_time_picker_open">Open Time Picker</string>
 </resources>
