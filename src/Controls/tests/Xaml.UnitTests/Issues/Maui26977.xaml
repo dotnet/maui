@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui26977">
+    <ContentPage.ControlTemplate>
+        <ControlTemplate>
+            <ContentPresenter />
+        </ControlTemplate>
+    </ContentPage.ControlTemplate>
+    <VerticalStackLayout x:Name="RootStackLayout">
+        <Label x:Name="TargetLabel" />
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="Group1">
+                    <VisualState x:Name="State1">
+                        <VisualState.Setters>
+                            <Setter TargetName="TargetLabel" Property="Label.Text" Value="State1Text" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="State2">
+                        <VisualState.Setters>
+                            <Setter TargetName="TargetLabel" Property="Label.Text" Value="State2Text" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </VisualStateManager.VisualStateGroups>
+    </VerticalStackLayout>
+</ContentPage>

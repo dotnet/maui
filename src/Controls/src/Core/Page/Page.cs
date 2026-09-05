@@ -50,14 +50,14 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
-		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), false);
+		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create(nameof(IgnoresContainerArea), typeof(bool), typeof(Page), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
-		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
+		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), BooleanBoxes.FalseBox, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
-			set { SetValue(IsBusyProperty, value); }
+			set { SetValue(IsBusyProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Controls
 		public bool IgnoresContainerArea
 		{
 			get { return (bool)GetValue(IgnoresContainerAreaProperty); }
-			set { SetValue(IgnoresContainerAreaProperty, value); }
+			set { SetValue(IgnoresContainerAreaProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -276,6 +276,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		// Base Page uses legacy IgnoreSafeArea behavior, not the SafeAreaEdges property.
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => false;
+
 		/// <summary>
 		/// Raised when the children of this page, and thus potentially the layout, have changed.
 		/// </summary>
@@ -323,10 +327,32 @@ namespace Microsoft.Maui.Controls
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
 
 			args.FlowDirection = flowDirection;
+
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestActionSheet(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayActionSheetAsync: Window is null, action sheet will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(cancel);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestActionSheet(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestActionSheet(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestActionSheet(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayActionSheetAsync: Window is null, action sheet will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(cancel);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
@@ -384,10 +410,31 @@ namespace Microsoft.Maui.Controls
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
 
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestAlert(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayAlertAsync: Window is null, alert will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(false);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestAlert(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestAlert(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestAlert(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayAlertAsync: Window is null, alert will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(false);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
@@ -408,10 +455,31 @@ namespace Microsoft.Maui.Controls
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 
+			var window = Window;
 			if (IsPlatformEnabled)
-				Window.AlertManager.RequestPrompt(this, args);
+			{
+				if (window is null)
+				{
+					Trace.WriteLine("DisplayPromptAsync: Window is null, prompt will not be shown. This can happen if the page is not attached to a window.");
+					args.SetResult(null);
+					return args.Result.Task;
+				}
+				window.AlertManager.RequestPrompt(this, args);
+			}
 			else
-				_pendingActions.Add(() => Window.AlertManager.RequestPrompt(this, args));
+			{
+				_pendingActions.Add(() =>
+				{
+					var w = Window;
+					if (w is not null)
+						w.AlertManager.RequestPrompt(this, args);
+					else
+					{
+						Trace.WriteLine("DisplayPromptAsync: Window is null, prompt will not be shown. This can happen if the page is not attached to a window.");
+						args.SetResult(null);
+					}
+				});
+			}
 
 			return args.Result.Task;
 		}
@@ -635,6 +703,15 @@ namespace Microsoft.Maui.Controls
 			OnAppearing();
 			Appearing?.Invoke(this, EventArgs.Empty);
 
+			// Refresh Enabled on the predictive back callback so the animation preview reflects the new state.
+			// Guard with Window.Page check so only the outermost SendAppearing in a recursive chain fires
+			// once, avoiding redundant re-walks in deep hierarchies (e.g. Window → Shell → NavigationPage → ContentPage).
+			var mauiWindow = this.Window as Window;
+			if (mauiWindow?.Page == this)
+			{
+				mauiWindow.NotifyNavigationStateChanged();
+			}
+
 			var pageContainer = this as IPageContainer<Page>;
 			pageContainer?.CurrentPage?.SendAppearing();
 
@@ -776,10 +853,30 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
+			// Prevent duplicate OnNavigatedTo during a single navigation burst (fixes #23902).
+			if (HasNavigatedTo)
+			{
+				return;
+			}
+
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+
+			// Cascade to child page (e.g. TabbedPage → CurrentPage).
+			// On Pop, reset the child flag first — a prior tab change while a modal was open
+			// can leave it true, which would incorrectly block the pop-return (fixes #35756).
+			// PopToRoot is excluded: SendNavigatedFrom already resets all flags before PopToRoot cascades.
+			var containerChild = (this as IPageContainer<Page>)?.CurrentPage;
+			if (containerChild is not null)
+			{
+				if (args.NavigationType == NavigationType.Pop)
+				{
+					containerChild.HasNavigatedTo = false;
+				}
+
+				containerChild.SendNavigatedTo(args);
+			}
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
@@ -804,6 +901,24 @@ namespace Microsoft.Maui.Controls
 			if (args.NavigationType == NavigationType.Pop ||
 				args.NavigationType == NavigationType.PopToRoot)
 			{
+#if IOS
+				// Don't dispose Handlers too early on iOS!
+				// iOS aggressively cleans up page Handlers during navigation, but if the page
+				// is still in Shell's navigation stack, users can navigate back to it.
+				// Disposing the Handler makes the page invisible.
+				// So only dispose Handler if page not in current Shell stack
+				if (Shell.Current != null)
+				{
+					// Check if this page is still referenced in Shell's navigation stack
+					var currentStack = Shell.Current.CurrentItem?.CurrentItem?.Stack;
+					if (currentStack?.Contains(this) == true)
+					{
+						// Page is still in navigation stack, don't dispose Handler
+						return;
+					}
+				}
+#endif
+				
 				if (!this.IsLoaded)
 				{
 					this.DisconnectHandlers();

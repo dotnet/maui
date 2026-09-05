@@ -296,7 +296,7 @@ dotnet build
 ### Platform Requirements
 
 #### Android
-- Android SDK 21+ (as specified in `SupportedOSPlatformVersion`)
+- Android SDK 24+ (as specified in `SupportedOSPlatformVersion`)
 - Java 11 or higher
 
 #### iOS

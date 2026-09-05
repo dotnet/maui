@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
@@ -10,8 +11,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	/// <summary>
 	/// A <see cref="View"/> that can render Blazor content.
 	/// </summary>
+#if ANDROID
+	[SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
+#elif IOS
+	[SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+	[SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
+#endif
 	public partial class BlazorWebView : View, IBlazorWebView
 	{
+		// NOTE: keep these in *reasonably* in sync with:
+		// * src\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj
+		// * src\Templates\src\templates\maui-blazor\MauiApp.1.csproj
+		// * src\Templates\src\templates\maui-blazor-solution\MauiApp.1\MauiApp.1.csproj
+		// * https://learn.microsoft.com/dotnet/maui/supported-platforms
+		internal const string AndroidSupportedOSPlatformVersion = "android24.0";
+		internal const string iOSSupportedOSPlatformVersion = "ios15.0";
+		internal const string MacCatalystSupportedOSPlatformVersion = "maccatalyst15.0";
+
 		internal static string AppHostAddress { get; } = HostAddressHelper.GetAppHostAddress();
 
 		private readonly JSComponentConfigurationStore _jSComponents = new();
@@ -80,9 +97,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		/// <inheritdoc />
 #if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
 #elif IOS
-		[System.Runtime.Versioning.SupportedOSPlatform("ios11.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
 #endif
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
@@ -97,7 +116,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <returns>Returns a <see cref="Task"/> representing <c>true</c> if the <paramref name="workItem"/> was called, or <c>false</c> if it was not called because Blazor is not currently running.</returns>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="workItem"/> is <c>null</c>.</exception>
 #if ANDROID
-		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
+		[System.Runtime.Versioning.SupportedOSPlatform(AndroidSupportedOSPlatformVersion)]
+#elif IOS
+		[System.Runtime.Versioning.SupportedOSPlatform(iOSSupportedOSPlatformVersion)]
+#elif MACCATALYST
+		[System.Runtime.Versioning.SupportedOSPlatform(MacCatalystSupportedOSPlatformVersion)]
 #endif
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{

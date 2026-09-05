@@ -384,7 +384,193 @@ public class FlyoutPageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
+#if TEST_FAILS_ON_WINDOWS
+	// NOTE:
+	// On Windows platform, FlyoutPage behaves as Split layout by default.
+	// Due to this, IsPresentedChanged event is triggered only during initial load (app deployment)
+	// and is not raised when IsPresented is changed programmatically or via UI interaction.
+	//
+	// As per official Microsoft.MAUI documentation, FlyoutLayoutBehavior is not fully supported
+	// on desktop platforms (Windows/macOS). Hence, this behavior is expected.
+	//
+	// Therefore, IsPresentedChanged event validation is not reliable on Windows
+	// and this test case should be ignored/skipped for Windows platform.
+	//Documentation: https://learn.microsoft.com/en-us/dotnet/maui/user-interface/pages/flyoutpage?view=net-maui-10.0#layout-behavior
+
 	[Test, Order(21)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_IsPresentedChanged_Raised_When_Flyout_Opened()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("OpenFlyoutButton");
+		App.Tap("OpenFlyoutButton");
+
+		App.WaitForElement("CloseFlyoutButton");
+		App.Tap("CloseFlyoutButton");
+
+		App.WaitForElement("IsPresentedChangedLabel");
+
+		var result = App.FindElement("IsPresentedChangedLabel").GetText();
+
+		Assert.That(result, Is.EqualTo("Raised"));
+	}
+
+	[Test, Order(26)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_IsPresented_True_Raises_IsPresentedChanged()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		// Toggle IsPresented switch
+		App.WaitForElement("IsPresentedTrue");
+		App.Tap("IsPresentedTrue");
+
+		App.Tap("Apply");
+		App.WaitForElement("CloseFlyoutButton");
+		App.Tap("CloseFlyoutButton");
+
+		App.WaitForElement("IsPresentedChangedLabel");
+
+		var result = App.FindElement("IsPresentedChangedLabel").GetText();
+
+		Assert.That(result, Is.EqualTo("Raised"));
+	}
+
+#endif
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST        //Issue Link: https://github.com/dotnet/maui/issues/8296                                                             
+	[Test, Order(23)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_BackButtonPressed_Event_Raised()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("SetDetail1Button");
+		App.Tap("SetDetail1Button");
+
+		App.TapBackArrow();
+
+		// Validate event label updated
+		App.WaitForElement("BackButtonPressedLabel");
+
+		var result = App.FindElement("BackButtonPressedLabel").GetText();
+
+		Assert.That(result, Is.EqualTo("Raised"));
+	}
+
+	[Test, Order(24)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_BackButtonPressed_Handled_False_Should_Allow_Navigation()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("HandleBackButtonSwitch");    // Turn OFF
+
+		App.WaitForElement("SetDetail2Button");
+		App.Tap("SetDetail2Button");
+
+		App.TapBackArrow();
+
+		// If handled → STILL on new page
+		App.WaitForElement("BackButtonHandledLabel");
+		Assert.That(App.FindElement("BackButtonHandledLabel").GetText(), Is.EqualTo("False"));
+
+	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_BackButtonPressed_Handled_True_Should_Stop_Navigation()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("HandleBackButtonSwitch");
+		App.Tap("HandleBackButtonSwitch"); // Turn ON
+
+		App.WaitForElement("SetDetail2Button");
+		App.Tap("SetDetail2Button");
+
+		App.TapBackArrow();
+
+		// If handled → STILL on new page
+		App.WaitForElement("BackToOriginalDetailButton2");
+		App.Tap("BackToOriginalDetailButton2");
+
+		Assert.That(App.FindElement("BackButtonHandledLabel").GetText(), Is.EqualTo("True"));
+
+	}
+
+#endif
+
+
+	[Test, Order(27)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout1_Navigation_Events_Raised()
+	{
+		App.WaitForElement("SetFlyout1Button");
+		App.Tap("SetFlyout1Button");
+
+		var navigatedTo = App.FindElement("NavigatedToLabel").GetText();
+		var navigatingFrom = App.FindElement("NavigatingFromLabel").GetText();
+		var navigatedFrom = App.FindElement("NavigatedFromLabel").GetText();
+
+		Assert.That(navigatedTo, Does.Contain("Flyout 1"));
+		Assert.That(navigatingFrom, Does.Contain("The Flyout"));
+		Assert.That(navigatedFrom, Does.Contain("The Flyout"));
+	}
+
+	[Test, Order(28)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout2_Navigation_Events_Raised()
+	{
+		App.WaitForElement("SetFlyout2Button");
+		App.Tap("SetFlyout2Button");
+
+		var navigatedTo = App.FindElement("NavigatedToLabel").GetText();
+		var navigatingFrom = App.FindElement("NavigatingFromLabel").GetText();
+		var navigatedFrom = App.FindElement("NavigatedFromLabel").GetText();
+
+		Assert.That(navigatedTo, Does.Contain("Flyout 2"));
+		Assert.That(navigatingFrom, Does.Contain("Flyout 1"));
+		Assert.That(navigatedFrom, Does.Contain("Flyout 1"));
+	}
+
+	[Test, Order(29)]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Flyout_Switch_From_Flyout1_To_Flyout2_NavigationEvents_Verified()
+	{
+		// Set Flyout 1
+		App.WaitForElement("SetFlyout1Button");
+		App.Tap("SetFlyout1Button");
+
+		// Set Flyout 2
+		App.WaitForElement("SetFlyout2Button");
+		App.Tap("SetFlyout2Button");
+
+		var navigatedTo = App.FindElement("NavigatedToLabel").GetText();
+		var navigatingFrom = App.FindElement("NavigatingFromLabel").GetText();
+		var navigatedFrom = App.FindElement("NavigatedFromLabel").GetText();
+
+		// Assertions
+		Assert.That(navigatingFrom, Does.Contain("Flyout 1"));
+		Assert.That(navigatedFrom, Does.Contain("Flyout 1"));
+		Assert.That(navigatedTo, Does.Contain("Flyout 2"));
+	}
+
+	[Test, Order(30)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyFlyoutPage_IsVisible()
 	{

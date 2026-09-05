@@ -28,7 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string ImageButton = "ImageButton";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
-		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
 		public const string Flaky = "Flaky";
 		public const string FlyoutPage = "FlyoutPage";
@@ -75,6 +74,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string GraphicsView = "GraphicsView";
 		public const string Fonts = "Fonts";
 		public const string SafeAreaEdges = "SafeAreaEdges";
+		public const string Essentials = "Essentials";
 		public const string Material3 = "Material3";
     public const string Triggers = "Triggers";
 		public const string VisualStateManager = "VisualStateManager";

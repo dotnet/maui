@@ -1,12 +1,20 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal partial class AlertManager
+	internal partial class AlertManager : IAlertManager
 	{
+		// These string values are documented in the XML remarks for AlertArguments,
+		// ActionSheetArguments, and PromptArguments. Third-party backends may depend
+		// on them as literal strings; do not change without breaking-change consideration.
+		internal const string DisplayAlertServiceKey = "Microsoft.Maui.Controls.DisplayAlert";
+		internal const string DisplayActionSheetServiceKey = "Microsoft.Maui.Controls.DisplayActionSheet";
+		internal const string DisplayPromptServiceKey = "Microsoft.Maui.Controls.DisplayPrompt";
+
 		readonly Window _window;
 
 		IAlertManagerSubscription? _subscription;
@@ -36,15 +44,46 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_subscription =
-				// try use services
+				// try use services - an explicitly-registered subscription wins over everything else
 				context.Services.GetService<IAlertManagerSubscription>() ??
-				// fall back to the platform implementation and a "null implementation" on non-platforms
+				// then check for the delegate-based extensibility convention (see DelegateAlertSubscription)
+				TryCreateDelegateSubscription(context) ??
+				// finally fall back to the platform implementation (or a no-op on non-platforms)
 				CreateSubscription(context);
 
 			if (_subscription is null)
 			{
 				context.CreateLogger<AlertManager>()?.LogWarning("Warning - Unable to create alert manager subscription.");
 			}
+		}
+
+		// Looks for per-operation keyed dialog delegates registered in DI using ONLY already-public types:
+		//   Func<Page, AlertArguments, Task<bool>>
+		//   Func<Page, ActionSheetArguments, Task<string>>
+		//   Func<Page, PromptArguments, Task<string>>
+		// This lets third-party backends supply alert/dialog implementations without MAUI having to
+		// expose IAlertManagerSubscription publicly. Keyed registrations make the intent explicit and
+		// avoid consuming unrelated Func<> registrations. Any delegate that isn't registered falls
+		// through to the platform default (so backends can override only what they care about).
+		IAlertManagerSubscription? TryCreateDelegateSubscription(IMauiContext context)
+		{
+			var services = context.Services;
+
+			if (services is not IKeyedServiceProvider keyedServices)
+			{
+				return null;
+			}
+
+			var alertHandler = keyedServices.GetKeyedService<Func<Page, AlertArguments, Task<bool>>>(DisplayAlertServiceKey);
+			var actionSheetHandler = keyedServices.GetKeyedService<Func<Page, ActionSheetArguments, Task<string>>>(DisplayActionSheetServiceKey);
+			var promptHandler = keyedServices.GetKeyedService<Func<Page, PromptArguments, Task<string>>>(DisplayPromptServiceKey);
+
+			if (alertHandler is null && actionSheetHandler is null && promptHandler is null)
+			{
+				return null;
+			}
+
+			return new DelegateAlertSubscription(alertHandler, actionSheetHandler, promptHandler, () => CreateSubscription(context));
 		}
 
 		public void Unsubscribe() =>
@@ -64,18 +103,6 @@ namespace Microsoft.Maui.Controls.Platform
 			_subscription?.OnPageBusy(page, isBusy);
 
 		private partial IAlertManagerSubscription CreateSubscription(IMauiContext mauiContext);
-
-		internal interface IAlertManagerSubscription
-		{
-			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments);
-
-			void OnAlertRequested(Page sender, AlertArguments arguments);
-
-			void OnPromptRequested(Page sender, PromptArguments arguments);
-
-			[Obsolete("This method is obsolete in .NET 10 and will be removed in .NET11.")]
-			void OnPageBusy(Page sender, bool enabled);
-		}
 
 		internal partial class AlertRequestHelper : IAlertManagerSubscription
 		{

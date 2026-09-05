@@ -24,7 +24,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.EnsureBorderPath();
 
 			if (handler.VirtualView.PresentedContent is IView view)
+			{
+				// Detach the old handler if it exists (prevents WinUI COM exception on reuse)
+				view.Handler?.DisconnectHandler(); 
 				handler.PlatformView.Content = view.ToPlatform(handler.MauiContext);
+			}
+				
 		}
 
 		protected override ContentPanel CreatePlatformView()

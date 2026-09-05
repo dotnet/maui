@@ -4,11 +4,11 @@
     Posts the PR finalize summary into the unified AI Summary comment on a GitHub PR.
 
 .DESCRIPTION
-    Reads the pr-finalize-summary.md file and injects its content directly into the
+    Reads the pr-finalize-summary.md file and injects its content into the
     <!-- SECTION:PR-FINALIZE --> block of the unified AI Summary comment.
 
-    No parsing or re-formatting — the summary file content is posted as-is inside
-    a collapsible details block.
+    Compatible with session-based AI Summary comments: the finalize section is placed
+    after all session blocks and the PR author ping is updated.
 
     Auto-discovers the summary file from:
       CustomAgentLogsTmp/PRState/{PRNumber}/PRAgent/pr-finalize/pr-finalize-summary.md
@@ -124,6 +124,14 @@ $SECTION_END
 "@
 
 # ============================================================================
+# FETCH PR AUTHOR FOR PING
+# ============================================================================
+
+try {
+    $prAuthor = gh api "repos/dotnet/maui/pulls/$PRNumber" --jq '.user.login' 2>$null
+} catch { $prAuthor = $null }
+
+# ============================================================================
 # POST / UPDATE
 # ============================================================================
 
@@ -177,13 +185,28 @@ if ($existingUnifiedComment) {
     } else {
         $finalComment = $body.TrimEnd() + "`n`n" + $finalizeSection
     }
+
+    # Update the author ping to reflect the finalize update
+    if ($prAuthor) {
+        $pingPattern = '> 👋 @\S+ — .*?(?=\n)'
+        $newPing = "> 👋 @$prAuthor — PR finalization review is ready. Please review below."
+        if ($finalComment -match $pingPattern) {
+            $finalComment = $finalComment -replace $pingPattern, $newPing
+        }
+    }
+
     $finalComment = $finalComment -replace "`n{4,}", "`n`n`n"
 } else {
+    $authorPing = ""
+    if ($prAuthor) {
+        $authorPing = "> 👋 @$prAuthor — PR finalization review is ready. Please review below.`n"
+    }
     $finalComment = @"
 $MAIN_MARKER
 
 ## 🤖 AI Summary
 
+$authorPing
 $finalizeSection
 "@
 }
@@ -219,12 +242,16 @@ try {
             Write-Host "✅ PR finalize section updated: $patchResult" -ForegroundColor Green
         } catch {
             Write-Host "⚠️ Could not update comment (no edit permission?) — creating new comment instead: $_" -ForegroundColor Yellow
-            # Rebuild the comment body as a standalone new comment (not an injection into existing)
+            $authorPing = ""
+            if ($prAuthor) {
+                $authorPing = "> 👋 @$prAuthor — PR finalization review is ready. Please review below.`n"
+            }
             $standaloneBody = @"
 $MAIN_MARKER
 
 ## 🤖 AI Summary
 
+$authorPing
 $finalizeSection
 "@
             $standaloneTempFile = [System.IO.Path]::GetTempFileName()

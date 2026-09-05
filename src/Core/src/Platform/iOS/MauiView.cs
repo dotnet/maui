@@ -62,6 +62,78 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		bool _appliesSafeAreaAdjustments;
 
+		/// <summary>
+		/// Safe area override injected by CollectionView cells.
+		/// UICollectionView bypasses MAUI's arrange chain, so cells cannot use <see cref="_safeArea"/>.
+		/// Applied as internal padding by <see cref="CrossPlatformArrange"/> and
+		/// <see cref="CrossPlatformMeasure"/> (#33604, #34635).
+		/// </summary>
+		internal SafeAreaPadding CellSafeAreaOverride { get; set; } = SafeAreaPadding.Empty;
+
+		/// <summary>
+		/// Computes and applies per-cell safe area insets for a CollectionView cell.
+		/// Called from TemplatedCell/TemplatedCell2 LayoutSubviews before Arrange.
+		/// </summary>
+		internal static void ApplyCellSafeAreaOverride(UIView cell, IView virtualView, UIView platformView)
+		{
+			if (virtualView is ISafeAreaView2 safeView && platformView is MauiView mauiView)
+			{
+				var insets = ComputeCellSafeAreaInsets(cell, safeView);
+				mauiView.CellSafeAreaOverride = insets != UIEdgeInsets.Zero
+					? insets.ToSafeAreaInsets()
+					: SafeAreaPadding.Empty;
+			}
+			else if (platformView is MauiView mv && !mv.CellSafeAreaOverride.IsEmpty)
+			{
+				// Clear stale override from a previous template that implemented ISafeAreaView2.
+				mv.CellSafeAreaOverride = SafeAreaPadding.Empty;
+			}
+		}
+
+		/// <summary>
+		/// Computes per-cell safe area insets based on geometric overlap with the window's unsafe regions.
+		/// Returns <see cref="UIEdgeInsets.Zero"/> when all edges share the same region (e.g., default
+		/// Container×4), as the parent layout chain handles uniform safe area (#33604, #34635).
+		/// </summary>
+		static UIEdgeInsets ComputeCellSafeAreaInsets(UIView cell, ISafeAreaView2 safeView)
+		{
+			var window = cell.Window;
+			if (window is null)
+				return UIEdgeInsets.Zero;
+
+			var windowSA = window.SafeAreaInsets;
+			if (windowSA == UIEdgeInsets.Zero)
+				return UIEdgeInsets.Zero;
+
+			var leftRegion = safeView.GetSafeAreaRegionsForEdge(0);
+			var topRegion = safeView.GetSafeAreaRegionsForEdge(1);
+			var rightRegion = safeView.GetSafeAreaRegionsForEdge(2);
+			var bottomRegion = safeView.GetSafeAreaRegionsForEdge(3);
+
+			// Uniform edges (Container×4, None×4, All×4) are handled by the parent layout chain.
+			bool allSameRegion = leftRegion == topRegion
+				&& topRegion == rightRegion
+				&& rightRegion == bottomRegion;
+
+			if (allSameRegion)
+				return UIEdgeInsets.Zero;
+
+			// Only apply insets for Container edges; SoftInput-only edges are excluded.
+			var cellInWindow = cell.ConvertRectToView(cell.Bounds, window);
+			var windowBounds = window.Bounds;
+
+			nfloat left = SafeAreaEdges.IsContainer(leftRegion) && windowSA.Left > 0
+				? (nfloat)Math.Max(0, (double)(windowSA.Left - cellInWindow.X)) : 0;
+			nfloat top = SafeAreaEdges.IsContainer(topRegion) && windowSA.Top > 0
+				? (nfloat)Math.Max(0, (double)(windowSA.Top - cellInWindow.Y)) : 0;
+			nfloat right = SafeAreaEdges.IsContainer(rightRegion) && windowSA.Right > 0
+				? (nfloat)Math.Max(0, (double)(cellInWindow.Right - (windowBounds.Width - windowSA.Right))) : 0;
+			nfloat bottom = SafeAreaEdges.IsContainer(bottomRegion) && windowSA.Bottom > 0
+				? (nfloat)Math.Max(0, (double)(cellInWindow.Bottom - (windowBounds.Height - windowSA.Bottom))) : 0;
+
+			return new UIEdgeInsets(top, left, bottom, right);
+		}
+
 		// Indicates whether this view should respond to safe area insets.
 		// Cached to avoid repeated hierarchy checks.
 		// True if the view is an ISafeAreaView, does not ignore safe area, and is not inside a UIScrollView;
@@ -71,6 +143,16 @@ namespace Microsoft.Maui.Platform
 		// Cached result of whether a parent MauiView is already handling safe area.
 		// Null means not yet determined. Invalidated when view hierarchy changes.
 		bool? _parentHandlesSafeArea;
+
+		// Indicates whether the measure invalidation has already been propagated
+		// to ancestors during this main loop.
+		bool _measureInvalidatedPropagated;
+
+		// Tracks whether this MauiView changed IsFocused, so we only clear focus we own.
+		// We intentionally do not rely on PreviouslyFocusedView here because composite
+		// controls can mirror a focused child Entry to the parent IsFocused state while
+		// UIKit reports the child (or null) as the previously focused view.
+		bool _isFocusedSetByUs;
 
 		// Keyboard tracking
 		CGRect _keyboardFrame = CGRect.Empty;
@@ -230,6 +312,18 @@ namespace Microsoft.Maui.Platform
 				UIKeyboard.WillHideNotification,
 				OnKeyboardWillHide);
 			_keyboardWillHideObserver = new WeakReference<NSObject>(hideObserver);
+
+			// When switching to SoftInput while keyboard is already open, iOS may not
+			// emit a new WillShow. Rehydrate from global keyboard tracking.
+			if (!_isKeyboardShowing
+				&& KeyboardAutoManagerScroll.IsKeyboardShowing
+				&& !KeyboardAutoManagerScroll.KeyboardFrame.IsEmpty)
+			{
+				_keyboardFrame = KeyboardAutoManagerScroll.KeyboardFrame;
+				_isKeyboardShowing = true;
+				_safeAreaInvalidated = true;
+				SetNeedsLayout();
+			}
 		}
 
 		void UnsubscribeFromKeyboardNotifications()
@@ -245,21 +339,30 @@ namespace Microsoft.Maui.Platform
 				NSNotificationCenter.DefaultCenter.RemoveObserver(hideObserver);
 				_keyboardWillHideObserver = null;
 			}
+
+			// If the keyboard was visible when we unsubscribed (e.g. view detached while keyboard
+			// is up), we will never receive the WillHide notification. Clear the stale state now
+			// so that safe-area calculations are correct if the view is later re-attached.
+			if (_isKeyboardShowing)
+			{
+				_keyboardFrame = CGRect.Empty;
+				_isKeyboardShowing = false;
+				_safeAreaInvalidated = true;
+			}
 		}
 
 		void UpdateKeyboardSubscription()
 		{
-			// Update keyboard subscription based on current SafeAreaEdges settings
-			if (Window != null)
+			// Subscribe only when attached to a window and SoftInput edges are configured.
+			// Always unsubscribe when detached (Window == null) to release the NSNotificationCenter
+			// observer tokens that otherwise retain this MauiView instance and cause memory leaks.
+			if (Window != null && ShouldSubscribeToKeyboardNotifications())
 			{
-				if (ShouldSubscribeToKeyboardNotifications())
-				{
-					SubscribeToKeyboardNotifications();
-				}
-				else
-				{
-					UnsubscribeFromKeyboardNotifications();
-				}
+				SubscribeToKeyboardNotifications();
+			}
+			else
+			{
+				UnsubscribeFromKeyboardNotifications();
 			}
 		}
 
@@ -275,7 +378,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void OnKeyboardWillHide(NSNotification notification)
+		void OnKeyboardWillHide(NSNotification notification) => ClearKeyboardState();
+
+		void ClearKeyboardState()
 		{
 			_safeAreaInvalidated = true;
 			_keyboardFrame = CGRect.Empty;
@@ -499,19 +604,23 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The desired size of the view</returns>
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (_appliesSafeAreaAdjustments)
+			var effectiveSafeArea = _appliesSafeAreaAdjustments ? _safeArea
+				: !CellSafeAreaOverride.IsEmpty ? CellSafeAreaOverride
+				: SafeAreaPadding.Empty;
+
+			if (!effectiveSafeArea.IsEmpty)
 			{
 				// When responding to safe area, we need to adjust the constraints to account for the safe area.
-				widthConstraint -= _safeArea.HorizontalThickness;
-				heightConstraint -= _safeArea.VerticalThickness;
+				widthConstraint -= effectiveSafeArea.HorizontalThickness;
+				heightConstraint -= effectiveSafeArea.VerticalThickness;
 			}
 
 			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
 
-			if (_appliesSafeAreaAdjustments)
+			if (!effectiveSafeArea.IsEmpty)
 			{
 				// If we're responding to the safe area, we need to add the safe area back to the size so the container can allocate the correct space
-				crossPlatformSize = new Size(crossPlatformSize.Width + _safeArea.HorizontalThickness, crossPlatformSize.Height + _safeArea.VerticalThickness);
+				crossPlatformSize = new Size(crossPlatformSize.Width + effectiveSafeArea.HorizontalThickness, crossPlatformSize.Height + effectiveSafeArea.VerticalThickness);
 			}
 
 			return crossPlatformSize;
@@ -528,6 +637,10 @@ namespace Microsoft.Maui.Platform
 			{
 				bounds = AdjustForSafeArea(bounds);
 			}
+			else if (!CellSafeAreaOverride.IsEmpty)
+			{
+				bounds = CellSafeAreaOverride.InsetRect(bounds);
+			}
 
 			CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle());
 		}
@@ -541,6 +654,10 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size that fits within the constraints</returns>
 		public override CGSize SizeThatFits(CGSize size)
 		{
+			// Invalidations shouldn't happen during measure pass,
+			// but we need to support that in case it happens.
+			_measureInvalidatedPropagated = false;
+
 			if (_crossPlatformLayoutReference == null)
 			{
 				return base.SizeThatFits(size);
@@ -572,6 +689,9 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			// Allow measure invalidations during layout pass
+			_measureInvalidatedPropagated = false;
 
 			if (_crossPlatformLayoutReference == null)
 			{
@@ -719,6 +839,12 @@ namespace Microsoft.Maui.Platform
 
 			// If we're not propagating, then this view is the one triggering the invalidation
 			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			if (_measureInvalidatedPropagated)
+			{
+				return false;
+			}
+
+			_measureInvalidatedPropagated = true;
 			return true;
 		}
 
@@ -800,16 +926,79 @@ namespace Microsoft.Maui.Platform
 			{
 				if (CrossPlatformLayout is IView view)
 				{
-					view.IsFocused = true;
+					if (!view.IsFocused)
+					{
+						view.IsFocused = true;
+						_isFocusedSetByUs = true;
+					}
 				}
 			}
-			else
+			else if (_isFocusedSetByUs)
 			{
+				// Don't switch to PreviouslyFocusedView here. Composite controls can mirror a
+				// focused child Entry to the parent IsFocused state while UIKit reports the
+				// child (or null) as the previously focused view, so we only clear focus we set.
 				if (CrossPlatformLayout is IView view)
 				{
-					view.IsFocused = false;
+					if (view.IsFocused)
+						view.IsFocused = false;
+
+					_isFocusedSetByUs = false;
 				}
 			}
+		}
+
+		/// <summary>
+		/// When true, <see cref="AccessibilityLabel"/>'s getter synthesizes the label on demand
+		/// from the layout's children instead of returning a stored snapshot. Set by
+		/// <see cref="SemanticExtensions.UpdateSemantics(UIView, IView)"/> when this layout was
+		/// promoted to an accessibility element with a Hint but no explicit Description, so that
+		/// child text changes are picked up on each VoiceOver focus. See PR #35590 review
+		/// comment r3291149230.
+		/// </summary>
+		internal bool SynthesizeAccessibilityLabelFromChildren { get; set; }
+
+		/// <inheritdoc/>
+		public override string? AccessibilityLabel
+		{
+			get
+			{
+				if (SynthesizeAccessibilityLabelFromChildren
+					&& CrossPlatformLayout is ILayout layout)
+				{
+					var synthesized = SemanticExtensions.SynthesizeAccessibilityLabelFromChildren(layout);
+					if (!string.IsNullOrWhiteSpace(synthesized))
+					{
+						return synthesized;
+					}
+				}
+
+				return base.AccessibilityLabel;
+			}
+			set => base.AccessibilityLabel = value;
+		}
+
+		/// <summary>
+		/// Optional callback invoked by <see cref="AccessibilityActivate"/> when VoiceOver activates this view.
+		/// Set by GesturePlatformManager for container layouts with tap gestures to bypass UIKit's
+		/// simulated-touch path, which can be intermittently unreliable on macOS Catalyst.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Memory", "MEM0002",
+			Justification = "Callback captures only a WeakReference<GesturePlatformManager>, which is not an NSObject. No circular strong NSObject reference is created.")]
+		internal Func<bool>? AccessibilityActivateCallback { get; set; }
+
+		/// <inheritdoc/>
+		public override bool AccessibilityActivate()
+		{
+			// Prefer direct MAUI gesture invocation over UIKit's simulated-touch mechanism.
+			// On macOS Catalyst, the simulated-touch path for UITapGestureRecognizer is
+			// intermittently unreliable when VoiceOver activates a container with Ctrl+Option+Space.
+			if (AccessibilityActivateCallback?.Invoke() == true)
+			{
+				return true;
+			}
+
+			return base.AccessibilityActivate();
 		}
 	}
 }

@@ -54,7 +54,6 @@ These are automatically loaded by the Run-DeviceTests.ps1 script.
 | Essentials | `src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj` |
 | Graphics | `src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj` |
 | BlazorWebView | `src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj` |
-| AI | `src/AI/tests/Essentials.AI.DeviceTests/Essentials.AI.DeviceTests.csproj` |
 
 ## Scripts
 
@@ -157,7 +156,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Windows tests run directly on the local machine
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
-- Windows uses vstest for test execution
+- Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
 
 ## Test Filtering
 
@@ -191,7 +190,7 @@ Test filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSh
 |----------|---------------------|-------------------|
 | **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
 | **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
-| **Windows** | `--filter "Category=..."` | Native vstest filter |
+| **Windows Controls** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
 
 ### Available Test Categories
 
@@ -258,7 +257,7 @@ The script automatically handles XHarness device targeting for iOS and Android:
 
 ### Windows
 - No device/emulator needed
-- Uses vstest (`dotnet test`) for test execution
+- Runs the built device-test app directly and parses `TestResults-*.xml`
 
 **Why both --target and --device for iOS?**
 - XHarness requires `--target ios-simulator-64` (or `ios-simulator-64_VERSION`) to specify platform type

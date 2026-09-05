@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Media;
+using Stream = System.IO.Stream;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
@@ -156,8 +158,92 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			var bitmap = BitmapFactory.DecodeStream(stream);
+			// Use original stream if seekable, otherwise copy to memory stream
+			if (stream.CanSeek)
+			{
+				return CreateImageFromSeekableStream(stream);
+			}
+			else
+			{
+				// Copy to memory stream and dispose it properly
+				using var memoryStream = new MemoryStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Position = 0;
+				return CreateImageFromSeekableStream(memoryStream);
+			}
+		}
+
+		private static IImage CreateImageFromSeekableStream(Stream seekableStream)
+		{
+			Bitmap bitmap;
+
+			// API 24+ (Android 7.0) required for ExifInterface stream constructor
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				try
+				{
+					// Read EXIF orientation
+					var exif = new ExifInterface(seekableStream);
+					var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+					seekableStream.Position = 0;
+					bitmap = BitmapFactory.DecodeStream(seekableStream);
+					// Apply rotation only if needed
+					if (orientation != 1)
+					{
+						bitmap = RotateBitmap(bitmap, orientation);
+					}
+				}
+				catch (Exception)
+				{
+					// Fallback: decode without EXIF orientation correction
+					seekableStream.Position = 0;
+					bitmap = BitmapFactory.DecodeStream(seekableStream);
+				}
+			}
+			else
+			{
+				// Fallback for older Android
+				bitmap = BitmapFactory.DecodeStream(seekableStream);
+			}
 			return new PlatformImage(bitmap);
+		}
+
+		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
+		{
+			// EXIF orientation has 8 possible values. See: https://jdhao.github.io/2019/07/31/image_rotation_exif_info/#exif-orientation-flag
+			Matrix matrix = new Matrix();
+			switch (orientation)
+			{
+				case 2: // Flip horizontal
+					matrix.PreScale(-1, 1);
+					break;
+				case 3: // Rotate 180
+					matrix.PostRotate(180);
+					break;
+				case 4: // Flip vertical
+					matrix.PreScale(1, -1);
+					break;
+				case 5: // Transpose (flip vertical + rotate 90)
+					matrix.PreScale(1, -1);
+					matrix.PostRotate(90);
+					break;
+				case 6: // Rotate 90
+					matrix.PostRotate(90);
+					break;
+				case 7: // Transverse (flip vertical + rotate 270)
+					matrix.PreScale(1, -1);
+					matrix.PostRotate(270);
+					break;
+				case 8: // Rotate 270
+					matrix.PostRotate(270);
+					break;
+				default:
+					return bitmap;
+			}
+			var rotated = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+			matrix.Dispose();
+			bitmap.Dispose();
+			return rotated;
 		}
 	}
 }

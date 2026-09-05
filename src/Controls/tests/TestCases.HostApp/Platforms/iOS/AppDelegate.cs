@@ -1,5 +1,4 @@
 using Foundation;
-using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using UIKit;
@@ -13,13 +12,6 @@ namespace Maui.Controls.Sample.Platform
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Subscribe<Issue5503>(this, Issue5503.ChangeUITableViewAppearanceBgColor, (s) =>
-			{
-				UITableView.Appearance.BackgroundColor = UITableView.Appearance.BackgroundColor == null ? UIColor.Red : null;
-			});
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}

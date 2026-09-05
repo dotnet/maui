@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Controls
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
-		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
+		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="IsPresented"/>.</summary>
-		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
+		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), BooleanBoxes.FalseBox,
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
 		/// <summary>Bindable property for <see cref="FlyoutLayoutBehavior"/>.</summary>
@@ -95,14 +95,14 @@ namespace Microsoft.Maui.Controls
 		public bool IsGestureEnabled
 		{
 			get { return (bool)GetValue(IsGestureEnabledProperty); }
-			set { SetValue(IsGestureEnabledProperty, value); }
+			set { SetValue(IsGestureEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets a value that indicates whether the flyout is presented. This is a bindable property.</summary>
 		public bool IsPresented
 		{
 			get { return (bool)GetValue(IsPresentedProperty); }
-			set { SetValue(IsPresentedProperty, value); }
+			set { SetValue(IsPresentedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the flyout page that is used to present a menu or navigation options.</summary>
@@ -282,14 +282,20 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
-				page.SetValue(IsPresentedProperty, true);
+				page.SetValue(IsPresentedProperty, BooleanBoxes.TrueBox);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
 					fpc.CanChangeIsPresented = false;
 			}
 		}
 
 		static void OnIsPresentedPropertyChanged(BindableObject sender, object oldValue, object newValue)
-			=> ((FlyoutPage)sender).IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
+		{
+			var flyoutPage = (FlyoutPage)sender;
+			flyoutPage.IsPresentedChanged?.Invoke(sender, EventArgs.Empty);
+			// Refresh the predictive back callback when the flyout opens or closes so the
+			// back-to-home animation is suppressed only while the flyout is actually open.
+			(flyoutPage.Window as Window)?.NotifyNavigationStateChanged();
+		}
 
 		static void OnIsPresentedPropertyChanging(BindableObject sender, object oldValue, object newValue)
 		{
@@ -402,6 +408,7 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
+
 		private protected override string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);

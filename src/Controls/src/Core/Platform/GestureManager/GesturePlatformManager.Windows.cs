@@ -452,7 +452,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			foreach (SwipeGestureRecognizer recognizer in view.GestureRecognizers.GetGesturesFor<SwipeGestureRecognizer>())
 			{
-				((ISwipeGestureController)recognizer).SendSwipe(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y);
+				((ISwipeGestureController)recognizer).SendSwipe(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y);
+				e.Handled = true;
 			}
 		}
 
@@ -471,7 +472,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					recognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 				}
-				recognizer.SendPan(view, e.Delta.Translation.X + e.Cumulative.Translation.X, e.Delta.Translation.Y + e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				recognizer.SendPan(view, e.Cumulative.Translation.X, e.Cumulative.Translation.Y, PanGestureRecognizer.CurrentId.Value);
+				e.Handled = true;
 			}
 			_wasPanGestureStartedSent = true;
 		}
@@ -497,6 +499,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					recognizer.SendPinch(view, e.Delta.Scale, scaleOriginPoint);
+					e.Handled = true;
 				}
 
 				_wasPinchGestureStartedSent = true;
@@ -554,7 +557,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SwipeComplete(true);
 
-			if (!_isPanning)
+			if (!_isPanning && !_isPinching && !_isSwiping)
 			{
 				_fingers.Remove(e.Pointer.PointerId);
 			}

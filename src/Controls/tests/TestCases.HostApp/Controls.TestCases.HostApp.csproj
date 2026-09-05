@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\Challenges\*" LogicalName="challenges/%(Filename)%(Extension)" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized.svg" Color="#FFFFFF" BaseSize="20,20" />
     <MauiImage Update="Resources\Images\dotnet_bot_resized2.svg" Color="#FFFFFF" BaseSize="40,40" />
@@ -71,7 +72,9 @@
     <MauiFont Remove="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Images\royals.png" />
+    <EmbeddedResource Include="Resources\Images\img_0111.heic" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiImage Include="Resources\Images\subfolder\dotnet_bot_red.png" Resize="True" BaseSize="300,185"/>
   </ItemGroup>
 
   <ItemGroup>

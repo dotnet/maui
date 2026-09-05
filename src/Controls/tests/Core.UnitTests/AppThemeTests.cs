@@ -82,6 +82,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ParentSetResolvesAppThemeDynamicResourceWithoutListener()
+		{
+			var view = new AppThemeResourceView();
+			view.SetDynamicResource(AppThemeResourceView.ThemeProperty, AppThemeBinding.AppThemeResource);
+
+			view.Parent = app;
+
+			Assert.Equal(AppTheme.Light, view.Theme);
+		}
+
+		[Fact]
 		public void ThemeChangeUsingUserAppTheme()
 		{
 			var label = new Label
@@ -251,6 +262,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var border = new Border();
 			border.SetAppTheme(Border.StrokeProperty, Colors.Red, Colors.Black);
+		}
+
+		class AppThemeResourceView : View
+		{
+			public static readonly BindableProperty ThemeProperty = BindableProperty.Create(nameof(Theme), typeof(AppTheme), typeof(AppThemeResourceView), AppTheme.Unspecified);
+
+			public AppTheme Theme => (AppTheme)GetValue(ThemeProperty);
 		}
 	}
 }

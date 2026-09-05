@@ -78,5 +78,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// and OnPlatform<Color> because OnPlatform creates new Color instances each time
 			Assert.True(brush1.Equals(brush2));
 		}
+
+		[Fact]
+		public void TestHasTransparencySolidColorBrush()
+		{
+			SolidColorBrush nullBrush = null;
+			Assert.False(Brush.HasTransparency(nullBrush));
+
+			SolidColorBrush solidColorBrush = new SolidColorBrush();
+			Assert.False(Brush.HasTransparency(solidColorBrush));
+
+			SolidColorBrush red = new SolidColorBrush(Colors.Red);
+			Assert.False(Brush.HasTransparency(red));
+
+			SolidColorBrush transparentBrush = new SolidColorBrush(Colors.Transparent);
+			Assert.True(Brush.HasTransparency(transparentBrush));
+
+			SolidColorBrush semiTransparentBrush = new SolidColorBrush(Color.FromRgba(255, 0, 0, 0.5));
+			Assert.True(Brush.HasTransparency(semiTransparentBrush));
+
+			Assert.True(Brush.HasTransparency(Brush.Transparent));
+
+			Assert.False(Brush.HasTransparency(Brush.Black));
+		}
 	}
 }
