@@ -85,3 +85,8 @@ Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.Handlers.ViewHandler.SetContainerView(UIKit.UIView? containerView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(UIKit.UIView! containerView) -> void
 override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.ValidateContainerView(UIKit.UIView! containerView) -> void
+Microsoft.Maui.MauiWidgetCenter
+static Microsoft.Maui.MauiWidgetCenter.ReloadTimelines(string! kind) -> void
+static Microsoft.Maui.MauiWidgetCenter.ReloadAllTimelines() -> void
+static Microsoft.Maui.MauiWidgetCenter.GetSharedContainerUrl(string! appGroupId) -> Foundation.NSUrl?
+static Microsoft.Maui.MauiWidgetCenter.GetSharedDefaults(string! appGroupId) -> Foundation.NSUserDefaults!
