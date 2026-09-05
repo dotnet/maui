@@ -1,3 +1,8 @@
+using Microsoft.Maui.Layouts;
+#if IOS
+using Microsoft.Maui.Handlers;
+using UIKit;
+#endif
 using ControlsPage = Microsoft.Maui.Controls.Page;
 using NavigationPage = Microsoft.Maui.Controls.NavigationPage;
 
@@ -20,31 +25,46 @@ public class Issue33037NonShellRootPage : ContentPage
 	{
 		Title = "Issue 33037 Non-Shell";
 
-		Content = new VerticalStackLayout
+		Content = new ScrollView
 		{
-			Padding = 20,
-			Spacing = 12,
-			Children =
+			AutomationId = "Issue33037ScenarioMenuScroller",
+			Content = new VerticalStackLayout
 			{
-				new Label
+				Padding = 20,
+				Spacing = 12,
+				Children =
 				{
-					Text = "Select a non-Shell NavigationPage large-title scenario.",
-					FontAttributes = FontAttributes.Bold
-				},
-				CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
-				CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
-				CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
-				CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
-				CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
-				CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
-				CreateButton("Issue33037TableViewButton", "Grid wrapping TableView", () => new Issue33037NonShellTableViewPage()),
-				CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
-				CreateButton("Issue33037CandidateSelectionButton", "Hidden and horizontal scrollers before vertical content", () => new Issue33037NonShellCandidateSelectionPage()),
-				CreateButton("Issue33037FixedHeaderCollectionViewButton", "Fixed header with CollectionView", () => new Issue33037NonShellFixedHeaderCollectionViewPage()),
-				CreateButton("Issue33037ShortFixedHeaderCollectionViewButton", "Short fixed header with CollectionView", () => new Issue33037NonShellShortFixedHeaderCollectionViewPage()),
-				CreateButton("Issue33037ProgrammaticCollectionViewButton", "Programmatic CollectionView scroll", () => new Issue33037NonShellProgrammaticCollectionViewPage()),
-				CreateButton("Issue33037AppearingCollectionViewButton", "OnAppearing CollectionView scroll", () => new Issue33037NonShellAppearingCollectionViewPage()),
-				CreateButton("Issue33037HiddenNavigationBarButton", "Hidden navigation bar", () => new Issue33037NonShellHiddenNavigationBarPage())
+					new Label
+					{
+						Text = "Select a non-Shell NavigationPage large-title scenario.",
+						FontAttributes = FontAttributes.Bold
+					},
+					CreateModalButton(),
+					CreateReporterScenarioButton(),
+					CreateOpaqueNavigationButton(),
+					CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
+					CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
+					CreateButton("Issue33037ContentViewGridScrollViewButton", "ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellContentViewGridScrollViewPage()),
+					CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
+					CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
+					CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
+					CreateButton("Issue33037LegacyCollectionViewButton", "Legacy CollectionView with header", () => new Issue33037NonShellLegacyCollectionViewPage()),
+#if IOS
+					CreateButton("Issue33037NativeTableViewButton", "Custom control backed by native UITableView", () => new Issue33037NativeTableViewPage()),
+#endif
+					CreateButton("Issue33037TableViewButton", "Grid wrapping TableView", () => new Issue33037NonShellTableViewPage()),
+					CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
+					CreateButton("Issue33037CandidateSelectionButton", "Hidden and horizontal scrollers before vertical content", () => new Issue33037NonShellCandidateSelectionPage()),
+					CreateButton("Issue33037FixedHeaderCollectionViewButton", "Fixed header with CollectionView", () => new Issue33037NonShellFixedHeaderCollectionViewPage()),
+					CreateButton("Issue33037OrdinaryHeaderButton", "Ordinary header preserves safe area", () => new Issue33037NonShellOrdinaryHeaderPage()),
+					CreateButton("Issue33037MultipleCandidatesButton", "Multiple candidates preserve safe area", () => new Issue33037NonShellMultipleCandidatesPage()),
+					CreateButton("Issue33037ExplicitSafeAreaButton", "Explicit safe-area ownership and reset", () => new Issue33037NonShellExplicitSafeAreaPage()),
+					CreateButton("Issue33037LargeTitleNeverButton", "Large-title opt-out preserves safe area", () => new Issue33037NonShellLargeTitleNeverPage()),
+					CreateButton("Issue33037ShortFixedHeaderCollectionViewButton", "Short fixed header with CollectionView", () => new Issue33037NonShellShortFixedHeaderCollectionViewPage()),
+					CreateButton("Issue33037ProgrammaticCollectionViewButton", "Programmatic CollectionView scroll", () => new Issue33037NonShellProgrammaticCollectionViewPage()),
+					CreateButton("Issue33037AppearingCollectionViewButton", "OnAppearing CollectionView scroll", () => new Issue33037NonShellAppearingCollectionViewPage()),
+					CreateButton("Issue33037HiddenNavigationBarButton", "Hidden navigation bar", () => new Issue33037NonShellHiddenNavigationBarPage())
+				}
 			}
 		};
 	}
@@ -58,6 +78,70 @@ public class Issue33037NonShellRootPage : ContentPage
 		};
 
 		button.Clicked += async (_, _) => await Navigation.PushAsync(createPage());
+		return button;
+	}
+
+	Button CreateModalButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ModalListViewButton",
+			Text = "Modal NavigationPage with ListView"
+		};
+
+		button.Clicked += async (_, _) =>
+		{
+			var navigationPage = new NavigationPage(new Issue33037NonShellModalListViewPage())
+			{
+				BarBackgroundColor = Colors.Transparent
+			};
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navigationPage, true);
+			await Navigation.PushModalAsync(navigationPage);
+		};
+
+		return button;
+	}
+
+	Button CreateReporterScenarioButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ReporterScenarioButton",
+			Text = "Reporter 19-row ListView with bottom overlay"
+		};
+
+		button.Clicked += async (_, _) =>
+		{
+			var navigationPage = new NavigationPage(new Issue33037ReporterScenarioPage())
+			{
+				BarBackgroundColor = Colors.Transparent
+			};
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navigationPage, true);
+			await Navigation.PushModalAsync(navigationPage);
+		};
+
+		return button;
+	}
+
+	Button CreateOpaqueNavigationButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037OpaqueNavigationButton",
+			Text = "Opaque navigation bar preserves safe area"
+		};
+
+		button.Clicked += async (_, _) =>
+		{
+			var navigationPage = new NavigationPage(new Issue33037OpaqueNavigationPage())
+			{
+				BarBackgroundColor = Colors.DarkBlue,
+				BarTextColor = Colors.White
+			};
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navigationPage, true);
+			await Navigation.PushModalAsync(navigationPage);
+		};
+
 		return button;
 	}
 }
@@ -99,7 +183,7 @@ abstract class Issue33037NonShellScenarioPage : ContentPage
 		return stack;
 	}
 
-	protected static IList<string> CreateItems(int count = 60)
+	internal static IList<string> CreateItems(int count = 60)
 	{
 		var items = new List<string>();
 		for (int i = 0; i < count; i++)
@@ -224,6 +308,162 @@ class Issue33037NonShellListViewPage : Issue33037NonShellScenarioPage
 	}
 }
 
+class Issue33037NonShellModalListViewPage : ContentPage
+{
+	public Issue33037NonShellModalListViewPage()
+	{
+		Title = "Issue33037 Modal List";
+
+#pragma warning disable CS0618 // ListView/ViewCell obsolete - intentionally matching the reported issue #33037 scenario
+		var listView = new ListView
+		{
+			AutomationId = "Issue33037ModalListViewScroller",
+			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(60),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					HeightRequest = 50,
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return new ViewCell { View = label };
+			})
+		};
+#pragma warning restore CS0618
+
+		var closeButton = new Button
+		{
+			AutomationId = "Issue33037ModalListViewCloseButton",
+			HorizontalOptions = LayoutOptions.Center,
+			Margin = 12,
+			Text = "Close"
+		};
+		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+
+		AbsoluteLayout.SetLayoutFlags(listView, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(listView, new Rect(0, 0, 1, 1));
+
+		var listContainer = new AbsoluteLayout
+		{
+			Children =
+			{
+				listView
+			}
+		};
+
+		var content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Star),
+				new RowDefinition(GridLength.Auto)
+			},
+			Children =
+			{
+				listContainer,
+				closeButton
+			}
+		};
+		Grid.SetRow(closeButton, 1);
+		Content = content;
+	}
+}
+
+class Issue33037ReporterScenarioPage : ContentPage
+{
+	public Issue33037ReporterScenarioPage()
+	{
+		Title = "Large Title Demo";
+
+#pragma warning disable CS0618 // ListView/ViewCell intentionally match the reporter's issue #33037 sample.
+		var listView = new ListView
+		{
+			AutomationId = "Issue33037ReporterScroller",
+			BackgroundColor = Color.FromArgb("#F4F7FB"),
+			RowHeight = 50,
+			SeparatorColor = Color.FromArgb("#D5DBE3"),
+			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(19),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					BackgroundColor = Colors.White,
+					Padding = new Thickness(20, 0),
+					TextColor = Color.FromArgb("#1D2733"),
+					VerticalTextAlignment = TextAlignment.Center
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return new ViewCell { View = label };
+			})
+		};
+#pragma warning restore CS0618
+
+		var closeButton = new Button
+		{
+			AutomationId = "Issue33037ReporterCloseButton",
+			BackgroundColor = Color.FromArgb("#0A84FF"),
+			CornerRadius = 12,
+			FontAttributes = FontAttributes.Bold,
+			Text = "Close",
+			TextColor = Colors.White,
+			ZIndex = 1
+		};
+		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+
+		AbsoluteLayout.SetLayoutFlags(listView, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(listView, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(closeButton, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(closeButton, new Rect(0.5, 1, 200, 40));
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				listView,
+				closeButton
+			}
+		};
+	}
+}
+
+class Issue33037OpaqueNavigationPage : ContentPage
+{
+	public Issue33037OpaqueNavigationPage()
+	{
+		Title = "Issue33037 Opaque";
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetLargeTitleDisplay(
+			this,
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Automatic);
+
+		var closeButton = new Button
+		{
+			AutomationId = "Issue33037OpaqueNavigationCloseButton",
+			Text = "Close",
+			ZIndex = 1
+		};
+		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+
+		Content = new Grid
+		{
+			Children =
+			{
+				new CollectionView
+				{
+					AutomationId = "Issue33037OpaqueNavigationScroller",
+					ItemsSource = Issue33037NonShellScenarioPage.CreateItems()
+				},
+				new VerticalStackLayout
+				{
+					VerticalOptions = LayoutOptions.End,
+					ZIndex = 1,
+					Children = { closeButton }
+				}
+			}
+		};
+	}
+}
+
 class Issue33037NonShellCollectionViewPage : Issue33037NonShellScenarioPage
 {
 	public Issue33037NonShellCollectionViewPage() : base("Issue33037 Collection")
@@ -244,6 +484,103 @@ class Issue33037NonShellCollectionViewPage : Issue33037NonShellScenarioPage
 		};
 	}
 }
+
+class Issue33037NonShellLegacyCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellLegacyCollectionViewPage() : base("Issue33037 Legacy Collection")
+	{
+		Content = new Maui.Controls.Sample.CollectionView1
+		{
+			AutomationId = "Issue33037LegacyCollectionViewScroller",
+			Header = new Label
+			{
+				AutomationId = "Issue33037LegacyCollectionViewHeader",
+				Padding = new Thickness(16, 12),
+				Text = "Legacy CollectionView header"
+			},
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+	}
+}
+
+#if IOS
+class Issue33037NativeTableViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NativeTableViewPage() : base("Issue33037 Native")
+	{
+		Content = new Issue33037NativeTableView
+		{
+			AutomationId = "Issue33037NativeTableViewScroller"
+		};
+	}
+}
+
+public class Issue33037NativeTableView : View
+{
+}
+
+public class Issue33037NativeTableViewHandler : ViewHandler<Issue33037NativeTableView, UITableView>
+{
+	readonly Issue33037NativeTableViewSource _source = new();
+
+	public static readonly IPropertyMapper<Issue33037NativeTableView, Issue33037NativeTableViewHandler> Mapper =
+		new PropertyMapper<Issue33037NativeTableView, Issue33037NativeTableViewHandler>(ViewHandler.ViewMapper);
+
+	public Issue33037NativeTableViewHandler() : base(Mapper)
+	{
+	}
+
+	protected override UITableView CreatePlatformView()
+	{
+		return new UITableView
+		{
+			AlwaysBounceVertical = true,
+			RowHeight = 50,
+			SeparatorInset = new UIEdgeInsets(0, 16, 0, 0),
+			Source = _source
+		};
+	}
+}
+
+class Issue33037NativeTableViewSource : UITableViewSource
+{
+	const string ReuseIdentifier = "Issue33037NativeCell";
+
+	public override nint RowsInSection(UITableView tableview, nint section) => 60;
+
+	public override UITableViewCell GetCell(UITableView tableView, Foundation.NSIndexPath indexPath)
+	{
+		var cell = tableView.DequeueReusableCell(ReuseIdentifier) ??
+			new UITableViewCell(UITableViewCellStyle.Default, ReuseIdentifier);
+		var label = cell.ContentView.ViewWithTag(1) as UILabel;
+		if (label is null)
+		{
+			label = new UILabel(new CoreGraphics.CGRect(
+				16,
+				0,
+				Math.Max(0, cell.ContentView.Bounds.Width - 32),
+				cell.ContentView.Bounds.Height))
+			{
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+				Tag = 1
+			};
+			cell.ContentView.AddSubview(label);
+		}
+
+		label.Text = $"Item {indexPath.Row}";
+		return cell;
+	}
+}
+#endif
 
 class Issue33037NonShellTableViewPage : Issue33037NonShellScenarioPage
 {
@@ -320,6 +657,7 @@ class Issue33037NonShellWebViewPage : Issue33037NonShellScenarioPage
 			{
 				new HorizontalStackLayout
 				{
+					ZIndex = 1,
 					Children =
 					{
 						scrollButton,
@@ -340,6 +678,7 @@ class Issue33037NonShellCandidateSelectionPage : Issue33037NonShellScenarioPage
 		{
 			AutomationId = "Issue33037HorizontalCollectionView",
 			HeightRequest = 80,
+			ZIndex = 1,
 			ItemsSource = CreateItems(10),
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 			ItemTemplate = new DataTemplate(() =>
@@ -403,7 +742,8 @@ class Issue33037NonShellFixedHeaderCollectionViewPage : Issue33037NonShellScenar
 			Text = "Fixed header must remain below the navigation bar",
 			BackgroundColor = Colors.LightBlue,
 			FontAttributes = FontAttributes.Bold,
-			Padding = 12
+			Padding = 12,
+			ZIndex = 1
 		};
 
 		var collectionView = new CollectionView
@@ -449,7 +789,8 @@ class Issue33037NonShellShortFixedHeaderCollectionViewPage : Issue33037NonShellS
 			Text = "Short content must still collapse the title",
 			BackgroundColor = Colors.LightBlue,
 			FontAttributes = FontAttributes.Bold,
-			Padding = 12
+			Padding = 12,
+			ZIndex = 1
 		};
 
 		var collectionView = new CollectionView
@@ -487,6 +828,137 @@ class Issue33037NonShellShortFixedHeaderCollectionViewPage : Issue33037NonShellS
 	}
 }
 
+class Issue33037NonShellOrdinaryHeaderPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellOrdinaryHeaderPage() : base("Issue33037 Ordinary Header")
+	{
+		var header = new Label
+		{
+			AutomationId = "Issue33037OrdinaryHeader",
+			Text = "This ordinary header must remain in the safe-area layout.",
+			BackgroundColor = Colors.LightBlue,
+			FontAttributes = FontAttributes.Bold,
+			Padding = 12
+		};
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037OrdinaryHeaderScroller",
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					Padding = new Thickness(16, 12)
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		Grid.SetRow(collectionView, 1);
+
+		Content = new Grid
+		{
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Star)
+			},
+			Children =
+			{
+				header,
+				collectionView
+			}
+		};
+	}
+}
+
+class Issue33037NonShellMultipleCandidatesPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellMultipleCandidatesPage() : base("Issue33037 Multiple Candidates")
+	{
+		var first = new CollectionView
+		{
+			AutomationId = "Issue33037FirstCandidate",
+			ItemsSource = CreateItems()
+		};
+
+		var second = new CollectionView
+		{
+			AutomationId = "Issue33037SecondCandidate",
+			ItemsSource = CreateItems()
+		};
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				first,
+				second
+			}
+		};
+
+		AbsoluteLayout.SetLayoutBounds(first, new Rect(0, 0, 0.5, 1));
+		AbsoluteLayout.SetLayoutFlags(first, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(second, new Rect(1, 0, 0.5, 1));
+		AbsoluteLayout.SetLayoutFlags(second, AbsoluteLayoutFlags.All);
+	}
+}
+
+class Issue33037NonShellExplicitSafeAreaPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellExplicitSafeAreaPage() : base("Issue33037 Explicit Safe Area")
+	{
+		var scrollView = new ScrollView
+		{
+			AutomationId = "Issue33037ExplicitSafeAreaScroller",
+			Content = CreateStackContent("Issue33037ExplicitSafeArea")
+		};
+
+		var toggle = new Button
+		{
+			AutomationId = "Issue33037ExplicitSafeAreaToggle",
+			Text = "Take explicit safe-area ownership"
+		};
+		toggle.Clicked += (_, _) =>
+		{
+			scrollView.SafeAreaEdges = new SafeAreaEdges(SafeAreaRegions.Container);
+			toggle.Text = "Explicit safe-area ownership active";
+		};
+
+		Content = new Grid
+		{
+			Children =
+			{
+				scrollView,
+				new VerticalStackLayout
+				{
+					VerticalOptions = LayoutOptions.End,
+					ZIndex = 1,
+					Children = { toggle }
+				}
+			}
+		};
+	}
+}
+
+class Issue33037NonShellLargeTitleNeverPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NonShellLargeTitleNeverPage() : base("Issue33037 No Large Title")
+	{
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetLargeTitleDisplay(
+			this,
+			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.LargeTitleDisplayMode.Never);
+
+		Content = new CollectionView
+		{
+			AutomationId = "Issue33037LargeTitleNeverScroller",
+			ItemsSource = CreateItems()
+		};
+	}
+}
+
 class Issue33037NonShellProgrammaticCollectionViewPage : Issue33037NonShellScenarioPage
 {
 	public Issue33037NonShellProgrammaticCollectionViewPage() : base("Issue33037 Programmatic")
@@ -509,7 +981,8 @@ class Issue33037NonShellProgrammaticCollectionViewPage : Issue33037NonShellScena
 		var scrollButton = new Button
 		{
 			AutomationId = "Issue33037ProgrammaticScrollButton",
-			Text = "Scroll to item 50"
+			Text = "Scroll to item 50",
+			ZIndex = 1
 		};
 		scrollButton.Clicked += (_, _) => collectionView.ScrollTo(50, position: ScrollToPosition.Start, animate: false);
 
