@@ -22,8 +22,15 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement, IConstrainedView
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IPropertyUpdateBatchingElement, IView, IControlsVisualElement, IConstrainedView
 	{
+		static readonly bool HandlerUpdateBatchingEnabled =
+			AppContext.TryGetSwitch("Microsoft.Maui.Experimental.HandlerUpdateBatching", out var enabled) &&
+			enabled;
+		static readonly bool AutomaticHandlerUpdateBatchingEnabled =
+			AppContext.TryGetSwitch("Microsoft.Maui.Experimental.HandlerUpdateBatching.AutoDispatch", out var enabled) &&
+			enabled;
+
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
@@ -1021,6 +1028,15 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;
 
+		bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingEnabled =>
+			HandlerUpdateBatchingEnabled;
+
+		bool IPropertyUpdateBatchingElement.IsAutomaticPropertyUpdateBatchingEnabled =>
+			HandlerUpdateBatchingEnabled &&
+			AutomaticHandlerUpdateBatchingEnabled;
+
+		bool IPropertyUpdateBatchingElement.IsPropertyUpdateBatchingExplicitlyScoped => Batched;
+
 		internal LayoutConstraint ComputedConstraint
 		{
 			get { return _computedConstraint; }
@@ -1141,7 +1157,11 @@ namespace Microsoft.Maui.Controls
 		/// <para>Application authors will generally not need to batch updates manually as the animation framework will do this for them.</para>
 		/// <para>When the operation is done, <see cref="BatchCommit"/> should be called.</para>
 		/// </remarks>
-		public void BatchBegin() => _batched++;
+		public void BatchBegin()
+		{
+			if (_batched++ == 0)
+				(Handler as IPropertyUpdateBatchingHandler)?.BeginPropertyUpdateBatch();
+		}
 
 		/// <summary>
 		/// Signals the end of a batch of commands to the element and that those commands should now be committed.
@@ -1152,6 +1172,7 @@ namespace Microsoft.Maui.Controls
 			_batched = Math.Max(0, _batched - 1);
 			if (!Batched)
 			{
+				(Handler as IPropertyUpdateBatchingHandler)?.FlushPendingPropertyUpdates();
 				BatchCommitted?.Invoke(this, new EventArg<VisualElement>(this));
 			}
 		}
