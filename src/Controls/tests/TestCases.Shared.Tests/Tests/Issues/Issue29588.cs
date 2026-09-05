@@ -13,7 +13,7 @@ internal class Issue29588 : _IssuesUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void RemainingItemsThresholdReachedEventShouldTrigger()
 	{
 		App.WaitForElement("29588CollectionView");

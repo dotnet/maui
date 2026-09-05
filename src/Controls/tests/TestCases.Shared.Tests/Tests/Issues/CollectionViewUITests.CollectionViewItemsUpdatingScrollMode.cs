@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepItemsInView()
 		{
 			App.WaitForElement("ScrollToMiddle");
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// KeepScrollOffset semantics. With the fix, the visible items remain stable; adding 5 items
 		// above shifts indices so the previously visible "Vegetables.jpg, 10" becomes "FlowerBuds.jpg, 12".
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");

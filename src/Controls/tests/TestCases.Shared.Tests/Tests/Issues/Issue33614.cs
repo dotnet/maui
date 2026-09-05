@@ -11,7 +11,7 @@ public class Issue33614 : _IssuesUITest
     public Issue33614(TestDevice device) : base(device) { }
 
     [Test]
-    [Category(UITestCategories.CollectionView)]
+    [ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
     public void FirstVisibleItemIndexShouldBeCorrectAfterScrollTo()
     {
         App.WaitForElement("ScrollToButton");

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView runtime binding errors when loading the ItemSource asynchronously";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 		public void CollectionViewBindingContextOnlyChangesOnce()
 		{
 			ClassicAssert.AreEqual("1", App.WaitForElement("LabelBindingCount").GetText());

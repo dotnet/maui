@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "When add GroupHeaderTemplate in XAML the group header does not show up";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void Issue2777Test()
 		{
 			App.WaitForElement("The letter A");

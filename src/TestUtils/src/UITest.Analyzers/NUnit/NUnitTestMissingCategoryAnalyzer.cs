@@ -15,6 +15,7 @@ namespace UITest.Analyzers.NUnit
 	{
 		public const string MissingCategoryDiagnosticId = "MAUI0001";
 		public const string MultipleCategoriesDiagnosticId = "MAUI0002";
+		public const string ShardedCategoryDiagnosticId = "MAUI0003";
 
 		const string MissingCategoryTitle = "Test methods should have exactly one Category";
 		const string MissingCategoryMessageFormat = "Test method '{0}' should be marked with exactly one `[Category]` attribute on the method or its parent class";
@@ -24,7 +25,15 @@ namespace UITest.Analyzers.NUnit
 		const string MultipleCategoriesMessageFormat = "Test method '{0}' has {1} `[Category]` attributes but should have exactly one";
 		const string MultipleCategoriesDescription = "Test methods should have exactly one `[Category]` attribute, either on the method or its parent class.";
 
+		const string ShardedCategoryTitle = "Sharded test categories should use ShardedTestCategory";
+		const string ShardedCategoryMessageFormat = "Test method '{0}' uses the sharded category '{1}' directly; use `[ShardedTestCategory(UITestCategories.{1}, shard: ...)]` so both the umbrella and CI shard categories are registered";
+		const string ShardedCategoryDescription = "Categories split across CI jobs must use ShardedTestCategory so every test remains addressable through both its umbrella category and exactly one shard category.";
+
 		private const string Category = "Testing";
+
+		// Keep this list in sync through the rebalance-ui-test-categories skill.
+		private static readonly ImmutableArray<string> CiShardCategoryPrefixes =
+			ImmutableArray.Create("CollectionView");
 
 		private static readonly DiagnosticDescriptor MissingCategoryRule = new DiagnosticDescriptor(
 			MissingCategoryDiagnosticId,
@@ -44,8 +53,17 @@ namespace UITest.Analyzers.NUnit
 			isEnabledByDefault: true,
 			description: MultipleCategoriesDescription);
 
+		private static readonly DiagnosticDescriptor ShardedCategoryRule = new DiagnosticDescriptor(
+			ShardedCategoryDiagnosticId,
+			ShardedCategoryTitle,
+			ShardedCategoryMessageFormat,
+			Category,
+			DiagnosticSeverity.Error,
+			isEnabledByDefault: true,
+			description: ShardedCategoryDescription);
+
 		public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-			=> ImmutableArray.Create(MissingCategoryRule, MultipleCategoriesRule);
+			=> ImmutableArray.Create(MissingCategoryRule, MultipleCategoriesRule, ShardedCategoryRule);
 
 		public override void Initialize(AnalysisContext context)
 		{
@@ -58,36 +76,92 @@ namespace UITest.Analyzers.NUnit
 		private static void AnalyzeSymbol(SymbolAnalysisContext context)
 		{
 			var methodSymbol = (IMethodSymbol)context.Symbol;
+			var methodAttributes = methodSymbol.GetAttributes();
+			var testAttributes = methodAttributes.Where(IsTestAttribute).ToImmutableArray();
 
-			// Check if the method has the [Test] attribute.
-			var hasTestAttribute = methodSymbol.GetAttributes().Any(attr => attr?.AttributeClass?.Name == "TestAttribute");
-
-			if (!hasTestAttribute)
+			if (testAttributes.IsEmpty)
 			{
 				return;
 			}
 
+			string? shardedCategory = null;
+			foreach (var attribute in methodAttributes.Concat(methodSymbol.ContainingType.GetAttributes()))
+			{
+				if (TryGetDirectCategory(attribute, out var category) &&
+					IsRegisteredCiShardCategory(category))
+				{
+					shardedCategory = category;
+					break;
+				}
+
+				var testCaseCategory = GetTestCaseCategories(attribute)
+					.FirstOrDefault(IsRegisteredCiShardCategory);
+				if (testCaseCategory != null)
+				{
+					shardedCategory = testCaseCategory;
+					break;
+				}
+			}
+			if (shardedCategory != null)
+			{
+				context.ReportDiagnostic(Diagnostic.Create(
+					ShardedCategoryRule,
+					methodSymbol.Locations[0],
+					methodSymbol.Name,
+					shardedCategory));
+			}
+
 			// Count category attributes on the method
-			int methodCategoryCount = CountCategoryAttributes(methodSymbol.GetAttributes());
+			int methodCategoryCount = CountCategoryAttributes(methodAttributes);
 
 			// Count category attributes on the containing class
 			var containingClass = methodSymbol.ContainingType;
 			int classCategoryCount = CountCategoryAttributes(containingClass.GetAttributes());
 
-			int totalCategoryCount = methodCategoryCount + classCategoryCount;
+			int sharedCategoryCount = methodCategoryCount + classCategoryCount;
+			var parameterizedTestAttributes = testAttributes
+				.Where(IsParameterizedTestAttribute)
+				.ToImmutableArray();
 
-			// If it has [Test] but no [Category], report missing category diagnostic.
-			if (totalCategoryCount == 0)
+			var categoryCounts = parameterizedTestAttributes.IsEmpty
+				? ImmutableArray.Create(sharedCategoryCount)
+				: parameterizedTestAttributes
+					.Select(attribute => sharedCategoryCount + CountTestCaseCategory(attribute))
+					.ToImmutableArray();
+
+			if (categoryCounts.Any(count => count == 0))
 			{
 				var diagnostic = Diagnostic.Create(MissingCategoryRule, methodSymbol.Locations[0], methodSymbol.Name);
 				context.ReportDiagnostic(diagnostic);
 			}
-			// If it has more than one [Category], report multiple categories diagnostic.
-			else if (totalCategoryCount > 1)
+			else if (categoryCounts.Any(count => count > 1))
 			{
-				var diagnostic = Diagnostic.Create(MultipleCategoriesRule, methodSymbol.Locations[0], methodSymbol.Name, totalCategoryCount);
+				var diagnostic = Diagnostic.Create(
+					MultipleCategoriesRule,
+					methodSymbol.Locations[0],
+					methodSymbol.Name,
+					categoryCounts.Max());
 				context.ReportDiagnostic(diagnostic);
 			}
+		}
+
+		private static bool IsTestAttribute(AttributeData attribute)
+		{
+			return attribute.AttributeClass?.Name is
+				"TestAttribute" or
+				"TestCaseAttribute" or
+				"TestCaseSourceAttribute" or
+				"TheoryAttribute";
+		}
+
+		private static bool IsParameterizedTestAttribute(AttributeData attribute)
+		{
+			return attribute.AttributeClass?.Name is "TestCaseAttribute" or "TestCaseSourceAttribute";
+		}
+
+		private static int CountTestCaseCategory(AttributeData attribute)
+		{
+			return GetTestCaseCategories(attribute).Count(category => !IsCiShardCategory(category));
 		}
 
 		/// <summary>
@@ -106,6 +180,17 @@ namespace UITest.Analyzers.NUnit
 
 				// Check if it's a direct [Category] attribute
 				if (attr.AttributeClass.Name == "CategoryAttribute")
+				{
+					if (IsCiShardCategory(attr))
+					{
+						continue;
+					}
+
+					count++;
+					continue;
+				}
+
+				if (attr.AttributeClass.Name is "ShardedTestCategoryAttribute" or "ShardedTestCategory")
 				{
 					count++;
 					continue;
@@ -133,6 +218,72 @@ namespace UITest.Analyzers.NUnit
 				}
 			}
 			return count;
+		}
+
+		private static bool IsCiShardCategory(AttributeData attribute)
+		{
+			if (!TryGetDirectCategory(attribute, out var category))
+			{
+				return false;
+			}
+
+			return IsCiShardCategory(category);
+		}
+
+		private static bool IsCiShardCategory(string category)
+		{
+			foreach (var prefix in CiShardCategoryPrefixes)
+			{
+				if (category.Length > prefix.Length &&
+					category.StartsWith(prefix, StringComparison.Ordinal) &&
+					category.Skip(prefix.Length).All(char.IsDigit))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static bool IsRegisteredCiShardCategory(string category)
+		{
+			return CiShardCategoryPrefixes.Contains(category) || IsCiShardCategory(category);
+		}
+
+		private static bool TryGetDirectCategory(AttributeData attribute, out string category)
+		{
+			category = string.Empty;
+			if (attribute.AttributeClass?.Name != "CategoryAttribute" ||
+				attribute.ConstructorArguments.Length != 1 ||
+				attribute.ConstructorArguments[0].Value is not string value)
+			{
+				return false;
+			}
+
+			category = value;
+			return true;
+		}
+
+		private static IEnumerable<string> GetTestCaseCategories(AttributeData attribute)
+		{
+			if (!IsParameterizedTestAttribute(attribute))
+			{
+				return Enumerable.Empty<string>();
+			}
+
+			foreach (var namedArgument in attribute.NamedArguments)
+			{
+				if (namedArgument.Key == "Category" &&
+					namedArgument.Value.Value is string value)
+				{
+					return value
+						.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+						.Select(category => category.Trim())
+						.Where(category => category.Length > 0);
+				}
+			}
+
+			return Enumerable.Empty<string>();
 		}
 
 		/// <summary>

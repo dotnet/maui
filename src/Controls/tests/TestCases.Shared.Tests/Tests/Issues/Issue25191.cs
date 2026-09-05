@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView ItemSizingStrategy:MeasureFirstItem renders labels incorrectly";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 		public void CollectionViewMeasureFirstItem()
 		{
 			App.WaitForElement("collectionView");

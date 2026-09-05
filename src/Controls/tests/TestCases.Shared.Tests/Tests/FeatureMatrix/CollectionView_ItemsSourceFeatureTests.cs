@@ -25,18 +25,17 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	public const string SingleModePreselection = "SingleModePreselection";
 
 	public override string GalleryPageName => ItemsSourceFeatureMatrix;
+	protected override string GallerySubPageButton => "ItemsSourceButton";
 
 	public CollectionView_ItemsSourceFeatureTests(TestDevice device)
 		: base(device)
 	{
 	}
 
-	[Test, Order(1)]
-	[Category(UITestCategories.CollectionView)]
+	[Test]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyStringItemsObservableCollectionWhenAddItems()
 	{
-		App.WaitForElement("ItemsSourceButton");
-		App.Tap("ItemsSourceButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemsSourceObservableCollection);
@@ -48,7 +47,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 		App.WaitForElement("Kiwi");
 	}
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyStringItemsObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -64,7 +63,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyStringItemsListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -79,7 +78,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyStringItemsListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -95,7 +94,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyStringItemsEmptyGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -110,7 +109,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyStringItemsEmptyGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -125,7 +124,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyStringItemsEmptyObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -140,7 +139,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyStringItemsEmptyObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -155,7 +154,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyStringItemsItemsSourceNoneWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -168,7 +167,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyStringItemsItemsSourceNoneWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -181,7 +180,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyModelItemsObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -198,7 +197,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyModelItemsObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -216,7 +215,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyModelItemsListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -233,7 +232,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyModelItemsListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -251,7 +250,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyModelItemsEmptyGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -268,7 +267,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyModelItemsEmptyGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -285,7 +284,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyModelItemsEmptyObservableCollectionWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -302,7 +301,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyModelItemsEmptyObservableCollectionWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -319,7 +318,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyModelItemsItemsSourceNoneWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -334,7 +333,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyModelItemsItemsSourceNoneWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -349,7 +348,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyStringItemsObservableCollectionWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -369,7 +368,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyStringItemsObservableCollectionWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -386,7 +385,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyModelItemsObservableCollectionWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -404,7 +403,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyModelItemsObservableCollectionWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -423,7 +422,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyStringItemsGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -442,7 +441,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyStringItemsGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -462,7 +461,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyModelItemsGroupedListWhenAddItems()
 	{
 		App.WaitForElement(Options);
@@ -483,7 +482,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyModelItemsGroupedListWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -505,7 +504,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyStringItemsGroupedListWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -525,7 +524,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyStringItemsGroupedListWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -546,7 +545,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyModelItemsGroupedListWhenAddIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -568,7 +567,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyModelItemsGroupedListWhenRemoveIndexAtItems()
 	{
 		App.WaitForElement(Options);
@@ -591,7 +590,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyStringItemsObservableCollectionWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -611,7 +610,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 	public void VerifyStringItemsObservableCollectionWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -631,7 +630,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void VerifyModelItemsObservableCollectionWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -653,7 +652,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 4)]
 	public void VerifyModelItemsObservableCollectionWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -675,7 +674,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 5)]
 	public void VerifyStringItemsGroupedListWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -699,7 +698,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 	public void VerifyStringItemsGroupedListWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -723,7 +722,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void VerifyModelItemsGroupedListWhenSingleModePreSelection()
 	{
 		App.WaitForElement(Options);
@@ -749,7 +748,7 @@ public class CollectionView_ItemsSourceFeatureTests : _GalleryUITest
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void VerifyModelItemsGroupedListWhenMultipleModePreSelection()
 	{
 		App.WaitForElement(Options);

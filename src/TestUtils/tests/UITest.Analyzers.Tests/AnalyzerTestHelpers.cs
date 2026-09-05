@@ -67,6 +67,23 @@ internal static class AnalyzerTestHelpers
 			[System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]
 			public class TestAttribute : System.Attribute { }
 
+			[System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
+			public class TestCaseAttribute : System.Attribute
+			{
+				public TestCaseAttribute(params object[] arguments) { }
+				public string Category { get; set; }
+			}
+
+			[System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
+			public class TestCaseSourceAttribute : System.Attribute
+			{
+				public TestCaseSourceAttribute(string sourceName) { }
+				public string Category { get; set; }
+			}
+
+			[System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = false)]
+			public class TheoryAttribute : System.Attribute { }
+
 			[System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple = true)]
 			public class CategoryAttribute : System.Attribute
 			{
