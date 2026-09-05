@@ -1000,5 +1000,110 @@ namespace Microsoft.Maui.Platform
 
 			return base.AccessibilityActivate();
 		}
+
+		/// <summary>
+		/// Label for a phantom accessibility element announcing this container's own Description
+		/// as a separate VoiceOver stop (see #33612), without hiding its real children.
+		/// </summary>
+		internal string? AccessibilityContainerLabel { get; set; }
+
+		/// <summary>Hint for the phantom element. See <see cref="AccessibilityContainerLabel"/>.</summary>
+		internal string? AccessibilityContainerHint { get; set; }
+
+		/// <summary>
+		/// Cached phantom accessibility element for container semantics.
+		/// WeakReference avoids NSObject retain-cycle/MEM0002 warnings.
+		/// </summary>
+		WeakReference<ContainerPhantomAccessibilityElement>? _accessibilityContainerElementRef;
+
+		/// <summary>
+		/// Clears the cached phantom accessibility element. Call this alongside setting
+		/// <see cref="AccessibilityContainerLabel"/>/<see cref="AccessibilityContainerHint"/> to null
+		/// (e.g. when a container is demoted back to a plain leaf in
+		/// <see cref="SemanticExtensions.UpdateSemantics(UIView, IView)"/>), so a stale cached element
+		/// doesn't resurrect with leftover label/hint state if semantics get re-applied later.
+		/// </summary>
+		internal void ClearAccessibilityContainerElement()
+		{
+			_accessibilityContainerElementRef = null;
+		}
+
+		// Exposes the UIKit accessibilityElements selector on MauiView.
+		// Returning null keeps default platform behavior (VoiceOver infers elements from subviews).
+		[Export("accessibilityElements")]
+		public virtual NSObject[]? AccessibilityElements
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(AccessibilityContainerLabel) && string.IsNullOrEmpty(AccessibilityContainerHint))
+				{
+					ClearAccessibilityContainerElement();
+					return null;
+				}
+
+				// Guard 2 (lazy): if native gesture recognizers are now attached, this container is
+				// itself the actionable unit (a tap gesture was wired up by GesturePlatformManager).
+				// Evaluating this at getter time — mirroring the SynthesizeAccessibilityLabelFromChildren
+				// synthesis pattern above — avoids the chicken-and-egg problem where SemanticExtensions'
+				// Guard 2 runs during the initial MapSemantics pass, before Controls has attached the
+				// native UIGestureRecognizers. Skipping the phantom here lets UIKit fall back to default
+				// behavior (Button trait + AccessibilityLabel/Hint on the container itself, as set by
+				// SemanticExtensions), which is the correct actionable-leaf presentation.
+				if (GestureRecognizers is { Length: > 0 })
+				{
+					ClearAccessibilityContainerElement();
+					return null;
+				}
+
+				// UIKit recurses into each entry's own accessibility rules, so children stay reachable.
+				// Reuse the same instance across calls so VoiceOver/Accessibility Inspector retain
+				// identity continuity on whichever element they're currently focused on/inspecting.
+				if (_accessibilityContainerElementRef?.TryGetTarget(out var containerLabelElement) != true
+					|| containerLabelElement is null)
+				{
+					containerLabelElement = new ContainerPhantomAccessibilityElement(this)
+					{
+						// AccessibilityFrame is computed live from this container's current Bounds on every
+						// read (see ContainerPhantomAccessibilityElement below) — no frame value is stored
+						// or manually kept in sync here, so resizes, rotations, and re-layouts are reflected
+						// automatically without a Bounds override or explicit per-resize notification.
+						IsAccessibilityElement = true,
+					};
+					_accessibilityContainerElementRef = new WeakReference<ContainerPhantomAccessibilityElement>(containerLabelElement);
+				}
+
+				containerLabelElement.AccessibilityLabel = AccessibilityContainerLabel;
+				containerLabelElement.AccessibilityHint = AccessibilityContainerHint;
+
+				var elements = new NSObject[Subviews.Length + 1];
+				elements[0] = containerLabelElement;
+				Array.Copy(Subviews, 0, elements, 1, Subviews.Length);
+
+				return elements;
+			}
+		}
+
+		/// <summary>
+		/// Phantom accessibility element for container label/hint.
+		/// AccessibilityFrame is computed from current container bounds on each read.
+		/// </summary>
+		internal class ContainerPhantomAccessibilityElement : UIAccessibilityElement
+		{
+			public ContainerPhantomAccessibilityElement(NSObject container) : base(container) { }
+
+			public override CGRect AccessibilityFrame
+			{
+				get
+				{
+					if (AccessibilityContainer is UIView view)
+					{
+						return UIAccessibility.ConvertFrameToScreenCoordinates(view.Bounds, view);
+					}
+
+					return base.AccessibilityFrame;
+				}
+				set => base.AccessibilityFrame = value;
+			}
+		}
 	}
 }
