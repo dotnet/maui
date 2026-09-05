@@ -75,10 +75,11 @@ jobs:
         condition: ${{ parameters.condition }}
 
     - ${{ if and(ne(parameters.CeapexServiceConnection, ''), or(eq(variables['System.TeamProject'], 'internal'), eq(variables['System.TeamProject'], 'DevDiv'))) }}:
-      - template: /eng/common/templates/steps/get-federated-access-token.yml
+      - template: /eng/common/core-templates/steps/get-federated-access-token.yml
         parameters:
           federatedServiceConnection: ${{ parameters.CeapexServiceConnection }}
           outputVariableName: CeapexEntraToken
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
           condition: ${{ parameters.condition }}
 
     - task: OneLocBuild@2

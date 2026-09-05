@@ -125,7 +125,7 @@ extends:
       - stage: Localization
         displayName: Localization
         dependsOn: []
-        condition: eq(variables.isLocHandoffBranch, true)
+        condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
         jobs:
           - template: /eng/common/templates-official/job/onelocbuild.yml@self
             parameters:
