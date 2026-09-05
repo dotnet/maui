@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
@@ -38,10 +39,11 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = new PathF();
 
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
+			var strokeInset = GetPathStrokeInset(width, height);
+			float x = (float)strokeInset / 2;
+			float y = (float)strokeInset / 2;
+			float w = (float)Math.Max(0, width - strokeInset);
+			float h = (float)Math.Max(0, height - strokeInset);
 
 			path.AppendEllipse(x, y, w, h);
 

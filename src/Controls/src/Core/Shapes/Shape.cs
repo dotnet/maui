@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			_fillProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
 		}
-		
+
 		int IVersionedShape.Version => _version;
 
 		protected override void OnPropertyChanged(string? propertyName = null)
@@ -130,6 +130,34 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(StrokeThicknessProperty, value); }
 			get { return (double)GetValue(StrokeThicknessProperty); }
+		}
+
+		/// <summary>
+		/// Gets the stroke inset that should be applied for path/measure calculations for
+		/// the given available width and height.
+		/// When no <see cref="Stroke"/> brush is set, no stroke will be rendered, so the default
+		/// <see cref="StrokeThickness"/> inset is only suppressed when it would be geometrically
+		/// destructive (i.e. it would consume at least half of the shape's width or height),
+		/// which otherwise collapses small fill-only shapes into an invisible sliver.
+		/// Normal-sized shapes keep the legacy inset behavior to avoid changing their rendered size.
+		/// </summary>
+		internal double GetPathStrokeInset(double width, double height)
+		{
+			var strokeThickness = StrokeThickness;
+
+			if (Stroke is null && strokeThickness > 0)
+			{
+				var minimumDimension = Math.Min(width, height);
+
+				if (!double.IsNaN(minimumDimension) &&
+					!double.IsInfinity(minimumDimension) &&
+					minimumDimension <= strokeThickness * 2)
+				{
+					return 0;
+				}
+			}
+
+			return strokeThickness;
 		}
 
 		/// <summary>
@@ -317,10 +345,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			viewBounds.X += StrokeThickness / 2;
-			viewBounds.Y += StrokeThickness / 2;
-			viewBounds.Width -= StrokeThickness;
-			viewBounds.Height -= StrokeThickness;
+			var strokeInset = GetPathStrokeInset(viewBounds.Width, viewBounds.Height);
+			viewBounds.X += strokeInset / 2;
+			viewBounds.Y += strokeInset / 2;
+			viewBounds.Width -= strokeInset;
+			viewBounds.Height -= strokeInset;
 
 			Matrix3x2 transform;
 
@@ -456,8 +485,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
-			widthConstraint -= StrokeThickness;
-			heightConstraint -= StrokeThickness;
+			var strokeInset = GetPathStrokeInset(widthConstraint, heightConstraint);
+			widthConstraint -= strokeInset;
+			heightConstraint -= strokeInset;
 
 			double scaleX = widthConstraint / result.Width;
 			double scaleY = heightConstraint / result.Height;
@@ -505,8 +535,8 @@ namespace Microsoft.Maui.Controls.Shapes
 					break;
 			}
 
-			result.Height += StrokeThickness;
-			result.Width += StrokeThickness;
+			result.Height += strokeInset;
+			result.Width += strokeInset;
 			if (this is Line or Path or Polyline)
 			{
 				result.Height += Margin.VerticalThickness;
