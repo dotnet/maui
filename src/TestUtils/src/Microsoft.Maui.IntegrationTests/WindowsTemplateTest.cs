@@ -179,6 +179,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64/" : "";
+		if (framework == DotNetPrevious && !usesRidGraph)
+			rid = "win-x64/";
+
 		var prefix = framework == DotNetCurrent
 			? ""
 			: $"bin/{config}/{framework}-windows10.0.19041.0/";
