@@ -25,23 +25,6 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> Application.Context?.PackageManager?.HasSystemFeature(PackageManager.FeatureCameraAny) ?? false;
 
-		internal static Task<string> ProcessPhotoAsync(string imagePath, MediaPickerOptions options)
-			=> ProcessImage(imagePath, options);
-
-		// Recovery-sensitive MediaPicker paths must leave the original file intact until the
-		// active recovery record has been cleared or promoted, so they opt out of the
-		// MAUI-owned input cleanup that ProcessImage otherwise performs.
-		internal static Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
-			=> ProcessImage(imagePath, options, preserveSource: true);
-
-		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
-			=> new(
-				options?.MaximumWidth,
-				options?.MaximumHeight,
-				options?.CompressionQuality ?? 100,
-				options?.RotateImage ?? false,
-				options?.PreserveMetaData ?? true);
-
 		internal static bool IsPhotoPickerAvailable
 			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
 
@@ -142,6 +125,7 @@ namespace Microsoft.Maui.Media
 				RecoveredMediaPickerResultKind.CapturePhoto,
 				[captureFile.AbsolutePath],
 				processingOptions);
+			string publishedPath = null;
 
 			try
 			{
@@ -152,12 +136,14 @@ namespace Microsoft.Maui.Media
 					return null;
 				}
 
-				return await ProcessPhotoPreservingSourceAsync(captureFile.AbsolutePath, processingOptions);
+				publishedPath = await ProcessPhotoPreservingSourceAsync(captureFile.AbsolutePath, processingOptions);
+				return publishedPath;
 			}
 			finally
 			{
 				// The live task completed or failed, so prevent the same capture from being published as recovered later.
 				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+				TryDeleteMauiOwnedTemporarySource(captureFile.AbsolutePath, publishedPath);
 			}
 		}
 
@@ -220,8 +206,7 @@ namespace Microsoft.Maui.Media
 				{
 					if (photo)
 					{
-						// Apply rotation and/or compression if needed
-						path = await ProcessImage(path, options);
+						path = await ProcessPhotoAsync(path, options);
 					}
 
 					return new FileResult(path);
@@ -249,6 +234,8 @@ namespace Microsoft.Maui.Media
 				operationKind ?? (photo ? RecoveredMediaPickerResultKind.PickPhoto : RecoveredMediaPickerResultKind.PickVideo),
 				[],
 				processingOptions);
+			string sourcePath = null;
+			string publishedPath = null;
 
 			try
 			{
@@ -260,19 +247,21 @@ namespace Microsoft.Maui.Media
 				}
 
 				var acceptedPaths = await MediaPickerRecoveryManager.MaterializeAcceptedFilePathsAsync(pendingOperation.Id, throwOnMaterializationFailure: true);
-				var path = acceptedPaths.FirstOrDefault() ?? await FileSystemUtils.EnsurePhysicalPathAsync(androidUri);
+				sourcePath = acceptedPaths.FirstOrDefault() ?? await FileSystemUtils.EnsurePhysicalPathAsync(androidUri);
+				publishedPath = sourcePath;
 
 				if (photo)
 				{
-					path = await ProcessPhotoPreservingSourceAsync(path, processingOptions);
+					publishedPath = await ProcessPhotoPreservingSourceAsync(sourcePath, processingOptions);
 				}
 
-				return new FileResult(path);
+				return new FileResult(publishedPath);
 			}
 			finally
 			{
 				// The live task completed or failed, so prevent the same pick from being published as recovered later.
 				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+				TryDeleteMauiOwnedTemporarySource(sourcePath, publishedPath);
 			}
 		}
 
@@ -306,6 +295,7 @@ namespace Microsoft.Maui.Media
 				photo ? RecoveredMediaPickerResultKind.PickPhotos : RecoveredMediaPickerResultKind.PickVideos,
 				[],
 				processingOptions);
+			var publishedPaths = new List<(string SourcePath, string PublishedPath)>();
 
 			try
 			{
@@ -326,6 +316,7 @@ namespace Microsoft.Maui.Media
 					if (photo)
 						path = await ProcessPhotoPreservingSourceAsync(path, processingOptions);
 
+					publishedPaths.Add((acceptedPath, path));
 					resultList.Add(new FileResult(path));
 				}
 
@@ -335,6 +326,8 @@ namespace Microsoft.Maui.Media
 			{
 				// The live task completed or failed, so prevent the same pick from being published as recovered later.
 				MediaPickerRecoveryManager.ClearActiveOperation(pendingOperation.Id);
+				foreach (var path in publishedPaths)
+					TryDeleteMauiOwnedTemporarySource(path.SourcePath, path.PublishedPath);
 			}
 		}
 
@@ -578,9 +571,7 @@ namespace Microsoft.Maui.Media
 
 					foreach (var path in tempResultList)
 					{
-						// Apply rotation and/or compression if needed
-						var processedPath = await ProcessImage(path, options);
-
+						var processedPath = await ProcessPhotoAsync(path, options);
 						resultList.Add(new FileResult(processedPath));
 					}
 				}
@@ -593,109 +584,143 @@ namespace Microsoft.Maui.Media
 			}
 		}
 
-		internal static Task<string> ProcessImage(string imagePath, MediaPickerOptions options)
-			=> ProcessImage(imagePath, GetPhotoProcessingOptions(options));
+		// --- Photo processing (shared MAUI Graphics pipeline) -------------------------------------
 
-		internal static async Task<string> ProcessImage(string imagePath, PersistedPhotoProcessingOptions options, bool preserveSource = false)
+		// Entry point used by the picker paths: resolves the MediaPickerOptions and processes the photo.
+		internal static Task<string> ProcessPhotoAsync(string imagePath, MediaPickerOptions options)
+			=> ProcessPhotoAsync(imagePath, GetPhotoProcessingOptions(options), preserveSource: false);
+
+		// Recovery-sensitive paths keep the materialized source until their persisted operation has been
+		// cleared or promoted, so a process death can never leave a recovery record pointing at a deleted file.
+		internal static Task<string> ProcessPhotoPreservingSourceAsync(string imagePath, PersistedPhotoProcessingOptions options)
+			=> ProcessPhotoAsync(imagePath, options, preserveSource: true);
+
+		// Loads the image through MAUI Graphics (applying EXIF orientation and capturing metadata per the
+		// options), applies any resize, and writes the result to a new MAUI-owned cache file that
+		// preserves the original file name. The source file is only ever read, never modified.
+		//
+		// When processing is performed this returns a separate MAUI-owned file (never the source): on a
+		// processing failure we copy the source bytes into the new file rather than handing back the
+		// source path. The source path is returned unchanged only in the early-out cases below (nothing
+		// to do, or the source no longer exists) or, as a last resort, if that fallback copy itself
+		// fails. Also used directly by MediaPickerRecoveryManager.
+		static async Task<string> ProcessPhotoAsync(
+			string imagePath,
+			PersistedPhotoProcessingOptions options,
+			bool preserveSource)
 		{
-			if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
-				return imagePath;
+			if (imagePath is null)
+			{
+				return null;
+			}
 
-			var needsRotation = options.RotateImage;
-			var needsProcessing = ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality);
-
-			// Nothing to do - return the picked path untouched.
-			if (!needsRotation && !needsProcessing)
+			// Nothing to do unless the caller asked to rotate, resize, or recompress.
+			if (!options.RotateImage &&
+				!ImageProcessor.IsProcessingNeeded(options.MaximumWidth, options.MaximumHeight, options.CompressionQuality))
+			{
 				return imagePath;
+			}
+
+			if (!File.Exists(imagePath))
+			{
+				return imagePath;
+			}
+
+			// Preserve the original container (JPEG/PNG). Deterministic: no automatic format switching.
+			var format = ImageProcessor.GetOutputFormat(imagePath);
+			var outputFileName = System.IO.Path.GetFileNameWithoutExtension(imagePath) + ImageProcessor.GetOutputExtension(format, imagePath);
+			var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
+			var outputPath = outputFile.AbsolutePath;
+
+			var processingOptions = new ImageProcessingOptions(
+				options.MaximumWidth,
+				options.MaximumHeight,
+				options.CompressionQuality,
+				options.RotateImage,
+				options.PreserveMetaData);
 
 			try
 			{
-				var inputFileName = System.IO.Path.GetFileName(imagePath);
-
-				// Compose the transforms without mutating the input: rotation and compression are
-				// chained through in-memory streams and only the final result is written - once - to
-				// a new MAUI-owned cache file (GetTemporaryFile preserves the original filename, see
-				// #33258). External/user-owned sources (the gallery original, an SD card, another
-				// app's storage) are therefore never deleted or overwritten. If the input was itself
-				// a MAUI-owned temporary cache file (a camera capture, or a content:// URI that
-				// EnsurePhysicalPath copied into our cache), it is removed after the output is written
-				// (below) so we don't leave an orphaned duplicate behind - unless the caller opted
-				// into preserving it because a recovery record still points at it.
-				Stream currentStream = File.OpenRead(imagePath);
-				try
+				using (var input = File.OpenRead(imagePath))
+				using (var output = File.Create(outputPath))
 				{
-					if (needsRotation)
-					{
-						var rotatedStream = await ImageProcessor.RotateImageAsync(currentStream, inputFileName);
-						currentStream.Dispose();
-						currentStream = rotatedStream;
-						currentStream.Position = 0;
-					}
-
-					if (needsProcessing)
-					{
-						var processedStream = await ImageProcessor.ProcessImageAsync(
-							currentStream,
-							options.MaximumWidth,
-							options.MaximumHeight,
-							options.CompressionQuality,
-							inputFileName,
-							false, // rotation, if any, has already been applied above
-							options.PreserveMetaData);
-
-						if (processedStream is not null)
-						{
-							currentStream.Dispose();
-							currentStream = processedStream;
-							currentStream.Position = 0;
-						}
-					}
-
-					// Preserve the original filename (see #33258), but honor a format change
-					// (e.g. PNG -> JPEG) by swapping the extension.
-					var outputExtension = ImageProcessor.DetermineOutputExtension(currentStream, options.CompressionQuality, inputFileName);
-					var originalExtension = System.IO.Path.GetExtension(inputFileName);
-					var outputFileName = inputFileName;
-					if (!string.Equals(outputExtension, originalExtension, StringComparison.OrdinalIgnoreCase))
-					{
-						outputFileName = System.IO.Path.ChangeExtension(inputFileName, outputExtension);
-					}
-
-					var outputFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, outputFileName);
-					var outputPath = outputFile.AbsolutePath;
-
-					using (var outputStream = File.Create(outputPath))
-					{
-						currentStream.Position = 0;
-						await currentStream.CopyToAsync(outputStream);
-					}
-
-					// The output is now fully written and closed. If the input was a MAUI-owned
-					// temporary cache file, delete it so we don't accumulate an orphaned duplicate.
-					// External/user-owned sources are never under our cache folder, so they are left
-					// untouched. Deleting only after the output is written avoids any data-loss window.
-					if (!preserveSource &&
-						FileSystemUtils.IsMauiOwnedTemporaryFile(imagePath) &&
-						!string.Equals(imagePath, outputPath, StringComparison.Ordinal))
-					{
-						try
-						{ File.Delete(imagePath); }
-						catch { }
-					}
-
-					return outputPath;
+					await ImageProcessor.ProcessImageAsync(input, output, format, processingOptions);
 				}
-				finally
-				{
-					currentStream.Dispose();
-				}
+
+				if (!preserveSource)
+					TryDeleteMauiOwnedTemporarySource(imagePath, outputPath);
+
+				return outputPath;
 			}
 			catch
 			{
-				// If processing fails, leave the picked source untouched and return its path.
+				// Processing failed (e.g. an undecodable image). Still hand back a separate MAUI-owned
+				// copy so callers never receive the untouched source path. Preserve the source file name
+				// and extension because these are the original bytes, not the requested encoded format.
+				var fallbackFileName = System.IO.Path.GetFileName(imagePath);
+				var fallbackFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fallbackFileName);
+				var fallbackPath = fallbackFile.AbsolutePath;
+				try
+				{
+					File.Copy(imagePath, fallbackPath, overwrite: true);
+
+					if (!preserveSource)
+						TryDeleteMauiOwnedTemporarySource(imagePath, fallbackPath);
+
+					return fallbackPath;
+				}
+				catch
+				{
+					return imagePath;
+				}
+				finally
+				{
+					TryDeleteMauiOwnedTemporaryFile(outputPath);
+				}
+			}
+		}
+
+		internal static void TryDeleteMauiOwnedTemporarySource(string sourcePath, string publishedPath)
+		{
+			if (string.IsNullOrEmpty(sourcePath) ||
+				string.IsNullOrEmpty(publishedPath) ||
+				string.Equals(sourcePath, publishedPath, StringComparison.Ordinal) ||
+				!File.Exists(publishedPath) ||
+				!FileSystemUtils.IsMauiOwnedTemporaryFile(sourcePath))
+			{
+				return;
 			}
 
-			return imagePath;
+			TryDeleteMauiOwnedTemporaryFile(sourcePath);
 		}
+
+		static void TryDeleteMauiOwnedTemporaryFile(string path)
+		{
+			if (string.IsNullOrEmpty(path) || !FileSystemUtils.IsMauiOwnedTemporaryFile(path))
+				return;
+
+			try
+			{
+				File.Delete(path);
+
+				// GetTemporaryFile places each file in its own directory. Remove the now-empty directory
+				// as well, but only after the ownership check above has confirmed it is under MAUI's cache.
+				var sourceDirectory = System.IO.Path.GetDirectoryName(path);
+				if (!string.IsNullOrEmpty(sourceDirectory) && Directory.Exists(sourceDirectory))
+					Directory.Delete(sourceDirectory, recursive: false);
+			}
+			catch
+			{
+				// Best-effort cache cleanup must never invalidate an otherwise valid picker result.
+			}
+		}
+
+		internal static PersistedPhotoProcessingOptions GetPhotoProcessingOptions(MediaPickerOptions options)
+			=> new(
+				options?.MaximumWidth,
+				options?.MaximumHeight,
+				options?.CompressionQuality ?? 100,
+				options?.RotateImage ?? false,
+				options?.PreserveMetaData ?? true);
 	}
 }
