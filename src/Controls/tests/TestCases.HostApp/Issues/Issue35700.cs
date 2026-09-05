@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 35700,
 	"Grouped CollectionView items not rendered properly on Android with GridItemsLayout",
-	PlatformAffected.Android)]
+	PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.macOS | PlatformAffected.UWP)]
 public class Issue35700 : TestContentPage
 {
 	protected override void Init()
