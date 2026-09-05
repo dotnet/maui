@@ -120,23 +120,17 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			// Normal (non-auto-sizing) WebView: apply flash prevention from issue #31475.
 			if (width > 0 && height > 0)
 			{
-				if (Parent is WrapperView)
-				{
-					// Parent is WrapperView (shadow/border/clip applied).
-					// Remove ClipBounds to allow visual effects like shadows
-					// to render outside the view area.
-					ClipBounds = null;
-				}
-				else
-				{
-					// No WrapperView — apply exact bounds to prevent the WebView
-					// from briefly rendering at full screen size before layout.
-					_clipRect.Set(0, 0, width, height);
-					ClipBounds = _clipRect;
-				}
+				// The view has a real size, so the pre-layout full-screen flash from
+				// issue #31475 is no longer possible — that window is already covered
+				// by the zero clip set in the constructor before the view is attached.
+				// A non-null ClipBounds on an attached WebView routes its drawing
+				// through the RenderThread GL-functor path (GLFunctorDrawable), which
+				// SIGSEGVs when the view is scrolled off-screen and its parent
+				// ScrollView is overscrolled. Null is the only safe value here.
+				// https://github.com/dotnet/maui/issues/38080
+				ClipBounds = null;
 			}
 			else
 			{
