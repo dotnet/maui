@@ -39,6 +39,30 @@ internal static class SafeAreaExtensions
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
 
+	// A view qualifies for resize-triggered inset reapplication only if it explicitly set SafeAreaEdges
+	// to a non-None value, or is already tracked as padded — excluding default (Container) layouts and
+	// explicit "None" views from the hot path. Mirrors the explicit-opt-in gate from #35664. See #36269.
+	internal static bool ShouldReapplyInsetsForResize(ICrossPlatformLayout? crossPlatformLayout, View view)
+	{
+		if (crossPlatformLayout is not null &&
+			GetSafeAreaView2(crossPlatformLayout) is { HasExplicitSafeAreaEdges: true } safeAreaView2)
+		{
+			for (var edge = 0; edge < 4; edge++)
+			{
+				var region = safeAreaView2.GetSafeAreaRegionsForEdge(edge);
+
+				// SoftInput-only edges pad only for the keyboard, so exclude them from the resize gate; while
+				// the keyboard is open the view is already tracked and the IsViewTracked branch below covers it.
+				if (region != SafeAreaRegions.None && !SafeAreaEdges.IsOnlySoftInput(region))
+				{
+					return true;
+				}
+			}
+		}
+
+		return MauiWindowInsetListener.FindListenerForView(view)?.IsViewTracked(view) == true;
+	}
+
 	internal static WindowInsetsCompat? ApplyAdjustedSafeAreaInsetsPx(
 		WindowInsetsCompat windowInsets,
 		ICrossPlatformLayout crossPlatformLayout,
