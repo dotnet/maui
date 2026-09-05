@@ -88,6 +88,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			SetupMenu();
 
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
+
+			if (RuntimeFeature.IsMaterial3Enabled && _appearanceTracker is ShellBottomNavViewAppearanceTracker concreteAppearanceTracker)
+				concreteAppearanceTracker.CaptureNativeAppearance(_bottomView);
+
 			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
 
@@ -143,11 +147,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			// Apply background color from appearance, fallback to default if unavailable
-			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
+			// Material2 keeps its original hardcoded fallback behavior untouched: apply the
+			// background color directly here (in addition to _appearanceTracker.SetAppearance
+			// below), falling back to the hardcoded default if unavailable. Material3 skips
+			// this entirely; ShellBottomNavViewAppearanceTracker.SetAppearance already owns the
+			// full M3 background handling (including native-capture based restore).
+			if (!RuntimeFeature.IsMaterial3Enabled &&
+				_bottomView.Background is ColorDrawable background &&
+				appearance is IShellAppearanceElement appearanceElement)
 			{
 				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
 			}
+
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);
 		}
