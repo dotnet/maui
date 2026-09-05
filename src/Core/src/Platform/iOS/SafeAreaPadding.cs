@@ -45,6 +45,8 @@ internal readonly record struct SafeAreaPadding(double Left, double Right, doubl
 
 	static double RoundToPixel(double value, double scale)
 		=> Math.Round(value * scale, MidpointRounding.AwayFromZero);
+
+	public bool IsEmptyAtPixelLevel() => EqualsAtPixelLevel(Empty);
 }
 
 internal static class SafeAreaInsetsExtensions

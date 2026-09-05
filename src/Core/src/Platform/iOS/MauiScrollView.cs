@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		SafeAreaPadding _safeArea = SafeAreaPadding.Empty;
 
-		UIEdgeInsets _systemAdjustedContentInset = UIEdgeInsets.Zero;
+		SafeAreaPadding _systemAdjustedContentInset = SafeAreaPadding.Empty;
 
 		/// <summary>
 		/// Flag indicating whether the safe area needs to be recalculated.
@@ -380,6 +380,7 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
+			var systemAdjustedContentInset = SystemAdjustedContentInset.ToSafeAreaInsets();
 
 			// iOS sets AdjustedContentInset only when the ContentSize exceeds the ScrollView's Bounds.
 			// If ContentSize is smaller, AdjustedContentInset is zero, and SafeAreaInsets are applied to child views instead.
@@ -387,18 +388,18 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (systemAdjustedContentInset.IsEmptyAtPixelLevel() || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 				_safeArea = GetInset().ToSafeAreaInsets();
 			else
-				_safeArea = SystemAdjustedContentInset.ToSafeAreaInsets();
+				_safeArea = systemAdjustedContentInset;
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
-			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmpty;
+			_appliesSafeAreaAdjustments = !IsParentHandlingSafeArea() && RespondsToSafeArea() && !_safeArea.IsEmptyAtPixelLevel();
 
-			if (_systemAdjustedContentInset != SystemAdjustedContentInset)
+			if (!_systemAdjustedContentInset.EqualsAtPixelLevel(systemAdjustedContentInset))
 			{
 				InvalidateConstraintsCache();
-				_systemAdjustedContentInset = SystemAdjustedContentInset;
+				_systemAdjustedContentInset = systemAdjustedContentInset;
 				return false;
 			}
 
@@ -450,7 +451,7 @@ namespace Microsoft.Maui.Platform
 
 			double width;
 			double height;
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (_systemAdjustedContentInset.IsEmptyAtPixelLevel() || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 			{
 				contentSize = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 
