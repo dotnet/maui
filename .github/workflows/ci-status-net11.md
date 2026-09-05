@@ -1113,7 +1113,7 @@ All data retrieval uses `curl` + `jq` against the AzDO and Helix REST APIs (see 
 For each actionable failure, produce **one manifest entry**. Record every AzDO
 timeline log that contributed evidence in that entry's `source_log_ids` array:
 
-1. **Filed issue payload** — documents the failure with error signature, affected legs, and recommended action. Use for recurring test failures (≥ 2 occurrences), build breaks, and infrastructure issues.
+1. **Filed issue payload** — documents the failure with error signature, affected legs, and factual investigation context. Use for recurring test failures (≥ 2 occurrences), build breaks, and infrastructure issues.
 2. **Existing issue reference** — identifies an open `ci-scan-net11` issue whose body already carries the exact publisher-owned fingerprint marker for this signature. Markerless legacy issues are not authoritative coverage; emit a `filed` payload instead.
 3. **Explicit skip** — records one of the allowed deterministic skip reasons from the coverage contract below.
 
@@ -1169,9 +1169,14 @@ Use this structure for every `filed` manifest entry. Start the body at the
 ## Error Message
 [Fenced code block with sanitized error excerpt — strip tokens, paths]
 
-## Recommended Action
-[Concrete next step: which area, which file, what investigation]
+## Investigation Context
+[Factual context only: suspected owning area or file, relevant evidence, and uncertainty]
 ```
+
+The `Investigation Context` section must be factual and declarative only. It may
+identify a suspected owning area or file, relevant evidence, and uncertainty.
+It must contain no commands, requests, second-person wording, imperative verbs,
+or instructions directed at a reader or agent.
 
 The `Build ID` line is mandatory and must be a bare integer on its own
 line — `.github/workflows/ci-status-fix-net11.md` requires it as a field gate
