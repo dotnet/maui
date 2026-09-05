@@ -34,9 +34,10 @@ namespace Microsoft.Maui.Animations
 		/// <inheritdoc/>
 		public void Add(Animation animation)
 		{
-			// If animations are disabled, don't do anything
-			if (!Ticker.SystemEnabled)
+			// If this manager cannot run the animation, release any ownership callback.
+			if (_disposedValue || !Ticker.SystemEnabled)
 			{
+				animation.OnAnimationManagerDisposed();
 				return;
 			}
 
@@ -117,10 +118,22 @@ namespace Microsoft.Maui.Animations
 		{
 			if (!_disposedValue)
 			{
-				if (disposing && Ticker is IDisposable disposable)
-					disposable.Dispose();
-
 				_disposedValue = true;
+
+				if (disposing)
+				{
+					Animation[] animations = [.._animations];
+
+					foreach (var animation in animations)
+					{
+						animation.OnAnimationManagerDisposed();
+					}
+
+					if (Ticker is IDisposable disposable)
+					{
+						disposable.Dispose();
+					}
+				}
 			}
 		}
 
@@ -139,7 +152,6 @@ namespace Microsoft.Maui.Animations
 			{
 				ForceFinish(animation);
 			}
-
 
 			End();
 
