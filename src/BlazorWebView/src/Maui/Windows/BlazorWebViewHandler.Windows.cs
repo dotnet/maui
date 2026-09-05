@@ -52,6 +52,26 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 				_webviewManager = null;
 			}
+
+			// Closes the native CoreWebView2, which isn't released by disposing WebViewManager alone.
+			CloseWebView2(platformView);
+		}
+
+		// Safely closes CoreWebView2. Shared by DisconnectHandler and Window_Destroying, which can
+		// both fire for the same view, so this tolerates repeat calls and an uninitialized WebView2.
+		internal static void CloseWebView2(WebView2Control platformView)
+		{
+			try
+			{
+				if (platformView.CoreWebView2 is not null)
+				{
+					platformView.Close();
+				}
+			}
+			catch (ObjectDisposedException)
+			{
+				// Already closed by the other teardown path.
+			}
 		}
 
 		private bool RequiredStartupPropertiesSet =>

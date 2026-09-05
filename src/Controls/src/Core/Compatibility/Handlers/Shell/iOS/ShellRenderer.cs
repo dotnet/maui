@@ -421,6 +421,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IElementHandler.DisconnectHandler()
 		{
+			if (_disposed)
+				return;
+
+			var element = Element;
+			element.PropertyChanged -= OnElementPropertyChanged;
+
+			if (_currentShellItemRenderer is not null)
+			{
+				(_currentShellItemRenderer as IDisconnectable)?.Disconnect();
+				_currentShellItemRenderer.ViewController.ViewIfLoaded?.RemoveFromSuperview();
+				_currentShellItemRenderer.ViewController.RemoveFromParentViewController();
+				_currentShellItemRenderer.Dispose();
+				_currentShellItemRenderer = null;
+			}
+
+			Dispose();
+
+			if (element.Handler == (IPlatformViewHandler)this)
+				element.Handler = null;
+
+			Element = null;
+			_mauiContext = null;
 		}
 	}
 }
