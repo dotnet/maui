@@ -114,6 +114,107 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task SelectableItemAppliesButtonTraitToNestedAccessibilityElement()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<CheckBox, CheckBoxHandler>();
+				});
+			});
+
+			Grid taskAccessibilityElement = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Survey Employees" },
+				SelectionMode = SelectionMode.Single,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					taskAccessibilityElement = new Grid();
+					SemanticProperties.SetDescription(taskAccessibilityElement, "Survey Employees");
+					taskAccessibilityElement.Add(new Label { Text = "Survey Employees" });
+
+					var content = new Grid();
+					content.Add(taskAccessibilityElement);
+					content.Add(new CheckBox());
+
+					return new Border { Content = content };
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(100);
+
+				var platformAccessibilityElement = Assert.IsAssignableFrom<MauiView>(taskAccessibilityElement?.Handler?.PlatformView);
+
+				Assert.True(platformAccessibilityElement.IsAccessibilityElement);
+				Assert.Equal(UIAccessibilityTrait.Button,
+					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+			});
+		}
+
+		[Fact]
+		public async Task ChangingSelectionModeToNoneClearsButtonTraitFromNestedAccessibilityElement()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<CheckBox, CheckBoxHandler>();
+				});
+			});
+
+			Grid taskAccessibilityElement = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Survey Employees" },
+				SelectionMode = SelectionMode.Single,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					taskAccessibilityElement = new Grid();
+					SemanticProperties.SetDescription(taskAccessibilityElement, "Survey Employees");
+					taskAccessibilityElement.Add(new Label { Text = "Survey Employees" });
+
+					var content = new Grid();
+					content.Add(taskAccessibilityElement);
+					content.Add(new CheckBox());
+
+					return new Border { Content = content };
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await Task.Delay(100);
+
+				// Sanity check: the trait was applied while the item was selectable.
+				var platformAccessibilityElement = Assert.IsAssignableFrom<MauiView>(taskAccessibilityElement?.Handler?.PlatformView);
+
+				Assert.Equal(UIAccessibilityTrait.Button,
+					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+
+				// Switching to SelectionMode.None should clear the previously-applied trait
+				// from that exact tracked descendant, without needing a full rebind.
+				collectionView.SelectionMode = SelectionMode.None;
+
+				await Task.Delay(100);
+
+				Assert.Equal((UIAccessibilityTrait)0,
+					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+			});
+		}
+
+		[Fact]
 		public async Task CollectionViewContentRespectsMargin()
 		{
 			SetupBuilder();
