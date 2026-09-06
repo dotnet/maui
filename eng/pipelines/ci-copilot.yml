@@ -689,7 +689,7 @@ stages:
               # request will actually be parented on rather than whatever the
               # upstream default branch happens to be at this moment.
               git fetch --no-tags --depth=1 \
-                https://github.com/kubaflo/maui.git main
+                https://github.com/dotnet/maui.git main
               git checkout --detach FETCH_HEAD
               BASE_SHA=$(git rev-parse HEAD)
               git fetch --no-tags origin main
@@ -846,13 +846,13 @@ stages:
               # The publisher is still the authority; asking the same public
               # question first only stops the device work from being wasted.
               # This runs in the untrusted agent job, so it reads the public
-              # fork with the ordinary comment token and never sees the
+              # upstream repository with the ordinary comment token and never sees the
               # publishing credential.
               $marker = "<!-- MAUI_COPILOT_REPLICATION issue=${{ parameters.IssueNumber }} platform=${{ parameters.Platform }} -->"
               $existing = $null
               try {
                 $openPulls = & gh pr list `
-                  --repo "kubaflo/maui" `
+                  --repo "dotnet/maui" `
                   --state open `
                   --limit 200 `
                   --json 'body,url'
@@ -871,7 +871,7 @@ stages:
                   }
                 }
                 $upstreamFix = $null
-                # The rollout fork marker covers generated fixes. A human or bot
+                # The replication marker covers generated fixes. A human or bot
                 # product fix in dotnet/maui has no marker, so always query the
                 # upstream open set too. `--state open` includes drafts.
                 $issueNumber = '${{ parameters.IssueNumber }}'
@@ -904,7 +904,7 @@ stages:
                   $upstreamFix | Add-Member -NotePropertyName isProductFix `
                     -NotePropertyValue $true -Force
                   # A real upstream product fix outranks a marker-matching
-                  # reproduction-only rollout PR in the testing fork.
+                  # reproduction-only generated PR in the same repository.
                   $existing = $upstreamFix
                 }
               } catch {
@@ -4018,7 +4018,7 @@ stages:
                   -RepositoryRoot "$(Build.SourcesDirectory)" `
                   -IssueOwner "dotnet" `
                   -IssueRepository "maui" `
-                  -TargetOwner "kubaflo" `
+                  -TargetOwner "dotnet" `
                   -TargetRepository "maui" `
                   -BuildUrl "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)" `
                   -OutputPath "$(Pipeline.Workspace)/ReplicationPublication/published-pr.json" `
