@@ -190,14 +190,16 @@ try {
         -FilePath 'gh' `
         -Arguments @('auth', 'setup-git') `
         -Description 'Configuring MauiBot Git authentication'
+    $commitMessage =
+        "Verify MauiBot draft PR publication`n`n" +
+        "Co-authored-by: Copilot App " +
+        '<223556219+Copilot@users.noreply.github.com>'
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(
             'commit',
             '-m',
-            "Verify MauiBot draft PR publication`n`n" +
-                "Co-authored-by: Copilot App " +
-                "<223556219+Copilot@users.noreply.github.com>") `
+            $commitMessage) `
         -Description 'Committing the publication smoke marker'
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
