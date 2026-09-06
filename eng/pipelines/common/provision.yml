@@ -520,8 +520,35 @@ steps:
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: |
       echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
-      $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
-      $preferredSdk = $jsonOutput.SdkInfo.Path
+      $usingMauiCli = $true
+      $rawOutput = @(& dotnet maui android sdk check --ci --json 2>&1)
+      $exitCode = $LASTEXITCODE
+      if ($exitCode -ne 0) {
+        $usingMauiCli = $false
+        $rawOutput = @(& dotnet android sdk info --format=Json 2>&1)
+        $exitCode = $LASTEXITCODE
+      }
+      if ($exitCode -ne 0) {
+        throw "Neither Microsoft.Maui.Cli nor androidsdk.tool could inspect the Android SDK (exit code: $exitCode)."
+      }
+      try {
+        $jsonOutput = ($rawOutput -join [Environment]::NewLine) |
+          ConvertFrom-Json -ErrorAction Stop
+      }
+      catch {
+        throw "The Android SDK tool returned invalid JSON: $($_.Exception.Message)"
+      }
+      if ($usingMauiCli) {
+        if ($jsonOutput.status -ne 'Ok') {
+          throw "Microsoft.Maui.Cli could not find a usable Android SDK (status: $($jsonOutput.status))."
+        }
+        $preferredSdk = $jsonOutput.details.path
+      } else {
+        $preferredSdk = $jsonOutput.SdkInfo.Path
+      }
+      if ([string]::IsNullOrWhiteSpace($preferredSdk)) {
+        throw "The Android SDK tool returned an empty SDK path."
+      }
       echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
       echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
       echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
