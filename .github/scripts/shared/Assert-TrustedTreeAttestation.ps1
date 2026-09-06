@@ -356,6 +356,101 @@ function Get-TrustedTreeContentHash {
     return Get-TrustedTreeTextHash -Text $builder.ToString()
 }
 
+function Get-TrustedTreeCrLfVariant {
+    <#
+        .SYNOPSIS
+        Computes the only cross-agent byte variant accepted for trusted text.
+
+        .DESCRIPTION
+        Git Bash on Windows can materialize Git-archive text as CRLF even when
+        the pinned blobs and the Ubuntu validation checkout are LF. This helper
+        accepts only strict UTF-8 text in the trusted file-extension allowlist,
+        preserves a UTF-8 BOM when present, canonicalizes all line endings, and
+        returns the SHA-256 and size of the CRLF rendering. Binary or malformed
+        text never receives an alternate identity.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Root,
+        [Parameter(Mandatory = $true)][string]$RelativePath
+    )
+
+    $allowedExtensions = @(
+        '.cmd', '.cs', '.diff', '.entitlements', '.gitattributes', '.json',
+        '.md', '.patch', '.proj', '.ps1', '.psm1', '.rb', '.sh', '.targets',
+        '.xml', '.yaml', '.yml')
+    $extension = if (
+        [IO.Path]::GetFileName($RelativePath) -ceq '.gitattributes') {
+        '.gitattributes'
+    } else {
+        [IO.Path]::GetExtension($RelativePath).ToLowerInvariant()
+    }
+    if ($extension -notin $allowedExtensions) {
+        return $null
+    }
+
+    $fullRoot = [IO.Path]::GetFullPath($Root)
+    $fullPath = [IO.Path]::GetFullPath((
+        Join-Path $fullRoot ($RelativePath.Replace(
+            '/',
+            [IO.Path]::DirectorySeparatorChar))))
+    $prefix = $fullRoot.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar) +
+        [IO.Path]::DirectorySeparatorChar
+    if (-not $fullPath.StartsWith(
+            $prefix,
+            (Get-TrustedTreePathComparison)) -or
+        -not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+        return $null
+    }
+
+    $bytes = [IO.File]::ReadAllBytes($fullPath)
+    $hasBom = $bytes.Length -ge 3 -and
+        $bytes[0] -eq 0xEF -and
+        $bytes[1] -eq 0xBB -and
+        $bytes[2] -eq 0xBF
+    $offset = if ($hasBom) { 3 } else { 0 }
+    try {
+        $encoding = [Text.UTF8Encoding]::new($false, $true)
+        $text = $encoding.GetString(
+            $bytes,
+            $offset,
+            $bytes.Length - $offset)
+    }
+    catch {
+        return $null
+    }
+    if ($text.Contains([char]0)) {
+        return $null
+    }
+
+    $normalized = $text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $variantText = $normalized.Replace("`n", "`r`n")
+    $textBytes = [Text.UTF8Encoding]::new($false).GetBytes($variantText)
+    if ($hasBom) {
+        $variantBytes = [byte[]]::new($textBytes.Length + 3)
+        $variantBytes[0] = 0xEF
+        $variantBytes[1] = 0xBB
+        $variantBytes[2] = 0xBF
+        [Array]::Copy(
+            $textBytes,
+            0,
+            $variantBytes,
+            3,
+            $textBytes.Length)
+    } else {
+        $variantBytes = $textBytes
+    }
+
+    return [pscustomobject]@{
+        size = [long]$variantBytes.Length
+        sha256 = [Convert]::ToHexString(
+            [Security.Cryptography.SHA256]::HashData($variantBytes)).
+            ToLowerInvariant()
+    }
+}
+
 function New-TrustedTreeAttestation {
     <#
         .SYNOPSIS
@@ -623,8 +718,39 @@ function Assert-TrustedTreeMatchesReference {
     $entries = @(Get-TrustedTreeEntries -Root $ReferenceRoot)
     $contentHash = Get-TrustedTreeContentHash -Entries $entries
     if ($contentHash -cne ([string]$Attestation.contentHash)) {
-        throw ("The trusted tree the run used does not match the pinned pipeline revision ($Context): " +
-            "expected content hash $contentHash.")
+        $attestedByPath = @{}
+        foreach ($entry in @($Attestation.files)) {
+            $attestedByPath[[string]$entry.path] = $entry
+        }
+        $lineEndingEquivalent = $entries.Count -eq
+            [int]$Attestation.fileCount
+        foreach ($entry in $entries) {
+            $path = [string]$entry.path
+            if (-not $attestedByPath.ContainsKey($path)) {
+                $lineEndingEquivalent = $false
+                break
+            }
+            $attestedEntry = $attestedByPath[$path]
+            if ([long]$entry.size -eq [long]$attestedEntry.size -and
+                [string]$entry.sha256 -ceq
+                    [string]$attestedEntry.sha256) {
+                continue
+            }
+            $variant = Get-TrustedTreeCrLfVariant `
+                -Root $ReferenceRoot `
+                -RelativePath $path
+            if ($null -eq $variant -or
+                [long]$variant.size -ne [long]$attestedEntry.size -or
+                [string]$variant.sha256 -cne
+                    [string]$attestedEntry.sha256) {
+                $lineEndingEquivalent = $false
+                break
+            }
+        }
+        if (-not $lineEndingEquivalent) {
+            throw ("The trusted tree the run used does not match the pinned pipeline revision ($Context): " +
+                "expected content hash $contentHash.")
+        }
     }
     if ([int]$Attestation.fileCount -ne $entries.Count) {
         throw "Trusted tree file count does not match the pinned pipeline revision ($Context)."
@@ -636,7 +762,17 @@ function Assert-TrustedTreeMatchesReference {
         }
         $pipelineSha256 = Get-TrustedTreeFileHash -Path $ReferencePipelineDefinitionPath
         if ($pipelineSha256 -cne ([string]$Attestation.pipelineSha256)) {
-            throw "The pipeline definition the run used does not match the pinned revision ($Context)."
+            $pipelineVariant = Get-TrustedTreeCrLfVariant `
+                -Root ([IO.Path]::GetDirectoryName(
+                    [IO.Path]::GetFullPath(
+                        $ReferencePipelineDefinitionPath))) `
+                -RelativePath ([IO.Path]::GetFileName(
+                    $ReferencePipelineDefinitionPath))
+            if ($null -eq $pipelineVariant -or
+                [string]$pipelineVariant.sha256 -cne
+                    [string]$Attestation.pipelineSha256) {
+                throw "The pipeline definition the run used does not match the pinned revision ($Context)."
+            }
         }
     }
 
@@ -648,7 +784,14 @@ function Assert-TrustedTreeMatchesReference {
             throw "The pinned pipeline revision has no key script named ($Context): $path"
         }
         if (([string]$match[0].sha256) -cne ([string]$property.Value)) {
-            throw "A key script the run used differs from the pinned pipeline revision ($Context): $path"
+            $keyVariant = Get-TrustedTreeCrLfVariant `
+                -Root $ReferenceRoot `
+                -RelativePath $path
+            if ($null -eq $keyVariant -or
+                [string]$keyVariant.sha256 -cne
+                    [string]$property.Value) {
+                throw "A key script the run used differs from the pinned pipeline revision ($Context): $path"
+            }
         }
     }
 
