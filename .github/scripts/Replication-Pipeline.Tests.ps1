@@ -46,6 +46,9 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match (
             "(?s)displayName: 'Create, verify, close, and delete MauiBot draft PR'.*?" +
             "GH_TOKEN: \$\(GH_COMMENT_TOKEN\)")
+        $script:Pipeline | Should -Match (
+            "(?s)- stage: SmokeTestReplicationPublication.*?" +
+            "- checkout: self.*?persistCredentials: true")
         $script:Pipeline | Should -Match 'Smoke-Test-ReplicationDraftPR\.ps1'
         $script:Pipeline | Should -Match 'Open-ReplicationDraftPullRequest\.ps1'
         $script:Pipeline | Should -Match (
@@ -111,7 +114,7 @@ Describe 'MAUI Copilot mode routing' {
         # Reviews of kubaflo/maui#189, #193, and #194 each rejected the declared
         # baseline because it was not the published commit's first parent. The
         # baseline must be the commit the pull request will be parented on.
-        $script:Pipeline | Should -Match 'https://github\.com/kubaflo/maui\.git main'
+        $script:Pipeline | Should -Match 'https://github\.com/dotnet/maui\.git main'
         $script:Pipeline |
             Should -Match 'merge-base --is-ancestor "\$\{BASE_SHA\}" origin/main'
         $script:Pipeline |
@@ -172,7 +175,10 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match 's/try-latest-version'
         $script:Pipeline | Should -Match "(?s)displayName: 'Create MauiBot fix draft PR'.*?GH_TOKEN: \$\(GH_COMMENT_TOKEN\)"
         $script:Pipeline | Should -Not -Match 'Move-ReplicationPRsToTestingFork\.ps1'
-        $script:Pipeline | Should -Match '-TargetOwner "kubaflo"'
+        $script:Pipeline | Should -Match '-TargetOwner "dotnet"'
+        $script:Pipeline | Should -Match (
+            '(?s)-TargetOwner "dotnet".*?' +
+            'displayName: ''Create MauiBot fix draft PR''')
         $script:Pipeline | Should -Match 'Remove-Item Env:GH_TOKEN'
         $script:Pipeline | Should -Not -Match 'GH_REPLICATION_TOKEN'
         $script:Pipeline | Should -Not -Match 'MAUI_REPLICATION_AZURE_SERVICE_CONNECTION'
