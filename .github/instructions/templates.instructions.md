@@ -42,8 +42,8 @@ Platform-specific `#if` directives (like `#if WINDOWS`, `#if ANDROID`, `#if IOS`
 
 //-:cnd:noEmit
 #if WINDOWS
-    Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping(
-        "KeyboardAccessibleCollectionView", 
+    Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.Mapper.AppendToMapping(
+        "ConfigureCollectionView",
         (handler, view) => { /* ... */ });
 #endif
 //+:cnd:noEmit

@@ -284,15 +284,9 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			ApplyDefaultWebViewSettings(developerTools);
 
 #if WEBVIEW2_MAUI
-			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = _webview,
-			});
+			_blazorWebViewHandler.VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(_webview));
 #elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
-			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = _webview,
-			});
+			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs(_webview));
 #endif
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);

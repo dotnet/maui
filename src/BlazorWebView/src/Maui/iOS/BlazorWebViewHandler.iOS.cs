@@ -112,10 +112,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				}
 			}
 
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = webview
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(webview));
 
 			// Disable bounce scrolling to make Blazor apps feel more native
 			if (webview.ScrollView != null)
@@ -143,6 +140,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (_webviewManager != null)
 			{
+				// Disposing the manager tears down the hot reload notifier along with the renderer, and
+				// this handler always builds a new manager on reconnect, so there is nothing to detach.
 				// Start the disposal...
 				var disposalTask = _webviewManager?
 					.DisposeAsync()
@@ -203,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				hostPageRelativePath,
 				Logger);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			if (RootComponents != null)
 			{

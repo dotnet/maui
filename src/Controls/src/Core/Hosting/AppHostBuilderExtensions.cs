@@ -74,7 +74,9 @@ public static partial class AppHostBuilderExtensions
 		}
 		else
 		{
+#pragma warning disable CS0618 // Retain the explicit opt-out path for the legacy Windows CollectionView handler.
 			handlersCollection.AddHandler<CollectionView, CollectionViewHandler>();
+#pragma warning restore CS0618
 		}
 		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
 #else

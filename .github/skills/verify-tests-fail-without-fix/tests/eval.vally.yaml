@@ -23,7 +23,7 @@
 # whose aggregate threshold is undefined so every grader must pass its own
 # threshold.
 #
-# Scoring: this suite deliberately omits scoring.weights, so Vally 0.12 uses
+# Scoring: this suite deliberately omits scoring.weights, so Vally uses
 # the unweighted mean of grader [0,1] scores. Every scenario also has a
 # deterministic invocation grader, and the workflow applies invocation failures
 # as a hard veto. The threshold preserves the prior semantic-judge floor after
@@ -266,7 +266,7 @@ stimuli:
         - verify-tests-fail-without-fix
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally uses the
   # unweighted mean of grader [0,1] scores. At 0.87, a stimulus with invocation
   # plus one structural floor still requires judge >= 0.61, preserving the old
   # 0.60 semantic bar. Stimuli without the extra floor are intentionally

@@ -16,10 +16,12 @@ namespace Microsoft.Maui.Controls.Platform
 					return UIModalPresentationStyle.FormSheet;
 				case PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.FullScreen:
 					return UIModalPresentationStyle.FullScreen;
-#pragma warning disable CA1416 // TODO:  'UIModalPresentationStyle.Automatic' is only supported on: 'ios' 13.0 and later
 				case PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Automatic:
-					return UIModalPresentationStyle.Automatic;
-#pragma warning restore CA1416
+					return OperatingSystem.IsIOSVersionAtLeast(13) ||
+						OperatingSystem.IsMacCatalystVersionAtLeast(13) ||
+						OperatingSystem.IsTvOSVersionAtLeast(13)
+							? UIModalPresentationStyle.Automatic
+							: UIModalPresentationStyle.FullScreen;
 				case PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.OverFullScreen:
 					return UIModalPresentationStyle.OverFullScreen;
 				case PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.PageSheet:

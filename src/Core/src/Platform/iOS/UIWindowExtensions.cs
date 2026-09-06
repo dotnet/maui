@@ -6,7 +6,11 @@ namespace Microsoft.Maui.Platform
 {
 	public static class UIWindowExtensions
 	{
-		// TODO Add public docs
+		/// <summary>
+		/// Gets the .NET MAUI window associated with the specified iOS or Mac Catalyst platform window.
+		/// </summary>
+		/// <param name="platformWindow">The <see cref="UIWindow"/> to resolve.</param>
+		/// <returns>The associated <see cref="IWindow"/>, or <see langword="null"/> if <paramref name="platformWindow"/> is <see langword="null"/> or no matching window is found.</returns>
 		public static IWindow? GetWindow(this UIWindow? platformWindow)
 			=> platformWindow.GetWindow(IPlatformApplication.Current?.Application);
 
@@ -24,7 +28,11 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		// TODO Add public docs
+		/// <summary>
+		/// Gets the .NET MAUI window associated with the specified iOS or Mac Catalyst window scene.
+		/// </summary>
+		/// <param name="windowScene">The <see cref="UIWindowScene"/> to resolve.</param>
+		/// <returns>The associated <see cref="IWindow"/>, or <see langword="null"/> if <paramref name="windowScene"/> is <see langword="null"/> or no matching window is found.</returns>
 		public static IWindow? GetWindow(this UIWindowScene? windowScene)
 		{
 			if (windowScene is null)

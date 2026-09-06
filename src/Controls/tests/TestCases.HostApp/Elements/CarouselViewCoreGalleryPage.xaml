@@ -75,9 +75,7 @@
                     BackgroundColor="LightGray"
                     TextColor="Black" />
             </StackLayout>
-            <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/28972 -->
-            <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->      
-            <local:CarouselView1
+            <CarouselView
                 x:Name="carousel"
                 Grid.Row="5"
                 Grid.ColumnSpan="2"
@@ -86,7 +84,7 @@
                 ItemsSource="{Binding Items}"
                 Position="{Binding Position}"
                 CurrentItem="{Binding Selected}">
-                <local:CarouselView1.ItemTemplate>
+                <CarouselView.ItemTemplate>
                     <DataTemplate x:DataType="local:CarouselItem">
                         <Border 
                             x:Name="frame"
@@ -117,8 +115,8 @@
                             </Grid>
                         </Border>
                     </DataTemplate>
-                </local:CarouselView1.ItemTemplate>
-            </local:CarouselView1>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

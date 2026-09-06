@@ -82,7 +82,7 @@ if grep -Fqx -- "--experimental" "$probe_output"; then
 	exit 1
 fi
 
-# Vally 0.12 normally creates an empty per-run Copilot home and passes it as the
+# Vally normally creates an empty per-run Copilot home and passes it as the
 # session configDirectory, which takes precedence over COPILOT_HOME. Confirm the
 # pinned executor honors the opt-out before any model credential enters the job.
 copilot_home_module="$install_root/node_modules/@microsoft/vally/dist/executor/copilot-home.js"

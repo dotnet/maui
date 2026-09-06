@@ -17,16 +17,12 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue26066ViewModel()
 		{
-			LoadCommand.Execute(null);
 			LoadCommandCV2.Execute(null);
 		}
 
-		public ObservableCollection<Issue22035Model> Images { get; set; } = new();
 		public ObservableCollection<Issue22035Model> Images2 { get; set; } = new();
 
 		public ICommand ShowDialogCommand => new Command(async () => await Application.Current.MainPage.DisplayAlertAsync("New Dialog", "Hello from Espinho", "OK"));
-
-		public ICommand LoadCommand => new Command(() => LoadItems(Images, "CV1"));
 
 		public ICommand LoadCommandCV2 => new Command(() => LoadItems(Images2, "CV2"));
 

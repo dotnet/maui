@@ -28,7 +28,7 @@
 #   structural floors (e.g. "claims PASS when no device was available").
 #
 # Scoring (see scoring block): this suite deliberately omits scoring.weights,
-# so Vally 0.12 uses the unweighted mean of grader [0,1] scores; skill passes
+# so Vally uses the unweighted mean of grader [0,1] scores; skill passes
 # when the mean >= scoring.threshold (0.8), unless any trial has an execution
 # error (a separate hard failure regardless of the numeric aggregate). Every
 # scenario also has a deterministic skill-invocation grader. The workflow
@@ -463,7 +463,7 @@ stimuli:
         - try-fix
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally uses the
   # unweighted mean of grader [0,1] scores; skill passes when the mean across runs >=
   # threshold. At 0.6, passing invocation/structural floors could dilute every
   # semantic judge failure to a suite score of 0.607. The 0.8 threshold keeps

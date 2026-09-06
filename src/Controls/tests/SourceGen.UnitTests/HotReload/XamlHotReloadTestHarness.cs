@@ -504,19 +504,22 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 	{
 		ObjectDisposedException.ThrowIf(_disposed, this);
 
-		if (versionIndex != _versionIndex + 1)
-			throw new ArgumentOutOfRangeException(nameof(versionIndex), "Updates must be applied sequentially.");
-
-		var nextVersion = _harness.Compile(_generation[versionIndex]);
-		var semanticEdits = CreateSemanticEdits(
-			_compiledVersion!.Compilation,
-			nextVersion.Compilation,
-			_compiledVersion.GeneratedVersion,
-			nextVersion.GeneratedVersion);
+		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex);
 
 		_harness.ApplicationHost?.Dispatch(() => ApplyUpdate(nextVersion, semanticEdits));
 		if (_harness.ApplicationHost is null)
 			ApplyUpdate(nextVersion, semanticEdits);
+
+		return Assert.IsAssignableFrom<T>(Instance);
+	}
+
+	public T ApplyUpdateThroughRuntimeHandler<T>(int versionIndex) where T : class
+	{
+		ObjectDisposedException.ThrowIf(_disposed, this);
+
+		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex);
+		ApplyMetadataUpdate(nextVersion, semanticEdits);
+		global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication([_pageType!]);
 
 		return Assert.IsAssignableFrom<T>(Instance);
 	}
@@ -562,6 +565,39 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 		XamlHotReloadCompiledVersion nextVersion,
 		XamlHotReloadSemanticEdits semanticEdits)
 	{
+		ApplyMetadataUpdate(nextVersion, semanticEdits);
+
+		foreach (var instance in _instances)
+		{
+			if (!semanticEdits.AffectedTypes.Contains(instance.GetType().FullName!, StringComparer.Ordinal))
+				continue;
+
+			var updateMethod = instance.GetType().GetMethod(
+				"UpdateComponent",
+				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			Assert.NotNull(updateMethod);
+			updateMethod!.Invoke(instance, null);
+		}
+	}
+
+	(XamlHotReloadCompiledVersion NextVersion, XamlHotReloadSemanticEdits SemanticEdits) PrepareUpdate(int versionIndex)
+	{
+		if (versionIndex != _versionIndex + 1)
+			throw new ArgumentOutOfRangeException(nameof(versionIndex), "Updates must be applied sequentially.");
+
+		var nextVersion = _harness.Compile(_generation[versionIndex]);
+		var semanticEdits = CreateSemanticEdits(
+			_compiledVersion!.Compilation,
+			nextVersion.Compilation,
+			_compiledVersion.GeneratedVersion,
+			nextVersion.GeneratedVersion);
+		return (nextVersion, semanticEdits);
+	}
+
+	void ApplyMetadataUpdate(
+		XamlHotReloadCompiledVersion nextVersion,
+		XamlHotReloadSemanticEdits semanticEdits)
+	{
 		Assert.NotEmpty(semanticEdits.Edits);
 
 		using var metadataDelta = new MemoryStream();
@@ -584,18 +620,6 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 			metadataDelta.ToArray(),
 			ilDelta.ToArray(),
 			pdbDelta.ToArray());
-
-		foreach (var instance in _instances)
-		{
-			if (!semanticEdits.AffectedTypes.Contains(instance.GetType().FullName!, StringComparer.Ordinal))
-				continue;
-
-			var updateMethod = instance.GetType().GetMethod(
-				"UpdateComponent",
-				BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-			Assert.NotNull(updateMethod);
-			updateMethod!.Invoke(instance, null);
-		}
 
 		_baseline = difference.Baseline;
 		_compiledVersion = nextVersion;

@@ -245,13 +245,32 @@ namespace Microsoft.Maui.Media
 	/// <summary>
 	/// Represents a specific geographical, political, or cultural region.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Instances are normally obtained from <see cref="ITextToSpeech.GetLocalesAsync"/>. The constructor is
+	/// public so that text-to-speech backends which live outside of .NET MAUI can implement
+	/// <see cref="ITextToSpeech"/> and return values that .NET MAUI understands.
+	/// </para>
+	/// <para>
+	/// The exact meaning of <see cref="Language"/>, <see cref="Country"/>, <see cref="Name"/> and <see cref="Id"/>
+	/// is defined by the text-to-speech engine that produced the locale, so values are stored verbatim: they are
+	/// not parsed, validated, trimmed, or case normalized. The only normalization performed is that
+	/// <see langword="null"/> is converted to <see cref="string.Empty"/>, so every property is guaranteed to be
+	/// non-<see langword="null"/>.
+	/// </para>
+	/// <para>
+	/// Locales are immutable. Although values are stored verbatim, the built-in platform backends treat a
+	/// property that is empty or entirely white-space as "not specified" and fall back accordingly — for
+	/// example, an empty <see cref="Id"/> causes a voice to be selected from <see cref="Language"/> instead.
+	/// </para>
+	/// </remarks>
 	public class Locale
 	{
 		/// <summary>
 		/// Gets the language name or code.
 		/// </summary>
 		/// <remarks>
-		/// <para>This value may vary between platforms.</para>
+		/// <para>This value may vary between platforms and is never <see langword="null"/>; an unknown language is represented by <see cref="string.Empty"/>.</para>
 		/// <para>
 		/// For Android this used the ISO 639 alpha-2 or alpha-3 language code, or registered language subtags up to 8 alpha letters (for future enhancements).
 		/// When a language has both an alpha-2 code and an alpha-3 code, the alpha-2 code must be used.
@@ -264,28 +283,44 @@ namespace Microsoft.Maui.Media
 		/// Gets the country name or code.
 		/// </summary>
 		/// <remarks>
-		/// <para>This value may vary between platforms.</para>
+		/// <para>This value may vary between platforms and is never <see langword="null"/>; an unknown or unused country is represented by <see cref="string.Empty"/>.</para>
 		/// <para>For Android this used the ISO 3166 alpha-2 country code or UN M.49 numeric-3 area code.</para>
-		/// <para>For iOS and Windows this field is not used and <see langword="null"/> .</para>
+		/// <para>For iOS and Windows this field is not used and is <see cref="string.Empty"/>. On those platforms the region is already part of <see cref="Language"/> (for example <c>en-US</c>).</para>
 		/// </remarks>
 		public string Country { get; }
 
 		/// <summary>
 		/// Gets the display name of the locale.
 		/// </summary>
+		/// <remarks>This value is never <see langword="null"/>; engines that do not provide a display name report <see cref="string.Empty"/>.</remarks>
 		public string Name { get; }
 
 		/// <summary>
 		/// Gets the unique identifier of the locale.
 		/// </summary>
+		/// <remarks>
+		/// <para>This identifier is only meaningful to the text-to-speech engine that produced it and is never <see langword="null"/>; engines that do not expose an identifier report <see cref="string.Empty"/>.</para>
+		/// <para>When this value is empty, platforms fall back to selecting a voice using <see cref="Language"/> and <see cref="Country"/>.</para>
+		/// </remarks>
 		public string Id { get; }
 
-		internal Locale(string language, string country, string name, string id)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Locale"/> class.
+		/// </summary>
+		/// <param name="language">The language name or code, as described by <see cref="Language"/>.</param>
+		/// <param name="country">The country name or code, as described by <see cref="Country"/>. Pass <see langword="null"/> when the language already carries the region, or when the engine does not report one.</param>
+		/// <param name="name">The display name of the locale, as described by <see cref="Name"/>.</param>
+		/// <param name="id">The engine specific identifier of the locale, as described by <see cref="Id"/>.</param>
+		/// <remarks>
+		/// No argument is required and none are validated. A <see langword="null"/> argument is normalized to
+		/// <see cref="string.Empty"/>; every other value is stored exactly as supplied.
+		/// </remarks>
+		public Locale(string? language, string? country, string? name, string? id)
 		{
-			Language = language;
-			Country = country;
-			Name = name;
-			Id = id;
+			Language = language ?? string.Empty;
+			Country = country ?? string.Empty;
+			Name = name ?? string.Empty;
+			Id = id ?? string.Empty;
 		}
 	}
 

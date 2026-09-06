@@ -189,5 +189,93 @@ namespace Microsoft.Maui.DeviceTests
 					message: "Timed out waiting for the pin's annotation view to revert to the default marker view.");
 			});
 		}
+
+		[Fact(DisplayName = "Cluster Marshalled As A Protocol Wrapper Gets The Cluster View")]
+		public async Task ClusterMarshalledAsProtocolWrapperGetsClusterView()
+		{
+			// Regression test for https://github.com/dotnet/maui/issues/37806
+			// MapKit invokes the GetViewForAnnotation block with the annotation marshalled as
+			// MKAnnotationWrapper - an INativeObject that is not an NSObject - so managed type
+			// checks never recognised the cluster and every cluster fell through to the ordinary
+			// pin path, silently ignoring ClusterImageSource/ClusterImageProvider.
+			SetupBuilder();
+
+			var map = new Map { IsClusteringEnabled = true };
+
+			await AttachAndRun<MapHandler>(map, async handler =>
+			{
+				await Task.Yield();
+
+				var platformView = handler.PlatformView;
+				Assert.NotNull(platformView);
+
+				using var member = new MKPointAnnotation
+				{
+					Coordinate = new CoreLocation.CLLocationCoordinate2D(47.6062, -122.3321),
+				};
+				using var cluster = new MKClusterAnnotation(new IMKAnnotation[] { member });
+
+				var view = InvokeGetViewForAnnotation(platformView, WrapAsProtocolWrapper(cluster));
+
+				Assert.NotNull(view);
+				Assert.Equal("clusterPin", view.ReuseIdentifier);
+			});
+		}
+
+		[Fact(DisplayName = "Disposed Cluster Annotation Is Not Treated As A Cluster")]
+		public void DisposedClusterAnnotationIsNotTreatedAsACluster()
+		{
+			// A cluster whose managed peer was disposed while a MapKit callback was in flight has a
+			// zero handle; treating it as a cluster throws ObjectDisposedException from
+			// MemberAnnotations inside the callback.
+			var member = new MKPointAnnotation
+			{
+				Coordinate = new CoreLocation.CLLocationCoordinate2D(47.6062, -122.3321),
+			};
+			var cluster = new MKClusterAnnotation(new IMKAnnotation[] { member });
+			cluster.Dispose();
+			member.Dispose();
+
+			Assert.Null(InvokeResolveAnnotationPeer(cluster));
+		}
+
+		// MapKit marshals the annotation into the GetViewForAnnotation block as the generated
+		// protocol wrapper for IMKAnnotation. It cannot be produced by the public runtime helpers
+		// (Runtime.GetINativeObject resolves the typed peer instead), so build the same wrapper the
+		// runtime hands us.
+		static IMKAnnotation WrapAsProtocolWrapper(MKClusterAnnotation cluster)
+		{
+			var wrapperType = typeof(IMKAnnotation).Assembly.GetType("MapKit.MKAnnotationWrapper");
+			Assert.NotNull(wrapperType);
+
+			var wrapper = Activator.CreateInstance(wrapperType, cluster.Handle, false) as IMKAnnotation;
+			Assert.NotNull(wrapper);
+			Assert.IsNotType<MKClusterAnnotation>(wrapper);
+
+			return wrapper;
+		}
+
+		static MKAnnotationView InvokeGetViewForAnnotation(MauiMKMapView mapView, IMKAnnotation annotation)
+		{
+			var method = typeof(MauiMKMapView).GetMethod(
+				"GetViewForAnnotation",
+				BindingFlags.Instance | BindingFlags.NonPublic,
+				new[] { typeof(MKMapView), typeof(IMKAnnotation) });
+
+			Assert.NotNull(method);
+
+			return (MKAnnotationView)method.Invoke(mapView, new object[] { mapView, annotation });
+		}
+
+		static Foundation.NSObject InvokeResolveAnnotationPeer(IMKAnnotation annotation)
+		{
+			var method = typeof(MauiMKMapView).GetMethod(
+				"ResolveAnnotationPeer",
+				BindingFlags.Static | BindingFlags.NonPublic);
+
+			Assert.NotNull(method);
+
+			return (Foundation.NSObject)method.Invoke(null, new object[] { annotation });
+		}
 	}
 }

@@ -24,11 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var result = style.ToPlatformModalPresentationStyle();
 
-					if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
-					{
-						result = UIKit.UIModalPresentationStyle.FullScreen;
-					}
-
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
 						var modalPage = (Page)_modal.VirtualView;

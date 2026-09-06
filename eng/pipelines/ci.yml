@@ -317,6 +317,43 @@ stages:
       timeout: 240
       testCategory: RunOnAndroid
 
+    # DotNetPrevious iOS template tests
+    - name: mac_runios_previous_maui_debug_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_MauiDebug
+      arch: ARM64
+
+    - name: mac_runios_previous_maui_release_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_MauiRelease
+      arch: ARM64
+
+    - name: mac_runios_previous_blazor_debug_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_BlazorDebug
+      arch: ARM64
+
+    - name: mac_runios_previous_blazor_release_arm64
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_BlazorRelease
+      arch: ARM64
+
     - name: mac_runios_nativeaot_arm64
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}
@@ -374,6 +411,46 @@ stages:
 
     # MacOSPool lanes - comparison with ARM64 pool
     # Only run on: (non-PR on main/net*.0/release/*/inflight/*) OR (PR targeting net*.0/release/*/inflight/*)
+    - name: mac_runios_previous_maui_debug
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_MauiDebug
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_previous_maui_release
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_MauiRelease
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_previous_blazor_debug
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_BlazorDebug
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
+    - name: mac_runios_previous_blazor_release
+      ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
+        pool: ${{ parameters.MacOSPool.public }}
+      ${{ else }}:
+        pool: ${{ parameters.MacOSPool.internal }}
+      timeout: 45
+      testName: RunOniOS_Previous_BlazorRelease
+      arch: x64
+      condition: ${{ parameters.macOSPoolLaneCondition }}
+
     - name: mac_runios_nativeaot
       ${{ if eq(variables['Build.DefinitionName'], 'maui-pr') }}:
         pool: ${{ parameters.MacOSPool.public }}

@@ -6,6 +6,10 @@ Microsoft.Maui.HybridWebViewInvoker.HybridWebViewInvoker(object? invokeJavaScrip
 Microsoft.Maui.IHybridWebView.Invoker.get -> Microsoft.Maui.HybridWebViewInvoker!
 Microsoft.Maui.IHybridWebView.Invoker.set -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target, System.Text.Json.Serialization.JsonSerializerContext! jsonSerializerContext) -> void
+Microsoft.Maui.ISafeAreaElement
+Microsoft.Maui.ISafeAreaElement.SafeAreaEdges.get -> Microsoft.Maui.SafeAreaEdges
+Microsoft.Maui.SafeAreaElementExtensions
+static Microsoft.Maui.SafeAreaElementExtensions.GetEffectiveSafeAreaEdges(this Microsoft.Maui.ISafeAreaElement! safeAreaElement) -> Microsoft.Maui.SafeAreaEdges
 Microsoft.Maui.ITab
 Microsoft.Maui.ITab.Icon.get -> Microsoft.Maui.IImageSource?
 Microsoft.Maui.ITab.IsEnabled.get -> bool
@@ -56,6 +60,8 @@ static Microsoft.Maui.Handlers.TimePickerHandler.MapFlowDirection(Microsoft.Maui
 static Microsoft.Maui.Handlers.WindowHandler.MapStatusBarTheme(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateBackground(this UIKit.UIButton! platformButton, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.CollectionViewExtensions.UpdateIsEnabled(this UIKit.UICollectionView! collectionView, Microsoft.Maui.IView! view) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView) -> void
+static Microsoft.Maui.Platform.SemanticExtensions.PostAccessibilityFocusNotification(this UIKit.UIView! platformView, UIKit.UIView? inputView) -> void
 static Microsoft.Maui.SafeAreaEdges.Container.get -> Microsoft.Maui.SafeAreaEdges
 virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 ~override Microsoft.Maui.Handlers.TabbedViewHandler.ConnectHandler(UIKit.UIView platformView) -> void
@@ -63,3 +69,22 @@ virtual Microsoft.Maui.Animations.PlatformTicker.Dispose(bool disposing) -> void
 Microsoft.Maui.ISwipeItemMenuItemIconColor
 Microsoft.Maui.ISwipeItemMenuItemIconColor.IconColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapIconColor(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! view) -> void
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.PlatformView.get -> TPlatformView!
+Microsoft.Maui.IElementHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>
+Microsoft.Maui.IViewHandler<TVirtualView, TPlatformView>.VirtualView.get -> TVirtualView
+Microsoft.Maui.ILayoutHandler<TPlatformView>
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Add(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Clear() -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Insert(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Remove(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.Update(int index, Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.ILayoutHandler<TPlatformView>.UpdateZIndex(Microsoft.Maui.IView! view) -> void
+Microsoft.Maui.IToolbarDrawerToggleVisible
+Microsoft.Maui.IToolbarDrawerToggleVisible.DrawerToggleVisible.get -> bool
+Microsoft.Maui.IImageSourcePaint
+Microsoft.Maui.IImageSourcePaint.ImageSource.get -> Microsoft.Maui.IImageSource?
+Microsoft.Maui.Handlers.ViewHandler.SetContainerView(UIKit.UIView? containerView) -> void
+virtual Microsoft.Maui.Handlers.ViewHandler.ValidateContainerView(UIKit.UIView! containerView) -> void
+override Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.ValidateContainerView(UIKit.UIView! containerView) -> void

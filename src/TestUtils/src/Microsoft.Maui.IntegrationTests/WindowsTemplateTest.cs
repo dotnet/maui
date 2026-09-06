@@ -105,9 +105,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	//[InlineData("maui", DotNetPrevious, "Release", true)]
+	[InlineData("maui", DotNetPrevious, "Release", false)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false)]
 	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
@@ -152,9 +152,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 	[Theory]
 	[InlineData("maui", DotNetCurrent, "Release", false)]
-	//[InlineData("maui", DotNetPrevious, "Release", true)]
+	[InlineData("maui", DotNetPrevious, "Release", false)]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false)]
-	//[InlineData("maui-blazor", DotNetPrevious, "Release", true)]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false)]
 	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		SetTestIdentifier(id, framework, config, usesRidGraph);
@@ -179,6 +179,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var rid = usesRidGraph ? "win10-x64/" : "";
+		if (framework == DotNetPrevious && !usesRidGraph)
+			rid = "win-x64/";
+
 		var prefix = framework == DotNetCurrent
 			? ""
 			: $"bin/{config}/{framework}-windows10.0.19041.0/";

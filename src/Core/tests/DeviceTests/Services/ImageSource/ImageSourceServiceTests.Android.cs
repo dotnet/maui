@@ -229,6 +229,53 @@ namespace Microsoft.Maui.DeviceTests
 			result2.Dispose();
 		}
 
+		[Fact]
+		public async Task DisposingTheResultFromInsideTheLoadCallbackDoesNotThrow()
+		{
+			// The dispose Runnable handed to the callback is MauiCustomTarget.clear(), and the
+			// callback itself runs on Glide's own onResourceReady stack. Glide rejects a clear()
+			// issued from inside one of its target callbacks (SingleRequest.assertNotCallingCallbacks),
+			// so running it there threw. That is not an exotic position to be in: ImageLoaderCallbackBase
+			// completes its TaskCompletionSource synchronously, so every consumer that disposes the
+			// result in its await continuation lands on exactly this stack. clear() posts to the main
+			// looper now, so the call has to come back clean.
+			var bitmapFile = CreateBitmapFile(100, 100, Colors.Red);
+			var callback = new DisposeInsideCallbackStub();
+
+			PlatformInterop.LoadImageFromFile(MauiProgram.DefaultContext, bitmapFile, callback);
+
+			var (loaded, disposeError) = await callback.Result;
+
+			// Asserted so a load that quietly failed cannot pass this as "dispose did not throw".
+			Assert.True(loaded);
+			Assert.Null(disposeError);
+		}
+
+		class DisposeInsideCallbackStub : Java.Lang.Object, IImageLoaderCallback
+		{
+			// Asynchronous continuations so awaiting the result does not resume the test body
+			// inside the very callback the test is measuring.
+			readonly TaskCompletionSource<(bool Loaded, Exception DisposeError)> _tcs =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task<(bool Loaded, Exception DisposeError)> Result => _tcs.Task;
+
+			public void OnComplete(Java.Lang.Boolean success, Drawable drawable, Java.Lang.IRunnable dispose)
+			{
+				var loaded = success?.BooleanValue() == true;
+
+				try
+				{
+					dispose?.Run();
+					_tcs.TrySetResult((loaded, null));
+				}
+				catch (Exception ex)
+				{
+					_tcs.TrySetResult((loaded, ex));
+				}
+			}
+		}
+
 		async Task<bool> TryCollectFile(string bitmapFile)
 		{
 			var collected = false;

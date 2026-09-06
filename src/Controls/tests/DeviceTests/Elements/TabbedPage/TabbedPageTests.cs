@@ -17,9 +17,6 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-#if IOS
-using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
-#endif
 #if WINDOWS
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 #endif
@@ -28,9 +25,16 @@ namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// TabbedPageTests_TabbedViewHandler subclass overrides registration to exercise
+	// TabbedViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null, bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -42,28 +46,37 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
+					RegisterNavigationPageHandler(handlers);
 
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-#else
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-#endif
+					RegisterTabbedPageHandler(handlers);
 				});
 
 				additionalCreationActions?.Invoke(builder);
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every TabbedPageTests test run against both the NavigationPage renderer and
+		// handler. See TabbedPageNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// Registers the TabbedPage handler mapping for this test variant. The base class exercises
+		// TabbedRenderer on iOS/MacCatalyst; TabbedPageTests_TabbedViewHandler overrides this to
+		// exercise TabbedViewHandler instead, so every test below runs against both variants.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#endif
 		}
 
 
@@ -107,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			tabbedPage.BarTextColor = Colors.Red;
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(tabbedPage, async handler =>
 			{
 				// Pre iOS15 you couldn't set the text color of the unselected tab
 				// so only android/windows currently set the color of both
@@ -146,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.SelectedTabColor = Colors.Red;
 			tabbedPage.UnselectedTabColor = Colors.Purple;
 
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(tabbedPage, async handler =>
 			{
 				// Pre iOS15 you couldn't set the text color of the unselected tab
 				// so only android/windows currently set the color of both
@@ -235,7 +248,28 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: this test forces the old event-based NavigationImpl path
+			// (setForMaui:false) below, which NavigationRenderer supports but
+			// NavigationViewHandler does not implement via RequestNavigation (causes hangs).
+			// Register NavigationRenderer directly (not via SetupBuilder/RegisterNavigationPageHandler)
+			// so this stays Renderer-only even when inherited by TabbedPageNavigationHandlerTests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
@@ -311,7 +345,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
@@ -380,7 +414,25 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: same setForMaui:false / RequestNavigation hang-avoidance reasoning
+			// as RemoveCurrentPageAndThenReAddDoesntCrash above.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var pages = new NavigationPage[5];
 
@@ -468,7 +520,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
