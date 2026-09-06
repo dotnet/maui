@@ -119,7 +119,7 @@ stages:
   - stage: SmokeTestReplicationPublication
     displayName: 'Smoke test MauiBot draft PR publication'
     dependsOn: []
-    condition: eq('${{ parameters.Mode }}', 'publication-smoke')
+    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'publication-smoke'))
     jobs:
       - job: SmokeTestReplicationPublication
         displayName: 'Create, verify, and clean up draft PR'
@@ -203,7 +203,7 @@ stages:
   - stage: ReviewPR
     displayName: 'Run Copilot Operation'
     dependsOn: []
-    condition: ne('${{ parameters.Mode }}', 'publication-smoke')
+    condition: and(not(canceled()), ne('${{ parameters.Mode }}', 'publication-smoke'))
     jobs:
       - job: ReplicationFeedback
         displayName: 'Collect replication feedback'
