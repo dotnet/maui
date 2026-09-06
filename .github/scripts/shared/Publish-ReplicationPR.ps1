@@ -35,7 +35,7 @@ param(
     [string]$IssueRepository = 'maui',
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$TargetOwner = 'kubaflo',
+    [string]$TargetOwner = 'dotnet',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$TargetRepository = 'maui',

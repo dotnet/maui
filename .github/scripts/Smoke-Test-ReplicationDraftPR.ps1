@@ -6,7 +6,7 @@
 .DESCRIPTION
     This is a manual transport smoke test. It runs only on a clean trusted
     checkout, creates a temporary branch in MauiBot's fork, opens a draft PR
-    against the testing fork, verifies its identity and routing, then closes the
+    against dotnet/maui, verifies its identity and routing, then closes the
     PR and deletes the branch. GitHub retains the closed PR record as evidence.
 #>
 
@@ -31,7 +31,7 @@ param(
     [string]$SourceRepository = 'maui',
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$TargetOwner = 'kubaflo',
+    [string]$TargetOwner = 'dotnet',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$TargetRepository = 'maui',
