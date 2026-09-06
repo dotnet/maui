@@ -146,16 +146,6 @@ try {
     & git remote remove $sourceRemote 2>$null
     $global:LASTEXITCODE = 0
 
-    # Create the remote branch at upstream main first. MauiBot's fork can lag
-    # upstream, and pushing the whole upstream range makes GitHub treat old
-    # workflow changes as part of this push and require workflows scope.
-    # A baseline-bound ref means the later push contains only this smoke commit.
-    $branchPushed = $true
-    Initialize-ReplicationSourceBranch `
-        -SourceOwner $SourceOwner `
-        -SourceRepository $SourceRepository `
-        -BranchName $branchName `
-        -BaselineSha $baselineSha
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(
@@ -230,6 +220,16 @@ try {
             $sourceRemote,
             "https://github.com/$SourceOwner/$SourceRepository.git") `
         -Description 'Configuring the MauiBot fork'
+    # Create the remote branch at upstream main first. MauiBot's fork can lag
+    # upstream, and pushing the whole upstream range makes GitHub treat old
+    # workflow changes as part of this push and require workflows scope.
+    # A baseline-bound ref means the later push contains only this smoke commit.
+    $branchPushed = $true
+    Initialize-ReplicationSourceBranch `
+        -SourceOwner $SourceOwner `
+        -SourceRepository $SourceRepository `
+        -BranchName $branchName `
+        -BaselineSha $baselineSha
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(
