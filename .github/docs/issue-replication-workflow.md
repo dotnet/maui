@@ -1,11 +1,13 @@
 # .NET MAUI issue replication workflow
 
-The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
+The `maui-copilot` Azure DevOps pipeline can run in four manual modes:
 
 | Mode | Target | Result |
 | --- | --- | --- |
 | `review` | Pull request number | Existing automated PR review and AI Summary |
 | `replicate` | GitHub issue number | On-device reproduction evidence and, only when fully validated, a draft product-fix PR |
+| `feedback` | None | Authenticated replication-PR feedback snapshot without device work |
+| `publication-smoke` | None | Create, verify, close, and delete the branch for a temporary MauiBot draft PR |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -23,6 +25,15 @@ The `maui-copilot` Azure DevOps pipeline can run in two manual modes:
    attestation; otherwise the trusted run ends as unsupported before generation.
 
 Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` replication PRs, and skips device reproduction. It does not create or migrate pull requests.
+
+Use `Mode=publication-smoke` with both target numbers set to `0` to test the
+real MauiBot publication credential and transport without running generated
+code. The mode creates a temporary branch in `MauiBot/maui`, opens a draft PR
+against `kubaflo/maui:main`, verifies the author, draft state, head, and base,
+then closes the PR and deletes the branch. GitHub retains the closed PR record
+as the durable audit result; the `ReplicationPublicationSmoke` artifact records
+the same checks. Normal `replicate` mode remains ordered as reproduction,
+validated product fix, evidence publication, and draft PR.
 
 The feedback snapshot is data-only and bounded. In addition to the discussion
 surfaces it includes normalized `qualityContract`, typed `selector`, `evidence`,
