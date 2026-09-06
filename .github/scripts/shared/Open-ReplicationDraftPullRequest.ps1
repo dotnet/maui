@@ -192,51 +192,76 @@ function Remove-ReplicationDraftPullRequest {
         [string]$CloseComment
     )
 
-    $pullRequest = Get-ReplicationDraftPullRequestByHead `
-        -TargetOwner $TargetOwner `
-        -TargetRepository $TargetRepository `
-        -SourceOwner $SourceOwner `
-        -BranchName $BranchName `
-        -BaseBranch $BaseBranch
+    $errors = [Collections.Generic.List[string]]::new()
+    $pullRequest = $null
+    try {
+        $pullRequest = Get-ReplicationDraftPullRequestByHead `
+            -TargetOwner $TargetOwner `
+            -TargetRepository $TargetRepository `
+            -SourceOwner $SourceOwner `
+            -BranchName $BranchName `
+            -BaseBranch $BaseBranch
+    }
+    catch {
+        $errors.Add(
+            "Locating the draft pull request failed: $($_.Exception.Message)")
+    }
     $closed = $false
     $number = $null
     $url = $null
     if ($null -ne $pullRequest) {
         $number = [int]$pullRequest.number
         $url = [string]$pullRequest.html_url
-        & gh pr close $number `
-            --repo "$TargetOwner/$TargetRepository" `
-            --comment $CloseComment |
-            Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Closing draft pull request #$number failed."
+        try {
+            & gh pr close $number `
+                --repo "$TargetOwner/$TargetRepository" `
+                --comment $CloseComment |
+                Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                throw "gh pr close exited with code $LASTEXITCODE."
+            }
+            $state = & gh pr view $number `
+                --repo "$TargetOwner/$TargetRepository" `
+                --json state `
+                --jq '.state'
+            if ($LASTEXITCODE -ne 0 -or
+                [string]$state -cne 'CLOSED') {
+                throw 'GitHub did not report the pull request as closed.'
+            }
+            $closed = $true
         }
-        $state = & gh pr view $number `
-            --repo "$TargetOwner/$TargetRepository" `
-            --json state `
-            --jq '.state'
-        if ($LASTEXITCODE -ne 0 -or [string]$state -cne 'CLOSED') {
-            throw "Draft pull request #$number did not close."
+        catch {
+            $errors.Add(
+                "Closing draft pull request #$number failed: " +
+                $_.Exception.Message)
         }
-        $closed = $true
     }
 
     $sourceUrl =
         "https://github.com/$SourceOwner/$SourceRepository.git"
-    & git push $sourceUrl --delete $BranchName
-    $deleteExitCode = $LASTEXITCODE
-    & git ls-remote --exit-code `
-        $sourceUrl `
-        "refs/heads/$BranchName" *> $null
-    $verifyExitCode = $LASTEXITCODE
-    $global:LASTEXITCODE = 0
-    if ($verifyExitCode -eq 0) {
-        throw 'The temporary publication branch still exists after cleanup.'
+    $branchDeleted = $false
+    try {
+        & git push $sourceUrl --delete $BranchName
+        $deleteExitCode = $LASTEXITCODE
+        & git ls-remote --exit-code `
+            $sourceUrl `
+            "refs/heads/$BranchName" *> $null
+        $verifyExitCode = $LASTEXITCODE
+        $global:LASTEXITCODE = 0
+        if ($verifyExitCode -eq 0) {
+            throw 'The temporary publication branch still exists after cleanup.'
+        }
+        if ($verifyExitCode -ne 2) {
+            throw (
+                'The temporary publication branch deletion could not be verified ' +
+                "(delete exit $deleteExitCode, verification exit $verifyExitCode).")
+        }
+        $branchDeleted = $true
     }
-    if ($verifyExitCode -ne 2) {
-        throw (
-            'The temporary publication branch deletion could not be verified ' +
-            "(delete exit $deleteExitCode, verification exit $verifyExitCode).")
+    catch {
+        $errors.Add(
+            "Deleting the temporary publication branch failed: " +
+            $_.Exception.Message)
     }
 
     return [pscustomobject]@{
@@ -244,6 +269,7 @@ function Remove-ReplicationDraftPullRequest {
         Number = $number
         Url = $url
         Closed = $closed
-        BranchDeleted = $true
+        BranchDeleted = $branchDeleted
+        Errors = @($errors)
     }
 }

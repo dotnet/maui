@@ -43,8 +43,14 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
-. (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
-. (Join-Path $PSScriptRoot 'Open-ReplicationDraftPullRequest.ps1')
+$helperRoot = if (Test-Path -LiteralPath (
+        Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1') -PathType Leaf) {
+    $PSScriptRoot
+} else {
+    Join-Path $PSScriptRoot 'shared'
+}
+. (Join-Path $helperRoot 'Get-ReplicationGitHubLogin.ps1')
+. (Join-Path $helperRoot 'Open-ReplicationDraftPullRequest.ps1')
 
 function Invoke-ReplicationSmokeCommand {
     param(
@@ -140,6 +146,9 @@ try {
     & git remote remove $sourceRemote 2>$null
     $global:LASTEXITCODE = 0
 
+    # A push can reach GitHub and still report a transport failure locally.
+    # From this point onward cleanup must probe the exact head unconditionally.
+    $branchPushed = $true
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(
@@ -216,7 +225,6 @@ try {
             $sourceRemote,
             "HEAD:refs/heads/$branchName") `
         -Description 'Pushing the publication smoke branch'
-    $branchPushed = $true
 
     @(
         $marker
@@ -276,6 +284,9 @@ finally {
                 $result.closed = $cleanup.Closed
             }
             $result.branchDeleted = $cleanup.BranchDeleted
+            foreach ($cleanupError in @($cleanup.Errors)) {
+                $cleanupErrors.Add([string]$cleanupError)
+            }
         }
         catch {
             $cleanupErrors.Add(

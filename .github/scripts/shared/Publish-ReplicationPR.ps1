@@ -1941,54 +1941,37 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             throw 'A fix patch was supplied but the validated candidate names no fix files.'
         }
 
-        Invoke-ReplicationExternalCommand `
-            -FilePath 'git' `
-            -Arguments @('push', $sourceRemote, "HEAD:refs/heads/$branchName") `
-            -Description 'Pushing reproduction branch'
-
         $bodyPath = Join-Path ([IO.Path]::GetTempPath()) "maui-replication-pr-$issueNumber-$buildId.md"
+        $publicationStarted = $false
         try {
             $prBody | Set-Content -LiteralPath $bodyPath -Encoding utf8NoBOM
-            try {
-                $openedUrl = Open-ReplicationDraftPullRequest `
+            # A push can reach GitHub and still report a transport failure
+            # locally, so cleanup starts before the push is attempted.
+            $publicationStarted = $true
+            Invoke-ReplicationExternalCommand `
+                -FilePath 'git' `
+                -Arguments @(
+                    'push',
+                    $sourceRemote,
+                    "HEAD:refs/heads/$branchName") `
+                -Description 'Pushing reproduction branch'
+            $openedUrl = Open-ReplicationDraftPullRequest `
+                -TargetOwner $TargetOwner `
+                -TargetRepository $TargetRepository `
+                -SourceOwner $sourceOwner `
+                -BranchName $branchName `
+                -BaseBranch $BaseBranch `
+                -Title $prTitle `
+                -BodyPath $bodyPath
+            $verifiedPullRequest =
+                Assert-ReplicationDraftPullRequest `
+                    -Url $openedUrl `
                     -TargetOwner $TargetOwner `
                     -TargetRepository $TargetRepository `
                     -SourceOwner $sourceOwner `
                     -BranchName $branchName `
-                    -BaseBranch $BaseBranch `
-                    -Title $prTitle `
-                    -BodyPath $bodyPath
-                $verifiedPullRequest =
-                    Assert-ReplicationDraftPullRequest `
-                        -Url $openedUrl `
-                        -TargetOwner $TargetOwner `
-                        -TargetRepository $TargetRepository `
-                        -SourceOwner $sourceOwner `
-                        -BranchName $branchName `
-                        -BaseBranch $BaseBranch
-                $plan.url = $verifiedPullRequest.Url
-            }
-            catch {
-                $publicationError = $_
-                try {
-                    $null = Remove-ReplicationDraftPullRequest `
-                        -TargetOwner $TargetOwner `
-                        -TargetRepository $TargetRepository `
-                        -SourceOwner $sourceOwner `
-                        -SourceRepository $sourceRepository `
-                        -BranchName $branchName `
-                        -BaseBranch $BaseBranch `
-                        -CloseComment (
-                            'MauiBot publication verification failed, so this ' +
-                            'draft is being closed automatically.')
-                }
-                catch {
-                    throw (
-                        "$($publicationError.Exception.Message) " +
-                        "Publication cleanup also failed: $($_.Exception.Message)")
-                }
-                throw $publicationError
-            }
+                    -BaseBranch $BaseBranch
+            $plan.url = $verifiedPullRequest.Url
 
             if ($supersededPull) {
                 # Only now, with the replacement open, is retiring the earlier
@@ -2007,6 +1990,32 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                         "$($_.Exception.Message)")
                 }
             }
+        }
+        catch {
+            $publicationError = $_
+            if ($publicationStarted) {
+                try {
+                    $cleanup = Remove-ReplicationDraftPullRequest `
+                        -TargetOwner $TargetOwner `
+                        -TargetRepository $TargetRepository `
+                        -SourceOwner $sourceOwner `
+                        -SourceRepository $sourceRepository `
+                        -BranchName $branchName `
+                        -BaseBranch $BaseBranch `
+                        -CloseComment (
+                            'MauiBot publication verification failed, so this ' +
+                            'draft is being closed automatically.')
+                    if (@($cleanup.Errors).Count -gt 0) {
+                        throw ($cleanup.Errors -join ' ')
+                    }
+                }
+                catch {
+                    throw (
+                        "$($publicationError.Exception.Message) " +
+                        "Publication cleanup also failed: $($_.Exception.Message)")
+                }
+            }
+            throw $publicationError
         }
         finally {
             Remove-Item -LiteralPath $bodyPath -Force -ErrorAction SilentlyContinue

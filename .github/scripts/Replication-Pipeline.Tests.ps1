@@ -29,9 +29,31 @@ Describe 'MAUI Copilot mode routing' {
         $modeIndex | Should -BeGreaterThan -1
         $modeIndex | Should -BeLessThan $prIndex
         $prIndex | Should -BeLessThan $issueIndex
-        $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback"
+        $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback\s+- publication-smoke"
         $script:Pipeline | Should -Match "(?s)- name: PRNumber.*?default: 0"
         $script:Pipeline | Should -Match "(?s)- name: IssueNumber.*?default: 0"
+    }
+
+    It 'isolates the empirically proven MauiBot publication smoke mode' {
+        $script:Pipeline | Should -Match (
+            "(?s)- stage: SmokeTestReplicationPublication.*?" +
+            "condition: and\(not\(canceled\(\)\), " +
+            "eq\('\$\{\{ parameters\.Mode \}\}', 'publication-smoke'\)\)")
+        $script:Pipeline | Should -Match (
+            "(?s)- stage: ReviewPR.*?dependsOn: \[\].*?" +
+            "condition: and\(not\(canceled\(\)\), " +
+            "ne\('\$\{\{ parameters\.Mode \}\}', 'publication-smoke'\)\)")
+        $script:Pipeline | Should -Match (
+            "(?s)displayName: 'Create, verify, close, and delete MauiBot draft PR'.*?" +
+            "GH_TOKEN: \$\(GH_COMMENT_TOKEN\)")
+        $script:Pipeline | Should -Match 'Smoke-Test-ReplicationDraftPR\.ps1'
+        $script:Pipeline | Should -Match 'Open-ReplicationDraftPullRequest\.ps1'
+        $script:Pipeline | Should -Match (
+            "(?s)Publish replication publication smoke result.*?" +
+            "artifact: 'ReplicationPublicationSmoke'.*?condition: always\(\)")
+        $script:Pipeline | Should -Match (
+            "condition: and\(not\(canceled\(\)\), " +
+            "ne\('\$\{\{ parameters\.Mode \}\}', 'publication-smoke'\)\)")
     }
 
     It 'requires exactly the target number for the selected mode' {
