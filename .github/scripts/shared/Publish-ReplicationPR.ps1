@@ -1948,6 +1948,11 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             # A push can reach GitHub and still report a transport failure
             # locally, so cleanup starts before the push is attempted.
             $publicationStarted = $true
+            Initialize-ReplicationSourceBranch `
+                -SourceOwner $sourceOwner `
+                -SourceRepository $sourceRepository `
+                -BranchName $branchName `
+                -BaselineSha $baselineSha
             Invoke-ReplicationExternalCommand `
                 -FilePath 'git' `
                 -Arguments @(

@@ -146,9 +146,16 @@ try {
     & git remote remove $sourceRemote 2>$null
     $global:LASTEXITCODE = 0
 
-    # A push can reach GitHub and still report a transport failure locally.
-    # From this point onward cleanup must probe the exact head unconditionally.
+    # Create the remote branch at upstream main first. MauiBot's fork can lag
+    # upstream, and pushing the whole upstream range makes GitHub treat old
+    # workflow changes as part of this push and require workflows scope.
+    # A baseline-bound ref means the later push contains only this smoke commit.
     $branchPushed = $true
+    Initialize-ReplicationSourceBranch `
+        -SourceOwner $SourceOwner `
+        -SourceRepository $SourceRepository `
+        -BranchName $branchName `
+        -BaselineSha $baselineSha
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(
@@ -165,6 +172,11 @@ try {
         -FilePath 'git' `
         -Arguments @('checkout', '--detach', 'FETCH_HEAD') `
         -Description 'Checking out the publication smoke base'
+    $baselineSha = (& git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or
+        $baselineSha -cnotmatch '^[0-9a-f]{40}$') {
+        throw 'Unable to resolve the publication smoke baseline commit.'
+    }
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @('switch', '-c', $branchName) `
