@@ -18,6 +18,10 @@ function Initialize-ReplicationSourceBranch {
         [string]$BranchName,
 
         [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[A-Za-z0-9._/-]+$')]
+        [string]$SourceBaseBranch,
+
+        [Parameter(Mandatory = $true)]
         [ValidatePattern('^[0-9a-f]{40}$')]
         [string]$BaselineSha
     )
@@ -32,7 +36,34 @@ function Initialize-ReplicationSourceBranch {
         $createdJson = & gh api `
             -X POST `
             "repos/$SourceOwner/$SourceRepository/git/refs" `
-            --input $payloadPath
+            --input $payloadPath 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            # A fork can lag upstream so far that the validated baseline object
+            # does not exist in its object database. Server-side fork sync
+            # imports upstream history without asking this token to push workflow
+            # files. Once imported, the exact older validated baseline can be
+            # referenced safely.
+            [ordered]@{
+                branch = $SourceBaseBranch
+            } | ConvertTo-Json -Compress |
+                Set-Content -LiteralPath $payloadPath -Encoding utf8NoBOM
+            $null = & gh api `
+                -X POST `
+                "repos/$SourceOwner/$SourceRepository/merge-upstream" `
+                --input $payloadPath
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Synchronizing the MauiBot fork with upstream failed.'
+            }
+            [ordered]@{
+                ref = "refs/heads/$BranchName"
+                sha = $BaselineSha
+            } | ConvertTo-Json -Compress |
+                Set-Content -LiteralPath $payloadPath -Encoding utf8NoBOM
+            $createdJson = & gh api `
+                -X POST `
+                "repos/$SourceOwner/$SourceRepository/git/refs" `
+                --input $payloadPath
+        }
         if ($LASTEXITCODE -ne 0) {
             throw 'Creating the baseline-bound source branch failed.'
         }
