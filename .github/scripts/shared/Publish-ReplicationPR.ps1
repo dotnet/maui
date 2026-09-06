@@ -79,6 +79,7 @@ $OutputPath = $publisherOutputPath
 
 . (Join-Path $PSScriptRoot 'Get-ReplicationGitHubLogin.ps1')
 . (Join-Path $PSScriptRoot 'Get-ReplicationUpstreamFix.ps1')
+. (Join-Path $PSScriptRoot 'Open-ReplicationDraftPullRequest.ps1')
 
 function ConvertTo-ReplicationSingleLine {
     param(
@@ -1948,17 +1949,46 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
         $bodyPath = Join-Path ([IO.Path]::GetTempPath()) "maui-replication-pr-$issueNumber-$buildId.md"
         try {
             $prBody | Set-Content -LiteralPath $bodyPath -Encoding utf8NoBOM
-            $prUrl = & gh pr create `
-                --repo "$TargetOwner/$TargetRepository" `
-                --head "$sourceOwner`:$branchName" `
-                --base $BaseBranch `
-                --title $prTitle `
-                --body-file $bodyPath `
-                --draft
-            if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace([string]$prUrl)) {
-                throw 'Creating the draft fix pull request failed.'
+            try {
+                $openedUrl = Open-ReplicationDraftPullRequest `
+                    -TargetOwner $TargetOwner `
+                    -TargetRepository $TargetRepository `
+                    -SourceOwner $sourceOwner `
+                    -BranchName $branchName `
+                    -BaseBranch $BaseBranch `
+                    -Title $prTitle `
+                    -BodyPath $bodyPath
+                $verifiedPullRequest =
+                    Assert-ReplicationDraftPullRequest `
+                        -Url $openedUrl `
+                        -TargetOwner $TargetOwner `
+                        -TargetRepository $TargetRepository `
+                        -SourceOwner $sourceOwner `
+                        -BranchName $branchName `
+                        -BaseBranch $BaseBranch
+                $plan.url = $verifiedPullRequest.Url
             }
-            $plan.url = ([string]$prUrl).Trim()
+            catch {
+                $publicationError = $_
+                try {
+                    $null = Remove-ReplicationDraftPullRequest `
+                        -TargetOwner $TargetOwner `
+                        -TargetRepository $TargetRepository `
+                        -SourceOwner $sourceOwner `
+                        -SourceRepository $sourceRepository `
+                        -BranchName $branchName `
+                        -BaseBranch $BaseBranch `
+                        -CloseComment (
+                            'MauiBot publication verification failed, so this ' +
+                            'draft is being closed automatically.')
+                }
+                catch {
+                    throw (
+                        "$($publicationError.Exception.Message) " +
+                        "Publication cleanup also failed: $($_.Exception.Message)")
+                }
+                throw $publicationError
+            }
 
             if ($supersededPull) {
                 # Only now, with the replacement open, is retiring the earlier

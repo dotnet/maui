@@ -18,6 +18,7 @@ parameters:
       - review
       - replicate
       - feedback
+      - publication-smoke
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -112,8 +113,97 @@ variables:
     value: 150
 
 stages:
+  # This manual mode proves the real MauiBot branch-push and draft-PR transport
+  # independently of issue reproduction. It creates a temporary draft, verifies
+  # its routing and ownership, closes it, and deletes the temporary branch.
+  - stage: SmokeTestReplicationPublication
+    displayName: 'Smoke test MauiBot draft PR publication'
+    dependsOn: []
+    condition: eq('${{ parameters.Mode }}', 'publication-smoke')
+    jobs:
+      - job: SmokeTestReplicationPublication
+        displayName: 'Create, verify, and clean up draft PR'
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 15
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            persistCredentials: false
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              New-Item `
+                -ItemType Directory `
+                -Path "$(Pipeline.Workspace)/ReplicationPublicationSmoke" `
+                -Force |
+                Out-Null
+              $pinned = '$(Build.SourceVersion)'
+              if ($pinned -notmatch '^[0-9a-f]{40}$') {
+                throw "Build.SourceVersion is not a commit SHA: $pinned"
+              }
+              git -C "$(Build.SourcesDirectory)" checkout --force --detach $pinned
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to pin the publication smoke checkout to $pinned."
+              }
+
+              $trustedRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-replication-publication-smoke'
+              Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
+              New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
+              foreach ($relative in @(
+                'Smoke-Test-ReplicationDraftPR.ps1',
+                'shared/Get-ReplicationGitHubLogin.ps1',
+                'shared/Open-ReplicationDraftPullRequest.ps1'
+              )) {
+                $source = Join-Path "$(Build.SourcesDirectory)/.github/scripts" $relative
+                if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+                  throw "Trusted publication smoke script is missing: $relative"
+                }
+                Copy-Item -LiteralPath $source -Destination (
+                  Join-Path $trustedRoot (Split-Path -Leaf $relative)) -Force
+              }
+              if (-not $IsWindows) {
+                & chmod -R a-w $trustedRoot
+                if ($LASTEXITCODE -ne 0) {
+                  throw 'Unable to make the publication smoke scripts read-only.'
+                }
+              }
+              Write-Host "##vso[task.setvariable variable=TRUSTED_REPLICATION_SMOKE_ROOT]$trustedRoot"
+              Write-Host "##vso[build.updatebuildnumber]MauiBot publication smoke $(Build.BuildId)"
+            displayName: 'Stage trusted publication smoke scripts'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $outputRoot = "$(Pipeline.Workspace)/ReplicationPublicationSmoke"
+              New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
+              & (Join-Path "$(TRUSTED_REPLICATION_SMOKE_ROOT)" 'Smoke-Test-ReplicationDraftPR.ps1') `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -OutputPath (Join-Path $outputRoot 'result.json')
+              if ($LASTEXITCODE -ne 0) {
+                throw 'MauiBot draft PR publication smoke test failed.'
+              }
+            displayName: 'Create, verify, close, and delete MauiBot draft PR'
+            env:
+              GH_TOKEN: $(GH_COMMENT_TOKEN)
+              BUILD_BUILDID: $(Build.BuildId)
+              SYSTEM_JOBATTEMPT: $(System.JobAttempt)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish replication publication smoke result'
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/ReplicationPublicationSmoke'
+              artifact: 'ReplicationPublicationSmoke'
+              publishLocation: 'pipeline'
+            condition: always()
+
   - stage: ReviewPR
     displayName: 'Run Copilot Operation'
+    dependsOn: []
+    condition: ne('${{ parameters.Mode }}', 'publication-smoke')
     jobs:
       - job: ReplicationFeedback
         displayName: 'Collect replication feedback'
@@ -3618,6 +3708,7 @@ stages:
                 'shared/Get-ReplicationSignatureMatch.ps1',
                 'shared/Get-ReplicationGitHubLogin.ps1',
                 'shared/Get-ReplicationUpstreamFix.ps1',
+                'shared/Open-ReplicationDraftPullRequest.ps1',
                 'shared/Assert-TrustedTreeAttestation.ps1',
                 'shared/Assert-ReplicationCertificationBinding.ps1',
                 'shared/Assert-ReplicationExecutionEnvironment.ps1',
@@ -7134,7 +7225,7 @@ stages:
       - PublishReplication
       - RunDeepUITests
       - UpdateAISummaryComment
-    condition: not(canceled())
+    condition: and(not(canceled()), ne('${{ parameters.Mode }}', 'publication-smoke'))
     variables:
       reviewPrResult: $[ dependencies.ReviewPR.result ]
       publishReplicationResult: $[ dependencies.PublishReplication.result ]
