@@ -1782,11 +1782,19 @@ if (-not $DryRun) {
     if (-not $authenticatedLogin.Equals('MauiBot', [StringComparison]::OrdinalIgnoreCase)) {
         throw "GH_TOKEN must authenticate as 'MauiBot'."
     }
-    $source = Resolve-ReplicationSourceRepository `
-        -ParentOwner $IssueOwner `
-        -ParentRepository $IssueRepository
-    $sourceOwner = [string]$source.Owner
-    $sourceRepository = [string]$source.Repository
+    $publishesDirectly =
+        "$TargetOwner/$TargetRepository" -ceq
+        "$IssueOwner/$IssueRepository"
+    if ($publishesDirectly) {
+        $sourceOwner = $TargetOwner
+        $sourceRepository = $TargetRepository
+    } else {
+        $source = Resolve-ReplicationSourceRepository `
+            -ParentOwner $IssueOwner `
+            -ParentRepository $IssueRepository
+        $sourceOwner = [string]$source.Owner
+        $sourceRepository = [string]$source.Repository
+    }
 
     Push-Location $RepositoryRoot
     try {
@@ -1894,7 +1902,12 @@ if (-not $DryRun) {
 
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('config', 'user.name', 'maui-copilot-replication') -Description 'Configuring git author'
         Invoke-ReplicationExternalCommand -FilePath 'git' -Arguments @('config', 'user.email', '223556219+Copilot@users.noreply.github.com') -Description 'Configuring git email'
-        Invoke-ReplicationExternalCommand -FilePath 'gh' -Arguments @('auth', 'setup-git') -Description 'Configuring bot Git authentication'
+        if (-not $publishesDirectly) {
+            Invoke-ReplicationExternalCommand `
+                -FilePath 'gh' `
+                -Arguments @('auth', 'setup-git') `
+                -Description 'Configuring bot Git authentication'
+        }
 
         $sourceRemote = 'replication-fork'
         & git remote remove $sourceRemote 2>$null
@@ -1948,12 +1961,14 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
             # A push can reach GitHub and still report a transport failure
             # locally, so cleanup starts before the push is attempted.
             $publicationStarted = $true
-            Initialize-ReplicationSourceBranch `
-                -SourceOwner $sourceOwner `
-                -SourceRepository $sourceRepository `
-                -BranchName $branchName `
-                -SourceBaseBranch $BaseBranch `
-                -BaselineSha $baselineSha
+            if (-not $publishesDirectly) {
+                Initialize-ReplicationSourceBranch `
+                    -SourceOwner $sourceOwner `
+                    -SourceRepository $sourceRepository `
+                    -BranchName $branchName `
+                    -SourceBaseBranch $BaseBranch `
+                    -BaselineSha $baselineSha
+            }
             Invoke-ReplicationExternalCommand `
                 -FilePath 'git' `
                 -Arguments @(

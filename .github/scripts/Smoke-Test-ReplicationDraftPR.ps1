@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     This is a manual transport smoke test. It runs only on a clean trusted
-    checkout, creates a temporary branch in MauiBot's fork, opens a draft PR
+    checkout, creates a temporary branch in dotnet/maui, opens a draft PR
     against dotnet/maui, verifies its identity and routing, then closes the
     PR and deletes the branch. GitHub retains the closed PR record as evidence.
 #>
@@ -25,7 +25,7 @@ param(
     [string]$ParentRepository = 'maui',
 
     [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
-    [string]$SourceOwner = 'MauiBot',
+    [string]$SourceOwner = 'dotnet',
 
     [ValidatePattern('^[A-Za-z0-9._-]+$')]
     [string]$SourceRepository = 'maui',
@@ -125,12 +125,21 @@ try {
         throw "Unable to inspect $SourceOwner/$SourceRepository."
     }
     $source = $sourceJson | ConvertFrom-Json -Depth 10
-    if ($source.fork -ne $true -or
+    $publishesDirectly =
+        "$SourceOwner/$SourceRepository" -ceq
+        "$ParentOwner/$ParentRepository"
+    if ($publishesDirectly) {
+        if ($source.fork -eq $true -or
+            [string]$source.full_name -cne
+                "$ParentOwner/$ParentRepository") {
+            throw 'The direct publication source must be the upstream repository.'
+        }
+    } elseif ($source.fork -ne $true -or
         [string]$source.parent.full_name -cne
             "$ParentOwner/$ParentRepository" -or
         $source.permissions.push -ne $true) {
         throw (
-            "$SourceOwner/$SourceRepository must be MauiBot's writable fork of " +
+            "$SourceOwner/$SourceRepository must be a writable fork of " +
             "$ParentOwner/$ParentRepository.")
     }
 
@@ -197,10 +206,12 @@ try {
             'user.email',
             '223556219+Copilot@users.noreply.github.com') `
         -Description 'Configuring the publication smoke email'
-    Invoke-ReplicationSmokeCommand `
-        -FilePath 'gh' `
-        -Arguments @('auth', 'setup-git') `
-        -Description 'Configuring MauiBot Git authentication'
+    if (-not $publishesDirectly) {
+        Invoke-ReplicationSmokeCommand `
+            -FilePath 'gh' `
+            -Arguments @('auth', 'setup-git') `
+            -Description 'Configuring MauiBot Git authentication'
+    }
     $commitMessage =
         "Verify MauiBot draft PR publication`n`n" +
         "Co-authored-by: Copilot App " +
@@ -220,17 +231,18 @@ try {
             $sourceRemote,
             "https://github.com/$SourceOwner/$SourceRepository.git") `
         -Description 'Configuring the MauiBot fork'
-    # Create the remote branch at upstream main first. MauiBot's fork can lag
-    # upstream, and pushing the whole upstream range makes GitHub treat old
-    # workflow changes as part of this push and require workflows scope.
-    # A baseline-bound ref means the later push contains only this smoke commit.
+    # Fork-backed publication needs a baseline-bound ref because a stale fork
+    # can make GitHub treat upstream workflow history as part of the push.
+    # Direct upstream publication already has the validated baseline object.
     $branchPushed = $true
-    Initialize-ReplicationSourceBranch `
-        -SourceOwner $SourceOwner `
-        -SourceRepository $SourceRepository `
-        -BranchName $branchName `
-        -SourceBaseBranch $BaseBranch `
-        -BaselineSha $baselineSha
+    if (-not $publishesDirectly) {
+        Initialize-ReplicationSourceBranch `
+            -SourceOwner $SourceOwner `
+            -SourceRepository $SourceRepository `
+            -BranchName $branchName `
+            -SourceBaseBranch $BaseBranch `
+            -BaselineSha $baselineSha
+    }
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
         -Arguments @(

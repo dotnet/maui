@@ -28,7 +28,7 @@ Maintainers can use `Mode=feedback` with both target numbers set to `0` for a li
 
 Use `Mode=publication-smoke` with both target numbers set to `0` to test the
 real MauiBot publication credential and transport without running generated
-code. The mode creates a temporary branch in `MauiBot/maui`, opens a draft PR
+code. The mode creates a temporary branch in `dotnet/maui`, opens a draft PR
 against `dotnet/maui:main`, verifies the author, draft state, head, and base,
 then closes the PR and deletes the branch. GitHub retains the closed PR record
 as the durable audit result; the `ReplicationPublicationSmoke` artifact records
@@ -57,7 +57,7 @@ Replication targets `main` in the first version. The issue must describe a scena
 7. Authors a product fix and certifies the same exact test through four causal arms: baseline red, trigger-removed green, product-fix green, and fix-reverted red.
 8. Validates, on a fresh credentialless agent, that the trusted tree matches the pinned pipeline revision, that the certification binding matches every artifact in hand, that the test patch is add-only and restricted to approved test locations, and that the fix patch changes only the validated product files.
 9. Publishes evidence to the repository's public, asset-only `review-tests-assets-v2` branch.
-10. Pushes the validated test and product fix to `MauiBot/maui` and opens a `[maui-bot-fix]` draft PR against `dotnet/maui:main`.
+10. Pushes the validated test and product fix to a temporary `dotnet/maui` branch using the trusted checkout credential, then MauiBot opens a `[maui-bot-fix]` draft PR against `dotnet/maui:main`.
 
 The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a supported API for uploading a video attachment directly into a PR body.
 
