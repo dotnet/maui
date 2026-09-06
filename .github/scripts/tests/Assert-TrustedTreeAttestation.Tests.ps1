@@ -307,6 +307,38 @@ Describe 'Re-deriving a trusted tree on another agent' {
         } | Should -Not -Throw
     }
 
+    It 'accepts the CRLF materialization observed on the Windows device agent' {
+        $recorded = script:New-TrustedTreeFixture
+        $reference = script:New-TrustedTreeFixture
+        foreach ($path in @(
+                @(Get-ChildItem -LiteralPath $recorded.Tree -File -Recurse |
+                    ForEach-Object FullName) +
+                @($recorded.PipelinePath))) {
+            $text = [IO.File]::ReadAllText($path)
+            $crlf = $text.Replace("`r`n", "`n").
+                Replace("`r", "`n").
+                Replace("`n", "`r`n")
+            [IO.File]::WriteAllText(
+                $path,
+                $crlf,
+                [Text.UTF8Encoding]::new($false))
+        }
+        $recorded.Attestation = New-TrustedTreeAttestation `
+            -TrustedRoot $recorded.Tree `
+            -SourceVersion $script:SourceVersion `
+            -PipelineDefinitionPath $recorded.PipelinePath `
+            -OutputPath $recorded.AttestationPath
+
+        $result = Assert-TrustedTreeMatchesReference `
+            -Attestation $recorded.AttestationPath `
+            -ReferenceRoot $reference.Tree `
+            -ExpectedSourceVersion $script:SourceVersion `
+            -ReferencePipelineDefinitionPath $reference.PipelinePath `
+            -Context 'Windows-to-Ubuntu regression'
+
+        $result.FileCount | Should -Be $recorded.Attestation.fileCount
+    }
+
     It 'refuses a run whose trusted tree differs from the pinned revision' {
         $recorded = script:New-TrustedTreeFixture
         $reference = script:New-TrustedTreeFixture
