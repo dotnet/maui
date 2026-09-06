@@ -299,9 +299,19 @@ steps:
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: |
       echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
-      $jsonOutput = & dotnet maui android sdk check --ci --json | ConvertFrom-Json
-      if ($LASTEXITCODE -ne 0 -or $jsonOutput.status -ne 'Ok') {
-        throw "Microsoft.Maui.Cli could not find a usable Android SDK."
+      $rawOutput = & dotnet maui android sdk check --ci --json
+      $exitCode = $LASTEXITCODE
+      if ($exitCode -ne 0) {
+        throw "Microsoft.Maui.Cli could not check the Android SDK (exit code: $exitCode)."
+      }
+      try {
+        $jsonOutput = ($rawOutput -join [Environment]::NewLine) | ConvertFrom-Json -ErrorAction Stop
+      }
+      catch {
+        throw "Microsoft.Maui.Cli returned invalid Android SDK JSON: $($_.Exception.Message)"
+      }
+      if ($jsonOutput.status -ne 'Ok') {
+        throw "Microsoft.Maui.Cli could not find a usable Android SDK (status: $($jsonOutput.status))."
       }
       $preferredSdk = $jsonOutput.details.path
       if ([string]::IsNullOrWhiteSpace($preferredSdk)) {
