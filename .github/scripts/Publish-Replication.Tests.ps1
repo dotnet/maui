@@ -932,7 +932,7 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match 'did not become writable within 60 seconds'
         $script:PrSource | Should -Match '\$matches = @\(\s*@\(\$response\.data\.viewer\.repositories\.nodes\) \|'
         $script:PrSource | Should -Match "'replication-fork'"
-        $script:PrSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
+        $script:PrSource.Contains("[string]`$TargetOwner = 'dotnet'") | Should -BeTrue
         $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
         $script:TransportSource |
             Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
@@ -941,6 +941,20 @@ Describe 'Trusted replication pull request publishing' {
 
     It 'encodes the empirically proven self-cleaning MauiBot transport' {
         $script:SmokeSource | Should -Match "GH_TOKEN must authenticate as 'MauiBot'"
+        $script:SmokeSource.Contains("[string]`$SourceOwner = 'dotnet'") |
+            Should -BeTrue
+        $script:SmokeSource.Contains("[string]`$TargetOwner = 'dotnet'") |
+            Should -BeTrue
+        $script:SmokeSource | Should -Match (
+            "(?s)\`$publishesDirectly\s*=.*?" +
+            "\`$sourceRemote = if \(\`$publishesDirectly\) \{\s*'origin'")
+        $script:SmokeSource | Should -Match (
+            "(?s)if \(-not \`$publishesDirectly\) \{\s*" +
+            'Initialize-ReplicationSourceBranch')
+        $script:PrSource | Should -Match (
+            "(?s)\`$publishesDirectly\s*=.*?" +
+            "\`$sourceOwner = \`$TargetOwner.*?" +
+            "\`$sourceRemote = if \(\`$publishesDirectly\) \{\s*'origin'")
         $script:SmokeSource | Should -Match 'Open-ReplicationDraftPullRequest'
         $script:SmokeSource | Should -Match 'Assert-ReplicationDraftPullRequest'
         $script:SmokeSource | Should -Match 'Remove-ReplicationDraftPullRequest'
@@ -957,7 +971,7 @@ Describe 'Trusted replication pull request publishing' {
         $script:TransportSource | Should -Match 'gh pr create'
         $script:TransportSource | Should -Match 'gh pr close'
         $script:TransportSource |
-            Should -Match 'git push \$sourceUrl --delete \$BranchName'
+            Should -Match 'git push \$sourceLocation --delete \$BranchName'
         $script:TransportSource | Should -Match '\$verification\.isDraft -ne \$true'
         $script:TransportSource | Should -Match (
             '\[string\]\$verification\.author\.login -cne \$ExpectedAuthor')
@@ -1028,6 +1042,7 @@ Describe 'Draft PR publication cleanup' {
                 $global:LASTEXITCODE = 0
                 return '[{"number":907,"html_url":"https://github.com/kubaflo/maui/pull/907"}]'
             }
+
             if ($command -like 'pr close *') {
                 $global:LASTEXITCODE = 1
                 return 'close failed'
@@ -1063,16 +1078,59 @@ Describe 'Draft PR publication cleanup' {
             Should -Match 'Closing draft pull request #907 failed'
     }
 
+    It 'uses authenticated origin when cleaning a direct upstream branch' {
+        $script:gitCalls = [Collections.Generic.List[string]]::new()
+        Mock gh {
+            $global:LASTEXITCODE = 0
+            return '[]'
+        }
+        Mock git {
+            $command = $args -join ' '
+            $script:gitCalls.Add($command)
+            $global:LASTEXITCODE = if ($command -like 'ls-remote *') { 2 } else { 0 }
+        }
+
+        $result = Remove-ReplicationDraftPullRequest `
+            -TargetOwner dotnet `
+            -TargetRepository maui `
+            -SourceOwner dotnet `
+            -SourceRepository maui `
+            -BranchName copilot/publication-smoke-1-1 `
+            -BaseBranch main `
+            -SourceRemote origin `
+            -CloseComment 'cleanup'
+
+        $result.BranchDeleted | Should -BeTrue
+        $script:gitCalls |
+            Should -Contain 'push origin --delete copilot/publication-smoke-1-1'
+        $script:gitCalls |
+            Should -Contain (
+                'ls-remote --exit-code origin ' +
+                'refs/heads/copilot/publication-smoke-1-1')
+    }
+
     It 'records an early credential failure in the smoke artifact' {
         $outputPath = Join-Path $TestDrive 'publication-smoke-result.json'
         $oldToken = $env:GH_TOKEN
         try {
             Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
-            & pwsh -NoProfile -File (
-                Join-Path $PSScriptRoot 'Smoke-Test-ReplicationDraftPR.ps1') `
-                -RepositoryRoot $TestDrive `
-                -OutputPath $outputPath *> $null
-            $LASTEXITCODE | Should -Not -Be 0
+            $standardOutput = Join-Path $TestDrive 'smoke-stdout.txt'
+            $standardError = Join-Path $TestDrive 'smoke-stderr.txt'
+            $process = Start-Process `
+                -FilePath pwsh `
+                -ArgumentList @(
+                    '-NoProfile',
+                    '-File',
+                    (Join-Path $PSScriptRoot 'Smoke-Test-ReplicationDraftPR.ps1'),
+                    '-RepositoryRoot',
+                    $TestDrive,
+                    '-OutputPath',
+                    $outputPath) `
+                -RedirectStandardOutput $standardOutput `
+                -RedirectStandardError $standardError `
+                -Wait `
+                -PassThru
+            $process.ExitCode | Should -Not -Be 0
         }
         finally {
             if ($null -ne $oldToken) {
