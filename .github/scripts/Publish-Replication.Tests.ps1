@@ -27,9 +27,13 @@ BeforeAll {
 
     $evidenceScript = Join-Path $PSScriptRoot 'shared/Publish-ReplicationEvidence.ps1'
     $prScript = Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1'
+    $transportScript = Join-Path $PSScriptRoot 'shared/Open-ReplicationDraftPullRequest.ps1'
+    $smokeScript = Join-Path $PSScriptRoot 'Smoke-Test-ReplicationDraftPR.ps1'
     $migrationScript = Join-Path $PSScriptRoot 'shared/Move-ReplicationPRsToTestingFork.ps1'
     $script:EvidenceSource = Get-Content -LiteralPath $evidenceScript -Raw
     $script:PrSource = Get-Content -LiteralPath $prScript -Raw
+    $script:TransportSource = Get-Content -LiteralPath $transportScript -Raw
+    $script:SmokeSource = Get-Content -LiteralPath $smokeScript -Raw
     $script:MigrationSource = Get-Content -LiteralPath $migrationScript -Raw
 
     foreach ($name in @(
@@ -63,6 +67,15 @@ BeforeAll {
         'Resolve-ReplicationSourceRepository'
     )) {
         Invoke-Expression (Get-ScriptFunctionText -Path $prScript -Name $name)
+    }
+    foreach ($name in @(
+        'Open-ReplicationDraftPullRequest',
+        'Assert-ReplicationDraftPullRequest',
+        'Get-ReplicationDraftPullRequestByHead',
+        'Remove-ReplicationDraftPullRequest'
+    )) {
+        Invoke-Expression (
+            Get-ScriptFunctionText -Path $transportScript -Name $name)
     }
     $validatorScript = Join-Path $PSScriptRoot 'shared/Validate-ReplicationCandidate.ps1'
     foreach ($name in @(
@@ -905,10 +918,12 @@ Describe 'Trusted replication pull request publishing' {
 
     It 'uses an add-only staged diff and creates a MauiBot fork draft fix PR' {
         $script:PrSource | Should -Match 'git diff --cached --name-status --diff-filter=ACDMRTUXB'
-        $script:PrSource | Should -Match '\s--draft'
+        $script:PrSource | Should -Match 'Open-ReplicationDraftPullRequest'
+        $script:TransportSource | Should -Match '\s--draft'
         $script:PrSource | Should -Match 'GH_TOKEN is required'
-        $script:PrSource | Should -Match "'push', \`$sourceRemote"
-        $script:PrSource.Contains('--head "$sourceOwner`:$branchName"') | Should -BeTrue
+        $script:PrSource | Should -Match "'push',\s+\`$sourceRemote"
+        $script:TransportSource.Contains(
+            '--head "$SourceOwner`:$BranchName"') | Should -BeTrue
         $script:PrSource | Should -Match "GH_TOKEN must authenticate as 'MauiBot'"
         $script:PrSource | Should -Match 'Expected exactly one writable fork'
         $script:PrSource | Should -Match 'affiliations: \[OWNER, ORGANIZATION_MEMBER\]'
@@ -919,8 +934,41 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match "'replication-fork'"
         $script:PrSource.Contains("[string]`$TargetOwner = 'kubaflo'") | Should -BeTrue
         $script:PrSource | Should -Match '-ParentOwner \$IssueOwner'
-        $script:PrSource | Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
+        $script:TransportSource |
+            Should -Match '--repo "\$TargetOwner/\$TargetRepository"'
         $script:PrSource | Should -Not -Match 'https://[^"\s]*\$env:GH_TOKEN'
+    }
+
+    It 'encodes the empirically proven self-cleaning MauiBot transport' {
+        $script:SmokeSource | Should -Match "GH_TOKEN must authenticate as 'MauiBot'"
+        $script:SmokeSource | Should -Match 'Open-ReplicationDraftPullRequest'
+        $script:SmokeSource | Should -Match 'Assert-ReplicationDraftPullRequest'
+        $script:SmokeSource | Should -Match 'Remove-ReplicationDraftPullRequest'
+        $script:SmokeSource | Should -Match (
+            "(?s)\`$commitMessage\s*=.*?-Arguments @\(\s*" +
+            "'commit',\s*'-m',\s*\`$commitMessage\)")
+        $cleanupFlag = $script:SmokeSource.IndexOf('$branchPushed = $true')
+        $pushCall = $script:SmokeSource.IndexOf(
+            "-Description 'Pushing the publication smoke branch'")
+        $cleanupFlag | Should -BeGreaterThan 0
+        $cleanupFlag | Should -BeLessThan $pushCall
+        $script:SmokeSource |
+            Should -Match '\$result\.branchDeleted = \$cleanup\.BranchDeleted'
+        $script:TransportSource | Should -Match 'gh pr create'
+        $script:TransportSource | Should -Match 'gh pr close'
+        $script:TransportSource |
+            Should -Match 'git push \$sourceUrl --delete \$BranchName'
+        $script:TransportSource | Should -Match '\$verification\.isDraft -ne \$true'
+        $script:TransportSource | Should -Match (
+            '\[string\]\$verification\.author\.login -cne \$ExpectedAuthor')
+        $script:TransportSource | Should -Match 'GitHub returned an invalid draft pull request URL'
+    }
+
+    It 'verifies every production draft and cleans failed publication resources' {
+        $script:PrSource | Should -Match 'Assert-ReplicationDraftPullRequest'
+        $script:PrSource | Should -Match 'Remove-ReplicationDraftPullRequest'
+        $script:PrSource |
+            Should -Match 'Publication cleanup also failed'
     }
 
     It 'refuses a reproduction-only candidate before reading publication assets' {
@@ -958,7 +1006,7 @@ Describe 'Trusted replication pull request publishing' {
         $script:PrSource | Should -Match "'replication-target'"
         $script:PrSource.Contains('@(''checkout'', ''--detach'', $baselineSha)') |
             Should -BeTrue
-        $script:PrSource | Should -Match '--base \$BaseBranch'
+        $script:TransportSource | Should -Match '--base \$BaseBranch'
         # A baseline the publisher cannot verify must never be committed onto.
         $script:PrSource.Contains('$baselineSha -cnotmatch ''^[0-9a-f]{40}$''') |
             Should -BeTrue
@@ -968,6 +1016,77 @@ Describe 'Trusted replication pull request publishing' {
             'git merge-base --is-ancestor $baselineSha FETCH_HEAD') | Should -BeTrue
         $script:PrSource | Should -Match 'would carry unrelated commits'
         $script:PrSource.Contains("@('checkout', '--detach', 'FETCH_HEAD')") | Should -BeFalse
+    }
+}
+
+Describe 'Draft PR publication cleanup' {
+    It 'still deletes the remote branch when closing the draft fails' {
+        $script:gitCalls = [Collections.Generic.List[string]]::new()
+        Mock gh {
+            $command = $args -join ' '
+            if ($command -like 'api *pulls*') {
+                $global:LASTEXITCODE = 0
+                return '[{"number":907,"html_url":"https://github.com/kubaflo/maui/pull/907"}]'
+            }
+            if ($command -like 'pr close *') {
+                $global:LASTEXITCODE = 1
+                return 'close failed'
+            }
+            throw "Unexpected gh invocation: $command"
+        }
+        Mock git {
+            $command = $args -join ' '
+            $script:gitCalls.Add($command)
+            $global:LASTEXITCODE = if ($command -like 'ls-remote *') { 2 } else { 0 }
+        }
+
+        $result = Remove-ReplicationDraftPullRequest `
+            -TargetOwner kubaflo `
+            -TargetRepository maui `
+            -SourceOwner MauiBot `
+            -SourceRepository maui `
+            -BranchName copilot/publication-smoke-1-1 `
+            -BaseBranch main `
+            -CloseComment 'cleanup'
+
+        $script:gitCalls |
+            Should -Contain (
+                'push https://github.com/MauiBot/maui.git --delete ' +
+                'copilot/publication-smoke-1-1')
+        $script:gitCalls |
+            Should -Contain (
+                'ls-remote --exit-code https://github.com/MauiBot/maui.git ' +
+                'refs/heads/copilot/publication-smoke-1-1')
+        $result.Closed | Should -BeFalse
+        $result.BranchDeleted | Should -BeTrue
+        $result.Errors -join ' ' |
+            Should -Match 'Closing draft pull request #907 failed'
+    }
+
+    It 'records an early credential failure in the smoke artifact' {
+        $outputPath = Join-Path $TestDrive 'publication-smoke-result.json'
+        $oldToken = $env:GH_TOKEN
+        try {
+            Remove-Item Env:GH_TOKEN -ErrorAction SilentlyContinue
+            & pwsh -NoProfile -File (
+                Join-Path $PSScriptRoot 'Smoke-Test-ReplicationDraftPR.ps1') `
+                -RepositoryRoot $TestDrive `
+                -OutputPath $outputPath *> $null
+            $LASTEXITCODE | Should -Not -Be 0
+        }
+        finally {
+            if ($null -ne $oldToken) {
+                $env:GH_TOKEN = $oldToken
+            }
+        }
+
+        $result = Get-Content -LiteralPath $outputPath -Raw |
+            ConvertFrom-Json
+        $result.created | Should -BeFalse
+        $result.verified | Should -BeFalse
+        $result.error |
+            Should -BeExactly (
+                'GH_TOKEN is required for the replication publication smoke test.')
     }
 }
 
@@ -1630,7 +1749,8 @@ Describe 'Superseding an existing replication pull request' {
         # Closing first would leave the issue with no open reproduction at all
         # if publication then failed. A duplicate is a far smaller problem than
         # lost evidence, so the order here is the whole safety property.
-        $urlIndex = $script:PrSource.IndexOf('$plan.url = ([string]$prUrl).Trim()')
+        $urlIndex = $script:PrSource.IndexOf(
+            '$plan.url = $verifiedPullRequest.Url')
         $closeIndex = $script:PrSource.IndexOf('gh pr close $supersededNumber')
         $captureIndex = $script:PrSource.IndexOf('$supersededPull = $duplicate')
 
