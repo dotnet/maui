@@ -1952,6 +1952,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                 -SourceOwner $sourceOwner `
                 -SourceRepository $sourceRepository `
                 -BranchName $branchName `
+                -SourceBaseBranch $BaseBranch `
                 -BaselineSha $baselineSha
             Invoke-ReplicationExternalCommand `
                 -FilePath 'git' `

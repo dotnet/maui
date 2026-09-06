@@ -229,6 +229,7 @@ try {
         -SourceOwner $SourceOwner `
         -SourceRepository $SourceRepository `
         -BranchName $branchName `
+        -SourceBaseBranch $BaseBranch `
         -BaselineSha $baselineSha
     Invoke-ReplicationSmokeCommand `
         -FilePath 'git' `
