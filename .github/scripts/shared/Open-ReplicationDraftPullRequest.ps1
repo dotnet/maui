@@ -263,6 +263,9 @@ function Remove-ReplicationDraftPullRequest {
         [ValidatePattern('^[A-Za-z0-9._/-]+$')]
         [string]$BaseBranch,
 
+        [ValidatePattern('^[A-Za-z0-9._-]+$')]
+        [string]$SourceRemote = '',
+
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$CloseComment
@@ -313,14 +316,18 @@ function Remove-ReplicationDraftPullRequest {
         }
     }
 
-    $sourceUrl =
+    $sourceLocation = if (
+        [string]::IsNullOrWhiteSpace($SourceRemote)) {
         "https://github.com/$SourceOwner/$SourceRepository.git"
+    } else {
+        $SourceRemote
+    }
     $branchDeleted = $false
     try {
-        & git push $sourceUrl --delete $BranchName
+        & git push $sourceLocation --delete $BranchName
         $deleteExitCode = $LASTEXITCODE
         & git ls-remote --exit-code `
-            $sourceUrl `
+            $sourceLocation `
             "refs/heads/$BranchName" *> $null
         $verifyExitCode = $LASTEXITCODE
         $global:LASTEXITCODE = 0

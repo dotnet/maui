@@ -1909,12 +1909,22 @@ if (-not $DryRun) {
                 -Description 'Configuring bot Git authentication'
         }
 
-        $sourceRemote = 'replication-fork'
-        & git remote remove $sourceRemote 2>$null
-        Invoke-ReplicationExternalCommand `
-            -FilePath 'git' `
-            -Arguments @('remote', 'add', $sourceRemote, "https://github.com/$sourceOwner/$sourceRepository.git") `
-            -Description 'Configuring reproduction fork'
+        $sourceRemote = if ($publishesDirectly) {
+            'origin'
+        } else {
+            'replication-fork'
+        }
+        if (-not $publishesDirectly) {
+            & git remote remove $sourceRemote 2>$null
+            Invoke-ReplicationExternalCommand `
+                -FilePath 'git' `
+                -Arguments @(
+                    'remote',
+                    'add',
+                    $sourceRemote,
+                    "https://github.com/$sourceOwner/$sourceRepository.git") `
+                -Description 'Configuring reproduction fork'
+        }
 
         $commitMessage = @"
 Add failing reproduction for #$issueNumber on $platform
@@ -2023,6 +2033,7 @@ Copilot-Session: 735ac9a2-7bec-4baa-ad19-c298e5bc795a
                         -SourceRepository $sourceRepository `
                         -BranchName $branchName `
                         -BaseBranch $BaseBranch `
+                        -SourceRemote $sourceRemote `
                         -CloseComment (
                             'MauiBot publication verification failed, so this ' +
                             'draft is being closed automatically.')
