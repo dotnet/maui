@@ -306,8 +306,10 @@
 			Command="dotnet maui android jdk check --ci --json"
 			ConsoleToMSBuild="True"
 			EnvironmentVariables="JAVA_HOME="
+			IgnoreExitCode="True"
 			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
 			<Output TaskParameter="ConsoleOutput" ItemName="_ProvisionedAndroidJdkOutputLines" />
+			<Output TaskParameter="ExitCode" PropertyName="_ProvisionedAndroidJdkCheckExitCode" />
 		</Exec>
 
 		<PropertyGroup Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
@@ -316,15 +318,22 @@
 
 		<JsonPeek
 			Content="$(_ProvisionedAndroidJdkOutput)"
+			Query="$.status"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkCheckExitCode)' == '0' AND $(_ProvisionedAndroidJdkOutput.Contains('status')) ">
+			<Output TaskParameter="Result" PropertyName="_ProvisionedAndroidJdkStatus" />
+		</JsonPeek>
+
+		<JsonPeek
+			Content="$(_ProvisionedAndroidJdkOutput)"
 			Query="$.details.version"
-			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkOutput)' != '' ">
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkStatus)' == 'Ok' AND $(_ProvisionedAndroidJdkOutput.Contains('details')) ">
 			<Output TaskParameter="Result" PropertyName="_AndroidJdkDetectedVersion" />
 		</JsonPeek>
 
 		<JsonPeek
 			Content="$(_ProvisionedAndroidJdkOutput)"
 			Query="$.details.path"
-			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkOutput)' != '' ">
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkStatus)' == 'Ok' AND $(_ProvisionedAndroidJdkOutput.Contains('details')) ">
 			<Output TaskParameter="Result" PropertyName="_AndroidJdkPath" />
 		</JsonPeek>
 
@@ -333,6 +342,9 @@
 			<_AndroidJavaExecutable Condition=" '$(IsWindows)' == 'True' ">$(_AndroidJdkPath)\bin\java.exe</_AndroidJavaExecutable>
 		</PropertyGroup>
 
+		<Error
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND ('$(_ProvisionedAndroidJdkCheckExitCode)' != '0' OR '$(_ProvisionedAndroidJdkStatus)' != 'Ok') "
+			Text="Microsoft.Maui.Cli could not verify the provisioned JDK (exit code: $(_ProvisionedAndroidJdkCheckExitCode), status: $(_ProvisionedAndroidJdkStatus))." />
 		<Error
 			Condition=" '$(_AndroidJdkDetectedVersion)' != '$(_AndroidJdkMajorVersion)' "
 			Text="Microsoft.Maui.Cli detected JDK $(_AndroidJdkDetectedVersion), but JDK $(_AndroidJdkMajorVersion) is required." />
@@ -381,7 +393,7 @@
 		</PropertyGroup>
 
 		<!-- Use maui android jdk check to detect installed JDK -->
-		<Exec Command="dotnet maui android jdk check --ci --json" ConsoleToMSBuild="True">
+		<Exec Command="dotnet maui android jdk check --ci --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AndroidJdkListOutputLines" />
 			<Output TaskParameter="ExitCode" PropertyName="_AndroidJdkCheckExitCode" />
 		</Exec>
@@ -391,12 +403,16 @@
 			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', '')</_AndroidJdkListOutput>
 		</PropertyGroup>
 
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.status" Condition=" '$(_AndroidJdkCheckExitCode)' == '0' AND $(_AndroidJdkListOutput.Contains('status')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkStatus" />
+		</JsonPeek>
+
 		<!-- Peek the JDK version and path from the json output -->
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.version" Condition=" '$(_AndroidJdkListOutput)' != '' ">
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.version" Condition=" '$(_AndroidJdkStatus)' == 'Ok' AND $(_AndroidJdkListOutput.Contains('details')) ">
 			<Output TaskParameter="Result" PropertyName="_AndroidJdkDetectedVersion" />
 		</JsonPeek>
 
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.path" Condition=" '$(_AndroidJdkListOutput)' != '' ">
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.path" Condition=" '$(_AndroidJdkStatus)' == 'Ok' AND $(_AndroidJdkListOutput.Contains('details')) ">
 			<Output TaskParameter="Result" PropertyName="_AndroidJdkPath" />
 		</JsonPeek>
 
@@ -421,7 +437,7 @@
 		<PropertyGroup>
 			<_AndroidJdkRequiresProvisioning>False</_AndroidJdkRequiresProvisioning>
 			<_AndroidJdkRequiresProvisioning
-				Condition=" '$(_AndroidJdkPath)' == '' OR '$(_DetectedAndroidJavaVersion)' == '' ">True</_AndroidJdkRequiresProvisioning>
+				Condition=" '$(_AndroidJdkCheckExitCode)' != '0' OR '$(_AndroidJdkStatus)' != 'Ok' OR '$(_AndroidJdkPath)' == '' OR '$(_DetectedAndroidJavaVersion)' == '' ">True</_AndroidJdkRequiresProvisioning>
 			<_AndroidJdkRequiresProvisioning
 				Condition=" '$(_DetectedAndroidJavaVersion)' != '' AND
 					($([MSBuild]::VersionLessThan('$(_DetectedAndroidJavaVersion)', '$(_AndroidJdkVersion)')) OR
