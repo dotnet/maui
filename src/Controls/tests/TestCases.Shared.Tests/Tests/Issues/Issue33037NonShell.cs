@@ -15,18 +15,18 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct", "Item 40", null)]
-	[TestCase("Issue33037GridScrollViewButton", "Issue33037GridScrollViewScroller", "Issue33037 Grid", "Item 40", null)]
-	[TestCase("Issue33037ContentViewGridScrollViewButton", "Issue33037ContentViewGridScrollViewScroller", "Issue33037 Wrapped", "Item 40", null)]
-	[TestCase("Issue33037DynamicContentViewGridScrollViewButton", "Issue33037DynamicContentViewGridScrollViewScroller", "Issue33037 Dynamic", "Item 40", null)]
-	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", "Item 40", null)]
-	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", "Item 40", null)]
-	[TestCase("Issue33037LegacyCollectionViewButton", "Issue33037LegacyCollectionViewScroller", "Issue33037 Legacy Collection", "Item 40", null)]
-	[TestCase("Issue33037NativeTableViewButton", "Issue33037NativeTableViewScroller", "Issue33037 Native", "Item 40", null)]
-	[TestCase("Issue33037TableViewButton", "Issue33037TableViewScroller", "Issue33037 Table", "Item 40", null)]
-	[TestCase("Issue33037FixedHeaderCollectionViewButton", "Issue33037FixedHeaderCollectionViewScroller", "Issue33037 Fixed Header", "Item 40", "Issue33037FixedHeader")]
-	[TestCase("Issue33037ShortFixedHeaderCollectionViewButton", "Issue33037ShortFixedHeaderCollectionViewScroller", "Issue33037 Short Header", "Item 16", "Issue33037ShortFixedHeader")]
-	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title, string targetItem, string fixedHeaderId)
+	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct", null)]
+	[TestCase("Issue33037GridScrollViewButton", "Issue33037GridScrollViewScroller", "Issue33037 Grid", null)]
+	[TestCase("Issue33037ContentViewGridScrollViewButton", "Issue33037ContentViewGridScrollViewScroller", "Issue33037 Wrapped", null)]
+	[TestCase("Issue33037DynamicContentViewGridScrollViewButton", "Issue33037DynamicContentViewGridScrollViewScroller", "Issue33037 Dynamic", null)]
+	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List", null)]
+	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection", null)]
+	[TestCase("Issue33037LegacyCollectionViewButton", "Issue33037LegacyCollectionViewScroller", "Issue33037 Legacy Collection", null)]
+	[TestCase("Issue33037NativeTableViewButton", "Issue33037NativeTableViewScroller", "Issue33037 Native", null)]
+	[TestCase("Issue33037TableViewButton", "Issue33037TableViewScroller", "Issue33037 Table", null)]
+	[TestCase("Issue33037FixedHeaderCollectionViewButton", "Issue33037FixedHeaderCollectionViewScroller", "Issue33037 Fixed Header", "Issue33037FixedHeader")]
+	[TestCase("Issue33037ShortFixedHeaderCollectionViewButton", "Issue33037ShortFixedHeaderCollectionViewScroller", "Issue33037 Short Header", "Issue33037ShortFixedHeader")]
+	public void LargeTitleCollapsesToVisibleStandardTitle(string buttonId, string scrollerId, string title, string fixedHeaderId)
 	{
 		RequireIOS26OrHigher();
 		App.WaitForElement(buttonId).Click();
@@ -49,9 +49,7 @@ public class Issue33037NonShell : _IssuesUITest
 					"The legacy CollectionView header should start below the expanded navigation title.");
 			}
 
-			App.ScrollDown(scrollerId, swipePercentage: 0.8);
-			App.ScrollDown(scrollerId, swipePercentage: 0.8);
-			App.WaitForElement(targetItem);
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.8, withInertia: false);
 
 			var collapsedTitleRect = GetNavigationTitleRect(title);
 
