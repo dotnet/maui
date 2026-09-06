@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using System.Collections.Specialized;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Segments")]
 	public sealed class PathFigure : BindableObject, IAnimatable
 	{
+		readonly WeakNotifyCollectionChangedProxy _segmentsCollectionChangedProxy = new();
 		readonly List<PathSegment> _subscribedSegments = new();
 
 		/// <summary>
@@ -24,6 +25,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			Segments = new PathSegmentCollection();
 		}
 
+		~PathFigure()
+		{
+			_segmentsCollectionChangedProxy.Unsubscribe();
+		}
+
 		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
 		public static readonly BindableProperty SegmentsProperty =
 			BindableProperty.Create(nameof(Segments), typeof(PathSegmentCollection), typeof(PathFigure), null,
@@ -31,7 +37,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		static void OnPathSegmentCollectionChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			(bindable as PathFigure)?.UpdatePathSegmentCollection(oldValue as PathSegmentCollection, newValue as PathSegmentCollection);
+			(bindable as PathFigure)?.UpdatePathSegmentCollection(newValue as PathSegmentCollection);
 		}
 
 		/// <summary>Bindable property for <see cref="StartPoint"/>.</summary>
@@ -96,16 +102,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		}
 
-		void UpdatePathSegmentCollection(PathSegmentCollection oldCollection, PathSegmentCollection newCollection)
+		void UpdatePathSegmentCollection(PathSegmentCollection newCollection)
 		{
-			oldCollection?.CollectionChanged -= OnPathSegmentCollectionChanged;
+			_segmentsCollectionChangedProxy.Unsubscribe();
 
 			UnsubscribeFromAllPathSegmentPropertyChanged();
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnPathSegmentCollectionChanged;
+			_segmentsCollectionChangedProxy.Subscribe(newCollection, OnPathSegmentCollectionChanged);
 
 			foreach (var newPathSegment in newCollection)
 			{
