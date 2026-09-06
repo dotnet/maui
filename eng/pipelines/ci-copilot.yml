@@ -133,7 +133,9 @@ stages:
           - checkout: self
             clean: true
             fetchDepth: 0
-            persistCredentials: false
+            # Trusted smoke code pushes one temporary non-workflow branch
+            # directly to dotnet/maui; no generated code runs in this job.
+            persistCredentials: true
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -3983,13 +3985,6 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              foreach ($line in @(git config --get-regexp 'http\..*\.extraheader' 2>$null)) {
-                $key = ($line -split '\s+', 2)[0]
-                if ($key) {
-                  git config --unset-all $key 2>$null
-                }
-              }
-
               try {
                 $publishFixPatch = "$(Pipeline.Workspace)/ReplicationArtifacts/fix.patch"
                 $publishFixArgument = @{}
