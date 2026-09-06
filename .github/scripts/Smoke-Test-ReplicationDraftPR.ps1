@@ -105,7 +105,14 @@ $cleanupErrors = [Collections.Generic.List[string]]::new()
 $branchPushed = $false
 $pullRequestNumber = 0
 $locationPushed = $false
-$sourceRemote = 'replication-smoke-source'
+$publishesDirectly =
+    "$SourceOwner/$SourceRepository" -ceq
+    "$ParentOwner/$ParentRepository"
+$sourceRemote = if ($publishesDirectly) {
+    'origin'
+} else {
+    'replication-smoke-source'
+}
 
 try {
     if ([string]::IsNullOrWhiteSpace($env:GH_TOKEN)) {
@@ -125,9 +132,6 @@ try {
         throw "Unable to inspect $SourceOwner/$SourceRepository."
     }
     $source = $sourceJson | ConvertFrom-Json -Depth 10
-    $publishesDirectly =
-        "$SourceOwner/$SourceRepository" -ceq
-        "$ParentOwner/$ParentRepository"
     if ($publishesDirectly) {
         if ($source.fork -eq $true -or
             [string]$source.full_name -cne
@@ -152,7 +156,9 @@ try {
 
     $targetRemote = 'replication-smoke-target'
     & git remote remove $targetRemote 2>$null
-    & git remote remove $sourceRemote 2>$null
+    if (-not $publishesDirectly) {
+        & git remote remove $sourceRemote 2>$null
+    }
     $global:LASTEXITCODE = 0
 
     Invoke-ReplicationSmokeCommand `
@@ -223,14 +229,16 @@ try {
             '-m',
             $commitMessage) `
         -Description 'Committing the publication smoke marker'
-    Invoke-ReplicationSmokeCommand `
-        -FilePath 'git' `
-        -Arguments @(
-            'remote',
-            'add',
-            $sourceRemote,
-            "https://github.com/$SourceOwner/$SourceRepository.git") `
-        -Description 'Configuring the MauiBot fork'
+    if (-not $publishesDirectly) {
+        Invoke-ReplicationSmokeCommand `
+            -FilePath 'git' `
+            -Arguments @(
+                'remote',
+                'add',
+                $sourceRemote,
+                "https://github.com/$SourceOwner/$SourceRepository.git") `
+            -Description 'Configuring the MauiBot fork'
+    }
     # Fork-backed publication needs a baseline-bound ref because a stale fork
     # can make GitHub treat upstream workflow history as part of the push.
     # Direct upstream publication already has the validated baseline object.
@@ -299,6 +307,7 @@ finally {
                 -SourceRepository $SourceRepository `
                 -BranchName $branchName `
                 -BaseBranch $BaseBranch `
+                -SourceRemote $sourceRemote `
                 -CloseComment (
                     'MauiBot draft publication smoke test completed. ' +
                     'Closing this temporary PR automatically.')
