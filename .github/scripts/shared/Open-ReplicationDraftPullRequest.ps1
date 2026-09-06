@@ -2,6 +2,51 @@
 
 Set-StrictMode -Version 3.0
 
+function Initialize-ReplicationSourceBranch {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$')]
+        [string]$SourceOwner,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[A-Za-z0-9._-]+$')]
+        [string]$SourceRepository,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[A-Za-z0-9._/-]+$')]
+        [string]$BranchName,
+
+        [Parameter(Mandatory = $true)]
+        [ValidatePattern('^[0-9a-f]{40}$')]
+        [string]$BaselineSha
+    )
+
+    $payloadPath = [IO.Path]::GetTempFileName()
+    try {
+        [ordered]@{
+            ref = "refs/heads/$BranchName"
+            sha = $BaselineSha
+        } | ConvertTo-Json -Compress |
+            Set-Content -LiteralPath $payloadPath -Encoding utf8NoBOM
+        $createdJson = & gh api `
+            -X POST `
+            "repos/$SourceOwner/$SourceRepository/git/refs" `
+            --input $payloadPath
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Creating the baseline-bound source branch failed.'
+        }
+        $created = $createdJson | ConvertFrom-Json -Depth 10
+        if ([string]$created.ref -cne "refs/heads/$BranchName" -or
+            [string]$created.object.sha -cne $BaselineSha) {
+            throw 'GitHub created the source branch at an unexpected ref or commit.'
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $payloadPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Open-ReplicationDraftPullRequest {
     [CmdletBinding()]
     param(
