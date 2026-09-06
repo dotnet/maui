@@ -33,7 +33,7 @@ public class Issue33037NonShell : _IssuesUITest
 
 		try
 		{
-			var expandedTitleRect = GetNavigationTitleRect(title);
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
 			App.WaitForElement(scrollerId);
 
 			if (buttonId == "Issue33037ScrollViewButton")
@@ -87,7 +87,7 @@ public class Issue33037NonShell : _IssuesUITest
 
 		try
 		{
-			var expandedTitleRect = GetNavigationTitleRect("Issue33037 Modal List");
+			var expandedTitleRect = GetExpandedNavigationTitleRect("Issue33037 Modal List");
 			var expandedListRect = App.WaitForElement("Issue33037ModalListViewScroller").GetRect();
 
 			App.ScrollDown("Issue33037ModalListViewScroller", swipePercentage: 0.8);
@@ -130,7 +130,7 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	public void WebViewWithFixedControlsPreservesLargeTitle()
+	public async Task WebViewWithFixedControlsPreservesLargeTitle()
 	{
 		RequireIOS26OrHigher();
 		App.WaitForElement("Issue33037WebViewButton").Click();
@@ -138,13 +138,14 @@ public class Issue33037NonShell : _IssuesUITest
 		try
 		{
 			App.WaitForElement("Ready");
-			var expandedTitleRect = GetNavigationTitleRect("Issue33037 Web");
+			await Task.Delay(1000);
+			var initialTitleRect = GetExpandedNavigationTitleRect("Issue33037 Web");
 
 			App.WaitForElement("Issue33037WebViewScrollButton").Click();
 			App.WaitForElement("Scrolled");
 
 			var titleRect = GetNavigationTitleRect("Issue33037 Web");
-			Assert.That(titleRect.Height, Is.EqualTo(expandedTitleRect.Height).Within(2),
+			Assert.That(titleRect.Height, Is.EqualTo(initialTitleRect.Height).Within(2),
 				"A WebView with fixed controls should retain its existing large-title layout.");
 		}
 		finally
@@ -164,7 +165,7 @@ public class Issue33037NonShell : _IssuesUITest
 		{
 			var title = "Large Title Demo";
 			var scrollerId = "Issue33037ReporterScroller";
-			var expandedTitleRect = GetNavigationTitleRect(title);
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
 			var expandedScrollerRect = App.WaitForElement(scrollerId).GetRect();
 
 			Assert.That(expandedTitleRect.Height, Is.GreaterThan(30),
@@ -219,7 +220,7 @@ public class Issue33037NonShell : _IssuesUITest
 		try
 		{
 			App.WaitForElement("Issue33037ProgrammaticCollectionViewScroller");
-			var expandedTitleRect = GetNavigationTitleRect("Issue33037 Programmatic");
+			var expandedTitleRect = GetExpandedNavigationTitleRect("Issue33037 Programmatic");
 
 			App.WaitForElement("Issue33037ProgrammaticScrollButton").Click();
 			App.WaitForElement("Item 50");
@@ -446,6 +447,19 @@ public class Issue33037NonShell : _IssuesUITest
 			.Select(titleElement => titleElement.GetRect())
 			.OrderBy(rect => rect.Height)
 			.First();
+	}
+
+	System.Drawing.Rectangle GetExpandedNavigationTitleRect(string title)
+	{
+		var titleElement = App.WaitForElement(
+			() => App.FindElements(title).FirstOrDefault(element =>
+			{
+				var height = element.GetRect().Height;
+				return height is > 30 and < 60;
+			}),
+			$"The navigation title '{title}' should expand before the scenario starts.");
+
+		return titleElement.GetRect();
 	}
 }
 #endif

@@ -17,8 +17,9 @@ public class Issue14708 : ContentPage
 			FontSize = 13
 		};
 
-		_primarySearchBar = new SearchBar
+		_primarySearchBar = new UITestSearchBar
 		{
+			IsCursorVisible = false,
 			Text = "Hello, landscape!",
 			Placeholder = "Tap here in landscape — keyboard should be inline",
 			AutomationId = "SearchBarControl"

@@ -22,6 +22,7 @@ on:
       - 'eng/pipelines/ci-official-release.Tests.ps1'
       - 'eng/scripts/nuget_release_packages.ps1'
       - 'eng/scripts/nuget_release_packages.Tests.ps1'
+      - 'eng/pipelines/common/non-workload-publish.yml'
       - '.github/workflows/powershell-script-tests.yml'
   workflow_dispatch:
 

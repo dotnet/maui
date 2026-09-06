@@ -1,0 +1,71 @@
+stages:
+- stage: publish_non_workload
+  displayName: Release NuGet packages
+  dependsOn: prepare_release
+  jobs:
+  - job: approval
+    displayName: Wait to push NuGet packages
+    timeoutInMinutes: 240
+    pool: server
+    steps:
+    - task: ManualValidation@0
+      timeoutInMinutes: 120
+      inputs:
+        instructions: 'Review NuGetReleaseAudit, then press "Resume" to publish packages from its staged list. Packages that have appeared on NuGet.org since preparation are skipped, so the pushed set may be smaller.'
+        onTimeout: reject
+
+  - job: publish
+    displayName: Push NuGet packages to NuGet.org
+    timeoutInMinutes: 90
+    dependsOn: approval
+    condition: eq(dependencies.approval.result, 'Succeeded')
+    variables:
+      PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
+    templateContext:
+      type: releaseJob
+      isProduction: true
+      inputs:
+      - input: pipelineArtifact
+        artifactName: NuGetPackagesForRelease
+        targetPath: '$(Pipeline.Workspace)\NuGetPackagesForRelease'
+    steps:
+    - checkout: none
+
+    - pwsh: |
+        $scriptPath = '$(Pipeline.Workspace)\NuGetPackagesForRelease\nuget_release_packages.ps1'
+        $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+        if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+          throw "Package status script hash '$actualHash' does not match the prepared hash."
+        }
+
+        & $scriptPath `
+          -Action FilterExisting `
+          -PackagesPath '$(Pipeline.Workspace)\NuGetPackagesForRelease'
+      displayName: Filter already-published NuGet packages
+      env:
+        EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+
+    - task: 1ES.PublishNuget@1
+      displayName: Push NuGet packages to NuGet.org
+      condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+      inputs:
+        useDotNetTask: false
+        packagesToPush: '$(Pipeline.Workspace)\NuGetPackagesForRelease\*.nupkg'
+        packageParentPath: '$(Pipeline.Workspace)\NuGetPackagesForRelease'
+        nuGetFeedType: external
+        publishFeedCredentials: 'nuget.org (dotnetframework)'
+
+    - pwsh: |
+        $scriptPath = '$(Pipeline.Workspace)\NuGetPackagesForRelease\nuget_release_packages.ps1'
+        if ((Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash -ne $env:EXPECTED_SCRIPT_HASH) {
+          throw 'Package status script hash does not match the prepared hash.'
+        }
+        & $scriptPath `
+          -Action Verify `
+          -PackagesPath '$(Pipeline.Workspace)\NuGetPackagesForRelease' `
+          -MaxAttempts 90 `
+          -DelaySeconds 20 `
+          -MaxDurationMinutes 30
+      displayName: Verify NuGet packages on NuGet.org
+      env:
+        EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
