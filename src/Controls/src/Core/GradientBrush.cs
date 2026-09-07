@@ -11,15 +11,38 @@ namespace Microsoft.Maui.Controls
 	public abstract class GradientBrush : Brush
 	{
 		// Keyed by reference identity so distinct GradientStop instances that compare equal by value
-		// still get independent subscription ref-counts. System.Collections.Generic.ReferenceEqualityComparer
+		// still get independent subscriptions. System.Collections.Generic.ReferenceEqualityComparer
 		// is .NET 5+ only, but Controls.Core also targets netstandard2.0/2.1, so use a small
 		// cross-TFM reference-equality comparer instead (avoids a netstandard build break).
-		readonly Dictionary<GradientStop, int> _subscriptionRefCounts = new(GradientStopReferenceComparer.Instance);
+		Dictionary<GradientStop, (int Count, WeakNotifyPropertyChangedProxy Proxy)> _stopSubscriptions;
+
+		// Cached delegates: WeakNotifyXProxy only holds a WeakReference to the handler, so an
+		// inline method-group delegate would have no other root and could be collected on its own.
+		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
+		PropertyChangedEventHandler _stopChangedHandler;
+
+		readonly WeakNotifyCollectionChangedProxy _collectionProxy = new();
 
 		/// <summary>Initializes a new instance of the <see cref="GradientBrush"/> class.</summary>
 		public GradientBrush()
 		{
+			_collectionChangedHandler = OnGradientStopCollectionChanged;
 			GradientStops = new GradientStopCollection();
+		}
+
+		~GradientBrush()
+		{
+			_collectionProxy.Unsubscribe();
+
+			if (_stopSubscriptions is null)
+			{
+				return;
+			}
+
+			foreach (var subscription in _stopSubscriptions.Values)
+			{
+				subscription.Proxy.Unsubscribe();
+			}
 		}
 
 		public event EventHandler InvalidateGradientBrushRequested;
@@ -68,7 +91,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			collection.CollectionChanged += OnGradientStopCollectionChanged;
+			_collectionProxy.Subscribe(collection, _collectionChangedHandler);
 
 			foreach (var stop in collection)
 			{
@@ -83,7 +106,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			collection.CollectionChanged -= OnGradientStopCollectionChanged;
+			_collectionProxy.Unsubscribe();
 			UnsubscribeFromAllGradientStops();
 		}
 
@@ -147,15 +170,19 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (_subscriptionRefCounts.TryGetValue(stop, out var count))
+			var subscriptions = _stopSubscriptions ??= new(GradientStopReferenceComparer.Instance);
+
+			if (subscriptions.TryGetValue(stop, out var subscription))
 			{
-				_subscriptionRefCounts[stop] = count + 1;
+				subscriptions[stop] = (subscription.Count + 1, subscription.Proxy);
 				return;
 			}
 
-			_subscriptionRefCounts[stop] = 1;
 			stop.Parent = this;
-			stop.PropertyChanged += OnGradientStopPropertyChanged;
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			_stopChangedHandler ??= OnGradientStopPropertyChanged;
+			proxy.Subscribe(stop, _stopChangedHandler);
+			subscriptions[stop] = (1, proxy);
 		}
 
 		void UnsubscribeFromGradientStop(GradientStop stop)
@@ -165,31 +192,38 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (!_subscriptionRefCounts.TryGetValue(stop, out var count))
+			var subscriptions = _stopSubscriptions;
+			if (subscriptions is null || !subscriptions.TryGetValue(stop, out var subscription))
 			{
 				return;
 			}
 
-			if (count > 1)
+			if (subscription.Count > 1)
 			{
-				_subscriptionRefCounts[stop] = count - 1;
+				subscriptions[stop] = (subscription.Count - 1, subscription.Proxy);
 				return;
 			}
 
-			_subscriptionRefCounts.Remove(stop);
+			subscriptions.Remove(stop);
 			stop.Parent = null;
-			stop.PropertyChanged -= OnGradientStopPropertyChanged;
+			subscription.Proxy.Unsubscribe();
 		}
 
 		void UnsubscribeFromAllGradientStops()
 		{
-			foreach (var stop in _subscriptionRefCounts.Keys)
+			var subscriptions = _stopSubscriptions;
+			if (subscriptions is null)
 			{
-				stop.Parent = null;
-				stop.PropertyChanged -= OnGradientStopPropertyChanged;
+				return;
 			}
 
-			_subscriptionRefCounts.Clear();
+			foreach (var subscription in subscriptions)
+			{
+				subscription.Key.Parent = null;
+				subscription.Value.Proxy.Unsubscribe();
+			}
+
+			subscriptions.Clear();
 		}
 
 		void ResubscribeCollection(GradientStopCollection collection)
