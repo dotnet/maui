@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if ANDROID
-			EditorHandler.CommandMapper.PrependToMappingForControls(nameof(IEditor.Focus), InputView.MapFocus);
+			EditorHandler.CommandMapper.PrependToMappingForControls<IEditor, IEditorHandler>(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
 		}
 	}

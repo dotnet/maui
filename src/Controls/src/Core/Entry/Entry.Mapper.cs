@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 				EntryHandler2.Mapper.ReplaceMappingForControls<Entry, EntryHandler2>(nameof(TextTransform), MapText);
 				EntryHandler2.Mapper.AppendToMappingForControls(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
 				EntryHandler2.Mapper.AppendToMappingForControls(nameof(VisualElement.IsVisible), InputView.MapIsVisible);
-				EntryHandler2.CommandMapper.PrependToMappingForControls(nameof(IEntry.Focus), InputView.MapFocus);
+				EntryHandler2.CommandMapper.PrependToMappingForControls<IEntry, EntryHandler2>(nameof(IEntry.Focus), InputView.MapFocus);
 			}
 #endif
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if ANDROID
-			EntryHandler.CommandMapper.PrependToMappingForControls(nameof(IEntry.Focus), InputView.MapFocus);
+			EntryHandler.CommandMapper.PrependToMappingForControls<IEntry, IEntryHandler>(nameof(IEntry.Focus), InputView.MapFocus);
 #endif
 		}
 	}
