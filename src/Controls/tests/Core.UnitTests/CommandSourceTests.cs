@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		where T : BindableObject
 	{
 		[Fact]
+		public void CommandDependsOnCommandParameterBeforeHandlerAttached()
+		{
+			Assert.Contains(CommandParameterProperty, CommandProperty.Dependencies);
+		}
+
+		[Fact]
 		public void TestCommand()
 		{
 			var source = CreateSource();

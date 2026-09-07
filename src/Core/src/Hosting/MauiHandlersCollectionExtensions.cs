@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting.Internal;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -81,6 +83,9 @@ namespace Microsoft.Maui.Hosting
 			if (!typeof(IElement).IsAssignableFrom(viewType) || !typeof(IElementHandler).IsAssignableFrom(handlerType))
 				throw new InvalidOperationException($"Unable to add handler mapping for {viewType} and {handlerType}. Please ensure that {viewType} implements {nameof(IElement)} and {handlerType} implements {nameof(IElementHandler)}.");
 
+			if (HasEnabledElementHandlerDefault(handlersCollection, viewType))
+				return handlersCollection;
+
 			handlersCollection.RegisterHandlerServiceType(viewType);
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.TryAddTransient(viewType, handlerType);
@@ -100,6 +105,9 @@ namespace Microsoft.Maui.Hosting
 			where TType : IView
 			where TTypeRender : IViewHandler
 		{
+			if (HasEnabledElementHandlerDefault(handlersCollection, typeof(TType)))
+				return handlersCollection;
+
 			handlersCollection.RegisterHandlerServiceType(typeof(TType));
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.TryAddTransient(typeof(TType), typeof(TTypeRender));
@@ -119,6 +127,9 @@ namespace Microsoft.Maui.Hosting
 			Func<IServiceProvider, IElementHandler> handlerImplementationFactory)
 			where TType : IElement
 		{
+			if (HasEnabledElementHandlerDefault(handlersCollection, typeof(TType)))
+				return handlersCollection;
+
 			handlersCollection.RegisterHandlerServiceType(typeof(TType));
 			handlersCollection.TryAddTransient(typeof(TType), handlerImplementationFactory);
 			return handlersCollection;
@@ -128,5 +139,9 @@ namespace Microsoft.Maui.Hosting
 		{
 			RegisteredHandlerServiceTypeSet.GetInstance(handlersCollection).Add(virtualViewType);
 		}
+
+		private static bool HasEnabledElementHandlerDefault(IMauiHandlersCollection handlersCollection, Type viewType) =>
+			handlersCollection is IElementHandlerDefaultsCollection { ElementHandlerDefaultsEnabled: true }
+			&& viewType.GetCustomAttribute<ElementHandlerAttribute>(inherit: false) is not null;
 	}
 }

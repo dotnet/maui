@@ -36,14 +36,14 @@ namespace Microsoft.Maui.Handlers
 #if IOS
 			[nameof(IEditor.IsEnabled)] = MapIsEnabled,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
-		public static CommandMapper<IEditor, IEditorHandler> CommandMapper = new(ViewCommandMapper)
+		public static CommandMapper<IEditor, IEditorHandler> CommandMapper = new CommandMapper<IEditor, IEditorHandler>(ViewCommandMapper)
 		{
 #if ANDROID
 			[nameof(IEditor.Focus)] = MapFocus
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public EditorHandler() : this(Mapper)
 		{

@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IButtonStroke.StrokeThickness)] = MapStrokeThickness,
 			[nameof(IButtonStroke.StrokeColor)] = MapStrokeColor,
 			[nameof(IButtonStroke.CornerRadius)] = MapCornerRadius
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IButton, IButtonHandler> CommandMapper = new(ViewCommandMapper);
 

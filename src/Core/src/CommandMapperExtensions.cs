@@ -29,6 +29,13 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
+			if (commandMapper is CommandMapper concreteMapper)
+			{
+				concreteMapper.AddMappingCustomization(key, previousMethod =>
+					(handler, view, args) => method((TViewHandler)handler, (TVirtualView)view, args, previousMethod));
+				return;
+			}
+
 			var previousMethod = commandMapper.GetCommand(key);
 
 			commandMapper.Add(key, newMethod);
@@ -51,6 +58,18 @@ namespace Microsoft.Maui
 			string key, Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
+			if (commandMapper is CommandMapper concreteMapper)
+			{
+				concreteMapper.AddMappingCustomization(key, previousMethod => (handler, view, args) =>
+				{
+					if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+						method((TViewHandler)handler!, virtualView, args, previousMethod);
+					else
+						previousMethod?.Invoke(handler!, view, args);
+				});
+				return;
+			}
+
 			var previousMethod = commandMapper.GetCommand(key);
 
 			void newMethod(IElementHandler handler, IElement view, object? args)
@@ -182,6 +201,36 @@ namespace Microsoft.Maui
 					method((TViewHandler)handler!, v, args);
 
 				action?.Invoke(handler!, view, args);
+			});
+		}
+
+		internal static void ModifyMappingForControls<TVirtualView, TViewHandler>(
+			this CommandMapper commandMapper,
+			string key,
+			Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.ModifyFrameworkMapping(key, previousMethod => (handler, view, args) =>
+			{
+				if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+					method((TViewHandler)handler!, virtualView, args, previousMethod);
+				else
+					previousMethod?.Invoke(handler!, view, args);
+			});
+		}
+
+		internal static void PrependToMappingForControls<TVirtualView, TViewHandler>(
+			this CommandMapper commandMapper,
+			string key,
+			Action<TViewHandler, TVirtualView, object?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.ModifyFrameworkMapping(key, previousMethod => (handler, view, args) =>
+			{
+				if ((handler is null || handler is TViewHandler) && view is TVirtualView virtualView)
+					method((TViewHandler)handler!, virtualView, args);
+
+				previousMethod?.Invoke(handler!, view, args);
 			});
 		}
 	}

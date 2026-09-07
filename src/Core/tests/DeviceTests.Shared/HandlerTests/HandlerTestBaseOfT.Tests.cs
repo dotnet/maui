@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -392,11 +393,17 @@ namespace Microsoft.Maui.DeviceTests
 		public void HandlersHaveAllExpectedContructors()
 		{
 			bool hasBothMappers = false;
-			var constructors = typeof(THandler).GetConstructors();
+			var handlerType = GetHandlerType();
+			var constructors = handlerType.GetConstructors();
+
+			var diagnostics = new System.Text.StringBuilder();
+			diagnostics.AppendLine($"Handler type: {handlerType.FullName} (Assembly: {handlerType.Assembly.GetName().Name})");
+			diagnostics.AppendLine($"Constructor count: {constructors.Length}");
 
 			foreach (var ctor in constructors)
 			{
 				var args = ctor.GetParameters();
+				diagnostics.AppendLine($"  ctor({string.Join(", ", System.Linq.Enumerable.Select(args, a => $"{a.ParameterType.FullName} {a.Name}"))})");
 				if (args.Length == 2)
 				{
 					if (args[0].ParameterType.IsAssignableTo(typeof(IPropertyMapper)) &&
@@ -407,7 +414,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(hasBothMappers, "Missing constructor with IPropertyMapper and ICommandMapper");
+			Assert.True(hasBothMappers, $"Missing constructor with IPropertyMapper and ICommandMapper\n{diagnostics}");
 		}
+
+		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+		static Type GetHandlerType() => typeof(THandler);
 	}
 }

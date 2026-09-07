@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with primary <see cref="Microsoft.Maui.Controls.TextCell.Text"/>  and <see cref="Microsoft.Maui.Controls.TextCell.Detail"/> text.</summary>
 	[Obsolete("The controls which use TextCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
+#if WINDOWS || ANDROID || IOS || MACCATALYST
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler(typeof(Handlers.Compatibility.TextCellRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class TextCell : Cell, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>

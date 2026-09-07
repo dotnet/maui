@@ -1,9 +1,11 @@
 #nullable disable
 using System;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
+	[ElementHandler(typeof(GraphicsViewHandler))]
 	public class GraphicsView : View, IGraphicsView
 	{
 		public event EventHandler<TouchEventArgs> StartHoverInteraction;

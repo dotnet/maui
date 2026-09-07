@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IWindow.IsMinimizable)] = MapIsMinimizable,
 			[nameof(IWindow.IsMaximizable)] = MapIsMaximizable,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IWindow, IWindowHandler> CommandMapper = new(ElementCommandMapper)
 		{

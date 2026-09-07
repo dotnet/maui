@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TabbedViewHandler : ViewHandler<ITabbedView, PlatformView>, ITabbedViewHandler
 	{
-		public static IPropertyMapper<ITabbedView, ITabbedViewHandler> Mapper = new PropertyMapper<ITabbedView, ITabbedViewHandler>(ViewHandler.ViewMapper);
+		public static IPropertyMapper<ITabbedView, ITabbedViewHandler> Mapper = new PropertyMapper<ITabbedView, ITabbedViewHandler>(ViewHandler.ViewMapper).WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ITabbedView, ITabbedViewHandler> CommandMapper = new(ViewCommandMapper);
 

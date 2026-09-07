@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IStackNavigationView, INavigationViewHandler> Mapper = new PropertyMapper<IStackNavigationView, INavigationViewHandler>(ViewMapper)
 		{
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IStackNavigationView, INavigationViewHandler> CommandMapper = new(ViewCommandMapper)
 		{

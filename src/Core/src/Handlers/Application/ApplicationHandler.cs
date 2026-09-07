@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || IOS
 			[nameof(IApplication.UserAppTheme)] = MapAppTheme,
 #endif
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IApplication, ApplicationHandler> CommandMapper = new(ElementCommandMapper)
 		{

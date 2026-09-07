@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITimePicker.TextColor)] = MapTextColor,
 			[nameof(ITimePicker.Time)] = MapTime,
 			[nameof(ITimePicker.IsOpen)] = MapIsOpen,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<ITimePicker, ITimePickerHandler> CommandMapper = new(ViewCommandMapper)
 		{

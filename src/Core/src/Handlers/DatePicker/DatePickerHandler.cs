@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IDatePicker.MinimumDate)] = MapMinimumDate,
 			[nameof(IDatePicker.TextColor)] = MapTextColor,
 			[nameof(IDatePicker.IsOpen)] = MapIsOpen,
-		};
+		}.WithFrameworkMappingsSealed();
 
 		public static CommandMapper<IPicker, IDatePickerHandler> CommandMapper = new(ViewCommandMapper)
 		{

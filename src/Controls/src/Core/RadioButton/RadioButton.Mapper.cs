@@ -11,12 +11,19 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
-		internal new static void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
 		{
-			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
+		{
+			RadioButtonHandler.Mapper.ReplaceMappingForControls<RadioButton, IRadioButtonHandler>(nameof(IRadioButton.Content), MapContent);
 #if ANDROID || WINDOWS
 			//On iOS, since a custom approach is used for RadioButton, TextTransform is applied through the Label control.
-			RadioButtonHandler.Mapper.ReplaceMapping<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
+			RadioButtonHandler.Mapper.ReplaceMappingForControls<RadioButton, IRadioButtonHandler>(nameof(TextTransform), MapContent);
 #endif
 #if ANDROID
 			RadioButtonHandler.PlatformViewFactory = CreatePlatformView;

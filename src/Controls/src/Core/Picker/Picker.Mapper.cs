@@ -6,16 +6,23 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Picker
 	{
-		internal static new void RemapForControls()
+		static readonly OneTimeInitializationAction s_remappedForControls = new(RemapForControlsOnce);
+		internal override void RemapForControls()
+		{
+			base.RemapForControls();
+			s_remappedForControls.InvokeOnce();
+		}
+
+		static void RemapForControlsOnce()
 		{
 			// Adjust the mappings to preserve Controls.Picker legacy behaviors
 #if IOS
-			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(PlatformConfiguration.iOSSpecific.Picker.UpdateModeProperty.PropertyName, MapUpdateMode);
+			PickerHandler.Mapper.ReplaceMappingForControls<Picker, IPickerHandler>(PlatformConfiguration.iOSSpecific.Picker.UpdateModeProperty.PropertyName, MapUpdateMode);
 #elif WINDOWS
-			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.HorizontalOptions), MapHorizontalOptions);
-			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.VerticalOptions), MapVerticalOptions);
+			PickerHandler.Mapper.ReplaceMappingForControls<Picker, IPickerHandler>(nameof(Picker.HorizontalOptions), MapHorizontalOptions);
+			PickerHandler.Mapper.ReplaceMappingForControls<Picker, IPickerHandler>(nameof(Picker.VerticalOptions), MapVerticalOptions);
 #endif
-			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(nameof(Picker.ItemsSource), MapItemsSource);
+			PickerHandler.Mapper.ReplaceMappingForControls<Picker, IPickerHandler>(nameof(Picker.ItemsSource), MapItemsSource);
 		}
 
 		internal static void MapItemsSource(IPickerHandler handler, IPicker view)

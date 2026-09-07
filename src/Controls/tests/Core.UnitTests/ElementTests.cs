@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public int TrackPropertyChangedDelegateCount { get; private set; }
 		public int TrackPropertyChangedOnPropertyChangedCount { get; private set; }
 		public int TrackPropertyChangedUpdateHandlerValueCount { get; private set; }
+		public int RemapForControlsCount { get; private set; }
 
 		private static void OnTrackPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue)
 		{
@@ -82,6 +83,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			base.UpdateHandlerValue(propertyName, valueChanged);
+		}
+
+		internal override void RemapForControls()
+		{
+			RemapForControlsCount++;
+			base.RemapForControls();
+		}
+	}
+
+	sealed class TestElementHandler : IElementHandler
+	{
+		readonly TestElement _element;
+
+		public TestElementHandler(TestElement element)
+		{
+			_element = element;
+		}
+
+		public int RemapCountWhenAttached { get; private set; }
+		public object PlatformView => null;
+		public IElement VirtualView { get; private set; }
+		public IMauiContext MauiContext { get; private set; }
+
+		public void SetMauiContext(IMauiContext mauiContext) => MauiContext = mauiContext;
+
+		public void SetVirtualView(IElement view)
+		{
+			RemapCountWhenAttached = _element.RemapForControlsCount;
+			VirtualView = view;
+		}
+
+		public void UpdateValue(string property)
+		{
+		}
+
+		public void Invoke(string command, object args = null)
+		{
+		}
+
+		public void DisconnectHandler()
+		{
 		}
 	}
 
@@ -123,6 +165,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.TrackPropertyChangedDelegate = 1;
 			Assert.Equal(2, element.TrackPropertyChangedUpdateHandlerValueCount);
+		}
+
+		[Fact]
+		public void RemapsControlsBeforeAttachingNonElementHandler()
+		{
+			var element = new TestElement();
+			var handler = new TestElementHandler(element);
+
+			element.Handler = handler;
+
+			Assert.Equal(1, handler.RemapCountWhenAttached);
 		}
 
 		[Fact]
