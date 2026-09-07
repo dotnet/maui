@@ -82,7 +82,9 @@ namespace Microsoft.Maui.Platform
 				_contentView.Frame = Bounds;
 
 			if (_isOpen)
+			{
 				Swipe(animated: false);
+			}
 		}
 
 		public override void TouchesEnded(NSSet touches, UIEvent? evt)
@@ -340,7 +342,7 @@ namespace Microsoft.Maui.Platform
 
 			int i = 0;
 			float previousWidth = 0;
-			double? executeModeItemWidth = null;
+			double executeModeItemWidth = 0;
 
 			if (items.Mode == SwipeMode.Execute && IsHorizontalSwipe())
 			{
@@ -955,7 +957,7 @@ namespace Microsoft.Maui.Platform
 					{
 						if (GetIsVisible(swipeItem))
 						{
-							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection, null);
+							var swipeItemSize = Element.GetSwipeItemSize(swipeItem, _contentView, _swipeDirection);
 							swipeThreshold += swipeItemSize.Width;
 						}
 					}
@@ -978,7 +980,7 @@ namespace Microsoft.Maui.Platform
 			float swipeItemsHeight = 0;
 			float swipeItemsWidth = 0;
 			bool useSwipeItemsSize = false;
-			double? executeModeItemWidth = null;
+			double executeModeItemWidth = 0;
 
 			if (swipeItems.Mode == SwipeMode.Execute && IsHorizontalSwipe())
 			{
