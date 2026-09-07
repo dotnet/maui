@@ -23,6 +23,12 @@
 		<!-- extension property declared in another assembly -->
 		<Label x:Name="label5" ext:ExternalLabelExtensions.ExternalTag="external" />
 
+		<!-- getter and setter declared in different extension blocks: only the setter defines the shape -->
+		<Label x:Name="label7" ext:SplitAccessorExtensions.SplitAccessor="from xaml" />
+
+		<!-- a markup extension returning object: the value is only known as an object at compile time -->
+		<Label x:Name="label8" local:LabelExtensions.MyTag="{local:ObjectValue}" />
+
 		<!-- property element syntax, value produced by an element -->
 		<Label x:Name="label6">
 			<local:LabelExtensions.MyTag>

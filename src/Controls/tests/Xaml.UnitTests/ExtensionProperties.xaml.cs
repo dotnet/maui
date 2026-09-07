@@ -84,20 +84,6 @@ public static class OverloadedExtensions
 	}
 }
 
-// two applicable receivers, neither more derived than the other
-public static class AmbiguousExtensions
-{
-	extension(IView view)
-	{
-		public string MyAmbiguous { get => string.Empty; set { } }
-	}
-
-	extension(BindableObject bindable)
-	{
-		public string MyAmbiguous { get => string.Empty; set { } }
-	}
-}
-
 // generic extension blocks lower to generic accessor methods, which XAML cannot instantiate
 public static class GenericExtensions
 {
@@ -105,6 +91,13 @@ public static class GenericExtensions
 	{
 		public bool IsEmpty { get => list.Count == 0; set { } }
 	}
+}
+
+// a non-generic IMarkupExtension: its value is only known as an object at compile time
+[AcceptEmptyServiceProvider]
+public class ObjectValueExtension : IMarkupExtension
+{
+	public object ProvideValue(IServiceProvider serviceProvider) => "from markup";
 }
 
 public partial class ExtensionProperties : ContentPage
@@ -176,6 +169,26 @@ public partial class ExtensionProperties : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
+		internal void SetterAloneDefinesTheExtensionPropertyShape(XamlInflator inflator)
+		{
+			// SplitAccessor is declared with an int getter on Label and a string setter on View. Only the
+			// setter is used, so the value is a string and the receiver is upcast to View
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("view:from xaml", page.label7.AutomationId);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyAcceptsAValueKnownAsObject(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("from markup", page.label8.MyTag);
+		}
+
+		[Theory]
+		[XamlInflatorData]
 		internal void ExtensionPropertyIsSetFromPropertyElementSyntax(XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
@@ -221,7 +234,7 @@ public partial class ExtensionProperties : ContentPage
 		[Fact]
 		public void AmbiguousExtensionPropertyThrows()
 		{
-			var xaml = PageWith("local:AmbiguousExtensions.MyAmbiguous=\"nope\"");
+			var xaml = PageWith("ext:AmbiguousExtensions.MyAmbiguous=\"nope\"");
 			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 			Assert.Contains("MyAmbiguous", e.Message, StringComparison.Ordinal);
 		}
@@ -251,6 +264,33 @@ public partial class ExtensionProperties : ContentPage
 			var xaml = PageWith("ext:InternalLabelExtensions.InternalTag=\"nope\"");
 			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 			Assert.Contains("InternalLabelExtensions", e.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void QualifiedNameNeverFallsBackToTheTargetsOwnProperty()
+		{
+			// ExternalLabelExtensions declares no extension property named Text, and Label.Text must not be
+			// assigned just because the qualifier was dropped
+			var xaml = """
+				<Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+						xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+						xmlns:ext="clr-namespace:Controls.Xaml.UnitTests.ExternalAssembly;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly"
+						ext:ExternalLabelExtensions.Text="wrong" />
+				""";
+			var label = new Label();
+
+			Assert.Throws<XamlParseException>(() => label.LoadFromXaml(xaml));
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
+		public void LookalikeStaticClassIsNotAnExtensionContainer()
+		{
+			// the members of LookalikeExtensions have the shape of lowered accessors, but the class carries no
+			// extension declaration
+			var xaml = PageWith("ext:LookalikeExtensions.Lookalike=\"nope\"");
+
+			Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 		}
 
 		[Fact]
