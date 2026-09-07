@@ -350,6 +350,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Warning,
 			isEnabledByDefault: true);
 
+		public static DiagnosticDescriptor ExtensionPropertyResolution = new DiagnosticDescriptor(
+			id: "MAUIX2020",
+			title: new LocalizableResourceString(nameof(MauiGResources.SymbolResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ExtensionPropertyResolution), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlInflation",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor DuplicatePropertyAssignment = new DiagnosticDescriptor(
 			id: "MAUIX2017",
 			title: new LocalizableResourceString(nameof(MauiGResources.DuplicatePropertyAssignmentTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
