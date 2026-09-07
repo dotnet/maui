@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
@@ -36,7 +37,7 @@ public class VisualDiagnosticsBenchmarker
 		return _notificationCount;
 	}
 
-	void OnVisualTreeChanged(object sender, VisualTreeChangeEventArgs e)
+	void OnVisualTreeChanged(object? sender, VisualTreeChangeEventArgs e)
 	{
 		_notificationCount++;
 	}
@@ -45,6 +46,6 @@ public class VisualDiagnosticsBenchmarker
 	{
 		public IReadOnlyList<IVisualTreeElement> GetVisualChildren() => Array.Empty<IVisualTreeElement>();
 
-		public IVisualTreeElement GetVisualParent() => null;
+		public IVisualTreeElement? GetVisualParent() => null;
 	}
 }
