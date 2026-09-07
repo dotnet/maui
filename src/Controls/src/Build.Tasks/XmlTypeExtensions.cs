@@ -80,30 +80,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		/// <summary>
-		/// Returns the clr namespaces, and the assemblies declaring them, that <paramref name="xmlNamespace"/>
-		/// maps to. Same map type names are resolved through, global xmlns included.
-		/// </summary>
-		public static IReadOnlyList<XmlnsDefinitionAttribute> GetXmlnsDefinitions(XamlCache cache, ModuleDefinition module, string xmlNamespace)
-		{
-			var definitions = new List<XmlnsDefinitionAttribute>();
-			foreach (var definition in cache.GetXmlnsDefinitions(module, GatherXmlnsDefinitionAttributes))
-			{
-				if (definition.XmlNamespace == xmlNamespace && !definition.Target.StartsWith("http", StringComparison.Ordinal))
-					definitions.Add(definition);
-			}
-
-			//an xmlns nobody declared, but which spells out a clr namespace, resolves like any clr-namespace: uri
-			if (definitions.Count == 0)
-			{
-				XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
-				if (ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
-					definitions.Add(new XmlnsDefinitionAttribute(xmlNamespace, ns) { AssemblyName = asm ?? module.Assembly.Name.Name });
-			}
-
-			return definitions;
-		}
-
 		public static TypeReference GetTypeReference(XamlCache cache, string typeName, ModuleDefinition module, BaseNode node, bool expandToExtension = true)
 		{
 			try

@@ -512,34 +512,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			return type;
 		}
 
-		/// <summary>
-		/// Returns the clr namespaces, and the assemblies declaring them, that <paramref name="xmlNamespace"/>
-		/// maps to. This is the same map <see cref="GetElementType"/> resolves type names through, including
-		/// the namespaces the global xmlns pulls in.
-		/// </summary>
-		internal static IReadOnlyList<XmlnsDefinitionAttribute> GetXmlnsDefinitions(string xmlNamespace, Assembly currentAssembly)
-		{
-			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAndXmlnsPrefixAttributes(currentAssembly);
-
-			var definitions = new List<XmlnsDefinitionAttribute>();
-			foreach (var definition in s_xmlnsDefinitions)
-			{
-				if (definition.XmlNamespace == xmlNamespace && !definition.Target.StartsWith("http", StringComparison.Ordinal))
-					definitions.Add(definition);
-			}
-
-			//an xmlns nobody declared, but which spells out a clr namespace, resolves like any clr-namespace: uri
-			if (definitions.Count == 0)
-			{
-				XmlnsHelper.ParseXmlns(xmlNamespace, out _, out var ns, out var asm, out _);
-				if (ns != null && !ns.StartsWith("http", StringComparison.Ordinal))
-					definitions.Add(new XmlnsDefinitionAttribute(xmlNamespace, ns) { AssemblyName = asm ?? currentAssembly?.FullName });
-			}
-
-			return definitions;
-		}
-
 		public static bool IsPublicOrVisibleInternal(this Type type, Assembly assembly)
 		{
 			if (type.IsPublic || type.IsNestedPublic)
