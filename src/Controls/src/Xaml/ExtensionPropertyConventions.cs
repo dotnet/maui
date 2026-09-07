@@ -20,14 +20,23 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// implementation method, and use the nested declaration as the marker that the container really is an
 	/// extension container.
 	/// </para>
-	/// <para>Supported in XAML, using the qualified (attached-property-like) syntax only:</para>
-	/// <code>&lt;Label local:LabelExtensions.MyTag="Hello" /&gt;</code>
+	/// <para>Both forms are supported in XAML:</para>
+	/// <code>
+	/// &lt;Label MyTag="Hello" /&gt;                          &lt;!-- resolved in the element's default xmlns --&gt;
+	/// &lt;Label local:LabelExtensions.MyTag="Hello" /&gt;     &lt;!-- container named explicitly --&gt;
+	/// </code>
 	/// <para>
-	/// The container type is always named explicitly, so resolution never depends on which assemblies
-	/// happen to be loaded, referenced or compiled, and is therefore identical for all three inflators.
-	/// Unqualified names (<c>&lt;Label MyTag="Hello" /&gt;</c>) are deliberately not supported: XAML has no
-	/// equivalent of a C# <c>using</c> directive to scope extension member lookup, so an unqualified lookup
-	/// would have to search every type of every assembly and could not produce a stable answer.
+	/// An unprefixed attribute carries no xml namespace, so an unqualified name is resolved in the default
+	/// xmlns declared for the element, which is what XAML uses as a scope, the way a C# file scopes extension
+	/// member lookup with its <c>using</c> directives. That scope is the very map type names are resolved
+	/// through: <c>[XmlnsDefinition]</c>, including everything the MAUI global xmlns pulls in for a document
+	/// that declares no xmlns at all. Candidates are therefore never searched for outside the namespaces and
+	/// assemblies the document already imports, and the map is cached per xmlns.
+	/// </para>
+	/// <para>
+	/// Naming the container explicitly stays available, to reach a container the document does not import and
+	/// to disambiguate. It is also the only form for which a name the container cannot resolve is an error
+	/// rather than a fallback, since naming a container means asking for one of its extension properties.
 	/// </para>
 	/// <para>Requirements for a container/accessor to be usable from XAML:</para>
 	/// <list type="bullet">
@@ -36,8 +45,13 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// <item><description>the setter is a non-generic <c>public static void set_Name(TReceiver, TValue)</c> method on the container;</description></item>
 	/// <item><description>the receiver parameter is not by-ref and is assignable from the target element type;</description></item>
 	/// <item><description>the container is accessible from the assembly declaring the XAML;</description></item>
-	/// <item><description>when several setters apply, exactly one has a receiver type more derived than all the others.</description></item>
+	/// <item><description>when several setters apply, whether on one container or across the containers a xmlns
+	/// brings in scope, exactly one has a receiver type more derived than all the others.</description></item>
 	/// </list>
+	/// <para>
+	/// Ordinary members win: an unqualified name is only looked up among extension properties once events,
+	/// dynamic resources, bindings, bindable properties and the target's own properties have all been tried.
+	/// </para>
 	/// <para>
 	/// Only assignment is supported, so the selected <c>set_Name</c> method alone defines the receiver type and
 	/// the value type. Getters are never consulted: an extension property may be declared with its getter and
@@ -84,6 +98,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			return true;
 		}
+
+		public static string AmbiguousError(string propertyName, string xmlNamespace, string targetTypeName)
+			=> $"Ambiguous extension property \"{propertyName}\" for \"{targetTypeName}\" in xmlns \"{xmlNamespace}\". Several extension containers in scope declare it with unrelated receiver types; name the container explicitly to disambiguate.";
 
 		public static string ResolutionError(string propertyName, string containerName, string targetTypeName)
 			=> $"Cannot resolve the extension property \"{propertyName}\" on \"{containerName}\". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a setter whose receiver type matches \"{targetTypeName}\", and it must be unambiguous.";

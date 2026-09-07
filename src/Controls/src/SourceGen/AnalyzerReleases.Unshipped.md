@@ -35,3 +35,4 @@ MAUIX2017 | XamlInflation | Warning | DuplicatePropertyAssignment
 MAUIX2018 | XamlParsing | Warning | StructIntermediateNotSettable
 MAUIX2019 | XamlParsing | Error | LambdaMethodGroupReference
 MAUIX2020 | XamlInflation | Error | ExtensionPropertyResolution
+MAUIX2021 | XamlInflation | Error | ExtensionPropertyAmbiguous
