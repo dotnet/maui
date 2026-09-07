@@ -40,8 +40,11 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ScrollViewer? _scrollViewer;
 	Canvas? _dropIndicatorCanvas;
 	bool _automationSetUpdateQueued;
+	int _automationDataItemCount = -1;
+	List<int>? _automationExcludedIndexes;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
+	internal event Action<int>? ContainerPrepared;
 
 	public MauiItemsView()
 	{
@@ -330,17 +333,22 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		InitInsertionFadeStoryboard();
 	}
 
-	void ItemsRepeater_AutomationElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args) =>
-		QueueAutomationSetPropertiesUpdate(sender);
+	void ItemsRepeater_AutomationElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
+	{
+		UpdateAutomationSetProperties(sender, args.Element, args.Index);
+		ContainerPrepared?.Invoke(args.Index);
+	}
 
 	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
-		QueueAutomationSetPropertiesUpdate(sender);
+		UpdateAutomationSetProperties(sender, args.Element, args.NewIndex);
 
 	void ItemsRepeater_AutomationElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args) =>
 		ClearAutomationSetProperties(args.Element);
 
 	internal void InvalidateAutomationSetProperties()
 	{
+		_automationDataItemCount = -1;
+		_automationExcludedIndexes = null;
 		if (ItemsRepeaterControl is ItemsRepeater repeater)
 		{
 			QueueAutomationSetPropertiesUpdate(repeater);
@@ -361,41 +369,68 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 				return;
 
 			_automationSetUpdateQueued = false;
-			UpdateAutomationSetProperties(repeater);
+			UpdateRealizedAutomationSetProperties(repeater);
 		}))
 		{
 			_automationSetUpdateQueued = false;
 		}
 	}
 
-	static void UpdateAutomationSetProperties(ItemsRepeater repeater)
+	void UpdateRealizedAutomationSetProperties(ItemsRepeater repeater)
 	{
-		var realizedDataItems = new List<UIElement>();
-		var size = 0;
-		for (var index = 0; index < repeater.ItemsSourceView.Count; index++)
+		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
+		for (var childIndex = 0; childIndex < childCount; childIndex++)
 		{
-			var isDataItem = IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index));
-			if (isDataItem)
+			if (VisualTreeHelper.GetChild(repeater, childIndex) is UIElement element)
 			{
-				size++;
+				UpdateAutomationSetProperties(repeater, element, repeater.GetElementIndex(element));
 			}
+		}
+	}
 
-			if (repeater.TryGetElement(index) is not UIElement element)
-				continue;
-
-			if (!isDataItem)
-			{
-				ClearAutomationSetProperties(element);
-				continue;
-			}
-
-			WAutomationProperties.SetPositionInSet(element, size);
-			realizedDataItems.Add(element);
+	void UpdateAutomationSetProperties(ItemsRepeater repeater, UIElement element, int index)
+	{
+		if (index < 0 || index >= repeater.ItemsSourceView.Count)
+		{
+			ClearAutomationSetProperties(element);
+			return;
 		}
 
-		foreach (var element in realizedDataItems)
+		EnsureAutomationSetCache(repeater);
+		var excludedIndex = _automationExcludedIndexes?.BinarySearch(index) ?? -1;
+		if (excludedIndex >= 0)
 		{
-			WAutomationProperties.SetSizeOfSet(element, size);
+			ClearAutomationSetProperties(element);
+			return;
+		}
+
+		var excludedBefore = excludedIndex < -1 ? ~excludedIndex : 0;
+		WAutomationProperties.SetPositionInSet(element, index + 1 - excludedBefore);
+		WAutomationProperties.SetSizeOfSet(element, _automationDataItemCount);
+	}
+
+	void EnsureAutomationSetCache(ItemsRepeater repeater)
+	{
+		if (_automationDataItemCount >= 0)
+		{
+			return;
+		}
+
+		_automationDataItemCount = repeater.ItemsSourceView.Count;
+		if (_mauiVirtualView is not GroupableItemsView { IsGrouped: true })
+		{
+			return;
+		}
+
+		for (var index = 0; index < repeater.ItemsSourceView.Count; index++)
+		{
+			if (IsAutomationDataItem(repeater.ItemsSourceView.GetAt(index)))
+			{
+				continue;
+			}
+
+			_automationDataItemCount--;
+			(_automationExcludedIndexes ??= new()).Add(index);
 		}
 	}
 
@@ -415,6 +450,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		}
 
 		_automationSetUpdateQueued = false;
+		_automationDataItemCount = -1;
+		_automationExcludedIndexes = null;
 	}
 
 	static bool IsAutomationDataItem(object? item) =>

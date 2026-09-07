@@ -455,6 +455,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		}
 
 		PlatformView.ItemsSource = _collectionViewSource?.View;
+		(PlatformView as MauiItemsView)?.InvalidateAutomationSetProperties();
 
 		if (PlatformView is MauiItemsView mauiItemsViewFlat)
 		{

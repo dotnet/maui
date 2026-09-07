@@ -36,6 +36,8 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 {
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
+	bool _selectionUpdateQueued;
+	Action<int>? _containerPreparedHandler;
 
 	// Cache for MeasureFirstItem optimization
 	global::Windows.Foundation.Size _firstItemMeasuredSize = global::Windows.Foundation.Size.Empty;
@@ -179,12 +181,24 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 
 	void OnPlatformViewLoaded(object? sender, UI.Xaml.RoutedEventArgs e)
 	{
-		if (sender is not MauiItemsView platformView)
+		if (sender is not MauiItemsView platformView || _selectionUpdateQueued)
 			return;
 
+		_selectionUpdateQueued = true;
 		void OnReady()
 		{
-			platformView.ContainerPrepared -= OnContainerPrepared;
+			if (!_selectionUpdateQueued || !ReferenceEquals(PlatformView, platformView))
+			{
+				return;
+			}
+
+			_selectionUpdateQueued = false;
+			if (_containerPreparedHandler is not null)
+			{
+				platformView.ContainerPrepared -= _containerPreparedHandler;
+				_containerPreparedHandler = null;
+			}
+
 			platformView.IsTabStop = true;
 			if (_selectionDirty)
 			{
@@ -193,9 +207,12 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			}
 		}
 
-		void OnContainerPrepared(int index) => OnReady();
-		platformView.ContainerPrepared += OnContainerPrepared;
-		platformView.DispatcherQueue.TryEnqueue(OnReady);
+		_containerPreparedHandler = _ => OnReady();
+		platformView.ContainerPrepared += _containerPreparedHandler;
+		if (!platformView.DispatcherQueue.TryEnqueue(OnReady))
+		{
+			OnReady();
+		}
 	}
 
 
@@ -209,6 +226,12 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 		platformView.SelectionChanged -= PlatformSelectionChanged;
 		platformView.Loaded -= OnPlatformViewLoaded;
 		platformView.ClearValue(WItemsView.SelectionModeProperty);
+		if (platformView is MauiItemsView mauiItemsView && _containerPreparedHandler is not null)
+		{
+			mauiItemsView.ContainerPrepared -= _containerPreparedHandler;
+			_containerPreparedHandler = null;
+		}
+		_selectionUpdateQueued = false;
 
 		if (ItemsView is not null)
 		{
