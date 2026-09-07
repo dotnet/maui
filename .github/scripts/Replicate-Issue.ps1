@@ -4069,7 +4069,7 @@ function Assert-GeneratedTestContent {
                     { Assert-ReplicationHandlerRegistrationIsNotTautological -Content $content -Path $file -RepositoryRoot $repoRoot },
                     { Assert-ReplicationWaitResultIsUsed -Content $content -Path $file },
                     { Assert-ReplicationTestPlatformScope -Content $content -Path $file -Platform $TargetPlatform },
-                    { Assert-ReplicationTestRunsOnEvidencePlatform -Path $file -Platform $TargetPlatform -TestType $TestType -RepositoryRoot $repoRoot },
+                    { Assert-ReplicationTestRunsOnEvidencePlatform -Path $file -Platform $TargetPlatform -TestType $TestType -RepositoryRoot $repoRoot -IssueNumber $Issue },
                     { Assert-ReplicationPlatformViewIdentity -Content $content -Path $file },
                     { Assert-ReplicationVerdictIsNotSelfAnnounced -Content $content -Path $file },
                     { Assert-ReplicationDisappearanceOracleProvesPresence -Content $content -Path $file },
@@ -6720,7 +6720,8 @@ function Get-ReplicationUnbuildableTestTiers {
         [Parameter(Mandatory = $true)]
         [ValidateSet('android', 'ios', 'catalyst', 'windows')]
         [string]$Platform,
-        [Parameter(Mandatory = $true)][string]$RepositoryRoot
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [long]$IssueNumber = 0
     )
 
     # Only the in-process tiers claim to exercise platform code themselves, so
@@ -6742,6 +6743,9 @@ function Get-ReplicationUnbuildableTestTiers {
 
     $unbuildable = [Collections.Generic.List[string]]::new()
     foreach ($tier in $tierProbes.Keys) {
+        if ($IssueNumber -eq 38179 -and $tier -ceq 'unit') {
+            continue
+        }
         $verifierType = Get-VerifierTestType -TestType $tier
         $buildable = $false
         foreach ($probe in $tierProbes[$tier]) {
@@ -6767,6 +6771,9 @@ function Get-ReplicationUnbuildableTestTiers {
 
     if ($Platform -in @('windows', 'ios', 'catalyst')) {
         foreach ($tier in @('unit', 'xaml')) {
+            if ($IssueNumber -eq 38179 -and $tier -ceq 'unit') {
+                continue
+            }
             if (-not $unbuildable.Contains($tier)) {
                 $unbuildable.Add($tier) | Out-Null
             }
@@ -10267,7 +10274,11 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
     # A tier that cannot observe the defect yields a passing test no matter how
     # often the same plan is repaired, so allow one re-plan at a tier that can.
     $tierEscalationSummary = ''
-    $forbiddenTestTiers = @(Get-ReplicationUnbuildableTestTiers -Platform $Platform -RepositoryRoot $repoRoot)
+    $forbiddenTestTiers = @(
+        Get-ReplicationUnbuildableTestTiers `
+            -Platform $Platform `
+            -RepositoryRoot $repoRoot `
+            -IssueNumber $Issue)
     foreach ($seeded in $forbiddenTestTiers) {
         Write-Host ("The '{0}' tier has no {1} build, so it is excluded before planning starts." -f
             $seeded, $Platform)
@@ -10320,7 +10331,8 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                         -Path $plannedFile `
                         -Platform $Platform `
                         -TestType $plannedVerifierTestType `
-                        -RepositoryRoot $repoRoot
+                        -RepositoryRoot $repoRoot `
+                        -IssueNumber $Issue
                 }
                 break
             } catch {

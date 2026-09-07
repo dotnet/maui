@@ -3384,7 +3384,8 @@ function Assert-SourceTextIsSafe {
             -Path $Path `
             -Platform ([string]$Manifest.Platform) `
             -TestType ([string]$Manifest.TestType) `
-            -RepositoryRoot $RepositoryRoot
+            -RepositoryRoot $RepositoryRoot `
+            -IssueNumber ([long]$Manifest.IssueNumber)
         Assert-ReplicationEnvironmentGateSkips `
             -Content $normalized `
             -Path $Path `
