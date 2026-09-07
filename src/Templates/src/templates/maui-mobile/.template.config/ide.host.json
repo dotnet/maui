@@ -28,13 +28,13 @@
     },
     {
       "id": "IncludeSampleContent",
+      "isVisible": false
+    },
+    {
+      "id": "IncludeSampleContentIde",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
-    },
-    {
-      "id": "IncludeSampleContentCli",
-      "isVisible": false
     },
     {
       "id": "WithAvalonia",

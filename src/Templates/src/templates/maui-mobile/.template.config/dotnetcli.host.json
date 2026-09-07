@@ -12,11 +12,11 @@
       "shortName": ""
     },
     "IncludeSampleContent": {
-      "isHidden": true
-    },
-    "IncludeSampleContentCli": {
       "longName": "sample-content",
       "shortName": "sc"
+    },
+    "IncludeSampleContentIde": {
+      "isHidden": true
     },
     "WithAvalonia": {
       "longName": "with-avalonia",

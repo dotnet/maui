@@ -98,7 +98,7 @@
         },
         {
           "id": "sampleContentIgnoredWithCSharpUI",
-          "condition": "(UseCSharpUI && IncludeSampleContentCli)",
+          "condition": "(UseCSharpUI && IncludeSampleContent)",
           "description": "Warning: The sample content option was not applied.",
           "manualInstructions": [
             {
@@ -280,21 +280,21 @@
       "IncludeSampleContent": {
         "type": "parameter",
         "datatype": "bool",
-        "isEnabled": "(UI == \"xaml\")",
         "defaultValue": "false",
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
       },
-      "IncludeSampleContentCli": {
+      "IncludeSampleContentIde": {
         "type": "parameter",
         "datatype": "bool",
+        "isEnabled": "(UI == \"xaml\")",
         "defaultValue": "false",
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
       },
       "EnableSampleContent": {
         "type": "computed",
-        "value": "((IncludeSampleContent || IncludeSampleContentCli) && !UseCSharpUI)"
+        "value": "((IncludeSampleContent || IncludeSampleContentIde) && !UseCSharpUI)"
       },
       "WithAvalonia": {
         "type": "parameter",

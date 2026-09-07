@@ -113,6 +113,75 @@ public class SimpleTemplateTest : BaseTemplateTests
 		AssertIncludesRootGitIgnore(projectDir);
 	}
 
+	[Fact]
+	public void SideBySideTemplateHelpIncludesSampleContentOnce()
+	{
+		var legacyTemplateDir = Path.Combine(TestDirectory, "legacy-template");
+		var legacyTemplateConfigDir = Path.Combine(legacyTemplateDir, ".template.config");
+		var customHive = Path.Combine(TestDirectory, "template-hive");
+		Directory.CreateDirectory(legacyTemplateConfigDir);
+
+		File.WriteAllText(Path.Combine(legacyTemplateConfigDir, "template.json"), """
+			{
+			  "$schema": "http://json.schemastore.org/template",
+			  "author": "Microsoft",
+			  "identity": "Microsoft.Maui.MauiApp.CSharp.10.0",
+			  "groupIdentity": "Microsoft.Maui.App",
+			  "precedence": "10",
+			  "name": ".NET MAUI App",
+			  "shortName": "maui",
+			  "sourceName": "MauiApp.1",
+			  "symbols": {
+			    "IncludeSampleContent": {
+			      "type": "parameter",
+			      "datatype": "bool",
+			      "defaultValue": "false",
+			      "displayName": "_Include sample content",
+			      "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
+			    }
+			  }
+			}
+			""");
+		File.WriteAllText(Path.Combine(legacyTemplateConfigDir, "dotnetcli.host.json"), """
+			{
+			  "$schema": "https://json.schemastore.org/dotnetcli.host",
+			  "symbolInfo": {
+			    "IncludeSampleContent": {
+			      "longName": "sample-content",
+			      "shortName": "sc"
+			    }
+			  }
+			}
+			""");
+		File.WriteAllText(Path.Combine(legacyTemplateDir, "MauiApp.1.csproj"), "<Project />");
+
+		var templatePack = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			".dotnet",
+			"template-packs",
+			$"Microsoft.Maui.Templates.{DotNetCurrent.Split('.')[0]}.{MauiPackageVersion}.nupkg");
+		Assert.True(File.Exists(templatePack), $"Template pack '{templatePack}' does not exist.");
+
+		var installOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"--debug:custom-hive \"{customHive}\" install \"{legacyTemplateDir}\" \"{templatePack}\"",
+			out int installExitCode,
+			output: _output);
+		_output.WriteLine(installOutput);
+		Assert.True(installExitCode == 0, "Unable to install side-by-side template packs.");
+
+		var helpOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"--debug:custom-hive \"{customHive}\" maui --help",
+			out int helpExitCode,
+			output: _output);
+		_output.WriteLine(helpOutput);
+		Assert.True(helpExitCode == 0, "Unable to show side-by-side template help.");
+		AssertContains("--ui", helpOutput);
+		AssertContains("in the XAML experience.", helpOutput);
+		Assert.Equal(1, helpOutput.Split("--sample-content", StringSplitOptions.None).Length - 1);
+	}
+
 	[Theory]
 	[InlineData(DotNetCurrent, "Debug", "", "")]
 	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
