@@ -389,6 +389,10 @@
                                       Condition="'$(UseWindowsCollectionView2Handler)' != ''"
                                       Value="$(UseWindowsCollectionView2Handler)"
                                       Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsiOSShell2HandlerEnabled"
+                                      Condition="'$(UseiOSShell2Handler)' != ''"
+                                      Value="$(UseiOSShell2Handler)"
+                                      Trim="true" />
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled"
                                       Condition="'$(EnableMauiIncrementalHotReload)' != ''"
                                       Value="$(EnableMauiIncrementalHotReload)"
