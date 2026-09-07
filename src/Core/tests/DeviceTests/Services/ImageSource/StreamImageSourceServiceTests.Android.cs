@@ -1,11 +1,10 @@
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Widget;
 using Bumptech.Glide;
+using Bumptech.Glide.Request;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using Color = Microsoft.Maui.Graphics.Color;
@@ -55,115 +54,82 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var expectedColor = Colors.Red.ToPlatform();
 			using var bitmapStream = Assert.IsType<MemoryStream>(CreateBitmapStream(100, 100, expectedColor));
-			using var blockingStream = new BlockingReadStream(bitmapStream.ToArray());
-			var imageSource = new StreamImageSourceStub(blockingStream);
+			using var trackingStream = new TrackingStream(bitmapStream.ToArray());
+			var imageSource = new StreamImageSourceStub(trackingStream);
 			var service = new StreamImageSourceService();
-			using var imageView = new ImageView(MauiProgram.DefaultContext);
-			var unhandledException = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+			using var imageView = new RequestTrackingImageView(MauiProgram.DefaultContext, trackingStream);
 
-			void OnUnhandledException(object sender, RaiseThrowableEventArgs args)
+			await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
 			{
-				if (args.Exception?.ToString().Contains(nameof(BlockingReadStream), StringComparison.Ordinal) == true)
+				var requestManager = Glide.With(imageView);
+				var loadTask = service.LoadDrawableAsync(imageSource, imageView);
+
+				var submission = await imageView.RequestSubmitted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+				var requestManagerStopped = false;
+
+				try
 				{
-					unhandledException.TrySetResult(args.Exception);
-					args.Handled = true;
-				}
-			}
+					Assert.True(submission.SourceDisposed);
+					Assert.True(submission.Request.IsRunning);
 
-			AndroidEnvironment.UnhandledExceptionRaiser += OnUnhandledException;
-
-			try
-			{
-				await InvokeOnMainThreadAsync(() => imageView.AttachAndRun(async () =>
-				{
-					var requestManager = Glide.With(imageView);
-					var loadTask = service.LoadDrawableAsync(imageSource, imageView);
-
-					await blockingStream.ReadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 					requestManager.OnStop();
-
-					blockingStream.ReleaseRead();
-					await blockingStream.ReadCompleted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					requestManagerStopped = true;
+					Assert.False(submission.Request.IsRunning);
 
 					requestManager.OnStart();
-					var completedTask = await Task.WhenAny(loadTask, unhandledException.Task).WaitAsync(TimeSpan.FromSeconds(5));
+					requestManagerStopped = false;
 
-					if (completedTask == unhandledException.Task)
-						Assert.Null(await unhandledException.Task);
-
-					using var result = await loadTask;
+					using var result = await loadTask.WaitAsync(TimeSpan.FromSeconds(5));
 					Assert.NotNull(result);
 
 					var bitmapDrawable = Assert.IsType<BitmapDrawable>(imageView.Drawable);
 					await bitmapDrawable.Bitmap.AssertContainsColor(expectedColor);
-				}));
-			}
-			finally
+				}
+				finally
+				{
+					if (requestManagerStopped)
+						requestManager.OnStart();
+
+					requestManager.Clear(imageView);
+				}
+			}));
+		}
+
+		sealed class RequestTrackingImageView : ImageView
+		{
+			readonly TrackingStream _sourceStream;
+
+			public RequestTrackingImageView(global::Android.Content.Context context, TrackingStream sourceStream)
+				: base(context)
 			{
-				blockingStream.ReleaseRead();
-				AndroidEnvironment.UnhandledExceptionRaiser -= OnUnhandledException;
+				_sourceStream = sourceStream;
+			}
+
+			public TaskCompletionSource<(IRequest Request, bool SourceDisposed)> RequestSubmitted { get; } =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public override void SetTag(int key, Java.Lang.Object tag)
+			{
+				base.SetTag(key, tag);
+
+				if (tag is IRequest request)
+					RequestSubmitted.TrySetResult((request, _sourceStream.IsDisposed));
 			}
 		}
 
-		sealed class BlockingReadStream : MemoryStream
+		sealed class TrackingStream : MemoryStream
 		{
-			readonly TaskCompletionSource _releaseRead = new(TaskCreationOptions.RunContinuationsAsynchronously);
-			int _blockNextRead = 1;
-
-			public BlockingReadStream(byte[] buffer)
+			public TrackingStream(byte[] buffer)
 				: base(buffer)
 			{
 			}
 
-			public TaskCompletionSource ReadStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-			public TaskCompletionSource ReadCompleted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+			public bool IsDisposed { get; private set; }
 
-			public void ReleaseRead() => _releaseRead.TrySetResult();
-
-			public override int Read(byte[] buffer, int offset, int count)
+			protected override void Dispose(bool disposing)
 			{
-				BlockRead();
-
-				try
-				{
-					return base.Read(buffer, offset, count);
-				}
-				finally
-				{
-					ReadCompleted.TrySetResult();
-				}
-			}
-
-			public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-			{
-				await BlockReadAsync(cancellationToken);
-
-				try
-				{
-					await base.CopyToAsync(destination, bufferSize, cancellationToken);
-				}
-				finally
-				{
-					ReadCompleted.TrySetResult();
-				}
-			}
-
-			void BlockRead()
-			{
-				if (Interlocked.Exchange(ref _blockNextRead, 0) == 0)
-					return;
-
-				ReadStarted.TrySetResult();
-				_releaseRead.Task.GetAwaiter().GetResult();
-			}
-
-			async Task BlockReadAsync(CancellationToken cancellationToken)
-			{
-				if (Interlocked.Exchange(ref _blockNextRead, 0) == 0)
-					return;
-
-				ReadStarted.TrySetResult();
-				await _releaseRead.Task.WaitAsync(cancellationToken);
+				IsDisposed = true;
+				base.Dispose(disposing);
 			}
 		}
 	}
