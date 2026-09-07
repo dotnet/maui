@@ -478,12 +478,22 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
     if (-not $VerifyOnly) {
         & $invoke @('-s', $DeviceUdid, 'root') 'restart adb as root' | Out-Null
         & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the rooted emulator' | Out-Null
-        & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
-            'enable airplane mode' | Out-Null
-        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
-            'disable guest Wi-Fi' | Out-Null
-        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
-            'disable guest mobile data' | Out-Null
+        $currentAirplane = ([string](& $invoke @(
+            '-s', $DeviceUdid, 'shell', 'settings', 'get', 'global',
+            'airplane_mode_on'
+        ) 'inspect airplane mode').Output).Trim()
+        if ($currentAirplane -cne '1') {
+            & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
+                'enable airplane mode' | Out-Null
+            & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
+                'disable guest Wi-Fi' | Out-Null
+            & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
+                'disable guest mobile data' | Out-Null
+            # Android's network daemon rebuilds OUTPUT asynchronously after a
+            # connectivity-state change. Install the trusted chain only after
+            # that transition settles so it remains present through build/run.
+            Start-Sleep -Seconds 5
+        }
     }
 
     $chain = 'MAUI_REPLICATION'
@@ -495,6 +505,12 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
             if ($VerifyOnly) {
                 throw "Android guest network isolation lost the $tool OUTPUT chain."
             }
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-F', $chain
+            ) "flush a stale $tool isolation chain" -AllowFailure | Out-Null
+            & $invoke @(
+                '-s', $DeviceUdid, 'shell', $tool, '-X', $chain
+            ) "remove a stale $tool isolation chain" -AllowFailure | Out-Null
             & $invoke @(
                 '-s', $DeviceUdid, 'shell', $tool, '-N', $chain
             ) "create the $tool isolation chain" | Out-Null
