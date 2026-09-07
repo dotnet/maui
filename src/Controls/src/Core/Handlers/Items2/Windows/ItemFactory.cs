@@ -155,6 +155,9 @@ internal partial class ItemFactory(ItemsView view) : IElementFactory
 
 				if (wrapper.VirtualView is View semanticView)
 				{
+					container.ClearValue(WAutomationProperties.NameProperty);
+					container.ClearValue(WAutomationProperties.HelpTextProperty);
+					container.ClearValue(WAutomationProperties.HeadingLevelProperty);
 					container.UpdateSemantics(semanticView);
 					if (string.IsNullOrWhiteSpace(((IView)semanticView).Semantics?.Description))
 					{
