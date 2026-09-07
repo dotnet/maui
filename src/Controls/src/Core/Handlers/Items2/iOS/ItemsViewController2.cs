@@ -284,7 +284,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
 
-			if (CollectionView.ContentOffset != contentOffset)
+			// UIKit already preserves scrolled content when replacing the layout.
+			// Only restore the offset at the origin, where self-sizing can shift the first item out of view.
+			if (contentOffset == CGPoint.Empty && CollectionView.ContentOffset != contentOffset)
 			{
 				(Delegator as IScrollTrackingDelegator)?.ResetScrollTracking();
 				CollectionView.ContentOffset = contentOffset;
