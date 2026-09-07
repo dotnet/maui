@@ -760,13 +760,35 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
             $text = $Arguments -join ' '
             $calls.Add($text)
             if ($text -match 'settings get global airplane_mode_on$') {
-                return [pscustomobject]@{ ExitCode = 0; Output = '1' }
+                $airplaneReads = @($calls | Where-Object {
+                        $_ -match 'settings get global airplane_mode_on$'
+                    }).Count
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = $(if ($airplaneReads -eq 1) { '0' } else { '1' })
+                }
             }
             if ($text -match ' route show default$') {
                 return [pscustomobject]@{ ExitCode = 0; Output = '' }
             }
+            if ($text -match ' (?<tool>ip6tables|iptables) -D OUTPUT ') {
+                return [pscustomobject]@{ ExitCode = 1; Output = '' }
+            }
+            if ($text -match ' (?<tool>ip6tables|iptables) -F MAUI_REPLICATION$') {
+                return [pscustomobject]@{ ExitCode = 1; Output = '' }
+            }
             if ($text -match ' (?<tool>ip6tables|iptables) -I OUTPUT ') {
                 $installed[$Matches['tool']] = $true
+            }
+            if ($text -match ' (?<tool>ip6tables|iptables) -S OUTPUT$') {
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = $(if ($installed.ContainsKey($Matches['tool'])) {
+                        "-P OUTPUT ACCEPT`n-A OUTPUT -j MAUI_REPLICATION"
+                    } else {
+                        '-P OUTPUT ACCEPT'
+                    })
+                }
             }
             if ($text -match ' (?<tool>ip6tables|iptables) -C OUTPUT ' -and
                 -not $installed.ContainsKey($Matches['tool'])) {
@@ -777,7 +799,8 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
 
         $result = Assert-ReplicationAndroidGuestNetworkIsolation `
             -DeviceUdid emulator-5554 `
-            -AdbInvoker $invoker
+            -AdbInvoker $invoker `
+            -SleepInvoker { param([int]$Seconds) }
 
         $result.NewConnectionsDenied | Should -BeTrue
         $joined = $calls -join "`n"
@@ -787,6 +810,54 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
         $joined | Should -Match 'ip -4 route show default'
         $joined | Should -Match 'ip -6 route show default'
         $joined | Should -Match 'connectivity airplane-mode enable'
+        $joined | Should -Match 'svc wifi disable'
+        $joined | Should -Match 'svc data disable'
+        $joined | Should -Match 'iptables -D OUTPUT -j MAUI_REPLICATION'
+        $joined | Should -Match 'iptables -I OUTPUT 1 -j MAUI_REPLICATION'
+    }
+
+    It 'reasserts each radio boundary when airplane mode is already enabled' {
+        $calls = [Collections.Generic.List[string]]::new()
+        $installed = @{
+            iptables = $true
+            ip6tables = $true
+        }
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            $calls.Add($text)
+            if ($text -match 'settings get global airplane_mode_on$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '1' }
+            }
+            if ($text -match ' route show default$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '' }
+            }
+            if ($text -match ' (?<tool>ip6tables|iptables) -D OUTPUT ') {
+                if ($installed[$Matches['tool']]) {
+                    $installed[$Matches['tool']] = $false
+                    return [pscustomobject]@{ ExitCode = 0; Output = '' }
+                }
+                return [pscustomobject]@{ ExitCode = 1; Output = '' }
+            }
+            if ($text -match ' (?<tool>ip6tables|iptables) -I OUTPUT ') {
+                $installed[$Matches['tool']] = $true
+            }
+            if ($text -match ' (?<tool>ip6tables|iptables) -S OUTPUT$') {
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = "-P OUTPUT ACCEPT`n-A OUTPUT -j MAUI_REPLICATION"
+                }
+            }
+            return [pscustomobject]@{ ExitCode = 0; Output = '' }
+        }.GetNewClosure()
+
+        Assert-ReplicationAndroidGuestNetworkIsolation `
+            -DeviceUdid emulator-5554 `
+            -AdbInvoker $invoker `
+            -SleepInvoker { param([int]$Seconds) } | Out-Null
+
+        $joined = $calls -join "`n"
+        $joined | Should -Not -Match 'connectivity airplane-mode enable'
         $joined | Should -Match 'svc wifi disable'
         $joined | Should -Match 'svc data disable'
     }
@@ -801,6 +872,15 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
             if ($text -match ' route show default$') {
                 return [pscustomobject]@{ ExitCode = 0; Output = 'default via 10.0.2.2 dev eth0' }
             }
+            if ($text -match ' (?:ip6tables|iptables) -D OUTPUT ') {
+                return [pscustomobject]@{ ExitCode = 1; Output = '' }
+            }
+            if ($text -match ' (?:ip6tables|iptables) -S OUTPUT$') {
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = "-P OUTPUT ACCEPT`n-A OUTPUT -j MAUI_REPLICATION"
+                }
+            }
             if ($text -match ' (?:ip6tables|iptables) -C OUTPUT ') {
                 return [pscustomobject]@{ ExitCode = 0; Output = '' }
             }
@@ -810,7 +890,8 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
         {
             Assert-ReplicationAndroidGuestNetworkIsolation `
                 -DeviceUdid emulator-5554 `
-                -AdbInvoker $invoker
+                -AdbInvoker $invoker `
+                -SleepInvoker { param([int]$Seconds) }
         } | Should -Throw '*left an IPv4 default route*'
     }
 
@@ -830,6 +911,109 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
                 -AdbInvoker $invoker `
                 -VerifyOnly
         } | Should -Throw '*lost the iptables OUTPUT chain*'
+    }
+
+    It 'fails closed when an earlier OUTPUT rule bypasses the isolation jump' {
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            if ($text -match ' (?:ip6tables|iptables) -S OUTPUT$') {
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = (
+                        "-P OUTPUT ACCEPT`n" +
+                        "-A OUTPUT -d 10.0.2.2/32 -j ACCEPT`n" +
+                        "-A OUTPUT -j MAUI_REPLICATION")
+                }
+            }
+            if ($text -match ' route show default$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '' }
+            }
+            return [pscustomobject]@{ ExitCode = 0; Output = '1' }
+        }
+
+        {
+            Assert-ReplicationAndroidGuestNetworkIsolation `
+                -DeviceUdid emulator-5554 `
+                -AdbInvoker $invoker `
+                -VerifyOnly
+        } | Should -Throw '*unique first rule*'
+    }
+}
+
+Describe 'Preinstalling Android Appium helpers before isolation' {
+    It 'installs the exact trusted helper set and verifies every package' {
+        $appiumHome = Join-Path $TestDrive '.appium'
+        $modules = Join-Path $appiumHome (
+            'node_modules/appium-uiautomator2-driver/node_modules')
+        $server = Join-Path $modules 'appium-uiautomator2-server/apks'
+        $settings = Join-Path $modules 'io.appium.settings/apks'
+        New-Item -ItemType Directory -Path $server, $settings -Force |
+            Out-Null
+        foreach ($path in @(
+            (Join-Path $server 'appium-uiautomator2-server-v7.4.1.apk'),
+            (Join-Path $server 'appium-uiautomator2-server-debug-androidTest.apk'),
+            (Join-Path $settings 'settings_apk-debug.apk')
+        )) {
+            Set-Content -LiteralPath $path -Value 'trusted apk'
+        }
+        $calls = [Collections.Generic.List[string]]::new()
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            $calls.Add($text)
+            [pscustomobject]@{
+                ExitCode = 0
+                Output = $(if ($text -match ' shell pm path ') {
+                    'package:/data/app/trusted/base.apk'
+                } else {
+                    'Success'
+                })
+            }
+        }.GetNewClosure()
+
+        $result = Install-ReplicationAndroidAppiumHelpers `
+            -DeviceUdid emulator-5554 `
+            -AppiumHome $appiumHome `
+            -AdbInvoker $invoker
+
+        $result.PackageCount | Should -Be 3
+        @($calls | Where-Object { $_ -match ' install -r -t ' }).Count |
+            Should -Be 3
+        @($calls | Where-Object { $_ -match ' shell pm path ' }).Count |
+            Should -Be 3
+    }
+
+    It 'fails closed when a helper package cannot be verified' {
+        $appiumHome = Join-Path $TestDrive '.appium-failure'
+        $modules = Join-Path $appiumHome (
+            'node_modules/appium-uiautomator2-driver/node_modules')
+        $server = Join-Path $modules 'appium-uiautomator2-server/apks'
+        $settings = Join-Path $modules 'io.appium.settings/apks'
+        New-Item -ItemType Directory -Path $server, $settings -Force |
+            Out-Null
+        foreach ($path in @(
+            (Join-Path $server 'appium-uiautomator2-server-v7.4.1.apk'),
+            (Join-Path $server 'appium-uiautomator2-server-debug-androidTest.apk'),
+            (Join-Path $settings 'settings_apk-debug.apk')
+        )) {
+            Set-Content -LiteralPath $path -Value 'trusted apk'
+        }
+        $invoker = {
+            param([string[]]$Arguments)
+            [pscustomobject]@{
+                ExitCode = $(if (($Arguments -join ' ') -match
+                    ' shell pm path io\.appium\.settings$') { 1 } else { 0 })
+                Output = ''
+            }
+        }
+
+        {
+            Install-ReplicationAndroidAppiumHelpers `
+                -DeviceUdid emulator-5554 `
+                -AppiumHome $appiumHome `
+                -AdbInvoker $invoker
+        } | Should -Throw "*'io.appium.settings' was not installed*"
     }
 }
 

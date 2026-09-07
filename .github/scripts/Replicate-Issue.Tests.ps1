@@ -3712,6 +3712,9 @@ InitializeComponent();
         Copy-Item `
             -LiteralPath (Join-Path $PSScriptRoot 'shared/Assert-ReplicationAppleAppSandbox.ps1') `
             -Destination (Join-Path $trustedShared 'Assert-ReplicationAppleAppSandbox.ps1')
+        Copy-Item `
+            -LiteralPath (Join-Path $PSScriptRoot 'shared/Assert-ReplicationExecutionEnvironment.ps1') `
+            -Destination (Join-Path $trustedShared 'Assert-ReplicationExecutionEnvironment.ps1')
         @'
 param(
     [string]$Platform,
@@ -7708,6 +7711,35 @@ Describe 'android launch is a cold start' {
         $stop | Should -BeLessThan $start
     }
 
+    It 'installs without launching and reestablishes isolation at the launch boundary' {
+        $deploy = $script:BuildSource.IndexOf(
+            '& "$PSScriptRoot/shared/Build-AndDeploy.ps1"')
+        $isolate = $script:BuildSource.IndexOf(
+            'Assert-ReplicationAndroidGuestNetworkIsolation',
+            $deploy)
+        $prepareOnly = $script:BuildSource.IndexOf(
+            'if ($PrepareOnly)',
+            $isolate)
+        $launchOnly = $script:BuildSource.IndexOf(
+            'if ($LaunchOnly)',
+            $prepareOnly)
+
+        $deploy | Should -BeGreaterThan 0
+        $isolate | Should -BeGreaterThan $deploy
+        $prepareOnly | Should -BeGreaterThan $isolate
+        $launchOnly | Should -BeGreaterThan $prepareOnly
+        $script:BuildSource.IndexOf(
+            'Install-ReplicationAndroidAppiumHelpers',
+            $deploy) | Should -BeLessThan $isolate
+        $script:BuildDeploySource | Should -Match (
+            "(?s)if \(\`$EnforceNetworkIsolation\).*?'-t:Install'.*?" +
+            "else \{.*?'-t:Run'")
+        $script:TrustedAppiumSource |
+            Should -Match '"appium:skipServerInstallation", true'
+        $script:TrustedAppiumSource |
+            Should -Match '"appium:skipDeviceInitialization", true'
+    }
+
     It 'leaves the iOS cold start alone' {
         $script:BuildSource.Contains('simctl launch --terminate-running-process') | Should -BeTrue
     }
@@ -9649,6 +9681,60 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     }
 }
 '@
+        $script:TrustedWindowsWindowHelperBase = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    public async Task Reproduces()
+    {
+        var expectedRed = Colors.Red;
+        var affectedLabel = new Label
+        {
+            Background = Colors.Transparent
+        };
+        var labelHost = new VerticalStackLayout
+        {
+            Children = { affectedLabel }
+        };
+        var contentPage = new ContentPage
+        {
+            Content = labelHost
+        };
+        contentPage.Resources["backgroundColor"] = expectedRed;
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedLabel.SetDynamicResource(
+                Label.BackgroundProperty,
+                "backgroundColor");
+        }
+        else
+        {
+            affectedLabel.Background = expectedRed;
+        }
+
+        await CreateHandlerAndAddToWindow<
+            global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+            new Window(contentPage),
+            async _ =>
+            {
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+                labelHost.Children.Add(affectedLabel);
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                Assert.True(
+                    affectedLabel.Background is SolidColorBrush finalBrush &&
+                    finalBrush.Color == expectedRed);
+            });
+    }
+}
+'@
     }
 
     AfterAll {
@@ -9745,7 +9831,8 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         {
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
-                -Edits @($script:GateEdit)
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
         } | Should -Not -Throw
 
         $postGateMutation = $baseline.Replace(
@@ -9757,7 +9844,8 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         {
             New-ReplicationControlVariant `
                 -BaselineSource $postGateMutation `
-                -Edits @($script:GateEdit)
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
         } | Should -Throw '*no trusted assertion after the trigger*'
 
         $postGateIncrement = $baseline.Replace(
@@ -9769,9 +9857,355 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         {
             New-ReplicationControlVariant `
                 -BaselineSource $postGateIncrement `
-                -Edits @($script:GateEdit)
+                -Edits @($script:GateEdit) `
+                -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
         } | Should -Throw '*no trusted assertion after the trigger*'
 
+    }
+
+    It 'allows the empirically captured Windows reload helper shape' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedWindowsWindowHelperBase `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects an unreachable Windows reload helper' {
+        $candidate = $script:TrustedWindowsWindowHelperBase.Replace(
+            '        await CreateHandlerAndAddToWindow<',
+            @'
+        if (false)
+        {
+            await CreateHandlerAndAddToWindow<
+'@).Replace(
+            @'
+            });
+    }
+}
+'@,
+            @'
+            });
+        }
+    }
+}
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $candidate `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*top-level selected-method statement*'
+    }
+
+    It 'rejects a vacuous or conditionally skipped Windows readiness wait' {
+        $vacuous = $script:TrustedWindowsWindowHelperBase.Replace(
+            '() => affectedLabel.Handler != null && affectedLabel.IsLoaded',
+            '() => true')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $vacuous `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*must be exactly the conjunction*'
+
+        $nested = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+'@,
+            @'
+                if (false)
+                {
+                    await AssertEventually(
+                        () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nested `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*may not branch, loop*'
+
+        $tautological = $script:TrustedWindowsWindowHelperBase.Replace(
+            '() => affectedLabel.Handler != null && affectedLabel.IsLoaded',
+            '() => affectedLabel.Handler == null || affectedLabel.Handler != null || affectedLabel.IsLoaded')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $tautological `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*must be exactly the conjunction*'
+    }
+
+    It 'rejects an incidental affected-control reference as Window ownership' {
+        $candidate = $script:TrustedWindowsWindowHelperBase.Replace(
+            '        var labelHost = new VerticalStackLayout',
+            @'
+        var decoy = new Label();
+        var labelHost = new VerticalStackLayout
+'@).Replace(
+            '            Children = { affectedLabel }',
+            '            Children = { affectedLabel.IsVisible ? decoy : decoy }')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $candidate `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*must initially be one direct child*'
+    }
+
+    It 'requires the Windows reload callback to execute in causal order' {
+        $earlyReturn = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+            {
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@,
+            @'
+            {
+                if (affectedLabel.IsVisible)
+                {
+                    return;
+                }
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $earlyReturn `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*may not return, yield, jump, or throw*'
+
+        $nonTerminating = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+            {
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@,
+            @'
+            {
+                while (true) { }
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nonTerminating `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*may not branch, loop*'
+
+        $preemptive = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+            {
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@,
+            @'
+            {
+                Assert.True(false);
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $preemptive `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*assert one successful removal*'
+
+        $reversed = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+                labelHost.Children.Add(affectedLabel);
+'@,
+            @'
+                labelHost.Children.Add(affectedLabel);
+                Assert.True(labelHost.Children.Remove(affectedLabel));
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $reversed `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*assert one successful removal*'
+
+        $unchecked = $script:TrustedWindowsWindowHelperBase.Replace(
+            'Assert.True(labelHost.Children.Remove(affectedLabel));',
+            'Assert.False(labelHost.Children.Remove(affectedLabel));')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $unchecked `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*assert one successful removal*'
+    }
+
+    It 'requires a page resource and a distinct initial Background' {
+        $localResource = $script:TrustedWindowsWindowHelperBase.Replace(
+            'contentPage.Resources["backgroundColor"] = expectedRed;',
+            'affectedLabel.Resources["backgroundColor"] = expectedRed;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $localResource `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*dynamic-resource key must be mapped exactly once*'
+
+        $preSatisfied = $script:TrustedWindowsWindowHelperBase.Replace(
+            'var expectedRed = Colors.Red;',
+            'var expectedRed = Colors.Transparent;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $preSatisfied `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*Background exactly Transparent*distinct Red value*'
+
+        $firstAttachment = $script:TrustedWindowsWindowHelperBase.Replace(
+            '            Children = { affectedLabel }',
+            '            Children = { new Label() }')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $firstAttachment `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*must initially be one direct child*'
+
+        $postConstructionWrite =
+            $script:TrustedWindowsWindowHelperBase.Replace(
+                @'
+        await CreateHandlerAndAddToWindow<
+'@,
+                @'
+        affectedLabel.Background = expectedRed;
+        await CreateHandlerAndAddToWindow<
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $postConstructionWrite `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*Background may be written only*'
+
+        $aliasWrite = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+        await CreateHandlerAndAddToWindow<
+'@,
+            @'
+        var affectedAlias = affectedLabel;
+        affectedAlias.Background = expectedRed;
+        await CreateHandlerAndAddToWindow<
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasWrite `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*Background may be written only*'
+
+        $conditionalAliasWrite =
+            $script:TrustedWindowsWindowHelperBase.Replace(
+                @'
+        await CreateHandlerAndAddToWindow<
+'@,
+                @'
+        var affectedAlias = true ? affectedLabel : affectedLabel;
+        affectedAlias.Background = expectedRed;
+        await CreateHandlerAndAddToWindow<
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $conditionalAliasWrite `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*Background may be written only*'
+    }
+
+    It 'rejects unrelated trigger semantics in the Issue37540 helper path' {
+        $candidate = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+        if (applyReportedTrigger)
+        {
+            affectedLabel.SetDynamicResource(
+                Label.BackgroundProperty,
+                "backgroundColor");
+        }
+        else
+        {
+            affectedLabel.Background = expectedRed;
+        }
+'@,
+            @'
+        if (applyReportedTrigger)
+        {
+            affectedLabel.IsVisible = false;
+        }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $candidate `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*exact SetDynamicResource Background trigger*'
+    }
+
+    It 'rejects extra lifecycle or content mutations after readiness' {
+        $extraLifecycle = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+'@,
+            @'
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                if (affectedLabel.IsVisible)
+                {
+                    labelHost.Children.Remove(affectedLabel);
+                    labelHost.Children.Add(affectedLabel);
+                }
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $extraLifecycle `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*may not branch, loop*'
+
+        $contentReplacement = $script:TrustedWindowsWindowHelperBase.Replace(
+            @'
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+'@,
+            @'
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                contentPage.Content = new Label();
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $contentReplacement `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs'
+        } | Should -Throw '*may not replace Content*'
     }
 
     It 'allows the immutable AssertEventually boolean helper for the Catalyst Issue35511 observation' {
@@ -18088,7 +18522,9 @@ Describe 'A tier the repository rules out is never offered' {
 
     It 'is seeded before the first plan attempt, not after the first refusal' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
-        $seed = [regex]::Match($source, '\$forbiddenTestTiers = @\(([^\r\n]*)\)')
+        $seed = [regex]::Match(
+            $source,
+            '(?s)\$forbiddenTestTiers\s*=\s*@\((.*?)\)\s*\r?\n\s*foreach')
         $seed.Success | Should -BeTrue
         $seed.Groups[1].Value | Should -Match 'Get-ReplicationUnbuildableTestTiers'
 

@@ -3961,6 +3961,7 @@ namespace Microsoft.Maui.Controls
     public class SolidColorBrush : Brush
     {
         public SolidColorBrush(global::Microsoft.Maui.Graphics.Color color) { }
+        public global::Microsoft.Maui.Graphics.Color Color { get; }
     }
     public class BindableObject
     {
@@ -3973,8 +3974,10 @@ namespace Microsoft.Maui.Controls
     }
     public class VisualElement : Element
     {
+        public string AutomationId { get; set; }
         public object Background { get; set; }
         public static BindableProperty BackgroundProperty { get; }
+        public bool IsLoaded { get; }
         public bool IsVisible { get; set; }
     }
     public class View : VisualElement { }
@@ -3991,13 +3994,20 @@ namespace Microsoft.Maui.Controls
     {
         public static BindableProperty BackgroundColorProperty { get; }
         public static BindableProperty TextColorProperty { get; }
+        public double FontSize { get; set; }
         public int MaxLines { get; set; }
+        public double Padding { get; set; }
         public string Text { get; set; }
     }
 
     public class Button : View
     {
         public string Text { get; set; }
+    }
+
+    public class ScrollView : View
+    {
+        public View Content { get; set; }
     }
 
     public class NavigationPage : Page
@@ -4141,7 +4151,13 @@ namespace Microsoft.Maui
 
 namespace Microsoft.Maui.Graphics
 {
-    public struct Color { }
+    public struct Color
+    {
+        public static bool operator ==(Color left, Color right) => false;
+        public static bool operator !=(Color left, Color right) => true;
+        public override bool Equals(object value) => false;
+        public override int GetHashCode() => 0;
+    }
     public static class Colors
     {
         public static Color Red { get; }
@@ -4268,8 +4284,41 @@ namespace UIKit
     }
 }
 
+namespace Windows.UI
+{
+    public struct Color
+    {
+        public byte A { get; }
+        public byte B { get; }
+        public byte G { get; }
+        public byte R { get; }
+    }
+}
+
+namespace Microsoft.UI.Xaml.Media
+{
+    public class SolidColorBrush
+    {
+        public global::Windows.UI.Color Color { get; }
+    }
+}
+
+namespace Microsoft.UI.Xaml.Controls
+{
+    public class TextBlock
+    {
+        public object Background { get; }
+    }
+}
+
 namespace Microsoft.Maui.Platform
 {
+    public static class ColorExtensions
+    {
+        public static global::Windows.UI.Color ToWindowsColor(
+            this global::Microsoft.Maui.Graphics.Color color) => default;
+    }
+
     public static class ViewExtensions
     {
         public static T FindDescendantView<T>(this UIKit.UIView view)
@@ -5794,10 +5843,11 @@ function New-ReplicationControlVariant {
             [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
             if ($Expression.RawKind -notin @(
                     [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::TrueLiteralExpression,
-                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::FalseLiteralExpression)) {
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::FalseLiteralExpression,
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NullLiteralExpression)) {
                 throw (
                     'The trusted AssertEventually predicate permits only boolean ' +
-                    'literals.')
+                    'or null literals.')
             }
             return
         }
@@ -5920,6 +5970,20 @@ function New-ReplicationControlVariant {
         [Collections.Generic.HashSet[int]]::new()
     $acceptedTrustedWindowHelperInvocations =
         [Collections.Generic.HashSet[int]]::new()
+    $acceptedExternalWindowHelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedExternalWindowCallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedExternalWindowCallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
+    $trustedExternalWindowCallbackReadinessPredicates =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedExternalWindowCallbackLifecycleInvocations =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedExternalWindowCallbackLifecycleOwners =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedExternalWindowContentSymbols =
+        [Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
     $acceptedTrustedBackTitleSetups =
         [Collections.Generic.HashSet[int]]::new()
     $trustedWindowCallbackBodies =
@@ -7546,7 +7610,347 @@ function New-ReplicationControlVariant {
             @($awaitedMethod.Locations | Where-Object {
                     $_.IsInSource
                 }).Count -eq 0
-        if (-not $isTrustedExternalAwait) {
+        $trustedExternalWindowHelper = if (
+            $Platform -ceq 'windows' -and
+            $SourcePath.Replace('\', '/') -ceq
+                'src/Controls/tests/DeviceTests/Elements/Label/Issue37540Tests.Windows.cs' -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            -not $requiresCatalystWindowContract -and
+            (& $isExactTrustedWindowHelperMethod -Method $awaitedMethod)) {
+            $awaitedMethod
+        }
+        if ($null -ne $trustedExternalWindowHelper) {
+            $externalStatement = $awaitExpression.Parent
+            if ($externalStatement -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+                $externalStatement.Expression -ne $awaitExpression -or
+                $externalStatement.Parent -ne $testMethod[0].Body -or
+                $externalStatement.SpanStart -le $gate.Span.End) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $awaitedExpression `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows helper must be directly awaited as one ' +
+                        'top-level selected-method statement after the reported-trigger gate.')
+            }
+            $externalArguments = $awaitedExpression.ArgumentList.Arguments
+            $externalWindowCreation = if ($externalArguments.Count -eq 2) {
+                $externalArguments[0].Expression
+            }
+            $externalCallback = if ($externalArguments.Count -eq 2) {
+                $externalArguments[1].Expression
+            }
+            if ($externalArguments.Count -ne 2 -or
+                @($externalArguments | Where-Object {
+                        $_.RefKindKeyword.RawKind -ne 0 -or
+                        $null -ne $_.NameColon
+                    }).Count -ne 0 -or
+                $externalWindowCreation -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                $externalCallback -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+                $externalCallback.AsyncKeyword.RawKind -eq 0 -or
+                $externalCallback.Body -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $awaitedExpression `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows helper requires direct new Window(page) and one ' +
+                        'async block callback; named/ref arguments and callback indirection ' +
+                        'are not trusted.')
+            }
+            $externalCallbackEscapes = @(
+                $externalCallback.Body.DescendantNodes() |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowExpressionSyntax]
+                    })
+            if ($externalCallbackEscapes.Count -ne 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $externalCallbackEscapes[0] `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows callback may not return, yield, jump, or throw ' +
+                        'around its required lifecycle, readiness wait, and oracle.') `
+                    -Callback
+            }
+            $externalCallbackControlFlow = @(
+                $externalCallback.Body.DescendantNodes() |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ForStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachVariableStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.WhileStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.DoStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.SwitchStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.TryStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.LockStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.UsingStatementSyntax] -or
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax]
+                    })
+            if ($externalCallbackControlFlow.Count -ne 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $externalCallbackControlFlow[0] `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows callback may not branch, loop, catch, lock, ' +
+                        'dispose, or declare local functions around its causal sequence.') `
+                    -Callback
+            }
+            $externalWindowConstructor =
+                $semanticModel.GetSymbolInfo($externalWindowCreation).Symbol
+            $externalWindowContent =
+                $externalWindowCreation.ArgumentList.Arguments[0].Expression
+            $externalWindowContentSymbol =
+                $semanticModel.GetSymbolInfo($externalWindowContent).Symbol
+            $externalWindowContentType =
+                $semanticModel.GetTypeInfo($externalWindowContent).Type
+            $externalWindowContentDeclarations = @(if (
+                $externalWindowContentSymbol -is
+                    [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                $externalWindowContentSymbol.DeclaringSyntaxReferences |
+                    ForEach-Object {
+                        $_.GetSyntax([Threading.CancellationToken]::None)
+                    } |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                        $null -ne $_.Initializer
+                    }
+            })
+            if ($externalWindowCreation.ArgumentList.Arguments.Count -ne 1 -or
+                $null -ne $externalWindowCreation.Initializer -or
+                $externalWindowConstructor -isnot
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $externalWindowConstructor.MethodKind -ne
+                    [Microsoft.CodeAnalysis.MethodKind]::Constructor -or
+                $externalWindowConstructor.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $externalWindowConstructor.ContainingType.ToString() -cne
+                    'Microsoft.Maui.Controls.Window' -or
+                $externalWindowConstructor.Parameters.Length -ne 1 -or
+                $externalWindowConstructor.Parameters[0].Type.ToString() -cne
+                    'Microsoft.Maui.Controls.Page' -or
+                $externalWindowContent -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                $externalWindowContentSymbol -isnot
+                    [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                $externalWindowContentType.ToString() -cne
+                    'Microsoft.Maui.Controls.ContentPage' -or
+                $externalWindowContentType.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $externalWindowContentDeclarations.Count -ne 1 -or
+                $externalWindowContentDeclarations[0].SpanStart -ge $gate.SpanStart) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $externalWindowCreation `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows helper must receive direct new Window(contentPage), ' +
+                        'where contentPage is one stable pre-gate external ContentPage local.')
+            }
+            [void]$acceptedExternalWindowHelperInvocations.Add(
+                $awaitedExpression.SpanStart)
+            [void]$trustedExternalWindowCallbackBodies.Add(
+                $externalCallback.Body.SpanStart)
+            $externalCallbackAwaitExpressions = @(
+                $externalCallback.Body.Statements |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+                        $_.Expression -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]
+                    } |
+                    ForEach-Object {
+                        $_.Expression
+                    })
+            $externalReadinessAwait = if (
+                $externalCallbackAwaitExpressions.Count -eq 1) {
+                $externalCallbackAwaitExpressions[0]
+            }
+            $externalReadinessInvocation = if (
+                $null -ne $externalReadinessAwait -and
+                $externalReadinessAwait.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                $externalReadinessAwait.Expression
+            }
+            $externalReadinessMethod = if (
+                $null -ne $externalReadinessInvocation) {
+                $semanticModel.GetSymbolInfo($externalReadinessInvocation).Symbol
+            }
+            $externalReadinessPredicate = if (
+                $null -ne $externalReadinessInvocation -and
+                $externalReadinessInvocation.ArgumentList.Arguments.Count -eq 1) {
+                $externalReadinessInvocation.ArgumentList.Arguments[0].Expression
+            }
+            if ($externalCallbackAwaitExpressions.Count -ne 1 -or
+                $externalReadinessMethod -isnot
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $null -eq $trustedAssertEventuallyMethod -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $externalReadinessMethod,
+                    $trustedAssertEventuallyMethod) -or
+                $externalReadinessPredicate -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedLambdaExpressionSyntax] -or
+                $externalReadinessPredicate.AsyncKeyword.RawKind -ne 0 -or
+                $externalReadinessPredicate.ParameterList.Parameters.Count -ne 0 -or
+                $externalReadinessPredicate.Body -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $externalCallback `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows callback must contain exactly one direct await of ' +
+                        'the immutable AssertEventually pure predicate before its oracle.') `
+                    -Callback
+            }
+            & $validateEventuallyPredicateExpression `
+                -Expression $externalReadinessPredicate.Body
+            $externalLifecycleCalls = @(
+                $externalCallback.Body.DescendantNodes() |
+                    Where-Object {
+                        if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                            return $false
+                        }
+                        $name = & $getInvocationName -Invocation $_
+                        if ($name -cnotin @('Add', 'Remove')) {
+                            return $false
+                        }
+                        $statement = @($_.Ancestors() | Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]
+                            } | Select-Object -First 1)
+                        return (
+                            $statement.Count -eq 1 -and
+                            $statement[0].Parent -eq $externalCallback.Body)
+                    })
+            $externalRemoveCalls = @($externalLifecycleCalls |
+                Where-Object {
+                    (& $getInvocationName -Invocation $_) -ceq 'Remove'
+                })
+            $externalAddCalls = @($externalLifecycleCalls |
+                Where-Object {
+                    (& $getInvocationName -Invocation $_) -ceq 'Add'
+                })
+            $externalRemoveAssertion = @(if (
+                $externalRemoveCalls.Count -eq 1) {
+                $externalRemoveCalls[0].Ancestors() | Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                    } | Select-Object -First 1
+            })
+            $externalRemoveAssertionMethod = if (
+                $externalRemoveAssertion.Count -eq 1) {
+                $semanticModel.GetSymbolInfo($externalRemoveAssertion[0]).Symbol
+            }
+            $externalStatements = @($externalCallback.Body.Statements)
+            $externalRemoveStatementIndex = -1
+            $externalAddStatementIndex = -1
+            $externalReadinessStatementIndex = -1
+            for ($statementIndex = 0;
+                $statementIndex -lt $externalStatements.Count;
+                $statementIndex++) {
+                $statement = $externalStatements[$statementIndex]
+                if ($externalRemoveAssertion.Count -eq 1 -and
+                    $statement.Span.Contains(
+                        $externalRemoveAssertion[0].Span)) {
+                    $externalRemoveStatementIndex = $statementIndex
+                }
+                if ($externalAddCalls.Count -eq 1 -and
+                    $statement.Span.Contains($externalAddCalls[0].Span)) {
+                    $externalAddStatementIndex = $statementIndex
+                }
+                if ($statement.Span.Contains(
+                    $externalReadinessAwait.Span)) {
+                    $externalReadinessStatementIndex = $statementIndex
+                }
+            }
+            $externalPrefixIsDeclarations =
+                $externalRemoveStatementIndex -ge 0
+            for ($statementIndex = 0;
+                $statementIndex -lt $externalRemoveStatementIndex;
+                $statementIndex++) {
+                if ($externalStatements[$statementIndex] -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax]) {
+                    $externalPrefixIsDeclarations = $false
+                    break
+                }
+            }
+            if ($externalRemoveCalls.Count -ne 1 -or
+                $externalAddCalls.Count -ne 1 -or
+                $externalRemoveCalls[0].SpanStart -ge
+                    $externalAddCalls[0].SpanStart -or
+                $externalAddCalls[0].Span.End -ge
+                    $externalReadinessAwait.SpanStart -or
+                $externalRemoveAssertion.Count -ne 1 -or
+                $externalRemoveAssertionMethod -isnot
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $externalRemoveAssertionMethod.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $externalRemoveAssertionMethod.ContainingType.ToString() -cne
+                    'Xunit.Assert' -or
+                $externalRemoveAssertionMethod.Name -cne 'True' -or
+                $externalRemoveAssertion[0].ArgumentList.Arguments.Count -lt 1 -or
+                $externalRemoveAssertion[0].ArgumentList.Arguments[0].Expression -ne
+                    $externalRemoveCalls[0] -or
+                -not $externalPrefixIsDeclarations -or
+                $externalAddStatementIndex -ne
+                    ($externalRemoveStatementIndex + 1) -or
+                $externalReadinessStatementIndex -ne
+                    ($externalAddStatementIndex + 1) -or
+                @($externalLifecycleCalls | Where-Object {
+                        $_.Span.End -ge $externalReadinessAwait.SpanStart
+                    }).Count -ne 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $externalCallback `
+                    -HelperSymbol $trustedExternalWindowHelper `
+                    -Reason (
+                        'the Windows callback must assert one successful removal, ' +
+                        'then directly re-add the affected control exactly once, ' +
+                        'before its readiness await.') `
+                    -Callback
+            }
+            $externalOracleMinimum = $externalCallback.Body.SpanStart
+            foreach ($sequencedNode in @($externalLifecycleCalls) +
+                @($externalReadinessAwait)) {
+                if ($sequencedNode.Span.End -gt $externalOracleMinimum) {
+                    $externalOracleMinimum = $sequencedNode.Span.End
+                }
+            }
+            $trustedExternalWindowCallbackOracleMinimums[
+                $externalCallback.Body.SpanStart] = $externalOracleMinimum
+            $trustedExternalWindowCallbackReadinessPredicates[
+                $externalCallback.Body.SpanStart] =
+                    $externalReadinessPredicate.Body
+            $trustedExternalWindowCallbackLifecycleInvocations[
+                $externalCallback.Body.SpanStart] =
+                    @($externalLifecycleCalls)
+            $trustedExternalWindowContentSymbols.Add(
+                $externalWindowContentSymbol)
+        }
+        if (-not $isTrustedExternalAwait -and
+            $null -eq $trustedExternalWindowHelper) {
             $awaitLine = $tree.GetLineSpan(
                 $awaitExpression.Span).StartLinePosition.Line + 1
             $awaitedSymbol = if ($awaitedMethod) {
@@ -7651,6 +8055,16 @@ function New-ReplicationControlVariant {
         return @($Node.AncestorsAndSelf() | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
                 $trustedWindowCallbackBodies.Contains($_.SpanStart)
+            }).Count -ne 0
+    }
+    $isTrustedExternalWindowCallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedExternalWindowCallbackBodies.Contains($_.SpanStart)
             }).Count -ne 0
     }
     $isAcceptedTrustedBackTitleSetupNode = {
@@ -7942,6 +8356,84 @@ function New-ReplicationControlVariant {
             continue
         }
         $operationSymbol = $precheckedSymbol
+        $externalWindowCollectionInvocation = if ($operationNode -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $operationNode
+        } elseif ($operationNode -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $operationNode.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+            $operationNode.Parent.Expression -eq $operationNode) {
+            $operationNode.Parent
+        }
+        $externalWindowCollectionMethod = if ($null -ne
+            $externalWindowCollectionInvocation) {
+            $semanticModel.GetSymbolInfo(
+                $externalWindowCollectionInvocation).Symbol
+        }
+        $recordedExternalWindowLifecycleMutation = $false
+        if ($null -ne $externalWindowCollectionInvocation) {
+            foreach ($recordedLifecycleSet in
+                $trustedExternalWindowCallbackLifecycleInvocations.Values) {
+                if (@($recordedLifecycleSet | Where-Object {
+                            $_.SpanStart -eq
+                                $externalWindowCollectionInvocation.SpanStart
+                        }).Count -ne 0) {
+                    $recordedExternalWindowLifecycleMutation = $true
+                    break
+                }
+            }
+        }
+        $allowedExternalWindowCollectionMutation =
+            $null -ne $externalWindowCollectionInvocation -and
+            $recordedExternalWindowLifecycleMutation -and
+            (& $isTrustedExternalWindowCallbackNode `
+                -Node $externalWindowCollectionInvocation) -and
+            $externalWindowCollectionMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $externalWindowCollectionMethod.MethodKind -eq
+                [Microsoft.CodeAnalysis.MethodKind]::Ordinary -and
+            $externalWindowCollectionMethod.Arity -eq 0 -and
+            $externalWindowCollectionMethod.Name -cin @('Add', 'Remove') -and
+            $externalWindowCollectionMethod.ContainingType.ToString() -ceq
+                'System.Collections.Generic.ICollection<Microsoft.Maui.Controls.View>' -and
+            $externalWindowCollectionMethod.Parameters.Length -eq 1 -and
+            $externalWindowCollectionMethod.Parameters[0].Type.ToString() -ceq
+                'Microsoft.Maui.Controls.View' -and
+            $externalWindowCollectionInvocation.ArgumentList.Arguments.Count -eq 1 -and
+            $externalWindowCollectionInvocation.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $semanticModel.GetSymbolInfo(
+                $externalWindowCollectionInvocation.Expression.Expression).Symbol -is
+                [Microsoft.CodeAnalysis.IPropertySymbol] -and
+            $semanticModel.GetSymbolInfo(
+                $externalWindowCollectionInvocation.Expression.Expression
+            ).Symbol.ContainingAssembly.Name -ceq
+                $trustedContractAssembly -and
+            $semanticModel.GetSymbolInfo(
+                $externalWindowCollectionInvocation.Expression.Expression
+            ).Symbol.ContainingType.ToString() -ceq
+                'Microsoft.Maui.Controls.Layout' -and
+            $semanticModel.GetSymbolInfo(
+                $externalWindowCollectionInvocation.Expression.Expression
+            ).Symbol.Name -ceq 'Children'
+        if ($allowedExternalWindowCollectionMutation) {
+            continue
+        }
+        if ((& $isTrustedExternalWindowCallbackNode -Node $operationNode) -and
+            $operationNode -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $operationNode.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+            $operationNode.Parent.Left -eq $operationNode -and
+            $operationSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+            $operationSymbol.ContainingAssembly.Name -ceq
+                $trustedContractAssembly -and
+            $operationSymbol.Name -ceq 'Content') {
+            throw (
+                'The Windows reload callback may not replace Content after the ' +
+                'trusted Window tree has been established.')
+        }
         if ($operationNode -is
             [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]) {
             $indexedType = $semanticModel.GetTypeInfo(
@@ -7980,6 +8472,30 @@ function New-ReplicationControlVariant {
                 }
                 $operationDefinitionKey =
                     "$($operationDefinition.ContainingType).$($operationDefinition.Name)"
+                if ($operationNode -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+                    $operationDefinitionKey -ceq
+                        'Microsoft.Maui.Platform.ColorExtensions.ToWindowsColor') {
+                    $isExactPureToWindowsColor =
+                        $null -ne $operationSymbol.ReducedFrom -and
+                        $operationNode.ArgumentList.Arguments.Count -eq 0 -and
+                        $operationDefinition.IsStatic -and
+                        $operationDefinition.IsExtensionMethod -and
+                        $operationDefinition.Arity -eq 0 -and
+                        $operationDefinition.Parameters.Length -eq 1 -and
+                        $operationDefinition.Parameters[0].Type.ToString() -ceq
+                            'Microsoft.Maui.Graphics.Color' -and
+                        $operationDefinition.ReturnType.ToString() -ceq
+                            'Windows.UI.Color'
+                    if (-not $isExactPureToWindowsColor) {
+                        $line = $tree.GetLineSpan(
+                            $operationNode.Span).StartLinePosition.Line + 1
+                        throw (
+                            "Trusted framework call '$operationSymbol' is not " +
+                            'the exact side-effect-free ToWindowsColor() observation ' +
+                            "overload for '$SourcePath' line $line.")
+                    }
+                }
                 if ($operationNode -is
                         [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
                     $operationDefinitionKey -ceq
@@ -8022,25 +8538,31 @@ function New-ReplicationControlVariant {
                         'Trusted descendant-observation predicates may not write ' +
                         'state or increment values.')
                 }
-                $allowedContractCall = $operationKey -cin @(
-                    'CoreGraphics.CGRect.Intersect',
-                    'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.EnsureHandlerCreated',
-                    'Microsoft.Maui.Hosting.HandlerBuilder.ConfigureMauiHandlers',
-                    'Microsoft.Maui.Hosting.HandlerCollection.AddHandler',
-                    'Microsoft.Maui.Platform.ElementExtensions.ToPlatform',
-                    'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView',
-                    'Microsoft.Maui.DeviceTests.AssertionExtensions.GetBackButton',
-                    'NUnit.Framework.ConstraintExpression.EqualTo',
-                    'NUnit.Framework.ConstraintExpression.GreaterThan',
-                    'NUnit.Framework.ConstraintExpression.LessThan',
-                    'NUnit.Framework.ConstraintExpression.SameAs',
-                    'NUnit.Framework.Is.EqualTo',
-                    'NUnit.Framework.Is.GreaterThan',
-                    'NUnit.Framework.Is.LessThan',
-                    'NUnit.Framework.Is.SameAs',
-                    'UIKit.UIView.ConvertRectToView',
-                    'UIKit.UINavigationBar.LayoutIfNeeded'
-                )
+                $allowedContractCall =
+                    $operationKey -cin @(
+                        'CoreGraphics.CGRect.Intersect',
+                        'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.EnsureHandlerCreated',
+                        'Microsoft.Maui.Hosting.HandlerBuilder.ConfigureMauiHandlers',
+                        'Microsoft.Maui.Hosting.HandlerCollection.AddHandler',
+                        'Microsoft.Maui.Platform.ColorExtensions.ToWindowsColor',
+                        'Microsoft.Maui.Platform.ElementExtensions.ToPlatform',
+                        'Microsoft.Maui.Platform.ViewExtensions.FindDescendantView',
+                        'Microsoft.Maui.DeviceTests.AssertionExtensions.GetBackButton',
+                        'NUnit.Framework.ConstraintExpression.EqualTo',
+                        'NUnit.Framework.ConstraintExpression.GreaterThan',
+                        'NUnit.Framework.ConstraintExpression.LessThan',
+                        'NUnit.Framework.ConstraintExpression.SameAs',
+                        'NUnit.Framework.Is.EqualTo',
+                        'NUnit.Framework.Is.GreaterThan',
+                        'NUnit.Framework.Is.LessThan',
+                        'NUnit.Framework.Is.SameAs',
+                        'UIKit.UIView.ConvertRectToView',
+                        'UIKit.UINavigationBar.LayoutIfNeeded'
+                    ) -or
+                    ($operationKey -ceq
+                        'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.CreateHandlerAndAddToWindow' -and
+                        $acceptedExternalWindowHelperInvocations.Contains(
+                            $operationNode.SpanStart))
                 if (-not $allowedContractCall) {
                     $line = $tree.GetLineSpan(
                         $operationNode.Span).StartLinePosition.Line + 1
@@ -8420,6 +8942,220 @@ function New-ReplicationControlVariant {
     $triggerOperation = & $validateFrameworkOperation `
         -Expression $gate.Statement.Statements[0].Expression `
         -Description 'The reported-trigger branch'
+    if ($trustedExternalWindowCallbackBodies.Count -ne 0 -and
+        ($triggerOperation.Kind -cne 'invocation' -or
+            $triggerOperation.MethodName -cne 'SetDynamicResource' -or
+            $triggerOperation.StateFamily -cne 'Background' -or
+            $null -eq $gate.Else)) {
+        throw (
+            'The Issue37540 Windows helper is accepted only for the exact ' +
+            'SetDynamicResource Background trigger with a direct alternate branch.')
+    }
+    $unwrapReadinessExpression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression
+        )
+        while ($Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax] -or
+            $Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+            $Expression = $Expression.Expression
+        }
+        return $Expression
+    }
+    foreach ($callbackBodyStart in
+        $trustedExternalWindowCallbackReadinessPredicates.Keys) {
+        $readinessPredicate =
+            $trustedExternalWindowCallbackReadinessPredicates[
+                $callbackBodyStart]
+        $readinessPredicate = & $unwrapReadinessExpression `
+            -Expression $readinessPredicate
+        $readinessTerms = @(if (
+            $readinessPredicate -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+            $readinessPredicate.RawKind -eq
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression) {
+            & $unwrapReadinessExpression `
+                -Expression $readinessPredicate.Left
+            & $unwrapReadinessExpression `
+                -Expression $readinessPredicate.Right
+        })
+        $readinessTermKinds = @($readinessTerms | ForEach-Object {
+                $term = $_
+                if ($term -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                    $property = $semanticModel.GetSymbolInfo($term).Symbol
+                    $receiver =
+                        $semanticModel.GetSymbolInfo($term.Expression).Symbol
+                    if ($property -is
+                            [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                        $property.ContainingAssembly.Name -ceq
+                            'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                        $property.Name -ceq 'IsLoaded' -and
+                        [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $receiver,
+                            $triggerOperation.AffectedSymbol)) {
+                        'IsLoaded'
+                    }
+                    return
+                }
+                if ($term -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -or
+                    $term.RawKind -ne
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NotEqualsExpression) {
+                    return
+                }
+                $left = & $unwrapReadinessExpression -Expression $term.Left
+                $right = & $unwrapReadinessExpression -Expression $term.Right
+                $handlerExpression = if ($left.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NullLiteralExpression) {
+                    $right
+                } elseif ($right.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NullLiteralExpression) {
+                    $left
+                }
+                if ($handlerExpression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                    return
+                }
+                $property =
+                    $semanticModel.GetSymbolInfo($handlerExpression).Symbol
+                $receiver =
+                    $semanticModel.GetSymbolInfo(
+                        $handlerExpression.Expression).Symbol
+                $operator = $semanticModel.GetSymbolInfo($term).Symbol
+                if ($property -is
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                    $property.ContainingAssembly.Name -ceq
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    $property.Name -ceq 'Handler' -and
+                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $receiver,
+                        $triggerOperation.AffectedSymbol) -and
+                    ($null -eq $operator -or
+                        ($operator -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                            $operator.MethodKind -eq
+                                [Microsoft.CodeAnalysis.MethodKind]::BuiltinOperator))) {
+                    'HandlerNotNull'
+                }
+            } | Sort-Object)
+        if (($readinessTermKinds -join "`n") -cne
+            "HandlerNotNull`nIsLoaded") {
+            throw (
+                'The Windows callback readiness predicate must be exactly the ' +
+                'conjunction affected.Handler != null && affected.IsLoaded.')
+        }
+        $lifecycleCalls = @(
+            $trustedExternalWindowCallbackLifecycleInvocations[
+                $callbackBodyStart])
+        $lifecycleOwners =
+            [System.Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
+        foreach ($lifecycleCall in $lifecycleCalls) {
+            $lifecycleMember = if ($lifecycleCall.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $lifecycleCall.Expression
+            }
+            $lifecycleMethod =
+                $semanticModel.GetSymbolInfo($lifecycleCall).Symbol
+            $childrenExpression = if ($null -ne $lifecycleMember) {
+                $lifecycleMember.Expression
+            }
+            $childrenProperty = if ($null -ne $childrenExpression) {
+                $semanticModel.GetSymbolInfo($childrenExpression).Symbol
+            }
+            $lifecycleOwner = if ($childrenExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $semanticModel.GetSymbolInfo(
+                    $childrenExpression.Expression).Symbol
+            }
+            $affectedArgument =
+                $semanticModel.GetSymbolInfo(
+                    $lifecycleCall.ArgumentList.Arguments[0].Expression).Symbol
+            if ($null -eq $lifecycleMember -or
+                $lifecycleMethod -isnot
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $lifecycleMethod.ContainingType.ToString() -cne
+                    'System.Collections.Generic.ICollection<Microsoft.Maui.Controls.View>' -or
+                $lifecycleMethod.Name -cnotin @('Add', 'Remove') -or
+                $childrenProperty -isnot
+                    [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $childrenProperty.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $childrenProperty.ContainingType.ToString() -cne
+                    'Microsoft.Maui.Controls.Layout' -or
+                $childrenProperty.Name -cne 'Children' -or
+                $lifecycleOwner -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $affectedArgument,
+                    $triggerOperation.AffectedSymbol)) {
+                throw (
+                    'The Windows callback lifecycle must directly remove and re-add ' +
+                    'the affected control through one trusted Layout.Children owner.')
+            }
+            & $assertStableOperationLocal -Symbol $lifecycleOwner
+            $lifecycleOwners.Add($lifecycleOwner)
+        }
+        if ($lifecycleOwners.Count -ne 2 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $lifecycleOwners[0],
+                $lifecycleOwners[1])) {
+            throw (
+                'The Windows callback must remove and re-add the affected control ' +
+                'through the same stable Layout.Children owner.')
+        }
+        $lifecycleOwnerDeclarations = @(
+            $lifecycleOwners[0].DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $null -ne $_.Initializer -and
+                    $_.SpanStart -lt $gate.SpanStart
+                })
+        $initialChildrenAssignments = @(if (
+            $lifecycleOwnerDeclarations.Count -eq 1) {
+            $lifecycleOwnerDeclarations[0].Initializer.Value.DescendantNodes() |
+                Where-Object {
+                    if ($_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                        $_.Right -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax]) {
+                        return $false
+                    }
+                    $property = $semanticModel.GetSymbolInfo($_.Left).Symbol
+                    return (
+                        $property -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                        $property.ContainingAssembly.Name -ceq
+                            'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                        $property.ContainingType.ToString() -ceq
+                            'Microsoft.Maui.Controls.Layout' -and
+                        $property.Name -ceq 'Children')
+                }
+        })
+        $initialAffectedChildren = @(if (
+            $initialChildrenAssignments.Count -eq 1) {
+            $initialChildrenAssignments[0].Right.Expressions |
+                Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                        $semanticModel.GetSymbolInfo($_).Symbol,
+                        $triggerOperation.AffectedSymbol)
+                }
+        })
+        if ($lifecycleOwnerDeclarations.Count -ne 1 -or
+            $initialChildrenAssignments.Count -ne 1 -or
+            $initialAffectedChildren.Count -ne 1) {
+            throw (
+                'The affected control must initially be one direct child of the ' +
+                'same stable Layout.Children owner used by the Windows reload callback.')
+        }
+        $trustedExternalWindowCallbackLifecycleOwners[
+            $callbackBodyStart] = $lifecycleOwners[0]
+    }
     if ($gate.Else) {
         $alternateOperation = & $validateFrameworkOperation `
             -Expression $gate.Else.Statement.Statements[0].Expression `
@@ -8461,6 +9197,111 @@ function New-ReplicationControlVariant {
                     'A SetDynamicResource/direct-assignment alternate requires ' +
                     'one literal resource key and one trusted local alternate value.')
             }
+            if ($trustedExternalWindowContentSymbols.Count -ne 0) {
+                $affectedDeclarations = @(
+                    $triggerOperation.AffectedSymbol.DeclaringSyntaxReferences |
+                        ForEach-Object {
+                            $_.GetSyntax([Threading.CancellationToken]::None)
+                        } |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                            $null -ne $_.Initializer -and
+                            $_.SpanStart -lt $gate.SpanStart
+                        })
+                $initialBackgroundAssignments = @(if (
+                    $affectedDeclarations.Count -eq 1) {
+                    $affectedDeclarations[0].Initializer.Value.DescendantNodes() |
+                        Where-Object {
+                            if ($_ -isnot
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                                return $false
+                            }
+                            $property =
+                                $semanticModel.GetSymbolInfo($_.Left).Symbol
+                            return (
+                                $property -is
+                                    [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                                $property.ContainingAssembly.Name -ceq
+                                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                                $property.ContainingType.ToString() -ceq
+                                    'Microsoft.Maui.Controls.VisualElement' -and
+                                $property.Name -ceq 'Background')
+                        }
+                })
+                $unexpectedAffectedBackgroundWrites = @(
+                    $testMethod[0].Body.DescendantNodes() |
+                        Where-Object {
+                            $candidateAssignment = $_
+                            if ($candidateAssignment -isnot
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                                $gate.Span.Contains($candidateAssignment.Span) -or
+                                $candidateAssignment.Parent -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax] -or
+                                $candidateAssignment.Left -isnot
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                                return $false
+                            }
+                            $property =
+                                $semanticModel.GetSymbolInfo(
+                                    $candidateAssignment.Left).Symbol
+                            return (
+                                $property -is
+                                    [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                                $property.ContainingAssembly.Name -ceq
+                                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                                $property.ContainingType.ToString() -ceq
+                                    'Microsoft.Maui.Controls.VisualElement' -and
+                                $property.Name -ceq 'Background')
+                        })
+                $expectedDeclarations = @(
+                    $alternateOperation.AssignedValueSymbol.DeclaringSyntaxReferences |
+                        ForEach-Object {
+                            $_.GetSyntax([Threading.CancellationToken]::None)
+                        } |
+                        Where-Object {
+                            $_ -is
+                                [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                            $null -ne $_.Initializer -and
+                            $_.SpanStart -lt $gate.SpanStart
+                        })
+                $initialBackgroundSymbol = if (
+                    $initialBackgroundAssignments.Count -eq 1) {
+                    $semanticModel.GetSymbolInfo(
+                        $initialBackgroundAssignments[0].Right).Symbol
+                }
+                $expectedBackgroundSymbol = if (
+                    $expectedDeclarations.Count -eq 1) {
+                    $semanticModel.GetSymbolInfo(
+                        $expectedDeclarations[0].Initializer.Value).Symbol
+                }
+                if ($affectedDeclarations.Count -ne 1 -or
+                    $initialBackgroundAssignments.Count -ne 1 -or
+                    $initialBackgroundSymbol -isnot
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $initialBackgroundSymbol.ContainingAssembly.Name -cne
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                    $initialBackgroundSymbol.ContainingType.ToString() -cne
+                        'Microsoft.Maui.Graphics.Colors' -or
+                    $initialBackgroundSymbol.Name -cne 'Transparent' -or
+                    $expectedDeclarations.Count -ne 1 -or
+                    $expectedBackgroundSymbol -isnot
+                        [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $expectedBackgroundSymbol.ContainingAssembly.Name -cne
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                    $expectedBackgroundSymbol.ContainingType.ToString() -cne
+                        'Microsoft.Maui.Graphics.Colors' -or
+                    $expectedBackgroundSymbol.Name -cne 'Red') {
+                    throw (
+                        'The Issue37540 Windows control must begin with the affected ' +
+                        'Background exactly Transparent and map/assign the distinct Red value.')
+                }
+                if ($unexpectedAffectedBackgroundWrites.Count -ne 0) {
+                    throw (
+                        'The affected Issue37540 Background may be written only by ' +
+                        'its Transparent initializer and the controlled trigger branches.')
+                }
+            }
             $unwrapResourceExpression = {
                 param(
                     [Parameter(Mandatory = $true)]
@@ -8476,6 +9317,128 @@ function New-ReplicationControlVariant {
             }
             $resourceAliases =
                 [System.Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
+            $trustedResourceOwnerSymbols =
+                [System.Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
+            foreach ($windowContentSymbol in
+                $trustedExternalWindowContentSymbols) {
+                $pendingContentSymbols =
+                    [System.Collections.Generic.Queue[Microsoft.CodeAnalysis.ISymbol]]::new()
+                $visitedContentSymbols =
+                    [System.Collections.Generic.List[Microsoft.CodeAnalysis.ISymbol]]::new()
+                $pendingContentSymbols.Enqueue($windowContentSymbol)
+                $containsAffectedControl = $false
+                while ($pendingContentSymbols.Count -ne 0) {
+                    if ($visitedContentSymbols.Count -ge 64) {
+                        throw (
+                            'The trusted Window content graph exceeds the bounded ' +
+                            'resource-owner analysis.')
+                    }
+                    $contentSymbol = $pendingContentSymbols.Dequeue()
+                    if (@($visitedContentSymbols | Where-Object {
+                                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                    $_,
+                                    $contentSymbol)
+                            }).Count -ne 0) {
+                        continue
+                    }
+                    $visitedContentSymbols.Add($contentSymbol)
+                    if ([Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                            $contentSymbol,
+                            $triggerOperation.AffectedSymbol)) {
+                        $containsAffectedControl = $true
+                        break
+                    }
+                    if ($contentSymbol -isnot
+                        [Microsoft.CodeAnalysis.ILocalSymbol]) {
+                        continue
+                    }
+                    & $assertStableOperationLocal -Symbol $contentSymbol
+                    $contentDeclarations = @(
+                        $contentSymbol.DeclaringSyntaxReferences |
+                            ForEach-Object {
+                                $_.GetSyntax([Threading.CancellationToken]::None)
+                            } |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                                $null -ne $_.Initializer -and
+                                $_.SpanStart -lt $gate.SpanStart
+                            })
+                    if ($contentDeclarations.Count -ne 1) {
+                        throw (
+                            'Every local in the trusted Window content graph must ' +
+                            'have one stable pre-gate initializer.')
+                    }
+                    foreach ($identifier in @(
+                        $contentDeclarations[0].Initializer.Value.DescendantNodesAndSelf() |
+                            Where-Object {
+                                $_ -is
+                                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]
+                            })) {
+                        $childSymbol =
+                            $semanticModel.GetSymbolInfo($identifier).Symbol
+                        if ($childSymbol -isnot
+                                [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                $childSymbol,
+                                $contentSymbol)) {
+                            continue
+                        }
+                        $ownershipAssignment = @(
+                            $identifier.Ancestors() |
+                                Where-Object {
+                                    $_ -is
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                                    $_.Span.Contains($identifier.Span) -and
+                                    $contentDeclarations[0].Initializer.Value.Span.Contains(
+                                        $_.Span)
+                                } |
+                                Select-Object -First 1)
+                        $ownershipProperty = if (
+                            $ownershipAssignment.Count -eq 1) {
+                            $semanticModel.GetSymbolInfo(
+                                $ownershipAssignment[0].Left).Symbol
+                        }
+                        $directOwnershipValue = $false
+                        if ($ownershipProperty -is
+                            [Microsoft.CodeAnalysis.IPropertySymbol]) {
+                            if ($ownershipProperty.Name -ceq 'Content') {
+                                $directOwnershipValue =
+                                    (& $unwrapResourceExpression `
+                                        -Expression $ownershipAssignment[0].Right) -eq
+                                    $identifier
+                            } elseif ($ownershipProperty.Name -ceq 'Children') {
+                                $directOwnershipValue =
+                                    $identifier.Parent -is
+                                        [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax] -and
+                                    $ownershipAssignment[0].Right -eq
+                                        $identifier.Parent
+                            }
+                        }
+                        if ($ownershipProperty -is
+                                [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                            $ownershipProperty.ContainingAssembly.Name -ceq
+                                'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                            $ownershipProperty.Name -cin @('Children', 'Content') -and
+                            $directOwnershipValue) {
+                            $pendingContentSymbols.Enqueue($childSymbol)
+                        }
+                    }
+                }
+                $containsLifecycleOwner = @(
+                    $trustedExternalWindowCallbackLifecycleOwners.Values |
+                        Where-Object {
+                            $requiredOwner = $_
+                            @($visitedContentSymbols | Where-Object {
+                                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                        $_,
+                                        $requiredOwner)
+                                }).Count -ne 0
+                        }).Count -ne 0
+                if ($containsAffectedControl -and $containsLifecycleOwner) {
+                    $trustedResourceOwnerSymbols.Add($windowContentSymbol)
+                }
+            }
             $allResourceWrites = @($testMethod[0].Body.DescendantNodes() |
                 Where-Object {
                     if ($_ -isnot
@@ -8518,6 +9481,13 @@ function New-ReplicationControlVariant {
                     $Expression.Name.Identifier.ValueText -ceq 'Resources') {
                     $receiver =
                         $semanticModel.GetSymbolInfo($Expression.Expression).Symbol
+                    if ($trustedExternalWindowContentSymbols.Count -ne 0) {
+                        return @($trustedResourceOwnerSymbols | Where-Object {
+                                    [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                                        $_,
+                                        $receiver)
+                                }).Count -ne 0
+                    }
                     return [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
                         $receiver,
                         $triggerOperation.AffectedSymbol)
@@ -8615,26 +9585,9 @@ function New-ReplicationControlVariant {
                     }
                     $resourceExpression = & $unwrapResourceExpression `
                         -Expression $element.Expression
-                    $writesAffectedResources = $false
-                    if ($resourceExpression -is
-                            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
-                        $resourceExpression.Name.Identifier.ValueText -ceq 'Resources') {
-                        $receiver = $semanticModel.GetSymbolInfo(
-                            $resourceExpression.Expression).Symbol
-                        $writesAffectedResources =
-                            [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
-                                $receiver,
-                                $triggerOperation.AffectedSymbol)
-                    } elseif ($resourceExpression -is
-                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
-                        $receiver =
-                            $semanticModel.GetSymbolInfo($resourceExpression).Symbol
-                        $writesAffectedResources = @($resourceAliases | Where-Object {
-                                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
-                                    $_,
-                                    $receiver)
-                            }).Count -ne 0
-                    }
+                    $writesAffectedResources =
+                        & $isAffectedResourceExpression `
+                            -Expression $resourceExpression
                     if (-not $writesAffectedResources) {
                         return $false
                     }
@@ -9865,6 +10818,137 @@ function New-ReplicationControlVariant {
             $type.OriginalDefinition.SpecialType -eq
                 [Microsoft.CodeAnalysis.SpecialType]::System_Nullable_T)
     }
+    $isTrustedExternalWindowManagedOracle = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Assertion,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$AssertionMethod
+        )
+
+        if ($AssertionMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $AssertionMethod.Name -cne 'True' -or
+            $Assertion.ArgumentList.Arguments.Count -lt 1) {
+            return $false
+        }
+        $condition = & $unwrapAssertionExpression `
+            -Expression $Assertion.ArgumentList.Arguments[0].Expression
+        $conditionParts =
+            [System.Collections.Generic.List[
+                Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]]::new()
+        $appendConditionParts = $null
+        $appendConditionParts = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Part
+            )
+            $Part = & $unwrapAssertionExpression -Expression $Part
+            if ($Part -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+                $Part.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalAndExpression) {
+                & $appendConditionParts -Part $Part.Left
+                & $appendConditionParts -Part $Part.Right
+                return
+            }
+            $conditionParts.Add($Part)
+        }
+        & $appendConditionParts -Part $condition
+        if ($conditionParts.Count -ne 2) {
+            return $false
+        }
+        $typePattern = @($conditionParts | Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IsPatternExpressionSyntax]
+            })
+        $colorEquality = @($conditionParts | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+                $_.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::EqualsExpression
+            })
+        if ($typePattern.Count -ne 1 -or $colorEquality.Count -ne 1 -or
+            $typePattern[0].Pattern -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.DeclarationPatternSyntax]) {
+            return $false
+        }
+        $backgroundExpression =
+            & $unwrapAssertionExpression -Expression $typePattern[0].Expression
+        $backgroundProperty =
+            $semanticModel.GetSymbolInfo($backgroundExpression).Symbol
+        $backgroundReceiver = if ($backgroundExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo(
+                $backgroundExpression.Expression).Symbol
+        }
+        $brushType =
+            $semanticModel.GetTypeInfo($typePattern[0].Pattern.Type).Type
+        $brushLocal =
+            $semanticModel.GetDeclaredSymbol(
+                $typePattern[0].Pattern.Designation)
+        if ($backgroundProperty -isnot
+                [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $backgroundProperty.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $backgroundProperty.Name -cne 'Background' -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $backgroundReceiver,
+                $triggerOperation.AffectedSymbol) -or
+            $brushType.ToString() -cne
+                'Microsoft.Maui.Controls.SolidColorBrush' -or
+            $brushType.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $brushLocal -isnot [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            return $false
+        }
+        $equality = $colorEquality[0]
+        $equalityOperator = $semanticModel.GetSymbolInfo($equality).Symbol
+        if ($equalityOperator -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $equalityOperator.MethodKind -ne
+                [Microsoft.CodeAnalysis.MethodKind]::UserDefinedOperator -or
+            $equalityOperator.Name -cne 'op_Equality' -or
+            $equalityOperator.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $equalityOperator.ContainingType.ToString() -cne
+                'Microsoft.Maui.Graphics.Color') {
+            return $false
+        }
+        foreach ($candidate in @(
+            [pscustomobject]@{
+                Observed = $equality.Left
+                Expected = $equality.Right
+            },
+            [pscustomobject]@{
+                Observed = $equality.Right
+                Expected = $equality.Left
+            })) {
+            $observed = & $unwrapAssertionExpression `
+                -Expression $candidate.Observed
+            $observedProperty =
+                $semanticModel.GetSymbolInfo($observed).Symbol
+            $observedReceiver = if ($observed -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+                $semanticModel.GetSymbolInfo($observed.Expression).Symbol
+            }
+            $expectedSymbol =
+                $semanticModel.GetSymbolInfo($candidate.Expected).Symbol
+            if ($observedProperty -is
+                    [Microsoft.CodeAnalysis.IPropertySymbol] -and
+                $observedProperty.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                $observedProperty.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.Controls.SolidColorBrush' -and
+                $observedProperty.Name -ceq 'Color' -and
+                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $observedReceiver,
+                    $brushLocal) -and
+                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $expectedSymbol,
+                    $alternateOperation.AssignedValueSymbol)) {
+                return $true
+            }
+        }
+        return $false
+    }
     foreach ($assertionStatement in $assertionStatements) {
         $assertionExpression = $assertionStatement.Expression
         if ($assertionExpression -is
@@ -9906,8 +10990,20 @@ function New-ReplicationControlVariant {
                 $trustedWindowCallbackOracleMinimums[
                     $assertionStatement.Parent.SpanStart] -and
             $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedExternalWindowCallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedExternalWindowCallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedExternalWindowCallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedExternalWindowCallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
         if ($isDirectPostGateAssertion -or
-            $isTrustedWindowCallbackAssertion) {
+            $isTrustedWindowCallbackAssertion -or
+            $isTrustedExternalWindowCallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -10178,6 +11274,16 @@ function New-ReplicationControlVariant {
                     $constraint.Name.Identifier.ValueText -cin @('True', 'False')) {
                     $supportedGuaranteedOracle = $true
                 }
+            }
+            if ($isTrustedExternalWindowCallbackAssertion -and
+                -not $supportedGuaranteedOracle -and
+                (& $isTrustedExternalWindowManagedOracle `
+                    -Assertion $assertionExpression `
+                    -AssertionMethod $assertionSymbol)) {
+                $supportedGuaranteedOracle = $true
+                $guaranteedObservationExpression =
+                    $assertionArguments[0].Expression
+                $guaranteedExpectedExpression = $null
             }
             if ($supportedGuaranteedOracle -and
                 $null -ne $guaranteedObservationExpression) {
