@@ -3,9 +3,15 @@
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
 			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.QualifiedMemberLegacy">
-	<!-- the owner is not even a type of the target: the qualifier is ignored and Resources is resolved on the page -->
+	<!-- the owner is not even a type of the target: the qualifier is ignored and Resources is resolved on
+	     the page. This is the shape ShadowBenchmark.xaml uses in the host app -->
 	<ContentView.Resources>
-		<x:String x:Key="legacyKey">legacy value</x:String>
+		<ResourceDictionary>
+			<x:String x:Key="legacyKey">legacy value</x:String>
+			<Style x:Key="LegacyStyle" TargetType="Label">
+				<Setter Property="HeightRequest" Value="240" />
+			</Style>
+		</ResourceDictionary>
 	</ContentView.Resources>
 	<StackLayout>
 		<!-- the owner is a base class of the target, and declares the property -->
