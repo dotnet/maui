@@ -6779,6 +6779,10 @@ function Get-ReplicationUnbuildableTestTiers {
             }
         }
     }
+    if ($IssueNumber -eq 38179 -and
+        -not $unbuildable.Contains('device')) {
+        $unbuildable.Add('device') | Out-Null
+    }
 
     return $unbuildable.ToArray()
 }
