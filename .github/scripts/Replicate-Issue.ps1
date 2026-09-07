@@ -10278,7 +10278,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         Get-ReplicationUnbuildableTestTiers `
             -Platform $Platform `
             -RepositoryRoot $repoRoot `
-            -IssueNumber $Issue)
+            -IssueNumber $IssueNumber)
     foreach ($seeded in $forbiddenTestTiers) {
         Write-Host ("The '{0}' tier has no {1} build, so it is excluded before planning starts." -f
             $seeded, $Platform)
@@ -10332,7 +10332,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                         -Platform $Platform `
                         -TestType $plannedVerifierTestType `
                         -RepositoryRoot $repoRoot `
-                        -IssueNumber $Issue
+                        -IssueNumber $IssueNumber
                 }
                 break
             } catch {
