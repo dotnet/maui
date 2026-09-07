@@ -159,7 +159,12 @@ if ($Platform -eq "android") {
     # root of many android "no UI test results" reports). Embedding the assemblies into the
     # APK makes it self-contained so any install/relaunch works — this is exactly what the
     # main maui-pr-uitests pipeline does (eng/devices/android.cake:168,329).
-    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, "-t:Run", "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
+    $androidTarget = if ($EnforceNetworkIsolation) {
+        '-t:Install'
+    } else {
+        '-t:Run'
+    }
+    $buildArgs = @($ProjectPath, "-f", $TargetFramework, "-c", $Configuration, $androidTarget, "-p:EmbedAssembliesIntoApk=true") + $hostAppBuildProps
     if ($EnforceNetworkIsolation) {
         if ([string]::IsNullOrWhiteSpace($NetworkIsolationManifestPath)) {
             throw 'Android replication requires a trusted network-isolation manifest path.'

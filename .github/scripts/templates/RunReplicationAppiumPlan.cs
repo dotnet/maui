@@ -259,6 +259,8 @@ static AppiumDriver CreateDriver(string platform, string udid, out Process? laun
                 "com.microsoft.maui.sandbox.MainActivity");
             options.AddAdditionalAppiumOption("appium:noReset", true);
             options.AddAdditionalAppiumOption("appium:dontStopAppOnReset", true);
+            options.AddAdditionalAppiumOption("appium:skipServerInstallation", true);
+            options.AddAdditionalAppiumOption("appium:skipDeviceInitialization", true);
             options.AddAdditionalAppiumOption(
                 "appium:uiautomator2ServerInstallTimeout",
                 300_000);

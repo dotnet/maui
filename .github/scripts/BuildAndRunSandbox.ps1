@@ -134,6 +134,7 @@ function Resolve-CatalystSandboxAppPath {
 . "$PSScriptRoot/shared/shared-utils.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationWindowsAppContainer.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationAppleAppSandbox.ps1"
+. "$PSScriptRoot/shared/Assert-ReplicationExecutionEnvironment.ps1"
 
 if ($Cleanup) {
     if (-not $EnforceNetworkIsolation) {
@@ -405,6 +406,17 @@ if (-not $SkipBuildDeploy) {
     Write-Info "Skipping Sandbox build/deploy; using the prepared app."
 }
 
+if ($EnforceNetworkIsolation -and $Platform -eq 'android') {
+    # Start-Emulator and package installation may cause Android's network daemon
+    # to rebuild OUTPUT. Preinstall every Appium helper so session creation cannot
+    # perform another package transition, then re-establish the trusted guest
+    # boundary immediately before any app launch.
+    $null = Install-ReplicationAndroidAppiumHelpers `
+        -DeviceUdid $DeviceUdid
+    $null = Assert-ReplicationAndroidGuestNetworkIsolation `
+        -DeviceUdid $DeviceUdid
+}
+
 if ($PrepareOnly) {
     Write-Success "Sandbox build and deployment preparation completed"
     return
@@ -627,6 +639,7 @@ if (-not (Get-Command "appium" -ErrorAction SilentlyContinue)) {
 # Check if Appium is already running
 $appiumWasRunning = $false
 $appiumJob = $null
+$logcatJob = $null
 
 try {
     $response = Invoke-WebRequest -Uri "http://127.0.0.1:$AppiumPort/status" -NoProxy -TimeoutSec 2 -ErrorAction Stop

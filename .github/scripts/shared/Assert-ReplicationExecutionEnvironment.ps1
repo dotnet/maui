@@ -441,6 +441,7 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
     param(
         [Parameter(Mandatory = $true)][string]$DeviceUdid,
         [scriptblock]$AdbInvoker,
+        [scriptblock]$SleepInvoker,
         [switch]$VerifyOnly
     )
 
@@ -448,6 +449,7 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
         $DeviceUdid -notmatch '^[A-Za-z0-9._:-]{1,128}$') {
         throw 'Android guest network isolation requires a validated device identifier.'
     }
+
     if ($null -eq $AdbInvoker) {
         $AdbInvoker = {
             param([string[]]$Arguments)
@@ -456,6 +458,12 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
                 ExitCode = $LASTEXITCODE
                 Output = ($output | ForEach-Object { [string]$_ }) -join "`n"
             }
+        }
+    }
+    if ($null -eq $SleepInvoker) {
+        $SleepInvoker = {
+            param([int]$Seconds)
+            Start-Sleep -Seconds $Seconds
         }
     }
 
@@ -485,35 +493,42 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
         if ($currentAirplane -cne '1') {
             & $invoke @('-s', $DeviceUdid, 'shell', 'cmd', 'connectivity', 'airplane-mode', 'enable') `
                 'enable airplane mode' | Out-Null
-            & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
-                'disable guest Wi-Fi' | Out-Null
-            & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
-                'disable guest mobile data' | Out-Null
-            # Android's network daemon rebuilds OUTPUT asynchronously after a
-            # connectivity-state change. Install the trusted chain only after
-            # that transition settles so it remains present through build/run.
-            Start-Sleep -Seconds 5
         }
+        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'wifi', 'disable') `
+            'disable guest Wi-Fi' | Out-Null
+        & $invoke @('-s', $DeviceUdid, 'shell', 'svc', 'data', 'disable') `
+            'disable guest mobile data' | Out-Null
+        # Android's network daemon rebuilds OUTPUT asynchronously after a
+        # connectivity-state change. Reassert every independent radio state and
+        # install the trusted chain only after that transition settles.
+        & $SleepInvoker 5
     }
 
     $chain = 'MAUI_REPLICATION'
     foreach ($tool in @('iptables', 'ip6tables')) {
-        $jump = & $invoke @(
-            '-s', $DeviceUdid, 'shell', $tool, '-C', 'OUTPUT', '-j', $chain
-        ) "inspect the $tool OUTPUT chain" -AllowFailure
-        if ([int]$jump.ExitCode -ne 0) {
-            if ($VerifyOnly) {
-                throw "Android guest network isolation lost the $tool OUTPUT chain."
+        if (-not $VerifyOnly) {
+            $removedAllJumps = $false
+            for ($removeAttempt = 0; $removeAttempt -lt 16; $removeAttempt++) {
+                $removed = & $invoke @(
+                    '-s', $DeviceUdid, 'shell', $tool, '-D', 'OUTPUT',
+                    '-j', $chain
+                ) "remove an existing $tool OUTPUT jump" -AllowFailure
+                if ([int]$removed.ExitCode -ne 0) {
+                    $removedAllJumps = $true
+                    break
+                }
             }
-            & $invoke @(
+            if (-not $removedAllJumps) {
+                throw "Android guest network isolation found too many $tool OUTPUT jumps."
+            }
+            $flushed = & $invoke @(
                 '-s', $DeviceUdid, 'shell', $tool, '-F', $chain
-            ) "flush a stale $tool isolation chain" -AllowFailure | Out-Null
-            & $invoke @(
-                '-s', $DeviceUdid, 'shell', $tool, '-X', $chain
-            ) "remove a stale $tool isolation chain" -AllowFailure | Out-Null
-            & $invoke @(
-                '-s', $DeviceUdid, 'shell', $tool, '-N', $chain
-            ) "create the $tool isolation chain" | Out-Null
+            ) "flush the $tool isolation chain" -AllowFailure
+            if ([int]$flushed.ExitCode -ne 0) {
+                & $invoke @(
+                    '-s', $DeviceUdid, 'shell', $tool, '-N', $chain
+                ) "create the $tool isolation chain" | Out-Null
+            }
             & $invoke @(
                 '-s', $DeviceUdid, 'shell', $tool, '-A', $chain,
                 '-o', 'lo', '-j', 'RETURN'
@@ -525,6 +540,12 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
                 '-s', $DeviceUdid, 'shell', $tool, '-I', 'OUTPUT', '1', '-j', $chain
             ) "install the $tool isolation chain" | Out-Null
         }
+        $jump = & $invoke @(
+            '-s', $DeviceUdid, 'shell', $tool, '-C', 'OUTPUT', '-j', $chain
+        ) "inspect the $tool OUTPUT chain" -AllowFailure
+        if ([int]$jump.ExitCode -ne 0) {
+            throw "Android guest network isolation lost the $tool OUTPUT chain."
+        }
         foreach ($rule in @(
             @('-C', 'OUTPUT', '-j', $chain),
             @('-C', $chain, '-o', 'lo', '-j', 'RETURN'),
@@ -532,6 +553,25 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
         )) {
             & $invoke (@('-s', $DeviceUdid, 'shell', $tool) + $rule) `
                 "verify the $tool isolation rules" | Out-Null
+        }
+        $outputRules = [string](& $invoke @(
+            '-s', $DeviceUdid, 'shell', $tool, '-S', 'OUTPUT'
+        ) "verify the ordered $tool OUTPUT rules").Output
+        $outputEntries = @(
+            $outputRules -split '\r?\n' |
+                ForEach-Object { $_.Trim() } |
+                Where-Object { $_ -cmatch '^-A OUTPUT ' }
+        )
+        $expectedJump = "-A OUTPUT -j $chain"
+        $matchingJumps = @($outputEntries | Where-Object {
+                $_ -ceq $expectedJump
+            })
+        if ($outputEntries.Count -eq 0 -or
+            $outputEntries[0] -cne $expectedJump -or
+            $matchingJumps.Count -ne 1) {
+            throw (
+                "Android guest network isolation requires the $tool OUTPUT jump " +
+                'to be the unique first rule.')
         }
     }
 
@@ -566,6 +606,111 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
         AirplaneMode = $true
         DefaultRoutesRemoved = $true
         NewConnectionsDenied = $true
+    }
+}
+
+function Install-ReplicationAndroidAppiumHelpers {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$DeviceUdid,
+        [string]$AppiumHome = $env:APPIUM_HOME,
+        [scriptblock]$AdbInvoker
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DeviceUdid) -or
+        $DeviceUdid -notmatch '^[A-Za-z0-9._:-]{1,128}$') {
+        throw 'Android Appium helper preparation requires a validated device identifier.'
+    }
+    if ([string]::IsNullOrWhiteSpace($AppiumHome) -or
+        -not (Test-Path -LiteralPath $AppiumHome -PathType Container)) {
+        throw 'Android Appium helper preparation requires the trusted APPIUM_HOME.'
+    }
+    if ($null -eq $AdbInvoker) {
+        $AdbInvoker = {
+            param([string[]]$Arguments)
+            $output = @(& adb @Arguments 2>&1)
+            [pscustomobject]@{
+                ExitCode = $LASTEXITCODE
+                Output = ($output | ForEach-Object { [string]$_ }) -join "`n"
+            }
+        }
+    }
+
+    $resolvedHome = [IO.Path]::GetFullPath(
+        [string](Resolve-Path -LiteralPath $AppiumHome))
+    $driverModules = Join-Path $resolvedHome (
+        'node_modules/appium-uiautomator2-driver/node_modules')
+    $serverDirectory = Join-Path $driverModules (
+        'appium-uiautomator2-server/apks')
+    $serverApks = @(
+        Get-ChildItem `
+            -LiteralPath $serverDirectory `
+            -Filter 'appium-uiautomator2-server-v*.apk' `
+            -File `
+            -ErrorAction Stop
+    )
+    $helpers = @(
+        [pscustomobject]@{
+            Package = 'io.appium.settings'
+            Path = Join-Path $driverModules (
+                'io.appium.settings/apks/settings_apk-debug.apk')
+        },
+        [pscustomobject]@{
+            Package = 'io.appium.uiautomator2.server'
+            Path = if ($serverApks.Count -eq 1) {
+                $serverApks[0].FullName
+            } else {
+                ''
+            }
+        },
+        [pscustomobject]@{
+            Package = 'io.appium.uiautomator2.server.test'
+            Path = Join-Path $serverDirectory (
+                'appium-uiautomator2-server-debug-androidTest.apk')
+        }
+    )
+    if ($serverApks.Count -ne 1) {
+        throw (
+            'Android Appium helper preparation expected exactly one versioned ' +
+            "UiAutomator2 server APK; found $($serverApks.Count).")
+    }
+    $trustedPrefix = $resolvedHome.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar
+    ) + [IO.Path]::DirectorySeparatorChar
+    foreach ($helper in $helpers) {
+        if ([string]::IsNullOrWhiteSpace([string]$helper.Path) -or
+            -not (Test-Path -LiteralPath $helper.Path -PathType Leaf)) {
+            throw "Android Appium helper APK is missing for '$($helper.Package)'."
+        }
+        $resolvedApk = [IO.Path]::GetFullPath(
+            [string](Resolve-Path -LiteralPath $helper.Path))
+        if (-not $resolvedApk.StartsWith(
+                $trustedPrefix,
+                [StringComparison]::Ordinal)) {
+            throw "Android Appium helper APK escaped the trusted APPIUM_HOME."
+        }
+        $apkItem = Get-Item -LiteralPath $resolvedApk -Force
+        if ($apkItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw "Android Appium helper APK must be a regular file."
+        }
+        $install = & $AdbInvoker @(
+            '-s', $DeviceUdid, 'install', '-r', '-t', $resolvedApk)
+        if ($null -eq $install -or [int]$install.ExitCode -ne 0) {
+            throw "Android Appium helper installation failed for '$($helper.Package)'."
+        }
+        $installed = & $AdbInvoker @(
+            '-s', $DeviceUdid, 'shell', 'pm', 'path', $helper.Package)
+        if ($null -eq $installed -or
+            [int]$installed.ExitCode -ne 0 -or
+            [string]$installed.Output -cnotmatch '^package:') {
+            throw "Android Appium helper package '$($helper.Package)' was not installed."
+        }
+    }
+
+    return [pscustomobject]@{
+        DeviceUdid = $DeviceUdid
+        PackageCount = $helpers.Count
     }
 }
 
