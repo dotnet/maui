@@ -78,20 +78,20 @@ static class SetPropertyHelpers
 		if (extensionPropertyReported)
 			return;
 
-		if (hasBindableProperty || !IsUnresolvedQualifiedMember(parentVar, propertyName, context))
-		{
-			//POCO, set the property
-			if (!asCollectionItem && CanSet(parentVar, localName, valueNode, context))
-			{
-				Set(writer, parentVar, localName, valueNode, context, getNodeValue);
-				return;
-			}
+		if (!hasBindableProperty && ReportUnresolvedExtensionMember(parentVar, propertyName, valueNode, context))
+			return;
 
-			if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, getNodeValue))
-			{
-				Add(writer, parentVar, propertyName, valueNode, context, getNodeValue);
-				return;
-			}
+		//POCO, set the property
+		if (!asCollectionItem && CanSet(parentVar, localName, valueNode, context))
+		{
+			Set(writer, parentVar, localName, valueNode, context, getNodeValue);
+			return;
+		}
+
+		if (CanAdd(parentVar, localName, bpFieldSymbol, attached, valueNode, context, getNodeValue))
+		{
+			Add(writer, parentVar, propertyName, valueNode, context, getNodeValue);
+			return;
 		}
 
 		// If the node was removed from Variables (e.g., Setter with no value due to OnPlatform), skip silently
@@ -1307,13 +1307,14 @@ static class SetPropertyHelpers
 	/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
 	/// block, and that type declares the extension properties. See <see cref="ExtensionPropertyConventions"/>.
 	/// </summary>
-	static bool DeclaresExtensionProperty(INamedTypeSymbol container, string propertyName)
+	/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
+	static bool DeclaresExtensionProperty(INamedTypeSymbol container, string? propertyName)
 	{
 		foreach (var nested in container.GetTypeMembers())
 		{
 			if (nested.CanBeReferencedByName && ExtensionPropertyConventions.IsSpeakable(nested.MetadataName))
 				continue;
-			if (nested.GetMembers(propertyName).OfType<IPropertySymbol>().Any())
+			if ((propertyName == null ? nested.GetMembers() : nested.GetMembers(propertyName)).OfType<IPropertySymbol>().Any())
 				return true;
 			if (DeclaresExtensionProperty(nested, propertyName))
 				return true;
@@ -1413,17 +1414,18 @@ static class SetPropertyHelpers
 	}
 
 	/// <summary>
-	/// A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
-	/// back to a member of the target itself: the ordinary lookup searches the target's own type, so the owner
-	/// has to be one of the target's types and has to declare or inherit the member.
+	/// An extension container is only ever named for its extension properties, so when none applies the name
+	/// must not fall back to a member of the target itself. Any other explicitly named owner keeps resolving
+	/// the way it always did.
 	/// </summary>
-	static bool IsUnresolvedQualifiedMember(ILocalValue parentVar, XmlName propertyName, SourceGenContext context)
+	static bool ReportUnresolvedExtensionMember(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context)
 	{
 		if (!TryGetQualifiedOwner(propertyName, context, out var owner, out var memberName))
 			return false;
+		if (!owner!.IsStatic || owner.IsGenericType || !DeclaresExtensionProperty(owner, propertyName: null))
+			return false;
 
-		return !IsReceiverApplicable(owner!, parentVar.Type, context)
-			|| !owner!.GetAllProperties(memberName, context).Any();
+		return ReportExtensionPropertyResolution(memberName, owner, parentVar.Type, context, (IXmlLineInfo)node);
 	}
 
 	//emits LabelExtensions.set_MyTag(label, "value"), the implementation method the C# compiler emits for the extension property

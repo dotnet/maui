@@ -1446,7 +1446,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSetExtensionProperty(parent, propertyName, valueNode, context, iXmlLineInfo, out var extensionAccessors))
 				return SetExtensionProperty(parent, extensionAccessors, valueNode, iXmlLineInfo, context);
 
-			ThrowIfUnresolvedQualifiedMember(parent, propertyName, bpRef, context, iXmlLineInfo);
+			ThrowIfUnresolvedExtensionMember(parent, propertyName, bpRef, context, iXmlLineInfo);
 
 			//If it's a property, set it
 			if (CanSet(parent, localName, valueNode, context))
@@ -1469,7 +1469,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanGetValue(parent, bpRef, attached, lineInfo, context, out _))
 				return GetValue(parent, bpRef, lineInfo, context, out propertyType);
 
-			ThrowIfUnresolvedQualifiedMember(parent, propertyName, bpRef, context, lineInfo);
+			ThrowIfUnresolvedExtensionMember(parent, propertyName, bpRef, context, lineInfo);
 
 			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
@@ -1985,8 +1985,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var cache = context.Cache;
 			var containerDef = container?.ResolveCached(cache);
 
-			//static classes are abstract and sealed. Generic containers can't be named in XAML
-			if (containerDef == null || !containerDef.IsAbstract || !containerDef.IsSealed || containerDef.HasGenericParameters)
+			if (containerDef == null || !IsStaticContainer(containerDef))
 				return null;
 
 			if (!DeclaresExtensionProperty(containerDef, propertyName))
@@ -2023,17 +2022,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			};
 		}
 
+		//static classes are abstract and sealed. Generic containers can't be named in XAML
+		static bool IsStaticContainer(TypeDefinition typeDef)
+			=> typeDef.IsAbstract && typeDef.IsSealed && !typeDef.HasGenericParameters;
+
 		/// <summary>
 		/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
 		/// block, and that type declares the extension properties. See <see cref="ExtensionPropertyConventions"/>.
 		/// </summary>
+		/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
 		static bool DeclaresExtensionProperty(TypeDefinition containerDef, string propertyName)
 		{
 			foreach (var nested in containerDef.NestedTypes)
 			{
 				if (ExtensionPropertyConventions.IsSpeakable(nested.Name))
 					continue;
-				if (nested.Properties.Any(pd => pd.Name == propertyName))
+				if (propertyName == null ? nested.HasProperties : nested.Properties.Any(pd => pd.Name == propertyName))
 					return true;
 				if (DeclaresExtensionProperty(nested, propertyName))
 					return true;
@@ -2159,22 +2163,23 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		/// <summary>
-		/// A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
-		/// back to a member of the target itself: the ordinary lookup searches the target's own type, so the
-		/// owner has to be one of the target's types and has to declare or inherit the member.
+		/// An extension container is only ever named for its extension properties, so when none applies the
+		/// name must not fall back to a member of the target itself. Any other explicitly named owner keeps
+		/// resolving the way it always did.
 		/// </summary>
-		static void ThrowIfUnresolvedQualifiedMember(VariableDefinition parent, XmlName propertyName, FieldReference bpRef, ILContext context, IXmlLineInfo lineInfo)
+		static void ThrowIfUnresolvedExtensionMember(VariableDefinition parent, XmlName propertyName, FieldReference bpRef, ILContext context, IXmlLineInfo lineInfo)
 		{
 			//an attached bindable property resolved the qualified name already, collections are added to below
 			if (bpRef != null)
 				return;
 			if (!TryGetQualifiedOwner(propertyName, context, lineInfo, out var owner, out var memberName))
 				return;
-			if (IsReceiverApplicable(owner, parent.VariableType, context.Cache)
-				&& owner.GetProperty(context.Cache, pd => pd.Name == memberName, out _) != null)
+
+			var ownerDef = owner?.ResolveCached(context.Cache);
+			if (ownerDef == null || !IsStaticContainer(ownerDef) || !DeclaresExtensionProperty(ownerDef, propertyName: null))
 				return;
 
-			throw new BuildException(MemberResolution, lineInfo, null, propertyName.LocalName);
+			throw new BuildException(ExtensionPropertyResolution, lineInfo, null, memberName, ownerDef.FullName, parent.VariableType.FullName);
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)
