@@ -14,13 +14,11 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// }
 	/// </code>
 	/// <para>
-	/// into a static class annotated with <c>System.Runtime.CompilerServices.ExtensionAttribute</c> that
-	/// declares <c>public static string get_MyTag(Label)</c> and <c>public static void set_MyTag(Label, string)</c>
-	/// implementation methods, plus unspeakable nested "grouping" types holding the skeleton members.
-	/// The inflators only ever look at the implementation methods on the container itself: the synthesized
-	/// <c>ExtensionAttribute</c> is not observable through Roslyn's symbol model, so the accessor shape is the
-	/// only signal all three inflators can agree on. The container is always named explicitly in the markup,
-	/// so no type is ever matched by accident.
+	/// into a static class that declares <c>public static string get_MyTag(Label)</c> and
+	/// <c>public static void set_MyTag(Label, string)</c> implementation methods, plus a nested, unspeakable
+	/// "extension declaration" type that declares the extension property itself. The inflators call the
+	/// implementation method, and use the nested declaration as the marker that the container really is an
+	/// extension container.
 	/// </para>
 	/// <para>Supported in XAML, using the qualified (attached-property-like) syntax only:</para>
 	/// <code>&lt;Label local:LabelExtensions.MyTag="Hello" /&gt;</code>
@@ -34,28 +32,60 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// <para>Requirements for a container/accessor to be usable from XAML:</para>
 	/// <list type="bullet">
 	/// <item><description>the container is a non-generic static class;</description></item>
-	/// <item><description>the accessors are non-generic <c>public static</c> methods declared on the container;</description></item>
-	/// <item><description>the getter takes the receiver only, the setter takes the receiver and the value;</description></item>
+	/// <item><description>the container declares an extension property with that name (see <see cref="IsSpeakable"/>);</description></item>
+	/// <item><description>the setter is a non-generic <c>public static void set_Name(TReceiver, TValue)</c> method on the container;</description></item>
 	/// <item><description>the receiver parameter is not by-ref and is assignable from the target element type;</description></item>
 	/// <item><description>the container is accessible from the assembly declaring the XAML;</description></item>
-	/// <item><description>when several accessors apply, exactly one has a receiver type more derived than all the others.</description></item>
+	/// <item><description>when several setters apply, exactly one has a receiver type more derived than all the others.</description></item>
 	/// </list>
 	/// <para>
-	/// Only assignment is supported. Reading an extension property (to add items to the collection it returns,
-	/// for instance) is not, so that the three inflators keep accepting exactly the same markup. Generic
-	/// extension blocks (<c>extension&lt;T&gt;(ICollection&lt;T&gt;)</c>) and static extension properties are
-	/// rejected with a diagnostic rather than silently ignored.
+	/// Only assignment is supported, so the selected <c>set_Name</c> method alone defines the receiver type and
+	/// the value type. Getters are never consulted: an extension property may be declared with its getter and
+	/// its setter in different extension blocks, with different receivers and even different value types, and
+	/// merging those into a single property shape would produce a shape no accessor actually has.
+	/// Reading an extension property (to add items to the collection it returns, for instance) is not supported
+	/// either, so that the three inflators keep accepting exactly the same markup. Generic extension blocks
+	/// (<c>extension&lt;T&gt;(ICollection&lt;T&gt;)</c>) and static extension properties have no applicable
+	/// <c>set_Name(TReceiver, TValue)</c> method and are reported, not silently ignored.
 	/// </para>
 	/// <para>
 	/// XamlC and SourceGen resolve everything at build time and emit a direct call to the setter; they are the
-	/// trimming and AOT safe paths. The runtime inflator resolves the accessors reflectively and therefore
+	/// trimming and AOT safe paths. The runtime inflator resolves the setter reflectively and therefore
 	/// inherits the existing trimming limitations of runtime XAML inflation.
 	/// </para>
 	/// </remarks>
 	static class ExtensionPropertyConventions
 	{
-		public static string GetterName(string propertyName) => "get_" + propertyName;
-
 		public static string SetterName(string propertyName) => "set_" + propertyName;
+
+		/// <summary>
+		/// Tells whether a type name can be written in C#. The compiler names the nested extension declaration
+		/// types it generates with characters no C# identifier may contain, and those types are the marker the
+		/// inflators use to accept a container.
+		/// </summary>
+		/// <remarks>
+		/// The exact names are an implementation detail and differ between compiler versions, so they are never
+		/// matched; only their unspeakability is. <c>ExtensionAttribute</c> cannot be used instead: Roslyn does
+		/// not surface it through <c>ISymbol.GetAttributes()</c>, neither for source nor for metadata symbols,
+		/// and <c>INamedTypeSymbol.IsExtension</c> is newer than the Microsoft.CodeAnalysis version the MAUI
+		/// source generator is built against.
+		/// </remarks>
+		public static bool IsSpeakable(string typeName)
+		{
+			if (string.IsNullOrEmpty(typeName))
+				return false;
+
+			foreach (var c in typeName)
+			{
+				//generic arity (`1) and nesting separators are part of a speakable metadata name
+				if (!char.IsLetterOrDigit(c) && c != '_' && c != '.' && c != '`')
+					return false;
+			}
+
+			return true;
+		}
+
+		public static string ResolutionError(string propertyName, string containerName, string targetTypeName)
+			=> $"Cannot resolve the extension property \"{propertyName}\" on \"{containerName}\". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a setter whose receiver type matches \"{targetTypeName}\", and it must be unambiguous.";
 	}
 }

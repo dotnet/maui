@@ -438,6 +438,14 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 
+			//A qualified name (Owner.Member) that resolved to none of the above must not silently fall back to a
+			//member of the target itself, unless the owner is the target's own type or one of its base types
+			if (xpe == null && attached && property == null && !bpOwnerType.IsAssignableFrom(element.GetType()))
+			{
+				xpe = new XamlParseException($"Cannot assign property \"{propertyName.LocalName}\": \"{bpOwnerType.FullName}\" declares no attached property, no attached bindable property and no extension property \"{localName}\" applicable to \"{element.GetType().FullName}\"", lineInfo);
+				return false;
+			}
+
 			//If we can assign that value to a normal property, let's do it
 			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
 			{
@@ -472,6 +480,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's a BindableProberty, GetValue
 			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))
 				return value;
+
+			//see TrySetPropertyValue: a qualified name never falls back to a member of the target itself
+			if (xpe == null && attached && property == null && !bpOwnerType.IsAssignableFrom(xamlElement.GetType()))
+			{
+				xpe = new XamlParseException($"Property {propertyName.LocalName} is not found or does not have an accessible getter", lineInfo);
+				return null;
+			}
 
 			//If it's a normal property, get it
 			if (xpe == null && TryGetProperty(xamlElement, localName, out value, lineInfo, rootElement, out xpe, out targetProperty))
@@ -791,100 +806,67 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		sealed class ExtensionPropertyAccessors
 		{
-			public static readonly ExtensionPropertyAccessors None = new ExtensionPropertyAccessors();
+			public static readonly ExtensionPropertyAccessors NotAnExtensionProperty = new ExtensionPropertyAccessors();
 
-			public MethodInfo Getter { get; init; }
 			public MethodInfo Setter { get; init; }
 			public Type PropertyType { get; init; }
-			public bool Ambiguous { get; init; }
-			public bool Unsupported { get; init; }
-			public bool Found => Getter != null || Setter != null;
+			public bool Declared { get; init; }
 		}
 
 		static readonly ConcurrentDictionary<(Type Container, Type Target, string Name), ExtensionPropertyAccessors> s_extensionProperties = new();
 
 		/// <summary>
-		/// Resolves the <c>get_Name</c>/<c>set_Name</c> implementation methods of a C# extension property declared
-		/// by <paramref name="containerType"/> and applicable to <paramref name="targetType"/>.
+		/// Resolves the <c>set_Name</c> implementation method of a C# extension property declared by
+		/// <paramref name="containerType"/> and applicable to <paramref name="targetType"/>.
 		/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with XamlC and SourceGen.
 		/// </summary>
 		static ExtensionPropertyAccessors ResolveExtensionProperty(Type containerType, Type targetType, string propertyName)
 		{
 			if (containerType == null || targetType == null)
-				return ExtensionPropertyAccessors.None;
+				return ExtensionPropertyAccessors.NotAnExtensionProperty;
 
 			//static classes are abstract and sealed. Generic containers can't be named in XAML
 			if (!containerType.IsAbstract || !containerType.IsSealed || containerType.IsGenericType || containerType.IsGenericTypeDefinition)
-				return ExtensionPropertyAccessors.None;
+				return ExtensionPropertyAccessors.NotAnExtensionProperty;
 
 			return s_extensionProperties.GetOrAdd((containerType, targetType, propertyName), static key => ResolveExtensionPropertyCore(key.Container, key.Target, key.Name));
 		}
 
 		static ExtensionPropertyAccessors ResolveExtensionPropertyCore(Type containerType, Type targetType, string propertyName)
 		{
-			var getterName = ExtensionPropertyConventions.GetterName(propertyName);
-			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
+			if (!DeclaresExtensionProperty(containerType, propertyName))
+				return ExtensionPropertyAccessors.NotAnExtensionProperty;
 
-			List<MethodInfo> getters = null;
+			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
 			List<MethodInfo> setters = null;
-			var unsupported = false;
 
 			foreach (var method in containerType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
 			{
-				var isGetter = method.Name == getterName;
-				if (!isGetter && method.Name != setterName)
+				//only assignment is supported, so the setter alone defines the receiver and the value type
+				if (method.Name != setterName || method.IsGenericMethodDefinition || method.ReturnType != typeof(void))
 					continue;
-
-				//generic extension blocks (extension<T>(ICollection<T>)) and static extension properties aren't supported
-				if (method.IsGenericMethodDefinition)
-				{
-					unsupported = true;
-					continue;
-				}
 
 				var parameters = method.GetParameters();
-				if (parameters.Length != (isGetter ? 1 : 2))
-				{
-					unsupported = true;
-					continue;
-				}
-
-				var receiverType = parameters[0].ParameterType;
-				if (receiverType.IsByRef || !receiverType.IsAssignableFrom(targetType))
+				if (parameters.Length != 2 || parameters[0].ParameterType.IsByRef || !parameters[0].ParameterType.IsAssignableFrom(targetType))
 					continue;
 
-				if (isGetter)
-				{
-					if (method.ReturnType == typeof(void))
-						continue;
-					(getters ??= new List<MethodInfo>()).Add(method);
-				}
-				else
-				{
-					if (method.ReturnType != typeof(void))
-						continue;
-					(setters ??= new List<MethodInfo>()).Add(method);
-				}
+				(setters ??= new List<MethodInfo>()).Add(method);
 			}
 
-			if (getters == null && setters == null)
-				return unsupported ? new ExtensionPropertyAccessors { Unsupported = true } : ExtensionPropertyAccessors.None;
+			var setter = MostSpecific(setters);
+			if (setter == null)
+				return new ExtensionPropertyAccessors { Declared = true };
 
-			var getter = MostSpecific(getters, out var ambiguousGetter);
-			var setter = MostSpecific(setters, out var ambiguousSetter);
-			if (ambiguousGetter || ambiguousSetter)
-				return new ExtensionPropertyAccessors { Ambiguous = true };
-
-			var propertyType = getter?.ReturnType ?? setter.GetParameters()[1].ParameterType;
-			if (getter != null && setter != null && setter.GetParameters()[1].ParameterType != propertyType)
-				return new ExtensionPropertyAccessors { Ambiguous = true };
-
-			return new ExtensionPropertyAccessors { Getter = getter, Setter = setter, PropertyType = propertyType };
-
-			//the accessor whose receiver type is more derived than every other applicable one wins, as it would in C#
-			static MethodInfo MostSpecific(List<MethodInfo> candidates, out bool ambiguous)
+			return new ExtensionPropertyAccessors
 			{
-				ambiguous = false;
+				Declared = true,
+				Setter = setter,
+				PropertyType = setter.GetParameters()[1].ParameterType,
+			};
+
+			//the setter whose receiver type is more derived than every other applicable one wins, as it would in C#
+			static MethodInfo MostSpecific(List<MethodInfo> candidates)
+			{
 				if (candidates == null)
 					return null;
 				if (candidates.Count == 1)
@@ -908,49 +890,46 @@ namespace Microsoft.Maui.Controls.Xaml
 					if (!isBest)
 						continue;
 					if (best != null)
-					{
-						ambiguous = true;
-						return null;
-					}
+						return null; //ambiguous
 					best = candidate;
 				}
 
-				ambiguous = best == null;
 				return best;
 			}
 		}
 
-		static bool TryResolveExtensionProperty(Type containerType, Type targetType, string propertyName, object rootElement, IXmlLineInfo lineInfo, out ExtensionPropertyAccessors accessors, out Exception exception)
+		/// <summary>
+		/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
+		/// block, and that type declares the extension properties. It is the only marker that tells a real
+		/// extension container apart from a static class that happens to declare get_X/set_X methods, and the
+		/// only one observable from reflection, Cecil and Roslyn alike.
+		/// </summary>
+		static bool DeclaresExtensionProperty(Type containerType, string propertyName)
 		{
-			exception = null;
-			accessors = ResolveExtensionProperty(containerType, targetType, propertyName);
-
-			if (accessors.Ambiguous || accessors.Unsupported)
+			foreach (var nested in containerType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
 			{
-				exception = new XamlParseException($"Cannot resolve the extension property \"{propertyName}\" on \"{containerType.FullName}\". The extension property must be a non-generic instance extension property, declared in a non-generic static extension container, with a receiver type matching \"{targetType.FullName}\", and it must be unambiguous.", lineInfo);
-				return false;
+				if (ExtensionPropertyConventions.IsSpeakable(nested.Name))
+					continue;
+				if (nested.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly) != null)
+					return true;
+				if (DeclaresExtensionProperty(nested, propertyName))
+					return true;
 			}
 
-			if (!accessors.Found)
-				return false;
-
-			if (!IsVisibleFrom(containerType, rootElement))
-			{
-				exception = new XamlParseException($"The extension container \"{containerType.FullName}\" is not accessible from \"{rootElement.GetType().Assembly.GetName().Name}\".", lineInfo);
-				return false;
-			}
-
-			return true;
+			return false;
 		}
 
 		static bool TrySetExtensionProperty(object element, Type containerType, string propertyName, object value, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)
 		{
-			if (!TryResolveExtensionProperty(containerType, element.GetType(), propertyName, rootElement, lineInfo, out var accessors, out exception))
+			exception = null;
+
+			var accessors = ResolveExtensionProperty(containerType, element.GetType(), propertyName);
+			if (!accessors.Declared)
 				return false;
 
-			if (accessors.Setter == null)
+			if (accessors.Setter == null || !IsVisibleFrom(containerType, rootElement))
 			{
-				exception = new XamlParseException($"The extension property \"{containerType.FullName}.{propertyName}\" has no accessible setter.", lineInfo);
+				exception = new XamlParseException(ExtensionPropertyConventions.ResolutionError(propertyName, containerType.FullName, element.GetType().FullName), lineInfo);
 				return false;
 			}
 
