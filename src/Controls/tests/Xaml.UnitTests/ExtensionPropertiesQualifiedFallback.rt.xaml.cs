@@ -26,7 +26,10 @@ public partial class ExtensionPropertiesQualifiedFallback : ContentPage
 		internal void Throw(XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.XamlC)
-				Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(ExtensionPropertiesQualifiedFallback)));
+			{
+				var e = Assert.Throws<BuildException>(() => MockCompiler.Compile(typeof(ExtensionPropertiesQualifiedFallback)));
+				Assert.Equal(BuildExceptionCode.ExtensionPropertyResolution, e.Code);
+			}
 			else if (inflator == XamlInflator.Runtime)
 				Assert.Throws<XamlParseException>(() => new ExtensionPropertiesQualifiedFallback(inflator));
 			else if (inflator == XamlInflator.SourceGen)
@@ -44,7 +47,7 @@ public partial class ExtensionPropertiesQualifiedFallback : ContentPage
 }
 """)
 					.RunMauiSourceGenerator(typeof(ExtensionPropertiesQualifiedFallback));
-				Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2002"));
+				Assert.True(result.Diagnostics.Any(d => d.Id == "MAUIX2015"));
 				Assert.DoesNotContain(".Text =", result.GeneratedInitializeComponent(), System.StringComparison.Ordinal);
 			}
 		}

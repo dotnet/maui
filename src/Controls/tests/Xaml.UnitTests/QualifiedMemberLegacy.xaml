@@ -2,16 +2,23 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
-			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.QualifiedMemberOwner">
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.QualifiedMemberLegacy">
+	<!-- the owner is not even a type of the target: the qualifier is ignored and Resources is resolved on the page -->
+	<ContentView.Resources>
+		<x:String x:Key="legacyKey">legacy value</x:String>
+	</ContentView.Resources>
 	<StackLayout>
-		<!-- the named owner is a base class of the target, and declares the property -->
+		<!-- the owner is a base class of the target, and declares the property -->
 		<local:QualifiedMemberProbe x:Name="probe0" local:QualifiedMemberProbeBase.BaseOnly="from base owner" />
 
-		<!-- the named owner is an interface the target implements, and declares the property -->
+		<!-- the owner is an interface the target implements, and declares the property -->
 		<local:QualifiedMemberProbe x:Name="probe1" local:IQualifiedMemberProbe.InterfaceOnly="from interface owner" />
 
+		<!-- the owner declares nothing of the sort: the qualifier is ignored, as it always was -->
+		<local:QualifiedMemberProbe x:Name="probe2" local:QualifiedMemberProbeBase.DerivedOnly="qualifier is ignored" />
+
 		<!-- property element syntax with a base owner -->
-		<local:QualifiedMemberProbe x:Name="probe2">
+		<local:QualifiedMemberProbe x:Name="probe3">
 			<local:QualifiedMemberProbeBase.BaseOnly>
 				<x:String>from base owner property element</x:String>
 			</local:QualifiedMemberProbeBase.BaseOnly>

@@ -438,11 +438,11 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 
-			//A qualified name (Owner.Member) that resolved to none of the above must not silently fall back to a
-			//member of the target itself: the ordinary lookup below searches the target's concrete type
-			if (xpe == null && attached && property == null && !IsOwnMemberOf(bpOwnerType, element.GetType(), localName))
+			//An extension container is only ever named for its extension properties, so when none applies the
+			//name must not fall back to a member of the target itself
+			if (xpe == null && attached && property == null && IsExtensionContainer(bpOwnerType))
 			{
-				xpe = new XamlParseException($"Cannot assign property \"{propertyName.LocalName}\": \"{bpOwnerType.FullName}\" declares no attached bindable property, no extension property and no property \"{localName}\" applicable to \"{element.GetType().FullName}\"", lineInfo);
+				xpe = new XamlParseException(ExtensionPropertyConventions.ResolutionError(localName, bpOwnerType.FullName, element.GetType().FullName), lineInfo);
 				return false;
 			}
 
@@ -481,10 +481,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))
 				return value;
 
-			//see TrySetPropertyValue: a qualified name never falls back to a member of the target itself
-			if (xpe == null && attached && property == null && !IsOwnMemberOf(bpOwnerType, xamlElement.GetType(), localName))
+			//see TrySetPropertyValue: an extension container never falls back to a member of the target itself
+			if (xpe == null && attached && property == null && IsExtensionContainer(bpOwnerType))
 			{
-				xpe = new XamlParseException($"Property {propertyName.LocalName} is not found or does not have an accessible getter", lineInfo);
+				xpe = new XamlParseException(ExtensionPropertyConventions.ResolutionError(localName, bpOwnerType.FullName, xamlElement.GetType().FullName), lineInfo);
 				return null;
 			}
 
@@ -780,40 +780,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			return false;
 		}
 
-		/// <summary>
-		/// Tells whether <paramref name="localName"/> may be resolved through the type explicitly named in a
-		/// qualified <c>Owner.Member</c> attribute or property element. The member itself is looked up on the
-		/// target instance afterwards, so the owner has to be one of the target's own types, and it has to
-		/// declare or inherit the member: <c>&lt;Label local:VisualElement.Text="..."/&gt;</c> would otherwise
-		/// reach <c>Label.Text</c>, which <c>VisualElement</c> never declares.
-		/// </summary>
-		static bool IsOwnMemberOf(Type ownerType, Type targetType, string localName)
-		{
-			if (ownerType == null || !ownerType.IsAssignableFrom(targetType))
-				return false;
-
-			foreach (var property in ownerType.GetRuntimeProperties())
-			{
-				if (property.Name == localName)
-					return true;
-			}
-
-			//an interface does not inherit the members of its base interfaces through GetRuntimeProperties
-			if (ownerType.IsInterface)
-			{
-				foreach (var face in ownerType.GetInterfaces())
-				{
-					foreach (var property in face.GetRuntimeProperties())
-					{
-						if (property.Name == localName)
-							return true;
-					}
-				}
-			}
-
-			return false;
-		}
-
 		static bool IsVisibleFrom(Type type, object rootElement)
 		{
 			if (type.IsPublic || type.IsNestedPublic)
@@ -856,11 +822,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		/// </summary>
 		static ExtensionPropertyAccessors ResolveExtensionProperty(Type containerType, Type targetType, string propertyName)
 		{
-			if (containerType == null || targetType == null)
-				return ExtensionPropertyAccessors.NotAnExtensionProperty;
-
-			//static classes are abstract and sealed. Generic containers can't be named in XAML
-			if (!containerType.IsAbstract || !containerType.IsSealed || containerType.IsGenericType || containerType.IsGenericTypeDefinition)
+			if (containerType == null || targetType == null || !IsStaticContainer(containerType))
 				return ExtensionPropertyAccessors.NotAnExtensionProperty;
 
 			return s_extensionProperties.GetOrAdd((containerType, targetType, propertyName), static key => ResolveExtensionPropertyCore(key.Container, key.Target, key.Name));
@@ -932,19 +894,34 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
+		//static classes are abstract and sealed. Generic containers can't be named in XAML
+		static bool IsStaticContainer(Type type)
+			=> type.IsAbstract && type.IsSealed && !type.IsGenericType && !type.IsGenericTypeDefinition;
+
+		/// <summary>
+		/// Tells whether a type explicitly named in XAML is a C# extension container, that is a static class
+		/// declaring at least one extension property. Such a type is only ever named for its extension
+		/// properties, so a name it cannot resolve is an error rather than a fallback to the target's members.
+		/// </summary>
+		static bool IsExtensionContainer(Type type)
+			=> type != null && IsStaticContainer(type) && DeclaresExtensionProperty(type, propertyName: null);
+
 		/// <summary>
 		/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
 		/// block, and that type declares the extension properties. It is the only marker that tells a real
 		/// extension container apart from a static class that happens to declare get_X/set_X methods, and the
 		/// only one observable from reflection, Cecil and Roslyn alike.
 		/// </summary>
+		/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
 		static bool DeclaresExtensionProperty(Type containerType, string propertyName)
 		{
+			const BindingFlags declared = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
 			foreach (var nested in containerType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
 			{
 				if (ExtensionPropertyConventions.IsSpeakable(nested.Name))
 					continue;
-				if (nested.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly) != null)
+				if (propertyName == null ? nested.GetProperties(declared).Length > 0 : nested.GetProperty(propertyName, declared) != null)
 					return true;
 				if (DeclaresExtensionProperty(nested, propertyName))
 					return true;
