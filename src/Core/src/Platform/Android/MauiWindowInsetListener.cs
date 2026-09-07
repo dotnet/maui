@@ -30,7 +30,12 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly HashSet<AView> _trackedViews = [];
 		readonly HashSet<AView> _imeAnimationViews = [];
-		bool IsImeAnimating { get; set; }
+		readonly HashSet<AView> _pendingFocusedViewRequests = [];
+		readonly HashSet<WindowInsetsAnimationCompat> _runningImeAnimations = [];
+		bool _imeAnimationStateInitialized;
+		bool _shouldApplyAnimatedImeInsets;
+		int _lastImeInsetBottom = -1;
+		bool IsImeAnimating => _runningImeAnimations.Count > 0;
 
 		// Static tracking for views that have local inset listeners.
 		// This registry allows child views to find their appropriate listener without
@@ -434,18 +439,17 @@ namespace Microsoft.Maui.Platform
 		public override void OnPrepare(WindowInsetsAnimationCompat? animation)
 		{
 			base.OnPrepare(animation);
-			if (IsImeAnimation(animation))
+			if (animation is not null && IsImeAnimation(animation))
 			{
-				_imeAnimationViews.Clear();
-				IsImeAnimating = true;
+				StartImeAnimation(animation);
 			}
 		}
 
 		public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
 		{
-			if (IsImeAnimation(animation))
+			if (animation is not null && IsImeAnimation(animation))
 			{
-				IsImeAnimating = true;
+				StartImeAnimation(animation);
 			}
 
 			return bounds;
@@ -453,16 +457,49 @@ namespace Microsoft.Maui.Platform
 
 		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
 		{
-			if (insets is null || runningAnimations is null || !runningAnimations.Any(IsImeAnimation))
+			if (insets is null || runningAnimations is null)
 			{
 				return insets;
 			}
+
+			bool hasImeAnimation = false;
+			for (int i = 0; i < runningAnimations.Count; i++)
+			{
+				if (IsImeAnimation(runningAnimations[i]))
+				{
+					hasImeAnimation = true;
+					break;
+				}
+			}
+
+			if (!hasImeAnimation)
+			{
+				return insets;
+			}
+
+			var imeInsetBottom = insets.GetInsets(WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
+			var isImeOpening = _lastImeInsetBottom >= 0 && imeInsetBottom > _lastImeInsetBottom;
+			_lastImeInsetBottom = imeInsetBottom;
 
 			foreach (var view in _imeAnimationViews)
 			{
 				if (view is ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout } && view.Context is Context context)
 				{
-					SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(insets, crossPlatformLayout, context, view);
+					InitializeImeAnimationState(context);
+					if (_shouldApplyAnimatedImeInsets &&
+						SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
+							insets,
+							crossPlatformLayout,
+							context,
+							view,
+							isImeOpening))
+					{
+						TrackView(view);
+						if (isImeOpening)
+						{
+							RequestFocusedViewVisibleAfterLayout(view);
+						}
+					}
 				}
 			}
 
@@ -473,16 +510,121 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnEnd(animation);
 
-			if (IsImeAnimation(animation))
+			if (animation is not null &&
+				IsImeAnimation(animation) &&
+				_runningImeAnimations.Remove(animation) &&
+				_runningImeAnimations.Count == 0)
 			{
-				IsImeAnimating = false;
 				foreach (var view in _imeAnimationViews)
 				{
 					ViewCompat.RequestApplyInsets(view);
 				}
-
 				_imeAnimationViews.Clear();
+				_pendingFocusedViewRequests.Clear();
+				_imeAnimationStateInitialized = false;
+				_shouldApplyAnimatedImeInsets = false;
+				_lastImeInsetBottom = -1;
 			}
+		}
+
+		void RequestFocusedViewVisibleAfterLayout(AView insetView)
+		{
+			if (!_pendingFocusedViewRequests.Add(insetView))
+			{
+				return;
+			}
+
+			insetView.Post(() =>
+			{
+				_pendingFocusedViewRequests.Remove(insetView);
+				if (!insetView.IsAttachedToWindow)
+				{
+					return;
+				}
+
+				var focusedView = insetView.RootView?.FindFocus();
+				if (focusedView is null || !IsDescendantOf(focusedView, insetView))
+				{
+					return;
+				}
+
+				// If a scrollable list (CollectionView/CarouselView) sits between the focused
+				// view and the safe-area container, let it manage its own item visibility
+				// instead of forcing it to scroll as a side effect of the keyboard opening.
+				if (HasInterveningRecyclerViewAncestor(focusedView, insetView))
+				{
+					return;
+				}
+
+				var visibleRect = new global::Android.Graphics.Rect();
+				if (focusedView.GetGlobalVisibleRect(visibleRect) &&
+					visibleRect.Width() >= focusedView.Width &&
+					visibleRect.Height() >= focusedView.Height)
+				{
+					return;
+				}
+
+				var focusedRect = new global::Android.Graphics.Rect();
+				focusedView.GetDrawingRect(focusedRect);
+				focusedView.RequestRectangleOnScreen(focusedRect, true);
+			});
+		}
+
+		/// <summary>
+		/// Checks whether a <see cref="RecyclerView"/> (the platform base for CollectionView/CarouselView)
+		/// sits between <paramref name="child"/> and <paramref name="boundary"/> in the view hierarchy.
+		/// <c>RequestRectangleOnScreen</c> bubbles through every ancestor, including nested
+		/// scrollable containers, so this is used to avoid unintentionally scrolling a nested list.
+		/// </summary>
+		static bool HasInterveningRecyclerViewAncestor(AView child, AView boundary)
+		{
+			var parent = child.Parent;
+			while (parent is AView parentView && parentView != boundary)
+			{
+				if (parentView is RecyclerView)
+				{
+					return true;
+				}
+
+				parent = parentView.Parent;
+			}
+
+			return false;
+		}
+
+		void StartImeAnimation(WindowInsetsAnimationCompat animation)
+		{
+			if (_runningImeAnimations.Count == 0)
+			{
+				_imeAnimationViews.Clear();
+				_pendingFocusedViewRequests.Clear();
+				_imeAnimationStateInitialized = false;
+				_shouldApplyAnimatedImeInsets = false;
+				_lastImeInsetBottom = -1;
+			}
+
+			_runningImeAnimations.Add(animation);
+		}
+
+		void InitializeImeAnimationState(Context context)
+		{
+			if (_imeAnimationStateInitialized)
+			{
+				return;
+			}
+
+			_imeAnimationStateInitialized = true;
+
+			if (context.GetActivity()?.Window?.Attributes is WindowManagerLayoutParams attributes)
+			{
+				_shouldApplyAnimatedImeInsets = ShouldApplyAnimatedImeInsets(attributes.SoftInputMode);
+			}
+		}
+
+		internal static bool ShouldApplyAnimatedImeInsets(SoftInput softInputMode)
+		{
+			var adjustMode = softInputMode & SoftInput.MaskAdjust;
+			return adjustMode == SoftInput.AdjustResize || adjustMode == SoftInput.AdjustNothing;
 		}
 
 		/// <summary>

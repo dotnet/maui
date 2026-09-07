@@ -308,48 +308,34 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
-	internal static void ApplyAnimatedSoftInputInsetsPx(
+	internal static bool ApplyAnimatedSoftInputInsetsPx(
 		WindowInsetsCompat windowInsets,
 		ICrossPlatformLayout crossPlatformLayout,
 		Context context,
-		View view)
+		View view,
+		bool isImeOpening)
 	{
 		var bottomRegion = GetSafeAreaRegionForEdge(3, crossPlatformLayout);
 		if (!SafeAreaEdges.IsSoftInput(bottomRegion))
 		{
-			return;
+			return false;
 		}
 
 		var keyboardBottom = windowInsets.GetKeyboardInsetsPx(context).Bottom;
 		var containerBottom = windowInsets.ToSafeAreaInsetsPx(context).Bottom;
-		var viewHeight = view.Height > 0 ? view.Height : view.MeasuredHeight;
-		if (viewHeight <= 0)
-		{
-			return;
-		}
 
-		var windowManager = context.GetSystemService(Context.WindowService) as IWindowManager;
-		if (windowManager?.DefaultDisplay is null)
-		{
-			return;
-		}
-
-		var realMetrics = new global::Android.Util.DisplayMetrics();
-		windowManager.DefaultDisplay.GetRealMetrics(realMetrics);
-
-		var viewLocation = new int[2];
-		view.GetLocationOnScreen(viewLocation);
-		var rootLocation = new int[2];
-		view.RootView?.GetLocationOnScreen(rootLocation);
-		var viewTop = viewLocation[1] - rootLocation[1];
-		var viewBottom = viewTop + viewHeight;
-		var keyboardOverlap = Math.Min(keyboardBottom, Math.Max(0, viewBottom - (realMetrics.HeightPixels - keyboardBottom)));
-		var containerOverlap = Math.Min(containerBottom, Math.Max(0, viewBottom - (realMetrics.HeightPixels - containerBottom)));
-		var bottom = SafeAreaEdges.IsOnlySoftInput(bottomRegion)
-			? keyboardOverlap
-			: Math.Max(containerOverlap, keyboardOverlap);
+		// While the keyboard is opening, track it directly so the container's bottom padding
+		// (and the viewport it controls) shrinks in step with every animation frame. Clamping
+		// to containerBottom here would hold the padding flat until keyboardBottom exceeds it,
+		// compressing the real shrink into the last few frames and clipping a focused editor.
+		// While closing, keep the containerBottom floor so padding doesn't dip below the
+		// resting container inset and pop back up once the animation ends.
+		var bottom = SafeAreaEdges.IsOnlySoftInput(bottomRegion) || isImeOpening
+			? keyboardBottom
+			: Math.Max(containerBottom, keyboardBottom);
 
 		view.SetPadding(view.PaddingLeft, view.PaddingTop, view.PaddingRight, (int)bottom);
+		return bottom > 0;
 	}
 
 	internal static double GetSafeAreaForEdge(SafeAreaRegions safeAreaRegion, double originalSafeArea, int edge, bool isKeyboardShowing, SafeAreaPadding keyBoardInsets)
@@ -371,10 +357,9 @@ internal static class SafeAreaExtensions
 
 			if (isKeyboardShowing)
 			{
-				// Combined regions such as All must continue respecting container insets
-				// while the keyboard is visible.
+				// Return keyboard insets for any region that includes SoftInput
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
-					return Math.Max(originalSafeArea, keyBoardInsets.Bottom);
+					return keyBoardInsets.Bottom;
 			}
 		}
 
