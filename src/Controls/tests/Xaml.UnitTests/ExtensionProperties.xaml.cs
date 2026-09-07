@@ -223,10 +223,10 @@ public partial class ExtensionProperties : ContentPage
 			""";
 
 		[Fact]
-		public void UnqualifiedExtensionPropertyNameIsNotSupported()
+		public void UnqualifiedNameOnlyResolvesContainersInScope()
 		{
-			// there is no `using` equivalent in xaml, so an unqualified name is never resolved against
-			// extension containers, whichever assemblies happen to be loaded
+			// LabelExtensions is declared in a namespace no xmlns maps, so only the qualified form reaches it,
+			// see ScopedExtensionProperties for the namespaces the default xmlns does bring in scope
 			var xaml = PageWith("MyTag=\"nope\"");
 			Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 		}
