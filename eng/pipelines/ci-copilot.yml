@@ -1113,6 +1113,23 @@ stages:
                   "($([Math]::Round($bytes / 1GB, 2)) GiB).")
                 Remove-Item -LiteralPath $workloadTemp -Recurse -Force
               }
+              $localDotnet = Join-Path "$(DotNet.Dir)" 'dotnet'
+              if (-not (Test-Path -LiteralPath $localDotnet -PathType Leaf)) {
+                throw "The repo-local .NET installation is missing at $localDotnet."
+              }
+              if ($IsLinux) {
+                foreach ($redundantDotnet in @(
+                    '/usr/share/dotnet',
+                    '/opt/hostedtoolcache/dotnet')) {
+                  if (Test-Path -LiteralPath $redundantDotnet -PathType Container) {
+                    Write-Host "Removing redundant hosted .NET SDKs from $redundantDotnet."
+                    & sudo rm -rf -- $redundantDotnet
+                    if ($LASTEXITCODE -ne 0) {
+                      throw "Unable to remove redundant hosted .NET SDKs from $redundantDotnet."
+                    }
+                  }
+                }
+              }
               & df -h "$(Build.SourcesDirectory)"
               if ($LASTEXITCODE -ne 0) {
                 throw 'Unable to report free disk space before emulator provisioning.'
