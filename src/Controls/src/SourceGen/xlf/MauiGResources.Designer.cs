@@ -247,6 +247,8 @@ namespace Microsoft.Maui.Controls.SourceGen {
 
 		internal static string ExtensionPropertyResolution => ResourceManager.GetString("ExtensionPropertyResolution", resourceCulture);
 
+		internal static string ExtensionPropertyAmbiguous => ResourceManager.GetString("ExtensionPropertyAmbiguous", resourceCulture);
+
 		internal static string MethodResolution => ResourceManager.GetString("MethodResolution", resourceCulture);
 
 		internal static string DuplicateKeyInRD => ResourceManager.GetString("DuplicateKeyInRD", resourceCulture);
