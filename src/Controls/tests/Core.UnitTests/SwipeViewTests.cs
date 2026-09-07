@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -414,6 +416,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(swipeItemView);
 			Assert.NotNull(swipeItemView.Content);
 			Assert.NotEmpty(swipeView.LeftItems);
+		}
+
+		[Fact]
+		public void SwipeItemViewIsNotRetainedByCommand()
+		{
+			var command = new TestCommand();
+			var swipeItemView = CreateSwipeItemViewWeakReference(command);
+
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.Collect();
+
+			Assert.False(swipeItemView.IsAlive);
+			GC.KeepAlive(command);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateSwipeItemViewWeakReference(ICommand command)
+		{
+			var swipeItemView = new SwipeItemView { Command = command };
+			return new WeakReference(swipeItemView);
+		}
+
+		sealed class TestCommand : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter)
+			{
+			}
 		}
 
 		[Fact]
