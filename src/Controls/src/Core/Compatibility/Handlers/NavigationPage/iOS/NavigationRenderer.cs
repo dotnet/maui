@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
@@ -16,6 +18,7 @@ using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
+using WebKit;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions;
 using static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions;
 using static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage;
@@ -33,7 +36,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _appeared;
 		bool _ignorePopCall;
 		FlyoutPage _parentFlyoutPage;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The controllers-to-remove array is transient navigation state cleared after UIKit removal completes.")]
 		UIViewController[] _removeControllers;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The secondary toolbar is owned by the renderer and disposed in Dispose.")]
 		UIToolbar _secondaryToolbar;
 		bool _hasNavigationBar;
 		UIImage _defaultNavBarShadowImage;
@@ -41,8 +46,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		Brush _currentBarBackgroundBrush;
 		Color _currentBarBackgroundColor;
 		bool _disposed;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The Maui context is required for the compatibility renderer lifetime and is not exposed outside the handler.")]
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The mapper is static shared handler metadata and is not retained by renderer instances.")]
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
@@ -54,6 +61,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<VisualElement> _element;
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		bool _interactivePopGesturePending;
+		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
@@ -77,6 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public VisualElement Element { get => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault(); }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "ElementChanged is a legacy public compatibility renderer event kept for API compatibility.")]
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -94,8 +104,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+			_nativeNavigationRegistrations.Clear();
 			(this as IElementHandler).SetVirtualView(element);
 			_element = element is null ? null : new(element);
+			if (element is NavigationPage navigationPage)
+			{
+				_nativeNavigationRegistrations.Register(
+					navigationPage,
+					NavigationBar,
+					NativeElementRoles.Toolbar,
+					NativeElementDiscriminators.RealizedView);
+			}
 		}
 
 		public UIViewController ViewController
@@ -167,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
 
 			base.ViewDidDisappear(animated);
@@ -203,6 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			(Element as IView).Arrange(View.Bounds.ToRectangle());
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "NavigationPage request and PropertyChanged subscriptions added in ViewDidLoad are removed in Dispose.")]
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -242,15 +263,42 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			Element.PropertyChanged += HandlePropertyChanged;
 
-			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(() => _uiRequestedPop = true);
+			InteractivePopGestureRecognizer.Delegate = new GestureDelegate(ShouldBeginInteractivePop);
 
 			UpdateToolBarVisible();
 			UpdateBackgroundColor();
 			Current = navPage.CurrentPage;
 		}
 
+		bool ShouldBeginInteractivePop()
+		{
+			_interactivePopGesturePending = ShouldPopCurrentPage();
+			return _interactivePopGesturePending;
+		}
+
+		bool ShouldPopCurrentPage()
+		{
+			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
+			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
+			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
+			// causing a UIKit VC / MAUI navigation stack desync.
+			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
+			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
+			// returns true for both "page handled it" and "SafePop handled it", making it
+			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
+			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			{
+				_uiRequestedPop = false;
+				return false;
+			}
+
+			_uiRequestedPop = true;
+			return true;
+		}
+
 		class GestureDelegate : UIGestureRecognizerDelegate
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The should-pop callback is owned by the gesture delegate while InteractivePopGestureRecognizer.Delegate is set and released in NavigationRenderer.Dispose.")]
 			readonly Func<bool> _shouldPop;
 
 			public GestureDelegate(Func<bool> shouldPop)
@@ -275,6 +323,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				_nativeNavigationRegistrations.Clear();
 				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
@@ -576,6 +625,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PrefersLargeTitlesProperty.PropertyName)
 			{
 				UpdateUseLargeTitles();
+				UpdateCurrentPageLargeTitleProxy();
 			}
 			else if (e.PropertyName == NavigationPage.BackButtonTitleProperty.PropertyName || e.PropertyName == NavigationPage.TitleProperty.PropertyName)
 			{
@@ -676,6 +726,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateUseLargeTitles()
 		{
 			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
+		}
+
+		void UpdateCurrentPageLargeTitleProxy()
+		{
+			(TopViewController as ParentingViewController)?.UpdateLargeTitleProxyScrollView();
 		}
 
 		void UpdateTranslucent()
@@ -810,6 +865,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			RefreshBarBackground();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Gradient brush InvalidateGradientBrushRequested is removed before replacing the brush and in Dispose.")]
 		void UpdateBarBackground()
 		{
 			if (_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
@@ -1037,13 +1093,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void SetStatusBarStyle()
 		{
-			if (NavPage is null)
+			var navPage = NavPage;
+
+			if (navPage is null)
 			{
 				return;
 			}
 
-			var barTextColor = NavPage.BarTextColor;
-			var statusBarColorMode = NavPage.OnThisPlatform().GetStatusBarTextColorMode();
+			var barTextColor = navPage.BarTextColor;
+			var statusBarColorMode = navPage.OnThisPlatform().GetStatusBarTextColorMode();
 
 #pragma warning disable CA1416, CA1422 // TODO:   'UIApplication.StatusBarStyle' is unsupported on: 'ios' 9.0 and later
 			if (statusBarColorMode == StatusBarTextColorMode.DoNotAdjust || barTextColor?.GetLuminosity() <= 0.5)
@@ -1123,21 +1181,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Internals.Preserve(Conditional = true)]
 		internal bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
 		{
-			// Call ContentPage.SendBackButtonPressed() directly (not via NavPage.SendBackButtonPressed())
-			// to avoid triggering NavigationPage.OnBackButtonPressed → SafePop(), which would
-			// pop the MAUI stack while ShouldPopItem returns false (blocking UIKit's pop),
-			// causing a UIKit VC / MAUI navigation stack desync.
-			// Note: This bypasses NavigationPage subclass overrides of OnBackButtonPressed.
-			// Using _ignorePopCall to suppress SafePop was considered, but OnBackButtonPressed
-			// returns true for both "page handled it" and "SafePop handled it", making it
-			// impossible to distinguish cancellation from normal pop in ShouldPopItem.
-			if (NavPage?.CurrentPage?.SendBackButtonPressed() == true)
+			// UIKit invokes ShouldBegin before ShouldPopItem for an interactive pop.
+			// The application back callback was already evaluated while admitting the gesture.
+			if (_interactivePopGesturePending)
 			{
-				_uiRequestedPop = false;
-				return false;
+				return true;
 			}
-			_uiRequestedPop = true;
-			return true;
+
+			return ShouldPopCurrentPage();
 		}
 
 		[Export("navigationBar:didPopItem:")]
@@ -1355,6 +1406,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
+					r._interactivePopGesturePending = false;
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
@@ -1389,7 +1441,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool _disposed;
 			ToolbarTracker _tracker = new ToolbarTracker();
 			List<ToolbarItem> _trackedToolbarItems = new List<ToolbarItem>();
+			readonly NativeElementRegistrationSet _nativeToolbarRegistrations = new NativeElementRegistrationSet();
 			bool _toolbarUpdatePending = false;
+
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proxy scroll view is removed from its superview, disposed, and cleared in RemoveLargeTitleProxyScrollView.")]
+			UIScrollView _largeTitleProxyScrollView;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observed scroll view reference is cleared in TearDownLargeTitleProxyScrollView.")]
+			UIScrollView _largeTitleObservedScrollView;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Observer is disposed and cleared in TearDownLargeTitleProxyScrollView.")]
+			IDisposable _largeTitleContentOffsetObserver;
+			PointF _largeTitleInitialContentOffset;
+			bool _largeTitleProxyScrollObservationArmed;
+			bool _isAppeared;
 
 			public ParentingViewController(NavigationRenderer navigation)
 			{
@@ -1400,6 +1463,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_navigation = new WeakReference<NavigationRenderer>(navigation);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Child PropertyChanged subscriptions are removed when Child changes and in Disconnect.")]
 			public Page Child
 			{
 				get => _child?.GetTargetOrDefault();
@@ -1411,6 +1475,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (child is not null)
 					{
+						TearDownLargeTitleProxyScrollView();
 						child.PropertyChanged -= HandleChildPropertyChanged;
 					}
 
@@ -1430,6 +1495,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Appearing is a legacy ParentingViewController event consumed by the navigation renderer lifecycle.")]
 			public event EventHandler Appearing;
 
 			[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
@@ -1441,6 +1507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View.SetNeedsLayout();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Disappearing is a legacy ParentingViewController event consumed by the navigation renderer lifecycle.")]
 			public event EventHandler Disappearing;
 
 			public override void ViewDidAppear(bool animated)
@@ -1448,11 +1515,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewDidAppear(animated);
 
 				Appearing?.Invoke(this, EventArgs.Empty);
+				_isAppeared = true;
+				ScheduleLargeTitleProxyScrollObservation();
 			}
 
 			public override void ViewDidDisappear(bool animated)
 			{
 				base.ViewDidDisappear(animated);
+				_isAppeared = false;
+				_largeTitleProxyScrollObservationArmed = false;
 
 				// force a redraw for right toolbar items by resetting TintColor to prevent
 				// toolbar items being grayed out when canceling swipe to a previous page
@@ -1514,8 +1585,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.ViewDidLayoutSubviews();
 				UpdateFrames();
+				UpdateLargeTitleProxyScrollView();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Toolbar tracker CollectionChanged is removed in Disconnect.")]
 			public override void ViewDidLoad()
 			{
 				base.ViewDidLoad();
@@ -1574,8 +1647,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			internal void Disconnect(bool dispose)
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from toolbar item property changes
 				CleanToolbarItems();
+
+				TearDownLargeTitleProxyScrollView();
 
 				if (Child is Page child)
 				{
@@ -1652,7 +1728,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
+				{
 					UpdateNavigationBarVisibility(true);
+					UpdateLargeTitleProxyScrollView();
+				}
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
 					NavigationItem.Title = Child.Title;
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
@@ -1660,7 +1739,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else if (e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
 					UpdatePrefersStatusBarHidden();
 				else if (e.PropertyName == LargeTitleDisplayProperty.PropertyName)
+				{
 					UpdateLargeTitles();
+					UpdateLargeTitleProxyScrollView();
+				}
 				else if (e.PropertyName == NavigationPage.TitleIconImageSourceProperty.PropertyName ||
 					 e.PropertyName == NavigationPage.TitleViewProperty.PropertyName)
 					UpdateTitleArea(Child);
@@ -1668,6 +1750,322 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateBackButtonTitle(Child);
 				else if (e.PropertyName == NavigationPage.IconColorProperty.PropertyName)
 					UpdateIconColor();
+				else if (e.PropertyName == ContentPage.ContentProperty.PropertyName)
+					RestartLargeTitleProxyScrollView();
+			}
+
+			bool NeedsLargeTitleProxyScrollView()
+			{
+				if (!OperatingSystem.IsIOSVersionAtLeast(26) || Child is null)
+					return false;
+
+				if (!_navigation.TryGetTarget(out NavigationRenderer navigationRenderer))
+					return false;
+
+				if (navigationRenderer.NavigationBarHidden || !NavigationPage.GetHasNavigationBar(Child))
+					return false;
+
+				if (!navigationRenderer.NavigationBar.Translucent || !navigationRenderer.NavigationBar.PrefersLargeTitles)
+					return false;
+
+				if (NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+					return false;
+
+				return true;
+			}
+
+			void RestartLargeTitleProxyScrollView()
+			{
+				TearDownLargeTitleProxyScrollView();
+				UpdateLargeTitleProxyScrollView();
+			}
+
+			internal void UpdateLargeTitleProxyScrollView()
+			{
+				if (!NeedsLargeTitleProxyScrollView() || !IsViewLoaded)
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				var presentedContent = (Child as IContentView)?.PresentedContent;
+				if (presentedContent is null)
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (_largeTitleObservedScrollView is UIScrollView observedScrollView &&
+					observedScrollView.IsDescendantOfView(View) &&
+					IsEligiblePlatformScrollView(observedScrollView))
+				{
+					if (_largeTitleProxyScrollView is not null)
+						UpdateLargeTitleProxyState(observedScrollView);
+					else if (!_largeTitleProxyScrollObservationArmed)
+						_largeTitleInitialContentOffset = observedScrollView.ContentOffset;
+
+					return;
+				}
+
+				var scrollable = FindPrimaryScrollableDescendant(presentedContent, View, out var scrollView);
+				if (scrollView is null)
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (ReferenceEquals(presentedContent, scrollable) &&
+					ReferenceEquals(scrollable.Handler?.PlatformView, scrollView))
+				{
+					TearDownLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
+				{
+					TearDownLargeTitleProxyScrollView();
+					SetUpLargeTitleProxyScrollView(scrollView);
+				}
+
+				if (_largeTitleProxyScrollView is not null)
+					UpdateLargeTitleProxyState(scrollView);
+				else if (!_largeTitleProxyScrollObservationArmed)
+					_largeTitleInitialContentOffset = scrollView.ContentOffset;
+			}
+
+			void SetUpLargeTitleProxyScrollView(UIScrollView scrollView)
+			{
+				_largeTitleObservedScrollView = scrollView;
+				_largeTitleInitialContentOffset = scrollView.ContentOffset;
+				_largeTitleProxyScrollObservationArmed = false;
+				_largeTitleContentOffsetObserver = scrollView.AddObserver(
+					"contentOffset",
+					NSKeyValueObservingOptions.New,
+					OnLargeTitleObservedScrollViewChanged);
+
+				if (_isAppeared)
+					ScheduleLargeTitleProxyScrollObservation();
+			}
+
+			void TearDownLargeTitleProxyScrollView()
+			{
+				_largeTitleContentOffsetObserver?.Dispose();
+				_largeTitleContentOffsetObserver = null;
+				_largeTitleObservedScrollView = null;
+				_largeTitleProxyScrollObservationArmed = false;
+				RemoveLargeTitleProxyScrollView();
+			}
+
+			void RemoveLargeTitleProxyScrollView()
+			{
+				if (_largeTitleProxyScrollView is not null)
+				{
+					_largeTitleProxyScrollView.RemoveFromSuperview();
+					_largeTitleProxyScrollView.Dispose();
+					_largeTitleProxyScrollView = null;
+				}
+			}
+
+			void OnLargeTitleObservedScrollViewChanged(NSObservedChange change)
+			{
+				if (_largeTitleObservedScrollView is UIScrollView scrollView)
+				{
+					if (!_largeTitleProxyScrollObservationArmed)
+					{
+						if (_largeTitleProxyScrollView is null)
+							_largeTitleInitialContentOffset = scrollView.ContentOffset;
+
+						return;
+					}
+
+					UpdateLargeTitleProxyState(scrollView);
+				}
+			}
+
+			void ScheduleLargeTitleProxyScrollObservation()
+			{
+				var scrollView = _largeTitleObservedScrollView;
+				if (scrollView is null)
+					return;
+
+				BeginInvokeOnMainThread(() =>
+				{
+					if (!_isAppeared ||
+						!ReferenceEquals(_largeTitleObservedScrollView, scrollView))
+					{
+						return;
+					}
+
+					if (_largeTitleProxyScrollView is null)
+					{
+						var adjustedContentInset = scrollView.AdjustedContentInset;
+						_largeTitleInitialContentOffset = new PointF(
+							-(float)adjustedContentInset.Left,
+							-(float)adjustedContentInset.Top);
+					}
+
+					_largeTitleProxyScrollObservationArmed = true;
+					UpdateLargeTitleProxyState(scrollView);
+				});
+			}
+
+			void UpdateLargeTitleProxyState(UIScrollView scrollView)
+			{
+				if (scrollView.ContentOffset.Y <= _largeTitleInitialContentOffset.Y + 0.5)
+				{
+					RemoveLargeTitleProxyScrollView();
+					return;
+				}
+
+				if (_largeTitleProxyScrollView is null)
+					CreateLargeTitleProxyScrollView();
+
+				_largeTitleProxyScrollView.Frame = View.Bounds;
+				_largeTitleProxyScrollView.ContentSize = new SizeF(
+					Math.Max(0, scrollView.ContentSize.Width + _largeTitleProxyScrollView.Bounds.Width - scrollView.Bounds.Width),
+					Math.Max(0, scrollView.ContentSize.Height + _largeTitleProxyScrollView.Bounds.Height - scrollView.Bounds.Height));
+				_largeTitleProxyScrollView.ContentInset = scrollView.AdjustedContentInset;
+				_largeTitleProxyScrollView.ContentOffset = scrollView.ContentOffset;
+			}
+
+			void CreateLargeTitleProxyScrollView()
+			{
+				// UIKit only observes a direct, visible UIScrollView for large-title collapse.
+				// Mirror wrapped scrollers into a transparent view behind the real content.
+				_largeTitleProxyScrollView = new UIScrollView(View.Bounds)
+				{
+					AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+					BackgroundColor = UIColor.Clear,
+					Opaque = false,
+					UserInteractionEnabled = false,
+					ScrollsToTop = false,
+					ShowsHorizontalScrollIndicator = false,
+					ShowsVerticalScrollIndicator = false,
+					AccessibilityElementsHidden = true,
+					IsAccessibilityElement = false,
+					ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never,
+				};
+
+				View.InsertSubview(_largeTitleProxyScrollView, 0);
+			}
+
+			static IView FindPrimaryScrollableDescendant(IView view, UIView container, out UIScrollView scrollView)
+			{
+				var candidates = new List<IView>();
+				CollectScrollableDescendants(view, candidates);
+
+				IView primaryScrollable = null;
+				UIScrollView primaryScrollView = null;
+				nfloat primaryTop = nfloat.MaxValue;
+
+				for (int i = 0; i < candidates.Count; i++)
+				{
+					var candidateScrollView = ResolvePlatformScrollView(candidates[i]);
+					if (!IsEligiblePlatformScrollView(candidateScrollView))
+						continue;
+
+					var frame = candidateScrollView.ConvertRectToView(candidateScrollView.Bounds, container);
+					if (frame.GetMinY() >= primaryTop)
+						continue;
+
+					primaryScrollable = candidates[i];
+					primaryScrollView = candidateScrollView;
+					primaryTop = frame.GetMinY();
+				}
+
+				scrollView = primaryScrollView;
+				return primaryScrollable;
+			}
+
+			static void CollectScrollableDescendants(IView view, List<IView> candidates)
+			{
+				if (view is null ||
+					view.Visibility != Visibility.Visible ||
+					view.Opacity <= 0.01)
+				{
+					return;
+				}
+
+				if (IsScrollableView(view) && CanScrollVertically(view))
+					candidates.Add(view);
+
+				if (view is IContentView contentView && contentView.PresentedContent is IView content)
+					CollectScrollableDescendants(content, candidates);
+
+				if (view is Microsoft.Maui.Controls.Layout layout)
+				{
+					for (int i = 0; i < layout.Count; i++)
+						CollectScrollableDescendants(layout[i], candidates);
+				}
+			}
+
+			static UIScrollView ResolvePlatformScrollView(IView view)
+			{
+				if (view is WebView &&
+					view.Handler?.PlatformView is WKWebView webView)
+				{
+					return webView.ScrollView;
+				}
+
+				if (view?.Handler?.PlatformView is UIScrollView scrollView)
+					return scrollView;
+
+				if (view?.Handler?.PlatformView is UIView platformView)
+					return FindPlatformScrollView(platformView);
+
+				return null;
+			}
+
+			static UIScrollView FindPlatformScrollView(UIView view)
+			{
+				var subviews = view.Subviews;
+				for (int i = 0; i < subviews.Length; i++)
+				{
+					if (subviews[i] is UIScrollView scrollView)
+						return scrollView;
+
+					var nestedScrollView = FindPlatformScrollView(subviews[i]);
+					if (nestedScrollView is not null)
+						return nestedScrollView;
+				}
+
+				return null;
+			}
+
+			static bool IsEligiblePlatformScrollView(UIScrollView scrollView)
+			{
+				if (scrollView is null ||
+					scrollView.Hidden ||
+					scrollView.Alpha <= 0.01)
+				{
+					return false;
+				}
+
+				return true;
+			}
+
+			static bool CanScrollVertically(IView view)
+			{
+				if (view is ScrollView scrollView)
+					return scrollView.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Both;
+
+				if (view is CarouselView carouselView)
+					return carouselView.ItemsLayout?.Orientation == ItemsLayoutOrientation.Vertical;
+
+				if (view is StructuredItemsView structuredItemsView)
+				{
+					return structuredItemsView.ItemsLayout is not ItemsLayout itemsLayout ||
+						itemsLayout.Orientation != ItemsLayoutOrientation.Horizontal;
+				}
+
+				return true;
+			}
+
+			static bool IsScrollableView(IView view)
+			{
+#pragma warning disable CS0618 // ListView is obsolete but still participates in iOS large-title collapse
+				return view is ScrollView or ListView or ItemsView or TableView or WebView;
+#pragma warning restore CS0618
 			}
 
 			internal void SetupDefaultNavigationBarAppearance()
@@ -2024,8 +2422,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_trackedToolbarItems.Clear();
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "ToolbarItem PropertyChanged subscriptions are removed by CleanToolbarItems before replacement and in Disconnect.")]
 			void UpdateToolbarItems()
 			{
+				_nativeToolbarRegistrations.Clear();
 				// Unsubscribe from previous toolbar item property changes
 				CleanToolbarItems();
 
@@ -2057,11 +2457,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 
@@ -2094,6 +2506,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					primaries ??= [];
 
 					primaries.Insert(0, menuButton);
+					if (Child is Page child)
+					{
+						_nativeToolbarRegistrations.Register(
+							child,
+							menu,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+						_nativeToolbarRegistrations.Register(
+							child,
+							menuButton,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
+					}
 				}
 
 				NavigationItem.SetRightBarButtonItems(primaries is null ? [] : primaries.ToArray(), false);
@@ -2278,6 +2703,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			public RectangleF BackButtonFrameSize { get; private set; }
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The navigation bar label is a cached native subview reference updated or cleared during LayoutSubviews.")]
 			public UILabel NavBarLabel { get; private set; }
 
 			public override void LayoutSubviews()
@@ -2315,8 +2741,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		class Container : UIView
 		{
 			View _view;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The navigation bar reference is used only for title layout while the container is attached and released with the container.")]
 			MauiControlsNavigationBar _bar;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title view child handler is disconnected and cleared in Dispose.")]
 			IPlatformViewHandler _child;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The title icon view is owned by the container and disposed in Dispose.")]
 			UIImageView _icon;
 			bool _disposed;
 			nfloat? _navigationBarHeight;
@@ -2343,6 +2772,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				InitializeContainer(view, bar, navigationBarFrame.Height);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The title view ParentSet subscription is removed when it fires and in Dispose.")]
 			void InitializeContainer(View view, UINavigationBar bar, nfloat? navigationBarHeight)
 			{
 				// iOS 26+ and MacCatalyst 26+ require autoresizing masks instead of constraints

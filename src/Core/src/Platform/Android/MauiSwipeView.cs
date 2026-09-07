@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
+using AndroidX.Core.View.Accessibility;
 using AndroidX.Core.Widget;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
@@ -603,8 +606,8 @@ namespace Microsoft.Maui.Platform
 						_swipeItems.Add(item, swipeItem);
 					}
 
-					if (swipeItem != null)
-						swipeItems.Add(swipeItem);
+					swipeItems.Add(swipeItem);
+					AttachSwipeItemAccessibilityDelegate(swipeItem);
 				}
 			}
 
@@ -680,12 +683,13 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
-					// AtMost lets custom SwipeItemView content size itself; Exactly forces precise dimensions for default SwipeItems.
-					var measureMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
+					// Width: Exactly for default SwipeItems (ensures text is visible), AtMost for custom SwipeItemView.
+					// Height: Always AtMost so the button can self-size and keep icon+text vertically centered.
+					var widthMode = item is ISwipeItemView ? MeasureSpecMode.AtMost : MeasureSpecMode.Exactly;
 
 					child.Measure(
-						MeasureSpec.MakeMeasureSpec(swipeItemWidth, measureMode),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, measureMode));
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, widthMode),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost));
 
 					child.Layout(l, t, r, b);
 
@@ -1291,6 +1295,85 @@ namespace Microsoft.Maui.Platform
 						break;
 					}
 				}
+			}
+		}
+
+		void AttachSwipeItemAccessibilityDelegate(AView swipeItemView)
+		{
+			// Avoid re-wrapping an already-attached delegate;
+			if (ViewCompat.GetAccessibilityDelegate(swipeItemView) is SwipeItemAccessibilityDelegate)
+			{
+				return;
+			}
+
+			var currentDelegate = ViewCompat.GetAccessibilityDelegate(swipeItemView);
+			ViewCompat.SetAccessibilityDelegate(swipeItemView, new SwipeItemAccessibilityDelegate(this, currentDelegate));
+		}
+
+		bool TryExecuteSwipeItemFromAccessibility(AView? host)
+		{
+			if (_isResettingSwipe || host is null || host.Visibility != ViewStates.Visible)
+			{
+				return false;
+			}
+
+			ISwipeItem? swipeItem = null;
+
+			foreach (var kvp in _swipeItems)
+			{
+				if (ReferenceEquals(kvp.Value, host))
+				{
+					swipeItem = kvp.Key;
+					break;
+				}
+			}
+
+			if (swipeItem is null)
+			{
+				return false;
+			}
+
+			ExecuteSwipeItem(swipeItem);
+
+			var swipeItems = GetSwipeItemsByDirection();
+
+			if (swipeItems?.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
+			{
+				ResetSwipe();
+			}
+
+			return true;
+		}
+
+		sealed class SwipeItemAccessibilityDelegate(MauiSwipeView swipeView, AccessibilityDelegateCompat? originalDelegate) : AccessibilityDelegateCompatWrapper(originalDelegate)
+		{
+			readonly WeakReference<MauiSwipeView> _swipeViewRef = new(swipeView);
+
+			public override void OnInitializeAccessibilityNodeInfo(AView? host, AccessibilityNodeInfoCompat? info)
+			{
+				base.OnInitializeAccessibilityNodeInfo(host, info);
+
+				//Without this, non-clickable platform views never expose the action, so ACTION_CLICK
+				// is never dispatched to PerformAccessibilityAction below.
+				if (info is not null)
+				{
+					info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+					info.Clickable = true;
+				}
+			}
+
+			public override bool PerformAccessibilityAction(AView? host, int action, Bundle? args)
+			{
+				if (host is not null &&
+					action == AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick?.Id &&
+					_swipeViewRef.TryGetTarget(out var swipeView))
+				{
+					if (swipeView.TryExecuteSwipeItemFromAccessibility(host))
+					{
+						return true;
+					}
+				}
+				return base.PerformAccessibilityAction(host, action, args);
 			}
 		}
 

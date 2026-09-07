@@ -334,7 +334,8 @@ namespace Microsoft.Maui.Controls.Platform
 					.MakeScoped(layoutInflater: inflater, fragmentManager: ChildFragmentManager, registerNewNavigationRoot: true);
 
 				_navigationRootManager = modalContext.GetNavigationRootManager();
-				_navigationRootManager.Connect(_modal, modalContext);
+				if (!_navigationRootManager.Connect(_modal, modalContext))
+					throw new InvalidOperationException("A modal navigation root must be initialized synchronously.");
 
 				UpdateBackgroundColor();
 

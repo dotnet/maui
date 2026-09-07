@@ -152,11 +152,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class CustomFilter : Filter
 		{
-			private readonly BaseAdapter _adapter;
+			private readonly BaseAdapter _adapter = null;
 
 			public CustomFilter(BaseAdapter adapter)
 			{
 				_adapter = adapter;
+			}
+
+			protected CustomFilter(IntPtr javaReference, global::Android.Runtime.JniHandleOwnership transfer)
+				: base(javaReference, transfer)
+			{
 			}
 
 			protected override FilterResults PerformFiltering(ICharSequence constraint)
@@ -169,7 +174,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			protected override void PublishResults(ICharSequence constraint, FilterResults results)
 			{
-				_adapter.NotifyDataSetChanged();
+				if (_adapter is not null)
+					_adapter.NotifyDataSetChanged();
 			}
 		}
 

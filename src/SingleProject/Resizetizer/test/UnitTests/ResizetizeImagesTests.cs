@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			[InlineData("prismicon.svg")]
 			[InlineData("warning.svg")]
 			[InlineData("yes_working.svg")]
+			[InlineData("link_out.svg")]
 			public void BasicImageProcessingWorks(string image)
 			{
 				var items = new[]
@@ -84,7 +85,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Theory]
-			[InlineData("link_out.svg")]
+			[InlineData("invalid.svg")]
 			public void BadImagesReportImageWithError(string image)
 			{
 				var items = new[]
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 
 			[Theory]
-			[InlineData("link_out.svg")]
+			[InlineData("invalid.svg")]
 			public void ImageProcessingErrorCode(string image)
 			{
 				var items = new[]

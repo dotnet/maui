@@ -16,11 +16,74 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class CollectionViewTests
 	{
+		[Fact(DisplayName = "Grouped CollectionView EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler>();
+		}
+
+		[Fact(DisplayName = "CollectionViewHandler2 Grouped EmptyView Tracks Groups")]
+		public Task GroupedCollectionViewEmptyViewTracksGroups2()
+		{
+			return VerifyGroupedCollectionViewEmptyViewTracksGroups<CollectionViewHandler2>();
+		}
+
+		async Task VerifyGroupedCollectionViewEmptyViewTracksGroups<THandler>()
+			where THandler : class, IElementHandler
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, THandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var group = new ObservableCollection<string> { "Item 1" };
+			var groups = new ObservableCollection<ObservableCollection<string>> { group };
+			var emptyView = new Label { Text = "Empty" };
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = groups,
+				EmptyView = emptyView
+			};
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<THandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				var platformView = Assert.IsAssignableFrom<UIView>(handler.PlatformView);
+				var nativeCollectionView = platformView as UICollectionView
+					?? platformView.Subviews.OfType<UICollectionView>().FirstOrDefault();
+				Assert.NotNull(nativeCollectionView);
+
+				var emptyPlatformView = Assert.IsAssignableFrom<UIView>(emptyView.Handler.PlatformView);
+				var emptyViewWrapper = Assert.IsAssignableFrom<UIView>(emptyPlatformView.Superview);
+
+				await AssertEventually(() => nativeCollectionView.NumberOfItemsInSection(0) == 1);
+				Assert.Null(emptyViewWrapper.Superview);
+
+				group.RemoveAt(0);
+				await AssertEventually(() => nativeCollectionView.NumberOfItemsInSection(0) == 0);
+				Assert.Null(emptyViewWrapper.Superview);
+
+				groups.RemoveAt(0);
+				await AssertEventually(() => emptyViewWrapper.Superview is not null);
+
+				groups.Add(new());
+				await AssertEventually(() => emptyViewWrapper.Superview is null);
+			});
+		}
+
 		[Fact]
 		public async Task ItemsSourceGroupedClearDoestCrash()
 		{
@@ -49,7 +112,55 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		class CollectionViewStringGroup : List<string>
+		[Fact(DisplayName = "Removing a grouped CollectionView section does not crash")]
+		public async Task RemovingGroupedCollectionViewSectionDoesNotCrash()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var data = new List<string> { "item 1", "item 2" };
+			var groupData = new ObservableCollection<CollectionViewStringGroup>
+			{
+				new("Header 1", data),
+				new("Header 2", data),
+				new("Header 3", data)
+			};
+
+			var collectionView = new CollectionView
+			{
+				WidthRequest = 300,
+				HeightRequest = 300,
+				IsGrouped = true,
+				ItemsSource = groupData,
+				ItemTemplate = new DataTemplate(() => new Label())
+			};
+
+			var initialFrame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(initialFrame, collectionView);
+
+				var uiCollectionView = handler.Controller.CollectionView;
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+
+				groupData.RemoveAt(groupData.Count - 1);
+
+				uiCollectionView.SetNeedsLayout();
+				uiCollectionView.LayoutIfNeeded();
+				Assert.Equal(groupData.Count, (int)uiCollectionView.NumberOfSections());
+			});
+		}
+
+		class CollectionViewStringGroup : ObservableCollection<string>
 		{
 			public string GroupHeader { get; private set; }
 			public CollectionViewStringGroup(string header, IEnumerable<string> data) : base(data)
@@ -152,7 +263,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
 		[Fact("Cells Do Not Leak")]
 		public async Task CellsDoNotLeak()
 		{
@@ -178,13 +288,34 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(cell);
 
+			// Simulate the cell being discarded outright (e.g. its bound item was removed from
+			// the ItemsSource) while the ItemsView itself stays alive and in use, as it would for
+			// the remainder of the page's lifetime. This is the scenario the production fix
+			// targets: the templated cell's bound view previously stayed registered as a logical
+			// child of the ItemsView even after the cell that displayed it was gone, permanently
+			// rooting the view (and its content) for as long as the ItemsView remained alive.
+			//
+			// Deliberately keep collectionView (and its handler) alive here instead of nulling
+			// them out - the leak only manifests when the ItemsView outlives the discarded cell,
+			// so nulling it out too would mask the very regression this test guards against.
+			await InvokeOnMainThreadAsync(() =>
+			{
+				cell.Unbind();
+			});
+
+			cell = null;
+
 			// HACK: test passes running individually, but fails when running entire suite.
 			// Skip the assertion on Catalyst for now.
 #if !MACCATALYST
 			await AssertionExtensions.WaitForGC([.. labels]);
 #endif
+
+			// Keep the still-alive ItemsView (and its handler) reachable past WaitForGC so the
+			// JIT can't optimize them away as dead stores before the assertion runs above.
+			GC.KeepAlive(collectionView);
+			GC.KeepAlive(handler);
 		}
-#endif
 
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
 		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]

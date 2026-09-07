@@ -23,6 +23,13 @@ public class Material3ImageFeatureTests : _GalleryUITest
 	public const string ShadowCheckBox = "ShadowCheckBox";
 	public const string IsAnimationTrue = "IsAnimationTrue";
 	public const string IsAnimationFalse = "IsAnimationFalse";
+	public const string BackgroundColorNone = "BackgroundColorNone";
+	public const string BackgroundColorYellow = "BackgroundColorYellow";
+	public const string OpacityHalf = "OpacityHalf";
+	public const string FontColorGreen = "FontColorGreen";
+	public const string EntryFontSize = "EntryFontSize";
+	public const string ImageControl = "ImageControl";
+	public const string TapResultLabel = "TapResultLabel";
 
 	public override string GalleryPageName => ImageFeatureMatrix;
 
@@ -31,7 +38,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 	{
 	}
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFitWithFileSource()
 	{
@@ -47,7 +54,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFitWithUriSource()
 	{
@@ -63,7 +70,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(3)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFitWithStreamSource()
 	{
@@ -79,7 +86,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(4)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFitWithFontImageSource()
 	{
@@ -95,7 +102,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(5)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFillWithFileSource()
 	{
@@ -111,7 +118,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(6)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFillWithUriSource()
 	{
@@ -127,7 +134,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(7)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFillWithStreamSource()
 	{
@@ -143,7 +150,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(8)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_AspectFillWithFontImageSource()
 	{
@@ -159,7 +166,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(9)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_FillWithFileSource()
 	{
@@ -175,7 +182,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(10)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_FillWithUriSource()
 	{
@@ -191,7 +198,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(11)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_FillWithStreamSource()
 	{
@@ -207,7 +214,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(12)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_FillWithFontImageSource()
 	{
@@ -223,7 +230,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(13)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_CenterWithFileSource()
 	{
@@ -239,7 +246,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(14)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_CenterWithUriSource()
 	{
@@ -255,7 +262,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(15)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_CenterWithStreamSource()
 	{
@@ -271,7 +278,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(16)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageAspect_CenterWithFontImageSource()
 	{
@@ -287,7 +294,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(17)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3FontImageWithFontColorGreen()
 	{
@@ -303,7 +310,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(18)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3FontImageWithFontSize()
 	{
@@ -321,7 +328,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(19)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageWithShadow()
 	{
@@ -337,7 +344,7 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test]
+	[Test, Order(20)]
 	[Category(UITestCategories.Material3)]
 	public void VerifyMaterial3ImageFlowDirectionRTL()
 	{
@@ -350,6 +357,54 @@ public class Material3ImageFeatureTests : _GalleryUITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(21)]
+	[Category(UITestCategories.Material3)]
+	public void VerifyMaterial3ImageWithOpacityHalf()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(OpacityHalf);
+		App.Tap(OpacityHalf);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(22)]
+	[Category(UITestCategories.Material3)]
+	public void VerifyMaterial3ImageWithBackgroundColorYellow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(BackgroundColorYellow);
+		App.Tap(BackgroundColorYellow);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+ 
+	[Test, Order(23)]
+	[Category(UITestCategories.Material3)]
+	public void VerifyMaterial3ImageWithBackgroundColorNone()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFontImage);
+		App.Tap(SourceTypeFontImage);
+		App.WaitForElement(BackgroundColorNone);
+		App.Tap(BackgroundColorNone);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(ImageControl);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

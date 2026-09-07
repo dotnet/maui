@@ -1,4 +1,5 @@
 using System;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -42,6 +43,8 @@ namespace Microsoft.Maui.Platform
 					platformButton.SetTitleColor(null, UIControlState.Disabled);
 					platformButton.TintColor = window.TintColor;
 				}
+
+				UpdateAttributedTitleColor(platformButton, null);
 				return;
 			}
 
@@ -50,21 +53,52 @@ namespace Microsoft.Maui.Platform
 			platformButton.SetTitleColor(color, UIControlState.Normal);
 			platformButton.SetTitleColor(color, UIControlState.Highlighted);
 			platformButton.SetTitleColor(color, UIControlState.Disabled);
-
 			platformButton.TintColor = color;
+
+			UpdateAttributedTitleColor(platformButton, color);
+		}
+
+		static void UpdateAttributedTitleColor(UIButton platformButton, UIKit.UIColor? color)
+		{
+			var attributedTitle = platformButton.GetAttributedTitle(UIControlState.Normal);
+			if (attributedTitle is null || attributedTitle.Length == 0)
+				return;
+
+			var mutable = new NSMutableAttributedString(attributedTitle);
+
+			if (color is null)
+			{
+				mutable.RemoveAttribute(UIStringAttributeKey.ForegroundColor, new NSRange(0, mutable.Length));
+			}
+			else
+			{
+				mutable.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, mutable.Length));
+			}
+
+			platformButton.SetAttributedTitle(mutable, UIControlState.Normal);
 		}
 
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
-			// Remove previous background gradient layer if any
+			// Remove previous background gradient layer if any.
+			// Safe to call unconditionally even when Window is null (initial-render path): at that
+			// point MAUI has not yet inserted a named gradient layer, so this is a no-op.
+			// Running it before the Window/paint guard ensures any previously-applied gradient is
+			// cleaned up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Reset to clear background for buttons when paint is null.
-				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
-				platformButton.BackgroundColor = UIColor.Clear;
+				// Only reset to UIColor.Clear when the button is already attached to a window.
+				// During initial property mapping (ConnectHandler), Window is null because the view
+				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
+				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
+				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
+				if (platformButton.Window is not null)
+				{
+					platformButton.BackgroundColor = UIColor.Clear;
+				}
 				return;
 			}
 
