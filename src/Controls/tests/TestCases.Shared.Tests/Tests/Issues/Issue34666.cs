@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS // The issue also affects Windows; tracked for follow-up in: https://github.com/dotnet/maui/issues/34701
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,16 +10,15 @@ public class Issue34666 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "The C6 page cannot scroll on Windows and Android platforms";
+	public override string Issue => "Disabling RefreshView cascades IsEnabled=false to its child CollectionView, preventing scrolling";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void CollectionViewScrollsWhenRefreshViewDisabled()
+	public void CollectionViewDoesNotScrollWhenRefreshViewDisabled()
 	{
 		App.WaitForElement("Baboon");
 		App.ScrollDown("CollectionView");
 		App.ScrollDown("CollectionView");
-		App.WaitForElement("Gelada");
+		App.WaitForElement("Baboon");
 	}
 }
-#endif

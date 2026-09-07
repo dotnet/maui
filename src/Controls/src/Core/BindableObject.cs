@@ -779,20 +779,15 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property)
 		{
-#if NETSTANDARD
-			var context = GetContext(property);
-			if (context is null)
-			{
-				context = CreateContext(property);
-				_properties.Add(property.InternalId, context);
-			}
-#else
-			ref var context = ref CollectionsMarshal.GetValueRefOrAddDefault(_properties, property.InternalId, out var exists);
-			if (!exists)
-			{
-				context = CreateContext(property);
-			}
-#endif
+			if (_properties.TryGetValue(property.InternalId, out var context))
+				return context;
+
+			// Do not use CollectionsMarshal.GetValueRefOrAddDefault: CreateContext invokes
+			// DefaultValueCreator, which is arbitrary user code and may mutate other
+			// BindableProperties, resizing _properties and invalidating the returned ref.
+			// See dotnet/maui#36744.
+			context = CreateContext(property);
+			_properties[property.InternalId] = context;
 			return context;
 		}
 

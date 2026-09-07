@@ -2514,7 +2514,6 @@ override Microsoft.Maui.Layouts.VerticalStackLayoutManager.ArrangeChildren(Micro
 override Microsoft.Maui.Layouts.VerticalStackLayoutManager.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.MauiAppCompatActivity.OnActivityResult(int requestCode, Android.App.Result resultCode, Android.Content.Intent? data) -> void
-override Microsoft.Maui.MauiAppCompatActivity.OnBackPressed() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnConfigurationChanged(Android.Content.Res.Configuration! newConfig) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void

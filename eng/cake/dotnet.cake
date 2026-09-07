@@ -273,6 +273,7 @@ Task("dotnet-test")
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
             "**/Compatibility.Core.UnitTests.csproj",
+            "**/MauiBlazorWebView.UnitTests.csproj",
         };
 
         var success = true;

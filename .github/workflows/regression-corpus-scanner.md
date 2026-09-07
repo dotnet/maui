@@ -42,7 +42,7 @@ on:
     pull-requests: read
   steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
     # Scheduled runs use main, but a workflow_dispatch can select another ref.
@@ -102,16 +102,21 @@ on:
         if-no-files-found: warn
         retention-days: 7
 
-# Only invoke the agent when the deterministic pre-pass found something to draft.
-# A manual dispatch can select any ref, but activation runtime-imports `.github`
-# configuration from its checkout. Restrict agent execution to trusted main.
+# Keep the deterministic pre-pass and every downstream job out of forks.
+# A manual dispatch can select another ref, so only trusted main may reach
+# pre-activation.
 if: >-
   github.repository == 'dotnet/maui' &&
-  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main') &&
-  (github.event_name == 'workflow_dispatch' ||
-  needs.pre_activation.outputs.has_candidates == 'true')
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
 
 jobs:
+  # Only invoke activation when the deterministic pre-pass found something to
+  # draft. A manual dispatch can select any ref, so restrict it to trusted main.
+  activation:
+    if: >-
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main') &&
+      (github.event_name == 'workflow_dispatch' ||
+      needs.pre_activation.outputs.has_candidates == 'true')
   pre-activation:
     outputs:
       candidates: ${{ steps.candidate_context.outputs.candidates }}
@@ -128,33 +133,24 @@ concurrency:
   group: "gh-aw-${{ github.workflow }}"
   cancel-in-progress: false
 
+model: gpt-5.6-sol
 engine:
   id: copilot
-  model: claude-sonnet-4.6
   env:
-    COPILOT_GITHUB_TOKEN: |
-      ${{ case(
-        needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
-        needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
-        needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2,
-        needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3,
-        needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4,
-        needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5,
-        needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6,
-        needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
-        needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
-        needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        'NO COPILOT PAT AVAILABLE')
-      }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 network: defaults
 
 tools:
   github:
     # The agent only needs the normalized candidate context plus the merged
-    # introducing PR diff. Filter all fetched content through the integrity proxy.
+    # introducing PR diff. Keep every agent MCP read integrity-filtered.
     toolsets: [pull_requests, repos]
     min-integrity: approved
+    # The deterministic pre-pass applies its own maintainer-association checks before
+    # extracting attribution. Let its gh calls read those fields without DIFC redaction;
+    # this does not disable min-integrity filtering on the agent's MCP reads.
+    integrity-proxy: false
   edit:
   # Shell utilities plus `git` for local diff/SHA inspection. The executable
   # allowlist cannot restrict Git subcommands; safe-outputs is the write boundary.

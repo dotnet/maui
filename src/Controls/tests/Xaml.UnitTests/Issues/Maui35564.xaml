@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui35564"
+    x:DataType="local:Maui35564">
+    <VerticalStackLayout>
+        <!-- Scenario A: RelativeSource binding without x:DataType on the binding itself.
+             The DataTemplate's x:DataType (Maui35564Item) must NOT be applied to the
+             RelativeSource binding's resolved ancestor (Maui35564 page). -->
+        <CollectionView x:Name="TheCollectionView"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding ItemTappedCommand, Source={RelativeSource AncestorType={x:Type local:Maui35564}}}"
+                                CommandParameter="{Binding}" />
+                        </VerticalStackLayout.GestureRecognizers>
+                        <Label Text="{Binding Name}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario B: RelativeSource binding WITH x:DataType directly on the binding.
+             This is the pattern used in real AOT apps — x:DataType describes the ancestor's
+             type so SourceGen can compile it to a TypedBinding (no reflection, AOT/trim safe). -->
+        <CollectionView x:Name="TheCollectionView2"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding ItemTappedCommand, x:DataType=local:Maui35564, Source={RelativeSource AncestorType={x:Type local:Maui35564}}}"
+                                CommandParameter="{Binding}" />
+                        </VerticalStackLayout.GestureRecognizers>
+                        <Label Text="{Binding Name}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario C: {RelativeSource Self} inside a DataTemplate with inherited x:DataType.
+             The DataTemplate's x:DataType (Maui35564Item) must NOT be applied to Self bindings
+             — the item type is never the type of the View itself (Label).
+             Before the fix, the inherited type would fail the IsAssignableFrom check and null
+             out the source; after the fix DataType = null for Self bindings with inherited type. -->
+        <CollectionView x:Name="TheCollectionView3"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <Label AutomationId="scenario-c"
+                               Text="{Binding AutomationId, Source={RelativeSource Self}}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <!-- Scenario D: {RelativeSource Self} with x:DataType explicitly on the binding node.
+             Even with explicit x:DataType, Self bindings should stay uncompiled because the
+             source is the element itself and not inferred from a model type annotation. -->
+        <CollectionView x:Name="TheCollectionView4"
+            ItemsSource="{Binding Items}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:Maui35564Item">
+                    <VerticalStackLayout>
+                        <Label AutomationId="scenario-d"
+                               Text="{Binding AutomationId, x:DataType=Label, Source={RelativeSource Self}}" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

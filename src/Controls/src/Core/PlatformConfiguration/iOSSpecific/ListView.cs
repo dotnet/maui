@@ -2,6 +2,7 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using System;
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.ListView;
 	/// <summary>Provides access to the separator style for list views on the iOS platform.</summary>
 	[Obsolete("With the deprecation of ListView, this class is obsolete. Please use CollectionView instead.")]
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		/// <summary>Bindable property for <see cref="RowAnimationsEnabled"/>.</summary>
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
-		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), true);
+		public static readonly BindableProperty RowAnimationsEnabledProperty = BindableProperty.Create(nameof(RowAnimationsEnabled), typeof(bool), typeof(ListView), BooleanBoxes.TrueBox);
 
 		/// <param name="element">The element parameter.</param>	
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetRowAnimationsEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(RowAnimationsEnabledProperty, value);
+			element.SetValue(RowAnimationsEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>Sets whether row animations are enabled for the ListView on iOS.</summary>

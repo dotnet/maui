@@ -76,6 +76,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
 			_isRotating = true;
+
+			// On iOS 26+ the TitleView container uses autoresizing masks with an explicitly set frame,
+			// so it does not automatically resize when the navigation bar changes width during rotation.
+			// Re-apply the frame alongside the transition so the TitleView fills the navigation bar.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				coordinator.AnimateAlongsideTransition(_ =>
+				{
+					(_tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+				}, null);
+			}
+		}
+
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
+			if (previousTraitCollection?.VerticalSizeClass != TraitCollection.VerticalSizeClass ||
+				previousTraitCollection?.HorizontalSizeClass != TraitCollection.HorizontalSizeClass)
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+				{
+					(_tracker as ShellPageRendererTracker)?.UpdateTitleViewFrameForOrientation();
+				}
+			}
 		}
 
 		public override void ViewDidLoad()

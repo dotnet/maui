@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 			=> UpdateIndicatorLayout((IndicatorView)bindable, newValue));
 
 		/// <summary>Bindable property for <see cref="HideSingle"/>.</summary>
-		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
+		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), BooleanBoxes.TrueBox);
 
 		/// <summary>Bindable property for <see cref="IndicatorColor"/>.</summary>
 		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.LightGrey);
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls
 		public bool HideSingle
 		{
 			get => (bool)GetValue(HideSingleProperty);
-			set => SetValue(HideSingleProperty, value);
+			set => SetValue(HideSingleProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>

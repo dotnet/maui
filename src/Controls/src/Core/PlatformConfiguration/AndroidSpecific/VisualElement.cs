@@ -1,6 +1,7 @@
 #nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
+	using Microsoft.Maui.Controls.Internals;
 	using FormsElement = Maui.Controls.VisualElement;
 
 	/// <summary>
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <summary>Bindable property for attached property <c>IsLegacyColorModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
-				typeof(FormsElement), true);
+				typeof(FormsElement), BooleanBoxes.TrueBox);
 
 		/// <summary>
 		/// Gets whether or not the legacy color mode for this element is enabled.
@@ -83,7 +84,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		/// <param name="value"><see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
 		public static void SetIsLegacyColorModeEnabled(BindableObject element, bool value)
 		{
-			element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -105,7 +106,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		public static IPlatformElementConfiguration<Android, FormsElement> SetIsLegacyColorModeEnabled(
 			this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
 		{
-			config.Element.SetValue(IsLegacyColorModeEnabledProperty, value);
+			config.Element.SetValue(IsLegacyColorModeEnabledProperty, BooleanBoxes.Box(value));
 			return config;
 		}
 

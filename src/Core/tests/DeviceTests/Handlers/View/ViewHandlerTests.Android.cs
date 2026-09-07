@@ -3,6 +3,8 @@ using Android.Views;
 using Android.Widget;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using AColor = Android.Graphics.Color;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -27,6 +29,26 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(ViewStates.Visible, wrapper.Visibility);
 				Assert.Equal(ViewStates.Visible, child.Visibility);
+			});
+		}
+
+		[Fact]
+		public async Task ShadowInvalidationOnlyFollowsImmediateChild()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var wrapper = new WrapperView(MauiContext.Context);
+				var child = new AView(MauiContext.Context);
+				var descendant = new AView(MauiContext.Context);
+
+				wrapper.SetSolidShadow(10, 0, 0, AColor.Black.ToArgb());
+
+				Assert.True(wrapper.ShouldInvalidateShadow(child, child));
+				Assert.False(wrapper.ShouldInvalidateShadow(child, descendant));
+
+				wrapper.SetNoShadow();
+
+				Assert.False(wrapper.ShouldInvalidateShadow(child, child));
 			});
 		}
 	}

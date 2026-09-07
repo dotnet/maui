@@ -128,5 +128,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(100, quadraticBezierSegment2.Point2.X);
 			Assert.Equal(100, quadraticBezierSegment2.Point2.Y);
 		}
+
+		[Fact]
+		public void ClearingSegmentsDetachesPropertyChangedFromRemovedSegments()
+		{
+			var pathFigure = new PathFigure();
+			var sharedSegment = new LineSegment();
+			var invalidationCount = 0;
+
+			pathFigure.InvalidatePathSegmentRequested += (_, __) => invalidationCount++;
+			pathFigure.Segments.Add(sharedSegment);
+
+			pathFigure.Segments.Clear();
+			var invalidationCountAfterClear = invalidationCount;
+
+			sharedSegment.Point = new Point(10, 10);
+
+			Assert.Equal(invalidationCountAfterClear, invalidationCount);
+		}
 	}
 }

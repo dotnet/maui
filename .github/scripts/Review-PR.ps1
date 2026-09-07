@@ -2388,6 +2388,43 @@ if (-not $DryRun) {
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
+#  STEP 5.5: Apply the Phase 4 (pr-finalize) title/description recommendation
+#  Deliberately outside the DEFER_COMMENT_TO_STAGE3 block below so the PR gets a
+#  descriptive title as soon as review finishes, rather than waiting on deep tests.
+#  Fully non-fatal: on any failure the recommendation still ships in the summary
+#  comment for a human to apply.
+# ═════════════════════════════════════════════════════════════════════════════
+
+Write-Host ""
+Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+Write-Host "║  STEP 5.5: APPLY PR TITLE/DESCRIPTION                     ║" -ForegroundColor Magenta
+Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+
+if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
+    Write-Host "  ⏭️ Skipped (SKIP_PR_FINALIZE_APPLY=true)" -ForegroundColor Gray
+} else {
+    $applyFinalizeScript = Join-Path $ScriptsDir "apply-pr-finalize.ps1"
+    if (Test-Path $applyFinalizeScript) {
+        try {
+            # Resolve content.md from $RepoRoot rather than letting the script fall back to
+            # the current directory — the Post phase's cwd is not guaranteed to be the repo.
+            $finalizeContent = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md"
+            $applyArgs = @{ PRNumber = $PRNumber; ContentFile = $finalizeContent }
+            if ($DryRun) { $applyArgs.DryRun = $true }
+            & $applyFinalizeScript @applyArgs
+        } catch {
+            # Backstop, not a live path: the child sanitizes its own console output and its
+            # one throw carries no PR-derived text today. Kept because a future throw that
+            # quotes the recommendation would otherwise reach stdout unsanitized, and every
+            # other console sink in this script already goes through the sanitizer.
+            Write-Host "  ⚠️ Failed to apply PR title/description (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "  ⚠️ apply-pr-finalize.ps1 not found — skipping" -ForegroundColor Yellow
+    }
+}
+
+# ═════════════════════════════════════════════════════════════════════════════
 #  STEP 6: Post AI Summary Review (direct script invocation)
 #  When DEFER_COMMENT_TO_STAGE3=true, skip posting here — Stage 3
 #  (UpdateAISummaryComment) will post the full review after deep tests.

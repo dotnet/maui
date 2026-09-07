@@ -252,7 +252,14 @@ public abstract class PlatformDrawable extends PaintDrawable implements Platform
     // PlatformShadowDrawable implementation
     @Override
     public boolean canDrawShadow() {
-        return this.backgroundStyle.getIsSolid() && (this.strokeThickness == 0 || this.borderStyle.getPaintType() == PlatformPaintType.NONE || this.borderStyle.getIsSolid());
+        // Fast-path is safe when the background defines the silhouette and the stroke
+        // contributes no visible pixels (thickness=0, no paint, opaque, or transparent).
+        // See #36942 — Border { Stroke=Transparent } falls here to avoid the SW-bake path.
+        return this.backgroundStyle.getIsSolid()
+            && (this.strokeThickness == 0
+                || this.borderStyle.getPaintType() == PlatformPaintType.NONE
+                || this.borderStyle.getIsSolid()
+                || this.borderStyle.getIsFullyTransparent());
     }
 
     @Override
@@ -268,7 +275,11 @@ public abstract class PlatformDrawable extends PaintDrawable implements Platform
             if (this.fullClipPath == null) {
                 return;
             }
-            contentPath = this.fullClipPath;
+            // Use the inner clipPath when the border draws no pixels so the shadow
+            // hugs the visible fill instead of the outer stroke bounds (#36942).
+            contentPath = this.borderStyle.getIsFullyTransparent()
+                ? this.clipPath
+                : this.fullClipPath;
         } else {
             contentPath = new Path();
             contentPath.addRect(0, 0, this.width, this.height, Path.Direction.CW);

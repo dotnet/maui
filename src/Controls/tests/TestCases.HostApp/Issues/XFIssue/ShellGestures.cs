@@ -15,8 +15,6 @@ public class ShellGestures : TestShell
 	const string TableViewTitle = "Table View";
 	const string TableViewId = "TableViewId";
 
-	const string ListViewTitle = "List View";
-	const string ListViewId = "ListViewId";
 
 	protected override void Init()
 	{
@@ -84,12 +82,6 @@ public class ShellGestures : TestShell
 			tableRoot.Add(tableSection);
 		}
 		tableViewPage.Content = tableView;
-
-
-		var listViewPage = CreateContentPage(shellItemTitle: ListViewTitle);
-		ListView listView = new ListView(ListViewCachingStrategy.RecycleElement) { AutomationId = ListViewId };
-		listView.ItemsSource = Enumerable.Range(0, 100).Select(x => $"{x} Entry").ToList();
-		listViewPage.Content = listView;
 
 		if (OperatingSystem.IsAndroid())
 		{

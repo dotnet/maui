@@ -24,16 +24,16 @@
       "rollForward": false
     },
     "microsoft.dotnet.xharness.cli": {
-      "version": "11.0.0-prerelease.26230.4",
+      "version": "11.0.0-prerelease.26428.1",
       "commands": [
         "xharness"
       ],
       "rollForward": false
     },
-    "androidsdk.tool": {
-      "version": "0.19.0",
+    "microsoft.maui.cli": {
+      "version": "0.1.0-preview.10.26274.3",
       "commands": [
-        "android"
+        "maui"
       ],
       "rollForward": false
     }

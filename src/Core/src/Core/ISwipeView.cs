@@ -6,7 +6,7 @@
 	public interface ISwipeView : IContentView
 	{
 		/// <summary>
-		/// Gets a value that represents the minimum swipe distance that must be achieved for a swipe to be recognized.
+		/// Gets a value that represents the swipe distance that must be achieved for a swipe to be recognized.
 		/// </summary>
 		public double Threshold { get; }
 

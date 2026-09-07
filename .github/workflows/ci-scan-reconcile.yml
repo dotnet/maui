@@ -1,0 +1,348 @@
+# ci-scan tracking-issue reconciler.
+#
+# This is DELIBERATELY a plain GitHub Actions workflow, not a gh-aw agentic workflow.
+# Deciding which tracking issues are stale is a deterministic set-difference over build
+# IDs; there is nothing for a language model to add, and a prompt-driven agent with
+# `issues: write` would be an injection target reachable from any CI log the scanner
+# reads. See `.github/instructions/ci-copilot-pipeline-security.instructions.md`.
+#
+# ─── SAFETY MODEL ────────────────────────────────────────────────────────────────────
+#
+# 1. DEFAULT IS READ-ONLY, AND IT IS ENFORCED BY THE TOKEN, NOT BY THE SCRIPT.
+#    The `report` job is granted `issues: read` only. Even a compromised or buggy script
+#    cannot close, reopen, label, or comment on anything from that job — the credential
+#    it holds does not permit it. It also passes `-Mode report` as a hard-coded literal,
+#    so the workflow input cannot steer it.
+#
+# 2. MUTATION REQUIRES ALL OF:
+#      * `workflow_dispatch` (a scheduled run can never reach the mutating job),
+#      * an explicit `mode` input of exactly `comment` or `enforce`,
+#      * the `ci-scan-reconcile` deployment environment,
+#      * the `CI_SCAN_RECONCILE_DISABLED` repository variable not being set to `true`, and
+#      * for `enforce` ONLY, `CI_SCAN_RECONCILE_ENFORCE_ENABLED` set to exactly `true`.
+#
+#    The last one is an OPT-IN, not a kill switch, and the two are not redundant. Note 3
+#    explains that the human approval gate does not exist until a maintainer configures
+#    the environment — but an unconfigured environment is auto-created UNPROTECTED, so
+#    absent this variable the very first `enforce` dispatch would close issues with no
+#    approval at all. Defaulting to "off" makes the irreversible mode unreachable until
+#    somebody deliberately turns it on, which is also when they will have configured the
+#    reviewers. `comment` mode is unaffected: it is reversible and stays one-step usable.
+#
+# 3. REQUIRED REVIEWERS ARE A REPOSITORY CONFIGURATION PREREQUISITE.
+#    GitHub Actions cannot declare an environment's protection rules in YAML. Naming the
+#    environment here is necessary but NOT sufficient: until a maintainer configures
+#    required reviewers on the `ci-scan-reconcile` environment in
+#    Settings → Environments, the human approval gate does not exist and `enforce` must
+#    not be used. Treat an unconfigured environment as "enforcement is unavailable".
+#
+# 4. KILL SWITCH / ROLLBACK.
+#    Immediate:  set repository variable `CI_SCAN_RECONCILE_DISABLED=true` (no PR needed).
+#                To disable only closures, clear `CI_SCAN_RECONCILE_ENFORCE_ENABLED`.
+#    Permanent:  the checked-in default is `report`; reverting to it is a one-line change.
+#    Nuclear:    disable the workflow in the Actions UI.
+#
+# 5. NO FORK-AUTHORED CODE EXECUTION.
+#    No `pull_request_target` and no PR-ref checkout, so content authored in a fork pull
+#    request is never executed here. That guarantee holds for every trigger, and it is
+#    the one this note exists to make. Every checkout uses `persist-credentials: false`.
+#
+#    What is NOT guaranteed is that the checkout is the default branch. No step pins
+#    `ref:`, so `actions/checkout` takes `github.ref`: the default branch on a schedule,
+#    but on `workflow_dispatch` whatever ref the operator picked. Dispatch requires write
+#    access, so that code is collaborator-authored — but it need not be reviewed, merged,
+#    or even on the default branch. What bounds it is the `test` job that every other job
+#    `needs`, plus least-privilege permissions; NOT the identity of the checked-out
+#    branch. The `test` job's own header depends on this being stated honestly: it exists
+#    precisely because a dispatch can run an arbitrary ref.
+#
+# 6. THE TWO MODE CHECKS ARE DELIBERATELY DIFFERENT.
+#    GitHub Actions expression `==` is CASE-INSENSITIVE, so the `if:` below would accept
+#    `ENFORCE`. `Set-CiScanReconcileMode` in the script is case-SENSITIVE and accepts only
+#    the exact lowercase strings. A value that slips past the `if:` therefore still runs
+#    the job in report mode and performs zero writes. Neither check is load-bearing alone.
+#
+# 7. A MUTATING RUN STOPS AT ITS FIRST FAILED WRITE.
+#    Closing an issue takes two calls: the close, then the `auto-closed-stale` marker. If
+#    the close lands and the marker does not, the issue is closed WITHOUT the label the
+#    reopen path keys on, so the automation can no longer recognise or undo its own
+#    irreversible action. Rather than carry on and manufacture more of those, the apply
+#    loop aborts at the first failure, names the exact issue it stopped on in the step
+#    summary and JSON, and exits non-zero. Damage is bounded to one known issue.
+
+name: ci-scan reconcile
+
+on:
+  schedule:
+    # Daily. Scheduled runs are report-only by construction (see the `mutate` job's `if`).
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      label:
+        # Applies to comment/enforce ONLY. The report job deliberately ignores this and
+        # always surveys both twins from a constant matrix, so under the default
+        # mode=report this choice has no effect on what is scanned.
+        description: 'Twin to MUTATE (comment/enforce only — report always surveys both)'
+        type: choice
+        required: true
+        default: 'ci-scan-net11'
+        options:
+          - ci-scan
+          - ci-scan-net11
+      mode:
+        description: 'report = read-only (default) · comment = labels+notice · enforce = also close'
+        type: choice
+        required: true
+        default: 'report'
+        options:
+          - report
+          - comment
+          - enforce
+
+permissions: {}
+
+concurrency:
+  # Deliberately constant. The `report` job scans a fixed matrix of BOTH labels on every
+  # run, so keying this on `inputs.label` created distinct groups for dispatches that do
+  # identical work — two of them would run the same read-heavy survey in parallel. That
+  # matters beyond wasted minutes: this scanner's failure mode is GitHub/AzDO rate
+  # limiting, which surfaces as read errors, which force the run fail-closed and suppress
+  # the mutations it was dispatched to make. One survey at a time.
+  group: ci-scan-reconcile
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────────
+  # SAFETY TESTS — gate for everything below. The most privileged thing this job can
+  # do is read the repository.
+  #
+  # What this job gates is the WRITE path, not report mode. Report mode is already
+  # enforced at run time by the credential — note 1 above: the `report` job holds
+  # `issues: read` only — so attributing that guarantee to this suite would misname the
+  # load-bearing control, and a header that points at the weaker of two controls is how
+  # the stronger one gets deleted as redundant. The `mutate` job is what has no such
+  # backstop: `workflow_dispatch` lets the operator pick ANY ref, so without this job an
+  # unreviewed branch could reach that job's `issues: write` token. PR-time gating
+  # (`powershell-script-tests.yml`) does not cover that path, because a dispatch does not
+  # have to run from a merged commit.
+  #
+  # The suite does still assert that a report-mode run performs zero writes, and that is
+  # not the same guarantee restated. The token stops a write from LANDING; the suite
+  # stops one from being ATTEMPTED — which is what keeps `-Mode report` a decision the
+  # script makes, rather than an error the API returns on whichever call happened to run
+  # first. Two independent controls, and this job is the weaker one.
+  #
+  # Note the stronger fact behind that. PR-time gating now EXISTS —
+  # `powershell-script-tests.yml` landed with dotnet/maui#36842 and runs both suites on
+  # `pull_request` for `.github/scripts/**` — but it gates MERGES, and this workflow is
+  # never reached by one: the triggers above are `schedule` and `workflow_dispatch` only.
+  # A dispatch names its own ref, so a branch that never opened a pull request reaches
+  # the `mutate` job with the repo-wide gate having never run against the code being
+  # executed. FOR THE REF A DISPATCH ACTUALLY RUNS, THIS JOB IS STILL THE ONLY PLACE THE
+  # SUITE RUNS, which is why its floor check below is not decorative and why the gate
+  # must not be weakened to "report-only runs may skip the tests".
+  #
+  # The test SUITE is offline — it reaches neither `gh` nor AzDO. The JOB is not: it
+  # checks out the repo and installs Pester from PSGallery. So the guarantee here is
+  # scoped by permission, not by connectivity:
+  #
+  #   * `permissions: contents: read` — the job-level `GITHUB_TOKEN` that
+  #     `actions/checkout` consumes cannot write anything, on this repo or any other;
+  #   * no `GH_TOKEN`/`GITHUB_TOKEN` is exported into the run step, so `gh` inside the
+  #     suite is unauthenticated;
+  #   * `persist-credentials: false`, so the checkout token is not left in `.git/config`
+  #     for the suite to pick up.
+  #
+  # A regression that tried to mutate GitHub therefore fails here rather than mutating
+  # anything.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  test:
+    name: Safety tests
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run reconciler safety tests
+        shell: pwsh
+        run: |
+          # NOTE: do NOT add `Set-StrictMode` here. Pester dot-sources each test file
+          # into this session, so a strict mode set at the host level leaks into every
+          # test body and fails tests that pass everywhere else.
+          $ErrorActionPreference = 'Stop'
+
+          # `-SkipPublisherCheck` is a no-op on this runner and is kept for portability,
+          # not to relax anything. The publisher check is an Authenticode comparison, and
+          # `Get-AuthenticodeSignature` does not exist off Windows -- it raises
+          # CommandNotFoundException -- so there is no verification here to bypass. The
+          # flag matters only if `runs-on` ever becomes a Windows image, where the in-box
+          # Microsoft-signed Pester 3.4.0 otherwise blocks installing 5.x from PSGallery.
+          # Removing it would therefore buy no supply-chain posture today and would break
+          # the job the day the image changes. What actually constrains supply chain here
+          # is the exact pinned version, on both lines.
+          Install-Module Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion 5.9.0
+
+          $config = New-PesterConfiguration
+          $config.Run.Path = @(
+            './.github/scripts/CiScanReconcile.Core.Tests.ps1'
+            './.github/scripts/Invoke-CiScanReconcile.Tests.ps1'
+          )
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+
+          $result = Invoke-Pester -Configuration $config
+
+          foreach ($t in $result.Failed) {
+            Write-Output "::error::Reconciler safety test failed: $($t.ExpandedPath)"
+          }
+          if ($result.FailedCount -gt 0) {
+            throw "$($result.FailedCount) reconciler safety test(s) failed; refusing to run the reconciler."
+          }
+
+          # A file that throws during DISCOVERY contributes zero tests and zero failures,
+          # so `FailedCount -eq 0` cannot distinguish "everything passed" from "a whole
+          # file never ran". Verified in isolation: two files, one throwing at discovery,
+          # reports Total=2 Passed=2 Failed=0 while two tests never existed.
+          #
+          # Assert container health directly. This is exact and needs no threshold: every
+          # configured path must produce a container, and every container must have loaded.
+          $missing = $config.Run.Path.Value.Count - $result.Containers.Count
+          if ($missing -ne 0) {
+            throw "Expected $($config.Run.Path.Value.Count) test container(s), got $($result.Containers.Count); a test file failed to load."
+          }
+          foreach ($c in $result.Containers) {
+            if (-not $c.Passed) {
+              Write-Output "::error::Test container did not load or did not pass: $($c.Item)"
+            }
+          }
+          if (@($result.Containers | Where-Object { -not $_.Passed }).Count -gt 0) {
+            throw "One or more test containers failed to load; refusing to run the reconciler."
+          }
+
+          # Anti-vacuous floor, kept as defence in depth. Note it cannot stand alone: the
+          # two suites hold 141 and 194 tests, so losing the 141-test decision-logic file
+          # leaves 194 -- above this floor -- and the gate would have opened with every
+          # verdict, threshold and fail-closed test unexecuted. The container assertions
+          # above are what actually close that hole.
+          if ($result.TotalCount -lt 150) {
+            throw "Only $($result.TotalCount) test(s) ran; the suite did not load correctly."
+          }
+          Write-Output "Reconciler safety suite: $($result.PassedCount)/$($result.TotalCount) passed."
+
+  # ─────────────────────────────────────────────────────────────────────────────────
+  # REPORT — runs for every trigger, once the safety suite passes, with a read-only token.
+  #
+  # "For every trigger" is literal: no `github.event_name` appears in its `if`, so a
+  # schedule and a dispatch reach it identically. It is NOT unconditional — `needs: test`
+  # skips it whenever the safety suite fails, which is deliberate. A survey is only worth
+  # reading if the logic that produced it was verified first, and a skipped report is a
+  # visibly absent one, whereas a published survey from unverified logic reads exactly
+  # like a trustworthy one.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  report:
+    name: Report (read-only)
+    needs: test
+    if: github.repository == 'dotnet/maui'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      # One survey at a time, for the same reason the concurrency group is constant:
+      # both legs hit the same GitHub/AzDO read paths, and rate limiting surfaces as
+      # read errors that force the run fail-closed. Running them in parallel would
+      # halve the wall clock and double the peak read rate — the wrong trade for a
+      # scanner whose whole job is to be trusted when it says "nothing to do".
+      max-parallel: 1
+      matrix:
+        # Deliberately a constant. Nothing about this job — not the mode, not the twin —
+        # is derived from a workflow input, so no dispatch input can steer it.
+        label: [ci-scan, ci-scan-net11]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reconcile (report only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # The markdown table is appended to $GITHUB_STEP_SUMMARY automatically, so the
+          # dry-run result is readable on the run page without downloading the artifact.
+          # NOTE: -Mode is the literal string 'report'. It is intentionally NOT wired to
+          # `inputs.mode`; this job must be incapable of mutation regardless of input.
+          CI_SCAN_LABEL: ${{ matrix.label }}
+        shell: pwsh
+        run: |
+          ./.github/scripts/Invoke-CiScanReconcile.ps1 `
+            -Mode report `
+            -Label $env:CI_SCAN_LABEL `
+            -OutputPath "ci-scan-reconcile-$env:CI_SCAN_LABEL.json"
+
+      - name: Upload report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-scan-reconcile-${{ matrix.label }}
+          path: ci-scan-reconcile-*.json
+          # Long enough to cover the 14-day report-only review phase plus slack.
+          retention-days: 90
+          if-no-files-found: error
+
+  # ─────────────────────────────────────────────────────────────────────────────────
+  # MUTATE — unreachable on a schedule, on a default dispatch, or with any mode value
+  # other than the two exact strings below.
+  # ─────────────────────────────────────────────────────────────────────────────────
+  mutate:
+    name: Apply (${{ inputs.mode }})
+    # `test` is listed explicitly even though `report` already depends on it: this is the
+    # only job that holds `issues: write`, and its gate must not be removable by an edit
+    # to a different job's `needs`.
+    needs: [test, report]
+    if: >-
+      github.repository == 'dotnet/maui' &&
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.mode == 'comment' || inputs.mode == 'enforce') &&
+      vars.CI_SCAN_RECONCILE_DISABLED != 'true' &&
+      (inputs.mode == 'comment' || vars.CI_SCAN_RECONCILE_ENFORCE_ENABLED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Repository-configured protection rules (required reviewers) are the human gate.
+    # See note 3 in the header — naming the environment does not create those rules.
+    environment: ci-scan-reconcile
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Reconcile (${{ inputs.mode }})
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CI_SCAN_LABEL: ${{ inputs.label }}
+          CI_SCAN_MODE: ${{ inputs.mode }}
+        shell: pwsh
+        run: |
+          ./.github/scripts/Invoke-CiScanReconcile.ps1 `
+            -Mode $env:CI_SCAN_MODE `
+            -Label $env:CI_SCAN_LABEL `
+            -OutputPath "ci-scan-reconcile-$env:CI_SCAN_LABEL-applied.json"
+
+      - name: Upload applied report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-scan-reconcile-applied-${{ inputs.label }}
+          path: ci-scan-reconcile-*.json
+          retention-days: 90
+          if-no-files-found: warn

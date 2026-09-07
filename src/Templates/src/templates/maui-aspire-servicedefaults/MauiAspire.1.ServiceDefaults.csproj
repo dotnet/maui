@@ -5,6 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<IsAspireSharedProject>true</IsAspireSharedProject>
+		<UseMauiCore>true</UseMauiCore>
 	</PropertyGroup>
 
 	<ItemGroup>

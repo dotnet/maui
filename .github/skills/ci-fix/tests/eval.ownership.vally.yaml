@@ -1,0 +1,136 @@
+# CI-fix ownership capability suite
+#
+# Each scenario in this small suite is a release gate for the human-PR dedup
+# policy. Vally aggregates at the suite level, so threshold 1.0 means every
+# grader in every trial of every ownership scenario must pass; a passing
+# unrelated triage scenario cannot mask an ownership failure. The prompts do
+# not supply the expected decision, so the deterministic decision graders
+# exercise the triage policy instead of response-format compliance.
+
+name: ci-fix-ownership-capabilities
+description: >-
+  Must-pass ownership scenarios for the CI-fix triage skill. They distinguish
+  explicit human ownership declarations from incidental issue references.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 5m
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
+  executor: copilot-sdk
+
+environment:
+  # Isolate and load the unit under test. `expect_skills` documents the
+  # expected route but does not itself force Copilot to invoke the skill.
+  skills:
+    - ..
+
+stimuli:
+  # Source: live CI-fixer run 30118934440, issue #36051, PR #36657.
+  - name: comment-only-reference-does-not-stop-triage
+    tags: { source_issue: "36051", source_pr: "36657", kind: false-dedup }
+    prompt: |
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
+      main-branch snapshot.
+
+      Tracking issue #36051 is open, has the ci-scan label, and has no open or
+      merged [ci-fix] PR. A search for #36051 found open human PR #36657.
+      PR #36657 has this title and body:
+
+      Title: "Forward-port Essentials DI service registration"
+      Body: "Forward-ports the Essentials dependency-injection service registration change to net11.0."
+
+      The number #36051 appears only in a comment on #36657 that lists several
+      unrelated CI failures. It does not appear in the title or body.
+
+      Reply with exactly two lines:
+      Decision: <Continue|Watch|Stop|Skip>
+      Next: <safe action>
+
+      Do not query GitHub; the snapshot above is complete.
+    graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: incidental-body-reference-does-not-stop-triage
+    tags: { kind: false-dedup }
+    prompt: |
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
+      main-branch snapshot.
+
+      Tracking issue #48101 is open, in scope, and has no [ci-fix] PR. The
+      title-and-body search found open human PR #48116:
+
+      Title: "Improve dispatcher shutdown diagnostics"
+      Body: "This change is similar to #48101, #48102, and other recent
+      dispatcher investigations. It does not fix those tracking issues."
+
+      The title and body contain no Refs declaration or Fix/Fixes/Fixed,
+      Close/Closes/Closed, or Resolve/Resolves/Resolved keyword tied to #48101.
+
+      Reply with exactly two lines:
+      Decision: <Continue|Watch|Stop|Skip>
+      Next: <safe action>
+
+      Do not query GitHub; the snapshot above is complete.
+    graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Continue\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: explicit-human-reference-stops-competing-fix
+    tags: { kind: human-ownership }
+    prompt: |
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
+      main-branch snapshot.
+
+      Tracking issue #48100 is open, in scope, and has no [ci-fix] PR. Open
+      human PR #48115 has this body:
+
+      "Fixes dotnet/maui#48100 by serializing access to the shared dispatcher."
+
+      No other dedup gate applies. Reply with exactly two lines:
+      Decision: <Continue|Watch|Stop|Skip>
+      Next: <safe action>
+
+      Do not query GitHub.
+    graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+  - name: explicit-human-url-reference-stops-competing-fix
+    tags: { kind: human-ownership }
+    prompt: |
+      Use the `ci-fix` skill to apply its triage protocol to this frozen
+      main-branch snapshot.
+
+      Tracking issue #48103 is open, in scope, and has no [ci-fix] PR. Open
+      human PR #48117 has this body:
+
+      "Fixes https://github.com/dotnet/maui/issues/48103 by serializing access
+      to the shared dispatcher."
+
+      No other dedup gate applies. Reply with exactly two lines:
+      Decision: <Continue|Watch|Stop|Skip>
+      Next: <safe action>
+
+      Do not query GitHub.
+    graders:
+      - type: skill-invocation
+        config: { required: [ci-fix] }
+      - type: output-matches
+        config: { pattern: '^Decision: Stop\r?\nNext: [^\r\n]+(?:\r?\n)?$' }
+    constraints: { max_duration: 5m, expect_skills: [ci-fix] }
+
+scoring:
+  threshold: 1.0

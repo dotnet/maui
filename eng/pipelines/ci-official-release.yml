@@ -28,24 +28,29 @@ parameters:
   default: true
 
 - name: pushPackages
-  displayName: "If false does dry run"
+  displayName: "If false, prepare a dry-run artifact without publishing"
   type: boolean
   default: true
 
 - name: nugetIncludeFilters
-  displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
+  displayName: "[OPTIONAL] Semi-colon (';') separated list of nuget packages to include"
   type: string
   default: skip
 
 - name: nugetExcludeFilters
-  displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to exclude"
+  displayName: "[OPTIONAL] Semi-colon (';') separated list of nuget packages to exclude"
   type: string
   default: skip
 
-- name: feedUrl
-  displayName: "[OPTIONAL] NuGet URL to push to defaults to nuget.org"
+- name: nugetAlreadyAttemptedPackFilters
+  displayName: "[RECOVERY] Semi-colon (';') separated pack file filters already accepted by NuGet.org"
   type: string
-  default: "https://api.nuget.org/v3/index.json"
+  default: skip
+
+- name: nugetAlreadyAttemptedManifestFilters
+  displayName: "[RECOVERY] Semi-colon (';') separated manifest file filters already accepted by NuGet.org"
+  type: string
+  default: skip
 
 - name: VM_IMAGE_HOST
   type: object
@@ -57,9 +62,9 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
-
 - group: AzureDevOps-Artifact-Feeds-Pats
-- group: maui-nuget-release # maui-nuget-release provides: pat--nuget--xamarinc--push--wildcard
+- name: isWorkload
+  value: ${{ and(eq(parameters.ghOwner, 'dotnet'), in(parameters.ghRepo, 'android', 'macios', 'maui')) }}
 
 resources:
   repositories:
@@ -90,207 +95,588 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
-    - stage: publish_maestro
-      displayName: Publish to Workload Set channel
-      dependsOn: []
-      condition: eq(${{ parameters.pushWorkloadSet }}, true)
-      jobs:
-      - job: publish_maestro
-        displayName: Publish to Workload Set channel
-        pool: ${{ parameters.VM_IMAGE_HOST }}
-        timeoutInMinutes: 240
-        workspace:
-          clean: all
-        steps:
-        - ${{ if eq(parameters.commitHash, 'skip') }}:
-          - script: echo parameters.commitHash was not set, skipping...
-            displayName: Skip push
-        - ${{ else }}:
-          - script: |
-              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
-            displayName: Set COMMIT
+    - ${{ if or(eq(parameters.commitHash, 'skip'), and(eq(parameters.pushNugetOrg, false), or(eq(variables.isWorkload, 'false'), eq(parameters.pushWorkloadSet, false)))) }}:
+      - stage: skip_release
+        displayName: Skip release
+        dependsOn: []
+        jobs:
+        - job: skip_release
+          displayName: Skip release
+          steps:
+          - checkout: none
+          - script: echo No release operations were requested.
+            displayName: Skip release
+
+    - ${{ if and(ne(parameters.commitHash, 'skip'), or(and(eq(variables.isWorkload, 'true'), eq(parameters.pushWorkloadSet, true)), eq(parameters.pushNugetOrg, true))) }}:
+      - stage: prepare_release
+        displayName: Prepare release artifacts
+        dependsOn: []
+        jobs:
+        - job: prepare_release
+          displayName: Gather and classify release packages
+          timeoutInMinutes: 240
+          workspace:
+            clean: all
+          templateContext:
+            outputs:
+            - ${{ if eq(variables.isWorkload, 'true') }}:
+              - output: pipelineArtifact
+                displayName: Publish workload packs
+                targetPath: '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet'
+                artifactName: MauiPacksForNuGet
+              - output: pipelineArtifact
+                displayName: Publish workload manifests
+                targetPath: '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet'
+                artifactName: MauiManifestsForNuGet
+            - ${{ else }}:
+              - output: pipelineArtifact
+                displayName: Publish NuGet packages
+                targetPath: '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                artifactName: NuGetPackagesForRelease
+              - output: pipelineArtifact
+                displayName: Publish NuGet release audit
+                targetPath: '$(Build.ArtifactStagingDirectory)\NuGetReleaseAudit'
+                artifactName: NuGetReleaseAudit
+          steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
 
           - task: AzureCLI@2
-            displayName: Add build to workload set channel
+            name: prepareRelease
+            displayName: Resolve BAR build and prepare packages
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
               scriptLocation: inlineScript
               inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                $ErrorActionPreference = 'Stop'
+                $releaseWorkload = [bool]::Parse($env:IS_WORKLOAD)
+                $sourceRepository = "https://github.com/$env:GH_OWNER/$env:GH_REPO".ToLowerInvariant()
+                $allowedRepositories = @(
+                  'https://github.com/dotnet/maui',
+                  'https://github.com/dotnet/android',
+                  'https://github.com/dotnet/macios',
+                  'https://github.com/dotnet/android-libraries'
+                )
+                if ($sourceRepository -notin $allowedRepositories) {
+                  throw "Repository '$sourceRepository' is not enabled for this release pipeline."
+                }
+
+                function Get-Filters([string] $value) {
+                  if ([string]::IsNullOrWhiteSpace($value) -or $value -eq 'skip') {
+                    return @()
+                  }
+
+                  return @($value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+                }
+
+                function Test-AnyFilter([string] $name, [string[]] $filters) {
+                  foreach ($filter in $filters) {
+                    if ($name -like $filter) {
+                      return $true
+                    }
+                  }
+
+                  return $false
+                }
+
+                function Get-PackageIdentity([System.IO.FileInfo] $package) {
+                  $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+                  try {
+                    $nuspec = @($archive.Entries | Where-Object {
+                      $_.Name -like '*.nuspec' -and $_.FullName -eq $_.Name
+                    })
+                    if ($nuspec.Count -ne 1) {
+                      throw "Expected one nuspec in '$($package.FullName)', found $($nuspec.Count)."
+                    }
+
+                    $reader = [System.IO.StreamReader]::new($nuspec[0].Open())
+                    try {
+                      [xml] $document = $reader.ReadToEnd()
+                    }
+                    finally {
+                      $reader.Dispose()
+                    }
+
+                    $idNode = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='id']")
+                    $versionNode = $document.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='version']")
+                    if (!$idNode -or !$versionNode -or
+                        [string]::IsNullOrWhiteSpace($idNode.InnerText) -or
+                        [string]::IsNullOrWhiteSpace($versionNode.InnerText)) {
+                      throw "Package '$($package.FullName)' has no ID or version."
+                    }
+
+                    $id = $idNode.InnerText.Trim()
+                    $version = $versionNode.InnerText.Trim()
+                    $filePrefix = "$id."
+                    if (!$package.BaseName.StartsWith($filePrefix, [StringComparison]::OrdinalIgnoreCase)) {
+                      throw "Package file '$($package.Name)' does not start with its ID '$id'."
+                    }
+
+                    return [pscustomobject]@{
+                      id = $id
+                      version = $version
+                      normalizedVersion = $package.BaseName.Substring($filePrefix.Length)
+                      fileName = $package.Name
+                    }
+                  }
+                  finally {
+                    $archive.Dispose()
+                  }
+                }
+
+                Add-Type -AssemblyName System.IO.Compression.FileSystem
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
+                $buildJson = & $darc get-build --ci --repo $sourceRepository --commit "$env:COMMIT_HASH" --extended --output-format json --azdev-pat $(System.AccessToken)
+                if ($LASTEXITCODE -ne 0) {
+                  throw "Darc failed to resolve the BAR build."
                 }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose
-                Write-Host "List downloaded artifacts"
-                Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
-                $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
-                $workloadSetsChannel = ""
-                $workloadSetsFeed = ""
-                if ($manifestPack -like "*.Manifest-8.0*") {
-                    $workloadSetsChannel = ".NET 8 Workload Release"
-                    $workloadSetsFeed = "dotnet8-workloads"
+
+                $builds = @($buildJson | ConvertFrom-Json)
+                if ($builds.Count -eq 0) {
+                  throw "No BAR build was returned for '$sourceRepository'."
                 }
-                if ($manifestPack -like "*.Manifest-9.0*") {
-                  $workloadSetsChannel = ".NET 9 Workload Release"
-                  $workloadSetsFeed = "dotnet9-workloads"
+                $build = $builds[0]
+                $repository = ([Uri] $build.gitHubRepository).GetLeftPart([UriPartial]::Path).TrimEnd('/').ToLowerInvariant()
+                if ($repository.EndsWith('.git')) {
+                  $repository = $repository.Substring(0, $repository.Length - 4)
                 }
-                if ($manifestPack -like "*.Manifest-10.0*") {
-                  $workloadSetsChannel = ".NET 10 Workload Release"
-                  $workloadSetsFeed = "dotnet10-workloads"
+                $repository = $repository.Replace('://www.github.com/', '://github.com/')
+                if ($repository -ne $sourceRepository) {
+                  throw "BAR build '$($build.id)' belongs to '$repository', not '$sourceRepository'."
                 }
-                if ($manifestPack -like "*.Manifest-11.0*") {
-                  $workloadSetsChannel = ".NET 11 Workload Release"
-                  $workloadSetsFeed = "dotnet11-workloads"
+                $barId = $build.id
+
+                $dropPath = "$(Build.StagingDirectory)\nupkgs"
+                # Darc represents NuGet packages as slash-free asset names. Symbol and other blob
+                # assets use paths and are not inputs to this NuGet.org release.
+                $packageAssetFilter = '^[^/]+$'
+                $barPackageAssets = @($build.assets | Where-Object {
+                  !$_.nonShipping -and $_.name -match $packageAssetFilter
+                })
+                if (!$releaseWorkload -and $barPackageAssets.Count -eq 0) {
+                  throw "BAR build '$barId' contains no shipping NuGet package assets."
                 }
-                if (!$workloadSetsChannel -or !$workloadSetsFeed) {
-                  Write-Error "Could not determine the workload sets channel or feed for the manifest pack '$manifestPack'"
-                  exit 1
+
+                $gatherArguments = @(
+                  'gather-drop',
+                  '--ci',
+                  '--id', $barId,
+                  '-o', $dropPath,
+                  '--azdev-pat', '$(System.AccessToken)',
+                  '--include-released',
+                  '--asset-filter', $packageAssetFilter,
+                  '--verbose'
+                )
+                if (!$releaseWorkload) {
+                  $gatherArguments += '--continue-on-error'
                 }
-                Write-Host "##vso[task.setvariable variable=WorkloadSetsFeedName;]$workloadSetsFeed"
-                Write-Host "Adding build ID '$barId' to channel '$workloadSetsChannel' and feed '$workloadSetsFeed'"
-                & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$barId" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
-
-    - stage: stage_push_packs
-      displayName: Release packs
-      dependsOn: []
-      condition: eq(${{ parameters.pushNugetOrg }}, true)
-      jobs:
-      # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
-      - job: push_packs_approval
-        displayName: Wait to push packs
-        timeoutInMinutes: 240
-        pool: server
-        steps:
-        - task: ManualValidation@0
-          timeoutInMinutes: 120
-          inputs:
-            instructions: 'Press "Resume" to push workload packs to NuGet.org.'
-            onTimeout: reject
-
-      - job: push_packs
-        displayName: Push packs to NuGet.org
-        timeoutInMinutes: 90
-        dependsOn: push_packs_approval
-        condition: eq(dependencies.push_packs_approval.result, 'Succeeded')
-        workspace:
-          clean: all
-        steps:
-        - checkout: self
-          clean: true
-
-        - ${{ if eq(parameters.commitHash, 'skip') }}:
-          - script: echo parameters.commitHash was not set, skipping...
-            displayName: skip push
-
-        - ${{ else }}:
-          - script: |
-              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
-            displayName: set COMMIT
-
-          - task: AzureCLI@2
-            displayName: Get build for commit
-            continueOnError: true
-            inputs:
-              azureSubscription: "Darc: Maestro Production"
-              scriptType: pscore
-              scriptLocation: inlineScript
-              inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
-                . $(Build.SourcesDirectory)\eng\common\tools.ps1
-                $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
+                Write-Host "Gathering BAR build '$barId' into '$dropPath'."
+                & $darc @gatherArguments
+                $gatherExitCode = $LASTEXITCODE
+                $gatherFailed = $gatherExitCode -ne 0
+                if ($gatherFailed -and $releaseWorkload) {
+                  throw "Darc gather-drop failed for BAR build '$barId'."
                 }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
+                if ($gatherFailed) {
+                  Write-Warning "Darc exited with code $gatherExitCode for BAR build '$barId'; missing selected packages must already exist on NuGet.org."
+                  $LASTEXITCODE = 0
+                }
 
-          - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
-            displayName: list downloaded artifacts
+                $shippingPath = Join-Path $dropPath 'shipping\packages'
+                if (!(Test-Path $shippingPath -PathType Container)) {
+                  if ($releaseWorkload) {
+                    throw "Darc gather-drop did not create the expected package directory '$shippingPath'."
+                  }
+                  New-Item -ItemType Directory -Force -Path $shippingPath | Out-Null
+                }
 
-          - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}" -NuGetOrgApiKey2 "$(pat--nuget--xamarinc--push--wildcard-1)" -NuGetOrgApiKey3 "$(pat--nuget--xamarinc--push--wildcard-2)" 
-            displayName: Push workload packs to NuGet.org
+                $allPackages = @(Get-ChildItem -Path $shippingPath -Filter '*.nupkg' -File -Recurse)
+                if ($releaseWorkload -and $allPackages.Count -eq 0) {
+                  throw "Darc gather-drop produced no shipping NuGet packages."
+                }
+
+                $packageStatusScript = '$(Build.SourcesDirectory)\eng\scripts\nuget_release_packages.ps1'
+                if (!(Test-Path -LiteralPath $packageStatusScript -PathType Leaf)) {
+                  throw "Package status script '$packageStatusScript' was not found."
+                }
+                $packageStatusScriptHash = (Get-FileHash -LiteralPath $packageStatusScript -Algorithm SHA256).Hash
+                $includeFilters = @(Get-Filters $env:NUGET_INCLUDE_FILTERS)
+                $excludeFilters = @(Get-Filters $env:NUGET_EXCLUDE_FILTERS)
+
+                if ($releaseWorkload) {
+                  $packPackages = @($allPackages | Where-Object {
+                    $_.Name -notlike '*Manifest*.nupkg' -and
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  $manifestPackages = @($allPackages | Where-Object {
+                    $_.Name -like '*Manifest*.nupkg' -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  if ($packPackages.Count -eq 0 -or $manifestPackages.Count -eq 0) {
+                    throw "Package filtering must select workload packs and manifests."
+                  }
+
+                  $packageSets = @(
+                    @{ Name = 'Workload packs'; Packages = $packPackages; Path = '$(Build.ArtifactStagingDirectory)\MauiPacksForNuGet' },
+                    @{ Name = 'Workload manifests'; Packages = $manifestPackages; Path = '$(Build.ArtifactStagingDirectory)\MauiManifestsForNuGet' }
+                  )
+                }
+                else {
+                  $unsupportedFilters = @(@(
+                    @{ Name = 'nugetAlreadyAttemptedPackFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_PACK_FILTERS) },
+                    @{ Name = 'nugetAlreadyAttemptedManifestFilters'; Values = @(Get-Filters $env:NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS) }
+                  ) | Where-Object { $_.Values.Count -gt 0 })
+                  if ($unsupportedFilters.Count -gt 0) {
+                    throw "Non-workload releases do not support workload recovery filters: $($unsupportedFilters.Name -join ', ')."
+                  }
+
+                  if (@($barPackageAssets | Where-Object Name -like '*Manifest*').Count -gt 0) {
+                    throw "A non-workload release cannot contain workload manifest packages."
+                  }
+                  $selectedBarAssets = @($barPackageAssets | Where-Object {
+                    $fileName = "$($_.name).$($_.version).nupkg"
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $fileName $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $fileName $excludeFilters))
+                  })
+                  if ($selectedBarAssets.Count -eq 0) {
+                    throw "Package filtering selected no non-workload NuGet packages."
+                  }
+
+                  $selectedPackages = @($allPackages | Where-Object {
+                    ($includeFilters.Count -eq 0 -or (Test-AnyFilter $_.Name $includeFilters)) -and
+                    !($excludeFilters.Count -gt 0 -and (Test-AnyFilter $_.Name $excludeFilters))
+                  })
+                  $downloadedIdentities = @($selectedPackages | ForEach-Object { Get-PackageIdentity $_ })
+                  $selectedIdentities = @($selectedBarAssets | ForEach-Object {
+                    $asset = $_
+                    $downloadedIdentity = @($downloadedIdentities | Where-Object {
+                      $_.id -ieq $asset.name -and $_.version -ieq $asset.version
+                    })
+                    if ($downloadedIdentity.Count -gt 1) {
+                      throw "Downloaded packages contain duplicate BAR identity '$($asset.name) $($asset.version)'."
+                    }
+                    if ($downloadedIdentity.Count -eq 1) {
+                      $downloadedIdentity[0]
+                    }
+                    else {
+                      [pscustomobject]@{
+                        id = [string] $asset.name
+                        version = [string] $asset.version
+                        normalizedVersion = [string] $asset.version
+                        fileName = "$($asset.name).$($asset.version).nupkg"
+                      }
+                    }
+                  })
+                  $unexpectedDownloadedPackages = @($downloadedIdentities | Where-Object {
+                    $downloadedIdentity = $_
+                    !@($selectedIdentities | Where-Object {
+                      $_.id -ieq $downloadedIdentity.id -and $_.version -ieq $downloadedIdentity.version
+                    })
+                  })
+                  if ($unexpectedDownloadedPackages.Count -gt 0) {
+                    throw "Gathered packages are absent from the selected BAR assets: $($unexpectedDownloadedPackages.fileName -join ', ')."
+                  }
+                  $packageSets = @(
+                    @{
+                      Name = 'NuGet packages'
+                      Packages = $selectedPackages
+                      Identities = $selectedIdentities
+                      Path = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                    }
+                  )
+                }
+
+                $releaseIdentities = @()
+                foreach ($packageSet in $packageSets) {
+                  New-Item -ItemType Directory -Force -Path $packageSet.Path | Out-Null
+                  $identities = if ($packageSet.ContainsKey('Identities')) {
+                    @($packageSet.Identities)
+                  }
+                  else {
+                    @($packageSet.Packages | ForEach-Object { Get-PackageIdentity $_ })
+                  }
+                  $fileNameDuplicates = @($identities | Group-Object fileName | Where-Object Count -gt 1)
+                  if ($fileNameDuplicates.Count -gt 0) {
+                    throw "$($packageSet.Name) contains duplicate package file names: $($fileNameDuplicates.Name -join ', ')."
+                  }
+
+                  $duplicates = @($identities | Group-Object id, version | Where-Object Count -gt 1)
+                  if ($duplicates.Count -gt 0) {
+                    throw "$($packageSet.Name) contains duplicate package identities: $($duplicates.Name -join ', ')."
+                  }
+
+                  Write-Host "$($packageSet.Name): $($identities.Count)"
+                  $identities | Sort-Object id, version | Format-Table id, version, fileName | Out-String | Write-Host
+                  $packageSet.Packages | Copy-Item -Destination $packageSet.Path
+                  Copy-Item -LiteralPath $packageStatusScript -Destination $packageSet.Path
+                  ConvertTo-Json -InputObject @($identities | Sort-Object id, version) -Depth 3 |
+                    Set-Content -Path (Join-Path $packageSet.Path 'expected-packages.json') -Encoding utf8
+                  if (!$releaseWorkload) {
+                    $releaseIdentities = $identities
+                  }
+                }
+
+                $workloadSetsChannel = ''
+                $workloadSetsFeed = ''
+                if ($releaseWorkload) {
+                  $manifestMajors = @($manifestPackages | ForEach-Object {
+                    if ($_.Name -notmatch '\.Manifest-(?<major>\d+)\.') {
+                      throw "Could not determine the workload band from manifest '$($_.Name)'."
+                    }
+                    $Matches.major
+                  } | Sort-Object -Unique)
+                  if ($manifestMajors.Count -ne 1) {
+                    throw "Expected one workload major version, found: $($manifestMajors -join ', ')."
+                  }
+
+                  if ($manifestMajors[0] -eq '8') {
+                    $workloadSetsChannel = '.NET 8 Workload Release'
+                    $workloadSetsFeed = 'dotnet8-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '9') {
+                    $workloadSetsChannel = '.NET 9 Workload Release'
+                    $workloadSetsFeed = 'dotnet9-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '10') {
+                    $workloadSetsChannel = '.NET 10 Workload Release'
+                    $workloadSetsFeed = 'dotnet10-workloads'
+                  }
+                  elseif ($manifestMajors[0] -eq '11') {
+                    $workloadSetsChannel = '.NET 11 Workload Release'
+                    $workloadSetsFeed = 'dotnet11-workloads'
+                  }
+                  if (!$workloadSetsChannel -or !$workloadSetsFeed) {
+                    throw "No workload set channel is configured for .NET $($manifestMajors[0])."
+                  }
+                }
+                else {
+                  $packagesPath = '$(Build.ArtifactStagingDirectory)\NuGetPackagesForRelease'
+                  & $packageStatusScript `
+                    -Action FilterExisting `
+                    -PackagesPath $packagesPath
+
+                  $staged = @($releaseIdentities | Where-Object {
+                    Test-Path -LiteralPath (Join-Path $packagesPath $_.fileName) -PathType Leaf
+                  })
+                  $auditPath = '$(Build.ArtifactStagingDirectory)\NuGetReleaseAudit'
+                  New-Item -ItemType Directory -Force -Path $auditPath | Out-Null
+                  [ordered]@{
+                    barBuildId = [int] $barId
+                    commit = [string] $build.commit
+                    repository = $repository
+                    selectedPackages = @($releaseIdentities | Sort-Object id, version)
+                    stagedPackages = @($staged | Sort-Object id, version)
+                  } | ConvertTo-Json -Depth 5 |
+                    Set-Content -LiteralPath (Join-Path $auditPath 'release-audit.json') -Encoding utf8
+
+                }
+
+                Write-Host "##vso[task.setvariable variable=BarId;isOutput=true]$barId"
+                Write-Host "##vso[task.setvariable variable=WorkloadSetsChannel;isOutput=true]$workloadSetsChannel"
+                Write-Host "##vso[task.setvariable variable=WorkloadSetsFeed;isOutput=true]$workloadSetsFeed"
+                Write-Host "##vso[task.setvariable variable=PackageStatusScriptHash;isOutput=true]$packageStatusScriptHash"
             env:
-              PUSH_PACKAGES: ${{ parameters.pushPackages }}
+              COMMIT_HASH: ${{ parameters.commitHash }}
+              GH_OWNER: ${{ parameters.ghOwner }}
+              GH_REPO: ${{ parameters.ghRepo }}
+              IS_WORKLOAD: $(isWorkload)
+              NUGET_INCLUDE_FILTERS: ${{ parameters.nugetIncludeFilters }}
+              NUGET_EXCLUDE_FILTERS: ${{ parameters.nugetExcludeFilters }}
+              NUGET_ALREADY_ATTEMPTED_PACK_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
+              NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
 
-    - stage: stage_push_manifests
-      displayName: Release manifests
-      dependsOn: []
-      condition: eq(${{ parameters.pushNugetOrg }}, true)
-      jobs:
-      # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
-      - job: push_manifests_approval
-        displayName: Wait to push manifests
-        timeoutInMinutes: 240
-        pool: server
-        steps:
-        - task: ManualValidation@0
-          timeoutInMinutes: 120
-          inputs:
-            instructions: 'Press "Resume" to push workload manifests to NuGet.org.'
-            onTimeout: reject
+      - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.pushWorkloadSet, true), eq(parameters.pushPackages, true)) }}:
+        - stage: publish_maestro
+          displayName: Publish to Workload Set channel
+          dependsOn: prepare_release
+          jobs:
+          - job: publish_maestro
+            displayName: Publish to Workload Set channel
+            timeoutInMinutes: 240
+            workspace:
+              clean: all
+            variables:
+              BarId: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.BarId'] ]
+              WorkloadSetsChannel: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.WorkloadSetsChannel'] ]
+              WorkloadSetsFeed: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.WorkloadSetsFeed'] ]
+            steps:
+            - checkout: self
+              clean: true
+              persistCredentials: false
 
-      - job: push_manifests
-        displayName: Push manifests to NuGet.org
-        timeoutInMinutes: 90
-        dependsOn: push_manifests_approval
-        condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
-        workspace:
-          clean: all
-        steps:
-        - checkout: self
-          clean: true
+            - task: AzureCLI@2
+              displayName: Add build to workload set channel
+              inputs:
+                azureSubscription: "Darc: Maestro Production"
+                scriptType: pscore
+                scriptLocation: inlineScript
+                inlineScript: |
+                  $ErrorActionPreference = 'Stop'
+                  . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                  $darc = Get-Darc
+                  Write-Host "Adding build ID '$(BarId)' to channel '$(WorkloadSetsChannel)' and feed '$(WorkloadSetsFeed)'."
+                  & $darc add-build-to-channel --ci --channel "$(WorkloadSetsChannel)" --id "$(BarId)" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
+                  if ($LASTEXITCODE -ne 0) {
+                    throw "Darc failed to add BAR build '$(BarId)' to workload set channel '$(WorkloadSetsChannel)'."
+                  }
 
-        - ${{ if eq(parameters.commitHash, 'skip') }}:
-          - script: echo parameters.commitHash was not set, skipping...
-            displayName: skip push
+      - ${{ if and(eq(variables.isWorkload, 'true'), eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true)) }}:
+        - stage: stage_push_packs
+          displayName: Release packs
+          dependsOn: prepare_release
+          jobs:
+          - job: push_packs_approval
+            displayName: Wait to push packs
+            timeoutInMinutes: 240
+            pool: server
+            steps:
+            - task: ManualValidation@0
+              timeoutInMinutes: 120
+              inputs:
+                instructions: 'Press "Resume" to push workload packs to NuGet.org.'
+                onTimeout: reject
 
-        - ${{ else }}:
-          - script: |
-              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
-            displayName: set COMMIT
+          - job: push_packs
+            displayName: Push packs to NuGet.org
+            timeoutInMinutes: 90
+            dependsOn: push_packs_approval
+            condition: eq(dependencies.push_packs_approval.result, 'Succeeded')
+            variables:
+              PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
+            templateContext:
+              type: releaseJob
+              isProduction: true
+              inputs:
+              - input: pipelineArtifact
+                artifactName: MauiPacksForNuGet
+                targetPath: '$(Pipeline.Workspace)\MauiPacksForNuGet'
+            steps:
+            - checkout: none
 
-          - task: AzureCLI@2
-            displayName: Get build for commit
-            continueOnError: true
-            inputs:
-              azureSubscription: "Darc: Maestro Production"
-              scriptType: pscore
-              scriptLocation: inlineScript
-              inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
-                . $(Build.SourcesDirectory)\eng\common\tools.ps1
-                $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiPacksForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
                 }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId --asset-filter "^Microsoft.*Manifest" -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --include-released  --skip-existing  --continue-on-error --verbose  
 
-          - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
-            displayName: list downloaded artifacts
+                & $scriptPath `
+                  -Action FilterExisting `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiPacksForNuGet' `
+                  -SkipFilters $env:NUGET_ALREADY_ATTEMPTED_FILTERS
+              displayName: Filter already-published workload packs
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+                NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedPackFilters }}
 
-          - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
-            displayName: Push workload manifests to NuGet.org
-            env:
-              PUSH_PACKAGES: ${{ parameters.pushPackages }}
+            - task: 1ES.PublishNuget@1
+              displayName: Push workload packs to NuGet.org
+              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+              inputs:
+                useDotNetTask: false
+                packagesToPush: '$(Pipeline.Workspace)\MauiPacksForNuGet\*.nupkg'
+                packageParentPath: '$(Pipeline.Workspace)\MauiPacksForNuGet'
+                nuGetFeedType: external
+                publishFeedCredentials: 'nuget.org (dotnetframework)'
+
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiPacksForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
+                }
+
+                & $scriptPath `
+                  -Action Verify `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiPacksForNuGet' `
+                  -MaxAttempts 90 `
+                  -DelaySeconds 20 `
+                  -MaxDurationMinutes 30
+              displayName: Verify workload packs on NuGet.org
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+
+        - stage: stage_push_manifests
+          displayName: Release manifests
+          dependsOn:
+          - prepare_release
+          - stage_push_packs
+          condition: succeeded()
+          jobs:
+          - job: push_manifests_approval
+            displayName: Wait to push manifests
+            timeoutInMinutes: 240
+            pool: server
+            steps:
+            - task: ManualValidation@0
+              timeoutInMinutes: 120
+              inputs:
+                instructions: 'Packs are verified on NuGet.org. Press "Resume" to push workload manifests.'
+                onTimeout: reject
+
+          - job: push_manifests
+            displayName: Push manifests to NuGet.org
+            timeoutInMinutes: 90
+            dependsOn: push_manifests_approval
+            condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
+            variables:
+              PackageStatusScriptHash: $[ stageDependencies.prepare_release.prepare_release.outputs['prepareRelease.PackageStatusScriptHash'] ]
+            templateContext:
+              type: releaseJob
+              isProduction: true
+              inputs:
+              - input: pipelineArtifact
+                artifactName: MauiManifestsForNuGet
+                targetPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
+            steps:
+            - checkout: none
+
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiManifestsForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
+                }
+
+                & $scriptPath `
+                  -Action FilterExisting `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiManifestsForNuGet' `
+                  -SkipFilters $env:NUGET_ALREADY_ATTEMPTED_FILTERS
+              displayName: Filter already-published workload manifests
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+                NUGET_ALREADY_ATTEMPTED_FILTERS: ${{ parameters.nugetAlreadyAttemptedManifestFilters }}
+
+            - task: 1ES.PublishNuget@1
+              displayName: Push workload manifests to NuGet.org
+              condition: and(succeeded(), eq(variables['NuGetPackagesToPublish'], 'true'))
+              inputs:
+                useDotNetTask: false
+                packagesToPush: '$(Pipeline.Workspace)\MauiManifestsForNuGet\*.nupkg'
+                packageParentPath: '$(Pipeline.Workspace)\MauiManifestsForNuGet'
+                nuGetFeedType: external
+                publishFeedCredentials: 'nuget.org (dotnetframework)'
+
+            - pwsh: |
+                $scriptPath = '$(Pipeline.Workspace)\MauiManifestsForNuGet\nuget_release_packages.ps1'
+                $actualHash = (Get-FileHash -LiteralPath $scriptPath -Algorithm SHA256).Hash
+                if ($actualHash -ne $env:EXPECTED_SCRIPT_HASH) {
+                  throw "Package status script hash '$actualHash' does not match the prepared hash."
+                }
+
+                & $scriptPath `
+                  -Action Verify `
+                  -PackagesPath '$(Pipeline.Workspace)\MauiManifestsForNuGet' `
+                  -MaxAttempts 90 `
+                  -DelaySeconds 20 `
+                  -MaxDurationMinutes 30
+              displayName: Verify workload manifests on NuGet.org
+              env:
+                EXPECTED_SCRIPT_HASH: $(PackageStatusScriptHash)
+
+    - ${{ if and(eq(variables.isWorkload, 'false'), eq(parameters.pushNugetOrg, true), eq(parameters.pushPackages, true), ne(parameters.commitHash, 'skip')) }}:
+      - template: /eng/pipelines/common/non-workload-publish.yml@self

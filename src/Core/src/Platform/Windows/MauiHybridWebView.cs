@@ -23,7 +23,10 @@ namespace Microsoft.Maui.Platform
 
 		public void SendRawMessage(string rawMessage)
 		{
-			CoreWebView2.PostWebMessageAsString(rawMessage);
+			// WebView2's PostWebMessageAsString marshals to a null-terminated LPCWSTR, so any embedded
+			// NUL character would truncate the message. URL-encode the payload so it survives; the JS
+			// transport decodes it in the WebView2 'message' event listener in hybridwebview.js.
+			CoreWebView2.PostWebMessageAsString(Uri.EscapeDataString(rawMessage));
 		}
 
 		public async void RunAfterInitialize(Action action)

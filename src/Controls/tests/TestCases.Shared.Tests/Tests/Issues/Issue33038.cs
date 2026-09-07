@@ -19,7 +19,9 @@ public class Issue33038 : _IssuesUITest
 		App.WaitForElement("StartPageLabel");
 		App.Tap("GoToSignInButton");
 		App.WaitForElement("SignInLabel");
-		VerifyScreenshot();
+		// The layout can take an extra frame to settle after navigation, so retry the screenshot
+		// comparison and allow a small tolerance for cross-machine rendering variance.
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
 #endif

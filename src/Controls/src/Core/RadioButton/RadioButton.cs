@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
-			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
+			nameof(IsChecked), typeof(bool), typeof(RadioButton), BooleanBoxes.FalseBox,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get { return (bool)GetValue(IsCheckedProperty); }
-			set { SetValue(IsCheckedProperty, value); }
+			set { SetValue(IsCheckedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (IsEnabled)
 			{
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+				SetValue(IsCheckedProperty, BooleanBoxes.TrueBox, specificity: SetterSpecificity.FromHandler);
 			}
 		}
 
@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Controls
 		bool IRadioButton.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()

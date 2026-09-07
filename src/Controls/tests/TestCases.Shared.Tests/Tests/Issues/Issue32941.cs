@@ -19,6 +19,7 @@ public class Issue32941 : _IssuesUITest
 	public void ShellContentShouldRespectSafeAreaEdges_After_Navigation()
 	{
 		App.WaitForElement("MainPageLabel");
+		App.WaitForElement("GoToSignOutButton");
 		App.Tap("GoToSignOutButton");
 		App.WaitForElement("SignOutLabel");
 

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using WebKit;
 
 namespace Microsoft.Maui.Platform
@@ -56,7 +58,32 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReload(this WKWebView platformWebView, IWebView webView)
 		{
-			platformWebView?.Reload();
+			if (platformWebView == null)
+			{
+				return;
+			}
+
+			// Check if we have a source and platformWebView implements IWebViewDelegate
+			if (webView.Source != null && platformWebView is IWebViewDelegate webViewDelegate)
+			{
+				// If the source is an HTML source, we need to reload from the source
+				// since WKWebView.Reload() doesn't work properly with LoadHtmlString
+				var sourceType = webView.Source.GetType().Name;
+				if (string.Equals(sourceType, "HtmlWebViewSource", StringComparison.Ordinal))
+				{
+					// For HTML sources, always reload from the source
+					webView.Source.Load(webViewDelegate);
+				}
+				else
+				{
+					// For URL sources, use the standard reload
+					platformWebView.Reload();
+				}
+			}
+			else
+			{
+				platformWebView.Reload();
+			}
 		}
 
 		internal static void UpdateCanGoBackForward(this WKWebView platformWebView, IWebView webView)
@@ -140,6 +167,43 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return result.ToString() ?? "null";
+		}
+
+		/// <summary>
+		/// Loads a local file URL into the WebView using NSBundle resource loading.
+		/// </summary>
+		/// <param name="webView">The WKWebView instance to load the file into</param>
+		/// <param name="url">The local file URL to load</param>
+		/// <param name="logger">Optional logger for error reporting</param>
+		/// <returns>True if the file was successfully loaded, false otherwise</returns>
+		internal static bool LoadFile(this WKWebView webView, string url, ILogger? logger = null)
+		{
+			try
+			{
+				var file = Path.GetFileNameWithoutExtension(url);
+				var ext = Path.GetExtension(url);
+				var directory = Path.GetDirectoryName(url);
+
+				// If there's a subdirectory, use the overload that accepts a subdirectory parameter else fallback to the original method if subdirectory method fails or if no subdirectory
+				NSUrl? nsUrl = string.IsNullOrEmpty(directory)
+					? NSBundle.MainBundle.GetUrlForResource(file, ext)
+					: NSBundle.MainBundle.GetUrlForResource(file, ext, directory);
+
+				if (nsUrl is null)
+				{
+					return false;
+				}
+
+				webView.LoadFileUrl(nsUrl, nsUrl);
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				logger?.LogWarning($"Could not load {url} as local file: {ex}");
+			}
+
+			return false;
 		}
 	}
 }
