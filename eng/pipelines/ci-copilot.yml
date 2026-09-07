@@ -1102,6 +1102,25 @@ stages:
             displayName: 'Add .NET to PATH'
 
           - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $workloadTemp = Join-Path "$(Build.SourcesDirectory)" 'temp'
+              if (Test-Path -LiteralPath $workloadTemp -PathType Container) {
+                $bytes = (
+                  Get-ChildItem -LiteralPath $workloadTemp -File -Recurse -Force |
+                    Measure-Object -Property Length -Sum).Sum
+                Write-Host (
+                  "Removing completed workload-install temp cache " +
+                  "($([Math]::Round($bytes / 1GB, 2)) GiB).")
+                Remove-Item -LiteralPath $workloadTemp -Recurse -Force
+              }
+              & df -h "$(Build.SourcesDirectory)"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Unable to report free disk space before emulator provisioning.'
+              }
+            displayName: 'Free workload installation cache'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+
+          - pwsh: |
               dotnet build `
                 -t:ProvisionAndroidSdkEmulatorImagePackages `
                 -p:AndroidSdkProvisionApiLevel="$env:AndroidSdkProvisionApiLevel" `
