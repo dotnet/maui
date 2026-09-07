@@ -46,6 +46,18 @@ public partial class ScopedExtensionProperties : ContentPage
 			=> Assert.Equal("label:from xaml", new ScopedExtensionProperties().label3.MostSpecific);
 
 		[Fact]
+		public void MostSpecificReceiverWinsWhateverTheEnumerationOrder()
+		{
+			// ThreeWayA declares it for IView, ThreeWayB for BindableObject, ThreeWayC for Label. Neither
+			// IView nor BindableObject is comparable with the other, and both come before the Label
+			// candidate for ThreeWayLast and after it for ThreeWayFirst
+			var page = new ScopedExtensionProperties();
+
+			Assert.Equal("C(Label):from xaml", ThreeWayRecorder.Get(page.label5));
+			Assert.Equal("A(Label):from xaml", ThreeWayRecorder.Get(page.label6));
+		}
+
+		[Fact]
 		public void ExplicitContainerDisambiguates()
 		{
 			// ScopedAmbiguous alone is ambiguous, see ScopedExtensionPropertiesErrors

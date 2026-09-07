@@ -23,6 +23,13 @@
 		<!-- two containers in scope declare MostSpecific, for View and for Label: Label wins -->
 		<Label x:Name="label3" MostSpecific="from xaml" />
 
+		<!-- three containers in scope, two of them with incomparable receivers: the Label one wins whatever
+		     the enumeration order is. The Label candidate is on the last container here... -->
+		<Label x:Name="label5" ThreeWayLast="from xaml" />
+
+		<!-- ...and on the first one here -->
+		<Label x:Name="label6" ThreeWayFirst="from xaml" />
+
 		<!-- naming the container explicitly disambiguates what is otherwise ambiguous -->
 		<Label x:Name="label4" scoped:ScopedAmbiguousAExtensions.ScopedAmbiguous="explicit wins" />
 	</StackLayout>

@@ -1350,6 +1350,42 @@ static class SetPropertyHelpers
 		return receiverType.TypeKind == TypeKind.Interface && targetType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, receiverType));
 	}
 
+	/// <summary>
+	/// Same rule as the setter overload, applied across the containers a xmlns brings in scope: the one
+	/// candidate whose receiver is at least as specific as every other one wins. Comparing every candidate
+	/// with every other, rather than folding them pairwise, is what makes the outcome independent of the
+	/// order the containers are enumerated in.
+	/// </summary>
+	static ExtensionPropertyAccessors? MostSpecific(List<ExtensionPropertyAccessors> candidates, SourceGenContext context)
+	{
+		if (candidates.Count == 1)
+			return candidates[0];
+
+		ExtensionPropertyAccessors? best = null;
+		foreach (var candidate in candidates)
+		{
+			var isBest = true;
+			foreach (var other in candidates)
+			{
+				if (ReferenceEquals(other, candidate))
+					continue;
+				if (!IsReceiverApplicable(other.ReceiverType, candidate.ReceiverType, context))
+				{
+					isBest = false;
+					break;
+				}
+			}
+			if (!isBest)
+				continue;
+			//two candidates for the same receiver, or none dominating the others, is not something to guess
+			if (best != null)
+				return null;
+			best = candidate;
+		}
+
+		return best;
+	}
+
 	//the setter whose receiver type is more derived than every other applicable one wins, as it would in C#
 	static IMethodSymbol? MostSpecific(List<IMethodSymbol>? candidates, SourceGenContext context)
 	{
@@ -1444,48 +1480,32 @@ static class SetPropertyHelpers
 			return false;
 
 		var lineInfo = (IXmlLineInfo)node;
-		INamedTypeSymbol? container = null;
-		var ambiguous = false;
+		List<ExtensionPropertyAccessors>? candidates = null;
 
-		foreach (var candidate in GetExtensionContainersInScope(xmlNamespace!, context))
+		foreach (var container in GetExtensionContainersInScope(xmlNamespace!, context))
 		{
-			if (!DeclaresExtensionProperty(candidate, propertyName.LocalName))
+			if (!DeclaresExtensionProperty(container, propertyName.LocalName))
 				continue;
 
-			var candidateAccessors = ResolveExtensionProperty(candidate, parentVar.Type, propertyName.LocalName, context, lineInfo, out var candidateReported, report: false);
-			if (candidateReported || candidateAccessors == null)
+			var candidate = ResolveExtensionProperty(container, parentVar.Type, propertyName.LocalName, context, lineInfo, out var candidateReported, report: false);
+			if (candidateReported || candidate == null)
 				continue;
 
-			if (accessors == null)
-			{
-				accessors = candidateAccessors;
-				container = candidate;
-				continue;
-			}
-
-			//C# picks the most specific receiver, and refuses to guess between unrelated ones
-			var incumbent = accessors.ReceiverType;
-			var challenger = candidateAccessors.ReceiverType;
-			if (!SymbolEqualityComparer.Default.Equals(incumbent, challenger) && IsReceiverApplicable(incumbent, challenger, context))
-			{
-				accessors = candidateAccessors;
-				container = candidate;
-			}
-			else if (SymbolEqualityComparer.Default.Equals(incumbent, challenger) || !IsReceiverApplicable(challenger, incumbent, context))
-				ambiguous = true;
+			(candidates ??= []).Add(candidate);
 		}
 
-		if (ambiguous)
+		if (candidates == null)
+			return false;
+
+		//C# picks the most specific receiver, and refuses to guess between unrelated ones
+		accessors = MostSpecific(candidates, context);
+		if (accessors == null)
 		{
 			var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName.LocalName);
 			context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyAmbiguous, location, propertyName.LocalName, xmlNamespace, parentVar.Type.ToFQDisplayString()));
-			accessors = null;
 			reported = true;
 			return false;
 		}
-
-		if (accessors == null)
-			return false;
 
 		var propertyType = accessors.PropertyType;
 
