@@ -13,11 +13,14 @@ namespace Microsoft.Maui.Hosting.Internal
 		readonly ConcurrentDictionary<Type, Lazy<ElementHandlerAttributeResolution>> _elementHandlerAttributeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
+		readonly Func<Type, Lazy<Type?>> _serviceCacheValueFactory;
 
 		public MauiHandlersFactory(IMauiHandlersCollection collection)
 			: base(collection)
 		{
 			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
+			_serviceCacheValueFactory = viewType => new Lazy<Type?>(
+				() => _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType(viewType));
 		}
 
 		public IElementHandler? GetHandler(Type type)
@@ -150,11 +153,7 @@ namespace Microsoft.Maui.Hosting.Internal
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
 		private Type? TryGetVirtualViewHandlerServiceType(Type type)
-			=> _serviceCache.GetOrAdd(
-				type,
-				static (viewType, serviceTypes) => new Lazy<Type?>(
-					() => serviceTypes.ResolveVirtualViewToRegisteredHandlerServiceType(viewType)),
-				_registeredHandlerServiceTypeSet).Value;
+			=> _serviceCache.GetOrAdd(type, _serviceCacheValueFactory).Value;
 
 		private static IElementHandler? CreateAttributeHandler(Type viewType, ElementHandlerAttribute elementHandlerAttribute)
 		{

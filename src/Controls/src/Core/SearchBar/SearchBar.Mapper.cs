@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if ANDROID
-			SearchBarHandler.CommandMapper.PrependToMappingForControls(nameof(ISearchBar.Focus), InputView.MapFocus);
+			SearchBarHandler.CommandMapper.PrependToMappingForControls<ISearchBar, ISearchBarHandler>(nameof(ISearchBar.Focus), InputView.MapFocus);
 #endif
 		}
 	}
