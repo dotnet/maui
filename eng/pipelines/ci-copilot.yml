@@ -1078,7 +1078,10 @@ stages:
               skipAndroidCommonSdks: ${{ ne(parameters.Platform, 'android') }}
               skipAndroidPlatformApis: true
               onlyAndroidPlatformDefaultApis: true
-              skipAndroidEmulatorImages: ${{ ne(parameters.Platform, 'android') }}
+              # Install the large emulator image after the .NET workload. Doing
+              # both in the opposite order exhausted the hosted agent disk
+              # before workload installation could finish.
+              skipAndroidEmulatorImages: true
               # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
               # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
               # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
@@ -1097,6 +1100,18 @@ stages:
 
           - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Add .NET to PATH'
+
+          - pwsh: |
+              dotnet build `
+                -t:ProvisionAndroidSdkEmulatorImagePackages `
+                -p:AndroidSdkProvisionApiLevel="$env:AndroidSdkProvisionApiLevel" `
+                -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" `
+                "$(Build.SourcesDirectory)/src/Provisioning/Provisioning.csproj" `
+                -v:detailed
+            displayName: 'Provision Android SDK - Emulator Images after workloads'
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            env:
+              AndroidSdkProvisionApiLevel: '30'
 
           # ─────────────────────────────────────────────────────────
           #  EARLY UI-CATEGORY DETECTION (infra-independent) — emits
