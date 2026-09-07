@@ -48,6 +48,7 @@ public partial class QualifiedMemberLegacy : ContentPage
 
 			Assert.True(page.Resources.TryGetValue("legacyKey", out var value));
 			Assert.Equal("legacy value", value);
+			Assert.True(page.Resources.TryGetValue("LegacyStyle", out _));
 		}
 
 		[Theory]
