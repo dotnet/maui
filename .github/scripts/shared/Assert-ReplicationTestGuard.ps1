@@ -7461,7 +7461,8 @@ function New-ReplicationControlVariant {
                 -HelperMethod $awaitedMethod
             continue
         }
-        if ($invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+        if ($requiresCatalystWindowContract -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
             -not $isTrustedWindowHelper) {
             $helperCandidate = if ($null -ne $awaitedMethod) {
                 $awaitedMethod
