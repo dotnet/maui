@@ -7450,14 +7450,19 @@ function New-ReplicationControlVariant {
         $isTrustedWindowHelper =
             $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
             (& $isExactTrustedWindowHelperMethod -Method $awaitedMethod)
-        if ($isTrustedWindowHelper) {
+        $requiresCatalystWindowContract =
+            $Platform -ceq 'catalyst' -and
+            $SourcePath -cmatch 'Issue35511'
+        if ($isTrustedWindowHelper -and
+            $requiresCatalystWindowContract) {
             & $validateTrustedWindowHelperInvocation `
                 -AwaitExpression $awaitExpression `
                 -Invocation $awaitedExpression `
                 -HelperMethod $awaitedMethod
             continue
         }
-        if ($invokedName -ceq 'CreateHandlerAndAddToWindow') {
+        if ($invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            -not $isTrustedWindowHelper) {
             $helperCandidate = if ($null -ne $awaitedMethod) {
                 $awaitedMethod
             } elseif ($null -ne $awaitedInfo) {
