@@ -13,14 +13,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks;
 class XamlCache
 {
 	readonly Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> _xmlnsDefinitions = new();
-	readonly Dictionary<(ModuleDefinition, string), TypeDefinition[]> _extensionContainersInScope = new();
-
-	public TypeDefinition[] GetOrAddExtensionContainersInScope(ModuleDefinition module, string xmlNamespace, Func<TypeDefinition[]> valueFactory)
-	{
-		if (!_extensionContainersInScope.TryGetValue((module, xmlNamespace), out var containers))
-			_extensionContainersInScope[(module, xmlNamespace)] = containers = valueFactory();
-		return containers;
-	}
 	readonly Dictionary<TypeReference, TypeDefinition> _resolvedTypes = new();
 	readonly Dictionary<(ModuleDefinition module, string fieldRefKey), FieldReference> _fieldReferenceCache = new();
 	readonly Dictionary<(ModuleDefinition module, string typeKey), TypeReference> _typeReferenceCache = new();

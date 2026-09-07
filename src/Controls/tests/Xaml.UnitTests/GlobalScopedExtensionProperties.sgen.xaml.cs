@@ -28,13 +28,8 @@ public partial class GlobalScopedExtensionProperties : ContentPage
 
 		public void Dispose() => AppInfo.SetCurrent(null);
 
-		[Theory]
-		[XamlInflatorData]
-		internal void UnqualifiedExtensionPropertyFromTheGlobalXmlns(XamlInflator inflator)
-		{
-			var page = new GlobalScopedExtensionProperties(inflator);
-
-			Assert.Equal("from the global xmlns", page.label.GlobalTag);
-		}
+		[Fact]
+		public void UnqualifiedExtensionPropertyFromTheGlobalXmlns()
+			=> Assert.Equal("from the global xmlns", new GlobalScopedExtensionProperties().label.GlobalTag);
 	}
 }
