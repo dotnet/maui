@@ -307,7 +307,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ScrollToTop();
 		}
 
-#if TEST_FAILS_ON_IOS // On iOS, when setting SoftInput, the bottom label are positioned incorrectly
+#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/37264
 
 		[Test, Order(7)]
 		[Description("ScrollView: Top avoids system bars; bottom avoids only keyboard")]
@@ -425,7 +425,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard + SafeArea (Portrait)
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 
 		[Test, Order(10)]
 		[Description("With None, bottom indicator does NOT move when keyboard is shown, then switch to All and bottom moves up")]
@@ -484,7 +484,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Setting SafeAreaEdges to All or SoftInput while the keyboard is open the bottom label does not move up to the keyboard, it stays at the same position as before the keyboard was shown
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 
 		[Test, Order(11)]
 		[Description("With All, bottom indicator moves up when keyboard is shown")]
@@ -541,7 +541,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // When SoftInput the keyboard is open the bottom label does not move up
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 
 		[Test, Order(12)]
 		[Description("With SoftInput, bottom indicator moves up when keyboard is shown")]
@@ -597,7 +597,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS // On iOS, when setting None, Default or Container, the bottom label do not stay at the same position when the keyboard is shown, instead it moves up with the keyboard
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36864
 
 		[Test, Order(13)]
 		[Description("With None, bottom indicator does NOT move when keyboard is shown")]
@@ -650,7 +650,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				$"After keyboard - top label Y ({topLabelAfterRect.Y}) should return to original ({topLabelBeforeRect.Y})");
 		}
 
-#if TEST_FAILS_ON_ANDROID // On Android, when setting Container, the bottom label do not stay at the same position when the keyboard is opened and closed
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36864
 
 		[Test, Order(14)]
 		[Description("With Container, bottom indicator does NOT move when keyboard is shown")]
@@ -713,7 +713,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Keyboard + Runtime SafeArea Changes
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 
 		[Test, Order(15)]
 		[Description("Switch None to All while keyboard is open — bottom indicator moves up")]
@@ -941,7 +941,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // when setting Container, Default, SoftInput or All, the top label and bottom label are positioned incorrectly
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36863
 
 		[Test, Order(18)]
 		[Description("Switch Container to SoftInput while keyboard is open — bottom indicator moves up")]
@@ -1023,7 +1023,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // When the safe area is set to None, and the keyboard is opened, the safe area changes to All or SoftInput, and the bottom label does not move above the keyboard
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 
 		[Test, Order(19)]
 		[Description("Keyboard open: cycle through None → All → Container → SoftInput → Default → None and verify positions")]
@@ -1161,7 +1161,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 		// Interaction with ContentPage Properties
 		// ──────────────────────────────────────────────
-#if TEST_FAILS_ON_ANDROID // Padding does not applied
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/37323
 
 		[Test, Order(20)]
 		[Description("Safe area insets and padding are additive")]
@@ -1309,7 +1309,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ScrollToTop();
 		}
 
-#if TEST_FAILS_ON_IOS // On iOS, when setting Container or Default, the left label and right label are positioned incorrectly
+#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/37263
 
 		[Test, Order(24)]
 		[Description("Container: landscape left/right/bottom inset by safe area")]
@@ -1469,8 +1469,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// Landscape Keyboard Position Validation
 		// ──────────────────────────────────────────────
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // In landscape mode on Android, the keyboard covers the entire screen, and Appium cannot find elements to validate their positions.
-// In iOS, bottom, left or right labels are positioned incorrectly
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // In landscape mode on Android, the keyboard covers the entire screen, and Appium cannot find elements to validate their positions. Issue Link: https://github.com/dotnet/maui/issues/37263
 
 		[Test, Order(27)]
 		[Description("Landscape All: bottom moves up to keyboard, left/right stay inset")]
@@ -1858,9 +1857,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ──────────────────────────────────────────────
 		// Default + Keyboard (Portrait)
 		// ──────────────────────────────────────────────
-#if TEST_FAILS_ON_IOS // On iOS, the top label or bottom label are positioned incorrectly
+#if TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36863
 
-#if TEST_FAILS_ON_ANDROID // On Android, the bottom label are positioned incorrectly after keyboard is opened and closed
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36864
 		[Test, Order(32)]
 		[Description("With Default, bottom indicator does NOT move when keyboard is shown (behaves like Container)")]
 		public void Validate_ScrollView_Keyboard_Default_BottomStays()
@@ -1971,7 +1970,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ScrollToTop();
 		}
 
-#if TEST_FAILS_ON_ANDROID // On Android, the bottom label are positioned incorrectly after keyboard is opened and closed
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/36864
 		[Test, Order(34)]
 		[Description("Per-edge B:Container + keyboard — bottom stays at safe area inset when keyboard is shown")]
 		public void Validate_ScrollView_PerEdgeKeyboard_BottomContainer_BottomStays()
@@ -2026,7 +2025,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_ANDROID // On Android, the bottom label not positioned above the keyboard when the keyboard is open
+#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/36826
 		[Test, Order(35)]
 		[Description("Per-edge B:SoftInput + keyboard — bottom moves up to keyboard Y")]
 		public void Validate_ScrollView_PerEdgeKeyboard_BottomSoftInput_BottomMovesUp()
