@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		nfloat _headerContentInset;
 		nfloat _footerContentInset;
+		bool _preservesExternalContentInset;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _headerUIView;
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (!IsHorizontal &&
 				CollectionView is not null &&
 				CollectionView.Handle != IntPtr.Zero &&
+				_preservesExternalContentInset &&
 				(_headerContentInset != 0 || _footerContentInset != 0))
 			{
 				var contentInset = CollectionView.ContentInset;
@@ -51,6 +53,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_headerContentInset = 0;
 			_footerContentInset = 0;
+			_preservesExternalContentInset = false;
 			_headerUIView = null;
 			_headerViewFormsElement = null;
 			_footerUIView = null;
@@ -190,6 +193,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						_footerUIView.Frame = new CGRect(footerX, 0, footerWidth, CollectionView.Frame.Height);
 					}
 				}
+
+				_headerContentInset = 0;
+				_footerContentInset = 0;
+				_preservesExternalContentInset = false;
 			}
 			else
 			{
@@ -197,19 +204,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
 				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
-				var topInset = currentInset.Top - _headerContentInset + headerHeight;
-				var bottomInset = currentInset.Bottom - _footerContentInset + footerHeight;
+				var preserveExternalContentInset =
+					CollectionView is MauiCollectionView { IsTopSafeAreaDelegated: true };
+				var topInset = preserveExternalContentInset
+					? currentInset.Top - _headerContentInset + headerHeight
+					: headerHeight;
+				var bottomInset = preserveExternalContentInset
+					? currentInset.Bottom - _footerContentInset + footerHeight
+					: footerHeight;
+
+				_headerContentInset = headerHeight;
+				_footerContentInset = footerHeight;
+				_preservesExternalContentInset = preserveExternalContentInset;
 
 				if (currentInset.Top != topInset || currentInset.Bottom != bottomInset)
 				{
 					var currentOffset = CollectionView.ContentOffset;
 					CollectionView.ContentInset = new UIEdgeInsets(
 						topInset,
-						currentInset.Left,
+						preserveExternalContentInset ? currentInset.Left : 0,
 						bottomInset,
-						currentInset.Right);
-					_headerContentInset = headerHeight;
-					_footerContentInset = footerHeight;
+						preserveExternalContentInset ? currentInset.Right : 0);
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed

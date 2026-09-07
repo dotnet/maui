@@ -19,6 +19,8 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	nfloat _delegatedScrollIndicatorTopInset;
 	UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
 
+	internal bool IsTopSafeAreaDelegated => _isTopSafeAreaDelegated;
+
 	readonly WeakEventManager _movedToWindowEventManager = new();
 
 #if MACCATALYST
