@@ -83,9 +83,6 @@ namespace Microsoft.Maui.Resizetizer
 			Paint = new SKPaint
 			{
 				IsAntialias = true,
-#pragma warning disable CS0618 // Type or member is obsolete
-				FilterQuality = SKFilterQuality.High,
-#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			if (tintColor is SKColor tint)
