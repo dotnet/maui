@@ -85,6 +85,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AddMauiControlsHandlersPreservesDefaultsPolicy(bool useControlsDefaults)
+		{
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			if (useControlsDefaults)
+				builder.UseMauiApp<ApplicationStub>();
+
+			using var mauiApp = builder
+				.ConfigureMauiHandlers(handlers =>
+				{
+					var registrationCount = handlers.Count;
+					Assert.Same(handlers, handlers.AddMauiControlsHandlers());
+					Assert.Equal(registrationCount, handlers.Count);
+
+					handlers.TryAddHandler<Button, ButtonHandlerStub>();
+
+					registrationCount = handlers.Count;
+					Assert.Same(handlers, handlers.AddMauiControlsHandlers());
+					Assert.Equal(registrationCount, handlers.Count);
+				})
+				.Build();
+
+			var handlers = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+			var expectedHandlerType = useControlsDefaults ? typeof(ButtonHandler) : typeof(ButtonHandlerStub);
+			Assert.Equal(expectedHandlerType, handlers.GetHandlerType(typeof(Button)));
+			Assert.Equal(expectedHandlerType, handlers.GetHandler(typeof(Button)).GetType());
+		}
+
+		[Theory]
 		[MemberData(nameof(BuiltInHandlerTypes))]
 		public void VariousControlsGetCorrectHandler(Type viewType, Type handlerType)
 		{
@@ -151,17 +181,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 #if IOS || MACCATALYST
 			{ typeof(CarouselView), typeof(Handlers.Items2.CarouselViewHandler2) },
 			{ typeof(CollectionView), typeof(Handlers.Items2.CollectionViewHandler2) },
-			{ typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer) },
-			{ typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer) },
-			{ typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer) },
 #else
 			{ typeof(CarouselView), typeof(Handlers.Items.CarouselViewHandler) },
 			{ typeof(CollectionView), typeof(Handlers.Items.CollectionViewHandler) },
 #endif
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			{ typeof(FlyoutPage), typeof(FlyoutViewHandler) },
 			{ typeof(NavigationPage), typeof(NavigationViewHandler) },
 			{ typeof(TabbedPage), typeof(TabbedViewHandler) },
+#endif
+#if WINDOWS || ANDROID || TIZEN
 			{ typeof(Toolbar), typeof(ToolbarHandler) },
 #endif
 #if IOS || MACCATALYST

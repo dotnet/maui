@@ -15,9 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	[ContentProperty(nameof(Detail))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-#if IOS || MACCATALYST
-	[ElementHandler(typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer))]
-#elif WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 	[ElementHandler(typeof(FlyoutViewHandler))]
 #endif
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
@@ -131,7 +129,7 @@ namespace Microsoft.Maui.Controls
 
 				// TODO MAUI refine this to fire earlier
 				var previousFlyout = _flyout;
-				
+
 				// TODO MAUI refine this to fire earlier
 				previousFlyout?.SendNavigatingFrom(new NavigatingFromEventArgs(value, NavigationType.Replace));
 
@@ -147,7 +145,7 @@ namespace Microsoft.Maui.Controls
 					previousFlyout?.SendDisappearing();
 					_flyout?.SendAppearing();
 				}
-				
+
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.Replace));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout, NavigationType.Replace));
 			}
