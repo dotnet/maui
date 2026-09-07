@@ -624,7 +624,7 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShouldApplyAnimatedImeInsets(SoftInput softInputMode)
 		{
 			var adjustMode = softInputMode & SoftInput.MaskAdjust;
-			return adjustMode == SoftInput.AdjustResize || adjustMode == SoftInput.AdjustNothing;
+			return adjustMode == SoftInput.AdjustNothing;
 		}
 
 		/// <summary>
