@@ -1,4 +1,4 @@
-#if ANDROID || IOS          // Issue related to SafeAreaEdges, which is only applicable to mobile platforms                                                                                         
+#if ANDROID || IOS          // Issue related to SafeAreaEdges, which is only applicable to mobile platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
