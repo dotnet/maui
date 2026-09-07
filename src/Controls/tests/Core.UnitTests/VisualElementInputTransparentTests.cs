@@ -293,8 +293,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(element.InputTransparent);
 		}
 
-		// TODO: the tests below may be duplicates of the tests above
-
 		[Theory]
 		[InlineData(typeof(Button), true)]
 		[InlineData(typeof(VerticalStackLayout), true)]

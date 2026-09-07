@@ -37,11 +37,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Rotate back and verify TitleView returns to original width
 			App.SetOrientationPortrait();
-			App.WaitForElement("TitleViewGrid"); // re-wait to ensure layout has settled after rotation
 
-			var finalRect = App.WaitForElement("TitleViewGrid").GetRect();
-			Assert.That(finalRect.Width, Is.EqualTo(portraitWidth).Within(5),
-				"Shell TitleView should return to original portrait width after rotating back");
+			App.RetryAssert(() =>
+			{
+				var finalRect = App.WaitForElement("TitleViewGrid").GetRect();
+				Assert.That(finalRect.Width, Is.EqualTo(portraitWidth).Within(5),
+					"Shell TitleView should return to original portrait width after rotating back");
+			});
 		}
 	}
 }

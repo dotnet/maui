@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	[ElementHandler(typeof(ScrollViewHandler))]
 #pragma warning disable CS0618 // Type or member is obsolete
-	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElement, ISafeAreaView2
+	public partial class ScrollView : Compatibility.Layout, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaElementController, ISafeAreaView2
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
@@ -552,7 +552,7 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Rect bounds) =>
 			((ICrossPlatformLayout)this).CrossPlatformArrange(bounds);
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.Default;
 		}

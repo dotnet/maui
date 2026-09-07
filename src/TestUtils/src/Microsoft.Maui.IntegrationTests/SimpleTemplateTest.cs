@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -11,8 +12,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
@@ -22,14 +23,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "", Skip = AvaloniaBuildSkipReason)]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial", Skip = AvaloniaBuildSkipReason)]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -175,16 +176,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
@@ -280,8 +281,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Theory]
-	// [InlineData("mauilib", DotNetPrevious, "Debug")]
-	// [InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
 	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
@@ -376,7 +377,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\"", output: _output),
+		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\" --skipRestore", output: _output),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
 		// Verify the project file was created with the correct name (this was the bug)
@@ -395,12 +396,31 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify the project file contains required properties
-		var projectContent = File.ReadAllText(expectedProjectFile);
-		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
-			"Project file should contain Aspire-specific properties.");
-		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
-			"Project file should contain UseMauiCore property.");
+		// Verify the current template was selected and contains the required MAUI properties.
+		var project = XDocument.Load(expectedProjectFile);
+		var targetFramework = project.Descendants("TargetFramework").Single().Value;
+		Assert.Equal(DotNetCurrent, targetFramework);
+		Assert.Equal("true", project.Descendants("IsAspireSharedProject").Single().Value);
+		Assert.Equal("true", project.Descendants("UseMauiCore").Single().Value);
+
+		var mauiCoreReference = project.Descendants("PackageReference")
+			.Single(element => string.Equals((string?)element.Attribute("Include"), "Microsoft.Maui.Core", StringComparison.Ordinal));
+		Assert.Equal("$(MauiVersion)", (string?)mauiCoreReference.Attribute("Version"));
+
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", target: "Restore", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to restore. Check test output/attachments for errors.");
+
+		using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json")));
+		var mauiCoreVersion = assets.RootElement
+			.GetProperty("project")
+			.GetProperty("frameworks")
+			.GetProperty(DotNetCurrent)
+			.GetProperty("dependencies")
+			.GetProperty("Microsoft.Maui.Core")
+			.GetProperty("version")
+			.GetString();
+		Assert.NotNull(mauiCoreVersion);
+		Assert.Contains(MauiPackageVersion, mauiCoreVersion, StringComparison.Ordinal);
 
 		// Verify the project actually builds
 		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),

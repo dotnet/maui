@@ -751,10 +751,7 @@ internal class KnownMarkups
 				var namescope = currentContext.Scopes[node];
 				if (namescope.namesInScope != null && namescope.namesInScope.ContainsKey(name))
 					return namescope.namesInScope[name].Type;
-				INode n = node;
-				while (n.Parent is ListNode ln)
-					n = ln.Parent;
-				node = n.Parent as ElementNode;
+				node = GetParentElement(node);
 			}
 
 			return null;
@@ -822,6 +819,14 @@ internal class KnownMarkups
 
 			return false;
 		}
+	}
+
+	static ElementNode? GetParentElement(INode node)
+	{
+		INode? parent = node.Parent;
+		while (parent is ListNode listNode)
+			parent = listNode.Parent;
+		return parent as ElementNode;
 	}
 
 	internal static bool ProvideValueForDataTemplateExtension(ElementNode markupNode, IndentedTextWriter writer, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate? getNodeValue, out ITypeSymbol? returnType, out string value)
@@ -892,10 +897,7 @@ internal class KnownMarkups
 				value = $"{namescope.namesInScope[name!].ValueAccessor}";
 				return true;
 			}
-			INode n = node;
-			while (n.Parent is ListNode ln)
-				n = ln.Parent;
-			node = n.Parent as ElementNode;
+			node = GetParentElement(node);
 		}
 
 		//TODO report diagnostic

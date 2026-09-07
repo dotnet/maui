@@ -28,7 +28,9 @@ namespace Microsoft.Maui.Controls
 				if (RuntimeFeature.IsWindowsCollectionView2HandlerEnabled)
 					return typeof(Handlers.Items2.CollectionViewHandler2);
 
+#pragma warning disable CS0618 // Retain the explicit opt-out path for the legacy Windows CollectionView handler.
 				return typeof(Handlers.Items.CollectionViewHandler);
+#pragma warning restore CS0618
 			}
 		}
 #endif

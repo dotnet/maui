@@ -57,9 +57,6 @@ stages:
 - stage: HelixTests
   displayName: Run Helix Unit Tests
   dependsOn: []
-  variables:
-  - name: enableHelixJobMonitor
-    value: false
   jobs:
   - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
     - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml@self', '/eng/common/templates-official/jobs/jobs.yml@self') }}
@@ -97,7 +94,7 @@ stages:
               DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
               PRIVATE_BUILD: $(PrivateBuild)
 
-          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:EnableHelixJobMonitor=$(enableHelixJobMonitor) /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
+          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:EnableHelixJobMonitor=true /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
             displayName: Run Helix Tests
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -105,7 +102,6 @@ stages:
 
   - job: HelixJobMonitor
     displayName: Monitor Helix Jobs
-    condition: eq(variables['enableHelixJobMonitor'], 'true')
     timeoutInMinutes: ${{ parameters.helixJobMonitorTimeoutInMinutes }}
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
@@ -123,9 +119,9 @@ stages:
 
         toolPath="$AGENT_TEMPDIRECTORY/helix-job-monitor"
         bash ./eng/common/dotnet.sh
-        toolVersion=$(bash ./eng/common/dotnet.sh msbuild eng/Versions.props -getProperty:MicrosoftDotNetHelixSdkPackageVersion -nologo | tail -n 1)
+        toolVersion=$(bash ./eng/common/dotnet.sh msbuild eng/Versions.props -getProperty:MicrosoftDotNetHelixJobMonitorPackageVersion -nologo | tail -n 1)
         if [[ -z "$toolVersion" || "$toolVersion" =~ [[:space:]] ]]; then
-          echo "Could not read the Helix SDK package version from eng/Versions.props." >&2
+          echo "Could not read the Helix Job Monitor package version from eng/Versions.props." >&2
           exit 1
         fi
 

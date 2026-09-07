@@ -27,6 +27,10 @@
 
     <UsingTask
         AssemblyFile="$(_ResizetizerTaskAssemblyName)"
+        TaskName="Microsoft.Maui.Resizetizer.DeleteStaleOutputFilesTask" />
+
+    <UsingTask
+        AssemblyFile="$(_ResizetizerTaskAssemblyName)"
         TaskName="Microsoft.Maui.Resizetizer.CreatePartialInfoPlistTask" />
 
     <UsingTask
@@ -810,27 +814,14 @@
                  written into the intermediate folder by external backends (e.g. *.items files) are
                  never surfaced through MauiProcessedImage / _ResizetizerCollectedImages. -->
             <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == '' And '@(_MauiImageToProcess)' != ''" Include="@(_ResizetizerOutputs)" />
-            <!-- Wildcard is kept solely for stale-file detection and cleanup. -->
-            <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
         </ItemGroup>
 
-        <!-- Compare canonical paths rather than item specs. The wildcard above and the collected images
-             can legitimately spell the same file differently (symlinked project paths, casing), and a
-             textual Remove would then classify every generated image as stale. Root also confines the
-             delete list to the intermediate folder, because the recursive wildcard descends through any
-             directory link it finds inside it. -->
-        <DetectStaleOutputFilesTask
+        <!-- Keep validation and removal in one task so cleanup retains the opened root, parent and leaf
+             identities. Windows deletes the retained leaf while locking its ancestry; Unix atomically
+             moves it to a quarantine outside the resource tree, which _CleanResizetizer removes. -->
+        <DeleteStaleOutputFilesTask
             Root="$(_MauiIntermediateImagesFullPath)"
-            Files="@(_ResizetizerExistingImages->'%(FullPath)')"
-            KnownOutputs="@(_ResizetizerCollectedImages)">
-            <Output TaskParameter="StaleFiles" ItemName="_ResizetizerImagesToDelete" />
-        </DetectStaleOutputFilesTask>
-
-        <!-- Remove files which are no longer needed -->
-        <Delete
-            Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
-            Files="@(_ResizetizerImagesToDelete)"
-        />
+            KnownOutputs="@(_ResizetizerCollectedImages)" />
 
         <ItemGroup>
             <MauiProcessedImage Include="@(_ResizetizerCollectedImages)" />

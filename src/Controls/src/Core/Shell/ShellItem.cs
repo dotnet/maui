@@ -336,6 +336,7 @@ namespace Microsoft.Maui.Controls
 			{
 				currentShellContent?.SetValue(ShellContent.QueryAttributesProperty, new ShellRouteParameters());
 			}
+			currentShellContent?.ApplyQueryAttributesFromSelection();
 
 			shellItem.SendStructureChanged();
 

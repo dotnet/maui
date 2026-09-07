@@ -35,6 +35,13 @@ namespace Microsoft.Maui.Controls
 			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(nameof(Toolbar.BarBackground), MapBarBackground);
 			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(nameof(Toolbar.BarTextColor), MapBarTextColor);
 #endif
+#if ANDROID || TIZEN
+			// Android and Tizen are the only built-in platforms that render the drawer affordance from the
+			// toolbar itself, in the same navigation slot as the back button, so a drawer toggle change has
+			// to re-evaluate that slot. Windows, iOS and MacCatalyst render the flyout toggle from the
+			// flyout/navigation view instead and never read this property.
+			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(nameof(IToolbarDrawerToggleVisible.DrawerToggleVisible), MapDrawerToggleVisible);
+#endif
 #if WINDOWS
 			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(nameof(Toolbar.BackButtonEnabled), MapBackButtonEnabled);
 			ToolbarHandler.Mapper.ReplaceMappingForControls<Toolbar, IToolbarHandler>(PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName, MapToolbarPlacement);

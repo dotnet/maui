@@ -136,6 +136,35 @@ public class NodeIdHelperTests
 		Assert.Equal("", ids[root]);
 	}
 
+	[Fact]
+	public void ItemTemplateContent_GetsStableIds()
+	{
+		var xaml = $@"
+			<ContentPage xmlns=""{Ns}"" xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml"">
+				<CollectionView>
+					<CollectionView.ItemTemplate>
+						<DataTemplate>
+							<Label Text=""Hello"" />
+						</DataTemplate>
+					</CollectionView.ItemTemplate>
+				</CollectionView>
+			</ContentPage>";
+
+		var ids = NodeIdHelper.AssignIds(Parse(xaml));
+		var secondIds = NodeIdHelper.AssignIds(Parse(xaml));
+		var template = FindByType(ids, "DataTemplate");
+		var secondTemplate = FindByType(secondIds, "DataTemplate");
+		var label = FindByType(ids, "Label");
+		var secondLabel = FindByType(secondIds, "Label");
+
+		Assert.NotNull(template);
+		Assert.NotNull(secondTemplate);
+		Assert.NotNull(label);
+		Assert.NotNull(secondLabel);
+		Assert.Equal(ids[template!], secondIds[secondTemplate!]);
+		Assert.Equal(ids[label!], secondIds[secondLabel!]);
+	}
+
 	static ElementNode? FindByType(Dictionary<ElementNode, string> ids, string typeName)
 	{
 		foreach (var kvp in ids)

@@ -103,7 +103,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return this; }
 		}
 
-		//TODO: this was deprecated in iOS8.0 and is not called in 9.0+
+#pragma warning disable CS0809 // Obsolete override provides migration guidance beyond UIKit's platform obsoletion.
+		[Obsolete("NavigationRenderer.DidRotate is obsolete and will be removed in .NET 12. Use ViewWillTransitionToSize for size-transition work and ViewDidLayoutSubviews for final layout updates.")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
 		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void DidRotate(UIInterfaceOrientation fromInterfaceOrientation)
@@ -115,6 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var parentingViewController = GetParentingViewController();
 			parentingViewController?.UpdateLeftBarButtonItem();
 		}
+#pragma warning restore CS0809
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
 		{

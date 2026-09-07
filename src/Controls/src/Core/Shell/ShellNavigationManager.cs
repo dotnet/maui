@@ -131,11 +131,11 @@ namespace Microsoft.Maui.Controls
 							if (!seg.IsParameter)
 								continue;
 							if (pathParameters.TryGetValue(seg.Value, out var val))
-						{
-							var prefixedKey = $"{routeKey}.{seg.Value}";
-							if (!parameters.ContainsKey(prefixedKey))
-								parameters[prefixedKey] = val;
-						}
+							{
+								var prefixedKey = $"{routeKey}.{seg.Value}";
+								if (!parameters.ContainsKey(prefixedKey))
+									parameters[prefixedKey] = val;
+							}
 						}
 					}
 				}
@@ -359,6 +359,9 @@ namespace Microsoft.Maui.Controls
 			// a prior cycle from propagating to pages that are not the navigation target.
 			if (!isLastItem && filteredQuery.Count == 0)
 			{
+				if (baseShellItem is ShellContent shellContent)
+					shellContent.ApplyQueryAttributesFromIntermediateNavigation();
+
 				return;
 			}
 
@@ -419,7 +422,14 @@ namespace Microsoft.Maui.Controls
 				foreach (var datum in existing)
 				{
 					if (!returnValue.ContainsKey(datum.Key))
-						returnValue[datum.Key] = datum.Value;
+					{
+						if (existing.IsShellContentQueryParameter(datum.Key))
+							returnValue.SetShellContentQueryParameter(datum.Key, datum.Value);
+						else if (existing.IsShellContentQueryStringParameter(datum.Key))
+							returnValue.SetShellContentQueryStringParameter(datum.Key, datum.Value);
+						else
+							returnValue[datum.Key] = datum.Value;
+					}
 				}
 
 				return returnValue;

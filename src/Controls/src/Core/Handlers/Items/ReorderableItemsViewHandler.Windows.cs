@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[System.Obsolete("This type is obsolete on Windows. Use Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewHandler2<TItemsView> instead.")]
 	public partial class ReorderableItemsViewHandler<TItemsView> : GroupableItemsViewHandler<TItemsView> where TItemsView : ReorderableItemsView
 	{
 		bool _trackerAllowDrop;

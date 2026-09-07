@@ -158,11 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 					infoBadge.Foreground is WSolidColorBrush foreground &&
 					background.Color == defaultBackgroundColor &&
 					foreground.Color == defaultForegroundColor);
-
-				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
-				Assert.Same(
-					Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
-					converter.Convert(null, typeof(object), null, null));
 			});
 		}
 

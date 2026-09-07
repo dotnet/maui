@@ -11,7 +11,7 @@ public class Issue27711 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "FlowDirection = `RightToLeft` doesn't work with CV1 & CV2";
+	public override string Issue => "FlowDirection = `RightToLeft` doesn't work with CollectionView";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
