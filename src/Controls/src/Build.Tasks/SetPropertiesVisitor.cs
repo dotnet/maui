@@ -1442,13 +1442,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSetValue(bpRef, attached, valueNode, iXmlLineInfo, context))
 				return SetValue(parent, bpRef, valueNode, iXmlLineInfo, context);
 
+			//If the member is qualified with an extension container type, set the extension property
+			if (CanSetExtensionProperty(parent, propertyName, valueNode, context, iXmlLineInfo, out var extensionAccessors))
+				return SetExtensionProperty(parent, extensionAccessors, valueNode, iXmlLineInfo, context);
+
 			//If it's a property, set it
 			if (CanSet(parent, localName, valueNode, context))
 				return Set(parent, localName, valueNode, iXmlLineInfo, context);
-
-			//If it's a C# 14 extension property, set it
-			if (CanSetExtensionProperty(parent, localName, valueNode, context))
-				return SetExtensionProperty(parent, localName, valueNode, iXmlLineInfo, context);
 
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
@@ -1470,10 +1470,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
 				return Get(parent, localName, lineInfo, context, out propertyType);
-
-			//If it's a C# 14 extension property, get it
-			if (CanGetExtensionProperty(parent, localName, context, out _))
-				return GetExtensionProperty(parent, localName, lineInfo, context, out propertyType);
 
 			throw new BuildException(PropertyResolution, lineInfo, null, localName, parent.VariableType.FullName);
 		}
@@ -1953,188 +1949,237 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				];
 		}
 
-		/// <summary>
-		/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
-		/// Extension properties are compiled as static get_X/set_X methods in extension container types
-		/// that have nested types marked with ExtensionAttribute.
-		/// </summary>
-		static (MethodDefinition Getter, MethodDefinition Setter, TypeReference DeclaringType) FindExtensionPropertyMethods(
-			TypeReference targetType, string propertyName, ILContext context)
+		sealed class ExtensionPropertyAccessors
 		{
-			var module = context.Body.Method.Module;
+			public MethodDefinition Getter { get; set; }
+			public MethodDefinition Setter { get; set; }
+			public TypeReference PropertyType { get; set; }
+			public TypeReference ReceiverType { get; set; }
+			public bool Found => Getter != null || Setter != null;
+		}
+
+		//<Label local:LabelExtensions.MyTag="..."/> -> container is local:LabelExtensions, member is MyTag
+		static bool TryGetExtensionContainer(XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference container, out string memberName)
+		{
+			container = null;
+			memberName = propertyName.LocalName;
+			var dotIdx = memberName.IndexOf('.');
+			if (dotIdx <= 0)
+				return false;
+
+			var typename = memberName.Substring(0, dotIdx);
+			memberName = memberName.Substring(dotIdx + 1);
+			container = new XmlType(propertyName.NamespaceURI, typename, null).GetTypeReference(context.Cache, context.Body.Method.Module, lineInfo);
+			return container != null;
+		}
+
+		/// <summary>
+		/// Resolves the <c>get_Name</c>/<c>set_Name</c> implementation methods of a C# extension property declared
+		/// by <paramref name="container"/> and applicable to <paramref name="targetType"/>.
+		/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with the runtime inflator and SourceGen.
+		/// </summary>
+		static ExtensionPropertyAccessors ResolveExtensionProperty(TypeReference container, TypeReference targetType, string propertyName, ILContext context, IXmlLineInfo lineInfo)
+		{
 			var cache = context.Cache;
-			var getterName = $"get_{propertyName}";
-			var setterName = $"set_{propertyName}";
-			var extensionAttributeFullName = "System.Runtime.CompilerServices.ExtensionAttribute";
+			var containerDef = container?.ResolveCached(cache);
 
-			// Get all assemblies to search
-			var assembliesToSearch = new List<AssemblyDefinition>();
+			//static classes are abstract and sealed. Generic containers can't be named in XAML
+			if (containerDef == null || !containerDef.IsAbstract || !containerDef.IsSealed || containerDef.HasGenericParameters)
+				return null;
 
-			// Add the current module's assembly
-			assembliesToSearch.Add(module.Assembly);
+			var getterName = ExtensionPropertyConventions.GetterName(propertyName);
+			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
 
-			// Add all referenced assemblies
-			foreach (var asmRef in module.AssemblyReferences)
+			List<MethodDefinition> getters = null;
+			List<MethodDefinition> setters = null;
+			var unsupported = false;
+
+			foreach (var method in containerDef.Methods)
 			{
-				try
+				var isGetter = method.Name == getterName;
+				if (!isGetter && method.Name != setterName)
+					continue;
+				if (!method.IsStatic || !method.IsPublic)
+					continue;
+
+				//generic extension blocks (extension<T>(ICollection<T>)) and static extension properties aren't supported
+				if (method.HasGenericParameters || method.Parameters.Count != (isGetter ? 1 : 2))
 				{
-					var asm = module.AssemblyResolver.Resolve(asmRef);
-					if (asm != null)
-						assembliesToSearch.Add(asm);
+					unsupported = true;
+					continue;
 				}
-				catch
+
+				var receiverType = method.Parameters[0].ParameterType;
+				if (receiverType.IsByReference)
+					continue;
+				if (!IsReceiverApplicable(receiverType, targetType, cache))
+					continue;
+
+				if (isGetter)
 				{
-					// Skip assemblies that can't be resolved
+					if (method.ReturnType.FullName == "System.Void")
+						continue;
+					(getters ??= []).Add(method);
+				}
+				else
+				{
+					if (method.ReturnType.FullName != "System.Void")
+						continue;
+					(setters ??= []).Add(method);
 				}
 			}
 
-			foreach (var assembly in assembliesToSearch)
+			if (getters == null && setters == null)
 			{
-				foreach (var asmModule in assembly.Modules)
+				if (unsupported)
+					throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
+				return null;
+			}
+
+			var getter = MostSpecific(getters, cache, out var ambiguousGetter);
+			var setter = MostSpecific(setters, cache, out var ambiguousSetter);
+			if (ambiguousGetter || ambiguousSetter)
+				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
+
+			var propertyType = getter?.ReturnType ?? setter.Parameters[1].ParameterType;
+			if (getter != null && setter != null && setter.Parameters[1].ParameterType.FullName != propertyType.FullName)
+				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
+
+			if (!IsVisibleFrom(containerDef, context))
+				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
+
+			var module = context.Body.Method.Module;
+			return new ExtensionPropertyAccessors
+			{
+				Getter = getter,
+				Setter = setter,
+				PropertyType = module.ImportReference(propertyType),
+				ReceiverType = module.ImportReference((getter ?? setter).Parameters[0].ParameterType),
+			};
+		}
+
+		static bool IsReceiverApplicable(TypeReference receiverType, TypeReference targetType, XamlCache cache)
+			=> receiverType.FullName == targetType.FullName || targetType.InheritsFromOrImplements(cache, receiverType);
+
+		static bool IsVisibleFrom(TypeDefinition containerDef, ILContext context)
+		{
+			if (containerDef.IsPublic || containerDef.IsNestedPublic)
+				return true;
+
+			var consumer = context.Body.Method.Module.Assembly.Name.Name;
+			if (containerDef.Module.Assembly.Name.Name == consumer)
+				return true;
+
+			return containerDef.Module.Assembly.CustomAttributes.Any(ca =>
+				ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
+				&& ca.ConstructorArguments.Count > 0
+				&& ca.ConstructorArguments[0].Value is string friend
+				&& IsSameAssemblyName(friend, consumer));
+		}
+
+		//InternalsVisibleTo values may carry a public key: "Friend, PublicKey=00..."
+		static bool IsSameAssemblyName(string friend, string consumer)
+		{
+			var comma = friend.IndexOf(',');
+			if (comma >= 0)
+				friend = friend.Substring(0, comma);
+			return string.Equals(friend.Trim(), consumer, StringComparison.Ordinal);
+		}
+
+		//the accessor whose receiver type is more derived than every other applicable one wins, as it would in C#
+		static MethodDefinition MostSpecific(List<MethodDefinition> candidates, XamlCache cache, out bool ambiguous)
+		{
+			ambiguous = false;
+			if (candidates == null)
+				return null;
+			if (candidates.Count == 1)
+				return candidates[0];
+
+			MethodDefinition best = null;
+			foreach (var candidate in candidates)
+			{
+				var candidateType = candidate.Parameters[0].ParameterType;
+				var isBest = true;
+				foreach (var other in candidates)
 				{
-					foreach (var type in asmModule.Types)
+					if (ReferenceEquals(other, candidate))
+						continue;
+					if (!IsReceiverApplicable(other.Parameters[0].ParameterType, candidateType, cache))
 					{
-						// Extension containers must be static classes (abstract and sealed) with ExtensionAttribute
-						if (!type.IsAbstract || !type.IsSealed)
-							continue;
-
-						if (!type.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName))
-							continue;
-
-						// Check if this container has nested types with ExtensionAttribute (C# 14 extension blocks)
-						var hasExtensionNestedTypes = type.NestedTypes.Any(nt =>
-							nt.CustomAttributes.Any(ca => ca.AttributeType.FullName == extensionAttributeFullName));
-
-						if (!hasExtensionNestedTypes)
-							continue;
-
-						// Look for get_PropertyName and set_PropertyName static methods
-						MethodDefinition getter = null;
-						MethodDefinition setter = null;
-
-						foreach (var method in type.Methods)
-						{
-							if (!method.IsStatic || !method.IsPublic)
-								continue;
-
-							if (method.Name == getterName && method.Parameters.Count == 1)
-							{
-								var paramType = method.Parameters[0].ParameterType;
-								if (IsAssignableFrom(paramType, targetType, cache))
-								{
-									getter = method;
-								}
-							}
-							else if (method.Name == setterName && method.Parameters.Count == 2)
-							{
-								var paramType = method.Parameters[0].ParameterType;
-								if (IsAssignableFrom(paramType, targetType, cache))
-								{
-									setter = method;
-								}
-							}
-						}
-
-						if (getter != null || setter != null)
-						{
-							return (getter, setter, module.ImportReference(type));
-						}
+						isBest = false;
+						break;
 					}
 				}
+				if (!isBest)
+					continue;
+				if (best != null)
+				{
+					ambiguous = true;
+					return null;
+				}
+				best = candidate;
 			}
 
-			return (null, null, null);
+			ambiguous = best == null;
+			return best;
 		}
 
-		static bool IsAssignableFrom(TypeReference baseType, TypeReference derivedType, XamlCache cache)
+		static bool CanSetExtensionProperty(VariableDefinition parent, XmlName propertyName, INode node, ILContext context, IXmlLineInfo lineInfo, out ExtensionPropertyAccessors accessors)
 		{
-			if (baseType.FullName == derivedType.FullName)
-				return true;
-
-			return derivedType.InheritsFromOrImplements(cache, baseType);
-		}
-
-		static bool CanSetExtensionProperty(VariableDefinition parent, string localName, INode node, ILContext context)
-		{
-			var (getter, setter, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
-			if (setter == null)
+			accessors = null;
+			if (!TryGetExtensionContainer(propertyName, context, lineInfo, out var container, out var memberName))
 				return false;
 
-			// Get the property type from the getter's return type or setter's second parameter
-			var propertyType = getter?.ReturnType ?? setter.Parameters[1].ParameterType;
+			accessors = ResolveExtensionProperty(container, parent.VariableType, memberName, context, lineInfo);
+			if (accessors == null || !accessors.Found)
+				return false;
+
+			if (accessors.Setter == null)
+				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, memberName, container.FullName, parent.VariableType.FullName);
+
 			var module = context.Body.Method.Module;
+			var propertyType = accessors.PropertyType;
 
-			if (node is ValueNode valueNode && valueNode.CanConvertValue(context, propertyType, [propertyType.ResolveCached(context.Cache)]))
-				return true;
+			if (node is ValueNode valueNode)
+				return valueNode.CanConvertValue(context, propertyType, [propertyType.ResolveCached(context.Cache)]);
 
-			if (node is not ElementNode elementNode)
+			if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var vardef))
 				return false;
-
-			var vardef = context.Variables[elementNode];
-			var implicitOperator = vardef.VariableType.GetImplicitOperatorTo(context.Cache, propertyType, module);
 
 			if (vardef.VariableType.InheritsFromOrImplements(context.Cache, propertyType))
 				return true;
-			if (implicitOperator != null)
+			if (vardef.VariableType.GetImplicitOperatorTo(context.Cache, propertyType, module) != null)
 				return true;
-			if (propertyType.FullName == "System.Object")
+			if (propertyType.FullName == "System.Object" || vardef.VariableType.FullName == "System.Object")
 				return true;
 
 			return false;
 		}
 
-		static bool CanGetExtensionProperty(VariableDefinition parent, string localName, ILContext context, out TypeReference propertyType)
-		{
-			propertyType = null;
-			var (getter, _, _) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
-			if (getter == null)
-				return false;
-
-			propertyType = context.Body.Method.Module.ImportReference(getter.ReturnType);
-			return true;
-		}
-
-		static IEnumerable<Instruction> SetExtensionProperty(VariableDefinition parent, string localName, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
+		//			IL_0007:  ldloc.0
+		//			IL_0008:  ldstr "foo"
+		//			IL_000d:  call void class LabelExtensions::set_MyTag(class Label, string)
+		static IEnumerable<Instruction> SetExtensionProperty(VariableDefinition parent, ExtensionPropertyAccessors accessors, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
 			var module = context.Body.Method.Module;
-			var (getter, setter, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
+			var setterRef = module.ImportReference(accessors.Setter);
+			var propertyType = accessors.PropertyType;
 
-			// Get the property type from the getter's return type or setter's second parameter
-			var propertyType = module.ImportReference(getter?.ReturnType ?? setter.Parameters[1].ParameterType);
-
-			var setterRef = module.ImportReference(setter);
-
-			// For static extension method: call ExtensionClass.set_PropertyName(target, value)
-			// Load the target object
-			yield return Create(Ldloc, parent);
+			foreach (var instruction in parent.LoadAs(context.Cache, accessors.ReceiverType, module))
+				yield return instruction;
 
 			if (node is ValueNode valueNode)
 			{
 				foreach (var instruction in valueNode.PushConvertedValue(context, propertyType, [propertyType.ResolveCached(context.Cache)], (requiredServices) => valueNode.PushServiceProvider(context, requiredServices, propertyRef: null), false, true))
 					yield return instruction;
-				yield return Create(Call, setterRef);
 			}
 			else if (node is ElementNode elementNode)
 			{
 				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, propertyType, module))
 					yield return instruction;
-				yield return Create(Call, setterRef);
 			}
-		}
 
-		static IEnumerable<Instruction> GetExtensionProperty(VariableDefinition parent, string localName, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
-		{
-			var module = context.Body.Method.Module;
-			var (getter, _, declaringType) = FindExtensionPropertyMethods(parent.VariableType, localName, context);
-
-			var getterRef = module.ImportReference(getter);
-			propertyType = module.ImportReference(getter.ReturnType);
-
-			// For static extension method: call ExtensionClass.get_PropertyName(target)
-			return [
-				Create(Ldloc, parent),
-				Create(Call, getterRef),
-			];
+			yield return Create(Call, setterRef);
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)

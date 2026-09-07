@@ -3,23 +3,23 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using Controls.Xaml.UnitTests.ExternalAssembly;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-// C# 14 extension members for Label - adds properties directly to Label
-// These should be usable in XAML like regular properties: <Label MyTag="value" />
+// C# extension members for Label. In XAML those are addressed with the qualified syntax
+// <Label local:LabelExtensions.MyTag="value" />, exactly like an attached property.
 public static class LabelExtensions
 {
-	private static readonly Dictionary<Label, string> _myTags = new();
-	private static readonly Dictionary<Label, int> _myPriorities = new();
+	static readonly Dictionary<Label, string> _myTags = new();
+	static readonly Dictionary<Label, int> _myPriorities = new();
+	static readonly Dictionary<Label, Color> _myAccents = new();
 
-	// C# 14 extension properties - adds properties directly to Label type
 	extension(Label label)
 	{
 		public string MyTag
@@ -33,82 +33,80 @@ public static class LabelExtensions
 			get => _myPriorities.TryGetValue(label, out var priority) ? priority : 0;
 			set => _myPriorities[label] = value;
 		}
-	}
-}
 
-// ViewModel with C# 14 extension properties
-public class PersonModel
-{
-	public string FirstName { get; set; } = string.Empty;
-	public string LastName { get; set; } = string.Empty;
-	public int Age { get; set; }
-}
-
-// C# 14 extension members that add computed properties to PersonModel
-public static class PersonModelExtensions
-{
-	extension(PersonModel person)
-	{
-		public string FullName => $"{person.FirstName} {person.LastName}";
-		public string DisplayInfo => $"{person.FirstName} {person.LastName} (Age: {person.Age})";
-	}
-}
-
-// C# 14 extension members that add properties to collections
-public static class CollectionExtensions
-{
-	extension<T>(ICollection<T> collection)
-	{
-		public bool IsEmpty => collection.Count == 0;
-	}
-}
-
-// ViewModel that exposes C# 14 extension properties through regular properties (for XAML binding)
-public class ExtensionPropertiesViewModel : INotifyPropertyChanged
-{
-	public event PropertyChangedEventHandler? PropertyChanged;
-
-	private PersonModel _person = new() { FirstName = "John", LastName = "Doe", Age = 30 };
-	public PersonModel Person
-	{
-		get => _person;
-		set
+		public Color? MyAccent
 		{
-			_person = value;
-			OnPropertyChanged();
-			OnPropertyChanged(nameof(FullName));
-			OnPropertyChanged(nameof(DisplayInfo));
+			get => _myAccents.TryGetValue(label, out var accent) ? accent : null;
+			set => _myAccents[label] = value!;
+		}
+
+		// no setter: can be read from C#, but cannot be assigned from XAML
+		public string MyReadOnly => label.MyTag + "!";
+	}
+}
+
+// extension container targeting a base type; applicable to any View
+public static class NoteExtensions
+{
+	static readonly Dictionary<View, string> _myNotes = new();
+
+	extension(View view)
+	{
+		public string MyNote
+		{
+			get => _myNotes.TryGetValue(view, out var note) ? note : string.Empty;
+			set => _myNotes[view] = value;
+		}
+	}
+}
+
+// two applicable receivers for the same name; the most derived one wins
+public static class OverloadedExtensions
+{
+	static readonly Dictionary<Element, string> _values = new();
+
+	extension(View view)
+	{
+		public string MyLabel
+		{
+			get => _values.TryGetValue(view, out var value) ? value : string.Empty;
+			set => _values[view] = "view:" + value;
 		}
 	}
 
-	// Expose C# 14 extension property through a regular property for XAML binding
-	public string FullName => _person.FullName;
-	public string DisplayInfo => _person.DisplayInfo;
-
-	private List<string> _items = new();
-	public List<string> Items
+	extension(Label label)
 	{
-		get => _items;
-		set
+		public string MyLabel
 		{
-			_items = value;
-			OnPropertyChanged();
-			OnPropertyChanged(nameof(IsCollectionEmpty));
+			get => _values.TryGetValue(label, out var value) ? value : string.Empty;
+			set => _values[label] = "label:" + value;
 		}
-	}
-
-	// Expose C# 14 extension property on ICollection<T> through a regular property for XAML binding
-	public bool IsCollectionEmpty => _items.IsEmpty;
-
-	protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-	{
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
 
-// All XAML inflators (Runtime, XamlC, SourceGen) now support C# 14 extension properties.
-// Extension properties appear as IPropertySymbol on static classes with get_X/set_X accessors
-// that take the target type as the first parameter.
+// two applicable receivers, neither more derived than the other
+public static class AmbiguousExtensions
+{
+	extension(IView view)
+	{
+		public string MyAmbiguous { get => string.Empty; set { } }
+	}
+
+	extension(BindableObject bindable)
+	{
+		public string MyAmbiguous { get => string.Empty; set { } }
+	}
+}
+
+// generic extension blocks lower to generic accessor methods, which XAML cannot instantiate
+public static class GenericExtensions
+{
+	extension<T>(IList<T> list)
+	{
+		public bool IsEmpty { get => list.Count == 0; set { } }
+	}
+}
+
 public partial class ExtensionProperties : ContentPage
 {
 	public ExtensionProperties() => InitializeComponent();
@@ -121,118 +119,159 @@ public partial class ExtensionProperties : ContentPage
 
 		[Theory]
 		[XamlInflatorData]
-		internal void ExtensionPropertyCanBeSetFromXaml(XamlInflator inflator)
+		internal void ExtensionPropertyIsSetFromXaml(XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
-			// Verify the C# 14 extension property was set from XAML (like a regular property)
-			Assert.Equal("Hello from extension property", page.labelWithExtProp.MyTag);
-			Assert.Equal("Regular text", page.labelWithExtProp.Text);
+			Assert.Equal("Hello from extension property", page.label0.MyTag);
+			Assert.Equal("Regular text", page.label0.Text);
 		}
 
 		[Theory]
 		[XamlInflatorData]
-		internal void MultipleExtensionPropertiesCanBeSetFromXaml(XamlInflator inflator)
+		internal void SeveralExtensionPropertiesAreSetFromXaml(XamlInflator inflator)
 		{
 			var page = new ExtensionProperties(inflator);
 
-			// Verify multiple C# 14 extension properties were set from XAML
-			Assert.Equal("Tag value", page.labelWithMultipleExtProps.MyTag);
-			Assert.Equal(42, page.labelWithMultipleExtProps.MyPriority);
+			Assert.Equal("Tag value", page.label1.MyTag);
+			Assert.Equal(42, page.label1.MyPriority);
+			Assert.Equal("Another label", page.label1.Text);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyValueGoesThroughTypeConverter(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal(Colors.Red, page.label2.MyAccent);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyOnBaseTypeAppliesToDerivedElement(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("note on a view", page.label3.MyNote);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void MostDerivedReceiverWins(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("label:from xaml", page.label4.MyLabel);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyFromAnotherAssemblyIsSetFromXaml(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("external", page.label5.ExternalTag);
+		}
+
+		[Theory]
+		[XamlInflatorData]
+		internal void ExtensionPropertyIsSetFromPropertyElementSyntax(XamlInflator inflator)
+		{
+			var page = new ExtensionProperties(inflator);
+
+			Assert.Equal("from property element", page.label6.MyTag);
 		}
 
 		[Fact]
-		internal void ExtensionPropertyCanBeSetAndReadInCode()
+		public void ExtensionPropertiesStillWorkFromCode()
 		{
 			var label = new Label();
 
-			// Set via C# 14 extension property syntax
 			label.MyTag = "Test value";
 			label.MyPriority = 123;
 
-			// Read via C# 14 extension property syntax
 			Assert.Equal("Test value", label.MyTag);
 			Assert.Equal(123, label.MyPriority);
+			Assert.Equal("Test value!", label.MyReadOnly);
 		}
 
-		[Theory]
-		[XamlInflatorData]
-		internal void ExtensionPropertyOnViewModelCanBeBoundTo(XamlInflator inflator)
+		// The runtime inflator is the only one that can be fed arbitrary xaml from a test, so the
+		// negative cases below are asserted there. XamlC and SourceGen apply the exact same rules
+		// (see ExtensionPropertyConventions); ExtensionPropertiesUnqualified covers them at build time.
+		static string PageWith(string attribute) =>
+			$"""
+			<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+						xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+						xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+						xmlns:ext="clr-namespace:Controls.Xaml.UnitTests.ExternalAssembly;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly">
+				<Label {attribute} />
+			</ContentPage>
+			""";
+
+		[Fact]
+		public void UnqualifiedExtensionPropertyNameIsNotSupported()
 		{
-			var vm = new ExtensionPropertiesViewModel
-			{
-				Person = new PersonModel { FirstName = "Jane", LastName = "Smith", Age = 25 }
-			};
-
-			var page = new ExtensionProperties(inflator)
-			{
-				BindingContext = vm
-			};
-
-			// Verify binding to FullName (which uses C# 14 extension property internally)
-			Assert.Equal("Jane Smith", page.labelWithBinding.Text);
-
-			// Verify binding to DisplayInfo (computed C# 14 extension property)
-			Assert.Equal("Jane Smith (Age: 25)", page.labelWithComputedBinding.Text);
-		}
-
-		[Theory]
-		[XamlInflatorData]
-		internal void ExtensionPropertyOnCollectionWorks(XamlInflator inflator)
-		{
-			var vm = new ExtensionPropertiesViewModel
-			{
-				Items = new List<string>() // Empty list
-			};
-
-			var page = new ExtensionProperties(inflator)
-			{
-				BindingContext = vm
-			};
-
-			// Verify binding to IsCollectionEmpty (which uses C# 14 extension property on ICollection<T>)
-			Assert.Equal("True", page.labelWithIsEmptyBinding.Text);
-
-			// Update collection and verify change
-			vm.Items = new List<string> { "item1", "item2" };
-			Assert.Equal("False", page.labelWithIsEmptyBinding.Text);
-		}
-
-		[Theory]
-		[XamlInflatorData]
-		internal void ExtensionPropertyUpdatesProperly(XamlInflator inflator)
-		{
-			var vm = new ExtensionPropertiesViewModel();
-			var page = new ExtensionProperties(inflator)
-			{
-				BindingContext = vm
-			};
-
-			// Initial value
-			Assert.Equal("John Doe", page.labelWithBinding.Text);
-
-			// Update the person and verify binding updates
-			vm.Person = new PersonModel { FirstName = "Alice", LastName = "Wonder", Age = 28 };
-			Assert.Equal("Alice Wonder", page.labelWithBinding.Text);
-			Assert.Equal("Alice Wonder (Age: 28)", page.labelWithComputedBinding.Text);
+			// there is no `using` equivalent in xaml, so an unqualified name is never resolved against
+			// extension containers, whichever assemblies happen to be loaded
+			var xaml = PageWith("MyTag=\"nope\"");
+			Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 		}
 
 		[Fact]
-		internal void ExtensionPropertyDirectUsageInCode()
+		public void AmbiguousExtensionPropertyThrows()
 		{
-			// Test C# 14 extension properties can be used directly in C# code
-			var person = new PersonModel { FirstName = "Test", LastName = "User", Age = 42 };
+			var xaml = PageWith("local:AmbiguousExtensions.MyAmbiguous=\"nope\"");
+			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("MyAmbiguous", e.Message, StringComparison.Ordinal);
+		}
 
-			// Using the C# 14 extension property syntax
-			Assert.Equal("Test User", person.FullName);
-			Assert.Equal("Test User (Age: 42)", person.DisplayInfo);
+		[Fact]
+		public void GenericExtensionPropertyThrows()
+		{
+			var xaml = PageWith("local:GenericExtensions.IsEmpty=\"true\"");
+			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("IsEmpty", e.Message, StringComparison.Ordinal);
+		}
 
-			// Test C# 14 collection extension property
-			var emptyList = new List<int>();
-			var nonEmptyList = new List<int> { 1, 2, 3 };
+		[Fact]
+		public void ReadOnlyExtensionPropertyThrows()
+		{
+			var xaml = PageWith("local:LabelExtensions.MyReadOnly=\"nope\"");
+			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("MyReadOnly", e.Message, StringComparison.Ordinal);
+		}
 
-			Assert.True(emptyList.IsEmpty);
-			Assert.False(nonEmptyList.IsEmpty);
+		[Fact]
+		public void InaccessibleExtensionContainerThrows()
+		{
+			// InternalLabelExtensions is internal to the external assembly, even though the accessor methods
+			// the compiler emits for it are public. The runtime rejects it while resolving the container type;
+			// XamlC and SourceGen resolve non-public types and reject them in ResolveExtensionProperty instead.
+			var xaml = PageWith("ext:InternalLabelExtensions.InternalTag=\"nope\"");
+			var e = Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+			Assert.Contains("InternalLabelExtensions", e.Message, StringComparison.Ordinal);
+		}
+
+		[Fact]
+		public void UnknownExtensionPropertyOnAContainerThrows()
+		{
+			var xaml = PageWith("local:LabelExtensions.NotAThing=\"nope\"");
+			Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
+		}
+
+		[Fact]
+		public void MismatchingReceiverThrows()
+		{
+			// MyTag is declared for Label, not for Button
+			var xaml = """
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+							xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+							xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
+					<Button local:LabelExtensions.MyTag="nope" />
+				</ContentPage>
+				""";
+			Assert.Throws<XamlParseException>(() => new ContentPage().LoadFromXaml(xaml));
 		}
 	}
 }

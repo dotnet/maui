@@ -27,6 +27,7 @@
     <Compile Include="..\Core\XmlnsPrefixAttribute.cs" Link="XmlnsPrefixAttribute.cs" />
     <Compile Include="..\Core\AllowImplicitXmlnsDeclarationAttribute.cs" Link="AllowImplicitXmlnsDeclarationAttribute.cs" />
     <Compile Include="..\Xaml\IDictionaryExtensions.cs" Link="IDictionaryExtensions.cs" />
+    <Compile Include="..\Xaml\ExtensionPropertyConventions.cs" Link="ExtensionPropertyConventions.cs" />
     <Compile Include="..\Xaml\IExpressionParser.cs" Link="IExpressionParser.cs" />
     <Compile Include="..\Xaml\IXmlLineInfoExtensions.cs" Link="IXmlLineInfoExtensions.cs" />
     <Compile Include="..\Xaml\NodeExtensions.cs" Link="NodeExtensions.cs" />

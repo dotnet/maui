@@ -269,8 +269,7 @@ static class NodeSGExtensions
 
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context)
 	{
-		List<AttributeData> attributes = [.. toType.GetAttributes()];
-		var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+		var typeConverter = toType.GetAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToFQDisplayString() == "global::System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
 		return CanConvertTo(valueNode, toType, typeConverter, context);
 	}
 

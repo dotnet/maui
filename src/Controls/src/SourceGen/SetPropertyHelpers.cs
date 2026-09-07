@@ -64,17 +64,22 @@ static class SetPropertyHelpers
 			return;
 		}
 
+		//If the member is qualified with an extension container type, set the extension property
+		var extensionPropertyReported = false;
+		if (!asCollectionItem && CanSetExtensionProperty(parentVar, propertyName, valueNode, context, out var extensionAccessors, out extensionPropertyReported))
+		{
+			SetExtensionProperty(writer, parentVar, extensionAccessors!, valueNode, context, getNodeValue);
+			return;
+		}
+
+		//a diagnostic was already emitted for the extension property, don't also report an unresolved member
+		if (extensionPropertyReported)
+			return;
+
 		//POCO, set the property
 		if (!asCollectionItem && CanSet(parentVar, localName, valueNode, context))
 		{
 			Set(writer, parentVar, localName, valueNode, context, getNodeValue);
-			return;
-		}
-
-		//C# 14 extension property
-		if (!asCollectionItem && CanSetExtensionProperty(parentVar, localName, valueNode, context))
-		{
-			SetExtensionProperty(writer, parentVar, localName, valueNode, context, getNodeValue);
 			return;
 		}
 
@@ -1223,362 +1228,240 @@ static class SetPropertyHelpers
 		return true;
 	}
 
-	/// <summary>
-	/// Finds C# 14 extension property for a given target type and property name.
-	/// In C# 14, extension properties appear directly on static classes with get_X/set_X accessor methods
-	/// that take the target type as the first parameter.
-	/// Results are cached per context to avoid repeated searches.
-	/// </summary>
-	static IPropertySymbol? FindExtensionProperty(
-		ITypeSymbol targetType, string propertyName, SourceGenContext context)
+	sealed class ExtensionPropertyAccessors
 	{
-		// Use cache if available
-		context.extensionPropertyCache ??= new Dictionary<(ITypeSymbol, string), IPropertySymbol?>(
-			new ExtensionPropertyKeyComparer());
-
-		var key = (targetType, propertyName);
-		if (context.extensionPropertyCache.TryGetValue(key, out var cachedResult))
-			return cachedResult;
-
-		// Search through all static types
-		var allStaticTypes = GetAllStaticTypes(context);
-
-		foreach (var type in allStaticTypes)
-		{
-			// Look for the property directly on the static class
-			foreach (var prop in type.GetMembers().OfType<IPropertySymbol>())
-			{
-				if (prop.Name != propertyName)
-					continue;
-
-				// Check if this is an extension property by looking at the accessor parameters
-				var getter = prop.GetMethod;
-				var setter = prop.SetMethod;
-
-				ITypeSymbol? extendedType = null;
-				if (getter != null && getter.Parameters.Length == 1)
-					extendedType = getter.Parameters[0].Type;
-				else if (setter != null && setter.Parameters.Length == 2)
-					extendedType = setter.Parameters[0].Type;
-
-				if (extendedType != null && IsAssignableFrom(extendedType, targetType, context))
-				{
-					context.extensionPropertyCache[key] = prop;
-					return prop;
-				}
-			}
-		}
-
-		context.extensionPropertyCache[key] = null;
-		return null;
+		public IMethodSymbol? Getter { get; set; }
+		public IMethodSymbol? Setter { get; set; }
+		public ITypeSymbol PropertyType { get; set; } = null!;
+		public ITypeSymbol ReceiverType { get; set; } = null!;
+		public bool Found => Getter != null || Setter != null;
 	}
 
-	/// <summary>
-	/// Finds C# 14 extension property getter and setter methods for a given target type and property name.
-	/// Extension properties are compiled as static get_X/set_X methods in static classes.
-	/// The getter has 1 parameter (the target) and the setter has 2 parameters (target, value).
-	/// Results are cached per context to avoid repeated searches.
-	/// </summary>
-	static (IMethodSymbol? Getter, IMethodSymbol? Setter) FindExtensionPropertyMethods(
-		ITypeSymbol targetType, string propertyName, SourceGenContext context)
+	//<Label local:LabelExtensions.MyTag="..."/> -> container is local:LabelExtensions, member is MyTag
+	static bool TryGetExtensionContainer(XmlName propertyName, SourceGenContext context, out INamedTypeSymbol? container, out string memberName)
 	{
-		// Use cache if available
-		context.extensionPropertyMethodsCache ??= new Dictionary<(ITypeSymbol, string), (IMethodSymbol?, IMethodSymbol?)>(
-			new ExtensionPropertyKeyComparer());
-
-		var key = (targetType, propertyName);
-		if (context.extensionPropertyMethodsCache.TryGetValue(key, out var cachedResult))
-			return cachedResult;
-
-		var getterName = $"get_{propertyName}";
-		var setterName = $"set_{propertyName}";
-
-		// Search through all static types
-		var allStaticTypes = GetAllStaticTypes(context);
-
-		foreach (var type in allStaticTypes)
-		{
-			// Look for get_PropertyName and set_PropertyName static methods
-			IMethodSymbol? getter = null;
-			IMethodSymbol? setter = null;
-
-			foreach (var method in type.GetMembers().OfType<IMethodSymbol>())
-			{
-				if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public)
-					continue;
-
-				if (method.Name == getterName && method.Parameters.Length == 1)
-				{
-					var paramType = method.Parameters[0].Type;
-					if (IsAssignableFrom(paramType, targetType, context))
-					{
-						getter = method;
-					}
-				}
-				else if (method.Name == setterName && method.Parameters.Length == 2)
-				{
-					var paramType = method.Parameters[0].Type;
-					if (IsAssignableFrom(paramType, targetType, context))
-					{
-						setter = method;
-					}
-				}
-			}
-
-			if (getter != null || setter != null)
-			{
-				var result = (getter, setter);
-				context.extensionPropertyMethodsCache[key] = result;
-				return result;
-			}
-		}
-
-		context.extensionPropertyMethodsCache[key] = (null, null);
-		return (null, null);
-	}
-
-	/// <summary>
-	/// Comparer for extension property cache keys that uses symbol equality.
-	/// </summary>
-	sealed class ExtensionPropertyKeyComparer : IEqualityComparer<(ITypeSymbol, string)>
-	{
-		public bool Equals((ITypeSymbol, string) x, (ITypeSymbol, string) y)
-			=> SymbolEqualityComparer.Default.Equals(x.Item1, y.Item1) && x.Item2 == y.Item2;
-
-		public int GetHashCode((ITypeSymbol, string) obj)
-			=> SymbolEqualityComparer.Default.GetHashCode(obj.Item1) ^ obj.Item2.GetHashCode();
-	}
-
-	/// <summary>
-	/// Gets all static types from the compilation, with caching to avoid repeated enumeration.
-	/// </summary>
-	static INamedTypeSymbol[] GetAllStaticTypes(SourceGenContext context)
-	{
-		if (context.allStaticTypesCache != null)
-			return context.allStaticTypesCache;
-
-		var staticTypes = new List<INamedTypeSymbol>();
-		foreach (var type in GetAllTypesFromCompilation(context.Compilation))
-		{
-			if (type.IsStatic)
-				staticTypes.Add(type);
-		}
-
-		context.allStaticTypesCache = staticTypes.ToArray();
-		return context.allStaticTypesCache;
-	}
-
-	static IEnumerable<INamedTypeSymbol> GetAllTypesFromCompilation(Compilation compilation)
-	{
-		// Get types from all referenced assemblies
-		foreach (var reference in compilation.References)
-		{
-			if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
-			{
-				foreach (var type in GetAllTypesFromNamespace(assembly.GlobalNamespace))
-				{
-					yield return type;
-				}
-			}
-		}
-
-		// Get types from the current compilation
-		foreach (var type in GetAllTypesFromNamespace(compilation.GlobalNamespace))
-		{
-			yield return type;
-		}
-	}
-
-	static IEnumerable<INamedTypeSymbol> GetAllTypesFromNamespace(INamespaceSymbol namespaceSymbol)
-	{
-		foreach (var type in namespaceSymbol.GetTypeMembers())
-		{
-			yield return type;
-			foreach (var nested in GetNestedTypes(type))
-			{
-				yield return nested;
-			}
-		}
-
-		foreach (var nestedNs in namespaceSymbol.GetNamespaceMembers())
-		{
-			foreach (var type in GetAllTypesFromNamespace(nestedNs))
-			{
-				yield return type;
-			}
-		}
-	}
-
-	static IEnumerable<INamedTypeSymbol> GetNestedTypes(INamedTypeSymbol type)
-	{
-		foreach (var nested in type.GetTypeMembers())
-		{
-			yield return nested;
-			foreach (var deepNested in GetNestedTypes(nested))
-			{
-				yield return deepNested;
-			}
-		}
-	}
-
-	static bool IsAssignableFrom(ITypeSymbol baseType, ITypeSymbol derivedType, SourceGenContext context)
-	{
-		if (SymbolEqualityComparer.Default.Equals(baseType, derivedType))
-			return true;
-
-		return derivedType.InheritsFrom(baseType, context) ||
-		       (baseType.TypeKind == TypeKind.Interface && derivedType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, baseType)));
-	}
-
-	static bool CanSetExtensionProperty(ILocalValue parentVar, string localName, INode node, SourceGenContext context)
-	{
-		ITypeSymbol? propertyType = null;
-
-		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
-		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
-		if (extProp != null && extProp.SetMethod != null)
-		{
-			propertyType = extProp.Type;
-		}
-		else
-		{
-			// Fall back to finding lowered accessor methods
-			var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
-			if (setter == null)
-				return false;
-
-			// Get the property type from the getter's return type or setter's second parameter
-			propertyType = getter?.ReturnType ?? setter.Parameters[1].Type;
-		}
-
-		if (node is ValueNode vn && vn.CanConvertTo(propertyType, context))
-			return true;
-
-		if (node is not ElementNode elementNode)
+		container = null;
+		memberName = propertyName.LocalName;
+		var dotIdx = memberName.IndexOf('.');
+		if (dotIdx <= 0)
 			return false;
 
-		if (!context.Variables.TryGetValue(elementNode, out var localVar))
+		var typename = memberName.Substring(0, dotIdx);
+		memberName = memberName.Substring(dotIdx + 1);
+		container = new XmlType(propertyName.NamespaceURI, typename, null).GetTypeSymbol(null, context.Compilation, context.XmlnsCache, context.TypeCache);
+		return container != null;
+	}
+
+	/// <summary>
+	/// Resolves the <c>get_Name</c>/<c>set_Name</c> implementation methods of a C# extension property declared
+	/// by <paramref name="container"/> and applicable to <paramref name="targetType"/>.
+	/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with the runtime inflator and XamlC.
+	/// </summary>
+	static ExtensionPropertyAccessors? ResolveExtensionProperty(INamedTypeSymbol container, ITypeSymbol targetType, string propertyName, SourceGenContext context, IXmlLineInfo lineInfo, out bool reported)
+	{
+		reported = false;
+
+		if (!container.IsStatic || container.IsGenericType)
+			return null;
+
+		var getterName = ExtensionPropertyConventions.GetterName(propertyName);
+		var setterName = ExtensionPropertyConventions.SetterName(propertyName);
+
+		List<IMethodSymbol>? getters = null;
+		List<IMethodSymbol>? setters = null;
+		var unsupported = false;
+
+		foreach (var method in container.GetMembers().OfType<IMethodSymbol>())
+		{
+			var isGetter = method.Name == getterName;
+			if (!isGetter && method.Name != setterName)
+				continue;
+			if (!method.IsStatic || method.DeclaredAccessibility != Accessibility.Public)
+				continue;
+
+			//generic extension blocks (extension<T>(ICollection<T>)) and static extension properties aren't supported
+			if (method.IsGenericMethod || method.Parameters.Length != (isGetter ? 1 : 2))
+			{
+				unsupported = true;
+				continue;
+			}
+
+			var receiverParameter = method.Parameters[0];
+			if (receiverParameter.RefKind != RefKind.None)
+				continue;
+			if (!IsReceiverApplicable(receiverParameter.Type, targetType, context))
+				continue;
+
+			if (isGetter)
+			{
+				if (method.ReturnsVoid)
+					continue;
+				(getters ??= []).Add(method);
+			}
+			else
+			{
+				if (!method.ReturnsVoid)
+					continue;
+				(setters ??= []).Add(method);
+			}
+		}
+
+		if (getters == null && setters == null)
+		{
+			if (unsupported)
+				reported = ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
+			return null;
+		}
+
+		var getter = MostSpecific(getters, context, out var ambiguousGetter);
+		var setter = MostSpecific(setters, context, out var ambiguousSetter);
+		if (ambiguousGetter || ambiguousSetter)
+		{
+			reported = ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
+			return null;
+		}
+
+		var propertyType = getter?.ReturnType ?? setter!.Parameters[1].Type;
+		if (getter != null && setter != null && !SymbolEqualityComparer.Default.Equals(setter.Parameters[1].Type, propertyType))
+		{
+			reported = ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
+			return null;
+		}
+
+		if (!context.Compilation.IsSymbolAccessibleWithin(container, context.RootType))
+		{
+			reported = ReportExtensionPropertyResolution(propertyName, container, targetType, context, lineInfo);
+			return null;
+		}
+
+		return new ExtensionPropertyAccessors
+		{
+			Getter = getter,
+			Setter = setter,
+			PropertyType = propertyType,
+			ReceiverType = (getter ?? setter)!.Parameters[0].Type,
+		};
+	}
+
+	static bool ReportExtensionPropertyResolution(string propertyName, INamedTypeSymbol container, ITypeSymbol targetType, SourceGenContext context, IXmlLineInfo lineInfo)
+	{
+		var location = LocationCreate(context.ProjectItem.RelativePath!, lineInfo, propertyName);
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ExtensionPropertyResolution, location, propertyName, container.ToFQDisplayString(), targetType.ToFQDisplayString()));
+		return true; //always reported: callers use the return value to flag the member as handled
+	}
+
+	static bool IsReceiverApplicable(ITypeSymbol receiverType, ITypeSymbol targetType, SourceGenContext context)
+	{
+		if (SymbolEqualityComparer.Default.Equals(receiverType, targetType))
+			return true;
+		if (targetType.InheritsFrom(receiverType, context))
+			return true;
+		return receiverType.TypeKind == TypeKind.Interface && targetType.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, receiverType));
+	}
+
+	//the accessor whose receiver type is more derived than every other applicable one wins, as it would in C#
+	static IMethodSymbol? MostSpecific(List<IMethodSymbol>? candidates, SourceGenContext context, out bool ambiguous)
+	{
+		ambiguous = false;
+		if (candidates == null)
+			return null;
+		if (candidates.Count == 1)
+			return candidates[0];
+
+		IMethodSymbol? best = null;
+		foreach (var candidate in candidates)
+		{
+			var candidateType = candidate.Parameters[0].Type;
+			var isBest = true;
+			foreach (var other in candidates)
+			{
+				if (ReferenceEquals(other, candidate))
+					continue;
+				if (!IsReceiverApplicable(other.Parameters[0].Type, candidateType, context))
+				{
+					isBest = false;
+					break;
+				}
+			}
+			if (!isBest)
+				continue;
+			if (best != null)
+			{
+				ambiguous = true;
+				return null;
+			}
+			best = candidate;
+		}
+
+		ambiguous = best == null;
+		return best;
+	}
+
+	//`reported` tells the caller a diagnostic was already emitted, so it must not also report an unresolved member
+	static bool CanSetExtensionProperty(ILocalValue parentVar, XmlName propertyName, INode node, SourceGenContext context, out ExtensionPropertyAccessors? accessors, out bool reported)
+	{
+		accessors = null;
+		reported = false;
+		if (!TryGetExtensionContainer(propertyName, context, out var container, out var memberName))
+			return false;
+
+		var lineInfo = (IXmlLineInfo)node;
+		accessors = ResolveExtensionProperty(container!, parentVar.Type, memberName, context, lineInfo, out reported);
+		if (reported)
+			return false;
+		if (accessors == null || !accessors.Found)
+			return false;
+
+		if (accessors.Setter == null)
+		{
+			reported = ReportExtensionPropertyResolution(memberName, container!, parentVar.Type, context, lineInfo);
+			accessors = null;
+			return false;
+		}
+
+		var propertyType = accessors.PropertyType;
+
+		if (node is ValueNode vn)
+			return vn.CanConvertTo(propertyType, context);
+
+		if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var localVar))
 			return false;
 
 		if (localVar.Type.InheritsFrom(propertyType, context))
 			return true;
-
 		if (propertyType.TypeKind == TypeKind.Interface && localVar.Type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, propertyType)))
 			return true;
-
 		if (propertyType.Equals(context.Compilation.ObjectType, SymbolEqualityComparer.Default))
 			return true;
-
 		if (context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
 			return true;
 
 		return false;
 	}
 
-	static bool CanGetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context, out ITypeSymbol? propertyType)
+	//emits LabelExtensions.set_MyTag(label, "value"), the implementation method the C# compiler emits for the extension property
+	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, ExtensionPropertyAccessors accessors, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
 	{
-		propertyType = null;
+		var setter = accessors.Setter!;
+		var setterAccessor = $"{setter.ContainingType.ToFQDisplayString()}.{setter.Name}";
+		var receiverCast = SymbolEqualityComparer.Default.Equals(parentVar.Type, accessors.ReceiverType) ? string.Empty : $"({accessors.ReceiverType.ToFQDisplayString()})";
 
-		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
-		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
-		if (extProp != null && extProp.GetMethod != null)
-		{
-			propertyType = extProp.Type;
-			return true;
-		}
-
-		// Fall back to finding lowered accessor methods
-		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
-		if (getter == null)
-			return false;
-
-		propertyType = getter.ReturnType;
-		return true;
-	}
-
-	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, string localName, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
-	{
-		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
-		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
-		if (extProp != null)
-		{
-			// Generate code using property access syntax - the compiler will handle it
-			var propertyType = extProp.Type;
-
-			if (node is ValueNode valueNode)
-			{
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					var valueString = valueNode.ConvertTo(propertyType, writer, context, parentVar);
-					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} = {valueString};");
-				}
-			}
-			else if (node is ElementNode elementNode)
-			{
-				using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
-				{
-					var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
-					string cast = string.Empty;
-					if (!context.Compilation.HasImplicitConversion(localVar.Type, propertyType))
-					{
-						cast = $"({propertyType.ToFQDisplayString()})";
-					}
-					writer.WriteLine($"{parentVar.ValueAccessor}.{localName} = {cast}{localVar.ValueAccessor};");
-				}
-			}
-			return;
-		}
-
-		// Fall back to lowered accessor methods
-		var (getter, setter) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
-
-		// Get the property type from the getter's return type or setter's second parameter
-		var propType = getter?.ReturnType ?? setter!.Parameters[1].Type;
-
-		// Generate: ExtensionClass.set_PropertyName(target, value)
-		var extensionClassName = setter!.ContainingType.ToFQDisplayString();
-		var setterName = setter.Name;
-
-		if (node is ValueNode vn)
+		if (node is ValueNode valueNode)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var valueString = vn.ConvertTo(propType, writer, context, parentVar);
-				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {valueString});");
+				var valueString = valueNode.ConvertTo(accessors.PropertyType, writer, context, parentVar);
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, {valueString});");
 			}
 		}
-		else if (node is ElementNode en)
+		else if (node is ElementNode elementNode)
 		{
 			using (context.ProjectItem.EnableLineInfo ? PrePost.NewLineInfo(writer, (IXmlLineInfo)node, context.ProjectItem) : PrePost.NoBlock())
 			{
-				var localVar = getNodeValue(en, context.Compilation.ObjectType);
-				string cast = string.Empty;
-				if (!context.Compilation.HasImplicitConversion(localVar.Type, propType))
-				{
-					cast = $"({propType.ToFQDisplayString()})";
-				}
-				writer.WriteLine($"{extensionClassName}.{setterName}({parentVar.ValueAccessor}, {cast}{localVar.ValueAccessor});");
+				var localVar = getNodeValue(elementNode, context.Compilation.ObjectType);
+				var cast = context.Compilation.HasImplicitConversion(localVar.Type, accessors.PropertyType) ? string.Empty : $"({accessors.PropertyType.ToFQDisplayString()})";
+				writer.WriteLine($"{setterAccessor}({receiverCast}{parentVar.ValueAccessor}, {cast}{localVar.ValueAccessor});");
 			}
 		}
-	}
-
-	static string GetExtensionProperty(ILocalValue parentVar, string localName, SourceGenContext context)
-	{
-		// First try to find extension property as IPropertySymbol (C# 14 semantic model)
-		var extProp = FindExtensionProperty(parentVar.Type, localName, context);
-		if (extProp != null)
-		{
-			// Generate code using property access syntax - the compiler will handle it
-			return $"{parentVar.ValueAccessor}.{localName}";
-		}
-
-		// Fall back to lowered accessor methods
-		var (getter, _) = FindExtensionPropertyMethods(parentVar.Type, localName, context);
-
-		// Generate: ExtensionClass.get_PropertyName(target)
-		var extensionClassName = getter!.ContainingType.ToFQDisplayString();
-		var getterName = getter.Name;
-
-		return $"{extensionClassName}.{getterName}({parentVar.ValueAccessor})";
 	}
 }
