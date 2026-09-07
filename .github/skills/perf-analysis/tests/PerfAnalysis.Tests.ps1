@@ -10,7 +10,6 @@ $familyRegistry = [IO.Path]::Combine($skillRoot, "references", "benchmark-famili
 $recommendationPolicyPath = [IO.Path]::Combine($skillRoot, "references", "recommendation-policy.json")
 $benchmarkRunner = [IO.Path]::Combine($skillRoot, "scripts", "Invoke-PerfBenchmarks.ps1")
 $repositoryRoot = [IO.Path]::GetFullPath([IO.Path]::Combine($skillRoot, "..", "..", ".."))
-$workflowSourcePath = [IO.Path]::Combine($repositoryRoot, ".github", "workflows", "perf-check.md")
 $testRoot = Join-Path ([IO.Path]::GetTempPath()) ("maui-perf-tests-" + [Guid]::NewGuid().ToString("N"))
 
 function Assert-True([bool]$Condition, [string]$Message) {
@@ -272,11 +271,12 @@ try {
         Assert-True $linkRejected "Symbolic-link path components must fail"
     }
 
-    $workflowSource = Get-Content $workflowSourcePath -Raw
-    Assert-True ($workflowSource -notmatch "perf-check-followup") "Follow-up dispatch must use the configured command"
-    Assert-True ($workflowSource -notmatch "partiallySucceeded") "Partially successful device builds must not be reused"
-    Assert-True ($workflowSource -match '\^\(main\|net\[0-9\]\+\\\.0\)\$') "Workflow must allow only main and netN.0 PR bases"
-    Assert-True ($workflowSource -notmatch '\$BASE_REF"\s*!=\s*"main') "Workflow must not retain the main-only base guard"
+    foreach ($removedWorkflow in @("perf-check.md", "perf-check.lock.yml", "perf-history.yml")) {
+        Assert-True (-not (Test-Path ([IO.Path]::Combine($repositoryRoot, ".github", "workflows", $removedWorkflow)))) "Standalone triggering must remain outside the analyzer"
+    }
+    $skillSource = Get-Content (Join-Path $skillRoot "SKILL.md") -Raw
+    Assert-True ($skillSource -match '(?m)^name: perf-analysis\r?$') "Reusable skill discovery metadata missing"
+    Assert-True ($skillSource -notmatch 'post_perf_report|run_device_performance|MAUI_DEVICE_PERFORMANCE_PIPELINE_ID') "Skill must not depend on removed workflow actions"
 
     $layoutExtensions = Invoke-SelectorFixture "layout-extensions" @(
         "src/Core/src/Layouts/LayoutExtensions.cs"

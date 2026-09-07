@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Validates an AI-generated performance report against sealed workflow evidence.
+    Validates an AI-generated performance report against trusted caller-supplied evidence.
 
 .DESCRIPTION
     The report must contain a `perf-analysis-decision` JSON metadata comment. This
@@ -114,8 +114,8 @@ foreach ($heading in $requiredHeadings) {
     }
 }
 
-if ($report -notmatch '(?i)automated analysis by the \*\*perf-check\*\* agentic workflow') {
-    Add-ValidationError "AI/workflow attribution is missing."
+if ($report -notmatch '(?i)automated analysis by the \*\*perf-analysis\*\* skill') {
+    Add-ValidationError "AI/skill attribution is missing."
 }
 
 $decisionMatches = [regex]::Matches(

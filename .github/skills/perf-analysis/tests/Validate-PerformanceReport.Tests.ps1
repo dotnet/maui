@@ -138,7 +138,7 @@ test
 
 test
 
-> Automated analysis by the **perf-check** agentic workflow.
+> Automated analysis by the **perf-analysis** skill.
 
 <!-- perf-analysis-decision: $decisionJson -->
 "@ | Set-Content $path -Encoding UTF8

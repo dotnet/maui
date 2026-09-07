@@ -246,7 +246,7 @@ if ($deviceScenarios.Count -gt 0 -and (
     -not [bool](Get-PropertyValue $deviceValidation "deviceEvidenceComplete" $false)
 )) {
     $lines.Add("")
-    $lines.Add("> Device measurement required: the changed native handler path was not executed by this workflow, so the whole PR cannot receive a clean performance verdict.")
+    $lines.Add("> Device measurement required: the supplied evidence does not cover the changed native handler path, so the whole PR cannot receive a clean performance verdict.")
     foreach ($scenario in $deviceScenarios) {
         $coverageMode = [string](Get-PropertyValue $scenario "coverageMode" "direct")
         $lines.Add("")
@@ -265,7 +265,7 @@ if ($TablePath -and (Test-Path $TablePath)) {
 }
 
 $lines.Add("")
-$lines.Add("> Automated analysis by the **perf-check** agentic workflow.")
+$lines.Add("> Automated analysis by the **perf-analysis** skill.")
 $lines.Add("")
 $decisionJson = ConvertTo-Json -InputObject $decision -Depth 12 -Compress
 $lines.Add("<!-- perf-analysis-decision: $decisionJson -->")

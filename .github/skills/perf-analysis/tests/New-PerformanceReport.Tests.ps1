@@ -82,6 +82,8 @@ try {
         $report = Get-Content $reportPath -Raw
         Assert-True ($report.Contains("**Verdict:** $($verdict.label)")) "Exact verdict label missing for $($verdict.id)"
         Assert-True ($report.Contains('"schemaVersion":2')) "Decision schema missing for $($verdict.id)"
+        Assert-True ($report.Contains("Automated analysis by the **perf-analysis** skill.")) "Reusable skill attribution missing"
+        Assert-True (-not $report.Contains("perf-check")) "Reports must not identify the removed triggering workflow"
     }
 
     $fullSelectionPath = Join-Path $testRoot "full-selection.json"

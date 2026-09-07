@@ -155,28 +155,6 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 | `dnceng-public` | `public` | 302 (maui-pr), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
 
-### Performance-check device pipeline
-
-The `/perf-check` safe-output job queues the pipeline registered from
-`eng/pipelines/ci-device-performance.yml`. Complete these one-time steps:
-
-The initial workflow rollout supports PRs targeting `main`. Release-branch PRs are rejected
-before benchmarks or device pipelines are queued because the trusted harness is sourced from
-the default branch.
-
-1. Register that YAML as a pipeline in `dnceng-public/public`.
-2. Grant the managed identity Basic access and **Queue builds** permission on that pipeline.
-3. Add repository Actions variable `MAUI_DEVICE_PERFORMANCE_PIPELINE_ID` with the resulting
-   pipeline definition ID.
-4. Add an OIDC federated credential with subject
-   `repo:dotnet/maui:environment:copilot-pat-pool`, because gh-aw safe-output jobs run in
-   that protected environment.
-
-The workflow uses the existing `AZDO_TRIGGER_CLIENT_ID` and
-`AZDO_TRIGGER_TENANT_ID` secrets only inside the trusted safe-output job. They are exchanged
-for a short-lived Azure DevOps bearer token sent only to Microsoft identity and
-`dev.azure.com/dnceng-public`; neither secret nor token is exposed to the AI agent or PR code.
-
 ## Step 4: Set GitHub Repository Secrets
 
 In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions**, add:
