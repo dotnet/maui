@@ -179,7 +179,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(helpExitCode == 0, "Unable to show side-by-side template help.");
 		AssertContains("--ui", helpOutput);
 		AssertContains("in the XAML experience.", helpOutput);
-		Assert.Equal(1, helpOutput.Split("--sample-content", StringSplitOptions.None).Length - 1);
+		var sampleContentOptionCount = helpOutput
+			.Split(Environment.NewLine)
+			.Count(line => line.Contains("--sample-content", StringComparison.Ordinal));
+		Assert.Equal(1, sampleContentOptionCount);
 	}
 
 	[Theory]
