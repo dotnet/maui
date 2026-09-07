@@ -439,10 +439,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			//A qualified name (Owner.Member) that resolved to none of the above must not silently fall back to a
-			//member of the target itself, unless the owner is the target's own type or one of its base types
-			if (xpe == null && attached && property == null && !bpOwnerType.IsAssignableFrom(element.GetType()))
+			//member of the target itself: the ordinary lookup below searches the target's concrete type
+			if (xpe == null && attached && property == null && !IsOwnMemberOf(bpOwnerType, element.GetType(), localName))
 			{
-				xpe = new XamlParseException($"Cannot assign property \"{propertyName.LocalName}\": \"{bpOwnerType.FullName}\" declares no attached property, no attached bindable property and no extension property \"{localName}\" applicable to \"{element.GetType().FullName}\"", lineInfo);
+				xpe = new XamlParseException($"Cannot assign property \"{propertyName.LocalName}\": \"{bpOwnerType.FullName}\" declares no attached bindable property, no extension property and no property \"{localName}\" applicable to \"{element.GetType().FullName}\"", lineInfo);
 				return false;
 			}
 
@@ -482,7 +482,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return value;
 
 			//see TrySetPropertyValue: a qualified name never falls back to a member of the target itself
-			if (xpe == null && attached && property == null && !bpOwnerType.IsAssignableFrom(xamlElement.GetType()))
+			if (xpe == null && attached && property == null && !IsOwnMemberOf(bpOwnerType, xamlElement.GetType(), localName))
 			{
 				xpe = new XamlParseException($"Property {propertyName.LocalName} is not found or does not have an accessible getter", lineInfo);
 				return null;
@@ -777,6 +777,40 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			if (method.IsFamily && method.DeclaringType.IsAssignableFrom(rootElement.GetType()))
 				return true;
+			return false;
+		}
+
+		/// <summary>
+		/// Tells whether <paramref name="localName"/> may be resolved through the type explicitly named in a
+		/// qualified <c>Owner.Member</c> attribute or property element. The member itself is looked up on the
+		/// target instance afterwards, so the owner has to be one of the target's own types, and it has to
+		/// declare or inherit the member: <c>&lt;Label local:VisualElement.Text="..."/&gt;</c> would otherwise
+		/// reach <c>Label.Text</c>, which <c>VisualElement</c> never declares.
+		/// </summary>
+		static bool IsOwnMemberOf(Type ownerType, Type targetType, string localName)
+		{
+			if (ownerType == null || !ownerType.IsAssignableFrom(targetType))
+				return false;
+
+			foreach (var property in ownerType.GetRuntimeProperties())
+			{
+				if (property.Name == localName)
+					return true;
+			}
+
+			//an interface does not inherit the members of its base interfaces through GetRuntimeProperties
+			if (ownerType.IsInterface)
+			{
+				foreach (var face in ownerType.GetInterfaces())
+				{
+					foreach (var property in face.GetRuntimeProperties())
+					{
+						if (property.Name == localName)
+							return true;
+					}
+				}
+			}
+
 			return false;
 		}
 
