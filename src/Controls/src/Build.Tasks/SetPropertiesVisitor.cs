@@ -1446,6 +1446,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSetExtensionProperty(parent, propertyName, valueNode, context, iXmlLineInfo, out var extensionAccessors))
 				return SetExtensionProperty(parent, extensionAccessors, valueNode, iXmlLineInfo, context);
 
+			ThrowIfUnresolvedQualifiedMember(parent, propertyName, bpRef, context, iXmlLineInfo);
+
 			//If it's a property, set it
 			if (CanSet(parent, localName, valueNode, context))
 				return Set(parent, localName, valueNode, iXmlLineInfo, context);
@@ -1466,6 +1468,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			//If it's a BP, GetValue ()
 			if (CanGetValue(parent, bpRef, attached, lineInfo, context, out _))
 				return GetValue(parent, bpRef, lineInfo, context, out propertyType);
+
+			ThrowIfUnresolvedQualifiedMember(parent, propertyName, bpRef, context, lineInfo);
 
 			//If it's a property, get it
 			if (CanGet(parent, localName, context, out _))
@@ -1951,17 +1955,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		sealed class ExtensionPropertyAccessors
 		{
-			public MethodDefinition Getter { get; set; }
 			public MethodDefinition Setter { get; set; }
 			public TypeReference PropertyType { get; set; }
 			public TypeReference ReceiverType { get; set; }
-			public bool Found => Getter != null || Setter != null;
 		}
 
 		//<Label local:LabelExtensions.MyTag="..."/> -> container is local:LabelExtensions, member is MyTag
-		static bool TryGetExtensionContainer(XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference container, out string memberName)
+		static bool TryGetQualifiedOwner(XmlName propertyName, ILContext context, IXmlLineInfo lineInfo, out TypeReference owner, out string memberName)
 		{
-			container = null;
+			owner = null;
 			memberName = propertyName.LocalName;
 			var dotIdx = memberName.IndexOf('.');
 			if (dotIdx <= 0)
@@ -1969,13 +1971,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var typename = memberName.Substring(0, dotIdx);
 			memberName = memberName.Substring(dotIdx + 1);
-			container = new XmlType(propertyName.NamespaceURI, typename, null).GetTypeReference(context.Cache, context.Body.Method.Module, lineInfo);
-			return container != null;
+			owner = new XmlType(propertyName.NamespaceURI, typename, null).GetTypeReference(context.Cache, context.Body.Method.Module, lineInfo);
+			return owner != null;
 		}
 
 		/// <summary>
-		/// Resolves the <c>get_Name</c>/<c>set_Name</c> implementation methods of a C# extension property declared
-		/// by <paramref name="container"/> and applicable to <paramref name="targetType"/>.
+		/// Resolves the <c>set_Name</c> implementation method of a C# extension property declared by
+		/// <paramref name="container"/> and applicable to <paramref name="targetType"/>.
 		/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with the runtime inflator and SourceGen.
 		/// </summary>
 		static ExtensionPropertyAccessors ResolveExtensionProperty(TypeReference container, TypeReference targetType, string propertyName, ILContext context, IXmlLineInfo lineInfo)
@@ -1987,75 +1989,57 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (containerDef == null || !containerDef.IsAbstract || !containerDef.IsSealed || containerDef.HasGenericParameters)
 				return null;
 
-			var getterName = ExtensionPropertyConventions.GetterName(propertyName);
-			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
+			if (!DeclaresExtensionProperty(containerDef, propertyName))
+				return null;
 
-			List<MethodDefinition> getters = null;
+			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
 			List<MethodDefinition> setters = null;
-			var unsupported = false;
 
 			foreach (var method in containerDef.Methods)
 			{
-				var isGetter = method.Name == getterName;
-				if (!isGetter && method.Name != setterName)
+				//only assignment is supported, so the setter alone defines the receiver and the value type
+				if (method.Name != setterName || !method.IsStatic || !method.IsPublic || method.HasGenericParameters)
 					continue;
-				if (!method.IsStatic || !method.IsPublic)
+				if (method.ReturnType.FullName != "System.Void" || method.Parameters.Count != 2)
 					continue;
-
-				//generic extension blocks (extension<T>(ICollection<T>)) and static extension properties aren't supported
-				if (method.HasGenericParameters || method.Parameters.Count != (isGetter ? 1 : 2))
-				{
-					unsupported = true;
-					continue;
-				}
 
 				var receiverType = method.Parameters[0].ParameterType;
-				if (receiverType.IsByReference)
-					continue;
-				if (!IsReceiverApplicable(receiverType, targetType, cache))
+				if (receiverType.IsByReference || !IsReceiverApplicable(receiverType, targetType, cache))
 					continue;
 
-				if (isGetter)
-				{
-					if (method.ReturnType.FullName == "System.Void")
-						continue;
-					(getters ??= []).Add(method);
-				}
-				else
-				{
-					if (method.ReturnType.FullName != "System.Void")
-						continue;
-					(setters ??= []).Add(method);
-				}
+				(setters ??= []).Add(method);
 			}
 
-			if (getters == null && setters == null)
-			{
-				if (unsupported)
-					throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
-				return null;
-			}
-
-			var getter = MostSpecific(getters, cache, out var ambiguousGetter);
-			var setter = MostSpecific(setters, cache, out var ambiguousSetter);
-			if (ambiguousGetter || ambiguousSetter)
-				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
-
-			var propertyType = getter?.ReturnType ?? setter.Parameters[1].ParameterType;
-			if (getter != null && setter != null && setter.Parameters[1].ParameterType.FullName != propertyType.FullName)
-				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
-
-			if (!IsVisibleFrom(containerDef, context))
+			var setter = MostSpecific(setters, cache);
+			if (setter == null || !IsVisibleFrom(containerDef, context))
 				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, propertyName, containerDef.FullName, targetType.FullName);
 
 			var module = context.Body.Method.Module;
 			return new ExtensionPropertyAccessors
 			{
-				Getter = getter,
 				Setter = setter,
-				PropertyType = module.ImportReference(propertyType),
-				ReceiverType = module.ImportReference((getter ?? setter).Parameters[0].ParameterType),
+				PropertyType = module.ImportReference(setter.Parameters[1].ParameterType),
+				ReceiverType = module.ImportReference(setter.Parameters[0].ParameterType),
 			};
+		}
+
+		/// <summary>
+		/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
+		/// block, and that type declares the extension properties. See <see cref="ExtensionPropertyConventions"/>.
+		/// </summary>
+		static bool DeclaresExtensionProperty(TypeDefinition containerDef, string propertyName)
+		{
+			foreach (var nested in containerDef.NestedTypes)
+			{
+				if (ExtensionPropertyConventions.IsSpeakable(nested.Name))
+					continue;
+				if (nested.Properties.Any(pd => pd.Name == propertyName))
+					return true;
+				if (DeclaresExtensionProperty(nested, propertyName))
+					return true;
+			}
+
+			return false;
 		}
 
 		static bool IsReceiverApplicable(TypeReference receiverType, TypeReference targetType, XamlCache cache)
@@ -2086,10 +2070,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return string.Equals(friend.Trim(), consumer, StringComparison.Ordinal);
 		}
 
-		//the accessor whose receiver type is more derived than every other applicable one wins, as it would in C#
-		static MethodDefinition MostSpecific(List<MethodDefinition> candidates, XamlCache cache, out bool ambiguous)
+		//the setter whose receiver type is more derived than every other applicable one wins, as it would in C#
+		static MethodDefinition MostSpecific(List<MethodDefinition> candidates, XamlCache cache)
 		{
-			ambiguous = false;
 			if (candidates == null)
 				return null;
 			if (candidates.Count == 1)
@@ -2113,29 +2096,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (!isBest)
 					continue;
 				if (best != null)
-				{
-					ambiguous = true;
-					return null;
-				}
+					return null; //ambiguous
 				best = candidate;
 			}
 
-			ambiguous = best == null;
 			return best;
 		}
 
 		static bool CanSetExtensionProperty(VariableDefinition parent, XmlName propertyName, INode node, ILContext context, IXmlLineInfo lineInfo, out ExtensionPropertyAccessors accessors)
 		{
 			accessors = null;
-			if (!TryGetExtensionContainer(propertyName, context, lineInfo, out var container, out var memberName))
+			if (!TryGetQualifiedOwner(propertyName, context, lineInfo, out var container, out var memberName))
 				return false;
 
 			accessors = ResolveExtensionProperty(container, parent.VariableType, memberName, context, lineInfo);
-			if (accessors == null || !accessors.Found)
+			if (accessors == null)
 				return false;
-
-			if (accessors.Setter == null)
-				throw new BuildException(ExtensionPropertyResolution, lineInfo, null, memberName, container.FullName, parent.VariableType.FullName);
 
 			var module = context.Body.Method.Module;
 			var propertyType = accessors.PropertyType;
@@ -2180,6 +2156,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			yield return Create(Call, setterRef);
+		}
+
+		//A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
+		//back to a member of the target itself, unless the owner is the target's own type or one of its base types
+		static void ThrowIfUnresolvedQualifiedMember(VariableDefinition parent, XmlName propertyName, FieldReference bpRef, ILContext context, IXmlLineInfo lineInfo)
+		{
+			//an attached bindable property resolved the qualified name already, collections are added to below
+			if (bpRef != null)
+				return;
+			if (!TryGetQualifiedOwner(propertyName, context, lineInfo, out var owner, out _))
+				return;
+			if (IsReceiverApplicable(owner, parent.VariableType, context.Cache))
+				return;
+
+			throw new BuildException(MemberResolution, lineInfo, null, propertyName.LocalName);
 		}
 
 		static bool CanAdd(VariableDefinition parent, XmlName propertyName, INode valueNode, IXmlLineInfo lineInfo, ILContext context)
