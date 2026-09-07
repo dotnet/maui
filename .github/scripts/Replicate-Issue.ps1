@@ -6837,6 +6837,16 @@ function New-CopilotPrompt {
     # phase - can run a command: every phase here authors files and returns,
     # and trusted code does the building, testing and grading afterwards.
     $isFixPhase = $Phase -in @('fix-scope', 'fix', 'fix-compare', 'fix-repair')
+    $issueSpecificTierGuidance = if (
+        $IssueNumber -eq 38179 -and
+        $Phase -in @('test-plan', 'test', 'repair')) {
+        @"
+
+For trusted issue 38179, testType MUST be ``unit``. The issue's independently executed plain net10.0 xUnit reproduction proves a purely managed GradientStop collection Reset/event-subscription leak. ``device`` and ``xaml`` are not selectable for this issue, even though Sandbox evidence was recorded on Windows.
+"@
+    } else {
+        ''
+    }
 
     # 'fix-review' is deliberately absent from that list. It judges a diff that
     # is already written and already proven by all four arms, so it needs to
@@ -6951,6 +6961,7 @@ Reproduction tests are add-only, so every proposed path must be new. Do not prop
 
 Trusted Sandbox execution succeeded. Read "$reproductionResultPath", "$sandboxArtifactDir", and the sanitized context.
 Plan the lightest automated test that proves the same behavior: unit/XAML first, device second. Host-executed generated UI tests are withheld because they require privileged adb control, so ``ui`` is not selectable. The unit and XAML tiers are only available for a defect that is purely managed. Controls.Core.UnitTests, Core.UnitTests and Controls.Xaml.UnitTests each declare a single non-platform TargetFramework, so there is no platform build of those assemblies and a test placed in them cannot be evidence for behaviour that depends on a handler, native view, window, MauiContext, or platform runtime. The selected recording lane does not by itself make a managed defect platform-dependent: when the reported trigger and oracle use only managed MAUI types and the issue supplies a plain non-platform xUnit reproduction, select unit even though the Sandbox evidence was recorded on Windows or Android. In particular, collection Reset bookkeeping, child event-subscription ownership, and GC retention that require no handler or native state belong in a unit test; do not reject that tier because it intentionally has no platform TFM. If proving the defect actually requires a handler, a native view, a window, a MauiContext, or any platform runtime, select device and say so in lighterTypesRejected. If a device test cannot reproduce a navigation-only scenario, declare it blocked rather than selecting UI.
+$issueSpecificTierGuidance
 $platformBoundaryGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
@@ -10306,6 +10317,13 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 $plannedQualityContract = ConvertTo-ReplicationQualityContract `
                     -Value $plannedTestProposal.qualityContract
                 $proposedTier = ([string]$plannedTestProposal.testType).Trim().ToLowerInvariant()
+                if ($IssueNumber -eq 38179 -and
+                    $proposedTier -cne 'unit') {
+                    throw (
+                        "Trusted issue 38179 requires testType 'unit'; " +
+                        "'$proposedTier' is not selectable because the reported " +
+                        'trigger and oracle are purely managed.')
+                }
 
                 # A tier already proven to have no build for this platform is
                 # rejected before its files are even resolved, so the run
