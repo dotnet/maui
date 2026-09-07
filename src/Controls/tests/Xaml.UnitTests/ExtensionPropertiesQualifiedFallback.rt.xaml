@@ -2,6 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:ext="clr-namespace:Controls.Xaml.UnitTests.ExternalAssembly;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly"
-			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ExtensionPropertiesAmbiguous">
-	<Label x:Name="shouldThrow" ext:AmbiguousExtensions.MyAmbiguous="two applicable receivers, none more derived" />
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ExtensionPropertiesQualifiedFallback">
+	<Label x:Name="shouldThrow" ext:ExternalLabelExtensions.Text="wrong" />
 </ContentPage>

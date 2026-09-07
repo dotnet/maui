@@ -1,4 +1,6 @@
 using System.Linq;
+using Controls.Xaml.UnitTests.ExternalAssembly;
+using Microsoft.CodeAnalysis;
 using Microsoft.Maui.Controls.Build.Tasks;
 using Xunit;
 
@@ -33,20 +35,13 @@ public partial class ExtensionPropertiesAmbiguous : ContentPage
 			}
 			else if (inflator == XamlInflator.SourceGen)
 			{
-				// the mock compilation does not reference the test assembly, and its Roslyn cannot parse
-				// C# extension blocks, so the container is declared here in its lowered form
+				// the container must be a real extension container, and the mock compilation uses a Roslyn
+				// that cannot parse extension blocks, so it is referenced as metadata instead
 				var result = CreateMauiCompilation()
+					.AddReferences(MetadataReference.CreateFromFile(typeof(AmbiguousExtensions).Assembly.Location))
 					.WithAdditionalSource(
 """
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
-
-public static class AmbiguousExtensions
-{
-	public static string get_MyAmbiguous(global::Microsoft.Maui.IView view) => string.Empty;
-	public static void set_MyAmbiguous(global::Microsoft.Maui.IView view, string value) { }
-	public static string get_MyAmbiguous(BindableObject bindable) => string.Empty;
-	public static void set_MyAmbiguous(BindableObject bindable, string value) { }
-}
 
 [XamlProcessing(XamlInflator.Runtime, true)]
 public partial class ExtensionPropertiesAmbiguous : ContentPage
