@@ -46,6 +46,8 @@ DI registration should only be used to override an existing `[ElementHandler]` d
 
 `TryAddHandler` has different override semantics. In an app using the Controls defaults, it does not replace a handler declared directly on the same type with `[ElementHandler]`. It can still register a handler for a custom derived type that only inherits an attribute fallback. Apps that do not enable the Controls defaults can use `TryAddHandler` normally. This policy is stored with each app's handler collection rather than in process-wide state, so separately built `MauiApp` instances do not affect one another.
 
+`UseMauiApp()` enables this policy before the handler-registration callbacks execute, regardless of where those callbacks were added in the builder chain. `AddMauiControlsHandlers()` is retained as a non-obsolete compatibility no-op: existing calls can remain without warnings. It returns the same collection without changing registrations, enabling the defaults policy, or triggering mapper remapping. Calling it without `UseMauiApp()` does not opt a standalone handler collection into Controls defaults.
+
 ## Resolution Order
 
 Both `MauiHandlersFactory.GetHandler(Type)` and `MauiHandlersFactory.GetHandlerType(Type)` follow the same resolution order:
