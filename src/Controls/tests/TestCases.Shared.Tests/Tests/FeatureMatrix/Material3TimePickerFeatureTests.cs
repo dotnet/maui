@@ -21,7 +21,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	void OpenTimePickerDialog()
 	{
 		App.WaitForElement("TimePickerControl");
-		var endIcon = AppiumQuery.ById("text_input_end_icon");
+		var endIcon = AppiumQuery.ByAccessibilityId("Open time picker");
 		App.WaitForElement(endIcon);
 		App.Tap(endIcon);
 	}
@@ -412,9 +412,9 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_TapTextArea_DoesNotOpenDialog()
 	{
-		App.WaitForElement("TimePickerControl");
+		var pickerRect = App.WaitForElement("TimePickerControl").GetRect();
 		// Material3 opens the dialog only via the trailing clock icon; tapping the text area must not open it.
-		App.Tap("TimePickerControl");
+		App.TapCoordinates(pickerRect.X + pickerRect.Width / 4, pickerRect.CenterY());
 		// Bounded wait: the dialog must NOT appear within its normal inflation window.
 		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
 

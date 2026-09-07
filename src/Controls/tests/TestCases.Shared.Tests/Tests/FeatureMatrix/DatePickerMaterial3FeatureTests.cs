@@ -16,7 +16,7 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	void OpenDatePickerDialog()
 	{
 		App.WaitForElement("DatePickerControl");
-		var endIcon = AppiumQuery.ById("text_input_end_icon");
+		var endIcon = AppiumQuery.ByAccessibilityId("Open date picker");
 		App.WaitForElement(endIcon);
 		App.Tap(endIcon);
 	}
@@ -436,9 +436,9 @@ public class DatePickerMaterial3FeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3DatePicker_TapTextArea_DoesNotOpenDialog()
 	{
-		App.WaitForElement("DatePickerControl");
+		var pickerRect = App.WaitForElement("DatePickerControl").GetRect();
 		// Material3 opens the dialog only via the trailing calendar icon; tapping the text area must not open it.
-		App.Tap("DatePickerControl");
+		App.TapCoordinates(pickerRect.X + pickerRect.Width / 4, pickerRect.CenterY());
 		// Bounded wait: the dialog must NOT appear within its normal inflation window.
 		Assert.Throws<TimeoutException>(() => App.WaitForElement("OK", timeout: TimeSpan.FromSeconds(2)));
 
