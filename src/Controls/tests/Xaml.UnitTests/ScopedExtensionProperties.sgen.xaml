@@ -3,6 +3,13 @@
 			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			xmlns:scoped="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensions"
 			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionProperties">
+	<!-- an ordinary qualified property element whose owner is unrelated to the target: the qualifier is
+	     ignored and Resources resolves on the page. This is the shape ShadowBenchmark.xaml uses -->
+	<ContentView.Resources>
+		<ResourceDictionary>
+			<x:String x:Key="legacyKey">legacy value</x:String>
+		</ResourceDictionary>
+	</ContentView.Resources>
 	<StackLayout>
 		<!-- the container is brought in scope by the element's default xmlns -->
 		<Label x:Name="label0" ScopedTag="from the default xmlns" />

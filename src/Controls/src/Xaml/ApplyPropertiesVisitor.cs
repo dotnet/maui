@@ -1,13 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -378,7 +375,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 			}
 
-			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, node?.NamespaceResolver, out var xpe))
+			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;
 
 			if (context.ExceptionHandler != null)
@@ -389,9 +386,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		//Used by HotReload, do not change signature
 		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, out Exception xpe)
-			=> TrySetPropertyValue(element, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, namespaceResolver: null, out xpe);
-
-		static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, IXmlNamespaceResolver namespaceResolver, out Exception xpe)
 		{
 			var localName = propertyName.LocalName;
 			xpe = null;
@@ -434,32 +428,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				return true;
 			}
 
-			//If the member is qualified with an extension container type, set the extension property
-			if (xpe == null && attached && TrySetExtensionProperty(element, bpOwnerType, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
-			{
-				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
-					registerSourceInfo(value, path);
-				return true;
-			}
-
-			//An extension container is only ever named for its extension properties, so when none applies the
-			//name must not fall back to a member of the target itself
-			if (xpe == null && attached && property == null && IsExtensionContainer(bpOwnerType))
-			{
-				xpe = new XamlParseException(ExtensionPropertyConventions.ResolutionError(localName, bpOwnerType.FullName, element.GetType().FullName), lineInfo);
-				return false;
-			}
-
 			//If we can assign that value to a normal property, let's do it
 			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
-			{
-				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
-					registerSourceInfo(value, path);
-				return true;
-			}
-
-			//An unqualified name may name an extension property brought in scope by the default xmlns
-			if (xpe == null && !attached && TrySetScopedExtensionProperty(element, propertyName, value, lineInfo, serviceProvider, rootElement, namespaceResolver, out xpe))
 			{
 				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
@@ -492,13 +462,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			//If it's a BindableProberty, GetValue
 			if (xpe == null && TryGetValue(xamlElement, property, attached, out var value, lineInfo, out xpe, out targetProperty))
 				return value;
-
-			//see TrySetPropertyValue: an extension container never falls back to a member of the target itself
-			if (xpe == null && attached && property == null && IsExtensionContainer(bpOwnerType))
-			{
-				xpe = new XamlParseException(ExtensionPropertyConventions.ResolutionError(localName, bpOwnerType.FullName, xamlElement.GetType().FullName), lineInfo);
-				return null;
-			}
 
 			//If it's a normal property, get it
 			if (xpe == null && TryGetProperty(xamlElement, localName, out value, lineInfo, rootElement, out xpe, out targetProperty))
@@ -790,305 +753,6 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (method.IsFamily && method.DeclaringType.IsAssignableFrom(rootElement.GetType()))
 				return true;
 			return false;
-		}
-
-		static bool IsVisibleFrom(Type type, object rootElement)
-		{
-			if (type.IsPublic || type.IsNestedPublic)
-				return true;
-
-			var consumer = rootElement.GetType().Assembly;
-			if (type.Assembly == consumer)
-				return true;
-
-			var consumerName = consumer.GetName().Name;
-			foreach (var ivt in type.Assembly.GetCustomAttributes<InternalsVisibleToAttribute>())
-			{
-				//InternalsVisibleTo values may carry a public key: "Friend, PublicKey=00..."
-				var friend = ivt.AssemblyName;
-				var comma = friend.IndexOf(",", StringComparison.Ordinal);
-				if (comma >= 0)
-					friend = friend.Substring(0, comma);
-				if (string.Equals(friend.Trim(), consumerName, StringComparison.Ordinal))
-					return true;
-			}
-
-			return false;
-		}
-
-		sealed class ExtensionPropertyAccessors
-		{
-			public static readonly ExtensionPropertyAccessors NotAnExtensionProperty = new ExtensionPropertyAccessors();
-
-			public MethodInfo Setter { get; init; }
-			public Type PropertyType { get; init; }
-			public bool Declared { get; init; }
-		}
-
-		static readonly ConcurrentDictionary<(Type Container, Type Target, string Name), ExtensionPropertyAccessors> s_extensionProperties = new();
-
-		/// <summary>
-		/// Resolves the <c>set_Name</c> implementation method of a C# extension property declared by
-		/// <paramref name="containerType"/> and applicable to <paramref name="targetType"/>.
-		/// See <see cref="ExtensionPropertyConventions"/> for the rules shared with XamlC and SourceGen.
-		/// </summary>
-		static ExtensionPropertyAccessors ResolveExtensionProperty(Type containerType, Type targetType, string propertyName)
-		{
-			if (containerType == null || targetType == null || !IsStaticContainer(containerType))
-				return ExtensionPropertyAccessors.NotAnExtensionProperty;
-
-			return s_extensionProperties.GetOrAdd((containerType, targetType, propertyName), static key => ResolveExtensionPropertyCore(key.Container, key.Target, key.Name));
-		}
-
-		static ExtensionPropertyAccessors ResolveExtensionPropertyCore(Type containerType, Type targetType, string propertyName)
-		{
-			if (!DeclaresExtensionProperty(containerType, propertyName))
-				return ExtensionPropertyAccessors.NotAnExtensionProperty;
-
-			var setterName = ExtensionPropertyConventions.SetterName(propertyName);
-			List<MethodInfo> setters = null;
-
-			foreach (var method in containerType.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
-			{
-				//only assignment is supported, so the setter alone defines the receiver and the value type
-				if (method.Name != setterName || method.IsGenericMethodDefinition || method.ReturnType != typeof(void))
-					continue;
-
-				var parameters = method.GetParameters();
-				if (parameters.Length != 2 || parameters[0].ParameterType.IsByRef || !parameters[0].ParameterType.IsAssignableFrom(targetType))
-					continue;
-
-				(setters ??= new List<MethodInfo>()).Add(method);
-			}
-
-			var setter = MostSpecific(setters);
-			if (setter == null)
-				return new ExtensionPropertyAccessors { Declared = true };
-
-			return new ExtensionPropertyAccessors
-			{
-				Declared = true,
-				Setter = setter,
-				PropertyType = setter.GetParameters()[1].ParameterType,
-			};
-
-			//the setter whose receiver type is more derived than every other applicable one wins, as it would in C#
-			static MethodInfo MostSpecific(List<MethodInfo> candidates)
-			{
-				if (candidates == null)
-					return null;
-				if (candidates.Count == 1)
-					return candidates[0];
-
-				MethodInfo best = null;
-				foreach (var candidate in candidates)
-				{
-					var candidateType = candidate.GetParameters()[0].ParameterType;
-					var isBest = true;
-					foreach (var other in candidates)
-					{
-						if (ReferenceEquals(other, candidate))
-							continue;
-						if (!other.GetParameters()[0].ParameterType.IsAssignableFrom(candidateType))
-						{
-							isBest = false;
-							break;
-						}
-					}
-					if (!isBest)
-						continue;
-					if (best != null)
-						return null; //ambiguous
-					best = candidate;
-				}
-
-				return best;
-			}
-		}
-
-		//static classes are abstract and sealed. Generic containers can't be named in XAML
-		static bool IsStaticContainer(Type type)
-			=> type.IsAbstract && type.IsSealed && !type.IsGenericType && !type.IsGenericTypeDefinition;
-
-		/// <summary>
-		/// Tells whether a type explicitly named in XAML is a C# extension container, that is a static class
-		/// declaring at least one extension property. Such a type is only ever named for its extension
-		/// properties, so a name it cannot resolve is an error rather than a fallback to the target's members.
-		/// </summary>
-		static bool IsExtensionContainer(Type type)
-			=> type != null && IsStaticContainer(type) && DeclaresExtensionProperty(type, propertyName: null);
-
-		/// <summary>
-		/// The compiler nests an unspeakable "extension declaration" type in the container for every extension
-		/// block, and that type declares the extension properties. It is the only marker that tells a real
-		/// extension container apart from a static class that happens to declare get_X/set_X methods, and the
-		/// only one observable from reflection, Cecil and Roslyn alike.
-		/// </summary>
-		/// <remarks><paramref name="propertyName"/> is the extension property to look for, or <c>null</c> for any.</remarks>
-		static bool DeclaresExtensionProperty(Type containerType, string propertyName)
-		{
-			const BindingFlags declared = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
-
-			foreach (var nested in containerType.GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
-			{
-				if (ExtensionPropertyConventions.IsSpeakable(nested.Name))
-					continue;
-				if (propertyName == null ? nested.GetProperties(declared).Length > 0 : nested.GetProperty(propertyName, declared) != null)
-					return true;
-				if (DeclaresExtensionProperty(nested, propertyName))
-					return true;
-			}
-
-			return false;
-		}
-
-		//the containers a xmlns brings in scope, keyed by the xmlns uri. The map itself never changes for a
-		//given app, and enumerating a clr namespace is expensive enough to be worth remembering
-		//the xmlns map depends on the assembly the xaml is declared in, for the global xmlns at least
-		static readonly ConcurrentDictionary<(string XmlNamespace, Assembly RootAssembly), Type[]> s_extensionContainersInScope = new();
-
-		static Type[] GetExtensionContainersInScope(string xmlNamespace, Assembly rootAssembly)
-		{
-			if (s_extensionContainersInScope.TryGetValue((xmlNamespace, rootAssembly), out var cached))
-				return cached;
-
-			return s_extensionContainersInScope[(xmlNamespace, rootAssembly)] = Enumerate(xmlNamespace, rootAssembly);
-
-			static Type[] Enumerate(string uri, Assembly assembly)
-			{
-				var containers = new List<Type>();
-
-				foreach (var definition in XamlParser.GetXmlnsDefinitions(uri, assembly))
-				{
-					Assembly declaring;
-					try
-					{
-						declaring = definition.AssemblyName == null ? assembly : Assembly.Load(new AssemblyName(definition.AssemblyName));
-					}
-					catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException or ArgumentException)
-					{
-						continue;
-					}
-
-					if (declaring == null)
-						continue;
-
-					Type[] types;
-					try
-					{
-						types = declaring.GetTypes();
-					}
-					catch (ReflectionTypeLoadException e)
-					{
-						types = e.Types;
-					}
-
-					foreach (var type in types)
-					{
-						if (type != null && type.Namespace == definition.Target && IsExtensionContainer(type))
-							containers.Add(type);
-					}
-				}
-
-				return containers.ToArray();
-			}
-		}
-
-		/// <summary>
-		/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
-		/// scope, the way C# resolves an extension member against the namespaces a file imports.
-		/// </summary>
-		static bool TrySetScopedExtensionProperty(object element, XmlName propertyName, object value, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, IXmlNamespaceResolver namespaceResolver, out Exception exception)
-		{
-			exception = null;
-
-			//unprefixed attributes carry no namespace, the scope is the default xmlns declared for the element
-			if (namespaceResolver == null || propertyName.NamespaceURI != string.Empty)
-				return false;
-
-			var xmlNamespace = namespaceResolver.LookupNamespace(string.Empty);
-			if (string.IsNullOrEmpty(xmlNamespace))
-				return false;
-
-			var targetType = element.GetType();
-			var rootAssembly = rootElement?.GetType().Assembly;
-			MethodInfo setter = null;
-			Type container = null;
-			var ambiguous = false;
-
-			foreach (var candidate in GetExtensionContainersInScope(xmlNamespace, rootAssembly))
-			{
-				var accessors = ResolveExtensionProperty(candidate, targetType, propertyName.LocalName);
-				if (accessors.Setter == null || !IsVisibleFrom(candidate, rootElement))
-					continue;
-
-				if (setter == null)
-				{
-					setter = accessors.Setter;
-					container = candidate;
-					continue;
-				}
-
-				//C# picks the most specific receiver, and refuses to guess between unrelated ones
-				var incumbent = setter.GetParameters()[0].ParameterType;
-				var challenger = accessors.Setter.GetParameters()[0].ParameterType;
-				if (incumbent.IsAssignableFrom(challenger) && challenger != incumbent)
-				{
-					setter = accessors.Setter;
-					container = candidate;
-				}
-				else if (!challenger.IsAssignableFrom(incumbent) || challenger == incumbent)
-					ambiguous = true;
-			}
-
-			if (ambiguous)
-			{
-				exception = new XamlParseException(ExtensionPropertyConventions.AmbiguousError(propertyName.LocalName, xmlNamespace, targetType.FullName), lineInfo);
-				return false;
-			}
-
-			if (setter == null)
-				return false;
-
-			return TrySetExtensionProperty(element, container, propertyName.LocalName, value, lineInfo, serviceProvider, rootElement, out exception);
-		}
-
-		static bool TrySetExtensionProperty(object element, Type containerType, string propertyName, object value, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)
-		{
-			exception = null;
-
-			var accessors = ResolveExtensionProperty(containerType, element.GetType(), propertyName);
-			if (!accessors.Declared)
-				return false;
-
-			if (accessors.Setter == null || !IsVisibleFrom(containerType, rootElement))
-			{
-				exception = new XamlParseException(ExtensionPropertyConventions.ResolutionError(propertyName, containerType.FullName, element.GetType().FullName), lineInfo);
-				return false;
-			}
-
-			if (serviceProvider?.GetService<IProvideValueTarget>() is XamlValueTargetProvider valueTargetProvider)
-				valueTargetProvider.TargetProperty = accessors.Setter;
-
-			var convertedValue = value.ConvertTo(accessors.PropertyType, (Func<MemberInfo>)(() => accessors.Setter), serviceProvider, out exception);
-			if (exception != null)
-				return false;
-			if (convertedValue == null ? accessors.PropertyType.IsValueType && Nullable.GetUnderlyingType(accessors.PropertyType) == null : !accessors.PropertyType.IsInstanceOfType(convertedValue))
-			{
-				exception = new XamlParseException($"Cannot assign property \"{propertyName}\": mismatching type between value and property", lineInfo);
-				return false;
-			}
-
-			try
-			{
-				accessors.Setter.Invoke(null, new[] { element, convertedValue });
-				return true;
-			}
-			catch (TargetInvocationException e)
-			{
-				exception = e.InnerException ?? e;
-				return false;
-			}
 		}
 
 		static bool TryAddToProperty(object element, XmlName propertyName, object value, string xKey, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)

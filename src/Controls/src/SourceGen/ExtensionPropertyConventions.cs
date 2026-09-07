@@ -1,9 +1,9 @@
-namespace Microsoft.Maui.Controls.Xaml
+namespace Microsoft.Maui.Controls.SourceGen
 {
 	/// <summary>
-	/// Single source of truth describing how the three XAML inflators (runtime, XamlC and SourceGen)
-	/// recognize C# extension properties. The file is linked into Controls.Build.Tasks and
-	/// Controls.SourceGen so the three implementations cannot drift apart.
+	/// Describes how the MAUI XAML source generator recognizes C# extension properties. The source generator
+	/// is the only inflator that supports them: it resolves everything at compile time, against the very
+	/// namespace map type names resolve through, and emits a direct call to the setter.
 	/// </summary>
 	/// <remarks>
 	/// <para>The C# compiler lowers</para>
@@ -63,9 +63,10 @@ namespace Microsoft.Maui.Controls.Xaml
 	/// <c>set_Name(TReceiver, TValue)</c> method and are reported, not silently ignored.
 	/// </para>
 	/// <para>
-	/// XamlC and SourceGen resolve everything at build time and emit a direct call to the setter; they are the
-	/// trimming and AOT safe paths. The runtime inflator resolves the setter reflectively and therefore
-	/// inherits the existing trimming limitations of runtime XAML inflation.
+	/// Neither XamlC nor the runtime inflator resolve extension properties. Both would have to discover the
+	/// containers a xmlns brings in scope by enumerating the types of the mapped assemblies, which the source
+	/// generator gets for free from the namespace symbols of the compilation. XAML using an extension property
+	/// therefore has to be inflated by the source generator, and fails to resolve the member otherwise.
 	/// </para>
 	/// </remarks>
 	static class ExtensionPropertyConventions
@@ -98,11 +99,5 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			return true;
 		}
-
-		public static string AmbiguousError(string propertyName, string xmlNamespace, string targetTypeName)
-			=> $"Ambiguous extension property \"{propertyName}\" for \"{targetTypeName}\" in xmlns \"{xmlNamespace}\". Several extension containers in scope declare it with unrelated receiver types; name the container explicitly to disambiguate.";
-
-		public static string ResolutionError(string propertyName, string containerName, string targetTypeName)
-			=> $"Cannot resolve the extension property \"{propertyName}\" on \"{containerName}\". The extension property must be a non-generic instance extension property, declared in an accessible non-generic static extension container, with a setter whose receiver type matches \"{targetTypeName}\", and it must be unambiguous.";
 	}
 }
