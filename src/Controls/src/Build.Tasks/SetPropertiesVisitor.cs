@@ -1452,6 +1452,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (CanSet(parent, localName, valueNode, context))
 				return Set(parent, localName, valueNode, iXmlLineInfo, context);
 
+			//An unqualified name may name an extension property brought in scope by the default xmlns
+			if (!attached && CanSetScopedExtensionProperty(parent, propertyName, valueNode, context, iXmlLineInfo, out var scopedAccessors))
+				return SetExtensionProperty(parent, scopedAccessors, valueNode, iXmlLineInfo, context);
+
 			//If it's an already initialized property, add to it
 			if (CanAdd(parent, propertyName, valueNode, iXmlLineInfo, context))
 				return Add(parent, propertyName, valueNode, iXmlLineInfo, context);
@@ -2105,6 +2109,125 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			return best;
+		}
+
+		//the containers a xmlns brings in scope. Enumerating a clr namespace is expensive enough to remember
+		static TypeDefinition[] GetExtensionContainersInScope(string xmlNamespace, ILContext context)
+		{
+			var module = context.Body.Method.Module;
+			return context.Cache.GetOrAddExtensionContainersInScope(module, xmlNamespace, () => Enumerate(xmlNamespace, context, module));
+		}
+
+		static TypeDefinition[] Enumerate(string xmlNamespace, ILContext context, ModuleDefinition module)
+		{
+			var containers = new List<TypeDefinition>();
+			foreach (var definition in XmlTypeExtensions.GetXmlnsDefinitions(context.Cache, module, xmlNamespace))
+			{
+				AssemblyDefinition assembly;
+				try
+				{
+					assembly = definition.AssemblyName == null || module.Assembly.Name.Name == definition.AssemblyName || module.Assembly.Name.FullName == definition.AssemblyName
+						? module.Assembly
+						: module.AssemblyResolver.Resolve(AssemblyNameReference.Parse(definition.AssemblyName));
+				}
+				catch (AssemblyResolutionException)
+				{
+					continue;
+				}
+
+				if (assembly == null)
+					continue;
+
+				foreach (var asmModule in assembly.Modules)
+				{
+					foreach (var type in asmModule.Types)
+					{
+						if (type.Namespace == definition.Target && IsStaticContainer(type) && DeclaresExtensionProperty(type, propertyName: null))
+							containers.Add(type);
+					}
+				}
+			}
+
+			return containers.ToArray();
+		}
+
+		/// <summary>
+		/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
+		/// scope, the way C# resolves an extension member against the namespaces a file imports.
+		/// </summary>
+		static bool CanSetScopedExtensionProperty(VariableDefinition parent, XmlName propertyName, INode node, ILContext context, IXmlLineInfo lineInfo, out ExtensionPropertyAccessors accessors)
+		{
+			accessors = null;
+
+			//unprefixed attributes carry no namespace, the scope is the default xmlns declared for the element
+			if (propertyName.NamespaceURI != string.Empty || node?.NamespaceResolver == null)
+				return false;
+
+			var xmlNamespace = node.NamespaceResolver.LookupNamespace(string.Empty);
+			if (string.IsNullOrEmpty(xmlNamespace))
+				return false;
+
+			TypeReference container = null;
+			var ambiguous = false;
+
+			foreach (var candidate in GetExtensionContainersInScope(xmlNamespace, context))
+			{
+				var candidateAccessors = ResolveExtensionPropertyOrNull(candidate, parent.VariableType, propertyName.LocalName, context);
+				if (candidateAccessors == null)
+					continue;
+
+				if (accessors == null)
+				{
+					accessors = candidateAccessors;
+					container = candidate;
+					continue;
+				}
+
+				//C# picks the most specific receiver, and refuses to guess between unrelated ones
+				var incumbent = accessors.ReceiverType;
+				var challenger = candidateAccessors.ReceiverType;
+				if (incumbent.FullName != challenger.FullName && IsReceiverApplicable(incumbent, challenger, context.Cache))
+				{
+					accessors = candidateAccessors;
+					container = candidate;
+				}
+				else if (incumbent.FullName == challenger.FullName || !IsReceiverApplicable(challenger, incumbent, context.Cache))
+					ambiguous = true;
+			}
+
+			if (ambiguous)
+				throw new BuildException(ExtensionPropertyAmbiguous, lineInfo, null, propertyName.LocalName, xmlNamespace, parent.VariableType.FullName);
+
+			if (accessors == null)
+				return false;
+
+			if (node is ValueNode valueNode)
+				return valueNode.CanConvertValue(context, accessors.PropertyType, [accessors.PropertyType.ResolveCached(context.Cache)]);
+
+			if (node is not ElementNode elementNode || !context.Variables.TryGetValue(elementNode, out var vardef))
+				return false;
+
+			var propertyType = accessors.PropertyType;
+			return vardef.VariableType.InheritsFromOrImplements(context.Cache, propertyType)
+				|| vardef.VariableType.GetImplicitOperatorTo(context.Cache, propertyType, context.Body.Method.Module) != null
+				|| propertyType.FullName == "System.Object"
+				|| vardef.VariableType.FullName == "System.Object";
+		}
+
+		//like ResolveExtensionProperty, but a container that does not apply is simply not a candidate
+		static ExtensionPropertyAccessors ResolveExtensionPropertyOrNull(TypeDefinition container, TypeReference targetType, string propertyName, ILContext context)
+		{
+			if (!DeclaresExtensionProperty(container, propertyName))
+				return null;
+
+			try
+			{
+				return ResolveExtensionProperty(container, targetType, propertyName, context, null);
+			}
+			catch (BuildException)
+			{
+				return null;
+			}
 		}
 
 		static bool CanSetExtensionProperty(VariableDefinition parent, XmlName propertyName, INode node, ILContext context, IXmlLineInfo lineInfo, out ExtensionPropertyAccessors accessors)

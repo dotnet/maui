@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -377,7 +378,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return;
 			}
 
-			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
+			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, node?.NamespaceResolver, out var xpe))
 				return;
 
 			if (context.ExceptionHandler != null)
@@ -388,6 +389,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		//Used by HotReload, do not change signature
 		public static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, out Exception xpe)
+			=> TrySetPropertyValue(element, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, namespaceResolver: null, out xpe);
+
+		static bool TrySetPropertyValue(object element, XmlName propertyName, string xKey, object value, object rootElement, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, IXmlNamespaceResolver namespaceResolver, out Exception xpe)
 		{
 			var localName = propertyName.LocalName;
 			xpe = null;
@@ -448,6 +452,14 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			//If we can assign that value to a normal property, let's do it
 			if (xpe == null && TrySetProperty(element, localName, value, lineInfo, serviceProvider, rootElement, out xpe))
+			{
+				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
+					registerSourceInfo(value, path);
+				return true;
+			}
+
+			//An unqualified name may name an extension property brought in scope by the default xmlns
+			if (xpe == null && !attached && TrySetScopedExtensionProperty(element, propertyName, value, lineInfo, serviceProvider, rootElement, namespaceResolver, out xpe))
 			{
 				if (value != null && !value.GetType().IsValueType && XamlFilePathAttribute.GetFilePathForObject(rootElement) is string path)
 					registerSourceInfo(value, path);
@@ -928,6 +940,117 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			return false;
+		}
+
+		//the containers a xmlns brings in scope, keyed by the xmlns uri. The map itself never changes for a
+		//given app, and enumerating a clr namespace is expensive enough to be worth remembering
+		//the xmlns map depends on the assembly the xaml is declared in, for the global xmlns at least
+		static readonly ConcurrentDictionary<(string XmlNamespace, Assembly RootAssembly), Type[]> s_extensionContainersInScope = new();
+
+		static Type[] GetExtensionContainersInScope(string xmlNamespace, Assembly rootAssembly)
+		{
+			if (s_extensionContainersInScope.TryGetValue((xmlNamespace, rootAssembly), out var cached))
+				return cached;
+
+			return s_extensionContainersInScope[(xmlNamespace, rootAssembly)] = Enumerate(xmlNamespace, rootAssembly);
+
+			static Type[] Enumerate(string uri, Assembly assembly)
+			{
+				var containers = new List<Type>();
+
+				foreach (var definition in XamlParser.GetXmlnsDefinitions(uri, assembly))
+				{
+					Assembly declaring;
+					try
+					{
+						declaring = definition.AssemblyName == null ? assembly : Assembly.Load(new AssemblyName(definition.AssemblyName));
+					}
+					catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException or ArgumentException)
+					{
+						continue;
+					}
+
+					if (declaring == null)
+						continue;
+
+					Type[] types;
+					try
+					{
+						types = declaring.GetTypes();
+					}
+					catch (ReflectionTypeLoadException e)
+					{
+						types = e.Types;
+					}
+
+					foreach (var type in types)
+					{
+						if (type != null && type.Namespace == definition.Target && IsExtensionContainer(type))
+							containers.Add(type);
+					}
+				}
+
+				return containers.ToArray();
+			}
+		}
+
+		/// <summary>
+		/// Resolves an unqualified name against the extension containers the element's default xmlns brings in
+		/// scope, the way C# resolves an extension member against the namespaces a file imports.
+		/// </summary>
+		static bool TrySetScopedExtensionProperty(object element, XmlName propertyName, object value, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, IXmlNamespaceResolver namespaceResolver, out Exception exception)
+		{
+			exception = null;
+
+			//unprefixed attributes carry no namespace, the scope is the default xmlns declared for the element
+			if (namespaceResolver == null || propertyName.NamespaceURI != string.Empty)
+				return false;
+
+			var xmlNamespace = namespaceResolver.LookupNamespace(string.Empty);
+			if (string.IsNullOrEmpty(xmlNamespace))
+				return false;
+
+			var targetType = element.GetType();
+			var rootAssembly = rootElement?.GetType().Assembly;
+			MethodInfo setter = null;
+			Type container = null;
+			var ambiguous = false;
+
+			foreach (var candidate in GetExtensionContainersInScope(xmlNamespace, rootAssembly))
+			{
+				var accessors = ResolveExtensionProperty(candidate, targetType, propertyName.LocalName);
+				if (accessors.Setter == null || !IsVisibleFrom(candidate, rootElement))
+					continue;
+
+				if (setter == null)
+				{
+					setter = accessors.Setter;
+					container = candidate;
+					continue;
+				}
+
+				//C# picks the most specific receiver, and refuses to guess between unrelated ones
+				var incumbent = setter.GetParameters()[0].ParameterType;
+				var challenger = accessors.Setter.GetParameters()[0].ParameterType;
+				if (incumbent.IsAssignableFrom(challenger) && challenger != incumbent)
+				{
+					setter = accessors.Setter;
+					container = candidate;
+				}
+				else if (!challenger.IsAssignableFrom(incumbent) || challenger == incumbent)
+					ambiguous = true;
+			}
+
+			if (ambiguous)
+			{
+				exception = new XamlParseException(ExtensionPropertyConventions.AmbiguousError(propertyName.LocalName, xmlNamespace, targetType.FullName), lineInfo);
+				return false;
+			}
+
+			if (setter == null)
+				return false;
+
+			return TrySetExtensionProperty(element, container, propertyName.LocalName, value, lineInfo, serviceProvider, rootElement, out exception);
 		}
 
 		static bool TrySetExtensionProperty(object element, Type containerType, string propertyName, object value, IXmlLineInfo lineInfo, IServiceProvider serviceProvider, object rootElement, out Exception exception)
