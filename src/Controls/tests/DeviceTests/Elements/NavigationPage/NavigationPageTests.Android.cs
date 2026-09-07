@@ -148,6 +148,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift highlight")]
+		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftHighlight()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var barColor = Colors.Red;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
+			{
+				BarBackgroundColor = barColor
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				await OnLoadedAsync(navPage.CurrentPage);
+
+				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+				AssertAppBarBackgroundColor(appBar, barColor);
+
+				var toolbarTint = platformToolbar.BackgroundTintList;
+				Assert.NotNull(toolbarTint);
+				Assert.Equal(global::Android.Graphics.Color.Transparent,
+					new global::Android.Graphics.Color(toolbarTint.DefaultColor));
+
+				var unliftedColor = GetAppBarBackgroundColor(appBar);
+				appBar.SetLifted(true);
+				await AssertEventually(() => GetAppBarBackgroundColor(appBar) != unliftedColor,
+					message: "The customized Material 3 AppBar did not show its lifted highlight.");
+			});
+		}
+
 		[Fact(DisplayName = "NavigationPage BarBackgroundColor colors Android status bar on initial load")]
 		public async Task BarBackgroundColorUpdatesAndroidStatusBarOnInitialLoad()
 		{

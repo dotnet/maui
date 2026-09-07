@@ -11,11 +11,13 @@ using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Shape;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -116,6 +118,46 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(appBar.Elevation > 0);
 				else
 					Assert.True(appBar.Elevation == 0);
+			});
+		}
+
+		[Fact(DisplayName = "Shell Background preserves Material 3 AppBar lift highlight")]
+		public async Task BackgroundPreservesMaterial3AppBarLiftHighlight()
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+
+			var barColor = Colors.Red;
+			var contentPage = new ContentPage { Title = "Flyout Item" };
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem { Items = { contentPage } };
+				Shell.SetBackgroundColor(contentPage, barColor);
+			});
+
+			await CreateHandlerAndAddToWindow(shell, async () =>
+			{
+				await OnLoadedAsync(contentPage);
+
+				var platformToolbar = GetPlatformToolbar((IPlatformViewHandler)shell.Handler);
+				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+
+				var materialBackground = Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				Assert.NotNull(materialBackground.FillColor);
+				Assert.Equal(barColor.ToPlatform().ToArgb(), materialBackground.FillColor.DefaultColor);
+
+				var toolbarTint = platformToolbar.BackgroundTintList;
+				Assert.NotNull(toolbarTint);
+				Assert.Equal(global::Android.Graphics.Color.Transparent,
+					new global::Android.Graphics.Color(toolbarTint.DefaultColor));
+
+				var unliftedColor = materialBackground.FillColor.DefaultColor;
+				appBar.SetLifted(true);
+				await AssertEventually(() => materialBackground.FillColor.DefaultColor != unliftedColor,
+					message: "The customized Material 3 Shell AppBar did not show its lifted highlight.");
 			});
 		}
 
@@ -758,7 +800,7 @@ namespace Microsoft.Maui.DeviceTests
 			var context = platformView.Context;
 
 			return new Graphics.Rect(0, 0,
-				context.FromPixels(platformView.MeasuredWidth- (platformView.PaddingLeft + platformView.PaddingRight)),
+				context.FromPixels(platformView.MeasuredWidth - (platformView.PaddingLeft + platformView.PaddingRight)),
 				context.FromPixels(platformView.MeasuredHeight - (platformView.PaddingTop + platformView.PaddingBottom)));
 		}
 

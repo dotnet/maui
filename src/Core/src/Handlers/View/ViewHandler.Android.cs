@@ -244,6 +244,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			appbarLayout.AddView(nativeToolBar, 0);
+			te.Toolbar?.Handler?.UpdateValue("BarBackground");
 		}
 
 		public static void MapContextFlyout(IViewHandler handler, IView view)
