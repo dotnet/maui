@@ -2158,16 +2158,20 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			yield return Create(Call, setterRef);
 		}
 
-		//A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
-		//back to a member of the target itself, unless the owner is the target's own type or one of its base types
+		/// <summary>
+		/// A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
+		/// back to a member of the target itself: the ordinary lookup searches the target's own type, so the
+		/// owner has to be one of the target's types and has to declare or inherit the member.
+		/// </summary>
 		static void ThrowIfUnresolvedQualifiedMember(VariableDefinition parent, XmlName propertyName, FieldReference bpRef, ILContext context, IXmlLineInfo lineInfo)
 		{
 			//an attached bindable property resolved the qualified name already, collections are added to below
 			if (bpRef != null)
 				return;
-			if (!TryGetQualifiedOwner(propertyName, context, lineInfo, out var owner, out _))
+			if (!TryGetQualifiedOwner(propertyName, context, lineInfo, out var owner, out var memberName))
 				return;
-			if (IsReceiverApplicable(owner, parent.VariableType, context.Cache))
+			if (IsReceiverApplicable(owner, parent.VariableType, context.Cache)
+				&& owner.GetProperty(context.Cache, pd => pd.Name == memberName, out _) != null)
 				return;
 
 			throw new BuildException(MemberResolution, lineInfo, null, propertyName.LocalName);

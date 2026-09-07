@@ -1412,10 +1412,19 @@ static class SetPropertyHelpers
 		return false;
 	}
 
-	//A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
-	//back to a member of the target itself, unless the owner is the target's own type or one of its base types
+	/// <summary>
+	/// A qualified name (Owner.Member) that resolved to none of the supported members must not silently fall
+	/// back to a member of the target itself: the ordinary lookup searches the target's own type, so the owner
+	/// has to be one of the target's types and has to declare or inherit the member.
+	/// </summary>
 	static bool IsUnresolvedQualifiedMember(ILocalValue parentVar, XmlName propertyName, SourceGenContext context)
-		=> TryGetQualifiedOwner(propertyName, context, out var owner, out _) && !IsReceiverApplicable(owner!, parentVar.Type, context);
+	{
+		if (!TryGetQualifiedOwner(propertyName, context, out var owner, out var memberName))
+			return false;
+
+		return !IsReceiverApplicable(owner!, parentVar.Type, context)
+			|| !owner!.GetAllProperties(memberName, context).Any();
+	}
 
 	//emits LabelExtensions.set_MyTag(label, "value"), the implementation method the C# compiler emits for the extension property
 	static void SetExtensionProperty(IndentedTextWriter writer, ILocalValue parentVar, ExtensionPropertyAccessors accessors, INode node, SourceGenContext context, NodeSGExtensions.GetNodeValueDelegate getNodeValue)
