@@ -78,6 +78,31 @@ try {
     Assert-Equal $true $pipelineSource.Contains("- windows") "Windows pipeline parameter"
     Assert-Equal $true $pipelineSource.Contains("DEVICE_PERFORMANCE_SCENARIO") "Pipeline scenario environment binding"
     $buildJobSource = Get-Content $buildJob -Raw
+    $prValidation = [regex]::Match(
+        $buildJobSource,
+        '(?m)^  - pwsh: \|\r?\n(?<script>(?:      [^\r\n]*\r?\n)+)    displayName: Validate device performance PR number\r?\n    env:\r?\n      DEVICE_PERFORMANCE_PR_NUMBER: \$\{\{ parameters\.prNumber \}\}')
+    Assert-Equal $true $prValidation.Success "Build job must validate PR number before fetch"
+    Assert-Equal $true ($prValidation.Index -lt $buildJobSource.IndexOf("git cat-file")) "PR number validation must precede both platform fetch paths"
+    $validatePrNumber = [scriptblock]::Create($prValidation.Groups["script"].Value)
+    $savedPrNumber = $env:DEVICE_PERFORMANCE_PR_NUMBER
+    try {
+        foreach ($invalidPrNumber in @("", "0", "-1", "1.5", "not-a-number", "2147483648")) {
+            $env:DEVICE_PERFORMANCE_PR_NUMBER = $invalidPrNumber
+            $invalidRejected = $false
+            try {
+                & $validatePrNumber
+            }
+            catch {
+                $invalidRejected = $_.Exception.Message -like "*prNumber must be a positive integer*"
+            }
+            Assert-Equal $true $invalidRejected "Invalid PR number '$invalidPrNumber' must fail clearly"
+        }
+        $env:DEVICE_PERFORMANCE_PR_NUMBER = "38274"
+        & $validatePrNumber
+    }
+    finally {
+        $env:DEVICE_PERFORMANCE_PR_NUMBER = $savedPrNumber
+    }
     $provisionSource = Get-Content $provisionTemplate -Raw
     $declaredProvisionParameters = @(
         [regex]::Matches(($provisionSource -split '(?m)^steps:', 2)[0], '(?m)^  (?<name>[A-Za-z][A-Za-z0-9]*):') |

@@ -36,6 +36,15 @@ jobs:
     persistCredentials: false
 
   - pwsh: |
+      $prNumber = 0
+      if (-not [int]::TryParse($env:DEVICE_PERFORMANCE_PR_NUMBER, [ref]$prNumber) -or $prNumber -le 0) {
+        throw "prNumber must be a positive integer before fetching or building a device performance PR."
+      }
+    displayName: Validate device performance PR number
+    env:
+      DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+
+  - pwsh: |
       $trustedRoot = "$(Agent.TempDirectory)/device-performance-harness"
       Remove-Item $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
       New-Item -ItemType Directory -Force -Path $trustedRoot | Out-Null
