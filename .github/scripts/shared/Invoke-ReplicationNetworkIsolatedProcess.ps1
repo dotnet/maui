@@ -46,31 +46,36 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
         if ($escaped) {
             throw "Generated execution isolation allowed escape through $($probe.Name)."
         }
-        foreach ($socket in @(
-            '/run/docker.sock',
-            '/var/run/docker.sock',
-            '/run/containerd/containerd.sock',
-            '/run/podman/podman.sock',
-            '/run/buildkit/buildkitd.sock'
-        )) {
-            if (-not (Test-Path -LiteralPath $socket)) {
+    }
+
+    foreach ($socket in @(
+        '/run/docker.sock',
+        '/var/run/docker.sock',
+        '/run/containerd/containerd.sock',
+        '/run/podman/podman.sock',
+        '/run/buildkit/buildkitd.sock'
+    )) {
+        $probeSocket = [Net.Sockets.Socket]::new(
+            [Net.Sockets.AddressFamily]::Unix,
+            [Net.Sockets.SocketType]::Stream,
+            [Net.Sockets.ProtocolType]::Unspecified)
+        try {
+            # Masked socket paths can deny even Test-Path. Probe access directly
+            # and accept only denial, refusal, or Linux ENOENT (no endpoint).
+            $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($socket))
+        } catch [Net.Sockets.SocketException] {
+            $socketError = $_.Exception.GetBaseException()
+            if ($socketError.SocketErrorCode -in @(
+                    [Net.Sockets.SocketError]::AccessDenied,
+                    [Net.Sockets.SocketError]::ConnectionRefused
+                ) -or $socketError.NativeErrorCode -eq 2) {
                 continue
             }
-            $probeSocket = [Net.Sockets.Socket]::new(
-                [Net.Sockets.AddressFamily]::Unix,
-                [Net.Sockets.SocketType]::Stream,
-                [Net.Sockets.ProtocolType]::Unspecified)
-            try {
-                $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($socket))
-                if ($probeSocket.Connected) {
-                    throw "Generated execution isolation exposed privileged socket $socket."
-                }
-            } catch {
-                if ($_.Exception.Message -match 'exposed privileged socket') { throw }
-            } finally {
-                $probeSocket.Dispose()
-            }
+            throw
+        } finally {
+            $probeSocket.Dispose()
         }
+        throw "Generated execution isolation exposed privileged socket $socket."
     }
 }
 
