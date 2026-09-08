@@ -131,6 +131,7 @@ $script:ReplicationAllowedEnvironmentNames = @(
     'GRADLE_USER_HOME',
     'XDG_CACHE_HOME',
     'MavenCacheDirectory',
+    'XamarinBuildDownloadDir',
     'JAVA_HOME',
     'ANDROID_HOME',
     'ANDROID_SDK_ROOT',
