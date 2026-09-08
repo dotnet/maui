@@ -156,9 +156,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// Otherwise, by default, we'll fire-and-forget the disposal task. The native
 					// WebView must stay alive until the Blazor/JS teardown driven by disposal has
 					// actually completed, so the (Android-native-resource-releasing) teardown below
-					// is chained as a continuation instead of running immediately.
+					// is chained as a continuation instead of running immediately. Routed through the
+					// FireAndForget helper (rather than discarded directly) so any exception thrown by
+					// the continuation itself -- e.g. from DestroyPlatformView -- is logged instead of
+					// becoming an unobserved task exception.
 					disposalTask.FireAndForget(_logger);
-					_ = DestroyPlatformViewAfterDisposalAsync(disposalTask, platformView, webViewClient, webChromeClient);
+					DestroyPlatformViewAfterDisposalAsync(disposalTask, platformView, webViewClient, webChromeClient).FireAndForget(_logger);
 				}
 
 				_webviewManager = null;
