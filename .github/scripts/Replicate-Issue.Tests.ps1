@@ -8073,6 +8073,62 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         ).Success | Should -BeTrue
     }
 
+    It 'keeps Catalyst Issue35511 window-helper guidance out of other prompts' {
+        $script:Source | Should -Match (
+            '\$catalystWindowHelperRepairGuidance = if \(\$Platform -eq ''catalyst'' -and\s*\$IssueNumber -eq 35511\)')
+        $script:Source | Should -Match (
+            '\$catalystWindowHelperAuthorGuidance = if \(\$Platform -eq ''catalyst'' -and\s*\$IssueNumber -eq 35511\)')
+        $script:Source | Should -Match (
+            'Do not copy Catalyst or Windows window-helper examples into Android tests')
+        $script:Source | Should -Match (
+            'has no closed Android native observation surface')
+        $script:Source | Should -Match (
+            'classify that scenario as unsupported by the current generated-test contract')
+        $script:Source | Should -Match (
+            'Do not claim the issue is intrinsically uncertifiable')
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test-plan' \{.*?\`$androidGeneratedTestGuidance.*?'test' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test' \{.*?\`$androidGeneratedTestGuidance.*?'repair' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test' \{.*?\`$catalystWindowHelperAuthorGuidance.*?'repair' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'repair' \{.*?\`$androidGeneratedTestGuidance.*?'control' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'repair' \{.*?\`$catalystWindowHelperRepairGuidance.*?'control' \{"
+        ).Success | Should -BeTrue
+    }
+
+    It 'tells authoring and repair attempts to use only the one-argument AssertEventually shape' {
+        $script:Source | Should -Match (
+            'call it with exactly one argument: AssertEventually\(\(\) => condition\)')
+        $script:Source | Should -Match (
+            'Do not pass timeout, polling interval, message')
+        $script:Source | Should -Match (
+            'rejects every explicit AssertEventually argument beyond the pure predicate')
+        $script:Source | Should -Match (
+            'Do not return a helper Task')
+        $script:Source | Should -Match (
+            'to evade await/body validation')
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test' \{.*?\`$assertEventuallyGeneratedGuidance.*?'repair' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'repair' \{.*?\`$assertEventuallyGeneratedGuidance.*?'control' \{"
+        ).Success | Should -BeTrue
+    }
+
     It 'names both sides of the nullable split, not just one' {
         # CS8604 (43), CS8602 (39), CS8632 (13) and CS8600 (12) are 107 of the
         # compiler errors measured across this pipeline's runs. They come from
@@ -10215,6 +10271,32 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Edits @($script:GateEdit) `
                 -SourcePath 'src/Controls/tests/DeviceTests/Issue35511.iOS.cs'
         } | Should -Not -Throw
+    }
+
+    It 'rejects the window helper on Android until a closed Android observation contract exists' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedWindowHelperBase `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw (
+            '*Android generated tests cannot use CreateHandlerAndAddToWindow*' +
+            '*no Android, AndroidX, or Google.Android read surface*')
+    }
+
+    It 'does not add a broad Android native surface to the closed control contract' {
+        $guardSource = Get-Content -Raw -LiteralPath (
+            Join-Path (Split-Path -Parent $PSCommandPath) 'shared/Assert-ReplicationTestGuard.ps1')
+        $contractMatch = [regex]::Match(
+            $guardSource,
+            "(?s)\`$contractSource = @'\r?\n(?<contract>.*?)\r?\n'@")
+        $contractMatch.Success | Should -BeTrue
+        $contract = $contractMatch.Groups['contract'].Value
+
+        $contract | Should -Not -Match 'namespace\s+(Android|AndroidX|Google\.Android)'
+        $contract | Should -Not -Match 'MaterialButton'
+        $contract | Should -Not -Match 'PaddingLeft|PaddingTop|PaddingRight|PaddingBottom|Elevation'
     }
 
     It 'allows the captured Catalyst helper invocation with an inferred handler parameter' {

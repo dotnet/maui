@@ -7517,6 +7517,20 @@ function New-ReplicationControlVariant {
         $requiresCatalystWindowContract =
             $Platform -ceq 'catalyst' -and
             $SourcePath -cmatch 'Issue35511'
+        if ($Platform -ceq 'android' -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow') {
+            & $throwTrustedWindowHelperViolation `
+                -Node $awaitedExpression `
+                -HelperSymbol $awaitedMethod `
+                -Reason (
+                    'Android generated tests cannot use ' +
+                    'CreateHandlerAndAddToWindow until a narrow Android ' +
+                    'handler lifecycle and native observation contract is ' +
+                    'defined. The current control contract has no Android, ' +
+                    'AndroidX, or Google.Android read surface; reject the ' +
+                    'candidate instead of reusing the Catalyst or Windows ' +
+                    'helper shape.')
+        }
         if ($isTrustedWindowHelper -and
             $requiresCatalystWindowContract) {
             & $validateTrustedWindowHelperInvocation `
