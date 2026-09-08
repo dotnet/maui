@@ -215,17 +215,23 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler<Shell, ShellRenderer>();
+		if (RuntimeFeature.IsiOSShellHandlerEnabled)
+		{
+			handlersCollection.AddHandler<Shell, ShellHandler>();
+			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
+			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
+			handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
+		}
+		else
+		{
+			handlersCollection.AddHandler<Shell, ShellRenderer>();
+		}
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#elif ANDROID
-		handlersCollection.AddHandler<Shell, ShellHandler>();
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
-#elif TIZEN
+#elif ANDROID || TIZEN
 		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();

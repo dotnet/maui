@@ -1,5 +1,5 @@
 ﻿#nullable disable
-#if WINDOWS || TIZEN || ANDROID
+#if WINDOWS || TIZEN || ANDROID || IOS || MACCATALYST
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -44,7 +44,15 @@ namespace Microsoft.Maui.Controls.Handlers
 #if ANDROID
 					[nameof(Shell.FlyoutHeight)] = MapFlyoutHeight,
 #endif
-				};
+#if IOS || MACCATALYST
+			[PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName] = MapPrefersHomeIndicatorAutoHidden,
+			[PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName] = MapPrefersStatusBarHidden,
+			[PlatformConfiguration.iOSSpecific.Page.PreferredStatusBarUpdateAnimationProperty.PropertyName] = MapPreferredStatusBarUpdateAnimation,
+			// Refresh toolbar items when these properties change on iOS.
+			[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+			[Shell.ForegroundColorProperty.PropertyName] = MapForegroundColor,
+#endif
+			};
 
 		public static CommandMapper<Shell, ShellHandler> CommandMapper =
 				new CommandMapper<Shell, ShellHandler>(ElementCommandMapper);

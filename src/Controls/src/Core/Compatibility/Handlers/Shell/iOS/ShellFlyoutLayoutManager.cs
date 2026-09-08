@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellFlyoutLayoutManager(IShellContext context)
 		{
 			_context = context;
-			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+
+			// Only the compatibility renderer subscribes here; handlers use mapper-driven updates.
+			if (context is not Handlers.ShellHandler)
+			{
+				_context.Shell.PropertyChanged += OnShellPropertyChanged;
+			}
+
 			ShellController.StructureChanged += OnStructureChanged;
 		}
 
@@ -209,7 +215,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void SetHeaderContentInset()
 		{
-			if (ScrollView is null)
+			// ScrollView may not be attached to a window yet.
+			if (ScrollView is null || ScrollView.Window is null)
 				return;
 
 			var offset = ScrollView.ContentInset.Top;
@@ -366,11 +373,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
-				SetHeaderContentInset();
-				LayoutParallax();
+				OnFlyoutHeaderBehaviorChanged();
 			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
+		}
+
+		internal void OnFlyoutHeaderBehaviorChanged()
+		{
+			SetHeaderContentInset();
+			LayoutParallax();
 		}
 
 		public void ViewDidLoad()

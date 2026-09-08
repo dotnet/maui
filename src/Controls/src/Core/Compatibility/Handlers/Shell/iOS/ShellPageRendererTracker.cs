@@ -1195,12 +1195,61 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnSearchItemSelected(object? sender, object e)
 		{
 			if (_searchController is null)
-			{
 				return;
+
+			var searchController = _searchController;
+			var handlerController = SearchHandler as ISearchHandlerController;
+
+			// Dismiss the search controller first, then navigate after it is fully gone.
+			// UIKit rejects PushViewController calls while a modal presentation is occurring
+			// (including an active UISearchController). Using DidDismissSearchController ensures
+			// the push is not attempted until the dismissal animation is complete.
+			if (searchController.Active)
+			{
+				var previousDelegate = searchController.Delegate;
+				searchController.Delegate = new SearchItemSelectedDelegate(() =>
+				{
+					handlerController?.ItemSelected(e);
+				}, previousDelegate);
+				searchController.Active = false;
+			}
+			else
+			{
+				// Already dismissed — fire ItemSelected directly.
+				handlerController?.ItemSelected(e);
+			}
+		}
+
+		// One-shot UISearchControllerDelegate that fires ItemSelected after dismissal completes,
+		// then restores whatever delegate (if any) was previously installed on the search
+		// controller, so this temporary hookup doesn't permanently clobber other delegate behavior.
+		sealed class SearchItemSelectedDelegate : UISearchControllerDelegate
+		{
+			readonly Action _onDismissed;
+			readonly IUISearchControllerDelegate? _previousDelegate;
+			bool _fired;
+
+			internal SearchItemSelectedDelegate(Action onDismissed, IUISearchControllerDelegate? previousDelegate)
+			{
+				_onDismissed = onDismissed;
+				_previousDelegate = previousDelegate;
 			}
 
-			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
-			_searchController.Active = false;
+			public override void DidDismissSearchController(UISearchController searchController)
+			{
+				if (_fired)
+				{
+					return;
+				}
+				_fired = true;
+
+				if (searchController.Delegate == this)
+				{
+					searchController.Delegate = _previousDelegate!;
+				}
+
+				_onDismissed();
+			}
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)
