@@ -60,15 +60,16 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
             [Net.Sockets.SocketType]::Stream,
             [Net.Sockets.ProtocolType]::Unspecified)
         try {
-            # Masked socket paths can deny even Test-Path. Probe access directly
-            # and accept only denial, refusal, or Linux ENOENT (no endpoint).
+            # Masked paths can deny even Test-Path. .NET maps Unix ENOENT to
+            # AddressNotAvailable; NativeErrorCode need not retain ENOENT.
             $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($socket))
         } catch [Net.Sockets.SocketException] {
             $socketError = $_.Exception.GetBaseException()
             if ($socketError.SocketErrorCode -in @(
                     [Net.Sockets.SocketError]::AccessDenied,
-                    [Net.Sockets.SocketError]::ConnectionRefused
-                ) -or $socketError.NativeErrorCode -eq 2) {
+                    [Net.Sockets.SocketError]::ConnectionRefused,
+                    [Net.Sockets.SocketError]::AddressNotAvailable
+                )) {
                 continue
             }
             throw
