@@ -4163,7 +4163,7 @@ function Assert-GeneratedTestContent {
         "before resubmitting, because each one is checked again:`n" + ($numbered -join "`n"))
 }
 
-$script:FixPanelModels = @('claude-opus-5', 'gpt-5.6-sol')
+$script:FixPanelModels = @('gpt-5.4', 'gpt-5.6-sol')
 
 function Get-ReplicationFixCandidateModel {
     <#
@@ -7469,6 +7469,9 @@ function Invoke-ReplicationCopilot {
     # each round, and a fix attempt needs a far longer leash than authoring a
     # file does, so those three limits move per call instead of per run.
     $effectiveModel = if ([string]::IsNullOrWhiteSpace($ModelOverride)) { $Model } else { $ModelOverride }
+    if ($effectiveModel -cnotmatch '^gpt-[a-z0-9][a-z0-9.-]*$') {
+        throw 'Copilot CLI unavailable: replication requires an explicitly selected GPT model.'
+    }
     $effectiveCredits = if ($MaxAiCreditsOverride -gt 0) { $MaxAiCreditsOverride } else { $MaxAiCredits }
     $effectiveTimeout = if ($TimeoutMinutesOverride -gt 0) { $TimeoutMinutesOverride } else { $CopilotTimeoutMinutes }
 
