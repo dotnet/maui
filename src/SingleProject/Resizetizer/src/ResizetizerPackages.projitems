@@ -15,6 +15,8 @@
     <PackageReference Include="Svg.Skia" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Custom" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Svg.Model" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.SceneGraph" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Svg.Animation" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ShimSkiaSharp" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Fizzler" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ExCSS" GeneratePathProperty="true" PrivateAssets="all" />
@@ -39,6 +41,8 @@
     <_ResizetizerFiles Include="$(PkgSystem_ObjectModel)\lib\netstandard1.3\System.ObjectModel.dll" />
     <_ResizetizerFiles Include="$(PkgSvg_Custom)\lib\netstandard2.0\Svg.Custom.dll" />
     <_ResizetizerFiles Include="$(PkgSvg_Model)\lib\netstandard2.0\Svg.Model.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_SceneGraph)\lib\netstandard2.0\Svg.SceneGraph.dll" />
+    <_ResizetizerFiles Include="$(PkgSvg_Animation)\lib\netstandard2.0\Svg.Animation.dll" />
     <_ResizetizerFiles Include="$(PkgShimSkiaSharp)\lib\netstandard2.0\ShimSkiaSharp.dll" />
     <!-- <_ResizetizerFiles Include="$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll" /> -->
     <_ResizetizerFiles Include="$(PkgFizzler)\lib\netstandard2.0\Fizzler.dll" />

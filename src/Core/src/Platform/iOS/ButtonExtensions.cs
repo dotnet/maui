@@ -57,14 +57,24 @@ namespace Microsoft.Maui.Platform
 		// TODO: Make this public in .NET 11
 		internal static void UpdateBackground(this UIButton platformButton, Graphics.Paint? paint)
 		{
-			// Remove previous background gradient layer if any
+			// Remove previous background gradient layer if any.
+			// Safe to call unconditionally even when Window is null (initial-render path): at that
+			// point MAUI has not yet inserted a named gradient layer, so this is a no-op.
+			// Running it before the Window/paint guard ensures any previously-applied gradient is
+			// cleaned up regardless of the new paint value.
 			platformButton.RemoveBackgroundLayer();
 
 			if (paint.IsNullOrEmpty())
 			{
-				// Reset to clear background for buttons when paint is null.
-				// UIColor.Clear ensures proper transparency when VisualState setters are unapplied.
-				platformButton.BackgroundColor = UIColor.Clear;
+				// Only reset to UIColor.Clear when the button is already attached to a window.
+				// During initial property mapping (ConnectHandler), Window is null because the view
+				// hasn't been added to the hierarchy yet — skipping here preserves native BackgroundColor
+				// set by custom UIButton subclasses. Once live on screen, null means a VisualState
+				// transition back to Normal, so we do reset. Mirrors the same guard in UpdateTextColor.
+				if (platformButton.Window is not null)
+				{
+					platformButton.BackgroundColor = UIColor.Clear;
+				}
 				return;
 			}
 
