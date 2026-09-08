@@ -6751,7 +6751,7 @@ function New-ReplicationControlVariant {
         $setupInvocation = $setupStatements[0].Expression
         $setupArguments = $setupInvocation.ArgumentList.Arguments
         $setupMethod = $semanticModel.GetSymbolInfo($setupInvocation).Symbol
-        if ($setupStatements[0].SpanStart -le $buttonDeclarators[0].Parent.Parent.SpanEnd -or
+        if ($setupStatements[0].SpanStart -le $buttonDeclarators[0].Parent.Parent.Span.End -or
             $setupStatements[0].SpanStart -ge $localDeclaration.SpanStart -or
             $setupInvocation.Expression.ToString() -cne
                 'global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding' -or
