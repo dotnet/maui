@@ -59,7 +59,7 @@ public class SkiaCanvasTests
 			? null
 			: SKPathEffect.CreateDash(strokePattern.Select(interval => interval * paint.StrokeWidth).ToArray(), 0);
 		paint.PathEffect = pathEffect;
-		using var path = new SKPath();
+		using var pathBuilder = new SKPathBuilder();
 
 		canvas.StrokeColor = Colors.Red;
 		canvas.StrokeLineCap = lineCap;
@@ -67,7 +67,8 @@ public class SkiaCanvasTests
 		canvas.StrokeDashPattern = strokePattern;
 		canvas.DrawArc(5, 7, width, height, startAngle, endAngle, clockwise, false);
 
-		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
+		pathBuilder.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
+		using var path = pathBuilder.Detach();
 		expectedPlatformCanvas.DrawPath(path, paint);
 
 		Assert.Equal(shouldDrawPixels, HasPixels(expected));
@@ -107,12 +108,13 @@ public class SkiaCanvasTests
 			IsAntialias = true,
 			IsStroke = false,
 		};
-		using var path = new SKPath();
+		using var pathBuilder = new SKPathBuilder();
 
 		canvas.FillColor = Colors.Red;
 		canvas.FillArc(5, 7, width, height, startAngle, endAngle, clockwise);
 
-		path.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
+		pathBuilder.AddArc(new SKRect(5, 7, 5 + width, 7 + height), expectedStartAngle, expectedSweep);
+		using var path = pathBuilder.Detach();
 		expectedPlatformCanvas.DrawPath(path, paint);
 
 		Assert.Equal(shouldDrawPixels, HasPixels(expected));
