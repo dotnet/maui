@@ -238,10 +238,11 @@ $replicationRuntimeParent = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEM
 }
 $replicationRuntimeRoot = Join-Path $replicationRuntimeParent (
     "maui-replication-runtime-$IssueNumber-$PID")
+$replicationHome = Join-Path $replicationRuntimeRoot 'home'
 $replicationGradleHome = Join-Path $replicationRuntimeRoot 'gradle'
 $replicationDotnetHome = Join-Path $replicationRuntimeRoot 'dotnet'
 $replicationNugetPackages = Join-Path $replicationRuntimeRoot 'nuget-packages'
-$replicationAndroidHome = Join-Path $replicationRuntimeRoot 'android'
+$replicationAndroidHome = Join-Path $replicationHome '.android'
 $replicationCacheHome = Join-Path $replicationRuntimeRoot 'cache'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
@@ -7812,6 +7813,7 @@ function Get-ReplicationPwshArguments {
 function Get-ReplicationRuntimeEnvironment {
     foreach ($directory in @(
         $replicationRuntimeRoot,
+        $replicationHome,
         $replicationGradleHome,
         $replicationDotnetHome,
         $replicationNugetPackages,
@@ -7820,7 +7822,7 @@ function Get-ReplicationRuntimeEnvironment {
     )) {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
-    return Get-ReplicationExecutionEnvironment -Additional @{
+    $additional = @{
         CI = 'true'
         GRADLE_USER_HOME = $replicationGradleHome
         DOTNET_CLI_HOME = $replicationDotnetHome
@@ -7832,6 +7834,12 @@ function Get-ReplicationRuntimeEnvironment {
         XamarinBuildDownloadDir = (Join-Path $replicationCacheHome 'XamarinBuildDownload') + [IO.Path]::DirectorySeparatorChar
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
     }
+    if ($Platform -eq 'android') {
+        # ADB uses HOME/.android, not ANDROID_USER_HOME. Bind only this run's
+        # private home; ProtectHome continues to hide the original host home.
+        $additional['HOME'] = $replicationHome
+    }
+    return Get-ReplicationExecutionEnvironment -Additional $additional
 }
 
 function Get-ReplicationWindowsPlatformRestoreArguments {
@@ -8240,7 +8248,7 @@ function Invoke-LoggedChildProcess {
                 -ScriptPath $ScriptPath `
                 -Arguments $Arguments `
                 -Environment $childEnvironment `
-                -WritableRoots @($repoRoot, $ArtifactRoot) `
+                -WritableRoots @($repoRoot, $ArtifactRoot, $replicationHome) `
                 -AllowDeviceControl:$effectiveDeviceControl `
                 -DeviceUdid $DeviceUdid `
                 -TimeoutSeconds $effectiveTimeoutSeconds
@@ -9766,7 +9774,7 @@ try {
             -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
             -Arguments @('-Platform', $Platform, '-PrepareOnly', '-EnforceNetworkIsolation') `
             -Environment (Get-ReplicationRuntimeEnvironment) `
-            -WritableRoots @($repoRoot, $ArtifactRoot) `
+            -WritableRoots @($repoRoot, $ArtifactRoot, $replicationHome) `
             -DeviceUdid $DeviceUdid
     } elseif ($Platform -eq 'windows') {
         if (-not [OperatingSystem]::IsWindows()) {

@@ -532,11 +532,13 @@ Describe 'Selecting a real process isolation boundary' {
             throw 'The replication runtime environment factory is missing.'
         }
         . ([scriptblock]::Create($runtimeEnvironmentFunction.Extent.Text))
+        $script:Platform = 'android'
         $script:replicationRuntimeRoot = Join-Path $script:ScratchRoot 'runtime-environment'
+        $script:replicationHome = Join-Path $script:replicationRuntimeRoot 'home'
         $script:replicationGradleHome = Join-Path $script:replicationRuntimeRoot 'gradle'
         $script:replicationDotnetHome = Join-Path $script:replicationRuntimeRoot 'dotnet'
         $script:replicationNugetPackages = Join-Path $script:replicationRuntimeRoot 'nuget'
-        $script:replicationAndroidHome = Join-Path $script:replicationRuntimeRoot 'android'
+        $script:replicationAndroidHome = Join-Path $script:replicationHome '.android'
         $script:replicationCacheHome = Join-Path $script:replicationRuntimeRoot 'cache'
     }
 
