@@ -66,6 +66,7 @@ steps:
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*delivers the issue-derived visual scene guidance without generated-test syntax'
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*scopes Issue26505 Sandbox scene guidance to Android Issue26505'
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*keeps Sandbox-only Issue26505 guidance out of generated-test phases'
+        'Replication orchestrator security boundary*clears trusted Android preflight residue before Sandbox authoring'
         'Agent prompt deliverability*leaves no control character in any string literal of the orchestrator'
         'New-ReplicationControlVariant*allows Android Issue26505 ButtonHandler text-fit oracle'
         'New-ReplicationControlVariant*reports the captured Android Issue26505 missing static import'
