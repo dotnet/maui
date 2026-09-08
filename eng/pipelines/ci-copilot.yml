@@ -19,6 +19,9 @@ parameters:
       - replicate
       - feedback
       - publication-smoke
+      # Run trusted helper/semantic regressions only, without issue generation,
+      # product builds, devices, certification, or publication.
+      - replication-checks
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -113,6 +116,25 @@ variables:
     value: 150
 
 stages:
+  - stage: CheckReplicationContracts
+    displayName: 'Check replication contracts without devices'
+    dependsOn: []
+    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'replication-checks'))
+    jobs:
+      - job: CheckReplicationContracts
+        pool:
+          name: Azure Pipelines
+          vmImage: ubuntu-22.04
+        timeoutInMinutes: 15
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            persistCredentials: false
+          - template: common/replication-contract-checks.yml
+
   # This manual mode proves the real MauiBot branch-push and draft-PR transport
   # independently of issue reproduction. It creates a temporary draft, verifies
   # its routing and ownership, closes it, and deletes the temporary branch.
@@ -205,7 +227,7 @@ stages:
   - stage: ReviewPR
     displayName: 'Run Copilot Operation'
     dependsOn: []
-    condition: and(not(canceled()), ne('${{ parameters.Mode }}', 'publication-smoke'))
+    condition: and(not(canceled()), in('${{ parameters.Mode }}', 'review', 'replicate', 'feedback'))
     jobs:
       - job: ReplicationFeedback
         displayName: 'Collect replication feedback'
@@ -360,38 +382,8 @@ stages:
               PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
 
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              $pester = Get-Module -ListAvailable -Name Pester |
-                Where-Object { $_.Version -eq [version]'5.9.0' }
-              if (-not $pester) {
-                Install-Module -Name Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
-              }
-              Import-Module Pester -RequiredVersion 5.9.0
-              $config = New-PesterConfiguration
-              $config.Run.Path = "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationExecutionEnvironment.Tests.ps1"
-              $config.Run.PassThru = $true
-              $config.Output.Verbosity = 'Detailed'
-              $config.TestResult.Enabled = $true
-              $config.TestResult.OutputPath = "$(Agent.TempDirectory)/replication-execution-environment.xml"
-              $config.TestResult.OutputFormat = 'NUnitXml'
-              $result = Invoke-Pester -Configuration $config
-              if ($result.Result -ne 'Passed' -or $result.PassedCount -lt 1) {
-                throw "Replication execution-environment regression tests did not pass: $($result.Result)."
-              }
-            displayName: 'Test trusted Android execution-boundary helpers'
-            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'))
-            timeoutInMinutes: 10
-
-          - task: PublishTestResults@2
-            displayName: 'Publish execution-boundary regression results'
-            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'))
-            inputs:
-              testResultsFormat: 'NUnit'
-              testResultsFiles: '$(Agent.TempDirectory)/replication-execution-environment.xml'
-              testRunTitle: 'Replication execution boundary'
-              failTaskOnFailedTests: true
-              failTaskOnMissingResultsFile: true
+          - ${{ if and(eq(parameters.Mode, 'replicate'), eq(parameters.Platform, 'android')) }}:
+            - template: common/replication-contract-checks.yml
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -7346,7 +7338,7 @@ stages:
       - PublishReplication
       - RunDeepUITests
       - UpdateAISummaryComment
-    condition: and(not(canceled()), ne('${{ parameters.Mode }}', 'publication-smoke'))
+    condition: and(not(canceled()), in('${{ parameters.Mode }}', 'review', 'replicate', 'feedback'))
     variables:
       reviewPrResult: $[ dependencies.ReviewPR.result ]
       publishReplicationResult: $[ dependencies.PublishReplication.result ]

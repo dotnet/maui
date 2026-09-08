@@ -4,6 +4,8 @@
 BeforeAll {
     $script:PipelinePath = Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml'
     $script:Pipeline = Get-Content -LiteralPath $script:PipelinePath -Raw
+    $script:ContractChecks = Get-Content -LiteralPath (
+        Join-Path $PSScriptRoot '../../eng/pipelines/common/replication-contract-checks.yml') -Raw
 
     # One authority for "this text reads a pipeline script out of the worktree".
     # Two consumers ask that question - the Build MSBuild Tasks step guard and
@@ -30,6 +32,7 @@ Describe 'MAUI Copilot mode routing' {
         $modeIndex | Should -BeLessThan $prIndex
         $prIndex | Should -BeLessThan $issueIndex
         $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback\s+- publication-smoke"
+        $script:Pipeline | Should -Match '(?m)^\s+- replication-checks\s*$'
         $script:Pipeline | Should -Match "(?s)- name: PRNumber.*?default: 0"
         $script:Pipeline | Should -Match "(?s)- name: IssueNumber.*?default: 0"
     }
@@ -42,7 +45,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match (
             "(?s)- stage: ReviewPR.*?dependsOn: \[\].*?" +
             "condition: and\(not\(canceled\(\)\), " +
-            "ne\('\$\{\{ parameters\.Mode \}\}', 'publication-smoke'\)\)")
+            "in\('\$\{\{ parameters\.Mode \}\}', 'review', 'replicate', 'feedback'\)\)")
         $script:Pipeline | Should -Match (
             "(?s)displayName: 'Create, verify, close, and delete MauiBot draft PR'.*?" +
             "GH_TOKEN: \$\(GH_COMMENT_TOKEN\)")
@@ -55,8 +58,55 @@ Describe 'MAUI Copilot mode routing' {
             "(?s)Publish replication publication smoke result.*?" +
             "artifact: 'ReplicationPublicationSmoke'.*?condition: always\(\)")
         $script:Pipeline | Should -Match (
+            "(?s)- stage: AnalyzeCopilotTokenUsage.*?" +
             "condition: and\(not\(canceled\(\)\), " +
-            "ne\('\$\{\{ parameters\.Mode \}\}', 'publication-smoke'\)\)")
+            "in\('\$\{\{ parameters\.Mode \}\}', 'review', 'replicate', 'feedback'\)\)")
+    }
+
+    It 'runs guard-only mode without agents devices or publication' {
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: CheckReplicationContracts\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Not -BeNullOrEmpty
+        $stage | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'replication-checks'\)"
+        $stage | Should -Match 'dependsOn: \[\]'
+        $stage | Should -Match 'persistCredentials: false'
+        $stage | Should -Match 'template: common/replication-contract-checks\.yml'
+        foreach ($source in @($stage, $script:ContractChecks)) {
+            $source | Should -Not -Match (
+                'persistCredentials: true|GH_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|' +
+                'build\.ps1|BuildAndRunSandbox\.ps1|Run-DeviceTests\.ps1|' +
+                'Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1')
+        }
+        foreach ($stageName in @('ValidateReplication', 'PublishReplication')) {
+            $script:Pipeline | Should -Match (
+                '(?s)- stage: ' + $stageName + '.*?' +
+                "condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)")
+        }
+    }
+
+    It 'shares fail-fast checks before Android provisioning and baseline restoration' {
+        $jobStart = $script:Pipeline.IndexOf('- job: CopilotReview')
+        $templateIndex = $script:Pipeline.IndexOf(
+            'template: common/replication-contract-checks.yml', $jobStart)
+        $templateIndex | Should -BeGreaterThan $jobStart
+        foreach ($later in @(
+            "displayName: 'Restore clean replication baseline'",
+            'template: common/provision.yml',
+            "displayName: 'Build MSBuild Tasks'")) {
+            $templateIndex | Should -BeLessThan $script:Pipeline.IndexOf($later, $jobStart)
+        }
+        $script:Pipeline | Should -Match (
+            "\$\{\{ if and\(eq\(parameters\.Mode, 'replicate'\), " +
+            "eq\(parameters\.Platform, 'android'\)\) \}\}:\s+" +
+            '- template: common/replication-contract-checks\.yml')
+        $script:ContractChecks | Should -Match 'exact pipeline source checkout'
+        $script:ContractChecks | Should -Match '\$result\.PassedCount -lt 78'
+        $script:ContractChecks | Should -Match '\$result\.PassedCount -ne \$filters\.Count'
+        $script:ContractChecks | Should -Match '\$result\.SkippedCount -ne 0'
+        [regex]::Matches(
+            $script:ContractChecks,
+            'failTaskOnMissingResultsFile: true').Count | Should -Be 2
     }
 
     It 'requires exactly the target number for the selected mode' {
