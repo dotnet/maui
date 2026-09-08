@@ -43,17 +43,41 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
+
+					// Disposal already finished (we blocked on it above), so it's safe to close
+					// the native WebView2 synchronously right here.
+					CloseWebView2(platformView);
 				}
 				else
 				{
-					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					// Otherwise, by default, defer closing until disposal completes so JS-driven teardown isn't aborted early (same as Android).
 					disposalTask.FireAndForget();
+					CloseWebView2AfterDisposalAsync(disposalTask, platformView).FireAndForget();
 				}
 
 				_webviewManager = null;
 			}
+			else
+			{
+				// No WebViewManager was ever created -- nothing to await, so close immediately.
+				CloseWebView2(platformView);
+			}
+		}
 
-			// Closes the native CoreWebView2, which isn't released by disposing WebViewManager alone.
+		static async Task CloseWebView2AfterDisposalAsync(Task disposalTask, WebView2Control platformView)
+		{
+			try
+			{
+				// WebView2Control.Close() must run on the UI thread; ConfigureAwait(true) ensures the
+				// continuation resumes there instead of on a background thread.
+				await disposalTask.ConfigureAwait(true);
+			}
+			catch
+			{
+				// Already logged/handled by the sibling disposalTask.FireAndForget() call;
+				// swallow here so this continuation still runs the native cleanup below.
+			}
+
 			CloseWebView2(platformView);
 		}
 
