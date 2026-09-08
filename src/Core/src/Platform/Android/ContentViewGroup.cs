@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Platform
 				(_didSafeAreaEdgeConfigurationChange ||
 					(changed && SafeAreaExtensions.ShouldReapplyInsetsForResize(CrossPlatformLayout, this))))
 			{
-				_windowInsetsScope.Invalidate(SafeAreaInvalidationReason.BoundsChanged);
+				_windowInsetsScope.OnParticipantLayoutChanged(this);
 			}
 
 		}
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.OrientationChanged);
+			_windowInsetsScope?.OnConfigurationChanged(this);
 		}
 
 		/// <summary>

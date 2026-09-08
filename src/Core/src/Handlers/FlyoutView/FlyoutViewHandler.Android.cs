@@ -179,11 +179,17 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateIsPresented()
 		{
-			// Use MauiDrawerLayout's open/close methods
-			if (VirtualView.IsPresented)
-				MauiDrawerLayout.OpenFlyout();
-			else
-				MauiDrawerLayout.CloseFlyout();
+			if (_flyoutView is not null)
+			{
+				if (VirtualView.IsPresented)
+				{
+					DrawerLayout.OpenDrawer(_flyoutView);
+				}
+				else
+				{
+					DrawerLayout.CloseDrawer(_flyoutView);
+				}
+			}
 
 			InvalidateFlyoutSafeArea();
 		}
@@ -217,9 +223,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiDrawerLayout platformView)
 		{
-			// Subscribe to MauiDrawerLayout events
-			platformView.OnPresentedChanged += HandlePresentedChanged;
-			platformView.ViewAttachedToWindow += DrawerLayoutAttached;
+			if (platformView is DrawerLayout dl)
+			{
+				dl.DrawerStateChanged += OnDrawerStateChanged;
+				dl.ViewAttachedToWindow += DrawerLayoutAttached;
+			}
 		}
 
 		protected override void DisconnectHandler(MauiDrawerLayout platformView)
