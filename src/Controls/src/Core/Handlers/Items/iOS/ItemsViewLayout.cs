@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use the Items2 handler implementation with UIKit.UICollectionViewLayout instead.")]
 	public abstract class ItemsViewLayout : UICollectionViewFlowLayout
 	{
 		readonly ItemsLayout _itemsLayout;
@@ -427,7 +428,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				catch (ObjCRuntime.ObjCException ex) when (ex.Name == "NSRangeException")
 				{
-					Application.Current?.FindMauiContext()?.CreateLogger<ItemsViewLayout>()?.LogWarning(ex, "NSRangeException");
+					MauiLogger<ItemsViewLayout>.Log(LogLevel.Warning, ex, "NSRangeException");
 				}
 
 				UICollectionViewFlowLayoutInvalidationContext context = new UICollectionViewFlowLayoutInvalidationContext();

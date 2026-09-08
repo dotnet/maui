@@ -14,7 +14,7 @@ public class Bugzilla34912 : _IssuesUITest
 	public override string Issue => "ListView.IsEnabled has no effect on iOS";
 
 	[Test]
-	[Category(UITestCategories.IsEnabled)]
+	[Category(UITestCategories.ListView)]
 	public void Bugzilla34912Test()
 	{
 		App.WaitForElement("Allen");

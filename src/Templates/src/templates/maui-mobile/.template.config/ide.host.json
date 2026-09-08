@@ -25,6 +25,14 @@
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
+    },
+    {
+      "id": "WithAvalonia",
+      "isVisible": false
+    },
+    {
+      "id": "avaloniaControlsMauiVersion",
+      "isVisible": false
     }
   ]
 }

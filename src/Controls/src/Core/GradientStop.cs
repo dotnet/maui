@@ -40,7 +40,11 @@ namespace Microsoft.Maui.Controls
 			Offset = offset;
 		}
 
-		/// <inheritdoc/>
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
+		/// <summary>Determines whether the specified object is equal to the current <see cref="GradientStop"/>, using an approximate comparison for <see cref="Offset"/>.</summary>
+		/// <param name="obj">The object to compare with the current object.</param>
+		/// <returns><see langword="true"/> if the specified object is a <see cref="GradientStop"/> with the same <see cref="Color"/> and an <see cref="Offset"/> value within a small tolerance of the current object; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is GradientStop dest))
@@ -49,7 +53,9 @@ namespace Microsoft.Maui.Controls
 			return Color == dest.Color && global::System.Math.Abs(Offset - dest.Offset) < 0.00001;
 		}
 
-		/// <inheritdoc/>
-		public override int GetHashCode() => base.GetHashCode();
+		/// <inheritdoc cref="object.GetHashCode"/>
+		/// <summary>Serves as the default hash function.</summary>
+		/// <returns>A hash code for the current object.</returns>
+		public override int GetHashCode() => Color is null ? 0 : Color.GetHashCode();
 	}
 }

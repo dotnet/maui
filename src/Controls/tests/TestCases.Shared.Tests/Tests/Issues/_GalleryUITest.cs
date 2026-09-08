@@ -54,9 +54,10 @@ namespace Microsoft.Maui.TestCases.Tests
         {
             base.FixtureSetup();
             if (Device is not TestDevice.Mac)
-                App.NavigateToGallery(GalleryPageName);
+                App.NavigateToGallery(GalleryPageName, GalleryPageReadyElement);
         }
 
         public abstract string GalleryPageName { get; }
+        protected virtual string? GalleryPageReadyElement => null;
     }
 }

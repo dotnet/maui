@@ -14,7 +14,7 @@ public class Issue1455 : _IssuesUITest
 	public override string Issue => "Context action are not changed when selected item changed on Android";
 
 	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.ListView)]
 	public void RefreshContextActions()
 	{
 		App.WaitForElement("Cell 1");

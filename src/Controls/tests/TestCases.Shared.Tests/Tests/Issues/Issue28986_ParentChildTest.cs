@@ -46,43 +46,37 @@ public class Issue28986_ParentChildTest : _IssuesUITest
         // 2. Bottom indicator is inset from screen bottom by safe area (child handles bottom)
         // 3. Both work independently without conflict
 
-        // Get screen dimensions
-        var parentGridRect = App.WaitForElement("ParentGrid").GetRect();
-        var screenTop = parentGridRect.Y;
-        var screenBottom = parentGridRect.Y + parentGridRect.Height;
-
         // Verify initial status
         WaitForText("StatusLabel", "Parent: Top=Container, Bottom=None | Child: Bottom=Container");
 
-        // Measure top indicator position
-        var topIndicatorRect = App.WaitForElement("TopIndicator").GetRect();
-        var topIndicatorTop = topIndicatorRect.Y;
-
-        // Top indicator should be below the screen top (safe area applied)
-        var topInsetFromScreenTop = topIndicatorTop - screenTop;
-        Assert.That(topInsetFromScreenTop, Is.GreaterThan(5),
-            $"Top indicator should be inset from screen top by safe area. " +
-            $"Current inset: {topInsetFromScreenTop}pt (expected >5pt)");
-
-        // Measure bottom indicator position
-        var bottomIndicatorRect = App.WaitForElement("BottomIndicator").GetRect();
-        var bottomIndicatorBottom = bottomIndicatorRect.Y + bottomIndicatorRect.Height;
-
-        // Bottom indicator should be above the screen bottom (safe area applied)
-        var bottomInsetFromScreenBottom = screenBottom - bottomIndicatorBottom;
-        // On devices with bottom safe area (iOS home indicator, Android nav bar), verify meaningful inset.
-        // On gesture-nav Android devices, bottom safe area is correctly 0.
-        if (HasBottomSafeArea(bottomInsetFromScreenBottom))
+        App.RetryAssert(() =>
         {
-            Assert.That(bottomInsetFromScreenBottom, Is.GreaterThan(5),
-                $"Bottom indicator should be inset from screen bottom by safe area. " +
-                $"Current inset: {bottomInsetFromScreenBottom}pt (expected >5pt)");
-        }
-        else
-        {
-            Assert.That(bottomInsetFromScreenBottom, Is.GreaterThanOrEqualTo(0),
-                $"Bottom indicator should not extend below screen bottom. Inset: {bottomInsetFromScreenBottom}pt");
-        }
+            var parentGridRect = App.FindElement("ParentGrid").GetRect();
+            var screenTop = parentGridRect.Y;
+            var screenBottom = parentGridRect.Y + parentGridRect.Height;
+
+            var topIndicatorRect = App.FindElement("TopIndicator").GetRect();
+            var topInsetFromScreenTop = topIndicatorRect.Y - screenTop;
+            Assert.That(topInsetFromScreenTop, Is.GreaterThan(5),
+                $"Top indicator should be inset from screen top by safe area. " +
+                $"Current inset: {topInsetFromScreenTop}pt (expected >5pt)");
+
+            var bottomIndicatorRect = App.FindElement("BottomIndicator").GetRect();
+            var bottomIndicatorBottom = bottomIndicatorRect.Y + bottomIndicatorRect.Height;
+            var bottomInsetFromScreenBottom = screenBottom - bottomIndicatorBottom;
+
+            if (HasBottomSafeArea(bottomInsetFromScreenBottom))
+            {
+                Assert.That(bottomInsetFromScreenBottom, Is.GreaterThan(5),
+                    $"Bottom indicator should be inset from screen bottom by safe area. " +
+                    $"Current inset: {bottomInsetFromScreenBottom}pt (expected >5pt)");
+            }
+            else
+            {
+                Assert.That(bottomInsetFromScreenBottom, Is.GreaterThanOrEqualTo(0),
+                    $"Bottom indicator should not extend below screen bottom. Inset: {bottomInsetFromScreenBottom}pt");
+            }
+        });
     }
 
     [Test, Order(2)]

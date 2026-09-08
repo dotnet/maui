@@ -15,7 +15,7 @@ public class Bugzilla31330 : _IssuesUITest
 	public override string Issue => "Disabled context actions appear enabled";
 
 	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.ListView)]
 	public void Bugzilla31330Test()
 	{
 		App.WaitForElement("Something 2");

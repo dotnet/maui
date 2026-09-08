@@ -15,7 +15,7 @@ public class Bugzilla42832 : _IssuesUITest
 	public override string Issue => "Scrolling a ListView with active ContextAction Items causes NRE";
 
 	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.ListView)]
 	public void ContextActionsScrollNRE()
 	{
 		App.WaitForElement("Item #0");

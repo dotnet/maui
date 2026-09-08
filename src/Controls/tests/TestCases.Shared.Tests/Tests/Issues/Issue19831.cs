@@ -14,7 +14,7 @@ public class Issue19831 : _IssuesUITest
 	{ }
 
 	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.ListView)]
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{
 		_ = App.WaitForElement("Item1");

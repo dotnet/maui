@@ -53,7 +53,7 @@ parameters:
   type: object
   default:
     name: Azure Pipelines
-    vmImage: macOS-15
+    vmImage: $(HostedMacImage)
     os: macOS
 
 resources:
@@ -120,20 +120,6 @@ extends:
           pool: ${{ parameters.WindowsPool }}
           dependsOnStage: Pack
 
-    # Localization with OneLocBuild. Only run on official builds for handoff branches.
-    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-      - stage: Localization
-        displayName: Localization
-        dependsOn: []
-        condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
-        jobs:
-          - template: /eng/common/templates-official/job/onelocbuild.yml@self
-            parameters:
-              CeapexServiceConnection: dnceng-onelocbuild-ceapex
-              SkipLocProjectJsonGeneration: true
-              MirrorRepo: 'maui'
-              MirrorBranch: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
-
     # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
@@ -146,6 +132,3 @@ extends:
         - Pack
         publishDependsOn:
         - Validate
-        # This is to enable SDL runs part of Post-Build Validation Stage
-        SDLValidationParameters:
-          enable: false

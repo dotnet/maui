@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shadows & Gradients don't work with a list view's header/footer";
 
 		[Test]
-		[Category(UITestCategories.Shadow)]
+		[Category(UITestCategories.ListView)]
 		public void GradientAndShadowShouldWork()
 		{
 			App.WaitForElement("HeaderLabel");

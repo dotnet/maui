@@ -6,18 +6,69 @@ The following switches are toggled for applications running on Mono for `TrimMod
 
 | MSBuild Property Name | AppContext Setting | Description |
 |-|-|-|
+| MauiXamlInflator | N/A | Controls how XAML files are processed. See [XAML Inflator](#mauixamlinflator) section below. |
+| MauiCssEnabled | Microsoft.Maui.RuntimeFeature.IsCssEnabled | When disabled, CSS stylesheets cannot be used. Defaults to `false` when no `MauiCss` items are present in the project, and `true` otherwise. |
 | MauiEnableIVisualAssemblyScanning | Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled | When enabled, MAUI will scan assemblies for types implementing `IVisual` and for `[assembly: Visual(...)]` attributes and register these types. |
 | MauiShellSearchResultsRendererDisplayMemberNameSupported | Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported | When disabled, it is necessary to always set `ItemTemplate` of any `SearchHandler`. Displaying search results through `DisplayMemberName` will not work. |
 | MauiQueryPropertyAttributeSupport | Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported | When disabled, the `[QueryProperty(...)]` attributes won't be used to set values to properties when navigating. |
 | MauiImplicitCastOperatorsUsageViaReflectionSupport | Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported | When disabled, MAUI won't look for implicit cast operators when converting values from one type to another. This feature is not trim-compatible. |
 | _MauiBindingInterceptorsSupport | Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported | When disabled, MAUI won't intercept any calls to `SetBinding` methods and try to compile them. Enabled by default. |
 | MauiEnableXamlCBindingWithSourceCompilation | Microsoft.Maui.RuntimeFeature.XamlCBindingWithSourceCompilationEnabled | When enabled, MAUI will compile all bindings, including those where the `Source` property is used. |
-| MauiHybridWebViewSupported | Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported | Enables HybridWebView, which makes use of dynamic System.Text.Json serialization features |
 | MauiNamescopesSupported | Microsoft.Maui.RuntimeFeature.AreNamescopesSupported | Enable support for Namescopes, FindByName if the application uses it, or to keep supporting runtime and XamlC XAML inflators |
 | EnableDiagnostics | Microsoft.Maui.RuntimeFeature.EnableDiagnostics | Enables diagnostic for the running app |
 | EnableMauiDiagnostics | Microsoft.Maui.RuntimeFeature.EnableMauiDiagnostics | Enables MAUI specific diagnostics, like VisualDiagnostics and BindingDiagnostics. Defaults to EnableDiagnostics |
 | _EnableMauiAspire | Microsoft.Maui.RuntimeFeature.EnableMauiAspire | When enabled, MAUI Aspire integration features are available. **Warning**: Using Aspire outside of Debug configuration may introduce performance and security risks in production. |
 
+## MauiXamlInflator
+
+Controls how XAML files are processed and compiled. Starting with .NET 11, the default value is `SourceGen`.
+
+**Available Values:**
+- `SourceGen` (default) - XAML is compiled to C# at build time using a source generator. This provides the best performance and debugging experience, including full XAML Hot Reload support.
+- `Runtime` - XAML is inflated at runtime. This has negative performance impact and is deprecated.
+- `XamlC` - XAML is compiled using the XamlC IL weaver after compilation. This prevents some debugging capabilities like XAML Hot Reload and is deprecated.
+
+**Example:**
+```xml
+<PropertyGroup>
+  <!-- Use default (SourceGen) - recommended -->
+  <!-- No need to specify MauiXamlInflator -->
+  
+  <!-- Or explicitly set deprecated inflators (will produce warning MAUI1001) -->
+  <MauiXamlInflator>Runtime</MauiXamlInflator>
+</PropertyGroup>
+```
+
+**Per-file override:**
+You can override the inflator for individual XAML files using item metadata:
+```xml
+<ItemGroup>
+  <MauiXaml Update="MyPage.xaml" Inflator="Runtime" />
+</ItemGroup>
+```
+
+**Changes in .NET 11:**
+- The default inflator changed from configuration-based (Runtime in Debug, XamlC in Release) to `SourceGen` for all configurations.
+- The `[XamlCompilation]` attribute is deprecated (produces warning) but still functional.
+
+**Changes in .NET 12:**
+- The `[XamlCompilation]` attribute will be obsolete with `error: true` and becomes a no-op. Use MSBuild properties or item metadata instead.
+
+## MauiCssEnabled
+
+When this feature is disabled, CSS stylesheets cannot be parsed or applied to UI elements. Any attempt to use CSS will throw a `NotSupportedException`.
+
+**Default behavior**: In optimized builds (`PublishAot=true` or `TrimMode=full`), this feature is automatically disabled when your project has no `MauiCss` items (CSS files), and automatically enabled when CSS files are present. In development builds, CSS is always enabled regardless of whether `MauiCss` items are present.
+
+**When to enable manually**: If your app loads CSS stylesheets dynamically at runtime (e.g., from a network source or embedded resources) rather than including them as `MauiCss` build items, you need to explicitly enable this feature in your optimized builds:
+
+```xml
+<PropertyGroup>
+  <MauiCssEnabled>true</MauiCssEnabled>
+</PropertyGroup>
+```
+
+**Trimming benefits**: When disabled, the .NET trimmer can eliminate CSS-related code paths, reducing the final application size.
 ## MauiEnableIVisualAssemblyScanning
 
 When this feature is not enabled, custom and third party `IVisual` types will not be automatically discovered and registered.
@@ -48,9 +99,7 @@ This feature is a counterpart of [XAML Compiled bindings](https://learn.microsof
 
 It is necessary to use this feature instead of the string-based bindings in NativeAOT apps and in apps with full trimming enabled.
 
-## MauiHybridWebViewSupported
-
-When this feature is disabled, `HybridWebView` will not be available. This is the default for projects using `TrimMode=full` or `PublishAot=true`.
+## MauiEnableXamlCBindingWithSourceCompilation
 
 ### Example use-case
 
@@ -71,8 +120,6 @@ Compiled binding in XAML:
 ```xml
 <Label Text="{Binding Customer.Name}" x:DataType="local:PageViewModel" />
 ```
-
-## MauiEnableXamlCBindingWithSourceCompilation
 
 XamlC skipped compilation of bindings with the `Source` property set to any value in previous releases. Some bindings might start producing build errors or start failing at runtime after this feature is enabled. After enabling this feature, make sure all bindings have the right `x:DataType` so they are compiled correctly. For bindings which should not be compiled, clear the data type like this:
 ```

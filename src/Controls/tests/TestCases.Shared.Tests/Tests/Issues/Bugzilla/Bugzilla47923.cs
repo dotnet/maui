@@ -15,7 +15,7 @@ public class Bugzilla47923 : _IssuesUITest
 
 
 	[Test]
-	[Category(UITestCategories.Image)]
+	[Category(UITestCategories.ListView)]
 	public void Bugzilla47923Test()
 	{
 		foreach (var testString in new[] { "AspectFit", "AspectFill", "Fill", "Test cell views" })

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Setting ToolbarItems in ContentPage constructor crashes app";
 
 		[Test]
-		[Category(UITestCategories.ToolbarItem)]
+		[Category(UITestCategories.ListView)]
 		public void ViewCellInTableViewDoesNotCrash()
 		{
 			App.WaitForElement(Success);

@@ -24,7 +24,7 @@
   "symbols/InteractivityPlatform/choices/Auto/description": "下载 WebAssembly 资产时使用服务器，然后使用 WebAssembly",
   "symbols/IncludeSampleContent/displayName": "包含示例页(_I)",
   "symbols/IncludeSampleContent/description": "配置是否添加示例页和样式以演示基本使用模式。",
-  "symbols/Empty/description": "配置是否忽略演示基本使用模式的示例页和样式。",
+  "symbols/empty/description": "配置是否忽略演示基本使用模式的示例页和样式。",
   "symbols/AllInteractive/displayName": "在整个网站全局启用交互式呈现(_E)",
   "symbols/AllInteractive/description": "配置是否通过在顶层应用交互式呈现模式来使每个页面都具备交互性。如果为 false，页面将默认使用静态服务器呈现，并且可按每页或每组件标记为具有交互性。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。只有当未对 --auth 使用“个人”时，此选项才适用。",

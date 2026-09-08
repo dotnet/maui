@@ -172,8 +172,17 @@ namespace Microsoft.Maui.Platform
 
 		static bool HasExplicitSafeAreaEdges(AView view)
 		{
-			return view is ICrossPlatformLayoutBacking { CrossPlatformLayout: ISafeAreaView2 safeAreaView } &&
-				safeAreaView.HasExplicitSafeAreaEdges;
+			if (view is not ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout })
+			{
+				return false;
+			}
+
+			return crossPlatformLayout switch
+			{
+				ISafeAreaView2 safeAreaView2 => safeAreaView2.HasExplicitSafeAreaEdges,
+				ISafeAreaElement => true,
+				_ => false
+			};
 		}
 
 		/// <summary>
@@ -358,10 +367,10 @@ namespace Microsoft.Maui.Platform
 
 		public bool HasTrackedView => _trackedViews.Count > 0;
 
-        public bool IsViewTracked(AView view)
-        {
-            return _trackedViews.Contains(view);
-        }
+		public bool IsViewTracked(AView view)
+		{
+			return _trackedViews.Contains(view);
+		}
 		public void ResetView(AView view)
 		{
 			if (view is IHandleWindowInsets customHandler)

@@ -13,6 +13,7 @@ public class Issue2976 : _IssuesUITest
 	public override string Issue => "Sample 'WorkingWithListviewNative' throw Exception on Xam.Android project.";
 
 	// [Test]
+	// [Category(UITestCategories.ListView)]
 	// [FailsOnAndroid]
 	// [FailsOnIOS]
 	// public void Issue1Test()

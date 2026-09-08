@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
-		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
+		[Obsolete("Page.IsBusy is obsolete and has no replacement. Remove usage. This property will be removed in a future release.")]
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create(nameof(IsBusy), typeof(bool), typeof(Page), BooleanBoxes.FalseBox, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the developer's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
 		/// </remarks>
-		[Obsolete("Page.IsBusy has been deprecated and will be removed in .NET 11")]
+		[Obsolete("Page.IsBusy is obsolete and has no replacement. Remove usage. This property will be removed in a future release.")]
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
@@ -590,7 +590,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			OnChildMeasureInvalidated(child, InvalidationEventArgs.GetCached(trigger));
 			var propagatedTrigger = GetPropagatedTrigger(trigger);
 			InvokeMeasureInvalidated(propagatedTrigger);
 		}
@@ -690,7 +690,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = true;
 
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
+#pragma warning disable CS0618 // TODO: Remove this API in a future release. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 			{
 				if (IsPlatformEnabled)
@@ -730,7 +730,7 @@ namespace Microsoft.Maui.Controls
 
 			_hasAppeared = false;
 
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
+#pragma warning disable CS0618 // TODO: Remove this API in a future release. Issue Link: https://github.com/dotnet/maui/issues/30155
 			if (IsBusy)
 				Window.AlertManager.RequestPageBusy(this, false);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -789,7 +789,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!_hasAppeared)
 				return;
-#pragma warning disable CS0618 // TODO: Remove this API in .NET 11. Issue Link: https://github.com/dotnet/maui/issues/30155
+#pragma warning disable CS0618 // TODO: Remove this API in a future release. Issue Link: https://github.com/dotnet/maui/issues/30155
 			Window.AlertManager.RequestPageBusy(this, IsBusy);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}

@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		where TTask : Microsoft.Build.Framework.ITask
 	{
 		protected readonly TestLogger? Logger;
+		readonly object logEventsLock = new object();
 
 		protected List<BuildErrorEventArgs> LogErrorEvents = new List<BuildErrorEventArgs>();
 		protected List<BuildMessageEventArgs> LogMessageEvents = new List<BuildMessageEventArgs>();
@@ -36,25 +37,29 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		void IBuildEngine.LogCustomEvent(CustomBuildEventArgs e)
 		{
-			LogCustomEvents.Add(e);
+			lock (logEventsLock)
+				LogCustomEvents.Add(e);
 			Output?.WriteLine($"CUSTOM : {e.Message}");
 		}
 
 		void IBuildEngine.LogErrorEvent(BuildErrorEventArgs e)
 		{
-			LogErrorEvents.Add(e);
+			lock (logEventsLock)
+				LogErrorEvents.Add(e);
 			Output?.WriteLine($"ERROR  : {e.Message}");
 		}
 
 		void IBuildEngine.LogMessageEvent(BuildMessageEventArgs e)
 		{
-			LogMessageEvents.Add(e);
+			lock (logEventsLock)
+				LogMessageEvents.Add(e);
 			Output?.WriteLine($"MESSAGE: {e.Message}");
 		}
 
 		void IBuildEngine.LogWarningEvent(BuildWarningEventArgs e)
 		{
-			LogWarningEvents.Add(e);
+			lock (logEventsLock)
+				LogWarningEvents.Add(e);
 			Output?.WriteLine($"WARNING: {e.Message}");
 		}
 	}

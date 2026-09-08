@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 		public Color Start { get; set; } = Colors.Red;
 		public Color Stop { get; set; } = Colors.Orange;
 
-		void OnUpdateSolidColorClicked(object sender, EventArgs e)
+		void OnUpdateSolidColorClicked(object? sender, EventArgs e)
 		{
 			var color = GetRandomColor();
 
@@ -31,12 +31,12 @@ namespace Maui.Controls.Sample.Pages
 				solidBrushPolygon.Color = color;
 		}
 
-		void OnRemovePolygonSolidColorClicked(object sender, EventArgs e)
+		void OnRemovePolygonSolidColorClicked(object? sender, EventArgs e)
 		{
 			BrushChangesLayout.Children.Remove(SolidBrushPolygon);
 		}
 
-		void OnUpdateLinearColorsClicked(object sender, EventArgs e)
+		void OnUpdateLinearColorsClicked(object? sender, EventArgs e)
 		{
 			var gradientStop = GetRandomGradientStop();
 			var color = GetRandomColor();
@@ -54,12 +54,12 @@ namespace Maui.Controls.Sample.Pages
 			randomStop.Color = color;
 		}
 
-		void OnRemovePolygonLinearColorsClicked(object sender, EventArgs e)
+		void OnRemovePolygonLinearColorsClicked(object? sender, EventArgs e)
 		{
 			BrushChangesLayout.Children.Remove(LinearBrushPolygon);
 		}
 
-		void OnUpdateRadialColorsClicked(object sender, EventArgs e)
+		void OnUpdateRadialColorsClicked(object? sender, EventArgs e)
 		{
 			var gradientStop = GetRandomGradientStop();
 			var color = GetRandomColor();
@@ -68,7 +68,7 @@ namespace Maui.Controls.Sample.Pages
 			UpdateGradientStopColor(RadialBrushPolygon.Fill as RadialGradientBrush, gradientStop, color);
 		}
 
-		void OnRemovePolygonRadialColorsClicked(object sender, EventArgs e)
+		void OnRemovePolygonRadialColorsClicked(object? sender, EventArgs e)
 		{
 			BrushChangesLayout.Children.Remove(RadialBrushPolygon);
 		}

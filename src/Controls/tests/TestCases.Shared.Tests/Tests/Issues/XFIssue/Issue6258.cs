@@ -15,7 +15,7 @@ public class Issue6258 : _IssuesUITest
 	public override string Issue => "[Android] ContextActions icon not working";
 
 	[Test]
-	[Category(UITestCategories.ContextActions)]
+	[Category(UITestCategories.ListView)]
 	public void ContextActionsIconImageSource()
 	{
 		App.WaitForElement("ListViewItem");

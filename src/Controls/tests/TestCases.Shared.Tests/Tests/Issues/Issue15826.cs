@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ListView visibility doesn't work well";
 
 		[Test]
-		[Category(UITestCategories.IsVisible)]
+		[Category(UITestCategories.ListView)]
 		public async Task WhenTapButtonThenListViewsChangesVisibility()
 		{
 			App.WaitForElement(buttonId);

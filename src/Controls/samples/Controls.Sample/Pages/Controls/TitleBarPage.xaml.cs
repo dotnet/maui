@@ -39,7 +39,7 @@ namespace Maui.Controls.Sample.Pages
 			Application.Current!.Windows[0].TitleBar = _customTitleBar;
 		}
 
-		private void SetIconCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void SetIconCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -51,7 +51,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ColorButton_Clicked(object sender, EventArgs e)
+		private void ColorButton_Clicked(object? sender, EventArgs e)
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ColorTextBox.Text, out var color))
 			{
@@ -59,7 +59,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ForegroundColorButton_Clicked(object sender, EventArgs e)
+		private void ForegroundColorButton_Clicked(object? sender, EventArgs e)
 		{
 			if (Microsoft.Maui.Graphics.Color.TryParse(ForegroundColorTextBox.Text, out var color))
 			{
@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void LeadingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void LeadingCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -82,7 +82,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void ContentCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void ContentCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -101,12 +101,12 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 
-		async void PushNewTitleBarPage_Clicked(object sender, EventArgs e)
+		async void PushNewTitleBarPage_Clicked(object? sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new TitleBarPage());
 		}
 
-		void ToggleTitleBarOnWindow_Clicked(object sender, EventArgs e)
+		void ToggleTitleBarOnWindow_Clicked(object? sender, EventArgs e)
 		{
 			if (Window.TitleBar is not null)
 				Window.TitleBar = null;
@@ -114,7 +114,7 @@ namespace Maui.Controls.Sample.Pages
 				Window.TitleBar = _customTitleBar;
 		}
 
-		void ToggleHasNavigationBar_Clicked(object sender, EventArgs eventArgs)
+		void ToggleHasNavigationBar_Clicked(object? sender, EventArgs eventArgs)
 		{
 			if (Shell.GetNavBarIsVisible(this))
 			{
@@ -128,7 +128,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void TrailingCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void TrailingCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -155,7 +155,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void TallModeCheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+		private void TallModeCheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
 		{
 			if (e.Value)
 			{

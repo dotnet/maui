@@ -43,12 +43,14 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontFamily))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontFamily ?? string.Empty);
-			if (cleansedFont == null)
-				return "";
+		var cleansedFont = CleanseFontName(fontFamily ?? string.Empty);
+		if (cleansedFont == null)
+			return "";
 
-			int index = cleansedFont.LastIndexOf('-');
-			if (index != -1)
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
+		int index = cleansedFont.LastIndexOf('-');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+		if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
 				return $"{font}";
@@ -69,13 +71,15 @@ namespace Microsoft.Maui
 			if (string.IsNullOrEmpty(fontKey.family))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontKey.family ?? string.Empty);
+		var cleansedFont = CleanseFontName(fontKey.family ?? string.Empty);
 
-			if (cleansedFont == null)
-				return "";
+		if (cleansedFont == null)
+			return "";
 
-			int index = cleansedFont.LastIndexOf('-');
-			if (index != -1)
+#pragma warning disable CA1307 // Specify StringComparison for clarity - char overload doesn't support StringComparison
+		int index = cleansedFont.LastIndexOf('-');
+#pragma warning restore CA1307 // Specify StringComparison for clarity
+		if (index != -1)
 			{
 				string font = cleansedFont.Substring(0, index);
 				return $"{font}";

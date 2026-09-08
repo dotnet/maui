@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		[Test]
-		[Category(UITestCategories.ProgressBar)]
+		[Category(UITestCategories.ListView)]
 		public void Bugzilla57910Test()
 		{
 			for (int i = 0; i < 10; i++)

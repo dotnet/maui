@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		private void OnToggleRefreshColorClicked(object sender, System.EventArgs e)
+		private void OnToggleRefreshColorClicked(object? sender, System.EventArgs e)
 		{
 			if (refreshView.RefreshColor == Colors.Red)
 			{
@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void OnToggleRefreshBackgroundColorClicked(object sender, System.EventArgs e)
+		private void OnToggleRefreshBackgroundColorClicked(object? sender, System.EventArgs e)
 		{
 			if (refreshView.Background == SolidColorBrush.Yellow)
 			{
@@ -34,10 +34,10 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		private void OnTriggerRefreshClicked(object sender, System.EventArgs e) =>
+		private void OnTriggerRefreshClicked(object? sender, System.EventArgs e) =>
 			refreshView.IsRefreshing = !refreshView.IsRefreshing;
 
-		private void OnToggleEnabledClicked(object sender, System.EventArgs e) =>
+		private void OnToggleEnabledClicked(object? sender, System.EventArgs e) =>
 			refreshView.IsEnabled = !refreshView.IsEnabled;
 	}
 }

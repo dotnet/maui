@@ -250,6 +250,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.IsAssignableFrom<ISafeAreaView2>(contentView);
 		}
 
+		[Fact]
+		public void CustomView_ImplementsPublicSafeAreaContract()
+		{
+			var view = new CustomSafeAreaView
+			{
+				SafeAreaEdges = new SafeAreaEdges(
+					SafeAreaRegions.Container,
+					SafeAreaRegions.None,
+					SafeAreaRegions.All,
+					SafeAreaRegions.SoftInput)
+			};
+
+			Assert.IsAssignableFrom<ISafeAreaElement>(view);
+			Assert.Equal(SafeAreaRegions.Container, view.GetSafeAreaRegionForEdge(0));
+			Assert.Equal(SafeAreaRegions.None, view.GetSafeAreaRegionForEdge(1));
+			Assert.Equal(SafeAreaRegions.All, view.GetSafeAreaRegionForEdge(2));
+			Assert.Equal(SafeAreaRegions.SoftInput, view.GetSafeAreaRegionForEdge(3));
+			Assert.Equal(view.SafeAreaEdges, view.GetEffectiveSafeAreaEdges());
+		}
+
+		[Fact]
+		public void CustomView_SafeAreaEdgesCanChange()
+		{
+			var view = new CustomSafeAreaView();
+
+			Assert.Equal(SafeAreaEdges.None, view.SafeAreaEdges);
+
+			view.SafeAreaEdges = SafeAreaEdges.Container;
+
+			Assert.Equal(SafeAreaEdges.Container, view.SafeAreaEdges);
+			Assert.Equal(SafeAreaRegions.Container, view.GetSafeAreaRegionForEdge(0));
+		}
+
+		[Fact]
+		public void BuiltInView_EffectiveSafeAreaEdgesPreserveLegacyBehavior()
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var layout = new Grid { IgnoreSafeArea = true };
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var effectiveEdges = ((ISafeAreaElement)layout).GetEffectiveSafeAreaEdges();
+
+			Assert.Equal(SafeAreaEdges.None, effectiveEdges);
+		}
+
 		[Theory]
 		[MemberData(nameof(SafeAreaView2Types))]
 		public void HasExplicitSafeAreaEdges_DefaultValueCreationDoesNotCountAsExplicit(Type safeAreaViewType)
@@ -318,6 +363,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		class SafeAreaBindingContext
 		{
 			public SafeAreaEdges Edges { get; set; }
+		}
+
+		sealed class CustomSafeAreaView : View, ISafeAreaElement
+		{
+			public static readonly BindableProperty SafeAreaEdgesProperty =
+				BindableProperty.Create(
+					nameof(SafeAreaEdges),
+					typeof(SafeAreaEdges),
+					typeof(CustomSafeAreaView),
+					SafeAreaEdges.None);
+
+			public SafeAreaEdges SafeAreaEdges
+			{
+				get => (SafeAreaEdges)GetValue(SafeAreaEdgesProperty);
+				set => SetValue(SafeAreaEdgesProperty, value);
+			}
 		}
 
 		static BindableObject CreateSafeAreaBindable(Type safeAreaViewType)

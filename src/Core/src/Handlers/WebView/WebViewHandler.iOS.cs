@@ -436,10 +436,13 @@ namespace Microsoft.Maui.Handlers
 						for (nuint i = 0; i < records.Count; i++)
 						{
 							var record = records.GetItem<WKWebsiteDataRecord>(i);
+							if (record is null)
+								continue;
 
 							foreach (var deleteme in cookies)
 							{
-								if (record.DisplayName.Contains(deleteme.Domain, StringComparison.Ordinal) || deleteme.Domain.Contains(record.DisplayName, StringComparison.Ordinal))
+								if (record.DisplayName is { } displayName &&
+									(displayName.Contains(deleteme.Domain, StringComparison.Ordinal) || deleteme.Domain.Contains(displayName, StringComparison.Ordinal)))
 								{
 									WKWebsiteDataStore.DefaultDataStore.RemoveDataOfTypes(record.DataTypes,
 										  new[] { record }, () => { });

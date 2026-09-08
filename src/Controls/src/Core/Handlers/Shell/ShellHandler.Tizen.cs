@@ -84,6 +84,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView.UpdateItems();
 		}
 
+		// TODO: No-op stubs — make public when Tizen implements these features.
+		internal static void MapFlowDirection(ShellHandler handler, Shell view) { }
+		internal static void MapFlyoutBackgroundImage(ShellHandler handler, Shell view) { }
+		internal static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view) { }
+		internal static void MapFlyoutIcon(ShellHandler handler, Shell view) { }
+
 		void OnToggled(object? sender, EventArgs e)
 		{
 			if (sender is ShellView shellView)
