@@ -8100,6 +8100,10 @@ Describe 'the test prompt names the compile traps runs actually hit' {
             'exactly five top-level statements in order')
         $script:Source | Should -Match (
             'The selected method must carry \[Fact\] and \[Category\("Issue26505"\)\]')
+        $script:Source | Should -Match (
+            'source must explicitly import `using static Microsoft\.Maui\.DeviceTests\.AssertHelpers;`')
+        $script:Source | Should -Match (
+            'Follow the reported binding diagnostics \(including errors inside the callback\)')
         [regex]::Match(
             $script:Source,
             "(?s)'test-plan' \{.*?\`$androidGeneratedTestGuidance.*?'test' \{"
@@ -9862,6 +9866,36 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     }
 }
 '@
+        $script:CapturedAndroidIssue26505MissingImport = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public class Issue26505 : ControlsHandlerTestBase
+    {
+        [Fact]
+        [Category("Issue26505")]
+        public async Task LargeTextFitsWhenDefaultPaddingIsDisabled()
+        {
+            var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };
+            global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);
+            var applyReportedTrigger = true;
+            if (applyReportedTrigger)
+            {
+                button.FontSize = 36;
+            }
+            await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(new Window(new ContentPage { Content = button }), async handler =>
+            {
+                await AssertEventually(() => button.Handler != null && button.IsLoaded);
+                Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);
+                Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);
+            });
+        }
+    }
+}
+'@
     }
 
     AfterAll {
@@ -10352,6 +10386,33 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
         } | Should -Not -Throw
+    }
+
+    It 'reports the captured Android Issue26505 missing static import' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:CapturedAndroidIssue26505MissingImport `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue26505' `
+                -ExpectedTestMethod 'LargeTextFitsWhenDefaultPaddingIsDisabled' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*Binding diagnostics:*CS0103*AssertEventually*'
+    }
+
+    It 'allows the captured Android Issue26505 source after importing the trusted helper' {
+        $baseline = "using static Microsoft.Maui.DeviceTests.AssertHelpers;`n" +
+            $script:CapturedAndroidIssue26505MissingImport
+        $variant = New-ReplicationControlVariant `
+            -BaselineSource $baseline `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue26505' `
+            -ExpectedTestMethod 'LargeTextFitsWhenDefaultPaddingIsDisabled' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        $variant | Should -BeExactly $baseline.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
     }
 
     It 'rejects Android Issue26505 helper outside exact issue path' {

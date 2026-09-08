@@ -65,6 +65,8 @@ steps:
         'the test prompt names the compile traps runs actually hit*tells authoring and repair attempts to use only the one-argument AssertEventually shape'
         'Agent prompt deliverability*leaves no control character in any string literal of the orchestrator'
         'New-ReplicationControlVariant*allows Android Issue26505 ButtonHandler text-fit oracle'
+        'New-ReplicationControlVariant*reports the captured Android Issue26505 missing static import'
+        'New-ReplicationControlVariant*allows the captured Android Issue26505 source after importing the trusted helper'
         'New-ReplicationControlVariant*rejects Android Issue26505 helper outside exact issue path'
         'New-ReplicationControlVariant*rejects Android Issue26505 source-defined native shadows'
         'New-ReplicationControlVariant*rejects Android Issue26505 missing setup or non-FontSize trigger'
