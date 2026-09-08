@@ -5129,6 +5129,7 @@ function Invoke-ReplicationFixCandidateVerification {
             -TimeoutSeconds $TimeoutSeconds | Out-Null
         return [pscustomobject]@{ Ran = $true; Passed = $true; Detail = '' }
     } catch {
+        if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) { throw }
         $detail = ConvertTo-BoundedAgentLine `
             -Value $_.Exception.Message `
             -Description 'Trusted candidate verification' `
@@ -5817,8 +5818,9 @@ function Invoke-ReplicationFixArms {
             -Description 'Running the reproduction test with the fix applied' `
             -TimeoutSeconds $TimeoutSeconds
     } catch {
+        if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) { throw }
         Write-Host ('The fix arm did not pass, so the fix is discarded and the ' +
-            "reproduction is published on its own. $($_.Exception.Message)")
+            "reproduction remains an artifact; no PR will be published. $($_.Exception.Message)")
         Restore-ReplicationFixTree -TrustedScriptRoot $TrustedScriptRoot -ScopeFiles $ScopeFiles | Out-Null
         return $null
     }
@@ -5838,6 +5840,7 @@ function Invoke-ReplicationFixArms {
             -Description 'Running the reproduction test again with the fix removed' `
             -TimeoutSeconds $TimeoutSeconds
     } catch {
+        if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) { throw }
         # The test did not come back red without the fix. Something other than
         # the change made it green, so the fix arm proved nothing.
         Write-Host ('The restoration arm did not reproduce the original failure, so the fix ' +
@@ -6002,6 +6005,7 @@ function Test-ReplicationFixBaselineStillRed {
             -TimeoutSeconds $TimeoutSeconds | Out-Null
         return $true
     } catch {
+        if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) { throw }
         # A green test and a broken build both arrive here, and the panel must
         # not run either way, so the message says what was observed rather than
         # naming a cause the probe cannot distinguish.
@@ -8196,11 +8200,11 @@ function Invoke-LoggedChildProcess {
         [string]$Arguments[$testTypeIndex + 1] -ceq 'DeviceTest')
     $effectiveTimeoutSeconds = Get-ReplicationEffectiveTimeoutSeconds `
         -TimeoutSeconds $TimeoutSeconds
-    $null = Assert-ReplicationTrustedTree -Context "before $Description"
     $isolatedCommand = $null
     $guestIsolationEstablished = $false
     $boundarySetup = $true
     try {
+        $null = Assert-ReplicationTrustedTree -Context "before $Description"
         # Guest firewall setup stays in the trusted parent so host-generated
         # tests can run without seeing adb inside their isolated process tree.
         if ($Platform -eq 'android' -and $effectiveDeviceControl) {
@@ -8269,6 +8273,9 @@ function Invoke-LoggedChildProcess {
                 Stop-ReplicationNetworkIsolationUnit `
                     -UnitName ([string]$isolatedCommand.UnitName)
             }
+        } catch {
+            $_.Exception.Data['ReplicationExecutionBoundaryFailure'] = $true
+            throw
         } finally {
             try {
                 if ($guestIsolationEstablished) {
@@ -8283,7 +8290,12 @@ function Invoke-LoggedChildProcess {
                     (ConvertTo-ReplicationSafeLog $_.Exception.Message 1000))
                 throw
             } finally {
-                $null = Assert-ReplicationTrustedTree -Context "after $Description"
+                try {
+                    $null = Assert-ReplicationTrustedTree -Context "after $Description"
+                } catch {
+                    $_.Exception.Data['ReplicationExecutionBoundaryFailure'] = $true
+                    throw
+                }
             }
         }
     }
@@ -8951,10 +8963,9 @@ function Invoke-ReplicationFixPhase {
 
         .DESCRIPTION
             Runs only against a reproduction that is already certified, and is
-            best-effort at every step. Every way this can go wrong returns
-            $null, which publishes the reproduction exactly as every run before
-            the fix phase existed did. That is the whole contract: a fix is an
-            addition to a certified reproduction, never a risk to one.
+            best-effort for candidate failures. An unsuccessful fix leaves the
+            reproduction as an artifact, not a PR. Execution-boundary failures
+            terminate the run rather than entering candidate repair.
 
             The two arm results are normalised into the reproduction's own
             verification directory under the names the publisher gate reads.
@@ -9128,7 +9139,7 @@ function Invoke-ReplicationFixPhase {
         -CandidateTimeoutMinutes $FixCandidateTimeoutMinutes)
     $passing = @($results | Where-Object { $_ -and $_.Result -ceq 'Pass' -and $_.Diff })
     if ($passing.Count -eq 0) {
-        Write-Host 'No fix candidate passed the trusted verification, so the reproduction publishes on its own.'
+        Write-Host 'No fix candidate passed the trusted verification. The reproduction remains an artifact; no PR will be published.'
         return $null
     }
 
@@ -10981,9 +10992,7 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
     $fixOutcome = $null
     & $writeCandidateManifest $false
 
-    # The reproduction is certified at this point and its patch is already
-    # written, so nothing the fix phase does can reach it. Any failure inside
-    # returns $null and publishes the reproduction alone.
+    # A reproduction without a verified fix remains an artifact, never a PR.
     if ($negativeControl) {
         try {
             $fixOutcome = Invoke-ReplicationFixPhase `
@@ -10993,7 +11002,8 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
                 -TrustedScriptRoot $trustedScripts `
                 -VerificationDirectory $verificationDir
         } catch {
-            Write-Host ('The fix phase failed, so the reproduction is published on its own. ' +
+            if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) { throw }
+            Write-Host ('The fix phase failed. The reproduction remains an artifact; no PR will be published. ' +
                 (ConvertTo-ReplicationSafeLog $_.Exception.Message 500) +
                 (ConvertTo-ReplicationSafeLog (Get-ReplicationErrorOrigin $_) 200))
             $fixOutcome = $null
