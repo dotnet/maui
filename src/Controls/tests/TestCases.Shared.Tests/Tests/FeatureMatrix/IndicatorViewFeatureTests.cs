@@ -136,8 +136,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31064
+ 
 	[Test, Order(5)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifySelectedIndicatorSize()
@@ -149,9 +148,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Issue Link: https://github.com/dotnet/maui/issues/31065
 	[Test, Order(6)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorShape()
@@ -257,23 +254,6 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
-	[Test, Order(30)]
-	[Category(UITestCategories.IndicatorView)]
-	public void VerifyIndicatorShapeWithShadow()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(IndicatorShapeSquareRadioButton);
-		App.Tap(IndicatorShapeSquareRadioButton);
-		App.WaitForElement(ShadowTrueRadioButton);
-		App.Tap(ShadowTrueRadioButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-#endif
 
 	[Test, Order(7)]
 	[Category(UITestCategories.IndicatorView)]
@@ -331,13 +311,42 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_WINDOWS // https://github.com/dotnet/maui/issues/29812
+#if TEST_FAILS_ON_WINDOWS 
+	[Test, Order(30)]
+	[Category(UITestCategories.IndicatorView)]
+	public void VerifyIndicatorShapeWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IndicatorShapeSquareRadioButton);
+		App.Tap(IndicatorShapeSquareRadioButton);
+		App.WaitForElement(ShadowTrueRadioButton);
+		App.Tap(ShadowTrueRadioButton);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+ 
 	[Test, Order(11)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorView_Shadow()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
+		App.WaitForElement(ShadowTrueRadioButton);
+		App.Tap(ShadowTrueRadioButton);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(23)]
+	[Category(UITestCategories.IndicatorView)]
+	public void VerifyIndicatorSizeWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		IncreaseIndicatorSizeStepper();
 		App.WaitForElement(ShadowTrueRadioButton);
 		App.Tap(ShadowTrueRadioButton);
 		App.WaitForElement(Apply);
@@ -438,22 +447,6 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //Issue Link: https://github.com/dotnet/maui/issues/31140 , https://github.com/dotnet/maui/issues/29812
-	[Test, Order(23)]
-	[Category(UITestCategories.IndicatorView)]
-	public void VerifyIndicatorSizeWithShadow()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		IncreaseIndicatorSizeStepper();
-		App.WaitForElement(ShadowTrueRadioButton);
-		App.Tap(ShadowTrueRadioButton);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
-	}
-#endif
-
 	[Test, Order(24)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorSizeWithFlowDirection()
@@ -537,7 +530,6 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 // Issue Link: https://github.com/dotnet/maui/issues/31128
 // Issue Link: https://github.com/dotnet/maui/issues/31141
-// Issue Link: https://github.com/dotnet/maui/issues/31145
 	[Test, Order(34)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorTemplate()
