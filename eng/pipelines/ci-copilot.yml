@@ -131,7 +131,8 @@ stages:
         steps:
           - checkout: self
             clean: true
-            fetchDepth: 0
+            fetchDepth: 1
+            fetchTags: false
             persistCredentials: false
           - template: common/replication-contract-checks.yml
 

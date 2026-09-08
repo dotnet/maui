@@ -8081,18 +8081,40 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match (
             'Do not copy Catalyst or Windows window-helper examples into Android tests')
         $script:Source | Should -Match (
-            'has no closed Android native observation surface')
+            'Apart from an issue-keyed exception stated separately')
         $script:Source | Should -Match (
             'classify that scenario as unsupported by the current generated-test contract')
         $script:Source | Should -Match (
             'Do not claim the issue is intrinsically uncertifiable')
+        $script:Source | Should -Match (
+            '\$androidIssue26505GeneratedTestGuidance = if \(\$Platform -eq ''android'' -and \$IssueNumber -eq 26505\)')
+        $script:Source | Should -Match (
+            'CreateHandlerAndAddToWindow<global::Microsoft\.Maui\.Handlers\.ButtonHandler>')
+        $script:Source | Should -Match (
+            'SetUseDefaultPadding\(button, false\)')
+        $script:Source | Should -Match (
+            'AssertEventually\(\(\) => button\.Handler != null && button\.IsLoaded\)')
+        $script:Source | Should -Match (
+            'Paint\.MeasureText\(handler\.PlatformView\.Text\)')
+        $script:Source | Should -Match (
+            'exactly five top-level statements in order')
+        $script:Source | Should -Match (
+            'The selected method must carry \[Fact\] and \[Category\("Issue26505"\)\]')
         [regex]::Match(
             $script:Source,
             "(?s)'test-plan' \{.*?\`$androidGeneratedTestGuidance.*?'test' \{"
         ).Success | Should -BeTrue
         [regex]::Match(
             $script:Source,
+            "(?s)'test-plan' \{.*?\`$androidIssue26505GeneratedTestGuidance.*?'test' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
             "(?s)'test' \{.*?\`$androidGeneratedTestGuidance.*?'repair' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'test' \{.*?\`$androidIssue26505GeneratedTestGuidance.*?'repair' \{"
         ).Success | Should -BeTrue
         [regex]::Match(
             $script:Source,
@@ -8101,6 +8123,10 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         [regex]::Match(
             $script:Source,
             "(?s)'repair' \{.*?\`$androidGeneratedTestGuidance.*?'control' \{"
+        ).Success | Should -BeTrue
+        [regex]::Match(
+            $script:Source,
+            "(?s)'repair' \{.*?\`$androidIssue26505GeneratedTestGuidance.*?'control' \{"
         ).Success | Should -BeTrue
         [regex]::Match(
             $script:Source,
@@ -9791,6 +9817,51 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     }
 }
 '@
+        $script:TrustedAndroidIssue26505Base = @'
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue26505")]
+    public async Task Reproduces()
+    {
+        var button = new Button
+        {
+            Text = "CI",
+            WidthRequest = 64,
+            HeightRequest = 64,
+            CornerRadius = 32,
+            BorderWidth = 0,
+            BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red,
+            TextColor = global::Microsoft.Maui.Graphics.Colors.White,
+            HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center,
+            VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center
+        };
+        global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(
+            button,
+            false);
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            button.FontSize = 36;
+        }
+
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(
+            new Window(new ContentPage { Content = button }),
+            async handler =>
+            {
+                await AssertEventually(() => button.Handler != null && button.IsLoaded);
+                Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);
+                Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);
+            });
+    }
+}
+'@
     }
 
     AfterAll {
@@ -10273,16 +10344,223 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         } | Should -Not -Throw
     }
 
-    It 'rejects the window helper on Android until a closed Android observation contract exists' {
+    It 'allows Android Issue26505 ButtonHandler text-fit oracle' {
         {
             New-ReplicationControlVariant `
-                -BaselineSource $script:TrustedWindowHelperBase `
+                -BaselineSource $script:TrustedAndroidIssue26505Base `
                 -Edits @($script:GateEdit) `
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
-        } | Should -Throw (
-            '*Android generated tests cannot use CreateHandlerAndAddToWindow*' +
-            '*no Android, AndroidX, or Google.Android read surface*')
+        } | Should -Not -Throw
+    }
+
+    It 'rejects Android Issue26505 helper outside exact issue path' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue26505Base `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26506.Android.cs'
+        } | Should -Throw '*only available for the reviewed Issue26505 Android generated-test path*'
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue26505Base `
+                -Edits @($script:GateEdit) `
+                -Platform catalyst `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*Android ButtonHandler/native metadata is trusted only for the exact Issue26505 Android generated-test profile*'
+    }
+
+    It 'rejects Android Issue26505 source-defined native shadows' {
+        $shadowSource = @'
+namespace Google.Android.Material.Button
+{
+    public class MaterialButton
+    {
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue26505Base `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs' `
+                -AdditionalSources @($shadowSource)
+        } | Should -Throw '*may not declare Android Issue26505 profile types*'
+    }
+
+    It 'rejects Android Issue26505 missing setup or non-FontSize trigger' {
+        $missingSetup = $script:TrustedAndroidIssue26505Base.Replace(
+            @'
+        global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(
+            button,
+            false);
+'@,
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $missingSetup `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*requires exactly one explicit*SetUseDefaultPadding(button, false) setup*'
+
+        $wrongTrigger = $script:TrustedAndroidIssue26505Base.Replace(
+            'button.FontSize = 36;',
+            'button.Text = "CI";')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongTrigger `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*only trusted Android Issue26505 reported trigger*button.FontSize = 36*'
+    }
+
+    It 'rejects Android Issue26505 wrong helper overload or handler provenance' {
+        $wrongHandler = $script:TrustedAndroidIssue26505Base.Replace(
+            'global::Microsoft.Maui.Handlers.ButtonHandler',
+            'global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongHandler `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*only for the exact reviewed Issue26505 ButtonHandler text-fit profile*'
+
+        $namedArgument = $script:TrustedAndroidIssue26505Base.Replace(
+            'new Window(new ContentPage { Content = button }),',
+            'view: new Window(new ContentPage { Content = button }),')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $namedArgument `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*with unnamed, by-value arguments*'
+    }
+
+    It 'rejects Android Issue26505 foreign button or native receiver' {
+        $foreignButton = $script:TrustedAndroidIssue26505Base.Replace(
+            'new Window(new ContentPage { Content = button })',
+            'new Window(new ContentPage { Content = new Button() })')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $foreignButton `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*ContentPage.Content must bind directly to the single affected Button local*'
+
+        $foreignNative = $script:TrustedAndroidIssue26505Base.Replace(
+            'handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text)',
+            'new global::Google.Android.Material.Button.MaterialButton().Paint.MeasureText(handler.PlatformView.Text)')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $foreignNative `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*mandatory oracle must directly compare native*'
+    }
+
+    It 'rejects Android Issue26505 stretched geometry or computed oracle' {
+        $stretchedGeometry = $script:TrustedAndroidIssue26505Base.Replace(
+            'Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);',
+            'Assert.True(handler.PlatformView.Width > 0);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $stretchedGeometry `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*fixed-geometry assertion must directly prove the Button remained 64x64*'
+
+        $computedOracle = $script:TrustedAndroidIssue26505Base.Replace(
+            'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',
+            @'
+                var usableWidth = handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight;
+                Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= usableWidth);
+'@)
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $computedOracle `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*may contain only the reviewed readiness wait, fixed-geometry assertion, and direct native text-fit assertion*'
+    }
+
+    It 'rejects Android Issue26505 alias mutations and extra method state' {
+        $anchor = '        await CreateHandlerAndAddToWindow<'
+        foreach ($extra in @(
+            '        var alias = button; alias.Text = button.FontSize > 20 ? "long text" : "CI";'
+            '        var alias = button; alias.WidthRequest = button.FontSize > 20 ? 30 : 64;'
+            '        var alias = button; var second = alias; second.Text = "long text";'
+            '        ((Button)button).Text = "long text";'
+            '        button.FontSize++;'
+            '        var alias = button;'
+        )) {
+            $candidate = $script:TrustedAndroidIssue26505Base.Replace(
+                $anchor,
+                $extra + [Environment]::NewLine + $anchor)
+            $candidate | Should -Not -BeExactly $script:TrustedAndroidIssue26505Base
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+            } | Should -Throw '*method may contain only*aliases and extra statements are not permitted*'
+        }
+    }
+
+    It 'rejects Android Issue26505 native writes and broad native reads' {
+        $nativeWrite = $script:TrustedAndroidIssue26505Base.Replace(
+            'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',
+            'handler.PlatformView.SetPadding(0, 0, 0, 0);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $nativeWrite `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*native text-fit assertion must be exactly*Xunit Assert.True*'
+
+        $broadRead = $script:TrustedAndroidIssue26505Base.Replace(
+            'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',
+            'Assert.True(handler.PlatformView.Height > 0);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $broadRead `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*mandatory oracle must directly compare native*'
+    }
+
+    It 'prevents Android Issue26505 metadata cache bleed' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue26505Base `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Not -Throw
+
+        $outsideProfile = $script:ControlBase.Replace(
+            'Assert.True(label.IsVisible);',
+            'Assert.True(new global::Google.Android.Material.Button.MaterialButton().Width > 0);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $outsideProfile `
+                -Edits @($script:GateEdit) `
+                -Platform catalyst `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*Android ButtonHandler/native metadata is trusted only for the exact Issue26505 Android generated-test profile*'
     }
 
     It 'does not add a broad Android native surface to the closed control contract' {
@@ -10294,9 +10572,12 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         $contractMatch.Success | Should -BeTrue
         $contract = $contractMatch.Groups['contract'].Value
 
-        $contract | Should -Not -Match 'namespace\s+(Android|AndroidX|Google\.Android)'
-        $contract | Should -Not -Match 'MaterialButton'
-        $contract | Should -Not -Match 'PaddingLeft|PaddingTop|PaddingRight|PaddingBottom|Elevation'
+        $contract | Should -Match 'namespace\s+Android\.Graphics'
+        $contract | Should -Match 'namespace\s+Google\.Android\.Material\.Button'
+        $contract | Should -Match 'Microsoft\.Maui\.Handlers\.ButtonHandler'
+        $contract | Should -Not -Match 'namespace\s+AndroidX'
+        $contract | Should -Not -Match 'namespace\s+Android\.Widget'
+        $contract | Should -Not -Match 'SetPadding|PaddingTop|PaddingBottom|Elevation'
     }
 
     It 'allows the captured Catalyst helper invocation with an inferred handler parameter' {
