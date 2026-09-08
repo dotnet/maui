@@ -35,6 +35,7 @@ public class Issue36749 : ContentPage
             Text = "Test Button",
             AutomationId = "Issue36749Button"
         };
+        _button.Loaded += OnButtonLoaded;
 
         Content = new VerticalStackLayout
         {
@@ -44,28 +45,26 @@ public class Issue36749 : ContentPage
         };
     }
 
-    protected override void OnAppearing()
+    void OnButtonLoaded(object sender, EventArgs e)
     {
-        base.OnAppearing();
-
 #if IOS || MACCATALYST
-		if (_button.Handler?.PlatformView is UIButton platformButton)
-		{
-			// The native UIButton subclass sets BackgroundColor = UIColor.Cyan in its constructor.
-			// With the regression: initial null-Background mapping resets it to UIColor.Clear.
-			// With the fix:        the Window-null check skips the reset, preserving Cyan.
-			platformButton.BackgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
+        if (_button.Handler?.PlatformView is UIButton platformButton)
+        {
+            // The native UIButton subclass sets BackgroundColor = UIColor.Cyan in its constructor.
+            // With the regression: initial null-Background mapping resets it to UIColor.Clear.
+            // With the fix:        the Window-null check skips the reset, preserving Cyan.
+            platformButton.BackgroundColor.GetRGBA(out var r, out var g, out var b, out var a);
 
-			// UIColor.Cyan = R:0, G:1, B:1, A:1
-			bool isCyan = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
-			_resultLabel.Text = isCyan ? "PASS" : "FAIL";
-		}
-		else
-		{
-			// Handler or platform view unavailable — mark as FAIL so the test fails
-			// immediately rather than timing out on "Checking...".
-			_resultLabel.Text = "FAIL";
-		}
+            // UIColor.Cyan = R:0, G:1, B:1, A:1
+            bool isCyan = r < 0.01 && g > 0.99 && b > 0.99 && a > 0.99;
+            _resultLabel.Text = isCyan ? "PASS" : "FAIL";
+        }
+        else
+        {
+            // Handler or platform view unavailable — mark as FAIL so the test fails
+            // immediately rather than timing out on "Checking...".
+            _resultLabel.Text = "FAIL";
+        }
 #endif
     }
 }
@@ -79,16 +78,16 @@ public class Issue36749Button : Button { }
 // The cross-platform Button intentionally leaves Background and TextColor unset.
 class Issue36749NativeStyledButton : UIButton
 {
-	public Issue36749NativeStyledButton() : base(UIButtonType.System)
-	{
-		BackgroundColor = UIColor.Cyan;
-		SetTitleColor(UIColor.DarkGray, UIControlState.Normal);
-	}
+    public Issue36749NativeStyledButton() : base(UIButtonType.System)
+    {
+        BackgroundColor = UIColor.Cyan;
+        SetTitleColor(UIColor.DarkGray, UIControlState.Normal);
+    }
 }
 
 class Issue36749ButtonHandler : ButtonHandler
 {
-	protected override UIButton CreatePlatformView() => new Issue36749NativeStyledButton();
+    protected override UIButton CreatePlatformView() => new Issue36749NativeStyledButton();
 }
 
 #endif

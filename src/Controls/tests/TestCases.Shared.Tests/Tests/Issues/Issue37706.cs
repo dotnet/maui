@@ -15,7 +15,7 @@ public class Issue37706 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
-	public void RootPageBackButtonOverrideIsInvokedOnce()
+	public void RootPageBackButtonOverrideIsInvokedForEachPress()
 	{
 		App.WaitForElement("RootPageLabel");
 
@@ -25,6 +25,14 @@ public class Issue37706 : _IssuesUITest
 			App.WaitForTextToBePresentInElement("BackButtonPressedStatus", "OnBackButtonPressed called 1 time"),
 			Is.True,
 			"OnBackButtonPressed should be called exactly once.");
+		App.WaitForElement("RootPageLabel");
+
+		App.Back();
+
+		Assert.That(
+			App.WaitForTextToBePresentInElement("BackButtonPressedStatus", "OnBackButtonPressed called 2 times"),
+			Is.True,
+			"OnBackButtonPressed should be called once for each back press.");
 		App.WaitForElement("RootPageLabel");
 	}
 }

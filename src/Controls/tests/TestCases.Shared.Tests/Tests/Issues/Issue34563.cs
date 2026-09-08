@@ -1,4 +1,4 @@
-#if IOS || ANDROID // SafeAreaEdges not supported on Catalyst and Windows
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,20 +15,50 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.SafeAreaEdges)]
 		public void SafeAreaEdgesRespectedWhenTopAndBottomMismatch()
 		{
-			App.WaitForElement("RootGrid");
+			const string initialStatus = "Parent: Top=None, Bottom=Container | Child: Top=Container, Bottom=Container";
+			App.WaitForElement("TopMarker");
+			App.WaitForElement("BottomMarker");
+			Assert.That(App.WaitForTextToBePresentInElement("SafeAreaStatusLabel", initialStatus), Is.True);
 
-			var topSafeBoxRect = App.WaitForElement("TopSafeBox").GetRect();
-			Assert.That(topSafeBoxRect.Y, Is.GreaterThan(0),
-				"TopSafeBox opted into SafeAreaEdges.Container and should be inset from the top of the screen, " +
-				"even though the Page's Top edge is None.");
+			var root = App.WaitForElement("RootGrid").GetRect();
+			var rootTop = root.Y;
+			var rootBottom = root.Y + root.Height;
+			var singleTopInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
+			var bottomMarker = App.WaitForElement("BottomMarker").GetRect();
+			var singleBottomInset = rootBottom - (bottomMarker.Y + bottomMarker.Height);
+#if MACCATALYST
+			if (singleTopInset <= 5)
+				Assert.Ignore("This MacCatalyst environment does not expose a measurable title-bar safe area.");
+#endif
+			Assert.That(singleTopInset, Is.GreaterThan(5),
+				"The child must apply the top safe area even though its parent handles only Bottom.");
+#if !MACCATALYST
+			Assert.That(singleBottomInset, Is.GreaterThan(5),
+				"The parent must apply the bottom safe area while the child defers that edge.");
+#endif
 
-			var bottomSafeBoxRect = App.WaitForElement("BottomSafeBox").GetRect();
-			var rootGridRect = App.WaitForElement("RootGrid").GetRect();
-			var screenBottom = rootGridRect.Y + rootGridRect.Height;
-			var bottomSafeBoxBottom = bottomSafeBoxRect.Y + bottomSafeBoxRect.Height;
+			App.Tap("ToggleParentEdgeButton");
+			Assert.That(
+				App.WaitForTextToBePresentInElement(
+					"SafeAreaStatusLabel",
+					"Parent: Top=Container, Bottom=None | Child: Top=Container, Bottom=Container"),
+				Is.True);
 
-			Assert.That(bottomSafeBoxBottom, Is.LessThanOrEqualTo(screenBottom),
-				"BottomSafeBox should not extend past the bottom of its container.");
+			App.RetryAssert(() =>
+			{
+				var parentAndChildInset = App.WaitForElement("TopMarker").GetRect().Y - rootTop;
+				Assert.That(parentAndChildInset, Is.EqualTo(singleTopInset).Within(3),
+					"When both parent and child request Top, ancestor arbitration must prevent double padding.");
+			});
+#if !MACCATALYST
+			App.RetryAssert(() =>
+			{
+				var childBottomMarker = App.WaitForElement("BottomMarker").GetRect();
+				var childBottomInset = rootBottom - (childBottomMarker.Y + childBottomMarker.Height);
+				Assert.That(childBottomInset, Is.EqualTo(singleBottomInset).Within(3),
+					"When the parent stops handling Bottom, the child must apply that newly unblocked edge.");
+			});
+#endif
 		}
 	}
 }

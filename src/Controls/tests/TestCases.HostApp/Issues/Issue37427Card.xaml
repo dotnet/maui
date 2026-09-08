@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border
+	x:Class="Maui.Controls.Sample.Issues.Issue37427Card"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	Stroke="LightGray"
+	StrokeThickness="1">
+	<Grid
+		RowDefinitions="Auto,Auto,*"
+		RowSpacing="0">
+		<Image
+			x:Name="image"
+			Grid.Row="0"
+			Aspect="AspectFit"
+			HeightRequest="50" />
+
+		<Border
+			x:Name="previewColorsPancakeView"
+			Grid.Row="1"
+			HorizontalOptions="Fill"
+			Margin="12,8,12,8">
+			<Grid
+				x:Name="previewColorsLayout"
+				ColumnSpacing="0"
+				HeightRequest="32"
+				HorizontalOptions="Fill"
+				VerticalOptions="Fill" />
+		</Border>
+
+		<VerticalStackLayout
+			Grid.Row="2"
+			Padding="12,0,12,12"
+			Spacing="4">
+			<Label
+				x:Name="heading"
+				FontAttributes="Bold" />
+			<Label
+				x:Name="body"
+				TextColor="Gray" />
+		</VerticalStackLayout>
+	</Grid>
+</Border>

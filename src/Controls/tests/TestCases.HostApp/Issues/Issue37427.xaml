@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+	x:Class="Maui.Controls.Sample.Issues.Issue37427"
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:issues="clr-namespace:Maui.Controls.Sample.Issues"
+	Title="Issue 37427">
+	<CollectionView
+		x:Name="CardsCollectionView"
+		AutomationId="37427CollectionView"
+		ItemsSource="{Binding Items}"
+		SelectionMode="None">
+		<CollectionView.Header>
+			<VerticalStackLayout Padding="20,20,20,10">
+				<Label
+					FontSize="16"
+					Text="Every card below should show a colored preview bar under its title." />
+				<Label
+					Margin="0,4,0,0"
+					FontSize="13"
+					Text="Cards realized after the first layout pass must also render their preview bars."
+					TextColor="Gray" />
+			</VerticalStackLayout>
+		</CollectionView.Header>
+		<CollectionView.ItemTemplate>
+			<DataTemplate x:DataType="issues:Issue37427Item">
+				<issues:Issue37427Card
+					AutomationId="{Binding AutomationId}"
+					BodyText="{Binding Name, StringFormat='item: {0}'}"
+					HeadingText="{Binding Name}"
+					ImageSource="{Binding ImageSource}"
+					Margin="16,0,16,16"
+					PreviewColors="{Binding PreviewColors}"
+					ShowPreviewColors="True" />
+			</DataTemplate>
+		</CollectionView.ItemTemplate>
+	</CollectionView>
+</ContentPage>
