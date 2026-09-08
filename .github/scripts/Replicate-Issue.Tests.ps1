@@ -152,6 +152,7 @@ BeforeAll {
         'Invoke-ReplicationWindowsTwoPhaseRestore',
         'Get-ReplicationPlannedRestoreTargets',
         'Restore-TrackedVerificationSideEffects',
+        'Clear-TransientAppiumDirectory',
         'Test-TransientCopilotServiceFailure',
         'Test-TransientReproductionInfrastructureFailure',
         'Test-ReplicationSandboxBuildFailure',
@@ -3226,6 +3227,44 @@ InitializeComponent();
             '(?s)\$replayScriptPath = Join-Path \$trustedScripts ' +
             '''BuildAndRunSandbox\.ps1''.*?-ReproductionScriptPath'', ' +
             '\$replayScriptPath.*?-ReproductionArgumentsPayload'', \$replayPayload')
+    }
+
+    It 'clears trusted Android preflight residue before Sandbox authoring' {
+        $preflight = $script:Source.IndexOf(
+            "-Description 'Preflighting the trusted Android runner'",
+            [StringComparison]::Ordinal)
+        $authoringLoop = $script:Source.IndexOf(
+            'for ($attempt = 1; $attempt -le $MaxSandboxAttempts; $attempt++)',
+            [StringComparison]::Ordinal)
+        $preflight | Should -BeGreaterOrEqual 0
+        $authoringLoop | Should -BeGreaterThan $preflight
+        $beforeAuthoring = $script:Source.Substring(
+            $preflight, $authoringLoop - $preflight)
+        $beforeAuthoring | Should -Match (
+            '(?s)-TimeoutSeconds 1800\s+Clear-TransientAppiumDirectory\s+}')
+
+        $repoRoot = Join-Path $TestDrive 'preflight-repo'
+        $sandboxAppiumDir = Join-Path $repoRoot 'CustomAgentLogsTmp/Sandbox'
+        $sandboxArtifactDir = Join-Path $TestDrive 'preflight-artifacts'
+        $trustedAppiumRunnerPath = Join-Path $TestDrive 'trusted-runner.cs'
+        $runnerLog = Join-Path $sandboxArtifactDir 'runner-preflight.log'
+        New-Item -ItemType Directory -Path $sandboxAppiumDir, $sandboxArtifactDir -Force |
+            Out-Null
+        'trusted runner' | Set-Content -LiteralPath $trustedAppiumRunnerPath
+        Copy-Item -LiteralPath $trustedAppiumRunnerPath `
+            -Destination (Join-Path $sandboxAppiumDir 'RunWithAppiumTest.cs')
+        $cache = Join-Path $sandboxAppiumDir 'obj'
+        New-Item -ItemType Directory -Path $cache | Out-Null
+        'generated cache' | Set-Content -LiteralPath (Join-Path $cache 'cache.txt')
+        'preserved child diagnostics' | Set-Content -LiteralPath $runnerLog
+
+        Clear-TransientAppiumDirectory
+
+        @(Get-ChildItem -LiteralPath $sandboxAppiumDir -Force).Count | Should -Be 0
+        (Get-Content -LiteralPath $trustedAppiumRunnerPath -Raw).Trim() |
+            Should -BeExactly 'trusted runner'
+        (Get-Content -LiteralPath $runnerLog -Raw).Trim() |
+            Should -BeExactly 'preserved child diagnostics'
     }
 
     It 'prewarms trusted inputs and forbids restore during isolated execution' {

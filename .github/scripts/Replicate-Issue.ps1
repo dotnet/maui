@@ -10013,6 +10013,7 @@ try {
             -Description 'Preflighting the trusted Android runner' `
             -AllowDeviceControl `
             -TimeoutSeconds 1800
+        Clear-TransientAppiumDirectory
     }
 
     if (Test-Path -LiteralPath $structuredContextPath -PathType Leaf) {
