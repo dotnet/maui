@@ -1663,6 +1663,112 @@ public partial class MainPage : ContentPage
         { Read-SandboxProposal | Out-Null } | Should -Not -Throw
         Remove-Item -LiteralPath $issueAgentContextPath
     }
+    Context 'Android Issue26505 Sandbox prompt guidance' {
+        BeforeEach {
+            $script:SavedReplicationPromptVariables = @{}
+            foreach ($name in @(
+                'IssueNumber',
+                'Platform',
+                'BaseSha',
+                'ContextPath',
+                'DeviceUdid',
+                'ArtifactRoot',
+                'repoRoot',
+                'trustedSkills',
+                'sandboxDir',
+                'sandboxArtifactDir',
+                'verificationDir',
+                'reproductionResultPath',
+                'appiumPlanPath',
+                'sandboxProposalPath',
+                'sandboxBlockedPath',
+                'testProposalPath',
+                'approvedTestRoots')) {
+                $variable = Get-Variable -Name $name -Scope Script -ErrorAction SilentlyContinue
+                $script:SavedReplicationPromptVariables[$name] = [pscustomobject]@{
+                    Existed = ($null -ne $variable)
+                    Value = if ($null -ne $variable) { $variable.Value } else { $null }
+                }
+            }
+
+            $script:IssueNumber = 26505
+            $script:Platform = 'android'
+            $script:BaseSha = 'abc1234'
+            $script:ContextPath = Join-Path $TestDrive 'context.md'
+            $script:DeviceUdid = 'emulator-5554'
+            $script:ArtifactRoot = Join-Path $TestDrive 'artifacts'
+            $script:repoRoot = Join-Path $TestDrive 'repo'
+            $script:trustedSkills = Join-Path $TestDrive 'trusted/skills'
+            $script:sandboxDir = Join-Path $script:repoRoot 'src/Controls/samples/Controls.Sample.Sandbox'
+            $script:sandboxArtifactDir = Join-Path $script:ArtifactRoot 'sandbox'
+            $script:verificationDir = Join-Path $script:ArtifactRoot 'verification'
+            $script:reproductionResultPath = Join-Path $script:ArtifactRoot 'reproduction-result.json'
+            $script:appiumPlanPath = Join-Path $script:repoRoot 'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+            $script:sandboxProposalPath = Join-Path $script:ArtifactRoot 'agent/sandbox-proposal.json'
+            $script:sandboxBlockedPath = Join-Path $script:ArtifactRoot 'agent/sandbox-blocked.json'
+            $script:testProposalPath = Join-Path $script:ArtifactRoot 'agent/test-proposal.json'
+            $script:approvedTestRoots = @('src/Controls/tests/')
+        }
+
+        AfterEach {
+            foreach ($name in $script:SavedReplicationPromptVariables.Keys) {
+                $saved = $script:SavedReplicationPromptVariables[$name]
+                if ($saved.Existed) {
+                    Set-Variable -Name $name -Scope Script -Value $saved.Value
+                } else {
+                    Remove-Variable -Name $name -Scope Script -ErrorAction SilentlyContinue
+                }
+            }
+            Remove-Variable -Name SavedReplicationPromptVariables -Scope Script -ErrorAction SilentlyContinue
+        }
+
+        It 'delivers the issue-derived visual scene guidance without generated-test syntax' {
+            $prompt = New-CopilotPrompt -Phase sandbox
+
+            $prompt | Should -Match 'ANDROID ISSUE26505 SANDBOX FIDELITY'
+            $prompt | Should -Match 'Text="CI"'
+            $prompt | Should -Match 'WidthRequest=64'
+            $prompt | Should -Match 'HeightRequest=64'
+            $prompt | Should -Match 'FontSize=36'
+            $prompt | Should -Match 'CornerRadius=32'
+            $prompt | Should -Match 'red BackgroundColor'
+            $prompt | Should -Match 'white TextColor'
+            $prompt | Should -Match 'SetUseDefaultPadding\(\.\.\., false\)'
+            $prompt | Should -Match 'managed Width/Height/Bounds staying unchanged'
+            $prompt | Should -Match 'managed Width, Height, Bounds, or layout bookkeeping alone is not direct proof'
+            $prompt | Should -Match 'Shadow/elevation may appear only as contextual issue background'
+            $prompt | Should -Not -Match 'ANDROID ISSUE26505 NARROW EXCEPTION'
+            $prompt | Should -Not -Match 'CreateHandlerAndAddToWindow<global::Microsoft\.Maui\.Handlers\.ButtonHandler>'
+            $prompt | Should -Not -Match 'AssertEventually\(\(\) => button\.Handler != null && button\.IsLoaded\)'
+        }
+
+        It 'scopes Issue26505 Sandbox scene guidance to Android Issue26505' {
+            foreach ($case in @(
+                @{ Issue = 26505; Platform = 'ios' }
+                @{ Issue = 26505; Platform = 'catalyst' }
+                @{ Issue = 37440; Platform = 'android' }
+            )) {
+                $script:IssueNumber = $case.Issue
+                $script:Platform = $case.Platform
+                $prompt = New-CopilotPrompt -Phase sandbox
+
+                $prompt | Should -Not -Match 'ANDROID ISSUE26505 SANDBOX FIDELITY'
+                $prompt | Should -Match 'managed Width, Height, Bounds, or layout bookkeeping alone is not direct proof'
+            }
+        }
+
+        It 'keeps Sandbox-only Issue26505 guidance out of generated-test phases' {
+            $testPlanPrompt = New-CopilotPrompt -Phase 'test-plan'
+            $testPlanPrompt | Should -Not -Match 'ANDROID ISSUE26505 SANDBOX FIDELITY'
+            $testPlanPrompt | Should -Match 'ANDROID ISSUE26505 NARROW EXCEPTION'
+
+            foreach ($phase in @('test', 'repair')) {
+                $prompt = New-CopilotPrompt -Phase $phase -BaselineRelativePath 'tests/Issue26505.Android.cs'
+                $prompt | Should -Not -Match 'ANDROID ISSUE26505 SANDBOX FIDELITY'
+                $prompt | Should -Match 'ANDROID ISSUE26505 NARROW EXCEPTION'
+            }
+        }
+    }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
         $repoRoot = $TestDrive
