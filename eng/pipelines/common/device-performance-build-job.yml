@@ -120,7 +120,7 @@ jobs:
       onlyAndroidPlatformDefaultApis: true
       skipAndroidEmulatorImages: true
       skipAndroidCreateAvds: true
-      skipProvisioning: true
+      skipProvisionator: true
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipSimulatorSetup: true
       skipInternalFeeds: true
