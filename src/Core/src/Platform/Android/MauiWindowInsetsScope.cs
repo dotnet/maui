@@ -249,6 +249,32 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 		ScheduleResolve();
 	}
 
+	public void OnConfigurationChanged(IMauiSafeAreaParticipant participant)
+	{
+		ObjectDisposedException.ThrowIf(_isDisposed, this);
+		ArgumentNullException.ThrowIfNull(participant);
+
+		if (_participants.TryGetValue(participant, out var node))
+		{
+			node.OnConfigurationChanged();
+		}
+
+		Invalidate(SafeAreaInvalidationReason.OrientationChanged);
+	}
+
+	public void OnParticipantLayoutChanged(IMauiSafeAreaParticipant participant)
+	{
+		ObjectDisposedException.ThrowIf(_isDisposed, this);
+		ArgumentNullException.ThrowIfNull(participant);
+
+		if (_participants.TryGetValue(participant, out var node))
+		{
+			node.OnLayoutChanged();
+		}
+
+		Invalidate(SafeAreaInvalidationReason.BoundsChanged);
+	}
+
 	public SafeAreaInvalidationReason ConsumePendingInvalidations()
 	{
 		ObjectDisposedException.ThrowIf(_isDisposed, this);
@@ -332,6 +358,7 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			_stableHostHeight = HostView.Height;
 		}
 
+		ResolvePendingSafeAreas();
 		Invalidate(SafeAreaInvalidationReason.NavigationChromeChanged | SafeAreaInvalidationReason.BoundsChanged);
 	}
 
@@ -486,6 +513,11 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 
 	void ResolveNode(ParticipantNode node, SafeAreaBranchContext inheritedContext)
 	{
+		if (node.IsAwaitingLayout)
+		{
+			return;
+		}
+
 		var view = node.Participant.PlatformView;
 		if (!view.IsAttachedToWindow || view.Visibility != ViewStates.Visible)
 		{
@@ -858,22 +890,42 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 				}
 			}
 
-			view?.SetPadding(
-				_originalPadding.Left + left,
-				_originalPadding.Top + top,
-				_originalPadding.Right + right,
-				_originalPadding.Bottom + bottom);
+			if (view is not null)
+			{
+				SetPaddingIfChanged(
+					view,
+					_originalPadding.Left + left,
+					_originalPadding.Top + top,
+					_originalPadding.Right + right,
+					_originalPadding.Bottom + bottom);
+			}
 		}
 
 		public void Reset()
 		{
-			_view?.SetPadding(
-				_originalPadding.Left,
-				_originalPadding.Top,
-				_originalPadding.Right,
-				_originalPadding.Bottom);
+			if (_view is not null)
+			{
+				SetPaddingIfChanged(
+					_view,
+					_originalPadding.Left,
+					_originalPadding.Top,
+					_originalPadding.Right,
+					_originalPadding.Bottom);
+			}
+
 			_view = null;
 			_originalPadding = default;
+		}
+
+		static void SetPaddingIfChanged(AView view, int left, int top, int right, int bottom)
+		{
+			if (view.PaddingLeft != left ||
+				view.PaddingTop != top ||
+				view.PaddingRight != right ||
+				view.PaddingBottom != bottom)
+			{
+				view.SetPadding(left, top, right, bottom);
+			}
 		}
 	}
 
@@ -1039,6 +1091,8 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 
 		public List<ParticipantNode> Children { get; } = [];
 
+		public bool IsAwaitingLayout { get; private set; }
+
 		public void AttachTo(ParticipantNode parent)
 		{
 			Parent = parent;
@@ -1054,6 +1108,17 @@ internal sealed class MauiWindowInsetsScope : IDisposable
 			}
 
 			Children.Clear();
+		}
+
+		public void OnConfigurationChanged()
+		{
+			IsAwaitingLayout = true;
+			ResetContribution();
+		}
+
+		public void OnLayoutChanged()
+		{
+			IsAwaitingLayout = false;
 		}
 
 		public void ApplyContribution(in SafeAreaPadding contribution)

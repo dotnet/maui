@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Platform
 
 			if (changed && _windowInsetsScope is not null)
 			{
-				_windowInsetsScope.Invalidate(SafeAreaInvalidationReason.BoundsChanged);
+				_windowInsetsScope.OnParticipantLayoutChanged(this);
 			}
 
 			if (ClipsToBounds)
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.OrientationChanged);
+			_windowInsetsScope?.OnConfigurationChanged(this);
 		}
 
 		/// <summary>

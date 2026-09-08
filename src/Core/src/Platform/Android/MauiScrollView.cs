@@ -395,7 +395,7 @@ namespace Microsoft.Maui.Platform
 			base.OnLayout(changed, left, top, right, bottom);
 			if (changed)
 			{
-				_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.BoundsChanged);
+				_windowInsetsScope?.OnParticipantLayoutChanged(this);
 			}
 
 			if (_hScrollView?.Parent == this && _content is not null)
@@ -431,7 +431,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnConfigurationChanged(newConfig);
 
-			_windowInsetsScope?.Invalidate(SafeAreaInvalidationReason.OrientationChanged);
+			_windowInsetsScope?.OnConfigurationChanged(this);
 		}
 
 		/// <summary>

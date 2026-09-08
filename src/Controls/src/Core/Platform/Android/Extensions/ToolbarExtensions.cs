@@ -13,7 +13,10 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
+using Google.Android.Material.Badge;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
 using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
@@ -38,12 +41,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool showNavBar = toolbar.IsVisible;
 			var lp = nativeToolbar.LayoutParameters;
+			var appBar = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
 			if (lp == null)
 				return;
 
 			if (!showNavBar)
 			{
 				lp.Height = 0;
+				// Clear stale inset padding so the hidden AppBar can fully collapse.
+				appBar?.SetPadding(0, 0, 0, 0);
 			}
 			else
 			{
@@ -54,7 +60,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
+			if (!showNavBar && appBar is not null)
+			{
+				nativeToolbar.Post(() =>
+				{
+					if (nativeToolbar.IsAttachedToWindow && !toolbar.IsVisible)
+						ViewCompat.RequestApplyInsets(nativeToolbar);
+				});
+			}
+			else
+			{
+				ViewCompat.RequestApplyInsets(nativeToolbar);
+			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
