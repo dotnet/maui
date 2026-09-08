@@ -1098,7 +1098,7 @@ stages:
               # before workload installation could finish.
               skipAndroidEmulatorImages: true
               # AVD is created by the inline 'Create AVD and boot Android Emulator' script below
-              # with specific config (playstore image variant, partition shrink, ADB key pre-auth)
+              # with mode-specific image selection, partition shrink, and ADB key pre-auth
               # that ProvisionAndroidSdkAvdCreateAvds doesn't replicate.
               skipAndroidCreateAvds: true
               androidEmulatorApiLevel: '30'
@@ -1160,7 +1160,9 @@ stages:
                 "$(Build.SourcesDirectory)/src/Provisioning/Provisioning.csproj" `
                 -v:detailed
             displayName: 'Provision Android SDK - Emulator Images after workloads'
-            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'))
+            # The shared provisioning target selects a non-rootable Play Store
+            # image. Replication installs its AOSP image in the AVD step instead.
+            condition: and(succeeded(), eq('${{ parameters.Platform }}', 'android'), ne('${{ parameters.Mode }}', 'replicate'))
             env:
               AndroidSdkProvisionApiLevel: '30'
 
@@ -1681,10 +1683,22 @@ stages:
                 # fails with "Package path is not valid. Valid system image paths
                 # are: null" and every retry fails identically. See deep-stage
                 # build 14635021.
-                SYS_IMAGE="system-images;android-30;google_apis_playstore;x86_64"
-                if ! sdkmanager --list_installed 2>/dev/null | grep -q "google_apis_playstore/x86_64"; then
+                # Play Store images reject adb root, which guest firewall setup
+                # requires. Keep review behavior; use a rootable AOSP replication guest.
+                if [ "$PIPELINE_MODE" = "replicate" ]; then
+                  SYS_IMAGE="system-images;android-30;default;x86_64"
+                else
+                  SYS_IMAGE="system-images;android-30;google_apis_playstore;x86_64"
+                fi
+                echo "Selected Android system image: $SYS_IMAGE"
+                if ! sdkmanager --list_installed 2>/dev/null | grep -Fq "$SYS_IMAGE"; then
                   echo "=== System image not detected — installing $SYS_IMAGE ==="
-                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -8 || true
+                  yes | sdkmanager "$SYS_IMAGE" 2>&1 | tail -8
+                  SDK_INSTALL_EXIT=${PIPESTATUS[1]}
+                  if [ "$SDK_INSTALL_EXIT" -ne 0 ]; then
+                    echo "##vso[task.logissue type=error]Required Android image installation failed."
+                    exit "$SDK_INSTALL_EXIT"
+                  fi
                 fi
 
                 echo "=== Creating AVD ==="
@@ -1925,8 +1939,21 @@ stages:
               # Emulator provisioning is infrastructure. If every retry fails,
               # continue into Setup so code review still runs; the Gate will
               # classify any device-dependent verification as inconclusive.
-              continueOnError: true
+              continueOnError: ${{ ne(parameters.Mode, 'replicate') }}
               condition: succeeded()
+              env:
+                PIPELINE_MODE: ${{ parameters.Mode }}
+
+            - pwsh: |
+                $ErrorActionPreference = 'Stop'
+                . "$(Build.ArtifactStagingDirectory)/trusted-github/scripts/shared/Assert-ReplicationExecutionEnvironment.ps1"
+                $boundary = Assert-ReplicationAndroidGuestNetworkIsolation -DeviceUdid $env:DEVICE_UDID
+                Write-Host "Android guest boundary established: $($boundary | ConvertTo-Json -Compress)"
+              displayName: 'Verify Android replication guest boundary'
+              condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'))
+              timeoutInMinutes: 3
+              env:
+                DEVICE_UDID: $(DEVICE_UDID)
 
           # Install Node.js and Appium (same as ui-tests-steps.yml)
           - task: UseNode@1

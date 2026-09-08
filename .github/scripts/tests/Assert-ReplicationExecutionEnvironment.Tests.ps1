@@ -759,6 +759,9 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
             param([string[]]$Arguments)
             $text = $Arguments -join ' '
             $calls.Add($text)
+            if ($text -match ' shell id -u$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '0' }
+            }
             if ($text -match 'settings get global airplane_mode_on$') {
                 $airplaneReads = @($calls | Where-Object {
                         $_ -match 'settings get global airplane_mode_on$'
@@ -826,6 +829,9 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
             param([string[]]$Arguments)
             $text = $Arguments -join ' '
             $calls.Add($text)
+            if ($text -match ' shell id -u$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '0' }
+            }
             if ($text -match 'settings get global airplane_mode_on$') {
                 return [pscustomobject]@{ ExitCode = 0; Output = '1' }
             }
@@ -866,6 +872,9 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
         $invoker = {
             param([string[]]$Arguments)
             $text = $Arguments -join ' '
+            if ($text -match ' shell id -u$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '0' }
+            }
             if ($text -match 'settings get global airplane_mode_on$') {
                 return [pscustomobject]@{ ExitCode = 0; Output = '1' }
             }
