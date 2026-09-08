@@ -39,7 +39,10 @@ Supply:
 - `expectedScenario`: a supported scenario/platform combination from the table above.
 
 The pipeline snapshots its trusted performance harness and overlays it into separate
-base/head builds. It records build provenance, packages both applications, submits the
+base/head builds. It merges only the required performance category constants into each
+revision's own `TestCategory.cs`, preserving older or revision-specific categories.
+Conflicting performance category values fail rather than silently changing the workload.
+It records build provenance, packages both applications, submits the
 paired payload to Helix, and publishes `device_performance_results_<platform>`.
 Required build pools, workloads, and Helix access must already be available.
 

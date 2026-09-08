@@ -38,9 +38,13 @@ jobs:
   - pwsh: |
       $trustedRoot = "$(Agent.TempDirectory)/device-performance-harness"
       Remove-Item $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
+      New-Item -ItemType Directory -Force -Path $trustedRoot | Out-Null
+      Copy-Item "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/TestCategory.cs" `
+        -Destination "$trustedRoot/TestCategory.cs"
+      Copy-Item "$(Build.SourcesDirectory)/eng/scripts/Merge-DevicePerformanceCategories.ps1" `
+        -Destination "$trustedRoot/"
 
       $paths = @(
-        "src/Controls/tests/DeviceTests/TestCategory.cs",
         "src/Controls/tests/DeviceTests/Performance",
         "src/Core/tests/DeviceTests.Shared/DeviceTestSharedHelpers.cs",
         "src/Core/tests/DeviceTests.Shared/DevicePerformanceResult.cs",
@@ -105,10 +109,13 @@ jobs:
         DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
 
   - pwsh: |
-      Copy-Item "$(Agent.TempDirectory)/device-performance-harness/*" `
-        -Destination "$(Build.SourcesDirectory)" `
+      Copy-Item "$(Agent.TempDirectory)/device-performance-harness/src/*" `
+        -Destination "$(Build.SourcesDirectory)/src" `
         -Recurse `
         -Force
+      & "$(Agent.TempDirectory)/device-performance-harness/Merge-DevicePerformanceCategories.ps1" `
+        -TrustedCategoryPath "$(Agent.TempDirectory)/device-performance-harness/TestCategory.cs" `
+        -TargetCategoryPath "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/TestCategory.cs"
     displayName: Overlay trusted performance harness
 
   - template: /eng/pipelines/common/provision.yml@self
