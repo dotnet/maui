@@ -497,7 +497,10 @@ Describe 'Selecting a real process isolation boundary' {
         New-Item -ItemType Directory -Path $script:TrustedRoot -Force | Out-Null
         $script:Target = Join-Path $script:TrustedRoot 'isolated-target.ps1'
         $script:IsolationPlanRepo = Join-Path $script:ScratchRoot 'isolation-plan-repo'
-        New-Item -ItemType Directory -Path $script:IsolationPlanRepo -Force | Out-Null
+        $script:IsolationPlanArtifactRoot = Join-Path $script:ScratchRoot 'isolation-plan-artifacts'
+        New-Item -ItemType Directory `
+            -Path $script:IsolationPlanRepo, $script:IsolationPlanArtifactRoot `
+            -Force | Out-Null
         foreach ($relative in @('.git/hooks', '.git/objects', '.git/refs', '.git/info')) {
             New-Item -ItemType Directory -Path (Join-Path $script:IsolationPlanRepo $relative) -Force |
                 Out-Null
@@ -519,12 +522,12 @@ Describe 'Selecting a real process isolation boundary' {
 
         $tokens = $null
         $errors = $null
-        $orchestratorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:OrchestratorAst = [System.Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $PSScriptRoot '../Replicate-Issue.ps1'), [ref]$tokens, [ref]$errors)
         if ($errors) {
             throw ($errors | ForEach-Object Message) -join [Environment]::NewLine
         }
-        $runtimeEnvironmentFunction = $orchestratorAst.Find({
+        $runtimeEnvironmentFunction = $script:OrchestratorAst.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq 'Get-ReplicationRuntimeEnvironment'
         }, $true)
@@ -598,6 +601,115 @@ Describe 'Selecting a real process isolation boundary' {
             Should -Match ([regex]::Escape("BindReadOnlyPaths=$($script:TrustedRoot)"))
     }
 
+    It 'uses a private Android HOME whose .android directory is the adb home' {
+        $environment = Get-ReplicationRuntimeEnvironment
+        { Assert-ReplicationExecutionEnvironment -Environment $environment } |
+            Should -Not -Throw
+        $environment['HOME'] | Should -BeExactly $script:replicationHome
+        $environment['ANDROID_USER_HOME'] | Should -BeExactly $script:replicationAndroidHome
+        $environment['ANDROID_USER_HOME'] |
+            Should -BeExactly (Join-Path ([string]$environment['HOME']) '.android')
+        Test-Path -LiteralPath $script:replicationHome -PathType Container |
+            Should -BeTrue
+        Test-Path -LiteralPath $script:replicationAndroidHome -PathType Container |
+            Should -BeTrue
+
+        # JDK binding is covered separately and must not depend on this host's provisioning.
+        $environment.Remove('JAVA_HOME')
+        $command = Get-ReplicationNetworkIsolatedCommand `
+            -Platform android `
+            -RepositoryRoot $script:IsolationPlanRepo `
+            -TrustedRoot $script:TrustedRoot `
+            -ScriptPath $script:Target `
+            -Arguments @() `
+            -Environment $environment `
+            -WritableRoots @(
+                $script:IsolationPlanRepo,
+                $script:IsolationPlanArtifactRoot,
+                $script:replicationHome) `
+            -DeviceUdid 'emulator-5554' `
+            -OperatingSystem linux `
+            -UserId 1000 `
+            -GroupId 1000
+
+        $command.Arguments | Should -Contain "--setenv=HOME=$($script:replicationHome)"
+        $command.Arguments |
+            Should -Contain "--setenv=ANDROID_USER_HOME=$($script:replicationAndroidHome)"
+        $command.Arguments |
+            Should -Contain "--property=BindPaths=$($script:replicationHome)"
+        $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
+
+        $hostHomes = @(
+            [Environment]::GetEnvironmentVariable('HOME'),
+            [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+        ) | Where-Object {
+            -not [string]::IsNullOrWhiteSpace($_) -and [IO.Path]::IsPathRooted($_)
+        } | ForEach-Object {
+            [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($_))
+        } | Sort-Object -Unique
+        foreach ($hostHome in $hostHomes) {
+            if ($hostHome -ceq $script:replicationHome) { continue }
+            $command.Arguments | Should -Not -Contain "--property=BindPaths=$hostHome"
+            $command.Arguments |
+                Should -Not -Contain "--property=BindReadOnlyPaths=$hostHome"
+        }
+    }
+
+    It 'wires the private home into both production Linux isolated command sites' {
+        $networkCalls = @($script:OrchestratorAst.FindAll({
+            $args[0] -is [System.Management.Automation.Language.CommandAst] -and
+            $args[0].GetCommandName() -eq 'Get-ReplicationNetworkIsolatedCommand'
+        }, $true))
+
+        $networkCalls.Count | Should -Be 2
+        $inlineCall = @($networkCalls | Where-Object {
+                $_.Extent.Text -match '(?s)-Environment\s+\(Get-ReplicationRuntimeEnvironment\)'
+            })
+        $loggedChildCall = @($networkCalls | Where-Object {
+                $_.Extent.Text -match '(?s)-Environment\s+\$childEnvironment\b'
+            })
+        $inlineCall.Count | Should -Be 1
+        $loggedChildCall.Count | Should -Be 1
+
+        $loggedChildFunction = $script:OrchestratorAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Invoke-LoggedChildProcess'
+        }, $true)
+        $loggedChildFunction | Should -Not -Be $null
+        $loggedChildFunction.Extent.Text |
+            Should -Match '(?m)^\s*\$childEnvironment\s*=\s*Get-ReplicationRuntimeEnvironment\s*$'
+
+        foreach ($call in @($inlineCall + $loggedChildCall)) {
+            $call.Extent.Text |
+                Should -Match '(?s)-WritableRoots\s+@\(\$repoRoot,\s*\$ArtifactRoot,\s*\$replicationHome\)'
+        }
+    }
+
+    It 'preserves inherited HOME outside Android for <Platform>' -TestCases @(
+        @{ Platform = 'ios' },
+        @{ Platform = 'catalyst' },
+        @{ Platform = 'windows' }
+    ) {
+        param([string]$Platform)
+
+        $previousPlatform = $script:Platform
+        try {
+            $script:Platform = $Platform
+            $inheritedHome = [Environment]::GetEnvironmentVariable('HOME')
+            $environment = Get-ReplicationRuntimeEnvironment
+            $actualHome = if ($environment.Contains('HOME')) {
+                [string]$environment['HOME']
+            } else {
+                $null
+            }
+
+            $actualHome | Should -BeExactly $inheritedHome
+            $actualHome | Should -Not -BeExactly $script:replicationHome
+        } finally {
+            $script:Platform = $previousPlatform
+        }
+    }
+
     It 'carries the run-scoped <CacheProperty> from the runtime factory into isolation' -TestCases @(
         @{
             CacheProperty = 'MavenCacheDirectory'
@@ -633,7 +745,10 @@ Describe 'Selecting a real process isolation boundary' {
             -ScriptPath $script:Target `
             -Arguments @() `
             -Environment $environment `
-            -WritableRoots @($script:IsolationPlanRepo) `
+            -WritableRoots @(
+                $script:IsolationPlanRepo,
+                $script:IsolationPlanArtifactRoot,
+                $script:replicationHome) `
             -DeviceUdid 'emulator-5554' `
             -OperatingSystem linux `
             -UserId 1000 `
@@ -641,8 +756,22 @@ Describe 'Selecting a real process isolation boundary' {
 
         $command.Arguments | Should -Contain "--setenv=$CacheProperty=$expectedCache"
         $command.Arguments | Should -Contain "--property=BindPaths=$($script:replicationCacheHome)"
+        $command.Arguments | Should -Contain "--property=BindPaths=$($environment['HOME'])"
         $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
-        $command.Arguments | Should -Not -Contain "--property=BindPaths=$($environment['HOME'])"
+        $hostHomes = @(
+            [Environment]::GetEnvironmentVariable('HOME'),
+            [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+        ) | Where-Object {
+            -not [string]::IsNullOrWhiteSpace($_) -and [IO.Path]::IsPathRooted($_)
+        } | ForEach-Object {
+            [IO.Path]::TrimEndingDirectorySeparator([IO.Path]::GetFullPath($_))
+        } | Sort-Object -Unique
+        foreach ($hostHome in $hostHomes) {
+            if ($hostHome -ceq $environment['HOME']) { continue }
+            $command.Arguments | Should -Not -Contain "--property=BindPaths=$hostHome"
+            $command.Arguments |
+                Should -Not -Contain "--property=BindReadOnlyPaths=$hostHome"
+        }
     }
 
     It 'binds only the provisioned JDK read-only while keeping the home masked' -Skip:([OperatingSystem]::IsWindows()) {
