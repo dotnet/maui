@@ -42,6 +42,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _automationSetUpdateQueued;
 	int _automationDataItemCount = -1;
 	List<int>? _automationExcludedIndexes;
+	int _lastFocusedItemIndex = -1;
+	int _pendingFocusItemIndex = -1;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
 	internal event Action<int>? ContainerPrepared;
@@ -87,6 +89,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	ItemContainer? FindTargetContainer(ItemsRepeater repeater)
 	{
 		ItemContainer? firstContainer = null;
+		var targetIndex = CurrentItemIndex >= 0 ? CurrentItemIndex : _lastFocusedItemIndex;
 		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
 		for (var childIndex = 0; childIndex < childCount; childIndex++)
 		{
@@ -97,7 +100,13 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 				continue;
 			}
 
-			if (repeater.GetElementIndex(container) == CurrentItemIndex)
+			var elementIndex = repeater.GetElementIndex(container);
+			if (elementIndex < 0 || container.ActualWidth <= 0 || container.ActualHeight <= 0)
+			{
+				continue;
+			}
+
+			if (elementIndex == targetIndex)
 			{
 				return container;
 			}
@@ -118,12 +127,43 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		base.OnGotFocus(e);
 
-		if (!ReferenceEquals(e.OriginalSource, this) || ItemsRepeaterControl is not ItemsRepeater repeater)
+		if (ItemsRepeaterControl is not ItemsRepeater repeater)
 		{
 			return;
 		}
 
-		FindTargetContainer(repeater)?.Focus(FocusState.Keyboard);
+		if (e.OriginalSource is ItemContainer focusedContainer)
+		{
+			var focusedIndex = repeater.GetElementIndex(focusedContainer);
+			if (focusedIndex >= 0)
+			{
+				_lastFocusedItemIndex = focusedIndex;
+				_pendingFocusItemIndex = -1;
+			}
+			return;
+		}
+
+		if (!ReferenceEquals(e.OriginalSource, this))
+		{
+			return;
+		}
+
+		var targetIndex = CurrentItemIndex >= 0 ? CurrentItemIndex : _lastFocusedItemIndex;
+		var target = FindTargetContainer(repeater);
+		if (target is not null && (targetIndex < 0 || repeater.GetElementIndex(target) == targetIndex))
+		{
+			target.Focus(FocusState.Keyboard);
+			return;
+		}
+
+		if (targetIndex >= 0 && targetIndex < repeater.ItemsSourceView.Count)
+		{
+			_pendingFocusItemIndex = targetIndex;
+			StartBringItemIntoView(targetIndex, new BringIntoViewOptions { AnimationDesired = false });
+			return;
+		}
+
+		target?.Focus(FocusState.Keyboard);
 	}
 
 	/// <summary>
@@ -337,6 +377,25 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		UpdateAutomationSetProperties(sender, args.Element, args.Index);
 		ContainerPrepared?.Invoke(args.Index);
+
+		if (args.Index == _pendingFocusItemIndex && args.Element is ItemContainer container)
+		{
+			DispatcherQueue.TryEnqueue(() => RestorePendingFocus(sender, container, args.Index));
+		}
+	}
+
+	void RestorePendingFocus(ItemsRepeater repeater, ItemContainer container, int index)
+	{
+		if (_pendingFocusItemIndex != index ||
+			repeater.GetElementIndex(container) != index ||
+			container.ActualWidth <= 0 || container.ActualHeight <= 0 ||
+			!ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), this))
+		{
+			return;
+		}
+
+		_pendingFocusItemIndex = -1;
+		container.Focus(FocusState.Keyboard);
 	}
 
 	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
