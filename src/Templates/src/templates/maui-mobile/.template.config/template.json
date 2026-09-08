@@ -15,19 +15,19 @@
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !UseSampleContent)",
         "path": "MainPage.xaml.cs"
       },
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !EnableSampleContent)",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && !UseSampleContent)",
         "path": "MainPage.xaml"
       },
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && UseSampleContent)",
         "path": "Pages/MainPage.xaml.cs"
       },
       {
-        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && EnableSampleContent)",
+        "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && !UseCSharpUI && UseSampleContent)",
         "path": "Pages/MainPage.xaml"
       },
       {
@@ -41,7 +41,7 @@
     "postActions": [
         {
             "id": "openInEditor",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && !EnableSampleContent)",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && !UseSampleContent)",
             "description": "Opens MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
@@ -52,7 +52,7 @@
         },
         {
             "id": "openInEditorSampleXaml",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && EnableSampleContent)",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\" && !UseCSharpUI && UseSampleContent)",
             "description": "Opens Pages/MainPage.xaml in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
@@ -86,7 +86,7 @@
         },
         {
           "id": "avaloniaIgnoredWithSampleContent",
-          "condition": "(WithAvalonia && EnableSampleContent)",
+          "condition": "(WithAvalonia && UseSampleContent)",
           "description": "Warning: The Avalonia option was not applied.",
           "manualInstructions": [
             {
@@ -116,7 +116,7 @@
         "copyOnly": [ "**/*.svg", "**/*.ttf" ],
         "modifiers": [
         {
-          "condition": "(!EnableSampleContent)",
+          "condition": "(!UseSampleContent)",
           "exclude": [
             "Converter/**",
             "Data/**",
@@ -135,7 +135,7 @@
           ]
         },
         {
-          "condition": "(EnableSampleContent)",
+          "condition": "(UseSampleContent)",
           "exclude": [
             "MainPage.xaml",
             "MainPage.xaml.cs",
@@ -292,9 +292,9 @@
         "displayName": "_Include sample content",
         "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns in the XAML experience."
       },
-      "EnableSampleContent": {
+      "UseSampleContent": {
         "type": "computed",
-        "value": "((IncludeSampleContent || IncludeSampleContentIde) && !UseCSharpUI)"
+        "value": "((((HostIdentifier == \"dotnetcli\") || (HostIdentifier == \"dotnetcli-preview\")) && IncludeSampleContent && !UseCSharpUI) || ((HostIdentifier != \"dotnetcli\") && (HostIdentifier != \"dotnetcli-preview\") && IncludeSampleContentIde && !UseCSharpUI))"
       },
       "WithAvalonia": {
         "type": "parameter",
@@ -305,7 +305,7 @@
       },
       "UseAvaloniaHandlers": {
         "type": "computed",
-        "value": "(WithAvalonia && !EnableSampleContent)"
+        "value": "(WithAvalonia && !UseSampleContent)"
       },
       "avaloniaControlsMauiVersion": {
         "type": "parameter",

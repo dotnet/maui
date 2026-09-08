@@ -179,10 +179,36 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(helpExitCode == 0, "Unable to show side-by-side template help.");
 		AssertContains("--ui", helpOutput);
 		AssertContains("in the XAML experience.", helpOutput);
-		var sampleContentOptionCount = helpOutput
-			.Split(Environment.NewLine)
-			.Count(line => line.Contains("--sample-content", StringComparison.Ordinal));
+		var sampleContentOptionCount = 0;
+		using var helpReader = new StringReader(helpOutput);
+		while (helpReader.ReadLine() is { } line)
+		{
+			if (line.Contains("--sample-content", StringComparison.Ordinal))
+				sampleContentOptionCount++;
+		}
 		Assert.Equal(1, sampleContentOptionCount);
+
+		foreach (var (options, expectAvalonia) in new[]
+		{
+			("--ui csharp --sample-content --no-restore", false),
+			("--ui csharp --sample-content --with-avalonia --no-restore", true),
+		})
+		{
+			var projectDir = Path.Combine(TestDirectory, expectAvalonia ? "csharp-sample-avalonia" : "csharp-sample");
+			var commandOutput = DotnetInternal.RunForOutput(
+				"new",
+				$"--debug:custom-hive \"{customHive}\" maui -o \"{projectDir}\" -f {DotNetCurrent} {options}",
+				out int exitCode,
+				output: _output);
+			Assert.True(exitCode == 0, $"Unable to create side-by-side template with '{options}'.");
+			AssertContains("Warning: The sample content option was not applied.", commandOutput);
+			AssertDoesNotContain("Warning: The Avalonia option was not applied.", commandOutput);
+			Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectContent = File.ReadAllText(projectFile);
+			Assert.Equal(expectAvalonia, projectContent.Contains("Avalonia.Controls.Maui", StringComparison.Ordinal));
+		}
 	}
 
 	[Theory]
