@@ -8195,12 +8195,16 @@ function Invoke-LoggedChildProcess {
         -TimeoutSeconds $TimeoutSeconds
     $null = Assert-ReplicationTrustedTree -Context "before $Description"
     $isolatedCommand = $null
+    $guestIsolationEstablished = $false
+    $boundarySetup = $true
     try {
         # Guest firewall setup stays in the trusted parent so host-generated
         # tests can run without seeing adb inside their isolated process tree.
         if ($Platform -eq 'android' -and $effectiveDeviceControl) {
+            Write-Host "Establishing Android guest isolation before: $Description"
             $null = Assert-ReplicationAndroidGuestNetworkIsolation `
                 -DeviceUdid $DeviceUdid
+            $guestIsolationEstablished = $true
         }
         $isolatedCommand = if ($Platform -eq 'windows') {
             Get-ReplicationWindowsAppContainerCommand `
@@ -8228,6 +8232,7 @@ function Invoke-LoggedChildProcess {
                 -DeviceUdid $DeviceUdid `
                 -TimeoutSeconds $effectiveTimeoutSeconds
         }
+        $boundarySetup = $false
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $isolatedCommand.FilePath `
@@ -8236,6 +8241,23 @@ function Invoke-LoggedChildProcess {
                 -Environment $isolatedCommand.Environment `
                 -TimeoutAlreadyBounded
         }
+        # Persist the child result before post-execution assertions can throw.
+        $output = @($runResult.Output)
+        $exitCode = [int]$runResult.ExitCode
+        New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force | Out-Null
+        $output | ForEach-Object { [string]$_ } | Set-Content -LiteralPath $LogPath -Encoding utf8NoBOM
+        $tail = ($output | Select-Object -Last 30 | ForEach-Object { ConvertTo-ReplicationSafeLog $_ 500 }) -join [Environment]::NewLine
+        Write-Host "$Description returned exit code $exitCode (timed out: $($runResult.TimedOut))."
+        if ($tail) {
+            Write-Host $tail
+        }
+    } catch {
+        if ($boundarySetup) {
+            $_.Exception.Data['ReplicationExecutionBoundaryFailure'] = $true
+        }
+        Write-Host ("$Description failed before post-execution checks: " +
+            (ConvertTo-ReplicationSafeLog $_.Exception.Message 1000))
+        throw
     } finally {
         try {
             if ($isolatedCommand -and
@@ -8246,23 +8268,21 @@ function Invoke-LoggedChildProcess {
             }
         } finally {
             try {
-                if ($Platform -eq 'android' -and $effectiveDeviceControl) {
+                if ($guestIsolationEstablished) {
+                    Write-Host "Verifying Android guest isolation after: $Description"
                     $null = Assert-ReplicationAndroidGuestNetworkIsolation `
                         -DeviceUdid $DeviceUdid `
                         -VerifyOnly
                 }
+            } catch {
+                $_.Exception.Data['ReplicationExecutionBoundaryFailure'] = $true
+                Write-Host ("Post-execution isolation check failed after ${Description}: " +
+                    (ConvertTo-ReplicationSafeLog $_.Exception.Message 1000))
+                throw
             } finally {
                 $null = Assert-ReplicationTrustedTree -Context "after $Description"
             }
         }
-    }
-    $output = @($runResult.Output)
-    $exitCode = [int]$runResult.ExitCode
-    New-Item -ItemType Directory -Path (Split-Path -Parent $LogPath) -Force | Out-Null
-    $output | ForEach-Object { [string]$_ } | Set-Content -LiteralPath $LogPath -Encoding utf8NoBOM
-    $tail = ($output | Select-Object -Last 30 | ForEach-Object { ConvertTo-ReplicationSafeLog $_ 500 }) -join [Environment]::NewLine
-    if ($tail) {
-        Write-Host $tail
     }
     if ($runResult.TimedOut) {
         $failureDetails = Get-ReplicationFailureDetails -Output $output
@@ -9869,6 +9889,26 @@ try {
     Assert-InitialReplicationWorktree
     Clear-TransientAppiumDirectory
 
+    if ($Platform -eq 'android') {
+        # Exercise the actual isolated build/deploy path on trusted source before
+        # asking a model to author anything. Machine failures are not source repairs.
+        Copy-Item -LiteralPath $trustedAppiumRunnerPath -Destination $appiumScriptPath -Force
+        Invoke-LoggedChildProcess `
+            -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+            -Arguments @(
+                '-Platform', $Platform,
+                '-Configuration', 'Debug',
+                '-RepoRoot', $repoRoot,
+                '-DeviceUdid', $DeviceUdid,
+                '-PrepareOnly',
+                '-EnforceNetworkIsolation'
+            ) `
+            -LogPath (Join-Path $sandboxArtifactDir 'runner-preflight.log') `
+            -Description 'Preflighting the trusted Android runner' `
+            -AllowDeviceControl `
+            -TimeoutSeconds 1800
+    }
+
     if (Test-Path -LiteralPath $structuredContextPath -PathType Leaf) {
         $structuredContext = Get-Content -LiteralPath $structuredContextPath -Raw |
             ConvertFrom-Json -Depth 20
@@ -10049,6 +10089,10 @@ try {
             break
         }
         catch {
+            if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) {
+                Write-Host 'Execution isolation failed; stopping without asking the model to rewrite the reproduction.'
+                throw
+            }
             $sandboxFailureSummary = ConvertTo-ReplicationAttemptFailureSummary $_.Exception.Message 1000
             if (
                 $sandboxFailureSummary -match '(?i)Confirming the on-device reproduction repeats' -and
@@ -10498,6 +10542,10 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 break
             }
             catch {
+                if ($_.Exception.Data['ReplicationExecutionBoundaryFailure'] -eq $true) {
+                    Write-Host 'Execution isolation failed; stopping without reauthoring the test.'
+                    throw
+                }
                 $repairFailureSummary = ConvertTo-ReplicationSafeLog $_.Exception.Message 4000
                 $verificationRan = $true
                 $currentStamp = if (Test-Path -LiteralPath $verificationResultPath -PathType Leaf) {

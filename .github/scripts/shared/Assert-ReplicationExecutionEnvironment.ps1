@@ -478,7 +478,10 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
             throw "Android guest network isolation could not $Description."
         }
         if ([int]$result.ExitCode -ne 0 -and -not $AllowFailure) {
-            throw "Android guest network isolation could not $Description."
+            $detail = ([string]$result.Output -replace '##vso\[[^\]]*\]|##\[[^\]]*\]', '' `
+                -replace '[\x00-\x1F\x7F]', ' ').Trim()
+            if ($detail.Length -gt 400) { $detail = $detail.Substring(0, 400) }
+            throw "Android guest network isolation could not $Description (adb exit $($result.ExitCode)): $detail"
         }
         return $result
     }
@@ -544,7 +547,10 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
             '-s', $DeviceUdid, 'shell', $tool, '-C', 'OUTPUT', '-j', $chain
         ) "inspect the $tool OUTPUT chain" -AllowFailure
         if ([int]$jump.ExitCode -ne 0) {
-            throw "Android guest network isolation lost the $tool OUTPUT chain."
+            $detail = ([string]$jump.Output -replace '##vso\[[^\]]*\]|##\[[^\]]*\]', '' `
+                -replace '[\x00-\x1F\x7F]', ' ').Trim()
+            if ($detail.Length -gt 400) { $detail = $detail.Substring(0, 400) }
+            throw "Android guest network isolation lost the $tool OUTPUT chain (adb exit $($jump.ExitCode)): $detail"
         }
         foreach ($rule in @(
             @('-C', 'OUTPUT', '-j', $chain),
