@@ -19,19 +19,17 @@ public class Issue10947 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{
-		var headerEntry = App.WaitForElement(HeaderEntry);
-		var headerLocation = headerEntry.GetRect();
-		var footerEntry = App.WaitForElement(FooterEntry);
-		var footerLocation = footerEntry.GetRect();
+		var headerLocation = App.WaitForElement(HeaderEntry).GetRect();
+		var footerLocation = App.WaitForElement(FooterEntry).GetRect();
 
 		App.Tap(HeaderEntry);
 
-		var newHeaderLocation = headerEntry.GetRect();
+		var newHeaderLocation = App.WaitForElement(HeaderEntry).GetRect();
 		ClassicAssert.AreEqual(headerLocation, newHeaderLocation);
 
 		App.Tap(FooterEntry);
 
-		var newFooterLocation = footerEntry.GetRect();
+		var newFooterLocation = App.WaitForElement(FooterEntry).GetRect();
 
 		ClassicAssert.AreEqual(footerLocation, newFooterLocation);
 	}
