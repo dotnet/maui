@@ -308,12 +308,7 @@ internal static class SafeAreaExtensions
 		return newWindowInsets;
 	}
 
-	internal static bool ApplyAnimatedSoftInputInsetsPx(
-		WindowInsetsCompat windowInsets,
-		ICrossPlatformLayout crossPlatformLayout,
-		Context context,
-		View view,
-		bool isImeOpening)
+	internal static bool ApplyAnimatedSoftInputInsetsPx(WindowInsetsCompat windowInsets, ICrossPlatformLayout crossPlatformLayout, Context context, View view, bool isImeOpening)
 	{
 		var bottomRegion = GetSafeAreaRegionForEdge(3, crossPlatformLayout);
 		if (!SafeAreaEdges.IsSoftInput(bottomRegion))
