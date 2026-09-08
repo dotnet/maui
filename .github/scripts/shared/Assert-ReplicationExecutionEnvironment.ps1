@@ -634,6 +634,19 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
     }
 }
 
+function Get-ReplicationAdbFailureDiagnostic {
+    param([AllowNull()][object]$Result)
+
+    if ($null -eq $Result) {
+        return 'ADB returned no command result.'
+    }
+    $output = ([string]$Result.Output).Replace("`r", '') -replace '##vso\[[^\]]*\]', ''
+    if ($output.Length -gt 4096) {
+        $output = $output.Substring(0, 4096) + ' [truncated]'
+    }
+    return "adb exit $($Result.ExitCode): $($output.Trim())"
+}
+
 function Install-ReplicationAndroidAppiumHelpers {
     [CmdletBinding()]
     param(
@@ -722,14 +735,16 @@ function Install-ReplicationAndroidAppiumHelpers {
         $install = & $AdbInvoker @(
             '-s', $DeviceUdid, 'install', '-r', '-t', $resolvedApk)
         if ($null -eq $install -or [int]$install.ExitCode -ne 0) {
-            throw "Android Appium helper installation failed for '$($helper.Package)'."
+            throw ("Android Appium helper installation failed for '$($helper.Package)'. " +
+                (Get-ReplicationAdbFailureDiagnostic -Result $install))
         }
         $installed = & $AdbInvoker @(
             '-s', $DeviceUdid, 'shell', 'pm', 'path', $helper.Package)
         if ($null -eq $installed -or
             [int]$installed.ExitCode -ne 0 -or
             [string]$installed.Output -cnotmatch '^package:') {
-            throw "Android Appium helper package '$($helper.Package)' was not installed."
+            throw ("Android Appium helper package '$($helper.Package)' was not installed. " +
+                (Get-ReplicationAdbFailureDiagnostic -Result $installed))
         }
     }
 

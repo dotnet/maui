@@ -22,6 +22,10 @@
 .PARAMETER RepoRoot
     Repository root to operate on. Defaults to the script's repository location.
 
+.PARAMETER PrepareAndroidHelpersOnly
+    Validate trusted Android Appium helper installation without building or launching
+    the Sandbox. Reserved for the network-isolated replication preflight.
+
 .EXAMPLE
     ./BuildAndRunSandbox.ps1 -Platform android
     
@@ -50,6 +54,8 @@ param(
 
     [switch]$PrepareOnly,
 
+    [switch]$PrepareAndroidHelpersOnly,
+
     [switch]$SkipBuildDeploy,
 
     [switch]$LaunchOnly,
@@ -71,6 +77,11 @@ if ($PrepareOnly -and ($SkipBuildDeploy -or $LaunchOnly)) {
 }
 if ($LaunchOnly -and -not $SkipBuildDeploy) {
     throw 'LaunchOnly requires SkipBuildDeploy.'
+}
+if ($PrepareAndroidHelpersOnly -and (
+    $Platform -ne 'android' -or -not $EnforceNetworkIsolation -or
+    $PrepareOnly -or $SkipBuildDeploy -or $LaunchOnly -or $Cleanup)) {
+    throw 'PrepareAndroidHelpersOnly requires isolated Android execution and cannot be combined with other modes.'
 }
 if ([string]::IsNullOrWhiteSpace($WindowsManifestObservationRoot) -ne
     [string]::IsNullOrWhiteSpace($WindowsManifestObservationDirectory)) {
@@ -135,6 +146,13 @@ function Resolve-CatalystSandboxAppPath {
 . "$PSScriptRoot/shared/Assert-ReplicationWindowsAppContainer.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationAppleAppSandbox.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationExecutionEnvironment.ps1"
+
+if ($PrepareAndroidHelpersOnly) {
+    $null = Install-ReplicationAndroidAppiumHelpers -DeviceUdid $DeviceUdid
+    $null = Assert-ReplicationAndroidGuestNetworkIsolation -DeviceUdid $DeviceUdid
+    Write-Host 'Android Appium helpers prepared; guest isolation re-established.'
+    return
+}
 
 if ($Cleanup) {
     if (-not $EnforceNetworkIsolation) {
