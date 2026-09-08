@@ -4,7 +4,7 @@ The device-performance tools compare a selected native scenario between a PR's m
 and head. They build or accept two device-test apps, run them on one test host in
 **base, head, head, base** order, and produce JSON and Markdown comparisons.
 
-There is no AI analysis, managed microbenchmark selection, automatic PR trigger, or comment
+There is no AI analysis, managed benchmark selection, automatic PR trigger, or comment
 posting in this measurement path. A maintainer selects the scenario and platforms and
 authorizes execution through the existing pipeline mechanism or the local drivers.
 
@@ -39,7 +39,10 @@ Supply:
 - `expectedScenario`: a supported scenario/platform combination from the table above.
 
 The pipeline snapshots its trusted performance harness and overlays it into separate
-base/head builds. It records build provenance, packages both applications, submits the
+base/head builds. It merges only the required performance category constants into each
+revision's own `TestCategory.cs`, preserving older or revision-specific categories.
+Conflicting performance category values fail rather than silently changing the workload.
+It records build provenance, packages both applications, submits the
 paired payload to Helix, and publishes `device_performance_results_<platform>`.
 Required build pools, workloads, and Helix access must already be available.
 
@@ -115,6 +118,6 @@ at least a 15% median change by default. Its classifications are `neutral`,
 Inspect `provenanceValidated`, `correctnessPassed`, and `verdict`; exit code zero means
 the comparison was written, not that the scenario was correct or regression-free.
 
-Latency and correctness counters do not imply allocation, frame-jank, or accessibility
+Latency and correctness counters do not imply allocation, frame timing, or accessibility
 coverage. Accessibility defaults to `not-assessed`. These results inform a human decision;
 they do not approve a PR or prove whole-PR performance.
