@@ -488,7 +488,23 @@ function Assert-ReplicationAndroidGuestNetworkIsolation {
 
     if (-not $VerifyOnly) {
         & $invoke @('-s', $DeviceUdid, 'root') 'restart adb as root' | Out-Null
-        & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the rooted emulator' | Out-Null
+        # adb root can exit successfully even when a production image refuses
+        # root. wait-for-device proves transport readiness, not guest privileges.
+        $rootConfirmed = $false
+        for ($rootAttempt = 0; $rootAttempt -lt 10; $rootAttempt++) {
+            & $invoke @('-s', $DeviceUdid, 'wait-for-device') 'wait for the emulator' | Out-Null
+            $identity = & $invoke @('-s', $DeviceUdid, 'shell', 'id', '-u') `
+                'inspect the guest shell uid' -AllowFailure
+            if ([int]$identity.ExitCode -eq 0 -and ([string]$identity.Output).Trim() -ceq '0') {
+                $rootConfirmed = $true
+                break
+            }
+            & $SleepInvoker 1
+        }
+        if (-not $rootConfirmed) {
+            throw ('Android guest network isolation requires a root-enabled emulator ' +
+                '(adb shell id -u must be 0). Use the AOSP system image, not a Google Play Store image.')
+        }
         $currentAirplane = ([string](& $invoke @(
             '-s', $DeviceUdid, 'shell', 'settings', 'get', 'global',
             'airplane_mode_on'
