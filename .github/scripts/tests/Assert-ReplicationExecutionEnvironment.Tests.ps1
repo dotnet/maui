@@ -596,15 +596,31 @@ Describe 'Selecting a real process isolation boundary' {
             Should -Match ([regex]::Escape("BindReadOnlyPaths=$($script:TrustedRoot)"))
     }
 
-    It 'carries the run-scoped Maven cache from the runtime factory into isolation' {
+    It 'carries the run-scoped <CacheProperty> from the runtime factory into isolation' -TestCases @(
+        @{
+            CacheProperty = 'MavenCacheDirectory'
+            RelativePath = 'dotnet-android/MavenCacheDirectory'
+            TrailingSeparator = $false
+        },
+        @{
+            CacheProperty = 'XamarinBuildDownloadDir'
+            RelativePath = 'XamarinBuildDownload'
+            TrailingSeparator = $true
+        }
+    ) {
+        param($CacheProperty, $RelativePath, $TrailingSeparator)
+
         $environment = Get-ReplicationRuntimeEnvironment
         { Assert-ReplicationExecutionEnvironment -Environment $environment } | Should -Not -Throw
-        $expectedMavenCache = Join-Path $script:replicationCacheHome 'dotnet-android/MavenCacheDirectory'
-        $environment['MavenCacheDirectory'] | Should -BeExactly $expectedMavenCache
+        $expectedCache = Join-Path $script:replicationCacheHome $RelativePath
+        if ($TrailingSeparator) {
+            $expectedCache += [IO.Path]::DirectorySeparatorChar
+        }
+        $environment[$CacheProperty] | Should -BeExactly $expectedCache
         $environment['XDG_CACHE_HOME'] | Should -BeExactly $script:replicationCacheHome
         Test-Path -LiteralPath $script:replicationCacheHome -PathType Container | Should -BeTrue
-        (Get-ReplicationRuntimeEnvironment)['MavenCacheDirectory'] |
-            Should -BeExactly $expectedMavenCache
+        (Get-ReplicationRuntimeEnvironment)[$CacheProperty] |
+            Should -BeExactly $expectedCache
 
         # JDK binding is covered separately and must not depend on this host's provisioning.
         $environment.Remove('JAVA_HOME')
@@ -621,7 +637,7 @@ Describe 'Selecting a real process isolation boundary' {
             -UserId 1000 `
             -GroupId 1000
 
-        $command.Arguments | Should -Contain "--setenv=MavenCacheDirectory=$expectedMavenCache"
+        $command.Arguments | Should -Contain "--setenv=$CacheProperty=$expectedCache"
         $command.Arguments | Should -Contain "--property=BindPaths=$($script:replicationCacheHome)"
         $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
         $command.Arguments | Should -Not -Contain "--property=BindPaths=$($environment['HOME'])"

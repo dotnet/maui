@@ -9708,6 +9708,22 @@ try {
             'an Aces host/hypervisor egress boundary; app permissions and host pf are insufficient.')
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
+    if ($Platform -eq 'android') {
+        # Exercise device setup in the real boundary before paying for restore and compilation.
+        Invoke-LoggedChildProcess `
+            -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
+            -Arguments @(
+                '-Platform', $Platform,
+                '-RepoRoot', $repoRoot,
+                '-DeviceUdid', $DeviceUdid,
+                '-PrepareAndroidHelpersOnly',
+                '-EnforceNetworkIsolation'
+            ) `
+            -LogPath (Join-Path $sandboxArtifactDir 'appium-helpers-preflight.log') `
+            -Description 'Preflighting Android Appium helpers before restore and build' `
+            -AllowDeviceControl `
+            -TimeoutSeconds 180
+    }
     if ($Platform -eq 'windows') {
         Invoke-ReplicationWindowsTwoPhaseRestore `
             -Target $sandboxProjectPath `
