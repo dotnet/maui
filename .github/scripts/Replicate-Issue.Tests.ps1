@@ -10369,7 +10369,7 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Edits @($script:GateEdit) `
                 -Platform catalyst `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
-        } | Should -Throw '*Android ButtonHandler/native metadata is trusted only for the exact Issue26505 Android generated-test profile*'
+        } | Should -Throw '*Android Issue26505 ButtonHandler/native members are trusted only inside the exact reviewed setup/helper callback*'
     }
 
     It 'rejects Android Issue26505 source-defined native shadows' {
@@ -10528,7 +10528,7 @@ namespace Google.Android.Material.Button
                 -Edits @($script:GateEdit) `
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
-        } | Should -Throw '*native text-fit assertion must be exactly*Xunit Assert.True*'
+        } | Should -Throw '*Android generated tests may use CreateHandlerAndAddToWindow only for the exact reviewed Issue26505 ButtonHandler text-fit profile*'
 
         $broadRead = $script:TrustedAndroidIssue26505Base.Replace(
             'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',
@@ -10574,7 +10574,8 @@ namespace Google.Android.Material.Button
 
         $contract | Should -Match 'namespace\s+Android\.Graphics'
         $contract | Should -Match 'namespace\s+Google\.Android\.Material\.Button'
-        $contract | Should -Match 'Microsoft\.Maui\.Handlers\.ButtonHandler'
+        $contract | Should -Match (
+            'namespace Microsoft\.Maui\.Handlers\s*\{\s*public class ButtonHandler : global::Microsoft\.Maui\.IElementHandler')
         $contract | Should -Not -Match 'namespace\s+AndroidX'
         $contract | Should -Not -Match 'namespace\s+Android\.Widget'
         $contract | Should -Not -Match 'SetPadding|PaddingTop|PaddingBottom|Elevation'
