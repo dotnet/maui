@@ -55,28 +55,7 @@ function Assert-ReplicationPrivilegeEscapesBlocked {
         '/run/podman/podman.sock',
         '/run/buildkit/buildkitd.sock'
     )) {
-        $probeSocket = [Net.Sockets.Socket]::new(
-            [Net.Sockets.AddressFamily]::Unix,
-            [Net.Sockets.SocketType]::Stream,
-            [Net.Sockets.ProtocolType]::Unspecified)
-        try {
-            # Masked paths can deny even Test-Path. .NET maps Unix ENOENT to
-            # AddressNotAvailable; NativeErrorCode need not retain ENOENT.
-            $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($socket))
-        } catch [Net.Sockets.SocketException] {
-            $socketError = $_.Exception.GetBaseException()
-            if ($socketError.SocketErrorCode -in @(
-                    [Net.Sockets.SocketError]::AccessDenied,
-                    [Net.Sockets.SocketError]::ConnectionRefused,
-                    [Net.Sockets.SocketError]::AddressNotAvailable
-                )) {
-                continue
-            }
-            throw
-        } finally {
-            $probeSocket.Dispose()
-        }
-        throw "Generated execution isolation exposed privileged socket $socket."
+        Assert-ReplicationPrivilegedSocketBlocked -SocketPath $socket
     }
 }
 

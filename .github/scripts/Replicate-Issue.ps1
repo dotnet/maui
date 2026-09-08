@@ -242,6 +242,7 @@ $replicationGradleHome = Join-Path $replicationRuntimeRoot 'gradle'
 $replicationDotnetHome = Join-Path $replicationRuntimeRoot 'dotnet'
 $replicationNugetPackages = Join-Path $replicationRuntimeRoot 'nuget-packages'
 $replicationAndroidHome = Join-Path $replicationRuntimeRoot 'android'
+$replicationCacheHome = Join-Path $replicationRuntimeRoot 'cache'
 $issueAgentContextPath = Join-Path $ArtifactRoot 'context/issue-agent-context.md'
 $sandboxXamlPath = Join-Path $sandboxDir 'MainPage.xaml'
 $sandboxCodePath = Join-Path $sandboxDir 'MainPage.xaml.cs'
@@ -7814,7 +7815,8 @@ function Get-ReplicationRuntimeEnvironment {
         $replicationGradleHome,
         $replicationDotnetHome,
         $replicationNugetPackages,
-        $replicationAndroidHome
+        $replicationAndroidHome,
+        $replicationCacheHome
     )) {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
@@ -7824,6 +7826,7 @@ function Get-ReplicationRuntimeEnvironment {
         DOTNET_CLI_HOME = $replicationDotnetHome
         NUGET_PACKAGES = $replicationNugetPackages
         ANDROID_USER_HOME = $replicationAndroidHome
+        XDG_CACHE_HOME = $replicationCacheHome
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
     }
 }

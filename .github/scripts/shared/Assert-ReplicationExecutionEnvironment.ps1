@@ -129,6 +129,7 @@ $script:ReplicationAllowedEnvironmentNames = @(
     'DOTNET_CLI_HOME',
     'NUGET_PACKAGES',
     'GRADLE_USER_HOME',
+    'XDG_CACHE_HOME',
     'JAVA_HOME',
     'ANDROID_HOME',
     'ANDROID_SDK_ROOT',
@@ -736,6 +737,34 @@ function Install-ReplicationAndroidAppiumHelpers {
     }
 }
 
+function Assert-ReplicationPrivilegedSocketBlocked {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$SocketPath)
+
+    $probeSocket = [Net.Sockets.Socket]::new(
+        [Net.Sockets.AddressFamily]::Unix,
+        [Net.Sockets.SocketType]::Stream,
+        [Net.Sockets.ProtocolType]::Unspecified)
+    try {
+        # Masked paths can deny even Test-Path. .NET maps Unix ENOENT to
+        # AddressNotAvailable; NativeErrorCode need not retain ENOENT.
+        $probeSocket.Connect([Net.Sockets.UnixDomainSocketEndPoint]::new($SocketPath))
+    } catch [Net.Sockets.SocketException] {
+        $socketError = $_.Exception.GetBaseException()
+        if ($socketError.SocketErrorCode -in @(
+                [Net.Sockets.SocketError]::AccessDenied,
+                [Net.Sockets.SocketError]::ConnectionRefused,
+                [Net.Sockets.SocketError]::AddressNotAvailable
+            )) {
+            return
+        }
+        throw
+    } finally {
+        $probeSocket.Dispose()
+    }
+    throw "Generated execution isolation exposed privileged socket $SocketPath."
+}
+
 function Get-ReplicationNetworkIsolatedCommand {
     <#
         .SYNOPSIS
@@ -982,6 +1011,20 @@ function Get-ReplicationNetworkIsolatedCommand {
         # unnecessary but keeps command construction directly testable.
         $systemdArguments += "--property=BindReadOnlyPaths=$wrapperDirectory"
     }
+    $javaHome = [string]$Environment['JAVA_HOME']
+    if (-not [string]::IsNullOrWhiteSpace($javaHome)) {
+        $fullJavaHome = [IO.Path]::TrimEndingDirectorySeparator(
+            [IO.Path]::GetFullPath($javaHome))
+        if (-not [IO.Path]::IsPathRooted($javaHome) -or
+            $fullJavaHome -match '[\s:%]' -or
+            -not (Test-Path -LiteralPath $fullJavaHome -PathType Container) -or
+            $fullJavaHome -ceq [IO.Path]::GetPathRoot($fullJavaHome) -or
+            $fullJavaHome -ceq [Environment]::GetFolderPath(
+                [Environment+SpecialFolder]::UserProfile)) {
+            throw 'Generated execution requires a dedicated, existing JAVA_HOME directory.'
+        }
+        $systemdArguments += "--property=BindReadOnlyPaths=$fullJavaHome"
+    }
     if ($readOnlyPaths.Count -gt 0) {
         $systemdArguments += "--property=ReadOnlyPaths=$($readOnlyPaths -join ' ')"
     }
@@ -1000,6 +1043,7 @@ function Get-ReplicationNetworkIsolatedCommand {
         $Environment['ANDROID_AVD_HOME'],
         $Environment['ANDROID_USER_HOME'],
         $Environment['GRADLE_USER_HOME'],
+        $Environment['XDG_CACHE_HOME'],
         $Environment['DOTNET_CLI_HOME'],
         $Environment['NUGET_PACKAGES']
     )) {
