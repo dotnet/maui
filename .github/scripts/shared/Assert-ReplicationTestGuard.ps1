@@ -6401,10 +6401,29 @@ function New-ReplicationControlVariant {
         } else {
             'invocation'
         }
+        $bindingDiagnostics = ''
+        if ($null -eq $HelperSymbol) {
+            $bindingErrors = @($semanticModel.GetDiagnostics() | Where-Object {
+                    [string]$_.Severity -ceq 'Error' -and
+                    $_.Location.SourceTree -eq $diagnosticTree -and
+                    $Node.Span.IntersectsWith($_.Location.SourceSpan)
+                } | Select-Object -First 3)
+            if ($bindingErrors.Count -ne 0) {
+                $bindingDetails = @(foreach ($bindingError in $bindingErrors) {
+                    $message = $bindingError.GetMessage().Replace("`r", ' ').Replace("`n", ' ')
+                    if ($message.Length -gt 240) {
+                        $message = $message.Substring(0, 240) + '...'
+                    }
+                    $line = $bindingError.Location.GetLineSpan().StartLinePosition.Line + 1
+                    "$($bindingError.Id) line ${line}: $message"
+                })
+                $bindingDiagnostics = ' Binding diagnostics: ' + ($bindingDetails -join '; ')
+            }
+        }
         throw (
             "Trusted helper symbol '$symbolText' rejected $context syntax " +
             "'$diagnosticSyntax' in '$diagnosticPath' line ${diagnosticLine}: " +
-            $Reason)
+            $Reason + $bindingDiagnostics)
     }
     $validateAndroidIssue26505HelperInvocation = {
         param(
