@@ -61,6 +61,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CancelledPushRemovesOnlyPushedPageImplicitRoute()
+		{
+			var shell = new TestShell
+			{
+				Items = { CreateShellItem<FlyoutItem>() }
+			};
+			var existingPage = new ContentPage();
+			var cancelledPage = new ContentPage();
+			var existingRoute = Routing.GetRoute(existingPage);
+			var cancelledRoute = Routing.GetRoute(cancelledPage);
+
+			Routing.RegisterImplicitPageRoute(existingPage);
+			shell.Navigating += (_, args) => args.Cancel();
+
+			await shell.Navigation.PushAsync(cancelledPage);
+
+			Assert.Same(existingPage, Routing.GetOrCreateContent(existingRoute));
+			Assert.Null(Routing.GetOrCreateContent(cancelledRoute));
+		}
+
+		[Fact]
 		public void CancelNavigationOccurringOutsideGotoAsyncWithoutDelay()
 		{
 			var flyoutItem = CreateShellItem<FlyoutItem>();

@@ -35,6 +35,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal static void UnregisterImplicitPageRoute(Page page)
+		{
+			var route = GetRoute(page);
+			if (s_implicitPageRoutes.TryGetValue(route, out var registeredPage) &&
+				ReferenceEquals(registeredPage, page))
+			{
+				s_implicitPageRoutes.Remove(route);
+				s_routeKeys = null;
+			}
+		}
+
 		// Shell works much better if the entire nav stack can be represented by a string
 		// If the users pushes pages without using routes we want these page keys tracked
 		internal static void RegisterImplicitPageRoutes(Shell shell)
