@@ -516,6 +516,28 @@ Describe 'Selecting a real process isolation boundary' {
             TMPDIR = [IO.Path]::GetTempPath()
             NUGET_PACKAGES = $nugetPackages
         }
+
+        $tokens = $null
+        $errors = $null
+        $orchestratorAst = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PSScriptRoot '../Replicate-Issue.ps1'), [ref]$tokens, [ref]$errors)
+        if ($errors) {
+            throw ($errors | ForEach-Object Message) -join [Environment]::NewLine
+        }
+        $runtimeEnvironmentFunction = $orchestratorAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Get-ReplicationRuntimeEnvironment'
+        }, $true)
+        if ($null -eq $runtimeEnvironmentFunction) {
+            throw 'The replication runtime environment factory is missing.'
+        }
+        . ([scriptblock]::Create($runtimeEnvironmentFunction.Extent.Text))
+        $script:replicationRuntimeRoot = Join-Path $script:ScratchRoot 'runtime-environment'
+        $script:replicationGradleHome = Join-Path $script:replicationRuntimeRoot 'gradle'
+        $script:replicationDotnetHome = Join-Path $script:replicationRuntimeRoot 'dotnet'
+        $script:replicationNugetPackages = Join-Path $script:replicationRuntimeRoot 'nuget'
+        $script:replicationAndroidHome = Join-Path $script:replicationRuntimeRoot 'android'
+        $script:replicationCacheHome = Join-Path $script:replicationRuntimeRoot 'cache'
     }
 
     It 'uses a Linux cgroup firewall with only loopback allowed' {
@@ -572,6 +594,37 @@ Describe 'Selecting a real process isolation boundary' {
         ($command.Arguments -join "`n") | Should -Match 'BindPaths=.*?/nuget-packages'
         ($command.Arguments -join "`n") |
             Should -Match ([regex]::Escape("BindReadOnlyPaths=$($script:TrustedRoot)"))
+    }
+
+    It 'carries the run-scoped Maven cache from the runtime factory into isolation' {
+        $environment = Get-ReplicationRuntimeEnvironment
+        { Assert-ReplicationExecutionEnvironment -Environment $environment } | Should -Not -Throw
+        $expectedMavenCache = Join-Path $script:replicationCacheHome 'dotnet-android/MavenCacheDirectory'
+        $environment['MavenCacheDirectory'] | Should -BeExactly $expectedMavenCache
+        $environment['XDG_CACHE_HOME'] | Should -BeExactly $script:replicationCacheHome
+        Test-Path -LiteralPath $script:replicationCacheHome -PathType Container | Should -BeTrue
+        (Get-ReplicationRuntimeEnvironment)['MavenCacheDirectory'] |
+            Should -BeExactly $expectedMavenCache
+
+        # JDK binding is covered separately and must not depend on this host's provisioning.
+        $environment.Remove('JAVA_HOME')
+        $command = Get-ReplicationNetworkIsolatedCommand `
+            -Platform android `
+            -RepositoryRoot $script:IsolationPlanRepo `
+            -TrustedRoot $script:TrustedRoot `
+            -ScriptPath $script:Target `
+            -Arguments @() `
+            -Environment $environment `
+            -WritableRoots @($script:IsolationPlanRepo) `
+            -DeviceUdid 'emulator-5554' `
+            -OperatingSystem linux `
+            -UserId 1000 `
+            -GroupId 1000
+
+        $command.Arguments | Should -Contain "--setenv=MavenCacheDirectory=$expectedMavenCache"
+        $command.Arguments | Should -Contain "--property=BindPaths=$($script:replicationCacheHome)"
+        $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
+        $command.Arguments | Should -Not -Contain "--property=BindPaths=$($environment['HOME'])"
     }
 
     It 'binds only the provisioned JDK read-only while keeping the home masked' -Skip:([OperatingSystem]::IsWindows()) {
