@@ -130,6 +130,7 @@ $script:ReplicationAllowedEnvironmentNames = @(
     'NUGET_PACKAGES',
     'GRADLE_USER_HOME',
     'XDG_CACHE_HOME',
+    'MavenCacheDirectory',
     'JAVA_HOME',
     'ANDROID_HOME',
     'ANDROID_SDK_ROOT',

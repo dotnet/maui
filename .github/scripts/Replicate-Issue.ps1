@@ -7827,6 +7827,8 @@ function Get-ReplicationRuntimeEnvironment {
         NUGET_PACKAGES = $replicationNugetPackages
         ANDROID_USER_HOME = $replicationAndroidHome
         XDG_CACHE_HOME = $replicationCacheHome
+        # The Android SDK's Maven targets use this MSBuild property, not XDG_CACHE_HOME.
+        MavenCacheDirectory = Join-Path $replicationCacheHome 'dotnet-android/MavenCacheDirectory'
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
     }
 }

@@ -574,6 +574,75 @@ Describe 'Selecting a real process isolation boundary' {
             Should -Match ([regex]::Escape("BindReadOnlyPaths=$($script:TrustedRoot)"))
     }
 
+    It 'binds only the provisioned JDK read-only while keeping the home masked' -Skip:([OperatingSystem]::IsWindows()) {
+        $javaHome = Join-Path $script:ScratchRoot 'provisioned-jdk'
+        New-Item -ItemType Directory -Path $javaHome -Force | Out-Null
+        $environment = $script:MinimalEnvironment.Clone()
+        $environment['JAVA_HOME'] = $javaHome + [IO.Path]::DirectorySeparatorChar
+
+        $command = Get-ReplicationNetworkIsolatedCommand `
+            -Platform android `
+            -RepositoryRoot $script:IsolationPlanRepo `
+            -TrustedRoot $script:TrustedRoot `
+            -ScriptPath $script:Target `
+            -Arguments @() `
+            -Environment $environment `
+            -WritableRoots @($script:IsolationPlanRepo) `
+            -DeviceUdid 'emulator-5554' `
+            -OperatingSystem linux `
+            -UserId 1000 `
+            -GroupId 1000
+
+        $homeDirectory = [Environment]::GetFolderPath(
+            [Environment+SpecialFolder]::UserProfile)
+        $command.Arguments | Should -Contain "--property=BindReadOnlyPaths=$javaHome"
+        $command.Arguments | Should -Not -Contain "--property=BindPaths=$javaHome"
+        $command.Arguments | Should -Not -Contain "--property=BindReadOnlyPaths=$homeDirectory"
+        $command.Arguments | Should -Not -Contain "--property=BindPaths=$homeDirectory"
+        $command.Arguments | Should -Contain '--property=ProtectHome=tmpfs'
+    }
+
+    It 'rejects an unsafe JDK bind: <Kind>' -TestCases @(
+        @{ Kind = 'filesystem root' },
+        @{ Kind = 'user home' },
+        @{ Kind = 'user home with trailing separator' },
+        @{ Kind = 'relative path' },
+        @{ Kind = 'missing directory' },
+        @{ Kind = 'mount syntax' }
+    ) {
+        param($Kind)
+
+        $environment = $script:MinimalEnvironment.Clone()
+        $environment['JAVA_HOME'] = switch ($Kind) {
+            'filesystem root' { [IO.Path]::GetPathRoot($script:ScratchRoot) }
+            'user home' {
+                [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+            }
+            'user home with trailing separator' {
+                [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile) +
+                    [IO.Path]::DirectorySeparatorChar
+            }
+            'relative path' { 'relative-jdk' }
+            'missing directory' { Join-Path $script:ScratchRoot 'missing-jdk' }
+            'mount syntax' { (Join-Path $script:ScratchRoot 'jdk') + ':/tmp' }
+        }
+
+        {
+            Get-ReplicationNetworkIsolatedCommand `
+                -Platform android `
+                -RepositoryRoot $script:IsolationPlanRepo `
+                -TrustedRoot $script:TrustedRoot `
+                -ScriptPath $script:Target `
+                -Arguments @() `
+                -Environment $environment `
+                -WritableRoots @($script:IsolationPlanRepo) `
+                -DeviceUdid 'emulator-5554' `
+                -OperatingSystem linux `
+                -UserId 1000 `
+                -GroupId 1000
+        } | Should -Throw '*dedicated, existing JAVA_HOME directory*'
+    }
+
     It 'withholds lanes that have no enforceable process and app boundary' -TestCases @(
         @{ Platform = 'ios'; OS = 'macos' },
         @{ Platform = 'catalyst'; OS = 'macos' },
