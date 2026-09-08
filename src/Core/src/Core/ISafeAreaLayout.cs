@@ -11,7 +11,7 @@ namespace Microsoft.Maui
 #if IOS
 	internal interface ISafeAreaScrollView
 	{
-		void ApplyDelegatedTopInset(double topInset);
+		void ApplyDelegatedTopInset(double topInset, bool uiKitOwnsSystemInset);
 		void ResetDelegatedTopInset();
 	}
 

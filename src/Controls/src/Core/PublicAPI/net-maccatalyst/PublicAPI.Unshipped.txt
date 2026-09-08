@@ -28,3 +28,5 @@ override Microsoft.Maui.Controls.Handlers.Items.MauiCollectionView.LayoutSubview
 Microsoft.Maui.Controls.ShellContent.~ShellContent() -> void
 Microsoft.Maui.Controls.GradientBrush.~GradientBrush() -> void
 Microsoft.Maui.Controls.SwipeView.~SwipeView() -> void
+override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using CoreGraphics;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -11,7 +12,13 @@ sealed class SafeAreaScrollViewCoordinator
 {
 	WeakReference<UIScrollView> _delegatedNativeScrollView;
 	WeakReference<ISafeAreaScrollViewContainer> _delegatedScrollContainer;
+	WeakReference<UIViewController> _contentScrollViewOwner;
+	WeakReference<UIScrollView> _previousContentScrollView;
+	WeakReference<UIScrollView> _registeredContentScrollView;
 	UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
+	bool _nativeScrollIsSafeAreaPinned;
+	bool _uiKitOwnsSystemInset;
+	bool _insetOwnershipClassified;
 	nfloat _delegatedSystemTopInset;
 	nfloat _delegatedTopInset;
 	nfloat _delegatedScrollIndicatorTopInset;
@@ -34,6 +41,29 @@ sealed class SafeAreaScrollViewCoordinator
 			return false;
 		}
 
+		var coordinatorOwnsNativeScrollView =
+			_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) == true &&
+			delegatedScrollView == nativeScrollView;
+		if (nativeScrollView is not ISafeAreaScrollView &&
+			!coordinatorOwnsNativeScrollView &&
+			nativeScrollView.ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+		{
+			Reset();
+			return false;
+		}
+
+		var isFirstDelegation =
+			_delegatedNativeScrollView?.TryGetTarget(out var currentDelegatedScrollView) != true ||
+			currentDelegatedScrollView != nativeScrollView;
+		if (isFirstDelegation)
+		{
+			ResetNativeScrollInsetOwnership();
+			_delegatedNativeScrollView = new(nativeScrollView);
+
+			if (nativeScrollView is not ISafeAreaScrollView)
+				_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
+		}
+
 		var scrollFrame = scrollHost.Frame;
 		var delegatedFrame = new Rect(
 			scrollFrame.X,
@@ -41,15 +71,7 @@ sealed class SafeAreaScrollViewCoordinator
 			scrollFrame.Width,
 			scrollFrame.Bottom - bounds.Top);
 
-		TransferNativeScrollInsetOwnership(
-			nativeScrollView,
-			contentTopInset,
-			systemTopInset,
-			bounds);
-
-		if (scrollHost.Handler is ISafeAreaScrollViewContainer scrollContainer &&
-			scrollHost.Handler.PlatformView == nativeScrollView &&
-			(scrollContainer is not UIView containerView || containerView != nativeScrollView))
+		if (scrollHost.Handler is ISafeAreaScrollViewContainer scrollContainer)
 		{
 			ResetNativeScrollFrameOwnership(scrollContainer);
 			scrollContainer.ApplyDelegatedFrame(scrollFrame, delegatedFrame);
@@ -61,13 +83,107 @@ sealed class SafeAreaScrollViewCoordinator
 			scrollHost.Handler?.PlatformArrange(delegatedFrame);
 		}
 
+		var layoutEnvironmentChanged = UpdateLayoutEpoch(nativeScrollView, bounds, systemTopInset);
+		if (isFirstDelegation || layoutEnvironmentChanged || !_insetOwnershipClassified)
+		{
+			var hostPlatformView = scrollHost.Handler?.PlatformView as UIView;
+			var nativeFrameInHostParent = nativeScrollView.Superview?.ConvertRectToView(
+				nativeScrollView.Frame,
+				hostPlatformView?.Superview);
+			_nativeScrollIsSafeAreaPinned =
+				scrollContent.Handler?.PlatformView != nativeScrollView &&
+				nativeFrameInHostParent is CGRect hostParentFrame &&
+				hostParentFrame.Top >= delegatedFrame.Top + systemTopInset - 0.5;
+			_uiKitOwnsSystemInset =
+				!_nativeScrollIsSafeAreaPinned &&
+				nativeScrollView.SafeAreaInsets.Top > 0.5;
+			_insetOwnershipClassified = true;
+		}
+
+		if (_nativeScrollIsSafeAreaPinned)
+		{
+			ResetContentScrollView();
+			return true;
+		}
+
+		var registeredContentScrollView = RegisterContentScrollView(nativeScrollView);
+		if (nativeScrollView.SafeAreaInsets.Top > 0.5 ||
+			(registeredContentScrollView &&
+				(nativeScrollView is UITableView ||
+					nativeScrollView is MauiCollectionView { UsesUIKitSystemInset: true })))
+			_uiKitOwnsSystemInset = true;
+
+		TransferNativeScrollInsetOwnership(
+			nativeScrollView,
+			contentTopInset,
+			systemTopInset,
+			isFirstDelegation);
+
 		return true;
 	}
 
 	public void Reset()
 	{
 		ResetNativeScrollFrameOwnership();
+		ResetNativeScrollInsetOwnership();
+		ResetContentScrollView();
+	}
 
+	bool RegisterContentScrollView(UIScrollView nativeScrollView)
+	{
+		var navigationController =
+			nativeScrollView.FindResponder<UINavigationController>() ??
+			nativeScrollView.Superview?.FindResponder<UINavigationController>();
+		var owner = navigationController?.TopViewController;
+		if (owner is null ||
+			owner.Handle == IntPtr.Zero ||
+			owner.View is null ||
+			!nativeScrollView.IsDescendantOfView(owner.View))
+		{
+			ResetContentScrollView();
+			return false;
+		}
+
+		if (_contentScrollViewOwner?.TryGetTarget(out var currentOwner) == true &&
+			currentOwner == owner)
+		{
+			owner.SetContentScrollView(nativeScrollView, NSDirectionalRectEdge.Top);
+			_registeredContentScrollView = new(nativeScrollView);
+			return true;
+		}
+
+		ResetContentScrollView();
+		var previousContentScrollView = owner.GetContentScrollView(NSDirectionalRectEdge.Top);
+		if (previousContentScrollView is not null && previousContentScrollView != nativeScrollView)
+			_previousContentScrollView = new(previousContentScrollView);
+
+		owner.SetContentScrollView(nativeScrollView, NSDirectionalRectEdge.Top);
+		_contentScrollViewOwner = new(owner);
+		_registeredContentScrollView = new(nativeScrollView);
+		return true;
+	}
+
+	void ResetContentScrollView()
+	{
+		if (_contentScrollViewOwner?.TryGetTarget(out var owner) == true &&
+			_registeredContentScrollView?.TryGetTarget(out var registeredScrollView) == true &&
+			owner.Handle != IntPtr.Zero &&
+			owner.GetContentScrollView(NSDirectionalRectEdge.Top) == registeredScrollView)
+		{
+			var previousContentScrollView =
+				_previousContentScrollView?.TryGetTarget(out var previous) == true
+					? previous
+					: null;
+			owner.SetContentScrollView(previousContentScrollView, NSDirectionalRectEdge.Top);
+		}
+
+		_contentScrollViewOwner = null;
+		_previousContentScrollView = null;
+		_registeredContentScrollView = null;
+	}
+
+	void ResetNativeScrollInsetOwnership()
+	{
 		if (_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) != true)
 		{
 			ClearNativeScrollInsetOwnership();
@@ -182,27 +298,13 @@ sealed class SafeAreaScrollViewCoordinator
 		UIScrollView nativeScrollView,
 		double topInset,
 		double systemTopInset,
-		Rect bounds)
+		bool isFirstDelegation)
 	{
-		var isFirstDelegation =
-			_delegatedNativeScrollView?.TryGetTarget(out var delegatedScrollView) != true ||
-			delegatedScrollView != nativeScrollView;
-
-		if (isFirstDelegation)
-		{
-			Reset();
-			_delegatedNativeScrollView = new(nativeScrollView);
-
-			if (nativeScrollView is not ISafeAreaScrollView)
-				_previousInsetAdjustmentBehavior = nativeScrollView.ContentInsetAdjustmentBehavior;
-		}
-
-		UpdateLayoutEpoch(nativeScrollView, bounds, systemTopInset);
-		// The navigation bar derives its large-title state from this scroll geometry.
-		// Keep the system contribution stable so that state cannot feed back into its own threshold.
 		_delegatedSystemTopInset = (nfloat)Math.Max(_delegatedSystemTopInset, systemTopInset);
 		var additionalTopInset = (nfloat)Math.Max(0, topInset - systemTopInset);
-		var requestedTopInset = _delegatedSystemTopInset + additionalTopInset;
+		var requestedTopInset = _uiKitOwnsSystemInset || _nativeScrollIsSafeAreaPinned
+			? additionalTopInset
+			: _delegatedSystemTopInset + additionalTopInset;
 		var stableTopInset =
 			!isFirstDelegation &&
 			(nativeScrollView.Tracking || nativeScrollView.Dragging || nativeScrollView.Decelerating)
@@ -216,7 +318,7 @@ sealed class SafeAreaScrollViewCoordinator
 		{
 			_delegatedTopInset = stableTopInset;
 			_delegatedScrollIndicatorTopInset = stableTopInset;
-			safeAreaScrollView.ApplyDelegatedTopInset(stableTopInset);
+			safeAreaScrollView.ApplyDelegatedTopInset(stableTopInset, _uiKitOwnsSystemInset);
 			return;
 		}
 
@@ -228,7 +330,9 @@ sealed class SafeAreaScrollViewCoordinator
 
 		_delegatedTopInset = stableTopInset;
 		_delegatedScrollIndicatorTopInset = stableTopInset;
-		nativeScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		nativeScrollView.ContentInsetAdjustmentBehavior = _uiKitOwnsSystemInset
+			? UIScrollViewContentInsetAdjustmentBehavior.Always
+			: UIScrollViewContentInsetAdjustmentBehavior.Never;
 		nativeScrollView.ContentInset = new UIEdgeInsets(
 			baseContentTop + _delegatedTopInset,
 			contentInset.Left,
@@ -253,7 +357,7 @@ sealed class SafeAreaScrollViewCoordinator
 		}
 	}
 
-	void UpdateLayoutEpoch(UIScrollView nativeScrollView, Rect bounds, double systemTopInset)
+	bool UpdateLayoutEpoch(UIScrollView nativeScrollView, Rect bounds, double systemTopInset)
 	{
 		var statusBarHeight =
 			nativeScrollView.Window?.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? -1;
@@ -276,6 +380,7 @@ sealed class SafeAreaScrollViewCoordinator
 		if (statusBarHeight >= 0)
 			_delegatedStatusBarHeight = statusBarHeight;
 		_delegatedContentSizeCategory = contentSizeCategory;
+		return layoutEnvironmentChanged;
 	}
 
 	void ResetNativeScrollFrameOwnership(ISafeAreaScrollViewContainer currentContainer = null)
@@ -291,6 +396,9 @@ sealed class SafeAreaScrollViewCoordinator
 	void ClearNativeScrollInsetOwnership()
 	{
 		_delegatedNativeScrollView = null;
+		_nativeScrollIsSafeAreaPinned = false;
+		_uiKitOwnsSystemInset = false;
+		_insetOwnershipClassified = false;
 		_delegatedSystemTopInset = 0;
 		_delegatedTopInset = 0;
 		_delegatedScrollIndicatorTopInset = 0;

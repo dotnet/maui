@@ -51,6 +51,8 @@ public class Issue33037NonShellRootPage : ContentPage
 					CreateButton("Issue33037LegacyCollectionViewButton", "Legacy CollectionView with header", () => new Issue33037NonShellLegacyCollectionViewPage()),
 #if IOS
 					CreateButton("Issue33037NativeTableViewButton", "Custom control backed by native UITableView", () => new Issue33037NativeTableViewPage()),
+					CreateButton("Issue33037NestedSafeAreaTableButton", "Nested safe-area UITableView", () => new Issue33037NestedSafeAreaTableViewPage(60)),
+					CreateButton("Issue33037NestedSafeAreaShortTableButton", "Nested safe-area UITableView with short content", () => new Issue33037NestedSafeAreaTableViewPage(2)),
 #endif
 					CreateButton("Issue33037TableViewButton", "Grid wrapping TableView", () => new Issue33037NonShellTableViewPage()),
 					CreateButton("Issue33037WebViewButton", "Grid wrapping WebView", () => new Issue33037NonShellWebViewPage()),
@@ -577,6 +579,93 @@ class Issue33037NativeTableViewSource : UITableViewSource
 		}
 
 		label.Text = $"Item {indexPath.Row}";
+		return cell;
+	}
+}
+
+class Issue33037NestedSafeAreaTableViewPage : Issue33037NonShellScenarioPage
+{
+	public Issue33037NestedSafeAreaTableViewPage(int rowCount) : base("Issue33037 Nested Safe Area")
+	{
+		Content = new Issue33037NestedSafeAreaTableView
+		{
+			AutomationId = "Issue33037NestedSafeAreaTableScroller",
+			RowCount = rowCount
+		};
+	}
+}
+
+public class Issue33037NestedSafeAreaTableView : View
+{
+	public int RowCount { get; set; }
+}
+
+public class Issue33037NestedSafeAreaTableViewHandler : ViewHandler<Issue33037NestedSafeAreaTableView, UIView>
+{
+	public static readonly IPropertyMapper<Issue33037NestedSafeAreaTableView, Issue33037NestedSafeAreaTableViewHandler> Mapper =
+		new PropertyMapper<Issue33037NestedSafeAreaTableView, Issue33037NestedSafeAreaTableViewHandler>(ViewHandler.ViewMapper);
+
+	public Issue33037NestedSafeAreaTableViewHandler() : base(Mapper)
+	{
+	}
+
+	protected override UIView CreatePlatformView()
+	{
+		var container = new UIView();
+		var tableView = new UITableView
+		{
+			AlwaysBounceVertical = true,
+			RowHeight = 50,
+			Source = new Issue33037NestedSafeAreaTableViewSource(VirtualView.RowCount),
+			TranslatesAutoresizingMaskIntoConstraints = false
+		};
+
+		container.AddSubview(tableView);
+		NSLayoutConstraint.ActivateConstraints(
+		[
+			tableView.TopAnchor.ConstraintEqualTo(container.SafeAreaLayoutGuide.TopAnchor),
+			tableView.BottomAnchor.ConstraintEqualTo(container.SafeAreaLayoutGuide.BottomAnchor),
+			tableView.LeadingAnchor.ConstraintEqualTo(container.LeadingAnchor),
+			tableView.TrailingAnchor.ConstraintEqualTo(container.TrailingAnchor)
+		]);
+
+		return container;
+	}
+}
+
+class Issue33037NestedSafeAreaTableViewSource : UITableViewSource
+{
+	const string ReuseIdentifier = "Issue33037NestedSafeAreaCell";
+	readonly int _rowCount;
+
+	public Issue33037NestedSafeAreaTableViewSource(int rowCount)
+	{
+		_rowCount = rowCount;
+	}
+
+	public override nint RowsInSection(UITableView tableview, nint section) => _rowCount;
+
+	public override UITableViewCell GetCell(UITableView tableView, Foundation.NSIndexPath indexPath)
+	{
+		var cell = tableView.DequeueReusableCell(ReuseIdentifier) ??
+			new UITableViewCell(UITableViewCellStyle.Default, ReuseIdentifier);
+		var label = cell.ContentView.ViewWithTag(1) as UILabel;
+		if (label is null)
+		{
+			label = new UILabel(new CoreGraphics.CGRect(
+				16,
+				0,
+				Math.Max(0, cell.ContentView.Bounds.Width - 32),
+				cell.ContentView.Bounds.Height))
+			{
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+				Tag = 1
+			};
+			cell.ContentView.AddSubview(label);
+		}
+
+		label.Text = $"Nested Item {indexPath.Row}";
+		cell.AccessibilityIdentifier = $"Nested Item {indexPath.Row}";
 		return cell;
 	}
 }

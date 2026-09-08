@@ -20,6 +20,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 	UIScrollViewContentInsetAdjustmentBehavior _previousInsetAdjustmentBehavior;
 
 	internal bool IsTopSafeAreaDelegated => _isTopSafeAreaDelegated;
+	internal bool UsesUIKitSystemInset { get; set; }
 
 	readonly WeakEventManager _movedToWindowEventManager = new();
 
@@ -273,7 +274,7 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		}
 	}
 
-	void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset)
+	void ISafeAreaScrollView.ApplyDelegatedTopInset(double topInset, bool uiKitOwnsSystemInset)
 	{
 		var isFirstDelegation = !_isTopSafeAreaDelegated;
 		var delegatedInsetChanged =
@@ -292,7 +293,9 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 		_isTopSafeAreaDelegated = true;
 		_delegatedTopInset = (nfloat)topInset;
 		_delegatedScrollIndicatorTopInset = (nfloat)topInset;
-		ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+		ContentInsetAdjustmentBehavior = uiKitOwnsSystemInset
+			? UIScrollViewContentInsetAdjustmentBehavior.Always
+			: UIScrollViewContentInsetAdjustmentBehavior.Never;
 		ContentInset = new UIEdgeInsets(
 			baseContentTop + _delegatedTopInset,
 			contentInset.Left,
@@ -304,7 +307,10 @@ public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPla
 			indicatorInsets.Bottom,
 			indicatorInsets.Right);
 
-		if (delegatedInsetChanged && !Tracking && !Dragging && !Decelerating)
+		if (delegatedInsetChanged &&
+			!Tracking &&
+			!Dragging &&
+			!Decelerating)
 		{
 			ContentOffset = new CGPoint(
 				ContentOffset.X,

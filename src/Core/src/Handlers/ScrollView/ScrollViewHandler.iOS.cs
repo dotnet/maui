@@ -7,9 +7,11 @@ using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout, IScrollViewportProvider
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout, IScrollViewportProvider, ISafeAreaScrollViewContainer
 	{
 		readonly ScrollEventProxy _eventProxy = new();
+		Rect? _delegatedSafeAreaFrame;
+		double _delegatedFrameTop;
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
 
@@ -56,13 +58,45 @@ namespace Microsoft.Maui.Handlers
 			return new MauiScrollView();
 		}
 
+		public override void PlatformArrange(Rect frame)
+		{
+			if (_delegatedSafeAreaFrame is not null)
+			{
+				_delegatedSafeAreaFrame = frame;
+				frame = new Rect(
+					frame.X,
+					_delegatedFrameTop,
+					frame.Width,
+					frame.Bottom - _delegatedFrameTop);
+			}
+
+			base.PlatformArrange(frame);
+		}
+
+		void ISafeAreaScrollViewContainer.ApplyDelegatedFrame(Rect safeFrame, Rect delegatedFrame)
+		{
+			_delegatedSafeAreaFrame = safeFrame;
+			_delegatedFrameTop = delegatedFrame.Top;
+			base.PlatformArrange(delegatedFrame);
+		}
+
+		void ISafeAreaScrollViewContainer.ResetDelegatedFrame()
+		{
+			if (_delegatedSafeAreaFrame is not { } safeFrame)
+				return;
+
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
+			base.PlatformArrange(safeFrame);
+		}
+
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
-			
+
 			if (PlatformView is MauiScrollView mauiScrollView)
 				mauiScrollView.View = view;
-				
+
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -79,6 +113,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
+
 			if (platformView is ICrossPlatformLayoutBacking platformScrollView)
 			{
 				platformScrollView.CrossPlatformLayout = null;
@@ -147,7 +184,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			platformView.UpdateIsEnabled(scrollView);
-			
+
 			// Notify MauiScrollView of orientation change to handle RTL layout
 			if (platformView is MauiScrollView mauiScrollView)
 			{

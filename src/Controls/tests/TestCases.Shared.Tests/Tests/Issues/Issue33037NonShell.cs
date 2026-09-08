@@ -78,6 +78,56 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	public void NestedSafeAreaLongTableScrollsWithoutDoubleTopInset()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037NestedSafeAreaTableButton").Click();
+
+		try
+		{
+			var titleRect = GetExpandedNavigationTitleRect("Issue33037 Nested Safe Area");
+			var firstItemRect = App.WaitForElement("Nested Item 0").GetRect();
+
+			Assert.That(firstItemRect.Y, Is.InRange(titleRect.Bottom, titleRect.Bottom + 40),
+				"A nested native scroll view which already uses its container safe area must not receive the system top inset a second time.");
+
+			App.ScrollDown("Issue33037NestedSafeAreaTableScroller", ScrollStrategy.Gesture, swipePercentage: 0.8, withInertia: false);
+			App.WaitForElement("Nested Item 15");
+
+			// A scroll view pinned below the navigation bar can scroll, but it does not geometrically
+			// participate in UIKit's large-title collapse transition.
+			var titleAfterScrollRect = GetNavigationTitleRect("Issue33037 Nested Safe Area");
+			Assert.That(titleAfterScrollRect.Height, Is.EqualTo(titleRect.Height).Within(1));
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void NestedSafeAreaShortTableDoesNotDoubleTopInset()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037NestedSafeAreaShortTableButton").Click();
+
+		try
+		{
+			var titleRect = GetExpandedNavigationTitleRect("Issue33037 Nested Safe Area");
+			var firstItemRect = App.WaitForElement("Nested Item 0").GetRect();
+
+			Assert.That(firstItemRect.Y, Is.InRange(titleRect.Bottom, titleRect.Bottom + 40),
+				"A nested native scroll view which already uses its container safe area must not receive the system top inset a second time.");
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public void ModalListViewLargeTitleRemainsVisibleAfterScrollRoundTrip()
 	{
 		RequireIOS26OrHigher();
