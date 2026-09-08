@@ -1048,6 +1048,60 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
     }
 }
 
+Describe 'Probing actual Unix socket access' -Skip:(-not [OperatingSystem]::IsLinux()) {
+    BeforeEach {
+        $script:ProbeSocketPath = Join-Path '/tmp' (
+            "maui-replication-probe-$([guid]::NewGuid().ToString('N')).sock")
+        $script:ProbeListener = $null
+    }
+
+    AfterEach {
+        if ($null -ne $script:ProbeListener) {
+            $script:ProbeListener.Dispose()
+        }
+        [IO.File]::Delete($script:ProbeSocketPath)
+    }
+
+    It 'accepts the managed missing-endpoint error from a real Unix connection' {
+        {
+            Assert-ReplicationPrivilegedSocketBlocked -SocketPath $script:ProbeSocketPath
+        } | Should -Not -Throw
+    }
+
+    It 'accepts a refused connection to a socket with no listener' {
+        $script:ProbeListener = [Net.Sockets.Socket]::new(
+            [Net.Sockets.AddressFamily]::Unix,
+            [Net.Sockets.SocketType]::Stream,
+            [Net.Sockets.ProtocolType]::Unspecified)
+        $script:ProbeListener.Bind(
+            [Net.Sockets.UnixDomainSocketEndPoint]::new($script:ProbeSocketPath))
+
+        {
+            Assert-ReplicationPrivilegedSocketBlocked -SocketPath $script:ProbeSocketPath
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a successful connection to a live socket' {
+        $script:ProbeListener = [Net.Sockets.Socket]::new(
+            [Net.Sockets.AddressFamily]::Unix,
+            [Net.Sockets.SocketType]::Stream,
+            [Net.Sockets.ProtocolType]::Unspecified)
+        $script:ProbeListener.Bind(
+            [Net.Sockets.UnixDomainSocketEndPoint]::new($script:ProbeSocketPath))
+        $script:ProbeListener.Listen(1)
+
+        {
+            Assert-ReplicationPrivilegedSocketBlocked -SocketPath $script:ProbeSocketPath
+        } | Should -Throw '*exposed privileged socket*'
+    }
+
+    It 'does not turn an invalid endpoint into successful denial evidence' {
+        {
+            Assert-ReplicationPrivilegedSocketBlocked -SocketPath ('/' + ('x' * 200))
+        } | Should -Throw
+    }
+}
+
 Describe 'Preinstalling Android Appium helpers before isolation' {
     It 'installs the exact trusted helper set and verifies every package' {
         $appiumHome = Join-Path $TestDrive '.appium'
