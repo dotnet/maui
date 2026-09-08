@@ -51,6 +51,13 @@ namespace Microsoft.Maui.Controls
 				return tcs.Task;
 			}
 
+			return AnimateToAsyncCore(view, start, end, name, updateAction, length, easing, cancellationToken, tcs);
+		}
+
+		static Task<bool> AnimateToAsyncCore(VisualElement view, double start, double end, string name,
+			Action<VisualElement, double> updateAction, uint length, Easing easing, CancellationToken cancellationToken,
+			TaskCompletionSource<bool> tcs)
+		{
 			var weakView = new WeakReference<VisualElement>(view);
 
 			void UpdateProperty(double f)

@@ -722,13 +722,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (child is IShellContentController sc && (sc.Page?.IsPlatformEnabled == true))
 			{
-				sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
-				void WaitForRendererToGetRemoved(object s, EventArgs p)
-				{
-					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
-					base.OnChildRemoved(child, oldLogicalIndex);
-				}
-				;
+				OnChildRemovedWhenPlatformDisabled(sc, child, oldLogicalIndex);
 			}
 			else
 			{
@@ -736,6 +730,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			OnVisibleChildRemoved(child);
+		}
+
+		void OnChildRemovedWhenPlatformDisabled(IShellContentController sc, Element child, int oldLogicalIndex)
+		{
+			sc.Page.PlatformEnabledChanged += WaitForRendererToGetRemoved;
+
+			void WaitForRendererToGetRemoved(object s, EventArgs p)
+			{
+				sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
+				base.OnChildRemoved(child, oldLogicalIndex);
+			}
 		}
 
 		void OnVisibleChildAdded(Element child)

@@ -242,16 +242,22 @@ namespace Microsoft.Maui.Controls
 
 			if (page.Parent == null)
 			{
-				page.ParentSet += OnPresentedPageParentSet;
-				void OnPresentedPageParentSet(object sender, EventArgs e)
-				{
-					this.FindParentOfType<Shell>().SendPageAppearing(page);
-					(sender as Page).ParentSet -= OnPresentedPageParentSet;
-				}
+				SendPageAppearingWhenParentSet(page);
 			}
 			else if (IsVisibleContent && page.IsVisible)
 			{
 				this.FindParentOfType<Shell>().SendPageAppearing(page);
+			}
+		}
+
+		void SendPageAppearingWhenParentSet(Page page)
+		{
+			page.ParentSet += OnPresentedPageParentSet;
+
+			void OnPresentedPageParentSet(object sender, EventArgs e)
+			{
+				this.FindParentOfType<Shell>().SendPageAppearing(page);
+				(sender as Page).ParentSet -= OnPresentedPageParentSet;
 			}
 		}
 
