@@ -563,16 +563,23 @@ namespace Microsoft.Maui.Controls.Handlers
 
         void UpdateHeaderVisibility()
         {
-            bool visible = ShellSectionController.GetItems().Count > 1;
+            if (((IElementHandler)this).VirtualView is not ShellSection shellSection ||
+                _shellContext is null ||
+                _rootViewController is null)
+            {
+                return;
+            }
+
+            bool visible = ((IShellSectionController)shellSection).GetItems().Count > 1;
 
             if (visible)
             {
                 if (_header is null)
                 {
-                    _header = CreateShellSectionRootHeader(_shellContext!);
-                    _header.ShellSection = VirtualView;
+                    _header = CreateShellSectionRootHeader(_shellContext);
+                    _header.ShellSection = shellSection;
 
-                    _rootViewController!.AddChildViewController(_header.ViewController);
+                    _rootViewController.AddChildViewController(_header.ViewController);
                     _rootViewController.View!.AddSubview(_header.ViewController.View!);
                 }
                 if (_blurView is not null)

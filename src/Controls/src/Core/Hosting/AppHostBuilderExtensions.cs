@@ -213,7 +213,7 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		if (RuntimeFeature.IsiOSShell2HandlerEnabled)
+		if (RuntimeFeature.IsiOSShellHandlerEnabled)
 		{
 			handlersCollection.AddHandler<Shell, ShellHandler>();
 			handlersCollection.AddHandler<ShellItem, ShellItemHandler>();

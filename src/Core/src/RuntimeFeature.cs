@@ -29,7 +29,7 @@ namespace Microsoft.Maui
 		const bool IsMaterial3EnabledByDefault = false;
 		const bool IsCssEnabledByDefault = true;
 		const bool IsWindowsCollectionView2HandlerEnabledByDefault = true;
-		const bool IsiOSShell2HandlerEnabledByDefault = false;
+		const bool IsiOSShellHandlerEnabledByDefault = false;
 		const bool IsIncrementalHotReloadEnabledByDefault = false;
 		const bool UseMauiAndroidSystemBarBackgroundsByDefault = false;
 
@@ -159,12 +159,12 @@ namespace Microsoft.Maui
 				: IsWindowsCollectionView2HandlerEnabledByDefault;
 
 #if NET11_0_OR_GREATER
-		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsiOSShell2HandlerEnabled)}")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsiOSShellHandlerEnabled)}")]
 #endif
-		public static bool IsiOSShell2HandlerEnabled =>
-			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsiOSShell2HandlerEnabled)}", out bool isEnabled)
+		public static bool IsiOSShellHandlerEnabled =>
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsiOSShellHandlerEnabled)}", out bool isEnabled)
 				? isEnabled
-				: IsiOSShell2HandlerEnabledByDefault;
+				: IsiOSShellHandlerEnabledByDefault;
 
 #if NET11_0_OR_GREATER
 		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsIncrementalHotReloadEnabled)}")]
