@@ -752,14 +752,27 @@ Describe 'Selecting a real process isolation boundary' {
 }
 
 Describe 'Isolating the Android guest from confused-deputy egress' {
-    It 'installs and verifies IPv4 and IPv6 output filters and removes default routes' {
+    It 'installs and verifies both guest filters after <RootDelay> pending root checks' -ForEach @(
+        @{ RootDelay = 0 }
+        @{ RootDelay = 2 }
+    ) {
         $calls = [Collections.Generic.List[string]]::new()
+        $sleeps = [Collections.Generic.List[int]]::new()
         $installed = @{}
         $invoker = {
             param([string[]]$Arguments)
             $text = $Arguments -join ' '
             $calls.Add($text)
             if ($text -match ' shell id -u$') {
+                $identityReads = @($calls | Where-Object {
+                        $_ -match ' shell id -u$'
+                    }).Count
+                if ($identityReads -le $RootDelay) {
+                    return [pscustomobject]@{
+                        ExitCode = $(if ($identityReads -eq 1) { 1 } else { 0 })
+                        Output = $(if ($identityReads -eq 1) { 'device offline' } else { '2000' })
+                    }
+                }
                 return [pscustomobject]@{ ExitCode = 0; Output = '0' }
             }
             if ($text -match 'settings get global airplane_mode_on$') {
@@ -803,9 +816,13 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
         $result = Assert-ReplicationAndroidGuestNetworkIsolation `
             -DeviceUdid emulator-5554 `
             -AdbInvoker $invoker `
-            -SleepInvoker { param([int]$Seconds) }
+            -SleepInvoker { param([int]$Seconds) $sleeps.Add($Seconds) }
 
         $result.NewConnectionsDenied | Should -BeTrue
+        @($calls | Where-Object { $_ -match ' shell id -u$' }).Count |
+            Should -Be ($RootDelay + 1)
+        @($sleeps | Where-Object { $_ -eq 1 }).Count | Should -Be $RootDelay
+        @($sleeps | Where-Object { $_ -eq 5 }).Count | Should -Be 1
         $joined = $calls -join "`n"
         $joined | Should -Match 'iptables -A MAUI_REPLICATION -j REJECT'
         $joined | Should -Match 'ip6tables -A MAUI_REPLICATION -j REJECT'
@@ -817,6 +834,52 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
         $joined | Should -Match 'svc data disable'
         $joined | Should -Match 'iptables -D OUTPUT -j MAUI_REPLICATION'
         $joined | Should -Match 'iptables -I OUTPUT 1 -j MAUI_REPLICATION'
+    }
+
+    It 'rejects successful adb root without a proven root uid: <Case>' -ForEach @(
+        @{ Case = 'production image'; IdentityExitCode = 0; IdentityOutput = '2000' }
+        @{ Case = 'empty uid'; IdentityExitCode = 0; IdentityOutput = '' }
+        @{ Case = 'malformed uid'; IdentityExitCode = 0; IdentityOutput = '0 2000' }
+        @{ Case = 'failed identity command'; IdentityExitCode = 1; IdentityOutput = '0' }
+    ) {
+        $calls = [Collections.Generic.List[string]]::new()
+        $sleeps = [Collections.Generic.List[int]]::new()
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            $calls.Add($text)
+            switch ($text) {
+                '-s emulator-5554 root' {
+                    return [pscustomobject]@{
+                        ExitCode = 0
+                        Output = 'adbd cannot run as root in production builds'
+                    }
+                }
+                '-s emulator-5554 wait-for-device' {
+                    return [pscustomobject]@{ ExitCode = 0; Output = '' }
+                }
+                '-s emulator-5554 shell id -u' {
+                    return [pscustomobject]@{
+                        ExitCode = $IdentityExitCode
+                        Output = $IdentityOutput
+                    }
+                }
+                default { throw "Guest setup must not proceed before root is proven: $text" }
+            }
+        }.GetNewClosure()
+
+        {
+            Assert-ReplicationAndroidGuestNetworkIsolation `
+                -DeviceUdid emulator-5554 `
+                -AdbInvoker $invoker `
+                -SleepInvoker { param([int]$Seconds) $sleeps.Add($Seconds) }
+        } | Should -Throw '*requires a root-enabled emulator*'
+
+        @($calls | Where-Object { $_ -match ' root$' }).Count | Should -Be 1
+        @($calls | Where-Object { $_ -match ' wait-for-device$' }).Count | Should -Be 10
+        @($calls | Where-Object { $_ -match ' shell id -u$' }).Count | Should -Be 10
+        $sleeps.Count | Should -Be 10
+        @($sleeps | Where-Object { $_ -ne 1 }).Count | Should -Be 0
     }
 
     It 'reasserts each radio boundary when airplane mode is already enabled' {
@@ -905,14 +968,16 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
     }
 
     It 'fails closed after execution if the guest firewall was removed' {
+        $calls = [Collections.Generic.List[string]]::new()
         $invoker = {
             param([string[]]$Arguments)
             $text = $Arguments -join ' '
+            $calls.Add($text)
             if ($text -match ' (?:ip6tables|iptables) -C OUTPUT ') {
                 return [pscustomobject]@{ ExitCode = 1; Output = '' }
             }
             return [pscustomobject]@{ ExitCode = 0; Output = '1' }
-        }
+        }.GetNewClosure()
 
         {
             Assert-ReplicationAndroidGuestNetworkIsolation `
@@ -920,6 +985,39 @@ Describe 'Isolating the Android guest from confused-deputy egress' {
                 -AdbInvoker $invoker `
                 -VerifyOnly
         } | Should -Throw '*lost the iptables OUTPUT chain*'
+        $calls.Count | Should -Be 1
+        $calls[0] | Should -Be '-s emulator-5554 shell iptables -C OUTPUT -j MAUI_REPLICATION'
+    }
+
+    It 'verifies a healthy guest using only read-only commands' {
+        $invoker = {
+            param([string[]]$Arguments)
+            $text = $Arguments -join ' '
+            if ($text -match '^-s emulator-5554 shell (?:ip6tables|iptables) -S OUTPUT$') {
+                return [pscustomobject]@{
+                    ExitCode = 0
+                    Output = "-P OUTPUT ACCEPT`n-A OUTPUT -j MAUI_REPLICATION"
+                }
+            }
+            if ($text -match '^-s emulator-5554 shell (?:ip6tables|iptables) -C (?:OUTPUT -j MAUI_REPLICATION|MAUI_REPLICATION -o lo -j RETURN|MAUI_REPLICATION -j REJECT)$' -or
+                $text -match '^-s emulator-5554 shell ip -[46] route show default$') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '' }
+            }
+            if ($text -ceq '-s emulator-5554 shell settings get global airplane_mode_on') {
+                return [pscustomobject]@{ ExitCode = 0; Output = '1' }
+            }
+            throw "VerifyOnly must not repair or restart the guest: $text"
+        }
+
+        $result = Assert-ReplicationAndroidGuestNetworkIsolation `
+            -DeviceUdid emulator-5554 `
+            -AdbInvoker $invoker `
+            -SleepInvoker { throw 'VerifyOnly must not wait for guest setup.' } `
+            -VerifyOnly
+
+        $result.NewConnectionsDenied | Should -BeTrue
+        $result.DefaultRoutesRemoved | Should -BeTrue
+        $result.AirplaneMode | Should -BeTrue
     }
 
     It 'fails closed when an earlier OUTPUT rule bypasses the isolation jump' {

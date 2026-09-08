@@ -362,6 +362,39 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
+              $pester = Get-Module -ListAvailable -Name Pester |
+                Where-Object { $_.Version -eq [version]'5.9.0' }
+              if (-not $pester) {
+                Install-Module -Name Pester -RequiredVersion 5.9.0 -Force -Scope CurrentUser -SkipPublisherCheck
+              }
+              Import-Module Pester -RequiredVersion 5.9.0
+              $config = New-PesterConfiguration
+              $config.Run.Path = "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationExecutionEnvironment.Tests.ps1"
+              $config.Run.PassThru = $true
+              $config.Output.Verbosity = 'Detailed'
+              $config.TestResult.Enabled = $true
+              $config.TestResult.OutputPath = "$(Agent.TempDirectory)/replication-execution-environment.xml"
+              $config.TestResult.OutputFormat = 'NUnitXml'
+              $result = Invoke-Pester -Configuration $config
+              if ($result.Result -ne 'Passed' -or $result.PassedCount -lt 1) {
+                throw "Replication execution-environment regression tests did not pass: $($result.Result)."
+              }
+            displayName: 'Test trusted Android execution-boundary helpers'
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'))
+            timeoutInMinutes: 10
+
+          - task: PublishTestResults@2
+            displayName: 'Publish execution-boundary regression results'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'))
+            inputs:
+              testResultsFormat: 'NUnit'
+              testResultsFiles: '$(Agent.TempDirectory)/replication-execution-environment.xml'
+              testRunTitle: 'Replication execution boundary'
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
               if ([Environment]::GetEnvironmentVariable(
                   'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -cne '1') {
                 Write-Host '##vso[build.addbuildtag]ios-isolation-unavailable'
