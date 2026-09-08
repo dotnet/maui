@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/35985
+#if TESTS_FAILS_ON_WINDOWS // For more information, see: https://github.com/dotnet/maui/issues/38055
 		[Fact(DisplayName = "MauiWinUIWindow doesn't leak")]
 		public async Task MauiWinUIWindowDoesntLeak()
 		{

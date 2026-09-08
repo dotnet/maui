@@ -56,10 +56,10 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IPhoneDialer Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new PhoneDialerImplementation());
+			defaultImplementation ??= new PhoneDialerImplementation();
 
 		internal static void SetDefault(IPhoneDialer? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	partial class PhoneDialerImplementation : IPhoneDialer

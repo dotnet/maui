@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #pragma warning disable CS0618
 							if (_searchHandler.DisplayMemberName is not null)
 							{
-								MauiLogger<ShellSearchViewAdapter>.Log(LogLevel.Error, $"{TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning}");
+								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchViewAdapter>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
 							}
 #pragma warning restore CS0618
@@ -152,16 +152,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class CustomFilter : Filter
 		{
-			private readonly BaseAdapter _adapter;
-
-			// Required by Android JNI bridge for native handle activation
-			protected CustomFilter(IntPtr javaReference, global::Android.Runtime.JniHandleOwnership transfer) : base(javaReference, transfer)
-			{
-			}
+			private readonly BaseAdapter _adapter = null;
 
 			public CustomFilter(BaseAdapter adapter)
 			{
 				_adapter = adapter;
+			}
+
+			protected CustomFilter(IntPtr javaReference, global::Android.Runtime.JniHandleOwnership transfer)
+				: base(javaReference, transfer)
+			{
 			}
 
 			protected override FilterResults PerformFiltering(ICharSequence constraint)
@@ -174,7 +174,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			protected override void PublishResults(ICharSequence constraint, FilterResults results)
 			{
-				_adapter?.NotifyDataSetChanged();
+				if (_adapter is not null)
+					_adapter.NotifyDataSetChanged();
 			}
 		}
 

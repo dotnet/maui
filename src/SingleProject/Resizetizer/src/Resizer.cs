@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -26,7 +25,7 @@ namespace Microsoft.Maui.Resizetizer
 		public SKSize? BaseSize => Info.BaseSize;
 
 		protected SkiaSharpTools Tools =>
-			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Info.Quality, Logger);
+			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Logger);
 
 		public string GetRasterFileDestination(DpiPath dpi, bool includeIntermediate = true, bool includeScale = true)
 			=> GetRasterFileDestination(Info, dpi, includeIntermediate ? IntermediateOutputPath : null, includeScale);
@@ -76,42 +75,21 @@ namespace Microsoft.Maui.Resizetizer
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 		}
 
-		internal static bool IsUpToDate(string inputFile, string outputFile, string inputsFile, ILogger logger)
+		static bool IsUpToDate(string inputFile, string outputFile, string inputsFile, ILogger logger)
 		{
-			return IsUpToDate(new[] { inputFile }, outputFile, inputsFile, logger, inputFile);
-		}
-
-		internal static bool IsUpToDate(IEnumerable<string> inputFiles, string outputFile, string inputsFile, ILogger logger, string inputDescription = null)
-		{
-			var fileInputs = string.IsNullOrEmpty(inputsFile) ? null : new FileInfo(inputsFile);
-			if (fileInputs?.Exists != true)
-				return false;
-
+			var fileIn = new FileInfo(inputFile);
 			var fileOut = new FileInfo(outputFile);
-			if (!fileOut.Exists)
-				return false;
+			var fileInputs = inputsFile is null ? null : new FileInfo(inputsFile);
 
-			var newestInput = fileInputs.LastWriteTimeUtc;
-
-			foreach (var inputFile in inputFiles)
+			if (fileIn.Exists && fileOut.Exists && fileInputs?.Exists == true
+				&& fileIn.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc
+				&& fileInputs.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc)
 			{
-				if (string.IsNullOrEmpty(inputFile))
-					continue;
-
-				var fileIn = new FileInfo(inputFile);
-				if (!fileIn.Exists)
-					return false;
-
-				if (fileIn.LastWriteTimeUtc > newestInput)
-					newestInput = fileIn.LastWriteTimeUtc;
+				logger.Log($"Skipping '{inputFile}' as output '{outputFile}' is already up to date.");
+				return true;
 			}
 
-			if (newestInput > fileOut.LastWriteTimeUtc)
-				return false;
-
-			var description = string.IsNullOrEmpty(inputDescription) ? "inputs" : inputDescription;
-			logger.Log($"Skipping '{description}' as output '{outputFile}' is already up to date.");
-			return true;
+			return false;
 		}
 
 		public ResizedImageInfo Resize(DpiPath dpi, string inputsFile)

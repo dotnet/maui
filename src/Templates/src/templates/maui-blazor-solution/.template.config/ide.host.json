@@ -1,7 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/ide.host",
   "icon": "ide/icon.ico",
-  "supportsDocker": true,
   "disableHttpsSymbol": "NoHttps",
   "unsupportedHosts": [
     {
@@ -19,11 +18,6 @@
   "symbolInfo": [
     {
       "id": "InteractivityPlatform",
-      "isVisible": true,
-      "persistenceScope": "templateGroup"
-    },
-    {
-      "id": "InteractivityLocation",
       "isVisible": true,
       "persistenceScope": "templateGroup"
     },

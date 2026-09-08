@@ -109,6 +109,10 @@
       "kind": "library",
       "version": "@VERSION@"
     },
+    "Microsoft.Maui.Controls.Compatibility": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
     "Microsoft.Maui.Essentials": {
       "kind": "library",
       "version": "@VERSION@"

@@ -47,9 +47,6 @@ parameters:
   default:
   - Debug
   - Release
-- name: helixJobMonitorTimeoutInMinutes
-  type: number
-  default: 360
 - name: helixPool
   type: object
  
@@ -87,72 +84,12 @@ stages:
             - ${{ each pair in step }}:
                 ${{ pair.key }}: ${{ pair.value }}
 
-          - script: dotnet cake --target=dotnet-buildtasks --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-            displayName: 🛠️ Provision SDK & Build BuildTasks
-            retryCountOnTaskFailure: 3
-            env:
-              DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-              PRIVATE_BUILD: $(PrivateBuild)
+          - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
+            displayName: 🛠️ Build BuildTasks
 
-          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:EnableHelixJobMonitor=true /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
+          - script: $(_msbuildCommand) "${{ parameters.helixProject }}" -warnAsError 0 -restore /p:Configuration=${{ BuildConfiguration }} /p:HelixInternal="${{ parameters.helixInternal }}" /p:TestRunNameSuffix="_${{ BuildConfiguration }}" /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog ${{ parameters.extraHelixArguments }}
             displayName: Run Helix Tests
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
               HelixAccessToken: ${{ parameters.HelixAccessToken }}
-
-  - job: HelixJobMonitor
-    displayName: Monitor Helix Jobs
-    timeoutInMinutes: ${{ parameters.helixJobMonitorTimeoutInMinutes }}
-    pool:
-      ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.azurelinux.3.amd64.open
-      ${{ else }}:
-        name: $(DncEngInternalBuildPool)
-        demands: ImageOverride -equals build.azurelinux.3.amd64
-    steps:
-    - checkout: self
-      fetchDepth: 1
-
-    - bash: |
-        set -euo pipefail
-
-        toolPath="$AGENT_TEMPDIRECTORY/helix-job-monitor"
-        bash ./eng/common/dotnet.sh
-        toolVersion=$(bash ./eng/common/dotnet.sh msbuild eng/Versions.props -getProperty:MicrosoftDotNetHelixJobMonitorPackageVersion -nologo | tail -n 1)
-        if [[ -z "$toolVersion" || "$toolVersion" =~ [[:space:]] ]]; then
-          echo "Could not read the Helix Job Monitor package version from eng/Versions.props." >&2
-          exit 1
-        fi
-
-        bash ./eng/common/dotnet.sh tool install \
-          --tool-path "$toolPath" \
-          Microsoft.DotNet.Helix.JobMonitor \
-          --version "$toolVersion"
-
-        toolDll=$(find "$toolPath/.store" -path '*/tools/*/any/Microsoft.DotNet.Helix.JobMonitor.dll' -type f -print -quit)
-        if [ ! -f "$toolDll" ]; then
-          echo "Could not find the Helix Job Monitor DLL in '$toolPath/.store'." >&2
-          exit 1
-        fi
-
-        echo "##vso[task.setvariable variable=HelixJobMonitorDll]$toolDll"
-      displayName: Install Helix Job Monitor
-
-    - bash: |
-        set -euo pipefail
-
-        bash ./eng/common/dotnet.sh exec "$(HelixJobMonitorDll)" \
-          --helix-base-uri 'https://helix.dot.net/' \
-          --polling-interval-seconds 30 \
-          --fail-on-failed-tests true \
-          --max-wait-minutes "$((${{ parameters.helixJobMonitorTimeoutInMinutes }} - 5))" \
-          --stage-name '$(System.StageName)' \
-          --organization dotnet \
-          --repository maui \
-          --build-reason '$(Build.Reason)' \
-          --source-branch '$(Build.SourceBranch)'
-      displayName: Monitor Helix Jobs
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        HELIX_ACCESSTOKEN: ${{ parameters.HelixAccessToken }}
+    

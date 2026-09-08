@@ -100,7 +100,7 @@ operation=''
 authToken=''
 repoName=''
 
-while [[ $# -gt 0 ]]; do
+while [[ $# > 0 ]]; do
   opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     --operation)

@@ -24,7 +24,5 @@ steps:
       artifactName: ${{ parameters.args.artifactName }}
     ${{ if parameters.args.properties }}:
       properties: ${{ parameters.args.properties }}
-    ${{ if ne(parameters.args.sbomEnabled, '') }}:
+    ${{ if parameters.args.sbomEnabled }}:
       sbomEnabled: ${{ parameters.args.sbomEnabled }}
-    ${{ if ne(parameters.args.isProduction, '') }}:
-      isProduction: ${{ parameters.args.isProduction }}

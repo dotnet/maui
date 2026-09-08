@@ -48,7 +48,6 @@
         </uap:DefaultTile >
       </uap:VisualElements>
       <Extensions>
-        <!-- Protocol must belong to this Application. App-owned AppInstance keys remain registered. -->
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="xamarinessentials">
             <uap:DisplayName>Xamarin Essentials</uap:DisplayName>

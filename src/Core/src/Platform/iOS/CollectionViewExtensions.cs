@@ -5,7 +5,8 @@ namespace Microsoft.Maui.Platform
 {
 	public static class CollectionViewExtensions
 	{
-		public static void UpdateIsEnabled(this UICollectionView collectionView, IView view)
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void UpdateIsEnabled(this UICollectionView collectionView, IView view)
 		{
 			// UICollectionView inherits from UIScrollView (not UIControl), so we set UserInteractionEnabled
 			// to properly disable user interactions like scrolling and swiping based on IsEnabled

@@ -64,7 +64,13 @@ namespace Microsoft.Maui.Platform
 
 			Graphics.Color thumbColor = view.ThumbColor;
 			if (thumbColor != null)
+			{
 				uiSwitch.ThumbTintColor = thumbColor?.ToPlatform();
+			}
+			else
+			{
+				uiSwitch.ThumbTintColor = null;
+			}
 		}
 
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)

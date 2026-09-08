@@ -2,7 +2,8 @@ using Google.Android.Material.MaterialSwitch;
 
 namespace Microsoft.Maui.Handlers;
 
-public class SwitchHandler2 : SwitchHandler
+// TODO: material3 - make it public in .net 11
+internal class SwitchHandler2 : SwitchHandler
 {
 	public static new PropertyMapper<ISwitch, SwitchHandler2> Mapper =
   	new(SwitchHandler.Mapper)

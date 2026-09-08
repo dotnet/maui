@@ -6,7 +6,8 @@ using Google.Android.Material.DatePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
+// TODO: material3 - make it public in .net 11
+internal class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicker>
 {
     internal MaterialDatePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -294,7 +295,8 @@ public class DatePickerHandler2 : ViewHandler<IDatePicker, MauiMaterialDatePicke
     }
 }
 
-public class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
+// TODO: material3 - make it public in .net 11
+internal class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, IMaterialPickerOnPositiveButtonClickListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
 
@@ -324,7 +326,8 @@ public class MaterialDatePickerPositiveButtonClickListener : Java.Lang.Object, I
     }
 }
 
-public class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
+// TODO: material3 - make it public in .net 11
+internal class MaterialDatePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
     readonly WeakReference<DatePickerHandler2> _handler;
 

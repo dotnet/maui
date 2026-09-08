@@ -131,39 +131,13 @@ namespace Microsoft.Maui.Controls
 			DragOver?.Invoke(Parent ?? this, args);
 		}
 
-#nullable enable
-		/// <summary>
-		/// Executes the associated command and raises the <see cref="DragLeave"/> event.
-		/// </summary>
-		/// <param name="args">The event arguments that describe the drag operation.</param>
-		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendDragLeave(DragEventArgs args)
+		internal void SendDragLeave(DragEventArgs args)
 		{
-			_ = args ?? throw new ArgumentNullException(nameof(args));
-
 			DragLeaveCommand?.Execute(DragLeaveCommandParameter);
 			DragLeave?.Invoke(Parent ?? this, args);
 		}
 
-		/// <summary>
-		/// Executes the associated command, raises the <see cref="Drop"/> event, and performs default drop processing when the event is not handled.
-		/// </summary>
-		/// <param name="args">The event arguments that describe the drop operation.</param>
-		/// <returns>A task that completes when event dispatch and any default drop processing are complete.</returns>
-		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Task SendDrop(DropEventArgs args)
-		{
-			_ = args ?? throw new ArgumentNullException(nameof(args));
-
-			return SendDropCore(args);
-		}
-#nullable disable
-
-		async Task SendDropCore(DropEventArgs args)
+		internal async Task SendDrop(DropEventArgs args)
 		{
 			if (!AllowDrop)
 				return;

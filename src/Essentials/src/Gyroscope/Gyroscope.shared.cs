@@ -84,10 +84,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IGyroscope Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new GyroscopeImplementation());
+			defaultImplementation ??= new GyroscopeImplementation();
 
 		internal static void SetDefault(IGyroscope? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	/// <summary>

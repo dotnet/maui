@@ -40,6 +40,8 @@ namespace Maui.Controls.Sample.Issues
 
 		public class PickerPage : ContentPage
 		{
+			bool _popScheduled;
+
 			public PickerPage()
 			{
 				var picker = new Picker
@@ -49,9 +51,11 @@ namespace Maui.Controls.Sample.Issues
 					AutomationId = "colorPicker"
 				};
 
+				picker.Focused += OnPickerFocused;
+
 				var instructionsLabel = new Label
 				{
-					Text = "Tap the picker to open the dialog, then wait for auto navigation back (3 seconds). The app should not crash.",
+					Text = "Tap the picker to open the dialog. The page will automatically pop back once the dialog opens. The app should not crash.",
 					AutomationId = "instructionsLabel",
 					Margin = new Thickness(0, 0, 0, 20)
 				};
@@ -72,12 +76,25 @@ namespace Maui.Controls.Sample.Issues
 			protected override void OnNavigatedTo(NavigatedToEventArgs args)
 			{
 				base.OnNavigatedTo(args);
+			}
 
-				// Simulate the scenario: navigate back after 3 seconds
-				// This can cause a crash if the picker dialog is open
+			// Pop the page shortly after the picker dialog actually opens, so the
+			// "page popped while the dialog is open" scenario is reproduced
+			// deterministically. The previous implementation started a fixed
+			// 3-second wall-clock timer in OnNavigatedTo, which raced the UI test:
+			// under CI load the page could pop before the test managed to tap the
+			// picker, producing StaleElementReferenceException / TimeoutException
+			// instead of exercising the real scenario.
+			private void OnPickerFocused(object sender, FocusEventArgs e)
+			{
+				if (!e.IsFocused || _popScheduled)
+					return;
+
+				_popScheduled = true;
+
 				_ = Task.Run(async () =>
 				{
-					await Task.Delay(3000);
+					await Task.Delay(1000);
 					await Dispatcher.DispatchAsync(async () =>
 					{
 						await Navigation.PopToRootAsync();

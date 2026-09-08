@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,9 +21,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			for (int i = 0; i < 4; i++)
 			{
 				App.Tap("Stats");
-				// Re-query element after tap to avoid stale reference and wait for UI to settle
-				var element = App.WaitForElement("Stats");
-				ClassicAssert.True(element.GetText()!.StartsWith("Lvl1[0/0]"));
+				// The app updates the "Stats" text asynchronously ~100ms after the tap.
+				// Waiting only for the element to exist (WaitForElement) races with that
+				// update and can read stale text, so wait for the expected text instead.
+				bool textUpdated = App.WaitForTextToBePresentInElement("Stats", "Lvl1[0/0]");
+				Assert.That(textUpdated, Is.True);
 			}
 		}
 	}

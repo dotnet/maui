@@ -13,7 +13,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
@@ -108,61 +107,6 @@ namespace Microsoft.Maui.DeviceTests
 				(handler.VirtualView as TabbedPage).Children[0].Title = "New Page Name";
 				Assert.Equal("New Page Name", navItem.Content);
 				return Task.CompletedTask;
-			});
-		}
-
-		[Fact(DisplayName = "Badge Properties Update NavigationView Item")]
-		public async Task BadgePropertiesUpdateNavigationViewItem()
-		{
-			SetupBuilder();
-
-			var firstPage = new ContentPage { Title = "First" };
-			TabbedPage.SetBadgeText(firstPage, "New");
-			var tabbedPage = new TabbedPage { Children = { firstPage } };
-
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
-			{
-				var navView = GetMauiNavigationView(handler.MauiContext);
-				var item = Assert.Single((IEnumerable<NavigationViewItemViewModel>)navView.MenuItemsSource);
-				var navItem = Assert.Single(GetNavigationViewItems(navView));
-				var infoBadge = navItem.InfoBadge;
-				Assert.NotNull(infoBadge);
-				var defaultBackgroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Background).Color;
-				var defaultForegroundColor = Assert.IsType<WSolidColorBrush>(infoBadge.Foreground).Color;
-				Assert.NotEqual(Colors.Blue.ToWindowsColor(), defaultBackgroundColor);
-				Assert.NotEqual(Colors.Yellow.ToWindowsColor(), defaultForegroundColor);
-
-				TabbedPage.SetBadgeColor(firstPage, Colors.Blue);
-				TabbedPage.SetBadgeTextColor(firstPage, Colors.Yellow);
-
-				Assert.Equal("New", item.BadgeText);
-				Assert.Equal(-1, item.BadgeValue);
-				Assert.Equal(Colors.Blue.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeBackground).Color);
-				Assert.Equal(Colors.Yellow.ToWindowsColor(), Assert.IsType<WSolidColorBrush>(item.BadgeForeground).Color);
-				await AssertEventually(() =>
-					infoBadge.Background is WSolidColorBrush background &&
-					infoBadge.Foreground is WSolidColorBrush foreground &&
-					background.Color == Colors.Blue.ToWindowsColor() &&
-					foreground.Color == Colors.Yellow.ToWindowsColor());
-
-				TabbedPage.SetBadgeText(firstPage, "42");
-				TabbedPage.SetBadgeColor(firstPage, null);
-				TabbedPage.SetBadgeTextColor(firstPage, null);
-
-				Assert.Equal("42", item.BadgeText);
-				Assert.Equal(42, item.BadgeValue);
-				Assert.Null(item.BadgeBackground);
-				Assert.Null(item.BadgeForeground);
-				await AssertEventually(() =>
-					infoBadge.Background is WSolidColorBrush background &&
-					infoBadge.Foreground is WSolidColorBrush foreground &&
-					background.Color == defaultBackgroundColor &&
-					foreground.Color == defaultForegroundColor);
-
-				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
-				Assert.Same(
-					Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
-					converter.Convert(null, typeof(object), null, null));
 			});
 		}
 
@@ -289,6 +233,178 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(oldPresenter.Content);
 
 				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Issue 26214 - Nested TabbedPage Back Navigation Keeps Tabs Intact")]
+		public async Task NestedTabbedPageBackNavigationKeepsTabsIntact()
+		{
+			// https://github.com/dotnet/maui/issues/26214
+			// TabbedPages pushed onto a NavigationPage share the same root NavigationView.
+			// Popping back after switching tabs must not let the hidden TabbedPage steal
+			// the visible page's selection, and the tab bar must show the revealed page's tabs.
+			SetupBuilder();
+
+			var mainTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Home Tab 1" },
+				new ContentPage() { Title = "Home Tab 2" }
+			});
+			var productTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Product Tab 1" },
+				new ContentPage() { Title = "Product Tab 2" }
+			});
+			var navPage = new NavigationPage(mainTabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+
+				await navPage.PushAsync(productTabbedPage);
+				productTabbedPage.CurrentPage = productTabbedPage.Children[1];
+				await navPage.PopAsync();
+
+				// The popped page must not have adopted the revealed page's tab
+				Assert.Equal(productTabbedPage.Children[1], productTabbedPage.CurrentPage);
+				Assert.DoesNotContain(mainTabbedPage.Children[0], productTabbedPage.Children);
+
+				// The shared tab bar must be showing this page's tabs with its selection restored
+				var items = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).ToList();
+				Assert.Equal(mainTabbedPage.Children.Count, items.Count);
+				Assert.All(items, item => Assert.Contains(item.Data, mainTabbedPage.Children));
+				Assert.Equal(mainTabbedPage.CurrentPage, (navView.SelectedItem as NavigationViewItemViewModel)?.Data);
+			});
+		}
+
+		[Fact(DisplayName = "Issue 26214 - ContentPage Push Pop Keeps TabbedPage Intact")]
+		public async Task ContentPagePushPopKeepsTabbedPageIntact()
+		{
+			// A ContentPage pushed over a TabbedPage must not disturb the shared tab bar:
+			// popping back restores this page's tabs and selection.
+			SetupBuilder();
+
+			var mainTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Home Tab 1" },
+				new ContentPage() { Title = "Home Tab 2" }
+			});
+			var navPage = new NavigationPage(mainTabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+
+				await navPage.PushAsync(new ContentPage() { Title = "Overlay" });
+				mainTabbedPage.CurrentPage = mainTabbedPage.Children[1];
+				await navPage.PopAsync();
+
+				var items = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).ToList();
+				Assert.Equal(mainTabbedPage.Children.Count, items.Count);
+				Assert.All(items, item => Assert.Contains(item.Data, mainTabbedPage.Children));
+				Assert.Equal(mainTabbedPage.CurrentPage, (navView.SelectedItem as NavigationViewItemViewModel)?.Data);
+			});
+		}
+
+		[Fact(DisplayName = "Issue 26214 - Revealed TabbedPage Switches Tabs After Pop")]
+		public async Task RevealedTabbedPageSwitchesTabsAfterPop()
+		{
+			// After popping back, the revealed TabbedPage must be fully interactive and
+			// the popped page must not observe its tab switches.
+			SetupBuilder();
+
+			var mainTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Home Tab 1" },
+				new ContentPage() { Title = "Home Tab 2" }
+			});
+			var productTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Product Tab 1" },
+				new ContentPage() { Title = "Product Tab 2" }
+			});
+			var navPage = new NavigationPage(mainTabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+
+				await navPage.PushAsync(productTabbedPage);
+				productTabbedPage.CurrentPage = productTabbedPage.Children[1];
+				await navPage.PopAsync();
+
+				mainTabbedPage.CurrentPage = mainTabbedPage.Children[1];
+
+				Assert.Equal(mainTabbedPage.Children[1], mainTabbedPage.CurrentPage);
+				Assert.Equal(mainTabbedPage.Children[1], (navView.SelectedItem as NavigationViewItemViewModel)?.Data);
+				Assert.Equal(productTabbedPage.Children[1], productTabbedPage.CurrentPage);
+			});
+		}
+
+		[Fact(DisplayName = "Issue 26214 - Empty TabbedPage Pops Cleanly")]
+		public async Task EmptyTabbedPagePopsCleanly()
+		{
+			// A TabbedPage with no children owns no tab items, so its teardown must
+			// neither throw nor leave another page's tabs behind.
+			SetupBuilder();
+
+			var mainTabbedPage = new TabbedPage();
+			var productTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Product Tab 1" },
+				new ContentPage() { Title = "Product Tab 2" }
+			});
+			var navPage = new NavigationPage(mainTabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+
+				await navPage.PushAsync(productTabbedPage);
+				productTabbedPage.CurrentPage = productTabbedPage.Children[1];
+				await navPage.PopAsync();
+
+				var items = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).ToList();
+				Assert.Empty(items);
+				Assert.Null(navView.SelectedItem);
+			});
+		}
+
+		[Fact(DisplayName = "Issue 26214 - Disconnect Then Pop Restores Tabs")]
+		public async Task DisconnectThenPopRestoresTabs()
+		{
+			// If the pushed page's handler is torn down before the pop (order
+			// variation), the pop's Appearing pass must still restore this page's tabs.
+			SetupBuilder();
+
+			var mainTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Home Tab 1" },
+				new ContentPage() { Title = "Home Tab 2" }
+			});
+			var productTabbedPage = CreateBasicTabbedPage(pages: new[]
+			{
+				new ContentPage() { Title = "Product Tab 1" },
+				new ContentPage() { Title = "Product Tab 2" }
+			});
+			var navPage = new NavigationPage(mainTabbedPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var navView = GetMauiNavigationView(handler.MauiContext);
+
+				await navPage.PushAsync(productTabbedPage);
+				productTabbedPage.CurrentPage = productTabbedPage.Children[1];
+
+				((IElementHandler)productTabbedPage.Handler).DisconnectHandler();
+				Assert.Null(navView.SelectedItem);
+
+				await navPage.PopAsync();
+
+				var items = (navView.MenuItemsSource as IEnumerable<NavigationViewItemViewModel>).ToList();
+				Assert.Equal(mainTabbedPage.Children.Count, items.Count);
+				Assert.All(items, item => Assert.Contains(item.Data, mainTabbedPage.Children));
+				Assert.Equal(mainTabbedPage.CurrentPage, (navView.SelectedItem as NavigationViewItemViewModel)?.Data);
 			});
 		}
 	}

@@ -42,11 +42,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorProperty, value);
 		}
 
-		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
-		/// <inheritdoc cref="object.Equals(object)"/>
-		/// <summary>Determines whether the specified object is equal to the current <see cref="SolidColorBrush"/>.</summary>
-		/// <param name="obj">The object to compare with the current object.</param>
-		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
+		/// <inheritdoc/>
 		public override bool Equals(object obj)
 		{
 			if (!(obj is SolidColorBrush dest))
@@ -55,9 +51,7 @@ namespace Microsoft.Maui.Controls
 			return Equals(Color, dest.Color);
 		}
 
-		/// <inheritdoc cref="object.GetHashCode"/>
-		/// <summary>Serves as the default hash function.</summary>
-		/// <returns>A hash code for the current object.</returns>
-		public override int GetHashCode() => Color?.GetHashCode() ?? 0;
+		/// <inheritdoc/>
+		public override int GetHashCode() => base.GetHashCode();
 	}
 }

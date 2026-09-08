@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Devices
 
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
-		/// </summary>
+		/// </summary>s
 		public static IBattery Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new BatteryImplementation());
+			defaultImplementation ??= new BatteryImplementation();
 
 		internal static void SetDefault(IBattery? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	partial class BatteryImplementation : IBattery

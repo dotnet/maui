@@ -111,37 +111,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			Assert.Throws<InvalidOperationException>(() => SolidColorBrush.Green.Parent = new Grid());
 		}
-
-		[Fact]
-		public void ImplicitConversionFromNullColorReturnsEmptyBrush()
-		{
-			var exception = Record.Exception(() =>
-			{
-				Brush brush = (Color)null;
-
-				Assert.NotNull(brush);
-				Assert.True(brush.IsEmpty);
-				Assert.True(Brush.IsNullOrEmpty(brush));
-				Assert.Null(((SolidColorBrush)brush).Color);
-			});
-
-			Assert.Null(exception);
-		}
-
-		[Fact]
-		public void ImplicitConversionFromSolidPaintWithNullColorReturnsEmptyBrush()
-		{
-			var exception = Record.Exception(() =>
-			{
-				Brush brush = new SolidPaint { Color = null };
-
-				Assert.NotNull(brush);
-				Assert.True(brush.IsEmpty);
-				Assert.True(Brush.IsNullOrEmpty(brush));
-				Assert.Null(((SolidColorBrush)brush).Color);
-			});
-
-			Assert.Null(exception);
-		}
 	}
 }

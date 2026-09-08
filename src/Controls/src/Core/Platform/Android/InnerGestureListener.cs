@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls.Platform
 		SwipeGestureHandler _swipeGestureHandler;
 		DragAndDropGestureHandler _dragAndDropGestureHandler;
 		PointerGestureHandler _pointerGestureHandler;
-		LongPressGestureHandler _longPressGestureHandler;
 		bool _isScrolling;
 		float _lastX;
 		float _lastY;
@@ -36,22 +35,19 @@ namespace Microsoft.Maui.Controls.Platform
 			PanGestureHandler panGestureHandler,
 			SwipeGestureHandler swipeGestureHandler,
 			DragAndDropGestureHandler dragAndDropGestureHandler,
-			PointerGestureHandler pointerGestureHandler,
-			LongPressGestureHandler longPressGestureHandler)
+			PointerGestureHandler pointerGestureHandler)
 		{
 			_ = tapGestureHandler ?? throw new ArgumentNullException(nameof(tapGestureHandler));
 			_ = panGestureHandler ?? throw new ArgumentNullException(nameof(panGestureHandler));
 			_ = swipeGestureHandler ?? throw new ArgumentNullException(nameof(swipeGestureHandler));
 			_ = dragAndDropGestureHandler ?? throw new ArgumentNullException(nameof(dragAndDropGestureHandler));
 			_ = pointerGestureHandler ?? throw new ArgumentNullException(nameof(pointerGestureHandler));
-			_ = longPressGestureHandler ?? throw new ArgumentNullException(nameof(longPressGestureHandler));
 
 			_tapGestureHandler = tapGestureHandler;
 			_panGestureHandler = panGestureHandler;
 			_swipeGestureHandler = swipeGestureHandler;
 			_dragAndDropGestureHandler = dragAndDropGestureHandler;
 			_pointerGestureHandler = pointerGestureHandler;
-			_longPressGestureHandler = longPressGestureHandler;
 
 			_tapDelegate = tapGestureHandler.OnTap;
 			_tapGestureRecognizers = tapGestureHandler.TapGestureRecognizers;
@@ -63,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public bool EnableLongPressGestures =>
-			_dragAndDropGestureHandler.HasAnyDragGestures() || _longPressGestureHandler.HasAnyGestures();
+			_dragAndDropGestureHandler.HasAnyDragGestures();
 
 		bool HasAnyGestures()
 		{
@@ -138,7 +134,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SetStartingPosition(e);
 			_dragAndDropGestureHandler.OnLongPress(e);
-			_longPressGestureHandler.OnLongPress(e);
 		}
 
 		bool GestureDetector.IOnGestureListener.OnScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
@@ -233,7 +228,6 @@ namespace Microsoft.Maui.Controls.Platform
 				_dragAndDropGestureHandler?.Dispose();
 				_dragAndDropGestureHandler = null;
 				_pointerGestureHandler = null;
-				_longPressGestureHandler = null;
 			}
 
 			base.Dispose(disposing);

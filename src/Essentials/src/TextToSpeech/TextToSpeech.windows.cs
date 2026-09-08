@@ -74,9 +74,7 @@ namespace Microsoft.Maui.Media
 			var rate = "medium";
 
 			// Look for the specified language, otherwise the default voice
-			var locale = string.IsNullOrWhiteSpace(options?.Locale?.Language)
-				? SpeechSynthesizer.DefaultVoice.Language
-				: options.Locale.Language;
+			var locale = options?.Locale?.Language ?? SpeechSynthesizer.DefaultVoice.Language;
 
 			if (options?.Volume.HasValue ?? false)
 				volume = (options.Volume.Value * 100f).ToString(CultureInfo.InvariantCulture);

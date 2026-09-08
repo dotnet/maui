@@ -35,7 +35,6 @@ public class MapFeatureTests : _GalleryUITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_CATALYST // Issue - https://github.com/dotnet/maui/issues/35222
 	[Test]
 	public void Map_IsEnabledScroll_WithZoomOut()
 	{
@@ -183,7 +182,6 @@ public class MapFeatureTests : _GalleryUITest
 		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
-#endif
 
 	[Test]
 	public void Map_MapClicked()
@@ -203,7 +201,6 @@ public class MapFeatureTests : _GalleryUITest
 		Assert.That(App.WaitForElement("MapClickedLabel").GetText(), Is.Not.EqualTo("Not Clicked"));
 	}
 
-#if TEST_FAILS_ON_CATALYST // Issue - https://github.com/dotnet/maui/issues/35222
 	[Test]
 	public void Map_IsEnabledScroll_Hybrid_WithItemTemplate()
 	{
@@ -241,7 +238,6 @@ public class MapFeatureTests : _GalleryUITest
 		Thread.Sleep(2000);
 		Assert.That(App.WaitForElement("VisibleRegionLatitudeDegrees").GetText(), Is.Not.EqualTo(value));
 	}
-#endif
 
 	[Test]
 	public void Map_IsZoomDisabled_PreventZoom()

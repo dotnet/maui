@@ -1,15 +1,19 @@
 ﻿#nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
 using Microsoft.Maui.Controls;
+using PreserveAttribute = Microsoft.Maui.Controls.Internals.PreserveAttribute;
 
 namespace Microsoft.Maui.Controls.Platform.iOS;
 
 internal class CustomPressGestureRecognizer : UIGestureRecognizer
 {
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The recognizer owns the native target for its lifetime; retaining it keeps callback targets alive until the recognizer is released.")]
 	NSObject _target;
+	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The current UIEvent is replaced by touch callbacks and retained only for the gesture recognizer lifetime.")]
 	UIEvent _currentEvent;
 	ButtonsMask _detectedButton = ButtonsMask.Primary;
 
@@ -32,9 +36,10 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 	/// </summary>
 	public UIEvent CurrentEvent => _currentEvent;
 
-	[Register("Microsoft_Maui_Controls_Platform_iOS_CustomPressGestureRecognizer_Callback")]
+	[Register("__UIGestureRecognizer")]
 	class Callback : Token
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The callback token owns this delegate so the recognizer action remains invokable for the recognizer lifetime.")]
 		Action<UIGestureRecognizer> action;
 
 		internal Callback(Action<UIGestureRecognizer> action)
@@ -43,6 +48,7 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 		}
 
 		[Export("target:")]
+		[Preserve(Conditional = true)]
 		public void Activated(UIGestureRecognizer sender)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13))

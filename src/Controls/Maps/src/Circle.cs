@@ -1,4 +1,3 @@
-using System;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Maps;
@@ -57,16 +56,5 @@ namespace Microsoft.Maui.Controls.Maps
 			get => (Color)GetValue(FillColorProperty);
 			set => SetValue(FillColorProperty, value);
 		}
-
-		/// <summary>
-		/// Occurs when the user clicks/taps on the circle element
-		/// </summary>
-		public event EventHandler? CircleClicked;
-
-		void IMapElement.Clicked()
-		{
-			CircleClicked?.Invoke(this, EventArgs.Empty);
-		}
-
 	}
 }

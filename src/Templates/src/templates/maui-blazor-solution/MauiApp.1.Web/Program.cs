@@ -87,10 +87,15 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-#if (IndividualLocalAuth)
+#if (UseWebAssembly || IndividualLocalAuth)
 if (app.Environment.IsDevelopment())
 {
+#if (UseWebAssembly)
+    app.UseWebAssemblyDebugging();
+#endif
+#if (IndividualLocalAuth)
     app.UseMigrationsEndPoint();
+#endif
 }
 else
 #else

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Versioning;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #elif MACCATALYST
 	[SupportedOSPlatform(BlazorWebView.MacCatalystSupportedOSPlatformVersion)]
 #endif
-	public partial class BlazorWebViewHandler : IBlazorWebViewHandler
+	public partial class BlazorWebViewHandler
 	{
 		private const string UseBlockingDisposalSwitch = "BlazorWebView.UseBlockingDisposal";
 
@@ -51,12 +51,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public BlazorWebViewHandler(PropertyMapper? mapper) : base(mapper ?? BlazorWebViewMapper)
 		{
 		}
-
-		IFileProvider IBlazorWebViewHandler.CreateFileProvider(string contentRootDir) =>
-			CreateFileProvider(contentRootDir);
-
-		Task<bool> IBlazorWebViewHandler.TryDispatchAsync(Action<IServiceProvider> workItem) =>
-			TryDispatchAsync(workItem);
 
 		internal BlazorWebViewDeveloperTools DeveloperTools => MauiContext!.Services.GetRequiredService<BlazorWebViewDeveloperTools>();
 
@@ -129,8 +123,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			// If we haven't initialized yet, this is a no-op
 			if (_webviewManager != null)
 			{
+				var logger = Services!.GetService<ILogger<BlazorWebViewHandler>>()
+					?? NullLogger<BlazorWebViewHandler>.Instance;
+
 				// Dispatch because this is going to be async, and we want to catch any errors
-				_ = _webviewManager.Dispatcher.InvokeAsync(async () =>
+				var dispatchTask = _webviewManager.Dispatcher.InvokeAsync(async () =>
 				{
 					var newItems = eventArgs.NewItems!.Cast<RootComponent>();
 					var oldItems = eventArgs.OldItems!.Cast<RootComponent>();
@@ -145,6 +142,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						await item.RemoveFromWebViewManagerAsync(_webviewManager);
 					}
 				});
+				_ = dispatchTask.ObserveExceptionsAsync(logger);
 			}
 		}
 #endif

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -187,15 +186,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IVersionTracking Default =>
-			EssentialsImplementation.GetOrCreate(
-				ref defaultImplementation,
-				static () => new VersionTrackingImplementation(Preferences.Default, AppInfo.Current));
-
-		internal static IVersionTracking? GetDefault() =>
-			Volatile.Read(ref defaultImplementation);
+			defaultImplementation ??= new VersionTrackingImplementation(Preferences.Default, AppInfo.Current);
 
 		internal static void SetDefault(IVersionTracking? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 
 		internal static void InitVersionTracking() =>
 			(Default as VersionTrackingImplementation)?.InitVersionTracking();
@@ -206,9 +200,10 @@ namespace Microsoft.Maui.ApplicationModel
 		const string versionsKey = "VersionTracking.Versions";
 		const string buildsKey = "VersionTracking.Builds";
 
+		static readonly string sharedName = Preferences.GetPrivatePreferencesSharedName("versiontracking");
+
 		readonly IPreferences preferences;
 		readonly IAppInfo appInfo;
-		readonly string sharedName;
 
 		Dictionary<string, List<string>> versionTrail = null!;
 
@@ -220,7 +215,6 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			this.preferences = preferences;
 			this.appInfo = appInfo;
-			sharedName = Preferences.GetPrivatePreferencesSharedName(appInfo.PackageName, "versiontracking");
 
 			Track();
 		}

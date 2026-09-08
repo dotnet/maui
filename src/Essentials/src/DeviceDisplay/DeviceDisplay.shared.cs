@@ -82,10 +82,10 @@ namespace Microsoft.Maui.Devices
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IDeviceDisplay Current =>
-			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new DeviceDisplayImplementation());
+			currentImplementation ??= new DeviceDisplayImplementation();
 
 		internal static void SetCurrent(IDeviceDisplay? implementation) =>
-			EssentialsImplementation.Set(ref currentImplementation, implementation);
+			currentImplementation = implementation;
 	}
 
 	sealed partial class DeviceDisplayImplementation : DeviceDisplayImplementationBase

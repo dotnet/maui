@@ -17,31 +17,14 @@ namespace MauiRazorClassLibrarySample
 
 		public ExampleJsInterop(IJSRuntime jsRuntime)
 		{
-			moduleTask = new(async () =>
-			{
-				try
-				{
-					return await jsRuntime.InvokeAsync<IJSObjectReference>(
-						"import", "./_content/MauiRazorClassLibrarySample/exampleJsInterop.js");
-				}
-				catch (JSException ex)
-				{
-					throw new InvalidOperationException("Unable to import the example JavaScript module.", ex);
-				}
-			});
+			moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
+			   "import", "./_content/MauiRazorClassLibrarySample/exampleJsInterop.js").AsTask());
 		}
 
 		public async ValueTask<string> Prompt(string message)
 		{
-			try
-			{
-				var module = await moduleTask.Value;
-				return await module.InvokeAsync<string>("showPrompt", message);
-			}
-			catch (JSException ex)
-			{
-				throw new InvalidOperationException("Unable to show the JavaScript prompt.", ex);
-			}
+			var module = await moduleTask.Value;
+			return await module.InvokeAsync<string>("showPrompt", message);
 		}
 
 		public async ValueTask DisposeAsync()
@@ -49,14 +32,7 @@ namespace MauiRazorClassLibrarySample
 			if (moduleTask.IsValueCreated)
 			{
 				var module = await moduleTask.Value;
-				try
-				{
-					await module.DisposeAsync();
-				}
-				catch (JSDisconnectedException)
-				{
-					// The JavaScript context is already gone, so the module no longer needs disposal.
-				}
+				await module.DisposeAsync();
 			}
 		}
 	}

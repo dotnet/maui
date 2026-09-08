@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Handlers
 		}
 	}
 
-	public class ActivityIndicatorHandler2 : ActivityIndicatorHandler
+	// TODO: material3 - make it public in .net 11
+	internal class ActivityIndicatorHandler2 : ActivityIndicatorHandler
 	{
 		protected override MaterialActivityIndicator CreatePlatformView()
 		{

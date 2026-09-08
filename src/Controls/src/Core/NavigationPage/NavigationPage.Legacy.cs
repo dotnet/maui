@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls
 			Pushed?.Invoke(this, args);
 		}
 
-#if IOS || MACCATALYST
+#if IOS
 		// Because iOS currently doesn't use our `IStackNavigationView` structures
 		// there are scenarios where the legacy handler needs to alert the xplat
 		// code of when a navigation has occurred.
@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls
 
 			if (page == CurrentPage)
 			{
-				MauiLogger<NavigationPage>.Log(LogLevel.Warning, "RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
+				Application.Current?.FindMauiContext()?.CreateLogger<NavigationPage>()?.LogWarning("RemovePage called for CurrentPage object. This can result in undesired behavior, consider calling PopAsync instead.");
 				PopAsync();
 				return;
 			}

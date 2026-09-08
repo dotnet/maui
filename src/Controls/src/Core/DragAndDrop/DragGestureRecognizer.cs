@@ -1,8 +1,7 @@
 using System;
-using System.ComponentModel;
-using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
 {
@@ -93,20 +92,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(DragStartingCommandParameterProperty, value); }
 		}
 
-		/// <summary>
-		/// Executes the associated command and raises the <see cref="DropCompleted"/> event for an active drag operation.
-		/// </summary>
-		/// <param name="args">The event arguments that describe the completed drop operation.</param>
-		/// <remarks>
-		/// This infrastructure method is intended for gesture platform managers. A completion is dispatched only once for an active
-		/// drag operation started by <see cref="SendDragStarting"/>.
-		/// </remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="args"/> is <see langword="null"/>.</exception>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendDropCompleted(DropCompletedEventArgs args)
+		internal void SendDropCompleted(DropCompletedEventArgs args)
 		{
-			_ = args ?? throw new ArgumentNullException(nameof(args));
-
 			if (!_isDragActive)
 			{
 				// this is mainly relevant for Android
@@ -116,30 +103,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_isDragActive = false;
+			_ = args ?? throw new ArgumentNullException(nameof(args));
 
 			DropCompletedCommand?.Execute(DropCompletedCommandParameter);
 			DropCompleted?.Invoke(Parent ?? this, args);
 		}
 
-		/// <summary>
-		/// Executes the associated command and raises the <see cref="DragStarting"/> event.
-		/// </summary>
-		/// <param name="element">The view on which the drag gesture was recognized.</param>
-		/// <param name="getPosition">A function that returns the drag position relative to a specified element.</param>
-		/// <param name="platformArgs">The platform-specific data associated with the drag operation.</param>
-		/// <returns>The event arguments populated by the command and event handlers.</returns>
-		/// <remarks>
-		/// This infrastructure method is intended for gesture platform managers. If the returned event arguments indicate that the
-		/// operation was canceled or handled, the drag is not marked active and <see cref="SendDropCompleted"/> will not dispatch a completion.
-		/// Starting a new operation replaces any previously active operation.
-		/// </remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="element"/> is <see langword="null"/>.</exception>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
+		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
 		{
-			_ = element ?? throw new ArgumentNullException(nameof(element));
-
-			_isDragActive = false;
 			var args = new DragStartingEventArgs(getPosition, platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
@@ -161,7 +132,7 @@ namespace Microsoft.Maui.Controls
 				args.Data.Image = ie.Source;
 
 			if (String.IsNullOrWhiteSpace(args.Data.Text))
-				args.Data.Text = element.GetStringValue();
+				args.Data.Text = element?.GetStringValue();
 
 			return args;
 		}

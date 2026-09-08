@@ -33,24 +33,50 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 
-			AssertEventText("DragStartEventsLabel", "DragStarting");
-			AssertEventText("DragOverEventsLabel", "DragOver");
-			AssertEventText("DragCompletedEventsLabel", "DropCompleted");
-			AssertEventText("DropEventsLabel", "Drop");
-		}
+			App.WaitForElement("DragStartEventsLabel");
+			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
-		void AssertEventText(string automationId, string expectedText)
-		{
-			// Wait for the label's text to become EXACTLY the expected value. A substring wait is
-			// unreliable here because each label's placeholder (e.g. "DragOverEvents: ") already
-			// contains the expected event name (e.g. "DragOver"), so a Contains-based wait would pass
-			// immediately on the placeholder. WaitForTextEqualToElement polls until the text matches
-			// exactly, so the Assert below fails only on a genuine timeout; no separate GetText re-read
-			// is needed (it would only re-open a window for transient Appium flakiness).
-			Assert.That(
-				App.WaitForTextEqualToElement(automationId, expectedText),
-				Is.True,
-				$"Timed out waiting for {automationId} to become '{expectedText}'.");
+			if (string.IsNullOrEmpty(textAfterDragStart))
+			{
+				Assert.Fail("Text was expected: Drag start event");
+			}
+			else
+			{
+				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
+			}
+
+			App.WaitForElement("DragOverEventsLabel");
+			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragOver))
+			{
+				Assert.Fail("Text was expected: Drag over event");
+			}
+			else
+			{
+				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
+			}
+
+			App.WaitForElement("DragCompletedEventsLabel");
+			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDragComplete))
+			{
+				Assert.Fail("Text was expected: Drag complete event");
+			}
+			else
+			{
+				Assert.That(textAfterDragComplete, Is.EqualTo("DropCompleted"));
+			}
+
+			App.WaitForElement("DropEventsLabel");
+			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
+			if (string.IsNullOrEmpty(textAfterDrop))
+			{
+				Assert.Fail("Text was expected: Drop event");
+			}
+			else
+			{
+				Assert.That(textAfterDrop, Is.EqualTo("Drop"));
+			}
 		}
 
 		[Test]
@@ -68,7 +94,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
 
-			App.WaitForTextEqualToElement("DragStartEventsLabel", "DragStarting");
+			App.WaitForElement("DragStartEventsLabel");
 			var textAfterDragStart = App.FindElement("DragStartEventsLabel").GetText();
 
 			if (string.IsNullOrEmpty(textAfterDragStart))
@@ -80,7 +106,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(textAfterDragStart, Is.EqualTo("DragStarting"));
 			}
 
-			App.WaitForTextEqualToElement("DragOverEventsLabel", "DragOver");
+			App.WaitForElement("DragOverEventsLabel");
 			var textAfterDragOver = App.FindElement("DragOverEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragOver))
 			{
@@ -91,7 +117,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(textAfterDragOver, Is.EqualTo("DragOver"));
 			}
 
-			App.WaitForTextEqualToElement("DragCompletedEventsLabel", "DropCompleted");
+			App.WaitForElement("DragCompletedEventsLabel");
 			var textAfterDragComplete = App.FindElement("DragCompletedEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDragComplete))
 			{
@@ -113,7 +139,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				Assert.That(rainbowColorText, Is.EqualTo("RainbowColorsAdd:Red"));
 			}
 
-			App.WaitForTextEqualToElement("DropEventsLabel", "Drop");
+			App.WaitForElement("DropEventsLabel");
 			var textAfterDrop = App.FindElement("DropEventsLabel").GetText();
 			if (string.IsNullOrEmpty(textAfterDrop))
 			{
@@ -340,26 +366,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			bool dragDropSuccess = false;
 			for (int i = 0; i < 3; i++)
 			{
-				if (i > 0)
-				{
-					// A degenerate first gesture still fires OnDrop, which moves "Blue" into the
-					// target layout. Reset to a clean state before retrying; otherwise the retry would
-					// drag "Blue" within the same layout and OnDrop would ignore it (Source == layout).
-					App.Tap("ResetButton");
-					App.WaitForElement("Blue");
-					App.WaitForElement("Green");
-				}
-
 				App.DragAndDrop("Blue", "Green");
 				Thread.Sleep(500);
 				App.WaitForElement("DropRelativeLayout");
-
-				// Only treat the drag-and-drop as successful once the drop reports valid, positive
-				// coordinates (the same condition asserted below). On iOS 18.5 the first synthesized
-				// gesture can land with degenerate (0,0)/negative coordinates; retry from a clean
-				// state instead of accepting the first invalid reading.
-				var dropCoordinates = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
-				if (dropCoordinates is not null && dropCoordinates.Value.X > 0 && dropCoordinates.Value.Y > 0)
+				if (GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText()) != null)
 				{
 					dragDropSuccess = true;
 					break;

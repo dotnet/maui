@@ -9,7 +9,6 @@ public class AbsoluteLayoutFeatureTests : _GalleryUITest
 	public const string AbsoluteLayoutFeatureMatrix = "AbsoluteLayout Feature Matrix";
 	public override string GalleryPageName => AbsoluteLayoutFeatureMatrix;
 	public const string Options = "Options";
-	protected override string GalleryPageReadyElement => Options;
 	public const string Apply = "Apply";
 	public const string XEntry = "XEntry";
 	public const string YEntry = "YEntry";

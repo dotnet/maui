@@ -92,22 +92,13 @@ namespace Microsoft.Maui.Controls
 
 			var flyoutBehavior = (_shell as IFlyoutView).FlyoutBehavior;
 #if WINDOWS
-			var drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout;
+			_drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout;
 #else
-			var drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout && (stack.Count <= 1 || !backButtonVisible);
+			_drawerToggleVisible = stack.Count <= 1 && flyoutBehavior is FlyoutBehavior.Flyout;
 #endif
-			var drawerToggleVisibleChanged = _drawerToggleVisible != drawerToggleVisible;
-			_drawerToggleVisible = drawerToggleVisible;
-
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
-			BackButtonAccessibilityLabel = _backButtonBehavior?.AccessibilityLabel;
 			ToolbarItems = _toolbarTracker.ToolbarItems;
-
-			// Notified after BackButtonVisible (which takes precedence in the navigation slot) so that
-			// platform backends observe a fully consistent toolbar state.
-			if (drawerToggleVisibleChanged)
-				NotifyPropertyChanged(nameof(DrawerToggleVisible));
 
 			UpdateTitle();
 

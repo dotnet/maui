@@ -1,14 +1,18 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Android.App;
 using Android.Content;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
+using Microsoft.Maui.Storage;
 using Xunit;
 using AWebView = Android.Webkit.WebView;
+using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,6 +23,82 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeSource(WebViewHandler webViewHandler) =>
 			GetNativeWebView(webViewHandler).Url;
+
+		[Fact]
+		public void FileChooserRejectsFileUriInsideAppDataDirectory()
+		{
+			var filePath = Path.Combine(FileSystem.AppDataDirectory, $"webview_picker_{Guid.NewGuid():N}.txt");
+			File.WriteAllText(filePath, "application data");
+
+			try
+			{
+				using var file = new Java.IO.File(filePath);
+				using var uri = AndroidUri.FromFile(file);
+				using var intent = new Intent();
+				intent.SetData(uri);
+
+				Assert.False(MauiWebChromeClient.IsFileChooserResultValid(intent));
+			}
+			finally
+			{
+				File.Delete(filePath);
+			}
+		}
+
+		[Fact]
+		public void FileChooserRejectsClipDataFileUriInsideAppDataDirectory()
+		{
+			var filePath = Path.Combine(FileSystem.AppDataDirectory, $"webview_picker_{Guid.NewGuid():N}.txt");
+			File.WriteAllText(filePath, "application data");
+
+			try
+			{
+				using var file = new Java.IO.File(filePath);
+				using var uri = AndroidUri.FromFile(file);
+				using var clipData = ClipData.NewRawUri("selected file", uri);
+				using var intent = new Intent { ClipData = clipData };
+
+				Assert.False(MauiWebChromeClient.IsFileChooserResultValid(intent));
+			}
+			finally
+			{
+				File.Delete(filePath);
+			}
+		}
+
+		[Fact]
+		public void FileChooserAllowsExternalFileUri()
+		{
+			var externalCacheDirectory = Application.Context.ExternalCacheDir;
+			Assert.NotNull(externalCacheDirectory);
+
+			var filePath = Path.Combine(externalCacheDirectory.AbsolutePath, $"webview_picker_{Guid.NewGuid():N}.txt");
+			File.WriteAllText(filePath, "external data");
+
+			try
+			{
+				using var file = new Java.IO.File(filePath);
+				using var uri = AndroidUri.FromFile(file);
+				using var intent = new Intent();
+				intent.SetData(uri);
+
+				Assert.True(MauiWebChromeClient.IsFileChooserResultValid(intent));
+			}
+			finally
+			{
+				File.Delete(filePath);
+			}
+		}
+
+		[Fact]
+		public void FileChooserAllowsContentUri()
+		{
+			using var uri = AndroidUri.Parse("content://maui-test/selected-file");
+			using var intent = new Intent();
+			intent.SetData(uri);
+
+			Assert.True(MauiWebChromeClient.IsFileChooserResultValid(intent));
+		}
 
 		[Fact(DisplayName = "MauiWebView has JS bridge registered at construction time")]
 		public async Task WebView_HasScrollCaptureBridge_AfterConstruction()

@@ -11,7 +11,6 @@
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.READ_CONTACTS" />
-	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<queries>
 		<!-- Email -->
 		<intent>

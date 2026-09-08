@@ -22,10 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NavigatingBackViaBackButtonFiresNavigatedEvent()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+			SetupBuilder();
 			var page = new ContentPage();
 
-			var navPage = new NavigationPage(false, page) { Title = "App Page" };
+			var navPage = new NavigationPage(page) { Title = "App Page" };
 
 			await navPage.PushAsync(new ContentPage());
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -36,35 +36,61 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(page.HasNavigatedTo);
 				navController.NavigationBar.TapBackButton();
 				await OnNavigatedToAsync(page);
-
 				Assert.True(page.HasNavigatedTo);
 			});
 		}
 
-		[Fact]
-		public async Task Handler_NavigatingBackViaBackButtonFiresNavigatedEvent()
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task InteractivePopGestureRespectsBackButtonPressedWhenNavigationBarHidden(bool backHandled, bool expectedShouldBegin)
 		{
 			SetupBuilder();
-			var page = new ContentPage() { Title = "Root Page" };
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(backHandled);
+			NavigationPage.SetHasNavigationBar(backHandlingPage, false);
 
-			var navPage = new NavigationPage(page) { Title = "App Page" };
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
 
-			await navPage.PushAsync(new ContentPage() { Title = "Second Page" });
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
 			{
-				await OnNavigatedToAsync(navPage.CurrentPage);
+				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var recognizer = navController.InteractivePopGestureRecognizer;
 
-				var navController = (navPage.Handler as IPlatformViewHandler)?.ViewController as UINavigationController;
-				Assert.NotNull(navController);
+				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				await Task.CompletedTask;
+			});
+		}
 
-				Assert.False(page.HasNavigatedTo);
+		[Theory]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		public async Task InteractivePopGestureRespectsBackButtonPressedWhenNavigationBarVisible(bool backHandled, bool expectedShouldBegin)
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var backHandlingPage = new BackHandlingPage(backHandled);
+			var navPage = new NavigationPage(rootPage);
+			await navPage.PushAsync(backHandlingPage);
 
-				// Pop via UIKit - this triggers the handler's OnNavigationComplete which calls OnNativePopCompleted
-				navController.PopViewController(animated: false);
-				await OnNavigatedToAsync(page, TimeSpan.FromSeconds(5));
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
+			{
+				var navController = Assert.IsType<NavigationRenderer>(navPage.Handler);
+				var recognizer = navController.InteractivePopGestureRecognizer;
 
-				Assert.True(page.HasNavigatedTo);
+				Assert.Equal(expectedShouldBegin, recognizer.Delegate.ShouldBegin(recognizer));
+				if (expectedShouldBegin)
+				{
+					Assert.True(navController.ShouldPopItem(navController.NavigationBar, navController.NavigationBar.TopItem));
+				}
+				Assert.Equal(1, backHandlingPage.BackButtonPressedCount);
+				await Task.CompletedTask;
 			});
 		}
 
@@ -103,29 +129,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("Multiple calls to NavigationRenderer.Dispose shouldn't crash")]
 		public async Task NavigationRendererDoubleDisposal()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
-
-			var root = new ContentPage()
-			{
-				Title = "root",
-				Content = new Label { Text = "Hello" }
-			};
-
-			await root.Dispatcher.DispatchAsync(() =>
-			{
-				var navPage = new NavigationPage(false, root);
-				var handler = CreateHandler(navPage);
-
-				// Calling Dispose more than once should be fine
-				(handler as NavigationRenderer).Dispose();
-				(handler as NavigationRenderer).Dispose();
-			});
-		}
-
-		[Fact]
-		[Description("Multiple calls to NavigationViewHandler.DisconnectHandler shouldn't crash")]
-		public async Task Handler_NavigationViewHandlerDoubleDisposal()
-		{
 			SetupBuilder();
 
 			var root = new ContentPage()
@@ -139,11 +142,28 @@ namespace Microsoft.Maui.DeviceTests
 				var navPage = new NavigationPage(root);
 				var handler = CreateHandler(navPage);
 
-				// Calling DisconnectHandler more than once should be fine
-				// NavigationViewHandler uses OnDisconnectHandler lifecycle, not IDisposable
-				handler.DisconnectHandler();
-				handler.DisconnectHandler();
+				// Calling Dispose more than once should be fine
+				(handler as NavigationRenderer).Dispose();
+				(handler as NavigationRenderer).Dispose();
 			});
+		}
+
+		sealed class BackHandlingPage : ContentPage
+		{
+			readonly bool _backHandled;
+
+			public BackHandlingPage(bool backHandled)
+			{
+				_backHandled = backHandled;
+			}
+
+			public int BackButtonPressedCount { get; private set; }
+
+			protected override bool OnBackButtonPressed()
+			{
+				BackButtonPressedCount++;
+				return _backHandled;
+			}
 		}
 	}
 }

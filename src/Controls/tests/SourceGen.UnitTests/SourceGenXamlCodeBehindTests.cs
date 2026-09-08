@@ -51,6 +51,7 @@ public class SourceGenXamlCodeBehindTests : SourceGenTestsBase
 </ContentPage>
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		Assert.False(result.Diagnostics.Any());
@@ -481,6 +482,7 @@ public class Helper
 </foo>
 """;
 		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
 		var result = SourceGeneratorDriver.RunGenerator<XamlGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
 
 		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();

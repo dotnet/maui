@@ -56,40 +56,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			if (!(size.Width > 0) || !(size.Height > 0) ||
-				double.IsInfinity(size.Width) || double.IsInfinity(size.Height))
-			{
-				return target;
-			}
-
-			var width = checked((int)Math.Ceiling(size.Width));
-			var height = checked((int)Math.Ceiling(size.Height));
-
-			using var colorSpace = CGColorSpace.CreateDeviceRGB();
-			using var context = new CGBitmapContext(
-				IntPtr.Zero,
-				width,
-				height,
-				8,
-				checked(4 * width),
-				colorSpace,
-				CGBitmapFlags.ByteOrder32Little | CGBitmapFlags.PremultipliedFirst);
-
-			context.TranslateCTM(0, height);
-			context.ScaleCTM(1, -1);
-
-			UIGraphics.PushContext(context);
-			try
-			{
-				target.Draw(new CGRect(CGPoint.Empty, size));
-			}
-			finally
-			{
-				UIGraphics.PopContext();
-			}
-
-			using var cgImage = context.ToImage();
-			var image = UIImage.FromImage(cgImage, 1, UIImageOrientation.Up);
+			UIGraphics.BeginImageContext(size);
+			target.Draw(new CGRect(CGPoint.Empty, size));
+			var image = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
 
 			if (disposeOriginal)
 			{

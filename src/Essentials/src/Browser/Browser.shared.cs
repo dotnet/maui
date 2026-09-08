@@ -75,10 +75,10 @@ namespace Microsoft.Maui.ApplicationModel
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IBrowser Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new BrowserImplementation());
+			defaultImplementation ??= new BrowserImplementation();
 
 		internal static void SetDefault(IBrowser? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	/// <summary>

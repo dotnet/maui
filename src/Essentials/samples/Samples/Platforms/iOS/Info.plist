@@ -23,7 +23,6 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
-	<!-- Custom-scheme callback. HTTPS callbacks require iOS 17.4+ and Associated Domains. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -65,9 +64,5 @@
 	<string>Just writing events to the Calendar, nothing to see here.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Just so you will remember</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
 </dict>
 </plist>

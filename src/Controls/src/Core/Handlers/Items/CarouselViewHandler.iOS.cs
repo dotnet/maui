@@ -35,9 +35,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		// TODO: Change the modifier to public in .NET 11.
+		internal static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
+
+			// Also updates the outer Controller.View, which gates touch delivery
+			// but is otherwise left stale by the CollectionView-only update above.
+			ViewHandler.MapIsEnabled(handler, carouselView);
 		}
 
 		public static void MapIsSwipeEnabled(CarouselViewHandler handler, CarouselView carouselView)

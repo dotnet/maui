@@ -11,6 +11,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.Storage;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel;
+using Windows.Storage.Streams;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
@@ -27,7 +28,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private readonly string _contentRootRelativeToAppRoot;
 		private static readonly bool _isPackagedApp;
 		private readonly ILogger _logger;
-		private readonly StaticContentResponseCache _staticContentResponseCache = new();
 
 		static WinUIWebViewManager()
 		{
@@ -85,27 +85,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return;
 			}
 
-			StaticContentCacheRequestBehavior? cacheRequestBehavior = null;
-			if (_staticContentResponseCache.TryGet(url, out var cachedResponse))
-			{
-				cacheRequestBehavior = StaticContentResponseCachePolicy.GetRequestBehavior(
-					eventArgs.Request.Method,
-					GetCacheRequestHeaders(eventArgs.Request.Headers));
-				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Default)
-				{
-					var cachedRequestUri = QueryStringHelper.RemovePossibleQueryString(url);
-					_logger.HandlingWebRequest(cachedRequestUri);
-					_logger.ResponseContentBeingSent(cachedRequestUri, cachedResponse.StatusCode);
-					eventArgs.Response = CreateWebResourceResponse(cachedResponse);
-					return;
-				}
-
-				if (cacheRequestBehavior == StaticContentCacheRequestBehavior.Refresh)
-				{
-					_staticContentResponseCache.Remove(url);
-				}
-			}
-
 			// 2. If this is an app request, then assume the request is for a Blazor resource.
 			var requestUri = QueryStringHelper.RemovePossibleQueryString(url);
 			if (new Uri(requestUri) is Uri uri)
@@ -128,13 +107,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// brings in a default implementation.
 				if (relativePath != null &&
 					string.Equals(relativePath, "_framework/blazor.modules.json", StringComparison.Ordinal) &&
-					await TryServeFromFolderAsync(
-						eventArgs,
-						allowFallbackOnHostPage: false,
-						requestUri,
-						url,
-						relativePath,
-						cacheRequestBehavior))
+					await TryServeFromFolderAsync(eventArgs, allowFallbackOnHostPage: false, requestUri, relativePath))
 				{
 					_logger.ResponseContentBeingSent(requestUri, 200);
 				}
@@ -144,33 +117,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					// First, call into WebViewManager to see if it has a framework file for this request. It will
 					// fall back to an IFileProvider, but on WinUI it's always a NullFileProvider, so that will never
 					// return a file.
-					ApplyStaticContentCacheControlOverride(headers, url);
-					if (statusCode == 200 &&
-						headers.TryGetValue("Cache-Control", out var cacheControl) &&
-						StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
-					{
-						cacheRequestBehavior ??= StaticContentResponseCachePolicy.GetRequestBehavior(
-							eventArgs.Request.Method,
-							GetCacheRequestHeaders(eventArgs.Request.Headers));
-						if (cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled)
-						{
-							var bufferedResponse = await StaticContentResponseBuffer.TryBufferAsync(content, url, _logger);
-							if (bufferedResponse.IsBuffered)
-							{
-								_staticContentResponseCache.Set(new StaticContentResponse(
-									url,
-									headers["Content-Type"],
-									statusCode,
-									statusMessage,
-									headers,
-									bufferedResponse.CachedContent,
-									StaticContentResponseCachePolicy.GetExpiration(cacheLifetime)));
-							}
-
-							content = bufferedResponse.ResponseContent;
-						}
-					}
-
 					var headerString = GetHeaderString(headers);
 					_logger.ResponseContentBeingSent(requestUri, statusCode);
 					eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(content.AsRandomAccessStream(), statusCode, statusMessage, headerString);
@@ -181,9 +127,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 						eventArgs,
 						allowFallbackOnHostPage,
 						requestUri,
-						url,
-						relativePath,
-						cacheRequestBehavior);
+						relativePath);
 				}
 
 				// Notify WebView2 that the deferred (async) operation is complete and we set a response.
@@ -198,27 +142,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			_logger.LogDebug("Request for {Url} was not handled.", url);
 		}
 
-		// By default local caching is disabled so that user scripts are always re-executed. Applications can
-		// opt specific resources into caching via BlazorWebView.StaticContentCacheControlProvider.
-		// The original (unstripped) URI is passed so the provider can act on query strings (e.g. img.png?v=2).
-		// See https://github.com/dotnet/maui/issues/8279
-		private void ApplyStaticContentCacheControlOverride(IDictionary<string, string> headers, string originalRequestUri)
-		{
-			var contentType = headers.TryGetValue("Content-Type", out var resolvedContentType) ? resolvedContentType : string.Empty;
-			var cacheControlOverride = StaticContentCacheControl.ResolveOverride(_handler.VirtualView, originalRequestUri, contentType, _logger);
-			if (cacheControlOverride is not null)
-			{
-				headers["Cache-Control"] = cacheControlOverride;
-			}
-		}
-
 		private async Task<bool> TryServeFromFolderAsync(
 			CoreWebView2WebResourceRequestedEventArgs eventArgs,
 			bool allowFallbackOnHostPage,
 			string requestUri,
-			string originalRequestUri,
-			string relativePath,
-			StaticContentCacheRequestBehavior? cacheRequestBehavior)
+			string relativePath)
 		{
 			// If the path does not end in a file extension (or is empty), it's most likely referring to a page,
 			// in which case we should allow falling back on the host page.
@@ -231,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var statusMessage = "OK";
 			var contentType = StaticContentProvider.GetResponseContentTypeOrDefault(relativePath);
 			var headers = StaticContentProvider.GetResponseHeaders(contentType);
-			byte[]? contentBytes = null;
+			IRandomAccessStream? stream = null;
 			if (_isPackagedApp)
 			{
 				var winUIItem = await Package.Current.InstalledLocation.TryGetItemAsync(relativePath);
@@ -239,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (winUIItem != null)
 				{
 					using var contentStream = await Package.Current.InstalledLocation.OpenStreamForReadAsync(relativePath);
-					contentBytes = await ReadContentAsync(contentStream);
+					stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 				}
 			}
 			else
@@ -248,45 +176,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (path is not null && File.Exists(path))
 				{
 					using var contentStream = File.OpenRead(path);
-					contentBytes = await ReadContentAsync(contentStream);
+					stream = await CopyContentToRandomAccessStreamAsync(contentStream);
 				}
 			}
 
 			var hotReloadedContent = Stream.Null;
 			if (StaticContentHotReloadManager.TryReplaceResponseContent(_contentRootRelativeToAppRoot, requestUri, ref statusCode, ref hotReloadedContent, headers))
 			{
-				contentBytes = await ReadContentAsync(hotReloadedContent);
+				stream = await CopyContentToRandomAccessStreamAsync(hotReloadedContent);
 			}
 
-			if (contentBytes != null)
+			if (stream != null)
 			{
-				ApplyStaticContentCacheControlOverride(headers, originalRequestUri);
-				if (statusCode == 200 &&
-					headers.TryGetValue("Cache-Control", out var cacheControl) &&
-					StaticContentResponseCachePolicy.TryGetCacheLifetime(cacheControl, out var cacheLifetime))
-				{
-					cacheRequestBehavior ??= StaticContentResponseCachePolicy.GetRequestBehavior(
-						eventArgs.Request.Method,
-						GetCacheRequestHeaders(eventArgs.Request.Headers));
-					if (cacheRequestBehavior != StaticContentCacheRequestBehavior.Disabled)
-					{
-						_staticContentResponseCache.Set(new StaticContentResponse(
-							originalRequestUri,
-							contentType,
-							statusCode,
-							statusMessage,
-							headers,
-							contentBytes,
-							StaticContentResponseCachePolicy.GetExpiration(cacheLifetime)));
-					}
-				}
-
 				var headerString = GetHeaderString(headers);
 
 				_logger.ResponseContentBeingSent(requestUri, statusCode);
 
 				eventArgs.Response = _coreWebView2Environment!.CreateWebResourceResponse(
-					new MemoryStream(contentBytes, writable: false).AsRandomAccessStream(),
+					stream,
 					statusCode,
 					statusMessage,
 					headerString);
@@ -300,31 +207,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			return false;
 
-			static async Task<byte[]> ReadContentAsync(Stream content)
+			async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
 			{
 				using var memStream = new MemoryStream();
 				await content.CopyToAsync(memStream);
-				return memStream.ToArray();
-			}
-		}
-
-		internal void ClearStaticContentCache() => _staticContentResponseCache.Clear();
-
-		private CoreWebView2WebResourceResponse CreateWebResourceResponse(StaticContentResponse response)
-			=> _coreWebView2Environment!.CreateWebResourceResponse(
-				new MemoryStream(response.Content, writable: false).AsRandomAccessStream(),
-				response.StatusCode,
-				response.StatusMessage,
-				GetHeaderString(response.Headers));
-
-		private static IEnumerable<KeyValuePair<string, string>> GetCacheRequestHeaders(CoreWebView2HttpRequestHeaders headers)
-		{
-			foreach (var headerName in new[] { "Range", "Authorization", "Cache-Control", "Pragma" })
-			{
-				if (headers.Contains(headerName))
-				{
-					yield return new KeyValuePair<string, string>(headerName, headers.GetHeader(headerName));
-				}
+				var randomAccessStream = new InMemoryRandomAccessStream();
+				await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
+				return randomAccessStream;
 			}
 		}
 

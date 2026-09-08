@@ -44,9 +44,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typeref = Module.ImportReference(node.XmlType.GetTypeReference(Context.Cache, Module, node));
 			TypeDefinition typedef = typeref.ResolveCached(Context.Cache);
 
-			// Check if the type is marked as obsolete (typedef may be null for unresolvable types)
-			if (typedef != null)
-				SetPropertiesVisitor.LogObsoleteWarningOrError(Context, node, typedef.FullName, typedef.CustomAttributes);
+			if (node.IsOnPlatformDefaultValue)
+			{
+				var vardef = new VariableDefinition(typeref);
+				Context.Variables[node] = vardef;
+				Context.Body.Variables.Add(vardef);
+
+				if (typedef.IsValueType)
+				{
+					Context.IL.Emit(Ldloca, vardef);
+					Context.IL.Emit(Initobj, typeref);
+				}
+				else
+				{
+					Context.IL.Emit(Ldnull);
+					Context.IL.Emit(Stloc, vardef);
+				}
+
+				return;
+			}
 
 			if (typeref.FullName == "Microsoft.Maui.Controls.Xaml.ArrayExtension")
 			{

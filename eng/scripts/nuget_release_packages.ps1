@@ -153,22 +153,27 @@ if ($Action -eq 'FilterExisting') {
   $remaining = 0
   foreach ($package in $expected) {
     $packagePath = Join-Path $PackagesPath $package.fileName
-    if (!(Test-Path -LiteralPath $packagePath -PathType Leaf)) {
-      throw "Expected package '$packagePath' was not found."
-    }
+    $packageExists = Test-Path -LiteralPath $packagePath -PathType Leaf
 
     if ($skipPatterns.Count -gt 0 -and (Test-AnyFilter -Name $package.fileName -Filters $skipPatterns)) {
       Write-Host "Skipping previously attempted package $($package.id) $($package.version)."
-      Remove-Item -LiteralPath $packagePath
+      if ($packageExists) {
+        Remove-Item -LiteralPath $packagePath
+      }
       continue
     }
 
     $status = Get-NuGetPackageStatus -Package $package
     if ($status.StatusCode -eq 200) {
       Write-Host "Skipping already-published package $($package.id) $($package.version)."
-      Remove-Item -LiteralPath $packagePath
+      if ($packageExists) {
+        Remove-Item -LiteralPath $packagePath
+      }
     }
     elseif ($status.StatusCode -eq 404) {
+      if (!$packageExists) {
+        throw "Unpublished package '$packagePath' was not found."
+      }
       $remaining++
     }
     else {

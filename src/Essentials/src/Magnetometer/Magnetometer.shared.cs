@@ -88,10 +88,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IMagnetometer Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new MagnetometerImplementation());
+			defaultImplementation ??= new MagnetometerImplementation();
 
 		internal static void SetDefault(IMagnetometer? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	/// <summary>

@@ -50,9 +50,9 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IContacts Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ContactsImplementation());
+			defaultImplementation ??= new ContactsImplementation();
 
 		internal static void SetDefault(IContacts? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 }

@@ -28,17 +28,13 @@ namespace Microsoft.Maui.Media
 
 			if (options != null)
 			{
-				// Select the voice by identifier, else by language, otherwise use the default.
-				// Each step falls through when it yields no voice, including when a caller supplies
-				// an identifier this platform does not recognize.
+				// null voice if fine - it is the default
+				// select the voice by identifier else by Language, otherwise set for default
 				speechUtterance.Voice =
-					(string.IsNullOrWhiteSpace(options.Locale?.Id)
-						? null
-						: AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id))
-					?? (string.IsNullOrWhiteSpace(options.Locale?.Language)
-						? null
-						: AVSpeechSynthesisVoice.FromLanguage(options.Locale.Language))
-					?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
+				    options.Locale?.Id != null
+				        ? AVSpeechSynthesisVoice.FromIdentifier(options.Locale.Id)
+				        : AVSpeechSynthesisVoice.FromLanguage(options.Locale?.Language)
+				        ?? AVSpeechSynthesisVoice.FromLanguage(AVSpeechSynthesisVoice.CurrentLanguageCode);
 
 				// the platform has a range of 0.5 - 2.0
 				// anything lower than 0.5 is set to 0.5

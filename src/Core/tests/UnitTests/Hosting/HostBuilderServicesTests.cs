@@ -12,7 +12,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 	// via DI. Must be serialized with DispatcherTests (which mutates that singleton)
 	// to avoid ObjectDisposedException races on the DispatcherProviderStub's
 	// internal ThreadLocal during MauiApp.Build().
-	[Collection(MainThreadStaticStateCollection.Name)]
+	[Collection("MainThreadStaticState")]
 	public class HostBuilderServicesTests
 	{
 		[Fact]

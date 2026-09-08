@@ -151,12 +151,14 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsReadOnly(searchBar);
 		}
 
-		public static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
+		// make it public in .net 11
+		internal static void MapCursorPosition(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateCursorPosition(searchBar);
 		}
 
-		public static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
+		// make it public in .net 11
+		internal static void MapSelectionLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.QueryEditor?.UpdateSelectionLength(searchBar);
 		}

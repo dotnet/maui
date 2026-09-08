@@ -65,10 +65,10 @@ namespace Microsoft.Maui.Networking
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IConnectivity Current =>
-			EssentialsImplementation.GetOrCreate(ref currentImplementation, static () => new ConnectivityImplementation());
+			currentImplementation ??= new ConnectivityImplementation();
 
 		internal static void SetCurrent(IConnectivity? implementation) =>
-			EssentialsImplementation.Set(ref currentImplementation, implementation);
+			currentImplementation = implementation;
 	}
 #nullable disable
 

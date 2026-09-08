@@ -30,8 +30,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			{
 				return;
 			}
-			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
-
+			Application.Current?.FindMauiContext()?.CreateLogger<BindingDiagnostics>()?.LogWarning(message, messageArgs);
 			_weakEventManager.HandleEvent(null, new BindingBaseErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, errorCode, message, messageArgs), nameof(BindingFailed));
 		}
 
@@ -41,8 +40,7 @@ namespace Microsoft.Maui.Controls.Xaml.Diagnostics
 			{
 				return;
 			}
-			MauiLogger<BindingDiagnostics>.Log(LogLevel.Warning, message, messageArgs);
-
+			Application.Current?.FindMauiContext()?.CreateLogger<BindingDiagnostics>()?.LogWarning(message, messageArgs);
 			_weakEventManager.HandleEvent(null, new BindingErrorEventArgs(VisualDiagnostics.GetSourceInfo(binding), binding, source, bo, bp, errorCode, message, messageArgs), nameof(BindingFailed));
 		}
 	}

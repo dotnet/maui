@@ -10,24 +10,11 @@ namespace MauiApp._1;
 
 public static class MauiProgram
 {
-#if (UseAvaloniaHandlers)
-	public static MauiApp CreateMauiApp(bool useSingleViewLifetime = false)
-#else
 	public static MauiApp CreateMauiApp()
-#endif
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
-#if (UseAvaloniaHandlers)
-//-:cnd:noEmit
-#if !IOS && !MACCATALYST && !ANDROID && !WINDOWS
-			.UseAvaloniaApp(useSingleViewLifetime)
-#else
-			.UseAvaloniaEmbedding<AvaloniaApp>()
-#endif
-//+:cnd:noEmit
-#endif
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()

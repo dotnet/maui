@@ -86,10 +86,10 @@ namespace Microsoft.Maui.Storage
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IFilePicker Default =>
-			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new FilePickerImplementation());
+			defaultImplementation ??= new FilePickerImplementation();
 
 		internal static void SetDefault(IFilePicker? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
+			defaultImplementation = implementation;
 	}
 
 	partial class FilePickerImplementation : IFilePicker

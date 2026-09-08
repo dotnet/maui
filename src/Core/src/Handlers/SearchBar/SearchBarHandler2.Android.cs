@@ -9,7 +9,8 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Handlers;
 
-public class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTextInputLayout>
+// TODO: material3 - make it public in .net 11
+internal class SearchBarHandler2 : ViewHandler<ISearchBar, MauiMaterialSearchBarTextInputLayout>
 {
     public static PropertyMapper<ISearchBar, SearchBarHandler2> Mapper =
     new(ViewMapper)

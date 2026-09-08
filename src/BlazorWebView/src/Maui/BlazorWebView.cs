@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui;
@@ -68,24 +68,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public RootComponentsCollection RootComponents { get; }
 
 		/// <summary>
-		/// Gets or sets a callback that determines the <c>Cache-Control</c> header value used for static content
-		/// (such as images, fonts, or stylesheets) served from the app's content root.
-		/// <para>
-		/// By default no callback is set and all served content uses <c>no-cache, max-age=0, must-revalidate,
-		/// no-store</c>, which disables WebView caching. Provide a callback to opt specific resources into caching,
-		/// which can avoid repeated file reads and reduce image reload flicker when navigating between pages.
-		/// Return <see langword="null"/> or an empty string from the callback to keep the default behavior for a
-		/// given request. Cache entries remain subject to platform limits, expiration, and eviction.
-		/// </para>
-		/// <para>
-		/// The callback is invoked from the platform's request handling, which may run on a background thread, so it
-		/// must not access UI state directly. If the callback throws, the exception is logged and the request falls
-		/// back to the default header.
-		/// </para>
-		/// </summary>
-		public Func<BlazorWebViewStaticContentRequest, string?>? StaticContentCacheControlProvider { get; set; }
-
-		/// <summary>
 		/// Allows customizing how links are opened.
 		/// By default, opens internal links in the webview and external links in an external app.
 		/// </summary>
@@ -124,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir)
 		{
 			// Call into the platform-specific code to get that platform's asset file provider
-			return GetBlazorWebViewHandler().CreateFileProvider(contentRootDir);
+			return ((BlazorWebViewHandler)(Handler!)).CreateFileProvider(contentRootDir);
 		}
 
 		/// <summary>
@@ -143,31 +125,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
 		{
 			ArgumentNullException.ThrowIfNull(workItem);
-			var handler = Handler;
-			if (handler is null)
+			if (Handler is null)
 			{
 				return false;
 			}
 
-			return await GetBlazorWebViewHandler(handler).TryDispatchAsync(workItem);
+			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
 		}
-
-		private IBlazorWebViewHandler GetBlazorWebViewHandler()
-		{
-			var handler = Handler;
-			if (handler is null)
-			{
-				throw new InvalidOperationException(
-					$"{nameof(BlazorWebView)} must be connected to a handler before this operation can be performed.");
-			}
-
-			return GetBlazorWebViewHandler(handler);
-		}
-
-		private static IBlazorWebViewHandler GetBlazorWebViewHandler(IViewHandler handler) =>
-			handler as IBlazorWebViewHandler ??
-				throw new InvalidOperationException(
-					$"The handler type '{handler.GetType().FullName}' must implement {nameof(IBlazorWebViewHandler)}.");
 
 		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>

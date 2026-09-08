@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				await PostTestMessageAsync(window);
 
-				await WaitForMessageAsync(() => messages.Contains(TEST_MESSAGE));
-
 				tracker.Stop();
 
 				Assert.Contains(TEST_MESSAGE, messages);
@@ -83,8 +81,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				await PostTestMessageAsync(window);
 
-				await WaitForMessageAsync(() => messages.Contains(TEST_MESSAGE));
-
 				Assert.Contains(TEST_MESSAGE, messages);
 
 				void OnWindowMessage(object? sender, WindowMessageEventArgs e)
@@ -111,8 +107,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				wsm.OnActivated(window2);
 
 				await PostTestMessageAsync(window2);
-
-				await WaitForMessageAsync(() => messages.Contains((window2.GetWindowHandle(), TEST_MESSAGE)));
 
 				Assert.DoesNotContain((window1.GetWindowHandle(), TEST_MESSAGE), messages);
 				Assert.Contains((window2.GetWindowHandle(), TEST_MESSAGE), messages);

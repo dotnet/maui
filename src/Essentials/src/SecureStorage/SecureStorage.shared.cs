@@ -1,8 +1,6 @@
 #nullable enable
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Storage
 {
@@ -140,32 +138,13 @@ namespace Microsoft.Maui.Storage
 		/// <summary>
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
-		public static ISecureStorage Default
+		public static ISecureStorage Default =>
+			defaultImplementation ??= new SecureStorageImplementation();
+
+		internal static void SetDefault(ISecureStorage? implementation)
 		{
-			get
-			{
-				if (Volatile.Read(ref defaultImplementation) is { } current)
-					return current;
-
-				var packageName = SecureStorageImplementation.GetDefaultPackageName();
-#if WINDOWS
-				var appDataDirectory = SecureStorageImplementation.UsesFileSystemAppDataDirectory
-					? FileSystem.AppDataDirectory
-					: null;
-#endif
-				return EssentialsImplementation.GetOrCreate(
-					ref defaultImplementation,
-					() => new SecureStorageImplementation(
-						packageName
-#if WINDOWS
-						, appDataDirectory
-#endif
-						));
-			}
+			defaultImplementation = implementation;
 		}
-
-		internal static void SetDefault(ISecureStorage? implementation) =>
-			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>
@@ -223,43 +202,10 @@ namespace Microsoft.Maui.Storage
 
 	partial class SecureStorageImplementation
 	{
-		internal SecureStorageImplementation()
-			: this(GetDefaultPackageName())
-		{
-		}
-
-		internal SecureStorageImplementation(
-			string packageName
-#if WINDOWS
-			, string? appDataDirectory = null,
-			bool namespaceUnpackagedStorageByAlias = false
+#if !NETSTANDARD && PLATFORM
+		// Special Alias that is only used for Secure Storage. All others should use: Preferences.GetPrivatePreferencesSharedName
+		internal static readonly string Alias = Preferences.GetPrivatePreferencesSharedName("preferences");
 #endif
-			)
-		{
-			Alias = Preferences.GetPrivatePreferencesSharedName(packageName, "preferences");
-#if WINDOWS
-			UnpackagedAppDataDirectory = appDataDirectory;
-			NamespaceUnpackagedStorageByAlias = namespaceUnpackagedStorageByAlias;
-#endif
-			InitializePlatform();
-		}
-
-		internal string Alias { get; }
-
-		internal static bool UsesFileSystemAppDataDirectory =>
-#if WINDOWS
-			!AppInfoUtils.IsPackagedApp;
-#else
-			false;
-#endif
-
-#if WINDOWS
-		internal string? UnpackagedAppDataDirectory { get; }
-
-		internal bool NamespaceUnpackagedStorageByAlias { get; }
-#endif
-
-		partial void InitializePlatform();
 
 		public Task<string?> GetAsync(string key)
 		{
@@ -285,119 +231,5 @@ namespace Microsoft.Maui.Storage
 
 		public void RemoveAll()
 			=> PlatformRemoveAll();
-
-		internal static string GetDefaultPackageName()
-		{
-#if !NETSTANDARD && PLATFORM
-			return AppInfoImplementation.GetDefaultPackageName();
-#else
-			return string.Empty;
-#endif
-		}
-	}
-
-	internal sealed class AppInfoSecureStorage : ISecureStorage
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-		, IPlatformSecureStorage
-#endif
-	{
-		readonly Lazy<SecureStorageImplementation> _implementation;
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-		readonly object _sync = new();
-		Security.SecAccessible _defaultAccessible;
-#endif
-
-		internal AppInfoSecureStorage(
-			string packageName,
-			ISecureStorage? previous
-#if WINDOWS
-			, string? appDataDirectory
-#endif
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-			, Security.SecAccessible? inheritedDefaultAccessible = null
-#endif
-			)
-		{
-			_implementation = new(
-				() =>
-				{
-					var implementation = new SecureStorageImplementation(
-						packageName
-#if WINDOWS
-						, appDataDirectory,
-						namespaceUnpackagedStorageByAlias: true
-#endif
-						);
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-					implementation.DefaultAccessible = _defaultAccessible;
-#endif
-					return implementation;
-				},
-				LazyThreadSafetyMode.ExecutionAndPublication);
-
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-			// This wrapper is created while the SecureStorage facade assignment locks are held.
-			// Only read framework-owned predecessors here; invoking a custom platform getter would
-			// execute app code under those locks. A DI-registered ISecureStorage bypasses this wrapper.
-			_defaultAccessible = inheritedDefaultAccessible ?? previous switch
-			{
-				AppInfoSecureStorage wrapper => wrapper.DefaultAccessible,
-				SecureStorageImplementation implementation => implementation.DefaultAccessible,
-				_ => Security.SecAccessible.AfterFirstUnlock,
-			};
-#endif
-		}
-
-		internal bool IsValueCreated => _implementation.IsValueCreated;
-
-		SecureStorageImplementation Implementation
-		{
-			get
-			{
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-				lock (_sync)
-					return _implementation.Value;
-#else
-				return _implementation.Value;
-#endif
-			}
-		}
-
-		internal string Alias => Implementation.Alias;
-
-		public Task<string?> GetAsync(string key) =>
-			Implementation.GetAsync(key);
-
-		public Task SetAsync(string key, string value) =>
-			Implementation.SetAsync(key, value);
-
-		public bool Remove(string key) =>
-			Implementation.Remove(key);
-
-		public void RemoveAll() =>
-			Implementation.RemoveAll();
-
-#if IOS || MACCATALYST || MACOS || TVOS || WATCHOS
-		public Security.SecAccessible DefaultAccessible
-		{
-			get
-			{
-				lock (_sync)
-					return _defaultAccessible;
-			}
-			set
-			{
-				lock (_sync)
-				{
-					_defaultAccessible = value;
-					if (_implementation.IsValueCreated)
-						_implementation.Value.DefaultAccessible = value;
-				}
-			}
-		}
-
-		public Task SetAsync(string key, string value, Security.SecAccessible accessible) =>
-			Implementation.SetAsync(key, value, accessible);
-#endif
 	}
 }

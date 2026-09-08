@@ -49,15 +49,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
 		{
-			if (item is BindableObject bo)
+			DataTemplate template = DefaultItemTemplate;
+
+			if (item != null && item is BindableObject bo)
 			{
-				var dataTemplate = Shell.ResolveFlyoutItemTemplate(container as Shell, bo);
+				BindableProperty? bp = null;
+				var bindableObjectWithTemplate = Shell.GetBindableObjectWithFlyoutItemTemplate(bo);
 
-				if (dataTemplate is not null)
-					return dataTemplate.SelectDataTemplate(item, container);
+				if (bo is IMenuItemController)
+					bp = Shell.MenuItemTemplateProperty;
+				else
+					bp = Shell.ItemTemplateProperty;
+
+				if (bindableObjectWithTemplate.IsSet(bp) || container.IsSet(bp))
+				{
+					DataTemplate? dataTemplate = (container as IShellController)?.GetFlyoutItemDataTemplate(bo);
+					template = dataTemplate.SelectDataTemplate(item, container);
+				}
 			}
-
-			return DefaultItemTemplate;
+			return template;
 		}
 	}
 }

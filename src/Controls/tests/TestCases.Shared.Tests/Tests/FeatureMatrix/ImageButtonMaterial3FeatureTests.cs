@@ -26,6 +26,12 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     public const string IsVisibleFalse = "IsVisibleFalse";
     public const string IsEnabledFalse = "IsEnabledFalse";
     public const string PaddingEntry = "PaddingEntry";
+    public const string BackgroundColorNone = "BackgroundColorNone";
+	public const string BackgroundColorYellow = "BackgroundColorYellow";
+	public const string OpacityHalf = "OpacityHalf";
+	public const string InputTransparentTrue = "InputTransparentTrue";
+	public const string RotationEntry = "RotationEntry";
+	public const string ScaleEntry = "ScaleEntry";
 
     public override string GalleryPageName => ImageButtonFeatureMatrix;
 
@@ -50,7 +56,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(2)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFitWithImageSourceFromUri()
     {
@@ -66,7 +72,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
-    [Test]
+    [Test, Order(3)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFitWithImageSourceFromStream()
     {
@@ -82,7 +88,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(4)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_FillWithImageSourceFromStream()
     {
@@ -99,7 +105,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     }
 #endif
 
-    [Test]
+    [Test, Order(5)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFitWithImageSourceFromFontImage()
     {
@@ -116,7 +122,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     }
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
-    [Test]
+    [Test, Order(6)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromUri()
     {
@@ -133,7 +139,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     }
 #endif
 
-    [Test]
+    [Test, Order(7)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_FillWithImageSourceFromFile()
     {
@@ -149,7 +155,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(8)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_FillWithImageSourceFromUri()
     {
@@ -165,7 +171,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(9)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_CenterWithImageSourceFromFile()
     {
@@ -181,11 +187,8 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29959
-
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/30576
-    [Test]
+    [Test, Order(10)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromStream()
     {
@@ -201,7 +204,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(11)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_CenterWithImageSourceFromStream()
     {
@@ -218,7 +221,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     }
 #endif
 
-    [Test]
+    [Test, Order(12)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromFontImage()
     {
@@ -234,7 +237,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(13)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_FillWithImageSourceFromFontImage()
     {
@@ -250,7 +253,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(14)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_CenterWithImageSourceFromFontImage()
     {
@@ -267,7 +270,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
     }
 
 #if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/29956
-    [Test]
+    [Test, Order(15)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_AspectFillWithImageSourceFromFile()
     {
@@ -283,7 +286,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(16)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonAspect_CenterWithImageSourceFromUri()
     {
@@ -299,9 +302,8 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 #endif
-#endif
 
-    [Test]
+    [Test, Order(17)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonFlowDirectionRTL()
     {
@@ -315,7 +317,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(18)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithPadding()
     {
@@ -330,7 +332,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(19)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithCornerRadius()
     {
@@ -338,14 +340,14 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.Tap(Options);
         App.WaitForElement(CornerRadiusEntry);
         App.ClearText(CornerRadiusEntry);
-        App.EnterText(CornerRadiusEntry, "50,50,50,50");
+        App.EnterText(CornerRadiusEntry, "50");
         App.WaitForElement(Apply);
         App.Tap(Apply);
         App.WaitForElement("ImageButtonControl");
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(20)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBorderColor()
     {
@@ -359,7 +361,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(21)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBorderWidth()
     {
@@ -374,7 +376,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(22)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBorderColorAndWidth()
     {
@@ -391,7 +393,7 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 
-    [Test]
+    [Test, Order(23)]
     [Category(UITestCategories.Material3)]
     public void VerifyMaterial3ImageButtonWithBorderWidthAndCornerRadius()
     {
@@ -402,9 +404,85 @@ public class ImageButtonMaterial3FeatureTests : _GalleryUITest
         App.EnterText(BorderWidthEntry, "10");
         App.WaitForElement(CornerRadiusEntry);
         App.ClearText(CornerRadiusEntry);
-        App.EnterText(CornerRadiusEntry, "30,30,30,30");
+        App.EnterText(CornerRadiusEntry, "30");
         App.WaitForElement(SourceTypeFile);
         App.Tap(SourceTypeFile);
+        App.WaitForElement(Apply);
+        App.Tap(Apply);
+        App.WaitForElement("ImageButtonControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(24)]
+    [Category(UITestCategories.Material3)]
+    public void VerifyMaterial3ImageButtonWithOpacityHalf()
+    {
+        App.WaitForElement(Options);
+        App.Tap(Options);
+        App.WaitForElement(OpacityHalf);
+        App.Tap(OpacityHalf);
+        App.WaitForElement(Apply);
+        App.Tap(Apply);
+        App.WaitForElement("ImageButtonControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(25)]
+    [Category(UITestCategories.Material3)]
+    public void VerifyMaterial3ImageButtonWithRotation()
+    {
+        App.WaitForElement(Options);
+        App.Tap(Options);
+        App.WaitForElement(RotationEntry);
+        App.ClearText(RotationEntry);
+        App.EnterText(RotationEntry, "180");
+        App.WaitForElement(Apply);
+        App.Tap(Apply);
+        App.WaitForElement("ImageButtonControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(26)]
+    [Category(UITestCategories.Material3)]
+    public void VerifyMaterial3ImageButtonWithScale()
+    {
+        App.WaitForElement(Options);
+        App.Tap(Options);
+        App.WaitForElement(ScaleEntry);
+        App.ClearText(ScaleEntry);
+        App.EnterText(ScaleEntry, "0.5");
+        App.WaitForElement(Apply);
+        App.Tap(Apply);
+        App.WaitForElement("ImageButtonControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(27)]
+    [Category(UITestCategories.Material3)]
+    public void VerifyMaterial3ImageButtonWithBackgroundColorYellow()
+    {
+        App.WaitForElement(Options);
+        App.Tap(Options);
+        App.WaitForElement(SourceTypeFontImage);
+        App.Tap(SourceTypeFontImage);
+        App.WaitForElement(BackgroundColorYellow);
+        App.Tap(BackgroundColorYellow);
+        App.WaitForElement(Apply);
+        App.Tap(Apply);
+        App.WaitForElement("ImageButtonControl");
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+    }
+
+    [Test, Order(28)]
+    [Category(UITestCategories.Material3)]
+    public void VerifyMaterial3ImageButtonWithBackgroundColorNone()
+    {
+        App.WaitForElement(Options);
+        App.Tap(Options);
+        App.WaitForElement(SourceTypeFontImage);
+        App.Tap(SourceTypeFontImage);
+        App.WaitForElement(BackgroundColorNone);
+        App.Tap(BackgroundColorNone);
         App.WaitForElement(Apply);
         App.Tap(Apply);
         App.WaitForElement("ImageButtonControl");

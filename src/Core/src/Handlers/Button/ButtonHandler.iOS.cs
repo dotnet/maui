@@ -77,7 +77,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 #else
-		public static void MapBackground(IButtonHandler handler, IButton button)
+		// TODO: Make this public in .NET 11
+		internal static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			handler.PlatformView?.UpdateBackground(button.Background);
 		}

@@ -3,7 +3,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
-	class ImageSourcePaint : Paint, IImageSourcePaint
+	class ImageSourcePaint : Paint
 	{
 		public ImageSourcePaint()
 		{

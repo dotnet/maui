@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.Versioning;
@@ -17,10 +18,8 @@ using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	class GesturePlatformManager : IGesturePlatformManager
+	class GesturePlatformManager : IDisposable
 	{
-		static readonly UIGesturesProbe _alwaysRecognizeSimultaneously = (g, o) => true;
-
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
 		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
@@ -98,12 +97,6 @@ namespace Microsoft.Maui.Controls.Platform
 					swipeGestureRecognizer != null)
 				{
 					swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
-				}
-
-				if (TryGetLongPressGestureRecognizer(kvp.Key, out LongPressGestureRecognizer? longPressGestureRecognizer) &&
-					longPressGestureRecognizer != null)
-				{
-					longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
 				}
 
 				foreach (var uiGestureRecognizer in kvp.Value)
@@ -398,42 +391,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
-			if (recognizer is not LongPressGestureRecognizer longPressRecognizer)
-				return null;
-
-			WeakReference? weakPlatformRecognizer = null;
-			var longPressUiRecognizer = CreateLongPressRecognizer(r =>
-			{
-				var eventTracker = weakEventTracker.Target as GesturePlatformManager;
-				var view = eventTracker?._handler?.VirtualView as View;
-				var lpRecognizer = weakRecognizer.Target as LongPressGestureRecognizer;
-
-				if (lpRecognizer == null || view == null)
-					return;
-
-				var originPoint = r.LocationInView(eventTracker?.PlatformView);
-				Func<IElement?, Point?> getPosition = (relativeTo) => CalculatePosition(relativeTo, originPoint, weakPlatformRecognizer, weakEventTracker);
-
-				switch (r.State)
-				{
-					case UIGestureRecognizerState.Began:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Started, getPosition);
-						break;
-					case UIGestureRecognizerState.Changed:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Running, getPosition);
-						break;
-					case UIGestureRecognizerState.Ended:
-						lpRecognizer.SendLongPressed(view, getPosition);
-						lpRecognizer.SendLongPressing(view, GestureStatus.Completed, getPosition);
-						break;
-					case UIGestureRecognizerState.Cancelled:
-					case UIGestureRecognizerState.Failed:
-						lpRecognizer.SendLongPressing(view, GestureStatus.Canceled, getPosition);
-						break;
-				}
-			});
-			weakPlatformRecognizer = new WeakReference(longPressUiRecognizer);
-			return new List<UIGestureRecognizer?> { longPressUiRecognizer };
+			return null;
 		}
 
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)
@@ -468,61 +426,6 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 			result.AddTarget(() => action(direction));
 			return result;
-		}
-
-		UILongPressGestureRecognizer CreateLongPressRecognizer(Action<UILongPressGestureRecognizer> action)
-		{
-			var result = new UILongPressGestureRecognizer(action);
-			
-			// Get the recognizer from the handler's VirtualView
-			if (_handler?.VirtualView is View view)
-			{
-				var recognizers = view.GestureRecognizers;
-				foreach (var gestureRecognizer in recognizers)
-				{
-					if (gestureRecognizer is LongPressGestureRecognizer longPress)
-					{
-						// Configure native properties
-						result.MinimumPressDuration = longPress.MinimumPressDuration / 1000.0; // Convert ms to seconds
-						result.AllowableMovement = (nfloat)longPress.AllowableMovement;
-						result.NumberOfTouchesRequired = (nuint)longPress.NumberOfTouchesRequired;
-						break;
-					}
-				}
-			}
-			
-			// Enable simultaneous recognition with other gestures (like Swipe, Tap)
-			// This allows LongPress to coexist with other gestures
-			result.ShouldRecognizeSimultaneously = _alwaysRecognizeSimultaneously;
-			
-			return result;
-		}
-
-		void ConfigureTapLongPressFailureRequirements()
-		{
-			var nativeLongPressRecognizers = new List<UILongPressGestureRecognizer>();
-			var nativeTapRecognizers = new List<UITapGestureRecognizer>();
-
-			foreach (var kvp in _gestureRecognizers)
-			{
-				foreach (var native in kvp.Value)
-				{
-					if (native is UILongPressGestureRecognizer lp)
-						nativeLongPressRecognizers.Add(lp);
-					else if (native is UITapGestureRecognizer tap)
-						nativeTapRecognizers.Add(tap);
-				}
-			}
-
-			// Each tap recognizer must wait for all long press recognizers to fail
-			// before it can succeed. This prevents taps from firing during long presses.
-			foreach (var tap in nativeTapRecognizers)
-			{
-				foreach (var lp in nativeLongPressRecognizers)
-				{
-					tap.RequireGestureRecognizerToFail(lp);
-				}
-			}
 		}
 
 		void UpdateSwipeGestureDirection(UISwipeGestureRecognizer recognizer, SwipeDirection direction)
@@ -731,15 +634,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return swipeGestureRecognizer != null;
 		}
 
-		bool TryGetLongPressGestureRecognizer(IGestureRecognizer? recognizer, out LongPressGestureRecognizer? longPressGestureRecognizer)
-		{
-			longPressGestureRecognizer =
-					recognizer as LongPressGestureRecognizer ??
-					(recognizer as ChildGestureRecognizer)?.GestureRecognizer as LongPressGestureRecognizer;
-
-			return longPressGestureRecognizer != null;
-		}
-
 		void LoadRecognizers()
 		{
 			if (ElementGestureRecognizers == null)
@@ -768,7 +662,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (PlatformView != null &&
 				_handler.VirtualView is View v &&
-				(v.HasAccessibleTapGesture() || v.HasAccessibleLongPressGesture()) &&
+				v.HasAccessibleTapGesture() &&
 				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
 			{
 				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
@@ -881,11 +775,6 @@ namespace Microsoft.Maui.Controls.Platform
 					swipeGestureRecognizer.PropertyChanged += OnSwipeGestureRecognizerPropertyChanged;
 				}
 
-				if (TryGetLongPressGestureRecognizer(recognizer, out LongPressGestureRecognizer? longPressGestureRecognizer) && longPressGestureRecognizer != null)
-				{
-					longPressGestureRecognizer.PropertyChanged += OnLongPressGestureRecognizerPropertyChanged;
-				}
-
 				// AddFakeRightClickForMacCatalyst returns the button mask for the processed tap gesture
 				// If a fake gesture wasn't added then it just returns 0
 				// If a fake gesture was added then we return the button mask fromm the tap gesture
@@ -940,10 +829,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			// Make tap recognizers require long press recognizers to fail first.
-			// This prevents taps from firing when the user performs a long press.
-			ConfigureTapLongPressFailureRequirements();
-
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && PlatformView != null)
@@ -986,21 +871,17 @@ namespace Microsoft.Maui.Controls.Platform
 						swipeGestureRecognizer.PropertyChanged -= OnSwipeGestureRecognizerPropertyChanged;
 					}
 
-					if (TryGetLongPressGestureRecognizer(gestureRecognizer, out LongPressGestureRecognizer? longPressGestureRecognizer) &&
-						longPressGestureRecognizer != null)
-					{
-						longPressGestureRecognizer.PropertyChanged -= OnLongPressGestureRecognizerPropertyChanged;
-					}
-
 					uiRecognizer.Dispose();
 				}
 			}
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				for (int i = PlatformView.Interactions.Length - 1; i >= 0; i--)
+				// Cache Interactions; each access marshals the whole native array (see #34396).
+				var interactions = PlatformView.Interactions;
+				for (int i = interactions.Length - 1; i >= 0; i--)
 				{
-					var interaction = (IUIInteraction)PlatformView.Interactions[i];
+					var interaction = (IUIInteraction)interactions[i];
 					if (interaction is FakeRightClickContextMenuInteraction && !_interactions.Contains(interaction))
 					{
 						PlatformView.RemoveInteraction(interaction);
@@ -1026,27 +907,6 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uiRecognizer is UISwipeGestureRecognizer uiSwipe)
 					{
 						UpdateSwipeGestureDirection(uiSwipe, swipeGesture.Direction);
-						break;
-					}
-				}
-			}
-		}
-
-		void OnLongPressGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if ((e.Is(LongPressGestureRecognizer.MinimumPressDurationProperty) ||
-				e.Is(LongPressGestureRecognizer.AllowableMovementProperty) ||
-				e.Is(LongPressGestureRecognizer.NumberOfTouchesRequiredProperty)) &&
-				sender is LongPressGestureRecognizer longPressGesture &&
-				_gestureRecognizers.TryGetValue(longPressGesture, out var uiRecognizers))
-			{
-				foreach (var uiRecognizer in uiRecognizers)
-				{
-					if (uiRecognizer is UILongPressGestureRecognizer uiLongPress)
-					{
-						uiLongPress.MinimumPressDuration = longPressGesture.MinimumPressDuration / 1000.0;
-						uiLongPress.AllowableMovement = (nfloat)longPressGesture.AllowableMovement;
-						uiLongPress.NumberOfTouchesRequired = (nuint)longPressGesture.NumberOfTouchesRequired;
 						break;
 					}
 				}
@@ -1212,6 +1072,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickContextMenuInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickDelegate? _dontCollectMePlease;
 
 			public FakeRightClickContextMenuInteraction(TapGestureRecognizer tapGestureRecognizer, GesturePlatformManager gestureManager)
@@ -1250,6 +1111,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class FakeRightClickPointerInteraction : UIContextMenuInteraction
 		{
 			// Store a reference to the platform delegate so that it is not garbage collected
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The strong reference is required to keep the UIContextMenuInteractionDelegate alive for the interaction lifetime.")]
 			FakeRightClickPointerDelegate? _dontCollectMePlease;
 			bool _disposed;
 

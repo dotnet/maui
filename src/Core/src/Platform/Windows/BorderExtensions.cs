@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 
-			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = wLineCap;
+			borderPath.StrokeStartLineCap = borderPath.StrokeEndLineCap = borderPath.StrokeDashCap = wLineCap;
 		}
 
 		public static void UpdateStrokeLineJoin(this Path borderPath, LineJoin strokeLineJoin)

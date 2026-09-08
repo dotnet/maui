@@ -56,15 +56,10 @@ namespace Microsoft.Maui.Platform
 			SetTextHtml();
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
-			textView.UpdateTextColor(textStyle.TextColor);
-
-		// Applies an already-resolved text color, restoring the cached themed default when the color
-		// is null. Callers that resolve the color themselves (for example the SwipeItem handler, which
-		// also applies a background-contrast fallback) route through here so a later null still resets
-		// the TextView instead of leaving a stale color.
-		internal static void UpdateTextColor(this TextView textView, Microsoft.Maui.Graphics.Color? textColor)
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
 		{
+			var textColor = textStyle.TextColor;
+
 			// Cache the original themed TextColors the first time this control is updated.
 			if (textView.TextColors is ColorStateList currentColors)
 			{

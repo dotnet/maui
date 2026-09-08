@@ -41,16 +41,6 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(ToolbarHandler handler, Toolbar toolbar) =>
 			MapIsVisible((IToolbarHandler)handler, toolbar);
 
-		public static void MapDrawerToggleVisible(ToolbarHandler handler, Toolbar toolbar) =>
-			MapDrawerToggleVisible((IToolbarHandler)handler, toolbar);
-
-		public static void MapBackButtonAccessibilityLabel(ToolbarHandler handler, Toolbar toolbar) =>
-			MapBackButtonAccessibilityLabel((IToolbarHandler)handler, toolbar);
-
-		public static void MapBackButtonAccessibilityLabel(IToolbarHandler handler, Toolbar toolbar)
-		{
-			// Tizen back button accessibility — not yet implemented
-		}
 
 		public static void MapBarTextColor(IToolbarHandler handler, Toolbar toolbar)
 		{
@@ -95,11 +85,6 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(IToolbarHandler handler, Toolbar toolbar)
 		{
 			handler.PlatformView.UpdateIsVisible(toolbar);
-		}
-
-		public static void MapDrawerToggleVisible(IToolbarHandler handler, Toolbar toolbar)
-		{
-			handler.PlatformView.UpdateBackButton(toolbar);
 		}
 
 		public static void MapBarBackground(IToolbarHandler handler, Toolbar toolbar)

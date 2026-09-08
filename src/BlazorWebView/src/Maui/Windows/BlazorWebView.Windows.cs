@@ -1,5 +1,4 @@
 ﻿using System;
-using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
@@ -26,8 +25,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		private void Window_Destroying(object? sender, EventArgs e)
 		{
 			// see: https://github.com/microsoft/microsoft-ui-xaml/issues/6872
-			if (Handler?.PlatformView is WebView2Control webView)
-				webView.Close();
+			((BlazorWebViewHandler?)Handler)?.PlatformView.Close();
 		}
 	}
 }

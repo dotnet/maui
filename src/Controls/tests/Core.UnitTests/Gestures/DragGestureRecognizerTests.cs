@@ -46,14 +46,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SendDragStartingThrowsForNullElement()
-		{
-			var dragRec = new DragGestureRecognizer();
-
-			Assert.Throws<ArgumentNullException>(() => dragRec.SendDragStarting(null));
-		}
-
-		[Fact]
 		public void UserSpecifiedTextIsntOverwritten()
 		{
 			var dragRec = new DragGestureRecognizer();
@@ -109,67 +101,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			dragRec.SendDragStarting(new Label());
 			dragRec.DropCompletedCommand = cmd;
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
-			dragRec.SendDropCompleted(new DropCompletedEventArgs());
-			dragRec.SendDropCompleted(new DropCompletedEventArgs());
-
-			Assert.Equal(1, counter);
-		}
-
-		[Fact]
-		public void SendDropCompletedThrowsForNullArgs()
-		{
-			var dragRec = new DragGestureRecognizer();
-
-			Assert.Throws<ArgumentNullException>(() => dragRec.SendDropCompleted(null));
-		}
-
-		[Fact]
-		public void NullDropCompletedArgsDoesNotClearActiveDrag()
-		{
-			int counter = 0;
-			var dragRec = new DragGestureRecognizer
-			{
-				DropCompletedCommand = new Command(() => counter++)
-			};
-
-			dragRec.SendDragStarting(new Label());
-
-			Assert.Throws<ArgumentNullException>(() => dragRec.SendDropCompleted(null));
-
-			dragRec.SendDropCompleted(new DropCompletedEventArgs());
-
-			Assert.Equal(1, counter);
-		}
-
-		[Fact]
-		public void CanceledDragStartingClearsPreviousActiveDrag()
-		{
-			int counter = 0;
-			var dragRec = new DragGestureRecognizer
-			{
-				DropCompletedCommand = new Command(() => counter++)
-			};
-
-			dragRec.SendDragStarting(new Label());
-			dragRec.DragStarting += (_, args) => args.Cancel = true;
-
-			dragRec.SendDragStarting(new Label());
-			dragRec.SendDropCompleted(new DropCompletedEventArgs());
-
-			Assert.Equal(0, counter);
-		}
-
-		[Fact]
-		public void ReplacementDragStartingReplacesPreviousActiveDrag()
-		{
-			int counter = 0;
-			var dragRec = new DragGestureRecognizer
-			{
-				DropCompletedCommand = new Command(() => counter++)
-			};
-
-			dragRec.SendDragStarting(new Label());
-			dragRec.SendDragStarting(new Label());
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 			dragRec.SendDropCompleted(new DropCompletedEventArgs());
 

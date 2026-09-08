@@ -91,13 +91,20 @@ namespace Microsoft.Maui.Animations
 				return ValueAnimator.AreAnimatorsEnabled();
 			}
 
-			// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
-			// power save mode; for these API levels, power saving == ON will mean that animations are disabled
-			return Devices.Battery.EnergySaverStatus switch
+			if (OperatingSystem.IsAndroidVersionAtLeast(21))
 			{
-				Devices.EnergySaverStatus.On => false,
-				_ => true,
-			};
+				// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
+				// power save mode; for these API levels, power saving == ON will mean that animations are disabled
+
+				return Devices.Battery.EnergySaverStatus switch
+				{
+					Devices.EnergySaverStatus.On => false,
+					_ => true,
+				};
+			}
+
+			// We don't support anything below 21
+			return false;
 		}
 
 		class DurationScaleListener : Java.Lang.Object, ValueAnimator.IDurationScaleChangeListener

@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		IMauiContext SetupContext(ILayoutManagerFactory layoutManagerFactory)
 		{
 			var services = Substitute.For<IServiceProvider>();
-			services.GetService(typeof(ILayoutManagerFactory)).Returns(layoutManagerFactory);
+			services.GetService(Arg.Any<Type>()).Returns(layoutManagerFactory);
 			var context = Substitute.For<IMauiContext>();
 			context.Services.Returns(services);
 

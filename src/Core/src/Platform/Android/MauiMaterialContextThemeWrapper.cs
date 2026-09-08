@@ -3,7 +3,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiMaterialContextThemeWrapper : ContextThemeWrapper
+internal class MauiMaterialContextThemeWrapper : ContextThemeWrapper
 {
     // IsMaterial3Enabled Flag needed for Control Level theming. App Level theming is handled in MauiAppCompatActivity
     public MauiMaterialContextThemeWrapper(Context context)

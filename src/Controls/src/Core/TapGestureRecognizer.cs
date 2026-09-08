@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 
@@ -56,18 +55,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Occurs when a tap gesture is recognized on the element.</summary>
 		public event EventHandler<TappedEventArgs>? Tapped;
 
-		/// <summary>
-		/// Executes the associated command and raises the <see cref="Tapped"/> event.
-		/// </summary>
-		/// <param name="sender">The view on which the tap gesture was recognized.</param>
-		/// <param name="getPosition">A function that returns the tap position relative to a specified element.</param>
-		/// <remarks>This infrastructure method is intended for gesture platform managers.</remarks>
-		/// <exception cref="ArgumentNullException"><paramref name="sender"/> is <see langword="null"/>.</exception>
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SendTapped(View sender, Func<IElement?, Point?>? getPosition = null)
+		internal void SendTapped(View sender, Func<IElement?, Point?>? getPosition = null)
 		{
-			_ = sender ?? throw new ArgumentNullException(nameof(sender));
-
 			var cmd = Command;
 			if (cmd != null && cmd.CanExecute(CommandParameter))
 				cmd.Execute(CommandParameter);

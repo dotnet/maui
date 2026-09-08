@@ -126,10 +126,10 @@ namespace Microsoft.Maui.Media
 				});
 			}
 
-			if (!string.IsNullOrWhiteSpace(options?.Locale?.Language))
+			if (options?.Locale?.Language != null)
 			{
 				JavaLocale locale = null;
-				if (!string.IsNullOrWhiteSpace(options.Locale.Country))
+				if (!string.IsNullOrWhiteSpace(options?.Locale.Country))
 					locale = new JavaLocale(options.Locale.Language, options.Locale.Country);
 				else
 					locale = new JavaLocale(options.Locale.Language);
