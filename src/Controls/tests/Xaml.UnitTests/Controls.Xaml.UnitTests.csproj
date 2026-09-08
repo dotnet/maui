@@ -15,7 +15,7 @@
     <!-- We can't yet disable the namescope generation, ConstraintTypeConverter and ReferenceTypeConverter need to be ported to sourcegen
     <DefineConstants>$(DefineConstants);_MAUIXAML_SG_NAMESCOPE_DISABLE</DefineConstants>
     -->
-    
+
     <EmitCompilerGeneratedFiles Condition="'$(Configuration)' == 'Debug'">true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <EnablePreviewFeatures>True</EnablePreviewFeatures>
@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
@@ -68,7 +69,7 @@
     <MauiXaml Update="**\*.xc.xaml" Inflator="XamlC" />
     <MauiXaml Update="**\*.rtsg.xaml" Inflator="Runtime;SourceGen" />
     <MauiXaml Update="**\*.rtxc.xaml" Inflator="Runtime;XamlC" />
-    <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />    
+    <MauiXaml Update="**\*.sgxc.xaml" Inflator="SourceGen;XamlC" />
 
     <MauiXaml Update="FontSize.xaml" NoWarn="0612;0618" />
     <MauiXaml Update="Issues\Bz55343.xaml" NoWarn="0612" />
