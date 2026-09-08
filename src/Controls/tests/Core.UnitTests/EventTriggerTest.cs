@@ -77,11 +77,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var triggeraction = new MockTriggerAction();
 			var eventtrigger = new EventTrigger() { Event = "MockEvent", Actions = { triggeraction } };
 			var collection = bindable.Triggers;
+			Assert.Null(bindable._triggerSpecificity);
 			collection.Add(eventtrigger);
 
 			Assert.False(triggeraction.Invoked);
 			bindable.FireEvent();
 			Assert.True(triggeraction.Invoked);
+			Assert.Null(bindable._triggerSpecificity);
+
+			collection.Remove(eventtrigger);
+			triggeraction.Invoked = false;
+			bindable.FireEvent();
+			Assert.False(triggeraction.Invoked);
+			Assert.Null(bindable._triggerSpecificity);
+
+			collection.Add(eventtrigger);
+			bindable.FireEvent();
+			Assert.True(triggeraction.Invoked);
+			Assert.Null(bindable._triggerSpecificity);
 		}
 
 		[Fact]
