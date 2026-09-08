@@ -17,7 +17,7 @@ public class Issue38251 : _IssuesUITest
     public void ButtonContentLayoutShouldRespectRightToLeftFlowDirection()
     {
         _ = App.WaitForElement("LtrReferenceButton");
-        _ = App.WaitForElement("RtlReproductionButton");
+        _ = App.WaitForElement("RtlReferenceButton");
 
         VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
     }
