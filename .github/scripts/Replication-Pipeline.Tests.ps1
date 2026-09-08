@@ -70,6 +70,8 @@ Describe 'MAUI Copilot mode routing' {
         $stage | Should -Not -BeNullOrEmpty
         $stage | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'replication-checks'\)"
         $stage | Should -Match 'dependsOn: \[\]'
+        $stage | Should -Match 'fetchDepth: 1'
+        $stage | Should -Match 'fetchTags: false'
         $stage | Should -Match 'persistCredentials: false'
         $stage | Should -Match 'template: common/replication-contract-checks\.yml'
         foreach ($source in @($stage, $script:ContractChecks)) {

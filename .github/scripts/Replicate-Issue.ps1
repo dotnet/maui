@@ -6898,8 +6898,18 @@ When Apple-platform code traverses native descendants, preserve the static type 
     $androidGeneratedTestGuidance = if ($Platform -eq 'android') {
         @"
 
-ANDROID GENERATED-TEST CONTRACT: Do not copy Catalyst or Windows window-helper examples into Android tests. The current automatic negative-control guard has no closed Android native observation surface and does not trust Android handler/window helpers such as CreateHandlerAndAddToWindow, CreateHandlerAsync, InvokeOnMainThreadAsync, AttachAndRun, or reads from Android, AndroidX, or Google.Android native properties. An Android candidate is publishable only when the reported trigger and unchanged oracle fit the common public-MAUI closed contract: exactly one gated trusted MAUI operation and a top-level oracle that directly reads a trusted MAUI property. If the recorded/generated Android scenario requires native padding/elevation/pixel rendering or an untrusted Android helper path, classify that scenario as unsupported by the current generated-test contract instead of fabricating a compatible test. Do not claim the issue is intrinsically uncertifiable, and do not reject solely because the report mentions more than one flag.
+ANDROID GENERATED-TEST CONTRACT: Do not copy Catalyst or Windows window-helper examples into Android tests. Apart from an issue-keyed exception stated separately when applicable, the automatic negative-control guard has no closed Android native observation surface and does not trust Android handler/window helpers such as CreateHandlerAndAddToWindow, CreateHandlerAsync, InvokeOnMainThreadAsync, AttachAndRun, or reads from Android, AndroidX, or Google.Android native properties. An Android candidate is publishable only when the reported trigger and unchanged oracle fit the common public-MAUI closed contract: exactly one gated trusted MAUI operation and a top-level oracle that directly reads a trusted MAUI property. If the recorded/generated Android scenario requires unsupported native padding/elevation/pixel rendering or an untrusted Android helper path, classify that scenario as unsupported by the current generated-test contract instead of fabricating a compatible test. Do not claim the issue is intrinsically uncertifiable, and do not reject solely because the report mentions more than one flag.
 "@
+    } else {
+        ''
+    }
+
+    $androidIssue26505GeneratedTestGuidance = if ($Platform -eq 'android' -and $IssueNumber -eq 26505) {
+        @'
+
+ANDROID ISSUE26505 NARROW EXCEPTION: After the empirical Sandbox proof, the guard trusts exactly one Android native-read profile for `src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs`. Keep the affected control as `var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };` and make the explicit pre-gate setup call exactly `global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);`. The single trigger gate must be `if (applyReportedTrigger) { button.FontSize = 36; }` with no else branch; do not set FontSize elsewhere. Attach only with `await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(new Window(new ContentPage { Content = button }), async handler => { ... });` as a top-level statement after the gate; never return that helper Task, call another overload, use another handler type, rebind the handler, mutate native layout, or insert extra callback statements. Inside the callback use exactly one-argument `await AssertEventually(() => button.Handler != null && button.IsLoaded);`, then directly assert fixed logical geometry with `Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);`, then the mandatory native oracle `Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);`. Do not compute locals for those native values, read Elevation/shadow/padding-top, use Android namespaces outside that callback, compare app-authored verdict text, or add a decorative click. If this exact causal shape cannot express the candidate, classify the recorded/generated native scenario as unsupported by the current contract.
+The selected method must carry [Fact] and [Category("Issue26505")]. Its body must contain exactly five top-level statements in order: the Button declaration, padding setup, var applyReportedTrigger = true;, the trigger gate, and the awaited helper. Do not add aliases, other declarations, mutations, or statements before or after the helper.
+'@
     } else {
         ''
     }
@@ -7035,6 +7045,7 @@ Plan the lightest automated test that proves the same behavior: unit/XAML first,
 $issueSpecificTierGuidance
 $platformBoundaryGuidance
 $androidGeneratedTestGuidance
+$androidIssue26505GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
@@ -7072,6 +7083,7 @@ Trusted test planning succeeded. Read "$testProposalPath", "$reproductionResultP
 Read the matching trusted skill under "$trustedSkills".
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
+$androidIssue26505GeneratedTestGuidance
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
 Use one exact selected test method to exercise all issue-derived states; do not create a stateless matrix. Keep the primary oracle and, where feasible, a genuinely independent secondary observation. The test must assert the same visible invariant that the recording established.
 Design the test so trusted code can run the same assertions after removing only the reported trigger. Prove the shared setup and transition, but do not add an assertion whose sole condition is the continued presence or attachment of the exact property, configuration, ordering, or API call that a negative control must remove. Such an assertion makes the control permanently red even when the product is healthy. If no benign trigger removal can preserve the same oracle and shared preconditions, the reproduction cannot be causally certified; do not fabricate a control-compatible assertion.
@@ -7110,6 +7122,7 @@ Read "$testProposalPath" and, if it exists, "$verificationDir/verification-conso
 Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
+$androidIssue26505GeneratedTestGuidance
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
 Preserve the quality contract's user-visible invariant, scenario/precondition,

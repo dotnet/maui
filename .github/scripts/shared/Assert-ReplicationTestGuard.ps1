@@ -3977,10 +3977,22 @@ namespace Microsoft.Maui.Controls
         public string AutomationId { get; set; }
         public object Background { get; set; }
         public static BindableProperty BackgroundProperty { get; }
+        public double Height { get; }
+        public double HeightRequest { get; set; }
         public bool IsLoaded { get; }
         public bool IsVisible { get; set; }
+        public double Width { get; }
+        public double WidthRequest { get; set; }
     }
-    public class View : VisualElement { }
+    public struct LayoutOptions
+    {
+        public static LayoutOptions Center { get; }
+    }
+    public class View : VisualElement
+    {
+        public LayoutOptions HorizontalOptions { get; set; }
+        public LayoutOptions VerticalOptions { get; set; }
+    }
     public class Page : VisualElement
     {
         public event System.EventHandler NavigatedTo;
@@ -4002,7 +4014,12 @@ namespace Microsoft.Maui.Controls
 
     public class Button : View
     {
+        public object BackgroundColor { get; set; }
+        public double BorderWidth { get; set; }
+        public int CornerRadius { get; set; }
+        public double FontSize { get; set; }
         public string Text { get; set; }
+        public object TextColor { get; set; }
     }
 
     public class ScrollView : View
@@ -4162,6 +4179,17 @@ namespace Microsoft.Maui.Graphics
     {
         public static Color Red { get; }
         public static Color Transparent { get; }
+        public static Color White { get; }
+    }
+}
+
+namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
+{
+    public static class Button
+    {
+        public static void SetUseDefaultPadding(
+            global::Microsoft.Maui.Controls.BindableObject element,
+            bool value) { }
     }
 }
 
@@ -4181,6 +4209,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
     {
         public object PlatformView { get; }
         public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
+}
+
+namespace Microsoft.Maui.Handlers
+{
+    public class ButtonHandler : global::Microsoft.Maui.IElementHandler
+    {
+        public global::Google.Android.Material.Button.MaterialButton PlatformView
+        {
+            get;
+        }
+        object global::Microsoft.Maui.IElementHandler.PlatformView
+        {
+            get;
+        }
+        public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
+}
+
+namespace Android.Graphics
+{
+    public class Paint
+    {
+        public float MeasureText(string text) => 0;
+    }
+}
+
+namespace Google.Android.Material.Button
+{
+    public class MaterialButton
+    {
+        public int CompoundPaddingLeft { get; }
+        public int CompoundPaddingRight { get; }
+        public int Height { get; }
+        public global::Android.Graphics.Paint Paint { get; }
+        public string Text { get; }
+        public int Width { get; }
     }
 }
 
@@ -5455,6 +5520,36 @@ function New-ReplicationControlVariant {
                 'Generated control sources may not declare conversion operators; ' +
                 'argument evaluation must remain side-effect-free.')
         }
+        $sourceDefinedAndroidProfileTypes = @(
+            $semanticTree.GetRoot().DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseTypeDeclarationSyntax]
+            } |
+            Where-Object {
+                $namespace = @($_.Ancestors() | Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.BaseNamespaceDeclarationSyntax]
+                    } | Select-Object -First 1)
+                if ($namespace.Count -ne 1) {
+                    return $false
+                }
+                $namespaceName = $namespace[0].Name.ToString()
+                return (
+                    $namespaceName -cin @(
+                        'Android.Graphics',
+                        'Google.Android.Material.Button',
+                        'Microsoft.Maui.Handlers',
+                        'Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific'))
+            })
+        if ($sourceDefinedAndroidProfileTypes.Count -ne 0) {
+            $shadowTypeLine = $semanticTree.GetLineSpan(
+                $sourceDefinedAndroidProfileTypes[0].Span).StartLinePosition.Line + 1
+            throw (
+                'Generated sources may not declare Android Issue26505 profile ' +
+                "types; '$($sourceDefinedAndroidProfileTypes[0].Identifier.ValueText)' " +
+                "in '$($semanticTree.FilePath)' line $shadowTypeLine would shadow " +
+                'the closed metadata contract.')
+        }
     }
     $semanticCompilation =
         [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create(
@@ -5998,6 +6093,81 @@ function New-ReplicationControlVariant {
         [Collections.Generic.Dictionary[int, object]]::new()
     $trustedWindowCallbackFinalPages =
         [Collections.Generic.Dictionary[int, object]]::new()
+    $normalizedSourcePath = $SourcePath.Replace('\', '/')
+    $isAndroidIssue26505Profile =
+        $Platform -ceq 'android' -and
+        $normalizedSourcePath -ceq
+            'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+    $acceptedAndroidIssue26505SetupInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $acceptedAndroidIssue26505HelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedAndroidIssue26505CallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedAndroidIssue26505CallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
+    $trustedAndroidIssue26505CallbackButtons =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedAndroidIssue26505CallbackHandlers =
+        [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedAndroidIssue26505CallbackNativeExpressions =
+        [Collections.Generic.Dictionary[int, string]]::new()
+    $androidIssue26505ScopedTypes = @(
+        'Android.Graphics.Paint',
+        'Google.Android.Material.Button.MaterialButton',
+        'Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button',
+        'Microsoft.Maui.Handlers.ButtonHandler'
+    )
+    $isAndroidIssue26505ScopedType = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
+        if ($null -eq $Type) { return $false }
+        if ($Type -is [Microsoft.CodeAnalysis.IArrayTypeSymbol]) {
+            return & $isAndroidIssue26505ScopedType -Type $Type.ElementType
+        }
+        $typeName = $Type.ToString()
+        return @($androidIssue26505ScopedTypes | Where-Object {
+                $typeName -ceq $_ -or
+                $typeName.StartsWith(
+                    "$_<",
+                    [StringComparison]::Ordinal)
+            }).Count -ne 0
+    }
+    $isAndroidIssue26505ScopedSymbol = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ISymbol]$Symbol)
+        if ($null -eq $Symbol) { return $false }
+        if ($Symbol -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+            return & $isAndroidIssue26505ScopedType -Type $Symbol
+        }
+        if ($null -ne $Symbol.ContainingType -and
+            (& $isAndroidIssue26505ScopedType -Type $Symbol.ContainingType)) {
+            return $true
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            return (& $isAndroidIssue26505ScopedType -Type $Symbol.ReturnType)
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $Symbol -is [Microsoft.CodeAnalysis.IFieldSymbol]) {
+            return (& $isAndroidIssue26505ScopedType -Type $Symbol.Type)
+        }
+        return $false
+    }
+    $normalizeAndroidIssue26505Expression = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return [regex]::Replace($Node.ToString(), '\s+', '')
+    }
+    $isAndroidIssue26505CallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedAndroidIssue26505CallbackBodies.Contains($_.SpanStart)
+            }).Count -ne 0
+    }
     $getInvocationName = {
         param(
             [Parameter(Mandatory = $true)]
@@ -6107,6 +6277,95 @@ function New-ReplicationControlVariant {
                     }).Count -eq 0
             }).Count -eq 1
     }
+    $isExactTrustedAndroidIssue26505HelperMethod = {
+        param(
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$Method
+        )
+        if ($null -eq $Method -or
+            $Method.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+            $Method.IsStatic -or
+            $Method.DeclaredAccessibility -ne
+                [Microsoft.CodeAnalysis.Accessibility]::Protected -or
+            $Method.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $Method.ContainingType.ToString() -cne
+                'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase' -or
+            $Method.Name -cne 'CreateHandlerAndAddToWindow' -or
+            $Method.Arity -ne 1 -or
+            $Method.TypeArguments.Length -ne 1 -or
+            @($Method.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+
+        $definition = $Method.OriginalDefinition
+        if ($definition.Parameters.Length -ne 2 -or
+            $definition.TypeParameters.Length -ne 1 -or
+            $definition.ReturnType -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $definition.ReturnType.Name -cne 'Task' -or
+            $definition.ReturnType.ContainingNamespace.ToString() -cne
+                'System.Threading.Tasks' -or
+            $definition.Parameters[0].Name -cne 'view' -or
+            $definition.Parameters[0].RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            $definition.Parameters[0].Type.ToString() -cne
+                'Microsoft.Maui.IElement' -or
+            $definition.Parameters[0].Type.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $definition.Parameters[1].Name -cne 'action' -or
+            $definition.Parameters[1].RefKind -ne
+                [Microsoft.CodeAnalysis.RefKind]::None -or
+            $definition.Parameters[1].Type -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+            return $false
+        }
+
+        $callbackType = $definition.Parameters[1].Type
+        $typeParameter = $definition.TypeParameters[0]
+        if ($callbackType.Name -cne 'Func' -or
+            $callbackType.ContainingNamespace.ToString() -cne 'System' -or
+            $callbackType.TypeArguments.Length -ne 2 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $callbackType.TypeArguments[0],
+                $typeParameter) -or
+            $callbackType.TypeArguments[1] -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $callbackType.TypeArguments[1].Name -cne 'Task' -or
+            $callbackType.TypeArguments[1].ContainingNamespace.ToString() -cne
+                'System.Threading.Tasks' -or
+            -not $typeParameter.HasReferenceTypeConstraint -or
+            $typeParameter.HasValueTypeConstraint -or
+            $typeParameter.HasConstructorConstraint -or
+            $typeParameter.ConstraintTypes.Length -ne 1 -or
+            $typeParameter.ConstraintTypes[0].ToString() -cne
+                'Microsoft.Maui.IElementHandler' -or
+            $typeParameter.ConstraintTypes[0].ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract') {
+            return $false
+        }
+
+        $handlerType = $Method.TypeArguments[0]
+        if ($handlerType -isnot [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $handlerType.ToString() -cne 'Microsoft.Maui.Handlers.ButtonHandler' -or
+            $handlerType.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($handlerType.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            return $false
+        }
+        return @($handlerType.AllInterfaces | Where-Object {
+                $_.ToString() -ceq 'Microsoft.Maui.IElementHandler' -and
+                $_.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                @($_.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -eq 0
+            }).Count -eq 1
+    }
     $throwTrustedWindowHelperViolation = {
         param(
             [Parameter(Mandatory = $true)]
@@ -6146,6 +6405,696 @@ function New-ReplicationControlVariant {
             "Trusted helper symbol '$symbolText' rejected $context syntax " +
             "'$diagnosticSyntax' in '$diagnosticPath' line ${diagnosticLine}: " +
             $Reason)
+    }
+    $validateAndroidIssue26505HelperInvocation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]$AwaitExpression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        if (-not $isAndroidIssue26505Profile) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android ButtonHandler native text-fit contract is only ' +
+                    'available for the reviewed Issue26505 Android generated-test path.')
+        }
+        if ($null -eq $trustedControlsHandlerTestBaseSource) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the exact immutable ControlsHandlerTestBase source location ' +
+                    'and hash were not established.')
+        }
+        $issue26505Category = @($selectedAttributes | Where-Object {
+                $attributeName = $_.Name.ToString().Split('.')[-1]
+                if ($attributeName.EndsWith(
+                        'Attribute',
+                        [StringComparison]::Ordinal)) {
+                    $attributeName = $attributeName.Substring(
+                        0,
+                        $attributeName.Length - 'Attribute'.Length)
+                }
+                return (
+                    $attributeName -ceq 'Category' -and
+                    $_.ArgumentList -and
+                    $_.ArgumentList.Arguments.Count -eq 1 -and
+                    $_.ArgumentList.Arguments[0].Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                    $_.ArgumentList.Arguments[0].Expression.Token.ValueText -ceq
+                        'Issue26505')
+            })
+        if ($issue26505Category.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android native-read profile is issue-keyed and requires ' +
+                    'the selected method to carry exactly [Category("Issue26505")].')
+        }
+
+        $statement = $AwaitExpression.Parent
+        if ($statement -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+            $statement.Expression -ne $AwaitExpression -or
+            $statement.Parent -ne $testMethod[0].Body -or
+            $statement.SpanStart -le $gate.Span.End) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 helper must be directly awaited as ' +
+                    'one top-level selected-method statement after the trigger gate.')
+        }
+
+        $arguments = $Invocation.ArgumentList.Arguments
+        $helperGeneric = if ($Invocation.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+            $Invocation.Expression
+        } elseif ($Invocation.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $Invocation.Expression.Name -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+            $Invocation.Expression.Name
+        } else {
+            $null
+        }
+        if ($arguments.Count -ne 2 -or
+            @($arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or
+                    $null -ne $_.NameColon
+                }).Count -ne 0 -or
+            $helperGeneric -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -or
+            $helperGeneric.TypeArgumentList.Arguments.Count -ne 1 -or
+            $helperGeneric.TypeArgumentList.Arguments[0].ToString() -cne
+                'global::Microsoft.Maui.Handlers.ButtonHandler') {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'use the exact one-arity helper call ' +
+                    'CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(' +
+                    'new Window(new ContentPage { Content = button }), async handler => { ... }); ' +
+                    'with unnamed, by-value arguments.')
+        }
+
+        $windowCreation = $arguments[0].Expression
+        $callback = $arguments[1].Expression
+        if ($windowCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $semanticModel.GetTypeInfo($windowCreation).Type.ToString() -cne
+                'Microsoft.Maui.Controls.Window' -or
+            $windowCreation.ArgumentList.Arguments.Count -ne 1 -or
+            $windowCreation.Initializer -or
+            $callback -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $callback.AsyncKeyword.RawKind -eq 0 -or
+            $callback.Body -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $Invocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 profile requires direct ' +
+                    'new Window(new ContentPage { Content = button }) ownership ' +
+                    'and one async block callback.')
+        }
+
+        $contentPageCreation = $windowCreation.ArgumentList.Arguments[0].Expression
+        if ($contentPageCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $semanticModel.GetTypeInfo($contentPageCreation).Type.ToString() -cne
+                'Microsoft.Maui.Controls.ContentPage' -or
+            $contentPageCreation.ArgumentList -or
+            $contentPageCreation.Initializer -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax] -or
+            $contentPageCreation.Initializer.Expressions.Count -ne 1 -or
+            $contentPageCreation.Initializer.Expressions[0] -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $contentPageCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the helper window content must be exactly one ContentPage ' +
+                    'initializer assigning Content to the affected Button local.')
+        }
+        $contentAssignment = $contentPageCreation.Initializer.Expressions[0]
+        $contentProperty = $semanticModel.GetSymbolInfo(
+            $contentAssignment.Left).Symbol
+        $buttonExpression = $contentAssignment.Right
+        $buttonSymbol = $semanticModel.GetSymbolInfo($buttonExpression).Symbol
+        if ($contentProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $contentProperty.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $contentProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.ContentPage' -or
+            $contentProperty.Name -cne 'Content' -or
+            $buttonExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $buttonSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol]) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $contentAssignment `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'ContentPage.Content must bind directly to the single affected ' +
+                    'Button local; container indirection is not part of this profile.')
+        }
+
+        $buttonDeclarators = @($buttonSymbol.DeclaringSyntaxReferences |
+            ForEach-Object {
+                $_.GetSyntax([Threading.CancellationToken]::None)
+            } |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]
+            })
+        if ($buttonDeclarators.Count -ne 1 -or
+            $buttonDeclarators[0].Identifier.ValueText -cne 'button' -or
+            $buttonDeclarators[0].Parent.Type.ToString() -cne 'var' -or
+            $buttonDeclarators[0].Parent.Variables.Count -ne 1 -or
+            $buttonDeclarators[0].Initializer -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.EqualsValueClauseSyntax] -or
+            $buttonDeclarators[0].Parent.Parent -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -or
+            $buttonDeclarators[0].Parent.Parent.Parent -ne $testMethod[0].Body -or
+            $buttonDeclarators[0].Parent.Parent.SpanStart -ge $localDeclaration.SpanStart) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $buttonExpression `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the affected Button must be a single top-level var button ' +
+                    'object-initializer local declared before applyReportedTrigger.')
+        }
+
+        $buttonCreation = $buttonDeclarators[0].Initializer.Value
+        if ($buttonCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $semanticModel.GetTypeInfo($buttonCreation).Type.ToString() -cne
+                'Microsoft.Maui.Controls.Button' -or
+            $buttonCreation.ArgumentList -or
+            $buttonCreation.Initializer -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax]) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $buttonCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'button must be constructed as new Button { ... } without ' +
+                    'constructor arguments or factory indirection.')
+        }
+
+        $buttonInitializers = @{}
+        foreach ($initializerExpression in @($buttonCreation.Initializer.Expressions)) {
+            if ($initializerExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $initializerExpression `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'the Android Issue26505 Button initializer may contain ' +
+                        'only simple property assignments.')
+            }
+            $initializerProperty =
+                $semanticModel.GetSymbolInfo($initializerExpression.Left).Symbol
+            if ($initializerProperty -isnot
+                    [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $initializerProperty.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                -not $initializerProperty.ContainingType.ToString().StartsWith(
+                    'Microsoft.Maui.Controls.',
+                    [StringComparison]::Ordinal)) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $initializerExpression.Left `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'Button initializer targets must resolve to trusted MAUI ' +
+                        'metadata properties.')
+            }
+            if ($buttonInitializers.ContainsKey($initializerProperty.Name)) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $initializerExpression.Left `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "Button initializer assigns '$($initializerProperty.Name)' more than once.")
+            }
+            $buttonInitializers[$initializerProperty.Name] =
+                $initializerExpression.Right
+        }
+        $requiredInitializerNames = @(
+            'Text',
+            'WidthRequest',
+            'HeightRequest',
+            'CornerRadius',
+            'BorderWidth',
+            'BackgroundColor',
+            'TextColor',
+            'HorizontalOptions',
+            'VerticalOptions')
+        $extraInitializerNames = @($buttonInitializers.Keys | Where-Object {
+                $_ -cnotin $requiredInitializerNames
+            })
+        if ($buttonInitializers.Count -ne $requiredInitializerNames.Count -or
+            $extraInitializerNames.Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $buttonCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 Button initializer must contain only ' +
+                    'Text, WidthRequest, HeightRequest, CornerRadius, BorderWidth, ' +
+                    'BackgroundColor, TextColor, HorizontalOptions, and VerticalOptions; ' +
+                    'FontSize is the sole gated trigger.')
+        }
+        $expectedLiteralInitializers = @{
+            Text = '"CI"'
+            WidthRequest = '64'
+            HeightRequest = '64'
+            CornerRadius = '32'
+            BorderWidth = '0'
+        }
+        foreach ($initializerName in $expectedLiteralInitializers.Keys) {
+            if (-not $buttonInitializers.ContainsKey($initializerName) -or
+                (& $normalizeAndroidIssue26505Expression `
+                    -Node $buttonInitializers[$initializerName]) -cne
+                    $expectedLiteralInitializers[$initializerName]) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $buttonCreation `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "Button initializer '$initializerName' must be the exact " +
+                        "literal $($expectedLiteralInitializers[$initializerName]).")
+            }
+        }
+        $staticInitializerExpectations = @{
+            BackgroundColor = @('Microsoft.Maui.Graphics.Colors', 'Red')
+            TextColor = @('Microsoft.Maui.Graphics.Colors', 'White')
+            HorizontalOptions = @('Microsoft.Maui.Controls.LayoutOptions', 'Center')
+            VerticalOptions = @('Microsoft.Maui.Controls.LayoutOptions', 'Center')
+        }
+        foreach ($initializerName in $staticInitializerExpectations.Keys) {
+            if (-not $buttonInitializers.ContainsKey($initializerName)) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $buttonCreation `
+                    -HelperSymbol $HelperMethod `
+                    -Reason "Button initializer '$initializerName' is required."
+            }
+            $expected = $staticInitializerExpectations[$initializerName]
+            $initializerSymbol =
+                $semanticModel.GetSymbolInfo($buttonInitializers[$initializerName]).Symbol
+            if ($initializerSymbol -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                -not $initializerSymbol.IsStatic -or
+                $initializerSymbol.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $initializerSymbol.ContainingType.ToString() -cne $expected[0] -or
+                $initializerSymbol.Name -cne $expected[1]) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $buttonInitializers[$initializerName] `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "Button initializer '$initializerName' must read the trusted " +
+                        "$($expected[0]).$($expected[1]) metadata property.")
+            }
+        }
+
+        $setupStatements = @($testMethod[0].Body.Statements | Where-Object {
+                if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+                    return $false
+                }
+                $setupInvocation = $_.Expression
+                if ($setupInvocation -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                    return $false
+                }
+                $setupMethod =
+                    $semanticModel.GetSymbolInfo($setupInvocation).Symbol
+                return (
+                    $setupMethod -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                    $setupMethod.ContainingAssembly.Name -ceq
+                        'Microsoft.Maui.Controls.ReplicationControlContract' -and
+                    $setupMethod.ContainingType.ToString() -ceq
+                        'Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button' -and
+                    $setupMethod.Name -ceq 'SetUseDefaultPadding')
+            })
+        if ($setupStatements.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $buttonCreation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 profile requires exactly one explicit ' +
+                    'top-level pre-gate AndroidSpecific.Button.SetUseDefaultPadding(button, false) setup.')
+        }
+        $setupInvocation = $setupStatements[0].Expression
+        $setupArguments = $setupInvocation.ArgumentList.Arguments
+        $setupMethod = $semanticModel.GetSymbolInfo($setupInvocation).Symbol
+        if ($setupStatements[0].SpanStart -le $buttonDeclarators[0].Parent.Parent.SpanEnd -or
+            $setupStatements[0].SpanStart -ge $localDeclaration.SpanStart -or
+            $setupInvocation.Expression.ToString() -cne
+                'global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding' -or
+            $setupArguments.Count -ne 2 -or
+            @($setupArguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or
+                    $null -ne $_.NameColon
+                }).Count -ne 0 -or
+            $setupMethod.Parameters.Length -ne 2 -or
+            $setupMethod.ReturnsVoid -ne $true -or
+            $setupArguments[0].Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo(
+                    $setupArguments[0].Expression).Symbol,
+                $buttonSymbol) -or
+            $setupArguments[1].Expression.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::FalseLiteralExpression) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $setupInvocation `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the setup must be exactly global::Microsoft.Maui.Controls.' +
+                    'PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(' +
+                    'button, false) between button construction and applyReportedTrigger.')
+        }
+
+        $triggerExpression = $gate.Statement.Statements[0].Expression
+        $triggerProperty = if ($triggerExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+            $triggerExpression.Left -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($triggerExpression.Left).Symbol
+        } else {
+            $null
+        }
+        $triggerReceiver = if ($triggerExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+            $triggerExpression.Left -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $triggerExpression.Left.Expression
+        } else {
+            $null
+        }
+        if ($gate.Else -or
+            $triggerExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+            $triggerExpression.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $triggerReceiver -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($triggerReceiver).Symbol,
+                $buttonSymbol) -or
+            $triggerProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $triggerProperty.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $triggerProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.Button' -or
+            $triggerProperty.Name -cne 'FontSize' -or
+            (& $normalizeAndroidIssue26505Expression `
+                -Node $triggerExpression.Right) -cne '36') {
+            & $throwTrustedWindowHelperViolation `
+                -Node $triggerExpression `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the only trusted Android Issue26505 reported trigger is ' +
+                    'if (applyReportedTrigger) { button.FontSize = 36; } with no else branch.')
+        }
+
+        # Freeze the whole method, not just direct writes to button: aliases,
+        # increment operators and extra setup can otherwise manufacture the delta.
+        $expectedStatements = @(
+            $buttonDeclarators[0].Parent.Parent
+            $setupStatements[0]
+            $localDeclaration
+            $gate
+            $statement)
+        $actualStatements = $testMethod[0].Body.Statements
+        if ($actualStatements.Count -ne $expectedStatements.Count) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $testMethod[0].Body `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 method may contain only the Button ' +
+                    'initializer, padding setup, trigger declaration, trigger gate, ' +
+                    'and awaited helper; aliases and extra statements are not permitted.')
+        }
+        for ($statementIndex = 0; $statementIndex -lt $expectedStatements.Count; $statementIndex++) {
+            if ($actualStatements[$statementIndex].SpanStart -ne
+                $expectedStatements[$statementIndex].SpanStart) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $actualStatements[$statementIndex] `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'the Android Issue26505 method statements must execute in ' +
+                        'the reviewed initialization, setup, trigger, and helper order.')
+            }
+        }
+
+        $handlerParameter = $semanticModel.GetDeclaredSymbol($callback.Parameter)
+        if ($callback.Parameter.Identifier.ValueText -cne 'handler' -or
+            $handlerParameter -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $handlerParameter.Type.ToString() -cne
+                'Microsoft.Maui.Handlers.ButtonHandler' -or
+            $handlerParameter.Type.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($handlerParameter.Type.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $callback `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the callback parameter must be the converted trusted ' +
+                    'Microsoft.Maui.Handlers.ButtonHandler named handler.')
+        }
+
+        $callbackForbidden = @($callback.Body.DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.YieldStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ForEachVariableStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.WhileStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.DoStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.SwitchStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.TryStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LockStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.UsingStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ElementAccessExpressionSyntax]
+            })
+        if ($callbackForbidden.Count -ne 0 -or
+            $callback.Body.Statements.Count -ne 3) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $(if ($callbackForbidden.Count -ne 0) { $callbackForbidden[0] } else { $callback.Body }) `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 callback may contain only the reviewed ' +
+                    'readiness wait, fixed-geometry assertion, and direct native text-fit assertion.')
+        }
+
+        $readinessStatement = $callback.Body.Statements[0]
+        $readinessAwait = if ($readinessStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax]) {
+            $readinessStatement.Expression
+        } else {
+            $null
+        }
+        $readinessInvocation = if ($readinessAwait -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]) {
+            $readinessAwait.Expression
+        } else {
+            $null
+        }
+        $readinessMethod = if ($readinessInvocation -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($readinessInvocation).Symbol
+        } else {
+            $null
+        }
+        $readinessPredicate = if ($readinessInvocation -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -and
+            $readinessInvocation.ArgumentList.Arguments.Count -eq 1) {
+            $readinessInvocation.ArgumentList.Arguments[0].Expression
+        } else {
+            $null
+        }
+        if ($readinessInvocation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+            $readinessMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $null -eq $trustedAssertEventuallyMethod -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $readinessMethod,
+                $trustedAssertEventuallyMethod) -or
+            $readinessInvocation.ArgumentList.Arguments.Count -ne 1 -or
+            $readinessPredicate -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedLambdaExpressionSyntax] -or
+            $readinessPredicate.AsyncKeyword.RawKind -ne 0 -or
+            $readinessPredicate.ParameterList.Parameters.Count -ne 0 -or
+            $readinessPredicate.Body -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] -or
+            (& $normalizeAndroidIssue26505Expression `
+                -Node $readinessPredicate.Body) -cne
+                'button.Handler!=null&&button.IsLoaded') {
+            & $throwTrustedWindowHelperViolation `
+                -Node $(if ($readinessInvocation) { $readinessInvocation } else { $readinessStatement }) `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the callback readiness wait must be exactly one direct ' +
+                    'await AssertEventually(() => button.Handler != null && button.IsLoaded) ' +
+                    'using baseline timeout defaults.')
+        }
+        & $validateEventuallyPredicateExpression -Expression $readinessPredicate.Body
+
+        $getAndroidAssertionArgument = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax]$Statement,
+                [Parameter(Mandatory = $true)][string]$Role
+            )
+            $assertionInvocation = if ($Statement -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+                $Statement.Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+                $Statement.Expression
+            } else {
+                $null
+            }
+            $assertionMethod = if ($null -ne $assertionInvocation) {
+                $semanticModel.GetSymbolInfo($assertionInvocation).Symbol
+            } else {
+                $null
+            }
+            if ($assertionMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $assertionMethod.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $assertionMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+                $assertionMethod.Name -cne 'True' -or
+                $assertionInvocation.ArgumentList.Arguments.Count -ne 1 -or
+                @($assertionInvocation.ArgumentList.Arguments | Where-Object {
+                        $_.RefKindKeyword.RawKind -ne 0 -or
+                        $null -ne $_.NameColon
+                    }).Count -ne 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $Statement `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        "the Android Issue26505 $Role assertion must be exactly " +
+                        'one Xunit Assert.True(booleanExpression) call with no message or named/ref arguments.') `
+                    -Callback
+            }
+            return $assertionInvocation.ArgumentList.Arguments[0].Expression
+        }
+        $geometryExpression = & $getAndroidAssertionArgument `
+            -Statement $callback.Body.Statements[1] `
+            -Role 'fixed-geometry'
+        $textFitExpression = & $getAndroidAssertionArgument `
+            -Statement $callback.Body.Statements[2] `
+            -Role 'native text-fit'
+        $expectedGeometry =
+            'button.Width>=63&&button.Width<=65&&button.Height>=63&&button.Height<=65'
+        $expectedTextFit =
+            'handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text)<=handler.PlatformView.Width-handler.PlatformView.CompoundPaddingLeft-handler.PlatformView.CompoundPaddingRight'
+        if ((& $normalizeAndroidIssue26505Expression `
+                -Node $geometryExpression) -cne $expectedGeometry) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $geometryExpression `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the fixed-geometry assertion must directly prove the Button ' +
+                    'remained 64x64 logical units, so a stretched ContentPage child cannot pass.') `
+                -Callback
+        }
+        if ((& $normalizeAndroidIssue26505Expression `
+                -Node $textFitExpression) -cne $expectedTextFit) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $textFitExpression `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the mandatory oracle must directly compare native ' +
+                    'Paint.MeasureText(native.Text) to native Width minus CompoundPaddingLeft/Right; ' +
+                    'computed locals or app-authored verdicts are not trusted.') `
+                -Callback
+        }
+
+        $callbackScopedSymbols = @($callback.Body.DescendantNodesAndSelf() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+            } |
+            ForEach-Object {
+                $symbolInfo = $semanticModel.GetSymbolInfo($_)
+                @($symbolInfo.Symbol) + @($symbolInfo.CandidateSymbols)
+            } |
+            Where-Object { & $isAndroidIssue26505ScopedSymbol -Symbol $_ })
+        foreach ($scopedSymbol in $callbackScopedSymbols) {
+            if ($scopedSymbol.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                @($scopedSymbol.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0) {
+                & $throwTrustedWindowHelperViolation `
+                    -Node $callback.Body `
+                    -HelperSymbol $HelperMethod `
+                    -Reason (
+                        'Android Issue26505 native symbols must bind only to the ' +
+                        'closed metadata contract, never source-defined shadows.') `
+                    -Callback
+            }
+        }
+        $measureCalls = @($textFitExpression.DescendantNodesAndSelf() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+            })
+        if ($measureCalls.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $textFitExpression `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the native text-fit oracle may contain only the single ' +
+                    'Paint.MeasureText call.') `
+                -Callback
+        }
+        $measureMethod = $semanticModel.GetSymbolInfo($measureCalls[0]).Symbol
+        if ($measureMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $measureMethod.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $measureMethod.ContainingType.ToString() -cne 'Android.Graphics.Paint' -or
+            $measureMethod.Name -cne 'MeasureText' -or
+            $measureMethod.Parameters.Length -ne 1 -or
+            $measureMethod.Parameters[0].Type.SpecialType -ne
+                [Microsoft.CodeAnalysis.SpecialType]::System_String) {
+            & $throwTrustedWindowHelperViolation `
+                -Node $measureCalls[0] `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the oracle may call only Android.Graphics.Paint.MeasureText(string).') `
+                -Callback
+        }
+
+        [void]$acceptedAssertEventuallyInvocations.Add(
+            $readinessInvocation.SpanStart)
+        [void]$acceptedAndroidIssue26505SetupInvocations.Add(
+            $setupInvocation.SpanStart)
+        [void]$acceptedAndroidIssue26505HelperInvocations.Add(
+            $Invocation.SpanStart)
+        [void]$trustedAndroidIssue26505CallbackBodies.Add(
+            $callback.Body.SpanStart)
+        $trustedAndroidIssue26505CallbackOracleMinimums[
+            $callback.Body.SpanStart] = $readinessInvocation.Span.End
+        $trustedAndroidIssue26505CallbackButtons[
+            $callback.Body.SpanStart] = $buttonSymbol
+        $trustedAndroidIssue26505CallbackHandlers[
+            $callback.Body.SpanStart] = $handlerParameter
+        $trustedAndroidIssue26505CallbackNativeExpressions[
+            $callback.Body.SpanStart] = $expectedTextFit
     }
     $validateTrustedWindowHelperInvocation = {
         param(
@@ -7517,19 +8466,28 @@ function New-ReplicationControlVariant {
         $requiresCatalystWindowContract =
             $Platform -ceq 'catalyst' -and
             $SourcePath -cmatch 'Issue35511'
+        $isTrustedAndroidIssue26505Helper =
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            (& $isExactTrustedAndroidIssue26505HelperMethod -Method $awaitedMethod)
+        if ($Platform -ceq 'android' -and
+            $isTrustedAndroidIssue26505Helper) {
+            & $validateAndroidIssue26505HelperInvocation `
+                -AwaitExpression $awaitExpression `
+                -Invocation $awaitedExpression `
+                -HelperMethod $awaitedMethod
+            continue
+        }
         if ($Platform -ceq 'android' -and
             $invokedName -ceq 'CreateHandlerAndAddToWindow') {
             & $throwTrustedWindowHelperViolation `
                 -Node $awaitedExpression `
                 -HelperSymbol $awaitedMethod `
                 -Reason (
-                    'Android generated tests cannot use ' +
-                    'CreateHandlerAndAddToWindow until a narrow Android ' +
-                    'handler lifecycle and native observation contract is ' +
-                    'defined. The current control contract has no Android, ' +
-                    'AndroidX, or Google.Android read surface; reject the ' +
-                    'candidate instead of reusing the Catalyst or Windows ' +
-                    'helper shape.')
+                    'Android generated tests may use CreateHandlerAndAddToWindow ' +
+                    'only for the exact reviewed Issue26505 ButtonHandler text-fit ' +
+                    'profile. All other Android helper/native shapes remain outside ' +
+                    'the closed contract; reject the candidate instead of reusing ' +
+                    'Catalyst or Windows guidance.')
         }
         if ($isTrustedWindowHelper -and
             $requiresCatalystWindowContract) {
@@ -8207,6 +9165,25 @@ function New-ReplicationControlVariant {
             "'$SourcePath' line $typeLine; control and oracle dataflow require " +
             'trusted external types.')
     }
+    $scopedAndroidTypeSyntax = @($typeSyntaxCandidates | Where-Object {
+            $type = $semanticModel.GetTypeInfo($_).Type
+            if ($null -eq $type) {
+                $candidateType = $semanticModel.GetSymbolInfo($_).Symbol
+                if ($candidateType -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+                    $type = $candidateType
+                }
+            }
+            return (& $isAndroidIssue26505ScopedType -Type $type)
+        })
+    if ($scopedAndroidTypeSyntax.Count -ne 0 -and
+        -not $isAndroidIssue26505Profile) {
+        $typeLine = $tree.GetLineSpan(
+            $scopedAndroidTypeSyntax[0].Span).StartLinePosition.Line + 1
+        throw (
+            'Android ButtonHandler/native metadata is trusted only for the exact ' +
+            "Issue26505 Android generated-test profile; type '$(
+                $scopedAndroidTypeSyntax[0])' in '$SourcePath' line $typeLine is outside it.")
+    }
     $ambientSymbols = @($testMethod[0].Body.DescendantNodes() |
         Where-Object {
             if ($_ -isnot
@@ -8338,10 +9315,32 @@ function New-ReplicationControlVariant {
         if (& $isAcceptedTrustedWindowHelperNode -Node $operationNode) {
             continue
         }
+        $androidIssue26505HelperInvocation = if ($operationNode -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $operationNode
+        } else {
+            @($operationNode.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+        }
+        if ($null -ne $androidIssue26505HelperInvocation -and
+            $acceptedAndroidIssue26505HelperInvocations.Contains(
+                $androidIssue26505HelperInvocation.SpanStart)) {
+            continue
+        }
+        if ($null -ne $androidIssue26505HelperInvocation -and
+            $acceptedAndroidIssue26505SetupInvocations.Contains(
+                $androidIssue26505HelperInvocation.SpanStart)) {
+            continue
+        }
         if (& $isTrustedWindowCallbackNode -Node $operationNode) {
             continue
         }
         if (& $isAcceptedTrustedBackTitleSetupNode -Node $operationNode) {
+            continue
+        }
+        if (& $isAndroidIssue26505CallbackNode -Node $operationNode) {
             continue
         }
         $operationText = $operationNode.ToString()
@@ -8350,6 +9349,14 @@ function New-ReplicationControlVariant {
             $operationInfo.Symbol
         } else {
             @($operationInfo.CandidateSymbols | Select-Object -First 1)
+        }
+        if (& $isAndroidIssue26505ScopedSymbol -Symbol $precheckedSymbol) {
+            $operationLine = $tree.GetLineSpan(
+                $operationNode.Span).StartLinePosition.Line + 1
+            throw (
+                'Android Issue26505 ButtonHandler/native members are trusted only ' +
+                'inside the exact reviewed setup/helper callback; offending syntax ' +
+                "'$operationText' in '$SourcePath' line $operationLine.")
         }
         if ($operationText -cmatch
                 '^(?:Assert|ClassicAssert|CollectionAssert|StringAssert)\s*\.' -and
@@ -10731,6 +11738,61 @@ function New-ReplicationControlVariant {
                 $navigationRoot,
                 $trustedWindowCallbackNavigationRoots[$CallbackBody.SpanStart]))
     }
+    $isTrustedAndroidIssue26505NativeOracle = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]$Expression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]$CallbackBody,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$AssertionMethod,
+            [Parameter(Mandatory = $true)][int]$AssertionArgumentCount
+        )
+
+        if (-not $isAndroidIssue26505Profile -or
+            -not $trustedAndroidIssue26505CallbackBodies.Contains(
+                $CallbackBody.SpanStart) -or
+            -not $trustedAndroidIssue26505CallbackOracleMinimums.ContainsKey(
+                $CallbackBody.SpanStart) -or
+            $AssertionMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $AssertionMethod.Name -cne 'True' -or
+            $AssertionArgumentCount -ne 1) {
+            return $false
+        }
+
+        $compactExpression = & $normalizeAndroidIssue26505Expression `
+            -Node $Expression
+        $geometryExpression =
+            'button.Width>=63&&button.Width<=65&&button.Height>=63&&button.Height<=65'
+        $textFitExpression =
+            $trustedAndroidIssue26505CallbackNativeExpressions[
+                $CallbackBody.SpanStart]
+        if ($compactExpression -cne $geometryExpression -and
+            $compactExpression -cne $textFitExpression) {
+            return $false
+        }
+
+        $symbols = @($Expression.DescendantNodesAndSelf() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
+            } |
+            ForEach-Object {
+                $semanticModel.GetSymbolInfo($_).Symbol
+            } |
+            Where-Object { $null -ne $_ })
+        foreach ($symbol in $symbols) {
+            if ((& $isAndroidIssue26505ScopedSymbol -Symbol $symbol) -and
+                ($symbol.ContainingAssembly.Name -cne
+                    $trustedContractAssembly -or
+                    @($symbol.Locations | Where-Object {
+                            $_.IsInSource
+                        }).Count -ne 0)) {
+                return $false
+            }
+        }
+
+        return $true
+    }
     $isExpectedOracleValue = {
         param(
             [Parameter(Mandatory = $true)]
@@ -11015,9 +12077,21 @@ function New-ReplicationControlVariant {
                 $trustedExternalWindowCallbackOracleMinimums[
                     $assertionStatement.Parent.SpanStart] -and
             $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedAndroidIssue26505CallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedAndroidIssue26505CallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedAndroidIssue26505CallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedAndroidIssue26505CallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
         if ($isDirectPostGateAssertion -or
             $isTrustedWindowCallbackAssertion -or
-            $isTrustedExternalWindowCallbackAssertion) {
+            $isTrustedExternalWindowCallbackAssertion -or
+            $isTrustedAndroidIssue26505CallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -11471,6 +12545,15 @@ function New-ReplicationControlVariant {
                         -AssertionMethod $assertionSymbol `
                         -AssertionArgumentCount $assertionArguments.Count `
                         -ExpectedExpression $guaranteedExpectedExpression)
+            }
+            if ($isTrustedAndroidIssue26505CallbackAssertion) {
+                $supportedGuaranteedOracle =
+                    $assertionArguments.Count -eq 1 -and
+                    (& $isTrustedAndroidIssue26505NativeOracle `
+                        -Expression $assertionArguments[0].Expression `
+                        -CallbackBody $assertionStatement.Parent `
+                        -AssertionMethod $assertionSymbol `
+                        -AssertionArgumentCount $assertionArguments.Count)
             }
             if (-not $isTautologicalAssertion -and
                 $supportedGuaranteedOracle -and
