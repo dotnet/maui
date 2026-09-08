@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (position == RecyclerView.NoPosition)
 				return;
 
-			int itemCount = state.ItemCount;
+			int itemCount = parent.GetAdapter()?.ItemCount ?? state.ItemCount;
 			if (itemCount <= 0)
 				return;
 
