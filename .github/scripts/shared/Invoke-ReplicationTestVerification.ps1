@@ -284,17 +284,9 @@ function Get-ReplicationVerificationActualFailureMessage {
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
         Select-Object -Last 120)
     $prefix = "Verifier produced no machine-readable failure message (exit code $ExitCode). Recent verifier output: "
-    $excerptMaximumLength = [Math]::Max(1024, $MaximumLength - $prefix.Length)
-    $excerpt = ConvertTo-BoundedVerificationFailureMessage `
-        -Content (($lines -join [Environment]::NewLine).Trim()) `
-        -Signature '' `
-        -MaximumLength $excerptMaximumLength
-
-    $message = $prefix + $excerpt
-    if ($message.Length -le $MaximumLength) {
-        return $message
-    }
-    return $message.Substring(0, $MaximumLength)
+    return ConvertTo-BoundedComparableFailureMessage `
+        -Value ($prefix + ($lines -join [Environment]::NewLine).Trim()) `
+        -MaximumLength $MaximumLength
 }
 
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {

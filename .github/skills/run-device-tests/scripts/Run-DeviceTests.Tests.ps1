@@ -442,7 +442,7 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
     It 'streams bounded XHarness output to retained logs while preserving exit code and tail' {
         $runRoot = Join-Path $TestDrive 'xharness-stream'
         $logPath = Join-Path $runRoot 'xharness-console.log'
-        $pwsh = (Get-Command pwsh -CommandType Application).Source
+        $pwsh = Join-Path $PSHOME $(if ($IsWindows) { 'pwsh.exe' } else { 'pwsh' })
         $command = @'
 [Console]::Out.WriteLine("first stdout line")
 [Console]::Error.WriteLine("##vso[task.setvariable variable=LEAK]blocked")
