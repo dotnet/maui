@@ -8246,6 +8246,8 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match (
             'The selected method must carry \[Fact\] and \[Category\("Issue26505"\)\]')
         $script:Source | Should -Match (
+            'explicit subclass of `global::Microsoft\.Maui\.DeviceTests\.ControlsHandlerTestBase`')
+        $script:Source | Should -Match (
             'source must explicitly import `using static Microsoft\.Maui\.DeviceTests\.AssertHelpers;`')
         $script:Source | Should -Match (
             'Follow the reported binding diagnostics \(including errors inside the callback\)')
@@ -9609,7 +9611,7 @@ Describe 'A test that ran but found no element is not a build failure' {
     }
 }
 
-Describe 'A lost device session is not a test to repair' {
+Describe 'A missing device-harness verdict is not a test to repair' {
     It 'recognises an Appium session that never opened in OneTimeSetUp' {
         # Build 15029298 spent four build repairs and every remaining attempt
         # asking the agent to fix compiler diagnostics that did not exist.
@@ -9619,6 +9621,44 @@ Describe 'A lost device session is not a test to repair' {
 
         Test-ReplicationTestHarnessFault -FailureSummary 'A new session could not be created' |
             Should -BeTrue
+    }
+
+    It 'recognises Android XHarness missing-result output as a harness fault' {
+        $summary = @'
+The device test harness did not produce an authoritative target-test result.
+Actual harness failure: 'XHarness did not produce the expected fresh result
+testResults-abc.xml for requested class(es) Microsoft.Maui.DeviceTests.ButtonTests
+(no authoritative target-test result was produced). Raw XHarness exit code: 78'.
+'@
+
+        Test-ReplicationTestHarnessFault -FailureSummary $summary | Should -BeTrue
+        Get-ReplicationTestAttemptKind -FailureSummary $summary |
+            Should -BeExactly 'harness-error'
+    }
+
+    It 'reports missing XHarness results as harness diagnostics rather than a blank build failure' {
+        $verificationDir = Join-Path $TestDrive 'xharness-verification'
+        New-Item -ItemType Directory -Path $verificationDir -Force | Out-Null
+        [ordered]@{
+            schemaVersion = 1
+            expectedFailureSignature = 'CI text should fit'
+            actualFailureMessage = ("XHarness did not produce the expected fresh result " +
+                "'testResults-abc.xml' for requested class(es) " +
+                "'Microsoft.Maui.DeviceTests.ButtonTests' (no authoritative target-test result was produced).")
+            infrastructureFailure = $true
+            verifierPassed = $false
+            signatureMatched = $false
+        } | ConvertTo-Json |
+            Set-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Encoding utf8NoBOM
+
+        $diagnosis = Get-ReplicationVerificationFailureSummary `
+            -VerificationDirectory $verificationDir `
+            -RepositoryRoot $TestDrive
+
+        $diagnosis | Should -Match 'device test harness did not produce an authoritative target-test result'
+        $diagnosis | Should -Match 'selected test execution cannot be established'
+        $diagnosis | Should -Match 'testResults-abc\.xml'
+        $diagnosis | Should -Match 'do not ask the model to change assertions'
     }
 
     It 'leaves a genuine compile error repairable' {
@@ -9640,6 +9680,35 @@ Describe 'A lost device session is not a test to repair' {
     It 'gives the harness its own bounded budget in the attempt loop' {
         $script:Source | Should -Match '\$MaxTestHarnessRetries = 3'
         $script:Source | Should -Match 'Test harness retry \{0\}/\{1\}'
+    }
+
+    It 'retries a harness without an authoritative result with the same generated source' {
+        $script:Source | Should -Match '\$retryCurrentGeneratedTest = \$false'
+        $script:Source | Should -Match 'Re-running generated test attempt \{0\} without Copilot reauthoring'
+        $script:Source | Should -Match '(?s)Test-ReplicationTestHarnessFault -FailureSummary \$repairFailureSummary.*?\$retryCurrentGeneratedTest = \$true'
+    }
+
+    It 'preflights Android XHarness in the isolated boundary before generated code or product builds' {
+        $script:Source | Should -Match 'Preflighting Android XHarness before restore, generation, and product builds'
+        $script:Source | Should -Match 'run-device-tests/scripts/Run-DeviceTests\.ps1'
+        $script:Source | Should -Match "'-PreflightXHarnessOnly'"
+        $script:Source | Should -Match 'xharness-preflight\.log'
+        $preflightIndex = $script:Source.IndexOf(
+            'Preflighting Android XHarness before restore, generation, and product builds',
+            [StringComparison]::Ordinal)
+        $copilotIndex = $script:Source.IndexOf(
+            'Invoke-ReplicationCopilot',
+            $preflightIndex,
+            [StringComparison]::Ordinal)
+        $sandboxBuildIndex = $script:Source.IndexOf(
+            'Preflighting Android Appium helpers before restore and build',
+            $preflightIndex,
+            [StringComparison]::Ordinal)
+        $preflightIndex | Should -BeGreaterOrEqual 0
+        $sandboxBuildIndex | Should -BeGreaterThan $preflightIndex
+        $copilotIndex | Should -BeGreaterThan $preflightIndex
+        $script:Source | Should -Match 'ANDROID XHARNESS PREFLIGHT ONLY SUCCEEDED'
+        $script:Source | Should -Match 'ANDROID XHARNESS PREFLIGHT ONLY FAILED'
     }
 }
 
@@ -20712,7 +20781,7 @@ Describe 'A sick machine is not reported as an agent that cannot compile' {
     BeforeAll {
         $script:HarnessSummary = 'Replication test verification attempt 1 failed for ' +
             'build or infrastructure reasons. harness unavailable after 3 retries: the ' +
-            'device session never opened, so no edit to the test can produce a verdict. ' +
+            'device harness produced no authoritative target-test result, so no edit to the test can establish a verdict. ' +
             'infrastructureFailure=True'
     }
 
@@ -20721,8 +20790,8 @@ Describe 'A sick machine is not reported as an agent that cannot compile' {
             Should -BeExactly 'harness-error'
     }
 
-    It 'calls an attempt that lost its device session a harness error' {
-        $summary = 'Attempt 1 lost its device session before the test ran, so it ' +
+    It 'calls an attempt with no authoritative target-test result a harness error' {
+        $summary = 'Attempt 1 produced no authoritative target-test result, so it ' +
             'failed for build or infrastructure reasons.'
 
         Get-ReplicationTestAttemptKind -FailureSummary $summary |

@@ -34,6 +34,10 @@
 .PARAMETER BuildOnly
     If specified, only builds the project without running tests.
 
+.PARAMETER PreflightXHarnessOnly
+    If specified, verifies the XHarness command path and Android device visibility,
+    then exits before building or running product tests.
+
 .PARAMETER OutputDirectory
     Directory for test logs and results. Defaults to "artifacts/log".
 
@@ -106,6 +110,9 @@ param(
 
     [Parameter(Mandatory = $false)]
     [switch]$BuildOnly,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$PreflightXHarnessOnly,
 
     [Parameter(Mandatory = $false)]
     [string]$OutputDirectory = "artifacts/log",
@@ -529,6 +536,381 @@ function New-XHarnessRunOutputDirectory {
     $runDirectory = Join-Path $root "xharness-run-$([guid]::NewGuid().ToString('N'))"
     New-Item -ItemType Directory -Path $runDirectory -Force -ErrorAction Stop | Out-Null
     return $runDirectory
+}
+
+function ConvertTo-BoundedXHarnessDiagnosticText {
+    param(
+        [AllowEmptyString()][AllowNull()][string]$Value,
+        [ValidateRange(256, 1048576)][int]$MaximumLength = 262144
+    )
+
+    if ([string]::IsNullOrEmpty($Value)) {
+        return ''
+    }
+
+    $safeValue = [string]$Value -replace '##(?=\[|vso\[)', '## '
+    if ($safeValue.Length -le $MaximumLength) {
+        return $safeValue
+    }
+
+    $digest = ([System.BitConverter]::ToString(
+        [System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::UTF8.GetBytes($safeValue)
+        )
+    ) -replace '-', '').Substring(0, 16).ToLowerInvariant()
+    $marker = "$([Environment]::NewLine)[xharness diagnostic truncated; sha256=$digest]$([Environment]::NewLine)"
+    $headLength = [Math]::Max(0, [Math]::Floor(($MaximumLength - $marker.Length) / 2))
+    $tailLength = [Math]::Max(0, $MaximumLength - $marker.Length - $headLength)
+
+    return $safeValue.Substring(0, $headLength) +
+        $marker +
+        $safeValue.Substring($safeValue.Length - $tailLength)
+}
+
+function Write-XHarnessDiagnosticText {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [AllowEmptyString()][AllowNull()][string]$Content,
+        [ValidateRange(256, 1048576)][int]$MaximumLength = 262144
+    )
+
+    New-Item -ItemType Directory -Path (Split-Path -Parent $Path) -Force |
+        Out-Null
+    ConvertTo-BoundedXHarnessDiagnosticText `
+        -Value ([string]$Content) `
+        -MaximumLength $MaximumLength |
+        Set-Content -LiteralPath $Path -Encoding utf8NoBOM -NoNewline
+}
+
+function ConvertTo-XHarnessDiagnosticLine {
+    param(
+        [AllowEmptyString()][AllowNull()][string]$Value,
+        [ValidateRange(256, 16384)][int]$MaximumLength = 4096
+    )
+
+    $line = [string]$Value
+    $line = [regex]::Replace(
+        $line,
+        ([char]27 + '\[[0-?]*[ -/]*[@-~]'),
+        '')
+    $line = [regex]::Replace(
+        $line,
+        '(?i)##vso\[[^\]]*\]',
+        '## vso[redacted]')
+    $line = [regex]::Replace(
+        $line,
+        '(?i)##\[[^\]]*\]',
+        '## [redacted]')
+
+    return ConvertTo-BoundedXHarnessDiagnosticText `
+        -Value $line `
+        -MaximumLength $MaximumLength
+}
+
+function Invoke-StreamingXHarnessCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$FilePath,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][string[]]$Arguments,
+        [Parameter(Mandatory = $true)][string]$LogPath,
+        [string]$WorkingDirectory = (Get-Location).ProviderPath,
+        [ValidateRange(256, 1048576)][int]$MaximumLogLength = 262144,
+        [ValidateRange(1, 1000)][int]$MaximumTailLines = 240
+    )
+
+    $fullLogPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($LogPath)
+    $logDirectory = Split-Path -Parent $fullLogPath
+    New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
+    $tailLogPath = if ($fullLogPath.EndsWith('.log', [StringComparison]::OrdinalIgnoreCase)) {
+        $fullLogPath.Substring(0, $fullLogPath.Length - 4) + '-tail.log'
+    } else {
+        "$fullLogPath.tail.log"
+    }
+
+    $encoding = [System.Text.UTF8Encoding]::new($false)
+    $writer = [System.IO.StreamWriter]::new($fullLogPath, $false, $encoding)
+    $writer.AutoFlush = $true
+    $tail = [Collections.Generic.List[string]]::new()
+    $state = @{ WrittenLength = 0; TailLength = 0; Truncated = $false }
+    $tailLimit = [Math]::Min(65536, $MaximumLogLength)
+    $marker = '[xharness console log truncated; see bounded tail log]'
+    $markerLength = $marker.Length + [Environment]::NewLine.Length
+
+    $writeLine = {
+        param([AllowNull()][string]$Data)
+
+        if ($null -eq $Data) {
+            return
+        }
+
+        $line = ConvertTo-XHarnessDiagnosticLine -Value $Data
+        $lineLength = $line.Length + [Environment]::NewLine.Length
+        $tail.Add($line)
+        $state.TailLength += $lineLength
+        while ($tail.Count -gt $MaximumTailLines -or
+            ($tail.Count -gt 1 -and $state.TailLength -gt $tailLimit)) {
+            $state.TailLength -= $tail[0].Length + [Environment]::NewLine.Length
+            $tail.RemoveAt(0)
+        }
+        $tail |
+            Set-Content -LiteralPath $tailLogPath -Encoding utf8NoBOM
+
+        if (-not $state.Truncated) {
+            if ($state.WrittenLength + $lineLength -le $MaximumLogLength - $markerLength) {
+                $writer.WriteLine($line)
+                $state.WrittenLength += $lineLength
+            } else {
+                $writer.WriteLine($marker)
+                $state.WrittenLength += $markerLength
+                $state.Truncated = $true
+            }
+        }
+    }
+
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = $FilePath
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    if (-not [string]::IsNullOrWhiteSpace($WorkingDirectory)) {
+        $startInfo.WorkingDirectory = $WorkingDirectory
+    }
+    foreach ($argument in @($Arguments)) {
+        [void]$startInfo.ArgumentList.Add([string]$argument)
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    $started = $false
+
+    try {
+        if (-not $process.Start()) {
+            throw "Unable to start XHarness command: $FilePath"
+        }
+        $started = $true
+        # Consume fixed-size asynchronous reads on the PowerShell thread.
+        # Scriptblock event handlers cannot run on Process's worker threads.
+        $streams = @(
+            foreach ($reader in @($process.StandardOutput, $process.StandardError)) {
+                [pscustomobject]@{
+                    Reader = $reader
+                    Buffer = [char[]]::new(4096)
+                    ReadTask = $null
+                    Pending = ''
+                    Active = $true
+                }
+            }
+        )
+        foreach ($stream in $streams) {
+            $stream.ReadTask = $stream.Reader.ReadAsync($stream.Buffer, 0, $stream.Buffer.Length)
+        }
+        while ($true) {
+            $active = @($streams | Where-Object Active)
+            if ($active.Count -eq 0) {
+                break
+            }
+            $ready = [Threading.Tasks.Task]::WaitAny(
+                [Threading.Tasks.Task[]]@($active | ForEach-Object ReadTask))
+            $stream = $active[$ready]
+            $count = $stream.ReadTask.GetAwaiter().GetResult()
+            if ($count -eq 0) {
+                if ($stream.Pending.Length -gt 0) {
+                    & $writeLine $stream.Pending.TrimEnd("`r")
+                }
+                $stream.Active = $false
+                continue
+            }
+
+            $stream.Pending += [string]::new($stream.Buffer, 0, $count)
+            while ($stream.Pending.Length -gt 0) {
+                $newline = $stream.Pending.IndexOf("`n")
+                if ($newline -lt 0 -and $stream.Pending.Length -lt 4096) {
+                    break
+                }
+                $length = if ($newline -ge 0) { [Math]::Min($newline, 4096) } else { 4096 }
+                & $writeLine $stream.Pending.Substring(0, $length).TrimEnd("`r")
+                $consumed = $length + $(if ($newline -eq $length) { 1 } else { 0 })
+                $stream.Pending = $stream.Pending.Substring($consumed)
+            }
+            $stream.ReadTask = $stream.Reader.ReadAsync($stream.Buffer, 0, $stream.Buffer.Length)
+        }
+        $process.WaitForExit()
+
+        [pscustomobject]@{
+            ExitCode = [int]$process.ExitCode
+            TailText = (@($tail) -join [Environment]::NewLine)
+            LogPath = $fullLogPath
+            TailLogPath = $tailLogPath
+        }
+    } catch {
+        & $writeLine ("Failed to invoke XHarness command: $($_.Exception.Message)")
+        throw
+    } finally {
+        try {
+            if ($started -and -not $process.HasExited) {
+                $process.Kill($true)
+                [void]$process.WaitForExit(10000)
+            }
+        } finally {
+            $writer.Dispose()
+            $process.Dispose()
+        }
+    }
+}
+
+function Get-XHarnessDiagnosticInventory {
+    param(
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [ValidateRange(1, 200)][int]$MaximumFiles = 80
+    )
+
+    if (-not (Test-Path -LiteralPath $OutputDirectory -PathType Container)) {
+        return "Output directory is missing: $OutputDirectory"
+    }
+
+    $files = @(Get-ChildItem `
+        -LiteralPath $OutputDirectory `
+        -File `
+        -Recurse `
+        -Force `
+        -ErrorAction SilentlyContinue |
+            Sort-Object FullName)
+    if ($files.Count -eq 0) {
+        return "Output directory contains no files: $OutputDirectory"
+    }
+
+    $lines = @()
+    foreach ($file in @($files | Select-Object -First $MaximumFiles)) {
+        $relativePath = [IO.Path]::GetRelativePath($OutputDirectory, $file.FullName)
+        $lines += ("- {0} ({1} bytes, utc {2:O})" -f
+            $relativePath,
+            $file.Length,
+            $file.LastWriteTimeUtc)
+    }
+    if ($files.Count -gt $MaximumFiles) {
+        $lines += ("- ... {0} more file(s) omitted" -f
+            ($files.Count - $MaximumFiles))
+    }
+
+    return ($lines -join [Environment]::NewLine)
+}
+
+function New-XHarnessNoResultDiagnostic {
+    param(
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$ExpectedResultFileName,
+        [Parameter(Mandatory = $true)][string]$IncludeClasses,
+        [Parameter(Mandatory = $true)][int]$RawExitCode,
+        [AllowEmptyString()][string]$CommandLine = '',
+        [AllowEmptyString()][string]$ConsoleLogPath = '',
+        [AllowEmptyString()][AllowNull()][string]$ConsoleText = ''
+    )
+
+    $inventory = Get-XHarnessDiagnosticInventory `
+        -OutputDirectory $OutputDirectory
+    $consoleExcerpt = ConvertTo-BoundedXHarnessDiagnosticText `
+        -Value ([string]$ConsoleText) `
+        -MaximumLength 8192
+    $safeExpectedResultFileName = ConvertTo-BoundedXHarnessDiagnosticText `
+        -Value $ExpectedResultFileName `
+        -MaximumLength 512
+    $safeIncludeClasses = ConvertTo-BoundedXHarnessDiagnosticText `
+        -Value $IncludeClasses `
+        -MaximumLength 2048
+
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add("XHarness did not produce the expected fresh result '$safeExpectedResultFileName' for requested class(es) '$safeIncludeClasses' (no authoritative target-test result was produced; selected test execution cannot be established from retained results).")
+    $lines.Add("Raw XHarness exit code: $RawExitCode")
+    if (-not [string]::IsNullOrWhiteSpace($CommandLine)) {
+        $safeCommandLine = ConvertTo-BoundedXHarnessDiagnosticText `
+            -Value $CommandLine `
+            -MaximumLength 2048
+        $lines.Add("XHarness command: $safeCommandLine")
+    }
+    $lines.Add("XHarness output directory: $OutputDirectory")
+    if (-not [string]::IsNullOrWhiteSpace($ConsoleLogPath)) {
+        $lines.Add("Bounded XHarness console log: $ConsoleLogPath")
+    }
+    $lines.Add("XHarness output inventory:")
+    $lines.Add($inventory)
+    if (-not [string]::IsNullOrWhiteSpace($consoleExcerpt)) {
+        $lines.Add("XHarness console excerpt:")
+        $lines.Add($consoleExcerpt)
+    }
+
+    return ($lines -join [Environment]::NewLine)
+}
+
+function Invoke-XHarnessPreflight {
+    param(
+        [Parameter(Mandatory = $true)][bool]$UseLocalXHarness,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [AllowEmptyString()][string]$DeviceUdid = '',
+        [Parameter(Mandatory = $true)][string]$OutputDirectory
+    )
+
+    if ($Platform -ne 'android') {
+        throw 'XHarness preflight is currently scoped to Android replication.'
+    }
+
+    $preflightDirectory = Join-Path $OutputDirectory 'xharness-preflight'
+    New-Item -ItemType Directory -Path $preflightDirectory -Force | Out-Null
+    $logPath = Join-Path $preflightDirectory 'xharness-preflight.log'
+    $helpLogPath = Join-Path $preflightDirectory 'xharness-help.log'
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add("Preflighting Android XHarness in the replication execution environment.")
+    $lines.Add("UTC: $([DateTime]::UtcNow.ToString('O'))")
+
+    $helpCommand = if ($UseLocalXHarness) {
+        [pscustomobject]@{
+            FilePath = 'dotnet'
+            Arguments = [string[]]@('xharness', 'android', 'test', '--help')
+            Label = 'dotnet xharness android test --help'
+        }
+    } else {
+        [pscustomobject]@{
+            FilePath = 'xharness'
+            Arguments = [string[]]@('android', 'test', '--help')
+            Label = 'xharness android test --help'
+        }
+    }
+    $helpResult = Invoke-StreamingXHarnessCommand `
+        -FilePath $helpCommand.FilePath `
+        -Arguments $helpCommand.Arguments `
+        -LogPath $helpLogPath `
+        -MaximumLogLength 65536 `
+        -MaximumTailLines 120
+    $lines.Add("$($helpCommand.Label) exit code: $($helpResult.ExitCode)")
+    $lines.Add("Bounded XHarness help log: $($helpResult.LogPath)")
+    $lines.Add("Bounded XHarness help tail log: $($helpResult.TailLogPath)")
+    if (-not [string]::IsNullOrWhiteSpace([string]$helpResult.TailText)) {
+        $lines.Add("Recent XHarness help output:")
+        $lines.Add([string]$helpResult.TailText)
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+        $adbState = @(& adb -s $DeviceUdid get-state 2>&1)
+        $adbStateExitCode = $LASTEXITCODE
+        $bootCompleted = @(& adb -s $DeviceUdid shell getprop sys.boot_completed 2>&1)
+        $bootCompletedExitCode = $LASTEXITCODE
+        $lines.Add("adb get-state exit code: $adbStateExitCode")
+        $lines.AddRange([string[]]@($adbState | ForEach-Object { [string]$_ }))
+        $lines.Add("adb shell getprop sys.boot_completed exit code: $bootCompletedExitCode")
+        $lines.AddRange([string[]]@($bootCompleted | ForEach-Object { [string]$_ }))
+        if ($adbStateExitCode -ne 0 -or
+            $bootCompletedExitCode -ne 0 -or
+            (@($adbState | ForEach-Object { [string]$_ }) -join ' ').Trim() -ne 'device' -or
+            (@($bootCompleted | ForEach-Object { [string]$_ }) -join ' ').Trim() -ne '1') {
+            Write-XHarnessDiagnosticText -Path $logPath -Content ($lines -join [Environment]::NewLine)
+            throw "Android XHarness preflight could not confirm a ready device. See $logPath"
+        }
+    }
+
+    Write-XHarnessDiagnosticText -Path $logPath -Content ($lines -join [Environment]::NewLine)
+    if ($helpResult.ExitCode -ne 0) {
+        throw "Android XHarness preflight could not invoke '$($helpCommand.Label)' (exit $($helpResult.ExitCode)). See $logPath and $helpLogPath"
+    }
+
+    Write-Host "✓ Android XHarness preflight succeeded: $logPath" -ForegroundColor Green
 }
 
 function Select-WindowsDeviceTestCategories {
@@ -1454,19 +1836,37 @@ try {
     if ($platformConfig.UsesXHarness -and
         -not $RequireMacCatalystAppSandbox) {
         $xharness = Get-Command "xharness" -ErrorAction SilentlyContinue
-        
+        $xharnessProbeDirectory = Join-Path $OutputDirectory 'xharness-command-probe'
+        $xharnessProbeLog = Join-Path $xharnessProbeDirectory 'xharness-help.log'
+
         if (-not $xharness) {
             # Try dotnet tool (local tool manifest)
-            try {
-                $null = & dotnet xharness help 2>&1
+            $probe = Invoke-StreamingXHarnessCommand `
+                -FilePath 'dotnet' `
+                -Arguments ([string[]]@('xharness', '--help')) `
+                -LogPath $xharnessProbeLog `
+                -MaximumLogLength 65536 `
+                -MaximumTailLines 120
+            if ($probe.ExitCode -eq 0) {
                 Write-Host "✓ xharness found: local dotnet tool" -ForegroundColor Green
                 $useLocalXharness = $true
-            } catch {
-                Write-Error "xharness is not installed. Install with: dotnet tool install --global Microsoft.DotNet.XHarness.CLI"
+            } else {
+                Write-Error "xharness local dotnet tool probe failed with exit $($probe.ExitCode). See $($probe.LogPath). Install with: dotnet tool install --global Microsoft.DotNet.XHarness.CLI"
                 exit 1
             }
         } else {
-            Write-Host "✓ xharness found: $($xharness.Source)" -ForegroundColor Green
+            $probe = Invoke-StreamingXHarnessCommand `
+                -FilePath ([string]$xharness.Source) `
+                -Arguments ([string[]]@('--help')) `
+                -LogPath $xharnessProbeLog `
+                -MaximumLogLength 65536 `
+                -MaximumTailLines 120
+            if ($probe.ExitCode -eq 0) {
+                Write-Host "✓ xharness found: $($xharness.Source)" -ForegroundColor Green
+            } else {
+                Write-Error "xharness probe failed with exit $($probe.ExitCode). See $($probe.LogPath)."
+                exit 1
+            }
         }
     }
 
@@ -1498,6 +1898,15 @@ try {
         Write-Host "Include Class: $IncludeClasses" -ForegroundColor Yellow
     }
     Write-Host ""
+
+    if ($PreflightXHarnessOnly) {
+        Invoke-XHarnessPreflight `
+            -UseLocalXHarness $useLocalXharness `
+            -Platform $Platform `
+            -DeviceUdid $DeviceUdid `
+            -OutputDirectory $OutputDirectory
+        exit 0
+    }
 
     # ═══════════════════════════════════════════════════════════
     # BUILD PHASE
@@ -2010,13 +2419,29 @@ try {
             $null
         }
 
-        if ($useLocalXharness) {
-            & dotnet xharness @xharnessArgs
+        $xharnessConsoleLog = Join-Path $testOutputDirectory 'xharness-console.log'
+        $xharnessInvocation = if ($useLocalXharness) {
+            [pscustomobject]@{
+                FilePath = 'dotnet'
+                Arguments = [string[]](@('xharness') + $xharnessArgs)
+            }
         } else {
-            & xharness @xharnessArgs
+            [pscustomobject]@{
+                FilePath = 'xharness'
+                Arguments = [string[]]$xharnessArgs
+            }
         }
-
-        $rawXHarnessExitCode = $LASTEXITCODE
+        $xharnessResult = Invoke-StreamingXHarnessCommand `
+            -FilePath $xharnessInvocation.FilePath `
+            -Arguments $xharnessInvocation.Arguments `
+            -LogPath $xharnessConsoleLog
+        $rawXHarnessExitCode = [int]$xharnessResult.ExitCode
+        $xharnessConsoleText = [string]$xharnessResult.TailText
+        if (-not [string]::IsNullOrWhiteSpace($xharnessConsoleText)) {
+            Write-Host (ConvertTo-BoundedXHarnessDiagnosticText `
+                -Value $xharnessConsoleText `
+                -MaximumLength 16384)
+        }
         $testExitCode = $rawXHarnessExitCode
 
         if ($IncludeClasses) {
@@ -2025,7 +2450,18 @@ try {
                 -BeforeSnapshot $xharnessResultSnapshot `
                 -ResultFileName $xharnessResultFileName)
             if ($xharnessResultFiles.Count -eq 0) {
-                throw "XHarness did not produce the expected fresh result '$xharnessResultFileName' for requested class(es) '$IncludeClasses' (the target tests did not run)."
+                $noResultDiagnostic = New-XHarnessNoResultDiagnostic `
+                    -OutputDirectory $testOutputDirectory `
+                    -ExpectedResultFileName $xharnessResultFileName `
+                    -IncludeClasses $IncludeClasses `
+                    -RawExitCode $rawXHarnessExitCode `
+                    -CommandLine "$xharnessCommand $($xharnessArgs -join ' ')" `
+                    -ConsoleLogPath $xharnessConsoleLog `
+                    -ConsoleText $xharnessConsoleText
+                Write-XHarnessDiagnosticText `
+                    -Path (Join-Path $testOutputDirectory 'xharness-no-result-diagnostics.txt') `
+                    -Content $noResultDiagnostic
+                throw $noResultDiagnostic
             }
 
             $script:XHarnessDeviceTestSummary = Get-DeviceTestResultSummary `

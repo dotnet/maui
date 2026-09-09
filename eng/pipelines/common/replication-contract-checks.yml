@@ -67,7 +67,20 @@ steps:
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*scopes Issue26505 Sandbox scene guidance to Android Issue26505'
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*keeps Sandbox-only Issue26505 guidance out of generated-test phases'
         'Replication orchestrator security boundary*clears trusted Android preflight residue before Sandbox authoring'
+        'A missing device-harness verdict is not a test to repair*recognises Android XHarness missing-result output as a harness fault'
+        'A missing device-harness verdict is not a test to repair*reports missing XHarness results as harness diagnostics rather than a blank build failure'
+        'A missing device-harness verdict is not a test to repair*retries a harness without an authoritative result with the same generated source'
+        'A missing device-harness verdict is not a test to repair*preflights Android XHarness in the isolated boundary before generated code or product builds'
+        'Targeted failure message extraction*surfaces an Android XHarness no-result environment error in the machine message'
+        'Targeted failure message extraction*bounds long environment errors while retaining the exact XHarness exit readback'
+        'Replication failure-only verification*rejects compilation, timeout, missing baseline, and device failures'
+        'Replication failure-only verification*uses bounded verifier output when infrastructure failed without a machine message'
+        'Replication failure-only verification*keeps synthesized verifier fallback messages within the publisher bound'
+        'Cross-platform device test class filtering*retains bounded XHarness diagnostics when Android produces no fresh result XML'
+        'Cross-platform device test class filtering*streams bounded XHarness output to retained logs while preserving exit code and tail'
+        'Cross-platform device test class filtering*offers Android XHarness preflight without building or running product tests'
         'Agent prompt deliverability*leaves no control character in any string literal of the orchestrator'
+        'MAUI Copilot mode routing*routes Android harness-only diagnostics before Copilot generation and publication'
         'New-ReplicationControlVariant*allows Android Issue26505 ButtonHandler text-fit oracle'
         'New-ReplicationControlVariant*reports the captured Android Issue26505 missing static import'
         'New-ReplicationControlVariant*allows the captured Android Issue26505 source after importing the trusted helper'
@@ -98,6 +111,9 @@ steps:
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"
       )
       $config.Run.PassThru = $true
       $config.Filter.FullName = $filters
