@@ -46,6 +46,13 @@ function Get-SourcePackageInfo {
     }
 }
 
+function Get-SourcePackageFiles {
+    param([string]$Path)
+
+    return Get-ChildItem $Path -Filter 'Microsoft.Maui.*.nupkg' -File |
+        Where-Object Name -NotLike '*.symbols.nupkg'
+}
+
 function Read-SourcePackageManifest {
     param([string]$Path, [string]$SourceSha)
 

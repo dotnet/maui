@@ -59,6 +59,7 @@ $properties = @(
     "-p:SourceRevisionId=$SourceSha",
     '-p:CI=true',
     '-p:GenerateCgManifest=false',
+    '-p:SymbolPackageFormat=snupkg',
     '-p:IncludePreviousTfms=false',
     '-p:ValidateXcodeVersion=false'
 )
@@ -77,7 +78,7 @@ try {
 }
 
 $shipping = Join-Path $RepositoryPath 'artifacts/packages/Release/Shipping'
-$packages = @(Get-ChildItem $shipping -Filter 'Microsoft.Maui.*.nupkg' -File)
+$packages = @(Get-SourcePackageFiles $shipping)
 if ($packages.Count -eq 0) { throw "No source-built MAUI packages were produced." }
 $manifest = [ordered]@{
     sourceSha = $SourceSha
