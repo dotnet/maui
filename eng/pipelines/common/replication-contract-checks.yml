@@ -85,7 +85,16 @@ steps:
         'Cross-platform device test class filtering*retains HELP_SHOWN readback and rejects actual Android help failures'
         'Agent prompt deliverability*leaves no control character in any string literal of the orchestrator'
         'MAUI Copilot mode routing*routes Android harness-only diagnostics before Copilot generation and publication'
+        'MAUI Copilot mode routing*keeps the fixed Android native probe separate from issue certification'
+        'Fixed Android native harness probe*prewarms the clean baseline then runs the fixed fixture through the isolated selected-test runner'
+        'Fixed Android native harness probe*retains the native runner failure and removes only its owned fixture'
+        'Fixed Android native harness probe*refuses to overwrite an existing fixture before restore or execution'
         'New-ReplicationControlVariant*allows Android Issue26505 ButtonHandler text-fit oracle'
+        'New-ReplicationControlVariant*rejects captured Android Issue26505 source without handler registration'
+        'New-ReplicationControlVariant*accepts the captured Android native-crash source after exact handler registration'
+        'New-ReplicationControlVariant*rejects Android Issue26505 wrong handler registration pair'
+        'New-ReplicationControlVariant*rejects Android Issue26505 arbitrary registry lambda bodies'
+        'New-ReplicationControlVariant*rejects Android Issue26505 late handler registration or missing Hosting import'
         'New-ReplicationControlVariant*reports the captured Android Issue26505 missing static import'
         'New-ReplicationControlVariant*allows the captured Android Issue26505 source after importing the trusted helper'
         'New-ReplicationControlVariant*rejects Android Issue26505 helper outside exact issue path'
@@ -115,6 +124,7 @@ steps:
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"

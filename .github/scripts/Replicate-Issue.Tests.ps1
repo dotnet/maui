@@ -8331,7 +8331,9 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match (
             'Paint\.MeasureText\(handler\.PlatformView\.Text\)')
         $script:Source | Should -Match (
-            'exactly five top-level statements in order')
+            'exactly six top-level statements in order')
+        $script:Source | Should -Match (
+            'using Microsoft\.Maui\.Hosting;.*EnsureHandlerCreated\(builder => builder\.ConfigureMauiHandlers')
         $script:Source | Should -Match (
             'The selected method must carry \[Fact\] and \[Category\("Issue26505"\)\]')
         $script:Source | Should -Match (
@@ -10124,10 +10126,15 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     }
 }
 '@
+        $script:TrustedAndroidIssue26505Registration = @'
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
+            handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()));
+'@
         $script:TrustedAndroidIssue26505Base = @'
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
@@ -10137,6 +10144,8 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
     [Category("Issue26505")]
     public async Task Reproduces()
     {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
+            handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()));
         var button = new Button
         {
             Text = "CI",
@@ -10172,6 +10181,7 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
         $script:CapturedAndroidIssue26505MissingImport = @'
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -10181,6 +10191,39 @@ namespace Microsoft.Maui.DeviceTests
         [Fact]
         [Category("Issue26505")]
         public async Task LargeTextFitsWhenDefaultPaddingIsDisabled()
+        {
+            EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
+                handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()));
+            var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };
+            global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);
+            var applyReportedTrigger = true;
+            if (applyReportedTrigger)
+            {
+                button.FontSize = 36;
+            }
+            await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(new Window(new ContentPage { Content = button }), async handler =>
+            {
+                await AssertEventually(() => button.Handler != null && button.IsLoaded);
+                Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);
+                Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);
+            });
+        }
+    }
+}
+'@
+        $script:CapturedAndroidIssue26505MissingRegistration = @'
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public class Issue26505 : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+    {
+        [Fact]
+        [Category("Issue26505")]
+        public async Task DisabledDefaultPaddingLeavesEnoughRoomForButtonText()
         {
             var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };
             global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);
@@ -10718,6 +10761,130 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
             'var applyReportedTrigger = false;')
     }
 
+    It 'rejects captured Android Issue26505 source without handler registration' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:CapturedAndroidIssue26505MissingRegistration `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue26505' `
+                -ExpectedTestMethod 'DisabledDefaultPaddingLeavesEnoughRoomForButtonText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*exact first top-level handler registration*include exactly one non-alias using Microsoft.Maui.Hosting*'
+        $importOnly = $script:CapturedAndroidIssue26505MissingRegistration.Replace(
+            'using Microsoft.Maui.Controls;',
+            "using Microsoft.Maui.Controls;`nusing Microsoft.Maui.Hosting;")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $importOnly `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue26505' `
+                -ExpectedTestMethod 'DisabledDefaultPaddingLeavesEnoughRoomForButtonText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*exact first top-level handler registration*Button, global::Microsoft.Maui.Handlers.ButtonHandler*before constructing any Window, Page, or Button*'
+    }
+
+    It 'accepts the captured Android native-crash source after exact handler registration' {
+        $repaired = $script:CapturedAndroidIssue26505MissingRegistration.Replace(
+            'using Microsoft.Maui.Controls;',
+            "using Microsoft.Maui.Controls;`nusing Microsoft.Maui.Hosting;").Replace(
+            '            var button = new Button',
+            $script:TrustedAndroidIssue26505Registration + "`n            var button = new Button")
+        $result = New-ReplicationControlVariant `
+            -BaselineSource $repaired `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue26505' `
+            -ExpectedTestMethod 'DisabledDefaultPaddingLeavesEnoughRoomForButtonText' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        $result | Should -BeExactly $repaired.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+    }
+
+    It 'rejects Android Issue26505 wrong handler registration pair' {
+        $wrongControl = $script:TrustedAndroidIssue26505Base.Replace(
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()',
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.ButtonHandler>()')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongControl `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*AddHandler must register only trusted Button -> ButtonHandler metadata*'
+
+        $wrongHandler = $script:TrustedAndroidIssue26505Base.Replace(
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()',
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Controls.Handlers.LabelHandler>()')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongHandler `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*AddHandler must register only trusted Button -> ButtonHandler metadata*'
+    }
+
+    It 'rejects Android Issue26505 arbitrary registry lambda bodies' {
+        foreach ($replacement in @(
+            @'
+        EnsureHandlerCreated(builder =>
+        {
+            builder.ConfigureMauiHandlers(
+                handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>());
+        });
+'@,
+            @'
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(
+            handlers =>
+            {
+                handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>();
+                handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Controls.Handlers.LabelHandler>();
+            }));
+'@
+        )) {
+            $candidate = $script:TrustedAndroidIssue26505Base.Replace(
+                $script:TrustedAndroidIssue26505Registration,
+                $replacement)
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+            } | Should -Throw '*exact first top-level handler registration*'
+        }
+    }
+
+    It 'rejects Android Issue26505 late handler registration or missing Hosting import' {
+        $lateRegistration = $script:TrustedAndroidIssue26505Base.Replace(
+            $script:TrustedAndroidIssue26505Registration,
+            '').Replace(
+            '        var applyReportedTrigger = true;',
+            $script:TrustedAndroidIssue26505Registration +
+                '        var applyReportedTrigger = true;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $lateRegistration `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*first top-level handler registration*before constructing any Window, Page, or Button*'
+
+        $missingHostingUsing = $script:TrustedAndroidIssue26505Base.Replace(
+            "using Microsoft.Maui.Hosting;`n",
+            '')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $missingHostingUsing `
+                -Edits @($script:GateEdit) `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        } | Should -Throw '*using Microsoft.Maui.Hosting*real MAUI handler-registration extension method binds*'
+    }
+
     It 'rejects Android Issue26505 helper outside exact issue path' {
         {
             New-ReplicationControlVariant `
@@ -10785,8 +10952,8 @@ namespace Google.Android.Material.Button
 
     It 'rejects Android Issue26505 wrong helper overload or handler provenance' {
         $wrongHandler = $script:TrustedAndroidIssue26505Base.Replace(
-            'global::Microsoft.Maui.Handlers.ButtonHandler',
-            'global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub')
+            'CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>',
+            'CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>')
         {
             New-ReplicationControlVariant `
                 -BaselineSource $wrongHandler `
@@ -10892,7 +11059,7 @@ namespace Google.Android.Material.Button
                 -Edits @($script:GateEdit) `
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
-        } | Should -Throw '*Android generated tests may use CreateHandlerAndAddToWindow only for the exact reviewed Issue26505 ButtonHandler text-fit profile*'
+        } | Should -Throw '*native text-fit assertion must be exactly one Xunit Assert.True*'
 
         $broadRead = $script:TrustedAndroidIssue26505Base.Replace(
             'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',
