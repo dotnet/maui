@@ -23,7 +23,6 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 	public const string FlowDirectionRightToLeftRadioButton = "FlowDirectionRTLRadioButton";
 	public const string IsEnabledFalseRadioButton = "IsEnabledFalseRadioButton";
 	public const string IsVisibleFalseRadioButton = "IsVisibleFalseRadioButton";
-	public const string PositionEntry = "PositionEntry";
 	public const string AddItemButton = "AddItemButton";
 	public const string RemoveItemButton = "RemoveItemButton";
 	public const string MaximumVisibleStepper = "MaximumVisibleStepper";
@@ -632,6 +631,28 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 #endif
+
+	[Test, Order(41)]
+	[Category(UITestCategories.IndicatorView)]
+	public void VerifyIndicatorView_HideSingleReappears()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(HideSingleTrueRadioButton);
+		App.Tap(HideSingleTrueRadioButton);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		for (int i = 0; i < 4; i++)
+		{
+			App.WaitForElement(RemoveItemButton);
+			App.Tap(RemoveItemButton);
+		}
+		// Only a single item remains, so the indicator should be hidden. Adding an item
+		// back should make the indicator reappear.
+		App.WaitForElement(AddItemButton);
+		App.Tap(AddItemButton);
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
 
 	public void IncreasePositionStepper()
 	{
