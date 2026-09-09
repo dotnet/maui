@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 				var state = await InvokeOnMainThreadAsync(() =>
 				{
 					var offset = collectionView.ContentOffset;
-					using NSIndexPath targetIndexPath = expectedItem is null
+					using var targetIndexPath = expectedItem is null
 						? null
 						: NSIndexPath.FromItemSection(expectedItem.Value, expectedSection.Value);
 					var targetAttributes = targetIndexPath is null
