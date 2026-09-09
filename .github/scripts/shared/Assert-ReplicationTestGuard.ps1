@@ -581,6 +581,145 @@ function Get-ReplicationProductFixUnsafePatterns {
         })
 }
 
+function Get-ReplicationProductFixSafetyContent {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $normalizedPath = $Path.Replace('\', '/')
+    if ($normalizedPath -cne 'src/Controls/src/Core/Button/Button.Mapper.cs') {
+        return $Content
+    }
+
+    # Button.Mapper.cs has an established Windows mapper key that uses the
+    # contextual nameof(ImageSource) operator. Treat only that exact Controls
+    # mapper registration as a property-key token, not as a device source
+    # capability. Assert-ReplicationNoContextualNameofShadowing runs before
+    # this replacement, so a source-declared nameof cannot turn this spelling
+    # into an executable call. Any executable ImageSource use, changed callback,
+    # different receiver, or different path still reaches the normal scanner.
+    return [regex]::Replace(
+        $Content,
+        '(?m)(?<prefix>\bButtonHandler\s*\.\s*Mapper\s*\.\s*ReplaceMapping\s*<\s*Button\s*,\s*IButtonHandler\s*>\s*\(\s*)nameof\s*\(\s*ImageSource\s*\)(?<suffix>\s*,\s*MapImageSource\s*\)\s*;)',
+        '${prefix}nameof(Text)${suffix}'
+    )
+}
+
+function Assert-ReplicationNoContextualNameofShadowing {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$Content,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ([IO.Path]::GetExtension($Path) -ine '.cs') {
+        return
+    }
+
+    $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText($Content)
+    $root = $tree.GetRoot()
+    $sanitize = {
+        param([string]$Value)
+        $clean = [regex]::Replace($Value, '[\p{C}]', ' ').Trim()
+        if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 160) }
+        return $clean
+    }
+    $throwShadow = {
+        param([string]$Kind, [string]$Snippet)
+
+        $clean = & $sanitize $Snippet
+        throw "Product fix source '$Path' contains prohibited 'contextual-nameof-shadow' content: $Kind named 'nameof' could make a syntactic nameof(...) expression bind to executable source code ('$clean')."
+    }
+
+    foreach ($node in @($root.DescendantNodes())) {
+        switch ($node.GetType().Name) {
+            'UsingDirectiveSyntax' {
+                if ($null -ne $node.Alias -and
+                    $node.Alias.Name.Identifier.ValueText -ceq 'nameof') {
+                    & $throwShadow 'using alias' $node.ToString()
+                }
+            }
+            { $_ -in @(
+                    'ClassDeclarationSyntax',
+                    'StructDeclarationSyntax',
+                    'InterfaceDeclarationSyntax',
+                    'RecordDeclarationSyntax',
+                    'RecordStructDeclarationSyntax',
+                    'EnumDeclarationSyntax',
+                    'DelegateDeclarationSyntax',
+                    'MethodDeclarationSyntax',
+                    'LocalFunctionStatementSyntax',
+                    'PropertyDeclarationSyntax',
+                    'EventDeclarationSyntax',
+                    'VariableDeclaratorSyntax',
+                    'ParameterSyntax',
+                    'SingleVariableDesignationSyntax',
+                    'ForEachStatementSyntax',
+                    'CatchDeclarationSyntax',
+                    'FromClauseSyntax',
+                    'LetClauseSyntax',
+                    'JoinClauseSyntax',
+                    'QueryContinuationSyntax'
+                ) } {
+                if ($node.PSObject.Properties['Identifier'] -and
+                    $node.Identifier.ValueText -ceq 'nameof') {
+                    & $throwShadow $node.GetType().Name $node.ToString()
+                }
+            }
+        }
+    }
+
+    $disabledTextKind = [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::DisabledTextTrivia
+    $nullPredicate = [System.Func[Microsoft.CodeAnalysis.SyntaxNode, bool]]$null
+    $inactiveDeclarationPatterns = @(
+        [pscustomobject]@{
+            Kind = 'using alias'
+            Pattern = '(?im)^\s*using\s+@?nameof(?![A-Za-z0-9_])\s*='
+        },
+        [pscustomobject]@{
+            Kind = 'type or delegate declaration'
+            Pattern = '(?im)(?<![A-Za-z0-9_@])(?:class|struct|interface|enum|delegate|record)\s+@?nameof(?![A-Za-z0-9_])'
+        },
+        [pscustomobject]@{
+            Kind = 'method or local-function declaration'
+            Pattern = '(?im)(?<![A-Za-z0-9_@])(?:public|private|protected|internal|static|new|virtual|override|sealed|abstract|extern|unsafe|async|partial|readonly|\s)+[A-Za-z_@][A-Za-z0-9_@<>,\[\]\.?\s:]*\s+@?nameof(?![A-Za-z0-9_])\s*(?:<[^;{}()\r\n]*>)?\s*\([^;{}]*\)\s*(?:=>|where\b|[{\r\n])'
+        },
+        [pscustomobject]@{
+            Kind = 'property declaration'
+            Pattern = '(?im)(?<![A-Za-z0-9_@])(?:public|private|protected|internal|static|new|virtual|override|sealed|abstract|extern|unsafe|partial|readonly|required|\s)+[A-Za-z_@][A-Za-z0-9_@<>,\[\]\.?\s:]*\s+@?nameof(?![A-Za-z0-9_])\s*(?:\{|=>)'
+        },
+        [pscustomobject]@{
+            Kind = 'variable or parameter declaration'
+            Pattern = '(?im)(?<![A-Za-z0-9_@])(?:const|static|readonly|volatile|public|private|protected|internal|new|var|[A-Za-z_@][A-Za-z0-9_@<>,\[\]\.?\s:]*)\s+@?nameof(?![A-Za-z0-9_])\s*(?:=|;|,|\))'
+        },
+        [pscustomobject]@{
+            Kind = 'foreach variable declaration'
+            Pattern = '(?im)\bforeach\s*\([^)]*\s+@?nameof(?![A-Za-z0-9_])\s+in\b'
+        },
+        [pscustomobject]@{
+            Kind = 'deconstruction variable declaration'
+            Pattern = '(?im)\bvar\s*\([^;\r\n)]*\b@?nameof(?![A-Za-z0-9_])\b'
+        }
+    )
+
+    foreach ($trivia in @($root.DescendantTrivia($nullPredicate, $true))) {
+        if ($trivia.RawKind -ne $disabledTextKind) {
+            continue
+        }
+        $inactiveText = Get-ReplicationCommentFreeText `
+            -Text $trivia.ToFullString() `
+            -Path $Path
+        foreach ($entry in $inactiveDeclarationPatterns) {
+            $match = [regex]::Match($inactiveText, $entry.Pattern)
+            if ($match.Success) {
+                & $throwShadow "inactive $($entry.Kind)" $match.Value
+            }
+        }
+    }
+}
+
 function Assert-ReplicationProductFixSafety {
     <#
     .SYNOPSIS
@@ -613,9 +752,18 @@ function Assert-ReplicationProductFixSafety {
     if ([string]::IsNullOrWhiteSpace($Content)) {
         throw "Product fix source '$Path' is empty."
     }
+    if ($extension -eq '.cs') {
+        Assert-ReplicationNoContextualNameofShadowing `
+            -Content $Content `
+            -Path $Path
+    }
+
+    $safetyContent = Get-ReplicationProductFixSafetyContent `
+        -Content $Content `
+        -Path $Path
 
     $null = Invoke-ReplicationUnsafeSourceCapabilities `
-        -Content $Content `
+        -Content $safetyContent `
         -Path $Path `
         -Patterns @(Get-ReplicationProductFixUnsafePatterns)
 }
@@ -785,6 +933,294 @@ function Get-ReplicationCSharpMemberRecords {
     return @($records)
 }
 
+function Test-ReplicationStaticInitializerHasNarrowPrimitiveType {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)]$Type)
+
+    if ($Type.GetType().Name -cne 'PredefinedTypeSyntax') {
+        return $false
+    }
+
+    return $Type.Keyword.ValueText -cin @(
+        'bool',
+        'byte',
+        'sbyte',
+        'short',
+        'ushort',
+        'int',
+        'uint',
+        'long',
+        'ulong',
+        'char',
+        'float',
+        'double',
+        'decimal',
+        'string'
+    )
+}
+
+function Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)]$Expression)
+
+    switch ($Expression.GetType().Name) {
+        'LiteralExpressionSyntax' {
+            return $true
+        }
+        'ParenthesizedExpressionSyntax' {
+            return Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                -Expression $Expression.Expression
+        }
+        'PrefixUnaryExpressionSyntax' {
+            if ($Expression.OperatorToken.Text -cnotin @('+', '-', '!', '~')) {
+                return $false
+            }
+            return Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                -Expression $Expression.Operand
+        }
+        'BinaryExpressionSyntax' {
+            if ($Expression.OperatorToken.Text -cnotin @(
+                    '+',
+                    '-',
+                    '*',
+                    '/',
+                    '%',
+                    '<<',
+                    '>>',
+                    '>>>',
+                    '&',
+                    '|',
+                    '^',
+                    '&&',
+                    '||',
+                    '==',
+                    '!=',
+                    '<',
+                    '<=',
+                    '>',
+                    '>='
+                )) {
+                return $false
+            }
+            return (Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                    -Expression $Expression.Left) -and
+                (Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                    -Expression $Expression.Right)
+        }
+        'CheckedExpressionSyntax' {
+            return Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                -Expression $Expression.Expression
+        }
+        'UncheckedExpressionSyntax' {
+            return Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax `
+                -Expression $Expression.Expression
+        }
+    }
+
+    return $false
+}
+
+function Get-ReplicationConditionalBranchBodies {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$RecordText,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $lines = $RecordText.Replace("`r`n", "`n").Replace("`r", "`n").Split("`n")
+    $branches = [Collections.Generic.List[string]]::new()
+    if ($lines.Count -eq 0 -or $lines[0] -notmatch '^\s*#\s*if\b') {
+        throw "Product fix source '$Path' could not validate changed conditional static initialization."
+    }
+
+    $currentBranch = [Collections.Generic.List[string]]::new()
+    $nestedBlock = $null
+    $nestedDepth = 0
+    for ($lineIndex = 1; $lineIndex -lt $lines.Count; $lineIndex++) {
+        $line = $lines[$lineIndex]
+
+        if ($null -ne $nestedBlock) {
+            $nestedBlock.Add($line)
+            if ($line -match '^\s*#\s*if\b') {
+                $nestedDepth++
+            } elseif ($line -match '^\s*#\s*endif\b') {
+                $nestedDepth--
+                if ($nestedDepth -eq 0) {
+                    foreach ($nestedBranch in @(Get-ReplicationConditionalBranchBodies `
+                                -RecordText ($nestedBlock -join "`n") `
+                                -Path $Path)) {
+                        $branches.Add($nestedBranch)
+                    }
+                    $nestedBlock = $null
+                }
+            }
+            continue
+        }
+
+        if ($line -match '^\s*#\s*if\b') {
+            $nestedBlock = [Collections.Generic.List[string]]::new()
+            $nestedBlock.Add($line)
+            $nestedDepth = 1
+            continue
+        }
+
+        if ($line -match '^\s*#\s*(?:elif|else)\b') {
+            $branches.Add(($currentBranch -join "`n"))
+            $currentBranch.Clear()
+            continue
+        }
+
+        if ($line -match '^\s*#\s*endif\b') {
+            $branches.Add(($currentBranch -join "`n"))
+            $currentBranch.Clear()
+            if ($lineIndex -ne ($lines.Count - 1)) {
+                throw "Product fix source '$Path' could not validate changed conditional static initialization."
+            }
+            return $branches.ToArray()
+        }
+
+        $currentBranch.Add($line)
+    }
+
+    throw "Product fix source '$Path' could not validate changed conditional static initialization."
+}
+
+function Assert-ReplicationStaticInitializerRootSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Root,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $sanitize = {
+        param([string]$Value)
+        $clean = [regex]::Replace($Value, '[\p{C}]', ' ').Trim()
+        if ($clean.Length -gt 160) { $clean = $clean.Substring(0, 160) }
+        return $clean
+    }
+    $assertInitializer = {
+        param([string]$Name, $Type, $Expression)
+
+        $typeText = & $sanitize $Type.ToString()
+        if (-not (Test-ReplicationStaticInitializerHasNarrowPrimitiveType -Type $Type)) {
+            throw "Product fix source '$Path' contains prohibited 'static-initializer' content: changed static member '$Name' initializes non-primitive type '$typeText'. Use an existing startup hook instead of type initialization."
+        }
+        if (-not (Test-ReplicationStaticInitializerIsPrimitiveConstantSyntax -Expression $Expression)) {
+            $snippet = & $sanitize $Expression.ToString()
+            throw "Product fix source '$Path' contains prohibited 'static-initializer' content: changed static member '$Name' initializes from non-literal or executable expression '$snippet'. Use only primitive literal constant syntax in changed static initializers."
+        }
+    }
+
+    foreach ($field in @($Root.DescendantNodes() | Where-Object {
+        $_.GetType().Name -in @('FieldDeclarationSyntax', 'EventFieldDeclarationSyntax')
+    })) {
+        $modifiers = @($field.Modifiers | ForEach-Object { $_.ValueText })
+        if ($modifiers -notcontains 'static' -or $modifiers -contains 'const') {
+            continue
+        }
+        foreach ($variable in @($field.Declaration.Variables)) {
+            if ($null -ne $variable.Initializer -and
+                $null -ne $variable.Initializer.Value) {
+                & $assertInitializer `
+                    $variable.Identifier.ValueText `
+                    $field.Declaration.Type `
+                    $variable.Initializer.Value
+            }
+        }
+    }
+
+    foreach ($property in @($Root.DescendantNodes() | Where-Object {
+        $_.GetType().Name -eq 'PropertyDeclarationSyntax'
+    })) {
+        $modifiers = @($property.Modifiers | ForEach-Object { $_.ValueText })
+        if ($modifiers -notcontains 'static') {
+            continue
+        }
+        if ($null -ne $property.Initializer -and
+            $null -ne $property.Initializer.Value) {
+            & $assertInitializer `
+                $property.Identifier.ValueText `
+                $property.Type `
+                $property.Initializer.Value
+        }
+    }
+}
+
+function Invoke-ReplicationConditionalStaticInitializerSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$RecordText,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ($RecordText -notmatch '(?i)\bstatic\b') {
+        return
+    }
+
+    foreach ($branchText in @(Get-ReplicationConditionalBranchBodies `
+                -RecordText $RecordText `
+                -Path $Path)) {
+        if ([string]::IsNullOrWhiteSpace($branchText) -or
+            $branchText -notmatch '(?i)\bstatic\b') {
+            continue
+        }
+
+        $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            "class __ReplicationStaticInitializer {`n$branchText`n}"
+        )
+        $errors = @($tree.GetDiagnostics() | Where-Object {
+            [string]$_.Severity -ceq 'Error'
+        } | Select-Object -First 1)
+        if ($errors.Count -gt 0) {
+            throw "Product fix source '$Path' could not validate changed conditional static initialization."
+        }
+
+        Assert-ReplicationStaticInitializerRootSafety `
+            -Root $tree.GetRoot() `
+            -Path $Path
+    }
+}
+
+function Invoke-ReplicationChangedStaticInitializerSafety {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$RecordText,
+        [Parameter(Mandatory = $true)][string]$RecordKind,
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    if ($RecordKind -ceq 'conditional') {
+        Invoke-ReplicationConditionalStaticInitializerSafety `
+            -RecordText $RecordText `
+            -Path $Path
+        return
+    }
+
+    if ($RecordKind -notin @(
+            'FieldDeclarationSyntax',
+            'EventFieldDeclarationSyntax',
+            'PropertyDeclarationSyntax'
+        )) {
+        return
+    }
+    if ($RecordText -notmatch '(?i)\bstatic\b') {
+        return
+    }
+
+    $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        "class __ReplicationStaticInitializer {`n$RecordText`n}"
+    )
+    $errors = @($tree.GetDiagnostics() | Where-Object {
+        [string]$_.Severity -ceq 'Error'
+    } | Select-Object -First 1)
+    if ($errors.Count -gt 0) {
+        throw "Product fix source '$Path' could not validate changed static initialization."
+    }
+
+    $root = $tree.GetRoot()
+    Assert-ReplicationStaticInitializerRootSafety -Root $root -Path $Path
+}
+
 function Get-ReplicationXamlElementRecords {
     [CmdletBinding()]
     param(
@@ -869,9 +1305,10 @@ function Assert-ReplicationProductFixDeltaSafety {
     }
     # A guard, helper call, alias, field, property, or XAML visibility edit can
     # activate a dangerous sink in an otherwise unchanged member/subtree. The
-    # complete resulting file is therefore the security boundary. This is
-    # intentionally conservative: files that already contain prohibited
-    # capabilities are outside model-authored fix scope.
+    # complete resulting file is therefore the security boundary. The only
+    # product-specific neutralization is the exact contextual nameof(ImageSource)
+    # key in the existing Controls Button mapper after source-declared nameof
+    # shadows have been rejected.
     Assert-ReplicationProductFixSafety -Content $AfterContent -Path $Path
 
     $extension = [IO.Path]::GetExtension($Path).ToLowerInvariant()
@@ -960,6 +1397,11 @@ function Assert-ReplicationProductFixDeltaSafety {
         $afterRecords[$record.Key] = $record
         if (-not $beforeRecords.ContainsKey($record.Key) -or
             $record.Text -cne $beforeRecords[$record.Key].Text) {
+            Invoke-ReplicationChangedStaticInitializerSafety `
+                -RecordText $record.Text `
+                -RecordKind $record.Kind `
+                -Path $Path
+
             $scanText = $record.Text
             foreach ($alias in $aliasRecords) {
                 if ($record.Text -match "(?<![A-Za-z0-9_])$([regex]::Escape($alias.Alias))(?![A-Za-z0-9_])") {
