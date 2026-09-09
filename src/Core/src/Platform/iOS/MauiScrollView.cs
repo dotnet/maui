@@ -417,6 +417,11 @@ namespace Microsoft.Maui.Platform
 			else
 				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
 
+			if (_safeArea.IsEmptyAtPixelLevel())
+			{
+				_safeArea = SafeAreaPadding.Empty;
+			}
+
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			// Parent-edge blocking is now resolved per-edge inline while computing GetInset() above
 			// (see ResolveParentBlockedEdges/GetManualInsetForEdge) for BOTH the manual (mixed-edge)

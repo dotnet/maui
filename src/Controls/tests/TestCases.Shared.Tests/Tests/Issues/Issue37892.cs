@@ -18,11 +18,6 @@ public class Issue37892 : _IssuesUITest
 	[Category(UITestCategories.SafeAreaEdges)]
 	public void ScrollViewLayoutShouldSettle()
 	{
-		if (App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp))
-		{
-			Assert.Ignore("The issue reproduction is not reliable on iOS 26 because UIKit no longer exposes the fluctuating adjusted content inset."); // Issue Link: https://github.com/dotnet/maui/issues/37892
-		}
-
 		App.WaitForElement("Issue37892LaunchButton", timeout: TimeSpan.FromSeconds(10));
 		App.Tap("Issue37892LaunchButton");
 
@@ -32,12 +27,6 @@ public class Issue37892 : _IssuesUITest
 			if (App.FindElements("Layout Loop Detected").Count > 0)
 			{
 				App.TapDisplayAlertButton("OK");
-				Assert.Fail(
-					$"The ScrollView entered a layout loop and reached {LoopDetectionThreshold} root size changes.");
-			}
-
-			if (HasStatus("Issue37892LayoutLoopDetected"))
-			{
 				Assert.Fail(
 					$"The ScrollView entered a layout loop and reached {LoopDetectionThreshold} root size changes.");
 			}
