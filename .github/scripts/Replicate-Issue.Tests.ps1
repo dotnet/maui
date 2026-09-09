@@ -16381,6 +16381,9 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
 Describe 'The fix panel stops before the step timeout kills the evidence' {
     BeforeAll {
         $script:start = [DateTimeOffset]::Parse('2025-01-01T00:00:00Z')
+        # Stay inside this task's indentation instead of imposing a character
+        # window that truncates long conditions or crossing into another task.
+        $script:replicationStepTimeoutPattern = '(?m)^(?<indent>[ \t]+)name: RunReplication[ \t]*\r?\n(?:\k<indent>[ \t]*\S[^\r\n]*\r?\n|[ \t]*\r?\n)*?\k<indent>timeoutInMinutes:[ \t]*(?<timeout>\d+)[ \t]*\r?$'
     }
 
     It 'leaves the publish reserve intact after a worst-case scope phase' {
@@ -16554,9 +16557,9 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
     It 'derives a budget no candidate can overrun the step with' {
         $yml = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
-        $step = [regex]::Match($yml, "name: RunReplication[\s\S]{0,400}?timeoutInMinutes: (\d+)")
+        $step = [regex]::Match($yml, $script:replicationStepTimeoutPattern)
         $step.Success | Should -BeTrue -Because 'the replicate step must declare a timeout'
-        $stepTimeout = [int]$step.Groups[1].Value
+        $stepTimeout = [int]$step.Groups['timeout'].Value
 
         $orchestrator = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
@@ -16579,6 +16582,36 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
         $declaredStep | Should -Be $stepTimeout -Because (
             'the orchestrator budgets against this number and Azure kills ' +
             'against the pipeline one')
+    }
+
+    It 'finds the replication timeout after long metadata with either line ending' {
+        foreach ($newline in @("`n", "`r`n")) {
+            $yml = @(
+                '  - pwsh: reproduce'
+                '    name: RunReplication'
+                ('    condition: ' + ('x' * 2048))
+                '    timeoutInMinutes: 240'
+                '  - pwsh: another'
+                '    timeoutInMinutes: 17'
+            ) -join $newline
+            $step = [regex]::Match($yml, $script:replicationStepTimeoutPattern)
+            $step.Success | Should -BeTrue
+            $step.Groups['timeout'].Value | Should -BeExactly '240'
+        }
+    }
+
+    It 'does not borrow a nested value or another tasks timeout' {
+        $yml = @(
+            '  - pwsh: reproduce'
+            '    name: RunReplication'
+            '    env:'
+            '      timeoutInMinutes: 91'
+            '  - pwsh: another'
+            '    name: OtherTask'
+            '    timeoutInMinutes: 17'
+        ) -join "`n"
+        [regex]::IsMatch($yml, $script:replicationStepTimeoutPattern) |
+            Should -BeFalse
     }
 }
 
