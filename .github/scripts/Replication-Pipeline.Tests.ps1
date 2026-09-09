@@ -131,6 +131,25 @@ Describe 'MAUI Copilot mode routing' {
             'Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1|SetEnvironmentVariable|git (fetch|checkout|merge|apply)')
     }
 
+    It 'uses the trusted checkout Xcode pins for the iOS harness probe' {
+        $variables = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^variables:\r?\n.*?(?=^stages:)').Value
+        $variables | Should -Match 'template: /eng/pipelines/common/variables\.yml@self'
+        $overrides = [regex]::Match(
+            $variables,
+            '(?m)^  - \$\{\{ if ne\(parameters\.Mode, ''ios-harness-probe''\) \}\}:\r?\n(?:^    .*\r?\n)+').Value
+        $overrides | Should -Not -BeNullOrEmpty
+        foreach ($name in @('REQUIRED_XCODE', 'DEVICETESTS_REQUIRED_XCODE', 'XCODE')) {
+            $overrides | Should -Match "(?m)^    - name: $name\r?\n      value: 26\.5"
+            [regex]::Matches($variables, "(?m)^\s+- name: $name\s*$").Count | Should -Be 1
+        }
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Not -Match 'ValidateXcodeVersion|REQUIRED_XCODE|DEVICETESTS_REQUIRED_XCODE|\bXCODE:'
+    }
+
     It 'runs exactly the checked-in iOS fixture and retains native diagnostics' {
         $stage = [regex]::Match(
             $script:Pipeline,

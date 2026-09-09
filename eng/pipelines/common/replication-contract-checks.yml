@@ -137,6 +137,7 @@ steps:
         'MAUI Copilot mode routing*runs guard-only mode without agents devices or publication'
         'MAUI Copilot mode routing*shares fail-fast checks before Android provisioning and baseline restoration'
         'MAUI Copilot mode routing*isolates the trusted iOS native probe from issue generation and publication'
+        'MAUI Copilot mode routing*uses the trusted checkout Xcode pins for the iOS harness probe'
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
         'MAUI Copilot mode routing*keeps generated iOS execution dependent on external isolation'
       )
