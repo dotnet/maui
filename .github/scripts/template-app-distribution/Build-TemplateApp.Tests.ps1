@@ -79,25 +79,6 @@ BeforeAll {
     $script:rubyPath = (Get-Command ruby -ErrorAction SilentlyContinue).Source
     $script:originalPath = $env:PATH
     . $script:sourcePackagesScriptPath
-    $sourcePackagesTokens = $null
-    $sourcePackagesParseErrors = $null
-    $sourcePackagesAst = [System.Management.Automation.Language.Parser]::ParseFile(
-        $script:sourcePackagesScriptPath,
-        [ref]$sourcePackagesTokens,
-        [ref]$sourcePackagesParseErrors
-    )
-    if ($sourcePackagesParseErrors -and $sourcePackagesParseErrors.Count -gt 0) {
-        throw ($sourcePackagesParseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
-    }
-    $payloadProofFunction = $sourcePackagesAst.Find({
-        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-        $args[0].Name -eq 'Get-AppPayloadProof'
-    }, $true)
-    if (-not $payloadProofFunction) {
-        throw "Function 'Get-AppPayloadProof' not found"
-    }
-    $script:payloadProofFunctionText = $payloadProofFunction.Extent.Text
-    Invoke-Expression $payloadProofFunction.Extent.Text
     $script:fixtureSourceSha = '0123456789abcdef0123456789abcdef01234567'
     $script:fixtureSourceVersion = '11.0.0-preview.1.25080.1'
     $script:requiredSourcePackageIds = @(
@@ -316,11 +297,47 @@ namespace MauiFixture_$namespaceSuffix {
         }
     }
 
+    function New-FakeAndroidAssemblyWrapper([string]$SourcePath, [string]$Path, [int]$ElfClass) {
+        $assembly = [System.IO.File]::ReadAllBytes($SourcePath)
+        $bytes = [byte[]]::new(0x4000 + $assembly.Length)
+        ([byte[]]@(0x7f, 0x45, 0x4c, 0x46, $ElfClass, 1, 1)).CopyTo($bytes, 0)
+        $entrySize = if ($ElfClass -eq 2) { 64 } else { 40 }
+        $headerOffset = if ($ElfClass -eq 2) { 58 } else { 46 }
+        [BitConverter]::GetBytes([uint16]$entrySize).CopyTo($bytes, $headerOffset)
+        [BitConverter]::GetBytes([uint16]3).CopyTo($bytes, $headerOffset + 2)
+        [BitConverter]::GetBytes([uint16]1).CopyTo($bytes, $headerOffset + 4)
+        if ($ElfClass -eq 2) {
+            [BitConverter]::GetBytes([uint64]64).CopyTo($bytes, 40)
+        } else {
+            [BitConverter]::GetBytes([uint32]64).CopyTo($bytes, 32)
+        }
+        $names = [System.Text.Encoding]::ASCII.GetBytes("`0.shstrtab`0payload`0")
+        $names.CopyTo($bytes, 300)
+        for ($index = 1; $index -le 2; $index++) {
+            $position = 64 + $index * $entrySize
+            $nameOffset = if ($index -eq 1) { 1 } else { 11 }
+            $offset = if ($index -eq 1) { 300 } else { 0x4000 }
+            $size = if ($index -eq 1) { $names.Length } else { $assembly.Length }
+            [BitConverter]::GetBytes([uint32]$nameOffset).CopyTo($bytes, $position)
+            if ($ElfClass -eq 2) {
+                [BitConverter]::GetBytes([uint64]$offset).CopyTo($bytes, $position + 24)
+                [BitConverter]::GetBytes([uint64]$size).CopyTo($bytes, $position + 32)
+            } else {
+                [BitConverter]::GetBytes([uint32]$offset).CopyTo($bytes, $position + 16)
+                [BitConverter]::GetBytes([uint32]$size).CopyTo($bytes, $position + 20)
+            }
+        }
+        $assembly.CopyTo($bytes, 0x4000)
+        [System.IO.File]::WriteAllBytes($Path, $bytes)
+        return $Path
+    }
+
     function New-FakePayloadArchive(
         [string]$Path,
         $Manifest,
         [string]$SourceSha = $script:fixtureSourceSha,
-        [switch]$OmitRequiredAssembly
+        [switch]$OmitRequiredAssembly,
+        [int]$ElfClass = 0
     ) {
         New-Item -ItemType Directory -Path (Split-Path $Path -Parent) -Force | Out-Null
         Remove-Item -Path $Path -Force -ErrorAction SilentlyContinue
@@ -343,6 +360,11 @@ namespace MauiFixture_$namespaceSuffix {
                 }
 
                 $entryPath = if ([string]::IsNullOrWhiteSpace($prefix)) { $assemblyName } else { "$prefix/$assemblyName" }
+                if ($ElfClass) {
+                    $entryPath = "lib/arm64-v8a/lib_$assemblyName.so"
+                    $sourcePath = New-FakeAndroidAssemblyWrapper -SourcePath $sourcePath `
+                        -Path (Join-Path (Split-Path $Path -Parent) "$assemblyName.so") -ElfClass $ElfClass
+                }
                 Add-ZipEntryFromFile -Archive $archive -EntryPath $entryPath -SourcePath $sourcePath
             }
 
@@ -404,17 +426,6 @@ namespace MauiFixture_$namespaceSuffix {
     }
 
     $script:fakeMauiAssemblyDirectory = Initialize-FakeMauiPayloadAssemblies
-    $script:buildTemplateAppHarnessPath = Join-Path $testRoot 'Build-TemplateApp.harness.ps1'
-    @"
-param()
-`$ErrorActionPreference = 'Stop'
-. '$script:sourcePackagesScriptPath'
-if (-not (Get-Command Get-AppPayloadProof -ErrorAction SilentlyContinue)) {
-$script:payloadProofFunctionText
-}
-& '$scriptPath' @args
-exit `$LASTEXITCODE
-"@ | Set-Content -Path $script:buildTemplateAppHarnessPath -Encoding utf8
 
     $script:fakeCommandDirectory = Join-Path $testRoot 'fake-commands'
     New-Item -ItemType Directory -Path $script:fakeCommandDirectory -Force | Out-Null
@@ -902,7 +913,7 @@ end
 
         $env:FAKE_SOURCE_MANIFEST_PATH = $TestCase.SourceManifestPath
         $env:FAKE_SOURCE_SHA = $TestCase.SourceSha
-        return Invoke-ExternalPowerShell $script:buildTemplateAppHarnessPath $arguments
+        return Invoke-ExternalPowerShell $scriptPath $arguments
     }
 
     function Invoke-NewTemplateApp(
@@ -2042,6 +2053,38 @@ Describe 'packaged payload provenance' {
         $proof.file | Should -Be 'TestApp-no-manifest.apk'
         $proof.assemblies.Count | Should -BeGreaterThan 0
         $proof.dependencies | Should -Contain "Microsoft.Maui.Controls/$($fixture.Version)"
+    }
+
+    It 'extracts exact managed bytes from Android ELF class <ElfClass> wrappers' -ForEach @(@{ ElfClass = 1 }, @{ ElfClass = 2 }) {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive -Path (Join-Path $fixture.Root 'wrapped.apk') `
+            -Manifest $fixture.Manifest -ElfClass $ElfClass
+
+        $proof = Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest
+
+        $proof.assemblies.Count | Should -Be 3
+        foreach ($assembly in $proof.assemblies) {
+            $assembly.path | Should -BeLike 'lib/arm64-v8a/lib_*.dll.so'
+            $assembly.sha256 | Should -Be (Get-FileHash (Join-Path $script:fakeMauiAssemblyDirectory $assembly.name)).Hash.ToLowerInvariant()
+        }
+    }
+
+    It 'rejects a different source SHA inside an Android ELF wrapper' {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive -Path (Join-Path $fixture.Root 'wrong-source.apk') `
+            -Manifest $fixture.Manifest -ElfClass 2 -SourceSha 'fedcba9876543210fedcba9876543210fedcba98'
+
+        { Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest } |
+            Should -Throw '*not from*'
+    }
+
+    It 'rejects truncated Android ELF section data' {
+        $path = New-FakeAndroidAssemblyWrapper -SourcePath (Join-Path $script:fakeMauiAssemblyDirectory 'Microsoft.Maui.dll') `
+            -Path (Join-Path $testRoot 'truncated.dll.so') -ElfClass 2
+        $stream = [System.IO.File]::OpenWrite($path)
+        try { $stream.SetLength(1024) } finally { $stream.Dispose() }
+
+        { Expand-AndroidAssemblyPayload -Path $path } | Should -Throw '*invalid ELF managed payload*'
     }
 
     It 'reads informational source sha and dependency provenance from packaged MAUI archives' {
