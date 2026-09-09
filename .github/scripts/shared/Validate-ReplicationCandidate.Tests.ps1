@@ -4233,6 +4233,500 @@ class SafeHandler
         Get-Content -LiteralPath $script:completeFile -Raw | Should -Match 'false'
     }
 
+    It 'accepts the normal Controls Button mapper registration patch beside its existing ImageSource key' {
+        $script:completePath = 'src/Controls/src/Core/Button/Button.Mapper.cs'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
+#if ANDROID
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty.PropertyName, MapRippleColor);
+#endif
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+'@
+        $after = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
+#if ANDROID
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty.PropertyName, MapRippleColor);
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.UseDefaultPaddingProperty.PropertyName, MapUseDefaultPadding);
+#endif
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
+    It 'rejects changed executable ImageSource use in the Controls Button mapper file' {
+        $script:completePath = 'src/Controls/src/Core/Button/Button.Mapper.cs'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+'@
+        $after = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            var source = ImageSource.FromFile("icon.png");
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'rejects a changed Controls Button ImageSource mapper callback' {
+        $script:completePath = 'src/Controls/src/Core/Button/Button.Mapper.cs'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+        }
+    }
+}
+'@
+        $after = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapText);
+#endif
+        }
+    }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*device-external-access*'
+    }
+
+    It 'rejects contextual nameof shadows before Controls Button mapper neutralization' {
+        foreach ($case in @(
+                @{
+                    Prefix = 'using nameof = System.String;'
+                    Member = ''
+                    Detail = 'using alias'
+                }
+                @{
+                    Prefix = ''
+                    Member = 'static string nameof(object value) => string.Empty;'
+                    Detail = 'MethodDeclarationSyntax'
+                }
+                @{
+                    Prefix = ''
+                    Member = 'static void Configure() { Func<object, string> nameof = _ => string.Empty; }'
+                    Detail = 'VariableDeclaratorSyntax'
+                }
+                @{
+                    Prefix = ''
+                    Member = "#if NEVER`nstatic string nameof(object value) => string.Empty;`n#endif"
+                    Detail = 'inactive method'
+                }
+                @{
+                    Prefix = ''
+                    Member = "#if NEVER`nstatic Func<object, string> nameof { get; } = _ => string.Empty;`n#endif"
+                    Detail = 'inactive property declaration'
+                }
+                @{
+                    Prefix = ''
+                    Member = "#if NEVER`nstatic string /* declaration gap */ nameof(object value) => string.Empty;`n#endif"
+                    Detail = 'inactive method'
+                }
+                @{
+                    Prefix = ''
+                    Member = "#if NEVER`nstatic Func<object, string> /* declaration gap */ nameof { get; } = _ => string.Empty;`n#endif"
+                    Detail = 'inactive property declaration'
+                }
+            )) {
+            $script:completePath = 'src/Controls/src/Core/Button/Button.Mapper.cs'
+            $script:completeFile = Join-Path $script:completeRepo $script:completePath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+                Out-Null
+            $before = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+'@
+            $after = @"
+$($case.Prefix)
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        $($case.Member)
+
+        internal new static void RemapForControls()
+        {
+#if WINDOWS
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);
+#endif
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Text), MapText);
+        }
+    }
+}
+"@
+            $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+            {
+                Assert-ReplicationFixSources `
+                    -RepositoryRoot $script:completeRepo `
+                    -Paths @($script:completePath) `
+                    -PatchPath $patch
+            } | Should -Throw "*contextual-nameof-shadow*$($case.Detail)*"
+        }
+    }
+
+    It 'allows conservative changed static primitive literal initialization' {
+        foreach ($case in @(
+                @{
+                    Before = 'class SafeHandler { static readonly int DefaultSize = 1; int Safe() => 1; }'
+                    After = 'class SafeHandler { static readonly int DefaultSize = 2; int Safe() => 1; }'
+                }
+                @{
+                    Before = 'class SafeHandler { static readonly bool Enabled = false; int Safe() => 1; }'
+                    After = 'class SafeHandler { static readonly bool Enabled = true; int Safe() => 1; }'
+                }
+                @{
+                    Before = "class SafeHandler { static readonly char Marker = 'a'; int Safe() => 1; }"
+                    After = "class SafeHandler { static readonly char Marker = 'b'; int Safe() => 1; }"
+                }
+                @{
+                    Before = 'class SafeHandler { static readonly string Name = "old"; int Safe() => 1; }'
+                    After = 'class SafeHandler { static readonly string Name = "new" + " value"; int Safe() => 1; }'
+                }
+                @{
+                    Before = 'class SafeHandler { static readonly int Mask = 1; int Safe() => 1; }'
+                    After = 'class SafeHandler { static readonly int Mask = (1 << 3) | 1; int Safe() => 1; }'
+                }
+                @{
+                    Before = 'class SafeHandler { static readonly decimal Ratio = 1.0m; int Safe() => 1; }'
+                    After = 'class SafeHandler { static readonly decimal Ratio = -2.5m; int Safe() => 1; }'
+                }
+            )) {
+            $patch = script:New-CompleteFilePatch `
+                -Before $case.Before `
+                -After $case.After
+
+            {
+                Assert-ReplicationFixSources `
+                    -RepositoryRoot $script:completeRepo `
+                    -Paths @($script:completePath) `
+                    -PatchPath $patch
+            } | Should -Not -Throw
+        }
+    }
+
+    It 'allows benign unchanged static object initialization beside a safe edit' {
+        $patch = script:New-CompleteFilePatch `
+            -Before 'class SafeHandler { static readonly object Gate = new object(); int Safe() => 1; }' `
+            -After 'class SafeHandler { static readonly object Gate = new object(); int Safe() => 2; }'
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
+    It 'allows unchanged conditional static object initialization beside a safe edit' {
+        $before = @'
+class SafeHandler
+{
+#if ANDROID
+    static readonly object Gate = new object();
+#else
+    static object OtherGate { get; } = new object();
+#endif
+    int Safe() => 1;
+}
+'@
+        $after = @'
+class SafeHandler
+{
+#if ANDROID
+    static readonly object Gate = new object();
+#else
+    static object OtherGate { get; } = new object();
+#endif
+    int Safe() => 2;
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
+    It 'rejects Android mapper registration hidden behind a static field initializer' {
+        $script:completePath = 'src/Controls/src/Core/Button/Button.Android.cs'
+        $script:completeFile = Join-Path $script:completeRepo $script:completePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $script:completeFile) -Force |
+            Out-Null
+        $before = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        public static void MapText(IButtonHandler handler, Button button)
+        {
+            handler.PlatformView?.UpdateText(button);
+        }
+    }
+}
+'@
+        $after = @'
+namespace Microsoft.Maui.Controls
+{
+    public partial class Button
+    {
+        static readonly bool s_androidMappingsInitialized = InitializeAndroidMappings();
+
+        static bool InitializeAndroidMappings()
+        {
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Padding), MapPadding);
+            ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(PlatformConfiguration.AndroidSpecific.Button.UseDefaultPaddingProperty.PropertyName, MapUseDefaultPadding);
+            return true;
+        }
+
+        public static void MapText(IButtonHandler handler, Button button)
+        {
+            handler.PlatformView?.UpdateText(button);
+        }
+    }
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*static-initializer*InitializeAndroidMappings()*'
+    }
+
+    It 'rejects static initialization hidden in changed conditional branches' {
+        foreach ($case in @(
+                @{
+                    Detail = 's_androidMappingsInitialized'
+                    AfterMember = @'
+#if ANDROID
+    static readonly bool s_androidMappingsInitialized = InitializeAndroidMappings();
+#endif
+'@
+                }
+                @{
+                    Detail = 's_androidMappingsInitialized'
+                    AfterMember = @'
+#if IOS
+    static readonly int SafeValue = 1;
+#elif ANDROID
+    static readonly bool s_androidMappingsInitialized = InitializeAndroidMappings();
+#else
+    static readonly int OtherSafeValue = 2;
+#endif
+'@
+                }
+                @{
+                    Detail = 'Initialized'
+                    AfterMember = @'
+#if IOS
+    static readonly int SafeValue = 1;
+#else
+    static bool Initialized { get; } = InitializeAndroidMappings();
+#endif
+'@
+                }
+                @{
+                    Detail = 's_androidMappingsInitialized'
+                    AfterMember = @'
+#if WINDOWS
+    static readonly int SafeValue = 1;
+#else
+#if ANDROID
+    static readonly bool s_androidMappingsInitialized = InitializeAndroidMappings();
+#endif
+#endif
+'@
+                }
+            )) {
+            $before = 'class SafeHandler { int Safe() => 1; }'
+            $after = @"
+class SafeHandler
+{
+$($case.AfterMember)
+    static bool InitializeAndroidMappings() => true;
+    int Safe() => 1;
+}
+"@
+            $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+            {
+                Assert-ReplicationFixSources `
+                    -RepositoryRoot $script:completeRepo `
+                    -Paths @($script:completePath) `
+                    -PatchPath $patch
+            } | Should -Throw "*static-initializer*$($case.Detail)*"
+        }
+    }
+
+    It 'rejects static literal initialization through a source-defined conversion' {
+        $before = 'class SafeHandler { int Safe() => 1; }'
+        $after = @'
+struct Bootstrap
+{
+    public static implicit operator Bootstrap(int value)
+    {
+        Register();
+        return new Bootstrap();
+    }
+
+    static void Register() { }
+}
+
+class SafeHandler
+{
+    static readonly Bootstrap State = 1;
+    int Safe() => 1;
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Throw '*static-initializer*State*Bootstrap*'
+    }
+
+    It 'rejects executable static property and field initializer variants' {
+        foreach ($case in @(
+                @{
+                    AfterMember = 'static bool Initialized { get; } = InitializeAndroidMappings(); static bool InitializeAndroidMappings() => true;'
+                    Detail = 'Initialized'
+                }
+                @{
+                    AfterMember = 'static readonly object InitializationState = new object();'
+                    Detail = 'InitializationState'
+                }
+                @{
+                    AfterMember = 'static int Counter; static readonly int InitializationState = (Counter = 1);'
+                    Detail = 'InitializationState'
+                }
+                @{
+                    AfterMember = 'static readonly Action InitializationState = () => InitializeAndroidMappings(); static void InitializeAndroidMappings() { }'
+                    Detail = 'InitializationState'
+                }
+                @{
+                    AfterMember = 'static readonly bool InitializationState = AndroidMappingsInitialized; static bool AndroidMappingsInitialized => InitializeAndroidMappings(); static bool InitializeAndroidMappings() => true;'
+                    Detail = 'InitializationState'
+                }
+            )) {
+            $before = 'class SafeHandler { int Safe() => 1; }'
+            $after = "class SafeHandler { $($case.AfterMember) int Safe() => 1; }"
+            $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+            {
+                Assert-ReplicationFixSources `
+                    -RepositoryRoot $script:completeRepo `
+                    -Paths @($script:completePath) `
+                    -PatchPath $patch
+            } | Should -Throw "*static-initializer*$($case.Detail)*"
+        }
+    }
+
     It 'rejects an edit to any file that retains dangerous trusted content' {
         $before = @'
 class SafeHandler
