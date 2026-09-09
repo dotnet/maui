@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebView2Control>
 	{
 		private WebView2WebViewManager? _webviewManager;
+		private ILogger? _logger;
+
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
 		/// <inheritdoc />
 		protected override WebView2Control CreatePlatformView()
@@ -51,8 +54,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				else
 				{
 					// Otherwise, by default, defer closing until disposal completes so JS-driven teardown isn't aborted early (same as Android).
-					disposalTask.FireAndForget();
-					CloseWebView2AfterDisposalAsync(disposalTask, platformView).FireAndForget();
+					disposalTask.FireAndForget(Logger);
+					CloseWebView2AfterDisposalAsync(disposalTask, platformView).FireAndForget(Logger);
 				}
 
 				_webviewManager = null;
@@ -74,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 			catch
 			{
-				// Already logged/handled by the sibling disposalTask.FireAndForget() call;
+				// Already logged/handled by the sibling disposalTask.FireAndForget(logger) call;
 				// swallow here so this continuation still runs the native cleanup below.
 			}
 
