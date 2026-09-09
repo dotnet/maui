@@ -840,6 +840,14 @@ function New-XHarnessNoResultDiagnostic {
     return ($lines -join [Environment]::NewLine)
 }
 
+function Test-XHarnessHelpExitCode {
+    param([AllowNull()][object]$ExitCode)
+
+    # Explicit help can return SUCCESS (0) or XHarness's HELP_SHOWN (2).
+    # This is not a success policy for test execution.
+    return ($ExitCode -is [int] -and $ExitCode -in @(0, 2))
+}
+
 function Invoke-XHarnessPreflight {
     param(
         [Parameter(Mandatory = $true)][bool]$UseLocalXHarness,
@@ -906,7 +914,7 @@ function Invoke-XHarnessPreflight {
     }
 
     Write-XHarnessDiagnosticText -Path $logPath -Content ($lines -join [Environment]::NewLine)
-    if ($helpResult.ExitCode -ne 0) {
+    if (-not (Test-XHarnessHelpExitCode -ExitCode $helpResult.ExitCode)) {
         throw "Android XHarness preflight could not invoke '$($helpCommand.Label)' (exit $($helpResult.ExitCode)). See $logPath and $helpLogPath"
     }
 
@@ -1847,11 +1855,11 @@ try {
                 -LogPath $xharnessProbeLog `
                 -MaximumLogLength 65536 `
                 -MaximumTailLines 120
-            if ($probe.ExitCode -eq 0) {
+            if (Test-XHarnessHelpExitCode -ExitCode $probe.ExitCode) {
                 Write-Host "✓ xharness found: local dotnet tool" -ForegroundColor Green
                 $useLocalXharness = $true
             } else {
-                Write-Error "xharness local dotnet tool probe failed with exit $($probe.ExitCode). See $($probe.LogPath). Install with: dotnet tool install --global Microsoft.DotNet.XHarness.CLI"
+                Write-Error "xharness local dotnet tool help probe failed with exit $($probe.ExitCode). See $($probe.LogPath)."
                 exit 1
             }
         } else {
@@ -1861,7 +1869,7 @@ try {
                 -LogPath $xharnessProbeLog `
                 -MaximumLogLength 65536 `
                 -MaximumTailLines 120
-            if ($probe.ExitCode -eq 0) {
+            if (Test-XHarnessHelpExitCode -ExitCode $probe.ExitCode) {
                 Write-Host "✓ xharness found: $($xharness.Source)" -ForegroundColor Green
             } else {
                 Write-Error "xharness probe failed with exit $($probe.ExitCode). See $($probe.LogPath)."
