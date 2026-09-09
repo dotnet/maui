@@ -3706,7 +3706,10 @@ stages:
               export DEBIAN_FRONTEND=noninteractive
               sudo systemctl stop unattended-upgrades.service || true
               sudo systemctl stop apt-daily.service apt-daily-upgrade.service || true
-              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120
+              sudo timeout 300 apt-get update -q -o DPkg::Lock::Timeout=120 || {
+                update_exit=$?
+                echo "##vso[task.logissue type=warning]Package index refresh failed with exit code ${update_exit}; attempting the required media-tool install from the available index."
+              }
               sudo timeout 600 apt-get install -y -q --no-install-recommends -o DPkg::Lock::Timeout=120 ffmpeg
               ffprobe -version | head -1
             displayName: 'Install validation media validator'

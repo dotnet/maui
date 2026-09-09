@@ -458,6 +458,37 @@ Describe 'Replication issue outcome publication boundary' {
             Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml') -Raw
         $script:OutcomeSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
+
+        function Invoke-ValidationMediaInstallFixture {
+            param([int]$UpdateExit, [int]$InstallExit, [int]$ProbeExit)
+
+            $end = $script:PipelineYaml.IndexOf("            displayName: 'Install validation media validator'")
+            $start = $script:PipelineYaml.LastIndexOf('          - bash: |', $end)
+            if ($start -lt 0 -or $end -le $start) {
+                throw 'Could not locate the validation media install script.'
+            }
+            $body = ($script:PipelineYaml.Substring($start, $end - $start) -split '\r?\n' |
+                Select-Object -Skip 1 | ForEach-Object { $_ -replace '^ {14}', '' }) -join "`n"
+            $fixtures = @'
+command() { return 1; }
+sudo() {
+  case "$*" in
+    "systemctl stop "*) return 0 ;;
+    "timeout 300 apt-get update "*) echo FIXTURE_UPDATE; return UPDATE_EXIT ;;
+    "timeout 600 apt-get install "*) echo FIXTURE_INSTALL; return INSTALL_EXIT ;;
+    *) echo UNEXPECTED_PRIVILEGED_COMMAND; return 97 ;;
+  esac
+}
+ffprobe() { echo FIXTURE_PROBE; return PROBE_EXIT; }
+'@
+            $fixtures = $fixtures.Replace('UPDATE_EXIT', [string]$UpdateExit).
+                Replace('INSTALL_EXIT', [string]$InstallExit).
+                Replace('PROBE_EXIT', [string]$ProbeExit)
+            $bash = (Get-Command bash -CommandType Application -ErrorAction Stop).Source
+            $PSNativeCommandUseErrorActionPreference = $false
+            $output = & $bash --noprofile --norc -c ($fixtures + "`n" + $body) 2>&1
+            [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output -join "`n" }
+        }
     }
 
     It 'gives each media-tool install attempt a fresh timeout' {
@@ -555,6 +586,28 @@ Describe 'Replication issue outcome publication boundary' {
         $update.Success | Should -BeTrue
         $update.Groups['next'].Value.Contains('Write-Warning') | Should -BeTrue
         $update.Groups['next'].Value.Contains('throw') | Should -BeFalse
+    }
+
+    It 'continues validation media installation after a package-index failure' -Skip:$IsWindows {
+        $result = Invoke-ValidationMediaInstallFixture -UpdateExit 100 -InstallExit 0 -ProbeExit 0
+        $result.ExitCode | Should -Be 0
+        $result.Output | Should -Match 'type=warning.*exit code 100'
+        $result.Output | Should -Match '(?s)FIXTURE_UPDATE.*FIXTURE_INSTALL.*FIXTURE_PROBE'
+        $result.Output | Should -Not -Match 'UNEXPECTED_PRIVILEGED_COMMAND'
+    }
+
+    It 'preserves validation media install failures after a package-index failure' -Skip:$IsWindows {
+        $result = Invoke-ValidationMediaInstallFixture -UpdateExit 100 -InstallExit 41 -ProbeExit 0
+        $result.ExitCode | Should -Be 41
+        $result.Output | Should -Match 'FIXTURE_INSTALL'
+        $result.Output | Should -Not -Match 'FIXTURE_PROBE|UNEXPECTED_PRIVILEGED_COMMAND'
+    }
+
+    It 'requires a working media validator after installation succeeds' -Skip:$IsWindows {
+        $result = Invoke-ValidationMediaInstallFixture -UpdateExit 0 -InstallExit 0 -ProbeExit 42
+        $result.ExitCode | Should -Be 42
+        $result.Output | Should -Match 'FIXTURE_PROBE'
+        $result.Output | Should -Not -Match 'type=warning|UNEXPECTED_PRIVILEGED_COMMAND'
     }
 
     It 'never publishes a replication artifact root that was never defined' {
