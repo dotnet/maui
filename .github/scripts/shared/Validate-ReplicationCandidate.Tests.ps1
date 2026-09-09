@@ -892,6 +892,20 @@ Describe 'Validate-ReplicationCandidate manifest boundary' {
             Should -Throw '*automated test attempt count must be between 1 and 5*'
     }
 
+    It 'rejects CSharp global aliases in public reproduction prose as logging-directive syntax' {
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture (
+            New-ValidationFixture)
+        $manifest = Get-Content -Raw -LiteralPath $fixture.ManifestPath |
+            ConvertFrom-Json
+        $manifest.reproductionSteps = @(
+            'Create a Controls device test deriving from global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.'
+        )
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Throw '*URL, mention, or logging directive*'
+    }
+
     It 'rejects a manifest whose expected pattern is an infrastructure failure' {
         $fixture = New-ValidationFixture
         Write-FixtureManifest `
