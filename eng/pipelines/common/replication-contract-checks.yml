@@ -87,6 +87,7 @@ steps:
         'MAUI Copilot mode routing*routes Android harness-only diagnostics before Copilot generation and publication'
         'MAUI Copilot mode routing*keeps the fixed Android native probe separate from issue certification'
         'Fixed Android native harness probe*prewarms the clean baseline then runs the fixed fixture through the isolated selected-test runner'
+        'Fixed Android native harness probe*does not stage or execute the fixture when trusted build cleanup rejects a path'
         'Fixed Android native harness probe*retains the native runner failure and removes only its owned fixture'
         'Fixed Android native harness probe*refuses to overwrite an existing fixture before restore or execution'
         'New-ReplicationControlVariant*allows Android Issue26505 ButtonHandler text-fit oracle'

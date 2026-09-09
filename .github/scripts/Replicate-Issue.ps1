@@ -8318,6 +8318,9 @@ function Invoke-ReplicationAndroidNativeHarnessProbe {
             '-p:AndroidPackageFormat=apk',
             '-p:TreatWarningsAsErrors=false'
         )
+    # The trusted build regenerates tracked outputs such as HybridWebView.js.
+    # Reuse full replication's cleanup before staging any fixture source.
+    Restore-TrackedVerificationSideEffects -PreservedFiles @()
     Assert-InitialReplicationWorktree
     $null = New-Item -ItemType Directory -Path $probeDirectory -Force
     Copy-Item -LiteralPath $fixtureSource -Destination $fixtureTarget
