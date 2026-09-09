@@ -484,7 +484,8 @@ ffprobe() { echo FIXTURE_PROBE; return PROBE_EXIT; }
             $fixtures = $fixtures.Replace('UPDATE_EXIT', [string]$UpdateExit).
                 Replace('INSTALL_EXIT', [string]$InstallExit).
                 Replace('PROBE_EXIT', [string]$ProbeExit)
-            $bash = (Get-Command bash -CommandType Application -ErrorAction Stop).Source
+            $bash = (Get-Command bash -CommandType Application -ErrorAction Stop |
+                Select-Object -First 1).Source
             $PSNativeCommandUseErrorActionPreference = $false
             $output = & $bash --noprofile --norc -c ($fixtures + "`n" + $body) 2>&1
             [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output -join "`n" }

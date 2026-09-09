@@ -1770,6 +1770,41 @@ public partial class MainPage : ContentPage
                 $prompt | Should -Match 'ANDROID ISSUE26505 NARROW EXCEPTION'
             }
         }
+
+        It 'scopes Issue33315 rendered-pixel generated-test guidance to Android Issue33315' {
+            $script:IssueNumber = 33315
+            $script:Platform = 'android'
+
+            foreach ($phase in @('test-plan', 'test', 'repair')) {
+                $prompt = New-CopilotPrompt -Phase $phase -BaselineRelativePath 'tests/Issue33315Tests.Android.cs'
+                $prompt | Should -Match 'ANDROID ISSUE33315 NARROW EXCEPTION'
+                $prompt | Should -Match 'RawBitmapExtensions\.AsRawBitmapAsync\(affectedLabel\)'
+                $prompt | Should -Match 'Assert\.False\(hasRightEdgeInk\)'
+                $prompt | Should -Match 'Assert\.True\(affectedLabel\.Width > 0 && affectedLabel\.Width <= 1024 && affectedLabel\.Height > 0 && affectedLabel\.Height <= 512\)'
+                $prompt | Should -Match 'Assert\.Equal\(bitmap\.PixelWidth \* bitmap\.PixelHeight \* 4, bitmap\.PixelBuffer\.Length\)'
+                $prompt | Should -Match 'var backgroundBlue = bitmap\.PixelBuffer\[0\]'
+                $prompt | Should -Match 'for \(var x = bitmap\.PixelWidth - 2; x < bitmap\.PixelWidth; x\+\+\)'
+                $prompt | Should -Match 'var delta = global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset\] - backgroundBlue\) \+ global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset \+ 1\] - backgroundGreen\) \+ global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset \+ 2\] - backgroundRed\)'
+                $prompt | Should -Match 'delta > 80'
+                $prompt | Should -Match 'resource bounds/preconditions, not substitutes for rendered native evidence'
+                $profile = [regex]::Match(
+                    $prompt,
+                    '(?s)ANDROID ISSUE33315 NARROW EXCEPTION:.*?```csharp(?<body>.*?)```')
+                $profile.Success | Should -BeTrue
+                $profile.Groups['body'].Value | Should -Not -Match 'Android\.Widget'
+            }
+
+            foreach ($case in @(
+                @{ Issue = 33315; Platform = 'ios' }
+                @{ Issue = 33315; Platform = 'catalyst' }
+                @{ Issue = 26505; Platform = 'android' }
+            )) {
+                $script:IssueNumber = $case.Issue
+                $script:Platform = $case.Platform
+                $prompt = New-CopilotPrompt -Phase 'test-plan'
+                $prompt | Should -Not -Match 'ANDROID ISSUE33315 NARROW EXCEPTION'
+            }
+        }
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
@@ -10386,6 +10421,93 @@ namespace Microsoft.Maui.DeviceTests
     }
 }
 '@
+        $script:TrustedAndroidIssue33315Base = @'
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue33315Tests : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue33315")]
+    public async Task ItalicLabelDoesNotClipRightEdgeGlyph()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+        {
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Layout, global::Microsoft.Maui.Handlers.LayoutHandler>();
+            handlers.AddHandler<global::Microsoft.Maui.Controls.ScrollView, global::Microsoft.Maui.Handlers.ScrollViewHandler>();
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Window, global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>();
+        }));
+        var headlineStyle = new Style(typeof(Label))
+        {
+            Setters =
+            {
+                new Setter { Property = Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Color.FromArgb("#190649") },
+                new Setter { Property = Label.FontSizeProperty, Value = 32d },
+                new Setter { Property = View.HorizontalOptionsProperty, Value = global::Microsoft.Maui.Controls.LayoutOptions.Center },
+                new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Center }
+            }
+        };
+        var affectedLabel = new Label
+        {
+            Text = "Hello, World",
+            AutomationId = "AffectedLabel",
+            BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Orange,
+            Style = headlineStyle
+        };
+        global::Microsoft.Maui.Controls.SemanticProperties.SetHeadingLevel(affectedLabel, SemanticHeadingLevel.Level1);
+        var layout = new VerticalStackLayout
+        {
+            Padding = new Thickness(30, 40),
+            Spacing = 25,
+            Children = { affectedLabel }
+        };
+        var scrollView = new ScrollView
+        {
+            Content = layout
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedLabel.FontAttributes = FontAttributes.Italic;
+        }
+
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+            new Window(new ContentPage { Content = scrollView }),
+            async _ =>
+            {
+                await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                Assert.True(affectedLabel.Width > 0 && affectedLabel.Width <= 1024 && affectedLabel.Height > 0 && affectedLabel.Height <= 512);
+                var bitmap = await global::Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmapExtensions.AsRawBitmapAsync(affectedLabel);
+                Assert.True(bitmap.PixelWidth >= 2 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
+                Assert.Equal(bitmap.PixelWidth * bitmap.PixelHeight * 4, bitmap.PixelBuffer.Length);
+                var backgroundBlue = bitmap.PixelBuffer[0];
+                var backgroundGreen = bitmap.PixelBuffer[1];
+                var backgroundRed = bitmap.PixelBuffer[2];
+                var hasRightEdgeInk = false;
+                for (var x = bitmap.PixelWidth - 2; x < bitmap.PixelWidth; x++)
+                {
+                    for (var y = 1; y < bitmap.PixelHeight - 1; y++)
+                    {
+                        var offset = ((y * bitmap.PixelWidth) + x) * 4;
+                        var delta = global::System.Math.Abs(bitmap.PixelBuffer[offset] - backgroundBlue) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 1] - backgroundGreen) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 2] - backgroundRed);
+                        if (delta > 80)
+                        {
+                            hasRightEdgeInk = true;
+                        }
+                    }
+                }
+                Assert.False(hasRightEdgeInk);
+            });
+    }
+}
+'@
     }
 
     AfterAll {
@@ -11238,6 +11360,262 @@ namespace Google.Android.Material.Button
         } | Should -Throw '*Android ButtonHandler/native metadata is trusted only for the exact Issue26505 Android generated-test profile*'
     }
 
+    It 'allows Android Issue33315 Label rendered-pixel clipping oracle' {
+        $variant = New-ReplicationControlVariant `
+            -BaselineSource $script:TrustedAndroidIssue33315Base `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+            -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+
+        $variant | Should -BeExactly $script:TrustedAndroidIssue33315Base.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+    }
+
+    It 'allows Android Issue33315 harmless formatting trivia but rejects altered string literal' {
+        $formatted = $script:TrustedAndroidIssue33315Base.Replace(
+            '            Text = "Hello, World",',
+            "            // reported final-glyph text`n            Text = ""Hello, World"",")
+        $formatted = $formatted.Replace(
+            'Assert.False(hasRightEdgeInk);',
+            'Assert.False(hasRightEdgeInk); // exact rendered-ink oracle')
+        $variant = New-ReplicationControlVariant `
+            -BaselineSource $formatted `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+            -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+
+        $variant | Should -BeExactly $formatted.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+
+        $alteredText = $script:TrustedAndroidIssue33315Base.Replace(
+            'Text = "Hello, World",',
+            'Text = "Hello,       World",')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $alteredText `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*comments and formatting trivia are ignored, but token and literal contents are not*'
+    }
+
+    It 'rejects Android Issue33315 helper outside exact issue path or category' {
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue33315Base `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33316Tests.Android.cs'
+        } | Should -Throw '*only for the exact reviewed Issue26505 ButtonHandler text-fit profile or the exact reviewed Issue33315 Label rendered-pixel profile*'
+
+        $wrongCategory = $script:TrustedAndroidIssue33315Base.Replace(
+            '[Category("Issue33315")]',
+            '[Category("Issue33316")]')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongCategory `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*selected method to carry exactly*Issue33315*'
+    }
+
+    It 'accepts the Android Issue33315 canonical prompt body without reconstruction' {
+        $orchestrator = Get-Content -Raw -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1')
+        $profile = [regex]::Match(
+            $orchestrator,
+            '(?s)ANDROID ISSUE33315 NARROW EXCEPTION:.*?```csharp(?<body>.*?)```')
+        $profile.Success | Should -BeTrue
+        $fixtureTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            $script:TrustedAndroidIssue33315Base,
+            [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default,
+            'profile-fixture.cs')
+        $method = @($fixtureTree.GetRoot().DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax] -and
+                $_.Identifier.ValueText -ceq 'ItalicLabelDoesNotClipRightEdgeGlyph'
+            })
+        $method.Count | Should -Be 1
+        $body = $method[0].Body.Span
+        $source = $script:TrustedAndroidIssue33315Base.Substring(0, $body.Start + 1) +
+            $profile.Groups['body'].Value +
+            $script:TrustedAndroidIssue33315Base.Substring($body.End - 1)
+        $variant = New-ReplicationControlVariant `
+            -BaselineSource $source `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+            -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        $variant | Should -BeExactly $source.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+    }
+
+    It 'rejects Android Issue33315 wrong capture target or helper shadowing' {
+        $wrongCaptureTarget = $script:TrustedAndroidIssue33315Base.Replace(
+            'RawBitmapExtensions.AsRawBitmapAsync(affectedLabel)',
+            'RawBitmapExtensions.AsRawBitmapAsync(scrollView)')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongCaptureTarget `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*capture only the affected Label*'
+
+        $shadowSource = @'
+namespace Microsoft.Maui.DeviceTests.ImageAnalysis
+{
+    public static class RawBitmapExtensions
+    {
+    }
+}
+'@
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedAndroidIssue33315Base `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs' `
+                -AdditionalSources @($shadowSource)
+        } | Should -Throw '*may not declare Android native/profile or Issue33315 callback-shadow types*'
+    }
+
+    It 'rejects Android Issue33315 source-defined callback shadows and inactive conditionals' {
+        foreach ($shadowSource in @(
+            @'
+namespace System
+{
+    public static class Math
+    {
+        public static int Abs(int value) => 0;
+    }
+}
+'@,
+            @'
+namespace Xunit
+{
+    public static class Assert
+    {
+        public static void False(bool value) { }
+    }
+}
+'@,
+            @'
+namespace Microsoft.Maui.DeviceTests
+{
+    public static class AssertHelpers
+    {
+        public static System.Threading.Tasks.Task AssertEventually(System.Func<bool> predicate) =>
+            System.Threading.Tasks.Task.CompletedTask;
+    }
+}
+'@
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $script:TrustedAndroidIssue33315Base `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                    -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs' `
+                    -AdditionalSources @($shadowSource)
+            } | Should -Throw '*Issue33315 callback-shadow*'
+        }
+
+        $inactiveConditional = $script:TrustedAndroidIssue33315Base.Replace(
+            'public class Issue33315Tests',
+            "#if IOS`npublic class HiddenEscape { static readonly int Escaped = 1; }`n#endif`npublic class Issue33315Tests")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $inactiveConditional `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*may not contain inactive conditional code*'
+    }
+
+    It 'rejects Android Issue33315 altered oracle loops threshold or trigger' {
+        foreach ($case in @(
+            @{
+                Source = $script:TrustedAndroidIssue33315Base.Replace(
+                    'delta > 80',
+                    'delta > 40')
+                Error = '*exact reported hierarchy/style, single Italic trigger, and unchanged rendered-ink oracle*'
+            },
+            @{
+                Source = $script:TrustedAndroidIssue33315Base.Replace(
+                    'var x = bitmap.PixelWidth - 2',
+                    'var x = bitmap.PixelWidth - 1')
+                Error = '*exact reported hierarchy/style, single Italic trigger, and unchanged rendered-ink oracle*'
+            },
+            @{
+                Source = $script:TrustedAndroidIssue33315Base.Replace(
+                    'affectedLabel.FontAttributes = FontAttributes.Italic;',
+                    'affectedLabel.FontSize = 32d;')
+                Error = '*only trusted Android Issue33315 reported trigger*FontAttributes.Italic*'
+            }
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                    -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+            } | Should -Throw $case.Error
+        }
+    }
+
+    It 'rejects Android Issue33315 unknown oracle and static initializer escapes' {
+        $unknownOracle = $script:TrustedAndroidIssue33315Base.Replace(
+            'Assert.False(hasRightEdgeInk);',
+            'Assert.True(bitmap.PixelWidth > 0);')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $unknownOracle `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*final Issue33315 oracle must be exactly Assert.False(hasRightEdgeInk)*'
+
+        $staticInitializer = $script:TrustedAndroidIssue33315Base.Replace(
+            '    [Fact]',
+            "    static readonly int Escaped = 1;`n`n    [Fact]")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $staticInitializer `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue33315Tests' `
+                -ExpectedTestMethod 'ItalicLabelDoesNotClipRightEdgeGlyph' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+        } | Should -Throw '*may not execute instance/static field initializers*'
+    }
+
     It 'does not add a broad Android native surface to the closed control contract' {
         $guardSource = Get-Content -Raw -LiteralPath (
             Join-Path (Split-Path -Parent $PSCommandPath) 'shared/Assert-ReplicationTestGuard.ps1')
@@ -11251,6 +11629,17 @@ namespace Google.Android.Material.Button
         $contract | Should -Match 'namespace\s+Google\.Android\.Material\.Button'
         $contract | Should -Match (
             'namespace Microsoft\.Maui\.Handlers\s*\{\s*public class ButtonHandler : global::Microsoft\.Maui\.IElementHandler')
+        $contract | Should -Match 'public global::Microsoft\.Maui\.TextAlignment HorizontalTextAlignment'
+        $contractTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            $contract, [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default, 'contract.cs')
+        foreach ($typeName in @('Thickness', 'TextAlignment', 'SemanticHeadingLevel')) {
+            $declarations = @($contractTree.GetRoot().DescendantNodes() | Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseTypeDeclarationSyntax] -and
+                    $_.Identifier.ValueText -ceq $typeName
+                })
+            $declarations.Count | Should -Be 1
+            $declarations[0].Parent.Name.ToString() | Should -BeExactly 'Microsoft.Maui'
+        }
         $contract | Should -Not -Match 'namespace\s+AndroidX'
         $contract | Should -Not -Match 'namespace\s+Android\.Widget'
         $contract | Should -Not -Match 'SetPadding|PaddingTop|PaddingBottom|Elevation'
