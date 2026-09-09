@@ -1784,52 +1784,48 @@ stages:
               PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
               COMMENTS_VIA_FILE: "true"
 
-          # Copy review artifacts into the CopilotLogs staging dir.
-          # Uses pwsh (not bash) so paths resolve correctly on Windows.
+          # Export only the fixed, bounded files consumed by the posting jobs.
+          # The review agent may create full clones under try-fix workspaces, so
+          # recursively publishing CustomAgentLogsTmp is both unsafe and unbounded.
           - pwsh: |
-              $logsDir = "$(Build.ArtifactStagingDirectory)/copilot-logs"
-              if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Path $logsDir -Force | Out-Null }
-
-              # CustomAgentLogsTmp (PRAgent content files for Stage 3 comment)
-              if (Test-Path "CustomAgentLogsTmp") {
-                Write-Host "Copying CustomAgentLogsTmp..."
-                Copy-Item -Path "CustomAgentLogsTmp" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
-              } else {
-                Write-Host "##[warning]CustomAgentLogsTmp not found — Stage 3 comment may be incomplete"
+              $ErrorActionPreference = 'Stop'
+              $trusted = Join-Path "$(Build.ArtifactStagingDirectory)" "trusted-github"
+              $boundedCopyScript = Join-Path $trusted "scripts/shared/Copy-BoundedDiagnosticFile.ps1"
+              $exportScript = Join-Path $trusted "scripts/shared/Export-ExpectedPRAgentArtifact.ps1"
+              foreach ($requiredScript in @($boundedCopyScript, $exportScript)) {
+                if (-not (Test-Path -LiteralPath $requiredScript -PathType Leaf)) {
+                  throw "Trusted CopilotLogs export helper is missing."
+                }
               }
+              . $boundedCopyScript
+              . $exportScript
+              $publishDir = "$(Build.ArtifactStagingDirectory)/copilot-logs-publish"
+              $publishDir = "$(Build.ArtifactStagingDirectory)/copilot-logs-publish"
+              $exportResult = Export-ExpectedPRAgentArtifact `
+                -RepositoryRoot "$(Build.SourcesDirectory)" `
+                -PRNumber ([int]$env:PARAM_PR_NUMBER) `
+                -DestinationRoot $publishDir `
+                -DiagnosticsRoot "$(Build.ArtifactStagingDirectory)/copilot-logs" `
+                -TokenUsageRoot "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" `
+                -MaxFileCount 128 `
+                -MaxFileBytes 16MB `
+                -MaxTotalBytes 128MB
 
-              # agent-pr-session files
-              if (Test-Path ".github/agent-pr-session") {
-                Write-Host "Copying agent-pr-session..."
-                Copy-Item -Path ".github/agent-pr-session" -Destination $logsDir -Recurse -Force -ErrorAction SilentlyContinue
-              }
-
-              # Copilot token usage raw records
-              $tokenUsageDir = "$(Build.ArtifactStagingDirectory)/copilot-token-usage"
-              if (Test-Path $tokenUsageDir) {
-                Write-Host "Copying copilot-token-usage..."
-                Copy-Item -Path $tokenUsageDir -Destination (Join-Path $logsDir "copilot-token-usage") -Recurse -Force -ErrorAction SilentlyContinue
-              }
-
-              # Review_Feedback files
-              Get-ChildItem -Path . -Filter "Review_Feedback_*.md" -Recurse -ErrorAction SilentlyContinue |
-                ForEach-Object { Copy-Item $_.FullName $logsDir -ErrorAction SilentlyContinue }
-
-              Write-Host "Artifacts staged in $logsDir"
-              Get-ChildItem $logsDir -Recurse -File | Select-Object -First 20 | ForEach-Object {
-                Write-Host "  $($_.FullName.Substring($logsDir.Length))"
-              }
-            displayName: 'Copy review artifacts to staging'
+              Write-Host "Exported bounded CopilotLogs artifact: $($exportResult.CopiedFiles) file(s), $($exportResult.CopiedBytes) bytes, $($exportResult.TruncatedFiles) truncated diagnostic artifact(s)."
+              Write-Host "##vso[task.setvariable variable=BoundedCopilotLogsReady]true"
+            displayName: 'Export bounded review artifacts'
             condition: succeededOrFailed()
+            env:
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
 
-          # Publish Copilot logs and session artifacts
+          # Publish the bounded review and diagnostic files.
           - task: PublishPipelineArtifact@1
             displayName: 'Publish Copilot Logs'
             inputs:
-              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs'
+              targetPath: '$(Build.ArtifactStagingDirectory)/copilot-logs-publish'
               artifact: 'CopilotLogs'
               publishLocation: 'pipeline'
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), eq(variables['BoundedCopilotLogsReady'], 'true'))
 
           # Publish build logs if they exist
           - task: PublishPipelineArtifact@1

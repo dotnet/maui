@@ -96,3 +96,24 @@ Describe 'Copilot reviewer base branch allowlist' {
         }
     }
 }
+
+Describe 'Copilot review artifact publication' {
+    It 'uses the trusted fixed-path bounded exporter' {
+        $pipeline | Should -Match ([regex]::Escape(
+            '$exportScript = Join-Path $trusted "scripts/shared/Export-ExpectedPRAgentArtifact.ps1"'))
+        $pipeline | Should -Match 'Export-ExpectedPRAgentArtifact\s+`'
+        $pipeline | Should -Match ([regex]::Escape(
+            "targetPath: '`$(Build.ArtifactStagingDirectory)/copilot-logs-publish'"))
+        $pipeline | Should -Match ([regex]::Escape(
+            "condition: and(succeededOrFailed(), eq(variables['BoundedCopilotLogsReady'], 'true'))"))
+    }
+
+    It 'does not recursively publish agent-controlled workspaces' {
+        $pipeline | Should -Not -Match (
+            'Copy-Item\s+-Path\s+"CustomAgentLogsTmp"\s+-Destination\s+\$logsDir\s+-Recurse')
+        $pipeline | Should -Not -Match (
+            'Get-ChildItem\s+-Path\s+\.\s+-Filter\s+"Review_Feedback_\*\.md"\s+-Recurse')
+        $pipeline | Should -Not -Match (
+            'Copy-Item\s+-Path\s+"\.github/agent-pr-session".*-Recurse')
+    }
+}
