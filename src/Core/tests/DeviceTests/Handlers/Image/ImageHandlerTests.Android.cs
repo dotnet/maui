@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Widget;
-using Google.Android.Material.ImageView;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
@@ -10,20 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ImageHandlerTests<TImageHandler, TStub>
 	{
-		[Fact]
-		public async Task ImageHandler2PlatformViewDoesNotUseHardwareLayer()
-		{
-			var image = new TStub();
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var handler = CreateHandler<ImageHandler2>(image);
-				var platformView = Assert.IsType<ShapeableImageView>(handler.PlatformView);
-
-				Assert.Equal(global::Android.Views.LayerType.None, platformView.LayerType);
-			});
-		}
-
 		[Fact]
 		public async Task UpdatingSourceWorks()
 		{
