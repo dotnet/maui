@@ -14,31 +14,48 @@ public sealed class DependencyResolverMemoryLeak
     [Fact]
     public void DependencyResolver_ResolveUsing_Leaks()
     {
-        var control = CreateControl();
-        var mitigation = CreateMitigation();
-        var leaky = CreateLeaky();
+        DependencyResolver.ResetResolver();
 
-        ForceGc();
+        try
+        {
+            var control = CreateControl();
+            var mitigation = CreateMitigation();
+            var leaky = CreateLeaky();
 
-        var controlAlive = CountAlive(control);
-        var leakyAlive = CountAlive(leaky);
-        var mitigationAlive = CountAlive(mitigation);
+            ForceGc();
 
-        Assert.Equal(0, controlAlive);
-        Assert.Equal(N, leakyAlive);
-        Assert.Equal(0, mitigationAlive);
-        DependencyResolver.ResolveUsing(static (_, _) => null!);
+            var controlAlive = CountAlive(control);
+            var leakyAlive = CountAlive(leaky);
+            var mitigationAlive = CountAlive(mitigation);
+
+            Assert.Equal(0, controlAlive);
+            Assert.Equal(N, leakyAlive);
+            Assert.Equal(0, mitigationAlive);
+        }
+        finally
+        {
+            DependencyResolver.ResetResolver();
+        }
     }
 
     [Fact]
     public void ResetResolver_ReleasesCapturedTarget()
     {
-        var leaky = CreateReleasedViaReset();
+        DependencyResolver.ResetResolver();
 
-        ForceGc();
+        try
+        {
+            var leaky = CreateReleasedViaReset();
 
-        var leakyAlive = CountAlive(leaky);
-        Assert.Equal(0, leakyAlive);
+            ForceGc();
+
+            var leakyAlive = CountAlive(leaky);
+            Assert.Equal(0, leakyAlive);
+        }
+        finally
+        {
+            DependencyResolver.ResetResolver();
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
