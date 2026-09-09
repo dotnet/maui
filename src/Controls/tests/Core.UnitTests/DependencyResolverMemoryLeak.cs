@@ -4,14 +4,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
-using Xunit.Abstractions;
+
+namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 public sealed class DependencyResolverMemoryLeak
 {
     const int N = 30;
-    readonly ITestOutputHelper _output;
-
-    public DependencyResolverMemoryLeak(ITestOutputHelper output) => _output = output;
 
     [Fact]
     public void DependencyResolver_ResolveUsing_Leaks()
