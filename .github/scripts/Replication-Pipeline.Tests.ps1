@@ -131,14 +131,14 @@ Describe 'MAUI Copilot mode routing' {
             'Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1|SetEnvironmentVariable|git (fetch|checkout|merge|apply)')
     }
 
-    It 'uses the trusted checkout Xcode pins for the iOS harness probe' {
+    It 'uses checkout Xcode pins for the iOS probe and replication' {
         $variables = [regex]::Match(
             $script:Pipeline,
             '(?ms)^variables:\r?\n.*?(?=^stages:)').Value
         $variables | Should -Match 'template: /eng/pipelines/common/variables\.yml@self'
         $overrides = [regex]::Match(
             $variables,
-            '(?m)^  - \$\{\{ if ne\(parameters\.Mode, ''ios-harness-probe''\) \}\}:\r?\n(?:^    .*\r?\n)+').Value
+            '(?m)^  - \$\{\{ if not\(or\(eq\(parameters\.Mode, ''ios-harness-probe''\), and\(eq\(parameters\.Mode, ''replicate''\), eq\(parameters\.Platform, ''ios''\)\)\)\) \}\}:\r?\n(?:^    .*\r?\n)+').Value
         $overrides | Should -Not -BeNullOrEmpty
         foreach ($name in @('REQUIRED_XCODE', 'DEVICETESTS_REQUIRED_XCODE', 'XCODE')) {
             $overrides | Should -Match "(?m)^    - name: $name\r?\n      value: 26\.5"
@@ -148,6 +148,16 @@ Describe 'MAUI Copilot mode routing' {
             $script:Pipeline,
             '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
         $stage | Should -Not -Match 'ValidateXcodeVersion|REQUIRED_XCODE|DEVICETESTS_REQUIRED_XCODE|\bXCODE:'
+    }
+
+    It 'keeps iOS replication simulator recovery on the configured Xcode' {
+        $recovery = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^\s+if \[ ''\$\{\{ parameters\.Mode \}\}'' != ''replicate'' \]; then\r?\n.*?^\s+fi\r?$').Value
+        $recovery | Should -Not -BeNullOrEmpty
+        $recovery | Should -Match 'NEWEST_XCODE='
+        $recovery | Should -Match 'sudo xcode-select -s "\$NEWEST_XCODE/Contents/Developer"'
+        [regex]::Matches($script:Pipeline, 'NEWEST_XCODE=').Count | Should -Be 1
     }
 
     It 'runs exactly the checked-in iOS fixture and retains native diagnostics' {

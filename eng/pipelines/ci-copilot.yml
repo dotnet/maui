@@ -108,10 +108,9 @@ parameters:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  # Preserve the newer Xcode override for existing modes that can target net11.
-  # The trusted iOS probe builds this checkout's workloads, so it must instead
-  # inherit this checkout's matching Xcode pins from common/variables.yml.
-  - ${{ if ne(parameters.Mode, 'ios-harness-probe') }}:
+  # Reviews can target net11, but iOS replication targets main and the trusted
+  # probe builds this checkout. Both use the matching common Xcode pins.
+  - ${{ if not(or(eq(parameters.Mode, 'ios-harness-probe'), and(eq(parameters.Mode, 'replicate'), eq(parameters.Platform, 'ios')))) }}:
     - name: REQUIRED_XCODE
       value: 26.5
     - name: DEVICETESTS_REQUIRED_XCODE
@@ -2351,11 +2350,12 @@ stages:
                 xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select((.identifier//"")|test("iOS")) | "  \(.identifier) v\(.version) isAvailable=\(.isAvailable) err=\(.availabilityError // "none")"' 2>/dev/null || echo "(none enrolled)"
                 echo "-- simctl runtime list --json (image state/sig/mount/path) --"
                 xcrun simctl runtime list --json 2>/dev/null | jq -r 'to_entries[] | .value | select((.runtimeIdentifier//"")|test("iOS")) | "  \(.runtimeIdentifier) state=\(.state) sig=\(.signatureState) mounted=\(.mountPath != null) path=\(.path // "null")"' 2>/dev/null || echo "(no images)"
-                # CoreSimulator is Xcode-specific: point xcode-select at the newest Xcode (the
-                # runtimes may have been enrolled under it) then 'simctl runtime add <path>' each
-                # Ready-but-unavailable image (stages/verifies/mounts). Best-effort; ignore errors.
-                NEWEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
-                [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
+                # Preserve review recovery, but never replace replication's SDK-matched
+                # Xcode with a newer installation just to discover simulator runtimes.
+                if [ '${{ parameters.Mode }}' != 'replicate' ]; then
+                  NEWEST_XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+                  [ -n "$NEWEST_XCODE" ] && { echo "Switching xcode-select to newest Xcode: $NEWEST_XCODE"; sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" 2>/dev/null || true; }
+                fi
                 AVAIL_IDS=$(xcrun simctl list runtimes -j 2>/dev/null | jq -r '.runtimes[] | select(.isAvailable==true) | .identifier' 2>/dev/null)
                 while IFS=$'\t' read -r IMG_ID IMG_PATH; do
                   [ -z "$IMG_ID" ] && continue
