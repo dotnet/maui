@@ -1048,10 +1048,18 @@ function Invoke-FailureOnlyTestRun {
     try {
         $result = Invoke-TestRunWithRetry -TestEntry $TestEntry -LogFile $LogFile
     } catch {
+        $message = "Test runner threw before producing a result: $($_.Exception.Message)"
+        try {
+            New-Item -ItemType Directory -Path (Split-Path -Parent $LogFile) -Force |
+                Out-Null
+            $message | Add-Content -LiteralPath $LogFile -Encoding utf8
+        } catch {
+            Write-Host "Could not persist the test-runner exception: $($_.Exception.Message)"
+        }
         $result = @{
             Passed = $false
             EnvError = $true
-            Error = "Test runner threw before producing a result: $($_.Exception.Message)"
+            Error = $message
             PassCount = 0
             FailCount = 0
             Failed = 0
@@ -1511,6 +1519,62 @@ function Get-TargetedTestFailureMessage {
     }
 
     return $consoleFailureMessage
+}
+
+function ConvertTo-BoundedReplicationMachineFailureMessage {
+    param(
+        [AllowEmptyString()][AllowNull()][string]$Value,
+        [ValidateRange(256, 10000)][int]$MaximumLength = 10000
+    )
+
+    if ([string]::IsNullOrEmpty($Value)) {
+        return ''
+    }
+
+    $safeValue = [string]$Value -replace '##(?=\[|vso\[)', '## '
+    if ($safeValue.Length -le $MaximumLength) {
+        return $safeValue
+    }
+
+    $digest = ([System.BitConverter]::ToString(
+        [System.Security.Cryptography.SHA256]::HashData(
+            [System.Text.Encoding]::UTF8.GetBytes($safeValue)
+        )
+    ) -replace '-', '').Substring(0, 16).ToLowerInvariant()
+    $marker = " ... [truncated; sha256=$digest]"
+    return $safeValue.Substring(0, $MaximumLength - $marker.Length) + $marker
+}
+
+function Get-ReplicationVerifierActualFailureMessage {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$TestResult,
+        [Parameter(Mandatory = $true)][string]$TargetClass,
+        [Parameter(Mandatory = $true)][string]$TargetMethod,
+        [string]$TargetTestType = '',
+        [string]$TargetFilter = ''
+    )
+
+    $actualFailureMessage = if (-not [bool]$TestResult.Passed) {
+        Get-TargetedTestFailureMessage `
+            -LogFile ([string]$TestResult.ResultLogFile) `
+            -ResultFiles @($TestResult.ResultFiles) `
+            -TargetClass $TargetClass `
+            -TargetMethod $TargetMethod `
+            -TargetTestType $TargetTestType `
+            -TargetFilter $TargetFilter
+    } else {
+        ''
+    }
+
+    if ([string]::IsNullOrWhiteSpace($actualFailureMessage) -and
+        [bool]$TestResult.EnvError -and
+        $TestResult.ContainsKey('Error') -and
+        -not [string]::IsNullOrWhiteSpace([string]$TestResult.Error)) {
+        $actualFailureMessage = [string]$TestResult.Error
+    }
+
+    return ConvertTo-BoundedReplicationMachineFailureMessage `
+        -Value $actualFailureMessage
 }
 
 function Write-ReplicationVerifierMachineResult {
@@ -2728,17 +2792,12 @@ if ($DetectedFixFiles.Count -eq 0) {
         }
         $targetEntry = $AllDetectedTests[0]
         $targetResult = $allResults[0]
-        $actualFailureMessage = if (-not $targetResult.Passed) {
-            Get-TargetedTestFailureMessage `
-                -LogFile ([string]$targetResult.ResultLogFile) `
-                -ResultFiles @($targetResult.ResultFiles) `
-                -TargetClass ([string]$targetEntry.ClassFilter) `
-                -TargetMethod ([string]($targetEntry.Methods | Select-Object -First 1)) `
-                -TargetTestType ([string]$targetEntry.Type) `
-                -TargetFilter ([string]$targetEntry.Filter)
-        } else {
-            ''
-        }
+        $actualFailureMessage = Get-ReplicationVerifierActualFailureMessage `
+            -TestResult $targetResult `
+            -TargetClass ([string]$targetEntry.ClassFilter) `
+            -TargetMethod ([string]($targetEntry.Methods | Select-Object -First 1)) `
+            -TargetTestType ([string]$targetEntry.Type) `
+            -TargetFilter ([string]$targetEntry.Filter)
         $targetResult.FailureMessage = $actualFailureMessage
         Write-ReplicationVerifierMachineResult `
             -TestEntry $targetEntry `

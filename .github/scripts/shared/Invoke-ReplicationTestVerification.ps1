@@ -164,6 +164,7 @@ function Test-ReplicationInfrastructureFailure {
         '(?im)\berror (?:CS|MSB|NETSDK|XLS|APT|XA)\d{3,}\b',
         '(?im)\bNo test matches\b',
         '(?im)\bHandlerNotFoundException\b|\bUnable to find an? IElementHandler\b',
+        '(?im)\bXHarness did not produce\b',
         '(?im)\b(?:test run|operation|command|task) timed out\b',
         '(?im)\b(?:snapshot|baseline).{0,80}\b(?:missing|not found|does not exist)\b',
         '(?im)\b(?:device|simulator|emulator).{0,80}\b(?:offline|unavailable|failed to boot)\b'
@@ -259,6 +260,41 @@ function ConvertTo-BoundedComparableFailureMessage {
     ) -replace '-', '').Substring(0, 16).ToLowerInvariant()
     $marker = " ... [truncated; sha256=$digest]"
     return $Value.Substring(0, $MaximumLength - $marker.Length) + $marker
+}
+
+function Get-ReplicationVerificationActualFailureMessage {
+    param(
+        [AllowEmptyString()][AllowNull()][string]$ActualFailureMessage,
+        [AllowEmptyString()][AllowNull()][string]$CombinedOutput,
+        [Parameter(Mandatory = $true)][int]$ExitCode,
+        [ValidateRange(1024, 4096)][int]$MaximumLength = 4096
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ActualFailureMessage)) {
+        return [string]$ActualFailureMessage
+    }
+
+    $output = (ConvertTo-AzdoSafeReplicationOutput `
+        -Value ([string]$CombinedOutput)).Trim()
+    if ([string]::IsNullOrWhiteSpace($output)) {
+        return ''
+    }
+
+    $lines = @($output -split '\r?\n' |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -Last 120)
+    $prefix = "Verifier produced no machine-readable failure message (exit code $ExitCode). Recent verifier output: "
+    $excerptMaximumLength = [Math]::Max(1024, $MaximumLength - $prefix.Length)
+    $excerpt = ConvertTo-BoundedVerificationFailureMessage `
+        -Content (($lines -join [Environment]::NewLine).Trim()) `
+        -Signature '' `
+        -MaximumLength $excerptMaximumLength
+
+    $message = $prefix + $excerpt
+    if ($message.Length -le $MaximumLength) {
+        return $message
+    }
+    return $message.Substring(0, $MaximumLength)
 }
 
 if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
@@ -440,6 +476,14 @@ function Invoke-SingleVerificationRun {
             # run leave behind a file that destroys the next candidate.
             Remove-Item -LiteralPath $machineResultPath -Force -ErrorAction SilentlyContinue
         }
+    }
+    if ([string]::IsNullOrWhiteSpace($actualFailureMessage) -and
+        $exitCode -ne 0 -and
+        (Test-ReplicationInfrastructureFailure -Content $combined)) {
+        $actualFailureMessage = Get-ReplicationVerificationActualFailureMessage `
+            -ActualFailureMessage $actualFailureMessage `
+            -CombinedOutput $combined `
+            -ExitCode $exitCode
     }
 
     $signatureMatched = Test-ReplicationExpectedFailureSignature `

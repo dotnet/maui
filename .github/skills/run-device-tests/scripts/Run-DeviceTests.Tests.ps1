@@ -22,6 +22,13 @@ BeforeAll {
         'Get-XHarnessTestResultSnapshot',
         'Get-FreshXHarnessTestResultFiles',
         'New-XHarnessRunOutputDirectory',
+        'ConvertTo-BoundedXHarnessDiagnosticText',
+        'Write-XHarnessDiagnosticText',
+        'ConvertTo-XHarnessDiagnosticLine',
+        'Invoke-StreamingXHarnessCommand',
+        'Get-XHarnessDiagnosticInventory',
+        'New-XHarnessNoResultDiagnostic',
+        'Invoke-XHarnessPreflight',
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
         'Start-WindowsDeviceTestProcess',
@@ -404,6 +411,76 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         $content | Should -Match '"xunit-test-\*\.xml"'
         $content | Should -Match '(?s)Get-XHarnessTestResultSnapshot\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-ResultFileName \$xharnessResultFileName'
         $content | Should -Match '(?s)Get-FreshXHarnessTestResultFiles\s+`\s*-OutputDirectory \$testOutputDirectory\s+`\s*-BeforeSnapshot \$xharnessResultSnapshot\s+`\s*-ResultFileName \$xharnessResultFileName'
+    }
+
+    It 'retains bounded XHarness diagnostics when Android produces no fresh result XML' {
+        $runRoot = Join-Path $TestDrive 'xharness-no-result'
+        New-Item -ItemType Directory -Path $runRoot -Force | Out-Null
+        'install failed' | Set-Content (Join-Path $runRoot 'install.log') -Encoding UTF8
+
+        $diagnostic = New-XHarnessNoResultDiagnostic `
+            -OutputDirectory $runRoot `
+            -ExpectedResultFileName 'testResults-abc.xml' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.ButtonTests' `
+            -RawExitCode 78 `
+            -ConsoleLogPath (Join-Path $runRoot 'xharness-console.log') `
+            -ConsoleText "raw xharness console`n##vso[task.setvariable variable=X]blocked"
+
+        $diagnostic | Should -Match "XHarness did not produce the expected fresh result 'testResults-abc.xml'"
+        $diagnostic | Should -Match 'no authoritative target-test result was produced'
+        $diagnostic | Should -Match 'Raw XHarness exit code: 78'
+        $diagnostic | Should -Match 'install\.log'
+        $diagnostic | Should -Match 'raw xharness console'
+        $diagnostic | Should -Not -Match '##vso\[task\.setvariable'
+
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match 'xharness-console\.log'
+        $content | Should -Match 'xharness-no-result-diagnostics\.txt'
+        $content | Should -Match 'throw \$noResultDiagnostic'
+    }
+
+    It 'streams bounded XHarness output to retained logs while preserving exit code and tail' {
+        $runRoot = Join-Path $TestDrive 'xharness-stream'
+        $logPath = Join-Path $runRoot 'xharness-console.log'
+        $pwsh = (Get-Command pwsh -CommandType Application).Source
+        $command = @'
+[Console]::Out.WriteLine("first stdout line")
+[Console]::Error.WriteLine("##vso[task.setvariable variable=LEAK]blocked")
+[Console]::Out.WriteLine("z" * 20000)
+for ($i = 0; $i -lt 40; $i++) {
+    [Console]::Out.WriteLine("line-$i " + ("x" * 80))
+}
+exit 17
+'@
+
+        $result = Invoke-StreamingXHarnessCommand `
+            -FilePath $pwsh `
+            -Arguments ([string[]]@('-NoLogo', '-NoProfile', '-NonInteractive', '-Command', $command)) `
+            -LogPath $logPath `
+            -MaximumLogLength 900 `
+            -MaximumTailLines 4
+
+        $result.ExitCode | Should -Be 17
+        Test-Path -LiteralPath $logPath -PathType Leaf | Should -BeTrue
+        Test-Path -LiteralPath $result.TailLogPath -PathType Leaf | Should -BeTrue
+        $log = Get-Content -LiteralPath $logPath -Raw
+        $tail = Get-Content -LiteralPath $result.TailLogPath -Raw
+        $log.Length | Should -BeLessOrEqual 900
+        $log | Should -Match 'first stdout line'
+        $log | Should -Match 'xharness console log truncated'
+        $log | Should -Not -Match '##vso\[task\.setvariable'
+        $tail | Should -Match 'line-39'
+        $result.TailText | Should -Match 'line-39'
+    }
+
+    It 'offers Android XHarness preflight without building or running product tests' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match '\[switch\]\$PreflightXHarnessOnly'
+        $content | Should -Match '(?s)if \(\$PreflightXHarnessOnly\).*?Invoke-XHarnessPreflight.*?exit 0.*?# ═+'
+        $content | Should -Match 'Invoke-StreamingXHarnessCommand'
+        $content | Should -Match "'android', 'test', '--help'"
+        $content | Should -Match 'adb -s \$DeviceUdid get-state'
+        $content | Should -Match 'adb -s \$DeviceUdid shell getprop sys\.boot_completed'
     }
 }
 

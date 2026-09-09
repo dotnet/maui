@@ -55,6 +55,8 @@ param(
     [ValidateRange(1, 3)]
     [int]$VerificationRunCount = 3,
 
+    [switch]$PreflightXHarnessOnly,
+
     [ValidateRange(5, 45)]
     [int]$CopilotTimeoutMinutes = 20,
 
@@ -103,6 +105,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
+
+if ($PreflightXHarnessOnly -and $Platform -ne 'android') {
+    throw 'XHarness-only replication diagnostics require Platform=android.'
+}
 
 # Azure's step timeout has been counting since this script started, so the fix
 # panel's budget is measured against this rather than against the moment the
@@ -1852,18 +1858,22 @@ function Test-ReplicationTestElementLookupFailure {
 function Test-ReplicationTestHarnessFault {
     <#
         .SYNOPSIS
-        Reports a verification round the device harness lost before the test ran.
+        Reports a verification round whose device-harness verdict is unavailable.
 
         .DESCRIPTION
         A UI test whose OneTimeSetUp cannot start an Appium session observed
         nothing about the reported issue, and no edit to the test changes that.
+        Likewise, an Android XHarness run that leaves no fresh scoped result
+        file has no authoritative target-test result in retained artifacts, so
+        selected test execution cannot be established.
         The build-failure detector matches 'build or infrastructure reasons',
         so build 15029298 spent its four build repairs and then every remaining
         attempt asking the agent to fix compiler diagnostics that did not exist,
         while the real fault was a driver session that never opened.
 
-        This is deliberately narrow: it requires a driver or session fault, so
-        an ordinary assertion failure inside a fixture is still a real result.
+        This is deliberately narrow: it requires a driver/session fault or an
+        explicit no-result XHarness diagnostic, so an ordinary assertion failure
+        inside a fixture is still a real result.
     #>
     param(
         [AllowEmptyString()][AllowNull()][string]$FailureSummary
@@ -1879,6 +1889,8 @@ function Test-ReplicationTestHarnessFault {
     }
     return [bool]($text -match ('(?i)OneTimeSetUp.*(?:OpenQA\.Selenium|Appium|WebDriver)|' +
         'A new session could not be created|UnknownErrorException|' +
+        'XHarness did not produce the expected fresh result|' +
+        'no authoritative target-test result|' +
         'Could not (?:find|start) (?:the )?Appium server|' +
         'the target tests did not run'))
 }
@@ -1972,7 +1984,8 @@ function Get-ReplicationVerificationFailureSummary {
     }
 
     $expected = ConvertTo-ReplicationSafeLog ([string]$result.expectedFailureSignature) 300
-    $actual = ConvertTo-ReplicationSafeLog ([string]$result.actualFailureMessage) 300
+    $actualRaw = [string]$result.actualFailureMessage
+    $actual = ConvertTo-ReplicationSafeLog $actualRaw 300
 
     if ($result.infrastructureFailure -eq $true) {
         # An infrastructure failure is usually a compile error, and the verifier
@@ -1987,7 +2000,10 @@ function Get-ReplicationVerificationFailureSummary {
             $apiNote = if ($identifierEvidence) { " $identifierEvidence" } else { '' }
             return "The test never ran because the build failed. Fix these compiler diagnostics: $diagnostics. Note that this repository builds with warnings as errors, so a warning-level diagnostic such as CS0108 still fails the build.$apiNote"
         }
-        if (Test-ReplicationTestElementLookupFailure -FailureSummary $actual) {
+        if (Test-ReplicationTestHarnessFault -FailureSummary $actualRaw) {
+            return "The device test harness did not produce an authoritative target-test result; selected test execution cannot be established from retained artifacts. Actual harness failure: '$actual'. Retry the same generated source after the harness path is available; do not ask the model to change assertions or setup for this infrastructure outcome."
+        }
+        if (Test-ReplicationTestElementLookupFailure -FailureSummary $actualRaw) {
             return "The test compiled and ran, but an element it waited for never appeared: '$actual'. Do not change the build and do not simply raise the timeout. Set an explicit AutomationId on the element the test queries, confirm the test navigates to the page that hosts it, and wait for a state the app actually reaches. If the element only exists once the reported defect occurs, assert the observable state that exists in both cases instead."
         }
         return "The test did not run: it failed for build or infrastructure reasons rather than the reported behavior. Actual failure: '$actual'. Make the test compile and run before asserting the bug."
@@ -3348,11 +3364,11 @@ function Get-ReplicationTestAttemptKind {
     # Test-ReplicationTestBuildFailure is deliberately true for that phrase - it
     # answers a budget question, and neither cause may be charged to the agent -
     # but read as a label it renamed every infrastructure fault a build failure.
-    # Builds 15082198 and 15082224 each lost their device session three times,
-    # logged "harness unavailable after 3 retries", and still summed to
-    # attemptKinds=[build-failed x6], hiding the one fact that mattered: the
-    # machine never opened a session, so no edit to the test could have helped.
-    if ($FailureSummary -match '(?i)infrastructureFailure=True|harness unavailable after|lost its device session') {
+    # Builds 15082198 and 15082224 each failed to produce a device-harness
+    # verdict three times, logged "harness unavailable after 3 retries", and
+    # still summed to attemptKinds=[build-failed x6], hiding the fact that no
+    # edit to the test could have established a verdict.
+    if ($FailureSummary -match '(?i)infrastructureFailure=True|harness unavailable after|lost its device session|device test harness did not produce|no authoritative target-test result') {
         return 'harness-error'
     }
     if (Test-ReplicationTestBuildFailure -FailureSummary $FailureSummary) { return 'build-failed' }
@@ -6917,7 +6933,7 @@ ANDROID ISSUE26505 SANDBOX FIDELITY: Recreate the issue-linked visual Button sce
         @'
 
 ANDROID ISSUE26505 NARROW EXCEPTION: After the empirical Sandbox proof, the guard trusts exactly one Android native-read profile for `src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs`. Keep the affected control as `var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };` and make the explicit pre-gate setup call exactly `global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);`. The single trigger gate must be `if (applyReportedTrigger) { button.FontSize = 36; }` with no else branch; do not set FontSize elsewhere. Attach only with `await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(new Window(new ContentPage { Content = button }), async handler => { ... });` as a top-level statement after the gate; never return that helper Task, call another overload, use another handler type, rebind the handler, mutate native layout, or insert extra callback statements. Inside the callback use exactly one-argument `await AssertEventually(() => button.Handler != null && button.IsLoaded);`, then directly assert fixed logical geometry with `Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);`, then the mandatory native oracle `Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);`. Do not compute locals for those native values, read Elevation/shadow/padding-top, use Android namespaces outside that callback, compare app-authored verdict text, or add a decorative click. If this exact causal shape cannot express the candidate, classify the recorded/generated native scenario as unsupported by the current contract.
-The selected method must carry [Fact] and [Category("Issue26505")]. Its body must contain exactly five top-level statements in order: the Button declaration, padding setup, var applyReportedTrigger = true;, the trigger gate, and the awaited helper. Do not add aliases, other declarations, mutations, or statements before or after the helper.
+Declare the test class as an explicit subclass of `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` in the generated source even if the immutable baseline has a partial ButtonTests class that already inherits it; the closed semantic guard binds only the generated file. The selected method must carry [Fact] and [Category("Issue26505")]. Its body must contain exactly five top-level statements in order: the Button declaration, padding setup, var applyReportedTrigger = true;, the trigger gate, and the awaited helper. Do not add aliases, other declarations, mutations, or statements before or after the helper.
 The source must explicitly import `using static Microsoft.Maui.DeviceTests.AssertHelpers;` for the unqualified AssertEventually call. This static method is not inherited from ControlsHandlerTestBase. Omitting that import can make the enclosing CreateHandlerAndAddToWindow invocation unresolved even when its outer syntax is correct. Follow the reported binding diagnostics (including errors inside the callback); do not try whitespace changes or unrelated namespace imports instead.
 '@
     } else {
@@ -9737,6 +9753,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $trustedScripts 'BuildAndRunSandbox.
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationTestVerification.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Invoke-ReplicationNetworkIsolatedProcess.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath (Join-Path $trustedScripts 'shared/Detect-TestsInDiff.ps1') -PathType Leaf) -or
+    -not (Test-Path -LiteralPath (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1') -PathType Leaf) -or
     -not (Test-Path -LiteralPath $trustedAppiumRunnerPath -PathType Leaf)) {
     throw 'Trusted replication scripts are incomplete.'
 }
@@ -9779,6 +9796,38 @@ try {
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
     if ($Platform -eq 'android') {
+        if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
+            throw 'DeviceUdid is required for android replication.'
+        }
+        if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
+            throw 'DeviceUdid contains an unresolved pipeline variable.'
+        }
+
+        Invoke-LoggedChildProcess `
+            -ScriptPath (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1') `
+            -Arguments @(
+                '-Project', 'Controls',
+                '-Platform', $Platform,
+                '-RepositoryRoot', $repoRoot,
+                '-DeviceUdid', $DeviceUdid,
+                '-OutputDirectory', (Join-Path $sandboxArtifactDir 'xharness-preflight'),
+                '-PreflightXHarnessOnly'
+            ) `
+            -LogPath (Join-Path $sandboxArtifactDir 'xharness-preflight.log') `
+            -Description 'Preflighting Android XHarness before restore, generation, and product builds' `
+            -AllowDeviceControl `
+            -TimeoutSeconds 180
+
+        if ($PreflightXHarnessOnly) {
+            Write-Host 'ANDROID XHARNESS PREFLIGHT ONLY SUCCEEDED: no candidate, certification, generated code, or product build was produced.'
+            try {
+                Remove-ReplicationRuntimeCache
+            } catch {
+                Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
+            }
+            exit 0
+        }
+
         # Exercise device setup in the real boundary before paying for restore and compilation.
         Invoke-LoggedChildProcess `
             -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
@@ -9804,12 +9853,6 @@ try {
         Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath
     }
     if ($Platform -eq 'android') {
-        if ([string]::IsNullOrWhiteSpace($DeviceUdid)) {
-            throw 'DeviceUdid is required for android replication.'
-        }
-        if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
-            throw 'DeviceUdid contains an unresolved pipeline variable.'
-        }
         $trustedIsolationManifest = Join-Path $TrustedRoot (
             'source-overrides/ReplicationNetworkIsolationManifest.xml')
         if (-not (Test-Path -LiteralPath $trustedIsolationManifest -PathType Leaf)) {
@@ -10552,6 +10595,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         $testHarnessRetries = 0
         $MaxTestHarnessRetries = 3
         $verificationRound = 0
+        $retryCurrentGeneratedTest = $false
         for ($attempt = 1; $attempt -le $MaxTestAttempts; $attempt++) {
             $verificationRound++
             $testAttempts = $attempt
@@ -10564,11 +10608,17 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
 
             $testWritePaths = @($testProposalPath)
             $testWritePaths += $plannedTestFiles | ForEach-Object { Join-Path $repoRoot $_ }
-            Invoke-ReplicationCopilot `
-                -PhaseName $phase `
-                -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
-                -WritePaths $testWritePaths `
-                -Attempt $attempt
+            if ($retryCurrentGeneratedTest) {
+                Write-Host ("Re-running generated test attempt {0} without Copilot reauthoring because the previous round produced no authoritative device-harness result." -f
+                    $attempt)
+                $retryCurrentGeneratedTest = $false
+            } else {
+                Invoke-ReplicationCopilot `
+                    -PhaseName $phase `
+                    -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
+                    -WritePaths $testWritePaths `
+                    -Attempt $attempt
+            }
 
             $intentToAddApplied = $false
             # Everything from here to the verifier can throw before the verifier
@@ -10736,15 +10786,16 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         $plannedTestProposal.testType)
                 }
                 elseif (Test-ReplicationTestHarnessFault -FailureSummary $repairFailureSummary) {
-                    # The device harness lost the round before the test ran, so
-                    # there is no code for the agent to repair. Build 15029298
-                    # spent its build repairs and then every remaining attempt
-                    # asking for compiler fixes while an Appium session was
-                    # failing to open in OneTimeSetUp.
+                    # The device harness produced no authoritative target-test
+                    # result, so there is no code for the agent to repair. Build
+                    # 15029298 spent its build repairs and then every remaining
+                    # attempt asking for compiler fixes while an Appium session
+                    # was failing to open in OneTimeSetUp.
                     if ($testHarnessRetries -lt $MaxTestHarnessRetries) {
                         $testHarnessRetries++
-                        Write-Host ("Test harness retry {0}/{1}: attempt {2} lost its device session before the test ran, so it does not consume a verification attempt." -f
+                        Write-Host ("Test harness retry {0}/{1}: attempt {2} produced no authoritative target-test result, so it does not consume a verification attempt." -f
                             $testHarnessRetries, $MaxTestHarnessRetries, $attempt)
+                        $retryCurrentGeneratedTest = $true
                         Start-Sleep -Seconds (30 * $testHarnessRetries)
                         $attempt--
                     }
@@ -10757,11 +10808,11 @@ You have now failed to produce the declared failure $($script:SignatureMismatchA
                         # failure, and it degraded from semantic assertions to
                         # hard-coded coordinates before the budget ran out.
                         #
-                        # No edit to a test opens an Appium session, so once the
-                        # retries are gone the only honest move is to stop and
-                        # say the runtime was unavailable.
+                        # No edit to a test produces a missing harness verdict,
+                        # so once the retries are gone the only honest move is
+                        # to stop and say the runtime was unavailable.
                         $script:ReplicationHarnessUnavailable = $true
-                        Write-Host ("Test harness unavailable after {0} retries: the device session never opened, so no edit to the test can produce a verdict." -f
+                        Write-Host ("Test harness unavailable after {0} retries: no authoritative target-test result was produced, so no edit to the test can establish a verdict." -f
                             $MaxTestHarnessRetries)
                         throw
                     }
@@ -11118,6 +11169,15 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
+    if ($PreflightXHarnessOnly) {
+        Write-Host "ANDROID XHARNESS PREFLIGHT ONLY FAILED: $reason"
+        try {
+            Remove-ReplicationRuntimeCache
+        } catch {
+            Write-Warning "Replication runtime-cache cleanup failed: $(ConvertTo-ReplicationSafeLog $_.Exception.Message 500)"
+        }
+        throw
+    }
     # Report the attempts belonging to the stage that failed: the sandbox list
     # is empty once the sandbox has succeeded. The classifier must read the same
     # list it prints. Build 15034037 recorded ten test attempts including

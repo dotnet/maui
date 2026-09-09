@@ -32,6 +32,7 @@ BeforeAll {
         'Test-ReplicationInfrastructureFailure',
         'ConvertTo-AzdoSafeReplicationOutput',
         'ConvertTo-BoundedVerificationFailureMessage',
+        'Get-ReplicationVerificationActualFailureMessage',
         'ConvertTo-BoundedComparableFailureMessage',
         'Get-ReplicationVolatileFreeMessage',
         'Test-ReplicationFailureMessagesAreStable'
@@ -190,6 +191,8 @@ Describe 'Replication failure-only verification' {
         Test-ReplicationInfrastructureFailure `
             -Content 'HandlerNotFoundException: Unable to find a IElementHandler corresponding to Grid.' |
             Should -BeTrue
+        Test-ReplicationInfrastructureFailure -Content 'XHarness did not produce the expected fresh result testResults-abc.xml' |
+            Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'Test run timed out' | Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'snapshot baseline was not found' | Should -BeTrue
         Test-ReplicationInfrastructureFailure -Content 'Android emulator failed to boot' | Should -BeTrue
@@ -208,6 +211,30 @@ Describe 'Replication failure-only verification' {
     It 'removes Azure logging directives from verifier console output' {
         ConvertTo-AzdoSafeReplicationOutput -Value 'bad ##vso[task.setvariable variable=X]secret and ##[error]fake' |
             Should -BeExactly 'bad secret and fake'
+    }
+
+    It 'uses bounded verifier output when infrastructure failed without a machine message' {
+        $message = Get-ReplicationVerificationActualFailureMessage `
+            -ActualFailureMessage '' `
+            -CombinedOutput ("line 1`nXHarness did not produce the expected fresh result " +
+                "'testResults-abc.xml' for requested class(es) 'Microsoft.Maui.DeviceTests.ButtonTests' " +
+                "(no authoritative target-test result was produced)") `
+            -ExitCode 1
+
+        $message | Should -Match 'Verifier produced no machine-readable failure message'
+        $message | Should -Match 'XHarness did not produce the expected fresh result'
+        $message | Should -Match 'testResults-abc\.xml'
+        $message.Length | Should -BeLessOrEqual 4096
+    }
+
+    It 'keeps synthesized verifier fallback messages within the publisher bound' {
+        $message = Get-ReplicationVerificationActualFailureMessage `
+            -ActualFailureMessage '' `
+            -CombinedOutput (('x' * 5000) + "`nXHarness did not produce the expected fresh result testResults-abc.xml") `
+            -ExitCode 78
+
+        $message | Should -Match 'exit code 78'
+        $message.Length | Should -BeLessOrEqual 4096
     }
 
     It 'bounds repeated verifier failures while retaining the expected signature' {

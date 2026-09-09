@@ -111,6 +111,40 @@ Describe 'MAUI Copilot mode routing' {
             'failTaskOnMissingResultsFile: true').Count | Should -Be 2
     }
 
+    It 'routes Android harness-only diagnostics before Copilot generation and publication' {
+        $script:Pipeline | Should -Match '- name: AndroidHarnessPreflightOnly'
+        $script:Pipeline | Should -Match 'AndroidHarnessPreflightOnly requires Mode=replicate and Platform=android'
+        $script:Pipeline | Should -Match '-PreflightXHarnessOnly:\$\(\[bool\]::Parse'
+
+        $run = $script:Pipeline.IndexOf("displayName: 'Replicate issue and author failing test'")
+        $installCopilot = $script:Pipeline.IndexOf("displayName: 'Install GitHub Copilot CLI'")
+        $installAppium = $script:Pipeline.IndexOf("displayName: 'Install Appium'")
+        $run | Should -BeGreaterThan $installCopilot
+        $installCopilot | Should -BeGreaterThan $installAppium
+        $script:Pipeline | Should -Match (
+            "(?s)displayName: 'Install Appium'.*?" +
+            "not\(and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
+            "eq\('\$\{\{ parameters\.Platform \}\}', 'android'\), " +
+            "eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)\)\)")
+        $script:Pipeline | Should -Match (
+            "(?s)displayName: 'Install GitHub Copilot CLI'.*?" +
+            "not\(and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
+            "eq\('\$\{\{ parameters\.Platform \}\}', 'android'\), " +
+            "eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)\)\)")
+        $script:Pipeline | Should -Match (
+            "(?s)name: RunReplication.*?" +
+            "or\(eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\),")
+        $script:Pipeline | Should -Match (
+            "(?s)- stage: ValidateReplication.*?" +
+            "ne\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)")
+        $script:Pipeline | Should -Match (
+            "(?s)- stage: PublishReplication.*?" +
+            "ne\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)")
+        $script:Pipeline | Should -Match "artifact: 'ReplicationArtifacts'"
+        $script:Pipeline | Should -Match 'sandbox/xharness-preflight\.log'
+        $script:Pipeline | Should -Match 'sandbox/xharness-preflight/xharness-preflight/\*\.log'
+    }
+
     It 'requires exactly the target number for the selected mode' {
         $script:Pipeline | Should -Match 'Mode=review requires PRNumber > 0 and IssueNumber = 0'
         $script:Pipeline | Should -Match 'Mode=replicate requires IssueNumber > 0 and PRNumber = 0'
@@ -218,7 +252,7 @@ Describe 'MAUI Copilot mode routing' {
         $recheckIndex | Should -BeLessThan $credentialIndex
         $credentialIndex | Should -BeLessThan $evidenceIndex
         $evidenceIndex | Should -BeLessThan $publicationIndex
-        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationCredentialCheck\.replicationEvidenceOnly'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationIssueIneligible'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\), in\(dependencies\.ValidateReplication\.result, 'Succeeded', 'SucceededWithIssues'\)\)"
+        $script:Pipeline | Should -Match "(?s)- stage: PublishReplication.*?condition: and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), ne\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationCredentialCheck\.replicationEvidenceOnly'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationAlreadyPublished'\], 'true'\), ne\(dependencies\.ReviewPR\.outputs\['CopilotReview\.ReplicationDuplicateCheck\.replicationIssueIneligible'\], 'true'\), in\(dependencies\.ReviewPR\.result, 'Succeeded', 'SucceededWithIssues', 'Failed'\), in\(dependencies\.ValidateReplication\.result, 'Succeeded', 'SucceededWithIssues'\)\)"
         $script:Pipeline | Should -Match "(?s)- job: PublishReplication.*?persistCredentials: true"
         $script:Pipeline | Should -Match 'review-tests-assets-v2'
         $script:Pipeline | Should -Match 'Publish-ReplicationEvidence\.ps1'

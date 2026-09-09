@@ -25,7 +25,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Test-IsWindowsDeviceCleanupError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
+    foreach ($fnName in @('Get-GateDeviceTestConfiguration', 'Limit-ExpensiveGateTests', 'Get-GateTestDetectionParameters', 'Get-TargetedTestFailureMessage', 'ConvertTo-BoundedReplicationMachineFailureMessage', 'Get-ReplicationVerifierActualFailureMessage', 'Get-NormalizedAppCrashSignature', 'Get-TestResultFromOutput', 'Get-SnapshotDiffMap', 'Get-SnapshotSizeMismatchSignatures', 'Test-SnapshotSizeMismatchPair', 'Convert-SnapshotSizeMismatchPairToEnvironment', 'Test-SnapshotEnvironmentalResidual', 'Write-MarkdownReport', 'Test-BuildErrorIsInDetectedTest', 'Test-FixIrrelevantToPlatform', 'Format-GateLogExcerpt', 'Test-IsWindowsDeviceNoResultsError', 'Test-IsWindowsDeviceTargetTimeoutError', 'Test-IsWindowsDeviceCleanupError', 'Convert-WindowsBaselineNoResultsToFailure', 'Convert-WindowsTargetTimeoutToFailure', 'Test-HasWithFixOnlyBuildError', 'Test-GateHasDefinitiveFailure', 'Convert-AmbiguousSetupFailurePairToEnvironment', 'Invoke-FailureOnlyTestRun', 'Invoke-TestRunWithRetry', 'Get-HostOnlyTargetFrameworkArgs', 'Write-ReplicationVerifierMachineResult')) {
         $fn = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $fnName
@@ -172,6 +172,57 @@ Total tests: 2
             Should -Match '\$deviceTestScript\s*=\s*\$resolvedDeviceTestScriptPath'
         $script:VerifierSource |
             Should -Match 'RepositoryRoot\s*=\s*\$RepoRoot'
+    }
+
+    It 'surfaces an Android XHarness no-result environment error in the machine message' {
+        $RepoRoot = $TestDrive
+        $runnerResult = @{
+            Passed = $false
+            EnvError = $true
+            Error = ("Test runner threw before producing a result: " +
+                "XHarness did not produce the expected fresh result " +
+                "'testResults-abc.xml' for requested class(es) " +
+                "'Microsoft.Maui.DeviceTests.ButtonTests' " +
+                "(no authoritative target-test result was produced). Raw XHarness exit code: 78")
+            ResultLogFile = ''
+            ResultFiles = @()
+            Total = 0
+        }
+
+        $message = Get-ReplicationVerifierActualFailureMessage `
+            -TestResult $runnerResult `
+            -TargetClass 'Microsoft.Maui.DeviceTests.ButtonTests' `
+            -TargetMethod 'Issue26505DefaultPaddingDisabledFitsLargeText' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue26505
+
+        $message | Should -Match 'XHarness did not produce the expected fresh result'
+        $message | Should -Match 'testResults-abc\.xml'
+        $message | Should -Match 'Raw XHarness exit code: 78'
+        $message.Length | Should -BeLessOrEqual 10000
+    }
+
+    It 'bounds long environment errors while retaining the exact XHarness exit readback' {
+        $RepoRoot = $TestDrive
+        $runnerResult = @{
+            Passed = $false
+            EnvError = $true
+            Error = ("Raw XHarness exit code: 78`n" + ('x' * 12000))
+            ResultLogFile = ''
+            ResultFiles = @()
+            Total = 0
+        }
+
+        $message = Get-ReplicationVerifierActualFailureMessage `
+            -TestResult $runnerResult `
+            -TargetClass 'Microsoft.Maui.DeviceTests.ButtonTests' `
+            -TargetMethod 'Issue26505DefaultPaddingDisabledFitsLargeText' `
+            -TargetTestType DeviceTest `
+            -TargetFilter Issue26505
+
+        $message | Should -Match 'Raw XHarness exit code: 78'
+        $message.Length | Should -BeLessOrEqual 10000
+        $message | Should -Match 'truncated; sha256='
     }
 
     It 'reads only the exact device target failure message from scoped xUnit XML' {
