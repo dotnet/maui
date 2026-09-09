@@ -6659,6 +6659,8 @@ function New-ReplicationControlVariant {
         [Collections.Generic.Dictionary[int, object]]::new()
     $trustedWindowCallbackFinalPages =
         [Collections.Generic.Dictionary[int, object]]::new()
+    $trustedContractAssembly =
+        'Microsoft.Maui.Controls.ReplicationControlContract'
     $normalizedSourcePath = $SourcePath.Replace('\', '/')
     $isAndroidIssue26505Profile =
         $Platform -ceq 'android' -and
@@ -8609,9 +8611,20 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     $callbackSymbol.Name -ceq 'Abs' -and
                     $callbackSymbol.Parameters.Length -eq 1 -and
                     $callbackSymbolLocations.Count -eq 0
-                $arrayLengthReceiver = if ($callbackExpression -is
+                $arrayLengthAccess = if ($callbackExpression -is
                         [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
-                    $semanticModel.GetTypeInfo($callbackExpression.Expression).Type
+                    $callbackExpression
+                } elseif ($callbackExpression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $callbackExpression.Parent -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $callbackExpression.Parent.Name -eq $callbackExpression) {
+                    $callbackExpression.Parent
+                } else {
+                    $null
+                }
+                $arrayLengthReceiver = if ($null -ne $arrayLengthAccess) {
+                    $semanticModel.GetTypeInfo($arrayLengthAccess.Expression).Type
                 } else {
                     $null
                 }
@@ -10885,8 +10898,6 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             "Offending $offendingKind symbol '$offendingSymbol' from syntax " +
             "'$offendingText' in '$SourcePath' line $offendingLine.")
     }
-    $trustedContractAssembly =
-        'Microsoft.Maui.Controls.ReplicationControlContract'
     $assertAliasDeclared = @($root.Usings | Where-Object {
             $null -ne $_.Alias -and
             $_.Alias.Name.Identifier.ValueText -ceq 'Assert'
