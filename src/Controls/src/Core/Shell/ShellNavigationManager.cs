@@ -53,9 +53,10 @@ namespace Microsoft.Maui.Controls
 				await (_shell?.CurrentItem?.CurrentItem?.PendingNavigationTask ?? Task.CompletedTask);
 
 			bool registeredPagePushingRoute = shellNavigationParameters.PagePushing is not null && navigationRequest is null;
+			Page previousPagePushingRoute = null;
 			if (registeredPagePushingRoute)
 			{
-				Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
+				previousPagePushingRoute = Routing.RegisterImplicitPageRoute(shellNavigationParameters.PagePushing);
 			}
 
 			var state = shellNavigationParameters.TargetState ?? new ShellNavigationState(Routing.GetRoute(shellNavigationParameters.PagePushing), false);
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls
 					{
 						if (registeredPagePushingRoute)
 						{
-							Routing.UnregisterImplicitPageRoute(shellNavigationParameters.PagePushing);
+							Routing.UnregisterImplicitPageRoute(shellNavigationParameters.PagePushing, previousPagePushingRoute);
 						}
 
 						return;
