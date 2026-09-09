@@ -526,11 +526,11 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 // Issue Link: https://github.com/dotnet/maui/issues/31128
 // Issue Link: https://github.com/dotnet/maui/issues/31141
 	[Test, Order(34)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplate()
 	{
 		App.WaitForElement(Options);
@@ -544,6 +544,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(35)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithFlowDirection()
 	{
 		App.WaitForElement(Options);
@@ -559,6 +560,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(36)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithMaximumVisible()
 	{
 		App.WaitForElement(Options);
@@ -573,6 +575,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(37)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithShadow()
 	{
 		App.WaitForElement(Options);
@@ -588,6 +591,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(38)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithIsVisible()
 	{
 		App.WaitForElement(Options);
@@ -603,6 +607,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(39)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithSelectedIndicatorColor()
 	{
 		App.WaitForElement(Options);
@@ -618,6 +623,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 
 	[Test, Order(40)]
 	[Category(UITestCategories.IndicatorView)]
+	[Ignore("IndicatorView templates currently fail on all supported platforms. See issues #31128 and #31141.")]
 	public void VerifyIndicatorTemplateWithIndicatorColor()
 	{
 		App.WaitForElement(Options);
@@ -630,8 +636,6 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		App.Tap(Apply);
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
-#endif
-
 	[Test, Order(41)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorView_HideSingleReappears()
