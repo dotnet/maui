@@ -4123,7 +4123,10 @@ Describe 'Complete post-patch product source scanning' {
 
             Set-Content -LiteralPath $script:completeFile -Value $Before -Encoding utf8NoBOM
             git -C $script:completeRepo add -- $script:completePath
-            git -C $script:completeRepo commit -qm baseline
+            git -C $script:completeRepo commit --allow-empty -qm baseline
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Could not commit the complete-source fixture baseline.'
+            }
             Set-Content -LiteralPath $script:completeFile -Value $After -Encoding utf8NoBOM
             $patch = Join-Path $TestDrive "$([guid]::NewGuid().ToString('N')).patch"
             [IO.File]::WriteAllText(
