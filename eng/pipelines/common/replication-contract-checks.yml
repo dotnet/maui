@@ -189,6 +189,8 @@ steps:
         'The fix panel stops before the step timeout kills the evidence*leaves room for two complete fix candidates after a ninety-minute reproduction'
         'The fix panel stops before the step timeout kills the evidence*refuses a candidate that cannot finish, rather than starting one that will be killed'
         'The fix panel stops before the step timeout kills the evidence*derives a budget no candidate can overrun the step with'
+        'The fix panel stops before the step timeout kills the evidence*finds the replication timeout after long metadata with either line ending'
+        'The fix panel stops before the step timeout kills the evidence*does not borrow a nested value or another tasks timeout'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
