@@ -116,5 +116,109 @@ namespace Microsoft.Maui.Controls.StyleSheets.UnitTests
 			Assert.Equal(label4match, selector.Matches(Label4));
 			Assert.Equal(content0match, selector.Matches(ContentView0));
 		}
+		[Fact]
+		public void RootSelectorMatchesElementWithNoParent()
+		{
+			var rootNode = new MockStylable
+			{
+				NameAndBases = new[] { "Page", "VisualElement" },
+				Children = new List<IStyleSelectable>()
+			};
+			// No parent set → :root should match
+			var selector = Selector.Parse(new CssReader(new StringReader(":root")));
+			Assert.True(selector.Matches(rootNode));
+		}
+
+		[Fact]
+		public void RootSelectorDoesNotMatchChildElement()
+		{
+			// Page has a parent set by SetParents → :root should NOT match
+			var selector = Selector.Parse(new CssReader(new StringReader(":root")));
+			Assert.False(selector.Matches(Label0));
+			Assert.False(selector.Matches(StackLayout));
+		}
+
+		// --- :first-child / :last-child tests ---
+
+		[Fact]
+		public void FirstChildMatchesFirstElement()
+		{
+			var selector = Selector.Parse(new CssReader(new StringReader("label:first-child")));
+			Assert.True(selector.Matches(Label0));   // first label in stacklayout
+			Assert.False(selector.Matches(Label1));   // second
+			Assert.False(selector.Matches(Label3));
+			Assert.False(selector.Matches(Label4));   // last
+		}
+
+		[Fact]
+		public void LastChildMatchesLastElement()
+		{
+			var selector = Selector.Parse(new CssReader(new StringReader("label:last-child")));
+			Assert.False(selector.Matches(Label0));
+			Assert.False(selector.Matches(Label1));
+			Assert.True(selector.Matches(Label4));    // last in stacklayout
+		}
+
+		[Fact]
+		public void FirstChildInNestedContainer()
+		{
+			// Label2 is the only (thus first and last) child of ContentView0
+			var selector = Selector.Parse(new CssReader(new StringReader(":first-child")));
+			Assert.True(selector.Matches(Label2));
+		}
+
+		// --- :not() tests ---
+
+		[Fact]
+		public void NotSelectorNegatesMatch()
+		{
+			// :not(.test) should match elements WITHOUT class "test"
+			var selector = Selector.Parse(new CssReader(new StringReader(":not(.test)")));
+			Assert.False(selector.Matches(Label0));  // has class "test"
+			Assert.True(selector.Matches(Label1));   // no class "test"
+			Assert.False(selector.Matches(Label2));  // has class "test"
+			Assert.True(selector.Matches(Label3));
+			Assert.True(selector.Matches(Label4));
+		}
+
+		[Fact]
+		public void NotSelectorWithElementType()
+		{
+			// label:not(#foo) should match labels that don't have id "foo"
+			var selector = Selector.Parse(new CssReader(new StringReader("label:not(#foo)")));
+			Assert.True(selector.Matches(Label0));
+			Assert.True(selector.Matches(Label1));
+			Assert.False(selector.Matches(Label3));  // has id "foo"
+			Assert.True(selector.Matches(Label4));
+		}
+
+		// --- [attr=value] tests ---
+
+		[Fact]
+		public void AttributeSelectorMatchesId()
+		{
+			var selector = Selector.Parse(new CssReader(new StringReader("[id=foo]")));
+			Assert.False(selector.Matches(Label0));
+			Assert.True(selector.Matches(Label3));    // has Id="foo"
+			Assert.False(selector.Matches(Label4));
+		}
+
+		[Fact]
+		public void AttributeSelectorMatchesQuotedValue()
+		{
+			var selector = Selector.Parse(new CssReader(new StringReader("[id=\"foo\"]")));
+			Assert.True(selector.Matches(Label3));
+			Assert.False(selector.Matches(Label0));
+		}
+
+		[Fact]
+		public void AttributeSelectorClassContains()
+		{
+			// [class~=test] — class attribute contains "test" token
+			var selector = Selector.Parse(new CssReader(new StringReader("[class~=test]")));
+			Assert.True(selector.Matches(Label0));    // has class "test"
+			Assert.False(selector.Matches(Label1));   // no class
+			Assert.True(selector.Matches(Label2));    // has class "test"
+		}
 	}
 }

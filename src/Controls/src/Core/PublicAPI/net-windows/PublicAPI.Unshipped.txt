@@ -307,3 +307,25 @@ static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColors
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.TabbedPage.BadgeTextProperty -> Microsoft.Maui.Controls.BindableProperty
 static Microsoft.Maui.Controls.Shell.ResolveFlyoutItemTemplate(Microsoft.Maui.Controls.Shell? shell, Microsoft.Maui.Controls.BindableObject! flyoutItem) -> Microsoft.Maui.Controls.DataTemplate?
+Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup
+Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.CompiledCssMediaGroup() -> void
+Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.Equals(Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup other) -> bool
+Microsoft.Maui.Controls.StyleSheets.CompiledCssRule
+Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.CompiledCssRule(string! selector, System.Collections.Generic.KeyValuePair<string!, string!>[]! declarations) -> void
+Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.Declarations -> System.Collections.Generic.KeyValuePair<string!, string!>[]!
+Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.Equals(Microsoft.Maui.Controls.StyleSheets.CompiledCssRule other) -> bool
+Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.Selector -> string!
+override Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.GetHashCode() -> int
+override Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.Equals(object? obj) -> bool
+override Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.GetHashCode() -> int
+static Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.operator !=(Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup left, Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup right) -> bool
+static Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.operator ==(Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup left, Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup right) -> bool
+static Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.operator !=(Microsoft.Maui.Controls.StyleSheets.CompiledCssRule left, Microsoft.Maui.Controls.StyleSheets.CompiledCssRule right) -> bool
+static Microsoft.Maui.Controls.StyleSheets.CompiledCssRule.operator ==(Microsoft.Maui.Controls.StyleSheets.CompiledCssRule left, Microsoft.Maui.Controls.StyleSheets.CompiledCssRule right) -> bool
+static Microsoft.Maui.Controls.StyleSheets.StyleSheet.CreateCompiled(Microsoft.Maui.Controls.StyleSheets.CompiledCssRule[]! rules) -> Microsoft.Maui.Controls.StyleSheets.StyleSheet!
+static Microsoft.Maui.Controls.StyleSheets.StyleSheet.RegisterCompiled(string! key, System.Func<Microsoft.Maui.Controls.StyleSheets.StyleSheet!>! factory) -> void
+~Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.CompiledCssMediaGroup(string condition, Microsoft.Maui.Controls.StyleSheets.CompiledCssRule[] rules) -> void
+~override Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.Equals(object obj) -> bool
+~readonly Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.Condition -> string
+~readonly Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup.Rules -> Microsoft.Maui.Controls.StyleSheets.CompiledCssRule[]
+~static Microsoft.Maui.Controls.StyleSheets.StyleSheet.CreateCompiled(Microsoft.Maui.Controls.StyleSheets.CompiledCssRule[] rules, Microsoft.Maui.Controls.StyleSheets.CompiledCssMediaGroup[] mediaGroups) -> Microsoft.Maui.Controls.StyleSheets.StyleSheet
