@@ -26,7 +26,7 @@ namespace UITest.Analyzers.NUnit
 		const string MultipleCategoriesDescription = "Test methods should have exactly one `[Category]` attribute, either on the method or its parent class.";
 
 		const string ShardedCategoryTitle = "Sharded test categories should use ShardedTestCategory";
-		const string ShardedCategoryMessageFormat = "Test method '{0}' uses the sharded category '{1}' directly; use `[ShardedTestCategory(UITestCategories.{1}, shard: ...)]` so both the umbrella and CI shard categories are registered";
+		const string ShardedCategoryMessageFormat = "Test method '{0}' uses the sharded category '{1}' directly; use `[ShardedTestCategory(UITestCategories.{2}, shard: ...)]` so both the umbrella and CI shard categories are registered";
 		const string ShardedCategoryDescription = "Categories split across CI jobs must use ShardedTestCategory so every test remains addressable through both its umbrella category and exactly one shard category.";
 
 		private const string Category = "Testing";
@@ -85,30 +85,34 @@ namespace UITest.Analyzers.NUnit
 			}
 
 			string? shardedCategory = null;
+			string? shardedCategoryPrefix = null;
 			foreach (var attribute in methodAttributes.Concat(methodSymbol.ContainingType.GetAttributes()))
 			{
 				if (TryGetDirectCategory(attribute, out var category) &&
-					IsRegisteredCiShardCategory(category))
+					TryGetRegisteredCiShardCategoryPrefix(category, out var categoryPrefix))
 				{
 					shardedCategory = category;
+					shardedCategoryPrefix = categoryPrefix;
 					break;
 				}
 
 				var testCaseCategory = GetTestCaseCategories(attribute)
-					.FirstOrDefault(IsRegisteredCiShardCategory);
+					.FirstOrDefault(category => TryGetRegisteredCiShardCategoryPrefix(category, out _));
 				if (testCaseCategory != null)
 				{
 					shardedCategory = testCaseCategory;
+					TryGetRegisteredCiShardCategoryPrefix(testCaseCategory, out shardedCategoryPrefix);
 					break;
 				}
 			}
-			if (shardedCategory != null)
+			if (shardedCategory != null && shardedCategoryPrefix != null)
 			{
 				context.ReportDiagnostic(Diagnostic.Create(
 					ShardedCategoryRule,
 					methodSymbol.Locations[0],
 					methodSymbol.Name,
-					shardedCategory));
+					shardedCategory,
+					shardedCategoryPrefix));
 			}
 
 			// Count category attributes on the method
@@ -245,9 +249,22 @@ namespace UITest.Analyzers.NUnit
 			return false;
 		}
 
-		private static bool IsRegisteredCiShardCategory(string category)
+		private static bool TryGetRegisteredCiShardCategoryPrefix(string category, out string prefix)
 		{
-			return CiShardCategoryPrefixes.Contains(category) || IsCiShardCategory(category);
+			foreach (var candidate in CiShardCategoryPrefixes)
+			{
+				if (category == candidate ||
+					category.Length > candidate.Length &&
+					category.StartsWith(candidate, StringComparison.Ordinal) &&
+					category.Skip(candidate.Length).All(char.IsDigit))
+				{
+					prefix = candidate;
+					return true;
+				}
+			}
+
+			prefix = string.Empty;
+			return false;
 		}
 
 		private static bool TryGetDirectCategory(AttributeData attribute, out string category)

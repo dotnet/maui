@@ -513,7 +513,34 @@ public class NUnitTestCategoryAnalyzerTests
 
 		Assert.Single(diagnostics);
 		Assert.Equal("MAUI0003", diagnostics[0].Id);
-		Assert.Contains("CollectionView", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+		Assert.Contains("uses the sharded category 'CollectionView'", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+		Assert.Contains("UITestCategories.CollectionView, shard:", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+		Assert.DoesNotContain("UITestCategories.CollectionView6", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+	}
+
+	[Fact]
+	public async Task TestMethod_WithNumberedShardCategory_RecommendsUmbrellaCategory()
+	{
+		var source = AnalyzerTestHelpers.NUnitAttributeStubs + """
+
+			namespace TestNamespace
+			{
+				public class TestClass
+				{
+					[NUnit.Framework.Test]
+					[NUnit.Framework.Category("CollectionView7")]
+					public void TestMethod() { }
+				}
+			}
+			""";
+
+		var diagnostics = await AnalyzerTestHelpers.GetDiagnosticsAsync<NUnitTestMissingCategoryAnalyzer>(
+			source, NUnitTestMissingCategoryAnalyzer.ShardedCategoryDiagnosticId);
+
+		Assert.Single(diagnostics);
+		Assert.Contains("uses the sharded category 'CollectionView7'", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+		Assert.Contains("UITestCategories.CollectionView, shard:", diagnostics[0].GetMessage(), StringComparison.Ordinal);
+		Assert.DoesNotContain("UITestCategories.CollectionView7", diagnostics[0].GetMessage(), StringComparison.Ordinal);
 	}
 
 	[Theory]
