@@ -83,9 +83,9 @@ function Read-SourcePackageManifest {
         if (-not $ids.ContainsKey($id)) {
             throw "Required source-built package '$id' is missing."
         }
-        if (@($manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*').Count -ne 1) {
-            throw "Expected exactly one source-built template package."
-        }
+    }
+    if (@($manifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*').Count -ne 1) {
+        throw "Expected exactly one source-built template package."
     }
     return $manifest
 }
@@ -141,58 +141,6 @@ function Test-SourcePackageAssets {
             throw "Resolved '$key' in '$AssetsPath' is not the pinned source-built package."
         }
 
-        function Get-AppPayloadProof {
-            param([string]$Path, [string]$SourceSha, $Manifest)
-
-            $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
-            $assemblies = @()
-            $dependencies = @()
-            try {
-                foreach ($entry in $archive.Entries) {
-                    if ($entry.Name -like 'Microsoft.Maui*.dll') {
-                        $temporaryFile = [System.IO.Path]::GetTempFileName()
-                        try {
-                            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $temporaryFile, $true)
-                            $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($temporaryFile).ProductVersion
-                            if ($version -notlike "*$SourceSha*") {
-                                throw "Packaged assembly '$($entry.FullName)' is not from $SourceSha (informational version '$version')."
-                            }
-                            $assemblies += [ordered]@{
-                                path = $entry.FullName
-                                informationalVersion = $version
-                                sha256 = (Get-FileHash $temporaryFile -Algorithm SHA256).Hash.ToLowerInvariant()
-                            }
-                        } finally { Remove-Item $temporaryFile -Force }
-                    } elseif ($entry.Name -like '*.deps.json') {
-                        $reader = [System.IO.StreamReader]::new($entry.Open())
-                        try { $deps = $reader.ReadToEnd() | ConvertFrom-Json -AsHashtable } finally { $reader.Dispose() }
-                        $dependencies += @($deps.libraries.Keys | Where-Object { $_ -like 'Microsoft.Maui.*' } | Sort-Object)
-                    }
-                }
-            } finally { $archive.Dispose() }
-            if ($assemblies.Count -eq 0) {
-                throw "No inspectable MAUI assemblies found in '$Path'; cannot verify the app payload."
-            }
-            if ($Manifest) {
-                foreach ($dependency in $dependencies) {
-                    $id, $version = $dependency -split '/', 2
-                    if ($id -notin $Manifest.packages.id -or $version -ne $Manifest.version) {
-                        throw "Packaged dependency '$dependency' is not from the pinned source package set."
-                    }
-                }
-                foreach ($name in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
-                    if (-not ($assemblies.path | Where-Object { [System.IO.Path]::GetFileName($_) -eq $name })) {
-                        throw "Required MAUI assembly '$name' is missing from '$Path'."
-                    }
-                }
-            }
-            return [ordered]@{
-                file = [System.IO.Path]::GetFileName($Path)
-                sha256 = (Get-FileHash $Path -Algorithm SHA256).Hash.ToLowerInvariant()
-                assemblies = $assemblies
-                dependencies = $dependencies
-            }
-        }
         $resolved += [ordered]@{
             id = $id
             version = $version
@@ -207,5 +155,110 @@ function Test-SourcePackageAssets {
     return [ordered]@{
         targets = @($assets.targets.Keys | Sort-Object)
         packages = $resolved
+    }
+}
+
+function Expand-AndroidAssemblyPayload {
+    param([string]$Path)
+
+    # Android packages discrete managed assemblies in ELF shared libraries with a "payload" section.
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    if ($bytes.Length -lt 64 -or [BitConverter]::ToUInt32($bytes, 0) -ne 0x464c457f -or
+        $bytes[5] -ne 1 -or $bytes[4] -notin @(1, 2)) {
+        throw "Unsupported Android ELF assembly wrapper '$Path'."
+    }
+    $is64Bit = $bytes[4] -eq 2
+    $tableOffset = if ($is64Bit) { [BitConverter]::ToUInt64($bytes, 40) } else { [BitConverter]::ToUInt32($bytes, 32) }
+    $headerOffset = if ($is64Bit) { 58 } else { 46 }
+    $entrySize = [BitConverter]::ToUInt16($bytes, $headerOffset)
+    $entryCount = [BitConverter]::ToUInt16($bytes, $headerOffset + 2)
+    $namesIndex = [BitConverter]::ToUInt16($bytes, $headerOffset + 4)
+    $minimumSize = if ($is64Bit) { 64 } else { 40 }
+    if ($entrySize -lt $minimumSize -or $entryCount -eq 0 -or $namesIndex -ge $entryCount -or
+        $tableOffset -gt $bytes.Length -or $entryCount * $entrySize -gt $bytes.Length - $tableOffset) {
+        throw "Invalid ELF section table in '$Path'."
+    }
+    $sections = for ($index = 0; $index -lt $entryCount; $index++) {
+        $position = [int]($tableOffset + $index * $entrySize)
+        [pscustomobject]@{
+            nameOffset = [BitConverter]::ToUInt32($bytes, $position)
+            offset = if ($is64Bit) { [BitConverter]::ToUInt64($bytes, $position + 24) } else { [BitConverter]::ToUInt32($bytes, $position + 16) }
+            size = if ($is64Bit) { [BitConverter]::ToUInt64($bytes, $position + 32) } else { [BitConverter]::ToUInt32($bytes, $position + 20) }
+        }
+    }
+    $names = $sections[$namesIndex]
+    if ($names.offset -gt $bytes.Length -or $names.size -gt $bytes.Length - $names.offset) {
+        throw "Invalid ELF section names in '$Path'."
+    }
+    $stringTable = [System.Text.Encoding]::ASCII.GetString($bytes, [int]$names.offset, [int]$names.size)
+    $payloads = @($sections | Where-Object {
+        $_.nameOffset -lt $stringTable.Length -and $stringTable.Substring([int]$_.nameOffset).Split([char]0)[0] -ceq 'payload'
+    })
+    if ($payloads.Count -ne 1 -or $payloads[0].offset -gt $bytes.Length -or
+        $payloads[0].size -lt 2 -or $payloads[0].size -gt $bytes.Length - $payloads[0].offset) {
+        throw "Missing or invalid ELF managed payload in '$Path'."
+    }
+    $payload = $payloads[0]
+    if ([BitConverter]::ToUInt16($bytes, [int]$payload.offset) -ne 0x5a4d) {
+        throw "Android ELF payload is not an uncompressed managed PE image in '$Path'."
+    }
+    $output = [System.IO.File]::Create($Path)
+    try { $output.Write($bytes, [int]$payload.offset, [int]$payload.size) } finally { $output.Dispose() }
+}
+
+function Get-AppPayloadProof {
+    param([string]$Path, [string]$SourceSha, $Manifest)
+
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+    $assemblies = @()
+    $dependencies = @()
+    try {
+        foreach ($entry in $archive.Entries) {
+            $wrapped = $entry.Name -match '^(?:lib)?_(Microsoft\.Maui.*\.dll)\.so$'
+            $assemblyName = if ($wrapped) { $Matches[1] } else { $entry.Name }
+            if ($assemblyName -like 'Microsoft.Maui*.dll') {
+                $temporaryFile = [System.IO.Path]::GetTempFileName()
+                try {
+                    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $temporaryFile, $true)
+                    if ($wrapped) { Expand-AndroidAssemblyPayload -Path $temporaryFile }
+                    $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($temporaryFile).ProductVersion
+                    if ($version -notlike "*$SourceSha*") {
+                        throw "Packaged assembly '$($entry.FullName)' is not from $SourceSha (informational version '$version')."
+                    }
+                    $assemblies += [ordered]@{
+                        path = $entry.FullName
+                        name = $assemblyName
+                        informationalVersion = $version
+                        sha256 = (Get-FileHash $temporaryFile -Algorithm SHA256).Hash.ToLowerInvariant()
+                    }
+                } finally { Remove-Item $temporaryFile -Force }
+            } elseif ($entry.Name -like '*.deps.json') {
+                $reader = [System.IO.StreamReader]::new($entry.Open())
+                try { $deps = $reader.ReadToEnd() | ConvertFrom-Json -AsHashtable } finally { $reader.Dispose() }
+                $dependencies += @($deps.libraries.Keys | Where-Object { $_ -like 'Microsoft.Maui.*' } | Sort-Object)
+            }
+        }
+    } finally { $archive.Dispose() }
+    if ($assemblies.Count -eq 0) {
+        throw "No inspectable MAUI assemblies found in '$Path'; cannot verify the app payload."
+    }
+    if ($Manifest) {
+        foreach ($dependency in $dependencies) {
+            $id, $version = $dependency -split '/', 2
+            if ($id -notin $Manifest.packages.id -or $version -ne $Manifest.version) {
+                throw "Packaged dependency '$dependency' is not from the pinned source package set."
+            }
+        }
+        foreach ($name in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
+            if ($name -notin $assemblies.name) {
+                throw "Required MAUI assembly '$name' is missing from '$Path'."
+            }
+        }
+    }
+    return [ordered]@{
+        file = [System.IO.Path]::GetFileName($Path)
+        sha256 = (Get-FileHash $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+        assemblies = $assemblies
+        dependencies = $dependencies
     }
 }
