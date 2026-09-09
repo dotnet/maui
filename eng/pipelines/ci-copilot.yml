@@ -72,6 +72,13 @@ parameters:
     # the ReplicationArtifacts artifact for sandbox/xharness-preflight.log and
     # sandbox/xharness-preflight/xharness-preflight/*.log.
 
+  - name: AndroidHarnessNativeProbeOnly
+    displayName: 'Android fixed native Button harness probe only (replicate/android diagnostic)'
+    type: boolean
+    default: false
+    # Unlike the help-only mode, this builds and runs one attested infrastructure
+    # fixture through the isolated native runner. No model, Sandbox reproduction,
+    # issue oracle, candidate, certification, or publication is produced.
 
   - name: androidPool
     type: object
@@ -356,6 +363,7 @@ stages:
               REVIEW_REPOSITORY="${PARAM_REVIEW_REPOSITORY}"
               ISSUE_NUM="${PARAM_ISSUE_NUMBER}"
               ANDROID_HARNESS_PREFLIGHT_ONLY="${PARAM_ANDROID_HARNESS_PREFLIGHT_ONLY}"
+              ANDROID_HARNESS_NATIVE_PROBE_ONLY="${PARAM_ANDROID_HARNESS_NATIVE_PROBE_ONLY}"
 
               if ! [[ "${REVIEW_REPOSITORY}" =~ ^[A-Za-z0-9]([A-Za-z0-9-]{0,38})/[A-Za-z0-9._-]+$ ]]; then
                 echo "##vso[task.logissue type=error]ReviewRepository must use a valid owner/name form."
@@ -392,7 +400,18 @@ stages:
                 fi
               fi
 
-              echo "Mode=${MODE} PRNumber=${PR_NUM} ReviewRepository=${REVIEW_REPOSITORY} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM} AndroidHarnessPreflightOnly=${ANDROID_HARNESS_PREFLIGHT_ONLY}"
+              if [ "${ANDROID_HARNESS_NATIVE_PROBE_ONLY}" = "True" ] || [ "${ANDROID_HARNESS_NATIVE_PROBE_ONLY}" = "true" ]; then
+                if [ "${MODE}" != "replicate" ] || [ "${PARAM_PLATFORM}" != "android" ]; then
+                  echo "##vso[task.logissue type=error]AndroidHarnessNativeProbeOnly requires Mode=replicate and Platform=android."
+                  exit 1
+                fi
+                if [ "${ANDROID_HARNESS_PREFLIGHT_ONLY}" = "True" ] || [ "${ANDROID_HARNESS_PREFLIGHT_ONLY}" = "true" ]; then
+                  echo "##vso[task.logissue type=error]Choose either the native harness probe or the help-only preflight, not both."
+                  exit 1
+                fi
+              fi
+
+              echo "Mode=${MODE} PRNumber=${PR_NUM} ReviewRepository=${REVIEW_REPOSITORY} IssueNumber=${ISSUE_NUM} Platform=${PARAM_PLATFORM} AndroidHarnessPreflightOnly=${ANDROID_HARNESS_PREFLIGHT_ONLY} AndroidHarnessNativeProbeOnly=${ANDROID_HARNESS_NATIVE_PROBE_ONLY}"
             displayName: 'Validate Parameters'
             env:
               PARAM_MODE: ${{ parameters.Mode }}
@@ -401,6 +420,7 @@ stages:
               PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
               PARAM_PLATFORM: ${{ parameters.Platform }}
               PARAM_ANDROID_HARNESS_PREFLIGHT_ONLY: ${{ parameters.AndroidHarnessPreflightOnly }}
+              PARAM_ANDROID_HARNESS_NATIVE_PROBE_ONLY: ${{ parameters.AndroidHarnessNativeProbeOnly }}
 
           - ${{ if and(eq(parameters.Mode, 'replicate'), eq(parameters.Platform, 'android')) }}:
             - template: common/replication-contract-checks.yml
@@ -2010,7 +2030,7 @@ stages:
               $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
               dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
             displayName: 'Install Appium'
-            condition: and(succeeded(), not(and(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'))))
+            condition: and(succeeded(), not(and(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True')))))
             retryCountOnTaskFailure: 2
             timeoutInMinutes: 10
             env:
@@ -2105,7 +2125,7 @@ stages:
               }
               Write-Host "Copilot CLI installed successfully"
             displayName: 'Install GitHub Copilot CLI'
-            condition: and(succeeded(), not(and(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'), eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'))))
+            condition: and(succeeded(), not(and(eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'android'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True')))))
 
           # Boot iOS Simulator (only for iOS platform)
           # Match main CI ui-tests pipeline: defaultiOSVersion: '26.0'
@@ -2600,13 +2620,14 @@ stages:
                 -DeviceOSVersion $deviceOSVersion `
                 -ArtifactRoot $artifactRoot `
                 -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" `
-                -PreflightXHarnessOnly:$([bool]::Parse('${{ parameters.AndroidHarnessPreflightOnly }}'))
+                -PreflightXHarnessOnly:$([bool]::Parse('${{ parameters.AndroidHarnessPreflightOnly }}')) `
+                -AndroidHarnessNativeProbeOnly:$([bool]::Parse('${{ parameters.AndroidHarnessNativeProbeOnly }}'))
               if ($LASTEXITCODE -ne 0) {
                 throw "Issue replication orchestration failed."
               }
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
-            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), and(ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))))
+            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), and(ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))))
             timeoutInMinutes: 180
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
@@ -2618,6 +2639,17 @@ stages:
               # reach a generated child process, an artifact, a log, a patch, or
               # a JSON document, and to fail the run if it does.
               MAUI_REPLICATION_SECRET_CANARY: maui-replication-secret-canary-$(Build.BuildId)-$(System.JobAttempt)
+
+          - task: PublishTestResults@2
+            displayName: 'Publish fixed Android native harness probe result'
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'))
+            inputs:
+              testResultsFormat: 'XUnit'
+              searchFolder: '$(Build.SourcesDirectory)/CustomAgentLogsTmp/IssueReplication'
+              testResultsFiles: '**/sandbox/native-harness-probe/results/**/testResults-*.xml'
+              testRunTitle: 'Replication Android native handler harness'
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
@@ -3332,7 +3364,7 @@ stages:
   - stage: ValidateReplication
     displayName: 'Validate issue fix without credentials'
     dependsOn: ReviewPR
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), ne('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'))
     jobs:
       - job: ValidateReplication
         displayName: 'Validate fix candidate without credentials'
@@ -3773,7 +3805,7 @@ stages:
     dependsOn:
       - ReviewPR
       - ValidateReplication
-    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), in(dependencies.ValidateReplication.result, 'Succeeded', 'SucceededWithIssues'))
+    condition: and(eq('${{ parameters.Mode }}', 'replicate'), ne('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), ne('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationCredentialCheck.replicationEvidenceOnly'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationAlreadyPublished'], 'true'), ne(dependencies.ReviewPR.outputs['CopilotReview.ReplicationDuplicateCheck.replicationIssueIneligible'], 'true'), in(dependencies.ReviewPR.result, 'Succeeded', 'SucceededWithIssues', 'Failed'), in(dependencies.ValidateReplication.result, 'Succeeded', 'SucceededWithIssues'))
     jobs:
       - job: PublishReplication
         displayName: 'Publish validated fix'

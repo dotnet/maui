@@ -6100,6 +6100,8 @@ function New-ReplicationControlVariant {
             'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
     $acceptedAndroidIssue26505SetupInvocations =
         [Collections.Generic.HashSet[int]]::new()
+    $acceptedAndroidIssue26505RegistrationInvocations =
+        [Collections.Generic.HashSet[int]]::new()
     $acceptedAndroidIssue26505HelperInvocations =
         [Collections.Generic.HashSet[int]]::new()
     $trustedAndroidIssue26505CallbackBodies =
@@ -6425,6 +6427,231 @@ function New-ReplicationControlVariant {
             "'$diagnosticSyntax' in '$diagnosticPath' line ${diagnosticLine}: " +
             $Reason + $bindingDiagnostics)
     }
+    $validateAndroidIssue26505RegistrationStatement = {
+        param(
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax]$RegistrationStatement,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        $throwRegistrationViolation = {
+            param(
+                [Parameter(Mandatory = $true)]
+                [Microsoft.CodeAnalysis.SyntaxNode]$Node,
+                [Parameter(Mandatory = $true)][string]$Reason
+            )
+            & $throwTrustedWindowHelperViolation `
+                -Node $Node `
+                -HelperSymbol $HelperMethod `
+                -Reason (
+                    'the Android Issue26505 profile requires the exact first ' +
+                    'top-level handler registration ' +
+                    'EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(' +
+                    'handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, ' +
+                    'global::Microsoft.Maui.Handlers.ButtonHandler>())); ' +
+                    $Reason)
+        }
+
+        if (@($root.Usings | Where-Object {
+                $null -eq $_.Alias -and
+                $_.StaticKeyword.RawKind -eq 0 -and
+                $_.Name.ToString() -ceq 'Microsoft.Maui.Hosting'
+            }).Count -ne 1) {
+            & $throwRegistrationViolation `
+                -Node $testMethod[0] `
+                -Reason (
+                    'include exactly one non-alias using Microsoft.Maui.Hosting; ' +
+                    'so the real MAUI handler-registration extension method binds.')
+        }
+
+        if ($RegistrationStatement -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+            $RegistrationStatement.Parent -ne $testMethod[0].Body -or
+            $RegistrationStatement.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            & $throwRegistrationViolation `
+                -Node $(if ($RegistrationStatement) { $RegistrationStatement } else { $testMethod[0].Body }) `
+                -Reason 'register the Button handler before constructing any Window, Page, or Button.'
+        }
+
+        $ensureInvocation = $RegistrationStatement.Expression
+        $ensureMethod = $semanticModel.GetSymbolInfo($ensureInvocation).Symbol
+        if ($ensureInvocation.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $ensureInvocation.Expression.Identifier.ValueText -cne 'EnsureHandlerCreated' -or
+            $ensureInvocation.ArgumentList.Arguments.Count -ne 1 -or
+            @($ensureInvocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or
+                    $null -ne $_.NameColon
+                }).Count -ne 0 -or
+            $ensureMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $ensureMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+            $ensureMethod.IsStatic -or
+            $ensureMethod.ReturnsVoid -ne $true -or
+            $ensureMethod.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $ensureMethod.ContainingType.ToString() -cne
+                'Microsoft.Maui.DeviceTests.ControlsHandlerTestBase' -or
+            $ensureMethod.Name -cne 'EnsureHandlerCreated' -or
+            $ensureMethod.Parameters.Length -ne 1 -or
+            $ensureMethod.Parameters[0].Type -isnot
+                [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
+            $ensureMethod.Parameters[0].Type.ToString() -cne
+                'System.Action<Microsoft.Maui.Hosting.HandlerBuilder>' -or
+            @($ensureMethod.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            & $throwRegistrationViolation `
+                -Node $ensureInvocation `
+                -Reason 'EnsureHandlerCreated must bind to the immutable control-contract helper.'
+        }
+
+        $builderLambda = $ensureInvocation.ArgumentList.Arguments[0].Expression
+        if ($builderLambda -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $builderLambda.AsyncKeyword.RawKind -ne 0 -or
+            $builderLambda.Parameter.Identifier.ValueText -cne 'builder' -or
+            $builderLambda.Body -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            & $throwRegistrationViolation `
+                -Node $builderLambda `
+                -Reason 'use the exact expression lambda builder => builder.ConfigureMauiHandlers(...).'
+        }
+        $builderParameter = $semanticModel.GetDeclaredSymbol($builderLambda.Parameter)
+        if ($builderParameter -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $builderParameter.Type.ToString() -cne 'Microsoft.Maui.Hosting.HandlerBuilder' -or
+            $builderParameter.Type.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($builderParameter.Type.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            & $throwRegistrationViolation `
+                -Node $builderLambda.Parameter `
+                -Reason 'the builder lambda parameter must be the trusted MAUI handler builder.'
+        }
+
+        $configureInvocation = $builderLambda.Body
+        $configureMethod = $semanticModel.GetSymbolInfo($configureInvocation).Symbol
+        $configureAccess = $configureInvocation.Expression
+        if ($configureAccess -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $configureAccess.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($configureAccess.Expression).Symbol,
+                $builderParameter) -or
+            $configureAccess.Name.Identifier.ValueText -cne 'ConfigureMauiHandlers' -or
+            $configureInvocation.ArgumentList.Arguments.Count -ne 1 -or
+            @($configureInvocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or
+                    $null -ne $_.NameColon
+                }).Count -ne 0 -or
+            $configureMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $configureMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+            $configureMethod.IsStatic -or
+            $configureMethod.ReturnsVoid -ne $true -or
+            $configureMethod.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $configureMethod.ContainingType.ToString() -cne
+                'Microsoft.Maui.Hosting.HandlerBuilder' -or
+            $configureMethod.Name -cne 'ConfigureMauiHandlers' -or
+            $configureMethod.Parameters.Length -ne 1 -or
+            $configureMethod.Parameters[0].Type.ToString() -cne
+                'System.Action<Microsoft.Maui.Hosting.HandlerCollection>' -or
+            @($configureMethod.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            & $throwRegistrationViolation `
+                -Node $configureInvocation `
+                -Reason 'ConfigureMauiHandlers must be the trusted single-argument registration hook on builder.'
+        }
+
+        $handlersLambda = $configureInvocation.ArgumentList.Arguments[0].Expression
+        if ($handlersLambda -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $handlersLambda.AsyncKeyword.RawKind -ne 0 -or
+            $handlersLambda.Parameter.Identifier.ValueText -cne 'handlers' -or
+            $handlersLambda.Body -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            & $throwRegistrationViolation `
+                -Node $handlersLambda `
+                -Reason 'use the exact expression lambda handlers => handlers.AddHandler<...>().'
+        }
+        $handlersParameter = $semanticModel.GetDeclaredSymbol($handlersLambda.Parameter)
+        if ($handlersParameter -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $handlersParameter.Type.ToString() -cne 'Microsoft.Maui.Hosting.HandlerCollection' -or
+            $handlersParameter.Type.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            @($handlersParameter.Type.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0) {
+            & $throwRegistrationViolation `
+                -Node $handlersLambda.Parameter `
+                -Reason 'the handlers lambda parameter must be the trusted MAUI handler collection.'
+        }
+
+        $addInvocation = $handlersLambda.Body
+        $addMethod = $semanticModel.GetSymbolInfo($addInvocation).Symbol
+        $addAccess = $addInvocation.Expression
+        $addGenericName = if ($addAccess -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $addAccess.Name -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+            $addAccess.Name
+        } else {
+            $null
+        }
+        if ($addAccess -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $addAccess.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($addAccess.Expression).Symbol,
+                $handlersParameter) -or
+            $addGenericName -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -or
+            $addGenericName.Identifier.ValueText -cne 'AddHandler' -or
+            $addGenericName.TypeArgumentList.Arguments.Count -ne 2 -or
+            $addGenericName.TypeArgumentList.Arguments[0].ToString() -cne
+                'global::Microsoft.Maui.Controls.Button' -or
+            $addGenericName.TypeArgumentList.Arguments[1].ToString() -cne
+                'global::Microsoft.Maui.Handlers.ButtonHandler' -or
+            $addInvocation.ArgumentList.Arguments.Count -ne 0 -or
+            $addMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $addMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+            $addMethod.IsStatic -or
+            $addMethod.ReturnsVoid -ne $true -or
+            $addMethod.ContainingAssembly.Name -cne
+                'Microsoft.Maui.Controls.ReplicationControlContract' -or
+            $addMethod.ContainingType.ToString() -cne
+                'Microsoft.Maui.Hosting.HandlerCollection' -or
+            $addMethod.Name -cne 'AddHandler' -or
+            $addMethod.Arity -ne 2 -or
+            $addMethod.Parameters.Length -ne 0 -or
+            $addMethod.TypeArguments.Length -ne 2 -or
+            $addMethod.TypeArguments[0].ToString() -cne
+                'Microsoft.Maui.Controls.Button' -or
+            $addMethod.TypeArguments[1].ToString() -cne
+                'Microsoft.Maui.Handlers.ButtonHandler' -or
+            @($addMethod.Locations | Where-Object {
+                    $_.IsInSource
+                }).Count -ne 0 -or
+            @($addMethod.TypeArguments | Where-Object {
+                    @($_.Locations | Where-Object { $_.IsInSource }).Count -ne 0
+                }).Count -ne 0) {
+            & $throwRegistrationViolation `
+                -Node $addInvocation `
+                -Reason 'AddHandler must register only trusted Button -> ButtonHandler metadata.'
+        }
+
+        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+            $ensureInvocation.SpanStart)
+        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+            $configureInvocation.SpanStart)
+        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+            $addInvocation.SpanStart)
+    }
     $validateAndroidIssue26505HelperInvocation = {
         param(
             [Parameter(Mandatory = $true)]
@@ -6477,6 +6704,15 @@ function New-ReplicationControlVariant {
                     'the Android native-read profile is issue-keyed and requires ' +
                     'the selected method to carry exactly [Category("Issue26505")].')
         }
+
+        $registrationStatement = if ($testMethod[0].Body.Statements.Count -gt 0) {
+            $testMethod[0].Body.Statements[0]
+        } else {
+            $null
+        }
+        & $validateAndroidIssue26505RegistrationStatement `
+            -RegistrationStatement $registrationStatement `
+            -HelperMethod $HelperMethod
 
         $statement = $AwaitExpression.Parent
         if ($statement -isnot
@@ -6844,6 +7080,7 @@ function New-ReplicationControlVariant {
         # Freeze the whole method, not just direct writes to button: aliases,
         # increment operators and extra setup can otherwise manufacture the delta.
         $expectedStatements = @(
+            $registrationStatement
             $buttonDeclarators[0].Parent.Parent
             $setupStatements[0]
             $localDeclaration
@@ -6856,8 +7093,9 @@ function New-ReplicationControlVariant {
                 -HelperSymbol $HelperMethod `
                 -Reason (
                     'the Android Issue26505 method may contain only the Button ' +
-                    'initializer, padding setup, trigger declaration, trigger gate, ' +
-                    'and awaited helper; aliases and extra statements are not permitted.')
+                    'handler registration, Button initializer, padding setup, ' +
+                    'trigger declaration, trigger gate, and awaited helper; ' +
+                    'aliases and extra statements are not permitted.')
         }
         for ($statementIndex = 0; $statementIndex -lt $expectedStatements.Count; $statementIndex++) {
             if ($actualStatements[$statementIndex].SpanStart -ne
@@ -6867,7 +7105,7 @@ function New-ReplicationControlVariant {
                     -HelperSymbol $HelperMethod `
                     -Reason (
                         'the Android Issue26505 method statements must execute in ' +
-                        'the reviewed initialization, setup, trigger, and helper order.')
+                        'the reviewed registration, initialization, setup, trigger, and helper order.')
             }
         }
 
@@ -9342,6 +9580,11 @@ function New-ReplicationControlVariant {
                     $_ -is
                         [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
                 } | Select-Object -First 1)
+        }
+        if ($null -ne $androidIssue26505HelperInvocation -and
+            $acceptedAndroidIssue26505RegistrationInvocations.Contains(
+                $androidIssue26505HelperInvocation.SpanStart)) {
+            continue
         }
         if ($null -ne $androidIssue26505HelperInvocation -and
             $acceptedAndroidIssue26505HelperInvocations.Contains(

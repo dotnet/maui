@@ -125,12 +125,14 @@ Describe 'MAUI Copilot mode routing' {
             "(?s)displayName: 'Install Appium'.*?" +
             "not\(and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
             "eq\('\$\{\{ parameters\.Platform \}\}', 'android'\), " +
-            "eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)\)\)")
+            "or\(eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\), " +
+            "eq\('\$\{\{ parameters\.AndroidHarnessNativeProbeOnly \}\}', 'True'\)\)\)\)")
         $script:Pipeline | Should -Match (
             "(?s)displayName: 'Install GitHub Copilot CLI'.*?" +
             "not\(and\(eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
             "eq\('\$\{\{ parameters\.Platform \}\}', 'android'\), " +
-            "eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\)\)\)")
+            "or\(eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\), " +
+            "eq\('\$\{\{ parameters\.AndroidHarnessNativeProbeOnly \}\}', 'True'\)\)\)\)")
         $script:Pipeline | Should -Match (
             "(?s)name: RunReplication.*?" +
             "or\(eq\('\$\{\{ parameters\.AndroidHarnessPreflightOnly \}\}', 'True'\),")
@@ -143,6 +145,33 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "artifact: 'ReplicationArtifacts'"
         $script:Pipeline | Should -Match 'sandbox/xharness-preflight\.log'
         $script:Pipeline | Should -Match 'sandbox/xharness-preflight/xharness-preflight/\*\.log'
+    }
+
+    It 'keeps the fixed Android native probe separate from issue certification' {
+        $script:Pipeline | Should -Match '- name: AndroidHarnessNativeProbeOnly'
+        $script:Pipeline | Should -Match 'AndroidHarnessNativeProbeOnly requires Mode=replicate and Platform=android'
+        $script:Pipeline | Should -Match 'Choose either the native harness probe or the help-only preflight, not both'
+        $script:Pipeline | Should -Match '-AndroidHarnessNativeProbeOnly:\$\(\[bool\]::Parse'
+        foreach ($stageName in @('ValidateReplication', 'PublishReplication')) {
+            $stage = [regex]::Match(
+                $script:Pipeline,
+                "(?ms)^  - stage: $stageName\r?\n.*?(?=^  - stage:|\z)").Value
+            $stage | Should -Match "ne\('\$\{\{ parameters\.AndroidHarnessNativeProbeOnly \}\}', 'True'\)"
+        }
+        $script:Pipeline | Should -Match (
+            "(?s)displayName: 'Publish fixed Android native harness probe result'.*?" +
+            "eq\('\$\{\{ parameters\.AndroidHarnessNativeProbeOnly \}\}', 'True'\).*?" +
+            "testResultsFormat: 'XUnit'.*?native-harness-probe/results/.*?" +
+            "failTaskOnFailedTests: true.*?failTaskOnMissingResultsFile: true")
+        $orchestrator = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $native = $orchestrator.IndexOf('if ($AndroidHarnessNativeProbeOnly) {')
+        $native | Should -BeGreaterThan $orchestrator.IndexOf('if ($PreflightXHarnessOnly) {')
+        $native | Should -BeLessThan $orchestrator.IndexOf("'-PrepareAndroidHelpersOnly'")
+        $orchestrator | Should -Match (
+            '(?s)if \(\$AndroidHarnessNativeProbeOnly\) \{\s+' +
+            'Invoke-ReplicationAndroidNativeHarnessProbe.*?exit 0')
+        $orchestrator | Should -Match 'if \(\$PreflightXHarnessOnly -or \$AndroidHarnessNativeProbeOnly\)'
     }
 
     It 'requires exactly the target number for the selected mode' {

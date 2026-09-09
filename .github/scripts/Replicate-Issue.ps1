@@ -57,6 +57,8 @@ param(
 
     [switch]$PreflightXHarnessOnly,
 
+    [switch]$AndroidHarnessNativeProbeOnly,
+
     [ValidateRange(5, 45)]
     [int]$CopilotTimeoutMinutes = 20,
 
@@ -108,6 +110,10 @@ Set-StrictMode -Version 3.0
 
 if ($PreflightXHarnessOnly -and $Platform -ne 'android') {
     throw 'XHarness-only replication diagnostics require Platform=android.'
+}
+if ($AndroidHarnessNativeProbeOnly -and
+    ($Platform -ne 'android' -or $PreflightXHarnessOnly)) {
+    throw 'The Android native harness probe requires Platform=android and cannot be combined with PreflightXHarnessOnly.'
 }
 
 # Azure's step timeout has been counting since this script started, so the fix
@@ -6933,7 +6939,8 @@ ANDROID ISSUE26505 SANDBOX FIDELITY: Recreate the issue-linked visual Button sce
         @'
 
 ANDROID ISSUE26505 NARROW EXCEPTION: After the empirical Sandbox proof, the guard trusts exactly one Android native-read profile for `src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs`. Keep the affected control as `var button = new Button { Text = "CI", WidthRequest = 64, HeightRequest = 64, CornerRadius = 32, BorderWidth = 0, BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Red, TextColor = global::Microsoft.Maui.Graphics.Colors.White, HorizontalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center, VerticalOptions = global::Microsoft.Maui.Controls.LayoutOptions.Center };` and make the explicit pre-gate setup call exactly `global::Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetUseDefaultPadding(button, false);`. The single trigger gate must be `if (applyReportedTrigger) { button.FontSize = 36; }` with no else branch; do not set FontSize elsewhere. Attach only with `await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.ButtonHandler>(new Window(new ContentPage { Content = button }), async handler => { ... });` as a top-level statement after the gate; never return that helper Task, call another overload, use another handler type, rebind the handler, mutate native layout, or insert extra callback statements. Inside the callback use exactly one-argument `await AssertEventually(() => button.Handler != null && button.IsLoaded);`, then directly assert fixed logical geometry with `Assert.True(button.Width >= 63 && button.Width <= 65 && button.Height >= 63 && button.Height <= 65);`, then the mandatory native oracle `Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);`. Do not compute locals for those native values, read Elevation/shadow/padding-top, use Android namespaces outside that callback, compare app-authored verdict text, or add a decorative click. If this exact causal shape cannot express the candidate, classify the recorded/generated native scenario as unsupported by the current contract.
-Declare the test class as an explicit subclass of `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` in the generated source even if the immutable baseline has a partial ButtonTests class that already inherits it; the closed semantic guard binds only the generated file. The selected method must carry [Fact] and [Category("Issue26505")]. Its body must contain exactly five top-level statements in order: the Button declaration, padding setup, var applyReportedTrigger = true;, the trigger gate, and the awaited helper. Do not add aliases, other declarations, mutations, or statements before or after the helper.
+Declare the test class as an explicit subclass of `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` in the generated source even if the immutable baseline has a partial ButtonTests class that already inherits it; the closed semantic guard binds only the generated file. The selected method must carry [Fact] and [Category("Issue26505")]. Its body must contain exactly six top-level statements in order: the handler registration below, the Button declaration, padding setup, var applyReportedTrigger = true;, the trigger gate, and the awaited helper. Do not add aliases, other declarations, mutations, or statements before or after the helper.
+Import `using Microsoft.Maui.Hosting;` and begin the method with exactly `EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, global::Microsoft.Maui.Handlers.ButtonHandler>()));`. The immutable window fixture does not register Button automatically; absent registration caused an actual native HandlerNotFoundException before the assertion. Do not substitute CreateHandlerAsync: the window uses a scoped MauiContext and can discard a previously created handler. Register only that exact Button/handler pair, before any context is created; no additional handlers, services, callbacks, or mutations are permitted.
 The source must explicitly import `using static Microsoft.Maui.DeviceTests.AssertHelpers;` for the unqualified AssertEventually call. This static method is not inherited from ControlsHandlerTestBase. Omitting that import can make the enclosing CreateHandlerAndAddToWindow invocation unresolved even when its outer syntax is correct. Follow the reported binding diagnostics (including errors inside the callback); do not try whitespace changes or unrelated namespace imports instead.
 '@
     } else {
@@ -8282,6 +8289,64 @@ function Get-ReplicationPlannedRestoreTargets {
         $directory = $parent
     }
     throw 'The planned test path has no trusted restore project.'
+}
+
+function Invoke-ReplicationAndroidNativeHarnessProbe {
+    $fixtureName = 'ReplicationAndroidButtonHarnessProbe.Android.cs'
+    $fixtureSource = Join-Path $trustedScripts "fixtures/$fixtureName"
+    $fixtureTarget = Join-Path $repoRoot (
+        "src/Controls/tests/DeviceTests/Elements/Button/$fixtureName")
+    $probeDirectory = Join-Path $sandboxArtifactDir 'native-harness-probe'
+    if (Test-Path -LiteralPath $fixtureTarget) {
+        throw 'The fixed Android harness probe would overwrite an existing source file.'
+    }
+    $null = Assert-ReplicationTrustedTree -Context 'before staging native harness probe'
+    if (-not (Test-Path -LiteralPath $fixtureSource -PathType Leaf)) {
+        throw 'The attested Android native harness probe fixture is missing.'
+    }
+    Assert-InitialReplicationWorktree
+    $project = Join-Path $repoRoot (
+        'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
+    Invoke-ReplicationTrustedRestore -Target $project
+    # Populate Android's build-time Maven/download caches from the clean baseline
+    # before the fixture exists; the isolated rebuild cannot download packages.
+    Invoke-ReplicationTrustedRestore -Target $project -Verb build `
+        -AdditionalArguments @(
+            '-f', 'net10.0-android',
+            '-c', 'Debug',
+            '--no-restore',
+            '-p:AndroidPackageFormat=apk',
+            '-p:TreatWarningsAsErrors=false'
+        )
+    Assert-InitialReplicationWorktree
+    $null = New-Item -ItemType Directory -Path $probeDirectory -Force
+    Copy-Item -LiteralPath $fixtureSource -Destination $fixtureTarget
+    try {
+        # This fixed trusted fixture checks registration and native attachment,
+        # not the issue oracle. The existing runner requires fresh selected XML.
+        Invoke-LoggedChildProcess `
+            -ScriptPath (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1') `
+            -Arguments @(
+                '-Project', 'Controls',
+                '-Platform', 'android',
+                '-RepositoryRoot', $repoRoot,
+                '-DeviceUdid', $DeviceUdid,
+                '-Configuration', 'Debug',
+                '-NoRestore',
+                '-TestFilter', 'ReplicationAndroidButtonHarnessProbe',
+                '-IncludeClasses', 'Microsoft.Maui.DeviceTests.ReplicationAndroidButtonHarnessProbe',
+                '-IncludeMethods', 'RegisteredButtonAttachesToWindow',
+                '-OutputDirectory', (Join-Path $probeDirectory 'results'),
+                '-Timeout', '00:05:00'
+            ) `
+            -LogPath (Join-Path $probeDirectory 'native-harness-probe.log') `
+            -Description 'Checking fixed Button registration and native window attachment without model generation' `
+            -AllowDeviceControl `
+            -TimeoutSeconds 1800
+    } finally {
+        Remove-Item -LiteralPath $fixtureTarget -Force
+        $null = Assert-ReplicationTrustedTree -Context 'after native harness probe'
+    }
 }
 
 function Invoke-LoggedChildProcess {
@@ -9853,6 +9918,13 @@ try {
             exit 0
         }
 
+        if ($AndroidHarnessNativeProbeOnly) {
+            Invoke-ReplicationAndroidNativeHarnessProbe
+            Write-Host 'ANDROID NATIVE HARNESS PROBE SUCCEEDED: fixed registration/attachment diagnostic only; no issue oracle, candidate, certification, or publication.'
+            Remove-ReplicationRuntimeCache
+            exit 0
+        }
+
         # Exercise device setup in the real boundary before paying for restore and compilation.
         Invoke-LoggedChildProcess `
             -ScriptPath (Join-Path $trustedScripts 'BuildAndRunSandbox.ps1') `
@@ -11194,8 +11266,12 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
 catch {
     $rawReason = [string]$_.Exception.Message
     $reason = ConvertTo-ReplicationSafeLog $rawReason 500
-    if ($PreflightXHarnessOnly) {
-        Write-Host "ANDROID XHARNESS PREFLIGHT ONLY FAILED: $reason"
+    if ($PreflightXHarnessOnly -or $AndroidHarnessNativeProbeOnly) {
+        if ($PreflightXHarnessOnly) {
+            Write-Host "ANDROID XHARNESS PREFLIGHT ONLY FAILED: $reason"
+        } else {
+            Write-Host "ANDROID NATIVE HARNESS PROBE FAILED: $reason"
+        }
         try {
             Remove-ReplicationRuntimeCache
         } catch {
