@@ -165,6 +165,30 @@ steps:
         'Replication issue outcome publication boundary*continues validation media installation after a package-index failure'
         'Replication issue outcome publication boundary*preserves validation media install failures after a package-index failure'
         'Replication issue outcome publication boundary*requires a working media validator after installation succeeds'
+        'Record-Reproduction recorder adapters*constructs bounded Android screenrecord, pull, and exact cleanup commands'
+        'Record-Reproduction recorder adapters*constructs an iOS simctl recordVideo command for the selected simulator'
+        'Record-Reproduction recorder adapters*constructs a bounded video from trusted Catalyst Appium frames'
+        'Record-Reproduction recorder adapters*constructs a no-audio bounded gdigrab desktop command for Windows'
+        'Record-Reproduction exact process lifecycle*stops the same opaque recorder handle after a successful reproduction'
+        'Record-Reproduction exact process lifecycle*stops the exact recorder and cleans Android device state when reproduction fails'
+        'Record-Reproduction exact process lifecycle*fails closed when exact-process cleanup cannot be confirmed'
+        'Record-Reproduction safe inputs and evidence*keeps a lead-in showing the state before the first interaction'
+        'Record-Reproduction safe inputs and evidence*retains settled post-trigger footage before cutting teardown'
+        'Record-Reproduction safe inputs and evidence*uses a representative thumbnail from the settled tail instead of startup'
+        'Record-Reproduction safe inputs and evidence*compresses a long recording into the preview instead of trimming its end'
+        'Kept footage stops where the scenario stopped*drops the frames recorded after the scenario ended'
+        'Kept footage stops where the scenario stopped*counts from the trimmed start, because -ss precedes the input'
+        'Kept footage stops where the scenario stopped*never exceeds the recording limit'
+        'Kept footage stops where the scenario stopped*keeps the existing bound when the scenario never reported an end'
+        'Kept footage stops where the scenario stopped*never produces an empty clip'
+        'Kept footage stops where the scenario stopped*adds a bounded settled tail after a successful reproduction'
+        'Kept footage stops where the scenario stopped*fails closed when no settled post-trigger scene can fit'
+        'Kept footage stops where the scenario stopped*chooses a late thumbnail frame for restart-heavy captures'
+        'Kept footage stops where the scenario stopped*keeps the original early thumbnail for captures without a settled device tail'
+        'The fix panel stops before the step timeout kills the evidence*budgets candidate authoring and trusted verification as one cycle'
+        'The fix panel stops before the step timeout kills the evidence*leaves room for two complete fix candidates after a ninety-minute reproduction'
+        'The fix panel stops before the step timeout kills the evidence*refuses a candidate that cannot finish, rather than starting one that will be killed'
+        'The fix panel stops before the step timeout kills the evidence*derives a budget no candidate can overrun the step with'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
@@ -173,6 +197,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"
       )

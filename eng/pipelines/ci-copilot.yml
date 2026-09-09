@@ -2773,7 +2773,7 @@ stages:
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), and(ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))))
-            timeoutInMinutes: 180
+            timeoutInMinutes: 240
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)

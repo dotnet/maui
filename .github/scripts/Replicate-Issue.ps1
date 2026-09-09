@@ -100,7 +100,7 @@ param(
     # Lets the orchestrator measure its budget against the same deadline Azure
     # will enforce, instead of against a clock that started when the panel did.
     [ValidateRange(0, 600)]
-    [int]$StepTimeoutMinutes = 180,
+    [int]$StepTimeoutMinutes = 240,
 
     [string]$Model = ''
 )

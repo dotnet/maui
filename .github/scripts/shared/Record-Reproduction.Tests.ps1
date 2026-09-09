@@ -849,6 +849,48 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $trim | Should -BeLessThan 3.9
     }
 
+    It 'retains settled post-trigger footage before cutting teardown' {
+        $harness = New-RecordingHarness
+        $evidenceDir = Join-Path $TestDrive 'evidence-settled-tail'
+
+        $null = Invoke-TestRecording `
+            -Harness $harness `
+            -Platform android `
+            -EvidenceDir $evidenceDir `
+            -DeviceUdid 'emulator-5554'
+
+        $normalize = (Get-CommandRequest $harness 'Normalize recording')[0]
+        $durationIndex = [array]::IndexOf($normalize.ArgumentList, '-t')
+        $durationIndex | Should -BeGreaterThan -1
+        $keptDuration = [double]$normalize.ArgumentList[$durationIndex + 1]
+        $keptDuration | Should -BeGreaterOrEqual 1.9
+    }
+
+    It 'uses a representative thumbnail from the settled tail instead of startup' {
+        $harness = New-RecordingHarness -MediaInfo ([pscustomobject]@{
+            HasVideo        = $true
+            HasAudio        = $false
+            Decodable       = $true
+            DecodedFrames   = 120
+            DurationSeconds = 8.0
+            Width           = 720
+            Height          = 1280
+            FrameRate       = 15
+        })
+        $evidenceDir = Join-Path $TestDrive 'evidence-late-thumbnail'
+
+        $null = Invoke-TestRecording `
+            -Harness $harness `
+            -Platform android `
+            -EvidenceDir $evidenceDir `
+            -DeviceUdid 'emulator-5554'
+
+        $thumbnail = (Get-CommandRequest $harness 'Generate recording thumbnail')[0]
+        $seekIndex = [array]::IndexOf($thumbnail.ArgumentList, '-ss')
+        $seekIndex | Should -BeGreaterThan -1
+        [double]$thumbnail.ArgumentList[$seekIndex + 1] | Should -BeGreaterThan 6.5
+    }
+
     It 'compresses a long recording into the preview instead of trimming its end' {
         # PR 155 reported a preview that stopped before the defect appeared,
         # because the preview kept only the opening seconds while the reported
@@ -1219,13 +1261,18 @@ Describe 'Kept footage stops where the scenario stopped' {
         $recordScriptPath = Join-Path $PSScriptRoot 'Record-Reproduction.ps1'
         $ast = [System.Management.Automation.Language.Parser]::ParseFile(
             $recordScriptPath, [ref] $null, [ref] $null)
-        $definition = $ast.FindAll({
-                param($node)
-                $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-                $node.Name -eq 'Get-ReproductionKeptDurationSeconds'
-            }, $true)
-        if (-not $definition) { throw 'Get-ReproductionKeptDurationSeconds is missing.' }
-        . ([scriptblock]::Create($definition[0].Extent.Text))
+        foreach ($functionName in @(
+            'Get-ReproductionKeptDurationSeconds',
+            'Get-ReproductionPostSuccessSettleSeconds',
+            'Get-ReproductionThumbnailTimeSeconds')) {
+            $definition = $ast.FindAll({
+                    param($node)
+                    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                    $node.Name -eq $functionName
+                }, $true)
+            if (-not $definition) { throw "$functionName is missing." }
+            . ([scriptblock]::Create($definition[0].Extent.Text))
+        }
     }
 
     It 'drops the frames recorded after the scenario ended' {
@@ -1258,6 +1305,35 @@ Describe 'Kept footage stops where the scenario stopped' {
         # Evidence that proves nothing is worse than a little extra tail.
         Get-ReproductionKeptDurationSeconds `
             -ScenarioElapsedSeconds 0.1 -TrimStartSeconds 0 -MaxDurationSeconds 60 |
+            Should -Be 1
+    }
+
+    It 'adds a bounded settled tail after a successful reproduction' {
+        Get-ReproductionPostSuccessSettleSeconds `
+            -ElapsedSeconds 4 `
+            -MaxDurationSeconds 10 `
+            -MinimumSeconds 1 `
+            -TargetSeconds 2 |
+            Should -Be 2
+    }
+
+    It 'fails closed when no settled post-trigger scene can fit' {
+        {
+            Get-ReproductionPostSuccessSettleSeconds `
+                -ElapsedSeconds 9.5 `
+                -MaxDurationSeconds 10 `
+                -MinimumSeconds 1 `
+                -TargetSeconds 2
+        } | Should -Throw '*settled post-trigger scene*'
+    }
+
+    It 'chooses a late thumbnail frame for restart-heavy captures' {
+        Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 -PreferSettledTail $true |
+            Should -Be 7
+    }
+
+    It 'keeps the original early thumbnail for captures without a settled device tail' {
+        Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 -PreferSettledTail $false |
             Should -Be 1
     }
 }
