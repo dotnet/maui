@@ -40,9 +40,8 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		internal static void UnregisterImplicitPageRoute(Page page, Page previousPage = null)
+		internal static void UnregisterImplicitPageRoute(Page page, string route, Page previousPage = null)
 		{
-			var route = GetRoute(page);
 			if (s_implicitPageRoutes.TryGetValue(route, out var registeredPage) &&
 				ReferenceEquals(registeredPage, page))
 			{
