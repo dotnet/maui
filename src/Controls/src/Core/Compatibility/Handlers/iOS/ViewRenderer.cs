@@ -64,12 +64,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_safeAreaFrame = safeFrame;
-			Center = new CGPoint(delegatedFrame.Center.X, delegatedFrame.Center.Y);
-			Bounds = new CGRect(Bounds.X, Bounds.Y, delegatedFrame.Width, delegatedFrame.Height);
+
+			var center = new CGPoint(delegatedFrame.Center.X, delegatedFrame.Center.Y);
+			var bounds = new CGRect(Bounds.X, Bounds.Y, delegatedFrame.Width, delegatedFrame.Height);
+
+			// Reassigning an equivalent Center/Bounds still lets UIKit compensate the hosted scroll
+			// view's ContentOffset while the navigation bar animates its safe area, which shows up
+			// as a stuttering large-title transition. Only write when the geometry actually moves.
+			if (Center != center || Bounds.Size != bounds.Size)
+			{
+				Center = center;
+				Bounds = bounds;
+			}
 
 			if ((this as IElementHandler).PlatformView is UIView platformView &&
 				platformView != this &&
-				platformView.Handle != IntPtr.Zero)
+				platformView.Handle != IntPtr.Zero &&
+				platformView.Frame != Bounds)
 				platformView.Frame = Bounds;
 		}
 

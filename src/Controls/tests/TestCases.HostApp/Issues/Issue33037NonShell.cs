@@ -1,5 +1,7 @@
 using Microsoft.Maui.Layouts;
 #if IOS
+using CoreAnimation;
+using Foundation;
 using Microsoft.Maui.Handlers;
 using UIKit;
 #endif
@@ -48,6 +50,7 @@ public class Issue33037NonShellRootPage : ContentPage
 					CreateButton("Issue33037DynamicContentViewGridScrollViewButton", "Late ContentView wrapping Grid/ScrollView", () => new Issue33037NonShellDynamicContentViewGridScrollViewPage()),
 					CreateButton("Issue33037ListViewButton", "ListView", () => new Issue33037NonShellListViewPage()),
 					CreateButton("Issue33037CollectionViewButton", "CollectionView", () => new Issue33037NonShellCollectionViewPage()),
+					CreateButton("Issue33037OverlayCollectionViewButton", "CollectionView with bottom overlay button", () => new Issue33037NonShellOverlayCollectionViewPage()),
 					CreateButton("Issue33037LegacyCollectionViewButton", "Legacy CollectionView with header", () => new Issue33037NonShellLegacyCollectionViewPage()),
 #if IOS
 					CreateButton("Issue33037NativeTableViewButton", "Custom control backed by native UITableView", () => new Issue33037NativeTableViewPage()),
@@ -1184,4 +1187,214 @@ class Issue33037NonShellHiddenNavigationBarPage : Issue33037NonShellScenarioPage
 			}
 		};
 	}
+}
+
+/// <summary>
+/// The reporter's topology from PR #38067: a full-bleed vertical scroller with a bottom-anchored
+/// overlay button on top of it. The page also records the range of top insets the native scroll view
+/// reports across every rendered frame after navigation, which is how the UI tests observe the first
+/// layout passes instead of only the settled state.
+/// </summary>
+class Issue33037NonShellOverlayCollectionViewPage : Issue33037NonShellScenarioPage
+{
+	// The two states the observation label reports. The UI test waits for the completed state rather
+	// than racing an in-progress reading.
+	public const string ObservingState = "observing";
+	public const string CompleteState = "complete";
+
+	readonly Label _observationStateLabel;
+	readonly Label _topInsetRangeLabel;
+	readonly CollectionView _collectionView;
+	int _overlayTapCount;
+
+	public Issue33037NonShellOverlayCollectionViewPage() : base("Issue33037 Overlay")
+	{
+		_collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037OverlayCollectionViewScroller",
+			BackgroundColor = Colors.White,
+			ItemsSource = CreateItems(),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
+				{
+					HeightRequest = 44,
+					Padding = new Thickness(16, 0),
+					VerticalTextAlignment = TextAlignment.Center
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		_topInsetRangeLabel = new Label
+		{
+			AutomationId = "Issue33037OverlayCollectionViewTopInsetRange",
+			BackgroundColor = Colors.White,
+			HorizontalTextAlignment = TextAlignment.Center,
+			Text = "-1;-1"
+		};
+
+		_observationStateLabel = new Label
+		{
+			AutomationId = "Issue33037OverlayCollectionViewObservationState",
+			BackgroundColor = Colors.White,
+			HorizontalTextAlignment = TextAlignment.Center,
+			Text = ObservingState
+		};
+
+		var overlayButton = new Button
+		{
+			AutomationId = "Issue33037OverlayCollectionViewOverlayButton",
+			HeightRequest = 44,
+			Text = "Overlay 0",
+			WidthRequest = 200,
+			ZIndex = 1
+		};
+		overlayButton.Clicked += (_, _) =>
+		{
+			_overlayTapCount++;
+			overlayButton.Text = $"Overlay {_overlayTapCount}";
+		};
+
+		var closeButton = new Button
+		{
+			AutomationId = "Issue33037OverlayCollectionViewCloseButton",
+			HeightRequest = 44,
+			Text = "Close",
+			WidthRequest = 90,
+			ZIndex = 1
+		};
+		closeButton.Clicked += async (_, _) => await Navigation.PopAsync();
+
+		AbsoluteLayout.SetLayoutFlags(_collectionView, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(_collectionView, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(_topInsetRangeLabel, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(_topInsetRangeLabel, new Rect(1, 0.02, 120, 30));
+		AbsoluteLayout.SetLayoutFlags(_observationStateLabel, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(_observationStateLabel, new Rect(1, 0.10, 120, 30));
+		AbsoluteLayout.SetLayoutFlags(closeButton, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(closeButton, new Rect(0, 0.02, 90, 44));
+		AbsoluteLayout.SetLayoutFlags(overlayButton, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(overlayButton, new Rect(0.5, 1, 200, 44));
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				_collectionView,
+				_topInsetRangeLabel,
+				_observationStateLabel,
+				closeButton,
+				overlayButton
+			}
+		};
+	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+#if IOS
+		StartObservingTopInset();
+#endif
+	}
+
+	protected override void OnDisappearing()
+	{
+#if IOS
+		StopObservingTopInset();
+#endif
+		base.OnDisappearing();
+	}
+
+#if IOS
+	// One second of rendered time is far longer than the push transition plus the asynchronous
+	// safe-area propagation that follows it, so the observation window covers every layout pass the
+	// user could see on arrival.
+	const double VisibleSecondsToObserve = 1;
+
+	CADisplayLink _displayLink;
+	UIScrollView _observedScrollView;
+	double _minimumTopInset = double.MaxValue;
+	double _maximumTopInset = double.MinValue;
+	double _observedVisibleSeconds;
+
+	/// <summary>
+	/// Records the native top inset once per rendered frame instead of on a wall-clock timer. A
+	/// display link is driven by the same refresh cycle that commits UIKit's layout, so every frame
+	/// the user could actually see is observed exactly once - a timer that happens to tick between
+	/// two commits can step straight over a frame that was laid out without a top inset.
+	/// </summary>
+	void StartObservingTopInset()
+	{
+		if (_displayLink is not null)
+			return;
+
+		_minimumTopInset = double.MaxValue;
+		_maximumTopInset = double.MinValue;
+		_observedVisibleSeconds = 0;
+		_topInsetRangeLabel.Text = "-1;-1";
+		_observationStateLabel.Text = ObservingState;
+
+		_displayLink = CADisplayLink.Create(ObserveRenderedFrame);
+
+		// Common mode keeps the observation running while UIKit is tracking a gesture.
+		_displayLink.AddToRunLoop(NSRunLoop.Main, NSRunLoopMode.Common);
+	}
+
+	void ObserveRenderedFrame()
+	{
+		_observedScrollView ??= _collectionView.Handler?.PlatformView is UIView platformView
+			? FindScrollView(platformView)
+			: null;
+
+		// Only frames where the scroll view is on screen with a real size represent a completed,
+		// visible layout pass; anything else is the view still being built.
+		if (_observedScrollView is null ||
+			_observedScrollView.Handle == IntPtr.Zero ||
+			_observedScrollView.Window is null ||
+			_observedScrollView.Bounds.IsEmpty)
+		{
+			return;
+		}
+
+		var topInset = (double)_observedScrollView.AdjustedContentInset.Top;
+		_minimumTopInset = Math.Min(_minimumTopInset, topInset);
+		_maximumTopInset = Math.Max(_maximumTopInset, topInset);
+
+		_observedVisibleSeconds += _displayLink.Duration;
+		if (_observedVisibleSeconds < VisibleSecondsToObserve)
+			return;
+
+		// Publish once, at the end: writing the labels every frame would re-arrange the page under
+		// the very layout passes being measured.
+		_topInsetRangeLabel.Text = string.Create(
+			System.Globalization.CultureInfo.InvariantCulture,
+			$"{_minimumTopInset:0};{_maximumTopInset:0}");
+		_observationStateLabel.Text = CompleteState;
+		StopObservingTopInset();
+	}
+
+	void StopObservingTopInset()
+	{
+		_displayLink?.Invalidate();
+		_displayLink?.Dispose();
+		_displayLink = null;
+		_observedScrollView = null;
+	}
+
+	static UIScrollView FindScrollView(UIView view)
+	{
+		if (view is UIScrollView scrollView)
+			return scrollView;
+
+		foreach (var child in view.Subviews)
+		{
+			if (FindScrollView(child) is UIScrollView nested)
+				return nested;
+		}
+
+		return null;
+	}
+#endif
 }

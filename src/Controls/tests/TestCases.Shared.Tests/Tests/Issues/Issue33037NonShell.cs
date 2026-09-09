@@ -445,6 +445,170 @@ public class Issue33037NonShell : _IssuesUITest
 		}
 	}
 
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	[TestCase("Issue33037CollectionViewButton", "Issue33037 Collection")]
+	[TestCase("Issue33037ListViewButton", "Issue33037 List")]
+	[TestCase("Issue33037OverlayCollectionViewButton", "Issue33037 Overlay")]
+	[TestCase("Issue33037NativeTableViewButton", "Issue33037 Native")]
+	public void LargeTitleSurvivesOrientationRoundTrip(string buttonId, string title)
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement(buttonId).Click();
+
+		try
+		{
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var firstItemRect = App.WaitForElement("Item 0").GetRect();
+
+			App.SetOrientationLandscape();
+			App.WaitForElement(title);
+
+			App.SetOrientationPortrait();
+			App.WaitForElement(title);
+
+			// UIKit shrinks the navigation bar to the compact height class in landscape. If the
+			// expanded height is not restored on the way back, the bar keeps measuring as collapsed
+			// while it still draws the large title, so the title slides up into the status bar (and
+			// can be clipped away entirely) and the page's top inset stays short.
+			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
+			Assert.That(restoredTitleRect.Y, Is.EqualTo(expandedTitleRect.Y).Within(2),
+				$"The '{title}' large title should return to its expanded position after a portrait/landscape/portrait round trip.");
+			Assert.That(restoredTitleRect.Height, Is.EqualTo(expandedTitleRect.Height).Within(2),
+				$"The '{title}' large title should return to its expanded height after a portrait/landscape/portrait round trip.");
+
+			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(restoredFirstItemRect.Y, Is.EqualTo(firstItemRect.Y).Within(2),
+				"The first row should return to its original position after a portrait/landscape/portrait round trip.");
+			Assert.That(restoredFirstItemRect.Y, Is.GreaterThanOrEqualTo(restoredTitleRect.Bottom - 2),
+				"The first row must stay below the expanded navigation title after rotating back to portrait.");
+		}
+		finally
+		{
+			App.SetOrientationPortrait();
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	[TestCase("Issue33037CollectionViewButton", "Issue33037CollectionViewScroller", "Issue33037 Collection")]
+	[TestCase("Issue33037ListViewButton", "Issue33037ListViewScroller", "Issue33037 List")]
+	public void CollapsedTitleStaysCollapsedThroughOrientationRoundTrip(string buttonId, string scrollerId, string title)
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement(buttonId).Click();
+
+		try
+		{
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, 0.8, 500);
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+
+			App.SetOrientationLandscape();
+			App.WaitForElement(title);
+			App.SetOrientationPortrait();
+
+			var restoredTitleRect = GetNavigationTitleRect(title);
+			Assert.That(restoredTitleRect.Height, Is.EqualTo(collapsedTitleRect.Height).Within(2),
+				$"The collapsed '{title}' title should remain compact after a portrait/landscape/portrait round trip.");
+			Assert.That(restoredTitleRect.Y, Is.EqualTo(collapsedTitleRect.Y).Within(2),
+				$"The collapsed '{title}' title should return to its compact position after a portrait/landscape/portrait round trip.");
+		}
+		finally
+		{
+			App.SetOrientationPortrait();
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void EdgeExtendedCollectionViewKeepsTopInsetFromTheFirstLayout()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037OverlayCollectionViewButton").Click();
+
+		try
+		{
+			var expandedTitleRect = GetExpandedNavigationTitleRect("Issue33037 Overlay");
+			var firstItemRect = App.WaitForElement("Item 0").GetRect();
+
+			Assert.That(firstItemRect.Y, Is.InRange(expandedTitleRect.Bottom, expandedTitleRect.Bottom + 40),
+				"The first row should settle exactly once below the expanded navigation title.");
+
+			// The scenario page records the native top inset once per rendered frame and only
+			// publishes the range once it has observed a full second of visible frames, so this waits
+			// for that completion signal instead of racing a partial reading.
+			Assert.That(
+				App.WaitForTextToBePresentInElement("Issue33037OverlayCollectionViewObservationState", "complete"),
+				Is.True,
+				"The scenario page never finished observing the native top inset.");
+
+			var recordedRange = App.WaitForElement("Issue33037OverlayCollectionViewTopInsetRange").GetText() ?? string.Empty;
+			var (minimumTopInset, maximumTopInset) = ParseRecordedTopInsetRange(recordedRange);
+
+			// Ceding the system inset to UIKit before its safe-area propagation actually arrives
+			// leaves the edge-extended scroll view with no inset for the first frames after a push,
+			// which is visible as rows rendered underneath the navigation bar.
+			Assert.That(minimumTopInset, Is.GreaterThan(0),
+				$"An edge-extended CollectionView must never be laid out without a top inset, not even on the first layout pass after navigation (recorded '{recordedRange}').");
+			Assert.That(minimumTopInset, Is.GreaterThanOrEqualTo(expandedTitleRect.Bottom - expandedTitleRect.Height - 20),
+				$"The recorded top inset should always cover the navigation bar (recorded '{recordedRange}').");
+
+			// The opposite failure: handing ownership to UIKit while MAUI's manual copy of the system
+			// inset is still applied stacks both and pushes the rows down twice as far.
+			Assert.That(maximumTopInset, Is.LessThanOrEqualTo(expandedTitleRect.Bottom + 40),
+				$"The system top inset must be applied exactly once; a doubled inset means UIKit and MAUI both supplied it (recorded '{recordedRange}').");
+		}
+		finally
+		{
+			App.Back();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void OverlayButtonRespondsToTheFirstTapInLandscape()
+	{
+		RequireIOS26OrHigher();
+
+		try
+		{
+			App.SetOrientationLandscape();
+			App.WaitForElement("Issue33037OverlayCollectionViewButton").Click();
+			App.WaitForElement("Issue33037OverlayCollectionViewScroller");
+
+			var overlayButton = App.WaitForElement("Issue33037OverlayCollectionViewOverlayButton");
+			overlayButton.Click();
+
+			// The overlay button sits on top of the edge-extended scroller. A stale frame or a
+			// scroll view still swallowing touches makes the first tap disappear, which the reporter
+			// saw as needing to click twice when the app starts in landscape.
+			Assert.That(
+				App.WaitForTextToBePresentInElement("Issue33037OverlayCollectionViewOverlayButton", "Overlay 1"),
+				Is.True,
+				"The first tap on the bottom overlay button must be delivered when the page opens in landscape.");
+		}
+		finally
+		{
+			App.SetOrientationPortrait();
+			App.Back();
+		}
+	}
+
+	static (int Minimum, int Maximum) ParseRecordedTopInsetRange(string text)
+	{
+		var parts = text.Split(';');
+		return parts.Length == 2
+			? (ParseRecordedTopInset(parts[0]), ParseRecordedTopInset(parts[1]))
+			: (-1, -1);
+	}
+
+	static int ParseRecordedTopInset(string text) =>
+		int.TryParse(text, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var value)
+			? value
+			: -1;
+
 	void RequireIOS26OrHigher()
 	{
 		if (App is not AppiumIOSApp iosApp || !HelperExtensions.IsIOS26OrHigher(iosApp))

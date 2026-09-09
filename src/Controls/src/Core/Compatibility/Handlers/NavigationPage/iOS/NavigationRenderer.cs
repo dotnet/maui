@@ -198,6 +198,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			PageController.SendDisappearing();
 		}
 
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				NavigationBar?.PrefersLargeTitles != true)
+				return;
+
+			// UIKit drops the large-title band when the navigation bar moves to a compact height
+			// class (iPhone landscape). Returning to a regular height class does not restore the
+			// expanded bar height on its own, which leaves the bar measuring as collapsed while it
+			// still draws the large title: the title slides up into the status bar and the page's
+			// top safe area stays short. Re-measuring the bar after the transition restores the
+			// height UIKit would have chosen for the new size class, and leaves an intentionally
+			// collapsed bar (because the content is scrolled) untouched.
+			coordinator.AnimateAlongsideTransition(_ => { }, _ =>
+			{
+				if (Handle != IntPtr.Zero && NavigationBar is { } navigationBar && navigationBar.Handle != IntPtr.Zero)
+					navigationBar.SizeToFit();
+			});
+		}
+
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
