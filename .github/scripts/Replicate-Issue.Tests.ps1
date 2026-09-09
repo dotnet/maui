@@ -1783,7 +1783,9 @@ public partial class MainPage : ContentPage
                 $prompt | Should -Match 'Assert\.True\(affectedLabel\.Width > 0 && affectedLabel\.Width <= 1024 && affectedLabel\.Height > 0 && affectedLabel\.Height <= 512\)'
                 $prompt | Should -Match 'Assert\.Equal\(bitmap\.PixelWidth \* bitmap\.PixelHeight \* 4, bitmap\.PixelBuffer\.Length\)'
                 $prompt | Should -Match 'var backgroundBlue = bitmap\.PixelBuffer\[0\]'
-                $prompt | Should -Match 'for \(var x = bitmap\.PixelWidth - 2; x < bitmap\.PixelWidth; x\+\+\)'
+                $prompt | Should -Match 'for \(var x = 1; x < bitmap\.PixelWidth; x\+\+\)'
+                $prompt | Should -Match 'if \(x >= bitmap\.PixelWidth - 2\)'
+                $prompt | Should -Match 'Assert\.True\(hasInteriorInk\)'
                 $prompt | Should -Match 'var delta = global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset\] - backgroundBlue\) \+ global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset \+ 1\] - backgroundGreen\) \+ global::System\.Math\.Abs\(bitmap\.PixelBuffer\[offset \+ 2\] - backgroundRed\)'
                 $prompt | Should -Match 'delta > 80'
                 $prompt | Should -Match 'resource bounds/preconditions, not substitutes for rendered native evidence'
@@ -10485,13 +10487,14 @@ public class Issue33315Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                 await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);
                 Assert.True(affectedLabel.Width > 0 && affectedLabel.Width <= 1024 && affectedLabel.Height > 0 && affectedLabel.Height <= 512);
                 var bitmap = await global::Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmapExtensions.AsRawBitmapAsync(affectedLabel);
-                Assert.True(bitmap.PixelWidth >= 2 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
+                Assert.True(bitmap.PixelWidth >= 4 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
                 Assert.Equal(bitmap.PixelWidth * bitmap.PixelHeight * 4, bitmap.PixelBuffer.Length);
                 var backgroundBlue = bitmap.PixelBuffer[0];
                 var backgroundGreen = bitmap.PixelBuffer[1];
                 var backgroundRed = bitmap.PixelBuffer[2];
                 var hasRightEdgeInk = false;
-                for (var x = bitmap.PixelWidth - 2; x < bitmap.PixelWidth; x++)
+                var hasInteriorInk = false;
+                for (var x = 1; x < bitmap.PixelWidth; x++)
                 {
                     for (var y = 1; y < bitmap.PixelHeight - 1; y++)
                     {
@@ -10499,10 +10502,18 @@ public class Issue33315Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                         var delta = global::System.Math.Abs(bitmap.PixelBuffer[offset] - backgroundBlue) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 1] - backgroundGreen) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 2] - backgroundRed);
                         if (delta > 80)
                         {
-                            hasRightEdgeInk = true;
+                            if (x >= bitmap.PixelWidth - 2)
+                            {
+                                hasRightEdgeInk = true;
+                            }
+                            else
+                            {
+                                hasInteriorInk = true;
+                            }
                         }
                     }
                 }
+                Assert.True(hasInteriorInk);
                 Assert.False(hasRightEdgeInk);
             });
     }
@@ -11565,8 +11576,20 @@ namespace Microsoft.Maui.DeviceTests
             },
             @{
                 Source = $script:TrustedAndroidIssue33315Base.Replace(
-                    'var x = bitmap.PixelWidth - 2',
-                    'var x = bitmap.PixelWidth - 1')
+                    'var x = 1',
+                    'var x = 2')
+                Error = '*exact reported hierarchy/style, single Italic trigger, and unchanged rendered-ink oracle*'
+            },
+            @{
+                Source = $script:TrustedAndroidIssue33315Base.Replace(
+                    'if (x >= bitmap.PixelWidth - 2)',
+                    'if (x >= bitmap.PixelWidth - 1)')
+                Error = '*exact reported hierarchy/style, single Italic trigger, and unchanged rendered-ink oracle*'
+            },
+            @{
+                Source = $script:TrustedAndroidIssue33315Base.Replace(
+                    'Assert.True(hasInteriorInk);',
+                    'Assert.True(true);')
                 Error = '*exact reported hierarchy/style, single Italic trigger, and unchanged rendered-ink oracle*'
             },
             @{

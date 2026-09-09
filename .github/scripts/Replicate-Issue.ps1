@@ -7017,13 +7017,14 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);
         Assert.True(affectedLabel.Width > 0 && affectedLabel.Width <= 1024 && affectedLabel.Height > 0 && affectedLabel.Height <= 512);
         var bitmap = await global::Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmapExtensions.AsRawBitmapAsync(affectedLabel);
-        Assert.True(bitmap.PixelWidth >= 2 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
+        Assert.True(bitmap.PixelWidth >= 4 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
         Assert.Equal(bitmap.PixelWidth * bitmap.PixelHeight * 4, bitmap.PixelBuffer.Length);
         var backgroundBlue = bitmap.PixelBuffer[0];
         var backgroundGreen = bitmap.PixelBuffer[1];
         var backgroundRed = bitmap.PixelBuffer[2];
         var hasRightEdgeInk = false;
-        for (var x = bitmap.PixelWidth - 2; x < bitmap.PixelWidth; x++)
+        var hasInteriorInk = false;
+        for (var x = 1; x < bitmap.PixelWidth; x++)
         {
             for (var y = 1; y < bitmap.PixelHeight - 1; y++)
             {
@@ -7031,14 +7032,22 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 var delta = global::System.Math.Abs(bitmap.PixelBuffer[offset] - backgroundBlue) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 1] - backgroundGreen) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 2] - backgroundRed);
                 if (delta > 80)
                 {
-                    hasRightEdgeInk = true;
+                    if (x >= bitmap.PixelWidth - 2)
+                    {
+                        hasRightEdgeInk = true;
+                    }
+                    else
+                    {
+                        hasInteriorInk = true;
+                    }
                 }
             }
         }
+        Assert.True(hasInteriorInk);
         Assert.False(hasRightEdgeInk);
     });
 ```
-The trigger is only the `FontAttributes.Italic` assignment above; the trusted negative control changes only `var applyReportedTrigger = true;` to `false`. The pre-capture managed Label size and bitmap size checks are resource bounds/preconditions, not substitutes for rendered native evidence or guarantees about Android native allocation. The oracle must inspect the Label-region bitmap produced by `RawBitmapExtensions.AsRawBitmapAsync(affectedLabel)`, not a Window screenshot, managed Bounds proxy, text advance, app-authored verdict, or Android.Widget/Bitmap/Canvas API. Do not add helper methods, callbacks, source-defined ImageAnalysis/handler/Math/Xunit/AssertHelpers shadows, inactive conditional alternatives, native API calls, file/network/process access, altered thresholds/loops, or alternate capture targets. If this exact causal shape cannot express the candidate, classify the scenario as unsupported by the current contract.
+The trigger is only the `FontAttributes.Italic` assignment above; the trusted negative control changes only `var applyReportedTrigger = true;` to `false`. The pre-capture managed Label size and bitmap size checks are resource bounds/preconditions, not substitutes for rendered native evidence or guarantees about Android native allocation. The pixel scan must prove that interior text ink remains visible as well as that the last two columns contain no clipped ink; blanking or hiding the text is not a fix. The oracle must inspect the Label-region bitmap produced by `RawBitmapExtensions.AsRawBitmapAsync(affectedLabel)`, not a Window screenshot, managed Bounds proxy, text advance, app-authored verdict, or Android.Widget/Bitmap/Canvas API. Do not add helper methods, callbacks, source-defined ImageAnalysis/handler/Math/Xunit/AssertHelpers shadows, inactive conditional alternatives, native API calls, file/network/process access, altered thresholds/loops, or alternate capture targets. If this exact causal shape cannot express the candidate, classify the scenario as unsupported by the current contract.
 '@
     } else {
         ''
