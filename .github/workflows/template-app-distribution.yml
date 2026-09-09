@@ -56,7 +56,7 @@ on:
   workflow_dispatch:
     inputs:
       source_ref:
-        description: Branch, tag, or full commit SHA to use for template source.
+        description: Branch, tag, or full commit SHA for both MAUI framework and template source.
         required: true
         default: main
         type: string
@@ -223,6 +223,7 @@ jobs:
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
       DOTNET_SDK: ${{ needs.prepare.outputs.dotnet_sdk }}
       DOTNET_TFM: ${{ needs.prepare.outputs.dotnet_tfm }}
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
@@ -352,7 +353,7 @@ jobs:
             exit $LASTEXITCODE
           }
 
-      - name: Pack local templates
+      - name: Build source MAUI packages and templates
         id: pack
         shell: pwsh
         env:
@@ -361,7 +362,9 @@ jobs:
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
-            -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
+            -SourceSha "$env:SOURCE_SHA" `
+            -Platform "$env:MATRIX_PLATFORM" `
+            -VersionSuffix "templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
             -OutputPath "${{ runner.temp }}/template-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -NuGetPackages "${{ runner.temp }}/nuget-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}"
@@ -395,6 +398,8 @@ jobs:
             -DotNetSdk "$env:DOTNET_SDK" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
+            -SourceSha "$env:SOURCE_SHA" `
             -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
 
       - name: Build generated app
@@ -415,6 +420,8 @@ jobs:
             -OutputPath "${{ runner.temp }}/template-app-output/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
+            -SourceSha "$env:SOURCE_SHA" `
             -CreateBinlog
 
       - name: Upload dry-run artifact
@@ -426,6 +433,16 @@ jobs:
             ${{ steps.build.outputs.sideload_package_path }}
             ${{ steps.build.outputs.additional_package_path }}
             ${{ steps.build.outputs.binlog_path }}
+            ${{ steps.build.outputs.provenance_path }}
+          retention-days: 14
+
+      - name: Upload source-built package evidence
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-packages-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
+          path: ${{ steps.pack.outputs.source_packages_path }}
+          if-no-files-found: error
           retention-days: 14
 
   publish:
@@ -440,6 +457,7 @@ jobs:
       APP_BUILD_NUMBER: ${{ needs.prepare.outputs.app_build_number }}
       DOTNET_SDK: ${{ needs.prepare.outputs.dotnet_sdk }}
       DOTNET_TFM: ${{ needs.prepare.outputs.dotnet_tfm }}
+      SOURCE_SHA: ${{ needs.prepare.outputs.source_sha }}
       TEMPLATE_APP_PLAY_TRACK: ${{ vars.TEMPLATE_APP_PLAY_TRACK || 'internal' }}
       TEMPLATE_APP_PLAY_RELEASE_STATUS: ${{ vars.TEMPLATE_APP_PLAY_RELEASE_STATUS || 'completed' }}
       TEMPLATE_APP_TESTFLIGHT_GROUPS: ${{ vars.TEMPLATE_APP_TESTFLIGHT_GROUPS }}
@@ -663,7 +681,7 @@ jobs:
           $notes >> $env:GITHUB_ENV
           "$delimiter" >> $env:GITHUB_ENV
 
-      - name: Pack local templates
+      - name: Build source MAUI packages and templates
         id: pack
         shell: pwsh
         env:
@@ -672,7 +690,9 @@ jobs:
         run: |
           & "${{ github.workspace }}/trusted/.github/scripts/template-app-distribution/Pack-Templates.ps1" `
             -RepositoryPath "${{ github.workspace }}/source" `
-            -PackageVersion "99.0.0-templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
+            -SourceSha "$env:SOURCE_SHA" `
+            -Platform "$env:MATRIX_PLATFORM" `
+            -VersionSuffix "templateapp.${{ github.run_id }}.${{ github.run_attempt }}" `
             -OutputPath "${{ runner.temp }}/template-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -DotNetCliHome "${{ runner.temp }}/dotnet-cli-home/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -NuGetPackages "${{ runner.temp }}/nuget-packages/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}"
@@ -706,6 +726,8 @@ jobs:
             -DotNetSdk "$env:DOTNET_SDK" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
+            -SourceSha "$env:SOURCE_SHA" `
             -NuGetConfigPath "${{ github.workspace }}/source/NuGet.config"
 
       - name: Install Apple signing assets
@@ -755,6 +777,8 @@ jobs:
             -OutputPath "${{ runner.temp }}/template-app-output/${env:MATRIX_VARIANT}-${env:MATRIX_PLATFORM}" `
             -AppDisplayVersion "$env:APP_DISPLAY_VERSION" `
             -AppBuildNumber "$env:APP_BUILD_NUMBER" `
+            -SourceManifestPath "${{ steps.pack.outputs.source_manifest_path }}" `
+            -SourceSha "$env:SOURCE_SHA" `
             -Publish
 
       - name: Upload artifact copy
@@ -762,7 +786,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: template-app-publish-${{ matrix.variant }}-${{ matrix.artifactPlatform }}-${{ needs.prepare.outputs.source_sha }}-attempt-${{ github.run_attempt }}
-          path: ${{ steps.build.outputs.sideload_package_path }}
+          path: |
+            ${{ steps.build.outputs.sideload_package_path }}
+            ${{ steps.build.outputs.provenance_path }}
           retention-days: 14
 
       - name: Write Google Play credentials

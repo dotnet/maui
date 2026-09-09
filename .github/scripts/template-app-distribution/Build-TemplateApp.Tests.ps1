@@ -70,18 +70,60 @@ BeforeAll {
     $script:prepareMatrixScriptPath = Join-Path $PSScriptRoot 'Prepare-Matrix.ps1'
     $script:resolveDotNetSdkScriptPath = Join-Path $PSScriptRoot 'Resolve-DotNetSdk.ps1'
     $script:resolveSourceRefScriptPath = Join-Path $PSScriptRoot 'Resolve-SourceRef.ps1'
+    $script:newTemplateScriptPath = Join-Path $PSScriptRoot 'New-TemplateApp.ps1'
+    $script:sourcePackagesScriptPath = Join-Path $PSScriptRoot 'Source-Packages.ps1'
     $script:fastfilePath = Join-Path $PSScriptRoot 'fastlane/Fastfile'
     $script:workflowPath = Join-Path $PSScriptRoot '../../workflows/template-app-distribution.yml'
     $script:workflowText = Get-Content -Path $script:workflowPath -Raw
     $script:pwshPath = (Get-Command pwsh -ErrorAction Stop).Source
     $script:rubyPath = (Get-Command ruby -ErrorAction SilentlyContinue).Source
     $script:originalPath = $env:PATH
+    . $script:sourcePackagesScriptPath
+    $sourcePackagesTokens = $null
+    $sourcePackagesParseErrors = $null
+    $sourcePackagesAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $script:sourcePackagesScriptPath,
+        [ref]$sourcePackagesTokens,
+        [ref]$sourcePackagesParseErrors
+    )
+    if ($sourcePackagesParseErrors -and $sourcePackagesParseErrors.Count -gt 0) {
+        throw ($sourcePackagesParseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+    }
+    $payloadProofFunction = $sourcePackagesAst.Find({
+        $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $args[0].Name -eq 'Get-AppPayloadProof'
+    }, $true)
+    if (-not $payloadProofFunction) {
+        throw "Function 'Get-AppPayloadProof' not found"
+    }
+    $script:payloadProofFunctionText = $payloadProofFunction.Extent.Text
+    Invoke-Expression $payloadProofFunction.Extent.Text
+    $script:fixtureSourceSha = '0123456789abcdef0123456789abcdef01234567'
+    $script:fixtureSourceVersion = '11.0.0-preview.1.25080.1'
+    $script:requiredSourcePackageIds = @(
+        'Microsoft.Maui.Controls',
+        'Microsoft.Maui.Controls.Core',
+        'Microsoft.Maui.Controls.Xaml',
+        'Microsoft.Maui.Core',
+        'Microsoft.Maui.Essentials',
+        'Microsoft.Maui.Graphics',
+        'Microsoft.Maui.Controls.Build.Tasks',
+        'Microsoft.Maui.Resizetizer',
+        'Microsoft.Maui.Sdk',
+        'Microsoft.Maui.Templates.net10'
+    )
     $script:testEnvironmentNames = @(
         'FAKE_DOTNET_MODE',
+        'FAKE_MAUI_ASSEMBLY_DIRECTORY',
         'FAKE_CODESIGN_MODE',
         'FAKE_TESTFLIGHT_ERROR',
         'FAKE_TESTFLIGHT_GROUPS',
+        'FAKE_SOURCE_ASSETS_MODE',
+        'FAKE_SOURCE_MANIFEST_PATH',
+        'FAKE_SOURCE_SHA',
         'FASTFILE_PATH',
+        'GITHUB_RUN_ID',
+        'GITHUB_SHA',
         'GITHUB_OUTPUT',
         'RUNNER_TEMP',
         'TEMPLATE_APP_VARIANTS_JSON',
@@ -110,16 +152,413 @@ BeforeAll {
         $script:originalEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
     }
 
+    function New-FakeSourcePackage(
+        [string]$PackageDirectory,
+        [string]$PackageId,
+        [string]$Version,
+        [string]$RepositoryCommit
+    ) {
+        New-Item -ItemType Directory -Path $PackageDirectory -Force | Out-Null
+        $packagePath = Join-Path $PackageDirectory "$PackageId.$Version.nupkg"
+        Remove-Item -Path $packagePath -Force -ErrorAction SilentlyContinue
+
+        $archive = [System.IO.Compression.ZipFile]::Open(
+            $packagePath,
+            [System.IO.Compression.ZipArchiveMode]::Create
+        )
+        try {
+            $entry = $archive.CreateEntry("$PackageId.nuspec")
+            $writer = [System.IO.StreamWriter]::new($entry.Open())
+            try {
+                @"
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$PackageId</id>
+    <version>$Version</version>
+    <repository type="git" url="https://github.com/dotnet/maui" commit="$RepositoryCommit" />
+  </metadata>
+</package>
+"@ | ForEach-Object { $writer.Write($_) }
+            }
+            finally {
+                $writer.Dispose()
+            }
+
+            if ($PackageId -eq 'Microsoft.Maui.Sdk') {
+                foreach ($sdkEntryPath in @('Sdk/Sdk.props', 'Sdk/Sdk.targets')) {
+                    $sdkEntry = $archive.CreateEntry($sdkEntryPath)
+                    $sdkWriter = [System.IO.StreamWriter]::new($sdkEntry.Open())
+                    try {
+                        "<Project />" | ForEach-Object { $sdkWriter.Write($_) }
+                    }
+                    finally {
+                        $sdkWriter.Dispose()
+                    }
+                }
+            }
+        }
+        finally {
+            $archive.Dispose()
+        }
+
+        return $packagePath
+    }
+
+    function Save-SourcePackageManifest($Fixture, $Manifest) {
+        $Manifest | ConvertTo-Json -Depth 20 | Set-Content -Path $Fixture.ManifestPath -Encoding utf8
+    }
+
+    function Get-SourcePackageManifestObject($Fixture) {
+        return Get-Content -Path $Fixture.ManifestPath -Raw | ConvertFrom-Json
+    }
+
+    function Get-TemplatePackageEntry($Fixture) {
+        return @($Fixture.Packages | Where-Object { $_['id'] -like 'Microsoft.Maui.Templates*' })[0]
+    }
+
+    function New-SourcePackageFixture {
+        param(
+            [string]$SourceSha = $script:fixtureSourceSha,
+            [string]$Version = $script:fixtureSourceVersion,
+            [string[]]$PackageIds = $script:requiredSourcePackageIds
+        )
+
+        $fixtureRoot = Join-Path $testRoot ([guid]::NewGuid().ToString("N"))
+        $packageDirectory = Join-Path $fixtureRoot 'packages'
+        New-Item -ItemType Directory -Path $packageDirectory -Force | Out-Null
+
+        foreach ($packageId in $PackageIds) {
+            New-FakeSourcePackage `
+                -PackageDirectory $packageDirectory `
+                -PackageId $packageId `
+                -Version $Version `
+                -RepositoryCommit $SourceSha | Out-Null
+        }
+
+        $packages = foreach ($packageId in $PackageIds) {
+            $packagePath = Join-Path $packageDirectory "$packageId.$Version.nupkg"
+            Get-SourcePackageInfo -Path $packagePath -SourceSha $SourceSha
+        }
+        $manifest = [ordered]@{
+            version = $Version
+            sourceSha = $SourceSha
+            packages = @($packages)
+        }
+        $manifestPath = Join-Path $packageDirectory 'source-packages.json'
+        $manifest | ConvertTo-Json -Depth 20 | Set-Content -Path $manifestPath -Encoding utf8
+
+        return [pscustomobject]@{
+            Root = $fixtureRoot
+            PackageDirectory = $packageDirectory
+            ManifestPath = $manifestPath
+            SourceSha = $SourceSha
+            Version = $Version
+            TemplatePackagePath = Join-Path $packageDirectory "$((@($PackageIds | Where-Object { $_ -like 'Microsoft.Maui.Templates*' })[0])).$Version.nupkg"
+            Packages = @($packages)
+            Manifest = $manifest
+        }
+    }
+
+    function Initialize-FakeMauiPayloadAssemblies {
+        param([string]$SourceSha = $script:fixtureSourceSha)
+
+        $assemblyDirectory = Join-Path $testRoot "payload-assemblies-$SourceSha"
+        New-Item -ItemType Directory -Path $assemblyDirectory -Force | Out-Null
+
+        foreach ($assemblyName in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
+            $assemblyPath = Join-Path $assemblyDirectory $assemblyName
+            if (Test-Path $assemblyPath) {
+                continue
+            }
+
+            $namespaceSuffix = $SourceSha.Substring(0, 8)
+            $typeSuffix = ($assemblyName -replace '[^A-Za-z0-9]', '')
+            Add-Type -TypeDefinition @"
+using System.Reflection;
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyInformationalVersion("1.0.0+$SourceSha")]
+namespace MauiFixture_$namespaceSuffix {
+    public sealed class Marker_$typeSuffix {}
+}
+"@ -Language CSharp -OutputAssembly $assemblyPath
+        }
+
+        return $assemblyDirectory
+    }
+
+    function Add-ZipEntryFromFile($Archive, [string]$EntryPath, [string]$SourcePath) {
+        $entry = $Archive.CreateEntry($EntryPath.Replace('\', '/'))
+        $entryStream = $entry.Open()
+        try {
+            $fileStream = [System.IO.File]::OpenRead($SourcePath)
+            try {
+                $fileStream.CopyTo($entryStream)
+            }
+            finally {
+                $fileStream.Dispose()
+            }
+        }
+        finally {
+            $entryStream.Dispose()
+        }
+    }
+
+    function Add-ZipEntryFromText($Archive, [string]$EntryPath, [string]$Content) {
+        $entry = $Archive.CreateEntry($EntryPath.Replace('\', '/'))
+        $writer = [System.IO.StreamWriter]::new($entry.Open())
+        try {
+            $writer.Write($Content)
+        }
+        finally {
+            $writer.Dispose()
+        }
+    }
+
+    function New-FakePayloadArchive(
+        [string]$Path,
+        $Manifest,
+        [string]$SourceSha = $script:fixtureSourceSha,
+        [switch]$OmitRequiredAssembly
+    ) {
+        New-Item -ItemType Directory -Path (Split-Path $Path -Parent) -Force | Out-Null
+        Remove-Item -Path $Path -Force -ErrorAction SilentlyContinue
+
+        $archive = [System.IO.Compression.ZipFile]::Open(
+            $Path,
+            [System.IO.Compression.ZipArchiveMode]::Create
+        )
+        try {
+            $prefix = if ([System.IO.Path]::GetExtension($Path) -ieq '.ipa') { 'Payload/TestApp.app' } else { '' }
+            foreach ($assemblyName in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
+                if ($OmitRequiredAssembly -and $assemblyName -eq 'Microsoft.Maui.Graphics.dll') {
+                    continue
+                }
+
+                $sourcePath = Join-Path $script:fakeMauiAssemblyDirectory $assemblyName
+                if ($SourceSha -ne $script:fixtureSourceSha) {
+                    $alternateDirectory = Initialize-FakeMauiPayloadAssemblies -SourceSha $SourceSha
+                    $sourcePath = Join-Path $alternateDirectory $assemblyName
+                }
+
+                $entryPath = if ([string]::IsNullOrWhiteSpace($prefix)) { $assemblyName } else { "$prefix/$assemblyName" }
+                Add-ZipEntryFromFile -Archive $archive -EntryPath $entryPath -SourcePath $sourcePath
+            }
+
+            $depsLibraries = [ordered]@{}
+            foreach ($package in $Manifest.packages) {
+                $depsLibraries["$($package.id)/$($package.version)"] = @{}
+            }
+            $depsJson = [ordered]@{ libraries = $depsLibraries } | ConvertTo-Json -Depth 10
+            $depsPath = if ([string]::IsNullOrWhiteSpace($prefix)) { 'TestApp.deps.json' } else { "$prefix/TestApp.deps.json" }
+            Add-ZipEntryFromText -Archive $archive -EntryPath $depsPath -Content $depsJson
+        }
+        finally {
+            $archive.Dispose()
+        }
+
+        return Get-Item $Path
+    }
+
+    function Write-SourcePackageAssetsFile(
+        [string]$AssetsPath,
+        $Manifest,
+        [ValidateSet('match', 'hash-mismatch', 'mixed-stable', 'missing-essential')]
+        [string]$Mode = 'match'
+    ) {
+        $libraries = [ordered]@{}
+        foreach ($package in $Manifest.packages) {
+            $libraries["$($package.id)/$($package.version)"] = @{
+                sha512 = $package.sha512
+            }
+        }
+
+        switch ($Mode) {
+            'hash-mismatch' {
+                $libraries["Microsoft.Maui.Controls/$($Manifest.version)"] = @{
+                    sha512 = 'hash-mismatch'
+                }
+            }
+            'mixed-stable' {
+                $null = $libraries.Remove("Microsoft.Maui.Controls/$($Manifest.version)")
+                $libraries['Microsoft.Maui.Controls/8.0.100'] = @{
+                    sha512 = ($Manifest.packages | Where-Object id -EQ 'Microsoft.Maui.Controls' | Select-Object -ExpandProperty sha512)
+                }
+            }
+            'missing-essential' {
+                $null = $libraries.Remove("Microsoft.Maui.Resizetizer/$($Manifest.version)")
+            }
+        }
+
+        New-Item -ItemType Directory -Path (Split-Path $AssetsPath -Parent) -Force | Out-Null
+        [ordered]@{
+            version = 3
+            targets = [ordered]@{
+                'net11.0' = [ordered]@{}
+            }
+            libraries = $libraries
+        } | ConvertTo-Json -Depth 10 | Set-Content -Path $AssetsPath -Encoding utf8
+
+        return $AssetsPath
+    }
+
+    $script:fakeMauiAssemblyDirectory = Initialize-FakeMauiPayloadAssemblies
+    $script:buildTemplateAppHarnessPath = Join-Path $testRoot 'Build-TemplateApp.harness.ps1'
+    @"
+param()
+`$ErrorActionPreference = 'Stop'
+. '$script:sourcePackagesScriptPath'
+if (-not (Get-Command Get-AppPayloadProof -ErrorAction SilentlyContinue)) {
+$script:payloadProofFunctionText
+}
+& '$scriptPath' @args
+exit `$LASTEXITCODE
+"@ | Set-Content -Path $script:buildTemplateAppHarnessPath -Encoding utf8
+
     $script:fakeCommandDirectory = Join-Path $testRoot 'fake-commands'
     New-Item -ItemType Directory -Path $script:fakeCommandDirectory -Force | Out-Null
     $fakeDotNetScriptPath = Join-Path $script:fakeCommandDirectory 'fake-dotnet.ps1'
     @'
 $ErrorActionPreference = "Stop"
 
+function Get-ArgumentValue([string[]]$Arguments, [string]$Name) {
+    for ($index = 0; $index -lt $Arguments.Count - 1; $index++) {
+        if ($Arguments[$index] -eq $Name) {
+            return $Arguments[$index + 1]
+        }
+    }
+
+    return $null
+}
+
+function Get-FakeSourceManifest {
+    if ([string]::IsNullOrWhiteSpace($env:FAKE_SOURCE_MANIFEST_PATH) -or -not (Test-Path $env:FAKE_SOURCE_MANIFEST_PATH)) {
+        return $null
+    }
+
+    return Get-Content -Path $env:FAKE_SOURCE_MANIFEST_PATH -Raw | ConvertFrom-Json -AsHashtable
+}
+
+function Write-FakeProjectAssets([string]$ProjectDirectory, $Manifest) {
+    if (-not $Manifest) {
+        return
+    }
+
+    $libraries = [ordered]@{}
+    foreach ($package in $Manifest.packages) {
+        $libraries["$($package.id)/$($package.version)"] = @{
+            sha512 = $package.sha512
+        }
+    }
+
+    switch ($env:FAKE_SOURCE_ASSETS_MODE) {
+        "hash-mismatch" {
+            $key = "Microsoft.Maui.Controls/$($Manifest.version)"
+            $libraries[$key] = @{ sha512 = 'hash-mismatch' }
+        }
+        "mixed-stable" {
+            $null = $libraries.Remove("Microsoft.Maui.Controls/$($Manifest.version)")
+            $libraries["Microsoft.Maui.Controls/8.0.100"] = @{
+                sha512 = ($Manifest.packages | Where-Object { $_.id -eq 'Microsoft.Maui.Controls' } | Select-Object -ExpandProperty sha512)
+            }
+        }
+        "missing-essential" {
+            $null = $libraries.Remove("Microsoft.Maui.Resizetizer/$($Manifest.version)")
+        }
+    }
+
+    $assets = [ordered]@{
+        version = 3
+        targets = [ordered]@{
+            'net11.0' = [ordered]@{}
+        }
+        libraries = $libraries
+    }
+
+    $assetsPath = Join-Path $ProjectDirectory 'obj/project.assets.json'
+    New-Item -ItemType Directory -Path (Split-Path $assetsPath -Parent) -Force | Out-Null
+    $assets | ConvertTo-Json -Depth 10 | Set-Content -Path $assetsPath -Encoding utf8
+}
+
+function Write-FakeAppBundle([string]$AppPath, $Manifest) {
+    New-Item -ItemType Directory -Path $AppPath -Force | Out-Null
+    Set-Content -Path (Join-Path $AppPath 'Info.plist') -Value 'fake app' -Encoding utf8
+    foreach ($assemblyName in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
+        Copy-Item -Path (Join-Path $env:FAKE_MAUI_ASSEMBLY_DIRECTORY $assemblyName) `
+            -Destination (Join-Path $AppPath $assemblyName) -Force
+    }
+
+    $depsLibraries = [ordered]@{}
+    foreach ($package in $Manifest.packages) {
+        $depsLibraries["$($package.id)/$($package.version)"] = @{}
+    }
+    [ordered]@{
+        libraries = $depsLibraries
+    } | ConvertTo-Json -Depth 10 | Set-Content -Path (Join-Path $AppPath 'TestApp.deps.json') -Encoding utf8
+}
+
+function Add-ArchiveFileEntry($Archive, [string]$EntryPath, [string]$SourcePath) {
+    $entry = $Archive.CreateEntry($EntryPath.Replace('\', '/'))
+    $targetStream = $entry.Open()
+    try {
+        $sourceStream = [System.IO.File]::OpenRead($SourcePath)
+        try {
+            $sourceStream.CopyTo($targetStream)
+        }
+        finally {
+            $sourceStream.Dispose()
+        }
+    }
+    finally {
+        $targetStream.Dispose()
+    }
+}
+
+function Add-ArchiveTextEntry($Archive, [string]$EntryPath, [string]$Content) {
+    $entry = $Archive.CreateEntry($EntryPath.Replace('\', '/'))
+    $writer = [System.IO.StreamWriter]::new($entry.Open())
+    try {
+        $writer.Write($Content)
+    }
+    finally {
+        $writer.Dispose()
+    }
+}
+
+function Write-FakeArchive([string]$ArchivePath, [string]$Prefix, $Manifest) {
+    New-Item -ItemType Directory -Path (Split-Path $ArchivePath -Parent) -Force | Out-Null
+    Remove-Item -Path $ArchivePath -Force -ErrorAction SilentlyContinue
+    $archive = [System.IO.Compression.ZipFile]::Open(
+        $ArchivePath,
+        [System.IO.Compression.ZipArchiveMode]::Create
+    )
+    try {
+        foreach ($assemblyName in @('Microsoft.Maui.dll', 'Microsoft.Maui.Controls.dll', 'Microsoft.Maui.Graphics.dll')) {
+            $entryPath = if ([string]::IsNullOrWhiteSpace($Prefix)) { $assemblyName } else { "$Prefix/$assemblyName" }
+            Add-ArchiveFileEntry -Archive $archive -EntryPath $entryPath `
+                -SourcePath (Join-Path $env:FAKE_MAUI_ASSEMBLY_DIRECTORY $assemblyName)
+        }
+
+        $depsLibraries = [ordered]@{}
+        foreach ($package in $Manifest.packages) {
+            $depsLibraries["$($package.id)/$($package.version)"] = @{}
+        }
+        $depsPath = if ([string]::IsNullOrWhiteSpace($Prefix)) { 'TestApp.deps.json' } else { "$Prefix/TestApp.deps.json" }
+        Add-ArchiveTextEntry -Archive $archive -EntryPath $depsPath -Content (
+            ([ordered]@{ libraries = $depsLibraries } | ConvertTo-Json -Depth 10)
+        )
+    }
+    finally {
+        $archive.Dispose()
+    }
+}
+
 $outputPath = $null
 $runtimeIdentifier = $null
 $binlogPaths = @()
 $projectPath = $args | Where-Object { $_ -like "*.csproj" } | Select-Object -First 1
+$sourceManifest = Get-FakeSourceManifest
 for ($index = 0; $index -lt $args.Count; $index++) {
     if ($args[$index] -eq "-o" -and $index + 1 -lt $args.Count) {
         $outputPath = $args[$index + 1]
@@ -145,26 +584,71 @@ if (-not [string]::IsNullOrWhiteSpace($env:FAKE_ANDROID_SIGNING_ENV_LOG)) {
     ) -join "`n" | Add-Content -Path $env:FAKE_ANDROID_SIGNING_ENV_LOG
 }
 
+if ($sourceManifest -and $projectPath -and $args[0] -in @('build', 'publish')) {
+    Write-FakeProjectAssets -ProjectDirectory (Split-Path $projectPath -Parent) -Manifest $sourceManifest
+}
+
+if ($args[0] -eq 'new') {
+    if ($args.Count -ge 2 -and $args[1] -eq 'install') {
+        exit 0
+    }
+
+    $projectName = Get-ArgumentValue -Arguments $args -Name '-n'
+    $projectDirectory = Get-ArgumentValue -Arguments $args -Name '-o'
+    if ([string]::IsNullOrWhiteSpace($projectDirectory)) {
+        throw "fake dotnet new requires -o"
+    }
+    if ([string]::IsNullOrWhiteSpace($projectName)) {
+        $projectName = 'TestApp'
+    }
+
+    $projectFilePath = Join-Path $projectDirectory "$projectName.csproj"
+    New-Item -ItemType Directory -Path $projectDirectory, (Join-Path $projectDirectory 'Platforms/iOS'), (Join-Path $projectDirectory 'Platforms/MacCatalyst') -Force | Out-Null
+    @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net11.0-android;net11.0-ios</TargetFrameworks>
+    <ApplicationTitle>Template Title</ApplicationTitle>
+    <ApplicationId>com.example.template</ApplicationId>
+    <ApplicationDisplayVersion>0.1</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Maui.Graphics">
+      <Version>8.0.0</Version>
+    </PackageReference>
+  </ItemGroup>
+</Project>
+"@ | Set-Content -Path $projectFilePath -Encoding utf8
+    '<plist><dict><key>ITSAppUsesNonExemptEncryption</key><true/></dict></plist>' |
+        Set-Content -Path (Join-Path $projectDirectory 'Platforms/iOS/Info.plist') -Encoding utf8
+    '<plist><dict><key>ITSAppUsesNonExemptEncryption</key><true/></dict></plist>' |
+        Set-Content -Path (Join-Path $projectDirectory 'Platforms/MacCatalyst/Info.plist') -Encoding utf8
+    '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" />' |
+        Set-Content -Path (Join-Path $projectDirectory 'MainPage.xaml') -Encoding utf8
+    exit 0
+}
+
 switch ($env:FAKE_DOTNET_MODE) {
     "android-success" {
         New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
         if ($argumentText -match "AndroidPackageFormat=apk") {
-            New-Item -ItemType File -Path (Join-Path $outputPath "TestApp-Signed.apk") -Force | Out-Null
+            Write-FakeArchive -ArchivePath (Join-Path $outputPath "TestApp-Signed.apk") -Prefix '' -Manifest $sourceManifest
         } elseif ($argumentText -match "AndroidPackageFormat=aab") {
-            New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.aab") -Force | Out-Null
+            Write-FakeArchive -ArchivePath (Join-Path $outputPath "TestApp.aab") -Prefix 'base/root' -Manifest $sourceManifest
         }
     }
     "ios-device-only" {
         if ($runtimeIdentifier -eq "ios-arm64") {
             $projectDirectory = Split-Path $projectPath -Parent
             $appPath = Join-Path $projectDirectory "bin/$runtimeIdentifier/TestApp.app"
-            New-Item -ItemType Directory -Path $appPath -Force | Out-Null
-            Set-Content -Path (Join-Path $appPath "Info.plist") -Value "fake app"
+            Write-FakeAppBundle -AppPath $appPath -Manifest $sourceManifest
         }
     }
     "ios-publish-success" {
         New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
-        New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.ipa") -Force | Out-Null
+        Write-FakeArchive -ArchivePath (Join-Path $outputPath "TestApp.ipa") -Prefix 'Payload/TestApp.app' -Manifest $sourceManifest
     }
     "ios-store-overwrite" {
         $projectDirectory = Split-Path $projectPath -Parent
@@ -182,7 +666,7 @@ switch ($env:FAKE_DOTNET_MODE) {
         if ($argumentText -match "CodesignProvision=Ad Hoc Profile") {
             exit 23
         }
-        New-Item -ItemType File -Path (Join-Path $outputPath "TestApp.ipa") -Force | Out-Null
+        Write-FakeArchive -ArchivePath (Join-Path $outputPath "TestApp.ipa") -Prefix 'Payload/TestApp.app' -Manifest $sourceManifest
     }
 }
 
@@ -227,6 +711,42 @@ exit /b %ERRORLEVEL%
 exec pwsh -NoLogo -NoProfile -File "$fakeCodesignScriptPath" "`$@"
 "@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'codesign') -Encoding utf8NoBOM
         & chmod +x (Join-Path $script:fakeCommandDirectory 'codesign')
+    }
+
+    $fakeDittoScriptPath = Join-Path $script:fakeCommandDirectory 'fake-ditto.ps1'
+    @'
+$ErrorActionPreference = "Stop"
+
+if ($args[0] -eq '-c') {
+    $sourcePath = $args[-2]
+    $destinationPath = $args[-1]
+    Remove-Item -Path $destinationPath -Force -ErrorAction SilentlyContinue
+    Compress-Archive -Path $sourcePath -DestinationPath $destinationPath -Force
+    exit 0
+}
+
+$source = $args[-2]
+$destination = $args[-1]
+if (Test-Path $destination) {
+    Remove-Item -Path $destination -Recurse -Force -ErrorAction SilentlyContinue
+}
+New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
+Copy-Item -Path $source -Destination $destination -Recurse -Force
+exit 0
+'@ | Set-Content -Path $fakeDittoScriptPath -Encoding utf8
+
+    if ($IsWindows) {
+        @"
+@echo off
+pwsh -NoLogo -NoProfile -File "$fakeDittoScriptPath" %*
+exit /b %ERRORLEVEL%
+"@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'ditto.cmd') -Encoding ascii
+    } else {
+        @"
+#!/bin/sh
+exec pwsh -NoLogo -NoProfile -File "$fakeDittoScriptPath" "`$@"
+"@ | Set-Content -Path (Join-Path $script:fakeCommandDirectory 'ditto') -Encoding utf8NoBOM
+        & chmod +x (Join-Path $script:fakeCommandDirectory 'ditto')
     }
 
     $pathSeparator = [System.IO.Path]::PathSeparator
@@ -299,16 +819,40 @@ end
         $caseRoot = Join-Path $testRoot ([guid]::NewGuid().ToString("N"))
         $projectRoot = Join-Path $caseRoot 'project'
         $outputRoot = Join-Path $caseRoot 'output'
+        $buildRoot = Join-Path $caseRoot 'build'
         $runnerTemp = Join-Path $caseRoot 'runner-temp'
-        New-Item -ItemType Directory -Path $projectRoot, $outputRoot, $runnerTemp -Force | Out-Null
+        New-Item -ItemType Directory -Path $caseRoot, $projectRoot, $outputRoot, $buildRoot, $runnerTemp -Force | Out-Null
+        $sourceFixture = New-SourcePackageFixture
+        $nuGetConfigPath = Join-Path $caseRoot 'NuGet.base.config'
+        @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="private-feed" value="https://example.invalid/v3/index.json" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key="nuget.org">
+      <package pattern="Legacy.*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>
+"@ | Set-Content -Path $nuGetConfigPath -Encoding utf8
         Set-Content -Path (Join-Path $projectRoot 'TestApp.csproj') -Value '<Project Sdk="Microsoft.NET.Sdk" />'
 
         return [pscustomobject]@{
             Root = $caseRoot
             ProjectRoot = $projectRoot
             OutputRoot = $outputRoot
+            BuildRoot = $buildRoot
             RunnerTemp = $runnerTemp
             GitHubOutput = Join-Path $caseRoot 'github-output.txt'
+            NuGetConfigPath = $nuGetConfigPath
+            SourceFixture = $sourceFixture
+            SourceManifestPath = $sourceFixture.ManifestPath
+            SourceSha = $sourceFixture.SourceSha
+            TemplatePackagePath = $sourceFixture.TemplatePackagePath
         }
     }
 
@@ -318,6 +862,16 @@ end
             ExitCode = $LASTEXITCODE
             Output = ($output | Out-String)
         }
+    }
+
+    function Read-GitHubOutputValues([string]$Path) {
+        $outputValues = @{}
+        foreach ($line in Get-Content -Path $Path) {
+            $name, $value = $line -split '=', 2
+            $outputValues[$name] = $value
+        }
+
+        return $outputValues
     }
 
     function Invoke-BuildTemplateApp(
@@ -335,7 +889,9 @@ end
             '-RuntimeIdentifier', $RuntimeIdentifier,
             '-OutputPath', $TestCase.OutputRoot,
             '-AppDisplayVersion', '11.0',
-            '-AppBuildNumber', '1'
+            '-AppBuildNumber', '1',
+            '-SourceManifestPath', $TestCase.SourceManifestPath,
+            '-SourceSha', $TestCase.SourceSha
         )
         if ($Publish) {
             $arguments += '-Publish'
@@ -344,7 +900,41 @@ end
             $arguments += '-CreateBinlog'
         }
 
-        return Invoke-ExternalPowerShell $scriptPath $arguments
+        $env:FAKE_SOURCE_MANIFEST_PATH = $TestCase.SourceManifestPath
+        $env:FAKE_SOURCE_SHA = $TestCase.SourceSha
+        return Invoke-ExternalPowerShell $script:buildTemplateAppHarnessPath $arguments
+    }
+
+    function Invoke-NewTemplateApp(
+        $TestCase,
+        [string]$Variant = 'sample',
+        [string]$ProjectName = 'TestApp',
+        [string]$Template = 'maui',
+        [string]$DotNetTfm = 'net11.0',
+        [string]$TargetFramework = 'net11.0-android',
+        [string]$ApplicationId = 'com.example.generated',
+        [string]$DisplayName = 'Generated App'
+    ) {
+        $env:FAKE_SOURCE_MANIFEST_PATH = $TestCase.SourceManifestPath
+        $env:FAKE_SOURCE_SHA = $TestCase.SourceSha
+        return Invoke-ExternalPowerShell $script:newTemplateScriptPath @(
+            '-TemplatePackagePath', $TestCase.TemplatePackagePath,
+            '-BuildRoot', $TestCase.BuildRoot,
+            '-Variant', $Variant,
+            '-ProjectName', $ProjectName,
+            '-Template', $Template,
+            '-TemplateArgsJson', '[]',
+            '-DotNetTfm', $DotNetTfm,
+            '-TargetFramework', $TargetFramework,
+            '-ApplicationId', $ApplicationId,
+            '-DisplayName', $DisplayName,
+            '-DotNetSdk', '11.0.100',
+            '-AppDisplayVersion', '11.0',
+            '-AppBuildNumber', '1',
+            '-NuGetConfigPath', $TestCase.NuGetConfigPath,
+            '-SourceManifestPath', $TestCase.SourceManifestPath,
+            '-SourceSha', $TestCase.SourceSha
+        )
     }
 
     function Invoke-PrepareMatrix([string]$Variants, [string]$Platforms) {
@@ -420,6 +1010,7 @@ end
             [Environment]::SetEnvironmentVariable($name, $null)
         }
         $env:FASTFILE_PATH = $script:fastfilePath
+        $env:FAKE_MAUI_ASSEMBLY_DIRECTORY = $script:fakeMauiAssemblyDirectory
     }
 }
 
@@ -952,6 +1543,39 @@ Describe 'Android artifact safety' {
         }
     }
 
+    It 'writes end-to-end provenance for a dry-run APK payload' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'android-success'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'android' `
+            -TargetFramework 'net11.0-android' `
+            -RuntimeIdentifier 'android-arm64'
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $outputValues = Read-GitHubOutputValues $case.GitHubOutput
+        $outputValues.provenance_path | Should -Not -BeNullOrEmpty
+        Test-Path $outputValues.provenance_path | Should -BeTrue
+
+        $provenance = Get-Content -Path $outputValues.provenance_path -Raw | ConvertFrom-Json
+        $provenance.sourceSha | Should -Be $case.SourceSha
+        $provenance.platform | Should -Be 'android'
+        @($provenance.resolutions).Count | Should -Be 1
+        $provenance.resolutions[0].description | Should -Be 'Android APK publish'
+        $provenance.resolutions[0].resolution.packages.id | Should -Contain 'Microsoft.Maui.Controls'
+        @($provenance.payloads).Count | Should -Be 1
+        $payload = $provenance.payloads[0]
+        $payload.file | Should -Match '\.apk$'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.dll'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.Controls.dll'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.Graphics.dll'
+    }
+
     It 'emits installable APK, store AAB, and distinct binlog outputs' {
         $case = New-BuildTestCase
         $keystorePath = Join-Path $case.Root 'test.keystore'
@@ -972,18 +1596,16 @@ Describe 'Android artifact safety' {
             -CreateBinlog
 
         $result.ExitCode | Should -Be 0 -Because $result.Output
-        $outputValues = @{}
-        foreach ($line in Get-Content -Path $case.GitHubOutput) {
-            $name, $value = $line -split '=', 2
-            $outputValues[$name] = $value
-        }
+        $outputValues = Read-GitHubOutputValues $case.GitHubOutput
 
         $outputValues.package_path | Should -Match '\.aab$'
         $outputValues.sideload_package_path | Should -Match '\.apk$'
+        $outputValues.provenance_path | Should -Not -BeNullOrEmpty
         $outputValues.binlog_path | Should -Be (Join-Path $case.OutputRoot 'build.binlog')
         $outputValues.store_binlog_path | Should -Be (Join-Path $case.OutputRoot 'store-build.binlog')
         Test-Path $outputValues.package_path | Should -BeTrue
         Test-Path $outputValues.sideload_package_path | Should -BeTrue
+        Test-Path $outputValues.provenance_path | Should -BeTrue
         Test-Path $outputValues.binlog_path | Should -BeTrue
         Test-Path $outputValues.store_binlog_path | Should -BeTrue
     }
@@ -1027,6 +1649,26 @@ Describe 'Android artifact safety' {
         $signingEnvironment | Should -Match 'storePass=store-password-secret'
         $signingEnvironment | Should -Match 'keyPass=key-password-secret'
     }
+
+    It 'fails the build when the packaged Android payload was built from a different source commit' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'android-success'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+        $env:FAKE_MAUI_ASSEMBLY_DIRECTORY = Initialize-FakeMauiPayloadAssemblies -SourceSha 'fedcba9876543210fedcba9876543210fedcba98'
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'android' `
+            -TargetFramework 'net11.0-android' `
+            -RuntimeIdentifier 'android-arm64'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match 'Packaged assembly'
+        $result.Output | Should -Match 'not from'
+        if (Test-Path $case.GitHubOutput) {
+            (Read-GitHubOutputValues $case.GitHubOutput).ContainsKey('package_path') | Should -BeFalse
+        }
+    }
 }
 
 Describe 'iOS dry-run artifact safety' {
@@ -1046,16 +1688,29 @@ Describe 'iOS dry-run artifact safety' {
             -TargetFramework 'net11.0-ios' `
             -RuntimeIdentifier 'ios-arm64'
 
-        $result.ExitCode | Should -Be 0
-        $outputValues = @{}
-        foreach ($line in Get-Content -Path $case.GitHubOutput) {
-            $name, $value = $line -split '=', 2
-            $outputValues[$name] = $value
-        }
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+        $outputValues = Read-GitHubOutputValues $case.GitHubOutput
 
         $outputValues.package_path | Should -Match '\.ipa$'
         $outputValues.sideload_package_path | Should -Be $outputValues.package_path
+        $outputValues.provenance_path | Should -Not -BeNullOrEmpty
         Test-Path $outputValues.package_path | Should -BeTrue
+        Test-Path $outputValues.provenance_path | Should -BeTrue
+
+        $provenance = Get-Content -Path $outputValues.provenance_path -Raw | ConvertFrom-Json
+        $provenance.sourceSha | Should -Be $case.SourceSha
+        $provenance.platform | Should -Be 'ios'
+        @($provenance.resolutions.description) | Should -Contain 'iOS simulator build'
+        @($provenance.resolutions.description) | Should -Contain 'iOS unsigned device build'
+        @($provenance.payloads).Count | Should -Be 1
+        $payload = $provenance.payloads[0]
+        $payload.file | Should -Match '\.ipa$'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.dll'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.Controls.dll'
+        @($payload.assemblies | ForEach-Object { [System.IO.Path]::GetFileName($_.path) }) |
+            Should -Contain 'Microsoft.Maui.Graphics.dll'
     }
 }
 
@@ -1185,6 +1840,240 @@ Describe 'publish binlogs' {
 
         $outputValues.sideload_binlog_path | Should -Be (Join-Path $case.OutputRoot 'ios-adhoc-build.binlog')
         Test-Path $outputValues.sideload_binlog_path | Should -BeTrue
+    }
+}
+
+Describe 'source package trust' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'rejects a source package whose nuspec commit no longer matches the pinned source sha' {
+        $fixture = New-SourcePackageFixture
+        New-FakeSourcePackage `
+            -PackageDirectory $fixture.PackageDirectory `
+            -PackageId 'Microsoft.Maui.Controls' `
+            -Version $fixture.Version `
+            -RepositoryCommit 'fedcba9876543210fedcba9876543210fedcba98' | Out-Null
+
+        {
+            Read-SourcePackageManifest -Path $fixture.ManifestPath -SourceSha $fixture.SourceSha
+        } | Should -Throw '*Source provenance mismatch*'
+    }
+
+    It 'rejects a source package manifest whose recorded hashes do not match the nupkg' {
+        $fixture = New-SourcePackageFixture
+        $manifest = Get-SourcePackageManifestObject $fixture
+        $manifest.packages[0].sha512 = 'hash-mismatch'
+        Save-SourcePackageManifest -Fixture $fixture -Manifest $manifest
+
+        {
+            Read-SourcePackageManifest -Path $fixture.ManifestPath -SourceSha $fixture.SourceSha
+        } | Should -Throw '*(sha512)*'
+    }
+
+    It 'rejects a source package manifest that omits a required package' {
+        $fixture = New-SourcePackageFixture -PackageIds (
+            $script:requiredSourcePackageIds | Where-Object { $_ -ne 'Microsoft.Maui.Sdk' }
+        )
+
+        {
+            Read-SourcePackageManifest -Path $fixture.ManifestPath -SourceSha $fixture.SourceSha
+        } | Should -Throw "*Required source-built package 'Microsoft.Maui.Sdk' is missing.*"
+    }
+
+    It 'rejects a source package manifest with multiple source-built template packages' {
+        $fixture = New-SourcePackageFixture -PackageIds (
+            $script:requiredSourcePackageIds + 'Microsoft.Maui.Templates.net11'
+        )
+
+        {
+            Read-SourcePackageManifest -Path $fixture.ManifestPath -SourceSha $fixture.SourceSha
+        } | Should -Throw '*Expected exactly one source-built template package.*'
+    }
+}
+
+Describe 'template source package configuration' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'writes fail-closed NuGet source mapping and MauiVersion for generated template apps' {
+        $case = New-BuildTestCase
+        $env:GITHUB_SHA = 'workflowcommit0123456789012345678901234567890'
+        $env:GITHUB_RUN_ID = '4242'
+
+        $result = Invoke-NewTemplateApp -TestCase $case -ProjectName 'GeneratedApp'
+
+        $result.ExitCode | Should -Be 0 -Because $result.Output
+
+        $projectRoot = Join-Path $case.BuildRoot 'sample'
+        $projectDirectory = Join-Path $projectRoot 'GeneratedApp'
+        $projectFilePath = Join-Path $projectDirectory 'GeneratedApp.csproj'
+        $generatedNuGetConfigPath = Join-Path $projectRoot 'NuGet.config'
+        $generatedPropsPath = Join-Path $projectRoot 'Directory.Build.props'
+        $generatedSdkDirectory = Join-Path $projectRoot '.maui-sdk'
+        $generatedSdkTargetsPath = Join-Path $generatedSdkDirectory 'Sdk/Sdk.targets'
+        $generatedSdkPropsPath = Join-Path $generatedSdkDirectory 'Sdk/Sdk.props'
+        $sourceManifestCopyPath = Join-Path $projectDirectory 'source-packages.json'
+        $sourceProvenancePath = Join-Path $projectDirectory 'Resources/Raw/source-provenance.json'
+
+        Test-Path $projectFilePath | Should -BeTrue
+        Test-Path $generatedNuGetConfigPath | Should -BeTrue
+        Test-Path $generatedPropsPath | Should -BeTrue
+        Test-Path $generatedSdkTargetsPath | Should -BeTrue
+        Test-Path $generatedSdkPropsPath | Should -BeTrue
+        Test-Path $sourceManifestCopyPath | Should -BeTrue
+        Test-Path $sourceProvenancePath | Should -BeTrue
+
+        [xml]$generatedNuGetConfig = Get-Content -Path $generatedNuGetConfigPath -Raw
+        @($generatedNuGetConfig.configuration.packageSources.add | ForEach-Object key) |
+            Should -Contain 'maui-source'
+        $mauiMapping = @($generatedNuGetConfig.configuration.packageSourceMapping.packageSource |
+            Where-Object key -EQ 'maui-source')
+        $mauiMapping.Count | Should -Be 1
+        @($mauiMapping[0].package | ForEach-Object pattern) | Should -Be @('Microsoft.Maui.*')
+        @($generatedNuGetConfig.configuration.packageSourceMapping.packageSource |
+            Where-Object key -EQ 'nuget.org').package.pattern |
+            Should -Contain '*'
+
+        [xml]$directoryBuildProps = Get-Content -Path $generatedPropsPath -Raw
+        $directoryBuildProps.Project.PropertyGroup.MauiVersion | Should -Be $case.SourceFixture.Version
+
+        [xml]$projectXml = Get-Content -Path $projectFilePath -Raw
+        $projectXml.Project.PropertyGroup.MauiVersion | Should -Be $case.SourceFixture.Version
+        $projectXml.Project.PropertyGroup.SkipMauiWorkloadManifest | Should -Be 'true'
+        $controlsReference = @($projectXml.Project.ItemGroup.PackageReference | Where-Object Include -EQ 'Microsoft.Maui.Controls')
+        $graphicsReference = @($projectXml.Project.ItemGroup.PackageReference | Where-Object Include -EQ 'Microsoft.Maui.Graphics')
+        $sdkImport = @($projectXml.Project.Import | Where-Object Project -EQ $generatedSdkTargetsPath)
+        $sdkImport.Count | Should -Be 1
+        $controlsReference[0].Version | Should -Be $case.SourceFixture.Version
+        $graphicsReference[0].Version | Should -Be $case.SourceFixture.Version
+        $graphicsReference[0].SelectSingleNode('Version') | Should -BeNullOrEmpty
+
+        $sourceManifestCopy = Get-Content -Path $sourceManifestCopyPath -Raw | ConvertFrom-Json
+        $sourceManifestCopy.sourceSha | Should -Be $case.SourceSha
+        @($sourceManifestCopy.packages).Count | Should -Be 10
+
+        $sourceProvenance = Get-Content -Path $sourceProvenancePath -Raw | ConvertFrom-Json
+        $templatePackage = Get-TemplatePackageEntry $case.SourceFixture
+        $sourceProvenance.sourceSha | Should -Be $case.SourceSha
+        $sourceProvenance.frameworkVersion | Should -Be $case.SourceFixture.Version
+        $sourceProvenance.template.sha512 | Should -Be $templatePackage['sha512']
+        $sourceProvenance.workflowCommit | Should -Be $env:GITHUB_SHA
+        $sourceProvenance.runId | Should -Be $env:GITHUB_RUN_ID
+    }
+}
+
+Describe 'source-built restore verification' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'fails closed when a build resolves a stable Microsoft.Maui package instead of the pinned source package' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'android-success'
+        $env:FAKE_SOURCE_ASSETS_MODE = 'mixed-stable'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'android' `
+            -TargetFramework 'net11.0-android' `
+            -RuntimeIdentifier 'android-arm64'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match "Resolved 'Microsoft\.Maui\.Controls/8\.0\.100'"
+        $result.Output | Should -Match 'not the pinned source-built package'
+    }
+
+    It 'fails closed when required source-built packages are missing from restore assets' {
+        $case = New-BuildTestCase
+        $env:FAKE_DOTNET_MODE = 'android-success'
+        $env:FAKE_SOURCE_ASSETS_MODE = 'missing-essential'
+        $env:GITHUB_OUTPUT = $case.GitHubOutput
+
+        $result = Invoke-BuildTemplateApp `
+            -TestCase $case `
+            -Platform 'android' `
+            -TargetFramework 'net11.0-android' `
+            -RuntimeIdentifier 'android-arm64'
+
+        $result.ExitCode | Should -Not -Be 0
+        $result.Output | Should -Match "Required resolved source package 'Microsoft\.Maui\.Resizetizer' is missing"
+    }
+}
+
+Describe 'packaged payload provenance' {
+    BeforeEach {
+        Reset-BuildTestEnvironment
+    }
+
+    It 'keeps direct payload helper compatibility when called without a manifest' {
+        $fixture = New-SourcePackageFixture
+        $archive = New-FakePayloadArchive `
+            -Path (Join-Path $fixture.Root 'TestApp-no-manifest.apk') `
+            -Manifest $fixture.Manifest
+
+        $proof = Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha
+
+        $proof.file | Should -Be 'TestApp-no-manifest.apk'
+        $proof.assemblies.Count | Should -BeGreaterThan 0
+        $proof.dependencies | Should -Contain "Microsoft.Maui.Controls/$($fixture.Version)"
+    }
+
+    It 'reads informational source sha and dependency provenance from packaged MAUI archives' {
+        $fixture = New-SourcePackageFixture
+        $assetsPath = Write-SourcePackageAssetsFile `
+            -AssetsPath (Join-Path $fixture.Root 'obj/project.assets.json') `
+            -Manifest $fixture.Manifest
+        $null = Test-SourcePackageAssets -AssetsPath $assetsPath -Manifest $fixture.Manifest
+
+        $archive = New-FakePayloadArchive `
+            -Path (Join-Path $fixture.Root 'TestApp-Signed.apk') `
+            -Manifest $fixture.Manifest
+
+        $proof = Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest
+
+        $proof.file | Should -Be 'TestApp-Signed.apk'
+        @($proof.assemblies.path | ForEach-Object { [System.IO.Path]::GetFileName($_) }) |
+            Should -Contain 'Microsoft.Maui.Controls.dll'
+        $proof.assemblies.informationalVersion | Should -Contain "1.0.0+$($fixture.SourceSha)"
+        $proof.dependencies | Should -Contain "Microsoft.Maui.Controls/$($fixture.Version)"
+    }
+
+    It 'rejects manifest-verified payloads that omit a required MAUI assembly' {
+        $fixture = New-SourcePackageFixture
+        $assetsPath = Write-SourcePackageAssetsFile `
+            -AssetsPath (Join-Path $fixture.Root 'obj/project.assets.json') `
+            -Manifest $fixture.Manifest
+        $null = Test-SourcePackageAssets -AssetsPath $assetsPath -Manifest $fixture.Manifest
+
+        $archive = New-FakePayloadArchive `
+            -Path (Join-Path $fixture.Root 'TestApp-missing-graphics.ipa') `
+            -Manifest $fixture.Manifest `
+            -OmitRequiredAssembly
+
+        {
+            Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest
+        } | Should -Throw "*Required MAUI assembly 'Microsoft.Maui.Graphics.dll' is missing*"
+    }
+
+    It 'rejects packaged MAUI assemblies that were not built from the pinned source sha' {
+        $fixture = New-SourcePackageFixture
+        $assetsPath = Write-SourcePackageAssetsFile `
+            -AssetsPath (Join-Path $fixture.Root 'obj/project.assets.json') `
+            -Manifest $fixture.Manifest
+        $null = Test-SourcePackageAssets -AssetsPath $assetsPath -Manifest $fixture.Manifest
+
+        $archive = New-FakePayloadArchive `
+            -Path (Join-Path $fixture.Root 'TestApp.ipa') `
+            -Manifest $fixture.Manifest `
+            -SourceSha 'fedcba9876543210fedcba9876543210fedcba98'
+
+        {
+            Get-AppPayloadProof -Path $archive.FullName -SourceSha $fixture.SourceSha -Manifest $fixture.Manifest
+        } | Should -Throw '*not from*'
     }
 }
 
