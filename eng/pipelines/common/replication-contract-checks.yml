@@ -83,6 +83,7 @@ steps:
         'Cross-platform device test class filtering*offers Android XHarness preflight without building or running product tests'
         'Cross-platform device test class filtering*accepts HELP_SHOWN only for explicit XHarness help probes'
         'Cross-platform device test class filtering*retains HELP_SHOWN readback and rejects actual Android help failures'
+        'Build isolation options*embeds Android assemblies in the APK for XHarness in every configuration'
         'Agent prompt deliverability*leaves no control character in any string literal of the orchestrator'
         'MAUI Copilot mode routing*routes Android harness-only diagnostics before Copilot generation and publication'
         'MAUI Copilot mode routing*keeps the fixed Android native probe separate from issue certification'

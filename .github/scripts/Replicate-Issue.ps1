@@ -8316,6 +8316,7 @@ function Invoke-ReplicationAndroidNativeHarnessProbe {
             '-c', 'Debug',
             '--no-restore',
             '-p:AndroidPackageFormat=apk',
+            '-p:EmbedAssembliesIntoApk=true',
             '-p:TreatWarningsAsErrors=false'
         )
     # The trusted build regenerates tracked outputs such as HybridWebView.js.
