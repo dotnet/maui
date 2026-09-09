@@ -136,9 +136,9 @@ function Find-ControlsDeviceTestApp([string]$root, [string]$variant) {
         $matches = @(
             Get-ChildItem $root -Directory -Recurse -Filter "*.app" |
                 Where-Object {
-                    $_.FullName -match 'Controls\.DeviceTests'
-                    -and $_.FullName -match $platformPattern
-                    -and $_.FullName -match '[\\/]Release[\\/]'
+                    $_.FullName -match 'Controls\.DeviceTests' -and
+                    $_.FullName -match $platformPattern -and
+                    $_.FullName -match '[\\/]Release[\\/]'
                 }
         )
     }

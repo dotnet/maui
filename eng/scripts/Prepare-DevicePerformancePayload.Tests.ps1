@@ -73,6 +73,103 @@ try
     Assert-Equal "10.0.100" $metadata.baseSdkVersion "Base SDK version"
     Assert-Equal "10.0.101" $metadata.headSdkVersion "Head SDK version"
 
+    foreach ($applePlatform in @("ios", "maccatalyst"))
+    {
+        $appleRoots = @{
+            base = Join-Path $testRoot "$applePlatform-base"
+            head = Join-Path $testRoot "$applePlatform-head"
+        }
+        $otherPlatform = if ($applePlatform -eq "ios") { "maccatalyst" } else { "ios" }
+        $appRelativePath = "Controls.DeviceTests/Release/net10.0-$applePlatform/Controls Tests.app"
+
+        foreach ($variant in @("base", "head"))
+        {
+            $root = $appleRoots[$variant]
+            $app = Join-Path $root $appRelativePath
+            $framework = Join-Path $app "Frameworks/Dependency.framework"
+            New-Item -ItemType Directory -Force -Path $framework | Out-Null
+            "$variant executable" | Set-Content (Join-Path $app "Microsoft.Maui.Controls.DeviceTests")
+            "$variant dependency" | Set-Content (Join-Path $framework "Dependency")
+            if ($IsMacOS)
+            {
+                "$variant hidden resource" | Set-Content (Join-Path $app ".hidden-resource")
+            }
+            foreach ($excludedApp in @(
+                "Controls.DeviceTests/Debug/net10.0-$applePlatform/Controls Tests.app",
+                "Controls.DeviceTests/Release/net10.0-$otherPlatform/Controls Tests.app",
+                "Core.DeviceTests/Release/net10.0-$applePlatform/Core Tests.app"
+            ))
+            {
+                New-Item -ItemType Directory -Force -Path (Join-Path $root $excludedApp) | Out-Null
+            }
+
+            @{
+                schemaVersion = 1
+                repository = "dotnet/maui"
+                pullRequestNumber = 42
+                variant = $variant
+                platform = $applePlatform
+                commitSha = if ($variant -eq "base") { "abc123" } else { "def456" }
+                harnessSha = "harness123"
+                runtimeVariant = "mono"
+                sdkVersion = "10.0.100"
+            } | ConvertTo-Json | Set-Content (Join-Path $root "device-performance-build-metadata.json")
+        }
+
+        $appleArchive = Join-Path $testRoot "$applePlatform-payload.zip"
+        $appleMetadataPath = Join-Path $testRoot "$applePlatform-payload.json"
+        $appleArguments = @{
+            BaseArtifacts = $appleRoots.base
+            HeadArtifacts = $appleRoots.head
+            Platform = $applePlatform
+            BaseCommitSha = "abc123"
+            HeadCommitSha = "def456"
+            ExpectedScenario = "collectionview-grouped-scrollto-makevisible"
+            Repository = "dotnet/maui"
+            PullRequestNumber = 42
+            HarnessSha = "harness123"
+            AzdoBuildId = "100"
+            AzdoBuildUrl = "https://build/100"
+            OutputArchive = $appleArchive
+            MetadataOut = $appleMetadataPath
+        }
+        & $script @appleArguments
+
+        Assert-Equal 0 $LASTEXITCODE "$applePlatform payload preparation should succeed"
+        Assert-Equal $true (Test-Path $appleArchive) "$applePlatform payload archive should exist"
+        $appleMetadata = Get-Content $appleMetadataPath -Raw | ConvertFrom-Json
+        Assert-Equal $applePlatform $appleMetadata.platform "$applePlatform payload platform"
+        Assert-Equal "payload/base/Controls Tests.app" $appleMetadata.baseAppRelativePath "$applePlatform base relative path"
+        Assert-Equal "payload/head/Controls Tests.app" $appleMetadata.headAppRelativePath "$applePlatform head relative path"
+
+        $appleExtract = Join-Path $testRoot "$applePlatform-extract"
+        Expand-Archive $appleArchive -DestinationPath $appleExtract
+        foreach ($variant in @("base", "head"))
+        {
+            $originalApp = Join-Path $appleRoots[$variant] $appRelativePath
+            $extractedApp = Join-Path $appleExtract $appleMetadata.("${variant}AppRelativePath")
+            $originalFiles = @(Get-ChildItem $originalApp -File -Recurse -Force)
+            $extractedFiles = @(Get-ChildItem $extractedApp -File -Recurse -Force)
+            Assert-Equal $originalFiles.Count $extractedFiles.Count "$applePlatform $variant app file count"
+            foreach ($file in $originalFiles)
+            {
+                $relativePath = [IO.Path]::GetRelativePath($originalApp, $file.FullName)
+                $extractedFile = Join-Path $extractedApp $relativePath
+                Assert-Equal (Get-FileHash $file.FullName).Hash (Get-FileHash $extractedFile).Hash "$applePlatform $variant $relativePath content"
+            }
+        }
+
+        New-Item -ItemType Directory -Path (Join-Path $appleRoots.base "Controls.DeviceTests/Release/net10.0-$applePlatform/Duplicate.app") | Out-Null
+        $duplicateAppRejected = $false
+        try {
+            & $script @appleArguments
+        }
+        catch {
+            $duplicateAppRejected = $_.Exception.Message -like "Expected exactly one base Controls.DeviceTests $applePlatform app, found 2:*"
+        }
+        Assert-Equal $true $duplicateAppRejected "$applePlatform payload preparation must reject ambiguous apps"
+    }
+
     $windowsBaseRoot = Join-Path $testRoot "windows-base/Controls.DeviceTests/Release/net10.0-windows/win-x64"
     $windowsHeadRoot = Join-Path $testRoot "windows-head/Controls.DeviceTests/Release/net10.0-windows/win-x64"
     $windowsBase = Join-Path $windowsBaseRoot "publish"
