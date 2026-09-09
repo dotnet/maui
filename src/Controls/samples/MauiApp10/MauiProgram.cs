@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+#if MAUI_DEVFLOW
+using Microsoft.Maui.DevFlow.Agent;
+#endif
 
 namespace MauiApp10
 {
@@ -9,6 +12,9 @@ namespace MauiApp10
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+#if MAUI_DEVFLOW
+            builder.AddMauiDevFlowAgent();
+#endif
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
@@ -16,11 +22,6 @@ namespace MauiApp10
                 .ConfigureMauiHandlers(handlers =>
                 {
 #if WINDOWS
-    				Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("KeyboardAccessibleCollectionView", (handler, view) =>
-    				{
-    					handler.PlatformView.SingleSelectionFollowsFocus = false;
-    				});
-
     				Microsoft.Maui.Handlers.ContentViewHandler.Mapper.AppendToMapping(nameof(Pages.Controls.CategoryChart), (handler, view) =>
     				{
     					if (view is Pages.Controls.CategoryChart && handler.PlatformView is Microsoft.Maui.Platform.ContentPanel contentPanel)

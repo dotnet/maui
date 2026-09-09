@@ -16,26 +16,26 @@ namespace MauiApp10.PageModels
         private readonly ModalErrorHandler _errorHandler;
 
         [ObservableProperty]
-        private string _title = string.Empty;
+        public partial string Title { get; set; } = string.Empty;
 
         [ObservableProperty]
-        private bool _isCompleted;
+        public partial bool IsCompleted { get; set; }
 
         [ObservableProperty]
-        private List<Project> _projects = [];
+        public partial List<Project> Projects { get; set; } = [];
 
         [ObservableProperty]
-        private Project? _project;
+        public partial Project? Project { get; set; }
 
         [ObservableProperty]
-        private int _selectedProjectIndex = -1;
+        public partial int SelectedProjectIndex { get; set; } = -1;
 
 
         [ObservableProperty]
-        private bool _isExistingProject;
+        public partial bool IsExistingProject { get; set; }
 
         [ObservableProperty]
-        private bool _isProjectPickerExpanded;
+        public partial bool IsProjectPickerExpanded { get; set; }
 
         public TaskDetailPageModel(ProjectRepository projectRepository, TaskRepository taskRepository, ModalErrorHandler errorHandler)
         {

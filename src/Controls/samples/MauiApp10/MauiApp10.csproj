@@ -9,16 +9,15 @@
 		<IsPackable>false</IsPackable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<NoWarn>$(NoWarn);XC0022</NoWarn>
+		<MauiXamlInflator>XamlC</MauiXamlInflator>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
 		<RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
 	</PropertyGroup>
 
 	<PropertyGroup>
-      <!-- Display name -->
-        <ApplicationTitle>MauiApp10</ApplicationTitle>
-        <!-- App Identifier -->
-        <ApplicationId>com.companyname.mauiapp10</ApplicationId>​‌
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+	<ApplicationTitle>MauiApp10</ApplicationTitle>
+	<ApplicationId>com.companyname.mauiapp10</ApplicationId>
+			<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsSdkPackageVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.19041.56</WindowsSdkPackageVersion>

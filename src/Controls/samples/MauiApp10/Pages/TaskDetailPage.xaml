@@ -1,4 +1,6 @@
-<ContentPage xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
              xmlns:pageModel="clr-namespace:MauiApp10.PageModels"
              xmlns:models="clr-namespace:MauiApp10.Models"
              x:DataType="pageModel:TaskDetailPageModel"
