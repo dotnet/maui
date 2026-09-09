@@ -191,6 +191,14 @@ $DeviceTestProjects = @{
     "BlazorWebView"= "src/BlazorWebView/tests/DeviceTests/"
 }
 
+$DeviceTestProjectPaths = @{
+    "Controls"     = "src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj"
+    "Core"         = "src/Core/tests/DeviceTests/Core.DeviceTests.csproj"
+    "Essentials"   = "src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj"
+    "Graphics"     = "src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj"
+    "BlazorWebView"= "src/BlazorWebView/tests/DeviceTests/MauiBlazorWebView.DeviceTests.csproj"
+}
+
 # Unit test project detection
 $UnitTestProjects = @{
     "Controls.Core.UnitTests"          = "src/Controls/tests/Core.UnitTests/"
@@ -1007,6 +1015,7 @@ foreach ($file in $ChangedFiles) {
                     foreach ($projKey in $DeviceTestProjects.Keys) {
                         if ($file -like "*$($DeviceTestProjects[$projKey])*") {
                             $project = $projKey
+                            $projectPath = $DeviceTestProjectPaths[$projKey]
                             break
                         }
                     }
