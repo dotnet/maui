@@ -6,6 +6,9 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 38321, "Grouped CollectionView with GridItemsLayout throws ArgumentOutOfRangeException after an item is removed", PlatformAffected.Android)]
 public class Issue38321 : ContentPage
 {
+	readonly Label _statusLabel;
+	int _removalStep;
+
 	public ObservableCollection<Issue38321ItemGroup> Groups { get; } = new ObservableCollection<Issue38321ItemGroup>();
 
 	public Issue38321()
@@ -54,6 +57,12 @@ public class Issue38321 : ContentPage
 			Text = "Remove item"
 		};
 
+		_statusLabel = new Label
+		{
+			AutomationId = "ItemsRemainingLabel",
+			Text = "Items remaining: 8"
+		};
+
 		removeButton.Clicked += OnRemoveItemClicked;
 
 		var headerGrid = new Grid
@@ -63,11 +72,17 @@ public class Issue38321 : ContentPage
 				new ColumnDefinition(GridLength.Star),
 				new ColumnDefinition(GridLength.Auto)
 			},
+			RowDefinitions =
+			{
+				new RowDefinition(GridLength.Auto),
+				new RowDefinition(GridLength.Auto)
+			},
 			ColumnSpacing = 12
 		};
 
 		headerGrid.Add(headerLayout);
 		headerGrid.Add(removeButton, 1, 0);
+		headerGrid.Add(_statusLabel, 0, 1);
 
 		var collectionView = new CollectionView
 		{
@@ -155,14 +170,24 @@ public class Issue38321 : ContentPage
 		Content = grid;
 	}
 
-	private async void OnRemoveItemClicked(object sender, EventArgs e)
+	async void OnRemoveItemClicked(object sender, EventArgs e)
 	{
 		await Task.Delay(250);
 
-		if (Groups.Count > 0 && Groups[0].Count > 0)
+		if (Groups.Count == 0 || Groups[0].Count == 0)
+			return;
+
+		var group = Groups[0];
+		var (positionName, index) = _removalStep switch
 		{
-			Groups[0].RemoveAt(0);
-		}
+			0 => ("first", 0),
+			1 => ("middle", group.Count / 2),
+			_ => ("last", group.Count - 1)
+		};
+
+		group.RemoveAt(index);
+		_removalStep++;
+		_statusLabel.Text = $"Removed {positionName}; items remaining: {group.Count}";
 	}
 }
 

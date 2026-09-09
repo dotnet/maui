@@ -67,13 +67,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.GetItemOffsets(outRect, view, parent, state);
 
-			int position = parent.GetChildAdapterPosition(view);
-			if (position == RecyclerView.NoPosition)
+			var adapter = parent.GetAdapter();
+			if (adapter is null)
+			{
 				return;
+			}
 
-			int itemCount = parent.GetAdapter()?.ItemCount ?? state.ItemCount;
-			if (itemCount <= 0)
+			int position = parent.GetChildAdapterPosition(view);
+			int itemCount = adapter.ItemCount;
+
+			if (position == RecyclerView.NoPosition || position < 0 || position >= itemCount)
+			{
 				return;
+			}
 
 			outRect.Left = HorizontalOffset;
 			outRect.Right = HorizontalOffset;

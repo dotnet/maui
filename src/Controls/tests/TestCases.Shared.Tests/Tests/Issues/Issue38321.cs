@@ -14,18 +14,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void GroupedCollectionViewRemoveItem()
+		public void GroupedCollectionViewRemovalsUseCurrentAdapterPositions()
 		{
 			App.WaitForElement("RemoveItemButton");
 
-			App.Tap("RemoveItemButton");
-			App.WaitForElement("RemoveItemButton");
+			string[] expectedResults =
+			{
+				"Removed first; items remaining: 7",
+				"Removed middle; items remaining: 6",
+				"Removed last; items remaining: 5"
+			};
 
-			App.Tap("RemoveItemButton");
-			App.WaitForElement("RemoveItemButton");
-
-			App.Tap("RemoveItemButton");
-			App.WaitForElement("RemoveItemButton");
+			for (int i = 0; i < expectedResults.Length; i++)
+			{
+				string expectedResult = expectedResults[i];
+				App.Tap("RemoveItemButton");
+				Assert.That(
+					App.WaitForTextToBePresentInElement(
+						"ItemsRemainingLabel",
+						expectedResult),
+					Is.True,
+					$"The grouped CollectionView did not complete the removal: {expectedResult}.");
+			}
 		}
 	}
 }
