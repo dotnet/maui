@@ -16457,6 +16457,27 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
             Should -BeTrue
     }
 
+    It 'leaves room for two complete fix candidates after a ninety-minute reproduction' {
+        $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
+        $stepTimeout = [int][regex]::Match($source, '\$StepTimeoutMinutes = (\d+)').Groups[1].Value
+        $configured = [int][regex]::Match($source, '\$FixPanelBudgetMinutes = (\d+)').Groups[1].Value
+        $candidateTimeout = [int][regex]::Match($source, '\$FixCandidateTimeoutMinutes = (\d+)').Groups[1].Value
+        $budget = Get-ReplicationFixPanelBudget `
+            -ConfiguredBudgetMinutes $configured `
+            -StepTimeoutMinutes $stepTimeout `
+            -ElapsedMinutes 90
+
+        # The first candidate may consume its entire authoring and native
+        # verification allowance before the second independent model starts.
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(2 * $candidateTimeout) `
+            -PanelBudgetMinutes $budget `
+            -CandidateTimeoutMinutes $candidateTimeout `
+            -VerificationTimeoutMinutes $candidateTimeout |
+            Should -BeTrue
+    }
+
     It 'keeps starting candidates while a whole one still fits' {
         Test-ReplicationFixPanelCanStartCandidate -PanelStarted $script:start `
             -Now $script:start.AddMinutes(119) -PanelBudgetMinutes 150 `

@@ -100,6 +100,8 @@ $maxFrameRate = 15.0
 $maxLongEdge = 1280
 $previewMaxSeconds = 6.0
 $previewMaxBytes = 16MB
+$postSuccessSettleSeconds = 2.0
+$minimumPostSuccessSettleSeconds = 1.0
 
 function Remove-ReproductionLogNoise {
     <#
@@ -1195,6 +1197,44 @@ function Get-ReproductionKeptDurationSeconds {
     return $kept
 }
 
+function Get-ReproductionPostSuccessSettleSeconds {
+    param(
+        [Parameter(Mandatory = $true)][double]$ElapsedSeconds,
+        [Parameter(Mandatory = $true)][double]$MaxDurationSeconds,
+        [Parameter(Mandatory = $true)][double]$MinimumSeconds,
+        [Parameter(Mandatory = $true)][double]$TargetSeconds
+    )
+
+    $remaining = [double]$MaxDurationSeconds - [Math]::Max(0.0, $ElapsedSeconds)
+    if ($remaining -lt $MinimumSeconds) {
+        $safeRemaining = [Math]::Max(0.0, $remaining).ToString(
+            '0.###',
+            [System.Globalization.CultureInfo]::InvariantCulture)
+        throw (
+            'Reproduction completed with only ' + $safeRemaining +
+            ' seconds left in the recording budget; rejecting evidence that ' +
+            'cannot retain a settled post-trigger scene.')
+    }
+
+    return [Math]::Min($TargetSeconds, $remaining)
+}
+
+function Get-ReproductionThumbnailTimeSeconds {
+    param(
+        [Parameter(Mandatory = $true)][double]$DurationSeconds,
+        [Parameter(Mandatory = $true)][bool]$PreferSettledTail
+    )
+
+    if (-not $PreferSettledTail -or $DurationSeconds -le 2.0) {
+        return [Math]::Min(1.0, $DurationSeconds / 2.0)
+    }
+
+    # Android and iOS launch/restart evidence can legitimately begin on a black
+    # transition frame. The success path keeps a settled post-trigger tail, so
+    # use a late representative frame rather than the startup/relaunch frame.
+    return [Math]::Max(1.0, $DurationSeconds - [Math]::Min(1.0, $DurationSeconds / 3.0))
+}
+
 function Invoke-TrustedReproduction {
     param([Parameter(Mandatory = $true)][System.Diagnostics.Stopwatch]$CaptureClock)
 
@@ -1421,13 +1461,31 @@ try {
                 $env:MAUI_REPLICATION_RECORDING_START_MARKER =
                     $recordingStartMarkerPath
                 Invoke-TrustedReproduction -CaptureClock $captureClock
+                $settleSeconds = if ($Platform -in @('android', 'ios')) {
+                    Get-ReproductionPostSuccessSettleSeconds `
+                        -ElapsedSeconds $captureClock.Elapsed.TotalSeconds `
+                        -MaxDurationSeconds $MaxDurationSeconds `
+                        -MinimumSeconds $minimumPostSuccessSettleSeconds `
+                        -TargetSeconds $postSuccessSettleSeconds
+                } else {
+                    0.0
+                }
+                if ($settleSeconds -gt 0 -and $null -eq $ProcessRunner) {
+                    Start-Sleep -Milliseconds ([int][Math]::Ceiling($settleSeconds * 1000))
+                }
                 # Everything the capture picks up after this instant belongs to
                 # tearing the app down and to the runner's own console. On the
                 # desktop platforms that is a full-screen grab, so the last
                 # frames cut from the app to hosted-agent terminal output and a
                 # reviewer of pull request 236 read that discontinuity as the
                 # evidence not being of the app at all.
-                $script:scenarioElapsedSeconds = $captureClock.Elapsed.TotalSeconds
+                $script:scenarioElapsedSeconds = if ($null -eq $ProcessRunner) {
+                    $captureClock.Elapsed.TotalSeconds
+                } else {
+                    [Math]::Min(
+                        [double]$MaxDurationSeconds,
+                        $captureClock.Elapsed.TotalSeconds + $settleSeconds)
+                }
             } finally {
                 $env:MAUI_REPLICATION_CATALYST_FRAMES_DIRECTORY =
                     $previousCatalystFramesDirectory
@@ -1706,7 +1764,10 @@ try {
         -MaxBytes $MaxVideoBytes
     $mediaInfo = Get-ValidatedMediaInfo -Path $videoPath
 
-    $thumbnailTime = ConvertTo-InvariantArgument ([Math]::Min(1.0, $mediaInfo.DurationSeconds / 2.0))
+    $thumbnailTime = ConvertTo-InvariantArgument (
+        Get-ReproductionThumbnailTimeSeconds `
+            -DurationSeconds $mediaInfo.DurationSeconds `
+            -PreferSettledTail ($Platform -in @('android', 'ios')))
     [void](Invoke-RequiredCommand `
         -FilePath 'ffmpeg' `
         -ArgumentList @(
