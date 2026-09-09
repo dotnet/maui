@@ -486,7 +486,7 @@ Describe 'Replication failure-only verification' {
         $result.verificationPassed | Should -BeFalse
     }
 
-    It 'passes the trusted pre-baseline device runner to the verifier' {
+    It 'passes the trusted pre-baseline device runner and project path to the verifier result' {
         $trustedRoot = Join-Path $TestDrive 'trusted-github'
         $verifier = Join-Path `
             $trustedRoot `
@@ -522,6 +522,44 @@ Describe 'Replication failure-only verification' {
         $capturedPath = Get-Content -LiteralPath (
             Join-Path $output 'verifier-machine-result.json.device-runner-path') -Raw
         $capturedPath.Trim() | Should -BeExactly $deviceRunner
+        $result = Get-Content -LiteralPath (
+            Join-Path $output 'verification-result.json') -Raw |
+            ConvertFrom-Json
+        $result.testProject | Should -BeExactly 'Controls'
+        $result.testProjectPath |
+            Should -BeExactly 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+    }
+
+    It 'rejects device verification that would write an empty project path' {
+        $trustedRoot = Join-Path $TestDrive 'trusted-github-missing-path'
+        $verifier = Join-Path `
+            $trustedRoot `
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-ReplicationVerifierStub `
+            -Path $verifier `
+            -ActualFailureMessage 'Issue26505 expected false but was true'
+
+        $output = Join-Path $TestDrive 'device-missing-path'
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 26505 `
+            -BaseSha ('a' * 40) `
+            -Platform android `
+            -TestType DeviceTest `
+            -TestFilter Issue26505 `
+            -TestProject Controls `
+            -TestClass Microsoft.Maui.DeviceTests.Issue26505 `
+            -TestMethod DisabledDefaultPaddingFitsTextWithinButton `
+            -ExpectedFailureSignature 'Assert.True() Failure' `
+            -VerifierPath $verifier `
+            -OutputDirectory $output *> $null
+
+        $LASTEXITCODE | Should -Not -Be 0
+        Test-Path -LiteralPath (Join-Path $output 'invocations.txt') |
+            Should -BeFalse
+        Test-Path -LiteralPath (Join-Path $output 'verification-result.json') |
+            Should -BeFalse
     }
 
     It 'requires the packaged device boundary for Windows and rejects host test tiers' {
@@ -549,7 +587,7 @@ Describe 'Replication failure-only verification' {
             -TestType DeviceTest `
             -TestFilter Issue37540 `
             -TestProject Controls `
-            -TestProjectPath src/Controls/tests/DeviceTests/Issue37540.Windows.cs `
+            -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
             -TestClass Microsoft.Maui.DeviceTests.Issue37540 `
             -TestMethod DynamicResourceBackgroundUpdates `
             -ExpectedFailureSignature Issue37540 `
@@ -613,7 +651,7 @@ Describe 'Replication failure-only verification' {
             -TestType DeviceTest `
             -TestFilter Issue35511 `
             -TestProject Controls `
-            -TestProjectPath src/Controls/tests/DeviceTests/Issue35511.iOS.cs `
+            -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
             -TestClass Microsoft.Maui.DeviceTests.Issue35511 `
             -TestMethod RetainsContent `
             -ExpectedFailureSignature Issue35511 `

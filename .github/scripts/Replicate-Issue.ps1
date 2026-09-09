@@ -6657,8 +6657,12 @@ function Resolve-ReplicationVerifierMetadata {
             throw "Resolved XAML unit test project path does not exist: $projectPath"
         }
     } elseif ($TestType -eq 'DeviceTest') {
-        if ([string]::IsNullOrWhiteSpace($project)) {
-            throw 'Device test verifier metadata must resolve an exact project.'
+        if ([string]::IsNullOrWhiteSpace($project) -or
+            [string]::IsNullOrWhiteSpace($projectPath)) {
+            throw 'Device test verifier metadata must resolve an exact project and project path.'
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $repoRoot $projectPath) -PathType Leaf)) {
+            throw "Resolved device test project path does not exist: $projectPath"
         }
         $classFilter = [string]$detectedTest.ClassFilter
         if ($classFilter -cne $declaration.QualifiedClassName) {

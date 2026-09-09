@@ -5570,8 +5570,10 @@ public class Issue37440Tests
 
     It 'resolves a non-Controls device project with exact class isolation' {
         $file = 'src/Essentials/test/DeviceTests/Tests/Issue37440Tests.cs'
+        $project = 'src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj'
         New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
             Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
         @'
 namespace Microsoft.Maui.Essentials.DeviceTests;
 
@@ -5593,9 +5595,47 @@ public class Issue37440Tests
             -DetectorPath $script:DetectorPath
 
         $metadata.Project | Should -BeExactly 'Essentials'
+        $metadata.ProjectPath | Should -BeExactly $project
         $metadata.ClassName |
             Should -BeExactly 'Microsoft.Maui.Essentials.DeviceTests.Issue37440Tests'
         $metadata.MethodName | Should -BeExactly 'ReproducesIssue37440'
+    }
+
+    It 'resolves the exact Controls device project path for the generated metadata handoff' {
+        $file = 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
+        $project = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        @'
+using System.Threading.Tasks;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue26505 : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue26505")]
+    public async Task DisabledDefaultPaddingFitsTextWithinButton()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) `
+            -TestType DeviceTest `
+            -TestFilter Issue26505 `
+            -Platform android `
+            -DetectorPath $script:DetectorPath
+
+        $metadata.Project | Should -BeExactly 'Controls'
+        $metadata.ProjectPath | Should -BeExactly $project
+        $metadata.File | Should -BeExactly $file
+        $metadata.ClassName |
+            Should -BeExactly 'Microsoft.Maui.DeviceTests.Issue26505'
+        $metadata.MethodName |
+            Should -BeExactly 'DisabledDefaultPaddingFitsTextWithinButton'
     }
 
     It 'rejects ambiguous planned files instead of broadening the verifier run' {

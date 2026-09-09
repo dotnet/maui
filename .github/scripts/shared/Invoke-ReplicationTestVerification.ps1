@@ -72,6 +72,16 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
 
+if ($TestType -in @('UnitTest', 'XamlUnitTest', 'DeviceTest') -and
+    [string]::IsNullOrWhiteSpace($TestProjectPath)) {
+    throw "Explicit $TestType verification requires -TestProjectPath."
+}
+if (-not [string]::IsNullOrWhiteSpace($TestProjectPath) -and
+    ($TestProjectPath -notmatch '^[A-Za-z0-9][A-Za-z0-9._/-]*\.csproj$' -or
+        $TestProjectPath.Contains('..'))) {
+    throw 'Explicit test verification requires a safe relative .csproj project path.'
+}
+
 . (Join-Path $PSScriptRoot 'Get-ReplicationSignatureMatch.ps1')
 
 # The publisher rejects a non-attributive oracle using the message the run
