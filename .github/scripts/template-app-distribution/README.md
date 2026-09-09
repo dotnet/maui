@@ -4,6 +4,23 @@ Builds a fresh .NET MAUI app from the packaged templates for each platform/varia
 either (a) uploads the results as GitHub artifacts (`publish=false`, a **dry run**) or
 (b) signs and publishes them to Google Play / TestFlight (`publish=true`).
 
+Both the framework packages and template content are built from the same resolved source
+commit. Installing the platform workload alone is not sufficient: it supplies the platform
+toolchain, not the MAUI framework used by these apps. The generated app sets `MauiVersion`
+to the source-built version and maps every `Microsoft.Maui.*` restore exclusively to the
+local source package directory. A missing package fails restore rather than using a release
+from NuGet. The generated project also disables the installed MAUI workload's SDK import and
+imports `Sdk/Sdk.targets` from the verified source-built `Microsoft.Maui.Sdk` package;
+the installed Android/Apple/Windows platform toolchains remain in use.
+
+Each dry-run download includes `provenance.json`: checked package repository commits and
+hashes, the MAUI packages resolved during each build, and informational versions and hashes
+read from the MAUI assemblies inside the final app archives. Separate `source-packages-*`
+artifacts contain the matching NuGet packages and source manifest. Archive labels and
+workflow inputs alone are not proof of which framework an app uses. Provenance failure
+prevents publishing successful app outputs. Android dry runs disable assembly-store packing
+and assembly compression so their managed assemblies can be inspected directly.
+
 The workflow lives in `.github/workflows/template-app-distribution.yml`. Trigger it from the
 **Actions** tab with *Run workflow* and pick the source branch plus whether to publish.
 Dry runs accept any safe ref. Publishing always accepts the default branch and accepts

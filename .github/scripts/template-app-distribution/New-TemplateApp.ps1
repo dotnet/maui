@@ -41,10 +41,18 @@ param(
     [string]$AppBuildNumber,
 
     [Parameter(Mandatory)]
-    [string]$NuGetConfigPath
+    [string]$NuGetConfigPath,
+
+    [Parameter(Mandatory)]
+    [string]$SourceManifestPath,
+
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-f]{40}$')]
+    [string]$SourceSha
 )
 
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot/Source-Packages.ps1"
 
 function ConvertTo-XmlEscaped([string]$Value) {
     return [System.Security.SecurityElement]::Escape($Value)
@@ -131,6 +139,12 @@ function Add-ProjectDefineConstant([string]$Content, [string]$Constant) {
 if (-not (Test-Path $TemplatePackagePath)) {
     throw "Template package was not found at '$TemplatePackagePath'."
 }
+$sourceManifest = Read-SourcePackageManifest $SourceManifestPath $SourceSha
+$templateInfo = Get-SourcePackageInfo $TemplatePackagePath $SourceSha
+$expectedTemplate = @($sourceManifest.packages | Where-Object id -Like 'Microsoft.Maui.Templates*')
+if ($expectedTemplate.Count -ne 1 -or $templateInfo.sha512 -cne $expectedTemplate[0].sha512) {
+    throw "Template content is not from the pinned source package set."
+}
 
 $projectRoot = Join-Path $BuildRoot $Variant
 $projectDir = Join-Path $projectRoot $ProjectName
@@ -149,13 +163,17 @@ if (-not (Test-Path $NuGetConfigPath)) {
     throw "NuGet.config was not found at '$NuGetConfigPath'."
 }
 
-Copy-Item -Path $NuGetConfigPath -Destination (Join-Path $projectRoot "NuGet.config") -Force
+Set-SourcePackageConfiguration -NuGetConfigPath $NuGetConfigPath `
+    -PackageDirectory (Split-Path $SourceManifestPath -Parent) -ProjectRoot $projectRoot -Version $sourceManifest.version
+$sdkPackage = $sourceManifest.packages | Where-Object id -EQ 'Microsoft.Maui.Sdk'
+$sdkDirectory = Join-Path $projectRoot '.maui-sdk'
+[System.IO.Compression.ZipFile]::ExtractToDirectory(
+    (Join-Path (Split-Path $SourceManifestPath -Parent) $sdkPackage.file), $sdkDirectory)
+$sdkTargets = Join-Path $sdkDirectory 'Sdk/Sdk.targets'
+if (-not (Test-Path $sdkTargets)) { throw "Source-built MAUI SDK has no Sdk/Sdk.targets." }
 
 Write-Host "Installing template package $TemplatePackagePath"
-dotnet new install $TemplatePackagePath
-if ($LASTEXITCODE -ne 0) {
-    throw "dotnet new install of '$TemplatePackagePath' failed with exit code $LASTEXITCODE."
-}
+Invoke-DistributionDotNet @('new', 'install', $TemplatePackagePath) "dotnet new install of '$TemplatePackagePath'"
 
 $templateArgs = @()
 if (-not [string]::IsNullOrWhiteSpace($TemplateArgsJson)) {
@@ -164,10 +182,7 @@ if (-not [string]::IsNullOrWhiteSpace($TemplateArgsJson)) {
 
 $dotnetNewArgs = @("new", $Template, "-n", $ProjectName, "-o", $projectDir, "--framework", $DotNetTfm, "--no-restore") + $templateArgs
 Write-Host "Creating project: dotnet $($dotnetNewArgs -join ' ')"
-& dotnet @dotnetNewArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "dotnet new $Template failed with exit code $LASTEXITCODE."
-}
+Invoke-DistributionDotNet $dotnetNewArgs "dotnet new $Template"
 
 $projectFile = Get-ChildItem -Path $projectDir -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
@@ -195,6 +210,18 @@ $content = Set-ProjectElementValue $content "ApplicationTitle" $DisplayName
 $content = Set-ProjectElementValue $content "ApplicationId" $ApplicationId
 $content = Set-ProjectElementValue $content "ApplicationDisplayVersion" $AppDisplayVersion
 $content = Set-ProjectElementValue $content "ApplicationVersion" $AppBuildNumber
+$content = Set-ProjectProperty $content "MauiVersion" (ConvertTo-XmlEscaped $sourceManifest.version)
+$content = Set-ProjectProperty $content "SkipMauiWorkloadManifest" "true"
+# Explicit template versions must not override the source-built framework or its transitive dependencies.
+$projectXml = [xml]::new()
+$projectXml.PreserveWhitespace = $true
+$projectXml.LoadXml($content)
+foreach ($reference in $projectXml.SelectNodes("//PackageReference[starts-with(@Include, 'Microsoft.Maui.')]")) {
+    $reference.SetAttribute('Version', $sourceManifest.version)
+    $versionElement = $reference.SelectSingleNode('Version')
+    if ($versionElement) { $reference.RemoveChild($versionElement) | Out-Null }
+}
+$content = $projectXml.OuterXml
 
 if ($TargetFramework.Contains("-windows", [System.StringComparison]::OrdinalIgnoreCase) -and
     $content -notmatch "RuntimeIdentifierOverride") {
@@ -215,7 +242,21 @@ if ($dotNetMajorVersion -and $dotNetMajorVersion -ge 11 -and (Test-UsesImplicitX
     $content = Set-ProjectProperty $content "EnablePreviewFeatures" "true"
 }
 
+$sdkImport = '<Import Project="' + (ConvertTo-XmlEscaped $sdkTargets) + '" />'
+$content = [regex]::Replace($content, '</Project>\s*$', { "$sdkImport`r`n</Project>" })
 Set-Content -Path $projectFile.FullName -Value $content -Encoding utf8
+$sourceManifest | ConvertTo-Json -Depth 20 |
+    Set-Content (Join-Path $projectDir 'source-packages.json') -Encoding utf8
+$resourceDirectory = Join-Path $projectDir 'Resources/Raw'
+New-Item -ItemType Directory -Path $resourceDirectory -Force | Out-Null
+[ordered]@{
+    sourceSha = $SourceSha
+    frameworkVersion = $sourceManifest.version
+    template = $templateInfo
+    workflowCommit = $env:GITHUB_SHA
+    runId = $env:GITHUB_RUN_ID
+} | ConvertTo-Json -Depth 10 |
+    Set-Content (Join-Path $resourceDirectory 'source-provenance.json') -Encoding utf8
 
 if ($TargetFramework.Contains("-ios", [System.StringComparison]::OrdinalIgnoreCase)) {
     Set-PlistBooleanFalse (Join-Path $projectDir "Platforms/iOS/Info.plist") "ITSAppUsesNonExemptEncryption"

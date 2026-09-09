@@ -24,6 +24,13 @@ param(
     [Parameter(Mandatory)]
     [string]$AppBuildNumber,
 
+    [Parameter(Mandatory)]
+    [string]$SourceManifestPath,
+
+    [Parameter(Mandatory)]
+    [ValidatePattern('^[0-9a-f]{40}$')]
+    [string]$SourceSha,
+
     [string]$Configuration = "Release",
 
     [switch]$Publish,
@@ -32,6 +39,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot/Source-Packages.ps1"
 
 function Assert-EnvironmentValue([string]$Name) {
     $value = [Environment]::GetEnvironmentVariable($Name)
@@ -107,9 +115,15 @@ function Repair-AppleAdhocSignature([string]$AppBundlePath) {
 }
 
 function Invoke-DotNetPublish([string[]]$Arguments, [string]$Description) {
-    & dotnet @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "$Description failed with exit code $LASTEXITCODE."
+    $buildProject = $Arguments | Where-Object { $_ -like '*.csproj' } | Select-Object -First 1
+    Push-Location (Split-Path $buildProject -Parent)
+    try {
+        Invoke-DistributionDotNet $Arguments $Description
+    } finally { Pop-Location }
+    if ($script:sourceManifest) {
+        $assetsPath = Join-Path $ProjectPath 'obj/project.assets.json'
+        $resolution = Test-SourcePackageAssets $assetsPath $script:sourceManifest
+        $script:sourceResolutions.Add([ordered]@{ description = $Description; resolution = $resolution })
     }
 }
 
@@ -558,6 +572,10 @@ function New-IosUnsignedDeviceIpa {
     }
 }
 
+$script:sourceManifest = Read-SourcePackageManifest $SourceManifestPath $SourceSha
+$script:sourceResolutions = [System.Collections.Generic.List[object]]::new()
+$env:NUGET_PACKAGES = Join-Path (Split-Path $ProjectPath -Parent) '.nuget'
+$env:DOTNET_CLI_HOME = Join-Path (Split-Path $ProjectPath -Parent) '.dotnet'
 $projectFile = Get-ChildItem -Path $ProjectPath -Filter "*.csproj" -Recurse | Select-Object -First 1
 if (-not $projectFile) {
     throw "No project file was found in '$ProjectPath'."
@@ -641,7 +659,7 @@ switch ($Platform) {
             }
         } else {
             # A debug-signed APK is directly installable on devices/emulators for testing.
-            $signingArgs = @("-p:AndroidKeyStore=false")
+            $signingArgs = @("-p:AndroidKeyStore=false", "-p:AndroidUseAssemblyStore=false", "-p:AndroidEnableAssemblyCompression=false")
         }
 
         # 1) Always build an installable APK. This is what testers sideload; an .aab cannot be
@@ -924,6 +942,24 @@ if (-not $package) {
     throw "Build completed but no package artifact was found for platform '$Platform'."
 }
 
+$provenance = [ordered]@{
+    sourceSha = $SourceSha
+    frameworkVersion = $script:sourceManifest.version
+    workflowCommit = $env:GITHUB_SHA
+    runId = $env:GITHUB_RUN_ID
+    platform = $Platform
+    resolutions = @($script:sourceResolutions.ToArray())
+    packages = $script:sourceManifest.packages
+    payloads = @()
+}
+if (-not $Publish) {
+    foreach ($artifact in @($package, $sideloadPackage, $additionalPackage) | Where-Object { $_ } | Sort-Object FullName -Unique) {
+        $provenance.payloads += Get-AppPayloadProof $artifact.FullName $SourceSha $script:sourceManifest
+    }
+}
+$provenancePath = Join-Path $OutputPath 'provenance.json'
+$provenance | ConvertTo-Json -Depth 30 | Set-Content $provenancePath -Encoding utf8
+
 Write-Host "Package artifact: $($package.FullName)"
 $sideloadResolved = if ($sideloadPackage) { $sideloadPackage.FullName } else { $package.FullName }
 Write-Host "Sideload artifact: $sideloadResolved"
@@ -941,6 +977,7 @@ if ($CreateBinlog) {
 }
 
 if ($env:GITHUB_OUTPUT) {
+    "provenance_path=$provenancePath" >> $env:GITHUB_OUTPUT
     "package_path=$($package.FullName)" >> $env:GITHUB_OUTPUT
     "sideload_package_path=$sideloadResolved" >> $env:GITHUB_OUTPUT
     if ($additionalPackage) {
