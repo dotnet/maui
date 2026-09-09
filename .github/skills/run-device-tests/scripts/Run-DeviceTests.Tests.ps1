@@ -28,6 +28,7 @@ BeforeAll {
         'Invoke-StreamingXHarnessCommand',
         'Get-XHarnessDiagnosticInventory',
         'New-XHarnessNoResultDiagnostic',
+        'Test-XHarnessHelpExitCode',
         'Invoke-XHarnessPreflight',
         'Select-WindowsDeviceTestCategories',
         'Test-WindowsDeviceTestCategoryDiscovery',
@@ -481,6 +482,45 @@ exit 17
         $content | Should -Match "'android', 'test', '--help'"
         $content | Should -Match 'adb -s \$DeviceUdid get-state'
         $content | Should -Match 'adb -s \$DeviceUdid shell getprop sys\.boot_completed'
+    }
+
+    It 'accepts HELP_SHOWN only for explicit XHarness help probes' {
+        foreach ($exitCode in @(0, 2)) {
+            Test-XHarnessHelpExitCode -ExitCode $exitCode | Should -BeTrue
+        }
+        foreach ($exitCode in @($null, '0', '2', $false, -1, 1, 3, 70, 71, 78, 91, 94)) {
+            Test-XHarnessHelpExitCode -ExitCode $exitCode | Should -BeFalse
+        }
+        $content = Get-Content $scriptPath -Raw
+        [regex]::Matches($content, 'Test-XHarnessHelpExitCode -ExitCode').Count | Should -Be 3
+        $buildPhase = $content.IndexOf('# BUILD PHASE')
+        $buildPhase | Should -BeGreaterThan 0
+        $content.Substring($buildPhase) | Should -Not -Match 'Test-XHarnessHelpExitCode'
+        $content | Should -Match 'throw \$noResultDiagnostic'
+    }
+
+    It 'retains HELP_SHOWN readback and rejects actual Android help failures' {
+        $script:helpProbeExitCode = 2
+        function Invoke-StreamingXHarnessCommand {
+            param($FilePath, $Arguments, $LogPath, $MaximumLogLength, $MaximumTailLines)
+            $FilePath | Should -Be 'dotnet'
+            ($Arguments -join '|') | Should -Be 'xharness|android|test|--help'
+            return [pscustomobject]@{
+                ExitCode = $script:helpProbeExitCode
+                LogPath = $LogPath
+                TailLogPath = "$LogPath.tail"
+                TailText = "XHarness exit code: $script:helpProbeExitCode"
+            }
+        }
+        $output = Join-Path $TestDrive 'help-shown'
+        Invoke-XHarnessPreflight -UseLocalXHarness $true -Platform android -OutputDirectory $output
+        $log = Join-Path $output 'xharness-preflight/xharness-preflight.log'
+        Get-Content -LiteralPath $log -Raw | Should -Match 'android test --help exit code: 2'
+
+        $script:helpProbeExitCode = 3
+        { Invoke-XHarnessPreflight -UseLocalXHarness $true -Platform android -OutputDirectory $output } |
+            Should -Throw '*could not invoke*exit 3*'
+        Get-Content -LiteralPath $log -Raw | Should -Match 'android test --help exit code: 3'
     }
 }
 
