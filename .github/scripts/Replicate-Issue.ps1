@@ -6964,6 +6964,86 @@ The source must explicitly import `using static Microsoft.Maui.DeviceTests.Asser
         ''
     }
 
+    $androidIssue33315GeneratedTestGuidance = if ($Platform -eq 'android' -and $IssueNumber -eq 33315) {
+        @'
+
+ANDROID ISSUE33315 NARROW EXCEPTION: The guard trusts exactly one Android rendered-pixel generated-test profile for `src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs`. This is not a general Android native allowance. The generated source must compile as a standalone Controls device test class explicitly inheriting `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase`, with one [Fact] method carrying [Category("Issue33315")]. Import `using Microsoft.Maui;`, `using Microsoft.Maui.Controls;`, `using Microsoft.Maui.Hosting;`, `using Xunit;`, and `using static Microsoft.Maui.DeviceTests.AssertHelpers;`.
+Use this exact method body shape; comments/formatting trivia may vary, but token/literal contents may not:
+```csharp
+EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+{
+    handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();
+    handlers.AddHandler<global::Microsoft.Maui.Controls.Layout, global::Microsoft.Maui.Handlers.LayoutHandler>();
+    handlers.AddHandler<global::Microsoft.Maui.Controls.ScrollView, global::Microsoft.Maui.Handlers.ScrollViewHandler>();
+    handlers.AddHandler<global::Microsoft.Maui.Controls.Window, global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>();
+}));
+var headlineStyle = new Style(typeof(Label))
+{
+    Setters =
+    {
+        new Setter { Property = Label.TextColorProperty, Value = global::Microsoft.Maui.Graphics.Color.FromArgb("#190649") },
+        new Setter { Property = Label.FontSizeProperty, Value = 32d },
+        new Setter { Property = View.HorizontalOptionsProperty, Value = global::Microsoft.Maui.Controls.LayoutOptions.Center },
+        new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Center }
+    }
+};
+var affectedLabel = new Label
+{
+    Text = "Hello, World",
+    AutomationId = "AffectedLabel",
+    BackgroundColor = global::Microsoft.Maui.Graphics.Colors.Orange,
+    Style = headlineStyle
+};
+global::Microsoft.Maui.Controls.SemanticProperties.SetHeadingLevel(affectedLabel, SemanticHeadingLevel.Level1);
+var layout = new VerticalStackLayout
+{
+    Padding = new Thickness(30, 40),
+    Spacing = 25,
+    Children = { affectedLabel }
+};
+var scrollView = new ScrollView
+{
+    Content = layout
+};
+var applyReportedTrigger = true;
+if (applyReportedTrigger)
+{
+    affectedLabel.FontAttributes = FontAttributes.Italic;
+}
+await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.WindowHandlerStub>(
+    new Window(new ContentPage { Content = scrollView }),
+    async _ =>
+    {
+        await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+        Assert.True(affectedLabel.Width > 0 && affectedLabel.Width <= 1024 && affectedLabel.Height > 0 && affectedLabel.Height <= 512);
+        var bitmap = await global::Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmapExtensions.AsRawBitmapAsync(affectedLabel);
+        Assert.True(bitmap.PixelWidth >= 2 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
+        Assert.Equal(bitmap.PixelWidth * bitmap.PixelHeight * 4, bitmap.PixelBuffer.Length);
+        var backgroundBlue = bitmap.PixelBuffer[0];
+        var backgroundGreen = bitmap.PixelBuffer[1];
+        var backgroundRed = bitmap.PixelBuffer[2];
+        var hasRightEdgeInk = false;
+        for (var x = bitmap.PixelWidth - 2; x < bitmap.PixelWidth; x++)
+        {
+            for (var y = 1; y < bitmap.PixelHeight - 1; y++)
+            {
+                var offset = ((y * bitmap.PixelWidth) + x) * 4;
+                var delta = global::System.Math.Abs(bitmap.PixelBuffer[offset] - backgroundBlue) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 1] - backgroundGreen) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 2] - backgroundRed);
+                if (delta > 80)
+                {
+                    hasRightEdgeInk = true;
+                }
+            }
+        }
+        Assert.False(hasRightEdgeInk);
+    });
+```
+The trigger is only the `FontAttributes.Italic` assignment above; the trusted negative control changes only `var applyReportedTrigger = true;` to `false`. The pre-capture managed Label size and bitmap size checks are resource bounds/preconditions, not substitutes for rendered native evidence or guarantees about Android native allocation. The oracle must inspect the Label-region bitmap produced by `RawBitmapExtensions.AsRawBitmapAsync(affectedLabel)`, not a Window screenshot, managed Bounds proxy, text advance, app-authored verdict, or Android.Widget/Bitmap/Canvas API. Do not add helper methods, callbacks, source-defined ImageAnalysis/handler/Math/Xunit/AssertHelpers shadows, inactive conditional alternatives, native API calls, file/network/process access, altered thresholds/loops, or alternate capture targets. If this exact causal shape cannot express the candidate, classify the scenario as unsupported by the current contract.
+'@
+    } else {
+        ''
+    }
+
     $catalystWindowHelperRepairGuidance = if ($Platform -eq 'catalyst' -and $IssueNumber -eq 35511) {
         @"
 
@@ -7098,6 +7178,7 @@ $issueSpecificTierGuidance
 $platformBoundaryGuidance
 $androidGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
+$androidIssue33315GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. reproductionSteps are public PR-body prose, not C# source or Markdown; each step must be a single user-facing sentence of at most 300 characters with no URLs, person or team mentions, logging directives, double-colon C# global namespace aliases, generic type-argument notation, attribute notation, Markdown links, or HTML tags. Describe the action and observation in plain words instead of naming source tokens. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
@@ -7136,6 +7217,7 @@ Read the matching trusted skill under "$trustedSkills".
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
+$androidIssue33315GeneratedTestGuidance
 Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
 Use one exact selected test method to exercise all issue-derived states; do not create a stateless matrix. Keep the primary oracle and, where feasible, a genuinely independent secondary observation. The test must assert the same visible invariant that the recording established.
 Design the test so trusted code can run the same assertions after removing only the reported trigger. Prove the shared setup and transition, but do not add an assertion whose sole condition is the continued presence or attachment of the exact property, configuration, ordering, or API call that a negative control must remove. Such an assertion makes the control permanently red even when the product is healthy. If no benign trigger removal can preserve the same oracle and shared preconditions, the reproduction cannot be causally certified; do not fabricate a control-compatible assertion.
@@ -7175,6 +7257,7 @@ Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
+$androidIssue33315GeneratedTestGuidance
 Revise only the already-created new test files and rewrite test-proposal.json.
 Do not change testType, testFilter, or files.
 Preserve the quality contract's user-visible invariant, scenario/precondition,
