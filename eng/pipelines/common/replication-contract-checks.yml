@@ -153,6 +153,9 @@ steps:
         'MAUI Copilot mode routing*keeps iOS replication simulator recovery on the configured Xcode'
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
         'MAUI Copilot mode routing*keeps generated iOS execution dependent on external isolation'
+        'Replication issue outcome publication boundary*continues validation media installation after a package-index failure'
+        'Replication issue outcome publication boundary*preserves validation media install failures after a package-index failure'
+        'Replication issue outcome publication boundary*requires a working media validator after installation succeeds'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
