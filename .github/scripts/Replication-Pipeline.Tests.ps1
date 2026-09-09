@@ -111,6 +111,65 @@ Describe 'MAUI Copilot mode routing' {
             'failTaskOnMissingResultsFile: true').Count | Should -Be 2
     }
 
+    It 'isolates the trusted iOS native probe from issue generation and publication' {
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Not -BeNullOrEmpty
+        $stage | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'ios-harness-probe'\)"
+        $stage | Should -Match 'pool: \$\{\{ parameters\.iosPool \}\}'
+        $stage | Should -Match 'persistCredentials: false'
+        $stage | Should -Match 'ios-harness-probe requires Platform=ios and both target numbers=0'
+        $stage | Should -Match 'refs/heads/copilot/replicate-issues-pipeline'
+        $stage | Should -Match '\$head -cne \$env:BUILD_SOURCEVERSION'
+        $stage | Should -Match 'template: common/provision\.yml'
+        $stage | Should -Match 'skipCertificates: true'
+        $stage | Should -Match 'skipInternalFeeds: true'
+        $stage | Should -Match 'certifiesIssue = \$false'
+        $stage | Should -Not -Match (
+            'persistCredentials: true|GH_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|' +
+            'Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1|SetEnvironmentVariable|git (fetch|checkout|merge|apply)')
+    }
+
+    It 'runs exactly the checked-in iOS fixture and retains native diagnostics' {
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Match 'Run-DeviceTests\.ps1 -Project Controls -Platform ios'
+        $stage | Should -Match '-IncludeClasses Microsoft\.Maui\.DeviceTests\.ReplicationIosButtonHarnessProbe'
+        $stage | Should -Match '-IncludeMethods RegisteredButtonAttachesToWindow'
+        $stage | Should -Match 'refuses to overwrite an existing source file'
+        $stage | Should -Match '(?s)finally \{\s+Remove-Item -LiteralPath \$target -Force'
+        $stage | Should -Match 'Invoke-BuildTasksWatchdog'
+        $stage | Should -Match 'tee "\$PROBE_ROOT/native-harness\.log"'
+        $stage | Should -Match 'testResultsFormat: ''XUnit'''
+        $stage | Should -Match 'failTaskOnMissingResultsFile: true'
+        $stage | Should -Match 'failTaskOnFailedTests: true'
+        $stage | Should -Match 'artifact: ''IosHarnessProbe'''
+        $fixture = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'fixtures/ReplicationIosButtonHarnessProbe.iOS.cs') -Raw
+        $fixture | Should -Match '#if IOS && !MACCATALYST'
+        $fixture | Should -Match 'class ReplicationIosButtonHarnessProbe : ControlsHandlerTestBase'
+        [regex]::Matches($fixture, '\[Fact\]').Count | Should -Be 1
+        $fixture | Should -Match 'Assert\.NotNull\(handler\.PlatformView\.Window\)'
+        $fixture | Should -Match 'Assert\.Equal\("CI", handler\.PlatformView\.CurrentTitle\)'
+    }
+
+    It 'keeps generated iOS execution dependent on external isolation' {
+        $script:Pipeline | Should -Match (
+            "(?s)MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'\) -cne '1'.*?" +
+            "throw \('iOS replication cannot run on this agent.*?" +
+            "displayName: 'Check iOS execution boundary before provisioning'.*?" +
+            "condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
+            "eq\('\$\{\{ parameters\.Platform \}\}', 'ios'\)\)")
+        foreach ($stageName in @('ValidateReplication', 'PublishReplication')) {
+            $stage = [regex]::Match(
+                $script:Pipeline,
+                "(?ms)^  - stage: $stageName\r?\n.*?(?=^  - stage:|\z)").Value
+            $stage | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\)"
+        }
+    }
+
     It 'routes Android harness-only diagnostics before Copilot generation and publication' {
         $script:Pipeline | Should -Match '- name: AndroidHarnessPreflightOnly'
         $script:Pipeline | Should -Match 'AndroidHarnessPreflightOnly requires Mode=replicate and Platform=android'

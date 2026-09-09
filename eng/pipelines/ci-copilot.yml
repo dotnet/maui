@@ -22,6 +22,8 @@ parameters:
       # Run trusted helper/semantic regressions only, without issue generation,
       # product builds, devices, certification, or publication.
       - replication-checks
+      # Fixed trusted iOS fixture only; never author or certify issue content.
+      - ios-harness-probe
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -152,6 +154,154 @@ stages:
             fetchTags: false
             persistCredentials: false
           - template: common/replication-contract-checks.yml
+
+  - stage: ProbeIosHarness
+    displayName: 'Probe trusted iOS harness without issue generation'
+    dependsOn: []
+    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'ios-harness-probe'))
+    jobs:
+      - job: ProbeIosHarness
+        pool: ${{ parameters.iosPool }}
+        timeoutInMinutes: 100
+        workspace:
+          clean: all
+        variables:
+          IosProbeRoot: $(Pipeline.Workspace)/IosHarnessProbe
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 1
+            fetchTags: false
+            persistCredentials: false
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              if ($env:PARAM_PLATFORM -cne 'ios' -or
+                  $env:PARAM_PR_NUMBER -cne '0' -or
+                  $env:PARAM_ISSUE_NUMBER -cne '0') {
+                throw 'ios-harness-probe requires Platform=ios and both target numbers=0.'
+              }
+              $head = & git rev-parse HEAD
+              if ($LASTEXITCODE -ne 0 -or
+                  $env:BUILD_SOURCEVERSION -cnotmatch '^[0-9a-f]{40}$' -or
+                  $head -cne $env:BUILD_SOURCEVERSION -or
+                  $env:BUILD_SOURCEBRANCH -cne 'refs/heads/copilot/replicate-issues-pipeline') {
+                throw 'The iOS harness probe requires the exact trusted pipeline checkout.'
+              }
+              & git diff --exit-code HEAD
+              if ($LASTEXITCODE -ne 0) {
+                throw 'The trusted iOS probe checkout has tracked modifications.'
+              }
+              New-Item -ItemType Directory -Path $env:PROBE_ROOT -Force | Out-Null
+              $advertised = [Environment]::GetEnvironmentVariable(
+                'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -ceq '1'
+              [ordered]@{
+                mode = 'trusted-ios-harness-only'
+                pipelineCommit = $head
+                externalIsolationAdvertised = $advertised
+                certifiesIssue = $false
+              } | ConvertTo-Json | Set-Content (
+                Join-Path $env:PROBE_ROOT 'scope.json') -Encoding utf8
+              Write-Host 'Only the checked-in infrastructure fixture will execute. This is not an isolation attestation or issue reproduction.'
+              Write-Host "##vso[build.updatebuildnumber]Trusted iOS harness probe $(Build.BuildId)"
+            displayName: 'Validate trusted-only iOS probe scope'
+            env:
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PROBE_ROOT: $(IosProbeRoot)
+
+          - template: common/provision.yml
+            parameters:
+              skipProvisionator: true
+              skipJdk: true
+              skipAndroidCommonSdks: true
+              skipAndroidPlatformApis: true
+              skipAndroidEmulatorImages: true
+              skipAndroidCreateAvds: true
+              skipCertificates: true
+              skipInternalFeeds: true
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . ./.github/scripts/shared/Resolve-BuildShell.ps1
+              $code = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal 2>&1 | tee "$PROBE_ROOT/workloads.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 30
+              exit $code
+            displayName: 'Provision trusted iOS workloads'
+            timeoutInMinutes: 35
+            env:
+              PROBE_ROOT: $(IosProbeRoot)
+
+          - pwsh: Write-Host "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Use repository .NET for iOS probe'
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . ./.github/scripts/shared/Resolve-BuildShell.ps1
+              $code = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=normal 2>&1 | tee "$PROBE_ROOT/buildtasks.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 20
+              exit $code
+            displayName: 'Build trusted iOS probe infrastructure'
+            timeoutInMinutes: 25
+            env:
+              PROBE_ROOT: $(IosProbeRoot)
+
+          - bash: |
+              set -euo pipefail
+              dotnet tool restore 2>&1 | tee "$PROBE_ROOT/tools.log"
+            displayName: 'Restore pinned iOS harness tools'
+            timeoutInMinutes: 5
+            env:
+              PROBE_ROOT: $(IosProbeRoot)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . ./.github/scripts/shared/Resolve-BuildShell.ps1
+              $fixture = 'ReplicationIosButtonHarnessProbe.iOS.cs'
+              $target = Join-Path $PWD "src/Controls/tests/DeviceTests/Elements/Button/$fixture"
+              if (Test-Path -LiteralPath $target) {
+                throw 'The trusted iOS probe refuses to overwrite an existing source file.'
+              }
+              Copy-Item -LiteralPath ".github/scripts/fixtures/$fixture" -Destination $target
+              try {
+                Write-Host '##vso[task.setvariable variable=iosNativeProbeStarted]true'
+                $code = Invoke-BuildTasksWatchdog `
+                  -ShellPath '/bin/bash' `
+                  -ShellCommand 'pwsh -NoProfile -File .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -Configuration Debug -TestFilter ReplicationIosButtonHarnessProbe -IncludeClasses Microsoft.Maui.DeviceTests.ReplicationIosButtonHarnessProbe -IncludeMethods RegisteredButtonAttachesToWindow -OutputDirectory "$PROBE_ROOT/results" -Timeout 00:05:00 2>&1 | tee "$PROBE_ROOT/native-harness.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                  -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 30
+                if ($code -ne 0) {
+                  throw "The trusted iOS native harness failed with exit code $code. Raw runner diagnostics are retained."
+                }
+              } finally {
+                Remove-Item -LiteralPath $target -Force
+              }
+            displayName: 'Run fixed trusted iOS Button fixture'
+            timeoutInMinutes: 35
+            env:
+              PROBE_ROOT: $(IosProbeRoot)
+
+          - task: PublishTestResults@2
+            displayName: 'Publish trusted iOS native fixture result'
+            condition: and(succeededOrFailed(), eq(variables['iosNativeProbeStarted'], 'true'))
+            inputs:
+              testResultsFormat: 'XUnit'
+              testResultsFiles: '$(IosProbeRoot)/results/**/xunit-test-*.xml'
+              testRunTitle: 'Trusted iOS harness fixture - not issue reproduction'
+              failTaskOnFailedTests: true
+              failTaskOnMissingResultsFile: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Preserve trusted iOS harness diagnostics'
+            condition: succeededOrFailed()
+            inputs:
+              targetPath: '$(IosProbeRoot)'
+              artifact: 'IosHarnessProbe'
+              publishLocation: 'pipeline'
 
   # This manual mode proves the real MauiBot branch-push and draft-PR transport
   # independently of issue reproduction. It creates a temporary draft, verifies

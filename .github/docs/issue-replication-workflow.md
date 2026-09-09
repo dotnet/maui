@@ -1,6 +1,6 @@
 # .NET MAUI issue replication workflow
 
-The `maui-copilot` Azure DevOps pipeline can run in four manual modes:
+The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 
 | Mode | Target | Result |
 | --- | --- | --- |
@@ -8,6 +8,8 @@ The `maui-copilot` Azure DevOps pipeline can run in four manual modes:
 | `replicate` | GitHub issue number | On-device reproduction evidence and, only when fully validated, a draft product-fix PR |
 | `feedback` | None | Authenticated replication-PR feedback snapshot without device work |
 | `publication-smoke` | None | Create, verify, close, and delete the branch for a temporary MauiBot draft PR |
+| `replication-checks` | None | Focused trusted pipeline-contract checks without devices |
+| `ios-harness-probe` | None | Run one checked-in iOS infrastructure fixture without issue generation or publication |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -34,6 +36,18 @@ then closes the PR and deletes the branch. GitHub retains the closed PR record
 as the durable audit result; the `ReplicationPublicationSmoke` artifact records
 the same checks. Normal `replicate` mode remains ordered as reproduction,
 validated product fix, evidence publication, and draft PR.
+
+Use `Mode=ios-harness-probe`, `Platform=ios`, and both target numbers set to
+`0` on the trusted `copilot/replicate-issues-pipeline` branch to diagnose iOS
+workload, simulator, native Button attachment, and XHarness execution. This
+separate job uses the existing iOS pool, provisioning template, and device-test
+runner against the exact pipeline checkout. It executes only a checked-in
+infrastructure fixture, not issue-derived Sandbox code, tests, or fixes. The
+`IosHarnessProbe` artifact retains raw build/runner logs and native results.
+Its `scope.json` reports whether the external isolation marker was advertised;
+that observation is not an attestation. A passing probe neither resolves the
+independent iOS egress prerequisite nor permits certification or publication.
+Normal iOS replication still fails closed without that prerequisite.
 
 The feedback snapshot is data-only and bounded. In addition to the discussion
 surfaces it includes normalized `qualityContract`, typed `selector`, `evidence`,
