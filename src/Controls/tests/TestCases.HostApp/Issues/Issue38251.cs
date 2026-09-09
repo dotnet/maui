@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 38251, "Button RTL image and text overlap on iOS", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 38251, "Button RTL image and text overlap on iOS", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue38251 : ContentPage
 {
     public Issue38251()
