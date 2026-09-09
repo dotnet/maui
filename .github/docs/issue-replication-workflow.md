@@ -41,7 +41,9 @@ Use `Mode=ios-harness-probe`, `Platform=ios`, and both target numbers set to
 `0` on the trusted `copilot/replicate-issues-pipeline` branch to diagnose iOS
 workload, simulator, native Button attachment, and XHarness execution. This
 separate job uses the existing iOS pool, provisioning template, and device-test
-runner against the exact pipeline checkout. It executes only a checked-in
+runner against the exact pipeline checkout. It inherits that checkout's shared
+Xcode pins to match its workloads, rather than the newer-Xcode override used by
+the other modes; Xcode version validation stays enabled. It executes only a checked-in
 infrastructure fixture, not issue-derived Sandbox code, tests, or fixes. The
 `IosHarnessProbe` artifact retains raw build/runner logs and native results.
 Its `scope.json` reports whether the external isolation marker was advertised;
