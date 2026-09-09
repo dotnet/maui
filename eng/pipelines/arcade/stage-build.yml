@@ -89,3 +89,7 @@ stages:
 
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:SkipInitInternalTooling=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build Microsoft.Maui.sln
+              ${{ if eq(BuildPlatform.os, 'macOS') }}:
+                env:
+                  # Keep Apple's task-level Console redirection out of Arcade's central logger process.
+                  MSBUILDNOINPROCNODE: '1'
