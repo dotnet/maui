@@ -135,4 +135,17 @@ Describe 'Android provisioning branch compatibility' {
         $provision | Should -Match ([regex]::Escape(
             '& dotnet android sdk info --format=Json'))
     }
+
+    It 'isolates legacy JDK apt provisioning from the unrelated Chrome feed' {
+        $provision | Should -Match ([regex]::Escape(
+            "if (`$toolIds -contains 'androidsdk.tool')"))
+        $provision | Should -Match ([regex]::Escape(
+            "'dl.google.com/linux/chrome'"))
+        $provision | Should -Match ([regex]::Escape(
+            "'.maui-jdk-disabled'"))
+        $provision | Should -Match ([regex]::Escape(
+            "displayName: 'Restore Chrome apt feed after legacy JDK provisioning'"))
+        $provision | Should -Match ([regex]::Escape(
+            "condition: and(always(), eq(variables['Agent.OS'], 'Linux'))"))
+    }
 }

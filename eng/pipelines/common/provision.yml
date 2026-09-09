@@ -506,9 +506,68 @@ steps:
 
 # Provisioning Android - JDK
 - ${{ if ne(parameters.skipJdk, 'true') }}:
+  # Legacy androidsdk.tool installs the JDK through apt. Keep unrelated hosted
+  # image feeds from making that trusted package install fail during a mirror
+  # synchronization window.
+  - pwsh: |
+      $toolManifestPath = Join-Path "${{ parameters.checkoutDirectory }}" ".config/dotnet-tools.json"
+      $toolManifest = Get-Content -Raw -LiteralPath $toolManifestPath |
+        ConvertFrom-Json -ErrorAction Stop
+      $toolIds = @($toolManifest.tools.PSObject.Properties.Name)
+
+      if ($toolIds -contains 'androidsdk.tool') {
+        $sourceDirectory = '/etc/apt/sources.list.d'
+        $disabledSuffix = '.maui-jdk-disabled'
+        $chromeSources = @(
+          Get-ChildItem -LiteralPath $sourceDirectory -File -ErrorAction Stop |
+            Where-Object {
+              $_.Extension -in '.list', '.sources' -and
+                (Select-String -LiteralPath $_.FullName -SimpleMatch 'dl.google.com/linux/chrome' -Quiet)
+            }
+        )
+
+        foreach ($source in $chromeSources) {
+          $disabledPath = "$($source.FullName)$disabledSuffix"
+          if (Test-Path -LiteralPath $disabledPath) {
+            throw "Refusing to overwrite existing disabled apt source '$disabledPath'."
+          }
+
+          & sudo mv -- $source.FullName $disabledPath
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not disable unrelated Chrome apt source '$($source.FullName)'."
+          }
+          Write-Host "Temporarily disabled unrelated Chrome apt source '$($source.FullName)'."
+        }
+      }
+    displayName: 'Isolate legacy JDK provisioning from Chrome apt feed'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK (maui cli)'
     condition: succeeded()
+
+  - pwsh: |
+      $sourceDirectory = '/etc/apt/sources.list.d'
+      $disabledSuffix = '.maui-jdk-disabled'
+      $disabledSources = @(
+        Get-ChildItem -LiteralPath $sourceDirectory -File -ErrorAction SilentlyContinue |
+          Where-Object { $_.Name.EndsWith($disabledSuffix, [StringComparison]::Ordinal) }
+      )
+
+      foreach ($source in $disabledSources) {
+        $originalPath = $source.FullName.Substring(0, $source.FullName.Length - $disabledSuffix.Length)
+        if (Test-Path -LiteralPath $originalPath) {
+          throw "Refusing to overwrite restored apt source '$originalPath'."
+        }
+
+        & sudo mv -- $source.FullName $originalPath
+        if ($LASTEXITCODE -ne 0) {
+          throw "Could not restore Chrome apt source '$originalPath'."
+        }
+        Write-Host "Restored Chrome apt source '$originalPath'."
+      }
+    displayName: 'Restore Chrome apt feed after legacy JDK provisioning'
+    condition: and(always(), eq(variables['Agent.OS'], 'Linux'))
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
