@@ -8233,13 +8233,14 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);
         Assert.True(affectedLabel.Width > 0 && affectedLabel.Width <= 1024 && affectedLabel.Height > 0 && affectedLabel.Height <= 512);
         var bitmap = await global::Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmapExtensions.AsRawBitmapAsync(affectedLabel);
-        Assert.True(bitmap.PixelWidth >= 2 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
+        Assert.True(bitmap.PixelWidth >= 4 && bitmap.PixelWidth <= 4096 && bitmap.PixelHeight >= 3 && bitmap.PixelHeight <= 2048);
         Assert.Equal(bitmap.PixelWidth * bitmap.PixelHeight * 4, bitmap.PixelBuffer.Length);
         var backgroundBlue = bitmap.PixelBuffer[0];
         var backgroundGreen = bitmap.PixelBuffer[1];
         var backgroundRed = bitmap.PixelBuffer[2];
         var hasRightEdgeInk = false;
-        for (var x = bitmap.PixelWidth - 2; x < bitmap.PixelWidth; x++)
+        var hasInteriorInk = false;
+        for (var x = 1; x < bitmap.PixelWidth; x++)
         {
             for (var y = 1; y < bitmap.PixelHeight - 1; y++)
             {
@@ -8247,10 +8248,18 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 var delta = global::System.Math.Abs(bitmap.PixelBuffer[offset] - backgroundBlue) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 1] - backgroundGreen) + global::System.Math.Abs(bitmap.PixelBuffer[offset + 2] - backgroundRed);
                 if (delta > 80)
                 {
-                    hasRightEdgeInk = true;
+                    if (x >= bitmap.PixelWidth - 2)
+                    {
+                        hasRightEdgeInk = true;
+                    }
+                    else
+                    {
+                        hasInteriorInk = true;
+                    }
                 }
             }
         }
+        Assert.True(hasInteriorInk);
         Assert.False(hasRightEdgeInk);
     });
 '@
@@ -8394,15 +8403,15 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     'if (applyReportedTrigger) { affectedLabel.FontAttributes = FontAttributes.Italic; } with no else branch.')
         }
 
-        if ($callback.Body.Statements.Count -ne 11) {
+        if ($callback.Body.Statements.Count -ne 13) {
             & $throwTrustedWindowHelperViolation `
                 -Node $callback.Body `
                 -HelperSymbol $HelperMethod `
                 -Reason (
                     'the Issue33315 callback must contain exactly the reviewed ' +
                     'readiness wait, bounded geometry checks, label bitmap capture, ' +
-                    'buffer-length check, RGB byte mapping, two-column scan, and ' +
-                    'final rendered-ink assertion.')
+                    'buffer-length check, RGB byte mapping, bounded pixel scan, ' +
+                    'visible-ink precondition, and final right-edge assertion.')
         }
 
         $readinessStatement = $callback.Body.Statements[0]
