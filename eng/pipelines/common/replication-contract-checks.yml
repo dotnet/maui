@@ -82,6 +82,10 @@ steps:
         'Replication failure-only verification*rejects device verification that would write an empty project path'
         'Replication verifier metadata resolution*resolves the exact Controls device project path for the generated metadata handoff'
         'Replication verifier metadata resolution*resolves a non-Controls device project with exact class isolation'
+        'Validate-ReplicationCandidate verification boundary*accepts Android XHarness TESTS_FAILED output when the verifier proves one selected test failed'
+        'Validate-ReplicationCandidate verification boundary*rejects Android XHarness infrastructure exit codes even when failure-only output is spoofed'
+        'Validate-ReplicationCandidate verification boundary*rejects Android XHarness TESTS_FAILED without the exact selected-test console proof'
+        'Validate-ReplicationCandidate verification boundary*does not waive Android XHarness evidence outside machine-result device validation'
         'Replication failure-only verification*requires the packaged device boundary for Windows and rejects host test tiers'
         'Replication failure-only verification*requires the trusted App Sandbox for Mac Catalyst device verification'
         'Cross-platform device test class filtering*retains bounded XHarness diagnostics when Android produces no fresh result XML'
@@ -134,6 +138,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"
       )

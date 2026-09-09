@@ -650,6 +650,28 @@ namespace Microsoft.Maui.Controls;
 
         return Get-Content -Raw -LiteralPath $Fixture.OutputPath | ConvertFrom-Json
     }
+
+    function Write-FixtureDeviceResultDocument {
+        param([Parameter(Mandatory = $true)][object]$Fixture)
+
+        Write-TestText `
+            -Path (Join-Path (Join-Path $Fixture.EvidenceDir 'verification') 'verification-test-result.xml') `
+            -Value @"
+<?xml version="1.0" encoding="utf-8"?>
+<assemblies>
+  <assembly name="Microsoft.Maui.Controls.DeviceTests.dll" total="1" passed="0" failed="1" skipped="0" errors="0">
+    <errors />
+    <collection total="1" passed="0" failed="1" skipped="0" name="Test collection for $($Fixture.TestClassName)">
+      <test name="$($Fixture.TestMethodName)" type="$($Fixture.TestClassName)" method="$($Fixture.TestMethodName)" result="Fail">
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[$($Fixture.FailurePattern)]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
+"@
+    }
 }
 
 AfterAll {
@@ -1744,6 +1766,110 @@ Describe 'Validate-ReplicationCandidate verification boundary' {
 
         { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
             Should -Throw '*disqualified*'
+    }
+
+    It 'accepts Android XHarness TESTS_FAILED output when the verifier proves one selected test failed' {
+        $fixture = New-ValidationFixture `
+            -TestType 'DeviceTest' `
+            -IssueNumber 26505 `
+            -TestName 'Issue26505' `
+            -TestFilter 'Issue26505' `
+            -TestClassName 'Issue26505' `
+            -TestMethodName 'ReproducesIssue' `
+            -FailurePattern 'Assert.True() Failure'
+        $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+        Write-FixtureDeviceResultDocument -Fixture $fixture
+
+        foreach ($logName in @('verification-console.log', 'verification-console-run-2.log')) {
+            $consolePath = Join-Path (Join-Path $fixture.EvidenceDir 'verification') $logName
+            Add-Content `
+                -LiteralPath $consolePath `
+                -Value @"
+
+Failed test(s): Issue26505.ReproducesIssue
+XHarness exit code: 1 (TESTS_FAILED)
+"@
+        }
+
+        { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+            Should -Not -Throw
+    }
+
+    It 'rejects Android XHarness infrastructure exit codes even when failure-only output is spoofed' {
+        foreach ($fault in @(
+            'XHarness exit code: 80 (APP_CRASH)',
+            'XHarness exit code: 2 (HELP_SHOWN)',
+            'XHarness exit code: 3 (INVALID_ARGUMENTS)',
+            'XHarness exit code: 1 (APP_CRASH)',
+            'ENV ERROR: device offline'
+        )) {
+            $fixture = New-ValidationFixture `
+                -TestType 'DeviceTest' `
+                -IssueNumber 26505 `
+                -TestName 'Issue26505' `
+                -TestFilter 'Issue26505' `
+                -TestClassName 'Issue26505' `
+                -TestMethodName 'ReproducesIssue' `
+                -FailurePattern 'Assert.True() Failure'
+            $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+            Write-FixtureDeviceResultDocument -Fixture $fixture
+            Add-Content `
+                -LiteralPath (Join-Path (Join-Path $fixture.EvidenceDir 'verification') 'verification-console.log') `
+                -Value @"
+
+Failed test(s): Issue26505.ReproducesIssue
+XHarness exit code: 1 (TESTS_FAILED)
+$fault
+"@
+
+            { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+                Should -Throw '*disqualified*infrastructure*'
+        }
+    }
+
+    It 'rejects Android XHarness TESTS_FAILED without the exact selected-test console proof' {
+        foreach ($missingProof in @('Parsed test results:', 'Failed test(s):')) {
+            $fixture = New-ValidationFixture `
+                -TestType 'DeviceTest' `
+                -IssueNumber 26505 `
+                -TestName 'Issue26505' `
+                -TestFilter 'Issue26505' `
+                -TestClassName 'Issue26505' `
+                -TestMethodName 'ReproducesIssue' `
+                -FailurePattern 'Assert.True() Failure'
+            $fixture = ConvertTo-ArtifactContractFixture -Fixture $fixture
+            Write-FixtureDeviceResultDocument -Fixture $fixture
+            $consolePath = Join-Path (Join-Path $fixture.EvidenceDir 'verification') 'verification-console.log'
+            $console = (Get-Content -Raw -LiteralPath $consolePath) + @"
+
+Failed test(s): Issue26505.ReproducesIssue
+XHarness exit code: 1 (TESTS_FAILED)
+"@
+            Write-TestText -Path $consolePath -Value $console.Replace($missingProof, 'Untrusted summary:')
+
+            { Invoke-FixtureValidation -Fixture $fixture | Out-Null } |
+                Should -Throw '*disqualified*infrastructure*'
+        }
+    }
+
+    It 'does not waive Android XHarness evidence outside machine-result device validation' {
+        $console = @'
+Platform: android
+Parsed test results: Passed=0 Failed=1 Total=1
+Failed test(s): Issue26505.ReproducesIssue
+VERIFICATION PASSED
+All 1 test(s) FAILED as expected
+XHarness exit code: 1 (TESTS_FAILED)
+'@
+        foreach ($identity in @(
+            @{ Platform = 'ios'; TestType = 'DeviceTest'; TestClassName = 'Issue26505'; TestMethodName = 'ReproducesIssue' },
+            @{ Platform = 'android'; TestType = 'UnitTest'; TestClassName = 'Issue26505'; TestMethodName = 'ReproducesIssue' },
+            @{ Platform = 'android'; TestType = 'DeviceTest'; TestClassName = 'DifferentIssue'; TestMethodName = 'ReproducesIssue' }
+        )) {
+            Get-DisqualifyingVerificationEvidenceCode -Text $console -Manifest ([pscustomobject]$identity) |
+                Should -Be 'infrastructure'
+        }
+        Get-DisqualifyingFailureCode -Text $console | Should -Be 'infrastructure'
     }
 
     It 'rejects an on-device reproduction that was never replayed' {
