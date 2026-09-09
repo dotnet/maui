@@ -62,6 +62,7 @@ BeforeAll {
 
     foreach ($name in @(
         'ConvertTo-ReplicationSafeLog',
+        'ConvertTo-ReplicationPublicationStep',
         'ConvertTo-ReplicationAttemptFailureSummary',
         'Get-ReplicationCauseExcerpt',
         'Get-ReplicationPwshArguments',
@@ -9592,14 +9593,117 @@ Describe 'Manifest reproduction steps survive the gate' {
         & $render "Tap  the`r`n  button " | Should -BeExactly 'Tap the button'
     }
 
-    It 'collapses and trims in the orchestrator itself' {
+    It 'uses the publisher prose grammar in the orchestrator itself' {
         $steps = [regex]::Match(
             $script:Source,
-            '\$reproductionSteps = @\(.*?Select-Object -First 10\)',
+            '\$reproductionSteps = \[System\.Collections\.Generic\.List\[string\]\]::new\(\).*?\[string\[\]\]\$reproductionSteps\.ToArray\(\)',
             'Singleline').Value
         $steps | Should -Not -BeNullOrEmpty
-        $steps | Should -Match '\)\)\.Trim\(\)'
-        $steps | Should -Match 'IsNullOrWhiteSpace'
+        $steps | Should -Match 'ConvertTo-ReplicationPublicationStep'
+    }
+
+    It 'normalizes test proposal reproduction steps with the publisher prose contract' {
+        $repoRoot = $TestDrive
+        $IssueNumber = 30210
+        $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+        $relativePath = 'src/Controls/tests/DeviceTests/Issue30210.Android.cs'
+        $fullPath = Join-Path $repoRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+            Out-Null
+        'public class Issue30210 { public void ReproducesIssue() { } }' |
+            Set-Content -LiteralPath $fullPath
+
+        $testProposalPath = Join-Path $TestDrive 'test-proposal-publishable-steps.json'
+        [ordered]@{
+            testType = 'device'
+            testFilter = 'Issue30210'
+            expectedFailureSignature = 'Expected value should change.'
+            files = @($relativePath)
+            reproductionSteps = @("  Tap the button.`nObserve **label** and [Fact] metadata.  ")
+            expectedBehavior = 'The value changes.'
+            observedBehavior = 'The value remains unchanged.'
+            reportedTrigger = 'Tap the button and observe the value.'
+            testTrigger = 'Tap the button and observe the value.'
+            scenarioDifferences = @()
+            lighterTypesRejected = [ordered]@{
+                unit = 'Requires the Android handler.'
+                xaml = 'Requires the Android handler.'
+            }
+        } | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $testProposalPath
+
+        $previousPlatform = Get-Variable -Name Platform -Scope Script -ErrorAction SilentlyContinue
+        try {
+            $script:Platform = 'android'
+            $proposal = Read-TestProposal -ActualFiles @($relativePath)
+        } finally {
+            if ($previousPlatform) {
+                $script:Platform = $previousPlatform.Value
+            } else {
+                Remove-Variable -Name Platform -Scope Script -ErrorAction SilentlyContinue
+            }
+        }
+
+        $proposal.reproductionSteps |
+            Should -Be @('Tap the button. Observe label and Fact metadata.')
+    }
+
+    It 'rejects unsafe public prose in test reproduction steps before empirical verification' {
+        foreach ($case in @(
+            @{ Issue = 30211; Step = 'Create a test deriving from global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase.' },
+            @{ Issue = 30212; Step = 'See https://example.invalid for setup details.' },
+            @{ Issue = 30213; Step = 'Ask @someone to confirm the device result.' },
+            @{ Issue = 30214; Step = 'Tap the button ##vso[task.setvariable variable=x]y.' }
+        )) {
+            $repoRoot = $TestDrive
+            $IssueNumber = $case.Issue
+            $approvedTestRoots = @('src/Controls/tests/DeviceTests/')
+            $relativePath = "src/Controls/tests/DeviceTests/Issue$($case.Issue).Android.cs"
+            $fullPath = Join-Path $repoRoot $relativePath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $fullPath) -Force |
+                Out-Null
+            "public class Issue$($case.Issue) { public void ReproducesIssue() { } }" |
+                Set-Content -LiteralPath $fullPath
+
+            $testProposalPath = Join-Path $TestDrive "test-proposal-unsafe-step-$($case.Issue).json"
+            [ordered]@{
+                testType = 'device'
+                testFilter = "Issue$($case.Issue)"
+                expectedFailureSignature = 'Expected value should change.'
+                files = @($relativePath)
+                reproductionSteps = @($case.Step)
+                expectedBehavior = 'The value changes.'
+                observedBehavior = 'The value remains unchanged.'
+                reportedTrigger = 'Tap the button and observe the value.'
+                testTrigger = 'Tap the button and observe the value.'
+                scenarioDifferences = @()
+                lighterTypesRejected = [ordered]@{
+                    unit = 'Requires the Android handler.'
+                    xaml = 'Requires the Android handler.'
+                }
+            } | ConvertTo-Json -Depth 10 |
+                Set-Content -LiteralPath $testProposalPath
+
+            $previousPlatform = Get-Variable -Name Platform -Scope Script -ErrorAction SilentlyContinue
+            try {
+                $script:Platform = 'android'
+                { Read-TestProposal -ActualFiles @($relativePath) | Out-Null } |
+                    Should -Throw '*safe PR-body prose*URL, mention, or logging directive*'
+            } finally {
+                if ($previousPlatform) {
+                    $script:Platform = $previousPlatform.Value
+                } else {
+                    Remove-Variable -Name Platform -Scope Script -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    }
+
+    It 'tells test authors that reproduction steps are public prose without CSharp syntax' {
+        $script:Source | Should -Match 'reproductionSteps are public PR-body prose'
+        $script:Source | Should -Match 'double-colon C# global namespace aliases'
+        $script:Source | Should -Match 'generic type-argument notation'
+        $script:Source | Should -Match 'HTML tags'
     }
 }
 
