@@ -11059,7 +11059,7 @@ namespace Google.Android.Material.Button
                 -Edits @($script:GateEdit) `
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
-        } | Should -Throw '*native text-fit assertion must be exactly one Xunit Assert.True*'
+        } | Should -Throw '*Android generated tests may use CreateHandlerAndAddToWindow only for the exact reviewed Issue26505 ButtonHandler text-fit profile*Binding diagnostics: CS1061*MaterialButton*SetPadding*'
 
         $broadRead = $script:TrustedAndroidIssue26505Base.Replace(
             'Assert.True(handler.PlatformView.Paint.MeasureText(handler.PlatformView.Text) <= handler.PlatformView.Width - handler.PlatformView.CompoundPaddingLeft - handler.PlatformView.CompoundPaddingRight);',

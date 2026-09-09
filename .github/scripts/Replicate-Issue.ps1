@@ -8307,7 +8307,7 @@ function Invoke-ReplicationAndroidNativeHarnessProbe {
     Assert-InitialReplicationWorktree
     $project = Join-Path $repoRoot (
         'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj')
-    Invoke-ReplicationTrustedRestore -Target $project
+    Invoke-ReplicationTrustedRestore -Target $project -Verb restore
     # Populate Android's build-time Maven/download caches from the clean baseline
     # before the fixture exists; the isolated rebuild cannot download packages.
     Invoke-ReplicationTrustedRestore -Target $project -Verb build `
@@ -9919,6 +9919,7 @@ try {
         }
 
         if ($AndroidHarnessNativeProbeOnly) {
+            Write-Host '##vso[task.setvariable variable=replicationNativeProbeStarted]true'
             Invoke-ReplicationAndroidNativeHarnessProbe
             Write-Host 'ANDROID NATIVE HARNESS PROBE SUCCEEDED: fixed registration/attachment diagnostic only; no issue oracle, candidate, certification, or publication.'
             Remove-ReplicationRuntimeCache
