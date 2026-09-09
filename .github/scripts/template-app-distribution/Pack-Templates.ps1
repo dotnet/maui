@@ -57,6 +57,8 @@ $properties = @(
     "-p:PackageVersion=$packageVersion",
     "-p:RepositoryCommit=$SourceSha",
     "-p:SourceRevisionId=$SourceSha",
+    # Arcade otherwise omits commit metadata for builds without a date-stamped VersionSuffix.
+    '-p:IncludeSourceRevisionInInformationalVersion=true',
     '-p:CI=true',
     '-p:GenerateCgManifest=false',
     '-p:SymbolPackageFormat=snupkg',

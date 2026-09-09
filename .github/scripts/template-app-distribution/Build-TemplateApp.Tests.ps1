@@ -2042,6 +2042,12 @@ Describe 'packaged payload provenance' {
         Reset-BuildTestEnvironment
     }
 
+    It 'overrides Arcade commit omission for all source package builds' {
+        $packScript = Get-Content (Join-Path $PSScriptRoot 'Pack-Templates.ps1') -Raw
+        $packScript | Should -Match ([regex]::Escape("'-p:IncludeSourceRevisionInInformationalVersion=true'"))
+        $packScript | Should -Match ([regex]::Escape('"-p:SourceRevisionId=$SourceSha"'))
+    }
+
     It 'keeps direct payload helper compatibility when called without a manifest' {
         $fixture = New-SourcePackageFixture
         $archive = New-FakePayloadArchive `
