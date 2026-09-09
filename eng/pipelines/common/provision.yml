@@ -520,29 +520,61 @@ steps:
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: |
       echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
-      $rawOutput = & dotnet maui android sdk check --ci --json
-      $exitCode = $LASTEXITCODE
-      if ($exitCode -ne 0) {
-        throw "Microsoft.Maui.Cli could not check the Android SDK (exit code: $exitCode)."
-      }
+      $toolManifestPath = Join-Path "${{ parameters.checkoutDirectory }}" ".config/dotnet-tools.json"
       try {
-        $jsonOutput = ($rawOutput -join [Environment]::NewLine) | ConvertFrom-Json -ErrorAction Stop
+        $toolManifest = Get-Content -Raw -LiteralPath $toolManifestPath |
+          ConvertFrom-Json -ErrorAction Stop
       }
       catch {
-        throw "Microsoft.Maui.Cli returned invalid Android SDK JSON: $($_.Exception.Message)"
+        throw "Could not read the restored .NET tool manifest: $($_.Exception.Message)"
       }
-      if ($jsonOutput.status -ne 'Ok') {
-        throw "Microsoft.Maui.Cli could not find a usable Android SDK (status: $($jsonOutput.status))."
+
+      $toolIds = @($toolManifest.tools.PSObject.Properties.Name)
+      if ($toolIds -contains 'microsoft.maui.cli') {
+        $rawOutput = & dotnet maui android sdk check --ci --json
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+          throw "Microsoft.Maui.Cli could not check the Android SDK (exit code: $exitCode)."
+        }
+        try {
+          $jsonOutput = ($rawOutput -join [Environment]::NewLine) |
+            ConvertFrom-Json -ErrorAction Stop
+        }
+        catch {
+          throw "Microsoft.Maui.Cli returned invalid Android SDK JSON: $($_.Exception.Message)"
+        }
+        if ($jsonOutput.status -ne 'Ok') {
+          throw "Microsoft.Maui.Cli could not find a usable Android SDK (status: $($jsonOutput.status))."
+        }
+        $preferredSdk = $jsonOutput.details.path
       }
-      $preferredSdk = $jsonOutput.details.path
+      elseif ($toolIds -contains 'androidsdk.tool') {
+        $rawOutput = & dotnet android sdk info --format=Json
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -ne 0) {
+          throw "androidsdk.tool could not inspect the Android SDK (exit code: $exitCode)."
+        }
+        try {
+          $jsonOutput = ($rawOutput -join [Environment]::NewLine) |
+            ConvertFrom-Json -ErrorAction Stop
+        }
+        catch {
+          throw "androidsdk.tool returned invalid Android SDK JSON: $($_.Exception.Message)"
+        }
+        $preferredSdk = $jsonOutput.SdkInfo.Path
+      }
+      else {
+        throw "The restored tool manifest contains neither Microsoft.Maui.Cli nor androidsdk.tool."
+      }
+
       if ([string]::IsNullOrWhiteSpace($preferredSdk)) {
-        throw "Microsoft.Maui.Cli returned an empty Android SDK path."
+        throw "The restored Android SDK tool returned an empty SDK path."
       }
       echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
       echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
       echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
       echo "ANDROID_HOME set to '$preferredSdk'"
-    displayName: 'Provision Android SDK - Environment variables (maui cli)'
+    displayName: 'Provision Android SDK - Environment variables (branch tool)'
     condition: succeeded()
 
 # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)

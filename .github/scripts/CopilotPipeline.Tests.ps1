@@ -9,6 +9,10 @@ BeforeAll {
         Resolve-Path |
         Select-Object -ExpandProperty Path
     $pipeline = Get-Content -Raw -LiteralPath $pipelinePath
+    $provisionPath = Join-Path $PSScriptRoot '..' '..' 'eng' 'pipelines' 'common' 'provision.yml' |
+        Resolve-Path |
+        Select-Object -ExpandProperty Path
+    $provision = Get-Content -Raw -LiteralPath $provisionPath
 
     $script:BaseBranchPatterns = @(
         $pipeline -split '\r?\n' |
@@ -115,5 +119,20 @@ Describe 'Copilot review artifact publication' {
             'Get-ChildItem\s+-Path\s+\.\s+-Filter\s+"Review_Feedback_\*\.md"\s+-Recurse')
         $pipeline | Should -Not -Match (
             'Copy-Item\s+-Path\s+"\.github/agent-pr-session".*-Recurse')
+    }
+}
+
+Describe 'Android provisioning branch compatibility' {
+    It 'selects the SDK query supported by the checked-out branch tool manifest' {
+        $provision | Should -Match ([regex]::Escape(
+            '$toolIds = @($toolManifest.tools.PSObject.Properties.Name)'))
+        $provision | Should -Match ([regex]::Escape(
+            "if (`$toolIds -contains 'microsoft.maui.cli')"))
+        $provision | Should -Match ([regex]::Escape(
+            '& dotnet maui android sdk check --ci --json'))
+        $provision | Should -Match ([regex]::Escape(
+            "elseif (`$toolIds -contains 'androidsdk.tool')"))
+        $provision | Should -Match ([regex]::Escape(
+            '& dotnet android sdk info --format=Json'))
     }
 }
