@@ -1031,10 +1031,6 @@ namespace Microsoft.Maui.Controls.Handlers
             // so the toolbar must already be in the view hierarchy.
             _appBarLayout.AddView(_toolbar, 0);
 
-            // Initial mappings run while ToPlatform creates the toolbar, before it has an AppBarLayout parent.
-            // Re-run the background mapping now that Material 3 can update the AppBar's shape drawable.
-            _shellToolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
-
             // Set up toolbar tracker and appearance tracker
             _toolbarTracker = _shellContext.CreateTrackerForToolbar(_toolbar);
             _toolbarAppearanceTracker = _shellContext.CreateToolbarAppearanceTracker();

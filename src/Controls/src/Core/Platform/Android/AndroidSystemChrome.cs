@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Android.App;
 using Android.Content;
@@ -7,6 +8,7 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using AndroidX.Core.View;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Shape;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -209,25 +211,87 @@ namespace Microsoft.Maui.Controls.Platform
 				appBarLayout,
 				static appBar => new OriginalAppBarBackground(appBar.Background));
 
+			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
+			ViewCompat.SetBackgroundTintList(appBarLayout, null);
 			if (Brush.IsNullOrEmpty(background))
 			{
-				ViewCompat.SetBackgroundTintMode(appBarLayout, null);
-				ViewCompat.SetBackgroundTintList(appBarLayout, null);
 				appBarLayout.Background = originalBackground.CreateDrawable();
 				return;
 			}
 
 			if (background is SolidColorBrush { Color: not null } solidColorBrush)
 			{
-				appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
-				ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
-				ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
+				if (RuntimeFeature.IsMaterial3Enabled && appBarLayout.Background is MaterialShapeDrawable materialShapeDrawable)
+				{
+					var platformColor = solidColorBrush.Color.ToPlatform();
+					materialShapeDrawable.FillColor = ColorStateList.ValueOf(platformColor);
+					appBarLayout.SetLiftOnScrollColor(
+						ColorStateList.ValueOf(LightenColor(solidColorBrush.Color, 0.3f).ToPlatform()));
+				}
+				else
+				{
+					appBarLayout.Background = originalBackground.CreateDrawable() ?? new ColorDrawable(AGraphics.Color.Transparent);
+					ViewCompat.SetBackgroundTintMode(appBarLayout, AGraphics.PorterDuff.Mode.Src);
+					ViewCompat.SetBackgroundTintList(appBarLayout, ColorStateList.ValueOf(solidColorBrush.Color.ToPlatform()));
+				}
+
 				return;
 			}
 
-			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
-			ViewCompat.SetBackgroundTintList(appBarLayout, null);
-			appBarLayout.UpdateBackground(background);
+			if (background is LinearGradientBrush linearGradientBrush && linearGradientBrush.GradientStops.Count > 0)
+			{
+				var colors = linearGradientBrush.GradientStops
+					.OrderBy(x => x.Offset)
+					.Select(x => x.Color.ToPlatform().ToArgb())
+					.ToArray();
+
+				var gradientDrawable = new GradientDrawable();
+
+				gradientDrawable.SetOrientation(
+					GetGradientOrientation(
+						linearGradientBrush.StartPoint,
+						linearGradientBrush.EndPoint));
+
+				gradientDrawable.SetColors(colors);
+
+				appBarLayout.Background = gradientDrawable;
+				return;
+			}
+
+			if (!RuntimeFeature.IsMaterial3Enabled)
+			{
+				appBarLayout.UpdateBackground(background);
+			}
+		}
+
+		static GradientDrawable.Orientation? GetGradientOrientation(
+			Point startPoint,
+			Point endPoint)
+		{
+			var dx = endPoint.X - startPoint.X;
+			var dy = endPoint.Y - startPoint.Y;
+
+			if (Math.Abs(dx) >= Math.Abs(dy))
+			{
+				return dx >= 0
+					? GradientDrawable.Orientation.LeftRight
+					: GradientDrawable.Orientation.RightLeft;
+			}
+
+			return dy >= 0
+				? GradientDrawable.Orientation.TopBottom
+				: GradientDrawable.Orientation.BottomTop;
+		}
+
+		static Color LightenColor(Color color, float factor)
+		{
+			factor = Math.Clamp(factor, 0f, 1f);
+
+			return new Color(
+				color.Red + ((1 - color.Red) * factor),
+				color.Green + ((1 - color.Green) * factor),
+				color.Blue + ((1 - color.Blue) * factor),
+				color.Alpha);
 		}
 
 		static Color? GetChromeColor(Brush? background, ChromeEdge edge)
