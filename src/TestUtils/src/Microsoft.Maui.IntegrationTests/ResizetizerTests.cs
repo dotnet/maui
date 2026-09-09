@@ -1,5 +1,14 @@
 namespace Microsoft.Maui.IntegrationTests;
 
+sealed class WindowsOnlyTheoryAttribute : TheoryAttribute
+{
+	public WindowsOnlyTheoryAttribute()
+	{
+		if (!TestEnvironment.IsWindows)
+			Skip = "Running Windows templates is only supported on Windows.";
+	}
+}
+
 [Trait("Category", "Build")]
 public class ResizetizerTests : BaseBuildTest
 {
@@ -17,7 +26,7 @@ public class ResizetizerTests : BaseBuildTest
 
 	static string WindowsRuntimeIdentifier => TestEnvironment.IsArm64 ? "win-arm64" : "win-x64";
 
-	[Theory]
+	[WindowsOnlyTheory]
 	// windows unpackaged/exe
 	[InlineData("maui", "classlib", true)]
 	[InlineData("maui", "mauilib", true)]
@@ -31,8 +40,6 @@ public class ResizetizerTests : BaseBuildTest
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		if (!TestEnvironment.IsWindows)
-			throw SkipException.ForSkip("Running Windows templates is only supported on Windows.");
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -94,14 +101,12 @@ public class ResizetizerTests : BaseBuildTest
 			"Windows was missing the image file.");
 	}
 
-	[Theory]
+	[WindowsOnlyTheory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]
 	public void AdditionalPropertiesExcludesImage(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		if (!TestEnvironment.IsWindows)
-			throw SkipException.ForSkip("Running Windows templates is only supported on Windows.");
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
@@ -160,14 +165,12 @@ public class ResizetizerTests : BaseBuildTest
 			"Windows should NOT have the image file (AdditionalProperties should have excluded it).");
 	}
 
-	[Theory]
+	[WindowsOnlyTheory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]
 	public void AdditionalPropertiesSelectsImageInLibrary(string id, string libid, bool unpackaged)
 	{
 		SetTestIdentifier(id, libid, unpackaged);
-		if (!TestEnvironment.IsWindows)
-			throw SkipException.ForSkip("Running Windows templates is only supported on Windows.");
 
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
