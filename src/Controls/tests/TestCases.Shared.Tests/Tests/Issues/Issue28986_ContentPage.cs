@@ -141,6 +141,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 		var baselinePosition = App.WaitForElement("ContentGrid").GetRect();
 
 		App.Tap("SoftInputTestEntry");
+		Assert.That(App.WaitForKeyboardToShow(), Is.True, "Keyboard should be visible before validating the resized safe area");
 		App.RetryAssert(() =>
 		{
 			var withKeyboard = App.WaitForElement("ContentGrid").GetRect();
@@ -150,6 +151,7 @@ public class Issue28986_ContentPage : _IssuesUITest
 
 		App.Tap("GridSetContainerButton");
 		App.DismissKeyboard();
+		Assert.That(App.WaitForKeyboardToHide(), Is.True, "Keyboard should be hidden before restoring all safe-area edges");
 		App.Tap("GridResetAllButton");
 
 		App.RetryAssert(() =>

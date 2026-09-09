@@ -92,6 +92,7 @@ safe-outputs:
   # for the issue-creation step is correctly suppressed.
 
 tools:
+  bash: false
   github:
     # `default` gives us issues, repos, pull_requests, context.
     # `labels` adds `list_label` (singular) and `get_label` — needed for

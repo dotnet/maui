@@ -38,6 +38,7 @@ env:
 
 jobs:
   prepare-matrix:
+    if: github.repository == 'dotnet/maui'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}

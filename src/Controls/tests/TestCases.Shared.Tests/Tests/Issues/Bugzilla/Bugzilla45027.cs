@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.ListView)]
+[Category(UITestCategories.ContextActions)]
 public class Bugzilla45027 : _IssuesUITest
 {
 	const string BUTTON_ACTION_TEXT = "Action";

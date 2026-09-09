@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     # Guard: only run in dotnet/maui — prevents the scheduled run from firing
     # in forks and pinging fork owners with duplicate queue issues.
-    if: github.repository_owner == 'dotnet' && github.event_name != 'pull_request'
+    if: github.repository == 'dotnet/maui' && github.event_name != 'pull_request'
     permissions:
       contents: read
       issues: write

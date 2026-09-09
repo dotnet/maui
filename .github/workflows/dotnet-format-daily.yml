@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   dotnet-format:
-    if: github.repository_owner == 'dotnet'
+    if: github.repository == 'dotnet/maui'
     runs-on: windows-latest
     strategy:
       matrix:

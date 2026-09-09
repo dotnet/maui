@@ -28,7 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string ImageButton = "ImageButton";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
-		public const string ListView = "ListView";
 		public const string LifeCycle = "Lifecycle";
 		public const string Flaky = "Flaky";
 		public const string FlyoutPage = "FlyoutPage";

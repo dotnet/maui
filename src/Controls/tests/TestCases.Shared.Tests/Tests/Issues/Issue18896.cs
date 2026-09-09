@@ -15,7 +15,7 @@ public class Issue18896 : _IssuesUITest
 	public override string Issue => "Can scroll ListView inside RefreshView";
 
 	[Test]
-	[Category(UITestCategories.ListView)]
+	[Category(UITestCategories.RefreshView)]
 	public void Issue18896Test()
 	{
 		App.WaitForElement("WaitForStubControl");

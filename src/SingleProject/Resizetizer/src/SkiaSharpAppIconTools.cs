@@ -155,10 +155,12 @@ namespace Microsoft.Maui.Resizetizer
 				var radius = Math.Min(canvasSize.Width, canvasSize.Height) / 2;
 
 				var clip = new SKPath();
+#pragma warning disable CS0618 // SKPath.AddCircle is obsolete in newer SkiaSharp; keep using it to avoid a hard build break on the current SkiaSharp band.
 				clip.AddCircle(
 					canvasSize.Width / 2,
 					canvasSize.Height / 2,
 					radius);
+#pragma warning restore CS0618
 				return clip;
 			}
 

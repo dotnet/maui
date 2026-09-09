@@ -102,16 +102,21 @@ on:
         if-no-files-found: warn
         retention-days: 7
 
-# Only invoke the agent when the deterministic pre-pass found something to draft.
-# A manual dispatch can select any ref, but activation runtime-imports `.github`
-# configuration from its checkout. Restrict agent execution to trusted main.
+# Keep the deterministic pre-pass and every downstream job out of forks.
+# A manual dispatch can select another ref, so only trusted main may reach
+# pre-activation.
 if: >-
   github.repository == 'dotnet/maui' &&
-  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main') &&
-  (github.event_name == 'workflow_dispatch' ||
-  needs.pre_activation.outputs.has_candidates == 'true')
+  (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main')
 
 jobs:
+  # Only invoke activation when the deterministic pre-pass found something to
+  # draft. A manual dispatch can select any ref, so restrict it to trusted main.
+  activation:
+    if: >-
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main') &&
+      (github.event_name == 'workflow_dispatch' ||
+      needs.pre_activation.outputs.has_candidates == 'true')
   pre-activation:
     outputs:
       candidates: ${{ steps.candidate_context.outputs.candidates }}
