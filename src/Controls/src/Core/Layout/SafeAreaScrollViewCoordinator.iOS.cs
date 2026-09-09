@@ -107,10 +107,11 @@ sealed class SafeAreaScrollViewCoordinator
 		}
 
 		var registeredContentScrollView = RegisterContentScrollView(nativeScrollView);
+		// Registration selects UIKit's large-title scroll candidate, but only safe-area propagation
+		// or explicit controller containment proves that UIKit owns the system inset.
 		if (nativeScrollView.SafeAreaInsets.Top > 0.5 ||
 			(registeredContentScrollView &&
-				(nativeScrollView is UITableView ||
-					nativeScrollView is MauiCollectionView { UsesUIKitSystemInset: true })))
+				nativeScrollView is MauiCollectionView { UsesUIKitSystemInset: true }))
 			_uiKitOwnsSystemInset = true;
 
 		TransferNativeScrollInsetOwnership(

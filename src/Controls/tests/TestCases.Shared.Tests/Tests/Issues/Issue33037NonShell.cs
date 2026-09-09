@@ -219,6 +219,10 @@ public class Issue33037NonShell : _IssuesUITest
 			Assert.That(expandedTitleRect.Height, Is.GreaterThan(30),
 				"The reporter scenario should initially display a large navigation title.");
 
+			var firstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(firstItemRect.Y, Is.GreaterThanOrEqualTo(expandedTitleRect.Bottom - 2),
+				"The reporter's first ListView row must remain below the translucent large-title navigation bar.");
+
 			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.2);
 			var collapsedTitleRect = GetNavigationTitleRect(title);
 			var collapsedScrollerRect = App.WaitForElement(scrollerId).GetRect();
