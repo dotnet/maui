@@ -44,6 +44,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	List<int>? _automationExcludedIndexes;
 	int _lastFocusedItemIndex = -1;
 	int _pendingFocusItemIndex = -1;
+	ItemContainer? _pendingFocusContainer;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
 	internal event Action<int>? ContainerPrepared;
@@ -52,9 +53,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		Template = (WControlTemplate)WApp.Current.Resources["MauiItemsViewTemplate"];
 
-		// This control is transparent to Tab (not a stop itself) so the single item
-		// returned by GetChildrenInTabFocusOrder below is the only hop Tab makes into
-		// or out of the collection; no extra intermediate stop on the owner itself.
+		// Keep the owner out of tab order until the handler finishes restoring its
+		// selection and the item containers are ready.
 		IsTabStop = false;
 		TabFocusNavigation = KeyboardNavigationMode.Local;
 		XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
@@ -138,7 +138,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			if (focusedIndex >= 0)
 			{
 				_lastFocusedItemIndex = focusedIndex;
-				_pendingFocusItemIndex = -1;
+				ClearPendingFocusRestore();
 			}
 			return;
 		}
@@ -158,12 +158,23 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 		if (targetIndex >= 0 && targetIndex < repeater.ItemsSourceView.Count)
 		{
+			ClearPendingFocusRestore();
 			_pendingFocusItemIndex = targetIndex;
 			StartBringItemIntoView(targetIndex, new BringIntoViewOptions { AnimationDesired = false });
 			return;
 		}
 
 		target?.Focus(FocusState.Keyboard);
+	}
+
+	protected override void OnLostFocus(RoutedEventArgs e)
+	{
+		base.OnLostFocus(e);
+
+		if (ReferenceEquals(e.OriginalSource, this))
+		{
+			ClearPendingFocusRestore();
+		}
 	}
 
 	/// <summary>
@@ -387,15 +398,53 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	void RestorePendingFocus(ItemsRepeater repeater, ItemContainer container, int index)
 	{
 		if (_pendingFocusItemIndex != index ||
-			repeater.GetElementIndex(container) != index ||
-			container.ActualWidth <= 0 || container.ActualHeight <= 0 ||
-			!ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), this))
+			repeater.GetElementIndex(container) != index)
 		{
 			return;
 		}
 
+		if (!ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), this))
+		{
+			ClearPendingFocusRestore();
+			return;
+		}
+
+		if (container.ActualWidth <= 0 || container.ActualHeight <= 0 ||
+			!container.Focus(FocusState.Keyboard))
+		{
+			if (!ReferenceEquals(_pendingFocusContainer, container))
+			{
+				if (_pendingFocusContainer is not null)
+				{
+					_pendingFocusContainer.LayoutUpdated -= OnPendingFocusContainerLayoutUpdated;
+				}
+
+				_pendingFocusContainer = container;
+				container.LayoutUpdated += OnPendingFocusContainerLayoutUpdated;
+			}
+			return;
+		}
+
+		ClearPendingFocusRestore();
+	}
+
+	void OnPendingFocusContainerLayoutUpdated(object? sender, object e)
+	{
+		if (sender is ItemContainer container && ItemsRepeaterControl is ItemsRepeater repeater)
+		{
+			RestorePendingFocus(repeater, container, _pendingFocusItemIndex);
+		}
+	}
+
+	void ClearPendingFocusRestore()
+	{
+		if (_pendingFocusContainer is not null)
+		{
+			_pendingFocusContainer.LayoutUpdated -= OnPendingFocusContainerLayoutUpdated;
+			_pendingFocusContainer = null;
+		}
+
 		_pendingFocusItemIndex = -1;
-		container.Focus(FocusState.Keyboard);
 	}
 
 	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
@@ -501,6 +550,8 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	internal void CleanUpAutomationEvents()
 	{
+		ClearPendingFocusRestore();
+
 		if (_itemsRepeater is ItemsRepeater repeater)
 		{
 			repeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;

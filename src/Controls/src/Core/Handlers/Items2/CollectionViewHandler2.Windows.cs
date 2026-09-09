@@ -37,6 +37,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	bool _ignorePlatformSelectionChange;
 	bool _selectionDirty;
 	bool _selectionUpdateQueued;
+	bool _platformSelectionUpdateQueued;
 	Action<int>? _containerPreparedHandler;
 
 	// Cache for MeasureFirstItem optimization
@@ -232,6 +233,7 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			_containerPreparedHandler = null;
 		}
 		_selectionUpdateQueued = false;
+		_platformSelectionUpdateQueued = false;
 
 		if (ItemsView is not null)
 		{
@@ -268,16 +270,21 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	/// </summary>
 	void PlatformSelectionChanged(WItemsView sender, ItemsViewSelectionChangedEventArgs args)
 	{
-		if (_ignorePlatformSelectionChange || PlatformView is null)
+		if (_ignorePlatformSelectionChange || PlatformView is null || _platformSelectionUpdateQueued)
 			return;
 
-		sender.DispatcherQueue.TryEnqueue(() =>
+		_platformSelectionUpdateQueued = true;
+		if (!sender.DispatcherQueue.TryEnqueue(() =>
 		{
+			_platformSelectionUpdateQueued = false;
 			if (ReferenceEquals(PlatformView, sender))
 			{
 				UpdateVirtualSelection();
 			}
-		});
+		}))
+		{
+			_platformSelectionUpdateQueued = false;
+		}
 	}
 
 	/// <summary>
