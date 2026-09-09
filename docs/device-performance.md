@@ -112,6 +112,13 @@ runs per side, matching identities and environment metadata, and the required co
 counters. A buggy baseline can provide context, but required head-side correctness must
 pass.
 
+These scenarios are measurement workloads, not regression tests for a particular product
+fix. Passing on both revisions is expected; assess the recorded correctness and comparison
+results rather than requiring a failing test before the change. Warmups are excluded from
+timing samples but still execute the scenario operation. For example,
+`updatesPreservingFirstVisibleItem` includes both warmups and measured updates, so a correct
+run with two warmups and ten measurements reports 12.
+
 Timing changes remain advisory: the comparator flags non-overlapping repeated ranges with
 at least a 15% median change by default. Its classifications are `neutral`,
 `time-regression-advisory`, `time-improvement-advisory`, or `inconclusive`.

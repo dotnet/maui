@@ -15,6 +15,92 @@ New-Item -ItemType Directory -Force -Path $testRoot | Out-Null
 
 try
 {
+    $linkValidationRoot = New-Item -ItemType Directory -Path (Join-Path $testRoot "CaseSensitiveApp")
+    foreach ($hostIsWindows in @($true, $false))
+    {
+        $linkTests = [PowerShell]::Create()
+        try
+        {
+            # Exercise both host policies without changing this process's automatic variables.
+            $null = $linkTests.AddScript({
+                param($scriptPath, $root, [bool]$hostIsWindows)
+                $ErrorActionPreference = "Stop"
+                Set-Variable -Name IsWindows -Value $hostIsWindows -Force
+
+                $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$null, [ref]$null)
+                $definitions = @($ast.FindAll({
+                    param($node)
+                    $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                        $node.Name -in @("Test-IsLink", "Assert-SafeDirectoryLinks")
+                }, $true))
+                if ($definitions.Count -ne 2)
+                {
+                    throw "Expected both directory-link validation functions."
+                }
+                foreach ($definition in $definitions)
+                {
+                    . ([ScriptBlock]::Create($definition.Extent.Text))
+                }
+
+                function Get-ChildItem {
+                    param([string]$LiteralPath, [switch]$Force, [switch]$Recurse)
+                    $link
+                }
+
+                $caseVariantRoot = Join-Path (Split-Path $root -Parent) "casesensitiveapp"
+                $cases = @(
+                    @{ Name = "root"; Target = $root; Rejected = $false },
+                    @{ Name = "descendant"; Target = (Join-Path $root "Resources/content.txt"); Rejected = $false },
+                    @{ Name = "parent"; Target = (Split-Path $root -Parent); Rejected = $true },
+                    @{ Name = "prefix sibling"; Target = (Join-Path "$root-sibling" "content.txt"); Rejected = $true },
+                    @{ Name = "case-variant root"; Target = $caseVariantRoot; Rejected = -not $hostIsWindows },
+                    @{ Name = "case-variant descendant"; Target = (Join-Path $caseVariantRoot "content.txt"); Rejected = -not $hostIsWindows }
+                )
+                foreach ($case in $cases)
+                {
+                    $link = [PSCustomObject]@{
+                        Attributes = [IO.FileAttributes]::ReparsePoint
+                        LinkType = "SymbolicLink"
+                        FullName = (Join-Path $root "link")
+                        Target = $case.Target
+                    }
+                    $link | Add-Member -MemberType ScriptMethod -Name ResolveLinkTarget -Value {
+                        param([bool]$returnFinalTarget)
+                        [IO.FileInfo]::new($this.Target)
+                    }
+
+                    $rejected = $false
+                    try {
+                        Assert-SafeDirectoryLinks ([IO.DirectoryInfo]::new($root))
+                    }
+                    catch {
+                        if ($_.Exception.Message -notlike "*outside its artifact tree*")
+                        {
+                            throw
+                        }
+                        $rejected = $true
+                    }
+                    if ($rejected -ne $case.Rejected)
+                    {
+                        throw "Link containment case '$($case.Name)' with Windows=$hostIsWindows expected rejected=$($case.Rejected), actual=$rejected."
+                    }
+                }
+                $cases.Count
+            }).AddArgument($script).AddArgument($linkValidationRoot.FullName).AddArgument($hostIsWindows)
+            $caseCounts = @($linkTests.Invoke())
+            if ($linkTests.Streams.Error.Count -gt 0)
+            {
+                throw $linkTests.Streams.Error[0].Exception
+            }
+            Assert-Equal 1 $caseCounts.Count "Link containment cases should complete for Windows=$hostIsWindows"
+            Assert-Equal 6 $caseCounts[0] "Link containment case count for Windows=$hostIsWindows"
+        }
+        finally
+        {
+            $linkTests.Dispose()
+        }
+    }
+
     $baseArtifacts = Join-Path $testRoot "base-artifacts/Controls.DeviceTests/Release/net10.0-android"
     $headArtifacts = Join-Path $testRoot "head-artifacts/Controls.DeviceTests/Release/net10.0-android"
     New-Item -ItemType Directory -Force -Path $baseArtifacts, $headArtifacts | Out-Null

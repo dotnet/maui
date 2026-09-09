@@ -69,6 +69,7 @@ function Assert-SafeDirectoryLinks([IO.DirectoryInfo]$directory)
 
     $root = [IO.Path]::GetFullPath($directory.FullName)
     $rootPrefix = $root + [IO.Path]::DirectorySeparatorChar
+    $pathComparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
     foreach ($entry in Get-ChildItem -LiteralPath $root -Force -Recurse)
     {
         if (-not (Test-IsLink $entry))
@@ -91,8 +92,8 @@ function Assert-SafeDirectoryLinks([IO.DirectoryInfo]$directory)
         }
 
         $targetPath = [IO.Path]::GetFullPath($target.FullName)
-        if ($targetPath -ne $root -and
-            -not $targetPath.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase))
+        if (-not [string]::Equals($targetPath, $root, $pathComparison) -and
+            -not $targetPath.StartsWith($rootPrefix, $pathComparison))
         {
             throw "Device performance app contains a symbolic link or reparse point outside its artifact tree: $($entry.FullName)"
         }
