@@ -13,6 +13,10 @@ BeforeAll {
         Resolve-Path |
         Select-Object -ExpandProperty Path
     $provision = Get-Content -Raw -LiteralPath $provisionPath
+    $vallySetupPath = Join-Path $PSScriptRoot 'SetupVallyRuntime.sh' |
+        Resolve-Path |
+        Select-Object -ExpandProperty Path
+    $vallySetup = Get-Content -Raw -LiteralPath $vallySetupPath
 
     $script:BaseBranchPatterns = @(
         $pipeline -split '\r?\n' |
@@ -147,5 +151,16 @@ Describe 'Android provisioning branch compatibility' {
             "displayName: 'Restore Chrome apt feed after legacy JDK provisioning'"))
         $provision | Should -Match ([regex]::Escape(
             "condition: and(always(), eq(variables['Agent.OS'], 'Linux'))"))
+    }
+}
+
+Describe 'Vally runtime dependency pinning' {
+    It 'pins the Copilot SDK that supplies the security-argument-compatible CLI' {
+        $vallySetup | Should -Match ([regex]::Escape(
+            'copilot_sdk_version=1.0.7'))
+        $vallySetup | Should -Match ([regex]::Escape(
+            '"@github/copilot-sdk@${copilot_sdk_version}"'))
+        $vallySetup | Should -Match ([regex]::Escape(
+            'Expected Copilot SDK $copilot_sdk_version, found $installed_copilot_sdk_version'))
     }
 }

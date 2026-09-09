@@ -10,6 +10,7 @@ fi
 install_root=$1
 vally_version=$2
 github_output=$3
+copilot_sdk_version=1.0.7
 
 mkdir -p "$install_root"
 (
@@ -19,7 +20,8 @@ mkdir -p "$install_root"
 		--no-fund \
 		--no-save \
 		--loglevel=error \
-		"@microsoft/vally-cli@${vally_version}"
+		"@microsoft/vally-cli@${vally_version}" \
+		"@github/copilot-sdk@${copilot_sdk_version}"
 )
 
 vally_bin="$install_root/node_modules/.bin/vally"
@@ -30,6 +32,15 @@ fi
 installed_version=$("$vally_bin" --version)
 if [ "$installed_version" != "$vally_version" ]; then
 	echo "Expected Vally $vally_version, found $installed_version" >&2
+	exit 1
+fi
+
+installed_copilot_sdk_version=$(
+	node -e 'console.log(require(process.argv[1]).version)' \
+		"$install_root/node_modules/@github/copilot-sdk/package.json"
+)
+if [ "$installed_copilot_sdk_version" != "$copilot_sdk_version" ]; then
+	echo "Expected Copilot SDK $copilot_sdk_version, found $installed_copilot_sdk_version" >&2
 	exit 1
 fi
 
