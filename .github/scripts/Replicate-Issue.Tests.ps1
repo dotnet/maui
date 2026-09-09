@@ -3662,6 +3662,95 @@ InitializeComponent();
         $restore | Should -Match 'timedOut='
     }
 
+    It 'restores the pinned tool manifest in the private environment and preserves failures' {
+        $repoRoot = Join-Path $TestDrive 'tool-restore-repo'
+        $sandboxArtifactDir = Join-Path $TestDrive 'tool-restore-artifacts'
+        $manifest = Join-Path $repoRoot '.config/dotnet-tools.json'
+        $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $manifest), $sandboxArtifactDir
+        '{"version":1,"isRoot":true,"tools":{}}' | Set-Content -LiteralPath $manifest
+        $allSecretNames = @('TOOL_RESTORE_SECRET')
+        $script:toolRestoreTrace = [Collections.Generic.List[string]]::new()
+        $script:toolRestoreResult = @{ ExitCode = 0; TimedOut = $false; Output = @('tools restored') }
+        function Assert-InitialReplicationWorktree {
+            $script:toolRestoreTrace.Add('clean')
+        }
+        function Assert-ReplicationTrustedTree {
+            param($Context)
+            $script:toolRestoreTrace.Add($Context)
+        }
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            $Names | Should -Contain 'TOOL_RESTORE_SECRET'
+            $script:toolRestoreTrace.Add('without-secrets')
+            & $ScriptBlock
+        }
+        function Get-ReplicationRuntimeEnvironment {
+            return @{
+                HOME = '/private/home'
+                DOTNET_CLI_HOME = '/private/dotnet'
+                NUGET_PACKAGES = '/private/nuget'
+            }
+        }
+        function Invoke-BoundedProcess {
+            param($FilePath, $Arguments, $WorkingDirectory, $TimeoutSeconds, $Environment)
+            $script:toolRestoreTrace.Add('restore')
+            $FilePath | Should -Be 'dotnet'
+            ($Arguments -join '|') | Should -Be "tool|restore|--tool-manifest|$manifest"
+            $WorkingDirectory | Should -Be $repoRoot
+            $TimeoutSeconds | Should -Be 600
+            $Environment.HOME | Should -Be '/private/home'
+            $Environment.DOTNET_CLI_HOME | Should -Be '/private/dotnet'
+            $Environment.NUGET_PACKAGES | Should -Be '/private/nuget'
+            return $script:toolRestoreResult
+        }
+
+        Invoke-ReplicationTrustedRestore -Target $manifest -Verb tool-restore -TimeoutSeconds 600
+        ($script:toolRestoreTrace -join '|') | Should -Be (
+            'clean|before trusted restore of dotnet-tools.json|without-secrets|' +
+            'restore|after trusted restore of dotnet-tools.json')
+        $log = Join-Path $sandboxArtifactDir 'trusted-tool-restore.log'
+        Get-Content -LiteralPath $log -Raw | Should -Match 'tools restored'
+
+        $script:toolRestoreResult = @{
+            ExitCode = 19; TimedOut = $false; Output = @('pinned tool download failed')
+        }
+        { Invoke-ReplicationTrustedRestore -Target $manifest -Verb tool-restore -TimeoutSeconds 600 } |
+            Should -Throw '*exit 19, timedOut=False*pinned tool download failed*'
+        Get-Content -LiteralPath $log -Raw | Should -Match 'exit=19; timedOut=False'
+        Get-Content -LiteralPath $log -Raw | Should -Match 'pinned tool download failed'
+
+        $script:toolRestoreResult = @{
+            ExitCode = 0; TimedOut = $true; Output = @('tool feed did not respond')
+        }
+        { Invoke-ReplicationTrustedRestore -Target $manifest -Verb tool-restore -TimeoutSeconds 600 } |
+            Should -Throw '*timedOut=True*tool feed did not respond*'
+        $script:toolRestoreTrace[$script:toolRestoreTrace.Count - 1] |
+            Should -Be 'after trusted restore of dotnet-tools.json'
+
+        $foreignManifest = Join-Path $repoRoot 'generated-tools.json'
+        Copy-Item -LiteralPath $manifest -Destination $foreignManifest
+        { Invoke-ReplicationTrustedRestore -Target $foreignManifest -Verb tool-restore } |
+            Should -Throw '*requires the baseline manifest without additional arguments*'
+        { Invoke-ReplicationTrustedRestore -Target $manifest -Verb tool-restore -AdditionalArguments @('--ignore-failed-sources') } |
+            Should -Throw '*requires the baseline manifest without additional arguments*'
+        @($script:toolRestoreTrace | Where-Object { $_ -eq 'restore' }).Count | Should -Be 3
+    }
+
+    It 'prewarms baseline CLI tools before the isolated Android harness-only probe' {
+        $start = $script:Source.IndexOf("Write-Host 'Restoring pinned baseline CLI tools")
+        $probe = $script:Source.IndexOf("-Description 'Preflighting Android XHarness", $start)
+        $start | Should -BeGreaterThan 0
+        $probe | Should -BeGreaterThan $start
+        $prewarm = $script:Source.Substring($start, $probe - $start)
+        $prewarm | Should -Match "Invoke-ReplicationTrustedRestore"
+        $prewarm | Should -Match '\-Target \(Join-Path \$repoRoot ''\.config/dotnet-tools\.json''\)'
+        $prewarm | Should -Match "\-Verb 'tool-restore'"
+        $prewarm | Should -Match '\-TimeoutSeconds 600'
+        $prewarm | Should -Match 'Invoke-LoggedChildProcess'
+        $prewarm | Should -Match "'-PreflightXHarnessOnly'"
+        $script:Source.IndexOf('if ($PreflightXHarnessOnly) {', $probe) | Should -BeGreaterThan $probe
+    }
+
     It 'does not offer host-executed generated UI tests to replication' {
         $proposal = [regex]::Match(
             $script:Source,
