@@ -161,6 +161,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match (
             "(?s)displayName: 'Publish fixed Android native harness probe result'.*?" +
             "eq\('\$\{\{ parameters\.AndroidHarnessNativeProbeOnly \}\}', 'True'\).*?" +
+            "eq\(variables\['replicationNativeProbeStarted'\], 'true'\).*?" +
             "testResultsFormat: 'XUnit'.*?native-harness-probe/results/.*?" +
             "failTaskOnFailedTests: true.*?failTaskOnMissingResultsFile: true")
         $orchestrator = Get-Content -LiteralPath (
@@ -169,7 +170,8 @@ Describe 'MAUI Copilot mode routing' {
         $native | Should -BeGreaterThan $orchestrator.IndexOf('if ($PreflightXHarnessOnly) {')
         $native | Should -BeLessThan $orchestrator.IndexOf("'-PrepareAndroidHelpersOnly'")
         $orchestrator | Should -Match (
-            '(?s)if \(\$AndroidHarnessNativeProbeOnly\) \{\s+' +
+            '(?s)if \(\$AndroidHarnessNativeProbeOnly\) \{.*?' +
+            'task\.setvariable variable=replicationNativeProbeStarted.*?' +
             'Invoke-ReplicationAndroidNativeHarnessProbe.*?exit 0')
         $orchestrator | Should -Match 'if \(\$PreflightXHarnessOnly -or \$AndroidHarnessNativeProbeOnly\)'
     }

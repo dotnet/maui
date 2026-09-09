@@ -2642,7 +2642,7 @@ stages:
 
           - task: PublishTestResults@2
             displayName: 'Publish fixed Android native harness probe result'
-            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'))
+            condition: and(succeededOrFailed(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), eq(variables['replicationNativeProbeStarted'], 'true'))
             inputs:
               testResultsFormat: 'XUnit'
               searchFolder: '$(Build.SourcesDirectory)/CustomAgentLogsTmp/IssueReplication'
