@@ -1848,6 +1848,28 @@ Describe 'source package trust' {
         Reset-BuildTestEnvironment
     }
 
+    It 'stages runtime packages without legacy or portable symbol packages' {
+        $fixture = New-SourcePackageFixture
+        $package = Join-Path $fixture.PackageDirectory "Microsoft.Maui.Controls.$($fixture.Version).nupkg"
+        Copy-Item $package (Join-Path $fixture.PackageDirectory "Microsoft.Maui.Controls.$($fixture.Version).symbols.nupkg")
+        Copy-Item $package (Join-Path $fixture.PackageDirectory "Microsoft.Maui.Controls.$($fixture.Version).snupkg")
+        $packages = @(Get-SourcePackageFiles $fixture.PackageDirectory)
+        $packages.Count | Should -Be $script:requiredSourcePackageIds.Count
+        $manifest = Get-SourcePackageManifestObject $fixture
+        $manifest.packages = @($packages | ForEach-Object { Get-SourcePackageInfo $_.FullName $fixture.SourceSha })
+        Save-SourcePackageManifest -Fixture $fixture -Manifest $manifest
+        { Read-SourcePackageManifest $fixture.ManifestPath $fixture.SourceSha } | Should -Not -Throw
+    }
+
+    It 'still rejects duplicate package identities in a source manifest' {
+        $fixture = New-SourcePackageFixture
+        $manifest = Get-SourcePackageManifestObject $fixture
+        $manifest.packages += $manifest.packages[0]
+        Save-SourcePackageManifest -Fixture $fixture -Manifest $manifest
+        { Read-SourcePackageManifest $fixture.ManifestPath $fixture.SourceSha } |
+            Should -Throw '*Invalid source package entry*'
+    }
+
     It 'rejects a source package whose nuspec commit no longer matches the pinned source sha' {
         $fixture = New-SourcePackageFixture
         New-FakeSourcePackage `
