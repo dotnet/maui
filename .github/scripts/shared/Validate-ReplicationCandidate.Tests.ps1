@@ -4664,6 +4664,37 @@ $($case.AfterMember)
         }
     }
 
+    It 'allows changed primitive static initialization across conditional branches' {
+        $before = @'
+class SafeHandler
+{
+#if ANDROID
+    static readonly int Size = 1;
+#else
+    static readonly int Size = 2;
+#endif
+}
+'@
+        $after = @'
+class SafeHandler
+{
+#if ANDROID
+    static readonly int Size = 3;
+#else
+    static readonly int Size = 4;
+#endif
+}
+'@
+        $patch = script:New-CompleteFilePatch -Before $before -After $after
+
+        {
+            Assert-ReplicationFixSources `
+                -RepositoryRoot $script:completeRepo `
+                -Paths @($script:completePath) `
+                -PatchPath $patch
+        } | Should -Not -Throw
+    }
+
     It 'rejects static literal initialization through a source-defined conversion' {
         $before = 'class SafeHandler { int Safe() => 1; }'
         $after = @'
