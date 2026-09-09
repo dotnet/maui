@@ -881,6 +881,7 @@ function Get-ReplicationCSharpMemberRecords {
         $records.Add([pscustomobject]@{
             Key = "$baseKey#$($occurrences[$baseKey])"
             Text = $node.ToFullString()
+            SyntaxText = $node.ToString()
             Kind = $kind
         })
     }
@@ -1397,8 +1398,15 @@ function Assert-ReplicationProductFixDeltaSafety {
         $afterRecords[$record.Key] = $record
         if (-not $beforeRecords.ContainsKey($record.Key) -or
             $record.Text -cne $beforeRecords[$record.Key].Text) {
+            # Surrounding directive trivia may be unbalanced outside the file.
+            # Conditional records retain their complete raw branches below.
+            $initializerText = if ($record.PSObject.Properties['SyntaxText']) {
+                $record.SyntaxText
+            } else {
+                $record.Text
+            }
             Invoke-ReplicationChangedStaticInitializerSafety `
-                -RecordText $record.Text `
+                -RecordText $initializerText `
                 -RecordKind $record.Kind `
                 -Path $Path
 

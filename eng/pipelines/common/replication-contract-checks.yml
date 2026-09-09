@@ -100,6 +100,7 @@ steps:
         'Complete post-patch product source scanning*allows unchanged conditional static object initialization beside a safe edit'
         'Complete post-patch product source scanning*rejects Android mapper registration hidden behind a static field initializer'
         'Complete post-patch product source scanning*rejects static initialization hidden in changed conditional branches'
+        'Complete post-patch product source scanning*allows changed primitive static initialization across conditional branches'
         'Complete post-patch product source scanning*rejects static literal initialization through a source-defined conversion'
         'Complete post-patch product source scanning*rejects executable static property and field initializer variants'
         'Replication failure-only verification*requires the packaged device boundary for Windows and rejects host test tiers'
