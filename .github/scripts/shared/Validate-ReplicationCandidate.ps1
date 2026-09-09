@@ -1827,6 +1827,37 @@ function Get-DisqualifyingFailureCode {
     return ''
 }
 
+function Get-DisqualifyingVerificationEvidenceCode {
+    param(
+        [AllowNull()][string]$Text,
+        [Parameter(Mandatory = $true)][object]$Manifest
+    )
+
+    $expectedFailure = (
+        $Manifest.Platform -ceq 'android' -and
+        $Manifest.TestType -ceq 'DeviceTest' -and
+        -not [string]::IsNullOrWhiteSpace($Manifest.TestClassName) -and
+        -not [string]::IsNullOrWhiteSpace($Manifest.TestMethodName) -and
+        $Text -match '(?im)^\s*XHarness exit code:\s*1\s*\(TESTS_FAILED\)\s*$' -and
+        $Text -match '(?im)^\s*Platform:\s*android\s*$' -and
+        $Text -match '(?im)\bParsed test results:\s*Passed=0\s+Failed=1\s+Total=1\b' -and
+        $Text -match ('(?m)^[ \t]*Failed test\(s\):[ \t]*' +
+            [regex]::Escape("$($Manifest.TestClassName).$($Manifest.TestMethodName)") +
+            '[ \t]*\r?$') -and
+        $Text -match '(?im)\bVERIFICATION PASSED\b' -and
+        $Text -match '(?im)\bAll\s+1\s+test\(s\)\s+FAILED\s+as\s+expected\b'
+    )
+
+    if ($expectedFailure) {
+        # Called only after machine-result validation; device XML independently
+        # proves the selected failure. Retain every other fault and the raw log.
+        $Text = [regex]::Replace(
+            $Text, '(?im)^[ \t]*XHarness exit code:[ \t]*1[ \t]*\(TESTS_FAILED\)[ \t]*\r?$', '')
+    }
+
+    return Get-DisqualifyingFailureCode -Text $Text
+}
+
 function Get-TestNameFromFilter {
     param(
         [Parameter(Mandatory = $true)][string]$TestFilter,
@@ -4876,7 +4907,7 @@ function Assert-ReplicationVerificationEvidence {
                 -MaximumBytes $script:VerificationArtifactMaxBytes `
                 -Root $Inventory.VerificationRoot `
                 -Context 'Verification console log'
-            $disqualifier = Get-DisqualifyingFailureCode -Text $console
+            $disqualifier = Get-DisqualifyingVerificationEvidenceCode -Text $console -Manifest $Manifest
             if ($disqualifier) {
                 throw "Verification evidence is disqualified by '$disqualifier' failure evidence."
             }
