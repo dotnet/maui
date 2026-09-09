@@ -67,6 +67,8 @@ steps:
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*scopes Issue26505 Sandbox scene guidance to Android Issue26505'
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*keeps Sandbox-only Issue26505 guidance out of generated-test phases'
         'Replication orchestrator security boundary*clears trusted Android preflight residue before Sandbox authoring'
+        'Replication orchestrator security boundary*restores the pinned tool manifest in the private environment and preserves failures'
+        'Replication orchestrator security boundary*prewarms baseline CLI tools before the isolated Android harness-only probe'
         'A missing device-harness verdict is not a test to repair*recognises Android XHarness missing-result output as a harness fault'
         'A missing device-harness verdict is not a test to repair*reports missing XHarness results as harness diagnostics rather than a blank build failure'
         'A missing device-harness verdict is not a test to repair*retries a harness without an authoritative result with the same generated source'

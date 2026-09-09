@@ -8143,7 +8143,7 @@ function Invoke-ReplicationTrustedRestore {
     param(
         [Parameter(Mandatory = $true)][string]$Target,
         [AllowEmptyCollection()][string[]]$AdditionalArguments = @(),
-        [ValidateSet('restore', 'build')][string]$Verb = 'restore',
+        [ValidateSet('restore', 'build', 'tool-restore')][string]$Verb = 'restore',
         [int]$TimeoutSeconds = 1800
     )
 
@@ -8151,17 +8151,34 @@ function Invoke-ReplicationTrustedRestore {
     if (-not (Test-Path -LiteralPath $fullTarget -PathType Leaf)) {
         throw "Trusted restore target does not exist: $fullTarget"
     }
+    $restoreArguments = @($Verb, $fullTarget) + @($AdditionalArguments)
+    if ($Verb -eq 'tool-restore') {
+        $toolManifest = [IO.Path]::GetFullPath(
+            (Join-Path $repoRoot '.config/dotnet-tools.json'))
+        if ($fullTarget -cne $toolManifest -or $AdditionalArguments.Count -ne 0) {
+            throw 'Trusted tool restore requires the baseline manifest without additional arguments.'
+        }
+        Assert-InitialReplicationWorktree
+        $restoreArguments = @('tool', 'restore', '--tool-manifest', $toolManifest)
+    }
     $null = Assert-ReplicationTrustedTree -Context "before trusted restore of $(Split-Path -Leaf $fullTarget)"
     try {
         $result = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath 'dotnet' `
-                -Arguments (@($Verb, $fullTarget) + @($AdditionalArguments)) `
+                -Arguments $restoreArguments `
+                -WorkingDirectory $repoRoot `
                 -TimeoutSeconds $TimeoutSeconds `
                 -Environment (Get-ReplicationRuntimeEnvironment)
         }
     } finally {
         $null = Assert-ReplicationTrustedTree -Context "after trusted restore of $(Split-Path -Leaf $fullTarget)"
+    }
+    if ($Verb -eq 'tool-restore') {
+        @(
+            "exit=$([int]$result.ExitCode); timedOut=$([bool]$result.TimedOut)"
+            ConvertTo-ReplicationSafeLog -Value (@($result.Output) -join "`n") -MaximumLength 65536
+        ) | Set-Content -LiteralPath (Join-Path $sandboxArtifactDir 'trusted-tool-restore.log') -Encoding utf8
     }
     if ($result.TimedOut -or [int]$result.ExitCode -ne 0) {
         $details = Get-ReplicationFailureDetails -Output @($result.Output)
@@ -9802,6 +9819,14 @@ try {
         if ($DeviceUdid -match '^\$\([A-Za-z0-9_.-]+\)$') {
             throw 'DeviceUdid contains an unresolved pipeline variable.'
         }
+
+        # The isolated CLI resolves tools from its private home and package cache,
+        # not the pipeline bootstrap's cache or its potentially different manifest.
+        Write-Host 'Restoring pinned baseline CLI tools into the private execution environment.'
+        Invoke-ReplicationTrustedRestore `
+            -Target (Join-Path $repoRoot '.config/dotnet-tools.json') `
+            -Verb 'tool-restore' `
+            -TimeoutSeconds 600
 
         Invoke-LoggedChildProcess `
             -ScriptPath (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1') `
