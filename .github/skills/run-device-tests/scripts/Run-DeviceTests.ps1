@@ -1988,6 +1988,8 @@ try {
         }
         "android" {
             $buildArgs += "/p:AndroidPackageFormat=apk"
+            # XHarness installs only the APK, not Debug fast-deployment assemblies.
+            $buildArgs += "/p:EmbedAssembliesIntoApk=true"
         }
         "windows" {
             $buildArgs += "/p:RuntimeIdentifierOverride=$($platformConfig.RuntimeIdentifier)"

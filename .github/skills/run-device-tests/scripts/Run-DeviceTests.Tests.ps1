@@ -52,6 +52,15 @@ BeforeAll {
 }
 
 Describe 'Build isolation options' {
+    It 'embeds Android assemblies in the APK for XHarness in every configuration' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match (
+            '(?s)"android"\s*\{\s*' +
+            '\$buildArgs \+= "/p:AndroidPackageFormat=apk"\s*' +
+            '(?:#[^\r\n]*\s*)?' +
+            '\$buildArgs \+= "/p:EmbedAssembliesIntoApk=true"\s*\}')
+    }
+
     It 'supports rebuilding the full project graph for A/B Gate runs' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match '\[switch\]\$Rebuild'

@@ -80,7 +80,9 @@ Describe 'Fixed Android native harness probe' {
         Test-Path -LiteralPath $fixtureTarget | Should -BeFalse
         Should -Invoke Assert-InitialReplicationWorktree -Times 2 -Exactly
         Should -Invoke Invoke-ReplicationTrustedRestore -Times 1 -Exactly -ParameterFilter {
-            $Verb -ceq 'build' -and $AdditionalArguments -contains '--no-restore'
+            $Verb -ceq 'build' -and
+                $AdditionalArguments -contains '--no-restore' -and
+                $AdditionalArguments -contains '-p:EmbedAssembliesIntoApk=true'
         }
         Should -Invoke Invoke-LoggedChildProcess -Times 1 -Exactly
         Should -Invoke Restore-TrackedVerificationSideEffects -Times 1 -Exactly
