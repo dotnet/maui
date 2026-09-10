@@ -105,6 +105,15 @@ BeforeAll {
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
         'Assert-GeneratedSandboxXaml',
+        'Get-ReplicationSandboxFinalResultIdentifiers',
+        'Get-ReplicationSandboxVerdictLiteralText',
+        'Get-ReplicationSandboxParseOptions',
+        'Test-ReplicationSandboxLocalHasMutableWrites',
+        'Test-ReplicationSandboxStatementDefinitelyExits',
+        'Get-ReplicationSandboxConstantBooleanValue',
+        'Get-ReplicationSandboxPositiveVerdictSelection',
+        'Get-ReplicationSandboxAssignmentGuardState',
+        'Assert-ReplicationSandboxFinalVerdictIsObservationDriven',
         'Assert-GeneratedSandboxSources',
         'Get-ReplicationFixBaselineGreenCause',
     'Get-ReplicationMissingIdentifierEvidence',
@@ -1963,6 +1972,519 @@ public partial class MainPage : ContentPage
             Replace('customButton.Text = result;', 'resultLabel.Text = result;') |
             Set-Content -LiteralPath $sandboxCodePath
         { Assert-GeneratedSandboxSources } | Should -Not -Throw
+    }
+
+    Context 'Sandbox final result target verdict writes' {
+        BeforeEach {
+            $script:SandboxVerdictFixtureState = @{}
+            foreach ($name in @(
+                    'IssueNumber',
+                    'Platform',
+                    'repoRoot',
+                    'sandboxXamlPath',
+                    'sandboxCodePath',
+                    'sandboxAppCodePath',
+                    'sandboxShellXamlPath',
+                    'sandboxShellCodePath',
+                    'appiumPlanPath',
+                    'SandboxRequiredPaths',
+                    'SandboxHostPaths')) {
+                $existing = Get-Variable -Scope Script -Name $name -ErrorAction SilentlyContinue
+                $script:SandboxVerdictFixtureState[$name] = if ($null -eq $existing) {
+                    @{ Exists = $false }
+                }
+                else {
+                    @{
+                        Exists = $true
+                        Value = $existing.Value
+                    }
+                }
+            }
+
+            $script:IssueNumber = 37440
+            $script:Platform = 'ios'
+            $script:repoRoot = $TestDrive
+            $script:sandboxXamlPath = Join-Path $TestDrive 'MainPage.xaml'
+            $script:sandboxCodePath = Join-Path $TestDrive 'MainPage.xaml.cs'
+            $script:sandboxAppCodePath = Join-Path $TestDrive 'App.xaml.cs'
+            $script:sandboxShellXamlPath = Join-Path $TestDrive 'SandboxShell.xaml'
+            $script:sandboxShellCodePath = Join-Path $TestDrive 'SandboxShell.xaml.cs'
+            $script:appiumPlanPath = Join-Path $TestDrive 'appium-plan.json'
+            $script:SandboxRequiredPaths = @(
+                'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml'
+                'src/Controls/samples/Controls.Sample.Sandbox/MainPage.xaml.cs'
+                'CustomAgentLogsTmp/Sandbox/appium-plan.json'
+            )
+            $script:SandboxHostPaths = @(
+                'src/Controls/samples/Controls.Sample.Sandbox/App.xaml.cs'
+                'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml'
+                'src/Controls/samples/Controls.Sample.Sandbox/SandboxShell.xaml.cs'
+            )
+
+            function script:Write-SandboxVerdictFixture {
+                param(
+                    [string]$Code,
+                    [string]$Xaml = @'
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage">
+    <VerticalStackLayout>
+        <Label x:Name="ProbeLabel"
+               AutomationId="ProbeLabel"
+               Text="Expected" />
+        <Button x:Name="TriggerButton"
+                AutomationId="TriggerButton"
+                Text="Inspect" />
+        <Label x:Name="ResultStatus"
+               AutomationId="ResultLabel"
+               Text="NO BUG: waiting" />
+    </VerticalStackLayout>
+</ContentPage>
+'@,
+                    [switch]$SkipPlan
+                )
+
+                $Xaml | Set-Content -LiteralPath $script:sandboxXamlPath
+                $Code | Set-Content -LiteralPath $script:sandboxCodePath
+
+                if ($SkipPlan) {
+                    Remove-Item -LiteralPath $script:appiumPlanPath -ErrorAction SilentlyContinue
+                    return
+                }
+
+                @'
+{
+  "schemaVersion": 1,
+  "issueNumber": 37440,
+  "steps": [
+    {
+      "action": "assertTextEquals",
+      "description": "Confirm the result starts in its initialized negative state",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "NO BUG: waiting",
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "tap",
+      "description": "Trigger the observation",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "TriggerButton"
+      },
+      "value": null,
+      "timeoutSeconds": 10
+    },
+    {
+      "action": "assertTextEquals",
+      "description": "Verify the observed failure",
+      "locator": {
+        "strategy": "accessibilityId",
+        "value": "ResultLabel"
+      },
+      "value": "BUG REPRODUCED: observed mismatch",
+      "timeoutSeconds": 10
+    }
+  ]
+}
+'@ | Set-Content -LiteralPath $script:appiumPlanPath
+            }
+        }
+
+        AfterEach {
+            foreach ($name in $script:SandboxVerdictFixtureState.Keys) {
+                $state = $script:SandboxVerdictFixtureState[$name]
+                if ($state.Exists) {
+                    Set-Variable -Scope Script -Name $name -Value $state.Value
+                }
+                else {
+                    Remove-Variable -Scope Script -Name $name -ErrorAction SilentlyContinue
+                }
+            }
+
+            Remove-Variable -Scope Script -Name SandboxVerdictFixtureState -ErrorAction SilentlyContinue
+            Remove-Item -LiteralPath Function:\Write-SandboxVerdictFixture -ErrorAction SilentlyContinue
+        }
+
+        It 'rejects the captured self-announced Sandbox verdict shape' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        ResultStatus.TextColor = Colors.DarkRed;
+        Console.WriteLine("Accessibility inspection finished.");
+    }
+}
+'@
+
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*without a state-dependent predicate*'
+        }
+
+        It 'allows state-dependent property and null-pattern predicates on the final result target' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (TriggerButton.IsVisible)
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (sender is null)
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'allows a state-dependent positive else branch and rejects a constant false selector' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (ProbeLabel.Text == "Expected")
+        {
+            ResultStatus.Text = "NO BUG: waiting";
+        }
+        else
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (false)
+        {
+            ResultStatus.Text = "NO BUG: waiting";
+        }
+        else
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*constant condition*false*'
+        }
+
+        It 'accepts guarded verdict writes beyond the old lexical window and with braces inside strings' {
+            $padding = 'x' * 900
+            Write-SandboxVerdictFixture @"
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (ProbeLabel.Text != "Expected")
+        {
+            var explanation = "status { brace }; still measuring $padding";
+            Console.WriteLine(explanation);
+            ResultStatus.Text = $"BUG REPRODUCED: {ProbeLabel.Text}";
+        }
+    }
+}
+"@
+
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'rejects concatenated and interpolated positive literals when no state decides them' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        ResultStatus.Text = "BUG " + "REPRODUCED: observed mismatch";
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*without a state-dependent predicate*'
+
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        var detail = ProbeLabel.Text;
+        ResultStatus.Text = $"BUG REPRODUCED: {detail}";
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*without a state-dependent predicate*'
+        }
+
+        It 'rejects constant selectors like if true, one equals one, and bool locals initialized to constants' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (true)
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*constant condition*true*'
+
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        ResultStatus.Text = 1 == 1
+            ? "BUG REPRODUCED: observed mismatch"
+            : "NO BUG: waiting";
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*constant condition*1 == 1*'
+
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        bool bugObserved = true;
+        if (bugObserved)
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*constant condition*bugObserved*'
+        }
+
+        It 'allows bool locals that are reassigned from observed state before the verdict branch' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        bool bugObserved = true;
+        bugObserved = ProbeLabel.Text != "Expected";
+        if (bugObserved)
+        {
+            ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+        }
+    }
+}
+'@
+
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'allows preceding state-dependent early returns that guard later positive verdict writes' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+        if (ProbeLabel.Text == "Expected")
+        {
+            return;
+        }
+
+        ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+    }
+}
+'@
+
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'parses active platform directives before evaluating final verdict writes' {
+            $platformConditionalCode = @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+    }
+
+    void OnInspectAccessibilityClicked(object sender, EventArgs e)
+    {
+#if IOS
+        ResultStatus.Text = "BUG REPRODUCED: observed mismatch";
+#endif
+    }
+}
+'@
+            Write-SandboxVerdictFixture $platformConditionalCode
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*final Appium result target*without a state-dependent predicate*'
+
+            $script:Platform = 'android'
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'ignores benign logs and non-positive captions around the result target' {
+            Write-SandboxVerdictFixture @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        ResultStatus.Text = "NO BUG: waiting";
+        TriggerButton.Text = "BUG REPRODUCED shown in report title";
+        Console.WriteLine("BUG REPRODUCED: diagnostic only");
+    }
+}
+'@
+
+            { Assert-GeneratedSandboxSources } | Should -Not -Throw
+        }
+
+        It 'propagates bounded XAML analysis errors instead of silently skipping them' {
+            {
+                Get-ReplicationSandboxFinalResultIdentifiers `
+                    -XamlSource '<ContentPage' `
+                    -LocatorValue 'ResultLabel'
+            } | Should -Throw '*could not be analyzed for the final Appium result target*'
+        }
+
+        It 'does not silently pass when the configured Appium plan path is missing' {
+            Write-SandboxVerdictFixture -Code @'
+namespace Maui.Controls.Sample;
+
+public partial class MainPage : ContentPage
+{
+    public MainPage()
+    {
+        InitializeComponent();
+        ResultStatus.Text = "NO BUG: waiting";
+    }
+}
+'@ -SkipPlan
+
+            { Assert-GeneratedSandboxSources } |
+                Should -Throw '*Generated Appium plan is missing*'
+        }
+    }
+
+    It 'tells Sandbox authors the bounded rule and the required repair guidance' {
+        $script:Source | Should -Match 'app-authored BUG REPRODUCED caption is supplemental only'
+        $script:Source | Should -Match 'actual observation of the affected state must decide it'
+        $script:Source | Should -Match 'reject the scenario rather than faking a verdict for Appium'
+        $script:Source | Should -Match 'observedBehaviorCheck must describe the measured state change'
+        $script:Source | Should -Match 'bounded prebuild guard rejects only confirmed unconditional or'
+        $script:Source | Should -Match 'constant-selected positives on the final result target'
     }
 
     It 'does not block ordinary English prose in comments or strings' {
@@ -15913,6 +16435,8 @@ Describe 'A sandbox attempt that decided something is not called other' {
         # 'other' - which is exactly how this whole family stayed invisible.
         $guardFunctions = @(
             'Assert-GeneratedSandboxXaml', 'Assert-GeneratedSandboxSources',
+            'Get-ReplicationSandboxFinalResultIdentifiers',
+            'Assert-ReplicationSandboxFinalVerdictIsObservationDriven',
             'Assert-SandboxChanges', 'Read-SandboxProposal', 'Read-GeneratedAppiumPlan')
 
         $source = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'

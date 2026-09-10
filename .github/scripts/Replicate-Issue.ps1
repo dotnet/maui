@@ -2524,8 +2524,700 @@ function Test-ReplicationPathChanged {
     return @(Get-ReplicationGitStatus | Where-Object { $_.Path -ceq $RelativePath }).Count -gt 0
 }
 
+function Get-ReplicationSandboxFinalResultIdentifiers {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $XamlSource,
+
+        [Parameter(Mandatory = $true)]
+        [string] $LocatorValue
+    )
+
+    if ([string]::IsNullOrWhiteSpace($XamlSource) -or
+        [string]::IsNullOrWhiteSpace($LocatorValue)) {
+        return @()
+    }
+
+    $targets = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+
+    $xamlNamespace = 'http://schemas.microsoft.com/winfx/2009/xaml'
+    $settings = [Xml.XmlReaderSettings]::new()
+    $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+    $settings.XmlResolver = $null
+    $stringReader = [IO.StringReader]::new($XamlSource)
+    $xmlReader = $null
+    $document = $null
+    try {
+        $xmlReader = [Xml.XmlReader]::Create($stringReader, $settings)
+        $document = [Xml.Linq.XDocument]::Load(
+            $xmlReader,
+            [Xml.Linq.LoadOptions]::None)
+    } catch {
+        $detail = ConvertTo-BoundedAgentLine `
+            -Value $_.Exception.Message `
+            -Description 'Sandbox XAML analysis failure' `
+            -MaximumLength 300 `
+            -Prose
+        throw "Generated Sandbox XAML could not be analyzed for the final Appium result target: $detail"
+    } finally {
+        if ($null -ne $xmlReader) {
+            $xmlReader.Dispose()
+        }
+        $stringReader.Dispose()
+    }
+
+    if ($null -ne $document.Root) {
+        foreach ($element in @($document.Root) + @($document.Root.Descendants())) {
+            $name = $element.Attribute(
+                [Xml.Linq.XName]::Get('Name', $xamlNamespace))
+            $automationId = $element.Attribute(
+                [Xml.Linq.XName]::Get('AutomationId'))
+            if ($null -ne $name -and $name.Value -ceq $LocatorValue) {
+                [void]$targets.Add($name.Value)
+            }
+            if (
+                $null -ne $name -and
+                $null -ne $automationId -and
+                $automationId.Value -ceq $LocatorValue
+            ) {
+                [void]$targets.Add($name.Value)
+            }
+        }
+    }
+
+    return @($targets | Sort-Object)
+}
+
+function Get-ReplicationSandboxVerdictLiteralText {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] $Expression
+    )
+
+    if ($null -eq $Expression) {
+        return ''
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+        return Get-ReplicationSandboxVerdictLiteralText -Expression $Expression.Expression
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax]) {
+        if ($Expression.Token.Value -is [string]) {
+            return (($Expression.Token.ValueText -replace '\s+', ' ').Trim())
+        }
+        return ''
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.InterpolatedStringExpressionSyntax]) {
+        $parts = foreach ($content in $Expression.Contents) {
+            if ($content -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InterpolatedStringTextSyntax]) {
+                $content.TextToken.ValueText
+            } else {
+                ' '
+            }
+        }
+        return ((($parts -join '') -replace '\s+', ' ').Trim())
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax] -and
+        $Expression.RawKind -eq
+            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::AddExpression) {
+        $left = Get-ReplicationSandboxVerdictLiteralText -Expression $Expression.Left
+        $right = Get-ReplicationSandboxVerdictLiteralText -Expression $Expression.Right
+        return ((@($left, $right) -join ' ' -replace '\s+', ' ').Trim())
+    }
+
+    return ''
+}
+
+function Get-ReplicationSandboxParseOptions {
+    $symbol = switch ($Platform) {
+        'android' { 'ANDROID' }
+        'ios' { 'IOS' }
+        'catalyst' { 'MACCATALYST' }
+        'windows' { 'WINDOWS' }
+        default { $null }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($symbol)) {
+        return [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default
+    }
+
+    return [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default.WithPreprocessorSymbols(
+        [string[]]@($symbol))
+}
+
+function Test-ReplicationSandboxLocalHasMutableWrites {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.ILocalSymbol] $LocalSymbol,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SemanticModel] $SemanticModel,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SyntaxNode] $ScopeMember
+    )
+
+    $symbolComparer = [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default
+    foreach ($identifier in @($ScopeMember.DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]
+            })) {
+        $identifierSymbol = $SemanticModel.GetSymbolInfo($identifier).Symbol
+        if (-not $symbolComparer.Equals($identifierSymbol, $LocalSymbol)) {
+            continue
+        }
+
+        $parent = $identifier.Parent
+        if ($parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+            $parent.Left -eq $identifier) {
+            return $true
+        }
+        if ($parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax] -and
+            $parent.RefKindKeyword.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::RefKeyword,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::OutKeyword)) {
+            return $true
+        }
+        if ($parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+            $parent.Operand -eq $identifier -and
+            $parent.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreIncrementExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PreDecrementExpression)) {
+            return $true
+        }
+        if ($parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.PostfixUnaryExpressionSyntax] -and
+            $parent.Operand -eq $identifier -and
+            $parent.RawKind -in @(
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostIncrementExpression,
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PostDecrementExpression)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-ReplicationSandboxStatementDefinitelyExits {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax] $Statement
+    )
+
+    if ($null -eq $Statement) {
+        return $false
+    }
+
+    if ($Statement -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]) {
+        $statements = @($Statement.Statements)
+        if ($statements.Count -eq 0) {
+            return $false
+        }
+        return Test-ReplicationSandboxStatementDefinitelyExits -Statement $statements[-1]
+    }
+
+    if ($Statement -is [Microsoft.CodeAnalysis.CSharp.Syntax.ReturnStatementSyntax] -or
+        $Statement -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThrowStatementSyntax] -or
+        $Statement -is [Microsoft.CodeAnalysis.CSharp.Syntax.GotoStatementSyntax]) {
+        return $true
+    }
+
+    if ($Statement -is [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax]) {
+        return (
+            $null -ne $Statement.Else -and
+            (Test-ReplicationSandboxStatementDefinitelyExits -Statement $Statement.Statement) -and
+            (Test-ReplicationSandboxStatementDefinitelyExits -Statement $Statement.Else.Statement))
+    }
+
+    return $false
+}
+
+function Get-ReplicationSandboxConstantBooleanValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] $Expression,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SemanticModel] $SemanticModel,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SyntaxNode] $ScopeMember,
+
+        [AllowNull()]
+        [System.Collections.Generic.HashSet[string]] $VisitedLocals
+    )
+
+    if ($null -eq $Expression) {
+        return $null
+    }
+
+    if ($null -eq $VisitedLocals) {
+        $VisitedLocals = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::Ordinal)
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+        return Get-ReplicationSandboxConstantBooleanValue `
+            -Expression $Expression.Expression `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember `
+            -VisitedLocals $VisitedLocals
+    }
+
+    $constant = $SemanticModel.GetConstantValue($Expression)
+    if ($constant.HasValue -and $constant.Value -is [bool]) {
+        return [bool]$constant.Value
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.PrefixUnaryExpressionSyntax] -and
+        $Expression.RawKind -eq
+            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::LogicalNotExpression) {
+        $operand = Get-ReplicationSandboxConstantBooleanValue `
+            -Expression $Expression.Operand `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember `
+            -VisitedLocals $VisitedLocals
+        if ($null -ne $operand) {
+            return (-not [bool]$operand)
+        }
+        return $null
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+        $symbol = $SemanticModel.GetSymbolInfo($Expression).Symbol
+        if ($symbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $symbol.Type.SpecialType -ne
+                [Microsoft.CodeAnalysis.SpecialType]::System_Boolean) {
+            return $null
+        }
+
+        $sourceLocation = @($symbol.Locations | Where-Object {
+                $_.IsInSource
+            } | Select-Object -First 1)
+        if ($sourceLocation.Count -ne 1) {
+            return $null
+        }
+
+        $key = "$($sourceLocation[0].SourceSpan.Start):$($symbol.Name)"
+        if (-not $VisitedLocals.Add($key)) {
+            return $null
+        }
+
+        $declarations = @(
+            $symbol.DeclaringSyntaxReferences |
+                ForEach-Object {
+                    $_.GetSyntax([Threading.CancellationToken]::None)
+                } |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax] -and
+                    $_.SpanStart -lt $Expression.SpanStart -and
+                    @($_.Ancestors() | Where-Object { $_ -eq $ScopeMember }).Count -eq 1
+                })
+        if ($declarations.Count -ne 1 -or $null -eq $declarations[0].Initializer) {
+            return $null
+        }
+        if (Test-ReplicationSandboxLocalHasMutableWrites `
+                -LocalSymbol $symbol `
+                -SemanticModel $SemanticModel `
+                -ScopeMember $ScopeMember) {
+            return $null
+        }
+
+        return Get-ReplicationSandboxConstantBooleanValue `
+            -Expression $declarations[0].Initializer.Value `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember `
+            -VisitedLocals $VisitedLocals
+    }
+
+    return $null
+}
+
+function Get-ReplicationSandboxPositiveVerdictSelection {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] $Expression,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SemanticModel] $SemanticModel,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SyntaxNode] $ScopeMember
+    )
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.ParenthesizedExpressionSyntax]) {
+        return Get-ReplicationSandboxPositiveVerdictSelection `
+            -Expression $Expression.Expression `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember
+    }
+
+    if ($Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.ConditionalExpressionSyntax]) {
+        $trueBranch = Get-ReplicationSandboxPositiveVerdictSelection `
+            -Expression $Expression.WhenTrue `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember
+        $falseBranch = Get-ReplicationSandboxPositiveVerdictSelection `
+            -Expression $Expression.WhenFalse `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember
+        $conditionValue = Get-ReplicationSandboxConstantBooleanValue `
+            -Expression $Expression.Condition `
+            -SemanticModel $SemanticModel `
+            -ScopeMember $ScopeMember `
+            -VisitedLocals $null
+        $conditionText = ConvertTo-BoundedAgentLine `
+            -Value $Expression.Condition.ToString() `
+            -Description 'Sandbox verdict condition' `
+            -MaximumLength 200 `
+            -Prose
+
+        if ($null -ne $conditionValue) {
+            $selected = if ([bool]$conditionValue) { $trueBranch } else { $falseBranch }
+            if (-not $selected.ProducesPositive) {
+                return [pscustomobject]@{
+                    ProducesPositive = $false
+                    RequiresState = $false
+                    Reason = ''
+                }
+            }
+            if ($selected.RequiresState) {
+                return [pscustomobject]@{
+                    ProducesPositive = $true
+                    RequiresState = $true
+                    Reason = ''
+                }
+            }
+            return [pscustomobject]@{
+                ProducesPositive = $true
+                RequiresState = $false
+                Reason = "behind the constant condition '$conditionText'."
+            }
+        }
+
+        if ($trueBranch.ProducesPositive -and $falseBranch.ProducesPositive) {
+            if (-not $trueBranch.RequiresState -and -not $falseBranch.RequiresState) {
+                return [pscustomobject]@{
+                    ProducesPositive = $true
+                    RequiresState = $false
+                    Reason = 'on every conditional branch.'
+                }
+            }
+            return [pscustomobject]@{
+                ProducesPositive = $true
+                RequiresState = $true
+                Reason = ''
+            }
+        }
+
+        if ($trueBranch.ProducesPositive -or $falseBranch.ProducesPositive) {
+            return [pscustomobject]@{
+                ProducesPositive = $true
+                RequiresState = $true
+                Reason = ''
+            }
+        }
+    }
+
+    $literalText = Get-ReplicationSandboxVerdictLiteralText -Expression $Expression
+    if ($literalText -cmatch '(?i)\bBUG\s+REPRODUCED\b') {
+        return [pscustomobject]@{
+            ProducesPositive = $true
+            RequiresState = $false
+            Reason = ''
+        }
+    }
+
+    return [pscustomobject]@{
+        ProducesPositive = $false
+        RequiresState = $false
+        Reason = ''
+    }
+}
+
+function Get-ReplicationSandboxAssignmentGuardState {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] $Assignment,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SemanticModel] $SemanticModel,
+
+        [Parameter(Mandatory = $true)]
+        [Microsoft.CodeAnalysis.SyntaxNode] $ScopeMember
+    )
+
+    $constantConditions = [Collections.Generic.List[string]]::new()
+    $node = [Microsoft.CodeAnalysis.SyntaxNode]$Assignment
+    while ($null -ne $node -and $node -ne $ScopeMember) {
+        $parent = $node.Parent
+        if ($parent -is [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax]) {
+            $branch = $null
+            if ($parent.Statement.FullSpan.Contains($Assignment.Span)) {
+                $branch = 'then'
+            } elseif ($null -ne $parent.Else -and
+                $parent.Else.Statement.FullSpan.Contains($Assignment.Span)) {
+                $branch = 'else'
+            }
+
+            if ($null -ne $branch) {
+                $conditionValue = Get-ReplicationSandboxConstantBooleanValue `
+                    -Expression $parent.Condition `
+                    -SemanticModel $SemanticModel `
+                    -ScopeMember $ScopeMember `
+                    -VisitedLocals $null
+                if ($null -eq $conditionValue) {
+                    return [pscustomobject]@{
+                        Reachable = $true
+                        RequiresState = $true
+                        Reason = ''
+                    }
+                }
+
+                $conditionText = ConvertTo-BoundedAgentLine `
+                    -Value $parent.Condition.ToString() `
+                    -Description 'Sandbox verdict condition' `
+                    -MaximumLength 200 `
+                    -Prose
+                if (($branch -ceq 'then' -and -not [bool]$conditionValue) -or
+                    ($branch -ceq 'else' -and [bool]$conditionValue)) {
+                    return [pscustomobject]@{
+                        Reachable = $false
+                        RequiresState = $false
+                        Reason = ''
+                    }
+                }
+
+                $constantConditions.Add($conditionText)
+            }
+        }
+        $node = $parent
+    }
+
+    $containingStatement = @($Assignment.AncestorsAndSelf() | Where-Object {
+            $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax]
+        } | Select-Object -First 1)
+    if ($containingStatement.Count -eq 1) {
+        $currentStatement = $containingStatement[0]
+        foreach ($block in @($currentStatement.Ancestors() | Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]
+                })) {
+            if (@($block.AncestorsAndSelf() | Where-Object { $_ -eq $ScopeMember }).Count -eq 0) {
+                continue
+            }
+
+            $statements = @($block.Statements)
+            $statementIndex = [Array]::IndexOf($statements, $currentStatement)
+            if ($statementIndex -lt 0) {
+                continue
+            }
+
+            for ($index = 0; $index -lt $statementIndex; $index++) {
+                $statement = $statements[$index]
+                if ($statement -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.IfStatementSyntax]) {
+                    continue
+                }
+
+                $conditionValue = Get-ReplicationSandboxConstantBooleanValue `
+                    -Expression $statement.Condition `
+                    -SemanticModel $SemanticModel `
+                    -ScopeMember $ScopeMember `
+                    -VisitedLocals $null
+                $thenExits = Test-ReplicationSandboxStatementDefinitelyExits -Statement $statement.Statement
+                $elseExits = $null -ne $statement.Else -and
+                    (Test-ReplicationSandboxStatementDefinitelyExits -Statement $statement.Else.Statement)
+
+                if (-not $thenExits -and -not $elseExits) {
+                    continue
+                }
+
+                if ($null -eq $conditionValue) {
+                    return [pscustomobject]@{
+                        Reachable = $true
+                        RequiresState = $true
+                        Reason = ''
+                    }
+                }
+
+                if (([bool]$conditionValue -and $thenExits) -or
+                    (-not [bool]$conditionValue -and $elseExits)) {
+                    return [pscustomobject]@{
+                        Reachable = $false
+                        RequiresState = $false
+                        Reason = ''
+                    }
+                }
+            }
+
+            $currentStatement = $block
+        }
+    }
+
+    if ($constantConditions.Count -gt 0) {
+        return [pscustomobject]@{
+            Reachable = $true
+            RequiresState = $false
+            Reason = "behind the constant condition '$($constantConditions[0])'."
+        }
+    }
+
+    return [pscustomobject]@{
+        Reachable = $true
+        RequiresState = $false
+        Reason = 'without a state-dependent predicate.'
+    }
+}
+
+function Assert-ReplicationSandboxFinalVerdictIsObservationDriven {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $XamlSource,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $CodeSource
+    )
+
+    $planPath = Get-Variable `
+        -Name 'appiumPlanPath' `
+        -Scope Script `
+        -ValueOnly `
+        -ErrorAction SilentlyContinue
+    if ([string]::IsNullOrWhiteSpace($planPath) -or
+        [string]::IsNullOrWhiteSpace($XamlSource) -or
+        [string]::IsNullOrWhiteSpace($CodeSource)) {
+        return
+    }
+
+    $plan = Read-GeneratedAppiumPlan
+    $steps = @($plan.steps)
+    if ($steps.Count -eq 0 -or $null -eq $steps[-1].locator) {
+        return
+    }
+
+    $strategy = [string]$steps[-1].locator.strategy
+    if ($strategy -cnotin @('id', 'accessibilityId')) {
+        return
+    }
+
+    $locatorValue = [string]$steps[-1].locator.value
+    $targets = @(
+        Get-ReplicationSandboxFinalResultIdentifiers `
+            -XamlSource $XamlSource `
+            -LocatorValue $locatorValue
+    )
+    if ($targets.Count -eq 0) {
+        return
+    }
+
+    $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        $CodeSource,
+        (Get-ReplicationSandboxParseOptions),
+        'MainPage.xaml.cs')
+    $root = $tree.GetRoot()
+    $compilation = [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create(
+        'ReplicationSandboxVerdictGuard',
+        [Microsoft.CodeAnalysis.SyntaxTree[]]@($tree),
+        [Microsoft.CodeAnalysis.MetadataReference[]](Get-ReplicationControlSemanticReferences),
+        [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
+            [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
+    $semanticModel = $compilation.GetSemanticModel($tree)
+    $targetSet = [Collections.Generic.HashSet[string]]::new(
+        [StringComparer]::Ordinal)
+    foreach ($target in $targets) {
+        [void]$targetSet.Add($target)
+    }
+
+    foreach ($assignment in @($root.DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -and
+                $_.RawKind -eq
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression
+            })) {
+        if ($assignment.Left -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            continue
+        }
+
+        $memberName = $assignment.Left.Name.Identifier.ValueText
+        if ($memberName -cnotin @('Text', 'Title', 'Content')) {
+            continue
+        }
+
+        $receiver = $assignment.Left.Expression
+        $targetName = $null
+        if ($receiver -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+            $targetName = $receiver.Identifier.ValueText
+        } elseif (
+            $receiver -is [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+            $receiver.Expression -is [Microsoft.CodeAnalysis.CSharp.Syntax.ThisExpressionSyntax]
+        ) {
+            $targetName = $receiver.Name.Identifier.ValueText
+        }
+
+        if ([string]::IsNullOrWhiteSpace($targetName) -or
+            -not $targetSet.Contains($targetName)) {
+            continue
+        }
+
+        $scopeMember = @($assignment.Ancestors() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseMethodDeclarationSyntax] -or
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.AccessorDeclarationSyntax]
+            } | Select-Object -First 1)
+        if ($scopeMember.Count -ne 1) {
+            continue
+        }
+
+        $expressionState = Get-ReplicationSandboxPositiveVerdictSelection `
+            -Expression $assignment.Right `
+            -SemanticModel $semanticModel `
+            -ScopeMember $scopeMember[0]
+        if (-not $expressionState.ProducesPositive) {
+            continue
+        }
+        if ($expressionState.RequiresState) {
+            continue
+        }
+
+        $pathState = Get-ReplicationSandboxAssignmentGuardState `
+            -Assignment $assignment `
+            -SemanticModel $semanticModel `
+            -ScopeMember $scopeMember[0]
+        if (-not $pathState.Reachable -or $pathState.RequiresState) {
+            continue
+        }
+
+        $reason = $expressionState.Reason
+        if ([string]::IsNullOrWhiteSpace($reason)) {
+            $reason = $pathState.Reason
+        }
+        throw ("Generated Sandbox code-behind writes BUG REPRODUCED to the final Appium " +
+            "result target '$locatorValue' through '$targetName.$memberName' $reason " +
+            'This bounded prebuild guard rejects only confirmed unconditional or ' +
+            'constant-selected positives on the final result target. The app-authored verdict is ' +
+            'supplemental only: actual observation must decide it. Drive the verdict ' +
+            'from the measured state the issue reports, or block the scenario ' +
+            'when this bounded Sandbox cannot observe it directly. Unsupported ' +
+            'Appium-only observation must be rejected rather than faked.')
+    }
+}
+
 function Assert-GeneratedSandboxSources {
     $combinedSource = [Text.StringBuilder]::new()
+    $sandboxXamlSource = $null
+    $sandboxCodeSource = $null
     foreach ($entry in @(
         @{ Path = $sandboxXamlPath; Name = 'Generated Sandbox XAML' },
         @{ Path = $sandboxCodePath; Name = 'Generated Sandbox code-behind' }
@@ -2546,6 +3238,7 @@ function Assert-GeneratedSandboxSources {
             throw "$($entry.Name) contains prohibited service-provider access."
         }
         if ($entry.Path -ceq $sandboxXamlPath) {
+            $sandboxXamlSource = $source
             Assert-GeneratedSandboxXaml -Source $source
         } elseif (
             $source -notmatch '\bpartial\s+class\s+MainPage\b' -or
@@ -2553,6 +3246,7 @@ function Assert-GeneratedSandboxSources {
         ) {
             throw 'Generated Sandbox code-behind must declare "public partial class MainPage" and call InitializeComponent() in its constructor.'
         } else {
+            $sandboxCodeSource = $source
             $verdictAssignments = [regex]::Matches(
                 $source,
                 '(?im)^\s*(?<target>[A-Za-z_]\w*)\s*\.\s*(?:Text|Title|Content)\s*=\s*(?:(?:result|status|verdict|message|evidence)\w*|"(?:PASS:|BUG REPRODUCED:)[^"]*")\s*;'
@@ -2602,6 +3296,17 @@ function Assert-GeneratedSandboxSources {
         $allSource -notmatch '"(?:PASS:|NO BUG:)[^"]*"'
     ) {
         throw 'Generated Sandbox semantic result must expose a PASS: or NO BUG: state before the trigger so a completed negative reproduction is distinguishable from infrastructure failure.'
+    }
+
+    $planPath = Get-Variable `
+        -Name 'appiumPlanPath' `
+        -Scope Script `
+        -ValueOnly `
+        -ErrorAction SilentlyContinue
+    if (-not [string]::IsNullOrWhiteSpace($planPath)) {
+        Assert-ReplicationSandboxFinalVerdictIsObservationDriven `
+            -XamlSource $sandboxXamlSource `
+            -CodeSource $sandboxCodeSource
     }
 }
 
@@ -7119,6 +7824,7 @@ Write every required output again even when only one of them caused the failure:
 If the failure names prohibited content, it quotes the exact matched text and line. Delete or replace that exact construct; do not merely rename it or move it to another file. Reconstruct the scenario using only plain MAUI controls, layouts, bindings, and event handlers.
 If the failure names a delay or background work, replace it with an event subscription that publishes the verdict, a single Dispatcher.Dispatch(() => ...) that measures after the pending layout pass, or a separate check control the plan taps after the trigger. Do not re-send Task.Delay, Thread.Sleep, DispatchDelayed, or a timer in any form; the same rejection will consume the next attempt too.
 If the failure contains a compiler diagnostic, search and read the checked-out repository for the exact symbol declaration and proven usage before editing. Never repeat a fully qualified type after CS0234 or CS0246; fully qualify only with the verified namespace from source or nearby platform code.
+If the failure says the Sandbox self-announced BUG REPRODUCED on its final result target, keep the status label only as a supplemental caption. The same handler branch that writes BUG REPRODUCED must first compare or measure the affected state and let that observation decide the verdict; if the bounded Sandbox cannot observe the defect directly, block the scenario instead of faking a result for Appium.
 "@
             }
             return $common + @"
@@ -7130,7 +7836,7 @@ The Sandbox is hosted by ``new Window(new NavigationPage(new MainPage()))`` and 
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind only after verifying the declaration or proven usage in the checked-out repository; do not guess namespaces.
 $androidIssue26505SandboxGuidance
-3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, dragPath, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, and dragPath require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, dragPath, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available on every platform, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the Sandbox stops running after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. A mutable result/status element is the exception: give it a stable id or AutomationId and locate it independently of its current verdict. Never assign an AutomationId more than once on any element, because MAUI permits it to be set only once and reassigning it throws InvalidOperationException; change the result element's Text to signal progress instead. Never locate the final result by the expected `BUG REPRODUCED:` text itself. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: initialize the separate result/status element to a visible `PASS:` or `NO BUG:` value before the trigger, and change it to `BUG REPRODUCED:` only when the reported defect is observed. This initialized negative state is required so the trusted runner can distinguish completed non-reproduction from element lookup or infrastructure failure. Never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. Before the step that triggers the defect, the plan MUST assert that same result element still holds its initialized `PASS:` or `NO BUG:` value, so the recording shows the caption changing rather than a verdict that was already latched when recording started; the only alternative is a restartApp step, for a defect that can latch solely during launch. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value against that independently located result element, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. dragPath is available on every platform and presses the located element, then moves one pointer through two to four segments before releasing; its value is `dx,dy;dx,dy` with two to four `dx,dy` pairs expressed as signed fractions of the screen (at most three decimals, magnitude at most 1) applied one after another from the press point. Use dragPath, not swipe, whenever the reported trigger keeps a finger down while changing direction, leaves and re-enters a control, or is a pan, drag, or SwipeView gesture; for example "0.4,0;0,0.2;-0.35,0" swipes right, drags below the row, and returns. Orientation values are portrait|landscape.
+3. Create "$appiumPlanPath" as JSON with exactly schemaVersion=1, issueNumber=$IssueNumber, and steps. Each of 1-20 steps must contain exactly action, description, locator, value, and timeoutSeconds (1-30). Allowed actions: waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, assertAppClosed, back, restartApp, swipe, dragPath, setOrientation. waitFor, tap, clear, enterText, assertExists, assertTextEquals, assertTextContains, and dragPath require a locator object; assertAppClosed, back, restartApp, swipe, and setOrientation require `"locator": null`. enterText, assertTextEquals, assertTextContains, swipe, dragPath, and setOrientation require a string value; waitFor, tap, clear, assertExists, assertAppClosed, back, and restartApp require `"value": null`. restartApp is available only on Android and iOS. assertAppClosed is available on every platform, only as the final step, and only when the issue reports that the exact trigger crashes or closes the application; it succeeds only when the Sandbox stops running after a preceding ready-state check and trigger action. Never use it for ordinary navigation, element disappearance, window replacement, or a failure already present before recording. Locator objects contain exactly strategy (id|accessibilityId|xpath|className|androidText) and value. On Android, every Button, Label, or other element with stable visible text MUST use androidText with that literal displayed text for taps, waits, and assertions; do not use its AutomationId/accessibilityId or XPath because MAUI's native UIAutomator tree may omit those values. Reserve id/accessibilityId/className for Android elements that genuinely have no stable visible text. A mutable result/status element is the exception: give it a stable id or AutomationId and locate it independently of its current verdict. Never assign an AutomationId more than once on any element, because MAUI permits it to be set only once and reassigning it throws InvalidOperationException; change the result element's Text to signal progress instead. Never locate the final result by the expected `BUG REPRODUCED:` text itself. androidText accepts literal visible text rather than a UiAutomator expression. Every string must be non-empty and already trimmed; never use leading or trailing whitespace to express a prefix assertion. For variable outcomes, expose a stable semantic result in the app: initialize the separate result/status element to a visible `PASS:` or `NO BUG:` value before the trigger, and change it to `BUG REPRODUCED:` only when the reported defect is observed. This initialized negative state is required so the trusted runner can distinguish completed non-reproduction from element lookup or infrastructure failure. An app-authored BUG REPRODUCED caption is supplemental only: actual observation of the affected state must decide it through a state-dependent comparison or measured predicate in app code. Do not flip the result unconditionally or only because a check button was tapped; if this bounded Sandbox cannot observe the defect directly, reject the scenario rather than faking a verdict for Appium. Never replace the affected control's Text, Title, Content, geometry, or other visible state with the verdict. The recording must keep the affected control visible and, for transition defects, show its pre-trigger reference state before the action and its post-trigger failure state afterward. When the issue says the failure is timing-sensitive, intermittent, a race, or may require multiple attempts, preserve that prerequisite and perform 2-5 bounded reset-and-trigger cycles in the same Appium plan whenever the non-crashing state can be reset. Do not spend whole Sandbox regeneration attempts repeating an unchanged one-shot plan. Do not use assertNotExists or any intermediate assertion to prove the reported bug; convert absence or other variable state into the app's semantic result. For initial launch, OnAppearing, or OnNavigatedTo issues on Android/iOS, use restartApp or an in-app navigation step after recording begins; evidence that starts with the failure already latched is invalid. Before the step that triggers the defect, the plan MUST assert that same result element still holds its initialized `PASS:` or `NO BUG:` value, so the recording shows the caption changing rather than a verdict that was already latched when recording started; the only alternative is a restartApp step, for a defect that can latch solely during launch. The final step MUST be assertTextEquals with the exact `BUG REPRODUCED:` value against that independently located result element, except an exact Windows app-crash report may end with assertAppClosed. Swipe values are up|down|left|right. dragPath is available on every platform and presses the located element, then moves one pointer through two to four segments before releasing; its value is `dx,dy;dx,dy` with two to four `dx,dy` pairs expressed as signed fractions of the screen (at most three decimals, magnitude at most 1) applied one after another from the press point. Use dragPath, not swipe, whenever the reported trigger keeps a finger down while changing direction, leaves and re-enters a control, or is a pan, drag, or SwipeView gesture; for example "0.4,0;0,0.2;-0.35,0" swipes right, drags below the row, and returns. Orientation values are portrait|landscape.
 When the reported defect only becomes observable after the framework has settled, do not wait on the clock inside the app. Subscribe to the event that reports the change (Loaded, SizeChanged, PropertyChanged, or the control's own event) and publish the verdict from its handler; or post the measurement with Dispatcher.Dispatch(() => ...), which runs after the pending layout pass; or give the page a separate check control and let the plan tap trigger, wait, then tap check. Task.Delay, Thread.Sleep, DispatchDelayed, and timers are rejected before they reach the device.
 4. Do not create executable Appium code. Do not use process, file-system, network, reflection, native interop, WebView, external services/data, Azure logging directives, or URLs in Sandbox source or plan data.
 Do not resolve services through DependencyService, ServiceProvider, GetService, or MauiContext.Services. For a reported custom-handler scenario, direct handler wiring with SetMauiContext(Handler.MauiContext) is allowed when it does not access Services.
@@ -7139,7 +7845,7 @@ For visible rendering, padding, shadow, clipping, overflow, disappearance, flick
 Sandbox source must not use Task.Delay, Thread.Sleep, timers, Task.Run, async delay handlers, or other arbitrary settling/background work. Expose deterministic state through the relevant synchronous event or an event-driven completion signal.
 Use Console.WriteLine rather than importing System.Diagnostics for optional diagnostics.
 Sandbox XAML supports only x:Class on the root element plus x:Name, x:Key, and x:DataType. Do not use x:FactoryMethod, x:Arguments, x:Static, x:Type, x:Reference, or any other x: directive. Assign any value that needs a factory method or constructor arguments from code-behind instead, for example setting Keyboard with Keyboard.Create in the page constructor.
-5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, qualityContract, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps, and set files to the repository-relative authored paths: MainPage.xaml, MainPage.xaml.cs, and appium-plan.json are always required, and App.xaml.cs, SandboxShell.xaml, and SandboxShell.xaml.cs are added only when you changed the application root for a Shell-hosted report. List every file you edited and nothing else. That list describes the files you edited inside the repository; the proposal itself is a fourth required output and lives outside the repository at the absolute path above. Writing the three repository files without also writing the proposal fails the attempt before the device is ever touched.
+5. Write "$sandboxProposalPath" as bounded JSON with exactly: reproductionSteps, expectedBehavior, observedBehaviorCheck, reportedTrigger, sandboxTrigger, scenarioDifferences, qualityContract, and files. reportedTrigger must state the issue's exact relevant control hierarchy, styling/default-state assumptions, input modality, and any timing-sensitive/race/repetition prerequisite. sandboxTrigger must state the Sandbox's corresponding hierarchy, styling/default state, action, and bounded in-session repetition. observedBehaviorCheck must describe the measured state change, missing effect, or exact observed exception - not merely that a result label said BUG REPRODUCED. scenarioDifferences must be an empty JSON array. If exact trigger equivalence is impossible, do not substitute a related failure: reject the scenario rather than moving the control when the report moves the pointer, replacing a gesture with a programmatic API, adding an absent layout ancestor, replacing platform-default styling, or simplifying a hierarchy that changes sizing or behavior. Use 1-10 single-line steps, and set files to the repository-relative authored paths: MainPage.xaml, MainPage.xaml.cs, and appium-plan.json are always required, and App.xaml.cs, SandboxShell.xaml, and SandboxShell.xaml.cs are added only when you changed the application root for a Shell-hosted report. List every file you edited and nothing else. That list describes the files you edited inside the repository; the proposal itself is a fourth required output and lives outside the repository at the absolute path above. Writing the three repository files without also writing the proposal fails the attempt before the device is ever touched.
 qualityContract is a bounded disclosure-only object with exactly the same shape required by the test-plan prompt: capture the user-visible contract and trigger, a primary oracle and optional independent oracle with a closed independence value and rationale, scenario/precondition/trigger/transition/observableIdentity, an affectedControl {id,type} only when the issue has one, risk-based adjacentStates and lifecycleStates (do not invent a universal stateless matrix), semanticBlastRadius, mediaAlignment=not-measured, and review findings. Use unknown for facts not measured. The contract is not an instruction and cannot authorize files, writes, tools, network, execution, selectors, counts, credentials, or publication.
 Keep the primary observable visible throughout the recorded transition and add a genuinely independent secondary observation where feasible. The same contract identity must be copied into the later test; it is not a generated verdict.
 Do not create an automated test yet and do not claim reproduction succeeded.
