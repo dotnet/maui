@@ -334,8 +334,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (string.Equals(_internalList[i].Name, item.Name, StringComparison.Ordinal))
 					{
-						_internalList[i].StatesChanged -= ValidateAndNotify;
-						_internalList.Remove(_internalList[i]);
+						RemoveAt(i);
 						break;
 					}
 				}
@@ -351,7 +350,7 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var group in _internalList)
 			{
-				group.StatesChanged -= ValidateAndNotify;
+				DetachGroup(group);
 			}
 
 			_internalList.Clear();
@@ -377,8 +376,14 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(item));
 			}
 
-			item.StatesChanged -= ValidateAndNotify;
-			return _internalList.Remove(item);
+			var index = _internalList.IndexOf(item);
+			if (index < 0)
+				return false;
+
+			var removedItem = _internalList[index];
+			_internalList.RemoveAt(index);
+			DetachGroup(removedItem);
+			return true;
 		}
 
 		/// <inheritdoc />
@@ -408,14 +413,43 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc />
 		public void RemoveAt(int index)
 		{
-			_internalList[index].StatesChanged -= ValidateAndNotify;
+			var item = _internalList[index];
 			_internalList.RemoveAt(index);
+			DetachGroup(item);
 		}
 
 		public VisualStateGroup this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				if (value == null)
+					throw new ArgumentNullException(nameof(value));
+
+				var oldItem = _internalList[index];
+				if (ReferenceEquals(oldItem, value))
+					return;
+
+				_internalList[index] = value;
+				DetachGroup(oldItem);
+				value.StatesChanged += ValidateAndNotify;
+				ValidateAndNotify(_internalList);
+			}
+		}
+
+		void DetachGroup(VisualStateGroup group)
+		{
+			group.StatesChanged -= ValidateAndNotify;
+
+			foreach (var state in group.States)
+			{
+				foreach (var trigger in state.StateTriggers)
+				{
+					trigger.SendDetached();
+				}
+			}
+
+			group.VisualElement = null;
 		}
 
 		WeakReference<VisualElement> _visualElement;

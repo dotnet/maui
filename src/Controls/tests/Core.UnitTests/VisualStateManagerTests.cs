@@ -336,6 +336,85 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			stateGroups.Add(new VisualStateGroup { Name = name });
 		}
 
+		[Fact]
+		public void ClearDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Clear();
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void RemoveDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Remove(groups[0]);
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void RemoveAtDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.RemoveAt(0);
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void AddingDuplicateNamedGroupDetachesReplacedStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups.Add(new VisualStateGroup { Name = groups[0].Name });
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		[Fact]
+		public void ReplacingGroupByIndexDetachesStateTriggers()
+		{
+			var (groups, trigger) = CreateAttachedStateTriggerGroup();
+
+			groups[0] = new VisualStateGroup { Name = "Replacement" };
+
+			Assert.False(trigger.IsAttached);
+		}
+
+		static (VisualStateGroupList Groups, StateTriggerBase Trigger) CreateAttachedStateTriggerGroup()
+		{
+			var trigger = new TestStateTrigger();
+			var groups = new VisualStateGroupList
+			{
+				new VisualStateGroup
+				{
+					Name = CommonStatesGroupName,
+					States =
+					{
+						new VisualState
+						{
+							Name = NormalStateName,
+							StateTriggers = { trigger }
+						}
+					}
+				}
+			};
+
+			trigger.SendAttached();
+			Assert.True(trigger.IsAttached);
+
+			return (groups, trigger);
+		}
+
+		sealed class TestStateTrigger : StateTriggerBase
+		{
+		}
+
 
 		public VisualStateManagerTests()
 		{
