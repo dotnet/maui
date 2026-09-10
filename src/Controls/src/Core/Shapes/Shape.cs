@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <summary>
 	/// Base class for shape elements, such as <see cref="Ellipse"/>, <see cref="Line"/>, <see cref="Polygon"/>, <see cref="Polyline"/>, and <see cref="Rectangle"/>.
 	/// </summary>
-	public abstract partial class Shape : View, IShapeView, IShape, IVersionedShape
+	public abstract partial class Shape : View, IShapeView, IShape, IShapeWithStroke, IVersionedShape
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
@@ -133,32 +133,12 @@ namespace Microsoft.Maui.Controls.Shapes
 		}
 
 		/// <summary>
-		/// Gets the stroke inset that should be applied for path/measure calculations for
-		/// the given available width and height.
-		/// When no <see cref="Stroke"/> brush is set, no stroke will be rendered, so the default
-		/// <see cref="StrokeThickness"/> inset is only suppressed when it would be geometrically
-		/// destructive (i.e. it would consume at least half of the shape's width or height),
-		/// which otherwise collapses small fill-only shapes into an invisible sliver.
-		/// Normal-sized shapes keep the legacy inset behavior to avoid changing their rendered size.
+		/// Gets the stroke inset used for path and measurement calculations.
 		/// </summary>
-		internal double GetPathStrokeInset(double width, double height)
-		{
-			var strokeThickness = StrokeThickness;
+		internal double GetPathStrokeInset(bool includeStroke = false) =>
+			Stroke is null && !includeStroke ? 0 : StrokeThickness;
 
-			if (Stroke is null && strokeThickness > 0)
-			{
-				var minimumDimension = Math.Min(width, height);
-
-				if (!double.IsNaN(minimumDimension) &&
-					!double.IsInfinity(minimumDimension) &&
-					minimumDimension <= strokeThickness * 2)
-				{
-					return 0;
-				}
-			}
-
-			return strokeThickness;
-		}
+		internal virtual PathF GetPath(double strokeInset) => GetPath();
 
 		/// <summary>
 		/// Gets or sets the collection of values that specify the pattern of dashes and gaps in the shape's outline. This is a bindable property.
@@ -327,17 +307,28 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			return PathForBounds(viewBounds, includeStroke: false);
+		}
+
+		PathF IShapeWithStroke.PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
+			return PathForBounds(viewBounds, includeStroke);
+		}
+
+		PathF PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
 			_fallbackHeight = viewBounds.Height;
 			_fallbackWidth = viewBounds.Width;
 
-			var path = GetPath();
+			var strokeInset = GetPathStrokeInset(includeStroke);
+			var path = GetPath(strokeInset);
 
-			TransformPathForBounds(path, viewBounds);
+			TransformPathForBounds(path, viewBounds, strokeInset);
 
 			return path;
 		}
 
-		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
+		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds, double strokeInset)
 		{
 #if !(NETSTANDARD || !PLATFORM)
 
@@ -345,7 +336,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = path.GetBoundsByFlattening(1);
 
-			var strokeInset = GetPathStrokeInset(viewBounds.Width, viewBounds.Height);
 			viewBounds.X += strokeInset / 2;
 			viewBounds.Y += strokeInset / 2;
 			viewBounds.Width -= strokeInset;
@@ -485,7 +475,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
-			var strokeInset = GetPathStrokeInset(widthConstraint, heightConstraint);
+			var strokeInset = GetPathStrokeInset();
 			widthConstraint -= strokeInset;
 			heightConstraint -= strokeInset;
 

@@ -88,10 +88,11 @@ public class Issue31330 : ContentPage
 		AbsoluteLayout.SetLayoutFlags(absBoxView, AbsoluteLayoutFlags.None);
 		absoluteLayout.Children.Add(absBoxView);
 
-		// Rectangle in AbsoluteLayout (should match BoxView appearance)
+		// Rectangle configured exactly as in the original issue report
 		var absRectangle = new Rectangle
 		{
-			Fill = Colors.Blue
+			BackgroundColor = Colors.Blue,
+			AutomationId = "BackgroundRectangle"
 		};
 		AbsoluteLayout.SetLayoutBounds(absRectangle, new Rect(
 			30,

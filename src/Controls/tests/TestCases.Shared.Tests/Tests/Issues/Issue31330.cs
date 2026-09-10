@@ -17,9 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void RectangleWithSmallHeightRendersAsFilledShape()
 		{
 			App.WaitForElement("TestBoxView");
+			App.WaitForElement("TestRectangle");
+			App.WaitForElement("BackgroundRectangle");
 
-			// Rectangle should render as a filled shape just like BoxView,
-			// not collapse into a thin stroked line for small height values.
+			// Verify both the documented Fill scenario and the original
+			// BackgroundColor reproduction render at a small height.
 			VerifyScreenshot();
 		}
 	}
