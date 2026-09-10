@@ -24,6 +24,13 @@ namespace Microsoft.Maui.Controls
 	{
 		const int DefaultPadding = 4;
 
+		// ItemsSource is owned by the app and routinely outlives the view that displays it, so this
+		// subscription is weak; a non-weak one roots every IndicatorView ever bound to the collection.
+		WeakNotifyCollectionChangedProxy _itemsSourceProxy;
+		NotifyCollectionChangedEventHandler _itemsSourceChanged;
+
+		~IndicatorView() => _itemsSourceProxy?.Unsubscribe();
+
 		/// <summary>Bindable property for <see cref="IndicatorsShape"/>.</summary>
 		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
@@ -237,11 +244,15 @@ namespace Microsoft.Maui.Controls
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
-			if (oldItemsSource is INotifyCollectionChanged oldCollection)
-				oldCollection.CollectionChanged -= OnCollectionChanged;
+			if (oldItemsSource is INotifyCollectionChanged)
+				_itemsSourceProxy?.Unsubscribe();
 
 			if (ItemsSource is INotifyCollectionChanged collection)
-				collection.CollectionChanged += OnCollectionChanged;
+			{
+				_itemsSourceProxy ??= new WeakNotifyCollectionChangedProxy();
+				_itemsSourceChanged ??= OnCollectionChanged;
+				_itemsSourceProxy.Subscribe(collection, _itemsSourceChanged);
+			}
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 

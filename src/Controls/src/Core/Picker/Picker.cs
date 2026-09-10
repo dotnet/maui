@@ -82,9 +82,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Initializes a new instance of the Picker class.</summary>
 		public Picker()
 		{
+			// Items is owned by this Picker, so a plain subscription cannot outlive it.
 			((INotifyCollectionChanged)Items).CollectionChanged += OnItemsCollectionChanged;
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Picker>>(() => new PlatformConfigurationRegistry<Picker>(this));
 		}
+
+		~Picker() => _itemsSourceProxy?.Unsubscribe();
 		/// <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither. This is a bindable property.</summary>
 		public FontAttributes FontAttributes
 		{
@@ -355,7 +358,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		readonly Queue<Action> _pendingIsOpenActions = new Queue<Action>();
+		// ItemsSource is owned by the app and routinely outlives the picker bound to it, so this
+		// subscription is weak; a non-weak one roots every Picker ever bound to the collection.
+		// The field is still held for the ReferenceEquals identity checks below.
 		INotifyCollectionChanged _subscribedItemsSourceCollection;
+		WeakNotifyCollectionChangedProxy _itemsSourceProxy;
+		NotifyCollectionChangedEventHandler _itemsSourceChanged;
 
 		void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
 		{
@@ -417,7 +425,10 @@ namespace Microsoft.Maui.Controls
 
 			UnsubscribeFromItemsSourceCollection();
 			_subscribedItemsSourceCollection = collection;
-			_subscribedItemsSourceCollection.CollectionChanged += CollectionChanged;
+
+			_itemsSourceProxy ??= new WeakNotifyCollectionChangedProxy();
+			_itemsSourceChanged ??= CollectionChanged;
+			_itemsSourceProxy.Subscribe(_subscribedItemsSourceCollection, _itemsSourceChanged);
 		}
 
 		void UnsubscribeFromItemsSourceCollection()
@@ -427,7 +438,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			_subscribedItemsSourceCollection.CollectionChanged -= CollectionChanged;
+			_itemsSourceProxy?.Unsubscribe();
 			_subscribedItemsSourceCollection = null;
 		}
 
