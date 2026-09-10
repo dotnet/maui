@@ -154,6 +154,7 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 
 			var result = driver.GetRunResult();
 			var generatedRoots = FindGeneratedRoots(result);
+			var codeBehindSources = FindCodeBehindSources(result);
 			var initializeComponentSource = generatedRoots
 				.FirstOrDefault(root => string.Equals(root.TypeName, PageClass, StringComparison.Ordinal))
 				?.InitializeComponentSource;
@@ -170,6 +171,7 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 					?.UpdateComponentSource,
 				result,
 				generatedRoots,
+				codeBehindSources,
 				files.ToImmutableDictionary(
 					static pair => pair.Key,
 					static pair => pair.Value.Document),
@@ -257,6 +259,26 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 		{
 			ArgumentNullException.ThrowIfNull(generatedVersion);
 			var sourceCompilation = compilation.AddSyntaxTrees(trees);
+
+			foreach (var source in generatedVersion.CodeBehindSources)
+			{
+				var sourceTree = ParseSource(source.Source, source.HintName);
+				var typeName = FindGeneratedRootTypeName(source.Source);
+				if (typeName is null
+					|| !generatedVersion.GeneratedRoots.Any(root => string.Equals(root.TypeName, typeName, StringComparison.Ordinal)))
+				{
+					continue;
+				}
+
+				if (sourceCompilation.GetTypeByMetadataName(typeName) is { } existingType
+					&& existingType.GetMembers("InitializeComponent").OfType<IMethodSymbol>().Any())
+				{
+					continue;
+				}
+
+				trees.Add(sourceTree);
+				sourceCompilation = sourceCompilation.AddSyntaxTrees(sourceTree);
+			}
 
 			foreach (var root in generatedVersion.GeneratedRoots)
 			{
@@ -398,6 +420,28 @@ internal sealed class XamlHotReloadTestHarness : IDisposable
 				root.UpdateComponentSource))];
 	}
 
+	static ImmutableArray<XamlHotReloadGeneratedSource> FindCodeBehindSources(GeneratorDriverRunResult result)
+	{
+		var sources = ImmutableArray.CreateBuilder<XamlHotReloadGeneratedSource>();
+		foreach (var generatorResult in result.Results)
+		{
+			foreach (var source in generatorResult.GeneratedSources)
+			{
+				if (!source.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)
+					|| source.HintName.EndsWith(".xsg.cs", StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+
+				sources.Add(new XamlHotReloadGeneratedSource(
+					source.HintName,
+					source.SourceText.ToString()));
+			}
+		}
+
+		return sources.ToImmutable();
+	}
+
 	static string? FindGeneratedRootTypeName(string source)
 	{
 		var root = CSharpSyntaxTree.ParseText(source).GetRoot();
@@ -470,6 +514,7 @@ internal sealed record XamlHotReloadGeneratedVersion(
 	string? UpdateComponentSource,
 	GeneratorDriverRunResult GeneratorResult,
 	ImmutableArray<XamlHotReloadGeneratedRoot> GeneratedRoots,
+	ImmutableArray<XamlHotReloadGeneratedSource> CodeBehindSources,
 	ImmutableDictionary<string, XamlHotReloadDocument> Documents,
 	string PageSource);
 
@@ -477,6 +522,8 @@ internal sealed record XamlHotReloadGeneratedRoot(
 	string TypeName,
 	string? InitializeComponentSource,
 	string? UpdateComponentSource);
+
+internal sealed record XamlHotReloadGeneratedSource(string HintName, string Source);
 
 internal sealed record XamlHotReloadCompiledVersion(
 	XamlHotReloadGeneratedVersion GeneratedVersion,
@@ -565,7 +612,12 @@ internal sealed class XamlHotReloadLiveSession : IDisposable
 
 		var (nextVersion, semanticEdits) = PrepareUpdate(versionIndex, []);
 		ApplyMetadataUpdate(nextVersion, semanticEdits);
-		global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication([_pageType!]);
+		var affectedTypes = semanticEdits.AffectedTypes
+			.Select(typeName => _assembly!.GetType(typeName))
+			.Where(static type => type is not null)
+			.Cast<Type>()
+			.ToArray();
+		global::Microsoft.Maui.Controls.Xaml.XamlIncrementalHotReloadHandler.UpdateApplication(affectedTypes);
 
 		return Assert.IsAssignableFrom<T>(Instance);
 	}
