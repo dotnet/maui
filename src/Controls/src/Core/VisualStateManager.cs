@@ -415,7 +415,25 @@ namespace Microsoft.Maui.Controls
 		public VisualStateGroup this[int index]
 		{
 			get => _internalList[index];
-			set => _internalList[index] = value;
+			set
+			{
+				// Every other mutation path keeps the StatesChanged subscriptions in step; replacing by
+				// index did not. That left the displaced group subscribed -- so it kept this list (and
+				// the element that owns it) alive and kept raising notifications -- while the incoming
+				// group was never subscribed at all, so its state changes went unnoticed.
+				var existing = _internalList[index];
+
+				if (ReferenceEquals(existing, value))
+					return;
+
+				if (existing is not null)
+					existing.StatesChanged -= ValidateAndNotify;
+
+				_internalList[index] = value;
+
+				if (value is not null)
+					value.StatesChanged += ValidateAndNotify;
+			}
 		}
 
 		WeakReference<VisualElement> _visualElement;
