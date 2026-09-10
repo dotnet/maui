@@ -94,6 +94,11 @@ internal class WindowViewController : UIViewController
 		base.ViewWillLayoutSubviews();
 	}
 
+	public override void ViewDidLayoutSubviews()
+	{
+		base.ViewDidLayoutSubviews();
+	}
+
 	/// <summary>
 	/// Sets up the TitleBar in the ViewController.
 	/// </summary>
