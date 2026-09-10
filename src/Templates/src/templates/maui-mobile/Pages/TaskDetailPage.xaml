@@ -44,7 +44,7 @@
                         SelectedItem="{Binding Project}"
                         SelectedIndex="{Binding SelectedProjectIndex}"
                         IsOpen="{Binding IsProjectPickerExpanded, Mode=TwoWay}"
-                        SemanticProperties.Description="ComboBox to select a project. Activate to browse and select a project"/>
+                        SemanticProperties.Hint="ComboBox to select a project. Activate to browse and select a project"/>
                 </sf:SfTextInputLayout>
 
                 <Button 
