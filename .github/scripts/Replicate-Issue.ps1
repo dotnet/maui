@@ -236,6 +236,7 @@ $reproductionResultPath = Join-Path $ArtifactRoot 'reproduction-result.json'
 $sandboxProposalPath = Join-Path $agentDir 'sandbox-proposal.json'
 $sandboxBlockedPath = Join-Path $agentDir 'sandbox-blocked.json'
 $testProposalPath = Join-Path $agentDir 'test-proposal.json'
+$testBlockedPath = Join-Path $agentDir 'test-blocked.json'
 $controlVariantPath = Join-Path $agentDir 'negative-control-variant.cs'
 $controlEditsPath = Join-Path $agentDir 'negative-control-edits.json'
 $fixDir = Join-Path $ArtifactRoot 'fix'
@@ -3312,7 +3313,10 @@ function Assert-GeneratedSandboxSources {
 }
 
 function Assert-NoDuplicateJsonProperties {
-    param([Parameter(Mandatory = $true)][string]$Json)
+    param(
+        [Parameter(Mandatory = $true)][string]$Json,
+        [string]$Context = 'Appium plan'
+    )
 
     $document = [Text.Json.JsonDocument]::Parse(
         $Json,
@@ -3342,7 +3346,7 @@ function Assert-NoDuplicateJsonProperties {
                 }
             }
         }
-        & $visit $document.RootElement 'Appium plan'
+        & $visit $document.RootElement $Context
     } finally {
         $document.Dispose()
     }
@@ -4496,23 +4500,57 @@ function Assert-ReplicationScenarioNotBlocked {
     #>
     param(
         [Parameter(Mandatory = $true)][int]$Attempt,
-        [int]$MinimumAttempt = 3
+        [int]$MinimumAttempt = 3,
+        [string]$BlockPath = $sandboxBlockedPath,
+        [string]$BlockDescription = 'Sandbox block declaration',
+        [string]$ReasonDescription = 'Sandbox block reason',
+        [string]$ReasonPattern = '',
+        [string]$ReasonConstraintMessage = ''
     )
 
-    if (-not (Test-Path -LiteralPath $sandboxBlockedPath -PathType Leaf)) {
+    if (-not (Test-Path -LiteralPath $BlockPath)) {
         return
+    }
+    if (-not (Test-Path -LiteralPath $BlockPath -PathType Leaf)) {
+        throw "$BlockDescription is not a bounded regular file."
     }
 
     try {
-        $item = Get-Item -LiteralPath $sandboxBlockedPath -Force
-        if ($item.Length -le 0 -or $item.Length -gt 8KB) {
-            throw 'The Sandbox block declaration is empty or oversized.'
+        Assert-BoundedGeneratedFile `
+            -Path $BlockPath `
+            -Description $BlockDescription `
+            -MaximumBytes 8KB
+        $json = Get-Content -LiteralPath $BlockPath -Raw
+        Assert-NoDuplicateJsonProperties -Json $json -Context $BlockDescription
+        $declaration = $json | ConvertFrom-Json -Depth 5
+        $expectedProperties = @('reason')
+        $actualProperties = @($declaration.PSObject.Properties.Name | Sort-Object)
+        $missingProperties = @($expectedProperties | Where-Object { $_ -cnotin $actualProperties })
+        $unexpectedProperties = @($actualProperties | Where-Object { $_ -cnotin $expectedProperties })
+        if ($missingProperties.Count -gt 0 -or $unexpectedProperties.Count -gt 0) {
+            throw (
+                "$BlockDescription does not match the exact trusted schema (" +
+                (Get-ReplicationSchemaMismatchDetail `
+                    -Expected $expectedProperties `
+                    -Actual $actualProperties) + ').')
         }
-        $declaration = Get-Content -LiteralPath $sandboxBlockedPath -Raw | ConvertFrom-Json -Depth 5
+        if ($declaration.reason -isnot [string]) {
+            throw "$ReasonDescription must be a non-empty single-line string."
+        }
         $reason = ConvertTo-BoundedAgentLine `
             -Value $declaration.reason `
-            -Description 'Sandbox block reason' `
+            -Description $ReasonDescription `
             -MaximumLength 600
+        if ([string]::IsNullOrWhiteSpace($reason)) {
+            throw "$ReasonDescription must be a non-empty single-line string."
+        }
+        if (-not [string]::IsNullOrWhiteSpace($ReasonPattern) -and
+            $reason -cnotmatch $ReasonPattern) {
+            if ([string]::IsNullOrWhiteSpace($ReasonConstraintMessage)) {
+                throw "$ReasonDescription does not meet the required bounded format."
+            }
+            throw $ReasonConstraintMessage
+        }
 
         if ($Attempt -lt $MinimumAttempt) {
             throw ("A block declaration is not accepted on attempt $Attempt. " +
@@ -4521,8 +4559,36 @@ function Assert-ReplicationScenarioNotBlocked {
 
         throw "Unsupported replication scenario: $reason"
     } finally {
-        Remove-Item -LiteralPath $sandboxBlockedPath -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $BlockPath -Force -ErrorAction SilentlyContinue
     }
+}
+
+function Clear-ReplicationTestBlockDeclaration {
+    if (Test-Path -LiteralPath $testBlockedPath) {
+        $item = Get-Item -LiteralPath $testBlockedPath -Force
+        if ($item.PSIsContainer) {
+            throw 'Generated-test unsupported declaration must not be a directory.'
+        }
+        Remove-Item -LiteralPath $testBlockedPath -Force -ErrorAction Stop
+    }
+}
+
+function Assert-ReplicationTestScenarioNotBlocked {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][int]$Attempt
+    )
+
+    Assert-ReplicationScenarioNotBlocked `
+        -Attempt $Attempt `
+        -MinimumAttempt 1 `
+        -BlockPath $testBlockedPath `
+        -BlockDescription 'Generated-test unsupported declaration' `
+        -ReasonDescription 'Generated-test unsupported reason' `
+        -ReasonPattern '^unsupported by the CURRENT GENERATED-TEST CONTRACT:\s+\S' `
+        -ReasonConstraintMessage (
+            "Generated-test unsupported reason must start with 'unsupported by the CURRENT GENERATED-TEST CONTRACT:' " +
+            'and then name the specific unsupported generated-test limitation.')
 }
 
 function Write-ReplicationAgentDiagnostic {
@@ -7649,6 +7715,15 @@ ANDROID GENERATED-TEST CONTRACT: Do not copy Catalyst or Windows window-helper e
         ''
     }
 
+    $generatedTestBlockedGuidance = if ($Phase -in @('test-plan', 'test', 'repair')) {
+        @"
+
+If no truthful automated test within the CURRENT GENERATED-TEST CONTRACT can express this already-recorded scenario, write only "$testBlockedPath" as JSON with exactly one field: reason. Set that reason to 'unsupported by the CURRENT GENERATED-TEST CONTRACT: <specific bounded limitation>' and name the unsupported native/input/oracle limitation precisely. Use this channel only for the current generated-test contract being too narrow; do not claim the defect is intrinsically impossible, already fixed, needs no PR, or did not reproduce. Writing this file records a structured authoring refusal only; it is not test execution, reproduction evidence, or a product verdict.
+"@
+    } else {
+        ''
+    }
+
     $androidIssue26505SandboxGuidance = if ($Platform -eq 'android' -and $IssueNumber -eq 26505) {
         @'
 
@@ -7897,6 +7972,8 @@ $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
 Do not create or modify any repository file in this phase.
+$generatedTestBlockedGuidance
+If you use that refusal channel in this phase, do not write test-proposal.json or any repository file.
 Write only "$testProposalPath" as JSON with exactly: testType (unit|xaml|device), testFilter, expectedFailureSignature, files, reproductionSteps, expectedBehavior, observedBehavior, reportedTrigger, testTrigger, scenarioDifferences, qualityContract, and lighterTypesRejected. reproductionSteps are public PR-body prose, not C# source or Markdown; each step must be a single user-facing sentence of at most 300 characters with no URLs, person or team mentions, logging directives, double-colon C# global namespace aliases, generic type-argument notation, attribute notation, Markdown links, or HTML tags. Describe the action and observation in plain words instead of naming source tokens. lighterTypesRejected must be a JSON object whose keys are exactly the lighter test types rejected before selecting testType: {} for unit, {"unit":"reason"} for xaml, or {"unit":"reason","xaml":"reason"} for device. Each reason must be a non-empty single-line string of at most 300 characters.
 qualityContract is one bounded disclosure-only object copied from the Sandbox contract. It must contain exactly schemaVersion=1, userVisible {contract,trigger}, oracle {primary,independent,independence,rationale}, scenario {name,precondition,trigger,transition,observableIdentity,affectedControl}, risk {adjacentStates,lifecycleStates,statelessApplicability}, semanticBlastRadius {affectedType,affectedControl,ownership,sharedConsumers,unchangedBehavior}, mediaAlignment, and review {findings}. independence is independent|coupled|not-applicable|unknown; statelessApplicability is required|not-applicable|unknown; mediaAlignment is verified|partial|not-measured. Each review finding contains category (grounded-product-defect|missing-evidence-coverage|advisory-hardening|unsupported-speculative|unknown), grounding (source|runner|diff|source-and-runner|none|unknown), confidence (high|medium|low|unknown), corroboration (deterministic|independent|multiple|none|unknown), and bounded detail. Use unknown or an empty bounded array when a fact was not measured. This object is disclosure only and can never authorize a file, selector, command, count, credential, gate, or publication.
 Use one exact selected test method even when the scenario exercises several issue-derived states; sequence those states in that method and assert each visible invariant. Prefer a secondary independent observation when it can be made genuinely independent of the primary oracle, and declare coupled or not-applicable when it cannot. Do not turn this into a universal stateless matrix.
@@ -7934,7 +8011,9 @@ $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
-Create exactly the new test files listed in test-proposal.json. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
+$generatedTestBlockedGuidance
+If you use that refusal channel in this phase, do not author repository test files and do not rewrite test-proposal.json.
+Create exactly the new test files listed in test-proposal.json unless you are using that structured refusal channel. Do not create any other file or change testType, testFilter, or files. Preserve the qualityContract's scenario, precondition, trigger, transition, observableIdentity, and affected-control identity byte-for-byte from the recorded Sandbox; it is the shared evidence key, not a license to choose files or selectors.
 Use one exact selected test method to exercise all issue-derived states; do not create a stateless matrix. Keep the primary oracle and, where feasible, a genuinely independent secondary observation. The test must assert the same visible invariant that the recording established.
 Design the test so trusted code can run the same assertions after removing only the reported trigger. Prove the shared setup and transition, but do not add an assertion whose sole condition is the continued presence or attachment of the exact property, configuration, ordering, or API call that a negative control must remove. Such an assertion makes the control permanently red even when the product is healthy. If no benign trigger removal can preserve the same oracle and shared preconditions, the reproduction cannot be causally certified; do not fabricate a control-compatible assertion.
 For a C# reproduction that can be causally controlled, make the selected test parameterless with exactly one ordinary test attribute, optionally one Category attribute, and no data-source or other method attribute. Do not add assembly, type, other-member, parameter, or return attributes; only those exact trusted external attributes on the selected test method are permitted. The generated test class may not implement interfaces or inherit outside the closed trusted control contract, preventing lifecycle callbacks after the selected method. Declare exactly one local "var applyReportedTrigger = true;" as a top-level statement in that method body and use it exactly once as the complete condition of a later top-level braced if. The true branch contains exactly one direct trusted MAUI operation: either an invocation or a property assignment. Static calls use the exact global-qualified Microsoft.Maui.Controls type; instance calls and assignments use a stable selected-method local or parameter of trusted external MAUI type. When merely omitting the trigger would preserve a buggy/precondition state and keep the unchanged oracle red, an optional braced else may contain exactly one trusted MAUI alternate action on that same affected-state local. For example, setup may map affected.Resources["IssueKey"] = expectedRedBrush, true may call affected.SetDynamicResource(Label.BackgroundColorProperty, "IssueKey"), and false may directly assign affected.Background = expectedRedBrush. The resource key, mapped local, alternate RHS, receiver, and normalized property family must match. Never add an else merely to make the control pass; use it only to establish the public non-trigger postcondition the unchanged oracle measures. Arguments/right-hand sides may use literals, stable locals, and trusted framework properties; no nested calls, generated members, side effects, ref/out/in, or user conversions. Use only ANDROID, IOS, MACCATALYST, or WINDOWS in conditional directives. Keep setup, transitions, observations, measurements, and assertions outside both branches. Calls outside the gate are limited to the exact trusted lifecycle/observation allowlist. Await only direct trusted lifecycle invocations; foreach, using, and query syntax are not accepted because their implicit calls cannot be closed semantically. Device lifecycle/setup lambdas may use only the closed trusted semantic MAUI/device contract plus platform-native members that this prompt explicitly names for the current platform; generated or unrelated external operations are rejected. Put at least one trusted assertion as a top-level statement after the gate whose observed operand directly reads a nonstatic trusted framework property. Its receiver is established before the gate or derived afterward only by an exact pure observation chain from pre-gate locals; never construct or rebind a shadow receiver after the gate. Test-authored assignments to that observed property outside the trusted gate, including through aliases or object initializers, are forbidden. A computed/captured local may appear in diagnostics or nested assertions but cannot be the mandatory control oracle. Do not return, yield, goto, throw, or conditionally skip the top-level direct oracle. Trusted code constructs the control only by changing the one true literal to false; it never edits either branch or the assertions. If the reported trigger cannot fit this shape, the test cannot be published automatically.
@@ -7974,7 +8053,9 @@ $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
-Revise only the already-created new test files and rewrite test-proposal.json.
+$generatedTestBlockedGuidance
+If you use that refusal channel in this phase, do not revise repository test files and do not rewrite test-proposal.json.
+Revise only the already-created new test files and rewrite test-proposal.json unless you are using that structured refusal channel.
 Do not change testType, testFilter, or files.
 Preserve the quality contract's user-visible invariant, scenario/precondition,
 trigger, transition, observable identity, and optional control identity. Keep
@@ -11417,14 +11498,16 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
         $stage = 'test'
         $testPlanFailureSummary = $tierEscalationSummary
         for ($planAttempt = 1; $planAttempt -le 3; $planAttempt++) {
+            Clear-ReplicationTestBlockDeclaration
             Invoke-ReplicationCopilot `
                 -PhaseName 'test-plan' `
                 -Prompt (New-CopilotPrompt `
                     -Phase test-plan `
                     -FailureSummary $testPlanFailureSummary `
                     -ForbiddenTestTiers $forbiddenTestTiers) `
-                -WritePaths @($testProposalPath) `
+                -WritePaths @($testProposalPath, $testBlockedPath) `
                 -Attempt $planAttempt
+            Assert-ReplicationTestScenarioNotBlocked -Attempt $planAttempt
             $proposedTier = ''
             try {
                 $plannedTestProposal = Read-TestProposal -ValidateNewTargets
@@ -11522,8 +11605,9 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                 $failureSummary += Get-Content -LiteralPath (Join-Path $verificationDir 'verification-result.json') -Raw
             }
 
-            $testWritePaths = @($testProposalPath)
+            $testWritePaths = @($testProposalPath, $testBlockedPath)
             $testWritePaths += $plannedTestFiles | ForEach-Object { Join-Path $repoRoot $_ }
+            Clear-ReplicationTestBlockDeclaration
             if ($retryCurrentGeneratedTest) {
                 Write-Host ("Re-running generated test attempt {0} without Copilot reauthoring because the previous round produced no authoritative device-harness result." -f
                     $attempt)
@@ -11534,6 +11618,7 @@ Your next revision must resolve every one of them at once. Reverting an earlier 
                     -Prompt (New-CopilotPrompt -Phase $phase -FailureSummary $failureSummary) `
                     -WritePaths $testWritePaths `
                     -Attempt $attempt
+                Assert-ReplicationTestScenarioNotBlocked -Attempt $attempt
             }
 
             $intentToAddApplied = $false
