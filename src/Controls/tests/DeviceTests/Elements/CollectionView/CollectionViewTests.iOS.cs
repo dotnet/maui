@@ -149,13 +149,58 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
-				await Task.Delay(100);
+				await AssertHelpers.AssertEventually(() =>
+					taskAccessibilityElement?.Handler?.PlatformView is MauiView platformView &&
+					platformView.IsAccessibilityElement &&
+					(platformView.AccessibilityTraits & UIAccessibilityTrait.Button) == UIAccessibilityTrait.Button,
+					message: "The nested accessibility element was not assigned the Button trait.");
 
+				Assert.NotNull(taskAccessibilityElement);
+				Assert.NotNull(taskAccessibilityElement.Handler);
 				var platformAccessibilityElement = Assert.IsAssignableFrom<MauiView>(taskAccessibilityElement?.Handler?.PlatformView);
 
 				Assert.True(platformAccessibilityElement.IsAccessibilityElement);
 				Assert.Equal(UIAccessibilityTrait.Button,
 					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+			});
+		}
+
+		[Fact]
+		public async Task SelectableItemPreservesNativeControlAccessibilityTraits()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<CheckBox, CheckBoxHandler>();
+				});
+			});
+
+			CheckBox checkBox = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Survey Employees" },
+				SelectionMode = SelectionMode.None,
+				ItemTemplate = new DataTemplate(() => checkBox = new CheckBox())
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await AssertHelpers.AssertEventually(() => checkBox?.Handler?.PlatformView is MauiCheckBox,
+					message: "The CheckBox item template did not create its native control.");
+
+				var platformCheckBox = Assert.IsAssignableFrom<MauiCheckBox>(checkBox.Handler.PlatformView);
+				var originalTraits = platformCheckBox.AccessibilityTraits;
+
+				collectionView.SelectionMode = SelectionMode.Single;
+
+				Assert.Equal(originalTraits, platformCheckBox.AccessibilityTraits);
+				Assert.IsAssignableFrom<UIControl>(platformCheckBox);
+
+				collectionView.SelectionMode = SelectionMode.None;
+
+				Assert.Equal(originalTraits, platformCheckBox.AccessibilityTraits);
 			});
 		}
 
@@ -195,7 +240,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
-				await Task.Delay(100);
+				await AssertHelpers.AssertEventually(() =>
+					taskAccessibilityElement?.Handler?.PlatformView is MauiView platformView &&
+					(platformView.AccessibilityTraits & UIAccessibilityTrait.Button) == UIAccessibilityTrait.Button,
+					message: "The nested accessibility element was not assigned the Button trait.");
 
 				// Sanity check: the trait was applied while the item was selectable.
 				var platformAccessibilityElement = Assert.IsAssignableFrom<MauiView>(taskAccessibilityElement?.Handler?.PlatformView);
@@ -207,8 +255,70 @@ namespace Microsoft.Maui.DeviceTests
 				// from that exact tracked descendant, without needing a full rebind.
 				collectionView.SelectionMode = SelectionMode.None;
 
-				await Task.Delay(100);
+				await AssertHelpers.AssertEventually(() =>
+					(platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button) == 0,
+					message: "The Button trait was not cleared after selection was disabled.");
 
+				Assert.Equal((UIAccessibilityTrait)0,
+					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+			});
+		}
+
+		[Fact]
+		public async Task ChangingAccessibilityTargetClearsButtonTraitFromPreviouslyTargetedElement()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			Grid taskAccessibilityElement = null;
+			var collectionView = new CollectionView
+			{
+				ItemsSource = new[] { "Survey Employees" },
+				SelectionMode = SelectionMode.Single,
+				ItemTemplate = new DataTemplate(() =>
+				{
+					taskAccessibilityElement = new Grid();
+					SemanticProperties.SetDescription(taskAccessibilityElement, "Survey Employees");
+					taskAccessibilityElement.Add(new Label { Text = "Survey Employees" });
+
+					return taskAccessibilityElement;
+				})
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
+			{
+				await AssertHelpers.AssertEventually(() =>
+					taskAccessibilityElement?.Handler?.PlatformView is MauiView platformView &&
+					platformView.IsAccessibilityElement &&
+					(platformView.AccessibilityTraits & UIAccessibilityTrait.Button) == UIAccessibilityTrait.Button,
+					message: "The initial accessibility target was not assigned the Button trait.");
+
+				var platformAccessibilityElement = Assert.IsAssignableFrom<MauiView>(taskAccessibilityElement?.Handler?.PlatformView);
+				Assert.True(platformAccessibilityElement.IsAccessibilityElement);
+				Assert.Equal(UIAccessibilityTrait.Button,
+					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
+
+				// Demote the layout so target discovery moves to its child label, then clear
+				// selection before promoting the original layout again.
+				SemanticProperties.SetDescription(taskAccessibilityElement, null);
+				Assert.False(platformAccessibilityElement.IsAccessibilityElement);
+
+				collectionView.SelectionMode = SelectionMode.None;
+				SemanticProperties.SetDescription(taskAccessibilityElement, "Survey Employees");
+
+				await AssertHelpers.AssertEventually(() =>
+					platformAccessibilityElement.IsAccessibilityElement &&
+					(platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button) == 0,
+					message: "The promoted non-selectable element retained the Button trait.");
+
+				Assert.True(platformAccessibilityElement.IsAccessibilityElement);
 				Assert.Equal((UIAccessibilityTrait)0,
 					platformAccessibilityElement.AccessibilityTraits & UIAccessibilityTrait.Button);
 			});
