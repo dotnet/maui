@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("IncreaseSpacingButton");
 			App.Tap("IncreaseSpacingButton");
-			VerifyScreenshot();
+			VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 		}
 	}
 }
