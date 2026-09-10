@@ -17,6 +17,14 @@ namespace Microsoft.Maui.Controls
 		readonly SpanCollection _spans = new SpanCollection();
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
+		// _spans is owned by this FormattedString, so subscribing to it directly cannot outlive us.
+		// Individual spans are a different matter: a Span the app holds on to -- or shares between
+		// FormattedStrings -- would root this instance through its PropertyChanged/PropertyChanging
+		// handlers, so those subscriptions go through weak proxies instead.
+		readonly Dictionary<Span, (WeakNotifyPropertyChangedProxy Changed, WeakNotifyPropertyChangingProxy Changing)> _subscribedSpans = new();
+		PropertyChangedEventHandler _itemPropertyChanged;
+		PropertyChangingEventHandler _itemPropertyChanging;
+
 		internal event NotifyCollectionChangedEventHandler SpansCollectionChanged
 		{
 			add => _weakEventManager.AddEventHandler(value, nameof(SpansCollectionChanged));
@@ -25,6 +33,15 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Initializes a new instance of the FormattedString class.</summary>
 		public FormattedString() => _spans.CollectionChanged += OnCollectionChanged;
+
+		~FormattedString()
+		{
+			foreach (var proxies in _subscribedSpans.Values)
+			{
+				proxies.Changed.Unsubscribe();
+				proxies.Changing.Unsubscribe();
+			}
+		}
 
 		protected override void OnBindingContextChanged()
 		{
@@ -53,8 +70,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						bo.Parent?.RemoveLogicalChild(bo);
-						bo.PropertyChanging -= OnItemPropertyChanging;
-						bo.PropertyChanged -= OnItemPropertyChanged;
+						DetachSpan(bo);
 					}
 
 				}
@@ -68,8 +84,7 @@ namespace Microsoft.Maui.Controls
 					if (bo != null)
 					{
 						this.AddLogicalChild(bo);
-						bo.PropertyChanging += OnItemPropertyChanging;
-						bo.PropertyChanged += OnItemPropertyChanged;
+						AttachSpan(bo);
 					}
 
 				}
@@ -77,6 +92,37 @@ namespace Microsoft.Maui.Controls
 
 			OnPropertyChanged(nameof(Spans));
 			_weakEventManager.HandleEvent(sender, e, nameof(SpansCollectionChanged));
+		}
+
+		void AttachSpan(Span span)
+		{
+			// The same Span instance can legally appear more than once in the collection; subscribe once.
+			if (_subscribedSpans.ContainsKey(span))
+				return;
+
+			_itemPropertyChanged ??= OnItemPropertyChanged;
+			_itemPropertyChanging ??= OnItemPropertyChanging;
+
+			var changed = new WeakNotifyPropertyChangedProxy();
+			changed.Subscribe(span, _itemPropertyChanged);
+
+			var changing = new WeakNotifyPropertyChangingProxy();
+			changing.Subscribe(span, _itemPropertyChanging);
+
+			_subscribedSpans[span] = (changed, changing);
+		}
+
+		void DetachSpan(Span span)
+		{
+			// Only tear the subscription down once the last occurrence has gone.
+			if (_spans.Contains(span))
+				return;
+
+			if (_subscribedSpans.Remove(span, out var proxies))
+			{
+				proxies.Changed.Unsubscribe();
+				proxies.Changing.Unsubscribe();
+			}
 		}
 
 		void OnItemPropertyChanged(object sender, PropertyChangedEventArgs e) => OnPropertyChanged(nameof(Spans));
