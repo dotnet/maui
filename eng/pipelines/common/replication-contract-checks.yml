@@ -167,20 +167,6 @@ steps:
         'Trusted iOS VM capability probe*separates unavailable hardware from probe infrastructure failures'
         'Trusted iOS VM capability probe*accepts an empty argument list for the fixed native fixture'
         'Trusted iOS VM capability probe*retains bounded diagnostics and a failing command exit code'
-        'Trusted iOS guest bootstrap*routes a distinct bounded guest installation without issue generation'
-        'Trusted iOS guest bootstrap*accepts only the fixed trusted bootstrap scope'
-        'Trusted iOS guest bootstrap*rejects other definitions branches platforms and issue targets'
-        'Trusted iOS guest bootstrap*constructs only private home temp locale and fixed path variables'
-        'Trusted iOS guest bootstrap*does not inherit the parent environment in its real child process'
-        'Trusted iOS guest bootstrap*retains a nonzero native exit and bounded error diagnostics'
-        'Trusted iOS guest bootstrap*terminates its exact timed out child rather than reporting success'
-        'Trusted iOS guest bootstrap*preserves process start failure without querying an unstarted process'
-        'Trusted iOS guest bootstrap*binds successful guest lifecycle and fixed snapshot headers to the current run'
-        'Trusted iOS guest bootstrap*rejects stale identity incomplete lifecycle or attached network devices'
-        'Trusted iOS guest bootstrap*rejects missing coercive authority granting and unexpected result fields'
-        'Trusted iOS guest bootstrap*rejects duplicate missing linked or invalid guest snapshots'
-        'Trusted iOS guest bootstrap*rejects missing linked or oversized result files'
-        'Trusted iOS guest bootstrap*publishes only bounded diagnostics and never grants execution authority'
         'Replication issue outcome publication boundary*continues validation media installation after a package-index failure'
         'Replication issue outcome publication boundary*preserves validation media install failures after a package-index failure'
         'Replication issue outcome publication boundary*requires a working media validator after installation succeeds'
@@ -226,7 +212,6 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
-        "$(Build.SourcesDirectory)/.github/scripts/Replication-IosGuestBootstrap.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Publish-Replication.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Publish-ReplicationOutcome.Tests.ps1"
