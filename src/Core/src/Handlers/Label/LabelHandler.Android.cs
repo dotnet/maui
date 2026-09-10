@@ -2,6 +2,8 @@ using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Graphics;
+using APath = Android.Graphics.Path;
+using ARectF = Android.Graphics.RectF;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -19,6 +21,34 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var size = base.GetDesiredSize(widthConstraint, heightConstraint);
+
+			if (VirtualView.HorizontalLayoutAlignment != Primitives.LayoutAlignment.Fill &&
+				PlatformView?.Layout is Layout textLayout &&
+				textLayout.LineCount == 1 &&
+				PlatformView.Ellipsize == null &&
+				size.Width < widthConstraint)
+			{
+				var text = PlatformView.Text;
+				if (!string.IsNullOrEmpty(text))
+				{
+					using var textPath = new APath();
+					textLayout.Paint.GetTextPath(text, 0, text.Length, 0, 0, textPath);
+
+					using var pathBounds = new ARectF();
+					textPath.ComputeBounds(pathBounds, true);
+
+					var lineWidth = textLayout.GetLineWidth(0);
+					var rightOverhang = pathBounds.Right - lineWidth;
+					if (rightOverhang > 0)
+					{
+						// Centered text receives half of added width on each side, so reserve
+						// twice the outline overhang plus two pixels for rasterized edge coverage.
+						var widthScale = VirtualView.HorizontalTextAlignment == TextAlignment.Center ? 2 : 1;
+						var extraWidth = Context.FromPixels((float)System.Math.Ceiling(rightOverhang + 2) * widthScale);
+						return new Size(size.Width + extraWidth, size.Height);
+					}
+				}
+			}
 
 			// Android TextView reports full available width instead of actual text width when
 			// text wraps to multiple lines, causing incorrect positioning for non-Fill alignments.
