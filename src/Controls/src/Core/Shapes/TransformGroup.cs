@@ -11,7 +11,14 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
-		readonly Dictionary<INotifyPropertyChanged, int> _subscribedTransforms = new();
+		// A TransformCollection and the transforms inside it can outlive the group that consumes them --
+		// for example when they are declared in a ResourceDictionary and shared between groups. Both the
+		// collection subscription and the per-transform subscriptions are therefore weak, so a long-lived
+		// collection or transform never roots a discarded TransformGroup.
+		WeakNotifyCollectionChangedProxy _childrenProxy;
+		NotifyCollectionChangedEventHandler _childrenChanged;
+		PropertyChangedEventHandler _transformPropertyChanged;
+		readonly Dictionary<INotifyPropertyChanged, (int Count, WeakNotifyPropertyChangedProxy Proxy)> _subscribedTransforms = new();
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
@@ -23,6 +30,14 @@ namespace Microsoft.Maui.Controls.Shapes
 		public TransformGroup()
 		{
 			Children = new TransformCollection();
+		}
+
+		~TransformGroup()
+		{
+			_childrenProxy?.Unsubscribe();
+
+			foreach (var entry in _subscribedTransforms.Values)
+				entry.Proxy.Unsubscribe();
 		}
 
 		/// <summary>
@@ -57,7 +72,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenChanged ??= OnChildrenCollectionChanged;
+			_childrenProxy.Subscribe(collection, _childrenChanged);
 
 			foreach (var transform in collection)
 			{
@@ -72,7 +89,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				return;
 			}
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
+			_childrenProxy?.Unsubscribe();
 
 			ClearAllTransformSubscriptions();
 		}
@@ -115,39 +132,42 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void SubscribeToTransformPropertyChanged(INotifyPropertyChanged item)
 		{
-			if (_subscribedTransforms.TryGetValue(item, out int count))
+			if (_subscribedTransforms.TryGetValue(item, out var entry))
 			{
-				_subscribedTransforms[item] = count + 1;
+				_subscribedTransforms[item] = (entry.Count + 1, entry.Proxy);
 				return;
 			}
 
-			item.PropertyChanged += OnTransformPropertyChanged;
-			_subscribedTransforms[item] = 1;
+			_transformPropertyChanged ??= OnTransformPropertyChanged;
+
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			proxy.Subscribe(item, _transformPropertyChanged);
+			_subscribedTransforms[item] = (1, proxy);
 		}
 
 		void UnsubscribeFromTransformPropertyChanged(INotifyPropertyChanged item)
 		{
-			if (!_subscribedTransforms.TryGetValue(item, out int count))
+			if (!_subscribedTransforms.TryGetValue(item, out var entry))
 			{
 				return;
 			}
 
-			if (count > 1)
+			if (entry.Count > 1)
 			{
-				_subscribedTransforms[item] = count - 1;
+				_subscribedTransforms[item] = (entry.Count - 1, entry.Proxy);
 				return;
 			}
 
-			item.PropertyChanged -= OnTransformPropertyChanged;
+			entry.Proxy.Unsubscribe();
 			_subscribedTransforms.Remove(item);
 		}
 
 		// Unsubscribes all tracked transforms from PropertyChanged and clears the dictionary.
 		void ClearAllTransformSubscriptions()
 		{
-			foreach (var item in _subscribedTransforms)
+			foreach (var entry in _subscribedTransforms.Values)
 			{
-				item.Key.PropertyChanged -= OnTransformPropertyChanged;
+				entry.Proxy.Unsubscribe();
 			}
 
 			_subscribedTransforms.Clear();

@@ -12,7 +12,22 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
-		readonly Dictionary<Geometry, int> _subscriptionRefCounts = new();
+		// A GeometryCollection and the geometries inside it can outlive the group that consumes them --
+		// for example when they are declared in a ResourceDictionary and shared between groups. Both the
+		// collection subscription and the per-geometry subscriptions are therefore weak, so a long-lived
+		// collection or geometry never roots a discarded GeometryGroup.
+		WeakNotifyCollectionChangedProxy _childrenProxy;
+		NotifyCollectionChangedEventHandler _childrenChanged;
+		PropertyChangedEventHandler _childPropertyChanged;
+		readonly Dictionary<Geometry, (int Count, WeakNotifyPropertyChangedProxy Proxy)> _subscriptionRefCounts = new();
+
+		~GeometryGroup()
+		{
+			_childrenProxy?.Unsubscribe();
+
+			foreach (var entry in _subscriptionRefCounts.Values)
+				entry.Proxy.Unsubscribe();
+		}
 
 		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
@@ -69,7 +84,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (collection == null)
 				return;
 
-			collection.CollectionChanged += OnChildrenCollectionChanged;
+			_childrenProxy ??= new WeakNotifyCollectionChangedProxy();
+			_childrenChanged ??= OnChildrenCollectionChanged;
+			_childrenProxy.Subscribe(collection, _childrenChanged);
 
 			foreach (var geometry in collection)
 			{
@@ -82,7 +99,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (collection == null)
 				return;
 
-			collection.CollectionChanged -= OnChildrenCollectionChanged;
+			_childrenProxy?.Unsubscribe();
 
 			foreach (var geometry in collection)
 			{
@@ -162,14 +179,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (geometry == null)
 				return;
 
-			if (_subscriptionRefCounts.TryGetValue(geometry, out var count))
+			if (_subscriptionRefCounts.TryGetValue(geometry, out var entry))
 			{
-				_subscriptionRefCounts[geometry] = count + 1;
+				_subscriptionRefCounts[geometry] = (entry.Count + 1, entry.Proxy);
 				return;
 			}
 
-			_subscriptionRefCounts[geometry] = 1;
-			geometry.PropertyChanged += OnChildrenPropertyChanged;
+			_childPropertyChanged ??= OnChildrenPropertyChanged;
+
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			proxy.Subscribe(geometry, _childPropertyChanged);
+			_subscriptionRefCounts[geometry] = (1, proxy);
 		}
 
 		void UnsubscribeFromGeometry(Geometry geometry)
@@ -177,24 +197,24 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (geometry == null)
 				return;
 
-			if (!_subscriptionRefCounts.TryGetValue(geometry, out var count))
+			if (!_subscriptionRefCounts.TryGetValue(geometry, out var entry))
 				return;
 
-			if (count > 1)
+			if (entry.Count > 1)
 			{
-				_subscriptionRefCounts[geometry] = count - 1;
+				_subscriptionRefCounts[geometry] = (entry.Count - 1, entry.Proxy);
 				return;
 			}
 
 			_subscriptionRefCounts.Remove(geometry);
-			geometry.PropertyChanged -= OnChildrenPropertyChanged;
+			entry.Proxy.Unsubscribe();
 		}
 
 		void UnsubscribeFromAllChildren()
 		{
-			foreach (var geometry in _subscriptionRefCounts.Keys)
+			foreach (var entry in _subscriptionRefCounts.Values)
 			{
-				geometry.PropertyChanged -= OnChildrenPropertyChanged;
+				entry.Proxy.Unsubscribe();
 			}
 
 			_subscriptionRefCounts.Clear();

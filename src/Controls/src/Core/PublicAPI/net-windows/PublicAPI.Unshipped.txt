@@ -7,3 +7,7 @@ override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.UpdateEmptyViewVisibility() -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
+Microsoft.Maui.Controls.Shapes.TransformGroup.~TransformGroup() -> void
+Microsoft.Maui.Controls.Shapes.GeometryGroup.~GeometryGroup() -> void
+Microsoft.Maui.Controls.Shapes.PathFigure.~PathFigure() -> void
+Microsoft.Maui.Controls.Shapes.PathGeometry.~PathGeometry() -> void

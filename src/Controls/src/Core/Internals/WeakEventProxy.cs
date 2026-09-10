@@ -202,6 +202,50 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <summary>
+	/// A "proxy" class for subscribing PathFigure.InvalidatePathSegmentRequested via WeakReference.
+	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakPathFigureInvalidateProxy objects from leaking.
+	/// </summary>
+	class WeakPathFigureInvalidateProxy : WeakEventProxy<PathFigure, EventHandler>
+	{
+		public WeakPathFigureInvalidateProxy() { }
+
+		void OnInvalidateRequested(object? sender, EventArgs e)
+		{
+			if (TryGetHandler(out var handler))
+			{
+				handler(sender, e);
+			}
+			else
+			{
+				Unsubscribe();
+			}
+		}
+
+		public override void Subscribe(PathFigure source, EventHandler handler)
+		{
+			if (TryGetSource(out var s))
+			{
+				s.InvalidatePathSegmentRequested -= OnInvalidateRequested;
+			}
+
+			source.InvalidatePathSegmentRequested += OnInvalidateRequested;
+
+			base.Subscribe(source, handler);
+		}
+
+		public override void Unsubscribe()
+		{
+			if (TryGetSource(out var s))
+			{
+				s.InvalidatePathSegmentRequested -= OnInvalidateRequested;
+			}
+
+			base.Unsubscribe();
+		}
+	}
+
+	/// <summary>
 	/// A "proxy" class for subscribing Geometry and PathGeometry invalidation via WeakReference.
 	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
 	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakGeometryChangedProxy objects from leaking.

@@ -16,3 +16,7 @@ override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
 Microsoft.Maui.Controls.Label.~Label() -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
+Microsoft.Maui.Controls.Shapes.TransformGroup.~TransformGroup() -> void
+Microsoft.Maui.Controls.Shapes.GeometryGroup.~GeometryGroup() -> void
+Microsoft.Maui.Controls.Shapes.PathFigure.~PathFigure() -> void
+Microsoft.Maui.Controls.Shapes.PathGeometry.~PathGeometry() -> void

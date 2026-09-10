@@ -17,7 +17,16 @@ namespace Microsoft.Maui.Controls.Shapes
 		// Tracks figures whose PropertyChanged and InvalidatePathSegmentRequested events are
 		// subscribed so we can unsubscribe them even when the collection is cleared (Reset
 		// action does not populate OldItems).
-		readonly List<PathFigure> _subscribedFigures = new List<PathFigure>();
+		//
+		// A PathFigureCollection and the figures inside it can outlive the geometry that consumes them
+		// -- for example when they are declared in a ResourceDictionary and shared between geometries --
+		// so every subscription here is weak, and a long-lived collection or figure never roots a
+		// discarded PathGeometry.
+		WeakNotifyCollectionChangedProxy _figuresProxy;
+		NotifyCollectionChangedEventHandler _figuresChanged;
+		PropertyChangedEventHandler _figurePropertyChanged;
+		EventHandler _figureInvalidateRequested;
+		readonly Dictionary<PathFigure, (WeakNotifyPropertyChangedProxy PropertyChanged, WeakPathFigureInvalidateProxy Invalidate)> _subscribedFigures = new();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="PathGeometry"/> class.
@@ -45,6 +54,17 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			Figures = figures;
 			FillRule = fillRule;
+		}
+
+		~PathGeometry()
+		{
+			_figuresProxy?.Unsubscribe();
+
+			foreach (var proxies in _subscribedFigures.Values)
+			{
+				proxies.PropertyChanged.Unsubscribe();
+				proxies.Invalidate.Unsubscribe();
+			}
 		}
 
 		/// <summary>Bindable property for <see cref="Figures"/>.</summary>
@@ -205,24 +225,36 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void SubscribeFigure(PathFigure figure)
 		{
-			figure.PropertyChanged += OnPathFigurePropertyChanged;
-			figure.InvalidatePathSegmentRequested += OnInvalidatePathSegmentRequested;
-			_subscribedFigures.Add(figure);
+			if (figure is null || _subscribedFigures.ContainsKey(figure))
+				return;
+
+			_figurePropertyChanged ??= OnPathFigurePropertyChanged;
+			_figureInvalidateRequested ??= OnInvalidatePathSegmentRequested;
+
+			var propertyChangedProxy = new WeakNotifyPropertyChangedProxy();
+			propertyChangedProxy.Subscribe(figure, _figurePropertyChanged);
+
+			var invalidateProxy = new WeakPathFigureInvalidateProxy();
+			invalidateProxy.Subscribe(figure, _figureInvalidateRequested);
+
+			_subscribedFigures[figure] = (propertyChangedProxy, invalidateProxy);
 		}
 
 		void UnsubscribeFigure(PathFigure figure)
 		{
-			figure.PropertyChanged -= OnPathFigurePropertyChanged;
-			figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
-			_subscribedFigures.Remove(figure);
+			if (figure is null || !_subscribedFigures.Remove(figure, out var proxies))
+				return;
+
+			proxies.PropertyChanged.Unsubscribe();
+			proxies.Invalidate.Unsubscribe();
 		}
 
 		void UnsubscribeAllFigures()
 		{
-			foreach (var figure in _subscribedFigures)
+			foreach (var proxies in _subscribedFigures.Values)
 			{
-				figure.PropertyChanged -= OnPathFigurePropertyChanged;
-				figure.InvalidatePathSegmentRequested -= OnInvalidatePathSegmentRequested;
+				proxies.PropertyChanged.Unsubscribe();
+				proxies.Invalidate.Unsubscribe();
 			}
 			_subscribedFigures.Clear();
 		}
@@ -231,14 +263,16 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			if (oldCollection != null)
 			{
-				oldCollection.CollectionChanged -= OnPathFigureCollectionChanged;
+				_figuresProxy?.Unsubscribe();
 				UnsubscribeAllFigures();
 			}
 
 			if (newCollection == null)
 				return;
 
-			newCollection.CollectionChanged += OnPathFigureCollectionChanged;
+			_figuresProxy ??= new WeakNotifyCollectionChangedProxy();
+			_figuresChanged ??= OnPathFigureCollectionChanged;
+			_figuresProxy.Subscribe(newCollection, _figuresChanged);
 
 			foreach (var newPathFigure in newCollection)
 			{
