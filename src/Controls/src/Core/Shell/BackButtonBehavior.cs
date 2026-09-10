@@ -8,17 +8,18 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Customizes the appearance and behavior of the back button in a <see cref="Shell"/> application.
 	/// </summary>
-	public class BackButtonBehavior : BindableObject
+	public class BackButtonBehavior : BindableObject, ICommandElement
 	{
 		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty =
 			BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(BackButtonBehavior), null, BindingMode.OneTime,
-				propertyChanged: OnCommandParameterChanged);
+				propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(BackButtonBehavior), null, BindingMode.OneTime,
-				propertyChanged: OnCommandChanged);
+				propertyChanging: CommandElement.OnCommandChanging,
+				propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <summary>Bindable property for <see cref="IconOverride"/>.</summary>
 		public static readonly BindableProperty IconOverrideProperty =
@@ -108,46 +109,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
+		// Command subscription goes through CommandElement/WeakCommandSubscription rather than a
+		// direct CanExecuteChanged handler: a command is usually owned by a view model that outlives
+		// the Shell page, and a strong handler kept every BackButtonBehavior ever bound to it alive.
+		WeakCommandSubscription ICommandElement.CleanupTracker { get; set; }
+
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
-			var self = (BackButtonBehavior)bindable;
-			var oldCommand = (ICommand)oldValue;
-			var newCommand = (ICommand)newValue;
-			self.OnCommandChanged(oldCommand, newCommand);
+			IsEnabledCore = CommandElement.GetCanExecute(this);
 		}
 
-		static void OnCommandParameterChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			((BackButtonBehavior)bindable).OnCommandParameterChanged();
-		}
-
-		void CanExecuteChanged(object sender, EventArgs e)
-		{
-			IsEnabledCore = Command.CanExecute(CommandParameter);
-		}
-
-		void OnCommandChanged(ICommand oldCommand, ICommand newCommand)
-		{
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= CanExecuteChanged;
-			}
-
-			if (newCommand != null)
-			{
-				newCommand.CanExecuteChanged += CanExecuteChanged;
-				IsEnabledCore = Command.CanExecute(CommandParameter);
-			}
-			else
-			{
-				IsEnabledCore = true;
-			}
-		}
-
-		void OnCommandParameterChanged()
-		{
-			if (Command != null)
-				IsEnabledCore = Command.CanExecute(CommandParameter);
-		}
 	}
 }
