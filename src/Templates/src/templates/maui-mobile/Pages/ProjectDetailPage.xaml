@@ -36,13 +36,13 @@
                         Text="{Binding Description}" SemanticProperties.Description="Description" />
                 </sf:SfTextInputLayout>
 
-              <sf:SfTextInputLayout
-                    Hint="Category"
-                    SemanticProperties.Description="ComboBox to select a category. Activate to browse and select a category">
+                <sf:SfTextInputLayout
+                    Hint="Category">
                     <Picker ItemsSource="{Binding Categories}"
                             SelectedItem="{Binding Category}"
                             SelectedIndex="{Binding CategoryIndex}"
-                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"/>
+                            IsOpen="{Binding IsCategoryPickerExpanded, Mode=TwoWay}"
+                            SemanticProperties.Description="ComboBox to select a category. Activate to browse and select a category"/>
                 </sf:SfTextInputLayout>
 
                 <Label 
