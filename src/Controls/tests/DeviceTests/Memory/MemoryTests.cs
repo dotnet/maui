@@ -200,6 +200,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #endif
 
 	[Theory("Handler Does Not Leak")]
+	[InlineData(typeof(AbsoluteLayout))]
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(BoxView))]
@@ -216,6 +217,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
+	[InlineData(typeof(HorizontalStackLayout))]
 #if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(HybridWebView))]
 #endif
@@ -239,6 +241,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
+	[InlineData(typeof(StackLayout))]
 #if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
 #endif
@@ -250,6 +253,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
 #pragma warning restore CS0618 // Type or member is obsolete
+	[InlineData(typeof(VerticalStackLayout))]
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
 #if IOS || MACCATALYST
