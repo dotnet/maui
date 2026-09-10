@@ -27,9 +27,6 @@ parameters:
       # Trusted host-capability diagnostic only; creates and destroys an empty
       # Hypervisor.framework VM without guest code, devices, or networking.
       - ios-vm-capability-probe
-      # Restore and boot an actual Apple macOS guest with VM-only visual evidence.
-      # This does not authorize generated execution or certify an issue.
-      - ios-guest-bootstrap
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -244,48 +241,6 @@ stages:
             inputs:
               targetPath: '$(IosVmCapabilityProbeRoot)'
               artifact: 'IosVmCapabilityProbe'
-              publishLocation: 'pipeline'
-
-  - stage: BootstrapIosGuest
-    displayName: 'Restore and boot trusted macOS guest for interactive setup'
-    dependsOn: []
-    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'ios-guest-bootstrap'))
-    jobs:
-      - job: BootstrapIosGuest
-        pool: ${{ parameters.iosVmCapabilityPool }}
-        timeoutInMinutes: 90
-        cancelTimeoutInMinutes: 5
-        workspace:
-          clean: all
-        steps:
-          - checkout: self
-            clean: true
-            fetchDepth: 1
-            fetchTags: false
-            persistCredentials: false
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              & ./.github/scripts/Invoke-IosGuestBootstrap.ps1 `
-                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
-                -BuildId $env:BUILD_BUILDID `
-                -OutputDirectory (Join-Path $env:PIPELINE_WORKSPACE 'IosGuestBootstrap')
-            displayName: 'Install Apple restore image and capture only the guest window'
-            timeoutInMinutes: 85
-            env:
-              BUILD_SOURCEBRANCH: $(Build.SourceBranch)
-              BUILD_SOURCEVERSION: $(Build.SourceVersion)
-              BUILD_BUILDID: $(Build.BuildId)
-              SYSTEM_DEFINITIONID: $(System.DefinitionId)
-              PIPELINE_WORKSPACE: $(Pipeline.Workspace)
-              PARAM_PLATFORM: ${{ parameters.Platform }}
-              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
-              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
-          - task: PublishPipelineArtifact@1
-            displayName: 'Preserve bounded guest bootstrap diagnostics without VM disks'
-            condition: succeededOrFailed()
-            inputs:
-              targetPath: '$(Pipeline.Workspace)/IosGuestBootstrap/diagnostics'
-              artifact: 'IosGuestBootstrap'
               publishLocation: 'pipeline'
 
   - stage: ProbeIosHarness
