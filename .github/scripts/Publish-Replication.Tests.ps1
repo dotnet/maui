@@ -1307,8 +1307,9 @@ Describe 'Trusted replication PR migration' {
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationPR.ps1') -Raw
 
         $body | Should -Match 'Validated on baseline commit'
-        $body | Should -Match 'first parent of the commit in this pull request is exactly the commit'
-        $body | Should -Match 'this diff contains only the added reproduction test'
+        $body | Should -Match 'the reproduction commit sits directly on the validated baseline above; its parent is that baseline'
+        $body | Should -Match 'The reproduction commit adds only the failing test'
+        $body | Should -Not -Match 'this diff contains only the added reproduction test'
         $body | Should -Match 'not of the committed test executing'
         $body | Should -Match 'not as exact-head evidence'
         $body.Contains('- Baseline commit: ``$baseSha``') | Should -BeFalse
@@ -1404,6 +1405,9 @@ Describe 'A pull request that carries a fix says so' {
         $body | Should -Not -Match 'Proposed fix'
         $body | Should -Match 'not a merge-ready product fix'
         $body | Should -Match 'The published patch is add-only'
+        $body | Should -Match 'the reproduction commit sits directly on the validated baseline above; its parent is that baseline'
+        $body | Should -Match 'The reproduction commit adds only the failing test'
+        $body | Should -Not -Match 'This pull request carries two commits'
     }
 
     It 'describes the fix, its files, and the two commits that carry it' {
@@ -1430,6 +1434,10 @@ Describe 'A pull request that carries a fix says so' {
         $body | Should -Match 'Clamping the padding'
         $body | Should -Match 'two commits'
         $body | Should -Match 'The reproduction commit is add-only'
+        $body | Should -Match 'check out that first, test-only commit to observe the failure'
+        $body | Should -Match 'any proposed product fix is a separate following commit'
+        $body | Should -Not -Match 'its parent can be checked out'
+        $body | Should -Not -Match 'this diff contains only the added reproduction test'
     }
 
     It 'still describes a fix that carries no prose' {
@@ -1444,6 +1452,8 @@ Describe 'A pull request that carries a fix says so' {
         $body | Should -Match 'Proposed fix'
         $body | Should -Match 'src/Core/src/Handlers/Button/ButtonHandler\.cs'
         $body | Should -Not -Match 'Approaches considered and rejected'
+        $body | Should -Match 'check out that first, test-only commit to observe the failure'
+        $body | Should -Match 'any proposed product fix is a separate following commit'
     }
 
     It 'refuses to let a fix file smuggle a pipeline command into the body' {

@@ -191,12 +191,17 @@ steps:
         'The fix panel stops before the step timeout kills the evidence*derives a budget no candidate can overrun the step with'
         'The fix panel stops before the step timeout kills the evidence*finds the replication timeout after long metadata with either line ending'
         'The fix panel stops before the step timeout kills the evidence*does not borrow a nested value or another tasks timeout'
+        'Trusted replication PR migration*states the real parent commit and the recording provenance'
+        'A pull request that carries a fix says so*says nothing about a fix when there is none'
+        'A pull request that carries a fix says so*describes the fix, its files, and the two commits that carry it'
+        'A pull request that carries a fix says so*still describes a fix that carries no prose'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Publish-Replication.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"

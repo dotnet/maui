@@ -1090,7 +1090,7 @@ function New-ReplicationPullRequestBody {
             '## Proposed fix',
             '',
             ('This pull request carries two commits. The first adds the failing reproduction on its own, ' +
-             'so its parent can be checked out and the test watched to fail. The second changes product ' +
+             'so check out that first, test-only commit to observe the failure. The second changes product ' +
              'code so the same test passes.'),
             ''
         )
@@ -1211,7 +1211,7 @@ $qualityBlock
 - Issue: [$IssueOwner/$IssueRepository#$issueNumber — $safeTitle]($issueUrl)
 - Platform: **$platform**
 - Validated on baseline commit: ``$baseSha`` — the trusted device reproduction and the failing-test verification both ran against this commit
-- Base branch: the reproduction commit sits directly on the baseline above, so the first parent of the commit in this pull request is exactly the commit the device reproduction and the failing-test verification ran against, and this diff contains only the added reproduction test.
+- Base branch: the reproduction commit sits directly on the validated baseline above; its parent is that baseline. The reproduction commit adds only the failing test; any proposed product fix is a separate following commit.
 - Test type: **$testType**
 - Test execution host: $testHostDescription
 - Exact test: ``$exactTestName``
