@@ -48,6 +48,8 @@ namespace Microsoft.Maui.Animations
 
 		internal WeakReference<IAnimator>? Parent { get; set; }
 
+		internal Action? AnimationManagerDisposed { get; set; }
+
 		/// <summary>
 		/// A callback that is invoked when this animation finishes.
 		/// </summary>
@@ -339,6 +341,12 @@ namespace Microsoft.Maui.Animations
 			IAnimator? view = null;
 			if (Parent?.TryGetTarget(out view) ?? false)
 				view?.RemoveAnimation(this);
+		}
+
+		internal void OnAnimationManagerDisposed()
+		{
+			AnimationManagerDisposed?.Invoke();
+			AnimationManagerDisposed = null;
 		}
 
 		/// <summary>
