@@ -1180,7 +1180,8 @@ function Get-ReplicationAppTermination {
         # line alongside the plan's own verdict is the runner reporting that
         # verdict, not the app dying. Claiming a crash there would invent a
         # termination and block a legitimate conclusion.
-        if ([string]$content -match (Get-ReplicationPlanVerdictPattern)) {
+        if ([string]$content -match (Get-ReplicationPlanVerdictPattern) -or
+            [string]$content -match (Get-ReplicationDriverElementFailurePattern)) {
             return ''
         }
 

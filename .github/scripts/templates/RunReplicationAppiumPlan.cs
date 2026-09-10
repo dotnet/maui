@@ -930,7 +930,7 @@ static void AssertElementText(
                     return false;
                 }
 
-                actual = ReadElementText(element);
+                actual = ReadElementText(element, platform);
                 if (platform == "android" &&
                     string.IsNullOrWhiteSpace(actual) &&
                     IsAndroidTextVisible(current, expected, contains))
@@ -986,14 +986,18 @@ static void AssertElementText(
     }
 }
 
-static string ReadElementText(IWebElement element)
+static string ReadElementText(IWebElement element, string platform)
 {
-    if (!string.IsNullOrWhiteSpace(element.Text))
+    var text = element.Text;
+    if (!string.IsNullOrWhiteSpace(text))
     {
-        return element.Text;
+        return text;
     }
 
-    foreach (var attribute in new[] { "text", "value", "label", "name" })
+    var attributes = platform == "ios"
+        ? new[] { "value", "label" }
+        : new[] { "text", "value", "label", "name" };
+    foreach (var attribute in attributes)
     {
         var value = element.GetAttribute(attribute);
         if (!string.IsNullOrWhiteSpace(value))
@@ -1038,7 +1042,7 @@ static string ReadVisibleAndroidNegativeVerdict(AppiumDriver driver)
                 continue;
             }
 
-            var actual = ReadElementText(element).Trim();
+            var actual = ReadElementText(element, "android").Trim();
             if (actual.StartsWith(prefix, StringComparison.Ordinal))
             {
                 return actual;
