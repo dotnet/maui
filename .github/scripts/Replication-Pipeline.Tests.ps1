@@ -460,6 +460,20 @@ Describe 'Replication issue outcome publication boundary' {
         $script:OutcomeSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot 'shared/Publish-ReplicationOutcome.ps1') -Raw
 
+        function Invoke-OutcomeReportingFixture {
+            param([bool]$PublishIssueOutcome, [bool]$Handled, [bool]$Commented)
+
+            $blocks = [regex]::Matches(
+                $script:PipelineYaml,
+                '(?ms)^ {16}if \(\$outcome\.handled\) \{\r?\n.*?^ {16}\}\r?$')
+            if ($blocks.Count -ne 1) {
+                throw 'Expected exactly one non-reproduction outcome reporting block.'
+            }
+            $outcome = [pscustomobject]@{ handled = $Handled; commented = $Commented }
+            $output = & ([scriptblock]::Create($blocks[0].Value)) 6>&1
+            ($output | ForEach-Object { [string]$_ }) -join "`n"
+        }
+
         function Invoke-ValidationMediaInstallFixture {
             param([int]$UpdateExit, [int]$InstallExit, [int]$ProbeExit)
 
@@ -567,6 +581,29 @@ ffprobe() { echo FIXTURE_PROBE; return PROBE_EXIT; }
         $script:PipelineYaml | Should -Match '(?s)name: PublishIssueOutcome.*?default: false'
         $script:PipelineYaml.Contains('-DryRun:(-not $publishIssueOutcome)') |
             Should -BeTrue
+    }
+
+    It 'reports a dry run without claiming an issue comment or label was written' {
+        $message = Invoke-OutcomeReportingFixture -PublishIssueOutcome $false -Handled $true -Commented $false
+        $message | Should -BeExactly 'Dry run: non-reproduction outcome eligible; no issue comment or label was written.'
+        $message | Should -Not -Match 'published'
+    }
+
+    It 'reports a newly published issue comment only after opted-in publication' {
+        Invoke-OutcomeReportingFixture -PublishIssueOutcome $true -Handled $true -Commented $true |
+            Should -BeExactly 'MauiBot published a new non-reproduction issue comment and applied its label.'
+    }
+
+    It 'distinguishes an existing issue comment from a newly published comment' {
+        Invoke-OutcomeReportingFixture -PublishIssueOutcome $true -Handled $true -Commented $false |
+            Should -BeExactly 'MauiBot found an existing non-reproduction issue comment and applied its label; no new comment was written.'
+    }
+
+    It 'does not claim publication for an unhandled outcome in either mode' {
+        foreach ($enabled in @($false, $true)) {
+            Invoke-OutcomeReportingFixture -PublishIssueOutcome $enabled -Handled $false -Commented $false |
+                Should -BeExactly 'No not-reproduced issue outcome requires publication.'
+        }
     }
 
     It 'requires an explicit repository so omission cannot reach dotnet/maui' {
