@@ -42,9 +42,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	bool _automationSetUpdateQueued;
 	int _automationDataItemCount = -1;
 	List<int>? _automationExcludedIndexes;
-	int _lastFocusedItemIndex = -1;
-	int _pendingFocusItemIndex = -1;
-	ItemContainer? _pendingFocusContainer;
 
 	internal ScrollViewer? ScrollViewerControl => _scrollViewer;
 	internal event Action<int>? ContainerPrepared;
@@ -70,7 +67,7 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	protected override AutomationPeer OnCreateAutomationPeer() => new MauiItemsViewAutomationPeer(this);
 
-	// Exposes exactly one candidate (the current, or first, item container) so Tab treats
+	// Exposes exactly one candidate (the first realized item container) so Tab treats
 	// the whole collection as a single stop. Up/Down arrow navigation between items is
 	// handled natively via directional focus, independent of this Tab-specific order.
 	protected override IEnumerable<DependencyObject> GetChildrenInTabFocusOrder()
@@ -80,16 +77,16 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			return base.GetChildrenInTabFocusOrder();
 		}
 
-		var tabCandidate = FindTargetContainer(repeater);
+		var tabCandidate = FindFirstContainer(repeater);
 		return tabCandidate is not null
 			? new DependencyObject[] { tabCandidate }
 			: base.GetChildrenInTabFocusOrder();
 	}
 
-	ItemContainer? FindTargetContainer(ItemsRepeater repeater)
+	static ItemContainer? FindFirstContainer(ItemsRepeater repeater)
 	{
 		ItemContainer? firstContainer = null;
-		var targetIndex = CurrentItemIndex >= 0 ? CurrentItemIndex : _lastFocusedItemIndex;
+		int? firstIndex = null;
 		var childCount = VisualTreeHelper.GetChildrenCount(repeater);
 		for (var childIndex = 0; childIndex < childCount; childIndex++)
 		{
@@ -101,17 +98,17 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			}
 
 			var elementIndex = repeater.GetElementIndex(container);
-			if (elementIndex < 0 || container.ActualWidth <= 0 || container.ActualHeight <= 0)
+			if (elementIndex < 0 ||
+				container.ActualWidth <= 0 || container.ActualHeight <= 0)
 			{
 				continue;
 			}
 
-			if (elementIndex == targetIndex)
+			if (firstIndex is null || elementIndex < firstIndex)
 			{
-				return container;
+				firstIndex = elementIndex;
+				firstContainer = container;
 			}
-
-			firstContainer ??= container;
 		}
 
 		return firstContainer;
@@ -120,61 +117,20 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	/// <summary>
 	/// Fallback for the rare case this control receives focus directly (e.g. programmatic
 	/// Focus() or pointer interaction on its chrome) rather than via Tab: redirect to the
-	/// current item so arrow keys can navigate/interact immediately. Overridden rather than
+	/// first realized item so arrow keys can navigate/interact immediately. Overridden rather than
 	/// subscribed to the GotFocus event so there is no handler to unsubscribe/leak.
 	/// </summary>
 	protected override void OnGotFocus(RoutedEventArgs e)
 	{
 		base.OnGotFocus(e);
 
-		if (ItemsRepeaterControl is not ItemsRepeater repeater)
+		if (!ReferenceEquals(e.OriginalSource, this) ||
+			ItemsRepeaterControl is not ItemsRepeater repeater)
 		{
 			return;
 		}
 
-		if (e.OriginalSource is ItemContainer focusedContainer)
-		{
-			var focusedIndex = repeater.GetElementIndex(focusedContainer);
-			if (focusedIndex >= 0)
-			{
-				_lastFocusedItemIndex = focusedIndex;
-				ClearPendingFocusRestore();
-			}
-			return;
-		}
-
-		if (!ReferenceEquals(e.OriginalSource, this))
-		{
-			return;
-		}
-
-		var targetIndex = CurrentItemIndex >= 0 ? CurrentItemIndex : _lastFocusedItemIndex;
-		var target = FindTargetContainer(repeater);
-		if (target is not null && (targetIndex < 0 || repeater.GetElementIndex(target) == targetIndex))
-		{
-			target.Focus(FocusState.Keyboard);
-			return;
-		}
-
-		if (targetIndex >= 0 && targetIndex < repeater.ItemsSourceView.Count)
-		{
-			ClearPendingFocusRestore();
-			_pendingFocusItemIndex = targetIndex;
-			StartBringItemIntoView(targetIndex, new BringIntoViewOptions { AnimationDesired = false });
-			return;
-		}
-
-		target?.Focus(FocusState.Keyboard);
-	}
-
-	protected override void OnLostFocus(RoutedEventArgs e)
-	{
-		base.OnLostFocus(e);
-
-		if (ReferenceEquals(e.OriginalSource, this))
-		{
-			ClearPendingFocusRestore();
-		}
+		FindFirstContainer(repeater)?.Focus(FocusState.Keyboard);
 	}
 
 	/// <summary>
@@ -388,63 +344,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 	{
 		UpdateAutomationSetProperties(sender, args.Element, args.Index);
 		ContainerPrepared?.Invoke(args.Index);
-
-		if (args.Index == _pendingFocusItemIndex && args.Element is ItemContainer container)
-		{
-			DispatcherQueue.TryEnqueue(() => RestorePendingFocus(sender, container, args.Index));
-		}
-	}
-
-	void RestorePendingFocus(ItemsRepeater repeater, ItemContainer container, int index)
-	{
-		if (_pendingFocusItemIndex != index ||
-			repeater.GetElementIndex(container) != index)
-		{
-			return;
-		}
-
-		if (!ReferenceEquals(FocusManager.GetFocusedElement(XamlRoot), this))
-		{
-			ClearPendingFocusRestore();
-			return;
-		}
-
-		if (container.ActualWidth <= 0 || container.ActualHeight <= 0 ||
-			!container.Focus(FocusState.Keyboard))
-		{
-			if (!ReferenceEquals(_pendingFocusContainer, container))
-			{
-				if (_pendingFocusContainer is not null)
-				{
-					_pendingFocusContainer.LayoutUpdated -= OnPendingFocusContainerLayoutUpdated;
-				}
-
-				_pendingFocusContainer = container;
-				container.LayoutUpdated += OnPendingFocusContainerLayoutUpdated;
-			}
-			return;
-		}
-
-		ClearPendingFocusRestore();
-	}
-
-	void OnPendingFocusContainerLayoutUpdated(object? sender, object e)
-	{
-		if (sender is ItemContainer container && ItemsRepeaterControl is ItemsRepeater repeater)
-		{
-			RestorePendingFocus(repeater, container, _pendingFocusItemIndex);
-		}
-	}
-
-	void ClearPendingFocusRestore()
-	{
-		if (_pendingFocusContainer is not null)
-		{
-			_pendingFocusContainer.LayoutUpdated -= OnPendingFocusContainerLayoutUpdated;
-			_pendingFocusContainer = null;
-		}
-
-		_pendingFocusItemIndex = -1;
 	}
 
 	void ItemsRepeater_AutomationElementIndexChanged(ItemsRepeater sender, ItemsRepeaterElementIndexChangedEventArgs args) =>
@@ -550,8 +449,6 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 
 	internal void CleanUpAutomationEvents()
 	{
-		ClearPendingFocusRestore();
-
 		if (_itemsRepeater is ItemsRepeater repeater)
 		{
 			repeater.ElementPrepared -= ItemsRepeater_AutomationElementPrepared;
