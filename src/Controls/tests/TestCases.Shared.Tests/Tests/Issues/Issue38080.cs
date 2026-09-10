@@ -119,7 +119,7 @@ public class Issue38080 : _IssuesUITest
 		var loadStatus = App.FindElements("Issue38080WebViewLoadStatus").FirstOrDefault();
 		return topMarker?.IsDisplayed() == true &&
 			loadStatus?.IsDisplayed() == true &&
-			loadStatus.GetText().Contains("HtmlProbe=Issue38080 WebView HTML loaded");
+			loadStatus.GetText()?.Contains("HtmlProbe=Issue38080 WebView HTML loaded", StringComparison.Ordinal) == true;
 	}
 
 	void AssertWebViewRenderedAndDisplayed()
