@@ -10,12 +10,17 @@ public class ImageViewModel : INotifyPropertyChanged
 	private bool _isAnimationPlaying;
 	private bool _isOpaque;
 	private bool _isVisible = true;
+	private bool _isEnabled = true;
 	private double _size = 40;
 	private Color _color = Colors.Blue;
 	private bool _hasShadow;
 	private Shadow _imageShadow;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private ImageSource _source = ImageSource.FromFile("animated_heart.gif");
+	private string _tapResult;
+	private Command _tapCommand;
+	private Color _backgroundColor;
+	private double _opacity = 1.0;
 
 	public Aspect Aspect
 	{
@@ -41,6 +46,16 @@ public class ImageViewModel : INotifyPropertyChanged
 		set { if (_source != value) { _source = value; OnPropertyChanged(); } }
 	}
 
+	public bool IsEnabled
+	{
+		get => _isEnabled;
+		set
+		{
+			_isEnabled = value;
+			OnPropertyChanged();
+		}
+	}
+
 	public bool IsVisible
 	{
 		get => _isVisible;
@@ -49,6 +64,45 @@ public class ImageViewModel : INotifyPropertyChanged
 			if (_isVisible != value)
 			{
 				_isVisible = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public string TapResult
+	{
+		get => _tapResult;
+		set { _tapResult = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsTapResultVisible)); }
+	}
+
+	public bool IsTapResultVisible => !string.IsNullOrEmpty(TapResult);
+
+	public Command TapCommand => _tapCommand ??= new Command(() =>
+	{
+		TapResult = "Tapped";
+	});
+
+	public Color BackgroundColor
+	{
+		get => _backgroundColor;
+		set
+		{
+			if (_backgroundColor != value)
+			{
+				_backgroundColor = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public double ImageOpacity
+	{
+		get => _opacity;
+		set
+		{
+			if (_opacity != value)
+			{
+				_opacity = value;
 				OnPropertyChanged();
 			}
 		}

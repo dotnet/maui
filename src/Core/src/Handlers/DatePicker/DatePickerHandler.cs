@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS
 			[nameof(IDatePicker.Background)] = MapBackground,
 #elif IOS
+			[nameof(IDatePicker.Background)] = MapBackground,
 			[nameof(IDatePicker.FlowDirection)] = MapFlowDirection,
 #endif
 			[nameof(IDatePicker.CharacterSpacing)] = MapCharacterSpacing,

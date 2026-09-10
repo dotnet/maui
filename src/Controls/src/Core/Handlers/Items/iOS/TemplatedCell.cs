@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// actually changed the size of the cell
 		Size _size;
 		bool _bound;
+		bool _disposed;
 
 		internal CGSize CurrentSize => _size.ToCGSize();
 
@@ -85,16 +86,106 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_bound = false;
 
+			// Transient cleanup only: clear the bound view's BindingContext and detach it from
+			// the ItemsView's logical children so it doesn't stay permanently rooted if the cell
+			// is discarded, but deliberately leave the native subtree, PlatformHandler, and
+			// CurrentTemplate intact. CarouselView Loop mode (and
+			// ItemsViewController.CellDisplayingEndedFromDelegate) may call this speculatively on
+			// a cell about to be redisplayed with the same content, and Bind() relies on the
+			// native view still being attached to cheaply reattach the logical child without
+			// re-running SetupPlatformView() (which would otherwise install duplicate Auto Layout
+			// constraints on every reuse cycle).
+			ClearBindingContext();
+			DetachFromItemsView();
+		}
+
+		// Clears the bound view's BindingContext. Called during routine recycling and final teardown.
+		void ClearBindingContext()
+		{
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.BindingContext = null;
 			}
 		}
 
+		// Permanent teardown for cells/content that are discarded outright and never
+		// reused/rebound: template replacement, deterministic disposal, and measurement-cell
+		// eviction (ItemsViewController.ClearMeasurementCells). Unlike Unbind(), this also
+		// clears the native subtree and disconnects the handler tree so the bound view and
+		// its platform view become collectible.
+		void ReleaseContent()
+		{
+			var view = PlatformHandler?.VirtualView as View;
+
+			ClearBindingContext();
+			DetachFromItemsView();
+			ClearSubviews();
+
+			view?.DisconnectHandlers();
+			PlatformHandler = null;
+			CurrentTemplate = null;
+			_bound = false;
+		}
+
+		internal void UnbindAndDisconnect()
+		{
+			ReleaseContent();
+		}
+
+		// Removes the bound view from the ItemsView's logical children, so it (and its handler) can
+		// be collected. Now also invoked from Unbind() for transient cleanup (previously reserved
+		// only for final teardown paths via ItemsViewController.Disconnect()/ClearMeasurementCells())
+		// as part of fixing the leak where a discarded/reused cell's bound view stayed permanently
+		// rooted as a logical child of the ItemsView.
+		internal void DetachFromItemsView()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			// Guard against re-entrancy: Dispose() is a public entry point on this unsealed
+			// type, so it's legal for a caller to invoke it more than once. Without this guard,
+			// a second call would run ReleaseContent() -> ClearSubviews() against a ContentView
+			// whose native handle may already have been released by the first Dispose(true)
+			// call, risking an ObjectDisposedException.
+			if (_disposed)
+			{
+				base.Dispose(disposing);
+				return;
+			}
+
+			// Only run managed/native cleanup on the deterministic disposing path. When
+			// disposing == false (finalizer), touching the managed object graph
+			// (BindingContext, LogicalChildren, events) is unsafe: it can run on the
+			// finalizer thread and reference objects that are themselves being finalized.
+			// ReleaseContent() covers the case where the cell is deallocated without ever
+			// going through PrepareForReuse/Unbind, permanently detaching and disconnecting
+			// the bound view since the cell itself is being torn down for good.
+			if (disposing)
+			{
+				ReleaseContent();
+				_disposed = true;
+			}
+
+			base.Dispose(disposing);
+		}
+
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
+
+			// Skip measuring cells that aren't currently bound (e.g. between Unbind() and a
+			// pending Bind() during rapid section restructuring). Measure() unconditionally
+			// dereferences PlatformHandler.VirtualView and would otherwise throw an NRE.
+			if (!_bound || PlatformHandler?.VirtualView is null)
+			{
+				return preferredAttributes;
+			}
 
 			if (_measureInvalidated ||
 				!AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
@@ -180,12 +271,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (itemTemplate != CurrentTemplate)
 			{
-				// Remove the old view, if it exists
+				// Remove the old view, if it exists. A template change discards oldElement's
+				// renderer for good, so this permanently detaches and disconnects it to avoid
+				// leaking (unlike the same-template branch below, which keeps the native
+				// subtree attached for cheap reuse). ReleaseContent() clears the BindingContext,
+				// removes the logical child, clears native subviews, and disconnects the handler
+				// tree (equivalent to the previous oldElement.DisconnectHandlers() call, since
+				// view == oldElement here).
 				if (oldElement != null)
 				{
-					oldElement.BindingContext = null;
-					itemsView.RemoveLogicalChild(oldElement);
-					ClearSubviews();
+					ReleaseContent();
 				}
 
 				// Create the content and renderer for the view 
@@ -216,6 +311,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (oldElement != null && !ReferenceEquals(bindingContext, oldElement.BindingContext))
 				{
 					oldElement.BindingContext = bindingContext;
+				}
+
+				// This cell may have been unbound while off-screen (e.g. its previous item was
+				// removed from the ItemsSource, see ItemsViewController.CellDisplayingEndedFromDelegate),
+				// which detaches the view from the ItemsView's logical children (Parent becomes null).
+				// If the cell is now being reused/rebound with the same template, the view must be
+				// re-attached; otherwise it silently drops out of the logical tree even though it's
+				// visibly bound and displayed again. Mirrors TemplatedCell2.BindVirtualView().
+				//
+				// Note: the native subtree itself never gets detached by Unbind() (only the
+				// logical-child link does), so there's no need to reattach/recreate it here -
+				// doing so would call SetupPlatformView() again and install duplicate Auto
+				// Layout constraints on every reuse cycle.
+				if (oldElement is not null && oldElement.Parent is null)
+				{
+					itemsView.AddLogicalChild(oldElement);
 				}
 			}
 
@@ -255,6 +366,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UseContent(TemplatedCell measurementCell)
 		{
+			// Release any content this cell was already displaying (e.g. left over from being
+			// recycled by the UICollectionView reuse pool) before adopting the donor's content.
+			// Without this, the previous bound view stays orphaned as a logical child of the
+			// ItemsView, and its handler tree stays connected, for as long as the ItemsView is
+			// alive - the same leak class this PR fixes, just reached via the measurement-cell
+			// content-transfer path instead of Bind().
+			if (PlatformHandler is not null)
+			{
+				ReleaseContent();
+			}
+
 			// Copy all the content and values from the measurement cell 
 			ConstrainedDimension = measurementCell.ConstrainedDimension;
 			ConstrainedSize = measurementCell.ConstrainedSize;
@@ -263,6 +385,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetRenderer(measurementCell.PlatformHandler);
 			_bound = true;
 			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
+
+			// Complete the ownership transfer on the donor so it no longer references the handler
+			// it just gave away. Without this, if the donor cell is later disposed directly
+			// (Dispose() is a public entry point on this unsealed type) it would tear down the
+			// handler subtree that now belongs to this cell.
+			measurementCell.PlatformHandler = null;
+			measurementCell.CurrentTemplate = null;
+			measurementCell._bound = false;
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)

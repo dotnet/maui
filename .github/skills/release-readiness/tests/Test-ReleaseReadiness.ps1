@@ -179,8 +179,129 @@ foreach ($case in @(
 }
 
 # Static workflow/renderer contracts must run even when network E2E is skipped.
-$workflowContractText = Get-Content (Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml') -Raw
+$releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
+$trackerUpdaterPath = Join-Path $PSScriptRoot '..' 'scripts' 'Update-TrackerIssue.sh'
+$releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+$trackerUpdaterText = Get-Content $trackerUpdaterPath -Raw
+$workflowContractText = "$releaseWorkflowText`n$trackerUpdaterText"
 $srScriptContractText = Get-Content (Join-Path $PSScriptRoot '..' 'scripts' 'Get-ReleaseReadiness.ps1') -Raw
+
+function Get-MaxWorkflowRunBlockBytes {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $lines = [System.IO.File]::ReadAllLines($Path)
+    $utf8 = [System.Text.UTF8Encoding]::new($false)
+    $maxBytes = 0
+
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $match = [regex]::Match($lines[$i], '^(?<indent> *)run:\s*[|>][0-9+-]*\s*$')
+        if (-not $match.Success) {
+            continue
+        }
+
+        $parentIndent = $match.Groups['indent'].Value.Length
+        $blockBytes = 0
+        for ($j = $i + 1; $j -lt $lines.Count; $j++) {
+            $line = $lines[$j]
+            if ($line.Length -eq 0) {
+                $blockBytes += 1
+                continue
+            }
+
+            $contentIndent = $line.Length - $line.TrimStart(' ').Length
+            if ($contentIndent -le $parentIndent) {
+                break
+            }
+
+            $blockBytes += $utf8.GetByteCount($line) + 1
+        }
+
+        $maxBytes = [Math]::Max($maxBytes, $blockBytes)
+    }
+
+    return $maxBytes
+}
+
+$maxWorkflowRunBlockBytes = Get-MaxWorkflowRunBlockBytes -Path $releaseWorkflowPath
+Assert-Eq -Label "workflow run blocks stay below the GitHub expression-template limit" `
+    -Expected $true -Actual ($maxWorkflowRunBlockBytes -lt 20000)
+Assert-Eq -Label "workflow passes the trusted repository identifier through env" -Expected $true `
+    -Actual $releaseWorkflowText.Contains('GITHUB_REPOSITORY: ${{ github.repository }}')
+Assert-Eq -Label "workflow invokes the extracted tracker updater" -Expected $true `
+    -Actual $releaseWorkflowText.Contains('run: bash .github/skills/release-readiness/scripts/Update-TrackerIssue.sh')
+Assert-Eq -Label "extracted tracker updater contains no GitHub expression templates" -Expected $false `
+    -Actual $trackerUpdaterText.Contains('${{')
+Assert-Eq -Label "extracted tracker updater uses the trusted repository environment variable" -Expected $true `
+    -Actual ($trackerUpdaterText.Contains('--repo "${GITHUB_REPOSITORY}"') -and
+        $trackerUpdaterText.Contains('"repos/${GITHUB_REPOSITORY}/issues/${CANONICAL}"'))
+
+& bash -n $trackerUpdaterPath
+Assert-Eq -Label "extracted tracker updater passes bash syntax validation" -Expected 0 -Actual $LASTEXITCODE
+
+$trackerUpdaterProbeDir = Join-Path ([System.IO.Path]::GetTempPath()) "release-readiness-updater-$([guid]::NewGuid().ToString('N'))"
+$trackerUpdaterMockBin = Join-Path $trackerUpdaterProbeDir 'bin'
+$trackerUpdaterBody = Join-Path $trackerUpdaterProbeDir 'body.md'
+$trackerUpdaterGhLog = Join-Path $trackerUpdaterProbeDir 'gh.log'
+$trackerUpdaterMockGh = Join-Path $trackerUpdaterMockBin 'gh'
+$trackerUpdaterMock = @'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$RR_GH_LOG"
+if [ "$1" = "issue" ] && [ "$2" = "list" ]; then
+  printf '[]\n'
+  exit 0
+fi
+echo "unexpected mutating gh call: $*" >&2
+exit 90
+'@
+$trackedEnvironmentVariables = @(
+    'PATH',
+    'GITHUB_REPOSITORY',
+    'TRACKER_KEY',
+    'ISSUE_TITLE',
+    'MILESTONE_NAME',
+    'BODY_FILE',
+    'RECENT_COMMIT_COUNT',
+    'MODE',
+    'RR_GH_LOG'
+)
+$savedEnvironment = @{}
+foreach ($name in $trackedEnvironmentVariables) {
+    $savedEnvironment[$name] = [System.Environment]::GetEnvironmentVariable($name, 'Process')
+}
+try {
+    New-Item -ItemType Directory -Path $trackerUpdaterMockBin -Force | Out-Null
+    Set-Content -Path $trackerUpdaterMockGh -Value $trackerUpdaterMock -NoNewline
+    Set-Content -Path $trackerUpdaterBody -Value '<!-- release-readiness-tracker: net11-preview7 -->' -NoNewline
+    & chmod +x $trackerUpdaterMockGh
+
+    $env:PATH = "$trackerUpdaterMockBin$([System.IO.Path]::PathSeparator)$($savedEnvironment['PATH'])"
+    $env:GITHUB_REPOSITORY = 'dotnet/maui'
+    $env:TRACKER_KEY = 'net11-preview7'
+    $env:ISSUE_TITLE = '[Release Readiness] .NET 11 Preview 7'
+    $env:MILESTONE_NAME = '.NET 11.0-preview7'
+    $env:BODY_FILE = $trackerUpdaterBody
+    $env:RECENT_COMMIT_COUNT = '0'
+    $env:MODE = 'candidate'
+    $env:RR_GH_LOG = $trackerUpdaterGhLog
+
+    $trackerUpdaterProbeOutput = (& bash $trackerUpdaterPath 2>&1) -join "`n"
+    $trackerUpdaterProbeExit = $LASTEXITCODE
+    $trackerUpdaterGhCalls = @(Get-Content $trackerUpdaterGhLog)
+} finally {
+    foreach ($name in $trackedEnvironmentVariables) {
+        [System.Environment]::SetEnvironmentVariable($name, $savedEnvironment[$name], 'Process')
+    }
+    Remove-Item $trackerUpdaterProbeDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+Assert-Eq -Label "extracted tracker updater preserves the no-activity no-write gate" -Expected 0 -Actual $trackerUpdaterProbeExit
+Assert-Eq -Label "no-activity updater probe reports the skipped tracker" -Expected $true `
+    -Actual $trackerUpdaterProbeOutput.Contains('no recent commits and no open tracker issue')
+Assert-Eq -Label "no-activity updater probe performs only read-only issue lookups" -Expected $true `
+    -Actual ($trackerUpdaterGhCalls.Count -eq 2 -and @($trackerUpdaterGhCalls | Where-Object {
+        -not $_.StartsWith('issue list ', [System.StringComparison]::Ordinal)
+    }).Count -eq 0)
+
 Assert-Eq -Label "SR auxiliary commits artifact uses the same public-safe data graph as the primary JSON" -Expected $true `
     -Actual $srScriptContractText.Contains('$commitsJson = $outputSrContents | ConvertTo-Json')
 Assert-Eq -Label "workflow verifies exact closed-generation body lines" -Expected $true `
@@ -227,10 +348,9 @@ Assert-Eq -Label "workflow surfaces post-edit metadata lookup failures" -Expecte
     -Actual $workflowContractText.Contains('race compensation could not be evaluated')
 Assert-Eq -Label "workflow gives version-pending hotfixes an explicit title" -Expected $true `
     -Actual $workflowContractText.Contains('hotfix version pending')
-$updateStepStart = $workflowContractText.IndexOf('- name: Update or create tracker issue')
-$lifecycleSourceIndex = $workflowContractText.IndexOf('source .github/skills/release-readiness/scripts/TrackerIssueLifecycle.sh')
-Assert-Eq -Label "workflow sources tracker lifecycle helper inside the mutating issue step" -Expected $true `
-    -Actual ($updateStepStart -ge 0 -and $lifecycleSourceIndex -gt $updateStepStart)
+Assert-Eq -Label "extracted tracker updater sources the lifecycle helper relative to its script directory" -Expected $true `
+    -Actual ($trackerUpdaterText.Contains('SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"') -and
+        $trackerUpdaterText.Contains('source "$SCRIPT_DIR/TrackerIssueLifecycle.sh"'))
 
 $lifecycleHelperPath = Join-Path $PSScriptRoot '..' 'scripts' 'TrackerIssueLifecycle.sh'
 $lifecycleProbePath = Join-Path ([System.IO.Path]::GetTempPath()) "release-readiness-lifecycle-$([guid]::NewGuid().ToString('N')).sh"
@@ -1611,8 +1731,7 @@ if (-not $SkipE2E) {
     }
 
     Write-Host "`n[Unit] Workflow preserves active hotfix tracker creation" -ForegroundColor Cyan
-    $releaseWorkflowPath = Join-Path $PSScriptRoot '..' '..' '..' 'workflows' 'release-readiness.yml'
-    $releaseWorkflowText = Get-Content $releaseWorkflowPath -Raw
+    $releaseWorkflowAndUpdaterText = "$releaseWorkflowText`n$trackerUpdaterText"
     Assert-Eq -Label "workflow matrix carries hotfixInProgress signal" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixInProgress:\s*\(\.hotfixInProgress // false\)'))
     Assert-Eq -Label "workflow matrix carries version-specific hotfix identity" `
@@ -1620,17 +1739,17 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow matrix carries hotfix branch generation" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'hotfixCommit:\s*\(\.hotfixCommit // ""\)'))
     Assert-Eq -Label "workflow lifecycle decisions use generated report hotfix marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'HOTFIX_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow lifecycle decisions use generated report shipped marker" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'SHIPPED_MARKER=\$\(LC_ALL=C grep.+BODY_FILE'))
     Assert-Eq -Label "workflow matrix carries expected tag for report-time lifecycle re-resolution" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'expectedTag:\s*\(\.expectedTag // ""\)'))
     Assert-Eq -Label "workflow re-resolves shipped mode when stable tag lands after detection" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'MODE.*in-flight[\s\S]*refs/tags/\$\{EXPECTED_TAG\}[\s\S]*MODE="shipped"'))
     Assert-Eq -Label "workflow propagates report-time resolved mode to issue updater" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
+        -Expected $true -Actual ([bool]($releaseWorkflowAndUpdaterText -match 'echo "mode=\$MODE".*GITHUB_OUTPUT[\s\S]*MODE:\s+\$\{\{ steps\.report\.outputs\.mode \}\}'))
     Assert-Eq -Label "workflow propagates report-time resolved issue title" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
+        -Expected $true -Actual ([bool]($releaseWorkflowAndUpdaterText -match 'echo "issue_title=\$ISSUE_TITLE".*GITHUB_OUTPUT[\s\S]*ISSUE_TITLE:\s+\$\{\{ steps\.report\.outputs\.issue_title \}\}'))
     Assert-Eq -Label "workflow derives hotfix title from generated report marker" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_HOTFIX_MARKER=.*BODY_FILE[\s\S]*ISSUE_TITLE=.*hotfix.*REPORT_HOTFIX_VERSION'))
     Assert-Eq -Label "workflow hotfix marker takes precedence over shipped title" `
@@ -1638,18 +1757,18 @@ if (-not $SkipE2E) {
     Assert-Eq -Label "workflow derives plain shipped title when no hotfix marker exists" `
         -Expected $true -Actual ([bool]($releaseWorkflowText -match 'REPORT_SHIPPED_MARKER[\s\S]*ISSUE_TITLE=.*— shipped'))
     Assert-Eq -Label "workflow closed-generation lookup searches exact marker directly" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
-    $closedLookupStart = $releaseWorkflowText.IndexOf('CLOSED_GENERATION=$(gh issue list')
-    $closedLookupEnd = $releaseWorkflowText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match '--search "in:body \\"\$\{GENERATION_MARKER\}\\""'))
+    $closedLookupStart = $trackerUpdaterText.IndexOf('CLOSED_GENERATION=$(gh issue list')
+    $closedLookupEnd = $trackerUpdaterText.IndexOf('if [ -n "$CLOSED_GENERATION" ]', $closedLookupStart)
     $closedLookupBlock = if ($closedLookupStart -ge 0 -and $closedLookupEnd -gt $closedLookupStart) {
-        $releaseWorkflowText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
+        $trackerUpdaterText.Substring($closedLookupStart, $closedLookupEnd - $closedLookupStart)
     } else { '' }
     Assert-Eq -Label "workflow closed-generation lookup ignores mutable post-close updatedAt" `
         -Expected $false -Actual ([bool]($closedLookupBlock -match 'updatedAt'))
     Assert-Eq -Label "workflow newly observed generation bypasses activity gate" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match '\$CREATE_GENERATION.*!=.*true'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match '\$CREATE_GENERATION.*!=.*true'))
     Assert-Eq -Label "workflow refresh rechecks issue state immediately before edit" `
-        -Expected $true -Actual ([bool]($releaseWorkflowText -match 'PRE_EDIT_META=.*gh issue view'))
+        -Expected $true -Actual ([bool]($trackerUpdaterText -match 'PRE_EDIT_META=.*gh issue view'))
 
     # Fail-closed: bad repo path should exit non-zero
     Write-Host "`n[E2E] Detection fails closed on invalid repo" -ForegroundColor Cyan

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -11,7 +12,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
 	public class ShellTableViewSource : UITableViewSource
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Shell context is required while the table source is owned by ShellTableViewController.")]
 		readonly IShellContext _context;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Selection callback is owned by ShellTableViewController for the table source lifetime.")]
 		readonly Action<Element> _onElementSelected;
 		List<List<Element>> _groups;
 		Dictionary<Element, UIContainerCell> _cells;
@@ -23,6 +26,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_onElementSelected = onElementSelected;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "All event subscribers are cleared by Disconnect when ShellTableViewController is disposed.")]
 		public event EventHandler<UIScrollView> ScrolledEvent;
 
 		public List<List<Element>> Groups
@@ -99,6 +103,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				_cells = new Dictionary<Element, UIContainerCell>();
 			}
+		}
+
+		internal void Disconnect()
+		{
+			ScrolledEvent = null;
+
+			if (_cells is not null)
+			{
+				foreach (var cell in _cells.Values)
+					cell.Disconnect(_context.Shell);
+				_cells.Clear();
+			}
+
+			_groups = null;
 		}
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
@@ -198,7 +216,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return cell;
 		}
 
-		void OnViewMeasureInvalidated(UIContainerCell cell)
+		static void OnViewMeasureInvalidated(UIContainerCell cell)
 		{
 			cell.ReloadRow();
 		}
@@ -247,6 +265,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		class SeparatorView : UIView
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Separator line is owned as a UIKit subview for the separator view lifetime.")]
 			UIView _line;
 
 			public SeparatorView()

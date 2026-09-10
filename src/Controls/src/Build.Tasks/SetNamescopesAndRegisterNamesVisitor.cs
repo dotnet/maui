@@ -53,6 +53,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				namescopeVarDef = Context.Scopes[parentNode].Item1;
 				namesInNamescope = Context.Scopes[parentNode].Item2;
 			}
+
+			if (node.IsOnPlatformDefaultValue)
+			{
+				Context.Scopes[node] = new Tuple<VariableDefinition, IList<string>>(namescopeVarDef, namesInNamescope);
+				return;
+			}
+
 			if (setNameScope && Context.Variables[node].VariableType.InheritsFromOrImplements(Context.Cache, Context.Body.Method.Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindableObject"))))
 				SetNameScope(node, namescopeVarDef);
 			//workaround when VSM tries to apply state before parenting

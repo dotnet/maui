@@ -58,8 +58,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 				path.SetFillType(geometryGroup.FillRule == FillRule.Nonzero ? APath.FillType.Winding : APath.FillType.EvenOdd);
 
-				foreach (Geometry child in geometryGroup.Children)
+				var children = geometryGroup.Children;
+				if (children is null)
+					return path;
+
+				foreach (Geometry child in children)
 				{
+					if (child is null)
+						continue;
+
 					APath childPath = child.ToAPath(context);
 					path.AddPath(childPath);
 				}

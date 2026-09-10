@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
@@ -82,6 +83,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _isVisiblePage;
 		NSObject? _keyboardWillHideObserver;
 		bool _pendingKeyboardNavigation;
+		readonly NativeElementRegistrationSet _nativeLeftToolbarRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeRightToolbarRegistrations = new NativeElementRegistrationSet();
+		readonly NativeElementRegistrationSet _nativeSearchRegistrations = new NativeElementRegistrationSet();
+		int _leftToolbarRegistrationGeneration;
 
 		BackButtonBehavior? BackButtonBehavior { get; set; }
 		UINavigationItem? NavigationItem { get; set; }
@@ -247,6 +252,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnPageSet(Page oldPage, Page newPage)
 #nullable restore
 		{
+			_leftToolbarRegistrationGeneration++;
+			_nativeLeftToolbarRegistrations.Clear();
+			_nativeRightToolbarRegistrations.Clear();
+			_nativeSearchRegistrations.Clear();
+
 			if (oldPage is not null)
 			{
 				// The _tracker.Page assignment now occurs before the navigation animation,
@@ -433,6 +443,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			_nativeRightToolbarRegistrations.Clear();
 			if (NavigationItem.RightBarButtonItems != null)
 			{
 				for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
@@ -449,11 +460,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeRightToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeRightToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 			}
@@ -463,11 +486,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToSecondarySubToolbarItem().PlatformAction);
+						var secondaryItem = item.ToSecondarySubToolbarItem().PlatformAction;
+						(secondaries ??= []).Add(secondaryItem);
+						_nativeRightToolbarRegistrations.Register(
+							item,
+							secondaryItem,
+							NativeElementRoles.ToolbarOverflow,
+							NativeElementDiscriminators.LogicalModel);
 					}
 					else
 					{
-						(primaries ??= []).Add(item.ToUIBarButtonItem());
+						var primaryItem = item.ToUIBarButtonItem();
+						(primaries ??= []).Add(primaryItem);
+						_nativeRightToolbarRegistrations.Register(
+							item,
+							primaryItem,
+							NativeElementRoles.ToolbarItem,
+							NativeElementDiscriminators.LogicalModel);
 					}
 				}
 			}
@@ -491,7 +526,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 
 				var menu = UIMenu.Create(string.Empty, null, UIMenuIdentifier.Edit, UIMenuOptions.DisplayInline, secondaries.ToArray());
-				var menuButton = new UIBarButtonItem(secondaryIcon, menu)
+				var menuControl = UIButton.FromType(UIButtonType.System);
+				menuControl.SetImage(secondaryIcon, UIControlState.Normal);
+				menuControl.Menu = menu;
+				menuControl.ShowsMenuAsPrimaryAction = true;
+				menuControl.AccessibilityIdentifier = "SecondaryToolbarMenuButton";
+				menuControl.Frame = new CGRect(0, 0, 44, 44);
+				var menuButton = new UIBarButtonItem(menuControl)
 				{
 					AccessibilityIdentifier = "SecondaryToolbarMenuButton"
 				};
@@ -501,6 +542,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				primaries ??= [];
 
 				primaries.Insert(0, menuButton);
+				_nativeRightToolbarRegistrations.Register(
+					Page,
+					menu,
+					NativeElementRoles.ToolbarOverflow,
+					NativeElementDiscriminators.LogicalModel);
+				_nativeRightToolbarRegistrations.Register(
+					Page,
+					menuControl,
+					NativeElementRoles.ToolbarOverflow,
+					NativeElementDiscriminators.RealizedView);
 			}
 
 			NavigationItem.SetRightBarButtonItems(primaries is null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
@@ -533,6 +584,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			foreach (var item in rightItems)
 			{
 				item.TintColor = platformColor;
+				if (item.CustomView is UIView customView)
+					customView.TintColor = platformColor;
 			}
 		}
 
@@ -540,12 +593,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var shell = _context?.Shell;
 			var mauiContext = MauiContext;
+			var trackedPage = Page;
 
-			if (shell is null || NavigationItem is null || mauiContext is null)
+			if (shell is null || NavigationItem is null || mauiContext is null || trackedPage is null)
 			{
 				return;
 			}
 
+			var registrationGeneration = ++_leftToolbarRegistrationGeneration;
+			var trackedNavigationItem = NavigationItem;
+			var trackedViewController = ViewController;
+			var isRootPage = IsRootPage;
 			var behavior = BackButtonBehavior;
 
 			var image = behavior.GetPropertyIfSet<ImageSource?>(BackButtonBehavior.IconOverrideProperty, null);
@@ -571,8 +629,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			image.LoadImage(mauiContext, result =>
 			{
-				if (ViewController is null)
+				if (_disposed ||
+					trackedViewController is null ||
+					registrationGeneration != _leftToolbarRegistrationGeneration ||
+					!ReferenceEquals(Page, trackedPage) ||
+					!ReferenceEquals(NavigationItem, trackedNavigationItem) ||
+					!ReferenceEquals(ViewController, trackedViewController))
+				{
+					result?.Dispose();
 					return;
+				}
+
+				_nativeLeftToolbarRegistrations.Clear();
 
 				UIImage? icon = null;
 
@@ -661,6 +729,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
 #pragma warning restore CS0618 // Type or member is obsolete
 					}
+
+					var isBackButton = !isRootPage || command is not null;
+					_nativeLeftToolbarRegistrations.Register(
+						isBackButton ? trackedPage : shell,
+						NavigationItem.LeftBarButtonItem,
+						isBackButton ? NativeElementRoles.BackButton : NativeElementRoles.ShellFlyoutToggle,
+						NativeElementDiscriminators.LogicalModel);
 				}
 			});
 
@@ -786,13 +861,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (BackButtonBehavior == value)
 				return;
 
-			if (BackButtonBehavior != null)
-				BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
+			BackButtonBehavior?.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
 
 			BackButtonBehavior = value;
 
-			if (BackButtonBehavior != null)
-				BackButtonBehavior.PropertyChanged += OnBackButtonBehaviorPropertyChanged;
+			BackButtonBehavior?.PropertyChanged += OnBackButtonBehaviorPropertyChanged;
 
 			UpdateToolbarItemsInternal();
 		}
@@ -944,6 +1017,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateSearchVisibility(_searchController);
 			else if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 				UpdateSearchIsEnabled(_searchController);
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+				RecreateSearchController();
 			else if (e.Is(SearchHandler.AutomationIdProperty))
 			{
 				UpdateAutomationId();
@@ -960,6 +1035,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
 			}
+		}
+
+		void RecreateSearchController()
+		{
+			if (_searchHandler is null || NavigationItem is null)
+				return;
+
+			var query = _searchController?.SearchBar.Text;
+			var oldSearchController = _searchController;
+
+			DettachSearchController();
+			DisposeResultsRenderer();
+			oldSearchController?.Dispose();
+
+			AttachSearchController();
+
+			if (_searchController is not null && query is not null)
+				_searchController.SearchBar.Text = query;
+		}
+
+		void DisposeResultsRenderer()
+		{
+			if (_resultsRenderer is null)
+				return;
+
+			_resultsRenderer.ItemSelected -= OnSearchItemSelected;
+			_resultsRenderer.Dispose();
+			_resultsRenderer = null;
 		}
 
 		void UpdateAutomationId()
@@ -1060,6 +1163,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
+
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{
@@ -1070,6 +1174,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var searchBar = _searchController.SearchBar;
+			_nativeSearchRegistrations.RegisterExclusive(
+				SearchHandler,
+				searchBar,
+				NativeElementRoles.SearchHandler,
+				NativeElementDiscriminators.RealizedView);
 
 			_searchController.SetSearchResultsUpdater(sc =>
 			{
@@ -1114,10 +1223,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnSearchBarEditingStopped(object? sender, EventArgs e)
 		{
-			if (_searchController is not null)
-			{
-				_searchController.Active = false;
-			}
+			_searchController?.Active = false;
 		}
 
 		void BookmarkButtonClicked(object? sender, EventArgs e)
@@ -1127,6 +1233,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void DettachSearchController()
 		{
+			_nativeSearchRegistrations.Clear();
 
 			_searchHandlerAppearanceTracker?.Dispose();
 			_searchHandlerAppearanceTracker = null;
@@ -1406,6 +1513,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
+				_leftToolbarRegistrationGeneration++;
+				_nativeLeftToolbarRegistrations.Clear();
+				_nativeRightToolbarRegistrations.Clear();
+				_nativeSearchRegistrations.Clear();
 				_searchHandlerAppearanceTracker?.Dispose();
 
 				if (Page is not null)
@@ -1423,13 +1534,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					((IShellController)shell).RemoveFlyoutBehaviorObserver(this);
 
-					if (BackButtonBehavior is not null)
-						BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
+					BackButtonBehavior?.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
 
 					shell.PropertyChanged -= HandleShellPropertyChanged;
 
-					if (shell.Toolbar is not null)
-						shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
+					shell.Toolbar?.PropertyChanged -= OnToolbarPropertyChanged;
 				}
 
 				if (NavigationItem?.TitleView is TitleViewContainer tvc)

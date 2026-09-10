@@ -68,11 +68,15 @@ namespace Microsoft.Maui.Platform
 		/// <param name="imageView">The <see cref="UIImageView"/> to be measured.</param>
 		/// <param name="constraints">The specified size constraints.</param>
 		/// <param name="padding"></param>
+		/// <param name="widthConstraintIsExplicit">Whether the width constraint comes from an explicit request (e.g. WidthRequest) and may therefore scale the image beyond its native width.</param>
+		/// <param name="heightConstraintIsExplicit">Whether the height constraint comes from an explicit request (e.g. HeightRequest) and may therefore scale the image beyond its native height.</param>
 		/// <returns>The size where the image would fit depending on the aspect ratio.</returns>
 		internal static CGSize SizeThatFitsImage(
 			this UIImageView imageView,
 			CGSize constraints,
-			Thickness padding = default)
+			Thickness padding = default,
+			bool widthConstraintIsExplicit = false,
+			bool heightConstraintIsExplicit = false)
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
@@ -87,9 +91,8 @@ namespace Microsoft.Maui.Platform
 			var horizontalThickness = padding.HorizontalThickness;
 			var verticalThickness = padding.VerticalThickness;
 
-			var widthConstraint = constraints.Width - horizontalThickness;
-			var heightConstraint = constraints.Height - verticalThickness;
-
+			double widthConstraint = constraints.Width - horizontalThickness;
+			double heightConstraint = constraints.Height - verticalThickness;
 
 			var constrainedWidth = Math.Min(imageWidth, widthConstraint);
 			var constrainedHeight = Math.Min(imageHeight, heightConstraint);
@@ -98,9 +101,28 @@ namespace Microsoft.Maui.Platform
 			// that can fit it
 			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
-				var widthRatio = constrainedWidth / imageWidth;
-				var heightRatio = constrainedHeight / imageHeight;
+				// Compute the raw (uncapped) ratio for each axis. When an axis constraint is +Infinity
+				// (i.e. unconstrained, as happens on the cross axis of a StackLayout), its ratio is also
+				// +Infinity, meaning it never limits the scale factor - only the other (finite/explicit) axis does.
+				var widthRatio =
+					double.IsPositiveInfinity(widthConstraint)
+						? double.PositiveInfinity
+						: widthConstraint / imageWidth;
+
+				var heightRatio =
+					double.IsPositiveInfinity(heightConstraint)
+						? double.PositiveInfinity
+						: heightConstraint / imageHeight;
+
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
+
+				// Only when NEITHER axis constraint came from an explicit request (WidthRequest/HeightRequest) -
+				// i.e. we're simply fitting within available space, not honoring an explicit enlarge request -
+				// do we cap the scale factor at 1 so the image never grows beyond its native size.
+				if (!widthConstraintIsExplicit && !heightConstraintIsExplicit)
+				{
+					scaleFactor = Math.Min(scaleFactor, 1);
+				}
 
 				return new CGSize(imageWidth * scaleFactor + horizontalThickness, imageHeight * scaleFactor + verticalThickness);
 			}
