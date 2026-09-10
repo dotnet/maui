@@ -412,7 +412,7 @@ namespace Microsoft.Maui.Platform
 			// it can push ContentSize over the Bounds, causing AdjustedContentInset to become non-zero and SafeAreaInsets on the child to reset to zero.
 			// This can result in a loop of invalidations as the layout toggles between these states.
 			// To prevent this, we ignore safe area calculations on child views when they are inside a scroll view.
-			if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			if (systemAdjustedContentInset.IsEmptyAtPixelLevel() || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
 				_safeArea = GetInset(SafeAreaInsets).ToSafeAreaInsets();
 			else
 				_safeArea = GetInset(SystemAdjustedContentInset).ToSafeAreaInsets();
