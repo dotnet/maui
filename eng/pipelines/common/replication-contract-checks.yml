@@ -170,6 +170,12 @@ steps:
         'Replication issue outcome publication boundary*continues validation media installation after a package-index failure'
         'Replication issue outcome publication boundary*preserves validation media install failures after a package-index failure'
         'Replication issue outcome publication boundary*requires a working media validator after installation succeeds'
+        'Replication issue outcome publication boundary*keeps commenting on the public issue tracker opt-in'
+        'Replication issue outcome publication boundary*reports a dry run without claiming an issue comment or label was written'
+        'Replication issue outcome publication boundary*reports a newly published issue comment only after opted-in publication'
+        'Replication issue outcome publication boundary*distinguishes an existing issue comment from a newly published comment'
+        'Replication issue outcome publication boundary*does not claim publication for an unhandled outcome in either mode'
+        'Trusted replication issue outcome publishing*handles only a genuine sandbox non-reproduction'
         'Record-Reproduction recorder adapters*constructs bounded Android screenrecord, pull, and exact cleanup commands'
         'Record-Reproduction recorder adapters*constructs an iOS simctl recordVideo command for the selected simulator'
         'Record-Reproduction recorder adapters*constructs a bounded video from trusted Catalyst Appium frames'
@@ -208,6 +214,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Publish-Replication.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Publish-ReplicationOutcome.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"

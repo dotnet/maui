@@ -31,6 +31,7 @@ Describe 'Trusted replication issue outcome publishing' {
             -DryRun
 
         $result.handled | Should -BeTrue
+        $result.commented | Should -BeFalse
         $result.label | Should -BeExactly 's/try-latest-version'
     }
 

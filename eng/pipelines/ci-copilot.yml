@@ -4330,7 +4330,13 @@ stages:
                   -Label "s/try-latest-version" `
                   -DryRun:(-not $publishIssueOutcome)
                 if ($outcome.handled) {
-                  Write-Host "MauiBot published a not-reproduced issue outcome."
+                  if (-not $publishIssueOutcome) {
+                    Write-Host "Dry run: non-reproduction outcome eligible; no issue comment or label was written."
+                  } elseif ($outcome.commented) {
+                    Write-Host "MauiBot published a new non-reproduction issue comment and applied its label."
+                  } else {
+                    Write-Host "MauiBot found an existing non-reproduction issue comment and applied its label; no new comment was written."
+                  }
                 } else {
                   Write-Host "No not-reproduced issue outcome requires publication."
                 }
