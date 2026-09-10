@@ -20,6 +20,32 @@ public class PlatformImageTests
 		Assert.NotNull(image);
 	}
 
+	[Theory]
+	[InlineData(-1f)]
+	[InlineData(2f)]
+	public void SaveWithOptionsClampsQuality(float quality)
+	{
+		byte[] orange1x1pxPngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4v5ThPwAG7wKklwQ/bwAAAABJRU5ErkJggg==");
+		using var image = new Microsoft.Maui.Graphics.Platform.PlatformImage(orange1x1pxPngBytes);
+		using var output = new MemoryStream();
+
+		image.Save(output, ImageFormat.Png, new ImageSaveOptions { Quality = quality });
+
+		Assert.Equal(orange1x1pxPngBytes, output.ToArray());
+	}
+
+	[Fact]
+	public void SaveWithNullOptionsUsesDefaults()
+	{
+		byte[] orange1x1pxPngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4v5ThPwAG7wKklwQ/bwAAAABJRU5ErkJggg==");
+		using var image = new Microsoft.Maui.Graphics.Platform.PlatformImage(orange1x1pxPngBytes);
+		using var output = new MemoryStream();
+
+		image.Save(output, ImageFormat.Png, options: null);
+
+		Assert.Equal(orange1x1pxPngBytes, output.ToArray());
+	}
+
 	private class NonSeekableReadOnlyStream(Stream stream) : Stream
 	{
 		public override bool CanRead => stream.CanRead;
