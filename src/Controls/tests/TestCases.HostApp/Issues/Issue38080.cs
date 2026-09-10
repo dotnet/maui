@@ -32,6 +32,7 @@ public class Issue38080 : NavigationPage
 	class Issue38080ReproPage : ContentPage
 	{
 		const int FillerRows = 50;
+		const int MaxDiagnosticRefreshAttempts = 50;
 
 		public Issue38080ReproPage()
 		{
@@ -47,19 +48,42 @@ public class Issue38080 : NavigationPage
 				Text = "Page loaded — no crash"
 			});
 
+			var clipBoundsStatus = new Label
+			{
+				AutomationId = "Issue38080ClipBoundsStatus",
+				Text = "ClipBounds=pending"
+			};
+			stack.Children.Add(clipBoundsStatus);
+
+			var webViewLoadStatus = new Label
+			{
+				AutomationId = "Issue38080WebViewLoadStatus",
+				Text = "WebView load pending"
+			};
+
 			// The first/last rows are sentinels the UITest asserts on to prove the scroll
 			// actually reached the top/bottom extreme.
 			AddFiller(stack, FillerRows, sentinelRow: 1, sentinelId: "Issue38080TopSentinel");
 
-			// Single fixed-size WebView mid-list, so it is off-screen at both extremes.
-			stack.Children.Add(new WebView
+			stack.Children.Add(new Label
 			{
+				AutomationId = "Issue38080WebViewTopMarker",
+				Text = "Issue38080 WebView starts below"
+			});
+
+			// Single fixed-size WebView mid-list, so it is off-screen at both extremes.
+			var webView = new WebView
+			{
+				AutomationId = "Issue38080WebView",
 				HeightRequest = 220,
 				Source = new HtmlWebViewSource
 				{
-					Html = "<html><body style='background:#d6e4ff'><h3>WebView</h3></body></html>"
+					Html = "<html><body style='background:#d6e4ff; margin:0; padding:24px'><h3 id='Issue38080HtmlProbe'>Issue38080 WebView HTML loaded</h3></body></html>"
 				}
-			});
+			};
+			RegisterWebViewDiagnostics(webView, clipBoundsStatus, webViewLoadStatus);
+			stack.Children.Add(webView);
+			stack.Children.Add(webViewLoadStatus);
 
 			AddFiller(stack, FillerRows, sentinelRow: FillerRows, sentinelId: "Issue38080BottomSentinel");
 
@@ -82,5 +106,73 @@ public class Issue38080 : NavigationPage
 				});
 			}
 		}
+
+		static void RegisterWebViewDiagnostics(WebView webView, Label diagnosticsLabel, Label loadStatusLabel)
+		{
+			webView.Navigated += async (_, args) =>
+			{
+				if (args.Result != WebNavigationResult.Success)
+				{
+					loadStatusLabel.Text = $"WebView load result: {args.Result}";
+					return;
+				}
+
+				var htmlProbe = await webView.EvaluateJavaScriptAsync("document.getElementById('Issue38080HtmlProbe').textContent");
+				loadStatusLabel.Text = $"WebView load result: {args.Result}; HtmlProbe={htmlProbe}";
+			};
+
+#if ANDROID
+			webView.HandlerChanged += (_, _) => UpdateClipBoundsDiagnostics(webView, diagnosticsLabel, attempt: 0);
+			webView.Loaded += (_, _) => UpdateClipBoundsDiagnostics(webView, diagnosticsLabel, attempt: 0);
+			webView.SizeChanged += (_, _) => UpdateClipBoundsDiagnostics(webView, diagnosticsLabel, attempt: 0);
+#endif
+		}
+
+#if ANDROID
+		static void UpdateClipBoundsDiagnostics(WebView webView, Label diagnosticsLabel, int attempt)
+		{
+			var nativeWebView = webView.Handler?.PlatformView as Android.Webkit.WebView;
+			var diagnosticsReady = false;
+
+			if (nativeWebView is null)
+			{
+				diagnosticsLabel.Text = "ClipBounds=pending; NativeWebView=null";
+			}
+			else
+			{
+				using var clipBounds = nativeWebView.ClipBounds;
+				var clipBoundsText = clipBounds is null
+					? "null"
+					: $"{clipBounds.Left},{clipBounds.Top},{clipBounds.Right},{clipBounds.Bottom}";
+				var nativeParent = nativeWebView.Parent;
+				var parentViewGroup = nativeParent as Android.Views.ViewGroup;
+				var parentClipChildren = parentViewGroup is null
+					? "null"
+					: parentViewGroup.ClipChildren.ToString();
+				var parentType = nativeParent?.GetType().Name ?? "null";
+				var isAttachedToWindow = nativeWebView.IsAttachedToWindow;
+				var isHardwareAccelerated = nativeWebView.IsHardwareAccelerated;
+
+				diagnosticsReady =
+					nativeWebView.Width > 0 &&
+					nativeWebView.Height > 0 &&
+					isAttachedToWindow &&
+					isHardwareAccelerated;
+
+				diagnosticsLabel.Text =
+					$"ClipBounds={clipBoundsText}; " +
+					$"Size={nativeWebView.Width}x{nativeWebView.Height}; " +
+					$"IsAttachedToWindow={isAttachedToWindow}; " +
+					$"HardwareAccelerated={isHardwareAccelerated}; " +
+					$"Parent={parentType}; " +
+					$"ParentClipChildren={parentClipChildren}";
+			}
+
+			if (!diagnosticsReady && attempt < MaxDiagnosticRefreshAttempts)
+				webView.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () => UpdateClipBoundsDiagnostics(webView, diagnosticsLabel, attempt + 1));
+			else if (!diagnosticsReady)
+				diagnosticsLabel.Text += "; DiagnosticsTimeout=True";
+		}
+#endif
 	}
 }

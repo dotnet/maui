@@ -53,16 +53,29 @@ namespace Microsoft.Maui.DeviceTests
 					var webView = new WebViewStub();
 					var handler = CreateHandler(webView);
 					var parent = new FrameLayout(handler.MauiContext!.Context!);
-					parent.AddView(handler.PlatformView);
+					var container = Assert.IsType<WrapperView>(handler.ContainerView);
+					parent.AddView(container);
 
-					Assert.Same(parent, handler.PlatformView.Parent);
+					Assert.Same(parent, container.Parent);
+					Assert.Same(container, handler.PlatformView.Parent);
+					Assert.True(container.ClipChildren);
+					Assert.Null(handler.PlatformView.ClipBounds);
 
 					((IElementHandler)handler).DisconnectHandler();
 
 					var destroyTrackingWebView = platformView ?? throw new InvalidOperationException("Expected the WebView factory to create a platform view.");
 					Assert.True(destroyTrackingWebView.DestroyCalled);
 					Assert.Null(destroyTrackingWebView.ParentWhenDestroyed);
+					Assert.Null(handler.ContainerView);
+					Assert.False(handler.HasContainer);
 					Assert.Equal(0, parent.ChildCount);
+
+					handler.SetVirtualView(webView);
+					var newContainer = Assert.IsType<WrapperView>(handler.ContainerView);
+					Assert.NotSame(container, newContainer);
+					Assert.Same(newContainer, handler.PlatformView.Parent);
+					Assert.True(newContainer.ClipChildren);
+					((IElementHandler)handler).DisconnectHandler();
 				});
 			}
 			finally
