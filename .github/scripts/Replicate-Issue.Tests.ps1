@@ -8679,6 +8679,107 @@ Describe 'wrapped failure text survives selection' {
     }
 }
 
+Describe 'Replication Appium native text reading' {
+    BeforeAll {
+        $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            $script:TrustedAppiumSource)
+        $methods = @($tree.GetRoot().DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax] -and
+                $_.Identifier.ValueText -ceq 'ReadElementText'
+            })
+        if ($methods.Count -ne 1) {
+            throw 'Expected exactly one trusted ReadElementText helper.'
+        }
+        $method = $methods[0].ToString().Replace(
+            'static string ReadElementText(', 'public static string ReadElementText(')
+        $namespace = 'NativeTextProbe' + [guid]::NewGuid().ToString('N')
+        $source = @"
+using System;
+using System.Collections.Generic;
+namespace $namespace
+{
+    public interface IWebElement
+    {
+        string Text { get; }
+        string GetAttribute(string name);
+    }
+    public class Element : IWebElement
+    {
+        public string Text { get; set; } = "";
+        public Dictionary<string, string> Values { get; } = new();
+        public List<string> Reads { get; } = new();
+        public string GetAttribute(string name)
+        {
+            Reads.Add(name);
+            if (!Values.TryGetValue(name, out var value))
+                throw new InvalidOperationException("Unsupported attribute: " + name);
+            return value;
+        }
+    }
+    public static class Probe
+    {
+        $method
+    }
+}
+"@
+        $types = @(Add-Type -TypeDefinition $source -PassThru)
+        $script:NativeTextElementType = $types | Where-Object Name -CEQ 'Element'
+        $script:NativeTextReadMethod = ($types | Where-Object Name -CEQ 'Probe').
+            GetMethod('ReadElementText')
+    }
+
+    BeforeEach {
+        $element = [Activator]::CreateInstance($script:NativeTextElementType)
+    }
+
+    It 'uses the iOS value without querying the unsupported text attribute' {
+        $element.Values.Add('value', 'Observed value')
+        $script:NativeTextReadMethod.Invoke($null, @($element, 'ios')) |
+            Should -Be 'Observed value'
+        ($element.Reads -join ',') | Should -Be 'value'
+    }
+
+    It 'falls back to the iOS label when the native text and value are empty' {
+        $element.Values.Add('value', '')
+        $element.Values.Add('label', 'Observed label')
+        $script:NativeTextReadMethod.Invoke($null, @($element, 'ios')) |
+            Should -Be 'Observed label'
+        ($element.Reads -join ',') | Should -Be 'value,label'
+    }
+
+    It 'does not substitute an iOS accessibility identifier for visible text' {
+        $element.Values.Add('value', '')
+        $element.Values.Add('label', '')
+        $element.Values.Add('name', 'ResultStatus')
+        $script:NativeTextReadMethod.Invoke($null, @($element, 'ios')) |
+            Should -BeNullOrEmpty
+        ($element.Reads -join ',') | Should -Be 'value,label'
+    }
+
+    It 'keeps native text authoritative without reading fallback attributes' {
+        $element.Text = 'Native text'
+        $script:NativeTextReadMethod.Invoke($null, @($element, 'ios')) |
+            Should -Be 'Native text'
+        $element.Reads.Count | Should -Be 0
+    }
+
+    It 'preserves the existing fallback order outside iOS' {
+        foreach ($platform in @('android', 'catalyst', 'windows')) {
+            $element = [Activator]::CreateInstance($script:NativeTextElementType)
+            $element.Values.Add('text', 'Existing text')
+            $script:NativeTextReadMethod.Invoke($null, @($element, $platform)) |
+                Should -Be 'Existing text'
+            ($element.Reads -join ',') | Should -Be 'text'
+        }
+    }
+
+    It 'propagates driver errors instead of synthesizing text' {
+        {
+            $script:NativeTextReadMethod.Invoke($null, @($element, 'ios'))
+        } | Should -Throw '*Unsupported attribute: value*'
+    }
+}
+
 Describe 'an abort exit code is not always a crash' {
     It 'reads a plan verdict as the answer even when the runner exits 134' {
         # The iOS device runner exits 134 for any failing test, so run 15014893
@@ -8716,6 +8817,31 @@ Describe 'an abort exit code is not always a crash' {
         )
 
         Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+    }
+
+    It 'does not turn a captured Appium lookup failure into a recovered app crash' {
+        $log = Join-Path $TestDrive 'record-driver-timeout.log'
+        $summary = @(
+            'Reproduction failed: Run trusted reproduction script failed with exit code 134.'
+            'That code is SIGABRT: the process aborted itself.'
+            'Unhandled exception. OpenQA.Selenium.WebDriverTimeoutException: Element was not visible: xpath=//XCUIElementTypeOther'
+        )
+        $summary | Set-Content -LiteralPath $log
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+        Get-ReplicationAttemptFailureKind -FailureSummary ($summary -join ' ') |
+            Should -Be 'element-missing'
+    }
+
+    It 'preserves explicit app termination even when subsequent lookups time out' {
+        $log = Join-Path $TestDrive 'record-explicit-termination.log'
+        @(
+            'REPLICATION_APP_TERMINATED the Sandbox stopped running'
+            '   at ObserveApp()'
+            'OpenQA.Selenium.WebDriverTimeoutException: Element was not visible'
+            'Test failed with exit code 134'
+        ) | Set-Content -LiteralPath $log
+        Get-ReplicationAppTermination -LogPath $log |
+            Should -Be 'the Sandbox stopped running'
     }
 
     It 'still recovers an abort when the plan left no verdict' {
