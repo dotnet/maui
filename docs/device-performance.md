@@ -58,6 +58,13 @@ explicitly allowlisted environment. It does not write an environment file.
 
 ## Local execution
 
+For Copilot-assisted execution, ask **"Check performance of PR #12345 on iOS."**
+The [check-pr-performance skill](../.github/skills/check-pr-performance/SKILL.md)
+selects a relevant supported scenario, prepares isolated merge-base/head builds,
+runs the local comparison, and generates the standard report. No new or existing
+pipeline is required or triggered. Add **"post the results on the PR"** only when
+you want Copilot to publish the comment.
+
 Build the base and head apps separately in Release with the same trusted performance
 harness. Use XHarness on Android/iOS/MacCatalyst, or an unpackaged Windows device-test
 publish directory with all dependencies. Keep output in a fresh directory per comparison.

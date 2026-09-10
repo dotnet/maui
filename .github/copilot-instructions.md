@@ -133,7 +133,13 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
-### Performance PR Comments
+### Performance PR Checks and Comments
+
+For "check performance of PR", "compare PR performance", or "is this PR faster/slower",
+use the [check-pr-performance skill](skills/check-pr-performance/SKILL.md), not the
+general PR-review/try-fix workflow. It prepares isolated base/head apps and runs the
+existing local comparison drivers; do not create or trigger a pipeline for this workflow.
+Checking performance alone does not authorize posting a comment.
 
 When authorized to post performance results, follow the [device-performance comment format](../docs/device-performance.md#pr-comment-format).
 Use the generated `comparison-summary.md` and supply the actual PR author for the mention.
