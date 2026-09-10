@@ -1,4 +1,5 @@
 <Project>
+  <!-- CI monitoring only: retain a comment-only diff for Azure Pipelines path filters. -->
   <PropertyGroup>
     <!-- The .NET product branding version -->
     <MajorVersion>11</MajorVersion>
