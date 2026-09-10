@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +16,15 @@ namespace Microsoft.Maui.Controls
 	[TypeConverter(typeof(ShellContentConverter))]
 	public class ShellContent : BaseShellItem, IShellContentController, IVisualTreeElement
 	{
+		readonly Dictionary<Page, WeakNotifyPropertyChangedProxy> _pageProxies = new();
+		PropertyChangedEventHandler _pagePropertyChanged;
+
+		~ShellContent()
+		{
+			foreach (var proxy in _pageProxies.Values)
+				proxy.Unsubscribe();
+		}
+
 		static readonly BindablePropertyKey MenuItemsPropertyKey =
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
 				defaultValueCreator: bo => new MenuItemCollection());
@@ -187,7 +196,7 @@ namespace Microsoft.Maui.Controls
 			base.OnChildAdded(child);
 			if (child is Page page)
 			{
-				page.PropertyChanged += OnPagePropertyChanged;
+				AttachPage(page);
 				_isPageVisibleChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
@@ -197,8 +206,29 @@ namespace Microsoft.Maui.Controls
 			base.OnChildRemoved(child, oldLogicalIndex);
 			if (child is Page page)
 			{
-				page.PropertyChanged -= OnPagePropertyChanged;
+				DetachPage(page);
 			}
+		}
+
+		// A Page can outlive the ShellContent that hosted it -- it may be cached by the app, or
+		// re-parented onto another ShellContent -- so a plain PropertyChanged handler keeps every
+		// ShellContent the page was ever attached to alive, and with it that whole Shell subtree.
+		void AttachPage(Page page)
+		{
+			if (page is null || _pageProxies.ContainsKey(page))
+				return;
+
+			_pagePropertyChanged ??= OnPagePropertyChanged;
+
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			proxy.Subscribe(page, _pagePropertyChanged);
+			_pageProxies[page] = proxy;
+		}
+
+		void DetachPage(Page page)
+		{
+			if (page is not null && _pageProxies.Remove(page, out var proxy))
+				proxy.Unsubscribe();
 		}
 
 

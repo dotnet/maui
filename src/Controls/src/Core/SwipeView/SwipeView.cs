@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +16,15 @@ namespace Microsoft.Maui.Controls
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
+
+		readonly Dictionary<Element, WeakNotifyPropertyChangedProxy> _childProxies = new();
+		PropertyChangedEventHandler _childPropertyChanged;
+
+		~SwipeView()
+		{
+			foreach (var proxy in _childProxies.Values)
+				proxy.Unsubscribe();
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="SwipeView"/> class.
@@ -278,7 +287,7 @@ namespace Microsoft.Maui.Controls
 			// potentially cached/long-lived SwipeItems back to this SwipeView.
 			if (child is not SwipeItems)
 			{
-				child.PropertyChanged += OnPropertyChanged;
+				AttachChild(child);
 			}
 		}
 
@@ -288,8 +297,29 @@ namespace Microsoft.Maui.Controls
 
 			if (child is not SwipeItems)
 			{
-				child.PropertyChanged -= OnPropertyChanged;
+				DetachChild(child);
 			}
+		}
+
+		// A content view can be reused -- moved between SwipeViews, or held by the app and
+		// re-parented -- so a plain PropertyChanged handler keeps every SwipeView it ever sat in
+		// alive. Same reasoning as the SwipeItems exclusion above, applied to ordinary children.
+		void AttachChild(Element child)
+		{
+			if (child is null || _childProxies.ContainsKey(child))
+				return;
+
+			_childPropertyChanged ??= OnPropertyChanged;
+
+			var proxy = new WeakNotifyPropertyChangedProxy();
+			proxy.Subscribe(child, _childPropertyChanged);
+			_childProxies[child] = proxy;
+		}
+
+		void DetachChild(Element child)
+		{
+			if (child is not null && _childProxies.Remove(child, out var proxy))
+				proxy.Unsubscribe();
 		}
 
 		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
