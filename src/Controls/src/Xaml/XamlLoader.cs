@@ -89,12 +89,11 @@ namespace Microsoft.Maui.Controls.Xaml
 					var rootnode = new RuntimeRootNode(new XmlType(reader.NamespaceURI, reader.Name, null), view, (IXmlNamespaceResolver)reader) { LineNumber = ((IXmlLineInfo)reader).LineNumber, LinePosition = ((IXmlLineInfo)reader).LinePosition };
 					XamlParser.ParseXaml(rootnode, reader);
 					var doNotThrow = ResourceLoader.ExceptionHandler2 != null;
-					void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
 					Visit(rootnode, new HydrationContext
 					{
 						RootElement = view,
 						RootAssembly = rootAssembly,
-						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
+						ExceptionHandler = doNotThrow ? CreateExceptionHandler(view) : null
 					}, useDesignProperties);
 
 					VisualDiagnostics.OnChildAdded(null, view as Element);
@@ -151,8 +150,6 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static IResourceDictionary LoadResources(string xaml, IResourcesProvider rootView)
 		{
-			void ehandler(Exception e) => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(rootView)));
-
 			using (var textReader = new StringReader(xaml))
 			using (var reader = XmlReader.Create(textReader))
 			{
@@ -178,7 +175,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					var visitorContext = new HydrationContext
 					{
-						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? ehandler : (Action<Exception>)null,
+						ExceptionHandler = ResourceLoader.ExceptionHandler2 != null ? CreateExceptionHandler(rootView) : null,
 					};
 					var cvv = new CreateValuesVisitor(visitorContext);
 					if (resources is ElementNode resourcesEN && (resourcesEN.XmlType.NamespaceUri != XamlParser.MauiUri || resourcesEN.XmlType.Name != nameof(ResourceDictionary)))
@@ -211,6 +208,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 			return null;
 		}
+
+		static Action<Exception> CreateExceptionHandler(object view)
+			=> e => ResourceLoader.ExceptionHandler2?.Invoke((e, XamlFilePathAttribute.GetFilePathForObject(view)));
 
 		static void Visit(RootNode rootnode, HydrationContext visitorContext, bool useDesignProperties)
 		{
