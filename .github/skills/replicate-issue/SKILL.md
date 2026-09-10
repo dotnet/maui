@@ -94,10 +94,15 @@ Mac Catalyst replication has the same device-only rule, using exactly one
 `.iOS.cs` Controls device test guarded by `#if MACCATALYST`. Both the Sandbox and device-test app are
 signed into an App Sandbox without network entitlements and must pass the trusted
 live network-denial check. Device-test results use a bounded file in the app
-container; XHarness TCP and loopback network exceptions are forbidden. iOS
-Simulator generation is unavailable unless the
-Aces host supplies the separate hypervisor-egress attestation; never substitute
-host firewall toggles, proxy changes, or app-side claims for that boundary.
+container; XHarness TCP and loopback network exceptions are forbidden.
+
+iOS uses the existing review Simulator build/deploy and XHarness runners with
+the replication credential-free child environment. It does not require a
+hypervisor-egress attestation and does not claim independent network isolation.
+Keep the device-only scope: exactly one `.iOS.cs` Controls test guarded by
+`#if IOS && !MACCATALYST`. Source capability restrictions, trusted-runner and
+argument checks, fresh native evidence, credentialless validation, and publisher
+rechecks remain required.
 
 - Plan the exact new, issue-numbered test paths before authoring. Use only existing parent directories. After trusted validation, create or repair only those exact files; never change the planned type, filter, or file list.
 - Persist only added test files; never edit a project, dependency, shared runner, existing test, or product file.

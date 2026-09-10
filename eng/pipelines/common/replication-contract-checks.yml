@@ -161,7 +161,18 @@ steps:
         'MAUI Copilot mode routing*uses checkout Xcode pins for the iOS probe and replication'
         'MAUI Copilot mode routing*keeps iOS replication simulator recovery on the configured Xcode'
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
-        'MAUI Copilot mode routing*keeps generated iOS execution dependent on external isolation'
+        'MAUI Copilot mode routing*uses shared iOS provisioning without an external isolation prerequisite'
+        'Replication orchestrator security boundary*keeps platform-specific execution controls without an iOS attestation gate'
+        'Apple trusted host command boundary*admits iOS Sandbox without advertising network isolation'
+        'Apple trusted host command boundary*admits iOS recording and device verification through exact trusted runners'
+        'Apple trusted host command boundary*retains iOS runner argument and test-tier restrictions'
+        'Apple trusted host command boundary*admits the exact Catalyst Sandbox runner with enforcement'
+        'Apple trusted host command boundary*rejects duplicate security-critical runner arguments'
+        'Apple trusted host command boundary*round-trips recording replay arguments without flattening the array'
+        'Apple trusted host command boundary*rejects recording replay arguments that drop App Sandbox enforcement'
+        'Apple trusted host command boundary*rejects null host command arguments'
+        'Apple trusted host command boundary*rejects an unlisted script or non-device verifier'
+        'A tier the repository rules out is never offered*retains device-only scope for Windows and Apple replication'
         'Trusted iOS VM capability probe*routes only the bounded physical-host diagnostic mode'
         'Trusted iOS VM capability probe*uses an empty Hypervisor VM fixture without guest or network devices'
         'Trusted iOS VM capability probe*separates unavailable hardware from probe infrastructure failures'
@@ -211,6 +222,7 @@ steps:
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationAppleAppSandbox.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Publish-Replication.Tests.ps1"

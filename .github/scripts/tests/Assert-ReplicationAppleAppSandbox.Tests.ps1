@@ -193,31 +193,105 @@ Describe 'Apple trusted host command boundary' {
         } | Should -Throw '*null*'
     }
 
-    It 'withholds iOS without the independently supplied hypervisor attestation' {
+    It 'admits iOS Sandbox without advertising network isolation' {
         $prior = [Environment]::GetEnvironmentVariable(
             'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED')
         try {
-            [Environment]::SetEnvironmentVariable(
-                'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED',
-                $null)
-            {
-                Get-ReplicationAppleIsolatedCommand `
+            foreach ($marker in @($null, '0', '1')) {
+                [Environment]::SetEnvironmentVariable(
+                    'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED',
+                    $marker)
+                $runner = Join-Path $script:TrustedRoot 'scripts/BuildAndRunSandbox.ps1'
+                $arguments = @('-Platform', 'ios', '-PrepareOnly', '-EnforceNetworkIsolation')
+                $command = Get-ReplicationAppleIsolatedCommand `
                     -Platform ios `
                     -TrustedRoot $script:TrustedRoot `
-                    -ScriptPath (Join-Path $script:TrustedRoot (
-                        'scripts/BuildAndRunSandbox.ps1')) `
-                    -Arguments @(
-                        '-Platform', 'ios',
-                        '-PrepareOnly',
-                        '-EnforceNetworkIsolation'
-                    ) `
+                    -ScriptPath $runner `
+                    -Arguments $arguments `
                     -Environment $script:Environment `
                     -OperatingSystem macos
-            } | Should -Throw '*requires an Aces host/hypervisor egress boundary*'
+                $command.FilePath | Should -BeExactly (Get-Command pwsh).Source
+                $expectedArguments = @(
+                    '-NoLogo', '-NoProfile', '-NonInteractive', '-File', $runner
+                ) + $arguments
+                $command.Arguments | Should -Be $expectedArguments
+                [object]::ReferenceEquals($command.Environment, $script:Environment) |
+                    Should -BeTrue
+                $command.Boundary | Should -BeExactly 'ios-review-host-no-network-isolation'
+                $command.Environment.ContainsKey('MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') |
+                    Should -BeFalse
+            }
         } finally {
             [Environment]::SetEnvironmentVariable(
                 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED',
                 $prior)
+        }
+    }
+
+    It 'admits iOS recording and device verification through exact trusted runners' {
+        $sandboxPath = Join-Path $script:TrustedRoot 'scripts/BuildAndRunSandbox.ps1'
+        $nested = @('-Platform', 'ios', '-EnforceNetworkIsolation')
+        $payload = [Convert]::ToBase64String(
+            [Text.Encoding]::UTF8.GetBytes(
+                (ConvertTo-Json -InputObject $nested -Compress)))
+        foreach ($case in @(
+            @{
+                Path = 'scripts/shared/Record-Reproduction.ps1'
+                Arguments = @(
+                    '-Platform', 'ios',
+                    '-ReproductionScriptPath', $sandboxPath,
+                    '-ReproductionArgumentsPayload', $payload)
+            },
+            @{
+                Path = 'scripts/shared/Invoke-ReplicationTestVerification.ps1'
+                Arguments = @('-Platform', 'ios', '-TestType', 'DeviceTest')
+            }
+        )) {
+            $runner = Join-Path $script:TrustedRoot $case.Path
+            $command = Get-ReplicationAppleIsolatedCommand `
+                -Platform ios -TrustedRoot $script:TrustedRoot `
+                -ScriptPath $runner -Arguments $case.Arguments `
+                -Environment $script:Environment -OperatingSystem macos
+            $expectedArguments = @(
+                '-NoLogo', '-NoProfile', '-NonInteractive', '-File', $runner
+            ) + $case.Arguments
+            $command.Arguments | Should -Be $expectedArguments
+            [object]::ReferenceEquals($command.Environment, $script:Environment) |
+                Should -BeTrue
+            $command.Boundary | Should -BeExactly 'ios-review-host-no-network-isolation'
+        }
+    }
+
+    It 'retains iOS runner argument and test-tier restrictions' {
+        foreach ($case in @(
+            @{
+                Path = 'scripts/Other.ps1'
+                Arguments = @('-Platform', 'ios')
+                Error = '*limited to exact trusted runners*'
+            },
+            @{
+                Path = 'scripts/BuildAndRunSandbox.ps1'
+                Arguments = @('-Platform', 'catalyst', '-EnforceNetworkIsolation')
+                Error = '*different platform*'
+            },
+            @{
+                Path = 'scripts/BuildAndRunSandbox.ps1'
+                Arguments = @('-Platform', 'ios', '-Platform', 'ios', '-EnforceNetworkIsolation')
+                Error = "*exactly one value for '-Platform'*"
+            },
+            @{
+                Path = 'scripts/shared/Invoke-ReplicationTestVerification.ps1'
+                Arguments = @('-Platform', 'ios', '-TestType', 'UnitTest')
+                Error = '*permits only device tests*'
+            }
+        )) {
+            {
+                Get-ReplicationAppleIsolatedCommand `
+                    -Platform ios -TrustedRoot $script:TrustedRoot `
+                    -ScriptPath (Join-Path $script:TrustedRoot $case.Path) `
+                    -Arguments $case.Arguments -Environment $script:Environment `
+                    -OperatingSystem macos
+            } | Should -Throw $case.Error
         }
     }
 
@@ -322,6 +396,6 @@ Describe 'Apple trusted host command boundary' {
                 ) `
                 -Environment $script:Environment `
                 -OperatingSystem macos
-        } | Should -Throw '*only sandboxed device tests*'
+        } | Should -Throw '*only device tests through the trusted runner*'
     }
 }
