@@ -19,6 +19,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WebView2Control>
 	{
 		private WebView2WebViewManager? _webviewManager;
+		private ILogger? _logger;
+
+		internal ILogger Logger => _logger ??= Services!.GetService<ILogger<BlazorWebViewHandler>>() ?? NullLogger<BlazorWebViewHandler>.Instance;
 
 		/// <inheritdoc />
 		protected override WebView2Control CreatePlatformView()
@@ -46,14 +49,58 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
+
+					// Disposal already finished (we blocked on it above), so it's safe to close
+					// the native WebView2 synchronously right here.
+					CloseWebView2(platformView);
 				}
 				else
 				{
-					// Otherwise, by default, we'll fire-and-forget the disposal task.
-					disposalTask.FireAndForget();
+					// Otherwise, by default, defer closing until disposal completes so JS-driven teardown isn't aborted early (same as Android).
+					disposalTask.FireAndForget(Logger);
+					CloseWebView2AfterDisposalAsync(disposalTask, platformView).FireAndForget(Logger);
 				}
 
 				_webviewManager = null;
+			}
+			else
+			{
+				// No WebViewManager was ever created -- nothing to await, so close immediately.
+				CloseWebView2(platformView);
+			}
+		}
+
+		static async Task CloseWebView2AfterDisposalAsync(Task disposalTask, WebView2Control platformView)
+		{
+			try
+			{
+				// WebView2Control.Close() must run on the UI thread; ConfigureAwait(true) ensures the
+				// continuation resumes there instead of on a background thread.
+				await disposalTask.ConfigureAwait(true);
+			}
+			catch
+			{
+				// Already logged/handled by the sibling disposalTask.FireAndForget(logger) call;
+				// swallow here so this continuation still runs the native cleanup below.
+			}
+
+			CloseWebView2(platformView);
+		}
+
+		// Safely closes CoreWebView2. Shared by DisconnectHandler and Window_Destroying, which can
+		// both fire for the same view, so this tolerates repeat calls and an uninitialized WebView2.
+		internal static void CloseWebView2(WebView2Control platformView)
+		{
+			try
+			{
+				if (platformView.CoreWebView2 is not null)
+				{
+					platformView.Close();
+				}
+			}
+			catch (ObjectDisposedException)
+			{
+				// Already closed by the other teardown path.
 			}
 		}
 
