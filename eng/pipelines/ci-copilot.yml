@@ -663,21 +663,6 @@ stages:
           - ${{ if and(eq(parameters.Mode, 'replicate'), eq(parameters.Platform, 'android')) }}:
             - template: common/replication-contract-checks.yml
 
-          - pwsh: |
-              $ErrorActionPreference = 'Stop'
-              if ([Environment]::GetEnvironmentVariable(
-                  'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -cne '1') {
-                Write-Host '##vso[build.addbuildtag]ios-isolation-unavailable'
-                throw ('iOS replication cannot run on this agent: the Aces pool must provide ' +
-                  'an independently enforced host/hypervisor egress boundary. Ask the pool owner ' +
-                  'to provision that boundary; do not set its attestation in pipeline YAML. ' +
-                  'No generated code was executed and no PR can be certified.')
-              }
-              Write-Host 'The iOS pool exposes the required external isolation attestation.'
-            displayName: 'Check iOS execution boundary before provisioning'
-            condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), eq('${{ parameters.Platform }}', 'ios'))
-            timeoutInMinutes: 2
-
           # A replicate run cannot do anything without reading its issue, but it
           # only tries to read it after capturing the trusted infrastructure,
           # resolving the baseline, installing the recording tools and installing

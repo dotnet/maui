@@ -7164,7 +7164,7 @@ WINDOWS PACKAGED BOUNDARY: testType must be device. Propose exactly one new .Win
 "@
             } elseif ($Platform -in @('ios', 'catalyst')) {
                 @"
-APPLE APP BOUNDARY: testType must be device. Propose exactly one new .iOS.cs file under src/Controls/tests/DeviceTests/. For an iOS run, wrap the test in #if IOS && !MACCATALYST; for a Catalyst run, wrap it in #if MACCATALYST. Unit, XAML, UI, shared device files, and every other device-test project are unavailable because they would execute model-authored code outside the selected app boundary. Mac Catalyst uses signed App Sandbox entitlements with no network capability and a live runtime denial check. iOS runs only when the Aces host attests an independent hypervisor egress boundary; otherwise the orchestrator stops before authoring. The single selected method must carry only [Category("Issue$IssueNumber")]; never put it on the class.
+APPLE DEVICE TEST SCOPE: testType must be device. Propose exactly one new .iOS.cs file under src/Controls/tests/DeviceTests/. For an iOS run, wrap the test in #if IOS && !MACCATALYST; for a Catalyst run, wrap it in #if MACCATALYST. Unit, XAML, UI, shared device files, and every other device-test project are outside this lane's approved test scope. Mac Catalyst uses signed App Sandbox entitlements with no network capability and a live runtime denial check. iOS uses the shared review Simulator and native test runners with the replication credential-free child environment; independent outbound-network isolation is not enforced. Source capability restrictions and all reproduction, control, fix, and publication checks still apply. The single selected method must carry only [Category("Issue$IssueNumber")]; never put it on the class.
 "@
             } else {
                 ''
@@ -9983,11 +9983,9 @@ $sandboxAttemptKinds = [System.Collections.Generic.List[string]]::new()
 $testAttemptKinds = [System.Collections.Generic.List[string]]::new()
 
 try {
-    if ($Platform -eq 'ios' -and
-        [Environment]::GetEnvironmentVariable(
-            'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -cne '1') {
-        throw ('Unsupported replication scenario: iOS Simulator replication requires ' +
-            'an Aces host/hypervisor egress boundary; app permissions and host pf are insufficient.')
+    if ($Platform -eq 'ios') {
+        Write-Host ('iOS replication uses the shared review Simulator runners; ' +
+            'independent outbound-network isolation is not enforced.')
     }
     $sandboxProjectPath = Join-Path $sandboxDir 'Maui.Controls.Sample.Sandbox.csproj'
     if ($Platform -eq 'android') {

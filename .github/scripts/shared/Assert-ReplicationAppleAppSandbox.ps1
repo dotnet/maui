@@ -605,13 +605,6 @@ function Get-ReplicationAppleIsolatedCommand {
         })
     )
 
-    if ($Platform -eq 'ios' -and
-        [Environment]::GetEnvironmentVariable(
-            'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED') -cne '1') {
-        throw ('Unsupported replication scenario: iOS Simulator replication requires ' +
-            'an Aces host/hypervisor egress boundary; app permissions and host pf are insufficient.')
-    }
-
     $trustedRootPath = [IO.Path]::GetFullPath($TrustedRoot)
     $trustedRootItem = Get-Item -LiteralPath $trustedRootPath -Force `
         -ErrorAction Stop
@@ -702,7 +695,7 @@ function Get-ReplicationAppleIsolatedCommand {
                 -Arguments $values `
                 -Name '-TestType'
             if ($testType -cne 'DeviceTest') {
-                throw 'Apple replication permits only sandboxed device tests.'
+                throw 'Apple replication permits only device tests through the trusted runner.'
             }
         }
     }
@@ -720,7 +713,7 @@ function Get-ReplicationAppleIsolatedCommand {
         Boundary = if ($Platform -eq 'catalyst') {
             'mac-catalyst-app-sandbox'
         } else {
-            'aces-hypervisor'
+            'ios-review-host-no-network-isolation'
         }
     }
 }

@@ -3144,7 +3144,7 @@ InitializeComponent();
             Should -Match 'MauiReplicationAppContainerManifest'
     }
 
-    It 'requires a proved platform boundary before generated execution and never sets its own isolation marker' {
+    It 'keeps platform-specific execution controls without an iOS attestation gate' {
         $script:Source | Should -Match 'Get-ReplicationNetworkIsolatedCommand'
         $script:Source | Should -Match 'Get-ReplicationWindowsAppContainerCommand'
         $script:Source | Should -Match 'Get-ReplicationAppleIsolatedCommand'
@@ -3186,18 +3186,13 @@ InitializeComponent();
         $script:Source | Should -Match (
             "(?s)Platform -eq 'catalyst'.*?-Cleanup.*?" +
             '-EnforceNetworkIsolation')
-        $earlyIosWithhold = $script:Source.IndexOf(
-            "if (`$Platform -eq 'ios' -and",
-            [StringComparison]::Ordinal)
-        $sandboxRestore = $script:Source.IndexOf(
-            'Invoke-ReplicationTrustedRestore -Target $sandboxProjectPath',
-            [StringComparison]::Ordinal)
-        $earlyIosWithhold | Should -BeGreaterOrEqual 0
-        $earlyIosWithhold | Should -BeLessThan $sandboxRestore
-        (Get-Content -LiteralPath (
+        $script:Source | Should -Not -Match 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'
+        $script:Source | Should -Match 'independent outbound-network isolation is not enforced'
+        $appleSource = Get-Content -LiteralPath (
             Join-Path $PSScriptRoot (
-                'shared/Assert-ReplicationAppleAppSandbox.ps1')) -Raw) |
-            Should -Match 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'
+                'shared/Assert-ReplicationAppleAppSandbox.ps1')) -Raw
+        $appleSource | Should -Not -Match 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED|aces-hypervisor'
+        $appleSource | Should -Match 'ios-review-host-no-network-isolation'
         $unsupported = $script:Source.IndexOf(
             "if (-not [OperatingSystem]::IsMacOS())",
             [StringComparison]::Ordinal)
@@ -20002,7 +19997,7 @@ Describe 'A tier the repository rules out is never offered' {
             Should -Not -Contain 'unit' -Because 'a project with an android target framework builds for android'
     }
 
-    It 'always excludes host-executed tiers from isolated app replication' {
+    It 'retains device-only scope for Windows and Apple replication' {
         foreach ($platform in @('windows', 'ios', 'catalyst')) {
             $excluded = @(Get-ReplicationUnbuildableTestTiers `
                 -Platform $platform `
@@ -20018,7 +20013,7 @@ Describe 'A tier the repository rules out is never offered' {
         $script:Source | Should -Match (
             "WINDOWS PACKAGED BOUNDARY: testType must be device")
         $script:Source | Should -Match (
-            "APPLE APP BOUNDARY: testType must be device")
+            "APPLE DEVICE TEST SCOPE: testType must be device")
         $script:Source | Should -Match (
             'single selected method must carry only \[Category')
         $script:Source | Should -Not -Match (

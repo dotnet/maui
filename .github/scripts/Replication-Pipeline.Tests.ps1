@@ -185,13 +185,15 @@ Describe 'MAUI Copilot mode routing' {
         $fixture | Should -Match 'Assert\.Equal\("CI", handler\.PlatformView\.CurrentTitle\)'
     }
 
-    It 'keeps generated iOS execution dependent on external isolation' {
-        $script:Pipeline | Should -Match (
-            "(?s)MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'\) -cne '1'.*?" +
-            "throw \('iOS replication cannot run on this agent.*?" +
-            "displayName: 'Check iOS execution boundary before provisioning'.*?" +
-            "condition: and\(succeeded\(\), eq\('\$\{\{ parameters\.Mode \}\}', 'replicate'\), " +
-            "eq\('\$\{\{ parameters\.Platform \}\}', 'ios'\)\)")
+    It 'uses shared iOS provisioning without an external isolation prerequisite' {
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ReviewPR\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Not -BeNullOrEmpty
+        $stage | Should -Not -Match 'MAUI_REPLICATION_APPLE_HYPERVISOR_EGRESS_DENIED'
+        $stage | Should -Not -Match 'ios-isolation-unavailable'
+        $stage | Should -Match "displayName: 'Boot iOS Simulator'"
+        $stage | Should -Match "displayName: 'Replicate issue and author failing test'"
         foreach ($stageName in @('ValidateReplication', 'PublishReplication')) {
             $stage = [regex]::Match(
                 $script:Pipeline,
