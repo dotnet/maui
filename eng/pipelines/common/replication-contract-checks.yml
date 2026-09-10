@@ -162,6 +162,11 @@ steps:
         'MAUI Copilot mode routing*keeps iOS replication simulator recovery on the configured Xcode'
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
         'MAUI Copilot mode routing*keeps generated iOS execution dependent on external isolation'
+        'Trusted iOS VM capability probe*routes only the bounded physical-host diagnostic mode'
+        'Trusted iOS VM capability probe*uses an empty Hypervisor VM fixture without guest or network devices'
+        'Trusted iOS VM capability probe*separates unavailable hardware from probe infrastructure failures'
+        'Trusted iOS VM capability probe*accepts an empty argument list for the fixed native fixture'
+        'Trusted iOS VM capability probe*retains bounded diagnostics and a failing command exit code'
         'Replication issue outcome publication boundary*continues validation media installation after a package-index failure'
         'Replication issue outcome publication boundary*preserves validation media install failures after a package-index failure'
         'Replication issue outcome publication boundary*requires a working media validator after installation succeeds'
@@ -200,6 +205,7 @@ steps:
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Publish-Replication.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"

@@ -33,6 +33,7 @@ Describe 'MAUI Copilot mode routing' {
         $prIndex | Should -BeLessThan $issueIndex
         $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback\s+- publication-smoke"
         $script:Pipeline | Should -Match '(?m)^\s+- replication-checks\s*$'
+        $script:Pipeline | Should -Match '(?m)^\s+- ios-vm-capability-probe\s*$'
         $script:Pipeline | Should -Match "(?s)- name: PRNumber.*?default: 0"
         $script:Pipeline | Should -Match "(?s)- name: IssueNumber.*?default: 0"
     }
