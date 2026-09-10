@@ -1820,6 +1820,36 @@ public partial class MainPage : ContentPage
                 $prompt | Should -Not -Match 'ANDROID ISSUE33315 NARROW EXCEPTION'
             }
         }
+
+        It 'scopes reusable native Label rendered-text guidance to Android and iOS generated-test phases' {
+            foreach ($case in @(
+                @{ Issue = 29282; Platform = 'android' }
+                @{ Issue = 40123; Platform = 'ios' }
+            )) {
+                $script:IssueNumber = $case.Issue
+                $script:Platform = $case.Platform
+                foreach ($phase in @('test-plan', 'test', 'repair')) {
+                    $prompt = New-CopilotPrompt -Phase $phase `
+                        -BaselineRelativePath "tests/Issue$($case.Issue)Tests.cs"
+                    $prompt | Should -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
+                    $prompt | Should -Match 'handler\.PlatformView\.Text'
+                    $prompt | Should -Match 'overriding the general custom-message assertion guidance'
+                    $prompt | Should -Match 'issue context must supply the actual input, alternate, and expected rendered text'
+                    $profile = [regex]::Match(
+                        $prompt,
+                        '(?s)NATIVE LABEL RENDERED-TEXT PROFILE:.*?(?=\r?\n[A-Z][A-Z -]+:|\r?\nTrusted |\r?\nDo not create|\z)')
+                    $profile.Success | Should -BeTrue
+                    $profile.Value | Should -Not -Match '&lt;a|<span>|Issue29282'
+                }
+            }
+
+            $script:Platform = 'catalyst'
+            (New-CopilotPrompt -Phase test-plan) |
+                Should -Not -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
+            $script:Platform = 'android'
+            (New-CopilotPrompt -Phase sandbox) |
+                Should -Not -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
+        }
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
@@ -11302,6 +11332,45 @@ public class Issue33315Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
     }
 }
 '@
+        $script:TrustedNativeLabelTextBase = @'
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue29282Tests : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue29282")]
+    public async Task ReproducesNativeLabelText()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));
+        var affectedLabel = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "<span>&lt</span>a",
+            TextType = global::Microsoft.Maui.Controls.TextType.Html
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedLabel.Text = "&lt;a";
+        }
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(
+            new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }),
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                Assert.Equal("<a", handler.PlatformView.Text);
+            });
+    }
+}
+'@
     }
 
     AfterAll {
@@ -11792,6 +11861,188 @@ public class ControlTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
                 -Platform android `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue26505.Android.cs'
         } | Should -Not -Throw
+    }
+
+    It 'allows reusable Android and iOS native Label rendered-text controls for different issue keys' {
+        $androidVariant = New-ReplicationControlVariant `
+            -BaselineSource $script:TrustedNativeLabelTextBase `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+            -ExpectedTestMethod 'ReproducesNativeLabelText' `
+            -Platform android `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        $androidVariant | Should -BeExactly (
+            $script:TrustedNativeLabelTextBase.Replace(
+                'var applyReportedTrigger = true;',
+                'var applyReportedTrigger = false;'))
+
+        $ios = $script:TrustedNativeLabelTextBase.
+            Replace('Issue29282Tests', 'Issue40123Tests').
+            Replace('Issue29282', 'Issue40123').
+            Replace('ReproducesNativeLabelText', 'RendersAlternateLiteral').
+            Replace('"&lt;a"', '"first"').
+            Replace('"<span>&lt</span>a"', '"second"').
+            Replace('Assert.Equal("<a",', 'Assert.Equal("rendered",')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $ios `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue40123Tests' `
+                -ExpectedTestMethod 'RendersAlternateLiteral' `
+                -Platform ios `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue40123Tests.iOS.cs'
+        } | Should -Not -Throw
+    }
+
+    It 'rejects native Label rendered-text wrong handler label identity and native writes' {
+        $cases = @(
+            $script:TrustedNativeLabelTextBase.Replace(
+                'global::Microsoft.Maui.Handlers.LabelHandler>(',
+                'global::Microsoft.Maui.Handlers.ButtonHandler>('),
+            $script:TrustedNativeLabelTextBase.Replace(
+                'new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }',
+                'new global::Microsoft.Maui.Controls.ContentPage { Content = new global::Microsoft.Maui.Controls.Label() }'),
+            $script:TrustedNativeLabelTextBase.Replace(
+                'Assert.Equal("<a", handler.PlatformView.Text);',
+                'handler.PlatformView.Text = "<a";')
+        )
+        foreach ($candidate in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                    -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects native Label rendered-text helper aliases overloads fabricated views and changed oracles' {
+        $wrongOverload = $script:TrustedNativeLabelTextBase.Replace(
+            '            });',
+            '            }, null, null);')
+        $alias = ('using LabelHandlerAlias = Microsoft.Maui.Handlers.LabelHandler;' +
+            [Environment]::NewLine + $script:TrustedNativeLabelTextBase).Replace(
+            'global::Microsoft.Maui.Handlers.LabelHandler>(',
+            'LabelHandlerAlias>(')
+        $cases = @(
+            $wrongOverload,
+            $alias,
+            $script:TrustedNativeLabelTextBase.Replace(
+                'Assert.Equal("<a", handler.PlatformView.Text);',
+                'Assert.Equal("<a", new AndroidX.AppCompat.Widget.AppCompatTextView().Text);'),
+            $script:TrustedNativeLabelTextBase.Replace(
+                'Assert.Equal("<a", handler.PlatformView.Text);',
+                'Assert.Contains("<", handler.PlatformView.Text);')
+        )
+        foreach ($candidate in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                    -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects native Label rendered-text source callbacks type arguments and profile leakage' {
+        $sourceCallback = $script:TrustedNativeLabelTextBase.Replace(
+            @'
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                Assert.Equal("<a", handler.PlatformView.Text);
+            }
+'@,
+            '            Observe').Replace(
+            "    }`n}",
+            @'
+    }
+    static Task Observe(global::Microsoft.Maui.Handlers.LabelHandler handler) =>
+        Task.CompletedTask;
+}
+'@)
+        @([Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+                $sourceCallback).GetDiagnostics() |
+            Where-Object { $_.Severity -eq 'Error' }).Count | Should -Be 0
+        $generatedHandler = @'
+namespace Generated
+{
+    public class LabelHandler : Microsoft.Maui.IElementHandler
+    {
+        public object PlatformView => null;
+        public Microsoft.Maui.IMauiContext MauiContext => null;
+    }
+}
+'@
+        $aliasedTypeArgument = (
+            'using LabelHandlerAlias = Generated.LabelHandler;' +
+            [Environment]::NewLine + $script:TrustedNativeLabelTextBase).Replace(
+            'global::Microsoft.Maui.Handlers.LabelHandler>(',
+            'LabelHandlerAlias>(')
+
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $sourceCallback `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        } | Should -Throw
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $aliasedTypeArgument `
+                -AdditionalSources @($generatedHandler) `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        } | Should -Throw
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedNativeLabelTextBase `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Button/Issue29282Tests.Android.cs'
+        } | Should -Throw
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedNativeLabelTextBase `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform catalyst `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.iOS.cs'
+        } | Should -Throw
+    }
+
+    It 'keeps bitmap and layout metadata restricted on native Label text paths' {
+        foreach ($typeName in @(
+                'Microsoft.Maui.DeviceTests.ImageAnalysis.RawBitmap',
+                'Microsoft.Maui.Handlers.LayoutHandler',
+                'Microsoft.Maui.Handlers.ScrollViewHandler'
+            )) {
+            $baseline = $script:ControlBase.Replace(
+                'var applyReportedTrigger = true;',
+                "var outsideProfile = new global::$typeName();`n        var applyReportedTrigger = true;")
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $baseline `
+                    -Edits @($script:GateEdit) `
+                    -Platform android `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue40124Tests.Android.cs'
+            } | Should -Throw '*Android Label rendered-bitmap metadata is trusted only*'
+        }
     }
 
     It 'reports the captured Android Issue26505 missing static import' {
@@ -12446,7 +12697,18 @@ namespace Microsoft.Maui.DeviceTests
             $declarations.Count | Should -Be 1
             $declarations[0].Parent.Name.ToString() | Should -BeExactly 'Microsoft.Maui'
         }
-        $contract | Should -Not -Match 'namespace\s+AndroidX'
+        $androidXNamespaces = @($contractTree.GetRoot().DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.NamespaceDeclarationSyntax] -and
+                $_.Name.ToString().StartsWith('AndroidX', [StringComparison]::Ordinal)
+            })
+        $androidXNamespaces.Count | Should -Be 1
+        $androidXNamespaces[0].Name.ToString() | Should -Be 'AndroidX.AppCompat.Widget'
+        $androidXNamespaces[0].Members.Count | Should -Be 1
+        $nativeTextView = $androidXNamespaces[0].Members[0]
+        $nativeTextView.Identifier.ValueText | Should -Be 'AppCompatTextView'
+        $nativeTextView.Members.Count | Should -Be 1
+        $nativeTextView.Members[0].Identifier.ValueText | Should -Be 'Text'
         $contract | Should -Not -Match 'namespace\s+Android\.Widget'
         $contract | Should -Not -Match 'SetPadding|PaddingTop|PaddingBottom|Elevation'
     }
