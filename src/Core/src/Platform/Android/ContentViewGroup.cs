@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Platform
 
 			var bounds = new Graphics.RectF(x, y, w, h);
 
-			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, true);
+			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, innerPath: true, includeShapeStroke: true);
 			return platformPath;
 		}
 

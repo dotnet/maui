@@ -124,9 +124,11 @@ namespace Microsoft.Maui.Platform
 			PathF? path;
 
 			if (clipShape is IRoundRectangle roundRectangle)
-				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
+				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness, includeShapeStroke: true);
 			else
-				path = clipShape?.PathForBounds(bounds);
+				path = clipShape is IShapeWithStroke shapeWithStroke
+					? shapeWithStroke.PathForBounds(bounds, includeStroke: true)
+					: clipShape?.PathForBounds(bounds);
 
 			return path?.AsCGPath();
 		}

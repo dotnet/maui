@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
-	public sealed partial class RoundRectangle : Shape, IShape, IRoundRectangle
+	public sealed partial class RoundRectangle : Shape, IShape, IShapeWithStroke, IRoundRectangle
 	{
 		public RoundRectangle() : base()
 		{
@@ -77,20 +77,30 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
+			return PathForBounds(viewBounds, includeStroke: false);
+		}
+
+		PathF IShapeWithStroke.PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
+			return PathForBounds(viewBounds, includeStroke);
+		}
+
+		PathF PathForBounds(Graphics.Rect viewBounds, bool includeStroke)
+		{
 			_fallbackHeight = viewBounds.Height;
 			_fallbackWidth = viewBounds.Width;
 
 			var path = GetPath();
 
-			TransformPathForBounds(path, viewBounds);
+			TransformPathForBounds(path, viewBounds, GetPathStrokeInset(includeStroke));
 
 			return path;
 		}
 
 		internal PathF GetInnerPath(float strokeThickness)
 		{
-			float w = (float)Math.Max(0, WidthForPathComputation - strokeThickness);
-			float h = (float)Math.Max(0, HeightForPathComputation - strokeThickness);
+			float w = (float)(WidthForPathComputation - strokeThickness);
+			float h = (float)(HeightForPathComputation - strokeThickness);
 			float x = strokeThickness / 2;
 			float y = strokeThickness / 2;
 
@@ -108,17 +118,17 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		PathF IRoundRectangle.InnerPath()
 		{
-			return GetInnerPath((float)GetPathStrokeInset(WidthForPathComputation, HeightForPathComputation));
+			return GetInnerPath((float)GetPathStrokeInset());
 		}
 
-		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness)
+		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeThickness, bool includeShapeStroke)
 		{
 			_fallbackHeight = viewBounds.Height;
 			_fallbackWidth = viewBounds.Width;
 
 			var path = GetInnerPath(strokeThickness);
 
-			TransformPathForBounds(path, viewBounds);
+			TransformPathForBounds(path, viewBounds, GetPathStrokeInset(includeShapeStroke));
 
 			return path;
 		}
