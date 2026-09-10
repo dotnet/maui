@@ -9206,9 +9206,9 @@ Describe 'the test prompt names the compile traps runs actually hit' {
         $script:Source | Should -Match (
             'Do not copy Catalyst or Windows window-helper examples into Android tests')
         $script:Source | Should -Match (
-            'Apart from an issue-keyed exception stated separately')
+            'Native observation is available only through an exact profile stated separately')
         $script:Source | Should -Match (
-            'classify that scenario as unsupported by the current generated-test contract')
+            'use the structured test-blocked channel instead of fabricating a compatible test')
         $script:Source | Should -Match (
             'Do not claim the issue is intrinsically uncertifiable')
         $script:Source | Should -Match (
