@@ -10735,9 +10735,23 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 -not (& $isTrustedClosedType -Type $local.Type))
         })
     if ($sourceTypedLocals.Count -ne 0) {
+        $declaration = $sourceTypedLocals[0]
+        $local = $semanticModel.GetDeclaredSymbol($declaration)
+        $localName = [string]$local.Name
+        $typeName = [string]$local.Type
+        if ($localName.Length -gt 120) {
+            $localName = $localName.Substring(0, 120) + '...'
+        }
+        if ($typeName.Length -gt 200) {
+            $typeName = $typeName.Substring(0, 200) + '...'
+        }
+        $localLine = $tree.GetLineSpan(
+            $declaration.Span).StartLinePosition.Line + 1
         throw (
             'The selected test method may not instantiate or carry generated ' +
-            'runtime types through its control or oracle.')
+            'runtime types through its control or oracle. ' +
+            "Local '$localName' has type '$typeName' ($($local.Type.TypeKind)) " +
+            "outside the closed trusted contract in '$SourcePath' line $localLine.")
     }
     $typeSyntaxCandidates = @($testMethod[0].Body.DescendantNodes() |
         ForEach-Object {

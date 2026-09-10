@@ -14698,7 +14698,49 @@ public sealed class GeneratedHelper { }
             New-ReplicationControlVariant `
                 -BaselineSource $baseline `
                 -Edits @($script:GateEdit)
-        } | Should -Throw '*generated runtime types*'
+        } | Should -Throw "*generated runtime types*Local 'helper'*GeneratedHelper*Class*line*"
+    }
+
+    It 'identifies unresolved local types before native verification' {
+        foreach ($declaration in @(
+                'var unsupported = new global::Microsoft.Maui.Controls.Border();',
+                'global::UIKit.UIWindow unsupported = null;',
+                'global::UIKit.UIWindow[] unsupported = null;',
+                'global::System.Collections.Generic.List<global::UIKit.UIWindow> unsupported = null;'
+            )) {
+            $baseline = $script:ControlBase.Replace(
+                'var applyReportedTrigger = true;',
+                "$declaration`n        var applyReportedTrigger = true;")
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $baseline `
+                    -Edits @($script:GateEdit) `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Issue38023Tests.iOS.cs'
+            } | Should -Throw "*Local 'unsupported'*type*outside the closed trusted contract*Issue38023Tests.iOS.cs*line*"
+        }
+    }
+
+    It 'bounds generated local type diagnostics without accepting the source' {
+        $localName = 'local' + ('x' * 300)
+        $typeName = 'MissingType' + ('y' * 300)
+        $baseline = $script:ControlBase.Replace(
+            'var applyReportedTrigger = true;',
+            "var $localName = new $typeName();`n        var applyReportedTrigger = true;")
+        $failure = $null
+        try {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit) `
+                -SourcePath 'ControlTests.cs'
+        } catch {
+            $failure = $_.Exception.Message
+        }
+        $failure | Should -Not -BeNullOrEmpty
+        $failure | Should -BeLike "*Local 'local*MissingType*Error*ControlTests.cs*line*"
+        $failure | Should -Not -BeLike "*$localName*"
+        $failure | Should -Not -BeLike "*$typeName*"
+        $failure.Length | Should -BeLessThan 650
     }
 
     It 'rejects virtual dispatch through a metadata-typed boxed source object' {
