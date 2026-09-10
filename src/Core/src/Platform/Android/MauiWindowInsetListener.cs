@@ -29,6 +29,16 @@ namespace Microsoft.Maui.Platform
 	internal class MauiWindowInsetListener : WindowInsetsAnimationCompat.Callback, IOnApplyWindowInsetsListener
 	{
 		readonly HashSet<AView> _trackedViews = [];
+		readonly HashSet<AView> _imeAnimationViews = [];
+		readonly HashSet<AView> _pendingFocusedViewRequests = [];
+		readonly HashSet<WindowInsetsAnimationCompat> _runningImeAnimations = [];
+		bool _imeAnimationStateInitialized;
+		bool _shouldApplyAnimatedImeInsets;
+		int _lastImeInsetBottom = -1;
+
+		// Explicitly tracked (rather than derived from _runningImeAnimations.Count) so the gate
+		// can be held open for one extra main-looper turn after the last animation ends -- see
+		// EndImeAnimation.
 		bool IsImeAnimating { get; set; }
 
 		// Set when a dispatch was gated (or an exempted view applied animation-time insets)
@@ -269,6 +279,9 @@ namespace Microsoft.Maui.Platform
 			{
 				if (IsImeAnimating && v is not null)
 				{
+					// Track the gated view so OnProgress can drive its safe-area padding directly
+					// from the live IME inset on every animation frame instead of leaving it frozen.
+					_imeAnimationViews.Add(v);
 					_reapplyInsetsWhenAnimationEnds = true;
 					_lastGatedView = v;
 				}
@@ -413,6 +426,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_trackedViews.Remove(view);
+			_imeAnimationViews.Remove(view);
 			_viewsAttachedDuringImeAnimation.Remove(view);
 
 			if (ReferenceEquals(_lastGatedView, view))
@@ -486,17 +500,17 @@ namespace Microsoft.Maui.Platform
 		public override void OnPrepare(WindowInsetsAnimationCompat? animation)
 		{
 			base.OnPrepare(animation);
-			if (IsImeAnimation(animation))
+			if (animation is not null && IsImeAnimation(animation))
 			{
-				StartImeAnimation();
+				StartImeAnimation(animation);
 			}
 		}
 
 		public override WindowInsetsAnimationCompat.BoundsCompat? OnStart(WindowInsetsAnimationCompat? animation, WindowInsetsAnimationCompat.BoundsCompat? bounds)
 		{
-			if (IsImeAnimation(animation))
+			if (animation is not null && IsImeAnimation(animation))
 			{
-				StartImeAnimation();
+				StartImeAnimation(animation);
 			}
 
 			return bounds;
@@ -508,19 +522,6 @@ namespace Microsoft.Maui.Platform
 		// can arrive before the posted runnable executes.
 		bool _gateReleaseScheduled;
 
-		void StartImeAnimation()
-		{
-			_gateReleaseScheduled = false;
-
-			if (!IsImeAnimating)
-			{
-				IsImeAnimating = true;
-
-				// Exemptions only apply to the animation during which the view attached
-				_viewsAttachedDuringImeAnimation.Clear();
-			}
-		}
-
 		public override WindowInsetsCompat? OnProgress(WindowInsetsCompat? insets, IList<WindowInsetsAnimationCompat>? runningAnimations)
 		{
 			if (insets is null || runningAnimations is null)
@@ -528,16 +529,47 @@ namespace Microsoft.Maui.Platform
 				return insets;
 			}
 
-			// Process any IME animations
-			foreach (var animation in runningAnimations)
+			bool hasImeAnimation = false;
+			for (int i = 0; i < runningAnimations.Count; i++)
 			{
-				if (IsImeAnimation(animation))
+				if (IsImeAnimation(runningAnimations[i]))
 				{
-					var imeInsets = insets.GetInsets(WindowInsetsCompat.Type.Ime());
-					// IME height available as: imeInsets?.Bottom ?? 0
-					break; // Only need to process one IME animation
+					hasImeAnimation = true;
+					break;
 				}
 			}
+
+			if (!hasImeAnimation)
+			{
+				return insets;
+			}
+
+			var imeInsetBottom = insets.GetInsets(WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
+			var isImeOpening = _lastImeInsetBottom >= 0 && imeInsetBottom > _lastImeInsetBottom;
+			_lastImeInsetBottom = imeInsetBottom;
+
+			foreach (var view in _imeAnimationViews)
+			{
+				if (view is ICrossPlatformLayoutBacking { CrossPlatformLayout: { } crossPlatformLayout } && view.Context is Context context)
+				{
+					InitializeImeAnimationState(context);
+					if (_shouldApplyAnimatedImeInsets &&
+						SafeAreaExtensions.ApplyAnimatedSoftInputInsetsPx(
+							insets,
+							crossPlatformLayout,
+							context,
+							view,
+							isImeOpening))
+					{
+						TrackView(view);
+						if (isImeOpening)
+						{
+							RequestFocusedViewVisibleAfterLayout(view);
+						}
+					}
+				}
+			}
+
 			return insets;
 		}
 
@@ -545,7 +577,12 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnEnd(animation);
 
-			if (!IsImeAnimation(animation))
+			// _runningImeAnimations supports overlapping IME animations (e.g. a hide immediately
+			// followed by a show); only the last one finishing should release the gate.
+			if (animation is null ||
+				!IsImeAnimation(animation) ||
+				!_runningImeAnimations.Remove(animation) ||
+				_runningImeAnimations.Count > 0)
 			{
 				return;
 			}
@@ -608,6 +645,11 @@ namespace Microsoft.Maui.Platform
 			_gateReleaseScheduled = false;
 			_viewsAttachedDuringImeAnimation.Clear();
 			_lastGatedView = null;
+			_imeAnimationViews.Clear();
+			_pendingFocusedViewRequests.Clear();
+			_imeAnimationStateInitialized = false;
+			_shouldApplyAnimatedImeInsets = false;
+			_lastImeInsetBottom = -1;
 
 			if (!_reapplyInsetsWhenAnimationEnds)
 			{
@@ -627,6 +669,119 @@ namespace Microsoft.Maui.Platform
 			// One call is enough: this reaches the ViewRootImpl and re-dispatches insets
 			// across the whole hierarchy, so every gated view gets its settled insets
 			ViewCompat.RequestApplyInsets(reapplyThrough);
+		}
+
+		void RequestFocusedViewVisibleAfterLayout(AView insetView)
+		{
+			if (!_pendingFocusedViewRequests.Add(insetView))
+			{
+				return;
+			}
+
+			insetView.Post(() =>
+			{
+				_pendingFocusedViewRequests.Remove(insetView);
+				if (!insetView.IsAttachedToWindow)
+				{
+					return;
+				}
+
+				var focusedView = insetView.RootView?.FindFocus();
+				if (focusedView is null || !IsDescendantOf(focusedView, insetView))
+				{
+					return;
+				}
+
+				// If a scrollable list (CollectionView/CarouselView) sits between the focused
+				// view and the safe-area container, let it manage its own item visibility
+				// instead of forcing it to scroll as a side effect of the keyboard opening.
+				if (HasInterveningRecyclerViewAncestor(focusedView, insetView))
+				{
+					return;
+				}
+
+				var visibleRect = new global::Android.Graphics.Rect();
+				if (focusedView.GetGlobalVisibleRect(visibleRect) &&
+					visibleRect.Width() >= focusedView.Width &&
+					visibleRect.Height() >= focusedView.Height)
+				{
+					return;
+				}
+
+				var focusedRect = new global::Android.Graphics.Rect();
+				focusedView.GetDrawingRect(focusedRect);
+				focusedView.RequestRectangleOnScreen(focusedRect, true);
+			});
+		}
+
+		/// <summary>
+		/// Checks whether a <see cref="RecyclerView"/> (the platform base for CollectionView/CarouselView)
+		/// sits between <paramref name="child"/> and <paramref name="boundary"/> in the view hierarchy.
+		/// <c>RequestRectangleOnScreen</c> bubbles through every ancestor, including nested
+		/// scrollable containers, so this is used to avoid unintentionally scrolling a nested list.
+		/// </summary>
+		static bool HasInterveningRecyclerViewAncestor(AView child, AView boundary)
+		{
+			var parent = child.Parent;
+			while (parent is AView parentView && parentView != boundary)
+			{
+				if (parentView is RecyclerView)
+				{
+					return true;
+				}
+
+				parent = parentView.Parent;
+			}
+
+			return false;
+		}
+
+		void StartImeAnimation(WindowInsetsAnimationCompat animation)
+		{
+			// A release posted by a previous animation's deferred OnEnd callback must not fire
+			// for this new animation; back-to-back animations (a hide immediately followed by a
+			// show) can start before that posted runnable has run.
+			_gateReleaseScheduled = false;
+
+			// Gated on IsImeAnimating (not _runningImeAnimations.Count) so a back-to-back
+			// animation that starts before the previous one's deferred gate release fires is
+			// treated as a continuation rather than a fresh start, keeping the gate held and
+			// preserving state (e.g. _reapplyInsetsWhenAnimationEnds) owed to the prior animation.
+			if (!IsImeAnimating)
+			{
+				IsImeAnimating = true;
+				_imeAnimationViews.Clear();
+				_pendingFocusedViewRequests.Clear();
+				_imeAnimationStateInitialized = false;
+				_shouldApplyAnimatedImeInsets = false;
+				_lastImeInsetBottom = -1;
+
+				// Exemptions only apply to the animation during which the view attached
+				_viewsAttachedDuringImeAnimation.Clear();
+			}
+
+			_runningImeAnimations.Add(animation);
+		}
+
+		void InitializeImeAnimationState(Context context)
+		{
+			if (_imeAnimationStateInitialized)
+			{
+				return;
+			}
+
+			_imeAnimationStateInitialized = true;
+
+			if (context.GetActivity()?.Window?.Attributes is WindowManagerLayoutParams attributes)
+			{
+				_shouldApplyAnimatedImeInsets = ShouldApplyAnimatedImeInsets(attributes.SoftInputMode);
+			}
+		}
+
+		internal static bool ShouldApplyAnimatedImeInsets(SoftInput softInputMode)
+		{
+			var adjustMode = softInputMode & SoftInput.MaskAdjust;
+			return adjustMode == SoftInput.AdjustNothing;
 		}
 
 		/// <summary>
