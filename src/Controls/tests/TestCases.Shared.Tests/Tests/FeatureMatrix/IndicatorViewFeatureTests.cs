@@ -310,7 +310,7 @@ public class IndicatorViewFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-#if TEST_FAILS_ON_WINDOWS 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/38391
 	[Test, Order(30)]
 	[Category(UITestCategories.IndicatorView)]
 	public void VerifyIndicatorShapeWithShadow()
