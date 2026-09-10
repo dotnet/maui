@@ -31,6 +31,7 @@ try {
         -ExpectedScenario carouselview-wheel-snap-windows `
         -Repository dotnet/maui `
         -PullRequestNumber 42 `
+        -PullRequestAuthor perf-author `
         -HarnessSha harness123 `
         -AzdoBuildId 100 `
         -AzdoBuildUrl https://build/100 `
@@ -49,6 +50,8 @@ try {
     Assert-Equal "head" $plan[2].variant "Windows third run"
     Assert-Equal "base" $plan[3].variant "Windows fourth run"
     Assert-Equal "PerformanceCarouselViewWheelSnap" $plan[0].category "Windows category"
+    $driverSource = Get-Content $script -Raw
+    Assert-Equal $true $driverSource.Contains('-PullRequestAuthor $PullRequestAuthor') "Windows driver forwards author to the shared renderer"
 
     $handlerOutput = Join-Path $testRoot "handler-output"
     & $script `
@@ -77,6 +80,8 @@ try {
     $pipelineSource = Get-Content $pipeline -Raw
     Assert-Equal $true $pipelineSource.Contains("- windows") "Windows pipeline parameter"
     Assert-Equal $true $pipelineSource.Contains("DEVICE_PERFORMANCE_SCENARIO") "Pipeline scenario environment binding"
+    Assert-Equal $true $pipelineSource.Contains('DEVICE_PERFORMANCE_PR_AUTHOR: ${{ parameters.pullRequestAuthor }}') "Pipeline report author environment binding"
+    Assert-Equal $true $pipelineSource.Contains("Compare-DevicePerformanceResults.Tests.ps1") "Pipeline guards the generated comment format"
     $buildJobSource = Get-Content $buildJob -Raw
     $prValidation = [regex]::Match(
         $buildJobSource,

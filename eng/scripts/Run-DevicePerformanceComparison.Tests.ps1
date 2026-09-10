@@ -54,6 +54,7 @@ try
         -ExpectedScenario collectionview-grouped-scrollto-makevisible `
         -Repository dotnet/maui `
         -PullRequestNumber 42 `
+        -PullRequestAuthor perf-author `
         -HarnessSha harness123 `
         -AzdoBuildId 100 `
         -AzdoBuildUrl https://build/100 `
@@ -83,6 +84,12 @@ try
 
     $driverSource = Get-Content $script -Raw
     $helixProjectSource = Get-Content $helixProject -Raw
+    Assert-Equal $true $driverSource.Contains('-PullRequestAuthor $PullRequestAuthor') "Driver forwards author to the shared renderer"
+    $helixXml = [xml]$helixProjectSource
+    Assert-Equal '-PullRequestAuthor "$(PerformancePullRequestAuthor)"' $helixXml.Project.PropertyGroup.PerformanceAuthorArgument.InnerText "Helix report author argument"
+    foreach ($command in $helixXml.Project.ItemGroup.HelixWorkItem.Command) {
+        Assert-Equal $true ([string]$command).Contains('$(PerformanceAuthorArgument)') "Both Helix runners receive report author metadata"
+    }
     foreach ($artifactName in @("results.json", "comparison-summary.json", "comparison-summary.md")) {
         Assert-Equal $true $driverSource.Contains($artifactName) "Driver artifact contract for $artifactName"
         Assert-Equal $true $helixProjectSource.Contains($artifactName) "Helix artifact contract for $artifactName"
@@ -448,6 +455,7 @@ echo "NFSHomeDirectory: ${MOCK_CONSOLE_HOME:-/Users/${MOCK_CONSOLE_USER:-console
             "-ExpectedScenario", "collectionview-grouped-scrollto-makevisible",
             "-Repository", "dotnet/maui",
             "-PullRequestNumber", "42",
+            "-PullRequestAuthor", "perf-author",
             "-HarnessSha", "harness123",
             "-AzdoBuildId", "100",
             "-AzdoBuildUrl", "https://build/100",

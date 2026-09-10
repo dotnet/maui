@@ -11,6 +11,10 @@ parameters:
   displayName: Pull request number
   type: number
   default: 0
+- name: pullRequestAuthor
+  displayName: PR author login for the report mention (optional)
+  type: string
+  default: ''
 - name: baseCommitSha
   displayName: Merge-base commit SHA
   type: string
@@ -115,6 +119,9 @@ stages:
         artifactName: device_performance_head
         targetPath: $(Pipeline.Workspace)/device_performance_head
 
+    - pwsh: ./eng/scripts/Compare-DevicePerformanceResults.Tests.ps1
+      displayName: Verify performance report format and classifications
+
     - pwsh: |
         $buildUrl = "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
         ./eng/scripts/Prepare-DevicePerformancePayload.ps1 `
@@ -126,6 +133,7 @@ stages:
           -ExpectedScenario $env:DEVICE_PERFORMANCE_SCENARIO `
           -Repository "dotnet/maui" `
           -PullRequestNumber ([int]$env:DEVICE_PERFORMANCE_PR_NUMBER) `
+          -PullRequestAuthor $env:DEVICE_PERFORMANCE_PR_AUTHOR `
           -HarnessSha "$(Build.SourceVersion)" `
           -AzdoBuildId "$(Build.BuildId)" `
           -AzdoBuildUrl $buildUrl `
@@ -138,6 +146,7 @@ stages:
         DEVICE_PERFORMANCE_HEAD_SHA: ${{ parameters.headCommitSha }}
         DEVICE_PERFORMANCE_SCENARIO: ${{ parameters.expectedScenario }}
         DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+        DEVICE_PERFORMANCE_PR_AUTHOR: ${{ parameters.pullRequestAuthor }}
 
     - publish: $(Build.ArtifactStagingDirectory)
       displayName: Publish paired device performance payload

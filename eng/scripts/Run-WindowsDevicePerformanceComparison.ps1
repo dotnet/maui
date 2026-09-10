@@ -23,6 +23,10 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$PullRequestNumber,
 
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z')]
+    [string]$PullRequestAuthor = "",
+
     [Parameter(Mandatory = $true)]
     [string]$HarnessSha,
 
@@ -246,6 +250,7 @@ if ($LASTEXITCODE -ne 0) {
     -MarkdownOut $summaryMarkdown `
     -ExpectedRepository $Repository `
     -ExpectedPullRequestNumber $PullRequestNumber `
+    -PullRequestAuthor $PullRequestAuthor `
     -ExpectedBaseCommitSha $BaseCommitSha `
     -ExpectedHeadCommitSha $HeadCommitSha `
     -ExpectedHarnessSha $HarnessSha `

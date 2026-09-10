@@ -31,6 +31,7 @@
     <AndroidInstrumentation Condition="'$(AndroidInstrumentation)' == ''">com.microsoft.maui.controls.devicetests.TestInstrumentation</AndroidInstrumentation>
     <PerformanceRepository Condition="'$(PerformanceRepository)' == ''">dotnet/maui</PerformanceRepository>
     <PerformanceExpectedVariantRuns Condition="'$(PerformanceExpectedVariantRuns)' == ''">2</PerformanceExpectedVariantRuns>
+    <PerformanceAuthorArgument Condition="'$(PerformancePullRequestAuthor)' != ''">-PullRequestAuthor "$(PerformancePullRequestAuthor)"</PerformanceAuthorArgument>
     <PerformanceOutputDirectory>perf-results</PerformanceOutputDirectory>
   </PropertyGroup>
 
@@ -53,6 +54,8 @@
            Text="PerformanceExpectedScenario is required." />
     <Error Condition="'$(PerformancePullRequestNumber)' == '' or '$(PerformancePullRequestNumber)' == '0'"
            Text="PerformancePullRequestNumber is required." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(PerformancePullRequestAuthor)', '\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z'))"
+           Text="PerformancePullRequestAuthor must be a GitHub login or empty." />
     <Error Condition="'$(PerformanceHarnessSha)' == ''"
            Text="PerformanceHarnessSha is required." />
     <Error Condition="'$(PerformanceAzdoBuildId)' == ''"
@@ -88,13 +91,13 @@
       <PayloadArchive>$(PerformancePayloadArchive)</PayloadArchive>
       <Timeout>03:00:00</Timeout>
       <DownloadFilesFromResults>perf-results/comparison-summary.json;perf-results/comparison-summary.md;perf-results/results.json;perf-results/run-plan.json</DownloadFilesFromResults>
-      <Command>bash "$HELIX_CORRELATION_PAYLOAD/eng/scripts/Run-DevicePerformanceComparison.helix.sh" -Platform "$(TargetOS)" -BaseApp "$HELIX_WORKITEM_ROOT/$(BaseAppRelativePath)" -HeadApp "$HELIX_WORKITEM_ROOT/$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -AndroidPackageName "$(AndroidPackageName)" -AndroidInstrumentation "$(AndroidInstrumentation)" -OutputDirectory "$HELIX_WORKITEM_UPLOAD_ROOT/$(PerformanceOutputDirectory)" -XHarnessMode helix</Command>
+      <Command>bash "$HELIX_CORRELATION_PAYLOAD/eng/scripts/Run-DevicePerformanceComparison.helix.sh" -Platform "$(TargetOS)" -BaseApp "$HELIX_WORKITEM_ROOT/$(BaseAppRelativePath)" -HeadApp "$HELIX_WORKITEM_ROOT/$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" $(PerformanceAuthorArgument) -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -AndroidPackageName "$(AndroidPackageName)" -AndroidInstrumentation "$(AndroidInstrumentation)" -OutputDirectory "$HELIX_WORKITEM_UPLOAD_ROOT/$(PerformanceOutputDirectory)" -XHarnessMode helix</Command>
     </HelixWorkItem>
     <HelixWorkItem Include="DevicePerformance-windows" Condition="'$(TargetOS)' == 'windows'">
       <PayloadArchive>$(PerformancePayloadArchive)</PayloadArchive>
       <Timeout>03:00:00</Timeout>
       <DownloadFilesFromResults>perf-results/comparison-summary.json;perf-results/comparison-summary.md;perf-results/results.json;perf-results/run-plan.json</DownloadFilesFromResults>
-      <Command>powershell -NoProfile -ExecutionPolicy Bypass -File "%HELIX_CORRELATION_PAYLOAD%\eng\scripts\Run-WindowsDevicePerformanceComparison.ps1" -BaseApp "%HELIX_WORKITEM_ROOT%\$(BaseAppRelativePath)" -HeadApp "%HELIX_WORKITEM_ROOT%\$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -OutputDirectory "%HELIX_WORKITEM_UPLOAD_ROOT%\$(PerformanceOutputDirectory)"</Command>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -File "%HELIX_CORRELATION_PAYLOAD%\eng\scripts\Run-WindowsDevicePerformanceComparison.ps1" -BaseApp "%HELIX_WORKITEM_ROOT%\$(BaseAppRelativePath)" -HeadApp "%HELIX_WORKITEM_ROOT%\$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" $(PerformanceAuthorArgument) -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -OutputDirectory "%HELIX_WORKITEM_UPLOAD_ROOT%\$(PerformanceOutputDirectory)"</Command>
     </HelixWorkItem>
   </ItemGroup>
 </Project>

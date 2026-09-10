@@ -140,6 +140,7 @@ try
         -ExpectedScenario collectionview-keepitemsinview-update `
         -Repository dotnet/maui `
         -PullRequestNumber 42 `
+        -PullRequestAuthor perf-author `
         -HarnessSha harness123 `
         -AzdoBuildId 100 `
         -AzdoBuildUrl https://build/100 `
@@ -154,6 +155,7 @@ try
     Assert-Equal "payload/head/com.microsoft.maui.controls.devicetests-Signed.apk" $metadata.headAppRelativePath "Head relative path"
     Assert-Equal 2 $metadata.schemaVersion "Payload schema version"
     Assert-Equal 42 $metadata.pullRequestNumber "Payload PR number"
+    Assert-Equal "perf-author" $metadata.pullRequestAuthor "Payload report author"
     Assert-Equal "harness123" $metadata.harnessSha "Payload harness SHA"
     Assert-Equal "collectionview-keepitemsinview-update" $metadata.expectedScenario "Expected scenario"
     Assert-Equal "10.0.100" $metadata.baseSdkVersion "Base SDK version"

@@ -33,6 +33,7 @@ pipeline mechanism. It declares `trigger: none` and `pr: none`.
 Supply:
 
 - `prNumber`: the approved PR.
+- `pullRequestAuthor`: the PR author's GitHub login, without `@`, for the report's author mention.
 - `baseCommitSha`: its full merge-base SHA, not the current base-branch tip.
 - `headCommitSha`: the exact head SHA to measure.
 - `platform`: `android`, `ios`, `maccatalyst`, or `windows`.
@@ -82,6 +83,7 @@ $run = @{
     HarnessSha = "<TRUSTED_HARNESS_SHA>"
     Repository = "dotnet/maui"
     PullRequestNumber = 12345
+    PullRequestAuthor = "<AUTHOR_LOGIN>"
     ExpectedScenario = "collectionview-keepitemsinview-update"
     BaseRuntimeVariant = "mono"
     HeadRuntimeVariant = "mono"
@@ -105,7 +107,7 @@ test host; local results are machine-specific.
 | `run-plan.json` | ABBA order and execution inputs |
 | `results.json` | Parsed `MAUI_PERF_RESULT` records, including measurements, counters, and provenance |
 | `comparison-summary.json` | Expected identities, provenance/correctness status, comparisons, and result classification |
-| `comparison-summary.md` | Human-readable ranges, median changes, and comparison results |
+| `comparison-summary.md` | Compact, comment-ready results with collapsed findings and follow-up |
 
 The parser also reassembles chunked Android log records. Comparisons require two complete
 runs per side, matching identities and environment metadata, and the required correctness
@@ -128,3 +130,27 @@ the comparison was written, not that the scenario was correct or regression-free
 Latency and correctness counters do not imply allocation, frame timing, or accessibility
 coverage. Accessibility defaults to `not-assessed`. These results inform a human decision;
 they do not approve a PR or prove whole-PR performance.
+
+## PR comment format
+
+Use the generated `comparison-summary.md` when sharing performance results. Both local
+drivers and the Helix path use the same deterministic renderer. Supply `-PullRequestAuthor`
+to either driver or the comparator (pipeline parameter: `pullRequestAuthor`) so the
+notification mentions the author. For backwards-compatible offline use, omitting the
+author produces a linked PR notice instead; it never guesses an author or queries GitHub.
+When preparing a public comment, obtain the actual PR author's login and supply it.
+
+Keep this layout for generated and manually supplemented performance comments:
+
+- Visible: **Performance Review Summary**, an author/commit notification, and truthful status badges.
+- Collapsed by default: **Performance Results** and **Findings & Follow-up**, exactly two sections.
+- No **Test Setup**, **Review Sessions**, or additional expanded narrative.
+
+Keep the result table and actionable findings concise. Preserve essential scope caveats,
+especially experimental scenarios, simulator-only runs, and managed versus native allocations.
+Do not turn a neutral timing result into a correctness or merge approval. Detailed ranges,
+counters, environment metadata, and provenance remain in `comparison-summary.json`.
+
+The pipeline runs `Compare-DevicePerformanceResults.Tests.ps1` before packaging to guard
+the layout, author handling, and neutral/advisory/inconclusive result states. Generating
+this Markdown does not authorize or perform comment posting.

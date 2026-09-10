@@ -20,6 +20,10 @@ param(
     [Parameter(Mandatory = $true)]
     [int]$ExpectedPullRequestNumber,
 
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z')]
+    [string]$PullRequestAuthor = "",
+
     [Parameter(Mandatory = $true)]
     [string]$ExpectedBaseCommitSha,
 
@@ -85,7 +89,12 @@ function Get-Percent([double]$from, [double]$to) {
 }
 
 function Format-Milliseconds([double]$value) {
-    return "{0:N2} ms" -f $value
+    return $value.ToString("N2", [Globalization.CultureInfo]::InvariantCulture) + " ms"
+}
+
+function ConvertTo-ReportText([string]$value) {
+    $encoded = [Net.WebUtility]::HtmlEncode(($value -replace '\s+', ' '))
+    return $encoded.Replace("|", "&#124;").Replace('`', "&#96;").Replace("[", "&#91;").Replace("]", "&#93;").Replace("@", "&#64;")
 }
 
 function Get-UniqueValues($items, [string]$propertyPath) {
@@ -429,27 +438,111 @@ $verdict = if ($results.Count -eq 0 -or $incomplete.Count -gt 0) {
     "neutral"
 }
 
+$provenanceValidated = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.ProvenanceValidated }).Count -eq 0
+$correctnessPassed = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.CorrectnessPassed }).Count -eq 0
+$timingLabels = @{
+    "neutral" = "Neutral"
+    "time-regression-advisory" = "Regression advisory"
+    "time-improvement-advisory" = "Improvement advisory"
+    "inconclusive" = "Inconclusive"
+}
+$timingColor = switch ($verdict) {
+    "time-regression-advisory" { "d1242f" }
+    "time-improvement-advisory" { "1a7f37" }
+    default { "bf8700" }
+}
+$correctnessLabel = if (-not $provenanceValidated) { "Not assessed" } elseif ($correctnessPassed) { "Passed" } else { "Failed" }
+$correctnessColor = if (-not $provenanceValidated) { "6e7781" } elseif ($correctnessPassed) { "1a7f37" } else { "d1242f" }
+$platformLabel = switch ($ExpectedPlatform) {
+    "ios" { "iOS" }
+    "maccatalyst" { "MacCatalyst" }
+    "android" { "Android" }
+    "windows" { "Windows" }
+    default { $ExpectedPlatform }
+}
+$commitUrl = [Net.WebUtility]::HtmlEncode("https://github.com/$ExpectedRepository/commit/$ExpectedHeadCommitSha")
+$shortHead = ConvertTo-ReportText $ExpectedHeadCommitSha.Substring(0, [Math]::Min(7, $ExpectedHeadCommitSha.Length))
+$recipient = if ($PullRequestAuthor) {
+    "@$PullRequestAuthor"
+} else {
+    $prUrl = [Net.WebUtility]::HtmlEncode("https://github.com/$ExpectedRepository/pull/$ExpectedPullRequestNumber")
+    "<a href=`"$prUrl`">PR #$ExpectedPullRequestNumber</a>"
+}
+
 $builder = New-Object System.Text.StringBuilder
-[void]$builder.AppendLine("| Scenario | Platform | Base range | Head range | Median delta | Result |")
-[void]$builder.AppendLine("|---|---|---:|---:|---:|---|")
+[void]$builder.AppendLine("## Performance Review Summary")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("> $recipient &mdash; performance review results are available based on commit <a href=`"$commitUrl`"><code>$shortHead</code></a>.")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine('<p align="left">')
+foreach ($badge in @(
+    @{ Label = "Timing"; Value = $timingLabels[$verdict]; Color = $timingColor },
+    @{ Label = "Correctness"; Value = $correctnessLabel; Color = $correctnessColor },
+    @{ Label = "Platform"; Value = $platformLabel; Color = "1f6feb" }
+)) {
+    $valueSegment = [Uri]::EscapeDataString($badge.Value.Replace("-", "--").Replace("_", "__"))
+    $alt = ConvertTo-ReportText "$($badge.Label) $($badge.Value)"
+    [void]$builder.AppendLine("  <img alt=`"$alt`" src=`"https://img.shields.io/badge/$($badge.Label)-$valueSegment-$($badge.Color)?labelColor=30363d&amp;style=flat-square`">")
+}
+[void]$builder.AppendLine("</p>")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("---")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("<details>")
+[void]$builder.AppendLine("<summary><strong>&#128202; Performance Results</strong> &mdash; $($timingLabels[$verdict].ToLowerInvariant())</summary>")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("| Scenario | Base median | Head median | Result |")
+[void]$builder.AppendLine("|---|---:|---:|---|")
 
 foreach ($comparison in $comparisons)
 {
+    $scenario = ConvertTo-ReportText $comparison.Scenario
     if (-not $comparison.Complete)
     {
-        [void]$builder.AppendLine("| ``$($comparison.Scenario)`` | $($comparison.Platform) | n/a | n/a | n/a | inconclusive |")
+        [void]$builder.AppendLine("| <code>$scenario</code> | n/a | n/a | Inconclusive |")
         continue
     }
 
-    $baseRange = "$(Format-Milliseconds $comparison.Base.Minimum)-$(Format-Milliseconds $comparison.Base.Maximum)"
-    $headRange = "$(Format-Milliseconds $comparison.Head.Minimum)-$(Format-Milliseconds $comparison.Head.Maximum)"
+    $baseMedian = Format-Milliseconds $comparison.Base.Median
+    $headMedian = Format-Milliseconds $comparison.Head.Median
     $deltaSign = if ($comparison.MedianDeltaPct -gt 0) { "+" } else { "" }
-    [void]$builder.AppendLine(
-        "| ``$($comparison.Scenario)`` | $($comparison.Platform) | $baseRange | $headRange | $deltaSign$($comparison.MedianDeltaPct.ToString('N1'))% | $($comparison.Flag) |")
+    $delta = $comparison.MedianDeltaPct.ToString("N1", [Globalization.CultureInfo]::InvariantCulture)
+    [void]$builder.AppendLine("| <code>$scenario</code> | $baseMedian | $headMedian | $($timingLabels[$comparison.Flag]) ($deltaSign$delta%) |")
+}
+if ($results.Count -eq 0) {
+    [void]$builder.AppendLine("| No device results | n/a | n/a | Inconclusive |")
 }
 
 [void]$builder.AppendLine("")
-[void]$builder.AppendLine("Timing is advisory. A change is flagged only when repeated base/head ranges do not overlap and the median delta exceeds the configured threshold.")
+[void]$builder.AppendLine("*Timing is advisory: repeated ranges must not overlap and the median change must reach $TimePctTolerance% to be flagged. Allocation and accessibility coverage are not inferred.*")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("</details>")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("---")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("<details>")
+$followUpLabel = if ($verdict -eq "inconclusive") { "investigation required" } elseif ($regressions.Count -gt 0) { "timing increase to investigate" } else { "advisory results" }
+[void]$builder.AppendLine("<summary><strong>&#128295; Findings &amp; Follow-up</strong> &mdash; $followUpLabel</summary>")
+[void]$builder.AppendLine("")
+if ($results.Count -eq 0) {
+    [void]$builder.AppendLine("No device results were supplied. Run both variants before drawing conclusions.")
+} elseif ($incomplete.Count -gt 0) {
+    [void]$builder.AppendLine("**Comparison is inconclusive.** Resolve the reported provenance or correctness failures and rerun:")
+    [void]$builder.AppendLine("")
+    foreach ($comparison in $incomplete) {
+        [void]$builder.AppendLine("- $(ConvertTo-ReportText $comparison.Reason)")
+    }
+} elseif ($regressions.Count -gt 0) {
+    [void]$builder.AppendLine("Investigate the timing increase in the measured scenario before accepting the change.")
+} elseif ($improvements.Count -gt 0) {
+    [void]$builder.AppendLine("A timing improvement was observed in the measured scenario; it remains advisory.")
+} else {
+    [void]$builder.AppendLine("No timing regression was demonstrated in the measured scenario.")
+}
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("These results are not whole-PR merge clearance. Full ranges, counters, and provenance remain in <code>comparison-summary.json</code>.")
+[void]$builder.AppendLine("")
+[void]$builder.AppendLine("</details>")
 
 $markdown = $builder.ToString()
 if ($MarkdownOut -eq "-")
@@ -480,8 +573,8 @@ $summary = [PSCustomObject]@{
         scenario = $ExpectedScenario
         variantRuns = $ExpectedVariantRuns
     }
-    provenanceValidated = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.ProvenanceValidated }).Count -eq 0
-    correctnessPassed = $results.Count -gt 0 -and @($comparisons | Where-Object { -not $_.CorrectnessPassed }).Count -eq 0
+    provenanceValidated = $provenanceValidated
+    correctnessPassed = $correctnessPassed
     accessibilityStatuses = @($results.correctness.accessibilityStatus | Sort-Object -Unique)
     comparisons = @($comparisons | ForEach-Object { $_ })
 }

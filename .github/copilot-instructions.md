@@ -133,6 +133,14 @@ Always format code before committing:
 dotnet format Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
 ```
 
+### Performance PR Comments
+
+When authorized to post performance results, follow the [device-performance comment format](../docs/device-performance.md#pr-comment-format).
+Use the generated `comparison-summary.md` and supply the actual PR author for the mention.
+Keep only the title, author/commit notification, and badges visible; use exactly two closed
+sections: **Performance Results** and **Findings & Follow-up**. Do not add **Test Setup**
+or generic session sections. Keep manually added findings concise and preserve measurement limitations.
+
 ## Contribution Guidelines
 
 ### Handling Existing PRs for Assigned Issues

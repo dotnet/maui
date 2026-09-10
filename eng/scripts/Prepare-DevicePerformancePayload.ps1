@@ -33,6 +33,10 @@ param(
     [ValidateRange(1, [int]::MaxValue)]
     [int]$PullRequestNumber,
 
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z')]
+    [string]$PullRequestAuthor = "",
+
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
     [string]$HarnessSha,
@@ -267,6 +271,7 @@ try
         schemaVersion = 2
         repository = $Repository
         pullRequestNumber = $PullRequestNumber
+        pullRequestAuthor = $PullRequestAuthor
         platform = $Platform
         expectedScenario = $ExpectedScenario
         baseCommitSha = $BaseCommitSha

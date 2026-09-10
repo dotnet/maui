@@ -65,6 +65,10 @@ stages:
         if ($metadata.platform -ne "${{ parameters.targetOS }}") {
           throw "Payload platform '$($metadata.platform)' does not match '${{ parameters.targetOS }}'."
         }
+        $author = [string]$metadata.pullRequestAuthor
+        if ($author -notmatch '\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z') {
+          throw "Payload PR author must be a GitHub login or empty."
+        }
 
         Write-Host "##vso[task.setvariable variable=PerformancePayloadArchive]$archive"
         Write-Host "##vso[task.setvariable variable=BaseAppRelativePath]$($metadata.baseAppRelativePath)"
@@ -74,6 +78,7 @@ stages:
         Write-Host "##vso[task.setvariable variable=PerformanceExpectedScenario]$($metadata.expectedScenario)"
         Write-Host "##vso[task.setvariable variable=PerformanceRepository]$($metadata.repository)"
         Write-Host "##vso[task.setvariable variable=PerformancePullRequestNumber]$($metadata.pullRequestNumber)"
+        Write-Host "##vso[task.setvariable variable=PerformancePullRequestAuthor]$author"
         Write-Host "##vso[task.setvariable variable=PerformanceHarnessSha]$($metadata.harnessSha)"
         Write-Host "##vso[task.setvariable variable=PerformanceAzdoBuildId]$($metadata.azdoBuildId)"
         Write-Host "##vso[task.setvariable variable=PerformanceAzdoBuildUrl]$($metadata.azdoBuildUrl)"
@@ -97,6 +102,7 @@ stages:
           /p:PerformanceExpectedScenario="$(PerformanceExpectedScenario)"
           /p:PerformanceRepository="$(PerformanceRepository)"
           /p:PerformancePullRequestNumber="$(PerformancePullRequestNumber)"
+          /p:PerformancePullRequestAuthor="$(PerformancePullRequestAuthor)"
           /p:PerformanceHarnessSha="$(PerformanceHarnessSha)"
           /p:PerformanceAzdoBuildId="$(PerformanceAzdoBuildId)"
           /p:PerformanceAzdoBuildUrl="$(PerformanceAzdoBuildUrl)"

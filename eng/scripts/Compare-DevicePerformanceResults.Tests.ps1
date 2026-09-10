@@ -11,6 +11,23 @@ function Assert-Equal($expected, $actual, [string]$message) {
     }
 }
 
+function Assert-CommentFormat([string]$path) {
+    $markdown = Get-Content $path -Raw
+    Assert-Equal $true $markdown.StartsWith("## Performance Review Summary") "Comment heading"
+    Assert-Equal 3 ([regex]::Matches($markdown, '<img ').Count) "Summary badge count"
+    Assert-Equal 2 ([regex]::Matches($markdown, '(?m)^<details>\r?$').Count) "Exactly two closed sections"
+    Assert-Equal 2 ([regex]::Matches($markdown, '(?m)^</details>\r?$').Count) "Balanced comment sections"
+    Assert-Equal $false ($markdown -match '<details\s') "Sections must not open by default"
+    Assert-Equal $true ($markdown -match '<summary><strong>.*Performance Results</strong>') "Performance section title"
+    Assert-Equal $true ($markdown -match '<summary><strong>.*Findings &amp; Follow-up</strong>') "Findings section title"
+    Assert-Equal $false ($markdown -match 'Test Setup|Review Sessions|Next Steps') "No setup or generic session sections"
+    $visible = [regex]::Replace($markdown, '(?s)<details>.*?</details>', '')
+    Assert-Equal $false ($visible -match '(?m)^\|') "Results tables must be collapsed"
+    Assert-Equal $true ($visible -match 'performance review results are available based on commit') "Visible result notification"
+    Assert-Equal $true $visible.Contains('https://github.com/dotnet/maui/commit/def456') "Pinned head link"
+    return $markdown
+}
+
 function Write-Results([string]$path, [object[]]$results) {
     ConvertTo-Json -InputObject $results -Depth 10 |
         Set-Content -Path $path -Encoding UTF8
@@ -98,6 +115,36 @@ try
     Assert-Equal 2 $summary.comparisons[0].headResultCount "Head ABBA result count"
     Assert-Equal $true $summary.provenanceValidated "Provenance validation"
     Assert-Equal $true $summary.correctnessPassed "Correctness validation"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Timing-Improvement%20advisory-") "Improvement badge"
+    Assert-Equal $true $markdown.Contains("Correctness-Passed-") "Correctness badge"
+    Assert-Equal $true $markdown.Contains("PR #42") "Offline report identifies the PR without inventing an author"
+    Assert-Equal $true $markdown.Contains("103.50 ms") "Base median is displayed"
+    Assert-Equal $true $markdown.Contains("73.50 ms") "Head median is displayed"
+
+    $authorArguments = $comparisonArguments.Clone()
+    $authorArguments.PullRequestAuthor = "perf-author"
+    & $script @authorArguments
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("> @perf-author &mdash;") "Author result notification"
+    $stdoutArguments = $authorArguments.Clone()
+    $stdoutArguments.Remove("MarkdownOut")
+    $stdoutMarkdown = & $script @stdoutArguments 6>$null
+    Assert-Equal $markdown.Trim() ([string]$stdoutMarkdown).Trim() "Stdout and file output use the same format"
+
+    $authorArguments.PullRequestAuthor = "dependabot[bot]"
+    & $script @authorArguments
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("> @dependabot[bot] &mdash;") "Bot author notification"
+    $authorArguments.PullRequestAuthor = "author`n<details open>"
+    $invalidAuthorRejected = $false
+    try {
+        & $script @authorArguments
+    }
+    catch [Management.Automation.ParameterBindingException] {
+        $invalidAuthorRejected = $true
+    }
+    Assert-Equal $true $invalidAuthorRejected "Unsafe author metadata must be rejected"
 
     Write-Results $resultsPath @(
         (New-Result "base" @(100, 110) 1),
@@ -109,6 +156,9 @@ try
     & $script @comparisonArguments
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "neutral" $summary.verdict "Overlapping timing ranges should be neutral"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Timing-Neutral-") "Neutral badge"
+    Assert-Equal $true $markdown.Contains("No timing regression was demonstrated") "Neutral follow-up"
 
     Write-Results $resultsPath @(
         (New-Result "base" @(100, 110) 1),
@@ -118,6 +168,10 @@ try
     & $script @comparisonArguments
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "inconclusive" $summary.verdict "Missing head result should be inconclusive"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Timing-Inconclusive-") "Incomplete result badge"
+    Assert-Equal $true $markdown.Contains("Expected 2 head results, found 1.") "Incomplete diagnostics remain available"
+    Assert-Equal $false $markdown.Contains("Correctness-Passed-") "Unvalidated results must not claim correctness passed"
 
     Write-Results $resultsPath @(
         (New-Result "base" @(100, 110) 1),
@@ -140,6 +194,9 @@ try
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "inconclusive" $summary.verdict "Correctness failure should be inconclusive"
     Assert-Equal $false $summary.correctnessPassed "Correctness failure status"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Correctness-Failed-") "Correctness failure badge"
+    Assert-Equal $true $markdown.Contains("failed operation-level correctness") "Correctness diagnostics remain available"
 
     $wrongCommitResults = @(
         (New-Result "base" @(100, 110) 1),
@@ -227,6 +284,9 @@ try
     & $script @itemUpdateArguments
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "time-regression-advisory" $summary.verdict "Correct item update head should compare"
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Timing-Regression%20advisory-") "Regression badge"
+    Assert-Equal $true $markdown.Contains("Investigate the timing increase") "Regression follow-up"
     Assert-Equal $true $summary.correctnessPassed "Item update head correctness"
 
     $itemUpdateResults[1].counters.updatesPreservingFirstVisibleItem = 3
@@ -368,6 +428,30 @@ try
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "inconclusive" $summary.verdict "Handler mismatch should be inconclusive"
     Assert-Equal $false $summary.correctnessPassed "Handler mismatch correctness failure"
+
+    Write-Results $resultsPath @()
+    & $script @comparisonArguments
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("Timing-Inconclusive-") "Empty result badge"
+    Assert-Equal $true $markdown.Contains("Correctness-Not%20assessed-") "Empty results must not claim a correctness failure"
+    Assert-Equal $true $markdown.Contains("No device results were supplied") "Empty result explanation"
+
+    $unsafeScenario = "<details open>injected</details>|@unexpected"
+    $unsafeResults = @(
+        (New-Result "base" @(100, 110) 1),
+        (New-Result "head" @(105, 115) 1),
+        (New-Result "head" @(106, 116) 2),
+        (New-Result "base" @(101, 111) 2)
+    )
+    $unsafeResults | ForEach-Object { $_.scenario = $unsafeScenario }
+    $unsafeArguments = $comparisonArguments.Clone()
+    $unsafeArguments.ExpectedScenario = $unsafeScenario
+    Write-Results $resultsPath $unsafeResults
+    & $script @unsafeArguments
+    $markdown = Assert-CommentFormat $markdownPath
+    Assert-Equal $true $markdown.Contains("&lt;details open&gt;") "Scenario HTML must be escaped"
+    Assert-Equal $true $markdown.Contains("&#124;") "Scenario must not add table columns"
+    Assert-Equal $false $markdown.Contains("@unexpected") "Scenario must not add author mentions"
 
     Write-Host "All device performance comparator tests passed."
 }
