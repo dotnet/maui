@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 env:
-  VALLY_VERSION: "0.12.0"
+  VALLY_VERSION: "0.14.0"
   NODE_VERSION: "22"
 
 jobs:

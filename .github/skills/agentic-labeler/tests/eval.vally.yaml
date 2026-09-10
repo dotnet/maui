@@ -37,7 +37,7 @@
 # Legacy scenarios AND-gated up to ~15 `output_not_contains` assertions
 # (every triage/partner/kind label spelled out) plus, for noop scenarios,
 # a fragile ~10-branch alternation regex matching phrasings of "no labels."
-# With scoring.weights omitted, Vally 0.12 computes the trial score as the
+# With scoring.weights omitted, Vally computes the trial score as the
 # UNWEIGHTED MEAN of
 # grader scores, so piling on 12 floors drowns the judge (1/13 weight) and
 # a single wrong label can't move the aggregate. This port keeps, per
@@ -998,7 +998,7 @@ stimuli:
     constraints: { max_duration: 5m, expect_skills: [agentic-labeler] }
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally uses the
   # unweighted mean of grader [0,1] scores; stimulus
   # passes when the mean across runs >= threshold. Invocation is a separate
   # workflow hard veto, while 0.90 preserves the suite's prior semantic bar

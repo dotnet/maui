@@ -673,6 +673,12 @@ namespace Microsoft.Maui.Controls
 		// the FlyoutPage) and the nested case (e.g. NavigationPage wrapping a FlyoutPage).
 		static void ReleaseFlyoutDrawerCallbacks(Page page)
 		{
+			if (page.Handler is Handlers.Compatibility.ShellRenderer compatibilityShellRenderer)
+			{
+				compatibilityShellRenderer.ReleaseDrawerCallbackBeforePageChange();
+				return;
+			}
+
 			if (page.Handler is FlyoutViewHandler flyoutHandler)
 			{
 				flyoutHandler.ReleaseDrawerCallbackBeforePageChange();
@@ -826,6 +832,12 @@ namespace Microsoft.Maui.Controls
 			if (page is null)
 				return false;
 
+			// Framework containers are handled below based on their current navigation state.
+			// App and third-party overrides must always receive the back press because only
+			// invoking the override can determine whether it consumes the navigation.
+			if (page.HasBackButtonPressedOverride)
+				return true;
+
 			switch (page)
 			{
 				case Shell shell:
@@ -862,8 +874,8 @@ namespace Microsoft.Maui.Controls
 
 				default:
 					// Conservative default: return false for unknown page types.
-					// We cannot know whether a custom container's OnBackButtonPressed() returns true,
-					// so we avoid suppressing the back-to-home animation speculatively.
+					// Custom overrides were handled above, so the system can safely provide
+					// the back-to-home animation for pages with framework behavior.
 					return false;
 			}
 		}

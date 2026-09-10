@@ -60,10 +60,18 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindableProperty IndicatorLayoutProperty = BindableProperty.Create(nameof(IndicatorLayout), typeof(IBindableLayout), typeof(IndicatorView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="IndicatorView"/> class.
 		/// </summary>
-		public IndicatorView() { }
+		public IndicatorView()
+		{
+			_collectionChangedEventHandler = OnCollectionChanged;
+		}
+
+		~IndicatorView() => _collectionChangedProxy.Unsubscribe();
 
 		/// <summary>
 		/// Gets or sets the shape of the indicators.
@@ -237,11 +245,11 @@ namespace Microsoft.Maui.Controls
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
-			if (oldItemsSource is INotifyCollectionChanged oldCollection)
-				oldCollection.CollectionChanged -= OnCollectionChanged;
+			if (oldItemsSource is INotifyCollectionChanged)
+				_collectionChangedProxy.Unsubscribe();
 
 			if (ItemsSource is INotifyCollectionChanged collection)
-				collection.CollectionChanged += OnCollectionChanged;
+				_collectionChangedProxy.Subscribe(collection, _collectionChangedEventHandler);
 
 			OnCollectionChanged(ItemsSource, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 

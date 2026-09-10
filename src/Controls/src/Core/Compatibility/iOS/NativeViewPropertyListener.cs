@@ -19,7 +19,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 			TargetProperty = targetProperty;
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		event PropertyChangedEventHandler PropertyChanged;
+
+		event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged
+		{
+			add => PropertyChanged += value;
+			remove => PropertyChanged -= value;
+		}
 
 		public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
 		{
