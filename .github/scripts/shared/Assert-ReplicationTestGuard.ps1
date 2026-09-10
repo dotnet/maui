@@ -4378,9 +4378,17 @@ function Get-ReplicationWhitespaceInsensitiveSpan {
 }
 
 function Get-ReplicationControlSemanticReferences {
-    if (Get-Variable -Name ReplicationControlSemanticReferences `
-            -Scope Script -ErrorAction SilentlyContinue) {
-        return @($script:ReplicationControlSemanticReferences)
+    param(
+        [ValidateSet('android', 'ios', 'catalyst', 'windows')]
+        [string]$Platform = 'catalyst'
+    )
+
+    if (-not (Get-Variable -Name ReplicationControlSemanticReferencesByPlatform `
+            -Scope Script -ErrorAction SilentlyContinue)) {
+        $script:ReplicationControlSemanticReferencesByPlatform = @{}
+    }
+    if ($script:ReplicationControlSemanticReferencesByPlatform.ContainsKey($Platform)) {
+        return @($script:ReplicationControlSemanticReferencesByPlatform[$Platform])
     }
 
     $references = [System.Collections.Generic.List[Microsoft.CodeAnalysis.MetadataReference]]::new()
@@ -4467,7 +4475,14 @@ namespace Microsoft.Maui.Controls
         public double Padding { get; set; }
         public Style Style { get; set; }
         public string Text { get; set; }
+        public TextType TextType { get; set; }
         public object TextColor { get; set; }
+    }
+
+    public enum TextType
+    {
+        Text = 0,
+        Html = 1
     }
 
     public enum FontAttributes
@@ -4724,7 +4739,25 @@ namespace Microsoft.Maui.Handlers
         }
         public global::Microsoft.Maui.IMauiContext MauiContext { get; }
     }
-    public class LabelHandler { }
+    public class LabelHandler : global::Microsoft.Maui.IElementHandler
+    {
+#if ANDROID
+        public global::AndroidX.AppCompat.Widget.AppCompatTextView PlatformView
+        {
+            get;
+        }
+#else
+        public global::UIKit.UILabel PlatformView
+        {
+            get;
+        }
+#endif
+        object global::Microsoft.Maui.IElementHandler.PlatformView
+        {
+            get;
+        }
+        public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
     public class LayoutHandler { }
     public class ScrollViewHandler { }
 }
@@ -4763,6 +4796,14 @@ namespace Google.Android.Material.Button
         public global::Android.Graphics.Paint Paint { get; }
         public string Text { get; }
         public int Width { get; }
+    }
+}
+
+namespace AndroidX.AppCompat.Widget
+{
+    public class AppCompatTextView
+    {
+        public string Text { get; set; }
     }
 }
 
@@ -5041,8 +5082,18 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
     }
 }
 '@
+    $contractSymbol = switch ($Platform) {
+        'android' { 'ANDROID' }
+        'ios' { 'IOS' }
+        'catalyst' { 'MACCATALYST' }
+        'windows' { 'WINDOWS' }
+    }
+    $contractParseOptions =
+        [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default.WithPreprocessorSymbols(
+            [string[]]@($contractSymbol))
     $contractTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
-        $contractSource)
+        $contractSource,
+        $contractParseOptions)
     $contractOptions =
         [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
             [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary)
@@ -5070,8 +5121,9 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
         $contractStream.Dispose()
     }
 
-    $script:ReplicationControlSemanticReferences = $references.ToArray()
-    return @($script:ReplicationControlSemanticReferences)
+    $script:ReplicationControlSemanticReferencesByPlatform[$Platform] =
+        $references.ToArray()
+    return @($script:ReplicationControlSemanticReferencesByPlatform[$Platform])
 }
 
 function Read-ReplicationControlResult {
@@ -5911,6 +5963,26 @@ function New-ReplicationControlVariant {
         $parseOptions,
         $SourcePath)
     $normalizedSourcePathForProfile = $SourcePath.Replace('\', '/')
+    $nativeLabelTextProfileMatch = [regex]::Match(
+        $normalizedSourcePathForProfile,
+        '^src/Controls/tests/DeviceTests/Elements/Label/Issue(?<issue>[1-9][0-9]*)(?:Tests)?\.(?<platform>Android|iOS)\.cs$',
+        [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $nativeLabelTextProfilePlatform = if ($Platform -ceq 'android') {
+        'Android'
+    } elseif ($Platform -ceq 'ios') {
+        'iOS'
+    } else {
+        ''
+    }
+    $isNativeLabelTextProfile =
+        $nativeLabelTextProfileMatch.Success -and
+        $nativeLabelTextProfileMatch.Groups['platform'].Value -ceq
+            $nativeLabelTextProfilePlatform
+    $nativeLabelTextProfileIssue = if ($isNativeLabelTextProfile) {
+        $nativeLabelTextProfileMatch.Groups['issue'].Value
+    } else {
+        ''
+    }
     $isAndroidIssue26505PathForSourceScan =
         $Platform -ceq 'android' -and
         $normalizedSourcePathForProfile -ceq
@@ -6082,10 +6154,15 @@ function New-ReplicationControlVariant {
                 $namespaceName = $namespace[0].Name.ToString()
                 if ($namespaceName -cin @(
                         'Android.Graphics',
+                        'AndroidX.AppCompat.Widget',
                         'Google.Android.Material.Button',
                         'Microsoft.Maui.DeviceTests.ImageAnalysis',
                         'Microsoft.Maui.Handlers',
                         'Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific')) {
+                    return $true
+                }
+                if ($isNativeLabelTextProfile -and
+                    $namespaceName -ceq 'UIKit') {
                     return $true
                 }
                 if (-not $isAndroidIssue33315PathForSourceScan -or
@@ -6122,7 +6199,7 @@ function New-ReplicationControlVariant {
             'Maui.Replication.GeneratedControl',
             [Microsoft.CodeAnalysis.SyntaxTree[]]$semanticTrees.ToArray(),
             [Microsoft.CodeAnalysis.MetadataReference[]]@(
-                Get-ReplicationControlSemanticReferences),
+                Get-ReplicationControlSemanticReferences -Platform $Platform),
             [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
                 [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
     $semanticModel = $semanticCompilation.GetSemanticModel($tree)
@@ -6682,6 +6759,14 @@ function New-ReplicationControlVariant {
         [Collections.Generic.Dictionary[int, object]]::new()
     $trustedAndroidIssue26505CallbackNativeExpressions =
         [Collections.Generic.Dictionary[int, string]]::new()
+    $acceptedNativeLabelTextRegistrationInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $acceptedNativeLabelTextHelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelTextCallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelTextCallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
     $isAndroidIssue33315Profile =
         $Platform -ceq 'android' -and
         $normalizedSourcePath -ceq
@@ -6722,6 +6807,43 @@ function New-ReplicationControlVariant {
         'Microsoft.Maui.Handlers.LayoutHandler',
         'Microsoft.Maui.Handlers.ScrollViewHandler'
     )
+    $nativeLabelTextScopedTypes = @(
+        'AndroidX.AppCompat.Widget.AppCompatTextView',
+        'Microsoft.Maui.Handlers.LabelHandler'
+    )
+    $isNativeLabelTextScopedType = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
+        if ($null -eq $Type) { return $false }
+        if ($Type -is [Microsoft.CodeAnalysis.IArrayTypeSymbol]) {
+            return & $isNativeLabelTextScopedType -Type $Type.ElementType
+        }
+        $typeName = $Type.ToString()
+        return @($nativeLabelTextScopedTypes | Where-Object {
+                $typeName -ceq $_ -or
+                $typeName.StartsWith(
+                    "$_<",
+                    [StringComparison]::Ordinal)
+            }).Count -ne 0
+    }
+    $isNativeLabelTextScopedSymbol = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ISymbol]$Symbol)
+        if ($null -eq $Symbol) { return $false }
+        if ($Symbol -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+            return & $isNativeLabelTextScopedType -Type $Symbol
+        }
+        if ($null -ne $Symbol.ContainingType -and
+            (& $isNativeLabelTextScopedType -Type $Symbol.ContainingType)) {
+            return $true
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            return (& $isNativeLabelTextScopedType -Type $Symbol.ReturnType)
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $Symbol -is [Microsoft.CodeAnalysis.IFieldSymbol]) {
+            return (& $isNativeLabelTextScopedType -Type $Symbol.Type)
+        }
+        return $false
+    }
     $isAndroidIssue33315ScopedType = {
         param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
         if ($null -eq $Type) { return $false }
@@ -6729,6 +6851,10 @@ function New-ReplicationControlVariant {
             return & $isAndroidIssue33315ScopedType -Type $Type.ElementType
         }
         $typeName = $Type.ToString()
+        if ($isNativeLabelTextProfile -and
+            $typeName -ceq 'Microsoft.Maui.Handlers.LabelHandler') {
+            return $false
+        }
         return @($androidIssue33315ScopedTypes | Where-Object {
                 $typeName -ceq $_ -or
                 $typeName.StartsWith(
@@ -6833,6 +6959,16 @@ function New-ReplicationControlVariant {
         return @($Node.AncestorsAndSelf() | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
                 $trustedAndroidIssue33315CallbackBodies.Contains($_.SpanStart)
+            }).Count -ne 0
+    }
+    $isNativeLabelTextCallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedNativeLabelTextCallbackBodies.Contains($_.SpanStart)
             }).Count -ne 0
     }
     $getInvocationName = {
@@ -6944,10 +7080,12 @@ function New-ReplicationControlVariant {
                     }).Count -eq 0
             }).Count -eq 1
     }
-    $isExactTrustedAndroidIssue26505HelperMethod = {
+    $isExactTrustedDirectHandlerWindowHelperMethod = {
         param(
             [AllowNull()]
-            [Microsoft.CodeAnalysis.IMethodSymbol]$Method
+            [Microsoft.CodeAnalysis.IMethodSymbol]$Method,
+            [Parameter(Mandatory = $true)]
+            [string]$ExpectedHandlerType
         )
         if ($null -eq $Method -or
             $Method.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
@@ -7016,7 +7154,7 @@ function New-ReplicationControlVariant {
 
         $handlerType = $Method.TypeArguments[0]
         if ($handlerType -isnot [Microsoft.CodeAnalysis.INamedTypeSymbol] -or
-            $handlerType.ToString() -cne 'Microsoft.Maui.Handlers.ButtonHandler' -or
+            $handlerType.ToString() -cne $ExpectedHandlerType -or
             $handlerType.ContainingAssembly.Name -cne
                 'Microsoft.Maui.Controls.ReplicationControlContract' -or
             @($handlerType.Locations | Where-Object {
@@ -7032,6 +7170,15 @@ function New-ReplicationControlVariant {
                         $_.IsInSource
                     }).Count -eq 0
             }).Count -eq 1
+    }
+    $isExactTrustedAndroidIssue26505HelperMethod = {
+        param(
+            [AllowNull()]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$Method
+        )
+        return & $isExactTrustedDirectHandlerWindowHelperMethod `
+            -Method $Method `
+            -ExpectedHandlerType 'Microsoft.Maui.Handlers.ButtonHandler'
     }
     $throwTrustedWindowHelperViolation = {
         param(
@@ -7092,12 +7239,20 @@ function New-ReplicationControlVariant {
             "'$diagnosticSyntax' in '$diagnosticPath' line ${diagnosticLine}: " +
             $Reason + $bindingDiagnostics)
     }
-    $validateAndroidIssue26505RegistrationStatement = {
+    $validateExactSingleHandlerRegistrationStatement = {
         param(
             [AllowNull()]
             [Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax]$RegistrationStatement,
             [Parameter(Mandatory = $true)]
-            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod,
+            [Parameter(Mandatory = $true)][string]$ProfileDescription,
+            [Parameter(Mandatory = $true)][string]$ViewTypeSyntax,
+            [Parameter(Mandatory = $true)][string]$HandlerTypeSyntax,
+            [Parameter(Mandatory = $true)][string]$ViewTypeName,
+            [Parameter(Mandatory = $true)][string]$HandlerTypeName,
+            [Parameter(Mandatory = $true)]
+            [AllowEmptyCollection()]
+            [Collections.Generic.HashSet[int]]$AcceptedInvocations
         )
 
         $throwRegistrationViolation = {
@@ -7110,12 +7265,20 @@ function New-ReplicationControlVariant {
                 -Node $Node `
                 -HelperSymbol $HelperMethod `
                 -Reason (
-                    'the Android Issue26505 profile requires the exact first ' +
+                    "the $ProfileDescription requires the exact first " +
                     'top-level handler registration ' +
                     'EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(' +
-                    'handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Button, ' +
-                    'global::Microsoft.Maui.Handlers.ButtonHandler>())); ' +
+                    "handlers => handlers.AddHandler<$ViewTypeSyntax, " +
+                    "$HandlerTypeSyntax>())); " +
                     $Reason)
+        }
+        $viewTypeShortName = $ViewTypeName.Split('.')[-1]
+        $handlerTypeShortName = $HandlerTypeName.Split('.')[-1]
+        $constructionReason = if ($ProfileDescription -ceq
+            'Android Issue26505 profile') {
+            'register the Button handler before constructing any Window, Page, or Button.'
+        } else {
+            'register the handler before constructing any Window, Page, or affected control.'
         }
 
         if (@($root.Usings | Where-Object {
@@ -7137,7 +7300,7 @@ function New-ReplicationControlVariant {
                 [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
             & $throwRegistrationViolation `
                 -Node $(if ($RegistrationStatement) { $RegistrationStatement } else { $testMethod[0].Body }) `
-                -Reason 'register the Button handler before constructing any Window, Page, or Button.'
+                -Reason $constructionReason
         }
 
         $ensureInvocation = $RegistrationStatement.Expression
@@ -7279,9 +7442,9 @@ function New-ReplicationControlVariant {
             $addGenericName.Identifier.ValueText -cne 'AddHandler' -or
             $addGenericName.TypeArgumentList.Arguments.Count -ne 2 -or
             $addGenericName.TypeArgumentList.Arguments[0].ToString() -cne
-                'global::Microsoft.Maui.Controls.Button' -or
+                $ViewTypeSyntax -or
             $addGenericName.TypeArgumentList.Arguments[1].ToString() -cne
-                'global::Microsoft.Maui.Handlers.ButtonHandler' -or
+                $HandlerTypeSyntax -or
             $addInvocation.ArgumentList.Arguments.Count -ne 0 -or
             $addMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
             $addMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
@@ -7296,9 +7459,9 @@ function New-ReplicationControlVariant {
             $addMethod.Parameters.Length -ne 0 -or
             $addMethod.TypeArguments.Length -ne 2 -or
             $addMethod.TypeArguments[0].ToString() -cne
-                'Microsoft.Maui.Controls.Button' -or
+                $ViewTypeName -or
             $addMethod.TypeArguments[1].ToString() -cne
-                'Microsoft.Maui.Handlers.ButtonHandler' -or
+                $HandlerTypeName -or
             @($addMethod.Locations | Where-Object {
                     $_.IsInSource
                 }).Count -ne 0 -or
@@ -7307,14 +7470,16 @@ function New-ReplicationControlVariant {
                 }).Count -ne 0) {
             & $throwRegistrationViolation `
                 -Node $addInvocation `
-                -Reason 'AddHandler must register only trusted Button -> ButtonHandler metadata.'
+                -Reason (
+                    "AddHandler must register only trusted $viewTypeShortName -> " +
+                    "$handlerTypeShortName metadata.")
         }
 
-        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+        [void]$AcceptedInvocations.Add(
             $ensureInvocation.SpanStart)
-        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+        [void]$AcceptedInvocations.Add(
             $configureInvocation.SpanStart)
-        [void]$acceptedAndroidIssue26505RegistrationInvocations.Add(
+        [void]$AcceptedInvocations.Add(
             $addInvocation.SpanStart)
     }
     $validateAndroidIssue26505HelperInvocation = {
@@ -7375,9 +7540,15 @@ function New-ReplicationControlVariant {
         } else {
             $null
         }
-        & $validateAndroidIssue26505RegistrationStatement `
+        & $validateExactSingleHandlerRegistrationStatement `
             -RegistrationStatement $registrationStatement `
-            -HelperMethod $HelperMethod
+            -HelperMethod $HelperMethod `
+            -ProfileDescription 'Android Issue26505 profile' `
+            -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Button' `
+            -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.ButtonHandler' `
+            -ViewTypeName 'Microsoft.Maui.Controls.Button' `
+            -HandlerTypeName 'Microsoft.Maui.Handlers.ButtonHandler' `
+            -AcceptedInvocations $acceptedAndroidIssue26505RegistrationInvocations
 
         $statement = $AwaitExpression.Parent
         if ($statement -isnot
@@ -8017,6 +8188,343 @@ function New-ReplicationControlVariant {
             $callback.Body.SpanStart] = $handlerParameter
         $trustedAndroidIssue26505CallbackNativeExpressions[
             $callback.Body.SpanStart] = $expectedTextFit
+    }
+    $validateNativeLabelTextHelperInvocation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]$AwaitExpression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        if (-not $isNativeLabelTextProfile) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label rendered-text profile is available only to ' +
+                    'an issue-keyed Android or iOS Controls Label device-test path.')
+        }
+        $expectedCategory = "Issue$nativeLabelTextProfileIssue"
+        $issueCategories = @($selectedAttributes | Where-Object {
+                $attributeSymbol = $semanticModel.GetSymbolInfo($_).Symbol
+                $attributeSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $attributeSymbol.ContainingAssembly.Name -ceq $trustedContractAssembly -and
+                $attributeSymbol.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.CategoryAttribute' -and
+                $_.ArgumentList -and $_.ArgumentList.Arguments.Count -eq 1 -and
+                $_.ArgumentList.Arguments[0].Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                $_.ArgumentList.Arguments[0].Expression.Token.ValueText -ceq
+                    $expectedCategory
+            })
+        if ($issueCategories.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0] `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label rendered-text profile requires exactly ' +
+                    "[Category(`"$expectedCategory`")] on the selected method, " +
+                    'matching the issue-keyed file path.')
+        }
+
+        $statements = @($testMethod[0].Body.Statements)
+        if ($statements.Count -ne 5 -or
+            $AwaitExpression.Parent -ne $statements[4] -or
+            $statements[2] -ne $localDeclaration -or
+            $statements[3] -ne $gate) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0].Body `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label rendered-text method must contain exactly ' +
+                    'five top-level statements in order: one handler registration, ' +
+                    'the affected Label declaration, the gate declaration, the gate, ' +
+                    'and the directly awaited immutable helper.')
+        }
+        & $validateExactSingleHandlerRegistrationStatement `
+            -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
+            -ProfileDescription 'native Label rendered-text profile' `
+            -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
+            -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
+            -ViewTypeName 'Microsoft.Maui.Controls.Label' `
+            -HandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
+            -AcceptedInvocations $acceptedNativeLabelTextRegistrationInvocations
+
+        $labelStatement = $statements[1]
+        if ($labelStatement -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -or
+            $labelStatement.Declaration.Type.ToString() -cne 'var' -or
+            $labelStatement.Declaration.Variables.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $labelStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'declare exactly one affected Label local as the second ' +
+                    'top-level statement.')
+        }
+        $labelDeclarator = $labelStatement.Declaration.Variables[0]
+        $labelSymbol = $semanticModel.GetDeclaredSymbol($labelDeclarator)
+        $labelCreation = if ($labelDeclarator.Initializer) {
+            $labelDeclarator.Initializer.Value
+        } else {
+            $null
+        }
+        if ($labelDeclarator.Identifier.ValueText -cne 'affectedLabel' -or
+            $labelSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $labelSymbol.Type.ToString() -cne 'Microsoft.Maui.Controls.Label' -or
+            $labelSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $labelCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $labelCreation.Type.ToString() -cne
+                'global::Microsoft.Maui.Controls.Label' -or
+            ($labelCreation.ArgumentList -and
+                $labelCreation.ArgumentList.Arguments.Count -ne 0)) {
+            & $throwTrustedWindowHelperViolation -Node $labelStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected control must be exactly `var affectedLabel = ' +
+                    'new global::Microsoft.Maui.Controls.Label { ... };` bound to ' +
+                    'the external Controls Label.')
+        }
+        $initializerAssignments = @(if ($labelCreation.Initializer) {
+                $labelCreation.Initializer.Expressions
+            })
+        if ($initializerAssignments.Count -gt 2) {
+            & $throwTrustedWindowHelperViolation -Node $labelCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected Label initializer may set only Text and TextType ' +
+                    'once each.')
+        }
+        $initializerPropertyNames =
+            [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        foreach ($initializerAssignment in $initializerAssignments) {
+            if ($initializerAssignment -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $initializerAssignment.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                $initializerAssignment.Left -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                & $throwTrustedWindowHelperViolation -Node $initializerAssignment `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts only direct Text ' +
+                        'or TextType assignments.')
+            }
+            $propertyName = $initializerAssignment.Left.Identifier.ValueText
+            $propertySymbol =
+                $semanticModel.GetSymbolInfo($initializerAssignment.Left).Symbol
+            if ($propertyName -cnotin @('Text', 'TextType') -or
+                -not $initializerPropertyNames.Add($propertyName) -or
+                $propertySymbol -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $propertySymbol.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $propertySymbol.ContainingType.ToString() -cne
+                    'Microsoft.Maui.Controls.Label') {
+                & $throwTrustedWindowHelperViolation -Node $initializerAssignment `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts only external ' +
+                        'Label.Text and Label.TextType once each.')
+            }
+            $initializerValue = $initializerAssignment.Right
+            $initializerValueSymbol =
+                $semanticModel.GetSymbolInfo($initializerValue).Symbol
+            $validInitializerValue =
+                ($propertyName -ceq 'Text' -and
+                    $initializerValue -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                    $initializerValue.RawKind -eq
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StringLiteralExpression) -or
+                ($propertyName -ceq 'TextType' -and
+                    $initializerValue -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $initializerValueSymbol -is [Microsoft.CodeAnalysis.IFieldSymbol] -and
+                    $initializerValueSymbol.ContainingType.ToString() -ceq
+                        'Microsoft.Maui.Controls.TextType' -and
+                    $initializerValueSymbol.ContainingAssembly.Name -ceq
+                        $trustedContractAssembly)
+            if (-not $validInitializerValue) {
+                & $throwTrustedWindowHelperViolation -Node $initializerValue `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'Label.Text must be a string literal and Label.TextType ' +
+                        'must be a direct trusted enum value.')
+            }
+        }
+
+        foreach ($gateBranch in @($gate.Statement) +
+            @(if ($gate.Else) { $gate.Else.Statement })) {
+            $gateExpression = $gateBranch.Statements[0].Expression
+            if ($gateExpression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $gateExpression.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                $gateExpression.Left -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+                $gateExpression.Left.Expression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo(
+                        $gateExpression.Left.Expression).Symbol,
+                    $labelSymbol) -or
+                $gateExpression.Left.Name.Identifier.ValueText -cnotin
+                    @('Text', 'TextType')) {
+                & $throwTrustedWindowHelperViolation -Node $gateExpression `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the profile gate may write only affectedLabel.Text or ' +
+                        'affectedLabel.TextType.')
+            }
+        }
+        if ($gate.Else) {
+            & $throwTrustedWindowHelperViolation -Node $gate.Else `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the profile keeps the common control model and does not ' +
+                    'admit an else branch; put the truthful alternate state in ' +
+                    'the affected Label initializer.')
+        }
+
+        if ($Invocation.ArgumentList.Arguments.Count -ne 2 -or
+            @($Invocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or $null -ne $_.NameColon
+                }).Count -ne 0) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'pass exactly the trusted Window tree and one async handler callback.')
+        }
+        $windowCreation = $Invocation.ArgumentList.Arguments[0].Expression
+        $callback = $Invocation.ArgumentList.Arguments[1].Expression
+        $windowText = [regex]::Replace($windowCreation.ToString(), '\s+', '')
+        if ($windowText -cne
+            'newglobal::Microsoft.Maui.Controls.Window(newglobal::Microsoft.Maui.Controls.ContentPage{Content=affectedLabel})') {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'attach only `new global::Microsoft.Maui.Controls.Window(' +
+                    'new global::Microsoft.Maui.Controls.ContentPage { Content = ' +
+                    'affectedLabel })`; no other control or hierarchy is admitted.')
+        }
+        $windowContentIdentifiers = @($windowCreation.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                $_.Identifier.ValueText -ceq 'affectedLabel'
+            })
+        if ($windowContentIdentifiers.Count -ne 1 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($windowContentIdentifiers[0]).Symbol,
+                $labelSymbol)) {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the Window must contain the exact pre-gate affectedLabel instance.')
+        }
+
+        if ($callback -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $callback.AsyncKeyword.RawKind -eq 0 -or
+            $callback.Parameter.Identifier.ValueText -cne 'handler' -or
+            $callback.Body -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+            $callback.Body.Statements.Count -ne 2) {
+            & $throwTrustedWindowHelperViolation -Node $callback `
+                -HelperSymbol $HelperMethod -Reason (
+                    'use exactly `async handler => { await AssertEventually(...); ' +
+                    'Assert.Equal(<literal>, handler.PlatformView.Text); }`.')
+        }
+        $handlerSymbol = $semanticModel.GetDeclaredSymbol($callback.Parameter)
+        if ($handlerSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $handlerSymbol.Type.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $handlerSymbol.Type.ContainingAssembly.Name -cne
+                $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $callback.Parameter `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback parameter must bind to the external LabelHandler ' +
+                    'selected by the helper.')
+        }
+        $readinessStatement = $callback.Body.Statements[0]
+        if ([regex]::Replace($readinessStatement.ToString(), '\s+', '') -cne
+            'awaitAssertEventually(()=>affectedLabel.Handler!=null&&affectedLabel.IsLoaded);') {
+            & $throwTrustedWindowHelperViolation -Node $readinessStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback must first await exactly AssertEventually(() => ' +
+                    'affectedLabel.Handler != null && affectedLabel.IsLoaded).')
+        }
+        foreach ($affectedIdentifier in @($readinessStatement.DescendantNodes() |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'affectedLabel'
+                })) {
+            if (-not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($affectedIdentifier).Symbol,
+                    $labelSymbol)) {
+                & $throwTrustedWindowHelperViolation -Node $affectedIdentifier `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the readiness predicate must observe the exact attached Label.')
+            }
+        }
+
+        $oracleStatement = $callback.Body.Statements[1]
+        $oracleInvocation = if ($oracleStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $oracleStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $oracleStatement.Expression
+        } else {
+            $null
+        }
+        $oracleMethod = if ($oracleInvocation) {
+            $semanticModel.GetSymbolInfo($oracleInvocation).Symbol
+        } else {
+            $null
+        }
+        if ($null -eq $oracleInvocation -or
+            $oracleInvocation.Expression.ToString() -cne 'Assert.Equal' -or
+            $oracleInvocation.ArgumentList.Arguments.Count -ne 2 -or
+            $oracleMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $oracleMethod.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $oracleMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $oracleMethod.Name -cne 'Equal') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the final oracle must be exactly Assert.Equal(<non-empty ' +
+                    'string literal>, handler.PlatformView.Text).')
+        }
+        $expectedText = $oracleInvocation.ArgumentList.Arguments[0].Expression
+        $nativeText = $oracleInvocation.ArgumentList.Arguments[1].Expression
+        if ($expectedText -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $expectedText.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StringLiteralExpression -or
+            [string]::IsNullOrEmpty([string]$expectedText.Token.Value) -or
+            $nativeText -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            [regex]::Replace($nativeText.ToString(), '\s+', '') -cne
+                'handler.PlatformView.Text') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the final oracle must directly compare a non-empty literal ' +
+                    'with handler.PlatformView.Text.')
+        }
+        $handlerIdentifier = $nativeText.Expression.Expression
+        $platformViewProperty =
+            $semanticModel.GetSymbolInfo($nativeText.Expression).Symbol
+        $nativeTextProperty = $semanticModel.GetSymbolInfo($nativeText).Symbol
+        $expectedNativeType = if ($Platform -ceq 'android') {
+            'AndroidX.AppCompat.Widget.AppCompatTextView'
+        } else {
+            'UIKit.UILabel'
+        }
+        if ($handlerIdentifier -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($handlerIdentifier).Symbol,
+                $handlerSymbol) -or
+            $platformViewProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $platformViewProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $platformViewProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $platformViewProperty.Name -cne 'PlatformView' -or
+            $nativeTextProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $nativeTextProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $nativeTextProperty.ContainingType.ToString() -cne $expectedNativeType -or
+            $nativeTextProperty.Name -cne 'Text') {
+            & $throwTrustedWindowHelperViolation -Node $nativeText `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the oracle must read Text directly from the genuine ' +
+                    'LabelHandler PlatformView parameter.')
+        }
+
+        [void]$acceptedNativeLabelTextHelperInvocations.Add($Invocation.SpanStart)
+        [void]$trustedNativeLabelTextCallbackBodies.Add($callback.Body.SpanStart)
+        $trustedNativeLabelTextCallbackOracleMinimums[$callback.Body.SpanStart] =
+            $readinessStatement.Span.End
     }
     $validateAndroidIssue33315HelperInvocation = {
         param(
@@ -10074,6 +10582,12 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             $isAndroidIssue33315Profile -and
             $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
             (& $isExactTrustedWindowHelperMethod -Method $awaitedMethod)
+        $isTrustedNativeLabelTextHelper =
+            $isNativeLabelTextProfile -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            (& $isExactTrustedDirectHandlerWindowHelperMethod `
+                -Method $awaitedMethod `
+                -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
         if ($Platform -ceq 'android' -and
             $isTrustedAndroidIssue26505Helper) {
             & $validateAndroidIssue26505HelperInvocation `
@@ -10090,6 +10604,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 -HelperMethod $awaitedMethod
             continue
         }
+        if ($isTrustedNativeLabelTextHelper) {
+            & $validateNativeLabelTextHelperInvocation `
+                -AwaitExpression $awaitExpression `
+                -Invocation $awaitedExpression `
+                -HelperMethod $awaitedMethod
+            continue
+        }
         if ($Platform -ceq 'android' -and
             $invokedName -ceq 'CreateHandlerAndAddToWindow') {
             & $throwTrustedWindowHelperViolation `
@@ -10099,6 +10620,7 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     'Android generated tests may use CreateHandlerAndAddToWindow ' +
                     'only for the exact reviewed Issue26505 ButtonHandler text-fit ' +
                     'profile or the exact reviewed Issue33315 Label rendered-pixel ' +
+                    'profile, or for the issue-keyed native Label rendered-text ' +
                     'profile. All other Android helper/native shapes remain outside ' +
                     'the closed contract; reject the candidate instead of reusing ' +
                     'Catalyst or Windows guidance.')
@@ -11008,6 +11530,22 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 $androidIssue33315HelperInvocation.SpanStart)) {
             continue
         }
+        $nativeLabelTextInvocation = if ($operationNode -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $operationNode
+        } else {
+            @($operationNode.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                } | Select-Object -First 1)
+        }
+        if ($null -ne $nativeLabelTextInvocation -and
+            ($acceptedNativeLabelTextRegistrationInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart) -or
+                $acceptedNativeLabelTextHelperInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart))) {
+            continue
+        }
         if (& $isTrustedWindowCallbackNode -Node $operationNode) {
             continue
         }
@@ -11018,6 +11556,9 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             continue
         }
         if (& $isAndroidIssue33315CallbackNode -Node $operationNode) {
+            continue
+        }
+        if (& $isNativeLabelTextCallbackNode -Node $operationNode) {
             continue
         }
         $operationText = $operationNode.ToString()
@@ -11041,6 +11582,15 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             throw (
                 'Android Issue33315 Label rendered-bitmap members are trusted only ' +
                 'inside the exact reviewed helper callback; offending syntax ' +
+                "'$operationText' in '$SourcePath' line $operationLine.")
+        }
+        if ((& $isNativeLabelTextScopedSymbol -Symbol $precheckedSymbol) -and
+            -not (& $isNativeLabelTextCallbackNode -Node $operationNode)) {
+            $operationLine = $tree.GetLineSpan(
+                $operationNode.Span).StartLinePosition.Line + 1
+            throw (
+                'Native Label text metadata is trusted only inside the exact ' +
+                'reviewed helper callback; offending syntax ' +
                 "'$operationText' in '$SourcePath' line $operationLine.")
         }
         if ($operationText -cmatch
@@ -13843,11 +14393,23 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 $trustedAndroidIssue33315CallbackOracleMinimums[
                     $assertionStatement.Parent.SpanStart] -and
             $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedNativeLabelTextCallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedNativeLabelTextCallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedNativeLabelTextCallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedNativeLabelTextCallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
         if ($isDirectPostGateAssertion -or
             $isTrustedWindowCallbackAssertion -or
             $isTrustedExternalWindowCallbackAssertion -or
             $isTrustedAndroidIssue26505CallbackAssertion -or
-            $isTrustedAndroidIssue33315CallbackAssertion) {
+            $isTrustedAndroidIssue33315CallbackAssertion -or
+            $isTrustedNativeLabelTextCallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -14319,6 +14881,18 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                         -CallbackBody $assertionStatement.Parent `
                         -AssertionMethod $assertionSymbol `
                         -AssertionArgumentCount $assertionArguments.Count)
+            }
+            if ($isTrustedNativeLabelTextCallbackAssertion) {
+                $supportedGuaranteedOracle =
+                    $assertionArguments.Count -eq 2 -and
+                    $assertionSymbol.ContainingType.ToString() -ceq 'Xunit.Assert' -and
+                    $assertionSymbol.Name -ceq 'Equal' -and
+                    $assertionArguments[0].Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                    [regex]::Replace(
+                        $assertionArguments[1].Expression.ToString(),
+                        '\s+',
+                        '') -ceq 'handler.PlatformView.Text'
             }
             if (-not $isTautologicalAssertion -and
                 $supportedGuaranteedOracle -and

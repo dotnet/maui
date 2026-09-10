@@ -162,6 +162,17 @@ model may describe a filter but cannot choose runner grammar or counts.
 
 Device tests that customize handler registration use the repository's `EnsureHandlerCreated` pattern and register standard handlers for every attached hierarchy family alongside the custom handler. Missing-handler exceptions are classified as setup failures, not product reproductions.
 
+Android and iOS now share a narrowly reusable native Label rendered-text
+profile. It registers exactly `Label`/`LabelHandler`, attaches the same
+pre-gate Label through the immutable window helper, waits for its handler and
+loaded state, and compares the direct native `handler.PlatformView.Text` to an
+issue-derived literal. The issue supplies the actual input and a truthful
+non-trigger initializer; the profile does not hard-code an issue number or
+expected text. It does not admit bitmap/layout helpers, native writes, larger
+hierarchies, or simulated input. Static profile acceptance is not proof that a
+particular alternate input passes on a device: all four causal arms remain
+required.
+
 The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
 Successful publication requires both:
