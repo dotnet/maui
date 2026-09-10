@@ -7,6 +7,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		internal static void DisposeModalAndChildHandlers(this Maui.IElement view)
 		{
+			if (view is Element rootElement && HandlerProperties.GetDisconnectPolicy(rootElement) == HandlerDisconnectPolicy.Manual)
+			{
+				return;
+			}
+
 			IPlatformViewHandler renderer;
 			foreach (Element child in ((Element)view).Descendants())
 			{
