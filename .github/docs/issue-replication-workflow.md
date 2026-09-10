@@ -10,6 +10,7 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 | `publication-smoke` | None | Create, verify, close, and delete the branch for a temporary MauiBot draft PR |
 | `replication-checks` | None | Focused trusted pipeline-contract checks without devices |
 | `ios-harness-probe` | None | Run one checked-in iOS infrastructure fixture without issue generation or publication |
+| `ios-vm-capability-probe` | None | Probe host Hypervisor.framework capabilities without running a guest or authorizing generated execution |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -19,12 +20,18 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 2. Set `Mode` to `replicate`.
 3. Set `PRNumber` to `0`.
 4. Set `IssueNumber` to the `dotnet/maui` issue number.
-5. Choose `android`, `windows`, or `catalyst`. Windows replication is restricted
+5. Choose `android`, `ios`, `windows`, or `catalyst`. Windows replication is restricted
    to the capability-free packaged Sandbox and one Windows-only Controls device
    test. Mac Catalyst uses a signed App Sandbox without network entitlements and
-   proves the live process is denied `network-outbound`. iOS Simulator runs only
-   when the Aces host supplies an independently managed hypervisor-egress
-   attestation; otherwise the trusted run ends as unsupported before generation.
+   proves the live process is denied `network-outbound`. iOS Simulator uses the
+   shared review runners with credential-free child execution and trusted
+   source/runner restrictions, but no independent outbound-network isolation.
+   It does not require or produce a hypervisor-egress attestation.
+
+Keep `PublishIssueOutcome=false` to suppress not-reproduced comments and labels
+on the issue. This is not a dry-run switch for fix publication: a fully validated
+fix can still become a draft PR. Keep `SupersedeExisting=false` to protect an
+existing fix PR.
 
 Maintainers can use `Mode=feedback` with both target numbers set to `0` for a lightweight authenticated snapshot. It migrates any missing attributed comments, exports discussion comments, reviews, inline comments, and commits from open `kubaflo/maui` replication PRs, and skips device reproduction. It does not create or migrate pull requests.
 
@@ -47,9 +54,14 @@ the other modes; Xcode version validation stays enabled. It executes only a chec
 infrastructure fixture, not issue-derived Sandbox code, tests, or fixes. The
 `IosHarnessProbe` artifact retains raw build/runner logs and native results.
 Its `scope.json` reports whether the external isolation marker was advertised;
-that observation is not an attestation. A passing probe neither resolves the
-independent iOS egress prerequisite nor permits certification or publication.
-Normal iOS replication still fails closed without that prerequisite.
+that observation is not an attestation. A passing probe is infrastructure
+evidence only, not issue reproduction, certification, or publication.
+
+Use `Mode=ios-vm-capability-probe`, `Platform=ios`, and both target numbers set to
+`0` for the separate host-capability diagnostic. It creates and destroys an empty
+Hypervisor.framework VM without guest execution, devices, or networking.
+Neither probe authorizes generated execution or proves network isolation;
+normal iOS replication uses the review-host controls described above.
 
 The feedback snapshot is data-only and bounded. In addition to the discussion
 surfaces it includes normalized `qualityContract`, typed `selector`, `evidence`,
@@ -65,10 +77,11 @@ Replication targets `main` in the first version. The issue must describe a scena
 2. Reconstructs a transient scenario in `Controls.Sample.Sandbox`.
 3. Builds and runs it on the selected device, simulator, or desktop target.
 4. Records a bounded MP4 plus GIF/PNG preview.
-5. Creates the lightest useful automated test:
-   - unit or XAML test first;
-   - device test when native/platform behavior is required;
-   - UI test only when lower-level tests cannot prove the issue.
+5. Creates the lightest supported automated test: unit or XAML for purely
+   managed Android-lane scenarios, otherwise a device test. Windows, iOS, and
+   Mac Catalyst require one platform-scoped Controls device test. Generated
+   host UI tests are withheld; an unsupported recorded interaction remains
+   an artifact rather than being replaced with a different scenario.
 6. Runs the exact test normally and confirms the expected assertion fails on the unfixed baseline.
 7. Authors a product fix and certifies the same exact test through four causal arms: baseline red, trigger-removed green, product-fix green, and fix-reverted red.
 8. Validates, on a fresh credentialless agent, that the trusted tree matches the pinned pipeline revision, that the certification binding matches every artifact in hand, that the test patch is add-only and restricted to approved test locations, and that the fix patch changes only the validated product files.

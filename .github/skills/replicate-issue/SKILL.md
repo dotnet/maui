@@ -66,7 +66,7 @@ Empirical proof requires all of:
 - The recording is continuous action-focused evidence, not a slideshow of staged still frames, and the preview reaches the failing state rather than ending on a setup or `PASS` frame.
 - The result is not merely a screenshot difference or missing baseline.
 
-Use only the runner-configured bounded attempts (default three and never more than three). If proof is still absent or inconclusive, write a blocked manifest and stop. Before restoring the Sandbox, copy the final scenario and logs into the artifact contract below.
+Use only the runner-configured bounded Sandbox attempts (`MaxSandboxAttempts`, default five; the trusted runner accepts one through eight). The agent cannot extend that limit or the remaining time/credit budget. If proof is still absent or inconclusive, write a blocked manifest and stop. Before restoring the Sandbox, copy the final scenario and logs into the artifact contract below.
 
 ### 2. Restore the Sandbox
 
@@ -124,7 +124,7 @@ rechecks remain required.
 - The assertion must describe correct behavior and fail because of the observed bug, not because of setup, compilation, infrastructure, missing data, screenshot, or baseline errors.
 - Have the trusted `.github/scripts/shared/Invoke-ReplicationTestVerification.ps1` wrapper invoke `verify-tests-fail-without-fix` in failure-only mode with the exact issue filter and literal expected failure signature. Never add a fix or use `-RequireFullVerification`.
 
-Use only the runner-configured bounded automated-test attempts (default two and never more than three). Success requires the verifier to confirm the targeted test fails for the expected assertion. Otherwise remove unverified test additions, write `status: "blocked"`, and stop.
+Use only the runner-configured bounded automated-test attempts (`MaxTestAttempts`, default five; the trusted runner accepts one through eight). The agent cannot extend that limit or the remaining time/credit budget. Success requires the verifier to confirm the targeted test fails for the expected assertion. Otherwise remove unverified test additions, write `status: "blocked"`, and stop.
 
 ### Contract-level quality and selector disclosures
 
