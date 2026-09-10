@@ -101,6 +101,8 @@ BeforeAll {
         'Remove-ReplicationLogNoise',
         'Get-ReplicationExistingIssueTestPaths',
         'Assert-ReplicationScenarioNotBlocked',
+        'Clear-ReplicationTestBlockDeclaration',
+        'Assert-ReplicationTestScenarioNotBlocked',
         'Test-PathInsideRoot',
         'Assert-NoReparsePointInParentPath',
         'Assert-BoundedGeneratedFile',
@@ -1694,6 +1696,7 @@ public partial class MainPage : ContentPage
                 'sandboxProposalPath',
                 'sandboxBlockedPath',
                 'testProposalPath',
+                'testBlockedPath',
                 'approvedTestRoots')) {
                 $variable = Get-Variable -Name $name -Scope Script -ErrorAction SilentlyContinue
                 $script:SavedReplicationPromptVariables[$name] = [pscustomobject]@{
@@ -1718,6 +1721,7 @@ public partial class MainPage : ContentPage
             $script:sandboxProposalPath = Join-Path $script:ArtifactRoot 'agent/sandbox-proposal.json'
             $script:sandboxBlockedPath = Join-Path $script:ArtifactRoot 'agent/sandbox-blocked.json'
             $script:testProposalPath = Join-Path $script:ArtifactRoot 'agent/test-proposal.json'
+            $script:testBlockedPath = Join-Path $script:ArtifactRoot 'agent/test-blocked.json'
             $script:approvedTestRoots = @('src/Controls/tests/')
         }
 
@@ -2902,6 +2906,133 @@ public class Issue35516
         $script:Source.Contains(
             '|Unsupported replication scenario:)') | Should -BeTrue
         $script:Source | Should -Match 'It is ignored before attempt 3'
+    }
+
+    It 'accepts a current-contract generated-test refusal on the first attempt' {
+        $script:testBlockedPath = Join-Path $TestDrive 'test-blocked.json'
+
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } | Should -Not -Throw
+
+        @{
+            reason = 'unsupported by the CURRENT GENERATED-TEST CONTRACT: the recorded Android scene requires a native selected-row input oracle that the closed generated-test contract does not permit.'
+        } | ConvertTo-Json | Set-Content -LiteralPath $script:testBlockedPath
+
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*Unsupported replication scenario: unsupported by the CURRENT GENERATED-TEST CONTRACT:*'
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+    }
+
+    It 'rejects malformed generated-test refusal declarations without granting them authority' {
+        $script:testBlockedPath = Join-Path $TestDrive 'test-blocked.json'
+
+        @{
+            reason = 'unsupported by the CURRENT GENERATED-TEST CONTRACT: native pixels are outside the trusted generated-test contract.'
+            extra = 'unexpected'
+        } | ConvertTo-Json | Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*does not match the exact trusted schema*'
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+
+        New-Item -ItemType Directory -Path $script:testBlockedPath | Out-Null
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*Generated-test unsupported declaration is not a bounded regular file*'
+        Remove-Item -LiteralPath $script:testBlockedPath -Recurse -Force
+
+        ('x' * 9000) | Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*Generated-test unsupported declaration is not a bounded regular file*'
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+
+        @{ reason = 'issue already fixed; no PR needed' } |
+            ConvertTo-Json | Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*Generated-test unsupported reason must start with ''unsupported by the CURRENT GENERATED-TEST CONTRACT:''*'
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+
+        '{"reason":"first","reason":"unsupported by the CURRENT GENERATED-TEST CONTRACT: unsupported input."}' |
+            Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*duplicate JSON property*'
+
+        '{"reason":["unsupported by the CURRENT GENERATED-TEST CONTRACT: unsupported input."]}' |
+            Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*must be a non-empty single-line string*'
+
+        '{"Reason":"unsupported by the CURRENT GENERATED-TEST CONTRACT: unsupported input."}' |
+            Set-Content -LiteralPath $script:testBlockedPath
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*does not match the exact trusted schema*'
+    }
+
+    It 'rejects a linked test refusal without reading or deleting its target' {
+        $script:testBlockedPath = Join-Path $TestDrive 'test-blocked.json'
+        $target = Join-Path $TestDrive 'retained-declaration.json'
+        $content = '{"reason":"unsupported by the CURRENT GENERATED-TEST CONTRACT: unsupported input."}'
+        Set-Content -LiteralPath $target -Value $content -NoNewline
+        New-Item -ItemType SymbolicLink -Path $script:testBlockedPath -Target $target |
+            Out-Null
+        { Assert-ReplicationTestScenarioNotBlocked -Attempt 1 } |
+            Should -Throw '*not a bounded regular file*'
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+        Get-Content -LiteralPath $target -Raw | Should -BeExactly $content
+    }
+
+    It 'stops the actual test planning loop after one structured current-contract refusal' {
+        $script:testBlockedPath = Join-Path $TestDrive 'test-blocked.json'
+        $testProposalPath = Join-Path $TestDrive 'test-proposal.json'
+        $testPlanFailureSummary = ''
+        $forbiddenTestTiers = @()
+        $script:refusalCalls = 0
+        function New-CopilotPrompt {
+            param($Phase, $FailureSummary, $ForbiddenTestTiers)
+            'test prompt'
+        }
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt)
+            $script:refusalCalls++
+            @{
+                reason = 'unsupported by the CURRENT GENERATED-TEST CONTRACT: the recorded touch input is unavailable.'
+            } | ConvertTo-Json | Set-Content -LiteralPath $script:testBlockedPath
+        }
+        function Read-TestProposal {
+            throw 'A refused test plan must never reach proposal validation.'
+        }
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $script:Source, [ref]$null, [ref]$null)
+        $loops = @($ast.FindAll({
+                param($node)
+                $node -is [System.Management.Automation.Language.ForStatementAst] -and
+                $node.Condition.Extent.Text -ceq '$planAttempt -le 3'
+            }, $true))
+        $loops.Count | Should -Be 1
+        {
+            & ([scriptblock]::Create($loops[0].Extent.Text))
+        } | Should -Throw '*Unsupported replication scenario:*'
+        $script:refusalCalls | Should -Be 1
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+    }
+
+    It 'clears stale test refusal files without recursively deleting directories' {
+        $script:testBlockedPath = Join-Path $TestDrive 'test-blocked.json'
+        'stale' | Set-Content -LiteralPath $script:testBlockedPath
+        Clear-ReplicationTestBlockDeclaration
+        Test-Path -LiteralPath $script:testBlockedPath | Should -BeFalse
+        { Clear-ReplicationTestBlockDeclaration } | Should -Not -Throw
+        New-Item -ItemType Directory -Path $script:testBlockedPath | Out-Null
+        { Clear-ReplicationTestBlockDeclaration } | Should -Throw '*must not be a directory*'
+        Test-Path -LiteralPath $script:testBlockedPath -PathType Container | Should -BeTrue
+    }
+
+    It 'wires the generated-test refusal file into exact write approvals and clears stale declarations before each authoring phase' {
+        $script:Source | Should -Match '\$testBlockedPath = Join-Path \$agentDir ''test-blocked\.json'''
+        $script:Source | Should -Match '-WritePaths @\(\$testProposalPath, \$testBlockedPath\)'
+        $script:Source | Should -Match '\$testWritePaths = @\(\$testProposalPath, \$testBlockedPath\)'
+        $script:Source | Should -Match '(?s)Clear-ReplicationTestBlockDeclaration\s+Invoke-ReplicationCopilot\s+`?\s*-PhaseName ''test-plan'''
+        $script:Source | Should -Match '(?s)\$testWritePaths = @\(\$testProposalPath, \$testBlockedPath\).*?Clear-ReplicationTestBlockDeclaration'
+        $script:Source | Should -Match 'Assert-ReplicationTestScenarioNotBlocked -Attempt \$planAttempt'
+        $script:Source | Should -Match 'Assert-ReplicationTestScenarioNotBlocked -Attempt \$attempt'
+        $script:Source | Should -Not -Match 'Resolve-MisplacedAgentOutput -CanonicalPath \$testBlockedPath'
     }
 
     It 'names the file and position the compiler already located' {
@@ -8493,6 +8624,15 @@ Describe 'Get-ReplicationBlockedCode' {
     It 'keeps the unsupported-scenario prefix ahead of the stage arms' {
         Get-ReplicationBlockedCode -RawReason 'Unsupported replication scenario: needs Syncfusion' -Stage 'sandbox' `
             -AttemptKinds ([System.Collections.Generic.List[string]]@('not-reproduced','not-reproduced')) |
+            Should -BeExactly 'unsupported_scenario'
+    }
+
+    It 'keeps the unsupported-scenario prefix ahead of the test-stage arms too' {
+        Get-ReplicationBlockedCode -RawReason (
+            'Unsupported replication scenario: unsupported by the CURRENT GENERATED-TEST CONTRACT: ' +
+            'the recorded Android scene requires a native selected-row input oracle that the closed contract does not permit.'
+        ) -Stage 'test' `
+            -AttemptKinds ([System.Collections.Generic.List[string]]@('other')) |
             Should -BeExactly 'unsupported_scenario'
     }
 
@@ -16693,6 +16833,9 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         $script:trustedSkills = '/tmp/trusted/skills'
         $script:trustedScripts = '/tmp/trusted/scripts'
         $script:sandboxDir = '/tmp/repo/sandbox'
+        $script:sandboxArtifactDir = '/tmp/artifacts/sandbox'
+        $script:verificationDir = '/tmp/artifacts/verification'
+        $script:reproductionResultPath = '/tmp/artifacts/reproduction-result.json'
         $script:repoRoot = '/tmp/repo'
         $script:agentDir = '/tmp/artifacts/agent'
         $script:fixScopePath = '/tmp/artifacts/agent/fix-scope.json'
@@ -16702,6 +16845,7 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
         $script:sandboxProposalPath = '/tmp/artifacts/agent/sandbox-proposal.json'
         $script:sandboxBlockedPath = '/tmp/artifacts/agent/sandbox-blocked.json'
         $script:testProposalPath = '/tmp/artifacts/agent/test-proposal.json'
+        $script:testBlockedPath = '/tmp/artifacts/agent/test-blocked.json'
         $script:controlVariantPath = '/tmp/artifacts/agent/negative-control-variant.cs'
         $script:controlEditsPath = '/tmp/artifacts/agent/negative-control-edits.json'
         $script:approvedTestRoots = @('src/Controls/tests/')
@@ -16715,6 +16859,18 @@ Describe 'A fix phase is told a different truth than a reproduction phase' {
             $prompt | Should -Match 'You have no shell, terminal, network, or package tools' -Because (
                 "the $phase phase must not believe it can run anything")
             $prompt | Should -Not -Match 'You have a shell'
+        }
+    }
+
+    It 'offers a structured generated-test refusal channel in planning and authoring prompts' {
+        foreach ($phase in @('test-plan', 'test', 'repair')) {
+            $prompt = New-CopilotPrompt -Phase $phase -BaselineRelativePath 'tests/Issue37440.Android.cs'
+
+            $prompt | Should -Match ([regex]::Escape($script:testBlockedPath))
+            $prompt | Should -Match 'CURRENT GENERATED-TEST CONTRACT'
+            $prompt | Should -Match 'structured authoring refusal only'
+            $prompt | Should -Match 'not test execution, reproduction evidence, or a product verdict'
+            $prompt | Should -Match 'do not claim the defect is intrinsically impossible, already fixed, needs no PR, or did not reproduce'
         }
     }
 

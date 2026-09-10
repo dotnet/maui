@@ -126,6 +126,17 @@ rechecks remain required.
 
 Use only the runner-configured bounded automated-test attempts (`MaxTestAttempts`, default five; the trusted runner accepts one through eight). The agent cannot extend that limit or the remaining time/credit budget. Success requires the verifier to confirm the targeted test fails for the expected assertion. Otherwise remove unverified test additions, write `status: "blocked"`, and stop.
 
+When the recorded scenario cannot be expressed truthfully by the current
+generated-test contract, use the exact `agent/test-blocked.json` path supplied
+by the trusted planning, test, or repair prompt. Write only a JSON object with
+one string field, `reason`, starting with
+`unsupported by the CURRENT GENERATED-TEST CONTRACT:` and naming the specific
+native, input, or oracle limitation. Do not substitute a different trigger or
+repeatedly rewrite a proposal without producing a test. This declaration stops
+test authoring with a blocked artifact; it is not test execution, proof that the
+issue is fixed, or a non-reproduction outcome. The runner validates and consumes
+the declaration and clears stale declarations before each authoring phase.
+
 ### Contract-level quality and selector disclosures
 
 Every Sandbox and test proposal carries one bounded `qualityContract`. It is a

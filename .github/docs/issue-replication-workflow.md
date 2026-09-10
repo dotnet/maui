@@ -92,6 +92,13 @@ The PR embeds the GIF/thumbnail linked to the MP4. GitHub does not provide a sup
 
 If no product fix completes all validation, the run retains the reproduction, diagnostics, and any incomplete fix material as pipeline artifacts only. It does not create or migrate a reproduction-only PR. An existing reproduction-only PR does not block a later validated fix; the fix publisher may replace it automatically. An existing fix PR remains protected unless `SupersedeExisting` is explicitly enabled.
 
+An unsupported generated-test scenario has a separate bounded
+`agent/test-blocked.json` refusal channel. A valid declaration stops authoring
+immediately with `unsupported_scenario`, rather than spending every attempt
+asking for the same impossible test. Missing declarations retain the ordinary
+repair path; malformed declarations fail closed. A refusal is not a test result
+or a claim that the issue does not reproduce, and never authorizes publication.
+
 ## Test semantics
 
 Generated reproduction tests are unconditional: they use no environment variable, command-line switch, category override, skip condition, or other opt-in gate. The exact targeted test must fail on the unfixed baseline during a normal test run.
