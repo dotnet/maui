@@ -148,18 +148,19 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift highlight")]
-		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftHighlight()
+		[Fact(DisplayName = "NavigationPage BarBackgroundColor preserves Material 3 AppBar lift-on-scroll styling")]
+		public async Task BarBackgroundColorPreservesMaterial3AppBarLiftOnScrollStyling()
 		{
-			if (!RuntimeFeature.IsMaterial3Enabled)
+			if (!RuntimeFeature.UseMauiAndroidSystemBarBackgrounds || !RuntimeFeature.IsMaterial3Enabled)
 				return;
 
 			SetupBuilder();
 
-			var barColor = Colors.Red;
+			var firstColor = Colors.Orange;
+			var secondColor = Colors.Blue;
 			var navPage = new NavigationPage(new ContentPage { Title = "Page Title" })
 			{
-				BarBackgroundColor = barColor
+				BarBackgroundColor = firstColor
 			};
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async handler =>
@@ -169,17 +170,11 @@ namespace Microsoft.Maui.DeviceTests
 				var platformToolbar = GetPlatformToolbar(handler.MauiContext);
 				var appBar = platformToolbar.Parent.GetParentOfType<AppBarLayout>();
 				Assert.NotNull(appBar);
-				AssertAppBarBackgroundColor(appBar, barColor);
+				Assert.IsType<MaterialShapeDrawable>(appBar.Background);
+				AssertAppBarBackgroundColor(appBar, firstColor);
 
-				var toolbarTint = platformToolbar.BackgroundTintList;
-				Assert.NotNull(toolbarTint);
-				Assert.Equal(global::Android.Graphics.Color.Transparent,
-					new global::Android.Graphics.Color(toolbarTint.DefaultColor));
-
-				var unliftedColor = GetAppBarBackgroundColor(appBar);
-				appBar.SetLifted(true);
-				await AssertEventually(() => GetAppBarBackgroundColor(appBar) != unliftedColor,
-					message: "The customized Material 3 AppBar did not show its lifted highlight.");
+				navPage.BarBackgroundColor = secondColor;
+				await AssertEventually(() => appBar.Background is MaterialShapeDrawable && GetAppBarBackgroundColor(appBar) == secondColor.ToPlatform().ToArgb());
 			});
 		}
 

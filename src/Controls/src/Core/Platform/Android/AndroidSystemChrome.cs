@@ -1,9 +1,7 @@
 ﻿#nullable enable
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Android.App;
-using Android.Animation;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -16,14 +14,12 @@ using Microsoft.Maui.Platform;
 using AGraphics = Android.Graphics;
 using AView = Android.Views.View;
 using AWindow = Android.Views.Window;
-using Android.Views;
 
 namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class AndroidSystemChrome
 	{
 		static readonly ConditionalWeakTable<AppBarLayout, OriginalAppBarBackground> s_originalAppBarBackgrounds = new();
-		static readonly ConditionalWeakTable<AppBarLayout, GradientAppBarBackground> s_gradientAppBarBackgrounds = new();
 		static readonly ConditionalWeakTable<AView, PendingBottomChromeUpdate> s_pendingBottomChromeUpdates = new();
 
 		internal static void UpdateTopChrome(AView? chromeView, Brush? background)
@@ -214,7 +210,6 @@ namespace Microsoft.Maui.Controls.Platform
 				appBarLayout,
 				static appBar => new OriginalAppBarBackground(appBar.Background));
 
-			RemoveGradientAppBarBackground(appBarLayout);
 			ViewCompat.SetBackgroundTintMode(appBarLayout, null);
 			ViewCompat.SetBackgroundTintList(appBarLayout, null);
 			if (Brush.IsNullOrEmpty(background))
@@ -241,91 +236,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 				return;
 			}
-			else
-			{
-				if (background is LinearGradientBrush linearGradientBrush &&
-				linearGradientBrush.GradientStops.Count > 0)
-				{
-					var stops = linearGradientBrush.GradientStops
-						.OrderBy(x => x.Offset)
-						.ToArray();
-					var normalColors = stops
-						.Select(x => x.Color.ToPlatform().ToArgb())
-						.ToArray();
-					var liftedColors = stops
-						.Select(x => LightenColor(x.Color, 0.3f).ToPlatform().ToArgb())
-						.ToArray();
-					var offsets = stops
-						.Select(x => (float)x.Offset)
-						.ToArray();
 
-					var gradientDrawable = new GradientDrawable();
-					gradientDrawable.SetOrientation(
-						GetGradientOrientation(
-							linearGradientBrush.StartPoint,
-							linearGradientBrush.EndPoint));
-					SetGradientColors(gradientDrawable, normalColors, offsets);
-					appBarLayout.Background = gradientDrawable;
-
-					if (RuntimeFeature.IsMaterial3Enabled)
-					{
-						s_gradientAppBarBackgrounds.Add(
-							appBarLayout,
-							new GradientAppBarBackground(appBarLayout, gradientDrawable, normalColors, liftedColors, offsets));
-					}
-
-					return;
-				}
-				else if (background is RadialGradientBrush radialGradientBrush &&
-				radialGradientBrush.GradientStops.Count > 0)
-				{
-				}
-			}
-
-			if (!RuntimeFeature.IsMaterial3Enabled)
-			{
-				appBarLayout.UpdateBackground(background);
-			}
-		}
-
-		static void RemoveGradientAppBarBackground(AppBarLayout appBarLayout)
-		{
-			if (s_gradientAppBarBackgrounds.TryGetValue(appBarLayout, out var gradientBackground))
-			{
-				gradientBackground.Dispose();
-				s_gradientAppBarBackgrounds.Remove(appBarLayout);
-			}
-		}
-
-		static void SetGradientColors(GradientDrawable gradientDrawable, int[] colors, float[] offsets)
-		{
-			if (OperatingSystem.IsAndroidVersionAtLeast(29))
-			{
-				gradientDrawable.SetColors(colors, offsets);
-			}
-			else
-			{
-				gradientDrawable.SetColors(colors);
-			}
-		}
-
-		static GradientDrawable.Orientation? GetGradientOrientation(
-			Point startPoint,
-			Point endPoint)
-		{
-			var dx = endPoint.X - startPoint.X;
-			var dy = endPoint.Y - startPoint.Y;
-
-			if (Math.Abs(dx) >= Math.Abs(dy))
-			{
-				return dx >= 0
-					? GradientDrawable.Orientation.LeftRight
-					: GradientDrawable.Orientation.RightLeft;
-			}
-
-			return dy >= 0
-				? GradientDrawable.Orientation.TopBottom
-				: GradientDrawable.Orientation.BottomTop;
+			appBarLayout.UpdateBackground(background);
 		}
 
 		static Color LightenColor(Color color, float factor)
@@ -465,22 +377,6 @@ namespace Microsoft.Maui.Controls.Platform
 				startColor.Alpha + ((endColor.Alpha - startColor.Alpha) * factor));
 		}
 
-		static int BlendArgbColors(int startColor, int endColor, float factor)
-		{
-			factor = Math.Clamp(factor, 0f, 1f);
-
-			return AGraphics.Color.Argb(
-				BlendColorComponent(startColor >> 24, endColor >> 24, factor),
-				BlendColorComponent(startColor >> 16, endColor >> 16, factor),
-				BlendColorComponent(startColor >> 8, endColor >> 8, factor),
-				BlendColorComponent(startColor, endColor, factor)).ToArgb();
-		}
-
-		static int BlendColorComponent(int startColor, int endColor, float factor)
-		{
-			return (int)(((startColor & 0xff) + (((endColor & 0xff) - (startColor & 0xff)) * factor)));
-		}
-
 		static float GetLinearGradientOffset(Point startPoint, Point endPoint, ChromeEdge edge)
 		{
 			var samplePoint = GetEdgeSamplePoint(edge);
@@ -554,99 +450,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				return constantState.NewDrawable()?.Mutate();
-			}
-		}
-
-		sealed class GradientAppBarBackground : Java.Lang.Object, ViewTreeObserver.IOnScrollChangedListener
-		{
-			readonly AppBarLayout _appBarLayout;
-			readonly GradientDrawable _gradientDrawable;
-			readonly int[] _normalColors;
-			readonly int[] _liftedColors;
-			readonly float[] _offsets;
-
-			ValueAnimator? _animator;
-			bool _wasLifted;
-
-			public GradientAppBarBackground(
-				AppBarLayout appBarLayout,
-				GradientDrawable gradientDrawable,
-				int[] normalColors,
-				int[] liftedColors,
-				float[] offsets)
-			{
-				_appBarLayout = appBarLayout;
-				_gradientDrawable = gradientDrawable;
-				_normalColors = normalColors;
-				_liftedColors = liftedColors;
-				_offsets = offsets;
-
-				_wasLifted = _appBarLayout.IsLifted;
-
-				_appBarLayout.ViewTreeObserver?.AddOnScrollChangedListener(this);
-			}
-
-			bool _isLiftedTarget;
-
-			public void OnScrollChanged()
-			{
-				bool currentLifted = _appBarLayout.IsLifted;
-
-				if (_wasLifted != currentLifted)
-				{
-					_wasLifted = currentLifted;
-					AnimateGradient(currentLifted);
-				}
-			}
-
-			void AnimateGradient(bool toLifted)
-			{
-				if (_animator != null && _animator.IsRunning && _isLiftedTarget == toLifted)
-				{
-					return;
-				}
-
-				_isLiftedTarget = toLifted;
-				_animator?.Cancel();
-
-				float start = _animator != null ? (float)(_animator.AnimatedValue ?? 0f) : (toLifted ? 0f : 1f);
-				float end = toLifted ? 1f : 0f;
-
-				_animator = ValueAnimator.OfFloat(start, end);
-				_animator?.SetDuration(250);
-
-				_animator?.Update += (s, e) =>
-				{
-					float progress = (float)(e?.Animation.AnimatedValue ?? 0f);
-					var currentColors = new int[_normalColors.Length];
-
-					for (int i = 0; i < currentColors.Length; i++)
-					{
-						currentColors[i] = AndroidSystemChrome.BlendArgbColors(_normalColors[i], _liftedColors[i], progress);
-					}
-
-					AndroidSystemChrome.SetGradientColors(_gradientDrawable, currentColors, _offsets);
-					_gradientDrawable.InvalidateSelf();
-				};
-
-				_animator?.Start();
-			}
-
-			protected override void Dispose(bool disposing)
-			{
-				if (disposing)
-				{
-					_animator?.Cancel();
-					_animator?.Dispose();
-					_animator = null;
-
-					if (_appBarLayout.ViewTreeObserver != null && _appBarLayout.ViewTreeObserver.IsAlive)
-					{
-						_appBarLayout.ViewTreeObserver.RemoveOnScrollChangedListener(this);
-					}
-				}
-
-				base.Dispose(disposing);
 			}
 		}
 	}
