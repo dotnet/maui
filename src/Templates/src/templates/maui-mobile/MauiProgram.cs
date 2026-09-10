@@ -1,8 +1,8 @@
-﻿#if (IncludeSampleContent)
+#if (UseSampleContent)
 using CommunityToolkit.Maui;
 #endif
 using Microsoft.Extensions.Logging;
-#if (IncludeSampleContent)
+#if (UseSampleContent)
 using Syncfusion.Maui.Toolkit.Hosting;
 #endif
 
@@ -28,7 +28,7 @@ public static class MauiProgram
 #endif
 //+:cnd:noEmit
 #endif
-#if (IncludeSampleContent)
+#if (UseSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
 //-:cnd:noEmit
@@ -50,7 +50,7 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-#if (IncludeSampleContent)
+#if (UseSampleContent)
 				fonts.AddFont("SegoeUI-Semibold.ttf", "SegoeSemibold");
 				fonts.AddFont("FluentSystemIcons-Regular.ttf", FluentUI.FontFamily);
 #endif
@@ -60,14 +60,14 @@ public static class MauiProgram
 #if DEBUG
 		builder.Logging.AddDebug();
 //+:cnd:noEmit
-#if (IncludeSampleContent)
+#if (UseSampleContent)
 		builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
 //-:cnd:noEmit
 #endif
 //+:cnd:noEmit
 
-#if (IncludeSampleContent)
+#if (UseSampleContent)
 		builder.Services.AddSingleton<ProjectRepository>();
 		builder.Services.AddSingleton<TaskRepository>();
 		builder.Services.AddSingleton<CategoryRepository>();
