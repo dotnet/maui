@@ -1,6 +1,8 @@
 // Crash is Android-specific: RenderThread GL functor SIGSEGVs when a non-null ClipBounds
 // routes an off-screen WebView's compositing through GLFunctorDrawable on overscroll.
 #if ANDROID
+using System;
+using System.Linq;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
