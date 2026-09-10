@@ -302,6 +302,12 @@ namespace Microsoft.Maui.Controls
 		WeakNotifyPropertyChangedProxy _shadowProxy = null;
 		PropertyChangedEventHandler _shadowChanged;
 
+		// A ResourceDictionary assigned to Resources is owned by the app and is routinely shared --
+		// merged into several elements, or held in App.Resources. A non-weak ValuesChanged handler
+		// therefore roots every element the dictionary is assigned to, and its whole visual tree.
+		WeakResourcesChangedProxy _resourcesProxy;
+		EventHandler<ResourcesChangedEventArgs> _resourcesChanged;
+
 		/// <summary>
 		/// Frees all resources associated with the handle.
 		/// </summary>
@@ -310,6 +316,7 @@ namespace Microsoft.Maui.Controls
 			_clipProxy?.Unsubscribe();
 			_backgroundProxy?.Unsubscribe();
 			_shadowProxy?.Unsubscribe();
+			_resourcesProxy?.Unsubscribe();
 		}
 
 		void NotifyBackgroundChanges()
@@ -342,6 +349,50 @@ namespace Microsoft.Maui.Controls
 
 				SetInheritedBindingContext(background, null);
 				_backgroundProxy?.Unsubscribe();
+			}
+		}
+
+		void SubscribeToResources(ResourceDictionary resources)
+		{
+			_resourcesProxy ??= new WeakResourcesChangedProxy();
+			_resourcesChanged ??= OnResourcesChanged;
+			_resourcesProxy.Subscribe((IResourceDictionary)resources, _resourcesChanged);
+		}
+
+		class WeakResourcesChangedProxy : WeakEventProxy<IResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public override void Subscribe(IResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var s))
+				{
+					s.ValuesChanged -= OnValuesChanged;
+				}
+
+				source.ValuesChanged += OnValuesChanged;
+
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+				{
+					s.ValuesChanged -= OnValuesChanged;
+				}
+
+				base.Unsubscribe();
 			}
 		}
 
@@ -1174,7 +1225,7 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					return _resources;
 				_resources = new ResourceDictionary();
-				((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+				SubscribeToResources(_resources);
 				return _resources;
 			}
 			set
@@ -1183,11 +1234,11 @@ namespace Microsoft.Maui.Controls
 					return;
 				OnPropertyChanging();
 				if (_resources != null)
-					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
+					_resourcesProxy?.Unsubscribe();
 				_resources = value;
 				OnResourcesChanged(value);
 				if (_resources != null)
-					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
+					SubscribeToResources(_resources);
 				OnPropertyChanged();
 			}
 		}
