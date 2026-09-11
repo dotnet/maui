@@ -401,7 +401,7 @@ steps:
         'Re-checking a certification binding*refuses retained regression XML mutated after validation'
         'Build isolation options*normalizes Mac Catalyst strict evidence to the replication platform name'
         'Get-DeviceTestResultSummary*emits exact strict identities, skip state, failure signatures, and source digests'
-        'Get-DeviceTestResultSummary*fails strict evidence closed for duplicate identities'
+        'Get-DeviceTestResultSummary*retains every row when native theory display names collide'
         'Get-DeviceTestResultSummary*prohibits DTD processing in strict evidence XML'
         'Get-DeviceTestResultSummary*rejects stale and incomplete strict evidence XML'
         'Get-DeviceTestResultSummary*writes a closed strict document and retains the exact source XML'
@@ -439,6 +439,16 @@ steps:
         'BuildAndRunSandbox Windows crash diagnostic wiring*reports disposed process metadata as unavailable'
         'BuildAndRunSandbox Windows crash diagnostic wiring*formats a negative signed exit code only as fixed-width hexadecimal'
         'A fix is regression-checked against the lane its neighbours declare*sends a class-wide sibling run through the real Apple argument boundary without empty tokens'
+        'What a certification binding records*accepts reordered all-pass duplicate identity groups without inventing case IDs'
+        'What a certification binding records*rejects failed or skipped candidates in an all-pass duplicate identity group'
+        'What a certification binding records*rejects a self-consistent duplicate-state tamper with every digest updated'
+        'What a certification binding records*rejects duplicate identity count drift'
+        'What a certification binding records*rejects method and display casing drift without merging identity groups'
+        'What a certification binding records*rejects JSON identity casing changes against unchanged retained XML'
+        'What a certification binding records*rejects offsetting mixed duplicate states under every possible pairing'
+        'What a certification binding records*accepts only all-pass candidates when duplicate baselines have different failure signatures'
+        'What a certification binding records*does not count stable duplicate skips as executed sibling coverage'
+        'Get-DeviceTestResultSummary*preserves the native Label result multiset with 53 rows and colliding MemberData names'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(

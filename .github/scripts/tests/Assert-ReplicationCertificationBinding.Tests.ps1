@@ -195,6 +195,7 @@ BeforeAll {
         if (-not [string]::IsNullOrWhiteSpace($DisplayName)) {
             $test.SetAttribute('name', $DisplayName)
         }
+
         $oldFailure = $test.SelectSingleNode('./failure')
         if ($oldFailure) { $null = $test.RemoveChild($oldFailure) }
         if ($Outcome -ceq 'Fail') {
@@ -242,6 +243,89 @@ BeforeAll {
         } else { 'fixResultSha256' }
         $comparison.$digestProperty = (
             Get-FileHash -LiteralPath $strictPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $comparison | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+    }
+
+    function script:Set-RegressionFixtureRecords {
+        param(
+            [Parameter(Mandatory = $true)][object]$Fixture,
+            [Parameter(Mandatory = $true)]
+            [ValidateSet('baseline', 'fix')][string]$Arm,
+            [Parameter(Mandatory = $true)][object[]]$Records
+        )
+
+        $directory = Join-Path $Fixture.Artifacts "regression/$Arm"
+        $xmlPath = Join-Path $directory 'source-result-1.xml'
+        $xml = [Xml.XmlDocument]::new()
+        $assemblies = $xml.CreateElement('assemblies')
+        $null = $xml.AppendChild($assemblies)
+        $assembly = $xml.CreateElement('assembly')
+        $null = $assemblies.AppendChild($assembly)
+        $collection = $xml.CreateElement('collection')
+        $null = $assembly.AppendChild($collection)
+        foreach ($record in $Records) {
+            $test = $xml.CreateElement('test')
+            $test.SetAttribute(
+                'type',
+                'Microsoft.Maui.DeviceTests.LabelTests')
+            $test.SetAttribute('method', [string]$record.Method)
+            $test.SetAttribute('name', [string]$record.Name)
+            $test.SetAttribute('result', [string]$record.Outcome)
+            if ([string]$record.Outcome -ceq 'Fail') {
+                $failure = $xml.CreateElement('failure')
+                $failure.SetAttribute(
+                    'exception-type',
+                    'Xunit.Sdk.EqualException')
+                $message = $xml.CreateElement('message')
+                $message.InnerText = 'Expected: Html'
+                $stack = $xml.CreateElement('stack-trace')
+                $stack.InnerText = "at $([string]$record.Frame) in /agent/LabelTests.cs:line 42"
+                $null = $failure.AppendChild($message)
+                $null = $failure.AppendChild($stack)
+                $null = $test.AppendChild($failure)
+            }
+            $null = $collection.AppendChild($test)
+        }
+        $passed = @($Records | Where-Object { $_.Outcome -ceq 'Pass' }).Count
+        $failed = @($Records | Where-Object { $_.Outcome -ceq 'Fail' }).Count
+        $skipped = @($Records | Where-Object { $_.Outcome -ceq 'Skip' }).Count
+        $assembly.SetAttribute('total', [string]$Records.Count)
+        $assembly.SetAttribute('passed', [string]$passed)
+        $assembly.SetAttribute('failed', [string]$failed)
+        $assembly.SetAttribute('skipped', [string]$skipped)
+        $assembly.SetAttribute('errors', '0')
+        $xml.Save($xmlPath)
+
+        $parsed = Read-ReplicationDeviceTestResultXmlStrict `
+            -Path $xmlPath `
+            -NotBeforeUtc ([datetime]'2025-01-01T00:00:00Z') `
+            -ExpectedClass 'Microsoft.Maui.DeviceTests.LabelTests'
+        $strictPath = Join-Path $directory 'strict-test-evidence.json'
+        $strict = Get-Content -LiteralPath $strictPath -Raw |
+            ConvertFrom-Json
+        $strict.total = $parsed.Total
+        $strict.passed = $parsed.Passed
+        $strict.failed = $parsed.Failed
+        $strict.skipped = $parsed.Skipped
+        $strict.errors = $parsed.Errors
+        $strict.records = @($parsed.Records)
+        $strict.resultFiles[0].sha256 = $parsed.Sha256
+        $strict | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath $strictPath -Encoding utf8NoBOM
+
+        $comparisonPath = Join-Path $Fixture.Artifacts (
+            'regression/regression-evidence.json')
+        $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+            ConvertFrom-Json
+        $property = if ($Arm -ceq 'baseline') {
+            'baselineResultSha256'
+        } else {
+            'fixResultSha256'
+        }
+        $comparison.$property = (
+            Get-FileHash -LiteralPath $strictPath -Algorithm SHA256
+        ).Hash.ToLowerInvariant()
         $comparison | ConvertTo-Json -Depth 8 |
             Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
     }
@@ -407,6 +491,250 @@ Describe 'What a certification binding records' {
                 -ExpectedPlatform 'android' } |
             Should -Throw '*no comparable passing sibling execution*'
     }
+
+        It 'accepts reordered all-pass duplicate identity groups without inventing case IDs' {
+            $fixture = script:New-BindingFixture -WithFix
+            $duplicateA = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'truncated(label: Label { ··· })'
+                Outcome = 'Pass'; Frame = ''
+            }
+            $duplicateB = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'truncated(label: Label { ··· })'
+                Outcome = 'Pass'; Frame = ''
+            }
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm baseline -Records @($duplicateA, $duplicateB)
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix -Records @($duplicateB, $duplicateA)
+
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } | Should -Not -Throw
+        }
+
+        It 'rejects failed or skipped candidates in an all-pass duplicate identity group' {
+            foreach ($outcome in @('Fail', 'Skip')) {
+                $fixture = script:New-BindingFixture -WithFix
+                $baseline = @(
+                    [pscustomobject]@{
+                        Method = 'MemberDataCase'; Name = 'collision'
+                        Outcome = 'Pass'; Frame = ''
+                    },
+                    [pscustomobject]@{
+                        Method = 'MemberDataCase'; Name = 'collision'
+                        Outcome = 'Pass'; Frame = ''
+                    })
+                $fix = @(
+                    [pscustomobject]@{
+                        Method = 'MemberDataCase'; Name = 'collision'
+                        Outcome = 'Pass'; Frame = ''
+                    },
+                    [pscustomobject]@{
+                        Method = 'MemberDataCase'; Name = 'collision'
+                        Outcome = $outcome
+                        Frame = 'Microsoft.Maui.DeviceTests.LabelTests.OtherAssertion()'
+                    })
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm baseline -Records $baseline
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm fix -Records $fix
+
+                { Assert-ReplicationRegressionEvidence `
+                        -ArtifactRoot $fixture.Artifacts `
+                        -ExpectedBaselineSha $script:BaseSha `
+                        -ExpectedPlatform 'android' } |
+                    Should -Throw "*incompatible outcome*Pass -> $outcome*"
+            }
+        }
+
+        It 'rejects a self-consistent duplicate-state tamper with every digest updated' {
+            $fixture = script:New-BindingFixture -WithFix
+            $pass = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Pass'; Frame = ''
+            }
+            $fail = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Fail'
+                Frame = 'Microsoft.Maui.DeviceTests.LabelTests.SameAssertion()'
+            }
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm baseline -Records @($pass, $pass)
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix -Records @($pass, $fail)
+
+            $binding = Get-Content -LiteralPath $fixture.BindingPath -Raw |
+                ConvertFrom-Json -Depth 20 -AsHashtable
+            foreach ($path in @(
+                'regression/baseline/strict-test-evidence.json',
+                'regression/fix/strict-test-evidence.json',
+                'regression/regression-evidence.json'
+            )) {
+                $binding.evidence[$path] = (
+                    Get-FileHash -LiteralPath (
+                        Join-Path $fixture.Artifacts $path
+                    ) -Algorithm SHA256
+                ).Hash.ToLowerInvariant()
+            }
+            $binding.digest = Get-ReplicationBindingDigest -Binding $binding
+            $binding | ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $fixture.BindingPath -Encoding utf8NoBOM
+
+            { script:Invoke-BindingCheck -Fixture $fixture } |
+                Should -Throw '*incompatible outcome*Pass -> Fail*'
+        }
+
+        It 'rejects duplicate identity count drift' {
+            $fixture = script:New-BindingFixture -WithFix
+            $record = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Pass'; Frame = ''
+            }
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm baseline -Records @($record, $record)
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix -Records @($record)
+
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } |
+                Should -Throw '*same exact test identity multiset*'
+        }
+
+        It 'rejects method and display casing drift without merging identity groups' {
+            foreach ($field in @('Method', 'Name')) {
+                $fixture = script:New-BindingFixture -WithFix
+                $first = [pscustomobject]@{
+                    Method = 'MemberCase'; Name = 'Collision'; Outcome = 'Pass'; Frame = ''
+                }
+                $second = [pscustomobject]@{
+                    Method = 'MemberCase'; Name = 'Collision'; Outcome = 'Pass'; Frame = ''
+                }
+                $second.$field = $second.$field.ToLowerInvariant()
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm baseline -Records @($first, $second)
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm fix -Records @($first, $first)
+
+                { Assert-ReplicationRegressionEvidence `
+                        -ArtifactRoot $fixture.Artifacts `
+                        -ExpectedBaselineSha $script:BaseSha `
+                        -ExpectedPlatform 'android' } |
+                    Should -Throw '*same exact test identities*'
+            }
+        }
+
+        It 'rejects JSON identity casing changes against unchanged retained XML' {
+            foreach ($field in @('method', 'displayName')) {
+                $fixture = script:New-BindingFixture -WithFix
+                $first = [pscustomobject]@{
+                    Method = 'MemberCase'; Name = 'Collision'; Outcome = 'Pass'; Frame = ''
+                }
+                $second = [pscustomobject]@{
+                    Method = 'membercase'; Name = 'collision'; Outcome = 'Pass'; Frame = ''
+                }
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm baseline -Records @($first, $second)
+                $path = Join-Path $fixture.Artifacts 'regression/baseline/strict-test-evidence.json'
+                $document = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -Depth 20
+                $document.records[1].$field = $document.records[0].$field
+                $document | ConvertTo-Json -Depth 20 |
+                    Set-Content -LiteralPath $path -Encoding utf8NoBOM
+
+                { Read-ReplicationRegressionRunEvidence `
+                        -Path $path -ExpectedPlatform 'android' `
+                        -ExpectedProject 'Controls.DeviceTests' -ExpectedCategory 'Label' `
+                        -ExpectedClass 'Microsoft.Maui.DeviceTests.LabelTests' } |
+                    Should -Throw '*records do not match retained XML*'
+            }
+        }
+
+        It 'rejects offsetting mixed duplicate states under every possible pairing' {
+            $fixture = script:New-BindingFixture -WithFix
+            $pass = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Pass'; Frame = ''
+            }
+            $fail = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Fail'
+                Frame = 'Microsoft.Maui.DeviceTests.LabelTests.SameAssertion()'
+            }
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm baseline -Records @($pass, $fail)
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix -Records @($fail, $pass)
+
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } |
+                Should -Throw '*incompatible outcome*Pass -> Fail*'
+        }
+
+        It 'accepts only all-pass candidates when duplicate baselines have different failure signatures' {
+            $fixture = script:New-BindingFixture -WithFix
+            $firstFailure = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'; Outcome = 'Fail'
+                Frame = 'Microsoft.Maui.DeviceTests.LabelTests.FirstAssertion()'
+            }
+            $secondFailure = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'; Outcome = 'Fail'
+                Frame = 'Microsoft.Maui.DeviceTests.LabelTests.SecondAssertion()'
+            }
+            $pass = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Pass'; Frame = ''
+            }
+            $executedSibling = [pscustomobject]@{
+                Method = 'ExistingBehavior'; Name = 'ExistingBehavior'
+                Outcome = 'Pass'; Frame = ''
+            }
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm baseline `
+                -Records @($firstFailure, $secondFailure, $executedSibling)
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix `
+                -Records @($firstFailure, $pass, $executedSibling)
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } |
+                Should -Throw '*incompatible outcome*Fail -> Fail*'
+
+            script:Set-RegressionFixtureRecords `
+                -Fixture $fixture -Arm fix `
+                -Records @($pass, $pass, $executedSibling)
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } | Should -Not -Throw
+        }
+
+        It 'does not count stable duplicate skips as executed sibling coverage' {
+            $fixture = script:New-BindingFixture -WithFix
+            $skip = [pscustomobject]@{
+                Method = 'MemberDataCase'; Name = 'collision'
+                Outcome = 'Skip'; Frame = ''
+            }
+            $failure = [pscustomobject]@{
+                Method = 'ExistingFailure'; Name = 'ExistingFailure'
+                Outcome = 'Fail'
+                Frame = 'Microsoft.Maui.DeviceTests.LabelTests.ExistingFailure()'
+            }
+            foreach ($arm in @('baseline', 'fix')) {
+                script:Set-RegressionFixtureRecords `
+                    -Fixture $fixture -Arm $arm -Records @($skip, $skip, $failure)
+            }
+
+            { Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform 'android' } |
+                Should -Throw '*no comparable passing sibling execution*'
+        }
 
     It 'rejects malformed regression JSON with duplicate properties' {
         $fixture = script:New-BindingFixture -WithFix

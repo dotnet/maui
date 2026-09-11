@@ -1454,13 +1454,6 @@ function Get-DeviceTestResultSummary {
         if ($summary.Records.Count -eq 0 -or $summary.Records.Count -gt 256) {
             throw 'Strict device-test evidence requires between 1 and 256 selected test records.'
         }
-        $identities = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-        foreach ($record in $summary.Records) {
-            $identity = "$($record.type)`n$($record.method)`n$($record.displayName)"
-            if (-not $identities.Add($identity)) {
-                throw "Strict device-test evidence contains a duplicate test identity: $($record.type).$($record.method) [$($record.displayName)]"
-            }
-        }
         if ($summary.ResultDigests.Count -eq 0) {
             throw 'Strict device-test evidence contains no source result digest.'
         }
