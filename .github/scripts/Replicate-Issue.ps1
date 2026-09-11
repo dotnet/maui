@@ -7745,6 +7745,20 @@ This exact profile requires Assert.Equal and exact equality only for a finite po
         ''
     }
 
+    $nativeLabelTapGestureCountGeneratedTestGuidance = if (
+        $Platform -eq 'ios' -and
+        $Phase -in @('test-plan', 'test', 'repair')) {
+        @'
+
+NATIVE LABEL TAP-COUNT PROFILE: iOS Controls device tests may use one narrowly reusable native observation when the recorded defect is a post-attachment `TapGestureRecognizer.NumberOfTapsRequired` update on a standard `Label` with a coexisting `PointerGestureRecognizer`. This profile is selected from its complete validated shape, not merely its filename, and is keyed by the validated issue identity rather than a special issue number. Use one issue-keyed file under `src/Controls/tests/DeviceTests/Elements/Label/` named `Issue<issue>Tests.iOS.cs`, one selected [Fact] method with [Category("Issue<issue>")], and an explicit `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` base. Wrap the entire source in exactly `#if IOS && !MACCATALYST` and `#endif`; this profile is not available for Mac Catalyst or any other platform.
+The selected method has exactly six top-level statements: (1) the exact single Label-to-LabelHandler registration used by the native Label profiles; (2) `var affectedTap = new global::Microsoft.Maui.Controls.TapGestureRecognizer { NumberOfTapsRequired = <target integer literal> };`; (3) `var affectedLabel = new global::Microsoft.Maui.Controls.Label { Text = "<issue-derived non-empty literal>", GestureRecognizers = { affectedTap, new global::Microsoft.Maui.Controls.PointerGestureRecognizer() } };`; (4) `var applyReportedTrigger = true;`; (5) a gate with no else whose only statement assigns `affectedTap.NumberOfTapsRequired = <distinct initial integer literal>;`; and (6) the directly awaited immutable `CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>` helper with the exact Window/ContentPage/affectedLabel tree. Both integer literals must be positive and at most 10. The target literal in the initializer is the unchanged control state; do not move the runtime update into the gate or before attachment, remove the PointerGestureRecognizer, add callbacks, or replace the affected Label.
+The async handler callback has exactly three statements in this order: the exact one-argument `await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);` readiness check, the common post-attachment `affectedTap.NumberOfTapsRequired = <the exact target literal>;` assignment, and `Assert.Equal((nuint)<the exact target literal>, handler.PlatformView.GestureRecognizers.OfType<global::UIKit.UITapGestureRecognizer>().Single().NumberOfTapsRequired);`. Import `System.Linq`, `Microsoft.Maui.Hosting`, and `using static Microsoft.Maui.DeviceTests.AssertHelpers;`. This exact external LINQ chain selects the single native tap recognizer while preserving the coexisting pointer recognizer. Do not generate or shadow Enumerable, extension methods, MAUI gesture types, or UIKit types; use another handler, receiver, view, recognizer, collection, alias, local oracle, callback, native write, event, input simulation, reflection, interop, or fault handling; or read the managed property as the oracle. Missing, duplicate, or wrongly typed native tap recognizers must fail `Single()` rather than be hidden by fallback logic.
+This exact profile requires Assert.Equal and the current xUnit expectedFailureSignature `Assert.Equal() Failure: Values differ`. The control changes only the gate literal from true to false and retains the same post-attachment managed update and native oracle. If this exact causal shape cannot truthfully represent the recorded Label scene, use the structured test-blocked channel instead of weakening or relocating it.
+'@
+    } else {
+        ''
+    }
+
     $generatedTestBlockedGuidance = if ($Phase -in @('test-plan', 'test', 'repair')) {
         @"
 
@@ -8011,6 +8025,7 @@ $platformBoundaryGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
+$nativeLabelTapGestureCountGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
@@ -8058,6 +8073,7 @@ $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
+$nativeLabelTapGestureCountGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance
@@ -8102,6 +8118,7 @@ $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
+$nativeLabelTapGestureCountGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance

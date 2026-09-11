@@ -188,6 +188,12 @@ Describe 'MAUI Copilot mode routing' {
         $fixture | Should -Match 'Assert\.Equal\("Native Label text", handler\.PlatformView\.Text\)'
         $fixture | Should -Match 'label\.CharacterSpacing = 5d;'
         $fixture | Should -Match 'Assert\.Equal\(5d, handler\.PlatformView\.AttributedText\.GetCharacterSpacing\(\)\)'
+        $fixture | Should -Match 'new TapGestureRecognizer \{ NumberOfTapsRequired = 1 \}'
+        $fixture | Should -Match 'GestureRecognizers = \{ tapGesture, new PointerGestureRecognizer\(\) \}'
+        $fixture | Should -Match 'tapGesture\.NumberOfTapsRequired = 1;'
+        $fixture | Should -Match (
+            '(?s)Assert\.Equal\(\(nuint\)1, handler\.PlatformView\.GestureRecognizers\s*' +
+            '\.OfType<UIKit\.UITapGestureRecognizer>\(\)\.Single\(\)\.NumberOfTapsRequired\)')
     }
 
     It 'retries trusted feed provisioning without changing review or verification defaults' {
