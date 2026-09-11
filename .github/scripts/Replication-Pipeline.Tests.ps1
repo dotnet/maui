@@ -194,6 +194,11 @@ Describe 'MAUI Copilot mode routing' {
         $fixture | Should -Match (
             '(?s)Assert\.Equal\(\(nuint\)1, handler\.PlatformView\.GestureRecognizers\s*' +
             '\.OfType<UIKit\.UITapGestureRecognizer>\(\)\.Single\(\)\.NumberOfTapsRequired\)')
+        $fixture | Should -Match 'handlers\.AddHandler<global::Microsoft\.Maui\.Controls\.Border, BorderHandler>'
+        $fixture | Should -Match 'CreateHandlerAndAddToWindow<BorderHandler>'
+        $fixture | Should -Match 'new Label \{ Text = "Native Border text", InputTransparent = true \}'
+        $fixture | Should -Match 'GestureRecognizers = \{ borderTap \}'
+        $fixture | Should -Match 'borderTap\.NumberOfTapsRequired = 1;'
     }
 
     It 'retries trusted feed provisioning without changing review or verification defaults' {

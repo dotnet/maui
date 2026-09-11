@@ -19,6 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				handlers.AddHandler<global::Microsoft.Maui.Controls.Button, ButtonHandler>();
 				handlers.AddHandler<global::Microsoft.Maui.Controls.Label, LabelHandler>();
+				handlers.AddHandler<global::Microsoft.Maui.Controls.Border, BorderHandler>();
 			}));
 
 			var button = new Button
@@ -58,6 +59,23 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());
 					// Exercise the non-trigger observer path; issue verification remains separate.
 					tapGesture.NumberOfTapsRequired = 1;
+					Assert.Equal((nuint)1, handler.PlatformView.GestureRecognizers
+						.OfType<UIKit.UITapGestureRecognizer>().Single().NumberOfTapsRequired);
+				});
+
+			var borderTap = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
+			var border = new Border
+			{
+				Content = new Label { Text = "Native Border text", InputTransparent = true },
+				GestureRecognizers = { borderTap }
+			};
+			await CreateHandlerAndAddToWindow<BorderHandler>(
+				new Window(new ContentPage { Content = border }), async handler =>
+				{
+					await AssertEventually(() => border.Handler != null && border.IsLoaded);
+					Assert.Same(border.Handler, handler);
+					Assert.NotNull(handler.PlatformView.Window);
+					borderTap.NumberOfTapsRequired = 1;
 					Assert.Equal((nuint)1, handler.PlatformView.GestureRecognizers
 						.OfType<UIKit.UITapGestureRecognizer>().Single().NumberOfTapsRequired);
 				});
