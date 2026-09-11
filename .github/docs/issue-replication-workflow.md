@@ -263,10 +263,18 @@ Fix scope, fix comparison, and independent review are also contract-aware:
 they record the root-cause path, ownership, dynamic state, threading, teardown,
 shared consumers, unchanged behavior, and semantic blast radius, preferring a
 narrow mechanism. Findings are advisory and grounded findings alone can drive
-at most one bounded repair/reselection pass. Model severity alone never vetoes
-a proven fix. If that pass changes the selected diff, trusted code reruns the
-unchanged fix-green and restoration-red arms. A legitimate trigger-removed
-control is required for publication; it is never fabricated.
+at most one bounded repair pass. Model severity alone never vetoes a proven
+fix. Independent review examines the provisionally selected, already-tested
+candidate before final certification. Candidate exploration and comparison
+must leave time for review, one repair, and both final verification arms within
+the existing panel, step, and job deadlines. The selected or repaired diff then runs
+the unchanged fix-green and restoration-red arms exactly once. Review does not
+claim those final arms passed before they execute.
+
+A legitimate trigger-removed control remains required for publication; it is
+never fabricated. The recorded regression-lane category is not itself evidence
+that sibling tests ran. Four-arm issue certification does not establish that
+all pre-existing component contracts remain intact.
 
 ## Negative control
 

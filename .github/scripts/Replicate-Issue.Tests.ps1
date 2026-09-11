@@ -175,6 +175,8 @@ BeforeAll {
         'Get-ReplicationFixScopePathRejection',
         'Test-ReplicationFixPanelCanStartCandidate',
         'Get-ReplicationFixPanelBudget',
+        'Get-ReplicationFixActionDeadlineUtc',
+        'Get-ReplicationFixActionReserve',
         'Get-ReplicationFixCandidateEligibility',
         'Invoke-ReplicationFixCandidateVerification',
         'Get-ReplicationFixCandidateModel',
@@ -19266,6 +19268,26 @@ Describe 'The fix scope is the only writable set, so it is checked like one' {
 }
 
 Describe 'The fix panel stops before the step timeout kills the evidence' {
+    It 'uses the earlier execution and panel deadlines without extending either budget' {
+        $now = [DateTimeOffset]::Parse('2026-09-11T08:00:00Z')
+        $executionDeadline = $now.AddMinutes(70)
+        Get-ReplicationFixPanelBudget `
+            -ConfiguredBudgetMinutes 150 -StepTimeoutMinutes 240 `
+            -ElapsedMinutes 10 -ReserveMinutes 15 `
+            -ExecutionDeadlineUtc $executionDeadline -Now $now |
+            Should -Be 70
+
+        Get-ReplicationFixActionDeadlineUtc -PanelStartedUtc $now `
+            -PanelBudgetMinutes 150 -ExecutionDeadlineUtc $executionDeadline |
+            Should -Be $executionDeadline
+        Get-ReplicationFixActionDeadlineUtc -PanelStartedUtc $now `
+            -PanelBudgetMinutes 50 -ExecutionDeadlineUtc $executionDeadline |
+            Should -Be ($now.AddMinutes(50))
+        Get-ReplicationFixActionDeadlineUtc -PanelStartedUtc $now `
+            -PanelBudgetMinutes 50 |
+            Should -Be ($now.AddMinutes(50))
+    }
+
     BeforeAll {
         $script:start = [DateTimeOffset]::Parse('2025-01-01T00:00:00Z')
         # Stay inside this task's indentation instead of imposing a character
@@ -19344,6 +19366,123 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
             -PanelBudgetMinutes 60 `
             -CandidateTimeoutMinutes 30 `
             -VerificationTimeoutMinutes 30 |
+            Should -BeTrue
+    }
+
+    It 'preserves the complete review repair and final-arm reserve at the exact boundary' {
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $script:start `
+            -Now $script:start `
+            -PanelBudgetMinutes 143 `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes 21 `
+            -RequiredReserveMinutes 92 |
+            Should -BeTrue
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $script:start `
+            -Now $script:start.AddSeconds(1) `
+            -PanelBudgetMinutes 143 `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes 21 `
+            -RequiredReserveMinutes 92 |
+            Should -BeFalse
+    }
+
+    It 'refuses the first candidate when elapsed scope and baseline time leave less than the action reserve' {
+        $panelStarted = $script:start.AddMinutes(75)
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $panelStarted `
+            -Now $panelStarted `
+            -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes 22 `
+            -RequiredReserveMinutes 94 `
+            -AbsoluteDeadlineUtc $panelStarted.AddMinutes(146).AddSeconds(-1) |
+            Should -BeFalse
+    }
+
+    It 'admits the first candidate at the exact panel and absolute action boundary' {
+        $panelStarted = $script:start.AddMinutes(75)
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $panelStarted `
+            -Now $panelStarted `
+            -PanelBudgetMinutes 146 `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes 22 `
+            -RequiredReserveMinutes 94 `
+            -AbsoluteDeadlineUtc $panelStarted.AddMinutes(146) |
+            Should -BeTrue
+    }
+
+    It 'derives the action reserve from bounded observed verification time' {
+        Get-ReplicationFixActionReserve `
+            -ReviewTimeoutMinutes 20 `
+            -RepairTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 20.84 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 92
+
+        Get-ReplicationFixActionReserve `
+            -ReviewTimeoutMinutes 20 `
+            -RepairTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 45 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 110 -Because 'the native verifier remains bounded by its configured timeout'
+    }
+
+    It 'fits the observed three-run Android verification without admitting another candidate' {
+        # Build 15288659 measured a one-run baseline probe at 7.2 minutes and
+        # three-run candidate verification at about 20.8 minutes. The scaled,
+        # rounded-up observation is 22 minutes: one 52-minute candidate cycle
+        # plus the 94-minute action reserve fits the 150-minute panel.
+        $observed = [int][Math]::Ceiling(7.2 * 3)
+        $reserve = Get-ReplicationFixActionReserve `
+            -ReviewTimeoutMinutes 20 `
+            -RepairTimeoutMinutes 30 `
+            -ObservedVerificationMinutes $observed `
+            -VerificationTimeoutMinutes 30
+        ($observed + 30 + $reserve) | Should -Be 146
+
+        # Once that candidate actually spends 21 minutes, another complete
+        # cycle would consume the action reserve and is refused.
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $script:start `
+            -Now $script:start.AddMinutes(21) `
+            -PanelBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes $observed `
+            -RequiredReserveMinutes $reserve |
+            Should -BeFalse
+    }
+
+    It 'admits build 15288659 after scaling its one-run baseline against the real step clock' {
+        $stepStarted = [DateTimeOffset]::Parse('2026-09-11T03:40:36.9195115Z')
+        $baselineStarted = [DateTimeOffset]::Parse('2026-09-11T04:49:24.1324803Z')
+        $panelStarted = [DateTimeOffset]::Parse('2026-09-11T04:56:33.4041762Z')
+        $stepDeadline = $stepStarted.AddMinutes(240 - 15)
+        $oneRunMinutes = ($panelStarted - $baselineStarted).TotalMinutes
+        $observed = [int][Math]::Ceiling($oneRunMinutes * 3)
+        $reserve = Get-ReplicationFixActionReserve `
+            -ReviewTimeoutMinutes 20 `
+            -RepairTimeoutMinutes 30 `
+            -ObservedVerificationMinutes $observed `
+            -VerificationTimeoutMinutes 30
+        $panelBudget = Get-ReplicationFixPanelBudget `
+            -ConfiguredBudgetMinutes 150 `
+            -StepTimeoutMinutes 240 `
+            -ElapsedMinutes ($panelStarted - $stepStarted).TotalMinutes `
+            -ReserveMinutes 15
+
+        $observed | Should -Be 22
+        $panelBudget | Should -Be 149
+        Test-ReplicationFixPanelCanStartCandidate `
+            -PanelStarted $panelStarted `
+            -Now $panelStarted `
+            -PanelBudgetMinutes $panelBudget `
+            -CandidateTimeoutMinutes 30 `
+            -VerificationTimeoutMinutes $observed `
+            -RequiredReserveMinutes $reserve `
+            -AbsoluteDeadlineUtc $stepDeadline |
             Should -BeTrue
     }
 
@@ -19616,6 +19755,7 @@ Describe 'Only trusted code may call a fix candidate a pass' {
 
         $result.Ran | Should -BeTrue
         $result.Passed | Should -BeTrue
+        $result.DurationMinutes | Should -BeGreaterOrEqual 0
         $script:loggedCalls.Count | Should -Be 1
         $script:loggedCalls[0].ScriptPath | Should -Be $script:verifier
         $script:loggedCalls[0].Arguments | Should -Contain '-ExpectPass'
@@ -20298,6 +20438,9 @@ Describe 'A failed fix never costs us a good reproduction' {
         New-Item -ItemType Directory -Path (Split-Path -Parent $productFile) -Force | Out-Null
         Set-Content -LiteralPath $productFile -Value 'class EntryHandler { bool Enabled => true; }'
         $script:IssueNumber = 12345
+        $script:FixPanelModels = @('gpt-5.4', 'gpt-5.6-sol')
+        $script:agentDir = Join-Path $script:repoRoot 'agent'
+        New-Item -ItemType Directory -Path $script:agentDir -Force | Out-Null
         $script:invocations = [Collections.Generic.List[object]]::new()
         $script:restoreCalls = 0
         $script:headGuardCalls = 0
@@ -20445,6 +20588,34 @@ Describe 'A failed fix never costs us a good reproduction' {
         $results.Count | Should -Be 0
         $script:invocations.Count | Should -Be 0 -Because (
             'starting a candidate that cannot finish risks the whole run')
+    }
+
+    It 'stops additional candidates once a passing candidate needs the action reserve' {
+        $script:verificationPassed = $true
+        function Invoke-ReplicationFixCandidateVerification {
+            [pscustomobject]@{
+                Ran = $true
+                Passed = $true
+                Detail = ''
+                DurationMinutes = 30
+            }
+        }
+        function git {
+            $global:LASTEXITCODE = 0
+            if ($args[0] -eq 'diff') { 'diff --git a/EntryHandler.cs b/EntryHandler.cs' }
+        }
+
+        $results = @(Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles $script:gitPaths `
+            -CandidateCount 2 `
+            -BudgetMinutes 150 `
+            -VerificationTimeoutSeconds 1800 `
+            -ObservedVerificationMinutes 20 `
+            -PostSelectionModelReserveMinutes 50)
+
+        $results | Should -HaveCount 1
+        $results[0].Result | Should -Be 'Pass'
+        $script:invocations | Should -HaveCount 1
     }
 
     It 'grades a candidate that restored its own work before reporting' {
@@ -21642,6 +21813,12 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
     # the plan gets a case here, and every one of them must return $null so the
     # caller publishes exactly what it published before the fix phase existed.
     BeforeEach {
+        $deadline = Get-Variable -Name ReplicationExecutionDeadlineUtc `
+            -Scope Script -ErrorAction SilentlyContinue
+        $script:FixPhasePreviousDeadline = [pscustomobject]@{
+            Existed = ($null -ne $deadline)
+            Value = if ($null -ne $deadline) { $deadline.Value } else { $null }
+        }
         $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         $script:fixDir = Join-Path $script:repoRoot 'fix'
         $script:agentDir = Join-Path $script:repoRoot 'agent'
@@ -21652,13 +21829,18 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         $script:fixWinnerPath = Join-Path $script:agentDir 'winner.json'
         $script:fixReviewPath = Join-Path $script:agentDir 'review.json'
         $script:fixPatchPath = Join-Path $script:repoRoot 'fix.patch'
+        $script:ArtifactRoot = Join-Path $script:repoRoot 'artifacts'
 
         $script:FixPanelBudgetMinutes = 120
         $script:StepTimeoutMinutes = 210
         $script:FixCandidateTimeoutMinutes = 30
         $script:FixScopeTimeoutMinutes = 25
         $script:FixCandidateCount = 5
+        $script:CopilotTimeoutMinutes = 20
+        $script:VerificationRunCount = 3
         $script:replicationStartedUtc = [DateTimeOffset]::UtcNow
+        $script:ReplicationExecutionDeadlineUtc =
+            $script:replicationStartedUtc.AddMinutes($script:StepTimeoutMinutes - 15)
 
         # Defaults describe the happy path; each test spoils exactly one step,
         # so a test that stops returning $null is telling us the guard it names
@@ -21679,6 +21861,13 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
             Restoration = [pscustomobject]@{ RunCount = 3; FailureCount = 3 }
         }
         $script:armResultsWritten = 0
+        $script:armCalls = 0
+        $script:armDiffs = [Collections.Generic.List[string]]::new()
+        $script:phaseOrder = [Collections.Generic.List[string]]::new()
+        $script:reviewResult = $null
+        $script:repairResult = $null
+        $script:repairCalls = 0
+        $script:panelCalls = 0
 
         function New-CopilotPrompt { param($Phase, $FailureSummary, $BaselineRelativePath) "prompt $Phase" }
         function Invoke-ReplicationCopilot {
@@ -21699,6 +21888,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                   $VerificationScriptPath, $BaseVerificationArguments, $VerificationRoot,
                   $VerificationTimeoutSeconds, $CandidateCount, $BudgetMinutes,
                   $CandidateTimeoutMinutes)
+            $script:panelCalls++
             $script:panelResults
         }
         function Get-ReplicationFixComparisonSummary { param($Results) 'summary' }
@@ -21706,11 +21896,27 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         function Invoke-ReplicationFixArms {
             param($WinnerDiff, $ScopeFiles, $BaseVerificationArguments, $TrustedScriptRoot,
                   $PatchPath, $FixOutputDirectory, $RestorationOutputDirectory, $ReproductionPaths)
+            $script:phaseOrder.Add('arms')
+            $script:armCalls++
+            $script:armDiffs.Add([string]$WinnerDiff)
             Set-Content -LiteralPath $script:fixPatchPath -Value 'patch' -NoNewline
             $script:armEvidence
         }
         function Write-ReplicationFixArmResults {
             param($Evidence, $VerificationDirectory) $script:armResultsWritten++
+        }
+        function Invoke-ReplicationFixReview {
+            param($WinnerAttempt, $TimeoutMinutes)
+            $script:phaseOrder.Add('review')
+            $script:reviewResult
+        }
+        function Invoke-ReplicationFixRepairPass {
+            param($Review, $WinnerAttempt, $ScopeFiles, $ReproductionPaths,
+                  $ProtectedPaths, $BaselineRelativePath, $TrustedScriptRoot,
+                  $FailureSummary)
+            $script:phaseOrder.Add('repair')
+            $script:repairCalls++
+            $script:repairResult
         }
         # The driver invokes the baseline script through the call operator, so
         # a real file is the only way to exercise the call. It must sit where
@@ -21744,6 +21950,12 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
     AfterEach {
         Remove-Item Env:REPLICATION_TEST_BASELINE_FAILS -ErrorAction SilentlyContinue
         Remove-Item Env:REPLICATION_TEST_REPO_ROOT -ErrorAction SilentlyContinue
+        if ($script:FixPhasePreviousDeadline.Existed) {
+            $script:ReplicationExecutionDeadlineUtc = $script:FixPhasePreviousDeadline.Value
+        } else {
+            Remove-Variable -Name ReplicationExecutionDeadlineUtc -Scope Script `
+                -ErrorAction SilentlyContinue
+        }
     }
 
     It 'authors a fix when every step succeeds' {
@@ -21755,7 +21967,157 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $result.Files | Should -Be @('src/Core/src/Handlers/EntryHandler.cs')
         $result.RootCause | Should -Be 'The handler drops the update.'
         $script:armResultsWritten | Should -Be 1
+        $script:armCalls | Should -Be 1
+        @($script:phaseOrder) | Should -Be @('review', 'arms')
 
+    }
+
+    It 'does not start the first candidate when elapsed work leaves no actionable tail' {
+        # The scope admission still fits, as does a candidate by itself. Only the
+        # combined candidate, review, repair and final-arm requirement refuses it.
+        $script:replicationStartedUtc = [DateTimeOffset]::UtcNow.AddMinutes(-112.1)
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+
+        $script:panelCalls | Should -Be 0
+        $script:phaseOrder | Should -BeNullOrEmpty
+        $script:armCalls | Should -Be 0
+    }
+
+    It 'refuses candidate admission when the job deadline is earlier than the step deadline' {
+        $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(70)
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+
+        $script:panelCalls | Should -Be 0
+        $script:phaseOrder | Should -BeNullOrEmpty
+        $script:armCalls | Should -Be 0
+    }
+
+    It 'rechecks the earlier execution deadline before review and final arms' {
+        function Invoke-ReplicationFixPanel {
+            $script:panelCalls++
+            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(51)
+            $script:panelResults
+        }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+        $script:panelCalls | Should -Be 1
+        $script:phaseOrder | Should -BeNullOrEmpty
+        $script:armCalls | Should -Be 0
+
+        $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(150)
+        function Invoke-ReplicationFixPanel { $script:panelResults }
+        function Invoke-ReplicationFixReview {
+            $script:phaseOrder.Add('review')
+            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(1)
+            [pscustomobject]@{ Findings = @() }
+        }
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+        @($script:phaseOrder) | Should -Be @('review')
+        $script:armCalls | Should -Be 0
+        $script:armResultsWritten | Should -Be 0
+    }
+
+    It 'invokes one grounded repair before certifying the repaired patch exactly once' {
+        $script:reviewResult = [pscustomobject]@{
+            Findings = @([pscustomobject]@{
+                Category = 'grounded-product-defect'
+                Grounding = 'diff'
+                Confidence = 'high'
+                Corroboration = 'deterministic'
+                Detail = 'The provisional patch breaks encoded HTML.'
+            })
+        }
+        $repairedWinner = [pscustomobject]@{
+            Attempt = 1
+            Model = 'gpt-5.4'
+            Result = 'Pass'
+            Diff = 'repaired diff'
+            ChangedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+            Approach = 'Preserve encoded HTML while fixing the reported input.'
+        }
+        $script:repairResult = [pscustomobject]@{
+            WinnerAttempt = $repairedWinner
+            Findings = @($script:reviewResult.Findings)
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        @($script:phaseOrder) | Should -Be @('review', 'repair', 'arms')
+        $script:repairCalls | Should -Be 1
+        $script:armCalls | Should -Be 1
+        @($script:armDiffs) | Should -Be @('repaired diff')
+        $result.RepairApplied | Should -BeTrue
+        $result.Approach | Should -Match 'Preserve encoded HTML'
+    }
+
+    It 'certifies the unchanged provisional patch exactly once when review requests no repair' {
+        $script:reviewResult = [pscustomobject]@{ Findings = @() }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        @($script:phaseOrder) | Should -Be @('review', 'arms')
+        $script:repairCalls | Should -Be 0
+        $script:armCalls | Should -Be 1
+        @($script:armDiffs) | Should -Be @('diff --git a b')
+        $result.RepairApplied | Should -BeFalse
+    }
+
+    It 'does not spend the action reserve on a comparison' {
+        $script:panelResults = @(
+            [pscustomobject]@{
+                Attempt = 1; Result = 'Pass'; Diff = 'd1'
+                ChangedPaths = @('a.cs'); Approach = 'x'
+            }
+            [pscustomobject]@{
+                Attempt = 2; Result = 'Pass'; Diff = 'd2'
+                ChangedPaths = @('b.cs'); Approach = 'y'
+            }
+        )
+        $script:copilotPhases = [Collections.Generic.List[string]]::new()
+        function Invoke-ReplicationCopilot {
+            param($PhaseName, $Prompt, $WritePaths, $Attempt, $TimeoutMinutesOverride)
+            $script:copilotPhases.Add($PhaseName)
+        }
+        function Invoke-ReplicationFixPanel {
+            param($ScopeFiles, $ReproductionPaths, $ProtectedPaths,
+                  $BaselineRelativePath, $FailureSummary, $TrustedScriptRoot,
+                  $VerificationScriptPath, $BaseVerificationArguments, $VerificationRoot,
+                  $VerificationTimeoutSeconds, $CandidateCount, $BudgetMinutes,
+                  $CandidateTimeoutMinutes, $ObservedVerificationMinutes,
+                  $PostSelectionModelReserveMinutes)
+            # With the instant fake verifier the action reserve is 52 minutes.
+            # Move the fake absolute clock only after the admission checks, then
+            # leave exactly that reserve before the execution deadline.
+            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(52.9)
+            $script:panelResults
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $script:copilotPhases | Should -Not -Contain 'fix-compare'
+        $result.Files | Should -Be @('a.cs')
+        $script:armCalls | Should -Be 1
+    }
+
+    It 'fails closed before final arms when repair restoration fails' {
+        $script:reviewResult = [pscustomobject]@{
+            Findings = @([pscustomobject]@{
+                Category = 'missing-evidence-coverage'
+                Grounding = 'runner'
+                Confidence = 'high'
+                Corroboration = 'deterministic'
+                Detail = 'The encoded baseline contract is not covered.'
+            })
+        }
+        function Invoke-ReplicationFixRepairPass { throw 'repair restoration failed' }
+
+        { Invoke-ReplicationFixPhase @script:phaseArgs } |
+            Should -Throw '*repair restoration failed*'
+        $script:armCalls | Should -Be 0
+        $script:armResultsWritten | Should -Be 0
     }
 
     It 'writes the scope file even when the artifact root does not exist yet' {
@@ -25414,15 +25776,7 @@ Describe 'The independent review cannot cost the fix it describes' {
         }, $true)
     }
 
-    It 'writes the four-arm results before it asks for a review' {
-        # A step timeout KILLS the process, so no try/catch inside the review
-        # can contain it - and 23% of runs that reach the fix panel time out
-        # inside it. Were the review to run first, a timeout during the model
-        # call would destroy the fix-control and restoration evidence of a fix
-        # that had already passed every arm.
-        #
-        # This arm publishes a paragraph that nothing acts on. It must never be
-        # able to discard the work it describes.
+    It 'asks for actionable review before it runs the final four-arm certification' {
         $script:FixPhaseFn | Should -Not -BeNullOrEmpty
 
         $calls = $script:FixPhaseFn.FindAll({
@@ -25436,10 +25790,29 @@ Describe 'The independent review cannot cost the fix it describes' {
         $reviewAt = @($calls | Where-Object { $_.GetCommandName() -eq 'Invoke-ReplicationFixReview' } |
             ForEach-Object { $_.Extent.StartOffset })
 
-        $writeAt | Should -Not -BeNullOrEmpty
+        $writeAt | Should -HaveCount 1
         $reviewAt | Should -Not -BeNullOrEmpty
-        ($writeAt | Measure-Object -Minimum).Minimum |
-            Should -BeLessThan ($reviewAt | Measure-Object -Minimum).Minimum
+        ($reviewAt | Measure-Object -Minimum).Minimum |
+            Should -BeLessThan ($writeAt | Measure-Object -Minimum).Minimum
+    }
+
+    It 'tells the reviewer the candidate is provisional rather than four-arm certified' {
+        $script:trustedSkills = Join-Path $TestDrive 'trusted-skills'
+        $script:BaseSha = 'abc1234'
+        $script:ContextPath = Join-Path $TestDrive 'context.md'
+        $script:IssueNumber = 12345
+        $script:Platform = 'android'
+        $script:DeviceUdid = 'emulator-5554'
+        $script:ArtifactRoot = Join-Path $TestDrive 'artifacts'
+        $script:fixReviewPath = Join-Path $script:ArtifactRoot 'fix-review.json'
+        $prompt = New-CopilotPrompt `
+            -Phase 'fix-review' `
+            -FailureSummary 'diff --git a/file b/file'
+
+        $prompt | Should -Match 'provisional candidate'
+        $prompt | Should -Match 'passed trusted targeted verification'
+        $prompt | Should -Match 'final fix-green and restoration-red certification arms have not run'
+        $prompt | Should -Not -Match 'already cleared all four'
     }
 
     It 'contains every failure inside the review rather than letting it reach the fix phase' {
@@ -25467,7 +25840,7 @@ Describe 'The independent review cannot cost the fix it describes' {
                 if ($node -is [System.Management.Automation.Language.TryStatementAst]) { $guarded = $true; break }
                 $node = $node.Parent
             }
-            $guarded | Should -BeTrue -Because 'a throw here would cost a fix that has already passed all four arms'
+            $guarded | Should -BeTrue -Because 'a throw here must not escape the bounded review'
         }
     }
 }
@@ -25937,14 +26310,14 @@ Describe 'Grounded fix review and bounded repair' {
         Read-ReplicationFixReview -Path $path | Should -BeNullOrEmpty
     }
 
-    It 'keeps the repair pass bounded and reruns both trusted arms when its diff changes' {
+    It 'keeps the repair pass bounded and centralizes final arms in the phase' {
         $source = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'Replicate-Issue.ps1') -Raw
         $repair = [regex]::Match(
             $source,
             '(?ms)^function Invoke-ReplicationFixRepairPass\b.*?^}')
         $repair.Success | Should -BeTrue
         $repair.Value | Should -Match 'Get-ReplicationGroundedFixFindings'
-        $repair.Value | Should -Match 'Invoke-ReplicationFixArms'
+        $repair.Value | Should -Not -Match 'Invoke-ReplicationFixArms'
         $repair.Value | Should -Match 'Assert-ReplicationFixSources'
         $repair.Value | Should -Match '\$beforeDiff ='
         $repair.Value | Should -Match '\$beforeOutOfScope = @\(\$beforePaths'
@@ -25952,7 +26325,6 @@ Describe 'Grounded fix review and bounded repair' {
         $repair.Value | Should -Match '\$scopedChanged = @\(\$changed'
         $repair.Value | Should -Match '\$newDiff -ceq \$beforeDiff'
         $repair.Value | Should -Not -Match '\$newPaths'
-        $repair.Value | Should -Match '-TimeoutSeconds \$ArmTimeoutSeconds'
         $phase = [regex]::Match(
             $source,
             '(?ms)^function Invoke-ReplicationFixPhase\b.*?^}')
@@ -25960,11 +26332,13 @@ Describe 'Grounded fix review and bounded repair' {
         $phase.Value | Should -Match 'Invoke-ReplicationFixReview'
         $phase.Value | Should -Match 'Invoke-ReplicationFixRepairPass'
         $phase.Value | Should -Match 'Write-ReplicationFixArmResults'
-        $phase.Value | Should -Match '\$remainingRepairSeconds'
         $phase.Value | Should -Match '\$review = \$null'
-        $phase.Value | Should -Match '-TimeoutSeconds \$initialArmTimeoutSeconds'
-        $phase.Value | Should -Match '\$candidateCycleMinutes = \$FixCandidateTimeoutMinutes \* 2'
-        $phase.Value | Should -Match '-TimeoutMinutes \(\[Math\]::Min\(20, \$reviewMinutes\)\)'
+        ([regex]::Matches($phase.Value, 'Invoke-ReplicationFixArms')).Count | Should -Be 1
+        ([regex]::Matches($phase.Value, 'Write-ReplicationFixArmResults')).Count | Should -Be 1
+        $phase.Value | Should -Match '\$candidateCycleMinutes = \('
+        $phase.Value | Should -Match '-TimeoutMinutes \$reviewTimeoutMinutes'
+        $phase.Value.IndexOf('Invoke-ReplicationFixReview', [StringComparison]::Ordinal) |
+            Should -BeLessThan $phase.Value.IndexOf('Invoke-ReplicationFixArms', [StringComparison]::Ordinal)
         $source | Should -Match "Phase 'fix-repair'"
         ([regex]::Matches($source, "Phase 'fix-repair'")).Count | Should -Be 1
     }
@@ -25987,12 +26361,15 @@ Describe 'Grounded fix review and bounded repair' {
             Set-Content -LiteralPath $script:repairFile `
                 -Value 'class EntryHandler { int Value => 1; }' `
                 -Encoding utf8NoBOM
+            $script:provisionalDiff = (
+                (git -C $script:repairRepo diff --binary HEAD -- $script:repairPath) -join "`n")
+            git -C $script:repairRepo checkout -q HEAD -- $script:repairPath
 
             $script:repoRoot = $script:repairRepo
             $script:fixDir = Join-Path $script:repairRepo 'repair-artifacts'
             $script:FixCandidateTimeoutMinutes = 1
             $script:repairMutation = 'same-file'
-            $script:repairArmCalls = 0
+            $script:repairInput = ''
 
             function Get-ReplicationGroundedFixFindings {
                 param($Review)
@@ -26022,6 +26399,7 @@ Describe 'Grounded fix review and bounded repair' {
                     $ModelOverride,
                     $TimeoutMinutesOverride
                 )
+                $script:repairInput = Get-Content -LiteralPath $script:repairFile -Raw
                 if ($script:repairMutation -eq 'same-file') {
                     Set-Content -LiteralPath $script:repairFile `
                         -Value 'class EntryHandler { int Value => 2; }' `
@@ -26036,21 +26414,6 @@ Describe 'Grounded fix review and bounded repair' {
                         -Value 'changed' -Encoding utf8NoBOM
                 }
             }
-            function Invoke-ReplicationFixArms {
-                param(
-                    $WinnerDiff,
-                    $ScopeFiles,
-                    $BaseVerificationArguments,
-                    $TrustedScriptRoot,
-                    $PatchPath,
-                    $FixOutputDirectory,
-                    $RestorationOutputDirectory,
-                    $ReproductionPaths,
-                    $TimeoutSeconds
-                )
-                $script:repairArmCalls++
-                [pscustomobject]@{ Passed = $true }
-            }
             function Restore-ReplicationFixTree {
                 param($TrustedScriptRoot, $ScopeFiles)
                 git -C $script:repairRepo checkout -q HEAD -- @ScopeFiles
@@ -26060,7 +26423,7 @@ Describe 'Grounded fix review and bounded repair' {
             $script:repairWinner = [pscustomobject]@{
                 Attempt = 1
                 Model = 'test-model'
-                Diff = ((git -C $script:repairRepo diff --binary HEAD -- $script:repairPath) -join "`n")
+                Diff = $script:provisionalDiff
             }
             $script:repairReview = [pscustomobject]@{ Findings = @([pscustomobject]@{
                 Detail = 'Change the value.'
@@ -26072,7 +26435,7 @@ Describe 'Grounded fix review and bounded repair' {
             Pop-Location
         }
 
-        It 're-certifies a repair that changes content in the same scoped file' {
+        It 'returns a repaired diff for centralized certification' {
             $result = Invoke-ReplicationFixRepairPass `
                 -Review $script:repairReview `
                 -WinnerAttempt $script:repairWinner `
@@ -26080,18 +26443,15 @@ Describe 'Grounded fix review and bounded repair' {
                 -ReproductionPaths @('tests/Issue1.cs') `
                 -BaselineRelativePath 'tests/Issue1.cs' `
                 -TrustedScriptRoot $script:repairRepo `
-                -VerificationScriptPath 'verify.ps1' `
-                -BaseVerificationArguments @('-IssueNumber', '1') `
-                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
-                -FailureSummary 'review finding' `
-                -ArmTimeoutSeconds 60
+                -FailureSummary 'review finding'
 
             $result | Should -Not -BeNullOrEmpty
-            $script:repairArmCalls | Should -Be 1
             $result.WinnerAttempt.ChangedPaths | Should -Contain $script:repairPath
+            $script:repairInput | Should -Match 'Value => 1' `
+                -Because 'the grounded repair must edit the trusted provisional winner, not recreate it from HEAD'
         }
 
-        It 'does not re-certify an unchanged repair diff' {
+        It 'returns no replacement for an unchanged repair diff' {
             $script:repairMutation = 'unchanged'
             $result = Invoke-ReplicationFixRepairPass `
                 -Review $script:repairReview `
@@ -26100,33 +26460,39 @@ Describe 'Grounded fix review and bounded repair' {
                 -ReproductionPaths @('tests/Issue1.cs') `
                 -BaselineRelativePath 'tests/Issue1.cs' `
                 -TrustedScriptRoot $script:repairRepo `
-                -VerificationScriptPath 'verify.ps1' `
-                -BaseVerificationArguments @('-IssueNumber', '1') `
-                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
-                -FailureSummary 'review finding' `
-                -ArmTimeoutSeconds 60
+                -FailureSummary 'review finding'
 
             $result | Should -BeNullOrEmpty
-            $script:repairArmCalls | Should -Be 0
         }
 
-        It 'does not re-certify a repair that creates an out-of-scope path' {
+        It 'fails closed when a repair creates an out-of-scope path' {
             $script:repairMutation = 'out-of-scope'
-            $result = Invoke-ReplicationFixRepairPass `
-                -Review $script:repairReview `
-                -WinnerAttempt $script:repairWinner `
-                -ScopeFiles @($script:repairPath) `
-                -ReproductionPaths @('tests/Issue1.cs') `
-                -BaselineRelativePath 'tests/Issue1.cs' `
-                -TrustedScriptRoot $script:repairRepo `
-                -VerificationScriptPath 'verify.ps1' `
-                -BaseVerificationArguments @('-IssueNumber', '1') `
-                -VerificationRoot (Join-Path $script:repairRepo 'verification') `
-                -FailureSummary 'review finding' `
-                -ArmTimeoutSeconds 60
+            {
+                Invoke-ReplicationFixRepairPass `
+                    -Review $script:repairReview `
+                    -WinnerAttempt $script:repairWinner `
+                    -ScopeFiles @($script:repairPath) `
+                    -ReproductionPaths @('tests/Issue1.cs') `
+                    -BaselineRelativePath 'tests/Issue1.cs' `
+                    -TrustedScriptRoot $script:repairRepo `
+                    -FailureSummary 'review finding'
+            } | Should -Throw '*outside its approved scope*'
+        }
 
-            $result | Should -BeNullOrEmpty
-            $script:repairArmCalls | Should -Be 0
+        It 'fails closed when an invalid repair cannot restore the provisional winner' {
+            $script:repairMutation = 'unchanged'
+            function Restore-ReplicationFixTree { return $false }
+
+            {
+                Invoke-ReplicationFixRepairPass `
+                    -Review $script:repairReview `
+                    -WinnerAttempt $script:repairWinner `
+                    -ScopeFiles @($script:repairPath) `
+                    -ReproductionPaths @('tests/Issue1.cs') `
+                    -BaselineRelativePath 'tests/Issue1.cs' `
+                    -TrustedScriptRoot $script:repairRepo `
+                    -FailureSummary 'review finding'
+            } | Should -Throw '*could not be restored*'
         }
     }
 
@@ -26142,11 +26508,18 @@ Describe 'Grounded fix review and bounded repair' {
     }
 
     It 'lets the bounded repair phase edit only the pre-approved product files' {
+        $script:trustedSkills = Join-Path $TestDrive 'trusted-skills'
+        $script:BaseSha = 'abc1234'
+        $script:ContextPath = Join-Path $TestDrive 'context.md'
+        $script:IssueNumber = 12345
+        $script:Platform = 'android'
+        $script:DeviceUdid = 'emulator-5554'
+        $script:ArtifactRoot = Join-Path $TestDrive 'artifacts'
         $prompt = New-CopilotPrompt `
             -Phase 'fix-repair' `
             -FailureSummary 'grounded finding' `
             -BaselineRelativePath 'tests/Issue1.cs' `
-            -OutputDirectory '/tmp/repair'
+            -OutputDirectory (Join-Path $TestDrive 'repair')
         $prompt | Should -Match 'You may modify product code'
         $prompt | Should -Match 'only the files the expert scope named'
         $prompt | Should -Match 'view, rg, glob, and'
