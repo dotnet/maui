@@ -9471,7 +9471,7 @@ namespace $namespace
                 Should -Be 'move,down,pause,up,pause,down,pause,up'
             $sequence.Actions[0].X | Should -Be 60
             $sequence.Actions[0].Y | Should -Be 50
-            $sequence.Actions[0].Milliseconds | Should -Be 1
+            $sequence.Actions[0].Milliseconds | Should -Be 100
             @($sequence.Actions | Where-Object Kind -eq 'down').Count | Should -Be 2
             @($sequence.Actions | Where-Object Kind -eq 'up').Count | Should -Be 2
             @(
@@ -9603,6 +9603,24 @@ Describe 'an abort exit code is not always a crash' {
         $crash = "REPLICATION_APP_TERMINATED the Sandbox exited`n$summary"
         Test-ReplicationAppTerminated -Text $crash | Should -BeTrue
         Get-ReplicationAttemptFailureKind -FailureSummary $crash |
+            Should -Be 'app-terminated'
+    }
+
+    It 'recognizes the XCTest strict pointer-duration assertion as a driver failure' {
+        $log = Join-Path $TestDrive 'record-xctest-pointer-duration.log'
+        $summary = @(
+            'Recording the on-device reproduction failed with exit code 134.'
+            'Unhandled exception. OpenQA.Selenium.UnknownErrorException: An unknown server-side error occurred. Original error: Invalid parameter not satisfying: duration > 0.001'
+            'WebDriverAgentLib -[FBPointerMoveItem addToEventPath:allItems:currentItemIndex:error:]'
+        ) -join "`n"
+        $summary | Set-Content -LiteralPath $log
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'recording-failed'
+        Get-ReplicationAttemptFailureKind -FailureSummary (
+            "REPLICATION_APP_TERMINATED the Sandbox exited`n$summary") |
             Should -Be 'app-terminated'
     }
 
@@ -23146,7 +23164,7 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
             'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
         $drag | Should -Match (
             'CreatePointerMove\(\s*CoordinateOrigin\.Viewport, x, y, ' +
-            'TimeSpan\.FromMilliseconds\(1\)\)')
+            'TimeSpan\.FromMilliseconds\(100\)\)')
     }
 
     It 'asks the driver rather than refusing before trying' {
