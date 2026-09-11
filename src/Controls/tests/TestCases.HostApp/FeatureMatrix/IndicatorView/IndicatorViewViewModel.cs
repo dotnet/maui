@@ -37,7 +37,9 @@ public class IndicatorViewViewModel : INotifyPropertyChanged
 
 	private void InitializeCarouselItems()
 	{
-		_carouselItems = new ObservableCollection<IndicatorViewCarouselItem>
+		// Assign via the CarouselItems property (not the backing field) so that any previously
+		// bound UI is notified of the new collection reference and Count/MaximumVisible stay in sync.
+		CarouselItems = new ObservableCollection<IndicatorViewCarouselItem>
 		{
 			new IndicatorViewCarouselItem { Title = "Item 1", Description = "First carousel item", Color = Colors.Red },
 			new IndicatorViewCarouselItem { Title = "Item 2", Description = "Second carousel item", Color = Colors.Blue },
@@ -45,12 +47,30 @@ public class IndicatorViewViewModel : INotifyPropertyChanged
 			new IndicatorViewCarouselItem { Title = "Item 4", Description = "Fourth carousel item", Color = Colors.Orange },
 			new IndicatorViewCarouselItem { Title = "Item 5", Description = "Fifth carousel item", Color = Colors.Purple },
 		};
-		_carouselItems.CollectionChanged += CarouselItems_CollectionChanged;
+		Position = 0;
+		CurrentItem = CarouselItems.FirstOrDefault();
+	}
 
-		// Initialize Count, MaximumVisible, and CurrentItem
-		Count = _carouselItems.Count;
-		MaximumVisible = _carouselItems.Count;
-		CurrentItem = _carouselItems.FirstOrDefault();
+	/// <summary>
+	/// Restores the view model to its initial default state. Called when re-entering the
+	/// options flow so that a single view model instance can be reused instead of
+	/// constructing a new one (and re-wiring bindings) on every navigation.
+	/// </summary>
+	public void Reset()
+	{
+		InitializeCarouselItems();
+		HideSingle = true;
+		IndicatorColor = Colors.LightGrey;
+		SelectedIndicatorColor = Colors.Black;
+		IndicatorSize = 6.0;
+		IndicatorsShape = IndicatorShape.Circle;
+		IndicatorTemplate = null;
+		ActiveTemplate = "Icon";
+		CurrentTemplateName = "Default";
+		FlowDirection = FlowDirection.LeftToRight;
+		IsEnabled = true;
+		IsVisible = true;
+		HasShadow = false;
 	}
 
 	private void CarouselItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
