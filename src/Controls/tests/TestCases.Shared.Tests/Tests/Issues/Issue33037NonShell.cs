@@ -178,6 +178,38 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	public void ModalListViewCollapsedTitleRemainsCollapsedAfterCoverWithoutRotation()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037ModalListViewButton").Click();
+
+		try
+		{
+			var title = "Issue33037 Modal List";
+			var scrollerId = "Issue33037ModalListViewScroller";
+
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.8, withInertia: false);
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+
+			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+
+			var titleAfterDismiss = GetNavigationTitleRect(title);
+			Assert.That(titleAfterDismiss.Y, Is.EqualTo(collapsedTitleRect.Y).Within(2),
+				"Re-entering at the same size must not move an intentionally collapsed title.");
+			Assert.That(titleAfterDismiss.Height, Is.EqualTo(collapsedTitleRect.Height).Within(2),
+				"Re-entering at the same size must not expand an intentionally collapsed title.");
+		}
+		finally
+		{
+			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
+				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public void ModalListViewLargeTitleSurvivesFullScreenCoverWithRotation()
 	{
 		RequireIOS26OrHigher();
@@ -189,20 +221,29 @@ public class Issue33037NonShell : _IssuesUITest
 			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
 			var firstItemRect = App.WaitForElement("Item 0").GetRect();
 
-			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
-			App.WaitForElement("Done");
+			// Rotate to the compact height class first, so the navigation bar is measured for
+			// landscape before it is covered.
 			App.SetOrientationLandscape();
-			App.WaitForElement("Done");
+			App.WaitForElement(title);
+
+			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+
+			// Rotating back while the navigation controller is covered is the case UIKit does not
+			// report: the covered controller receives no size transition, so nothing re-measures the
+			// bar for the regular height class. Without a repair on re-entry the bar stays at the
+			// compact landscape height while it still draws the large title, which is what the
+			// reporter sees as the large title disappearing after returning from a full-screen cover.
 			App.SetOrientationPortrait();
-			App.WaitForElement("Done").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
 
 			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
 			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
 
 			Assert.That(restoredTitleRect.Y, Is.EqualTo(expandedTitleRect.Y).Within(2),
-				"The expanded title should return to its original position after a full-screen cover rotates while presented.");
+				"The expanded title should return to its original position after the device rotates while a full-screen cover is presented.");
 			Assert.That(restoredTitleRect.Height, Is.EqualTo(expandedTitleRect.Height).Within(2),
-				"The expanded title should return to its original height after a full-screen cover rotates while presented.");
+				"The expanded title should return to its original height after the device rotates while a full-screen cover is presented.");
 			Assert.That(restoredFirstItemRect.Y, Is.EqualTo(firstItemRect.Y).Within(2),
 				"The first row should not retain a gap or overlap after the full-screen cover is dismissed.");
 			Assert.That(restoredFirstItemRect.Y, Is.GreaterThanOrEqualTo(restoredTitleRect.Bottom - 2),
@@ -211,8 +252,8 @@ public class Issue33037NonShell : _IssuesUITest
 		finally
 		{
 			App.SetOrientationPortrait();
-			if (App.FindElements("Done").Any())
-				App.WaitForElement("Done").Click();
+			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
+				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
 			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
 		}
 	}
@@ -234,12 +275,17 @@ public class Issue33037NonShell : _IssuesUITest
 			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.8, withInertia: false);
 			var collapsedTitleRect = GetNavigationTitleRect(title);
 
+			App.SetOrientationLandscape();
+			App.WaitForElement(title);
+
 			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
-			App.WaitForElement("Done").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+			App.SetOrientationPortrait();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
 
 			var titleAfterDismiss = GetNavigationTitleRect(title);
 			Assert.That(titleAfterDismiss.Height, Is.EqualTo(collapsedTitleRect.Height).Within(2),
-				"Presenting a full-screen cover must not expand an intentionally collapsed title.");
+				"Repairing the navigation bar on re-entry must not expand an intentionally collapsed title.");
 
 			var centerX = listRect.X + listRect.Width / 2;
 			var startY = expandedTitleRect.Bottom + 50;
@@ -250,13 +296,16 @@ public class Issue33037NonShell : _IssuesUITest
 
 			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
 			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(restoredTitleRect.Y, Is.EqualTo(expandedTitleRect.Y).Within(2),
+				"Scrolling back to the top after the cover round trip must restore the expanded title geometry.");
 			Assert.That(restoredFirstItemRect.Y, Is.InRange(restoredTitleRect.Bottom - 2, restoredTitleRect.Bottom + 40),
 				"The ListView should return to Item 0 without a gap or overlap after the cover round trip.");
 		}
 		finally
 		{
-			if (App.FindElements("Done").Any())
-				App.WaitForElement("Done").Click();
+			App.SetOrientationPortrait();
+			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
+				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
 			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
 		}
 	}

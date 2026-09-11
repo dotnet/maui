@@ -63,6 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 		bool _interactivePopGesturePending;
 		bool _hasCompletedFirstAppearance;
+		CGSize _lastVisibleBoundsSize;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -175,11 +176,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			base.ViewDidAppear(animated);
 
-			if (_hasCompletedFirstAppearance)
-				RepairLargeTitleLayout();
+			if (_hasCompletedFirstAppearance && View.Bounds.Size != _lastVisibleBoundsSize)
+				RepairLargeTitleLayoutAfterCoveredSizeChange();
 			else
 				_hasCompletedFirstAppearance = true;
 
+			_lastVisibleBoundsSize = View.Bounds.Size;
 			View.SetNeedsLayout();
 		}
 
@@ -194,6 +196,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_interactivePopGesturePending = false;
 			CompletePendingNavigation(false);
+			_lastVisibleBoundsSize = View.Bounds.Size;
 
 			base.ViewDidDisappear(animated);
 
@@ -221,11 +224,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// collapsed bar (because the content is scrolled) untouched.
 			coordinator.AnimateAlongsideTransition(_ => { }, _ =>
 			{
-				RepairLargeTitleLayout();
+				if (Handle != IntPtr.Zero && NavigationBar is { } navigationBar && navigationBar.Handle != IntPtr.Zero)
+					navigationBar.SizeToFit();
 			});
 		}
 
-		void RepairLargeTitleLayout()
+		void RepairLargeTitleLayoutAfterCoveredSizeChange()
 		{
 			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
 				Handle == IntPtr.Zero ||
@@ -237,10 +241,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-			// A full-screen controller can cover the navigation controller while the device rotates.
-			// UIKit does not send the covered controller a size-transition callback, and can leave the
-			// bar at its compact height when it becomes visible again. Re-measuring once on re-entry
-			// restores the height for the current scroll position without introducing a layout loop.
+			// A full-screen controller can cover the navigation controller while its size changes.
+			// UIKit does not send the covered controller a size-transition callback, and can leave
+			// the bar measured for the previous size when it becomes visible again.
 			navigationBar.SizeToFit();
 		}
 
