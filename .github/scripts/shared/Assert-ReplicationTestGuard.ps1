@@ -4473,6 +4473,7 @@ namespace Microsoft.Maui.Controls
         public global::Microsoft.Maui.TextAlignment HorizontalTextAlignment { get; set; }
         public int MaxLines { get; set; }
         public double Padding { get; set; }
+        public double CharacterSpacing { get; set; }
         public Style Style { get; set; }
         public string Text { get; set; }
         public TextType TextType { get; set; }
@@ -4867,6 +4868,10 @@ namespace CoreGraphics
 
 namespace UIKit
 {
+    public sealed class UIStringAttributeKey
+    {
+        public static UIStringAttributeKey KerningAdjustment { get; }
+    }
     public class UIView
     {
         public double Alpha { get; set; }
@@ -4881,6 +4886,7 @@ namespace UIKit
     }
     public class UILabel : UIView
     {
+        public global::Foundation.NSAttributedString AttributedText { get; set; }
         public string Text { get; set; }
     }
     public class UIButton : UIView { }
@@ -4904,6 +4910,32 @@ namespace UIKit
     {
         public UINavigationBar NavigationBar { get; }
         public UIViewController[] ViewControllers { get; }
+    }
+}
+
+namespace Foundation
+{
+    public class NSObject { }
+    public class NSNumber : NSObject
+    {
+        public double DoubleValue { get; }
+    }
+    public struct NSRange
+    {
+        public int Location { get; }
+        public int Length { get; }
+    }
+    public class NSAttributedString : NSObject
+    {
+        public int Length { get; }
+        public NSObject GetAttribute(
+            global::UIKit.UIStringAttributeKey key,
+            int location,
+            out NSRange range)
+        {
+            range = default;
+            return null;
+        }
     }
 }
 
@@ -5886,6 +5918,172 @@ function Get-ReplicationTrustedAssertEventuallySource {
     }
 }
 
+function Get-ReplicationTrustedCharacterSpacingSource {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$GeneratedSourcePath,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('ios', 'catalyst')]
+        [string]$Platform
+    )
+
+    $root = (Resolve-Path -LiteralPath $RepositoryRoot -ErrorAction Stop).Path
+    $relativePath = 'src/TestUtils/src/DeviceTests/AssertionExtensions.iOS.cs'
+    $expectedBaselineBlob = '5b48acba0e39fa1e8944676cb4bc58c314be0da8'
+    $expectedNormalizedSha256 =
+        '9bae70f72f82cfa3ac030ea88d3b4c65781bd0eee6e0679798e38790601fc48a'
+    $trustedPath = [IO.Path]::GetFullPath((Join-Path $root $relativePath))
+    $rootPrefix = $root.TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar) +
+        [IO.Path]::DirectorySeparatorChar
+    if (-not $trustedPath.StartsWith(
+            $rootPrefix,
+            [StringComparison]::Ordinal)) {
+        throw 'The trusted CharacterSpacing helper path escapes the repository root.'
+    }
+
+    $generatedPath = if ([IO.Path]::IsPathRooted($GeneratedSourcePath)) {
+        [IO.Path]::GetFullPath($GeneratedSourcePath)
+    } else {
+        [IO.Path]::GetFullPath((Join-Path $root $GeneratedSourcePath))
+    }
+    if ($generatedPath -ceq $trustedPath) {
+        throw (
+            'The generated test path may not replace the immutable trusted ' +
+            'CharacterSpacing helper source.')
+    }
+
+    $trustedItem = Get-Item -LiteralPath $trustedPath -Force -ErrorAction Stop
+    if ($trustedItem.PSIsContainer -or
+        ($trustedItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw (
+            'The trusted CharacterSpacing helper must be one regular, non-linked ' +
+            'repository file.')
+    }
+    $baselineBlob = @(& git -C $root rev-parse --verify "HEAD:$relativePath" 2>&1)
+    $baselineExitCode = $LASTEXITCODE
+    if ($baselineExitCode -ne 0 -or
+        $baselineBlob.Count -ne 1 -or
+        [string]$baselineBlob[0] -cne $expectedBaselineBlob) {
+        throw (
+            'The trusted CharacterSpacing helper does not match the reviewed ' +
+            'immutable repository blob pinned by this semantic gate.')
+    }
+
+    $bytes = [IO.File]::ReadAllBytes($trustedPath)
+    $normalizedBytes = [Collections.Generic.List[byte]]::new($bytes.Length)
+    for ($index = 0; $index -lt $bytes.Length; $index++) {
+        if ($bytes[$index] -eq 13 -and
+            ($index + 1) -lt $bytes.Length -and
+            $bytes[$index + 1] -eq 10) {
+            continue
+        }
+        $normalizedBytes.Add($bytes[$index])
+    }
+    $hashAlgorithm = [Security.Cryptography.SHA256]::Create()
+    try {
+        $actualNormalizedSha256 = [Convert]::ToHexString(
+            $hashAlgorithm.ComputeHash(
+                [byte[]]$normalizedBytes.ToArray())).ToLowerInvariant()
+    }
+    finally {
+        $hashAlgorithm.Dispose()
+    }
+    if ($actualNormalizedSha256 -cne $expectedNormalizedSha256) {
+        throw (
+            "Trusted CharacterSpacing helper '$relativePath' differs from the " +
+            'reviewed immutable source pinned by this semantic gate.')
+    }
+
+    $stream = [IO.MemoryStream]::new($bytes, $false)
+    $reader = [IO.StreamReader]::new(
+        $stream,
+        [Text.UTF8Encoding]::new($false, $true),
+        $true)
+    try {
+        $source = $reader.ReadToEnd()
+    }
+    finally {
+        $reader.Dispose()
+        $stream.Dispose()
+    }
+
+    $symbol = if ($Platform -ceq 'ios') { 'IOS' } else { 'MACCATALYST' }
+    $parseOptions =
+        [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default.WithPreprocessorSymbols(
+            [string[]]@($symbol))
+    $helperTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+        $source,
+        $parseOptions,
+        $trustedPath)
+    $helperDefinitions = @($helperTree.GetRoot().DescendantNodes() |
+        Where-Object {
+            if ($_ -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax] -or
+                $_.Identifier.ValueText -cne 'GetCharacterSpacing' -or
+                $_.ReturnType.ToString() -cne 'double' -or
+                $_.ParameterList.Parameters.Count -ne 1 -or
+                $_.ParameterList.Parameters[0].Identifier.ValueText -cne 'text' -or
+                $_.ParameterList.Parameters[0].Type.ToString() -cne
+                    'NSAttributedString' -or
+                $_.ParameterList.Parameters[0].Modifiers.Count -ne 1 -or
+                $_.ParameterList.Parameters[0].Modifiers[0].RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::ThisKeyword -or
+                @($_.Modifiers | Where-Object {
+                        $_.RawKind -eq
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::PublicKeyword
+                    }).Count -ne 1 -or
+                @($_.Modifiers | Where-Object {
+                        $_.RawKind -eq
+                            [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StaticKeyword
+                    }).Count -ne 1) {
+                return $false
+            }
+            $containingType = @($_.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax]
+                } | Select-Object -First 1)
+            $containingNamespace = @($_.Ancestors() | Where-Object {
+                    $_ -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BaseNamespaceDeclarationSyntax]
+                } | Select-Object -First 1)
+            return (
+                $containingType.Count -eq 1 -and
+                $containingType[0].Identifier.ValueText -ceq
+                    'AssertionExtensions' -and
+                $containingNamespace.Count -eq 1 -and
+                $containingNamespace[0].Name.ToString() -ceq
+                    'Microsoft.Maui.DeviceTests')
+        })
+    if ($helperDefinitions.Count -ne 1) {
+        throw (
+            'The immutable iOS assertion-extension source no longer contains ' +
+            'exactly one reviewed public GetCharacterSpacing(' +
+            'this NSAttributedString) definition.')
+    }
+
+    $methodSource = $helperDefinitions[0].ToFullString()
+    $semanticSource = @"
+using Foundation;
+using UIKit;
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public static partial class AssertionExtensions
+    {
+$methodSource
+    }
+}
+"@
+    return [pscustomobject]@{
+        Path = $trustedPath
+        Source = $semanticSource
+    }
+}
+
 function New-ReplicationControlVariant {
     <#
         .SYNOPSIS
@@ -5962,8 +6160,9 @@ function New-ReplicationControlVariant {
         $BaselineSource,
         $parseOptions,
         $SourcePath)
+    $root = $tree.GetRoot()
     $normalizedSourcePathForProfile = $SourcePath.Replace('\', '/')
-    $nativeLabelTextProfileMatch = [regex]::Match(
+    $nativeLabelProfileMatch = [regex]::Match(
         $normalizedSourcePathForProfile,
         '^src/Controls/tests/DeviceTests/Elements/Label/Issue(?<issue>[1-9][0-9]*)(?:Tests)?\.(?<platform>Android|iOS)\.cs$',
         [Text.RegularExpressions.RegexOptions]::CultureInvariant)
@@ -5974,12 +6173,36 @@ function New-ReplicationControlVariant {
     } else {
         ''
     }
+    $hasNativeLabelCharacterSpacingShape =
+        $Platform -in @('ios', 'catalyst') -and
+        $nativeLabelProfileMatch.Success -and
+        $nativeLabelProfileMatch.Groups['platform'].Value -ceq 'iOS' -and
+        @($root.DescendantNodes() | Where-Object {
+                ($_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'CharacterSpacing') -or
+                ($_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'AttributedText') -or
+                ($_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'GetCharacterSpacing')
+            }).Count -ne 0
+    $isNativeLabelCharacterSpacingProfile =
+        $hasNativeLabelCharacterSpacingShape
     $isNativeLabelTextProfile =
-        $nativeLabelTextProfileMatch.Success -and
-        $nativeLabelTextProfileMatch.Groups['platform'].Value -ceq
+        -not $isNativeLabelCharacterSpacingProfile -and
+        $nativeLabelProfileMatch.Success -and
+        $nativeLabelProfileMatch.Groups['platform'].Value -ceq
             $nativeLabelTextProfilePlatform
     $nativeLabelTextProfileIssue = if ($isNativeLabelTextProfile) {
-        $nativeLabelTextProfileMatch.Groups['issue'].Value
+        $nativeLabelProfileMatch.Groups['issue'].Value
+    } else {
+        ''
+    }
+    $nativeLabelCharacterSpacingProfileIssue =
+        if ($isNativeLabelCharacterSpacingProfile) {
+        $nativeLabelProfileMatch.Groups['issue'].Value
     } else {
         ''
     }
@@ -5998,13 +6221,14 @@ function New-ReplicationControlVariant {
         throw 'The reproduction source is not valid C# for a trusted negative control gate.'
     }
 
-    $root = $tree.GetRoot()
     $semanticTrees =
         [System.Collections.Generic.List[Microsoft.CodeAnalysis.SyntaxTree]]::new()
     $semanticTrees.Add($tree)
     $trustedAssertEventuallyTree = $null
     $trustedAssertEventuallySource = $null
     $trustedControlsHandlerTestBaseSource = $null
+    $trustedCharacterSpacingTree = $null
+    $trustedCharacterSpacingSource = $null
     $mentionsCreateHandlerAndAddToWindow = @(
         $root.DescendantNodes() |
         Where-Object {
@@ -6072,6 +6296,33 @@ function New-ReplicationControlVariant {
                 'under the control semantic compilation.')
         }
         $semanticTrees.Add($trustedAssertEventuallyTree)
+    }
+    if ($isNativeLabelCharacterSpacingProfile) {
+        if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
+            throw (
+                'The native Label CharacterSpacing profile requires an immutable ' +
+                'repository baseline, but RepositoryRoot was not provided.')
+        }
+        $trustedCharacterSpacingSource =
+            Get-ReplicationTrustedCharacterSpacingSource `
+                -RepositoryRoot $RepositoryRoot `
+                -GeneratedSourcePath $SourcePath `
+                -Platform $Platform
+        $trustedCharacterSpacingTree =
+            [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+                $trustedCharacterSpacingSource.Source,
+                $parseOptions,
+                $trustedCharacterSpacingSource.Path)
+        $trustedCharacterSpacingErrors = @(
+            $trustedCharacterSpacingTree.GetDiagnostics() |
+            Where-Object { [string]$_.Severity -ceq 'Error' } |
+            Select-Object -First 4)
+        if ($trustedCharacterSpacingErrors.Count -ne 0) {
+            throw (
+                'The immutable trusted CharacterSpacing helper is not valid C# ' +
+                'under the control semantic compilation.')
+        }
+        $semanticTrees.Add($trustedCharacterSpacingTree)
     }
     $additionalSourceIndex = 0
     foreach ($additionalSource in @($AdditionalSources)) {
@@ -6161,8 +6412,9 @@ function New-ReplicationControlVariant {
                         'Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific')) {
                     return $true
                 }
-                if ($isNativeLabelTextProfile -and
-                    $namespaceName -ceq 'UIKit') {
+                if (($isNativeLabelTextProfile -or
+                        $isNativeLabelCharacterSpacingProfile) -and
+                    $namespaceName -cin @('UIKit', 'Foundation')) {
                     return $true
                 }
                 if (-not $isAndroidIssue33315PathForSourceScan -or
@@ -6184,6 +6436,8 @@ function New-ReplicationControlVariant {
                 'Android native/profile or Issue33315 callback-shadow types'
             } elseif ($isAndroidIssue26505PathForSourceScan) {
                 'Android Issue26505 profile types'
+            } elseif ($isNativeLabelCharacterSpacingProfile) {
+                'Apple native Label CharacterSpacing profile types'
             } else {
                 'Android native/profile types'
             }
@@ -6297,6 +6551,60 @@ function New-ReplicationControlVariant {
             throw (
                 'The trusted AssertEventually symbol is not bound to the exact ' +
                 'immutable pre-existing repository helper file.')
+        }
+    }
+    $trustedCharacterSpacingMethod = $null
+    if ($null -ne $trustedCharacterSpacingTree) {
+        $trustedCharacterSpacingModel =
+            $semanticCompilation.GetSemanticModel($trustedCharacterSpacingTree)
+        $trustedCharacterSpacingMethods = @(
+            $trustedCharacterSpacingTree.GetRoot().DescendantNodes() |
+            Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax] -and
+                $_.Identifier.ValueText -ceq 'GetCharacterSpacing'
+            } |
+            ForEach-Object {
+                $trustedCharacterSpacingModel.GetDeclaredSymbol($_)
+            } |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $_.MethodKind -eq [Microsoft.CodeAnalysis.MethodKind]::Ordinary -and
+                $_.IsStatic -and $_.IsExtensionMethod -and
+                $_.DeclaredAccessibility -eq
+                    [Microsoft.CodeAnalysis.Accessibility]::Public -and
+                $_.Arity -eq 0 -and
+                $_.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.DeviceTests.AssertionExtensions' -and
+                $_.ReturnType.SpecialType -eq
+                    [Microsoft.CodeAnalysis.SpecialType]::System_Double -and
+                $_.Parameters.Length -eq 1 -and
+                $_.Parameters[0].Name -ceq 'text' -and
+                $_.Parameters[0].RefKind -eq
+                    [Microsoft.CodeAnalysis.RefKind]::None -and
+                $_.Parameters[0].Type.ToString() -ceq
+                    'Foundation.NSAttributedString' -and
+                $_.Parameters[0].Type.ContainingAssembly.Name -ceq
+                    'Microsoft.Maui.Controls.ReplicationControlContract'
+            })
+        if ($trustedCharacterSpacingMethods.Count -ne 1) {
+            throw (
+                'The immutable trusted CharacterSpacing helper no longer exposes ' +
+                'the one exact public extension-method contract.')
+        }
+        $trustedCharacterSpacingMethod = $trustedCharacterSpacingMethods[0]
+        $trustedCharacterSpacingLocations = @(
+            $trustedCharacterSpacingMethod.Locations |
+            Where-Object { $_.IsInSource })
+        if ($trustedCharacterSpacingLocations.Count -ne 1 -or
+            $trustedCharacterSpacingLocations[0].SourceTree -ne
+                $trustedCharacterSpacingTree -or
+            [IO.Path]::GetFullPath(
+                $trustedCharacterSpacingLocations[0].SourceTree.FilePath) -cne
+                $trustedCharacterSpacingSource.Path) {
+            throw (
+                'The trusted GetCharacterSpacing symbol is not bound to the exact ' +
+                'immutable pre-existing repository helper source.')
         }
     }
     foreach ($semanticTree in $semanticTrees) {
@@ -6767,6 +7075,14 @@ function New-ReplicationControlVariant {
         [Collections.Generic.HashSet[int]]::new()
     $trustedNativeLabelTextCallbackOracleMinimums =
         [Collections.Generic.Dictionary[int, int]]::new()
+    $acceptedNativeLabelCharacterSpacingRegistrationInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $acceptedNativeLabelCharacterSpacingHelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelCharacterSpacingCallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelCharacterSpacingCallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
     $isAndroidIssue33315Profile =
         $Platform -ceq 'android' -and
         $normalizedSourcePath -ceq
@@ -6843,6 +7159,42 @@ function New-ReplicationControlVariant {
             return (& $isNativeLabelTextScopedType -Type $Symbol.Type)
         }
         return $false
+    }
+    $isNativeLabelCharacterSpacingScopedSymbol = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ISymbol]$Symbol)
+        if ($null -eq $Symbol) { return $false }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            $definition = if ($null -ne $Symbol.ReducedFrom) {
+                $Symbol.ReducedFrom
+            } else {
+                $Symbol.OriginalDefinition
+            }
+            return (
+                $definition.Name -ceq 'GetCharacterSpacing' -and
+                $definition.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.DeviceTests.AssertionExtensions')
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol]) {
+            return (
+                ($Symbol.Name -ceq 'CharacterSpacing' -and
+                    $Symbol.ContainingType.ToString() -ceq
+                        'Microsoft.Maui.Controls.Label') -or
+                ($Symbol.Name -ceq 'AttributedText' -and
+                    $Symbol.ContainingType.ToString() -ceq 'UIKit.UILabel'))
+        }
+        $type = if ($Symbol -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+            $Symbol
+        } elseif ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $Symbol -is [Microsoft.CodeAnalysis.IFieldSymbol]) {
+            $Symbol.Type
+        } elseif ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            $Symbol.ReturnType
+        } else {
+            $null
+        }
+        return (
+            $null -ne $type -and
+            $type.ToString() -ceq 'Foundation.NSAttributedString')
     }
     $isAndroidIssue33315ScopedType = {
         param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
@@ -6969,6 +7321,17 @@ function New-ReplicationControlVariant {
         return @($Node.AncestorsAndSelf() | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
                 $trustedNativeLabelTextCallbackBodies.Contains($_.SpanStart)
+            }).Count -ne 0
+    }
+    $isNativeLabelCharacterSpacingCallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedNativeLabelCharacterSpacingCallbackBodies.Contains(
+                    $_.SpanStart)
             }).Count -ne 0
     }
     $getInvocationName = {
@@ -8525,6 +8888,506 @@ function New-ReplicationControlVariant {
         [void]$trustedNativeLabelTextCallbackBodies.Add($callback.Body.SpanStart)
         $trustedNativeLabelTextCallbackOracleMinimums[$callback.Body.SpanStart] =
             $readinessStatement.Span.End
+    }
+    $validateNativeLabelCharacterSpacingHelperInvocation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]$AwaitExpression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        if (-not $isNativeLabelCharacterSpacingProfile) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label CharacterSpacing profile is available only ' +
+                    'to an issue-keyed iOS or Mac Catalyst Controls Label device-test path.')
+        }
+        $normalizedEnvelope = $BaselineSource.Replace("`r`n", "`n")
+        $envelopePattern = if ($Platform -ceq 'ios') {
+            '(?s)\A\s*#if\s+IOS\s*&&\s*!\s*MACCATALYST\s*\n(?<body>.*)\n\s*#endif\s*\z'
+        } else {
+            '(?s)\A\s*#if\s+MACCATALYST\s*\n(?<body>.*)\n\s*#endif\s*\z'
+        }
+        $envelope = [regex]::Match(
+            $normalizedEnvelope,
+            $envelopePattern,
+            [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        if (-not $envelope.Success -or
+            $envelope.Groups['body'].Value -cmatch '(?m)^\s*#') {
+            $requiredGuard = if ($Platform -ceq 'ios') {
+                '#if IOS && !MACCATALYST'
+            } else {
+                '#if MACCATALYST'
+            }
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0] `
+                -HelperSymbol $HelperMethod -Reason (
+                    "the native Label CharacterSpacing profile must wrap the entire " +
+                    "source in exactly $requiredGuard and one matching #endif, with " +
+                    'no alternate or nested conditional source.')
+        }
+        if ($null -eq $trustedCharacterSpacingMethod) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the exact immutable GetCharacterSpacing source identity and ' +
+                    'public extension-method contract were not established.')
+        }
+
+        $expectedCategory = "Issue$nativeLabelCharacterSpacingProfileIssue"
+        $issueCategories = @($selectedAttributes | Where-Object {
+                $attributeSymbol = $semanticModel.GetSymbolInfo($_).Symbol
+                $attributeSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $attributeSymbol.ContainingAssembly.Name -ceq $trustedContractAssembly -and
+                $attributeSymbol.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.CategoryAttribute' -and
+                $_.ArgumentList -and $_.ArgumentList.Arguments.Count -eq 1 -and
+                $_.ArgumentList.Arguments[0].Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                $_.ArgumentList.Arguments[0].Expression.Token.ValueText -ceq
+                    $expectedCategory
+            })
+        if ($issueCategories.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0] `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label CharacterSpacing profile requires exactly ' +
+                    "[Category(`"$expectedCategory`")] on the selected method, " +
+                    'matching the issue-keyed file path.')
+        }
+
+        $statements = @($testMethod[0].Body.Statements)
+        if ($statements.Count -ne 5 -or
+            $AwaitExpression.Parent -ne $statements[4] -or
+            $statements[2] -ne $localDeclaration -or
+            $statements[3] -ne $gate) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0].Body `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label CharacterSpacing method must contain exactly ' +
+                    'five top-level statements in order: one handler registration, ' +
+                    'the affected Label declaration, the gate declaration, the gate, ' +
+                    'and the directly awaited immutable helper.')
+        }
+        & $validateExactSingleHandlerRegistrationStatement `
+            -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
+            -ProfileDescription 'native Label CharacterSpacing profile' `
+            -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
+            -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
+            -ViewTypeName 'Microsoft.Maui.Controls.Label' `
+            -HandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
+            -AcceptedInvocations `
+                $acceptedNativeLabelCharacterSpacingRegistrationInvocations
+
+        $labelStatement = $statements[1]
+        if ($labelStatement -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -or
+            $labelStatement.Declaration.Type.ToString() -cne 'var' -or
+            $labelStatement.Declaration.Variables.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $labelStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'declare exactly one affected Label local as the second ' +
+                    'top-level statement.')
+        }
+        $labelDeclarator = $labelStatement.Declaration.Variables[0]
+        $labelSymbol = $semanticModel.GetDeclaredSymbol($labelDeclarator)
+        $labelCreation = if ($labelDeclarator.Initializer) {
+            $labelDeclarator.Initializer.Value
+        } else {
+            $null
+        }
+        if ($labelDeclarator.Identifier.ValueText -cne 'affectedLabel' -or
+            $labelSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $labelSymbol.Type.ToString() -cne 'Microsoft.Maui.Controls.Label' -or
+            $labelSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $labelCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $labelCreation.Type.ToString() -cne
+                'global::Microsoft.Maui.Controls.Label' -or
+            ($labelCreation.ArgumentList -and
+                $labelCreation.ArgumentList.Arguments.Count -ne 0)) {
+            & $throwTrustedWindowHelperViolation -Node $labelStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected control must be exactly `var affectedLabel = ' +
+                    'new global::Microsoft.Maui.Controls.Label { ... };` bound to ' +
+                    'the external Controls Label.')
+        }
+        $initializerAssignments = @(if ($labelCreation.Initializer) {
+                $labelCreation.Initializer.Expressions
+            })
+        if ($initializerAssignments.Count -ne 2) {
+            & $throwTrustedWindowHelperViolation -Node $labelCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected Label initializer must establish exactly one ' +
+                    'non-empty literal Text and the known TextType.Text control state.')
+        }
+        $initializerByName = @{}
+        foreach ($initializerAssignment in $initializerAssignments) {
+            if ($initializerAssignment -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $initializerAssignment.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                $initializerAssignment.Left -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                & $throwTrustedWindowHelperViolation -Node $initializerAssignment `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts only direct Text ' +
+                        'and TextType assignments.')
+            }
+            $propertyName = $initializerAssignment.Left.Identifier.ValueText
+            $propertySymbol =
+                $semanticModel.GetSymbolInfo($initializerAssignment.Left).Symbol
+            if ($propertyName -cnotin @('Text', 'TextType') -or
+                $initializerByName.ContainsKey($propertyName) -or
+                $propertySymbol -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $propertySymbol.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $propertySymbol.ContainingType.ToString() -cne
+                    'Microsoft.Maui.Controls.Label') {
+                & $throwTrustedWindowHelperViolation -Node $initializerAssignment `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts exactly one external ' +
+                        'Label.Text and one Label.TextType assignment.')
+            }
+            $initializerByName[$propertyName] = $initializerAssignment.Right
+        }
+        $initialText = $initializerByName['Text']
+        $initialTextType = $initializerByName['TextType']
+        $initialTextTypeSymbol =
+            $semanticModel.GetSymbolInfo($initialTextType).Symbol
+        if ($initialText -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $initialText.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StringLiteralExpression -or
+            [string]::IsNullOrEmpty([string]$initialText.Token.Value) -or
+            $initialTextType -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $initialTextTypeSymbol -isnot [Microsoft.CodeAnalysis.IFieldSymbol] -or
+            $initialTextTypeSymbol.Name -cne 'Text' -or
+            $initialTextTypeSymbol.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.TextType' -or
+            $initialTextTypeSymbol.ContainingAssembly.Name -cne
+                $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $labelCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected Label must start with non-empty literal Text and ' +
+                    'the direct trusted TextType.Text value.')
+        }
+
+        if ($gate.Else) {
+            & $throwTrustedWindowHelperViolation -Node $gate.Else `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the CharacterSpacing profile keeps one common post-attachment ' +
+                    'mutation and does not admit an else branch.')
+        }
+        $gateExpression = $gate.Statement.Statements[0].Expression
+        $gateValueSymbol = if ($gateExpression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($gateExpression.Right).Symbol
+        } else {
+            $null
+        }
+        if ($gateExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+            $gateExpression.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $gateExpression.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $gateExpression.Left.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo(
+                    $gateExpression.Left.Expression).Symbol,
+                $labelSymbol) -or
+            $gateExpression.Left.Name.Identifier.ValueText -cne 'TextType' -or
+            $gateValueSymbol -isnot [Microsoft.CodeAnalysis.IFieldSymbol] -or
+            $gateValueSymbol.Name -cne 'Html' -or
+            $gateValueSymbol.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.TextType' -or
+            $gateValueSymbol.ContainingAssembly.Name -cne
+                $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $gateExpression `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the true gate must only assign affectedLabel.TextType to the ' +
+                    'direct trusted TextType.Html value.')
+        }
+
+        if ($Invocation.ArgumentList.Arguments.Count -ne 2 -or
+            @($Invocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or $null -ne $_.NameColon
+                }).Count -ne 0) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'pass exactly the trusted Window tree and one async handler callback.')
+        }
+        $windowCreation = $Invocation.ArgumentList.Arguments[0].Expression
+        $callback = $Invocation.ArgumentList.Arguments[1].Expression
+        if ([regex]::Replace($windowCreation.ToString(), '\s+', '') -cne
+            'newglobal::Microsoft.Maui.Controls.Window(newglobal::Microsoft.Maui.Controls.ContentPage{Content=affectedLabel})') {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'attach only the exact pre-gate affectedLabel in the trusted ' +
+                    'Window and ContentPage tree.')
+        }
+        $windowLabelIdentifiers = @($windowCreation.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                $_.Identifier.ValueText -ceq 'affectedLabel'
+            })
+        if ($windowLabelIdentifiers.Count -ne 1 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($windowLabelIdentifiers[0]).Symbol,
+                $labelSymbol)) {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the Window must contain the exact pre-gate affectedLabel instance.')
+        }
+
+        if ($callback -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $callback.AsyncKeyword.RawKind -eq 0 -or
+            $callback.Parameter.Identifier.ValueText -cne 'handler' -or
+            $callback.Body -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+            $callback.Body.Statements.Count -ne 3) {
+            & $throwTrustedWindowHelperViolation -Node $callback `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the handler callback must contain exactly readiness, the common ' +
+                    'post-attachment CharacterSpacing assignment, and the native oracle.')
+        }
+        $handlerSymbol = $semanticModel.GetDeclaredSymbol($callback.Parameter)
+        if ($handlerSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $handlerSymbol.Type.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $handlerSymbol.Type.ContainingAssembly.Name -cne
+                $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $callback.Parameter `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback parameter must bind to the external LabelHandler ' +
+                    'selected by the helper.')
+        }
+
+        $readinessStatement = $callback.Body.Statements[0]
+        $readinessInvocation = if ($readinessStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $readinessStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax] -and
+            $readinessStatement.Expression.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $readinessStatement.Expression.Expression
+        } else {
+            $null
+        }
+        if ([regex]::Replace($readinessStatement.ToString(), '\s+', '') -cne
+                'awaitAssertEventually(()=>affectedLabel.Handler!=null&&affectedLabel.IsLoaded);' -or
+            $null -eq $readinessInvocation -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($readinessInvocation).Symbol,
+                $trustedAssertEventuallyMethod)) {
+            & $throwTrustedWindowHelperViolation -Node $readinessStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback must first await the exact immutable ' +
+                    'AssertEventually helper for affectedLabel.Handler and IsLoaded.')
+        }
+        foreach ($affectedIdentifier in @($readinessStatement.DescendantNodes() |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'affectedLabel'
+                })) {
+            if (-not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($affectedIdentifier).Symbol,
+                    $labelSymbol)) {
+                & $throwTrustedWindowHelperViolation -Node $affectedIdentifier `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the readiness predicate must observe the exact attached Label.')
+            }
+        }
+
+        $spacingStatement = $callback.Body.Statements[1]
+        $spacingAssignment = if ($spacingStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $spacingStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $spacingStatement.Expression
+        } else {
+            $null
+        }
+        $spacingProperty = if ($null -ne $spacingAssignment) {
+            $semanticModel.GetSymbolInfo($spacingAssignment.Left).Symbol
+        } else {
+            $null
+        }
+        $spacingValue = if ($null -ne $spacingAssignment) {
+            $spacingAssignment.Right
+        } else {
+            $null
+        }
+        $spacingConstant = if ($null -ne $spacingValue) {
+            $semanticModel.GetConstantValue($spacingValue)
+        } else {
+            $null
+        }
+        if ($null -eq $spacingAssignment -or
+            $spacingAssignment.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $spacingAssignment.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $spacingAssignment.Left.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo(
+                    $spacingAssignment.Left.Expression).Symbol,
+                $labelSymbol) -or
+            $spacingProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $spacingProperty.Name -cne 'CharacterSpacing' -or
+            $spacingProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.Label' -or
+            $spacingProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $spacingValue -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $spacingValue.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            -not $spacingConstant.HasValue) {
+            & $throwTrustedWindowHelperViolation -Node $spacingStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the second callback statement must directly assign an ' +
+                    'issue-derived positive numeric literal to affectedLabel.CharacterSpacing.')
+        }
+        try {
+            $assignedSpacing = [Convert]::ToDouble(
+                $spacingConstant.Value,
+                [Globalization.CultureInfo]::InvariantCulture)
+        }
+        catch {
+            $assignedSpacing = [double]::NaN
+        }
+        if ([double]::IsNaN($assignedSpacing) -or
+            [double]::IsInfinity($assignedSpacing) -or
+            $assignedSpacing -le 0 -or
+            $assignedSpacing -gt 10000 -or
+            [Math]::Truncate($assignedSpacing) -ne $assignedSpacing) {
+            & $throwTrustedWindowHelperViolation -Node $spacingValue `
+                -HelperSymbol $HelperMethod -Reason (
+                    'CharacterSpacing must be a finite positive integer-valued ' +
+                    'numeric literal no greater than 10000 so native measurement is bounded.')
+        }
+
+        $oracleStatement = $callback.Body.Statements[2]
+        $oracleInvocation = if ($oracleStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $oracleStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $oracleStatement.Expression
+        } else {
+            $null
+        }
+        $oracleMethod = if ($null -ne $oracleInvocation) {
+            $semanticModel.GetSymbolInfo($oracleInvocation).Symbol
+        } else {
+            $null
+        }
+        if ($null -eq $oracleInvocation -or
+            $oracleInvocation.Expression.ToString() -cne 'Assert.Equal' -or
+            $oracleInvocation.ArgumentList.Arguments.Count -ne 2 -or
+            $oracleMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $oracleMethod.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $oracleMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $oracleMethod.Name -cne 'Equal') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the final oracle must be exactly Assert.Equal(<matching positive ' +
+                    'literal>, handler.PlatformView.AttributedText.GetCharacterSpacing()).')
+        }
+        $expectedSpacingExpression =
+            $oracleInvocation.ArgumentList.Arguments[0].Expression
+        $expectedSpacingConstant =
+            $semanticModel.GetConstantValue($expectedSpacingExpression)
+        try {
+            $expectedSpacing = [Convert]::ToDouble(
+                $expectedSpacingConstant.Value,
+                [Globalization.CultureInfo]::InvariantCulture)
+        }
+        catch {
+            $expectedSpacing = [double]::NaN
+        }
+        $nativeSpacingInvocation =
+            $oracleInvocation.ArgumentList.Arguments[1].Expression
+        if ($expectedSpacingExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $expectedSpacingExpression.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            -not $expectedSpacingConstant.HasValue -or
+            [double]::IsNaN($expectedSpacing) -or
+            [double]::IsInfinity($expectedSpacing) -or
+            $expectedSpacing -le 0 -or
+            $expectedSpacing -ne $assignedSpacing -or
+            $nativeSpacingInvocation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+            $nativeSpacingInvocation.ArgumentList.Arguments.Count -ne 0 -or
+            $nativeSpacingInvocation.Expression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $nativeSpacingInvocation.Expression.Name.Identifier.ValueText -cne
+                'GetCharacterSpacing') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the expected spacing must be the same finite positive literal ' +
+                    'assigned after attachment, and the actual value must be the ' +
+                    'direct native attributed-text observation.')
+        }
+        $nativeAttributedText =
+            $nativeSpacingInvocation.Expression.Expression
+        if ([regex]::Replace($nativeAttributedText.ToString(), '\s+', '') -cne
+            'handler.PlatformView.AttributedText') {
+            & $throwTrustedWindowHelperViolation -Node $nativeAttributedText `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native oracle must observe exactly the selected handler ' +
+                    'PlatformView.AttributedText instance.')
+        }
+        $handlerIdentifier = $nativeAttributedText.Expression.Expression
+        $platformViewProperty =
+            $semanticModel.GetSymbolInfo($nativeAttributedText.Expression).Symbol
+        $attributedTextProperty =
+            $semanticModel.GetSymbolInfo($nativeAttributedText).Symbol
+        $spacingMethod =
+            $semanticModel.GetSymbolInfo($nativeSpacingInvocation).Symbol
+        $spacingDefinition = if ($spacingMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $spacingMethod.ReducedFrom) {
+            $spacingMethod.ReducedFrom
+        } else {
+            $spacingMethod
+        }
+        if ($handlerIdentifier -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($handlerIdentifier).Symbol,
+                $handlerSymbol) -or
+            $platformViewProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $platformViewProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $platformViewProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $platformViewProperty.Name -cne 'PlatformView' -or
+            $attributedTextProperty -isnot
+                [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $attributedTextProperty.ContainingAssembly.Name -cne
+                $trustedContractAssembly -or
+            $attributedTextProperty.ContainingType.ToString() -cne
+                'UIKit.UILabel' -or
+            $attributedTextProperty.Name -cne 'AttributedText' -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $spacingDefinition,
+                $trustedCharacterSpacingMethod)) {
+            & $throwTrustedWindowHelperViolation -Node $nativeSpacingInvocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the oracle must bind the exact handler AttributedText instance ' +
+                    'to the exact immutable public GetCharacterSpacing extension.')
+        }
+
+        [void]$acceptedAssertEventuallyInvocations.Add(
+            $readinessInvocation.SpanStart)
+        [void]$acceptedNativeLabelCharacterSpacingHelperInvocations.Add(
+            $Invocation.SpanStart)
+        [void]$trustedNativeLabelCharacterSpacingCallbackBodies.Add(
+            $callback.Body.SpanStart)
+        $trustedNativeLabelCharacterSpacingCallbackOracleMinimums[
+            $callback.Body.SpanStart] = $spacingStatement.Span.End
     }
     $validateAndroidIssue33315HelperInvocation = {
         param(
@@ -10588,6 +11451,12 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             (& $isExactTrustedDirectHandlerWindowHelperMethod `
                 -Method $awaitedMethod `
                 -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
+        $isTrustedNativeLabelCharacterSpacingHelper =
+            $isNativeLabelCharacterSpacingProfile -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            (& $isExactTrustedDirectHandlerWindowHelperMethod `
+                -Method $awaitedMethod `
+                -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
         if ($Platform -ceq 'android' -and
             $isTrustedAndroidIssue26505Helper) {
             & $validateAndroidIssue26505HelperInvocation `
@@ -10606,6 +11475,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         }
         if ($isTrustedNativeLabelTextHelper) {
             & $validateNativeLabelTextHelperInvocation `
+                -AwaitExpression $awaitExpression `
+                -Invocation $awaitedExpression `
+                -HelperMethod $awaitedMethod
+            continue
+        }
+        if ($isTrustedNativeLabelCharacterSpacingHelper) {
+            & $validateNativeLabelCharacterSpacingHelperInvocation `
                 -AwaitExpression $awaitExpression `
                 -Invocation $awaitedExpression `
                 -HelperMethod $awaitedMethod
@@ -11406,6 +12282,9 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             if (& $isAcceptedAssertEventuallyNode -Node $_) {
                 return $false
             }
+            if (& $isNativeLabelCharacterSpacingCallbackNode -Node $_) {
+                return $false
+            }
             $symbolInfo = $semanticModel.GetSymbolInfo($_)
             $symbols = @($symbolInfo.Symbol) + @($symbolInfo.CandidateSymbols)
             return @($symbols | Where-Object {
@@ -11463,6 +12342,18 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 throw (
                     "Generic type argument '$typeArgument' is not a trusted " +
                     "external framework type in '$SourcePath' line $typeLine.")
+            }
+        }
+    }
+    if (-not $isNativeLabelCharacterSpacingProfile) {
+        foreach ($expression in @($testMethod[0].Body.DescendantNodes() |
+                Where-Object { $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] })) {
+            $expressionSymbol = $semanticModel.GetSymbolInfo($expression).Symbol
+            if (& $isNativeLabelCharacterSpacingScopedSymbol -Symbol $expressionSymbol) {
+                $line = $tree.GetLineSpan($expression.Span).StartLinePosition.Line + 1
+                throw (
+                    'Native Label CharacterSpacing metadata is trusted only for the ' +
+                    "exact reviewed profile; offending member in '$SourcePath' line $line.")
             }
         }
     }
@@ -11546,6 +12437,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     $nativeLabelTextInvocation.SpanStart))) {
             continue
         }
+        if ($null -ne $nativeLabelTextInvocation -and
+            ($acceptedNativeLabelCharacterSpacingRegistrationInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart) -or
+                $acceptedNativeLabelCharacterSpacingHelperInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart))) {
+            continue
+        }
         if (& $isTrustedWindowCallbackNode -Node $operationNode) {
             continue
         }
@@ -11559,6 +12457,9 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             continue
         }
         if (& $isNativeLabelTextCallbackNode -Node $operationNode) {
+            continue
+        }
+        if (& $isNativeLabelCharacterSpacingCallbackNode -Node $operationNode) {
             continue
         }
         $operationText = $operationNode.ToString()
@@ -11591,6 +12492,18 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             throw (
                 'Native Label text metadata is trusted only inside the exact ' +
                 'reviewed helper callback; offending syntax ' +
+                "'$operationText' in '$SourcePath' line $operationLine.")
+        }
+        if ((& $isNativeLabelCharacterSpacingScopedSymbol `
+                -Symbol $precheckedSymbol) -and
+            (-not $isNativeLabelCharacterSpacingProfile -or
+                -not (& $isNativeLabelCharacterSpacingCallbackNode `
+                    -Node $operationNode))) {
+            $operationLine = $tree.GetLineSpan(
+                $operationNode.Span).StartLinePosition.Line + 1
+            throw (
+                'Native Label CharacterSpacing metadata is trusted only inside ' +
+                'the exact reviewed helper callback and profile; offending syntax ' +
                 "'$operationText' in '$SourcePath' line $operationLine.")
         }
         if ($operationText -cmatch
@@ -14404,12 +15317,24 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 $trustedNativeLabelTextCallbackOracleMinimums[
                     $assertionStatement.Parent.SpanStart] -and
             $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedNativeLabelCharacterSpacingCallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedNativeLabelCharacterSpacingCallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedNativeLabelCharacterSpacingCallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedNativeLabelCharacterSpacingCallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
         if ($isDirectPostGateAssertion -or
             $isTrustedWindowCallbackAssertion -or
             $isTrustedExternalWindowCallbackAssertion -or
             $isTrustedAndroidIssue26505CallbackAssertion -or
             $isTrustedAndroidIssue33315CallbackAssertion -or
-            $isTrustedNativeLabelTextCallbackAssertion) {
+            $isTrustedNativeLabelTextCallbackAssertion -or
+            $isTrustedNativeLabelCharacterSpacingCallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -14894,6 +15819,19 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                         '\s+',
                         '') -ceq 'handler.PlatformView.Text'
             }
+            if ($isTrustedNativeLabelCharacterSpacingCallbackAssertion) {
+                $supportedGuaranteedOracle =
+                    $assertionArguments.Count -eq 2 -and
+                    $assertionSymbol.ContainingType.ToString() -ceq 'Xunit.Assert' -and
+                    $assertionSymbol.Name -ceq 'Equal' -and
+                    $assertionArguments[0].Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                    [regex]::Replace(
+                        $assertionArguments[1].Expression.ToString(),
+                        '\s+',
+                        '') -ceq
+                        'handler.PlatformView.AttributedText.GetCharacterSpacing()'
+            }
             if (-not $isTautologicalAssertion -and
                 $supportedGuaranteedOracle -and
                 ($observesFrameworkMember -or $observesChangedLocal)) {
@@ -14920,11 +15858,24 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax]
                 })) {
             $argumentSymbol = $semanticModel.GetSymbolInfo($argumentNode).Symbol
+            $argumentDefinition = if ($argumentSymbol -is
+                    [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $null -ne $argumentSymbol.ReducedFrom) {
+                $argumentSymbol.ReducedFrom
+            } else {
+                $argumentSymbol
+            }
+            $isExactTrustedCharacterSpacingObservation =
+                $isTrustedNativeLabelCharacterSpacingCallbackAssertion -and
+                [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $argumentDefinition,
+                    $trustedCharacterSpacingMethod)
             if (($argumentSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -or
                     $argumentSymbol -is [Microsoft.CodeAnalysis.IPropertySymbol]) -and
                 @($argumentSymbol.Locations | Where-Object {
                         $_.IsInSource
-                    }).Count -ne 0) {
+                    }).Count -ne 0 -and
+                -not $isExactTrustedCharacterSpacingObservation) {
                 throw (
                     'Trusted assertion arguments may not execute generated ' +
                     'helpers or getters.')

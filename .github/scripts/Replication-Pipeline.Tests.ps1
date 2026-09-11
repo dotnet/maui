@@ -186,6 +186,8 @@ Describe 'MAUI Copilot mode routing' {
         $fixture | Should -Match 'handlers\.AddHandler<global::Microsoft\.Maui\.Controls\.Label, LabelHandler>'
         $fixture | Should -Match 'CreateHandlerAndAddToWindow<LabelHandler>'
         $fixture | Should -Match 'Assert\.Equal\("Native Label text", handler\.PlatformView\.Text\)'
+        $fixture | Should -Match 'label\.CharacterSpacing = 5d;'
+        $fixture | Should -Match 'Assert\.Equal\(5d, handler\.PlatformView\.AttributedText\.GetCharacterSpacing\(\)\)'
     }
 
     It 'uses shared iOS provisioning without an external isolation prerequisite' {

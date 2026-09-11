@@ -48,6 +48,8 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Same(label.Handler, handler);
 					Assert.NotNull(handler.PlatformView.Window);
 					Assert.Equal("Native Label text", handler.PlatformView.Text);
+					label.CharacterSpacing = 5d;
+					Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());
 				});
 		}
 	}
