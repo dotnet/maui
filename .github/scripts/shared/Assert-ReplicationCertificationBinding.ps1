@@ -469,7 +469,7 @@ function Read-ReplicationRegressionRunEvidence {
             throw 'Strict regression run evidence must bind between one and eight result files.'
         }
         $sourceNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
-        $xmlRecordMap = [ordered]@{}
+        $xmlRecordMap = [Collections.Specialized.OrderedDictionary]::new([StringComparer]::Ordinal)
         $xmlTotals = [ordered]@{ Total = 0; Passed = 0; Failed = 0; Skipped = 0; Errors = 0 }
         foreach ($source in $sourceFiles) {
             $fields = @($source.PSObject.Properties.Name | Sort-Object -CaseSensitive)
@@ -495,10 +495,14 @@ function Read-ReplicationRegressionRunEvidence {
             $xmlTotals.Errors += $parsedXml.Errors
             foreach ($record in $parsedXml.Records) {
                 $identity = "$($record.type)`n$($record.method)`n$($record.displayName)"
-                if ($xmlRecordMap.Contains($identity)) {
-                    throw "Retained regression XML contains duplicate test identity '$($record.type).$($record.method) [$($record.displayName)]'."
+                if (-not $xmlRecordMap.Contains($identity)) {
+                    $xmlRecordMap[$identity] =
+                        [Collections.Generic.List[object]]::new()
                 }
-                $xmlRecordMap[$identity] = $record
+                $xmlRecordMap[$identity].Add([pscustomobject]@{
+                    Outcome = [string]$record.outcome
+                    FailureSignature = [string]$record.failureSignature
+                })
             }
         }
 
@@ -506,7 +510,7 @@ function Read-ReplicationRegressionRunEvidence {
         if ($records.Count -lt 1 -or $records.Count -gt 256) {
             throw 'Strict regression run evidence must contain between one and 256 test records.'
         }
-        $recordMap = [ordered]@{}
+        $recordMap = [Collections.Specialized.OrderedDictionary]::new([StringComparer]::Ordinal)
         foreach ($record in $records) {
             $fields = @($record.PSObject.Properties.Name | Sort-Object -CaseSensitive)
             if (($fields -join "`n") -cne "displayName`nfailureSignature`nmethod`noutcome`ntype") {
@@ -526,13 +530,14 @@ function Read-ReplicationRegressionRunEvidence {
                 throw 'Strict regression run evidence contains an invalid test identity or outcome.'
             }
             $identity = "$type`n$method`n$displayName"
-            if ($recordMap.Contains($identity)) {
-                throw "Strict regression run evidence contains duplicate test identity '$type.$method [$displayName]'."
+            if (-not $recordMap.Contains($identity)) {
+                $recordMap[$identity] =
+                    [Collections.Generic.List[object]]::new()
             }
-            $recordMap[$identity] = [pscustomobject]@{
+            $recordMap[$identity].Add([pscustomobject]@{
                 Outcome = $outcome
                 FailureSignature = $signature
-            }
+            })
         }
         foreach ($name in @('total', 'passed', 'failed', 'skipped', 'errors')) {
             $value = 0
@@ -551,15 +556,29 @@ function Read-ReplicationRegressionRunEvidence {
             throw 'Strict regression run evidence records do not match retained XML.'
         }
         foreach ($identity in $recordMap.Keys) {
-            if (-not $xmlRecordMap.Contains($identity) -or
-                [string]$recordMap[$identity].Outcome -cne
-                    [string]$xmlRecordMap[$identity].outcome -or
-                [string]$recordMap[$identity].FailureSignature -cne
-                    [string]$xmlRecordMap[$identity].failureSignature) {
+            if (-not $xmlRecordMap.Contains($identity)) {
+                throw 'Strict regression run evidence records do not match retained XML.'
+            }
+            $jsonStates = @($recordMap[$identity] | ForEach-Object {
+                "$($_.Outcome)`n$($_.FailureSignature)"
+            } | Sort-Object -CaseSensitive)
+            $xmlStates = @($xmlRecordMap[$identity] | ForEach-Object {
+                "$($_.Outcome)`n$($_.FailureSignature)"
+            } | Sort-Object -CaseSensitive)
+            if (($jsonStates -join "`n--state--`n") -cne
+                ($xmlStates -join "`n--state--`n")) {
                 throw 'Strict regression run evidence records do not match retained XML.'
             }
         }
-        if (@($recordMap.Values | Where-Object { $_.Outcome -ne 'Skip' }).Count -eq 0) {
+        $executedRecordCount = 0
+        foreach ($group in $recordMap.Values) {
+            foreach ($record in $group) {
+                if ($record.Outcome -ne 'Skip') {
+                    $executedRecordCount++
+                }
+            }
+        }
+        if ($executedRecordCount -eq 0) {
             throw 'Strict regression run evidence contains only skipped tests.'
         }
         return [pscustomobject]@{
@@ -645,24 +664,33 @@ function Assert-ReplicationRegressionEvidence {
         }
         $comparablePassingCount = 0
         foreach ($identity in $baselineIds) {
-            $before = $baseline.Records[$identity]
-            $after = $fix.Records[$identity]
-            if ($before.Outcome -ceq 'Pass' -and $after.Outcome -ceq 'Pass') {
-                $comparablePassingCount++
+            $beforeGroup = @($baseline.Records[$identity])
+            $afterGroup = @($fix.Records[$identity])
+            if ($beforeGroup.Count -ne $afterGroup.Count) {
+                throw 'Regression baseline and fix runs did not execute the same exact test identity multiset.'
             }
-            $accepted = switch ($before.Outcome) {
-                'Pass' { $after.Outcome -ceq 'Pass' }
-                'Fail' {
-                    $after.Outcome -ceq 'Pass' -or
-                    ($after.Outcome -ceq 'Fail' -and
-                        $after.FailureSignature -ceq $before.FailureSignature)
+            foreach ($after in $afterGroup) {
+                foreach ($before in $beforeGroup) {
+                    $accepted = switch ($before.Outcome) {
+                        'Pass' { $after.Outcome -ceq 'Pass' }
+                        'Fail' {
+                            $after.Outcome -ceq 'Pass' -or
+                            ($after.Outcome -ceq 'Fail' -and
+                                $after.FailureSignature -ceq
+                                    $before.FailureSignature)
+                        }
+                        'Skip' { $after.Outcome -in @('Skip', 'Pass') }
+                        default { $false }
+                    }
+                    if (-not $accepted) {
+                        $display = $identity -replace "`n", '.'
+                        throw "Regression evidence detected an incompatible outcome for '$display': $($before.Outcome) -> $($after.Outcome)."
+                    }
                 }
-                'Skip' { $after.Outcome -in @('Skip', 'Pass') }
-                default { $false }
             }
-            if (-not $accepted) {
-                $display = $identity -replace "`n", '.'
-                throw "Regression evidence detected an incompatible outcome for '$display': $($before.Outcome) -> $($after.Outcome)."
+            if (@($beforeGroup | Where-Object { $_.Outcome -ceq 'Pass' }).Count -gt 0 -and
+                @($afterGroup | Where-Object { $_.Outcome -ceq 'Pass' }).Count -gt 0) {
+                $comparablePassingCount++
             }
         }
         if ($comparablePassingCount -lt 1) {

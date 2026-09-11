@@ -313,12 +313,22 @@ Trusted code runs that class on the unfixed baseline and the selected fix in
 separate fresh directories, with the existing platform execution boundaries.
 The exact issue test and its four-arm counts remain separate. Each sibling
 record retains its class, method, theory/display identity, outcome and normalized
-failure signature, including stack-frame identity. The identity set must match.
+failure signature, including stack-frame identity. The case-sensitive identity
+multiset must match, including the number of rows with each identity.
 A new failure, changed failure or newly skipped test rejects the fix; an
 inherited failure must keep its signature or become passing. Stable skips are
 disclosed, not counted as coverage, and at least one sibling must pass in both
 runs. A deterministic regression can use the existing single repair opportunity,
 but cannot cause repeated repairs or larger execution budgets.
+
+Native theory display names can collide when the framework truncates complex
+arguments. Those rows remain separate in both the retained XML and JSON; no
+ordinal or guessed case ID is assigned. A duplicate group is accepted only when
+every possible baseline-to-fix pairing is nonregressing. For example, two
+baseline passes require two candidate passes; swapping a pass and failure cannot
+hide a regression behind unchanged totals. Ambiguous failure signatures require
+unambiguously safe outcomes, not an optimistic pairing. Reordering does not
+change the result, and stable skipped rows still provide no passing coverage.
 
 Strict completion is emitted only after required cleanup succeeds. Windows XML
 is preserved outside package LocalState before uninstall. A trusted, attested

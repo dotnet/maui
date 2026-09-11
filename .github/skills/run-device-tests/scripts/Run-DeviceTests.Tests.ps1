@@ -1690,7 +1690,7 @@ at Xunit.Assert.Equal() in D:\work\b\Assert.cs:line 200
                 Get-ReplicationDeviceTestFailureSignature -Test $second.DocumentElement)
     }
 
-    It 'fails strict evidence closed for duplicate identities' {
+    It 'retains every row when native theory display names collide' {
         $file = Join-Path $script:testDir 'TestResults-Duplicate.xml'
         @'
 <assemblies>
@@ -1703,13 +1703,79 @@ at Xunit.Assert.Equal() in D:\work\b\Assert.cs:line 200
 </assemblies>
 '@ | Set-Content $file -Encoding UTF8
 
-        { Get-DeviceTestResultSummary `
-                -ResultFiles @($file) `
-                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
-                -RequireClassIsolation `
-                -StrictEvidence `
-                -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1)) } |
-            Should -Throw -ExpectedMessage '*duplicate test identity*'
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+
+        $summary.Total | Should -Be 2
+        $summary.Passed | Should -Be 2
+        $summary.Records | Should -HaveCount 2
+        @($summary.Records | Where-Object {
+            $_.type -ceq 'Microsoft.Maui.DeviceTests.LabelTests' -and
+            $_.method -ceq 'Theory' -and $_.displayName -ceq 'same'
+        }) | Should -HaveCount 2
+    }
+
+    It 'preserves the native Label result multiset with 53 rows and colliding MemberData names' {
+        $file = Join-Path $script:testDir 'TestResults-Native-Label-Shape.xml'
+        $xml = [Xml.XmlDocument]::new()
+        $assemblies = $xml.CreateElement('assemblies')
+        $null = $xml.AppendChild($assemblies)
+        $assembly = $xml.CreateElement('assembly')
+        foreach ($pair in @{
+            total = '53'; passed = '48'; failed = '0'; skipped = '5'; errors = '0'
+        }.GetEnumerator()) {
+            $assembly.SetAttribute($pair.Key, $pair.Value)
+        }
+        $null = $assemblies.AppendChild($assembly)
+        $collection = $xml.CreateElement('collection')
+        $null = $assembly.AppendChild($collection)
+        $collision = (
+            'Using CharacterSpacing with LineHeight and TextDecorations works ' +
+            'Correctly(label: Label { AnchorX = 0.5, Background = ' +
+            'ImmutableBrush { Dispatcher = Dispatcher { ··· }, ··· }, ··· }, ' +
+            'expectedCharacterSpacing: 5, expectedLineHeight: 1.5, ' +
+            'expectedTextDecorations: Underline)')
+        for ($index = 0; $index -lt 53; $index++) {
+            $test = $xml.CreateElement('test')
+            $test.SetAttribute('type', 'Microsoft.Maui.DeviceTests.LabelTests')
+            if ($index -lt 2) {
+                $test.SetAttribute(
+                    'method',
+                    'CharacterSpacingWithLineHeightWithTextDecorationsWorksCorrectly')
+                $test.SetAttribute('name', $collision)
+            } else {
+                $test.SetAttribute('method', "NativeLabelCase$index")
+                $test.SetAttribute('name', "Native Label case $index")
+            }
+            $test.SetAttribute('result', $(if ($index -lt 48) { 'Pass' } else { 'Skip' }))
+            $null = $collection.AppendChild($test)
+        }
+        $xml.Save($file)
+
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+
+        $summary.Total | Should -Be 53
+        $summary.Passed | Should -Be 48
+        $summary.Skipped | Should -Be 5
+        $summary.Records | Should -HaveCount 53
+        @($summary.Records | Where-Object {
+            $_.method -ceq
+                'CharacterSpacingWithLineHeightWithTextDecorationsWorksCorrectly' -and
+            $_.displayName -ceq $collision -and $_.outcome -ceq 'Pass'
+        }) | Should -HaveCount 2
+        foreach ($record in $summary.Records) {
+            @($record.Keys | Sort-Object -CaseSensitive) | Should -Be @(
+                'displayName', 'failureSignature', 'method', 'outcome', 'type')
+        }
     }
 
     It 'prohibits DTD processing in strict evidence XML' {
