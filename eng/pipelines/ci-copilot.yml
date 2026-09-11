@@ -316,7 +316,7 @@ stages:
               . ./.github/scripts/shared/Resolve-BuildShell.ps1
               $code = Invoke-BuildTasksWatchdog `
                 -ShellPath '/bin/bash' `
-                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal 2>&1 | tee "$PROBE_ROOT/workloads.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal --nuget_source=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json 2>&1 | tee "$PROBE_ROOT/workloads.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
                 -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 30
               exit $code
             displayName: 'Provision trusted iOS workloads'
@@ -1398,7 +1398,13 @@ stages:
               skipCertificates: true
 
           # Install .NET and workloads via build.ps1
-          - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+          - pwsh: |
+              $cakeArguments = @('--target=dotnet', '--configuration=Release', '--verbosity=diagnostic')
+              if ('${{ parameters.Mode }}' -ceq 'replicate') {
+                # This runs after baseline checkout, so trusted-branch Cake directives are not in effect.
+                $cakeArguments += '--nuget_source=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json'
+              }
+              & ./build.ps1 @cakeArguments
             displayName: 'Install .NET and workloads'
             retryCountOnTaskFailure: 3
             env:

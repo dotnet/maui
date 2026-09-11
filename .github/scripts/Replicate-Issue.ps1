@@ -2422,10 +2422,10 @@ function Assert-GeneratedSandboxXaml {
     $root = $document.Root
     if (
         $null -eq $root -or
-        $root.Name.LocalName -cne 'ContentPage' -or
+        $root.Name.LocalName -cnotin @('ContentPage', 'TabbedPage') -or
         $root.Name.NamespaceName -cne $mauiNamespace
     ) {
-        throw "Generated Sandbox XAML must have a <ContentPage> root in the default MAUI namespace; found '$(if ($null -eq $root) { 'no root element' } else { $root.Name.LocalName })'."
+        throw "Generated Sandbox XAML must have a ContentPage or TabbedPage root in the default MAUI namespace; found '$(if ($null -eq $root) { 'no root element' } else { $root.Name.LocalName })'."
     }
 
     $namespacePrefixes = [Collections.Generic.HashSet[string]]::new(
@@ -2460,7 +2460,7 @@ function Assert-GeneratedSandboxXaml {
         -not $namespacePrefixes.Contains('') -or
         -not $namespacePrefixes.Contains('x')
     ) {
-        throw 'Generated Sandbox XAML must declare both the default MAUI xmlns and the x: xmlns on the root ContentPage.'
+        throw 'Generated Sandbox XAML must declare both the default MAUI xmlns and the x: xmlns on the root page.'
     }
 
     $classAttribute = $root.Attribute(
@@ -2483,7 +2483,7 @@ function Assert-GeneratedSandboxXaml {
         foreach ($attribute in $element.Attributes()) {
             if ($attribute.IsNamespaceDeclaration) {
                 if ($element -ne $root) {
-                    throw "Generated Sandbox XAML declares a namespace on nested element '$($element.Name.LocalName)'; declare every xmlns on the root ContentPage instead."
+                    throw "Generated Sandbox XAML declares a namespace on nested element '$($element.Name.LocalName)'; declare every xmlns on the root page instead."
                 }
                 continue
             }
@@ -7948,6 +7948,7 @@ Perform only the Sandbox-authoring portion:
 2. Modify only MainPage.xaml and MainPage.xaml.cs under "$sandboxDir", plus - only when the reported scenario requires a different application root - App.xaml.cs, SandboxShell.xaml, and SandboxShell.xaml.cs in the same directory.
 The Sandbox is hosted by ``new Window(new NavigationPage(new MainPage()))`` and App.xaml.cs carries a ``useShell`` boolean that switches it to ``new Window(new SandboxShell())``. Set that boolean to true, and edit SandboxShell.xaml, whenever the report is about Shell itself - a flyout, a TabBar, ShellContent, Shell navigation or routing, or a page whose behaviour depends on being hosted by Shell. Reproducing such a report under a NavigationPage root is not the reported scenario and will be rejected. Leave all three files untouched for every other report: changing the host when the report does not call for it is itself a scenario difference.
 Every XAML element referenced from code-behind must have x:Name; AutomationId alone does not create a generated field. On retries, recreate a complete self-consistent XAML/code-behind/plan because the prior tracked Sandbox files were restored to baseline.
+The bounded MainPage XAML root is ContentPage by default. When the report starts with a TabbedPage directly inside the existing NavigationPage host, use a TabbedPage root and matching MainPage C# base class, with its initial ContentPage children constructed before attachment. Keep App.xaml.cs unchanged for that topology. Do not manufacture an initial navigation hierarchy with Loaded/OnAppearing push, pop, InsertPageBefore, RemovePage, or window replacement; those add lifecycle transitions absent from the report and can move a second-navigation defect into setup.
 The bounded XAML contract allows only the default MAUI namespace, the x namespace, and an optional local namespace for Maui.Controls.Sample. Do not add maps or other assembly-qualified XAML namespaces; create those controls in code-behind instead. Fully qualify ambiguous framework type names in code-behind only after verifying the declaration or proven usage in the checked-out repository; do not guess namespaces.
 $androidIssue26505SandboxGuidance
 $appleLabelObservationGuidance
