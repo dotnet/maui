@@ -111,6 +111,12 @@ asking for the same impossible test. Missing declarations retain the ordinary
 repair path; malformed declarations fail closed. A refusal is not a test result
 or a claim that the issue does not reproduce, and never authorizes publication.
 
+Recorder diagnostics prioritize final verdicts and exceptions over progress
+lines, then retain the most recent steps within the existing output budget.
+An exit code of 134 alone does not distinguish an app crash from a host-runner
+assertion failure; retained verdict and termination evidence determine the
+classification. Missing observations never count as successful reproduction.
+
 ## Test semantics
 
 Generated reproduction tests are unconditional: they use no environment variable, command-line switch, category override, skip condition, or other opt-in gate. The exact targeted test must fail on the unfixed baseline during a normal test run.

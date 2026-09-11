@@ -189,7 +189,7 @@ function Get-ReproductionExitCodeMeaning {
     $meanings = @{
         132 = 'SIGILL: the process executed an illegal instruction'
         133 = 'SIGTRAP: the process hit a debugger trap'
-        134 = 'SIGABRT: the process aborted itself, which on a device runner usually means a native assertion or an unhandled platform exception rather than a failed assertion in the plan'
+        134 = 'SIGABRT: the child process aborted itself; the exit code alone does not establish whether the app or host runner failed'
         136 = 'SIGFPE: the process hit an arithmetic fault'
         137 = 'SIGKILL: the operating system killed the process, usually for memory pressure or a hard timeout'
         139 = 'SIGSEGV: the process crashed with a segmentation fault'
@@ -287,17 +287,25 @@ function Select-ReproductionDiagnosticLines {
     # said REPLICATION_NOT_REPRODUCED, because the twelve signal slots were
     # already full of benign XCTest chatter matching "error" and "timeout".
     #
-    # Only the protocol sentinels and an unhandled exception state an outcome,
-    # so they claim slots before anything matched by generic wording. The total
-    # budget is unchanged.
-    $decisivePattern = '(?i)REPLICATION_[A-Z_]+|Unhandled exception|\u274C|^STEP \d+/\d+:'
+    # Progress must not consume the outcome budget: iOS run 15288194 lost its
+    # final assertion behind twelve STEP lines and subsequent driver teardown.
+    $decisivePattern = '(?i)REPLICATION_[A-Z_]+|Unhandled exception|\u274C'
+    $stepPattern = '^STEP \d+/\d+:'
     $decisive = @($lines | Where-Object { $_ -match $decisivePattern })
     $generic = @($lines |
-        Where-Object { $_ -notmatch $decisivePattern -and $_ -match $signalPattern })
+        Where-Object {
+            $_ -notmatch $decisivePattern -and
+            $_ -notmatch $stepPattern -and
+            $_ -match $signalPattern
+        })
     $genericBudget = [Math]::Max(0, $MaximumSignalLines - $decisive.Count)
+    $stepBudget = [Math]::Max(0, $genericBudget - $generic.Count)
     $candidates = @(
         $decisive | Select-Object -First $MaximumSignalLines
         $generic | Select-Object -First $genericBudget
+        $lines | Where-Object {
+            $_ -notmatch $decisivePattern -and $_ -match $stepPattern
+        } | Select-Object -Last $stepBudget
         $lines | Select-Object -Last $MaximumTailLines
     )
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
