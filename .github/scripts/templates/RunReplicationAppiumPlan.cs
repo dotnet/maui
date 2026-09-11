@@ -353,6 +353,12 @@ static void ExecuteStep(
         case "tap":
             WaitForElement(driver, platform, step.Locator!, timeout).Click();
             break;
+        case "doubleTap":
+            DoubleTap(
+                driver,
+                platform,
+                WaitForElement(driver, platform, step.Locator!, timeout));
+            break;
         case "clear":
             WaitForElement(driver, platform, step.Locator!, timeout).Clear();
             break;
@@ -1151,6 +1157,34 @@ static void Swipe(AppiumDriver driver, string platform, string direction)
             ["direction"] = direction,
             ["percent"] = 0.75
         });
+}
+
+static void DoubleTap(
+    AppiumDriver driver,
+    string platform,
+    IWebElement element)
+{
+    var origin = element.Location;
+    var extent = element.Size;
+    var x = origin.X + (extent.Width / 2);
+    var y = origin.Y + (extent.Height / 2);
+    var isMousePointer = platform == "catalyst";
+    var button = isMousePointer ? MouseButton.Left : MouseButton.Touch;
+    var pointer = new PointerInputDevice(
+        isMousePointer ? PointerKind.Mouse : PointerKind.Touch,
+        isMousePointer ? "mouse" : "finger");
+    var sequence = new ActionSequence(pointer);
+    sequence.AddAction(pointer.CreatePointerMove(
+        CoordinateOrigin.Viewport, x, y, TimeSpan.Zero));
+    sequence.AddAction(pointer.CreatePointerDown(button));
+    sequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(80)));
+    sequence.AddAction(pointer.CreatePointerUp(button));
+    sequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(100)));
+    sequence.AddAction(pointer.CreatePointerDown(button));
+    sequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(80)));
+    sequence.AddAction(pointer.CreatePointerUp(button));
+
+    driver.PerformActions(new List<ActionSequence> { sequence });
 }
 
 static void DragPath(
