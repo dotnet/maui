@@ -740,7 +740,46 @@ Describe 'Trusted replication pull request publishing' {
         # probative; state its evidentiary role explicitly instead.
         $body | Should -Match 'authoritative proof is the trusted targeted test'
         $body | Should -Match 'only the app-reported verdict rather than the defect itself'
-        $body | Should -Match 'reproduction commit sits directly on the baseline above'
+        $body | Should -Match 'reproduction commit sits directly on the validated baseline above'
+    }
+
+    It 'puts the repository artifact-testing note at the very top of every draft body' {
+        $candidate = [pscustomobject]@{
+            issueNumber = 37440
+            platform = 'android'
+            baseSha = 'abc123'
+            testType = 'device'
+            testFilter = 'Issue37440'
+            expectedFailureSignature = 'Expected: 1; Actual: 0'
+            actualFailureMessage = 'Xunit failure. Expected: 1; Actual: 0'
+            verificationRunCount = 2
+            reproductionSteps = @('Launch the scenario')
+        }
+        $evidence = [pscustomobject]@{
+            blobs = [pscustomobject]@{
+                preview = 'https://example.test/preview.gif'
+                video = 'https://example.test/repro.mp4'
+                manifest = 'https://example.test/evidence.json'
+            }
+        }
+
+        $body = New-ReplicationPullRequestBody `
+            -Candidate $candidate `
+            -Evidence $evidence `
+            -IssueTitle 'Reported behavior' `
+            -IssueOwner 'dotnet' `
+            -IssueRepository 'maui' `
+            -BuildUrl 'https://dev.azure.com/example/build/1'
+        $note = @'
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+'@
+
+        $body.StartsWith($note) | Should -BeTrue
+        @([regex]::Matches($body, [regex]::Escape($note))).Count |
+            Should -Be 1
     }
 
     It 'names the simulator or emulator instead of claiming an on-device run' {
@@ -1438,6 +1477,64 @@ Describe 'A pull request that carries a fix says so' {
         $body | Should -Match 'any proposed product fix is a separate following commit'
         $body | Should -Not -Match 'its parent can be checked out'
         $body | Should -Not -Match 'this diff contains only the added reproduction test'
+    }
+
+    It 'describes repaired publication metadata without claiming the provisional diff shipped' {
+        Set-StrictMode -Version 3.0
+        $candidate = script:New-FixCandidate -Extra @{
+            fixFiles = @('src/Controls/src/Core/Button/Button.cs')
+            fixPatch = 'fix.patch'
+            fixApproach = 'Preserve encoded and literal HTML behavior during conversion.'
+            fixRejectedApproaches = @(
+                'Keep the provisional decoding removal unchanged.'
+            )
+            fixRepairApplied = $true
+            fixRepairFindings = @(
+                'The provisional diff regressed encoded HTML labels.'
+            )
+            fixPanel = @(
+                [pscustomobject]@{
+                    attempt = 4
+                    model = 'gpt-5.6-sol'
+                    result = 'Pass'
+                    detail = 'Remove decoding before conversion.'
+                    won = $true
+                }
+            )
+            fixIndependentReview = $null
+        }
+
+        $body = script:Get-FixBody -Candidate $candidate
+
+        $body | Should -Match 'selected provisional starting point'
+        $body | Should -Match 'grounded repair changed that diff before publication'
+        $body | Should -Match 'repaired patch was not separately independently reviewed'
+        $body | Should -Match 'any independent review of the provisional candidate applies only to that earlier diff'
+        $body | Should -Match 'Approaches considered and rejected before the grounded repair'
+        $body | Should -Match '\*\*Approach after grounded repair\.\*\* Preserve encoded and literal HTML behavior during conversion\.'
+        $body | Should -Not -Match 'Provisional approach before grounded repair'
+        @([regex]::Matches($body, '\*\*Grounded repair pass\.\*\*')).Count |
+            Should -Be 1
+        $body | Should -Match 'provisional diff regressed encoded HTML labels'
+        $body | Should -Not -Match 'selected row is the fix published below'
+        $body | Should -Not -Match 'second model did not return a usable report'
+    }
+
+    It 'does not attribute a runner-grounded repair to independent-review findings' {
+        $candidate = script:New-FixCandidate -Extra @{
+            fixFiles = @('src/Controls/src/Core/Button/Button.cs')
+            fixPatch = 'fix.patch'
+            fixRepairApplied = $true
+            fixRepairFindings = @('The deterministic Label sibling comparison regressed.')
+            fixIndependentReview = $null
+        }
+
+        $body = script:Get-FixBody -Candidate $candidate
+
+        $body | Should -Not -Match 'findings drove the grounded repair'
+        $body | Should -Not -Match 'driven by corroborated review evidence'
+        $body | Should -Match 'bounded repair addressed grounded findings'
+        $body | Should -Match 'repaired patch was not separately independently reviewed'
     }
 
     It 'still describes a fix that carries no prose' {
@@ -2624,6 +2721,21 @@ Describe 'The pull request body reports the independent review of the winning fi
             fixIndependentReview = [pscustomobject]@{ model = 'gpt-5.6-sol'; summary = '   '; findings = @() } }) |
             Should -Match 'Not measured'
     }
+
+    It 'distinguishes review-driven repair from review of the repaired patch' {
+        $candidate = [pscustomobject]@{
+            fixRepairApplied = $true
+            fixRepairFindings = @('The provisional diff regressed a sibling test.')
+            fixIndependentReview = $null
+        }
+
+        $block = Get-ReplicationIndependentReviewBlock -Candidate $candidate
+
+        $block | Should -Match 'any independent review of the provisional candidate applies only to that earlier diff'
+        $block | Should -Match 'grounded repair is disclosed below'
+        $block | Should -Match 'repaired patch was not separately independently reviewed'
+        $block | Should -Not -Match 'second model did not return a usable report'
+    }
 }
 
 Describe 'The pull request body records the try-fix panel, not only its winner' {
@@ -2653,6 +2765,27 @@ Describe 'The pull request body records the try-fix panel, not only its winner' 
 
         @([regex]::Matches($block, '\(selected\)')).Count | Should -Be 1
         $block | Should -Match 'Pass \*\*\(selected\)\*\*'
+    }
+
+    It 'marks a repaired panel winner only as the provisional starting point' {
+        $candidate = [pscustomobject]@{
+            fixRepairApplied = $true
+            fixPanel = @(
+                [pscustomobject]@{
+                    attempt = 4
+                    model = 'gpt-5.6-sol'
+                    result = 'Pass'
+                    detail = 'Remove decoding before conversion.'
+                    won = $true
+                }
+            )
+        }
+
+        $block = Get-ReplicationFixPanelBlock -Candidate $candidate
+
+        $block | Should -Match 'selected provisional starting point'
+        $block | Should -Match 'grounded repair changed that diff before publication'
+        $block | Should -Not -Match 'selected row is the fix published below'
     }
 
     It 'escapes a pipe in candidate prose so the table cannot silently shift its columns' {

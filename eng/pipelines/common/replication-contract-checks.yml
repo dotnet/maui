@@ -468,6 +468,18 @@ steps:
         'A selected sibling run cannot leave trusted build output in the fix tree*restores the applied patch then cleans tracked output while preserving the generated test'
         'A selected sibling run cannot leave trusted build output in the fix tree*fails closed when selected sibling cleanup fails'
         'A selected sibling run cannot leave trusted build output in the fix tree*does not certify or hide a failed scoped restore behind general build cleanup'
+        'What it takes to publish a fix alongside the reproduction*preserves grounded repair metadata through normalization and clean validation'
+        'What it takes to publish a fix alongside the reproduction*rejects non-boolean and duplicate grounded repair flags'
+        'What it takes to publish a fix alongside the reproduction*bounds grounded repair findings to four safe strings'
+        'What it takes to publish a fix alongside the reproduction*rejects duplicate grounded repair finding aliases'
+        'What it takes to publish a fix alongside the reproduction*normalizes snake-case grounded repair metadata to closed output types'
+        'What it takes to publish a fix alongside the reproduction*rejects a scalar grounded repair findings property'
+        'Trusted replication pull request publishing*puts the repository artifact-testing note at the very top of every draft body'
+        'Trusted replication pull request publishing*generates a draft body with video evidence, unconditional failure semantics, and safety statement'
+        'A pull request that carries a fix says so*describes repaired publication metadata without claiming the provisional diff shipped'
+        'A pull request that carries a fix says so*does not attribute a runner-grounded repair to independent-review findings'
+        'The pull request body reports the independent review*distinguishes review-driven repair from review of the repaired patch'
+        'The pull request body records the try-fix panel, not only its winner*marks a repaired panel winner only as the provisional starting point'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(

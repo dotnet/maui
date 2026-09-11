@@ -155,6 +155,17 @@ function Get-ReplicationIndependentReviewBlock {
 
     $header = '**Independent review.**'
     $notMeasured = "$header Not measured - a second model did not return a usable report on this fix."
+    $repairProperty = $Candidate.PSObject.Properties['fixRepairApplied']
+    $repairApplied = (
+        $repairProperty -and
+        $repairProperty.Value -is [bool] -and
+        [bool]$repairProperty.Value
+    )
+    if ($repairApplied) {
+        return ($header + ' The repaired patch was not separately independently reviewed; any ' +
+            'independent review of the provisional candidate applies only to that earlier diff. ' +
+            'The grounded repair is disclosed below.')
+    }
 
     $property = $Candidate.PSObject.Properties['fixIndependentReview']
     if (-not $property -or $null -eq $property.Value) { return $notMeasured }
@@ -239,6 +250,12 @@ function Get-ReplicationFixPanelBlock {
 
     $header = '**Try-fix panel.**'
     $notMeasured = "$header Not measured - no per-candidate record was produced for this fix."
+    $repairProperty = $Candidate.PSObject.Properties['fixRepairApplied']
+    $repairApplied = (
+        $repairProperty -and
+        $repairProperty.Value -is [bool] -and
+        [bool]$repairProperty.Value
+    )
 
     $property = $Candidate.PSObject.Properties['fixPanel']
     if (-not $property -or $null -eq $property.Value) { return $notMeasured }
@@ -261,7 +278,13 @@ function Get-ReplicationFixPanelBlock {
         $result = $result -replace '\|', '\|'
         $detail = $detail -replace '\|', '\|'
 
-        $marker = if ($entry.won) { ' **(selected)**' } else { '' }
+        $marker = if ($entry.won) {
+            if ($repairApplied) {
+                ' **(selected provisional starting point)**'
+            } else {
+                ' **(selected)**'
+            }
+        } else { '' }
         $rows += ('| ' + [int]$entry.attempt + ' | `' + $model + '` | ' + $result + $marker + ' | ' + $detail + ' |')
     }
 
@@ -271,7 +294,13 @@ function Get-ReplicationFixPanelBlock {
     $lead = ("$header " + $rows.Count + ' candidate(s) each ran the reviewer''s `try-fix` skill against this ' +
              'reproduction, sequentially and cross-pollinated, so each saw the approaches the earlier ones ' +
              'had already tried. ' +
-             $(if ($selected -gt 0) { 'The selected row is the fix published below.' } else { 'No row is marked selected.' }))
+             $(if ($selected -gt 0) {
+                 if ($repairApplied) {
+                     'The selected row is the provisional starting point; the grounded repair changed that diff before publication.'
+                 } else {
+                     'The selected row is the fix published below.'
+                 }
+             } else { 'No row is marked selected.' }))
 
     return (@(
         $lead,
@@ -280,8 +309,11 @@ function Get-ReplicationFixPanelBlock {
         '| --- | --- | --- | --- |'
     ) + $rows + @(
         '',
-        ('Only the selected candidate''s diff was applied and put through the fix and restoration arms. ' +
-         'The other rows are recorded so the comparison is visible rather than implied.')
+        $(if ($repairApplied) {
+            'The selected candidate supplied the provisional diff. One grounded repair changed it, and the repaired diff was then put through the fix and restoration arms. The other rows are recorded so the comparison is visible rather than implied.'
+        } else {
+            'Only the selected candidate''s diff was applied and put through the fix and restoration arms. The other rows are recorded so the comparison is visible rather than implied.'
+        })
     )) -join "`n"
 }
 
@@ -1135,8 +1167,19 @@ function New-ReplicationPullRequestBody {
                 'agree on a single conventional category.')
         }
         $fixLines += ''
+        $repairAppliedProperty = $Candidate.PSObject.Properties['fixRepairApplied']
+        $repairApplied = (
+            $repairAppliedProperty -and
+            $repairAppliedProperty.Value -is [bool] -and
+            [bool]$repairAppliedProperty.Value
+        )
         if ($fixApproach) {
-            $fixLines += ('**Approach taken.** ' + (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
+            $fixLines += ($(if ($repairApplied) {
+                    '**Approach after grounded repair.** '
+                } else {
+                    '**Approach taken.** '
+                }) +
+                (ConvertTo-ReplicationSingleLine -Value $fixApproach -MaximumLength 600))
             $fixLines += ''
         }
         if ($RegressionSignal) {
@@ -1158,15 +1201,17 @@ function New-ReplicationPullRequestBody {
         }
         if ($rejected.Count -gt 0) {
             $fixLines += ''
-            $fixLines += '**Approaches considered and rejected:**'
+            $fixLines += $(if ($repairApplied) {
+                    '**Approaches considered and rejected before the grounded repair:**'
+                } else {
+                    '**Approaches considered and rejected:**'
+                })
             $fixLines += ''
             $fixLines += $rejected
         }
-        $repairAppliedProperty = $Candidate.PSObject.Properties['fixRepairApplied']
-        if ($repairAppliedProperty -and $repairAppliedProperty.Value -is [bool] -and
-            $repairAppliedProperty.Value) {
+        if ($repairApplied) {
             $fixLines += ''
-            $fixLines += '**Grounded repair pass.** A single bounded repair was driven by corroborated review evidence; the unchanged fix-green and restoration-red arms were rerun before publication.'
+            $fixLines += '**Grounded repair pass.** A single bounded repair addressed grounded findings; the repaired diff passed the unchanged fix-green and restoration-red arms before publication.'
             $repairFindingsProperty = $Candidate.PSObject.Properties['fixRepairFindings']
             if ($repairFindingsProperty -and $null -ne $repairFindingsProperty.Value) {
                 foreach ($finding in @($repairFindingsProperty.Value | Select-Object -First 4)) {
@@ -1197,6 +1242,11 @@ function New-ReplicationPullRequestBody {
     }
 
     return @"
+<!-- Please let the below note in for people that find this PR -->
+> [!NOTE]
+> Are you waiting for the changes in this PR to be merged?
+> It would be very helpful if you could [test the resulting artifacts](https://github.com/dotnet/maui/wiki/Testing-PR-Builds) from this PR and let us know in a comment if this change resolves your issue. Thank you!
+
 $marker
 
 > [!IMPORTANT]

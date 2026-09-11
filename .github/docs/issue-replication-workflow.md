@@ -297,6 +297,15 @@ the existing panel, step, and job deadlines. The selected or repaired diff then 
 the unchanged fix-green and restoration-red arms exactly once. Review does not
 claim those final arms passed before they execute.
 
+Repair provenance survives clean validation as a Boolean flag and at most four
+bounded finding strings. The published panel identifies the selected provisional
+starting point rather than claiming its original diff shipped after a repair.
+The approach describes the repaired diff, while rejected approaches retain their
+pre-repair context. A grounded repair can follow independent-review findings or
+deterministic sibling evidence; disclosure does not attribute every repair to
+model review or imply that a pre-repair review covers the repaired patch.
+This metadata is advisory and cannot authorize execution or publication.
+
 A legitimate trigger-removed control remains required for publication; it is
 never fabricated. Four-arm issue certification does not establish that
 pre-existing component contracts remain intact.

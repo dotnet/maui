@@ -319,6 +319,51 @@ function Get-ReplicationManifestDisclosureList {
         Where-Object { $_ })
 }
 
+function Get-ReplicationManifestRepairMetadata {
+    param(
+        [Parameter(Mandatory = $true)]$Manifest
+    )
+
+    $appliedProperty = Find-AliasedProperty `
+        -Object $Manifest `
+        -Names @('fixRepairApplied', 'fix_repair_applied') `
+        -Context 'Candidate manifest'
+    $applied = $false
+    if ($appliedProperty.Found) {
+        if ($appliedProperty.Value -isnot [bool]) {
+            throw 'Manifest fix repair applied flag must be a Boolean.'
+        }
+        $applied = [bool]$appliedProperty.Value
+    }
+
+    $findingsProperty = Find-AliasedProperty `
+        -Object $Manifest `
+        -Names @('fixRepairFindings', 'fix_repair_findings') `
+        -Context 'Candidate manifest'
+    $findings = @()
+    if ($findingsProperty.Found -and $null -ne $findingsProperty.Value) {
+        if ($findingsProperty.Value -is [string] -or
+            $findingsProperty.Value -isnot [System.Collections.IEnumerable]) {
+            throw 'Manifest fix repair findings must be an array.'
+        }
+        $findings = @(
+            @($findingsProperty.Value) |
+                ForEach-Object {
+                    ConvertTo-ReplicationDisclosureText `
+                        -Value $_ `
+                        -MaximumLength 400
+                } |
+                Where-Object { $_ } |
+                Select-Object -First 4
+        )
+    }
+
+    return [pscustomobject]@{
+        Applied = $applied
+        Findings = [string[]]@($findings)
+    }
+}
+
 function ConvertTo-ReplicationDisclosureText {
     <#
     .SYNOPSIS
@@ -2553,6 +2598,7 @@ function Read-ReplicationManifest {
     } elseif (-not [string]::IsNullOrWhiteSpace($fixRegressionEvidence)) {
         throw 'Manifest names regression evidence but no fix files.'
     }
+    $fixRepair = Get-ReplicationManifestRepairMetadata -Manifest $manifest
 
     return [pscustomobject]@{
         IssueNumber = $manifestIssue
@@ -2579,6 +2625,8 @@ function Read-ReplicationManifest {
         FixSharedConsumers = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixSharedConsumers' -MaximumLength 256 | Select-Object -First 8)
         FixUnchangedBehavior = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixUnchangedBehavior' -MaximumLength 600)
         FixSemanticBlastRadius = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixSemanticBlastRadius' -MaximumLength 800)
+        FixRepairApplied = [bool]$fixRepair.Applied
+        FixRepairFindings = [string[]]@($fixRepair.Findings)
         FixRegressionLane = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionLane' -MaximumLength 120)
         FixRegressionClass = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionClass' -MaximumLength 500)
         FixRegressionEvidence = $fixRegressionEvidence
@@ -6136,20 +6184,10 @@ function Invoke-ReplicationCandidateValidation {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixSemanticBlastRadius -MaximumLength 800
             } else { '' }
             fixRepairApplied = if ($hasFixPatch) {
-                $repairProperty = Find-AliasedProperty `
-                    -Object $manifest `
-                    -Names @('fixRepairApplied', 'fix_repair_applied') `
-                    -Context 'Candidate manifest'
-                if ($repairProperty.Found -and $repairProperty.Value -is [bool]) {
-                    [bool]$repairProperty.Value
-                } else {
-                    $false
-                }
+                [bool]$manifest.FixRepairApplied
             } else { $false }
             fixRepairFindings = if ($hasFixPatch) {
-                @(@(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixRepairFindings') |
-                    ForEach-Object { ConvertTo-ReplicationDisclosureText -Value $_ -MaximumLength 400 } |
-                    Where-Object { $_ } | Select-Object -First 4)
+                [string[]]@($manifest.FixRepairFindings)
             } else { @() }
             fixRegressionLane = if ($hasFixPatch) {
                 [string]$trustedRegressionSelection.Category
