@@ -343,8 +343,13 @@ namespace Microsoft.Maui.Animations
 				view?.RemoveAnimation(this);
 		}
 
-		internal void OnAnimationManagerDisposed()
+		internal void OnAnimationManagerDisposed(IAnimationManager animationManager)
 		{
+			if (!ReferenceEquals(
+				Interlocked.CompareExchange(ref animationManger, null, animationManager),
+				animationManager))
+				return;
+
 			AnimationManagerDisposed?.Invoke();
 			AnimationManagerDisposed = null;
 		}

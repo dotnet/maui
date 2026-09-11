@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
@@ -8,57 +10,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class AnimationTests : BaseTestFixture
 	{
-		[Fact]
-		public void InsertWithDisabledTickerDoesNotRetainCallback()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AnimationWithDisabledTickerDoesNotRetainCallback(bool useAdd)
 		{
-			var initialTweenerCount = AnimationExtensions.TweenersCounter;
 			using var manager = new AnimationManager(new DisabledTicker());
 
-			AnimationExtensions.Insert(manager, _ => true);
+			var id = AddAnimation(manager, useAdd, null);
 
-			Assert.Equal(initialTweenerCount, AnimationExtensions.TweenersCounter);
+			Assert.False(AnimationExtensions.HasTweener(id));
 		}
 
-		[Fact]
-		public void InsertWithDisposedManagerDoesNotRetainCallback()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void AnimationWithDisposedManagerDoesNotRetainCallback(bool useAdd)
 		{
-			var initialTweenerCount = AnimationExtensions.TweenersCounter;
 			var manager = new AnimationManager(new Ticker()) { AutoStartTicker = false };
 			manager.Dispose();
 
-			AnimationExtensions.Insert(manager, _ => true);
+			var id = AddAnimation(manager, useAdd, null);
 
-			Assert.Equal(initialTweenerCount, AnimationExtensions.TweenersCounter);
+			Assert.False(AnimationExtensions.HasTweener(id));
 		}
 
-		[Fact]
-		public void DisposingNonStartingManagerReleasesInsertedCallback()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void DisposingNonStartingManagerReleasesCallback(bool useAdd)
 		{
-			var initialTweenerCount = AnimationExtensions.TweenersCounter;
-			var payload = CreateDisposedManagerPayload();
+			var (manager, id, payload) = CreateDisposedManagerPayload(useAdd);
 
 			CollectGarbage();
 
 			Assert.False(payload.IsAlive);
-			Assert.Equal(initialTweenerCount, AnimationExtensions.TweenersCounter);
+			Assert.False(AnimationExtensions.HasTweener(id));
+			GC.KeepAlive(manager);
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		static WeakReference CreateDisposedManagerPayload()
+		static (AnimationManager Manager, int Id, WeakReference Payload) CreateDisposedManagerPayload(bool useAdd)
 		{
 			var payload = new object();
 			var payloadReference = new WeakReference(payload);
+			using var manager = new AnimationManager(new Ticker()) { AutoStartTicker = false };
 
-			using (var manager = new AnimationManager(new Ticker()) { AutoStartTicker = false })
+			var id = AddAnimation(manager, useAdd, payload);
+
+			return (manager, id, payloadReference);
+		}
+
+		static int AddAnimation(
+			IAnimationManager manager,
+			bool useAdd,
+			object payload)
+		{
+			if (useAdd)
 			{
-				AnimationExtensions.Insert(manager, _ =>
+				return AnimationExtensions.Add(manager, _ =>
 				{
 					GC.KeepAlive(payload);
-					return true;
 				});
 			}
 
-			return payloadReference;
+			return AnimationExtensions.Insert(manager, _ =>
+			{
+				GC.KeepAlive(payload);
+				return true;
+			});
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
