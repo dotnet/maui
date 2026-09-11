@@ -1,4 +1,4 @@
-#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.FileHelpers&version=3.2.1"
 
 // Contains .NET - related Cake targets
 

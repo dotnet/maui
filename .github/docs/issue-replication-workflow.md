@@ -14,6 +14,11 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
+Cake bootstrap tools and addins use explicit `dotnet-public` package-source
+URIs at their existing pinned versions. They do not query SDK-specific ephemeral
+feeds for unrelated tooling packages. Product/workload feeds remain unchanged;
+restore failures are not ignored, and trusted provisioning retries are bounded.
+
 ## Running replication mode
 
 1. Select the implementation branch or the maintained reviewer branch after merge.

@@ -1,5 +1,5 @@
-#addin "nuget:?package=NuGet.Packaging&version=6.7.0"
-#addin "nuget:?package=NuGet.Protocol&version=6.7.0"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=NuGet.Packaging&version=6.7.0"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=NuGet.Protocol&version=6.7.0"
 
 using System.Threading.Tasks;
 using NuGet.Common;

@@ -207,6 +207,36 @@ Describe 'MAUI Copilot mode routing' {
             "displayName: 'Replicate issue and author failing test'\s+retryCountOnTaskFailure")
     }
 
+    It 'resolves fixed Cake bootstrap packages from the approved stable feed only' {
+        $source = 'nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json'
+        $files = @{
+            'build.cake' = @(
+                'Cake.Android.SdkManager&version=3.0.2',
+                'Cake.AppleSimulator&version=0.2.0',
+                'Cake.FileHelpers&version=3.2.1',
+                'nuget.commandline&version=6.6.1'
+            )
+            'eng/cake/dotnet.cake' = @('Cake.FileHelpers&version=3.2.1')
+            'eng/cake/helpers.cake' = @(
+                'NuGet.Packaging&version=6.7.0',
+                'NuGet.Protocol&version=6.7.0'
+            )
+        }
+        foreach ($file in $files.Keys) {
+            $content = Get-Content -LiteralPath (
+                Join-Path $PSScriptRoot "../../$file") -Raw
+            $directives = @([regex]::Matches(
+                $content, '(?m)^#(?:addin|tool)\s+"(?<uri>[^"]+)"'))
+            $directives.Count | Should -Be $files[$file].Count
+            foreach ($package in $files[$file]) {
+                $expected = "$source`?package=$package"
+                @($directives | Where-Object {
+                    $_.Groups['uri'].Value -ceq $expected
+                }).Count | Should -Be 1
+            }
+        }
+    }
+
     It 'uses shared iOS provisioning without an external isolation prerequisite' {
         $stage = [regex]::Match(
             $script:Pipeline,
