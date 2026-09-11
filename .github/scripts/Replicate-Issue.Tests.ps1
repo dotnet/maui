@@ -9055,6 +9055,396 @@ namespace $namespace
     }
 }
 
+Describe 'Trusted Appium double tap plan contract' {
+    BeforeEach {
+        $script:SavedDoubleTapPromptVariables = @{}
+        foreach ($name in @(
+                'IssueNumber',
+                'Platform',
+                'BaseSha',
+                'ContextPath',
+                'DeviceUdid',
+                'ArtifactRoot',
+                'repoRoot',
+                'trustedSkills',
+                'sandboxDir',
+                'sandboxArtifactDir',
+                'verificationDir',
+                'reproductionResultPath',
+                'appiumPlanPath',
+                'sandboxProposalPath',
+                'sandboxBlockedPath',
+                'testProposalPath',
+                'testBlockedPath',
+                'approvedTestRoots')) {
+            $variable = Get-Variable -Name $name -Scope Script -ErrorAction SilentlyContinue
+            $script:SavedDoubleTapPromptVariables[$name] = [pscustomobject]@{
+                Existed = ($null -ne $variable)
+                Value = if ($null -ne $variable) { $variable.Value } else { $null }
+            }
+        }
+
+        $script:IssueNumber = 38291
+        $script:Platform = 'catalyst'
+        $script:BaseSha = 'abc1234'
+        $script:ContextPath = Join-Path $TestDrive 'context.md'
+        $script:DeviceUdid = 'catalyst-device'
+        $script:ArtifactRoot = Join-Path $TestDrive 'artifacts'
+        $script:repoRoot = Join-Path $TestDrive 'repo'
+        $script:trustedSkills = Join-Path $TestDrive 'trusted/skills'
+        $script:sandboxDir = Join-Path $script:repoRoot 'src/Controls/samples/Controls.Sample.Sandbox'
+        $script:sandboxArtifactDir = Join-Path $script:ArtifactRoot 'sandbox'
+        $script:verificationDir = Join-Path $script:ArtifactRoot 'verification'
+        $script:reproductionResultPath = Join-Path $script:ArtifactRoot 'reproduction-result.json'
+        $script:appiumPlanPath = Join-Path $TestDrive 'double-tap-plan.json'
+        $script:sandboxProposalPath = Join-Path $script:ArtifactRoot 'agent/sandbox-proposal.json'
+        $script:sandboxBlockedPath = Join-Path $script:ArtifactRoot 'agent/sandbox-blocked.json'
+        $script:testProposalPath = Join-Path $script:ArtifactRoot 'agent/test-proposal.json'
+        $script:testBlockedPath = Join-Path $script:ArtifactRoot 'agent/test-blocked.json'
+        $script:approvedTestRoots = @('src/Controls/tests/')
+        $plan = [ordered]@{
+            schemaVersion = 1
+            issueNumber = 38291
+            steps = @(
+                [ordered]@{
+                    action = 'assertTextEquals'
+                    description = 'Confirm the scenario is ready'
+                    locator = [ordered]@{
+                        strategy = 'accessibilityId'
+                        value = 'TapResult'
+                    }
+                    value = 'NO BUG: callback not checked'
+                    timeoutSeconds = 10
+                },
+                [ordered]@{
+                    action = 'doubleTap'
+                    description = 'Perform the initially working double tap'
+                    locator = [ordered]@{
+                        strategy = 'accessibilityId'
+                        value = 'TapPad'
+                    }
+                    value = $null
+                    timeoutSeconds = 10
+                },
+                [ordered]@{
+                    action = 'assertTextEquals'
+                    description = 'Prove the affected callback works before its runtime update'
+                    locator = [ordered]@{
+                        strategy = 'accessibilityId'
+                        value = 'TapResult'
+                    }
+                    value = 'PASS: double-tap callback observed'
+                    timeoutSeconds = 10
+                },
+                [ordered]@{
+                    action = 'tap'
+                    description = 'Apply the reported runtime update'
+                    locator = [ordered]@{
+                        strategy = 'accessibilityId'
+                        value = 'ApplyUpdate'
+                    }
+                    value = $null
+                    timeoutSeconds = 10
+                },
+                [ordered]@{
+                    action = 'assertTextEquals'
+                    description = 'Verify the reported callback failure'
+                    locator = [ordered]@{
+                        strategy = 'accessibilityId'
+                        value = 'TapResult'
+                    }
+                    value = 'BUG REPRODUCED: tap callback did not run'
+                    timeoutSeconds = 10
+                }
+            )
+        }
+    }
+
+    AfterEach {
+        foreach ($name in $script:SavedDoubleTapPromptVariables.Keys) {
+            $saved = $script:SavedDoubleTapPromptVariables[$name]
+            if ($saved.Existed) {
+                Set-Variable -Name $name -Scope Script -Value $saved.Value
+            } else {
+                Remove-Variable -Name $name -Scope Script -ErrorAction SilentlyContinue
+            }
+        }
+        Remove-Variable `
+            -Name SavedDoubleTapPromptVariables `
+            -Scope Script `
+            -ErrorAction SilentlyContinue
+    }
+
+    It 'accepts doubleTap with a required locator and null value on every platform' {
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+
+        foreach ($candidatePlatform in @('android', 'ios', 'catalyst', 'windows')) {
+            $Platform = $candidatePlatform
+            { Read-GeneratedAppiumPlan | Out-Null } | Should -Not -Throw
+        }
+    }
+
+    It 'rejects doubleTap values and caller-selected counts' {
+        $plan.steps[1].value = '2'
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*must not contain a value*'
+
+        $plan.steps[1].value = $null
+        $plan.steps[1].Add('count', 2)
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*does not match the exact schema*'
+    }
+
+    It 'rejects doubleTap without a locator or with any extra field' {
+        $plan.steps[1].locator = $null
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*requires a locator*'
+
+        $plan.steps[1].locator = [ordered]@{
+            strategy = 'accessibilityId'
+            value = 'TapPad'
+        }
+        $plan.steps[1].Add('durationMilliseconds', 80)
+        $plan | ConvertTo-Json -Depth 10 |
+            Set-Content -LiteralPath $appiumPlanPath -Encoding utf8NoBOM
+        { Read-GeneratedAppiumPlan | Out-Null } |
+            Should -Throw '*does not match the exact schema*'
+    }
+
+    It 'advertises doubleTap and requires a real known-working prerequisite' {
+        $prompt = New-CopilotPrompt -Phase sandbox
+
+        $prompt | Should -Match 'Allowed actions: [^\r\n]*doubleTap'
+        $prompt | Should -Match 'doubleTap[^\r\n]*require a locator'
+        $prompt | Should -Match 'doubleTap[^\r\n]*require "value": null'
+        $prompt | Should -Match 'doubleTap[^\r\n]*exactly two presses'
+        $prompt | Should -Match (
+            'explicitly demonstrates that the affected interaction or callback works ' +
+            'before a runtime update')
+        $prompt | Should -Match (
+            'initialized NO BUG: caption or delivery through an unrelated ' +
+            'pointer/callback path does not prove')
+        $prompt | Should -Match 'disclose the scenario as unsupported instead of fabricating'
+    }
+}
+
+Describe 'Trusted Appium double tap execution' {
+    BeforeAll {
+        $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            $script:TrustedAppiumSource)
+        $methods = @($tree.GetRoot().DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.LocalFunctionStatementSyntax] -and
+                $_.Identifier.ValueText -ceq 'DoubleTap'
+            })
+        if ($methods.Count -ne 1) {
+            throw 'Expected exactly one trusted DoubleTap helper.'
+        }
+        $method = $methods[0].ToString().Replace(
+            'static void DoubleTap(', 'public static void DoubleTap(')
+        $namespace = 'DoubleTapProbe' + [guid]::NewGuid().ToString('N')
+        $source = @"
+using System;
+using System.Collections.Generic;
+namespace $namespace
+{
+    public enum PointerKind { Touch, Mouse }
+    public enum MouseButton { Touch, Left }
+    public enum CoordinateOrigin { Viewport }
+
+    public sealed class Point
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    public sealed class Size
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+
+    public interface IWebElement
+    {
+        Point Location { get; }
+        Size Size { get; }
+    }
+
+    public sealed class Element : IWebElement
+    {
+        public Point Location { get; set; } = new Point();
+        public Size Size { get; set; } = new Size();
+    }
+
+    public sealed class Interaction
+    {
+        public string Kind { get; set; } = "";
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Milliseconds { get; set; }
+        public MouseButton Button { get; set; }
+    }
+
+    public sealed class PointerInputDevice
+    {
+        public PointerInputDevice(PointerKind kind, string name)
+        {
+            Kind = kind;
+            Name = name;
+        }
+
+        public PointerKind Kind { get; }
+        public string Name { get; }
+
+        public Interaction CreatePointerMove(
+            CoordinateOrigin origin,
+            int x,
+            int y,
+            TimeSpan duration) =>
+            new Interaction
+            {
+                Kind = "move",
+                X = x,
+                Y = y,
+                Milliseconds = (int)duration.TotalMilliseconds
+            };
+
+        public Interaction CreatePointerDown(MouseButton button) =>
+            new Interaction { Kind = "down", Button = button };
+
+        public Interaction CreatePointerUp(MouseButton button) =>
+            new Interaction { Kind = "up", Button = button };
+
+        public Interaction CreatePause(TimeSpan duration) =>
+            new Interaction
+            {
+                Kind = "pause",
+                Milliseconds = (int)duration.TotalMilliseconds
+            };
+    }
+
+    public sealed class ActionSequence
+    {
+        public ActionSequence(PointerInputDevice device) => Device = device;
+
+        public PointerInputDevice Device { get; }
+        public List<Interaction> Actions { get; } = new List<Interaction>();
+
+        public void AddAction(Interaction action) => Actions.Add(action);
+    }
+
+    public sealed class AppiumDriver
+    {
+        public int PerformCalls { get; private set; }
+        public bool FailOnPerform { get; set; }
+        public List<ActionSequence> Performed { get; private set; } =
+            new List<ActionSequence>();
+
+        public void PerformActions(List<ActionSequence> sequences)
+        {
+            PerformCalls++;
+            Performed = sequences;
+            if (FailOnPerform)
+                throw new InvalidOperationException("driver failure");
+        }
+    }
+
+    public static class Probe
+    {
+        $method
+    }
+}
+"@
+        $types = @(Add-Type -TypeDefinition $source -PassThru)
+        $script:DoubleTapDriverType = $types | Where-Object Name -CEQ 'AppiumDriver'
+        $script:DoubleTapElementType = $types | Where-Object Name -CEQ 'Element'
+        $script:DoubleTapMethod = ($types | Where-Object Name -CEQ 'Probe').
+            GetMethod('DoubleTap')
+    }
+
+    It 'dispatches doubleTap through the located element and trusted helper' {
+        $dispatch = [regex]::Match(
+            $script:TrustedAppiumSource,
+            'case "doubleTap":(?<body>.*?)break;',
+            [Text.RegularExpressions.RegexOptions]::Singleline)
+
+        $dispatch.Success | Should -BeTrue
+        $dispatch.Groups['body'].Value | Should -Match 'DoubleTap\('
+        $dispatch.Groups['body'].Value | Should -Match 'WaitForElement\('
+        $dispatch.Groups['body'].Value | Should -Not -Match '\.Click\('
+    }
+
+    It 'performs exactly two bounded presses at the element center with the platform pointer' {
+        foreach ($case in @(
+                @{ Platform = 'android'; Kind = 'Touch'; Button = 'Touch'; Name = 'finger' },
+                @{ Platform = 'ios'; Kind = 'Touch'; Button = 'Touch'; Name = 'finger' },
+                @{ Platform = 'catalyst'; Kind = 'Mouse'; Button = 'Left'; Name = 'mouse' },
+                @{ Platform = 'windows'; Kind = 'Touch'; Button = 'Touch'; Name = 'finger' }
+            )) {
+            $driver = [Activator]::CreateInstance($script:DoubleTapDriverType)
+            $element = [Activator]::CreateInstance($script:DoubleTapElementType)
+            $element.Location.X = 10
+            $element.Location.Y = 20
+            $element.Size.Width = 100
+            $element.Size.Height = 60
+
+            $script:DoubleTapMethod.Invoke(
+                $null,
+                @($driver, $case.Platform, $element)) | Out-Null
+
+            $driver.PerformCalls | Should -Be 1
+            $driver.Performed.Count | Should -Be 1
+            $sequence = $driver.Performed[0]
+            $sequence.Device.Kind.ToString() | Should -Be $case.Kind
+            $sequence.Device.Name | Should -Be $case.Name
+            ($sequence.Actions.Kind -join ',') |
+                Should -Be 'move,down,pause,up,pause,down,pause,up'
+            $sequence.Actions[0].X | Should -Be 60
+            $sequence.Actions[0].Y | Should -Be 50
+            @($sequence.Actions | Where-Object Kind -eq 'down').Count | Should -Be 2
+            @($sequence.Actions | Where-Object Kind -eq 'up').Count | Should -Be 2
+            @(
+                $sequence.Actions |
+                    Where-Object Kind -in @('down', 'up') |
+                    ForEach-Object { $_.Button.ToString() } |
+                    Select-Object -Unique
+            ) | Should -Be @($case.Button)
+            @(
+                $sequence.Actions |
+                    Where-Object Kind -eq 'pause' |
+                    ForEach-Object Milliseconds
+            ) | Should -Be @(80, 100, 80)
+        }
+    }
+
+    It 'propagates the first driver failure without retrying or adding taps' {
+        $driver = [Activator]::CreateInstance($script:DoubleTapDriverType)
+        $driver.FailOnPerform = $true
+        $element = [Activator]::CreateInstance($script:DoubleTapElementType)
+        $element.Size.Width = 40
+        $element.Size.Height = 20
+
+        {
+            $script:DoubleTapMethod.Invoke(
+                $null,
+                @($driver, 'catalyst', $element))
+        } | Should -Throw '*driver failure*'
+
+        $driver.PerformCalls | Should -Be 1
+        $driver.Performed.Count | Should -Be 1
+        @($driver.Performed[0].Actions | Where-Object Kind -eq 'down').Count |
+            Should -Be 2
+        @($driver.Performed[0].Actions | Where-Object Kind -eq 'up').Count |
+            Should -Be 2
+    }
+}
+
 Describe 'an abort exit code is not always a crash' {
     It 'reads a plan verdict as the answer even when the runner exits 134' {
         # The iOS device runner exits 134 for any failing test, so run 15014893

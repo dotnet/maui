@@ -120,6 +120,15 @@ Thumbnails use the final scene of the normalized recording on every platform,
 with a small decoding margin. The original clip retains its pre-trigger lead-in;
 desktop teardown is excluded before choosing a frame.
 
+When a report demonstrates an initially working interaction, the Sandbox must
+perform that interaction and verify the affected callback or state before the
+runtime update. An initialized result caption or unrelated pointer-delivery
+counter is not that proof. Do not drop a failing prerequisite to obtain a later
+bug caption; disclose an unsupported interaction instead.
+The trusted `doubleTap` action performs exactly two press/release cycles at the
+same located element in one bounded input sequence. It requires a locator and
+`value: null`; callers cannot supply a count, duration, or executable argument.
+
 ## Test semantics
 
 Generated reproduction tests are unconditional: they use no environment variable, command-line switch, category override, skip condition, or other opt-in gate. The exact targeted test must fail on the unfixed baseline during a normal test run.
