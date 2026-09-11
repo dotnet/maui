@@ -1923,7 +1923,7 @@ Describe 'A build step may not report success for work it never ran' {
             $reader = $script:Yaml.IndexOf('trusted-github/scripts/shared/Resolve-BuildShell.ps1', $jobStart)
             $captureCandidates = @(
                 $script:Yaml.IndexOf(
-                    'git -c core.autocrlf=false archive "${SOURCE_VERSION}"',
+                    'git -c core.autocrlf=false -c core.eol=lf archive "${SOURCE_VERSION}"',
                     $jobStart)
                 $script:Yaml.IndexOf('cp -r .github/scripts "$TRUSTED/scripts"', $jobStart)
             ) | Where-Object { $_ -ge $jobStart } | Sort-Object
@@ -2506,7 +2506,7 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
         $script:ValidateStage | Should -Match '-ReferenceRoot "\$\(TRUSTED_REPLICATION_VALIDATOR_ROOT\)"'
         $script:ValidateStage | Should -Match (
             '(?s)git -C "\$\(Build\.SourcesDirectory\)"\s*`\s*' +
-            '-c core\.autocrlf=false\s*`\s*archive')
+            '-c core\.autocrlf=false\s*`\s*-c core\.eol=lf\s*`\s*archive')
         $script:ValidateStage | Should -Match 'TRUSTED_REPLICATION_REFERENCE_ROOT'
         $script:ValidateStage | Should -Match '-ExpectedSourceVersion ''\$\(Build\.SourceVersion\)'''
         $script:ValidateStage | Should -Match 'ReferencePipelineDefinitionPath'
@@ -2563,11 +2563,12 @@ Describe 'The trusted tree is attested rather than merely made read-only' {
         $script:Pipeline | Should -Match 'Assert-TrustedTreeAttestation'
         ([regex]::Matches(
                 $script:Pipeline,
-                'git -c core\.autocrlf=false archive "\$\{SOURCE_VERSION\}"'
+                'git -c core\.autocrlf=false -c core\.eol=lf archive "\$\{SOURCE_VERSION\}"'
             )).Count | Should -BeExactly 2
-        $script:Pipeline | Should -Match (
+        ([regex]::Matches($script:Pipeline,
             '(?s)& git -C "\$\(Build\.SourcesDirectory\)"\s*`\s*' +
-            '-c core\.autocrlf=false\s*`\s*archive')
+            '-c core\.autocrlf=false\s*`\s*-c core\.eol=lf\s*`\s*archive'
+        )).Count | Should -BeExactly 2
         $script:Pipeline | Should -Match 'cygpath -u'
         $script:Pipeline | Should -Match 'trusted-source/eng/pipelines/ci-copilot\.yml'
         $script:Pipeline | Should -Match '-PipelineDefinitionPath'
@@ -2587,27 +2588,39 @@ Describe 'The trusted tree is attested rather than merely made read-only' {
         git -C $repository config user.email tests@example.com
         git -C $repository config user.name Tests
         git -C $repository config core.autocrlf true
+        git -C $repository config core.eol crlf
         [IO.File]::WriteAllText(
             (Join-Path $repository '.gitattributes'),
-            "* text=auto`n",
+            "* text=auto`n*.bin binary`n",
             [Text.UTF8Encoding]::new($false))
         [IO.File]::WriteAllText(
             (Join-Path $repository 'trusted.txt'),
             "first`nsecond`n",
             [Text.UTF8Encoding]::new($false))
-        git -C $repository add .gitattributes trusted.txt
+        $nativeSource = "int main(void) {`n    return 0;`n}`n"
+        [IO.File]::WriteAllText(
+            (Join-Path $repository 'probe.c'), $nativeSource,
+            [Text.UTF8Encoding]::new($false))
+        $binary = [byte[]]@(0, 13, 10, 255, 10)
+        [IO.File]::WriteAllBytes((Join-Path $repository 'fixture.bin'), $binary)
+        git -C $repository add .gitattributes trusted.txt probe.c fixture.bin
         git -C $repository commit -q -m trusted
 
-        git -C $repository -c core.autocrlf=false archive `
+        git -C $repository -c core.autocrlf=false -c core.eol=lf archive `
             --format=tar `
             "--output=$archive" `
             HEAD `
-            trusted.txt
+            trusted.txt probe.c fixture.bin
         $LASTEXITCODE | Should -Be 0
         tar -xf $archive -C $extracted
         $LASTEXITCODE | Should -Be 0
         [IO.File]::ReadAllText((Join-Path $extracted 'trusted.txt')) |
             Should -BeExactly "first`nsecond`n"
+        [IO.File]::ReadAllText((Join-Path $extracted 'probe.c')) |
+            Should -BeExactly $nativeSource
+        [Convert]::ToHexString([IO.File]::ReadAllBytes(
+            (Join-Path $extracted 'fixture.bin'))) |
+            Should -BeExactly ([Convert]::ToHexString($binary))
     }
 
     It 'hands the orchestrator the attestation and the revision it was taken at' {
