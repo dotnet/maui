@@ -177,7 +177,7 @@
     <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
     <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
     <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
-    <AvaloniaControlsMauiPackageVersion>11.0.0-preview.6.26198.1455</AvaloniaControlsMauiPackageVersion>
+    <AvaloniaControlsMauiPackageVersion>11.0.0-preview.7.26224.328</AvaloniaControlsMauiPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
