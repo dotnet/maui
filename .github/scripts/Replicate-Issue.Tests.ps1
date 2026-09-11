@@ -1901,6 +1901,35 @@ public partial class MainPage : ContentPage
                 $prompt | Should -Match 'an explicitly reported runtime update must remain after attachment'
             }
         }
+
+        It 'uses native Apple kerning rather than PNG encoding as Sandbox evidence' {
+            $script:IssueNumber = 29668
+            $nativeRead = @'
+public partial class MainPage : ContentPage
+{
+    void Inspect()
+    {
+        var nativeLabel = (UIKit.UILabel)AffectedLabel.Handler.PlatformView;
+        var attributes = nativeLabel.AttributedText;
+        var value = attributes.GetAttribute(UIKit.UIStringAttributeKey.KerningAdjustment, 0, out var range);
+        var spacing = value is Foundation.NSNumber number ? number.DoubleValue : 0;
+    }
+}
+'@
+            {
+                Assert-ReplicationGeneratedSourceSafety -Content $nativeRead -Path 'MainPage.xaml.cs'
+            } | Should -Not -Throw
+            foreach ($targetPlatform in @('ios', 'catalyst')) {
+                $script:Platform = $targetPlatform
+                $prompt = New-CopilotPrompt -Phase sandbox
+                $prompt | Should -Match 'APPLE LABEL OBSERVATION'
+                $prompt | Should -Match 'UIKit.UIStringAttributeKey.KerningAdjustment belongs to UIKit'
+                $prompt | Should -Match 'Never substitute equality of PNG bytes or compressed IDAT data'
+                $prompt | Should -Match 'These Sandbox reads do not expand the later generated-test contract'
+            }
+            $script:Platform = 'android'
+            (New-CopilotPrompt -Phase sandbox) | Should -Not -Match 'APPLE LABEL OBSERVATION'
+        }
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
@@ -9063,6 +9092,15 @@ Describe 'an abort exit code is not always a crash' {
         ) | Set-Content -LiteralPath $log
         Get-ReplicationAppTermination -LogPath $log |
             Should -Be 'the Sandbox stopped running'
+    }
+
+    It 'recognizes a text assertion without stack frames as a host failure rather than an app crash' {
+        $log = Join-Path $TestDrive 'record-text-mismatch-no-stack.log'
+        $summary = "Unhandled exception. System.InvalidOperationException: Expected element text to equal 'HTML pixels unchanged', actual 'HTML active'. | Test failed with exit code 134"
+        $summary | Set-Content -LiteralPath $log
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'assertion-mismatch'
     }
 
     It 'still recovers an abort when the plan left no verdict' {
