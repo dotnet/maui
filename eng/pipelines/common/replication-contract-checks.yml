@@ -421,6 +421,11 @@ steps:
         'Cross-platform device test class filtering*injects the trusted Windows class-filter override into the baseline graph build'
         'Cross-platform device test class filtering*passes only the validated regression class to the packaged Windows process'
         'Get-DeviceTestResultSummary*retains strict Windows XML after package LocalState cleanup'
+        'Replication orchestrator security boundary*guides unspecified tap hosts only in iOS Sandbox planning'
+        'Replication orchestrator security boundary*preserves specified and recorded hosts ahead of test capability preferences'
+        'A verdict the length cap discarded is not a crash*retains an elided trusted text assertion instead of inferring an app crash'
+        'A verdict the length cap discarded is not a crash*retains an elided trusted action refusal within the existing recovery bound'
+        'A verdict the length cap discarded is not a crash*keeps genuine termination above an elided trusted assertion failure'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
