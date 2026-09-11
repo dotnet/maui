@@ -1,4 +1,5 @@
 #if IOS && !MACCATALYST
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -40,7 +41,12 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal("CI", handler.PlatformView.CurrentTitle);
 				});
 
-			var label = new Label { Text = "Native Label text" };
+			var tapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
+			var label = new Label
+			{
+				Text = "Native Label text",
+				GestureRecognizers = { tapGesture, new PointerGestureRecognizer() }
+			};
 			await CreateHandlerAndAddToWindow<LabelHandler>(
 				new Window(new ContentPage { Content = label }), async handler =>
 				{
@@ -50,6 +56,10 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal("Native Label text", handler.PlatformView.Text);
 					label.CharacterSpacing = 5d;
 					Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());
+					// Exercise the non-trigger observer path; issue verification remains separate.
+					tapGesture.NumberOfTapsRequired = 1;
+					Assert.Equal((nuint)1, handler.PlatformView.GestureRecognizers
+						.OfType<UIKit.UITapGestureRecognizer>().Single().NumberOfTapsRequired);
 				});
 		}
 	}

@@ -1889,6 +1889,36 @@ public partial class MainPage : ContentPage
                 Should -Not -Match 'NATIVE LABEL CHARACTERSPACING PROFILE'
         }
 
+        It 'scopes reusable native Label tap-count guidance to iOS generated-test phases' {
+            $script:IssueNumber = 38291
+            $script:Platform = 'ios'
+            foreach ($phase in @('test-plan', 'test', 'repair')) {
+                $prompt = New-CopilotPrompt -Phase $phase `
+                    -BaselineRelativePath 'tests/Issue38291Tests.iOS.cs'
+                $profile = [regex]::Match(
+                    $prompt,
+                    '(?s)NATIVE LABEL TAP-COUNT PROFILE:.*?(?=\r?\n[A-Z][A-Z -]+:|\r?\nTrusted |\r?\nDo not create|\z)')
+                $profile.Success | Should -BeTrue
+                $profile.Value | Should -Match ([regex]::Escape(
+                    '#if IOS && !MACCATALYST'))
+                $profile.Value | Should -Match 'affectedTap\.NumberOfTapsRequired = <the exact target literal>'
+                $profile.Value | Should -Match 'GestureRecognizers\.OfType<global::UIKit\.UITapGestureRecognizer>\(\)\.Single\(\)\.NumberOfTapsRequired'
+                $profile.Value | Should -Match 'same post-attachment managed update and native oracle'
+                $profile.Value | Should -Match 'coexisting `PointerGestureRecognizer`'
+                $profile.Value | Should -Match 'Assert\.Equal\(\) Failure: Values differ'
+                $profile.Value | Should -Not -Match 'Issue38291|Tap target'
+            }
+
+            foreach ($platform in @('android', 'catalyst', 'windows')) {
+                $script:Platform = $platform
+                (New-CopilotPrompt -Phase test-plan) |
+                    Should -Not -Match 'NATIVE LABEL TAP-COUNT PROFILE'
+            }
+            $script:Platform = 'ios'
+            (New-CopilotPrompt -Phase sandbox) |
+                Should -Not -Match 'NATIVE LABEL TAP-COUNT PROFILE'
+        }
+
         It 'keeps initial assignments out of invented post-attachment trigger buttons' {
             $script:IssueNumber = 29282
             foreach ($platform in @('android', 'ios')) {
@@ -11950,6 +11980,62 @@ public class Issue29668Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
 }
 #endif
 '@
+        $script:TrustedNativeLabelTapGestureCountBase = @'
+#if IOS && !MACCATALYST
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue38291")]
+    public async Task RuntimeTapCountUpdatesNativeRecognizer()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));
+        var affectedTap = new global::Microsoft.Maui.Controls.TapGestureRecognizer
+        {
+            NumberOfTapsRequired = 1
+        };
+        var affectedLabel = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "Tap target",
+            GestureRecognizers =
+            {
+                affectedTap,
+                new global::Microsoft.Maui.Controls.PointerGestureRecognizer()
+            }
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedTap.NumberOfTapsRequired = 2;
+        }
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(
+            new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }),
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                affectedTap.NumberOfTapsRequired = 1;
+                Assert.Equal(
+                    (nuint)1,
+                    handler.PlatformView.GestureRecognizers
+                        .OfType<global::UIKit.UITapGestureRecognizer>()
+                        .Single()
+                        .NumberOfTapsRequired);
+            });
+    }
+}
+#endif
+'@
     }
 
     AfterAll {
@@ -12652,6 +12738,392 @@ namespace Generated
         $catalystVariant | Should -BeExactly $catalyst.Replace(
             'var applyReportedTrigger = true;',
             'var applyReportedTrigger = false;')
+    }
+
+    It 'allows exact iOS native Label tap-count controls for different issue keys' {
+        foreach ($case in @(
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase
+                    Issue = '38291'
+                    Target = '1'
+                    Initial = '2'
+                }
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase.
+                        Replace('Issue38291Tests', 'Issue41234Tests').
+                        Replace('Issue38291', 'Issue41234').
+                        Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 3').
+                        Replace('NumberOfTapsRequired = 2', 'NumberOfTapsRequired = 4').
+                        Replace('(nuint)1', '(nuint)3')
+                    Issue = '41234'
+                    Target = '3'
+                    Initial = '4'
+                }
+            )) {
+            $path = "src/Controls/tests/DeviceTests/Elements/Label/Issue$(
+                $case.Issue)Tests.iOS.cs"
+            {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content $case.Source -Path $path
+                Assert-ReplicationPlatformSourceSafety `
+                    -Content $case.Source -Path $path -Platform ios
+            } | Should -Not -Throw
+            $variant = New-ReplicationControlVariant `
+                -BaselineSource $case.Source `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass "Microsoft.Maui.DeviceTests.Issue$(
+                    $case.Issue)Tests" `
+                -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                -Platform ios `
+                -SourcePath $path
+            $variant | Should -BeExactly $case.Source.Replace(
+                'var applyReportedTrigger = true;',
+                'var applyReportedTrigger = false;')
+        }
+    }
+
+    It 'matches the real managed gesture declarations and iOS native mapping' {
+        $sourceRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
+        $tapSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot 'src/Controls/src/Core/TapGestureRecognizer.cs') -Raw
+        $pointerSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot 'src/Controls/src/Core/PointerGestureRecognizer.cs') -Raw
+        $viewSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot 'src/Controls/src/Core/View/View.cs') -Raw
+        $iosMappingSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot (
+                'src/Controls/src/Core/Platform/GestureManager/' +
+                'GesturePlatformManager.iOS.cs')) -Raw
+
+        $tapSource | Should -Match (
+            '(?s)namespace Microsoft\.Maui\.Controls.*?' +
+            'public sealed class TapGestureRecognizer : GestureRecognizer.*?' +
+            'public int NumberOfTapsRequired')
+        $pointerSource | Should -Match (
+            'public sealed class PointerGestureRecognizer : GestureRecognizer')
+        $viewSource | Should -Match (
+            'public IList<IGestureRecognizer> GestureRecognizers')
+        $iosMappingSource | Should -Match (
+            '(?s)new UITapGestureRecognizer\(action\).*?' +
+            'NumberOfTapsRequired = \(uint\)tapGesture\.NumberOfTapsRequired')
+    }
+
+    It 'rejects tap-count syntax markers without a validated attachment and native oracle' {
+        $source = @'
+#if IOS && !MACCATALYST
+using System.Linq;
+using Microsoft.Maui;
+using Xunit;
+namespace Microsoft.Maui.DeviceTests;
+public class Issue38291Tests
+{
+    [Fact]
+    [Category("Issue38291")]
+    public void Reproduces()
+    {
+        var affectedTap = new global::Microsoft.Maui.Controls.TapGestureRecognizer();
+        var pointer = new global::Microsoft.Maui.Controls.PointerGestureRecognizer();
+        var marker = new global::UIKit.UIView().GestureRecognizers.OfType<global::UIKit.UITapGestureRecognizer>();
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedTap.NumberOfTapsRequired = 2;
+        }
+        Assert.Equal(1, affectedTap.NumberOfTapsRequired);
+    }
+}
+#endif
+'@
+        $path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+        Assert-ReplicationGeneratedSourceSafety -Content $source -Path $path
+        Assert-ReplicationPlatformSourceSafety -Content $source -Path $path -Platform ios
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $source `
+                -Edits @($script:GateEdit) `
+                -SourcePath $path `
+                -Platform ios `
+                -ExpectedTestMethod Reproduces `
+                -ExpectedTestClass Microsoft.Maui.DeviceTests.Issue38291Tests
+        } | Should -Throw '*requires exactly one validated*'
+    }
+
+    It 'rejects iOS native Label tap-count identity path category and platform drift' {
+        $cases = @(
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                    '[Category("Issue38291")]', '[Category("Issue38292")]')
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                Platform = 'ios'
+            }
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase
+                Path = 'src/Controls/tests/DeviceTests/Elements/Button/Issue38291Tests.iOS.cs'
+                Platform = 'ios'
+            }
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                    '#if IOS && !MACCATALYST', '#if IOS')
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                Platform = 'ios'
+            }
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                    '#if IOS && !MACCATALYST', '#if MACCATALYST')
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                Platform = 'catalyst'
+            }
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                    'global::Microsoft.Maui.Handlers.LabelHandler>()',
+                    'global::Microsoft.Maui.Handlers.ButtonHandler>()')
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                Platform = 'ios'
+            }
+            @{
+                Source = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                    'Content = affectedLabel',
+                    'Content = new global::Microsoft.Maui.Controls.Label()')
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                Platform = 'ios'
+            }
+        )
+        foreach ($case in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform $case.Platform `
+                    -SourcePath $case.Path
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects nonliteral mismatched reordered or relocated tap-count transitions' {
+        $cases = @(
+            $script:TrustedNativeLabelTapGestureCountBase.
+                Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 0').
+                Replace('(nuint)1', '(nuint)0'),
+            $script:TrustedNativeLabelTapGestureCountBase.
+                Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 11').
+                Replace('(nuint)1', '(nuint)11'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 2;', 'NumberOfTapsRequired = 1;'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 2;', 'NumberOfTapsRequired = 0;'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 2;', 'NumberOfTapsRequired = 11;'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 2;', 'NumberOfTapsRequired = "2";'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 2;', 'NumberOfTapsRequired = true;'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'affectedTap.NumberOfTapsRequired = 1;' + [Environment]::NewLine +
+                    '                Assert.Equal(',
+                'affectedTap.NumberOfTapsRequired = 3;' + [Environment]::NewLine +
+                    '                Assert.Equal('),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '(nuint)1,', '(nuint)2,'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 1 + 0'),
+            $script:TrustedNativeLabelTapGestureCountBase.
+                Replace(
+                    '        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(',
+                    "        affectedTap.NumberOfTapsRequired = 1;`n        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(").
+                Replace(
+                    '                affectedTap.NumberOfTapsRequired = 1;' +
+                        [Environment]::NewLine,
+                    ''),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '                affectedTap.NumberOfTapsRequired = 1;' +
+                    [Environment]::NewLine +
+                    '                Assert.Equal(',
+                '                Assert.Equal(').Replace(
+                    '                        .NumberOfTapsRequired);',
+                    "                        .NumberOfTapsRequired);`n                affectedTap.NumberOfTapsRequired = 1;")
+        )
+        foreach ($candidate in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'requires the exact affected tap plus one coexisting pointer recognizer' {
+        $cases = @(
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '                affectedTap,' + [Environment]::NewLine,
+                ''),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '                new global::Microsoft.Maui.Controls.PointerGestureRecognizer()',
+                '                new global::Microsoft.Maui.Controls.TapGestureRecognizer()'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '                new global::Microsoft.Maui.Controls.PointerGestureRecognizer()',
+                "                new global::Microsoft.Maui.Controls.PointerGestureRecognizer(),`n                new global::Microsoft.Maui.Controls.PointerGestureRecognizer()"),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '                affectedTap,',
+                '                new global::Microsoft.Maui.Controls.TapGestureRecognizer(),'),
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                '            Text = "Tap target",',
+                "            Text = `"Tap target`",`n            TextType = global::Microsoft.Maui.TextType.Text,")
+        )
+        foreach ($candidate in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects alternate native tap-count chains receivers and generated shadows' {
+        $wrongReceiver = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            'handler.PlatformView.GestureRecognizers',
+            '((global::UIKit.UIView)handler.PlatformView).GestureRecognizers')
+        $wrongType = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            'OfType<global::UIKit.UITapGestureRecognizer>()',
+            'OfType<global::UIKit.UIGestureRecognizer>()')
+        $wrongCardinality = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            '.Single()', '.First()')
+        $managedOracle = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            'handler.PlatformView.GestureRecognizers' +
+                [Environment]::NewLine +
+                '                        .OfType<global::UIKit.UITapGestureRecognizer>()' +
+                [Environment]::NewLine +
+                '                        .Single()' +
+                [Environment]::NewLine +
+                '                        .NumberOfTapsRequired',
+            'affectedTap.NumberOfTapsRequired')
+        $alias = $script:TrustedNativeLabelTapGestureCountBase.
+            Replace(
+                'using System.Linq;',
+                "using System.Linq;`nusing NativeTap = UIKit.UITapGestureRecognizer;").
+            Replace(
+                'OfType<global::UIKit.UITapGestureRecognizer>()',
+                'OfType<NativeTap>()')
+        $linqShadow = @'
+namespace System.Linq
+{
+    public static class Enumerable { }
+}
+'@
+        $nativeShadow = @'
+namespace UIKit
+{
+    public class UITapGestureRecognizer { }
+}
+'@
+        $managedShadow = @'
+namespace Microsoft.Maui.Controls
+{
+    public class TapGestureRecognizer { }
+}
+'@
+        $extensionShadow = @'
+namespace Generated
+{
+    public static class EnumerableExtensions
+    {
+        public static System.Collections.Generic.IEnumerable<T> OfType<T>(
+            this System.Collections.IEnumerable source) => null;
+        public static T Single<T>(
+            this System.Collections.Generic.IEnumerable<T> source) => default;
+    }
+}
+'@
+        $extensionShadowCall =
+            $script:TrustedNativeLabelTapGestureCountBase.Replace(
+                'using System.Linq;',
+                "using System.Linq;`nusing Generated;")
+        foreach ($case in @(
+                @{ Source = $wrongReceiver; Additional = @() }
+                @{ Source = $wrongType; Additional = @() }
+                @{ Source = $wrongCardinality; Additional = @() }
+                @{ Source = $managedOracle; Additional = @() }
+                @{ Source = $alias; Additional = @() }
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase
+                    Additional = @($linqShadow)
+                }
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase
+                    Additional = @($nativeShadow)
+                }
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase
+                    Additional = @($managedShadow)
+                }
+                @{
+                    Source = $extensionShadowCall
+                    Additional = @($extensionShadow)
+                }
+            )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -AdditionalSources $case.Additional `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects extra callbacks native writes ref arguments and tap-count profile leakage' {
+        $extraOracle = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            '                Assert.Equal(',
+            "                Assert.NotNull(handler.PlatformView);`n                Assert.Equal(")
+        $nativeWrite = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            '                Assert.Equal(',
+            "                handler.PlatformView.GestureRecognizers[0] = null;`n                Assert.Equal(")
+        $refArgument = $script:TrustedNativeLabelTapGestureCountBase.Replace(
+            '                Assert.Equal(',
+            "                Mutate(ref affectedTap);`n                Assert.Equal(")
+        foreach ($candidate in @($extraOracle, $nativeWrite, $refArgument)) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+
+        $innocentLocal = $script:ControlBase.Replace(
+            'var applyReportedTrigger = true;',
+            "var NumberOfTapsRequired = true;`n        var applyReportedTrigger = true;")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $innocentLocal `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+
+        $outsideProfile = $script:ControlBase.Replace(
+            'label.IsVisible = false;',
+            'label.GestureRecognizers.Add(new global::Microsoft.Maui.Controls.TapGestureRecognizer());')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $outsideProfile `
+                -Edits @($script:GateEdit) `
+                -Platform ios `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue40129Tests.iOS.cs'
+        } | Should -Throw '*tap-count metadata is trusted only*'
     }
 
     It 'requires literal matching positive native Label CharacterSpacing values after attachment' {

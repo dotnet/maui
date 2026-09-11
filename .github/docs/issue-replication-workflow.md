@@ -223,6 +223,18 @@ literal up to 10000 is accepted; zero/missing native attributes cannot pass.
 The profile does not permit raw native attribute access, generated observers,
 or native writes, and retains the iOS/Mac Catalyst execution boundaries.
 
+The iOS Label tap-count profile retains one TapGestureRecognizer and one
+coexisting PointerGestureRecognizer on the same Label. Its gate selects the
+pre-attachment tap count; the reported managed count assignment always remains
+after attachment. The unchanged oracle reads NumberOfTapsRequired from the
+single native UITapGestureRecognizer on that handler, using only the exact
+typed OfType/Single chain. Counts are distinct positive integer literals up to
+10, and the native expectation matches the common runtime assignment. This
+profile admits neither simulated input nor callback-counter proxies, native
+writes, alternate views, generated observers, or other platforms. A native
+infrastructure probe exercises the non-trigger observation path separately
+from issue reproduction and four-arm fix verification.
+
 The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
 Successful publication requires both:

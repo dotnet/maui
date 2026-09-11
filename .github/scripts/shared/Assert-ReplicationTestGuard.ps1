@@ -74,7 +74,6 @@ function Get-ReplicationCommentFreeText {
             if ($Text[$i] -ne "`n") { $null = $builder.Replace($Text[$i], ' ', $i, 1) }
         }
     }
-
     if ($isXaml) {
         foreach ($m in [regex]::Matches($Text, '<!--[\s\S]*?(?:-->|$)')) {
             & $blank $m.Index ($m.Index + $m.Length)
@@ -4449,9 +4448,20 @@ namespace Microsoft.Maui.Controls
     public class View : VisualElement
     {
         public static BindableProperty HorizontalOptionsProperty { get; }
+        public System.Collections.Generic.IList<IGestureRecognizer> GestureRecognizers
+        {
+            get;
+        } = new System.Collections.Generic.List<IGestureRecognizer>();
         public LayoutOptions HorizontalOptions { get; set; }
         public LayoutOptions VerticalOptions { get; set; }
     }
+    public interface IGestureRecognizer { }
+    public class GestureRecognizer : Element, IGestureRecognizer { }
+    public sealed class TapGestureRecognizer : GestureRecognizer
+    {
+        public int NumberOfTapsRequired { get; set; }
+    }
+    public sealed class PointerGestureRecognizer : GestureRecognizer { }
     public class Page : VisualElement
     {
         public event System.EventHandler NavigatedTo;
@@ -4868,6 +4878,11 @@ namespace CoreGraphics
 
 namespace UIKit
 {
+    public class UIGestureRecognizer { }
+    public class UITapGestureRecognizer : UIGestureRecognizer
+    {
+        public nuint NumberOfTapsRequired { get; set; }
+    }
     public sealed class UIStringAttributeKey
     {
         public static UIStringAttributeKey KerningAdjustment { get; }
@@ -4876,6 +4891,7 @@ namespace UIKit
     {
         public double Alpha { get; set; }
         public CoreGraphics.CGRect Bounds { get; set; }
+        public UIGestureRecognizer[] GestureRecognizers { get; }
         public bool Hidden { get; set; }
         public CoreGraphics.CGSize IntrinsicContentSize { get; }
         public UIView[] Subviews { get; }
@@ -6191,8 +6207,40 @@ function New-ReplicationControlVariant {
             }).Count -ne 0
     $isNativeLabelCharacterSpacingProfile =
         $hasNativeLabelCharacterSpacingShape
+    $hasNativeLabelTapGestureCountShape =
+        $Platform -ceq 'ios' -and
+        $nativeLabelProfileMatch.Success -and
+        $nativeLabelProfileMatch.Groups['platform'].Value -ceq 'iOS' -and
+        @($root.DescendantNodes() | Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
+                $_.Type.ToString() -ceq
+                    'global::Microsoft.Maui.Controls.TapGestureRecognizer'
+            }).Count -ne 0 -and
+        @($root.DescendantNodes() | Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
+                $_.Type.ToString() -ceq
+                    'global::Microsoft.Maui.Controls.PointerGestureRecognizer'
+            }).Count -ne 0 -and
+        @($root.DescendantNodes() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -and
+                $_.Identifier.ValueText -ceq 'OfType' -and
+                $_.TypeArgumentList.Arguments.Count -eq 1 -and
+                $_.TypeArgumentList.Arguments[0].ToString() -ceq
+                    'global::UIKit.UITapGestureRecognizer'
+            }).Count -ne 0 -and
+        @($root.DescendantNodes() | Where-Object {
+                $_ -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $_.Name.Identifier.ValueText -ceq 'NumberOfTapsRequired'
+            }).Count -ne 0
+    # Syntax selects candidate metadata; the exact helper must validate before acceptance.
+    $isNativeLabelTapGestureCountProfile =
+        $hasNativeLabelTapGestureCountShape
     $isNativeLabelTextProfile =
         -not $isNativeLabelCharacterSpacingProfile -and
+        -not $isNativeLabelTapGestureCountProfile -and
         $nativeLabelProfileMatch.Success -and
         $nativeLabelProfileMatch.Groups['platform'].Value -ceq
             $nativeLabelTextProfilePlatform
@@ -6203,6 +6251,12 @@ function New-ReplicationControlVariant {
     }
     $nativeLabelCharacterSpacingProfileIssue =
         if ($isNativeLabelCharacterSpacingProfile) {
+        $nativeLabelProfileMatch.Groups['issue'].Value
+    } else {
+        ''
+    }
+    $nativeLabelTapGestureCountProfileIssue =
+        if ($isNativeLabelTapGestureCountProfile) {
         $nativeLabelProfileMatch.Groups['issue'].Value
     } else {
         ''
@@ -6414,8 +6468,21 @@ function New-ReplicationControlVariant {
                     return $true
                 }
                 if (($isNativeLabelTextProfile -or
-                        $isNativeLabelCharacterSpacingProfile) -and
+                        $isNativeLabelCharacterSpacingProfile -or
+                        $isNativeLabelTapGestureCountProfile) -and
                     $namespaceName -cin @('UIKit', 'Foundation')) {
+                    return $true
+                }
+                if ($isNativeLabelTapGestureCountProfile -and
+                    (($namespaceName -ceq 'Microsoft.Maui.Controls' -and
+                            $_.Identifier.ValueText -cin @(
+                                'IGestureRecognizer',
+                                'GestureRecognizer',
+                                'TapGestureRecognizer',
+                                'PointerGestureRecognizer'
+                            )) -or
+                        ($namespaceName -ceq 'System.Linq' -and
+                            $_.Identifier.ValueText -ceq 'Enumerable'))) {
                     return $true
                 }
                 if (-not $isAndroidIssue33315PathForSourceScan -or
@@ -6439,6 +6506,8 @@ function New-ReplicationControlVariant {
                 'Android Issue26505 profile types'
             } elseif ($isNativeLabelCharacterSpacingProfile) {
                 'Apple native Label CharacterSpacing profile types'
+            } elseif ($isNativeLabelTapGestureCountProfile) {
+                'iOS native Label tap-count profile types'
             } else {
                 'Android native/profile types'
             }
@@ -7084,6 +7153,14 @@ function New-ReplicationControlVariant {
         [Collections.Generic.HashSet[int]]::new()
     $trustedNativeLabelCharacterSpacingCallbackOracleMinimums =
         [Collections.Generic.Dictionary[int, int]]::new()
+    $acceptedNativeLabelTapGestureCountRegistrationInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $acceptedNativeLabelTapGestureCountHelperInvocations =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelTapGestureCountCallbackBodies =
+        [Collections.Generic.HashSet[int]]::new()
+    $trustedNativeLabelTapGestureCountCallbackOracleMinimums =
+        [Collections.Generic.Dictionary[int, int]]::new()
     $isAndroidIssue33315Profile =
         $Platform -ceq 'android' -and
         $normalizedSourcePath -ceq
@@ -7196,6 +7273,65 @@ function New-ReplicationControlVariant {
         return (
             $null -ne $type -and
             $type.ToString() -ceq 'Foundation.NSAttributedString')
+    }
+    $nativeLabelTapGestureCountScopedTypes = @(
+        'Microsoft.Maui.Controls.IGestureRecognizer',
+        'Microsoft.Maui.Controls.GestureRecognizer',
+        'Microsoft.Maui.Controls.TapGestureRecognizer',
+        'Microsoft.Maui.Controls.PointerGestureRecognizer',
+        'UIKit.UIGestureRecognizer',
+        'UIKit.UITapGestureRecognizer'
+    )
+    $isNativeLabelTapGestureCountScopedType = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
+        if ($null -eq $Type) { return $false }
+        if ($Type -is [Microsoft.CodeAnalysis.IArrayTypeSymbol]) {
+            return & $isNativeLabelTapGestureCountScopedType -Type $Type.ElementType
+        }
+        if ($Type -is [Microsoft.CodeAnalysis.INamedTypeSymbol]) {
+            foreach ($typeArgument in $Type.TypeArguments) {
+                if (& $isNativeLabelTapGestureCountScopedType -Type $typeArgument) {
+                    return $true
+                }
+            }
+        }
+        return $Type.ToString() -cin $nativeLabelTapGestureCountScopedTypes
+    }
+    $isNativeLabelTapGestureCountScopedSymbol = {
+        param([AllowNull()][Microsoft.CodeAnalysis.ISymbol]$Symbol)
+        if ($null -eq $Symbol) { return $false }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            $definition = if ($null -ne $Symbol.ReducedFrom) {
+                $Symbol.ReducedFrom
+            } else {
+                $Symbol.OriginalDefinition
+            }
+            if ($definition.ContainingType.ToString() -ceq
+                    'System.Linq.Enumerable' -and
+                $definition.Name -cin @('OfType', 'Single') -and
+                $Symbol.TypeArguments.Length -eq 1 -and
+                $Symbol.TypeArguments[0].ToString() -ceq
+                    'UIKit.UITapGestureRecognizer') {
+                return $true
+            }
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+            return & $isNativeLabelTapGestureCountScopedType -Type $Symbol
+        }
+        if ($null -ne $Symbol.ContainingType -and
+            (& $isNativeLabelTapGestureCountScopedType `
+                -Type $Symbol.ContainingType)) {
+            return $true
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            return (& $isNativeLabelTapGestureCountScopedType `
+                -Type $Symbol.ReturnType)
+        }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $Symbol -is [Microsoft.CodeAnalysis.IFieldSymbol]) {
+            return (& $isNativeLabelTapGestureCountScopedType -Type $Symbol.Type)
+        }
+        return $false
     }
     $isAndroidIssue33315ScopedType = {
         param([AllowNull()][Microsoft.CodeAnalysis.ITypeSymbol]$Type)
@@ -7332,6 +7468,17 @@ function New-ReplicationControlVariant {
         return @($Node.AncestorsAndSelf() | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
                 $trustedNativeLabelCharacterSpacingCallbackBodies.Contains(
+                    $_.SpanStart)
+            }).Count -ne 0
+    }
+    $isNativeLabelTapGestureCountCallbackNode = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.SyntaxNode]$Node
+        )
+        return @($Node.AncestorsAndSelf() | Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+                $trustedNativeLabelTapGestureCountCallbackBodies.Contains(
                     $_.SpanStart)
             }).Count -ne 0
     }
@@ -9389,6 +9536,642 @@ function New-ReplicationControlVariant {
             $callback.Body.SpanStart)
         $trustedNativeLabelCharacterSpacingCallbackOracleMinimums[
             $callback.Body.SpanStart] = $spacingStatement.Span.End
+    }
+    $validateNativeLabelTapGestureCountHelperInvocation = {
+        param(
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax]$AwaitExpression,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]$Invocation,
+            [Parameter(Mandatory = $true)]
+            [Microsoft.CodeAnalysis.IMethodSymbol]$HelperMethod
+        )
+
+        if (-not $isNativeLabelTapGestureCountProfile) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label tap-count profile is available only to an ' +
+                    'issue-keyed iOS Controls Label device-test path.')
+        }
+        $normalizedEnvelope = $BaselineSource.Replace("`r`n", "`n")
+        $envelope = [regex]::Match(
+            $normalizedEnvelope,
+            '(?s)\A\s*#if\s+IOS\s*&&\s*!\s*MACCATALYST\s*\n(?<body>.*)\n\s*#endif\s*\z',
+            [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+        if (-not $envelope.Success -or
+            $envelope.Groups['body'].Value -cmatch '(?m)^\s*#') {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0] `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label tap-count profile must wrap the entire source ' +
+                    'in exactly #if IOS && !MACCATALYST and one matching #endif, ' +
+                    'with no alternate or nested conditional source.')
+        }
+
+        $expectedCategory = "Issue$nativeLabelTapGestureCountProfileIssue"
+        $issueCategories = @($selectedAttributes | Where-Object {
+                $attributeSymbol = $semanticModel.GetSymbolInfo($_).Symbol
+                $attributeSymbol -is [Microsoft.CodeAnalysis.IMethodSymbol] -and
+                $attributeSymbol.ContainingAssembly.Name -ceq $trustedContractAssembly -and
+                $attributeSymbol.ContainingType.ToString() -ceq
+                    'Microsoft.Maui.CategoryAttribute' -and
+                $_.ArgumentList -and $_.ArgumentList.Arguments.Count -eq 1 -and
+                $_.ArgumentList.Arguments[0].Expression -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -and
+                $_.ArgumentList.Arguments[0].Expression.Token.ValueText -ceq
+                    $expectedCategory
+            })
+        if ($issueCategories.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0] `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label tap-count profile requires exactly ' +
+                    "[Category(`"$expectedCategory`")] on the selected method, " +
+                    'matching the issue-keyed file path.')
+        }
+
+        $statements = @($testMethod[0].Body.Statements)
+        if ($statements.Count -ne 6 -or
+            $AwaitExpression.Parent -ne $statements[5] -or
+            $statements[3] -ne $localDeclaration -or
+            $statements[4] -ne $gate) {
+            & $throwTrustedWindowHelperViolation -Node $testMethod[0].Body `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native Label tap-count method must contain exactly six ' +
+                    'top-level statements in order: one Label handler registration, ' +
+                    'the affected tap declaration, the affected Label declaration, ' +
+                    'the gate declaration, the gate, and the directly awaited helper.')
+        }
+        & $validateExactSingleHandlerRegistrationStatement `
+            -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
+            -ProfileDescription 'native Label tap-count profile' `
+            -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
+            -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
+            -ViewTypeName 'Microsoft.Maui.Controls.Label' `
+            -HandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
+            -AcceptedInvocations `
+                $acceptedNativeLabelTapGestureCountRegistrationInvocations
+
+        $tapStatement = $statements[1]
+        $tapDeclarator = if ($tapStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
+            $tapStatement.Declaration.Type.ToString() -ceq 'var' -and
+            $tapStatement.Declaration.Variables.Count -eq 1) {
+            $tapStatement.Declaration.Variables[0]
+        }
+        $tapSymbol = if ($null -ne $tapDeclarator) {
+            $semanticModel.GetDeclaredSymbol($tapDeclarator)
+        }
+        $tapCreation = if ($null -ne $tapDeclarator -and
+            $null -ne $tapDeclarator.Initializer) {
+            $tapDeclarator.Initializer.Value
+        }
+        $tapConstructor = if ($tapCreation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($tapCreation).Symbol
+        }
+        if ($null -eq $tapDeclarator -or
+            $tapDeclarator.Identifier.ValueText -cne 'affectedTap' -or
+            $tapSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $tapSymbol.Type.ToString() -cne
+                'Microsoft.Maui.Controls.TapGestureRecognizer' -or
+            $tapSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $tapCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $tapCreation.Type.ToString() -cne
+                'global::Microsoft.Maui.Controls.TapGestureRecognizer' -or
+            ($tapCreation.ArgumentList -and
+                $tapCreation.ArgumentList.Arguments.Count -ne 0) -or
+            $tapConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $tapConstructor.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $null -eq $tapCreation.Initializer -or
+            $tapCreation.Initializer.Expressions.Count -ne 1) {
+            & $throwTrustedWindowHelperViolation -Node $tapStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'declare exactly `var affectedTap = new global::Microsoft.Maui.' +
+                    'Controls.TapGestureRecognizer { NumberOfTapsRequired = ' +
+                    '<target integer literal> };` as the second statement.')
+        }
+        $targetAssignment = $tapCreation.Initializer.Expressions[0]
+        $targetProperty = if ($targetAssignment -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($targetAssignment.Left).Symbol
+        }
+        $targetLiteral = if ($targetAssignment -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $targetAssignment.Right
+        }
+        $targetConstant = if ($null -ne $targetLiteral) {
+            $semanticModel.GetConstantValue($targetLiteral)
+        }
+        if ($targetAssignment -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+            $targetAssignment.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $targetAssignment.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            $targetAssignment.Left.Identifier.ValueText -cne
+                'NumberOfTapsRequired' -or
+            $targetProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $targetProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $targetProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.TapGestureRecognizer' -or
+            $targetProperty.Type.SpecialType -ne
+                [Microsoft.CodeAnalysis.SpecialType]::System_Int32 -or
+            $targetLiteral -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $targetLiteral.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            -not $targetConstant.HasValue -or
+            $targetConstant.Value -isnot [int] -or
+            [int]$targetConstant.Value -lt 1 -or
+            [int]$targetConstant.Value -gt 10) {
+            & $throwTrustedWindowHelperViolation -Node $targetAssignment `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the affected tap target count must be one direct positive Int32 ' +
+                    'numeric literal no greater than 10.')
+        }
+        $targetCount = [int]$targetConstant.Value
+        $targetToken = $targetLiteral.Token.Text
+
+        $labelStatement = $statements[2]
+        $labelDeclarator = if ($labelStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
+            $labelStatement.Declaration.Type.ToString() -ceq 'var' -and
+            $labelStatement.Declaration.Variables.Count -eq 1) {
+            $labelStatement.Declaration.Variables[0]
+        }
+        $labelSymbol = if ($null -ne $labelDeclarator) {
+            $semanticModel.GetDeclaredSymbol($labelDeclarator)
+        }
+        $labelCreation = if ($null -ne $labelDeclarator -and
+            $null -ne $labelDeclarator.Initializer) {
+            $labelDeclarator.Initializer.Value
+        }
+        $labelConstructor = if ($labelCreation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($labelCreation).Symbol
+        }
+        if ($null -eq $labelDeclarator -or
+            $labelDeclarator.Identifier.ValueText -cne 'affectedLabel' -or
+            $labelSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+            $labelSymbol.Type.ToString() -cne 'Microsoft.Maui.Controls.Label' -or
+            $labelSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $labelCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $labelCreation.Type.ToString() -cne
+                'global::Microsoft.Maui.Controls.Label' -or
+            ($labelCreation.ArgumentList -and
+                $labelCreation.ArgumentList.Arguments.Count -ne 0) -or
+            $labelConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $labelConstructor.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $null -eq $labelCreation.Initializer -or
+            $labelCreation.Initializer.Expressions.Count -ne 2) {
+            & $throwTrustedWindowHelperViolation -Node $labelStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'declare exactly one external affected Label with non-empty Text ' +
+                    'and the exact affected tap plus one PointerGestureRecognizer.')
+        }
+        $labelInitializers = @{}
+        foreach ($initializer in $labelCreation.Initializer.Expressions) {
+            if ($initializer -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                $initializer.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                $initializer.Left -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                & $throwTrustedWindowHelperViolation -Node $initializer `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts only Text and the ' +
+                        'GestureRecognizers collection.')
+            }
+            $name = $initializer.Left.Identifier.ValueText
+            $property = $semanticModel.GetSymbolInfo($initializer.Left).Symbol
+            if ($name -cnotin @('Text', 'GestureRecognizers') -or
+                $labelInitializers.ContainsKey($name) -or
+                $property -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                $property.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                ($name -ceq 'Text' -and
+                    ($property.ContainingType.ToString() -cne
+                            'Microsoft.Maui.Controls.Label' -or
+                        $property.Type.SpecialType -ne
+                            [Microsoft.CodeAnalysis.SpecialType]::System_String)) -or
+                ($name -ceq 'GestureRecognizers' -and
+                    ($property.ContainingType.ToString() -cne
+                            'Microsoft.Maui.Controls.View' -or
+                        $property.Type.ToString() -cne
+                            'System.Collections.Generic.IList<Microsoft.Maui.Controls.IGestureRecognizer>'))) {
+                & $throwTrustedWindowHelperViolation -Node $initializer `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the affected Label initializer accepts each trusted Text and ' +
+                        'GestureRecognizers property exactly once.')
+            }
+            $labelInitializers[$name] = $initializer.Right
+        }
+        $labelText = $labelInitializers['Text']
+        $gestureInitializer = $labelInitializers['GestureRecognizers']
+        if ($labelText -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $labelText.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StringLiteralExpression -or
+            [string]::IsNullOrEmpty([string]$labelText.Token.Value) -or
+            $gestureInitializer -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax] -or
+            $gestureInitializer.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::CollectionInitializerExpression -or
+            $gestureInitializer.Expressions.Count -ne 2) {
+            & $throwTrustedWindowHelperViolation -Node $labelCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the Label must have non-empty literal Text and exactly two ' +
+                    'gestures: affectedTap followed by one PointerGestureRecognizer.')
+        }
+        $tapEntry = $gestureInitializer.Expressions[0]
+        $pointerCreation = $gestureInitializer.Expressions[1]
+        $pointerConstructor = if ($pointerCreation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($pointerCreation).Symbol
+        }
+        if ($tapEntry -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($tapEntry).Symbol,
+                $tapSymbol) -or
+            $pointerCreation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+            $pointerCreation.Type.ToString() -cne
+                'global::Microsoft.Maui.Controls.PointerGestureRecognizer' -or
+            ($pointerCreation.ArgumentList -and
+                $pointerCreation.ArgumentList.Arguments.Count -ne 0) -or
+            $null -ne $pointerCreation.Initializer -or
+            $pointerConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $pointerConstructor.ContainingAssembly.Name -cne $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $gestureInitializer `
+                -HelperSymbol $HelperMethod -Reason (
+                    'GestureRecognizers must contain the exact affectedTap and exactly ' +
+                    'one new external PointerGestureRecognizer, in that order.')
+        }
+
+        if ($gate.Else) {
+            & $throwTrustedWindowHelperViolation -Node $gate.Else `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the tap-count profile keeps one common post-attachment mutation ' +
+                    'and does not admit an else branch.')
+        }
+        $gateExpression = $gate.Statement.Statements[0].Expression
+        $gateProperty = if ($gateExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($gateExpression.Left).Symbol
+        }
+        $initialLiteral = if ($gateExpression -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $gateExpression.Right
+        }
+        $initialConstant = if ($null -ne $initialLiteral) {
+            $semanticModel.GetConstantValue($initialLiteral)
+        }
+        if ($gateExpression -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+            $gateExpression.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $gateExpression.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo(
+                    $gateExpression.Left.Expression).Symbol,
+                $tapSymbol) -or
+            $gateProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $gateProperty.Name -cne 'NumberOfTapsRequired' -or
+            $gateProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.TapGestureRecognizer' -or
+            $gateProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $initialLiteral -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $initialLiteral.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            -not $initialConstant.HasValue -or
+            $initialConstant.Value -isnot [int] -or
+            [int]$initialConstant.Value -lt 1 -or
+            [int]$initialConstant.Value -gt 10 -or
+            [int]$initialConstant.Value -eq $targetCount) {
+            & $throwTrustedWindowHelperViolation -Node $gateExpression `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the true gate must assign the same affectedTap a distinct positive ' +
+                    'Int32 initial-count literal no greater than 10.')
+        }
+
+        if ($Invocation.ArgumentList.Arguments.Count -ne 2 -or
+            @($Invocation.ArgumentList.Arguments | Where-Object {
+                    $_.RefKindKeyword.RawKind -ne 0 -or $null -ne $_.NameColon
+                }).Count -ne 0) {
+            & $throwTrustedWindowHelperViolation -Node $Invocation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'pass exactly the trusted Window tree and one async handler callback.')
+        }
+        $windowCreation = $Invocation.ArgumentList.Arguments[0].Expression
+        $callback = $Invocation.ArgumentList.Arguments[1].Expression
+        if ([regex]::Replace($windowCreation.ToString(), '\s+', '') -cne
+            'newglobal::Microsoft.Maui.Controls.Window(newglobal::Microsoft.Maui.Controls.ContentPage{Content=affectedLabel})') {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'attach only the exact pre-gate affectedLabel in the trusted ' +
+                    'Window and ContentPage tree.')
+        }
+        $windowLabelIdentifiers = @($windowCreation.DescendantNodes() |
+            Where-Object {
+                $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                $_.Identifier.ValueText -ceq 'affectedLabel'
+            })
+        if ($windowLabelIdentifiers.Count -ne 1 -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($windowLabelIdentifiers[0]).Symbol,
+                $labelSymbol)) {
+            & $throwTrustedWindowHelperViolation -Node $windowCreation `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the Window must contain the exact pre-gate affectedLabel instance.')
+        }
+        if ($callback -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
+            $callback.AsyncKeyword.RawKind -eq 0 -or
+            $callback.Parameter.Identifier.ValueText -cne 'handler' -or
+            $callback.Body -isnot [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -or
+            $callback.Body.Statements.Count -ne 3) {
+            & $throwTrustedWindowHelperViolation -Node $callback `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the handler callback must contain exactly readiness, the common ' +
+                    'post-attachment affectedTap update, and the native tap-count oracle.')
+        }
+        $handlerSymbol = $semanticModel.GetDeclaredSymbol($callback.Parameter)
+        if ($handlerSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
+            $handlerSymbol.Type.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $handlerSymbol.Type.ContainingAssembly.Name -cne
+                $trustedContractAssembly) {
+            & $throwTrustedWindowHelperViolation -Node $callback.Parameter `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback parameter must bind to the external LabelHandler.')
+        }
+
+        $readinessStatement = $callback.Body.Statements[0]
+        $readinessInvocation = if ($readinessStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $readinessStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AwaitExpressionSyntax] -and
+            $readinessStatement.Expression.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $readinessStatement.Expression.Expression
+        }
+        if ([regex]::Replace($readinessStatement.ToString(), '\s+', '') -cne
+                'awaitAssertEventually(()=>affectedLabel.Handler!=null&&affectedLabel.IsLoaded);' -or
+            $null -eq $readinessInvocation -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($readinessInvocation).Symbol,
+                $trustedAssertEventuallyMethod)) {
+            & $throwTrustedWindowHelperViolation -Node $readinessStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the callback must first await the exact immutable ' +
+                    'AssertEventually helper for affectedLabel.Handler and IsLoaded.')
+        }
+        foreach ($identifier in @($readinessStatement.DescendantNodes() |
+                Where-Object {
+                    $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
+                    $_.Identifier.ValueText -ceq 'affectedLabel'
+                })) {
+            if (-not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($identifier).Symbol,
+                    $labelSymbol)) {
+                & $throwTrustedWindowHelperViolation -Node $identifier `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the readiness predicate must observe the exact attached Label.')
+            }
+        }
+
+        $updateStatement = $callback.Body.Statements[1]
+        $update = if ($updateStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $updateStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax]) {
+            $updateStatement.Expression
+        }
+        $updateLiteral = if ($null -ne $update) { $update.Right }
+        $updateProperty = if ($null -ne $update) {
+            $semanticModel.GetSymbolInfo($update.Left).Symbol
+        }
+        if ($null -eq $update -or
+            $update.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+            $update.Left -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($update.Left.Expression).Symbol,
+                $tapSymbol) -or
+            $updateProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $updateProperty.Name -cne 'NumberOfTapsRequired' -or
+            $updateProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Controls.TapGestureRecognizer' -or
+            $updateProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $updateLiteral -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $updateLiteral.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            $updateLiteral.Token.Text -cne $targetToken) {
+            & $throwTrustedWindowHelperViolation -Node $updateStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the second callback statement must restore affectedTap.' +
+                    'NumberOfTapsRequired to the exact target integer literal.')
+        }
+
+        $oracleStatement = $callback.Body.Statements[2]
+        $oracle = if ($oracleStatement -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -and
+            $oracleStatement.Expression -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $oracleStatement.Expression
+        }
+        $oracleMethod = if ($null -ne $oracle) {
+            $semanticModel.GetSymbolInfo($oracle).Symbol
+        }
+        if ($null -eq $oracle -or
+            $oracle.Expression.ToString() -cne 'Assert.Equal' -or
+            $oracle.ArgumentList.Arguments.Count -ne 2 -or
+            $oracleMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $oracleMethod.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $oracleMethod.ContainingType.ToString() -cne 'Xunit.Assert' -or
+            $oracleMethod.Name -cne 'Equal') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the final oracle must be Assert.Equal((nuint)<target>, the exact ' +
+                    'same-handler native UITapGestureRecognizer count chain).')
+        }
+        $expectedCast = $oracle.ArgumentList.Arguments[0].Expression
+        $expectedLiteral = if ($expectedCast -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+            $expectedCast.Expression
+        }
+        $expectedType = if ($expectedCast -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax]) {
+            $semanticModel.GetTypeInfo($expectedCast.Type).Type
+        }
+        $nativeCount = $oracle.ArgumentList.Arguments[1].Expression
+        if ($expectedCast -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax] -or
+            $expectedCast.Type.ToString() -cne 'nuint' -or
+            $expectedType.SpecialType -ne
+                [Microsoft.CodeAnalysis.SpecialType]::System_UIntPtr -or
+            $expectedLiteral -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+            $expectedLiteral.RawKind -ne
+                [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::NumericLiteralExpression -or
+            $expectedLiteral.Token.Text -cne $targetToken -or
+            $nativeCount -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $nativeCount.Name.Identifier.ValueText -cne 'NumberOfTapsRequired') {
+            & $throwTrustedWindowHelperViolation -Node $oracleStatement `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the expected native count must be the exact target literal cast ' +
+                    'to nuint, followed by the direct native NumberOfTapsRequired read.')
+        }
+        $nativeCountProperty = $semanticModel.GetSymbolInfo($nativeCount).Symbol
+        $singleInvocation = $nativeCount.Expression
+        $singleAccess = if ($singleInvocation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $singleInvocation.Expression
+        }
+        $ofTypeInvocation = if ($singleAccess -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $singleAccess.Expression
+        }
+        $ofTypeAccess = if ($ofTypeInvocation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $ofTypeInvocation.Expression
+        }
+        $gestureCollection = if ($ofTypeAccess -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            $ofTypeAccess.Expression
+        }
+        $singleMethod = if ($singleInvocation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($singleInvocation).Symbol
+        }
+        $ofTypeMethod = if ($ofTypeInvocation -is
+            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            $semanticModel.GetSymbolInfo($ofTypeInvocation).Symbol
+        }
+        $singleDefinition = if ($singleMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $singleMethod.ReducedFrom) {
+            $singleMethod.ReducedFrom
+        } elseif ($singleMethod -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            $singleMethod.OriginalDefinition
+        }
+        $ofTypeDefinition = if ($ofTypeMethod -is
+                [Microsoft.CodeAnalysis.IMethodSymbol] -and
+            $null -ne $ofTypeMethod.ReducedFrom) {
+            $ofTypeMethod.ReducedFrom
+        } elseif ($ofTypeMethod -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
+            $ofTypeMethod.OriginalDefinition
+        }
+        if ($gestureCollection -isnot
+            [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax]) {
+            & $throwTrustedWindowHelperViolation -Node $nativeCount `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native gesture collection must come directly from the same ' +
+                    'selected LabelHandler.PlatformView.')
+        }
+        if ($nativeCountProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $nativeCountProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $nativeCountProperty.ContainingType.ToString() -cne
+                'UIKit.UITapGestureRecognizer' -or
+            $nativeCountProperty.Type.SpecialType -ne
+                [Microsoft.CodeAnalysis.SpecialType]::System_UIntPtr -or
+            $singleInvocation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+            $singleInvocation.ArgumentList.Arguments.Count -ne 0 -or
+            $singleAccess -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $singleAccess.Name.Identifier.ValueText -cne 'Single' -or
+            $ofTypeInvocation -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax] -or
+            $ofTypeInvocation.ArgumentList.Arguments.Count -ne 0 -or
+            $ofTypeAccess -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+            $ofTypeAccess.Name -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -or
+            $ofTypeAccess.Name.Identifier.ValueText -cne 'OfType' -or
+            $ofTypeAccess.Name.TypeArgumentList.Arguments.Count -ne 1 -or
+            $ofTypeAccess.Name.TypeArgumentList.Arguments[0].ToString() -cne
+                'global::UIKit.UITapGestureRecognizer' -or
+            $singleDefinition -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $singleDefinition.ContainingType.ToString() -cne
+                'System.Linq.Enumerable' -or
+            $singleDefinition.ContainingAssembly.Name -ceq $trustedContractAssembly -or
+            @($singleDefinition.Locations | Where-Object { $_.IsInSource }).Count -ne 0 -or
+            $singleDefinition.Name -cne 'Single' -or
+            -not $singleDefinition.IsExtensionMethod -or
+            $singleDefinition.Arity -ne 1 -or
+            $singleDefinition.Parameters.Length -ne 1 -or
+            $singleMethod.TypeArguments[0].ToString() -cne
+                'UIKit.UITapGestureRecognizer' -or
+            $ofTypeDefinition -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+            $ofTypeDefinition.ContainingType.ToString() -cne
+                'System.Linq.Enumerable' -or
+            $ofTypeDefinition.ContainingAssembly.Name -ceq $trustedContractAssembly -or
+            @($ofTypeDefinition.Locations | Where-Object { $_.IsInSource }).Count -ne 0 -or
+            $ofTypeDefinition.Name -cne 'OfType' -or
+            -not $ofTypeDefinition.IsExtensionMethod -or
+            $ofTypeDefinition.Arity -ne 1 -or
+            $ofTypeDefinition.Parameters.Length -ne 1 -or
+            $ofTypeMethod.TypeArguments[0].ToString() -cne
+                'UIKit.UITapGestureRecognizer') {
+            & $throwTrustedWindowHelperViolation -Node $nativeCount `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native oracle must use the exact external System.Linq.' +
+                    'Enumerable OfType<UIKit.UITapGestureRecognizer>().Single() chain.')
+        }
+        if ([regex]::Replace($gestureCollection.ToString(), '\s+', '') -cne
+            'handler.PlatformView.GestureRecognizers') {
+            & $throwTrustedWindowHelperViolation -Node $gestureCollection `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the native gesture collection must come directly from the same ' +
+                    'selected LabelHandler.PlatformView.')
+        }
+        $handlerIdentifier = $gestureCollection.Expression.Expression
+        $platformViewProperty =
+            $semanticModel.GetSymbolInfo($gestureCollection.Expression).Symbol
+        $gestureRecognizersProperty =
+            $semanticModel.GetSymbolInfo($gestureCollection).Symbol
+        if ($handlerIdentifier -isnot
+                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                $semanticModel.GetSymbolInfo($handlerIdentifier).Symbol,
+                $handlerSymbol) -or
+            $platformViewProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $platformViewProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
+            $platformViewProperty.ContainingType.ToString() -cne
+                'Microsoft.Maui.Handlers.LabelHandler' -or
+            $platformViewProperty.Name -cne 'PlatformView' -or
+            $gestureRecognizersProperty -isnot
+                [Microsoft.CodeAnalysis.IPropertySymbol] -or
+            $gestureRecognizersProperty.ContainingAssembly.Name -cne
+                $trustedContractAssembly -or
+            $gestureRecognizersProperty.ContainingType.ToString() -cne
+                'UIKit.UIView' -or
+            $gestureRecognizersProperty.Name -cne 'GestureRecognizers' -or
+            $gestureRecognizersProperty.Type -isnot
+                [Microsoft.CodeAnalysis.IArrayTypeSymbol] -or
+            $gestureRecognizersProperty.Type.ElementType.ToString() -cne
+                'UIKit.UIGestureRecognizer') {
+            & $throwTrustedWindowHelperViolation -Node $gestureCollection `
+                -HelperSymbol $HelperMethod -Reason (
+                    'the oracle must bind the exact same-handler external UIKit ' +
+                    'UIGestureRecognizer array and UITapGestureRecognizer property.')
+        }
+
+        [void]$acceptedAssertEventuallyInvocations.Add(
+            $readinessInvocation.SpanStart)
+        [void]$acceptedNativeLabelTapGestureCountHelperInvocations.Add(
+            $Invocation.SpanStart)
+        [void]$trustedNativeLabelTapGestureCountCallbackBodies.Add(
+            $callback.Body.SpanStart)
+        $trustedNativeLabelTapGestureCountCallbackOracleMinimums[
+            $callback.Body.SpanStart] = $updateStatement.Span.End
     }
     $validateAndroidIssue33315HelperInvocation = {
         param(
@@ -11458,6 +12241,12 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             (& $isExactTrustedDirectHandlerWindowHelperMethod `
                 -Method $awaitedMethod `
                 -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
+        $isTrustedNativeLabelTapGestureCountHelper =
+            $isNativeLabelTapGestureCountProfile -and
+            $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
+            (& $isExactTrustedDirectHandlerWindowHelperMethod `
+                -Method $awaitedMethod `
+                -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
         if ($Platform -ceq 'android' -and
             $isTrustedAndroidIssue26505Helper) {
             & $validateAndroidIssue26505HelperInvocation `
@@ -11483,6 +12272,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         }
         if ($isTrustedNativeLabelCharacterSpacingHelper) {
             & $validateNativeLabelCharacterSpacingHelperInvocation `
+                -AwaitExpression $awaitExpression `
+                -Invocation $awaitedExpression `
+                -HelperMethod $awaitedMethod
+            continue
+        }
+        if ($isTrustedNativeLabelTapGestureCountHelper) {
+            & $validateNativeLabelTapGestureCountHelperInvocation `
                 -AwaitExpression $awaitExpression `
                 -Invocation $awaitedExpression `
                 -HelperMethod $awaitedMethod
@@ -11994,6 +12790,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 "$awaitLine.")
         }
     }
+    if ($isNativeLabelTapGestureCountProfile -and
+        $acceptedNativeLabelTapGestureCountHelperInvocations.Count -ne 1) {
+        throw (
+            'The native Label tap-count profile requires exactly one validated ' +
+            'immutable attachment helper and its same-handler native oracle.')
+    }
+
     $isAcceptedAssertEventuallyNode = {
         param(
             [Parameter(Mandatory = $true)]
@@ -12192,6 +12995,28 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             "'$SourcePath' line $typeLine; control and oracle dataflow require " +
             'trusted external types.')
     }
+    $scopedNativeLabelTapGestureCountTypeSyntax =
+        @($typeSyntaxCandidates | Where-Object {
+                $type = $semanticModel.GetTypeInfo($_).Type
+                if ($null -eq $type) {
+                    $candidateType = $semanticModel.GetSymbolInfo($_).Symbol
+                    if ($candidateType -is [Microsoft.CodeAnalysis.ITypeSymbol]) {
+                        $type = $candidateType
+                    }
+                }
+                return (& $isNativeLabelTapGestureCountScopedType -Type $type)
+            })
+    if ($scopedNativeLabelTapGestureCountTypeSyntax.Count -ne 0 -and
+        -not $isNativeLabelTapGestureCountProfile) {
+        $typeLine = $tree.GetLineSpan(
+            $scopedNativeLabelTapGestureCountTypeSyntax[0].Span
+        ).StartLinePosition.Line + 1
+        throw (
+            'Native Label tap-count metadata is trusted only for the exact ' +
+            "reviewed iOS profile; type '$(
+                $scopedNativeLabelTapGestureCountTypeSyntax[0])' in '$SourcePath' " +
+            "line $typeLine is outside it.")
+    }
     $scopedAndroidTypeSyntax = @($typeSyntaxCandidates | Where-Object {
             $type = $semanticModel.GetTypeInfo($_).Type
             if ($null -eq $type) {
@@ -12286,6 +13111,9 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             if (& $isNativeLabelCharacterSpacingCallbackNode -Node $_) {
                 return $false
             }
+            if (& $isNativeLabelTapGestureCountCallbackNode -Node $_) {
+                return $false
+            }
             $symbolInfo = $semanticModel.GetSymbolInfo($_)
             $symbols = @($symbolInfo.Symbol) + @($symbolInfo.CandidateSymbols)
             return @($symbols | Where-Object {
@@ -12355,6 +13183,20 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 throw (
                     'Native Label CharacterSpacing metadata is trusted only for the ' +
                     "exact reviewed profile; offending member in '$SourcePath' line $line.")
+            }
+        }
+    }
+    if (-not $isNativeLabelTapGestureCountProfile) {
+        foreach ($expression in @($testMethod[0].Body.DescendantNodes() |
+                Where-Object { $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax] })) {
+            $expressionSymbol = $semanticModel.GetSymbolInfo($expression).Symbol
+            if (& $isNativeLabelTapGestureCountScopedSymbol `
+                    -Symbol $expressionSymbol) {
+                $line = $tree.GetLineSpan(
+                    $expression.Span).StartLinePosition.Line + 1
+                throw (
+                    'Native Label tap-count metadata is trusted only for the exact ' +
+                    "reviewed iOS profile; offending member in '$SourcePath' line $line.")
             }
         }
     }
@@ -12445,6 +13287,13 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                     $nativeLabelTextInvocation.SpanStart))) {
             continue
         }
+        if ($null -ne $nativeLabelTextInvocation -and
+            ($acceptedNativeLabelTapGestureCountRegistrationInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart) -or
+                $acceptedNativeLabelTapGestureCountHelperInvocations.Contains(
+                    $nativeLabelTextInvocation.SpanStart))) {
+            continue
+        }
         if (& $isTrustedWindowCallbackNode -Node $operationNode) {
             continue
         }
@@ -12463,6 +13312,9 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         if (& $isNativeLabelCharacterSpacingCallbackNode -Node $operationNode) {
             continue
         }
+        if (& $isNativeLabelTapGestureCountCallbackNode -Node $operationNode) {
+            continue
+        }
         $operationText = $operationNode.ToString()
         $operationInfo = $semanticModel.GetSymbolInfo($operationNode)
         $precheckedSymbol = if ($operationInfo.Symbol) {
@@ -12476,6 +13328,16 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             throw (
                 'Android Issue26505 ButtonHandler/native members are trusted only ' +
                 'inside the exact reviewed setup/helper callback; offending syntax ' +
+                "'$operationText' in '$SourcePath' line $operationLine.")
+        }
+        if ((& $isNativeLabelTapGestureCountScopedSymbol `
+                -Symbol $precheckedSymbol) -and
+            -not $isNativeLabelTapGestureCountProfile) {
+            $operationLine = $tree.GetLineSpan(
+                $operationNode.Span).StartLinePosition.Line + 1
+            throw (
+                'Native Label tap-count metadata is trusted only inside the exact ' +
+                'reviewed helper callback and profile; offending syntax ' +
                 "'$operationText' in '$SourcePath' line $operationLine.")
         }
         if (& $isAndroidIssue33315ScopedSymbol -Symbol $precheckedSymbol) {
@@ -15329,13 +16191,25 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                 $trustedNativeLabelCharacterSpacingCallbackOracleMinimums[
                     $assertionStatement.Parent.SpanStart] -and
             $assertionStatement.SpanStart -gt $gate.Span.End
+        $isTrustedNativeLabelTapGestureCountCallbackAssertion =
+            $assertionStatement.Parent -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax] -and
+            $trustedNativeLabelTapGestureCountCallbackBodies.Contains(
+                $assertionStatement.Parent.SpanStart) -and
+            $trustedNativeLabelTapGestureCountCallbackOracleMinimums.ContainsKey(
+                $assertionStatement.Parent.SpanStart) -and
+            $assertionStatement.SpanStart -gt
+                $trustedNativeLabelTapGestureCountCallbackOracleMinimums[
+                    $assertionStatement.Parent.SpanStart] -and
+            $assertionStatement.SpanStart -gt $gate.Span.End
         if ($isDirectPostGateAssertion -or
             $isTrustedWindowCallbackAssertion -or
             $isTrustedExternalWindowCallbackAssertion -or
             $isTrustedAndroidIssue26505CallbackAssertion -or
             $isTrustedAndroidIssue33315CallbackAssertion -or
             $isTrustedNativeLabelTextCallbackAssertion -or
-            $isTrustedNativeLabelCharacterSpacingCallbackAssertion) {
+            $isTrustedNativeLabelCharacterSpacingCallbackAssertion -or
+            $isTrustedNativeLabelTapGestureCountCallbackAssertion) {
             $assertionArguments = @(
                 $assertionExpression.ArgumentList.Arguments)
             $isSelfComparison =
@@ -15832,6 +16706,18 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
                         '\s+',
                         '') -ceq
                         'handler.PlatformView.AttributedText.GetCharacterSpacing()'
+            }
+            if ($isTrustedNativeLabelTapGestureCountCallbackAssertion) {
+                $supportedGuaranteedOracle =
+                    $assertionArguments.Count -eq 2 -and
+                    $assertionSymbol.ContainingType.ToString() -ceq 'Xunit.Assert' -and
+                    $assertionSymbol.Name -ceq 'Equal' -and
+                    $assertionArguments[0].Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.CastExpressionSyntax] -and
+                    $assertionArguments[1].Expression -is
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                    $assertionArguments[1].Expression.Name.Identifier.ValueText -ceq
+                        'NumberOfTapsRequired'
             }
             if (-not $isTautologicalAssertion -and
                 $supportedGuaranteedOracle -and
