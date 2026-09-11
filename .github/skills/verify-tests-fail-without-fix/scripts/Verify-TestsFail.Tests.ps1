@@ -587,6 +587,65 @@ No test matches the given testcase filter `Issue26049` in /a/b/Controls.TestCase
 }
 
 Describe 'Get-TestResultFromOutput — environment/infra classification' {
+    It 'reports an empty log as missing execution evidence rather than a regex exception' {
+        $log = Join-Path $TestDrive 'empty-runner-output.log'
+        [IO.File]::WriteAllText($log, '')
+        $result = Get-TestResultFromOutput -LogFile $log
+
+        $result.Passed | Should -BeFalse
+        $result.EnvError | Should -BeTrue
+        $result.Total | Should -Be 0
+        $result.Error | Should -Match 'Test output log is empty'
+    }
+
+    It 'keeps XHarness preflight refusal distinct from an executed test failure' {
+        $log = New-LogFile 'xharness local dotnet tool help probe failed with exit 1. See xharness-help.log.'
+        try {
+            $result = Get-TestResultFromOutput -LogFile $log
+            $result.Passed | Should -BeFalse
+            $result.EnvError | Should -BeTrue
+            $result.Total | Should -Be 0
+            $result.Error | Should -Match 'XHarness command preflight failed before test execution'
+        } finally {
+            Remove-Item -LiteralPath $log -Force
+        }
+    }
+
+    It 'retains device-runner information-stream failures in the actual log' {
+        . ([scriptblock]::Create(
+            $script:invokeTestRunText.Replace('function Invoke-TestRun {', 'function Invoke-ActualDeviceTestRun {')))
+        function Invoke-WithoutGhTokens {
+            param([scriptblock]$ScriptBlock)
+            & $ScriptBlock
+        }
+        $oldDevice = Get-Variable BootedDeviceUdid -Scope Script -ValueOnly -ErrorAction SilentlyContinue
+        $script:BootedDeviceUdid = 'test-simulator'
+        $Platform = 'ios'
+        $RepoRoot = $TestDrive
+        $NoRestore = $true
+        $RequireWindowsAppContainer = $false
+        $RequireMacCatalystAppSandbox = $false
+        $resolvedDeviceTestScriptPath = Join-Path $TestDrive 'runner-preflight-failure.ps1'
+        @'
+Write-Host 'xharness local dotnet tool help probe failed with exit 1. See xharness-help.log.'
+exit 1
+'@ | Set-Content -LiteralPath $resolvedDeviceTestScriptPath -Encoding utf8
+        $log = Join-Path $TestDrive 'captured-preflight.log'
+        try {
+            Invoke-ActualDeviceTestRun -DetectedTestType DeviceTest `
+                -Filter Issue38291 -ClassFilter Microsoft.Maui.DeviceTests.Issue38291 `
+                -Methods @('ReproducesIssue') -DetectedProject Controls -LogFile $log |
+                Should -Be $log
+            Get-Content -LiteralPath $log -Raw |
+                Should -Match 'xharness local dotnet tool help probe failed with exit 1'
+            $result = Get-TestResultFromOutput -LogFile $log
+            $result.EnvError | Should -BeTrue
+            $result.Total | Should -Be 0
+        } finally {
+            $script:BootedDeviceUdid = $oldDevice
+        }
+    }
+
     # These lock in the campaign's env-class fixes: an Appium/Selenium fixture setup flake or
     # a brand-new snapshot with no committed baseline is NOT a fix failure — the gate could
     # not verify, so it must be EnvError (-> INCONCLUSIVE), never a plain FAIL that blocks.

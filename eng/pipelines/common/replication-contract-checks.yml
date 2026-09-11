@@ -426,6 +426,18 @@ steps:
         'A verdict the length cap discarded is not a crash*retains an elided trusted text assertion instead of inferring an app crash'
         'A verdict the length cap discarded is not a crash*retains an elided trusted action refusal within the existing recovery bound'
         'A verdict the length cap discarded is not a crash*keeps genuine termination above an elided trusted assertion failure'
+        'A missing device-harness verdict is not a test to repair*restores and preflights iOS tools in the private environment before authoring'
+        'A missing device-harness verdict is not a test to repair*stops iOS preparation when private tool restoration fails'
+        'Cross-platform device test class filtering*preflights the iOS XHarness command without invoking Android device tools'
+        'Get-TestResultFromOutput*reports an empty log as missing execution evidence rather than a regex exception'
+        'Get-TestResultFromOutput*keeps XHarness preflight refusal distinct from an executed test failure'
+        'Get-TestResultFromOutput*retains device-runner information-stream failures in the actual log'
+        'Apple trusted host command boundary*admits only the exact command-only iOS XHarness preflight'
+        'Apple trusted host command boundary*rejects preflight arguments that could run tests or reach the trusted tree'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*observes a still-running validated process without killing it'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*reports mismatched process identity as unavailable'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*reports disposed process metadata as unavailable'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*formats a negative signed exit code only as fixed-width hexadecimal'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(

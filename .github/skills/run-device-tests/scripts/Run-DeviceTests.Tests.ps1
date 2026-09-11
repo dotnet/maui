@@ -674,7 +674,7 @@ exit 17
         $content | Should -Match '\[switch\]\$PreflightXHarnessOnly'
         $content | Should -Match '(?s)if \(\$PreflightXHarnessOnly\).*?Invoke-XHarnessPreflight.*?exit 0.*?# ═+'
         $content | Should -Match 'Invoke-StreamingXHarnessCommand'
-        $content | Should -Match "'android', 'test', '--help'"
+        $content.Contains("'xharness', `$xharnessTarget, 'test', '--help'") | Should -BeTrue
         $content | Should -Match 'adb -s \$DeviceUdid get-state'
         $content | Should -Match 'adb -s \$DeviceUdid shell getprop sys\.boot_completed'
     }
@@ -716,6 +716,32 @@ exit 17
         { Invoke-XHarnessPreflight -UseLocalXHarness $true -Platform android -OutputDirectory $output } |
             Should -Throw '*could not invoke*exit 3*'
         Get-Content -LiteralPath $log -Raw | Should -Match 'android test --help exit code: 3'
+    }
+
+    It 'preflights the iOS XHarness command without invoking Android device tools' {
+        $script:helpProbeExitCode = 2
+        function adb { throw 'iOS preflight must not invoke adb.' }
+        function Invoke-StreamingXHarnessCommand {
+            param($FilePath, $Arguments, $LogPath, $MaximumLogLength, $MaximumTailLines)
+            $FilePath | Should -Be 'dotnet'
+            ($Arguments -join '|') | Should -Be 'xharness|apple|test|--help'
+            return [pscustomobject]@{
+                ExitCode = $script:helpProbeExitCode
+                LogPath = $LogPath
+                TailLogPath = "$LogPath.tail"
+                TailText = 'iOS command help'
+            }
+        }
+        $output = Join-Path $TestDrive 'ios-command-preflight'
+        Invoke-XHarnessPreflight -UseLocalXHarness $true -Platform ios `
+            -DeviceUdid 'test-simulator' -OutputDirectory $output
+        Get-Content (Join-Path $output 'xharness-preflight/xharness-preflight.log') -Raw |
+            Should -Match 'apple test --help exit code: 2'
+
+        $script:helpProbeExitCode = 1
+        { Invoke-XHarnessPreflight -UseLocalXHarness $true -Platform ios `
+            -DeviceUdid 'test-simulator' -OutputDirectory $output } |
+            Should -Throw '*iOS XHarness preflight could not invoke*exit 1*'
     }
 }
 

@@ -124,6 +124,15 @@ When the attempt summary's length cap removes a known host assertion or action
 failure, bounded recovery preserves that explanation rather than interpreting
 the remaining abort code as app death. Explicit termination and plan-verdict
 markers retain their existing precedence; absent observations are not invented.
+Android and iOS restore the pinned baseline CLI tools into the same private
+`DOTNET_CLI_HOME` and `NUGET_PACKAGES` used for generated execution, before any
+model authoring. A successful restore into the host cache does not populate this
+private tool resolver. Command-only XHarness preflight then runs through the
+trusted boundary before product builds. The iOS envelope admits only the exact
+Controls preflight argument set, not general device-test execution.
+Device-runner information and error streams are retained in the verifier log.
+An empty log or failed tool preflight reports zero executed tests and an explicit
+infrastructure error, never a null-regex exception or an assertion failure.
 Thumbnails use the final scene of the normalized recording on every platform,
 with a small decoding margin. The original clip retains its pre-trigger lead-in;
 desktop teardown is excluded before choosing a frame.
@@ -357,6 +366,14 @@ Missing, late, ambiguous, malformed and inaccessible events remain explicit
 diagnostic outcomes and never replace the original runner exit or exception.
 These observations cannot certify a crash or change a first-push failure into
 evidence for a reported second-push defect.
+The host also retains the already validated process handle while the Appium
+runner executes. It reads that exact process's state and exit code immediately
+after the runner returns or throws, before polling the event log, then releases
+the handle in `finally`. It never kills the application or looks up a reused PID
+to reconstruct an exit. The same bounded non-authoritative line can include
+`processState` and a fixed-width hexadecimal `processExitCode`, independently of
+whether an Application Error event was found. An exit code does not establish
+which reported step or framework defect caused the exit.
 Failure summaries retain the last such diagnostic ahead of generic errors and
 teardown only when the existing signal budget has room after actual outcomes.
 They do not increase the budget, displace a verdict, or recover diagnostic

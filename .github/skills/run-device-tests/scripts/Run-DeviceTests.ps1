@@ -35,7 +35,7 @@
     If specified, only builds the project without running tests.
 
 .PARAMETER PreflightXHarnessOnly
-    If specified, verifies the XHarness command path and Android device visibility,
+    If specified, verifies the Android/iOS XHarness command path and Android device visibility,
     then exits before building or running product tests.
 
 .PARAMETER OutputDirectory
@@ -919,29 +919,31 @@ function Invoke-XHarnessPreflight {
         [Parameter(Mandatory = $true)][string]$OutputDirectory
     )
 
-    if ($Platform -ne 'android') {
-        throw 'XHarness preflight is currently scoped to Android replication.'
+    if ($Platform -notin @('android', 'ios')) {
+        throw 'XHarness preflight supports Android and iOS replication only.'
     }
+    $platformName = if ($Platform -eq 'ios') { 'iOS' } else { 'Android' }
+    $xharnessTarget = if ($Platform -eq 'ios') { 'apple' } else { 'android' }
 
     $preflightDirectory = Join-Path $OutputDirectory 'xharness-preflight'
     New-Item -ItemType Directory -Path $preflightDirectory -Force | Out-Null
     $logPath = Join-Path $preflightDirectory 'xharness-preflight.log'
     $helpLogPath = Join-Path $preflightDirectory 'xharness-help.log'
     $lines = [System.Collections.Generic.List[string]]::new()
-    $lines.Add("Preflighting Android XHarness in the replication execution environment.")
+    $lines.Add("Preflighting $platformName XHarness in the replication execution environment.")
     $lines.Add("UTC: $([DateTime]::UtcNow.ToString('O'))")
 
     $helpCommand = if ($UseLocalXHarness) {
         [pscustomobject]@{
             FilePath = 'dotnet'
-            Arguments = [string[]]@('xharness', 'android', 'test', '--help')
-            Label = 'dotnet xharness android test --help'
+            Arguments = [string[]]@('xharness', $xharnessTarget, 'test', '--help')
+            Label = "dotnet xharness $xharnessTarget test --help"
         }
     } else {
         [pscustomobject]@{
             FilePath = 'xharness'
-            Arguments = [string[]]@('android', 'test', '--help')
-            Label = 'xharness android test --help'
+            Arguments = [string[]]@($xharnessTarget, 'test', '--help')
+            Label = "xharness $xharnessTarget test --help"
         }
     }
     $helpResult = Invoke-StreamingXHarnessCommand `
@@ -958,7 +960,7 @@ function Invoke-XHarnessPreflight {
         $lines.Add([string]$helpResult.TailText)
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+    if ($Platform -eq 'android' -and -not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
         $adbState = @(& adb -s $DeviceUdid get-state 2>&1)
         $adbStateExitCode = $LASTEXITCODE
         $bootCompleted = @(& adb -s $DeviceUdid shell getprop sys.boot_completed 2>&1)
@@ -978,10 +980,10 @@ function Invoke-XHarnessPreflight {
 
     Write-XHarnessDiagnosticText -Path $logPath -Content ($lines -join [Environment]::NewLine)
     if (-not (Test-XHarnessHelpExitCode -ExitCode $helpResult.ExitCode)) {
-        throw "Android XHarness preflight could not invoke '$($helpCommand.Label)' (exit $($helpResult.ExitCode)). See $logPath and $helpLogPath"
+        throw "$platformName XHarness preflight could not invoke '$($helpCommand.Label)' (exit $($helpResult.ExitCode)). See $logPath and $helpLogPath"
     }
 
-    Write-Host "✓ Android XHarness preflight succeeded: $logPath" -ForegroundColor Green
+    Write-Host "✓ $platformName XHarness preflight succeeded: $logPath" -ForegroundColor Green
 }
 
 function Select-WindowsDeviceTestCategories {

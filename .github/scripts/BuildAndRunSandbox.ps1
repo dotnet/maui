@@ -746,6 +746,7 @@ if ($Platform -eq "android") {
 Push-Location $SandboxAppiumDir
 
 $windowsCrashDiagnosticTarget = $null
+$windowsCrashDiagnosticProcess = $null
 $windowsCrashDiagnosticUnavailableReason = $null
 $windowsCrashDiagnosticKnownProcessId = 0
 try {
@@ -760,6 +761,7 @@ try {
             }
             $windowsCrashDiagnosticKnownProcessId = $processId
             $process = Get-Process -Id $processId -ErrorAction Stop
+            $retainProcessForDiagnostic = $false
             try {
                 $null = Assert-ReplicationWindowsAppContainerProcess `
                     -Process $process `
@@ -770,12 +772,19 @@ try {
                             -Process $process `
                             -ExpectedPackageFullName (
                                 [string]$windowsPackageState.packageFullName)
+                    # Keep this exact validated handle open through the runner.
+                    # The diagnostic owns and disposes it after observing state.
+                    $null = $process.Handle
+                    $windowsCrashDiagnosticProcess = $process
+                    $retainProcessForDiagnostic = $true
                 } catch {
                     $windowsCrashDiagnosticUnavailableReason =
                         'target-capture-failed'
                 }
             } finally {
-                $process.Dispose()
+                if (-not $retainProcessForDiagnostic) {
+                    $process.Dispose()
+                }
             }
             $env:REPLICATION_WINDOWS_PROCESS_ID = [string]$processId
             $env:REPLICATION_WINDOWS_PACKAGE_FULL_NAME =
@@ -807,6 +816,7 @@ try {
                     }
                 } `
                 -Target $windowsCrashDiagnosticTarget `
+                -WatchedProcess $windowsCrashDiagnosticProcess `
                 -KnownProcessId $windowsCrashDiagnosticKnownProcessId `
                 -UnavailableReason $windowsCrashDiagnosticUnavailableReason
         $appiumOutput = @($windowsRunnerResult.Output)

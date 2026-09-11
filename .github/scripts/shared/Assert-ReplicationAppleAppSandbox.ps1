@@ -618,6 +618,9 @@ function Get-ReplicationAppleIsolatedCommand {
         (Join-Path $trustedRootPath 'scripts/shared/Record-Reproduction.ps1') = 'record'
         (Join-Path $trustedRootPath 'scripts/shared/Invoke-ReplicationTestVerification.ps1') = 'verify'
     }
+    if ($Platform -ceq 'ios') {
+        $allowedScripts[(Join-Path $trustedRootPath 'skills/run-device-tests/scripts/Run-DeviceTests.ps1')] = 'xharness-preflight'
+    }
     $kind = ''
     foreach ($candidate in $allowedScripts.Keys) {
         if ($trustedScriptPath -ceq [IO.Path]::GetFullPath($candidate)) {
@@ -649,6 +652,35 @@ function Get-ReplicationAppleIsolatedCommand {
         throw 'Apple replication trusted runner received a different platform.'
     }
     switch ($kind) {
+        'xharness-preflight' {
+            $parameterOrder = @(
+                '-Project', '-Platform', '-RepositoryRoot', '-DeviceUdid', '-OutputDirectory')
+            if ($values.Count -ne 11 -or $values[10] -cne '-PreflightXHarnessOnly') {
+                throw 'iOS XHarness preflight requires the exact command-only argument set.'
+            }
+            for ($index = 0; $index -lt $parameterOrder.Count; $index++) {
+                if ($values[2 * $index] -cne $parameterOrder[$index]) {
+                    throw 'iOS XHarness preflight requires the exact command-only argument set.'
+                }
+            }
+            $deviceId = [guid]::Empty
+            if ($values[1] -cne 'Controls' -or
+                -not [guid]::TryParseExact($values[7], 'D', [ref]$deviceId)) {
+                throw 'iOS XHarness preflight requires Controls and the selected simulator identifier.'
+            }
+            foreach ($pathIndex in @(5, 9)) {
+                if (-not [IO.Path]::IsPathRooted($values[$pathIndex])) {
+                    throw 'iOS XHarness preflight paths must be absolute and outside the trusted tree.'
+                }
+                $path = [IO.Path]::GetFullPath($values[$pathIndex])
+                $rootPrefix = $trustedRootPath.TrimEnd(
+                    [IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+                if ([string]::Equals($path, $trustedRootPath, [StringComparison]::OrdinalIgnoreCase) -or
+                    $path.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+                    throw 'iOS XHarness preflight paths must be absolute and outside the trusted tree.'
+                }
+            }
+        }
         'sandbox' {
             if (@($values | Where-Object {
                     $_ -ceq '-EnforceNetworkIsolation'

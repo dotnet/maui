@@ -924,6 +924,64 @@ function Invoke-ReplicationWindowsCrashDiagnostic {
         -WindowEndUtc $windowEnd
 }
 
+function Get-ReplicationWindowsProcessExitObservation {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][Diagnostics.Process]$Process,
+        [Parameter(Mandatory = $true)]$Target
+    )
+
+    $unavailable = {
+        param([string]$Reason)
+        [pscustomobject]@{
+            State = 'unavailable'
+            Reason = $Reason
+            ExitCode = $null
+        }
+    }
+    try {
+        $retainedHandle = $Process.SafeHandle
+        if ($null -eq $retainedHandle -or $retainedHandle.IsClosed -or
+            $retainedHandle.IsInvalid) {
+            return & $unavailable 'process-metadata-unavailable'
+        }
+    } catch {
+        return & $unavailable 'process-metadata-unavailable'
+    }
+    if (-not (Test-ReplicationWindowsCrashDiagnosticTarget -Target $Target) -or
+        $Process.Id -ne [int]$Target.ProcessId) {
+        return & $unavailable 'identity-mismatch'
+    }
+
+    try {
+        $processStartUtc =
+            [DateTimeOffset]$Process.StartTime.ToUniversalTime()
+        if ($processStartUtc.UtcDateTime.Ticks -ne
+            ([DateTimeOffset]$Target.ProcessStartUtc).
+                ToUniversalTime().UtcDateTime.Ticks) {
+            return & $unavailable 'identity-mismatch'
+        }
+
+        # Refresh and read only from the already-open validated Process handle.
+        # Never rediscover by PID and never terminate or wait for the app.
+        $Process.Refresh()
+        if (-not $Process.HasExited) {
+            return [pscustomobject]@{
+                State = 'running'
+                Reason = 'still-running'
+                ExitCode = $null
+            }
+        }
+        return [pscustomobject]@{
+            State = 'exited'
+            Reason = 'exit-code-observed'
+            ExitCode = [int]$Process.ExitCode
+        }
+    } catch {
+        return & $unavailable 'process-metadata-unavailable'
+    }
+}
+
 function Invoke-ReplicationWindowsRunnerWithCrashDiagnostic {
     [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
@@ -933,46 +991,75 @@ function Invoke-ReplicationWindowsRunnerWithCrashDiagnostic {
     param(
         [Parameter(Mandatory = $true)][scriptblock]$Runner,
         $Target,
+        [Diagnostics.Process]$WatchedProcess,
         [ValidateRange(0, [int]::MaxValue)][int]$KnownProcessId,
         [AllowNull()][string]$UnavailableReason
     )
 
     try {
-        $runnerResult = & $Runner
-        $properties = @($runnerResult.PSObject.Properties.Name | Sort-Object)
-        if (($properties -join "`n") -cne ("ExitCode`nOutput")) {
-            throw 'The trusted Appium runner returned a malformed result.'
-        }
-        return [pscustomobject]@{
-            Output = @($runnerResult.Output)
-            ExitCode = [int]$runnerResult.ExitCode
-        }
-    } finally {
-        if ($Target) {
-            try {
-                $diagnostic = Invoke-ReplicationWindowsCrashDiagnostic `
+        try {
+            $runnerResult = & $Runner
+            $properties = @($runnerResult.PSObject.Properties.Name | Sort-Object)
+            if (($properties -join "`n") -cne ("ExitCode`nOutput")) {
+                throw 'The trusted Appium runner returned a malformed result.'
+            }
+            return [pscustomobject]@{
+                Output = @($runnerResult.Output)
+                ExitCode = [int]$runnerResult.ExitCode
+            }
+        } finally {
+            $processObservation = if ($Target -and $WatchedProcess) {
+                Get-ReplicationWindowsProcessExitObservation `
+                    -Process $WatchedProcess `
                     -Target $Target
+            } else {
+                [pscustomobject]@{
+                    State = 'unavailable'
+                    Reason = 'process-handle-unavailable'
+                    ExitCode = $null
+                }
+            }
+
+            if ($Target) {
+                try {
+                    $diagnostic = Invoke-ReplicationWindowsCrashDiagnostic `
+                        -Target $Target
+                } catch {
+                    $diagnostic =
+                        ConvertTo-ReplicationWindowsCrashDiagnosticResult `
+                            -Status 'unavailable' `
+                            -Reason 'diagnostic-fault' `
+                            -KnownProcessId $KnownProcessId
+                }
                 Write-Host (
                     Format-ReplicationWindowsCrashDiagnostic `
-                        -Diagnostic $diagnostic)
-            } catch {
+                        -Diagnostic $diagnostic `
+                        -ProcessObservation $processObservation)
+            } elseif ($UnavailableReason) {
+                $diagnostic =
+                    ConvertTo-ReplicationWindowsCrashDiagnosticResult `
+                        -Status 'unavailable' `
+                        -Reason $UnavailableReason `
+                        -KnownProcessId $KnownProcessId
                 Write-Host (
-                    'NON-AUTHORITATIVE Windows crash diagnostic ' +
-                    'status=unavailable reason=diagnostic-fault ' +
-                    "knownPid=$KnownProcessId")
+                    Format-ReplicationWindowsCrashDiagnostic `
+                        -Diagnostic $diagnostic `
+                        -ProcessObservation $processObservation)
             }
-        } elseif ($UnavailableReason) {
-            Write-Host (
-                'NON-AUTHORITATIVE Windows crash diagnostic ' +
-                "status=unavailable reason=$UnavailableReason " +
-                "knownPid=$KnownProcessId")
+        }
+    } finally {
+        if ($WatchedProcess) {
+            $WatchedProcess.Dispose()
         }
     }
 }
 
 function Format-ReplicationWindowsCrashDiagnostic {
     [CmdletBinding()]
-    param([Parameter(Mandatory = $true)]$Diagnostic)
+    param(
+        [Parameter(Mandatory = $true)]$Diagnostic,
+        $ProcessObservation
+    )
 
     $knownPid = [int]$Diagnostic.KnownProcessId
     if ($knownPid -lt 0 -or
@@ -1020,6 +1107,36 @@ function Format-ReplicationWindowsCrashDiagnostic {
             "moduleVersion=$($Diagnostic.ModuleVersion)"
             "faultingOffset=$($Diagnostic.FaultingOffset)"
         )
+    }
+    if ($ProcessObservation) {
+        $processState = [string]$ProcessObservation.State
+        $processReason = [string]$ProcessObservation.Reason
+        if ($processState -cnotmatch '^(?:exited|running|unavailable)$' -or
+            $processReason -cnotmatch '^[a-z0-9-]{1,64}$') {
+            $processState = 'unavailable'
+            $processReason = 'invalid-process-observation'
+        }
+        $parts += @(
+            "processState=$processState"
+            "processReason=$processReason"
+        )
+        if ($processState -ceq 'exited') {
+            try {
+                $exitCodeBytes =
+                    [BitConverter]::GetBytes([int]$ProcessObservation.ExitCode)
+                $exitCodeHex = [BitConverter]::ToUInt32($exitCodeBytes, 0).
+                    ToString('x8')
+                $parts += "processExitCode=0x$exitCodeHex"
+            } catch {
+                $parts = @($parts | Where-Object {
+                        $_ -cnotmatch '^process(?:State|Reason)='
+                    })
+                $parts += @(
+                    'processState=unavailable'
+                    'processReason=invalid-process-observation'
+                )
+            }
+        }
     }
 
     $line = $parts -join ' '
