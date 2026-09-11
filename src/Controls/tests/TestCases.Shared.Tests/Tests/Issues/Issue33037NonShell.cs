@@ -178,6 +178,91 @@ public class Issue33037NonShell : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	public void ModalListViewLargeTitleSurvivesFullScreenCoverWithRotation()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037ModalListViewButton").Click();
+
+		try
+		{
+			var title = "Issue33037 Modal List";
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var firstItemRect = App.WaitForElement("Item 0").GetRect();
+
+			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+			App.SetOrientationLandscape();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+			App.SetOrientationPortrait();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+
+			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
+			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
+
+			Assert.That(restoredTitleRect.Y, Is.EqualTo(expandedTitleRect.Y).Within(2),
+				"The expanded title should return to its original position after a full-screen cover rotates while presented.");
+			Assert.That(restoredTitleRect.Height, Is.EqualTo(expandedTitleRect.Height).Within(2),
+				"The expanded title should return to its original height after a full-screen cover rotates while presented.");
+			Assert.That(restoredFirstItemRect.Y, Is.EqualTo(firstItemRect.Y).Within(2),
+				"The first row should not retain a gap or overlap after the full-screen cover is dismissed.");
+			Assert.That(restoredFirstItemRect.Y, Is.GreaterThanOrEqualTo(restoredTitleRect.Bottom - 2),
+				"The first row must remain below the restored expanded title.");
+		}
+		finally
+		{
+			App.SetOrientationPortrait();
+			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
+				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void ModalListViewRecoversFromFullScreenCoverAfterCollapsing()
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement("Issue33037ModalListViewButton").Click();
+
+		try
+		{
+			var title = "Issue33037 Modal List";
+			var scrollerId = "Issue33037ModalListViewScroller";
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var listRect = App.WaitForElement(scrollerId).GetRect();
+
+			App.ScrollDown(scrollerId, ScrollStrategy.Gesture, swipePercentage: 0.8, withInertia: false);
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+
+			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
+			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+
+			var titleAfterDismiss = GetNavigationTitleRect(title);
+			Assert.That(titleAfterDismiss.Height, Is.EqualTo(collapsedTitleRect.Height).Within(2),
+				"Presenting a full-screen cover must not expand an intentionally collapsed title.");
+
+			var centerX = listRect.X + listRect.Width / 2;
+			var startY = expandedTitleRect.Bottom + 50;
+			var endY = listRect.Bottom - 50;
+			App.DragCoordinates(centerX, startY, centerX, endY);
+			App.DragCoordinates(centerX, startY, centerX, endY);
+			App.WaitForElement("Item 0");
+
+			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
+			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(restoredFirstItemRect.Y, Is.InRange(restoredTitleRect.Bottom - 2, restoredTitleRect.Bottom + 40),
+				"The ListView should return to Item 0 without a gap or overlap after the cover round trip.");
+		}
+		finally
+		{
+			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
+				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
+		}
+	}
+
+	[Test]
+	[Category(UITestCategories.Navigation)]
 	public async Task WebViewWithFixedControlsPreservesLargeTitle()
 	{
 		RequireIOS26OrHigher();

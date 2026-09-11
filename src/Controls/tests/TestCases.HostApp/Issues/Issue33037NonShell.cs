@@ -346,6 +346,29 @@ class Issue33037NonShellModalListViewPage : ContentPage
 		};
 		closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
 
+		var coverButton = new Button
+		{
+			AutomationId = "Issue33037ModalListViewCoverButton",
+			HorizontalOptions = LayoutOptions.Center,
+			Margin = 12,
+			Text = "Present full-screen cover"
+		};
+#if IOS
+		coverButton.Clicked += (_, _) =>
+		{
+			if (Handler is IPlatformViewHandler { ViewController: { } viewController })
+			{
+				viewController.PresentViewController(
+					new Issue33037FullScreenCoverViewController
+					{
+						ModalPresentationStyle = UIModalPresentationStyle.FullScreen
+					},
+					animated: true,
+					completionHandler: null);
+			}
+		};
+#endif
+
 		AbsoluteLayout.SetLayoutFlags(listView, AbsoluteLayoutFlags.All);
 		AbsoluteLayout.SetLayoutBounds(listView, new Rect(0, 0, 1, 1));
 
@@ -354,6 +377,16 @@ class Issue33037NonShellModalListViewPage : ContentPage
 			Children =
 			{
 				listView
+			}
+		};
+
+		var buttonRow = new HorizontalStackLayout
+		{
+			HorizontalOptions = LayoutOptions.Center,
+			Children =
+			{
+				coverButton,
+				closeButton
 			}
 		};
 
@@ -367,13 +400,51 @@ class Issue33037NonShellModalListViewPage : ContentPage
 			Children =
 			{
 				listContainer,
-				closeButton
+				buttonRow
 			}
 		};
-		Grid.SetRow(closeButton, 1);
+		Grid.SetRow(buttonRow, 1);
 		Content = content;
 	}
 }
+
+#if IOS
+sealed class Issue33037FullScreenCoverViewController : UIViewController
+{
+	UIButton _dismissButton;
+
+	public override void ViewDidLoad()
+	{
+		base.ViewDidLoad();
+
+		View.BackgroundColor = UIColor.SystemBackground;
+		_dismissButton = UIButton.FromType(UIButtonType.System);
+		_dismissButton.AccessibilityIdentifier = "Issue33037FullScreenCoverDismissButton";
+		_dismissButton.SetTitle("Dismiss cover", UIControlState.Normal);
+		_dismissButton.TranslatesAutoresizingMaskIntoConstraints = false;
+		_dismissButton.TouchUpInside += OnDismiss;
+		View.AddSubview(_dismissButton);
+
+		NSLayoutConstraint.ActivateConstraints(
+		[
+			_dismissButton.CenterXAnchor.ConstraintEqualTo(View.CenterXAnchor),
+			_dismissButton.CenterYAnchor.ConstraintEqualTo(View.CenterYAnchor),
+			_dismissButton.WidthAnchor.ConstraintEqualTo(200),
+			_dismissButton.HeightAnchor.ConstraintEqualTo(50)
+		]);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing && _dismissButton is not null)
+			_dismissButton.TouchUpInside -= OnDismiss;
+
+		base.Dispose(disposing);
+	}
+
+	void OnDismiss(object sender, EventArgs e) => DismissViewController(animated: true, completionHandler: null);
+}
+#endif
 
 class Issue33037ReporterScenarioPage : ContentPage
 {

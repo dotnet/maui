@@ -62,6 +62,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<Page> _current;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
 		bool _interactivePopGesturePending;
+		bool _hasCompletedFirstAppearance;
 		readonly NativeElementRegistrationSet _nativeNavigationRegistrations = new NativeElementRegistrationSet();
 		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
@@ -174,6 +175,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			base.ViewDidAppear(animated);
 
+			if (_hasCompletedFirstAppearance)
+				RepairLargeTitleLayout();
+			else
+				_hasCompletedFirstAppearance = true;
+
 			View.SetNeedsLayout();
 		}
 
@@ -215,9 +221,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// collapsed bar (because the content is scrolled) untouched.
 			coordinator.AnimateAlongsideTransition(_ => { }, _ =>
 			{
-				if (Handle != IntPtr.Zero && NavigationBar is { } navigationBar && navigationBar.Handle != IntPtr.Zero)
-					navigationBar.SizeToFit();
+				RepairLargeTitleLayout();
 			});
+		}
+
+		void RepairLargeTitleLayout()
+		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(26) ||
+				Handle == IntPtr.Zero ||
+				NavigationBarHidden ||
+				NavigationBar is not { PrefersLargeTitles: true } navigationBar ||
+				navigationBar.Handle == IntPtr.Zero ||
+				TopViewController?.NavigationItem.LargeTitleDisplayMode == UINavigationItemLargeTitleDisplayMode.Never)
+			{
+				return;
+			}
+
+			// A full-screen controller can cover the navigation controller while the device rotates.
+			// UIKit does not send the covered controller a size-transition callback, and can leave the
+			// bar at its compact height when it becomes visible again. Re-measuring once on re-entry
+			// restores the height for the current scroll position without introducing a layout loop.
+			navigationBar.SizeToFit();
 		}
 
 		public override void ViewWillLayoutSubviews()
