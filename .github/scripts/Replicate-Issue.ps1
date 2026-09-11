@@ -706,6 +706,11 @@ function Test-ReplicationElementValueMismatch {
     return [bool]([string]$Text -match "(?i)Expected element text to (?:contain|equal) '[^']*', actual '[^'\r\n]")
 }
 
+function Get-ReplicationDriverActionFailurePattern {
+    # Mac2 rejects this trusted action argument before delivering input to the app.
+    return '(?i)Pointer move duration must be greater or equal to 1ms'
+}
+
 function Test-ReplicationAppTerminated {
     param(
         [Parameter(Mandatory)]
@@ -723,7 +728,8 @@ function Test-ReplicationAppTerminated {
     # An unhandled driver exception fully explains the exit code, and none of
     # the markers that only ever mean the app went away are present, so this
     # is a locator to correct rather than a scenario to rewrite.
-    if ($value -match (Get-ReplicationDriverElementFailurePattern)) {
+    if ($value -match (Get-ReplicationDriverElementFailurePattern) -or
+        $value -match (Get-ReplicationDriverActionFailurePattern)) {
         return $false
     }
     return [bool]($value -match (Get-ReplicationAbortExitPattern))
@@ -848,6 +854,9 @@ function Get-ReplicationAttemptFailureKind {
     # and this rule matched none of them.
     if ($text -match '(?i)compiler diagnostics|Preparing the Sandbox app (?:failed|timed out)|error CS\d+') {
         return 'build-failed'
+    }
+    if ($text -match (Get-ReplicationDriverActionFailurePattern)) {
+        return 'recording-failed'
     }
     if ($text -match '(?i)REPLICATION_NOT_REPRODUCED') {
         return 'not-reproduced'
@@ -1182,7 +1191,8 @@ function Get-ReplicationAppTermination {
         # verdict, not the app dying. Claiming a crash there would invent a
         # termination and block a legitimate conclusion.
         if ([string]$content -match (Get-ReplicationPlanVerdictPattern) -or
-            [string]$content -match (Get-ReplicationDriverElementFailurePattern)) {
+            [string]$content -match (Get-ReplicationDriverElementFailurePattern) -or
+            [string]$content -match (Get-ReplicationDriverActionFailurePattern)) {
             return ''
         }
 

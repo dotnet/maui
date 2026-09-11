@@ -316,7 +316,7 @@ stages:
               . ./.github/scripts/shared/Resolve-BuildShell.ps1
               $code = Invoke-BuildTasksWatchdog `
                 -ShellPath '/bin/bash' `
-                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal --nuget_source=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json 2>&1 | tee "$PROBE_ROOT/workloads.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal 2>&1 | tee "$PROBE_ROOT/workloads.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
                 -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 30
               exit $code
             displayName: 'Provision trusted iOS workloads'
@@ -324,6 +324,8 @@ stages:
             retryCountOnTaskFailure: 2
             env:
               PROBE_ROOT: $(IosProbeRoot)
+              # Child pwsh -File splits a URL-bearing unknown parameter at the colon.
+              CAKE_NUGET_SOURCE: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 
           - pwsh: Write-Host "##vso[task.prependpath]$(DotNet.Dir)"
             displayName: 'Use repository .NET for iOS probe'
@@ -340,6 +342,7 @@ stages:
             timeoutInMinutes: 25
             env:
               PROBE_ROOT: $(IosProbeRoot)
+              CAKE_NUGET_SOURCE: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
 
           - bash: |
               set -euo pipefail

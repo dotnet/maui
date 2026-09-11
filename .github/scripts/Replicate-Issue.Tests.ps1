@@ -95,6 +95,7 @@ BeforeAll {
         'Test-ReplicationTestDidNotReproduce',
         'Get-ReplicationTestPassedDiagnosis',
     'Get-ReplicationDriverElementFailurePattern',
+    'Get-ReplicationDriverActionFailurePattern',
     'Test-ReplicationTierCannotBuildForPlatform',
     'Get-ReplicationTierExclusionGuidance',
         'Get-ReplicationTestAttemptKind',
@@ -9470,6 +9471,7 @@ namespace $namespace
                 Should -Be 'move,down,pause,up,pause,down,pause,up'
             $sequence.Actions[0].X | Should -Be 60
             $sequence.Actions[0].Y | Should -Be 50
+            $sequence.Actions[0].Milliseconds | Should -Be 1
             @($sequence.Actions | Where-Object Kind -eq 'down').Count | Should -Be 2
             @($sequence.Actions | Where-Object Kind -eq 'up').Count | Should -Be 2
             @(
@@ -9579,6 +9581,29 @@ Describe 'an abort exit code is not always a crash' {
         Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
         Get-ReplicationAttemptFailureKind -FailureSummary $summary |
             Should -Be 'assertion-mismatch'
+    }
+
+    It 'keeps a Mac2 pointer-action rejection as infrastructure rather than inventing an app crash' {
+        $log = Join-Path $TestDrive 'record-mac2-action-rejection.log'
+        $summary = @(
+            'Recording the on-device reproduction failed with exit code 134.'
+            'Unhandled exception. OpenQA.Selenium.UnknownErrorException: Error Domain=io.appium.WebDriverAgentMac Code=1 "Pointer move duration must be greater or equal to 1ms"'
+        ) -join "`n"
+        $summary | Set-Content -LiteralPath $log
+
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+        Get-ReplicationAppTermination -LogPath $log | Should -BeNullOrEmpty
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -Be 'recording-failed'
+        $kinds = [System.Collections.Generic.List[string]]@(
+            'not-reproduced', 'recording-failed', 'not-reproduced')
+        Test-ReplicationNonReproductionIsConclusive -AttemptKinds $kinds |
+            Should -BeFalse
+
+        $crash = "REPLICATION_APP_TERMINATED the Sandbox exited`n$summary"
+        Test-ReplicationAppTerminated -Text $crash | Should -BeTrue
+        Get-ReplicationAttemptFailureKind -FailureSummary $crash |
+            Should -Be 'app-terminated'
     }
 
     It 'still recovers an abort when the plan left no verdict' {
@@ -23114,6 +23139,14 @@ Describe 'A gesture the driver supports is not refused on its behalf' {
         $drag | Should -CMatch 'PointerKind\.Mouse'
         $drag | Should -CMatch 'MouseButton\.Left'
         $drag | Should -CMatch 'isDesktop'
+    }
+
+    It 'uses a nonzero initial move for desktop drag actions' {
+        $drag = [regex]::Match($script:runnerSource,
+            'static void DragPath\(.*?\n\}\n', [Text.RegularExpressions.RegexOptions]::Singleline).Value
+        $drag | Should -Match (
+            'CreatePointerMove\(\s*CoordinateOrigin\.Viewport, x, y, ' +
+            'TimeSpan\.FromMilliseconds\(1\)\)')
     }
 
     It 'asks the driver rather than refusing before trying' {

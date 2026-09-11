@@ -1218,6 +1218,7 @@ Describe 'A verdict rescued from the noise is classified as a verdict' {
             'Get-ReplicationAbortExitPattern',
             'Get-ReplicationPlanVerdictPattern',
             'Get-ReplicationDriverElementFailurePattern',
+            'Get-ReplicationDriverActionFailurePattern',
             'Test-ReplicationAppTerminated')) {
             $f = $replicate.FindAll({ param($x)
                 $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
