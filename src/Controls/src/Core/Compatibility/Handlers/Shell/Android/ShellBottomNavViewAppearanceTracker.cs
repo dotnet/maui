@@ -24,7 +24,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static ColorStateList _defaultListDark;
 
 		bool _disposed;
-		ColorStateList _itemActiveIndicatorColor;
 		ColorStateList _itemTextColor;
 		ColorStateList _itemIconTint;
 
@@ -41,7 +40,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void ResetAppearance(BottomNavigationView bottomView)
 		{
-			UpdateActiveIndicatorColor(bottomView);
 			bottomView.ItemIconTintList = GetDefaultTabColorList(_shellContext.AndroidContext);
 			bottomView.ItemTextColor = GetDefaultTabColorList(_shellContext.AndroidContext);
 			SetBackgroundColor(bottomView, null);
@@ -49,8 +47,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public virtual void SetAppearance(BottomNavigationView bottomView, IShellAppearanceElement appearance)
 		{
-			UpdateActiveIndicatorColor(bottomView);
-
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
 			var foregroundColor = controller.EffectiveTabBarForegroundColor;
@@ -72,21 +68,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			bottomView.ItemIconTintList = _itemIconTint;
 
 			SetBackgroundColor(bottomView, backgroundColor);
-		}
-
-		void UpdateActiveIndicatorColor(BottomNavigationView bottomView)
-		{
-			if (!RuntimeFeature.IsMaterial3Enabled)
-			{
-				return;
-			}
-
-			var context = bottomView.Context;
-			AndroidX.Core.Content.Resources.ResourcesCompat.ThemeCompat.Rebase(context.Theme);
-			_itemActiveIndicatorColor?.Dispose();
-			var color = context.GetThemeAttrColor(Resource.Attribute.colorSecondaryContainer);
-			_itemActiveIndicatorColor = ColorStateList.ValueOf(new AColor(color));
-			bottomView.ItemActiveIndicatorColor = _itemActiveIndicatorColor;
 		}
 
 		protected virtual void SetBackgroundColor(BottomNavigationView bottomView, Color color)
@@ -197,11 +178,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				_itemActiveIndicatorColor?.Dispose();
 				_itemTextColor?.Dispose();
 				_itemIconTint?.Dispose();
-
-				_itemActiveIndicatorColor = null;
 				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;
