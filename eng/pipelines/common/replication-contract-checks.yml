@@ -219,6 +219,17 @@ steps:
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
         'MAUI Copilot mode routing*retries trusted feed provisioning without changing review or verification defaults'
         'MAUI Copilot mode routing*resolves fixed Cake bootstrap packages from the approved stable feed only'
+        'Get-ReplicationIssueContext*preserves issue 29282 code literals and exposes its workaround to the agent'
+        'Get-ReplicationIssueContext*recognizes standard workaround heading variants'
+        'Get-ReplicationIssueContext*preserves fenced and inline code containing entity and backtick literals'
+        'Get-ReplicationIssueContext*keeps unmatched inline code inert without dropping or decoding its literals'
+        'Get-ReplicationIssueContext*treats an escaped backtick as prose instead of an inline code opener'
+        'Get-ReplicationIssueContext*keeps backslashes literal inside code spans without swallowing following prose'
+        'Get-ReplicationIssueContext*filters encoded URLs and logging directives inside code without changing nearby literals'
+        'Get-ReplicationIssueContext*strips encoded active HTML in prose and keeps literal HTML inert inside code'
+        'Get-ReplicationIssueContext*fails closed on malformed fences and does not restore placeholder-like issue text'
+        'Get-ReplicationIssueContext*keeps absent workaround semantics explicit and backward compatible'
+        'Get-ReplicationIssueContext*never treats attachment syntax inside code as downloadable media'
         'MAUI Copilot mode routing*uses shared iOS provisioning without an external isolation prerequisite'
         'Replication orchestrator security boundary*keeps platform-specific execution controls without an iOS attestation gate'
         'Apple trusted host command boundary*admits iOS Sandbox without advertising network isolation'
@@ -289,6 +300,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationIssueContext.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"
       )

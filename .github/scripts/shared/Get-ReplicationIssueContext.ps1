@@ -104,6 +104,140 @@ function Remove-UnsafeIssueCharacters {
     return $builder.ToString()
 }
 
+function Get-HtmlDecodedIssueTextMap {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    $current = [string] $Text
+    $starts = [int[]] (0..([Math]::Max(0, $current.Length - 1)))
+    $ends = [int[]] (1..$current.Length)
+    if ($current.Length -eq 0) {
+        $starts = [int[]] @()
+        $ends = [int[]] @()
+    }
+
+    # A small fixed pass count catches nested entity encoding without allowing
+    # an issue body to turn decoding into unbounded work.
+    for ($pass = 0; $pass -lt 3; $pass++) {
+        $decoded = [System.Text.StringBuilder]::new($current.Length)
+        $decodedStarts = [System.Collections.Generic.List[int]]::new()
+        $decodedEnds = [System.Collections.Generic.List[int]]::new()
+        $changed = $false
+        $index = 0
+        $entityRegex = [regex]::new(
+            '\G&(?:#[0-9]{1,10};?|#[xX][0-9A-Fa-f]{1,8};?|[A-Za-z][A-Za-z0-9]{1,31};|(?:amp|lt|gt|quot|apos)(?![A-Za-z0-9]))',
+            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase,
+            [TimeSpan]::FromMilliseconds(100))
+        while ($index -lt $current.Length) {
+            $entityMatch = $entityRegex.Match($current, $index)
+            if ($entityMatch.Success -and $entityMatch.Index -eq $index) {
+                $entity = $entityMatch.Value
+                $value = [System.Net.WebUtility]::HtmlDecode($entity)
+                if (-not [string]::Equals($entity, $value, [StringComparison]::Ordinal)) {
+                    $sourceStart = $starts[$index]
+                    $sourceEnd = $ends[$index + $entity.Length - 1]
+                    foreach ($character in $value.ToCharArray()) {
+                        [void] $decoded.Append($character)
+                        [void] $decodedStarts.Add($sourceStart)
+                        [void] $decodedEnds.Add($sourceEnd)
+                    }
+                    $index += $entity.Length
+                    $changed = $true
+                    continue
+                }
+            }
+
+            [void] $decoded.Append($current[$index])
+            [void] $decodedStarts.Add($starts[$index])
+            [void] $decodedEnds.Add($ends[$index])
+            $index++
+        }
+
+        if (-not $changed) {
+            break
+        }
+        $current = $decoded.ToString()
+        $starts = $decodedStarts.ToArray()
+        $ends = $decodedEnds.ToArray()
+    }
+
+    return [pscustomobject] @{
+        Text = $current
+        Starts = $starts
+        Ends = $ends
+    }
+}
+
+function Remove-IssueRegexIncludingHtmlEntities {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Pattern,
+
+        [AllowEmptyString()]
+        [string] $Replacement = '',
+
+        [System.Text.RegularExpressions.RegexOptions] $Options =
+            [System.Text.RegularExpressions.RegexOptions]::None
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) {
+        return [string] $Text
+    }
+    if ($Text.IndexOf('&', [StringComparison]::Ordinal) -lt 0) {
+        return [regex]::Replace(
+            $Text,
+            $Pattern,
+            $Replacement,
+            $Options,
+            [TimeSpan]::FromMilliseconds(250))
+    }
+
+    $map = Get-HtmlDecodedIssueTextMap $Text
+    $matches = [regex]::Matches(
+        $map.Text,
+        $Pattern,
+        $Options,
+        [TimeSpan]::FromMilliseconds(250))
+    if ($matches.Count -eq 0) {
+        return $Text
+    }
+
+    $builder = [System.Text.StringBuilder]::new($Text.Length)
+    $sourceIndex = 0
+    foreach ($match in $matches) {
+        if ($match.Length -eq 0) {
+            continue
+        }
+
+        $sourceStart = $map.Starts[$match.Index]
+        $sourceEnd = $map.Ends[$match.Index + $match.Length - 1]
+        if ($sourceEnd -le $sourceIndex) {
+            continue
+        }
+        if ($sourceStart -lt $sourceIndex) {
+            $sourceStart = $sourceIndex
+        }
+        if ($sourceStart -gt $sourceIndex) {
+            [void] $builder.Append(
+                $Text.Substring($sourceIndex, $sourceStart - $sourceIndex))
+        }
+        [void] $builder.Append($match.Result($Replacement))
+        $sourceIndex = $sourceEnd
+    }
+    if ($sourceIndex -lt $Text.Length) {
+        [void] $builder.Append($Text.Substring($sourceIndex))
+    }
+
+    return $builder.ToString()
+}
+
 function Remove-AzureLoggingCommands {
     [CmdletBinding()]
     param(
@@ -115,8 +249,14 @@ function Remove-AzureLoggingCommands {
         return ''
     }
 
-    $safe = [regex]::Replace($Text, '(?i)##vso\[[^\]\r\n]*\]', '')
-    return [regex]::Replace($safe, '(?i)##\[[^\]\r\n]*\]', '')
+    $safe = Remove-IssueRegexIncludingHtmlEntities `
+        -Text $Text `
+        -Pattern '##vso\[[^\]\r\n]*\]' `
+        -Options IgnoreCase
+    return Remove-IssueRegexIncludingHtmlEntities `
+        -Text $safe `
+        -Pattern '##\[[^\]\r\n]*\]' `
+        -Options IgnoreCase
 }
 
 function Remove-IssueUrls {
@@ -130,30 +270,24 @@ function Remove-IssueUrls {
         return ''
     }
 
-    $safe = [regex]::Replace(
-        $Text,
-        '(?im)^\s*\[[^\]\r\n]{1,128}\]:\s*\S+\s*$',
-        '')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?<![\w])[A-Za-z][A-Za-z0-9+.-]{1,31}\s*://[^\s<>"''\[\]{}]*',
-        '[url removed]')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto|tel|sms|intent|blob|about|ms-appx(?:-web)?)\s*:(?:\s*//[^\s<>"''\[\]{}]*|[^\s<>"''\[\]{}][^\s<>"''\[\]{}]*)',
-        '[url removed]')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto)(?:%25)?%3a(?:%2f){0,2}[^\s<>"''\[\]{}]*',
-        '[url removed]')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)(?<![:\w])//(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d{1,5})?(?:/[^\s<>"''\[\]{}]*)?',
-        '[url removed]')
-    return [regex]::Replace(
-        $safe,
-        '(?i)\bwww\.[^\s<>"''\[\]{}]+',
-        '[url removed]')
+    $safe = Remove-IssueRegexIncludingHtmlEntities `
+        -Text $Text `
+        -Pattern '^\s*\[[^\]\r\n]{1,128}\]:\s*\S+\s*$' `
+        -Options ([System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+            [System.Text.RegularExpressions.RegexOptions]::Multiline)
+    foreach ($pattern in @(
+            '(?<![\w])[A-Za-z][A-Za-z0-9+.-]{1,31}\s*://[^\s<>"''\[\]{}]*',
+            '(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto|tel|sms|intent|blob|about|ms-appx(?:-web)?)\s*:(?:\s*//[^\s<>"''\[\]{}]*|[^\s<>"''\[\]{}][^\s<>"''\[\]{}]*)',
+            '(?<![\w])(?:https?|ftps?|wss?|file|data|javascript|mailto)(?:%25)?%3a(?:%2f){0,2}[^\s<>"''\[\]{}]*',
+            '(?<![:\w])//(?:localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d{1,5})?(?:/[^\s<>"''\[\]{}]*)?',
+            '\bwww\.[^\s<>"''\[\]{}]+')) {
+        $safe = Remove-IssueRegexIncludingHtmlEntities `
+            -Text $safe `
+            -Pattern $pattern `
+            -Replacement '[url removed]' `
+            -Options IgnoreCase
+    }
+    return $safe
 }
 
 function Remove-IssueInstructionMarkers {
@@ -169,26 +303,26 @@ function Remove-IssueInstructionMarkers {
         return ''
     }
 
-    $safe = [regex]::Replace(
-        $Text,
-        '(?i)<\|(?:system|developer|assistant|user|tool)\|>|\[/?INST\]|<</?SYS>>',
-        '')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?im)^(\s*(?:[-*+]\s*)?)(?:system|developer|assistant|tool|shell|command|execute)\s*(?:message)?\s*:\s*',
-        '$1')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)\b(?:ignore|disregard|override|forget)\b[^\r\n]{0,80}\b(?:instructions?|prompts?|messages?)\b',
-        '[instruction-like text removed]')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)\b(?:do\s+not|don''t)\s+(?:follow|obey)\b[^\r\n]{0,60}\b(?:instructions?|prompts?|messages?)\b',
-        '[instruction-like text removed]')
-    $safe = [regex]::Replace(
-        $safe,
-        '(?i)\b(?:follow|obey)\s+(?:only\s+)?(?:these|my|the\s+following)\s+(?:instructions?|commands?)\b',
-        '[instruction-like text removed]')
+    $safe = Remove-IssueRegexIncludingHtmlEntities `
+        -Text $Text `
+        -Pattern '<\|(?:system|developer|assistant|user|tool)\|>|\[/?INST\]|<</?SYS>>' `
+        -Options IgnoreCase
+    $safe = Remove-IssueRegexIncludingHtmlEntities `
+        -Text $safe `
+        -Pattern '^(\s*(?:[-*+]\s*)?)(?:system|developer|assistant|tool|shell|command|execute)\s*(?:message)?\s*:\s*' `
+        -Replacement '$1' `
+        -Options ([System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+            [System.Text.RegularExpressions.RegexOptions]::Multiline)
+    foreach ($pattern in @(
+            '\b(?:ignore|disregard|override|forget)\b[^\r\n]{0,80}\b(?:instructions?|prompts?|messages?)\b',
+            '\b(?:do\s+not|don''t)\s+(?:follow|obey)\b[^\r\n]{0,60}\b(?:instructions?|prompts?|messages?)\b',
+            '\b(?:follow|obey)\s+(?:only\s+)?(?:these|my|the\s+following)\s+(?:instructions?|commands?)\b')) {
+        $safe = Remove-IssueRegexIncludingHtmlEntities `
+            -Text $safe `
+            -Pattern $pattern `
+            -Replacement '[instruction-like text removed]' `
+            -Options IgnoreCase
+    }
 
     if (-not $Code) {
         $safe = $safe.Replace('$(', '$ (').Replace('${', '$ {')
@@ -246,23 +380,6 @@ function ConvertTo-SafeIssueProse {
 
     $safe = Remove-UnsafeIssueCharacters $Text
 
-    # Preserve text intentionally wrapped as HTML code while dropping markup.
-    $safe = [regex]::Replace(
-        $safe,
-        '(?is)<code\b[^>]*>(?<value>.*?)</code\s*>',
-        {
-            param($match)
-            return [System.Net.WebUtility]::HtmlEncode(
-                [System.Net.WebUtility]::HtmlDecode($match.Groups['value'].Value))
-        })
-    $safe = [regex]::Replace(
-        $safe,
-        '(?is)<pre\b[^>]*>(?<value>.*?)</pre\s*>',
-        {
-            param($match)
-            return [System.Net.WebUtility]::HtmlEncode(
-                [System.Net.WebUtility]::HtmlDecode($match.Groups['value'].Value))
-        })
     $safe = [regex]::Replace($safe, '(?is)<!--.*?-->', ' ')
     $safe = [regex]::Replace(
         $safe,
@@ -277,6 +394,21 @@ function ConvertTo-SafeIssueProse {
     $safe = [regex]::Replace($safe, '(?i)<li\b[^>]*>', '- ')
     $safe = [regex]::Replace($safe, '(?is)<[^>]{1,4096}>', ' ')
     $safe = [System.Net.WebUtility]::HtmlDecode($safe)
+    # Encoded markup is still markup in prose. Decode once, then apply the same
+    # removal rules again so entity encoding cannot turn active HTML back on.
+    $safe = [regex]::Replace($safe, '(?is)<!--.*?-->', ' ')
+    $safe = [regex]::Replace(
+        $safe,
+        '(?is)<(?<tag>script|style|iframe|object|embed|svg|video|audio)\b[^>]*>.*?</\k<tag>\s*>',
+        ' ')
+    $safe = [regex]::Replace(
+        $safe,
+        '(?is)<(?:script|style|iframe|object|embed|svg|video|audio)\b[^>]*>.*$',
+        ' ')
+    $safe = [regex]::Replace($safe, '(?i)<br\s*/?>', "`n")
+    $safe = [regex]::Replace($safe, '(?i)</(?:p|div|li|tr|h[1-6])\s*>', "`n")
+    $safe = [regex]::Replace($safe, '(?i)<li\b[^>]*>', '- ')
+    $safe = [regex]::Replace($safe, '(?is)<[^>]{1,4096}>', ' ')
     $safe = Remove-UnsafeIssueCharacters $safe
     $safe = Remove-AzureLoggingCommands $safe
 
@@ -329,15 +461,222 @@ function ConvertTo-SafeIssueCodeLine {
     $safe = Remove-AzureLoggingCommands $safe
     $safe = Remove-IssueUrls $safe
     $safe = Remove-IssueInstructionMarkers -Text $safe -Code
-    $safe = [regex]::Replace(
-        $safe,
-        '`{4,}',
-        {
-            param($match)
-            return ($match.Value.ToCharArray() -join ' ')
-        })
 
     return Limit-IssueLine -Text $safe -MaxChars 1000
+}
+
+function Get-MaximumCharacterRun {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text,
+
+        [Parameter(Mandatory = $true)]
+        [char] $Character
+    )
+
+    $maximum = 0
+    $current = 0
+    foreach ($value in ([string] $Text).ToCharArray()) {
+        if ($value -eq $Character) {
+            $current++
+            if ($current -gt $maximum) {
+                $maximum = $current
+            }
+        } else {
+            $current = 0
+        }
+    }
+    return $maximum
+}
+
+function Get-SafeIssueFence {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    $backticks = Get-MaximumCharacterRun -Text $Text -Character ([char] 96)
+    $tildes = Get-MaximumCharacterRun -Text $Text -Character ([char] 126)
+    $character = if ($backticks -le $tildes) { [char] 96 } else { [char] 126 }
+    $minimum = if ($character -eq [char] 96) { $backticks + 1 } else { $tildes + 1 }
+    return ([string] $character) * [Math]::Max(4, $minimum)
+}
+
+function ConvertTo-SafeIssueInlineCode {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    $safeLines = [System.Collections.Generic.List[string]]::new()
+    foreach ($line in (([string] $Text) -split "`n", -1)) {
+        [void] $safeLines.Add((ConvertTo-SafeIssueCodeLine $line))
+    }
+    $safe = $safeLines -join "`n"
+    if ($safe.Contains("`n")) {
+        $fence = Get-SafeIssueFence $safe
+        return "$fence`n$safe`n$fence"
+    }
+
+    $delimiterLength = [Math]::Max(
+        1,
+        (Get-MaximumCharacterRun -Text $safe -Character ([char] 96)) + 1)
+    if ($delimiterLength -gt 32) {
+        $fence = Get-SafeIssueFence $safe
+        return "$fence`n$safe`n$fence"
+    }
+    $delimiter = ([string] [char] 96) * $delimiterLength
+    $padding = if ($safe.StartsWith(' ', [StringComparison]::Ordinal) -or
+        $safe.EndsWith(' ', [StringComparison]::Ordinal) -or
+        $safe.StartsWith('`', [StringComparison]::Ordinal) -or
+        $safe.EndsWith('`', [StringComparison]::Ordinal)) {
+        ' '
+    } else {
+        ''
+    }
+    $maximumContentLength = 1000 - (2 * $delimiter.Length) - (2 * $padding.Length)
+    $safe = Limit-IssueLine -Text $safe -MaxChars $maximumContentLength
+    return "$delimiter$padding$safe$padding$delimiter"
+}
+
+function ConvertTo-SafeIssueProseFragment {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    $value = [string] $Text
+    $safe = ConvertTo-SafeIssueProse $value
+    if ([string]::IsNullOrEmpty($safe)) {
+        return ''
+    }
+
+    $leading = if ($value.Length -gt 0 -and [char]::IsWhiteSpace($value[0])) {
+        if ($value[0] -eq "`n") { "`n" } else { ' ' }
+    } else {
+        ''
+    }
+    $trailing = if ($value.Length -gt 0 -and
+        [char]::IsWhiteSpace($value[$value.Length - 1])) {
+        if ($value[$value.Length - 1] -eq "`n") { "`n" } else { ' ' }
+    } else {
+        ''
+    }
+    return $leading + $safe + $trailing
+}
+
+function ConvertTo-SafeIssueInlineMarkdown {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    if ([string]::IsNullOrEmpty($Text)) {
+        return ''
+    }
+
+    $output = [System.Text.StringBuilder]::new($Text.Length)
+    $proseStart = 0
+    $index = 0
+    $htmlCodeRegex = [regex]::new(
+        '<(?<tag>code|pre)\b[^>]{0,1024}>(?<value>.*?)</\k<tag>\s*>',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+            [System.Text.RegularExpressions.RegexOptions]::Singleline,
+        [TimeSpan]::FromMilliseconds(250))
+
+    while ($index -lt $Text.Length) {
+        $htmlMatch = $htmlCodeRegex.Match($Text, $index)
+        $backtickIndex = $Text.IndexOf([char] 96, $index)
+        $useHtml = $htmlMatch.Success -and
+            ($backtickIndex -lt 0 -or $htmlMatch.Index -lt $backtickIndex)
+
+        if ($useHtml) {
+            if ($htmlMatch.Index -gt $proseStart) {
+                [void] $output.Append((ConvertTo-SafeIssueProseFragment `
+                            $Text.Substring($proseStart, $htmlMatch.Index - $proseStart)))
+            }
+            $htmlCode = $htmlMatch.Groups['value'].Value
+            if ($htmlCode -cmatch '^[A-Za-z_][A-Za-z0-9_.+#-]{0,127}$') {
+                [void] $output.Append((ConvertTo-SafeIssueCodeLine $htmlCode))
+            } else {
+                [void] $output.Append((ConvertTo-SafeIssueInlineCode $htmlCode))
+            }
+            $index = $htmlMatch.Index + $htmlMatch.Length
+            $proseStart = $index
+            continue
+        }
+
+        if ($backtickIndex -lt 0) {
+            break
+        }
+        $precedingBackslashes = 0
+        for ($escapeIndex = $backtickIndex - 1;
+            $escapeIndex -ge 0 -and $Text[$escapeIndex] -eq '\';
+            $escapeIndex--) {
+            $precedingBackslashes++
+        }
+        if (($precedingBackslashes % 2) -eq 1) {
+            $index = $backtickIndex + 1
+            continue
+        }
+
+        $openingLength = 1
+        while ($backtickIndex + $openingLength -lt $Text.Length -and
+            $Text[$backtickIndex + $openingLength] -eq [char] 96) {
+            $openingLength++
+        }
+
+        $closingIndex = -1
+        $searchIndex = $backtickIndex + $openingLength
+        while ($searchIndex -lt $Text.Length) {
+            $candidate = $Text.IndexOf([char] 96, $searchIndex)
+            if ($candidate -lt 0) {
+                break
+            }
+            $candidateLength = 1
+            while ($candidate + $candidateLength -lt $Text.Length -and
+                $Text[$candidate + $candidateLength] -eq [char] 96) {
+                $candidateLength++
+            }
+            if ($candidateLength -eq $openingLength) {
+                $closingIndex = $candidate
+                break
+            }
+            $searchIndex = $candidate + $candidateLength
+        }
+
+        if ($closingIndex -lt 0) {
+            if ($backtickIndex -gt $proseStart) {
+                [void] $output.Append((ConvertTo-SafeIssueProseFragment `
+                            $Text.Substring($proseStart, $backtickIndex - $proseStart)))
+            }
+            $codeStart = $backtickIndex + $openingLength
+            [void] $output.Append((ConvertTo-SafeIssueInlineCode `
+                        $Text.Substring($codeStart)))
+            $proseStart = $Text.Length
+            break
+        }
+
+        if ($backtickIndex -gt $proseStart) {
+            [void] $output.Append((ConvertTo-SafeIssueProseFragment `
+                        $Text.Substring($proseStart, $backtickIndex - $proseStart)))
+        }
+        $codeStart = $backtickIndex + $openingLength
+        [void] $output.Append((ConvertTo-SafeIssueInlineCode `
+                    $Text.Substring($codeStart, $closingIndex - $codeStart)))
+        $index = $closingIndex + $openingLength
+        $proseStart = $index
+    }
+
+    if ($proseStart -lt $Text.Length) {
+        [void] $output.Append((ConvertTo-SafeIssueProseFragment $Text.Substring($proseStart)))
+    }
+    return $output.ToString().Trim()
 }
 
 function Add-SafeIssueProseChunk {
@@ -358,7 +697,7 @@ function Add-SafeIssueProseChunk {
         return
     }
 
-    $safe = ConvertTo-SafeIssueProse ($Lines -join "`n")
+    $safe = ConvertTo-SafeIssueInlineMarkdown ($Lines -join "`n")
     if (-not [string]::IsNullOrWhiteSpace($safe)) {
         foreach ($line in ($safe -split "`n")) {
             [void] $Output.Add($line)
@@ -389,14 +728,20 @@ function Add-SafeIssueCodeBlock {
         $safeLanguage = $safeLanguage.Substring(0, 30)
     }
 
+    $safeLines = [System.Collections.Generic.List[string]]::new()
+    foreach ($line in $Lines) {
+        [void] $safeLines.Add((ConvertTo-SafeIssueCodeLine $line))
+    }
+    $fence = Get-SafeIssueFence ($safeLines -join "`n")
+
     if ($Output.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($Output[$Output.Count - 1])) {
         [void] $Output.Add('')
     }
-    [void] $Output.Add(('````' + $safeLanguage))
-    foreach ($line in $Lines) {
-        [void] $Output.Add((ConvertTo-SafeIssueCodeLine $line))
+    [void] $Output.Add(($fence + $safeLanguage))
+    foreach ($line in $safeLines) {
+        [void] $Output.Add($line)
     }
-    [void] $Output.Add('````')
+    [void] $Output.Add($fence)
     $Lines.Clear()
 }
 
@@ -520,6 +865,9 @@ function Get-CanonicalIssueSectionName {
         '^actual (?:behavior|behaviour|outcome|result)$' {
             return 'actual'
         }
+        '^(?:workarounds?|workaround s|did you find (?:a|any) workarounds?|is there (?:a|any) workaround)$' {
+            return 'workaround'
+        }
         '^(?:affected platforms?|affected platform s|platforms? affected|platform s affected|affected platform versions?)$' {
             return 'affectedPlatforms'
         }
@@ -544,6 +892,7 @@ function Get-RawIssueTemplateSections {
         'steps',
         'expected',
         'actual',
+        'workaround',
         'affectedPlatforms',
         'version')
     $lineBuckets = [ordered] @{}
@@ -689,8 +1038,7 @@ function Limit-SafeIssueMarkdown {
         return $marker.Substring(0, $MaxChars)
     }
 
-    # Reserve room for a closing normalized fence if truncation lands in code.
-    $candidateLength = $MaxChars - $marker.Length - 5
+    $candidateLength = $MaxChars - $marker.Length
     if ($candidateLength -lt 1) {
         return $marker.Substring(0, $MaxChars)
     }
@@ -702,14 +1050,30 @@ function Limit-SafeIssueMarkdown {
     }
     $candidate = $candidate.TrimEnd()
 
-    $openFence = $false
+    $openFence = $null
     foreach ($line in ($candidate -split "`n")) {
-        if ($line -match '^````(?:[A-Za-z0-9_.+#-]{0,30})\s*$') {
-            $openFence = -not $openFence
+        if ($null -eq $openFence -and
+            $line -match '^(?<fence>`{4,}|~{4,})(?:[A-Za-z0-9_.+#-]{0,30})\s*$') {
+            $openFence = $Matches['fence']
+            continue
+        }
+        if ($null -ne $openFence -and
+            (Test-IssueFenceClose `
+                -Line $line `
+                -FenceCharacter $openFence[0] `
+                -MinimumLength $openFence.Length)) {
+            $openFence = $null
         }
     }
-    if ($openFence) {
-        $candidate += "`n````"
+    if ($null -ne $openFence) {
+        $available = $MaxChars - $marker.Length - $openFence.Length - 1
+        if ($available -lt 1) {
+            return $marker.Substring(0, $MaxChars)
+        }
+        if ($candidate.Length -gt $available) {
+            $candidate = $candidate.Substring(0, $available).TrimEnd()
+        }
+        $candidate += "`n$openFence"
     }
 
     $result = $candidate + $marker
@@ -734,6 +1098,7 @@ function Limit-IssueSections {
         'steps',
         'expected',
         'actual',
+        'workaround',
         'affectedPlatforms',
         'version')
     $result = [ordered] @{}
@@ -809,6 +1174,120 @@ function Test-AllowedScreenshotUrl {
     return $uri.AbsolutePath -cmatch '^/user-attachments/assets/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
 }
 
+function Remove-IssueCodeFromMediaScan {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [string] $Text
+    )
+
+    $normalized = Remove-UnsafeIssueCharacters $Text
+    if ([string]::IsNullOrEmpty($normalized)) {
+        return ''
+    }
+
+    $characters = $normalized.ToCharArray()
+    $inFence = $false
+    $fenceCharacter = [char] 0
+    $fenceLength = 0
+    foreach ($lineMatch in [regex]::Matches($normalized, '(?m)^.*(?:\n|$)')) {
+        if ($lineMatch.Length -eq 0) {
+            continue
+        }
+        $line = $lineMatch.Value.TrimEnd("`n")
+        $mask = $inFence
+        if (-not $inFence -and
+            $line -match '^\s{0,3}(?<fence>`{3,}|~{3,})') {
+            $inFence = $true
+            $fenceCharacter = $Matches['fence'][0]
+            $fenceLength = $Matches['fence'].Length
+            $mask = $true
+        } elseif ($inFence -and
+            (Test-IssueFenceClose `
+                -Line $line `
+                -FenceCharacter $fenceCharacter `
+                -MinimumLength $fenceLength)) {
+            $inFence = $false
+            $mask = $true
+        }
+
+        if ($mask) {
+            for ($index = $lineMatch.Index;
+                $index -lt $lineMatch.Index + $lineMatch.Length;
+                $index++) {
+                if ($characters[$index] -ne "`n") {
+                    $characters[$index] = ' '
+                }
+            }
+        }
+    }
+
+    $masked = -join $characters
+    $characters = $masked.ToCharArray()
+    $htmlCodeRegex = [regex]::new(
+        '<(?<tag>code|pre)\b[^>]{0,1024}>.*?</\k<tag>\s*>',
+        [System.Text.RegularExpressions.RegexOptions]::IgnoreCase -bor
+            [System.Text.RegularExpressions.RegexOptions]::Singleline,
+        [TimeSpan]::FromMilliseconds(250))
+    foreach ($match in $htmlCodeRegex.Matches($masked)) {
+        for ($index = $match.Index; $index -lt $match.Index + $match.Length; $index++) {
+            if ($characters[$index] -ne "`n") {
+                $characters[$index] = ' '
+            }
+        }
+    }
+
+    $masked = -join $characters
+    $characters = $masked.ToCharArray()
+    $index = 0
+    while ($index -lt $masked.Length) {
+        if ($masked[$index] -ne [char] 96) {
+            $index++
+            continue
+        }
+
+        $openingIndex = $index
+        $openingLength = 1
+        while ($openingIndex + $openingLength -lt $masked.Length -and
+            $masked[$openingIndex + $openingLength] -eq [char] 96) {
+            $openingLength++
+        }
+        $searchIndex = $openingIndex + $openingLength
+        $closingIndex = -1
+        while ($searchIndex -lt $masked.Length) {
+            $candidate = $masked.IndexOf([char] 96, $searchIndex)
+            if ($candidate -lt 0) {
+                break
+            }
+            $candidateLength = 1
+            while ($candidate + $candidateLength -lt $masked.Length -and
+                $masked[$candidate + $candidateLength] -eq [char] 96) {
+                $candidateLength++
+            }
+            if ($candidateLength -eq $openingLength) {
+                $closingIndex = $candidate
+                break
+            }
+            $searchIndex = $candidate + $candidateLength
+        }
+
+        $end = if ($closingIndex -ge 0) {
+            $closingIndex + $openingLength
+        } else {
+            $lineEnd = $masked.IndexOf("`n", $openingIndex)
+            if ($lineEnd -lt 0) { $masked.Length } else { $lineEnd }
+        }
+        for ($maskIndex = $openingIndex; $maskIndex -lt $end; $maskIndex++) {
+            if ($characters[$maskIndex] -ne "`n") {
+                $characters[$maskIndex] = ' '
+            }
+        }
+        $index = $end
+    }
+
+    return (-join $characters)
+}
+
 function Get-AllowedScreenshotUrls {
     [CmdletBinding()]
     param(
@@ -823,6 +1302,7 @@ function Get-AllowedScreenshotUrls {
         return
     }
 
+    $scannableBody = Remove-IssueCodeFromMediaScan $Body
     $uuidPattern = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'
     $urlPattern = "https://github\.com/user-attachments/assets/$uuidPattern"
     $markdownPattern = '(?i)!\[[^\]\r\n]{0,512}\]\(\s*<?(?<url>__URL__)>?(?:\s+["''][^"''\r\n]{0,512}["''])?\s*\)'.Replace(
@@ -834,7 +1314,7 @@ function Get-AllowedScreenshotUrls {
 
     $candidates = [System.Collections.Generic.List[object]]::new()
     foreach ($pattern in @($markdownPattern, $htmlPattern)) {
-        foreach ($match in [regex]::Matches($Body, $pattern)) {
+        foreach ($match in [regex]::Matches($scannableBody, $pattern)) {
             $url = $match.Groups['url'].Value
             if (Test-AllowedScreenshotUrl $url) {
                 [void] $candidates.Add([pscustomobject] @{
@@ -2193,6 +2673,7 @@ function New-ReplicationIssueMarkdown {
         steps = 'Steps to reproduce'
         expected = 'Expected behavior'
         actual = 'Actual behavior'
+        workaround = 'Workaround'
         affectedPlatforms = 'Affected platforms'
         version = 'Version'
     }
@@ -2309,6 +2790,7 @@ function Invoke-GetReplicationIssueContext {
                 'steps',
                 'expected',
                 'actual',
+                'workaround',
                 'affectedPlatforms',
                 'version')) {
             $sanitizedSections[$key] = ConvertTo-SafeIssueMarkdown `
