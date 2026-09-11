@@ -1,0 +1,14 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'TestUtils.DeviceTests.Runners'">
+    <Compile Include="$(MauiReplicationWindowsClassFilterSource)"
+             Link="ReplicationWindowsDeviceTestClassFilter.cs" />
+  </ItemGroup>
+  <Target Name="_ValidateMauiReplicationWindowsClassFilterSource"
+          BeforeTargets="CoreCompile"
+          Condition="'$(MSBuildProjectName)' == 'TestUtils.DeviceTests.Runners'">
+    <Error Condition="'$(MauiReplicationWindowsClassFilterSource)' == ''"
+           Text="The trusted Windows device-test class-filter source was not supplied." />
+    <Error Condition="!Exists('$(MauiReplicationWindowsClassFilterSource)')"
+           Text="The trusted Windows device-test class-filter source does not exist." />
+  </Target>
+</Project>

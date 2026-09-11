@@ -49,6 +49,8 @@ $script:TrustedTreeKeyScriptPaths = @(
     'scripts/shared/Assert-ReplicationWindowsAppContainer.ps1',
     'scripts/shared/ReplicationWindowsAppContainerManifest.targets',
     'scripts/shared/ReplicationWindowsWinUiRegistrations.json',
+    'scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs',
+    'scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets',
     'scripts/shared/Invoke-ReplicationWindowsAppx.ps1',
     'scripts/shared/Get-ReplicationWindowsCrashDiagnostic.ps1',
     'scripts/shared/Assert-ReplicationAppleAppSandbox.ps1',
@@ -57,7 +59,8 @@ $script:TrustedTreeKeyScriptPaths = @(
     'scripts/shared/Invoke-ReplicationTestVerification.ps1',
     'scripts/shared/Record-Reproduction.ps1',
     'scripts/shared/Validate-ReplicationCandidate.ps1',
-    'scripts/templates/RunReplicationAppiumPlan.cs'
+    'scripts/templates/RunReplicationAppiumPlan.cs',
+    'skills/run-device-tests/scripts/Run-DeviceTests.ps1'
 )
 
 function Get-TrustedTreeKeyScriptPaths {

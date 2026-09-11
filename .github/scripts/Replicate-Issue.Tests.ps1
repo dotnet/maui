@@ -207,6 +207,8 @@ BeforeAll {
         'Get-ReplicationFixPanelRecord',
         'Get-ReplicationFixArmEvidence',
         'Get-ReplicationRegressionLaneCategory',
+        'Invoke-ReplicationRegressionLaneRun',
+        'Test-ReplicationFixRegression',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
         'Invoke-ReplicationFixPhase',
@@ -238,6 +240,31 @@ BeforeAll {
     foreach ($definition in $validatorAst.FindAll({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst]
         }, $true)) {
+        Invoke-Expression $definition.Extent.Text
+    }
+    $bindingPath = Join-Path $PSScriptRoot 'shared/Assert-ReplicationCertificationBinding.ps1'
+    $bindingTokens = $null
+    $bindingErrors = $null
+    $bindingAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $bindingPath,
+        [ref]$bindingTokens,
+        [ref]$bindingErrors)
+    if ($bindingErrors) {
+        throw ($bindingErrors | ForEach-Object Message) -join [Environment]::NewLine
+    }
+    foreach ($name in @(
+        'Get-ReplicationBindingFileDigest',
+        'Get-ReplicationDeviceTestFailureSignature',
+        'Get-ReplicationRegressionJson',
+        'Get-ReplicationRegressionLaneSelection',
+        'Read-ReplicationDeviceTestResultXmlStrict',
+        'Read-ReplicationRegressionRunEvidence',
+        'Assert-ReplicationRegressionEvidence'
+    )) {
+        $definition = $bindingAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $name
+        }, $true)
         Invoke-Expression $definition.Extent.Text
     }
     $script:QualityContractMaxBytes = 48KB
@@ -21868,6 +21895,181 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         $script:repairResult = $null
         $script:repairCalls = 0
         $script:panelCalls = 0
+        $script:regressionSelectionCalls = [Collections.Generic.List[object]]::new()
+        $script:regressionRunCalls = [Collections.Generic.List[object]]::new()
+        $script:fixRegressionCalls = [Collections.Generic.List[object]]::new()
+        $script:fixRegressionOutcomes = @($true)
+        $script:fixRegressionOutcomeIndex = 0
+        $script:BaseSha = ('a' * 40)
+        $script:Platform = 'android'
+        $script:IssueNumber = 12345
+
+        function Write-StrictRegressionRunFixture {
+            param(
+                [Parameter(Mandatory = $true)][string]$OutputDirectory,
+                [Parameter(Mandatory = $true)]$Selection
+            )
+
+            New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+            $xmlPath = Join-Path $OutputDirectory 'source-result-1.xml'
+            Set-Content -LiteralPath $xmlPath -Encoding utf8NoBOM -Value (
+                '<assemblies><assembly total="2" passed="2" failed="0" skipped="0" errors="0">' +
+                '<collection>' +
+                "<test name=`"Existing entry behavior`" type=`"$($Selection.TestClass)`" " +
+                'method="ExistingBehavior" result="Pass" />' +
+                "<test name=`"Second entry behavior`" type=`"$($Selection.TestClass)`" " +
+                'method="SecondBehavior" result="Pass" />' +
+                '</collection></assembly></assemblies>')
+            $completed = [DateTime]::UtcNow
+            [ordered]@{
+                schemaVersion = 1
+                completed = $true
+                runStartedUtc = $completed.AddSeconds(-1).ToString('O')
+                completedUtc = $completed.ToString('O')
+                project = [string]$Selection.Project
+                platform = [string]$Selection.Platform
+                testFilter = "Category=$($Selection.Category)"
+                includeClass = [string]$Selection.TestClass
+                total = 2
+                passed = 2
+                failed = 0
+                skipped = 0
+                errors = 0
+                records = @(
+                    [ordered]@{
+                        type = [string]$Selection.TestClass
+                        method = 'ExistingBehavior'
+                        displayName = 'Existing entry behavior'
+                        outcome = 'Pass'
+                        failureSignature = ''
+                    },
+                    [ordered]@{
+                        type = [string]$Selection.TestClass
+                        method = 'SecondBehavior'
+                        displayName = 'Second entry behavior'
+                        outcome = 'Pass'
+                        failureSignature = ''
+                    }
+                )
+                resultFiles = @([ordered]@{
+                    name = 'source-result-1.xml'
+                    sha256 = (Get-FileHash $xmlPath -Algorithm SHA256).Hash.ToLowerInvariant()
+                })
+            } | ConvertTo-Json -Depth 8 |
+                Set-Content -LiteralPath (Join-Path $OutputDirectory 'strict-test-evidence.json') `
+                    -Encoding utf8NoBOM
+        }
+
+        function Get-ReplicationRegressionLaneSelection {
+            param($TestPath, $RepositoryRoot, $BaselineSha, $Platform)
+            $selection = [pscustomobject]@{
+                SchemaVersion = 1
+                BaselineSha = [string]$BaselineSha
+                Platform = [string]$Platform
+                Project = 'Controls'
+                ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                Category = 'Entry'
+                TestClass = 'Microsoft.Maui.DeviceTests.EntryTests'
+                MetadataSourcePath = 'src/Controls/tests/DeviceTests/Elements/Entry/EntryTests.cs'
+                GeneratedTestPath = [string]$TestPath
+            }
+            $script:regressionSelectionCalls.Add([pscustomobject]@{
+                TestPath = [string]$TestPath
+                RepositoryRoot = [string]$RepositoryRoot
+                BaselineSha = [string]$BaselineSha
+                Platform = [string]$Platform
+                Selection = $selection
+            })
+            return $selection
+        }
+        function Invoke-ReplicationRegressionLaneRun {
+            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:phaseOrder.Add('baseline-regression')
+            $script:regressionRunCalls.Add([pscustomobject]@{
+                Selection = $Selection
+                OutputDirectory = [string]$OutputDirectory
+                TrustedScriptRoot = [string]$TrustedScriptRoot
+                TimeoutSeconds = [int]$TimeoutSeconds
+            })
+            Write-StrictRegressionRunFixture `
+                -OutputDirectory $OutputDirectory `
+                -Selection $Selection
+        }
+        function Test-ReplicationFixRegression {
+            param(
+                $Selection, $WinnerDiff, $ScopeFiles, $ReproductionPaths,
+                $TrustedScriptRoot, $RegressionRoot, $TimeoutSeconds
+            )
+            $script:phaseOrder.Add('fix-regression')
+            $script:fixRegressionCalls.Add([pscustomobject]@{
+                Selection = $Selection
+                WinnerDiff = [string]$WinnerDiff
+                ScopeFiles = @($ScopeFiles)
+                ReproductionPaths = @($ReproductionPaths)
+                TrustedScriptRoot = [string]$TrustedScriptRoot
+                RegressionRoot = [string]$RegressionRoot
+                TimeoutSeconds = [int]$TimeoutSeconds
+            })
+            $passed = if (
+                $script:fixRegressionOutcomeIndex -lt $script:fixRegressionOutcomes.Count
+            ) {
+                [bool]$script:fixRegressionOutcomes[$script:fixRegressionOutcomeIndex]
+            } else {
+                $true
+            }
+            $script:fixRegressionOutcomeIndex++
+            if (-not $passed) {
+                return [pscustomobject]@{
+                    Passed = $false
+                    Detail = 'Existing entry behavior changed from Pass to Fail.'
+                    EvidencePath = ''
+                }
+            }
+
+            $fixDirectory = Join-Path $RegressionRoot 'fix'
+            Write-StrictRegressionRunFixture `
+                -OutputDirectory $fixDirectory `
+                -Selection $Selection
+            [IO.File]::WriteAllText(
+                (Join-Path $script:ArtifactRoot 'fix.patch'),
+                ([string]$WinnerDiff + "`n"),
+                [Text.UTF8Encoding]::new($false))
+            $baselinePath = Join-Path $RegressionRoot 'baseline/strict-test-evidence.json'
+            $fixPath = Join-Path $fixDirectory 'strict-test-evidence.json'
+            [ordered]@{
+                schemaVersion = 1
+                baselineSha = [string]$Selection.BaselineSha
+                productPatchSha256 = Get-ReplicationBindingFileDigest `
+                    -Path (Join-Path $script:ArtifactRoot 'fix.patch')
+                platform = [string]$Selection.Platform
+                project = [string]$Selection.Project
+                projectPath = [string]$Selection.ProjectPath
+                category = [string]$Selection.Category
+                testClass = [string]$Selection.TestClass
+                generatedTestPath = [string]$Selection.GeneratedTestPath
+                baselineResult = 'regression/baseline/strict-test-evidence.json'
+                fixResult = 'regression/fix/strict-test-evidence.json'
+                baselineResultSha256 = Get-ReplicationBindingFileDigest -Path $baselinePath
+                fixResultSha256 = Get-ReplicationBindingFileDigest -Path $fixPath
+                comparison = 'pass'
+            } | ConvertTo-Json -Depth 8 |
+                Set-Content -LiteralPath (Join-Path $RegressionRoot 'regression-evidence.json') `
+                    -Encoding utf8NoBOM
+            $null = Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $script:ArtifactRoot `
+                -ExpectedBaselineSha ([string]$Selection.BaselineSha) `
+                -ExpectedPlatform ([string]$Selection.Platform) `
+                -ExpectedCategory ([string]$Selection.Category) `
+                -ExpectedProject ([string]$Selection.Project) `
+                -ExpectedProjectPath ([string]$Selection.ProjectPath) `
+                -ExpectedClass ([string]$Selection.TestClass) `
+                -ExpectedGeneratedTestPath ([string]$Selection.GeneratedTestPath)
+            return [pscustomobject]@{
+                Passed = $true
+                Detail = 'The exact trusted sibling identities did not regress.'
+                EvidencePath = 'regression/regression-evidence.json'
+            }
+        }
 
         function New-CopilotPrompt { param($Phase, $FailureSummary, $BaselineRelativePath) "prompt $Phase" }
         function Invoke-ReplicationCopilot {
@@ -21899,7 +22101,10 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
             $script:phaseOrder.Add('arms')
             $script:armCalls++
             $script:armDiffs.Add([string]$WinnerDiff)
-            Set-Content -LiteralPath $script:fixPatchPath -Value 'patch' -NoNewline
+            [IO.File]::WriteAllText(
+                $script:fixPatchPath,
+                ([string]$WinnerDiff + "`n"),
+                [Text.UTF8Encoding]::new($false))
             $script:armEvidence
         }
         function Write-ReplicationFixArmResults {
@@ -21939,7 +22144,8 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $env:REPLICATION_TEST_REPO_ROOT = $script:repoRoot
 
         $script:phaseArgs = @{
-            GeneratedFiles = @('src/Controls/tests/Issue12345.cs')
+            GeneratedFiles = @(
+                'src/Controls/tests/DeviceTests/Elements/Entry/Issue12345.Android.cs')
             BaseVerificationArguments = @('-Filter', 'Issue12345')
             FailureSummary = 'Expected 10 but was 0'
             TrustedScriptRoot = $script:trustedScriptRoot
@@ -21968,8 +22174,24 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $result.RootCause | Should -Be 'The handler drops the update.'
         $script:armResultsWritten | Should -Be 1
         $script:armCalls | Should -Be 1
-        @($script:phaseOrder) | Should -Be @('review', 'arms')
-
+        $script:regressionSelectionCalls.Count | Should -Be 1
+        $script:regressionSelectionCalls[0].TestPath |
+            Should -BeExactly 'src/Controls/tests/DeviceTests/Elements/Entry/Issue12345.Android.cs'
+        $script:regressionSelectionCalls[0].BaselineSha | Should -BeExactly ('a' * 40)
+        $script:regressionRunCalls.Count | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 1
+        $script:regressionRunCalls[0].OutputDirectory |
+            Should -BeExactly (Join-Path $script:ArtifactRoot 'regression/baseline')
+        (Join-Path $script:fixRegressionCalls[0].RegressionRoot 'fix') |
+            Should -Not -BeExactly $script:regressionRunCalls[0].OutputDirectory
+        Test-Path -LiteralPath (
+            Join-Path $script:fixRegressionCalls[0].RegressionRoot `
+                'fix/strict-test-evidence.json') | Should -BeTrue
+        $result.RegressionLane | Should -BeExactly 'Entry'
+        $result.RegressionEvidence |
+            Should -BeExactly 'regression/regression-evidence.json'
+        @($script:phaseOrder) |
+            Should -Be @('baseline-regression', 'review', 'fix-regression', 'arms')
     }
 
     It 'does not start the first candidate when elapsed work leaves no actionable tail' {
@@ -22003,10 +22225,11 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
         $script:panelCalls | Should -Be 1
-        $script:phaseOrder | Should -BeNullOrEmpty
+        @($script:phaseOrder) | Should -Be @('baseline-regression')
         $script:armCalls | Should -Be 0
 
         $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(150)
+        $script:phaseOrder.Clear()
         function Invoke-ReplicationFixPanel { $script:panelResults }
         function Invoke-ReplicationFixReview {
             $script:phaseOrder.Add('review')
@@ -22015,7 +22238,9 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         }
 
         Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
-        @($script:phaseOrder) | Should -Be @('review')
+        @($script:phaseOrder) |
+            Should -Be @('baseline-regression', 'review', 'fix-regression')
+        $script:fixRegressionCalls.Count | Should -Be 1
         $script:armCalls | Should -Be 0
         $script:armResultsWritten | Should -Be 0
     }
@@ -22045,8 +22270,13 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         $result = Invoke-ReplicationFixPhase @script:phaseArgs
 
-        @($script:phaseOrder) | Should -Be @('review', 'repair', 'arms')
+        @($script:phaseOrder) |
+            Should -Be @(
+                'baseline-regression', 'review', 'repair', 'fix-regression', 'arms')
         $script:repairCalls | Should -Be 1
+        $script:regressionRunCalls.Count | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 1
+        $script:fixRegressionCalls[0].WinnerDiff | Should -BeExactly 'repaired diff'
         $script:armCalls | Should -Be 1
         @($script:armDiffs) | Should -Be @('repaired diff')
         $result.RepairApplied | Should -BeTrue
@@ -22058,11 +22288,56 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         $result = Invoke-ReplicationFixPhase @script:phaseArgs
 
-        @($script:phaseOrder) | Should -Be @('review', 'arms')
+        @($script:phaseOrder) |
+            Should -Be @('baseline-regression', 'review', 'fix-regression', 'arms')
         $script:repairCalls | Should -Be 0
+        $script:regressionRunCalls.Count | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 1
+        $script:fixRegressionCalls[0].WinnerDiff | Should -BeExactly 'diff --git a b'
         $script:armCalls | Should -Be 1
         @($script:armDiffs) | Should -Be @('diff --git a b')
         $result.RepairApplied | Should -BeFalse
+    }
+
+    It 'uses one bounded repair for deterministic sibling regression evidence before final arms' {
+        $script:reviewResult = [pscustomobject]@{ Findings = @() }
+        $script:fixRegressionOutcomes = @($false, $true)
+        $repairedWinner = [pscustomobject]@{
+            Attempt = 1
+            Model = 'gpt-5.4'
+            Result = 'Pass'
+            Diff = 'regression repaired diff'
+            ChangedPaths = @('src/Core/src/Handlers/EntryHandler.cs')
+            Approach = 'Preserve the existing sibling behavior.'
+        }
+        $script:repairResult = [pscustomobject]@{
+            WinnerAttempt = $repairedWinner
+            Findings = @([pscustomobject]@{
+                Category = 'missing-evidence-coverage'
+                Grounding = 'runner'
+                Confidence = 'high'
+                Corroboration = 'deterministic'
+                Detail = 'Existing entry behavior changed from Pass to Fail.'
+            })
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result | Should -Not -BeNullOrEmpty
+        $result.RepairApplied | Should -BeTrue
+        $script:repairCalls | Should -Be 1
+        $script:regressionRunCalls.Count | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 2
+        @($script:fixRegressionCalls.WinnerDiff) |
+            Should -Be @('diff --git a b', 'regression repaired diff')
+        @($script:phaseOrder) | Should -Be @(
+            'baseline-regression',
+            'review',
+            'fix-regression',
+            'repair',
+            'fix-regression',
+            'arms')
+        @($script:armDiffs) | Should -Be @('regression repaired diff')
     }
 
     It 'does not spend the action reserve on a comparison' {
@@ -22088,10 +22363,11 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
                   $VerificationTimeoutSeconds, $CandidateCount, $BudgetMinutes,
                   $CandidateTimeoutMinutes, $ObservedVerificationMinutes,
                   $PostSelectionModelReserveMinutes)
-            # With the instant fake verifier the action reserve is 52 minutes.
+            # With the instant fake verifier the action reserve is 54 minutes:
+            # review, one repair, both final arms, and both possible fix-lane runs.
             # Move the fake absolute clock only after the admission checks, then
             # leave exactly that reserve before the execution deadline.
-            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(52.9)
+            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(54.9)
             $script:panelResults
         }
 
@@ -22099,6 +22375,8 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         $script:copilotPhases | Should -Not -Contain 'fix-compare'
         $result.Files | Should -Be @('a.cs')
+        @($script:phaseOrder) |
+            Should -Be @('baseline-regression', 'review', 'fix-regression', 'arms')
         $script:armCalls | Should -Be 1
     }
 
@@ -22116,6 +22394,9 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         { Invoke-ReplicationFixPhase @script:phaseArgs } |
             Should -Throw '*repair restoration failed*'
+        @($script:phaseOrder) | Should -Be @('baseline-regression', 'review')
+        $script:regressionRunCalls.Count | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 0
         $script:armCalls | Should -Be 0
         $script:armResultsWritten | Should -Be 0
     }
@@ -22506,6 +22787,57 @@ public class T { }
                 -RepositoryRoot $repositoryRoot |
                 Should -Be $expected[$relative] -Because "PR lane for $relative"
         }
+    }
+
+    It 'derives the Label class from the immutable baseline for issue 29282' {
+        $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $head = (& git -C $repositoryRoot rev-parse HEAD).Trim()
+        $selection = Get-ReplicationRegressionLaneSelection `
+            -TestPath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282.Android.cs' `
+            -RepositoryRoot $repositoryRoot `
+            -BaselineSha $head `
+            -Platform 'android'
+
+        $selection.Category | Should -Be 'Label'
+        $selection.TestClass | Should -Be 'Microsoft.Maui.DeviceTests.LabelTests'
+        $selection.MetadataSourcePath |
+            Should -Be 'src/Controls/tests/DeviceTests/Elements/Label/LabelTests.cs'
+        $platformSource = @(& git -C $repositoryRoot show (
+            "$head`:src/Controls/tests/DeviceTests/Elements/Label/LabelTests.Android.cs"))
+        ($platformSource -join "`n") | Should -Match '\bHtmlTextInitializesCorrectly\s*\('
+    }
+
+    It 'runs the immutable baseline before candidates and the selected fix before final arms' {
+        $baseline = $script:Source.IndexOf(
+            '-OutputDirectory $baselineRegressionDirectory')
+        $panel = $script:Source.IndexOf('$results = @(Invoke-ReplicationFixPanel')
+        $fix = $script:Source.IndexOf('$regressionResult = Test-ReplicationFixRegression')
+        $arms = $script:Source.IndexOf('$armEvidence = Invoke-ReplicationFixArms')
+
+        $baseline | Should -BeGreaterThan 0
+        $panel | Should -BeGreaterThan $baseline
+        $fix | Should -BeGreaterThan $panel
+        $arms | Should -BeGreaterThan $fix
+    }
+
+    It 'reserves the baseline and both possible fix runs without increasing a budget' {
+        $script:Source | Should -Match (
+            '\$actionReserveMinutes \+= \(3 \* \$regressionRunMinutes\)')
+        $script:Source | Should -Match (
+            '\$actionReserveMinutes -= \$regressionRunMinutes')
+        $script:Source | Should -Match (
+            '\$actionReserveMinutes \+= \(2 \* \$regressionRunMinutes\)')
+        $script:Source | Should -Not -Match (
+            '\$FixPanelBudgetMinutes\s*\+=')
+    }
+
+    It 'offers the deterministic finding only to the one unused repair opportunity' {
+        $script:Source | Should -Match (
+            'if \(-not \$regressionResult\.Passed -and -not \$repairApplied\)')
+        $script:Source | Should -Match (
+            "Corroboration = 'deterministic'")
+        $script:Source | Should -Match (
+            'No fix is published: deterministic sibling regression evidence failed')
     }
 }
 

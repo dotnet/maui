@@ -1399,3 +1399,118 @@ Describe 'A non-attributive oracle is refused while repairs are still possible' 
         $script:Source | Should -Match '-not \$ExpectPass -and -not \[string\]::IsNullOrWhiteSpace\(\$actualFailureMessage\)'
     }
 }
+
+Describe 'Replication sibling regression evidence' {
+    It 'uses only the trusted device runner with a class-scoped category' {
+        $script:Source | Should -Match "run-device-tests/scripts/Run-DeviceTests\.ps1"
+        $script:Source | Should -Match ([regex]::Escape("'-TestFilter', `$TestFilter"))
+        $script:Source | Should -Match ([regex]::Escape("'-IncludeClasses', `$TestClass"))
+        $script:Source | Should -Match (
+            [regex]::Escape("'-StrictTestEvidencePath', `$strictEvidencePath"))
+        $script:Source | Should -Match (
+            '\$TestFilter -cnotmatch ''\^Category=\(\?!Issue')
+    }
+
+    It 'requires one fresh run and does not permit method narrowing' {
+        $script:Source | Should -Match '\$RunCount -ne 1'
+        $script:Source | Should -Match '-not \[string\]::IsNullOrWhiteSpace\(\$TestMethod\)'
+        $script:Source | Should -Match 'Regression evidence requires a fresh output directory'
+        $script:Source | Should -Match '\$evidenceItem\.LastWriteTimeUtc -lt \$startedUtc'
+    }
+
+    It 'preserves platform isolation without claiming iOS network isolation' {
+        $script:Source | Should -Match "'-RequireWindowsAppContainer'"
+        $script:Source | Should -Match "'-RequireMacCatalystAppSandbox'"
+        $script:Source | Should -Not -Match 'RequireIosNetworkIsolation'
+    }
+
+    It 'removes credential variables around the child runner' {
+        foreach ($name in @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')) {
+            $script:Source | Should -Match ([regex]::Escape("'$name'"))
+        }
+        $script:Source | Should -Match (
+            '\[Environment\]::SetEnvironmentVariable\(\$name, \$null\)')
+        $script:Source | Should -Match (
+            '\[Environment\]::SetEnvironmentVariable\(\$name, \$savedSecrets\[\$name\]\)')
+    }
+
+    It 'sends a Windows regression run through the production strict selector contract' {
+        $trustedRoot = Join-Path $TestDrive 'trusted-regression'
+        $verifier = Join-Path $trustedRoot (
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
+        $runner = Join-Path $trustedRoot 'skills/run-device-tests/scripts/Run-DeviceTests.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $runner) -Force |
+            Out-Null
+        Set-Content -LiteralPath $verifier -Value '# trusted verifier marker' `
+            -Encoding utf8NoBOM
+        Set-Content -LiteralPath $runner -Encoding utf8NoBOM -Value @'
+param(
+    [string]$Project, [string]$Platform, [string]$RepositoryRoot,
+    [string]$Configuration, [switch]$NoRestore, [switch]$Rebuild,
+    [string]$TestFilter, [string]$IncludeClasses, [string]$OutputDirectory,
+    [string]$StrictTestEvidencePath, [timespan]$Timeout,
+    [switch]$RequireWindowsAppContainer, [string]$ReplicationTrustedRoot
+)
+New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+[ordered]@{
+    Project = $Project
+    TestFilter = $TestFilter
+    IncludeClasses = $IncludeClasses
+    IncludeMethods = ''
+    OutputDirectory = $OutputDirectory
+    StrictTestEvidencePath = $StrictTestEvidencePath
+    RequireWindowsAppContainer = [bool]$RequireWindowsAppContainer
+    ReplicationTrustedRoot = $ReplicationTrustedRoot
+} | ConvertTo-Json | Set-Content -LiteralPath (
+    Join-Path $OutputDirectory 'captured-arguments.json') -Encoding utf8NoBOM
+'{"completed":true}' | Set-Content -LiteralPath $StrictTestEvidencePath -Encoding utf8NoBOM
+exit 1
+'@
+        $output = Join-Path $TestDrive 'windows-regression-evidence'
+
+        & pwsh -NoProfile -File $scriptPath `
+            -IssueNumber 29282 `
+            -BaseSha ('a' * 40) `
+            -Platform windows `
+            -TestType DeviceTest `
+            -TestFilter 'Category=Label' `
+            -TestProject Controls `
+            -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
+            -TestClass Microsoft.Maui.DeviceTests.LabelTests `
+            -TestMethod '' `
+            -ExpectedFailureSignature sibling `
+            -VerifierPath $verifier `
+            -OutputDirectory $output `
+            -RegressionEvidence *> $null
+
+        $LASTEXITCODE | Should -Be 0
+        $captured = Get-Content -LiteralPath (
+            Join-Path $output 'captured-arguments.json') -Raw |
+            ConvertFrom-Json -AsHashtable
+        $captured.RequireWindowsAppContainer | Should -BeTrue
+        $captured.ReplicationTrustedRoot | Should -BeExactly $trustedRoot
+
+        $productionRunner = Join-Path $PSScriptRoot (
+            '../skills/run-device-tests/scripts/Run-DeviceTests.ps1')
+        $runnerErrors = $null
+        $runnerAst = [Management.Automation.Language.Parser]::ParseFile(
+            $productionRunner, [ref]$null, [ref]$runnerErrors)
+        $runnerErrors | Should -BeNullOrEmpty
+        $selectorFunction = $runnerAst.Find({
+            $args[0] -is [Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq 'Test-DeviceTestStrictRegressionSelector'
+        }, $true)
+        Invoke-Expression $selectorFunction.Extent.Text
+        $guardArguments = @{
+            Project = $captured.Project
+            TestFilter = $captured.TestFilter
+            IncludeClasses = $captured.IncludeClasses
+            IncludeMethods = $captured.IncludeMethods
+            OutputDirectory = $captured.OutputDirectory
+            StrictTestEvidencePath = $captured.StrictTestEvidencePath
+        }
+        Test-DeviceTestStrictRegressionSelector @guardArguments | Should -BeTrue
+    }
+}

@@ -5,6 +5,7 @@ BeforeAll {
     $scriptPath = Join-Path $PSScriptRoot 'Run-DeviceTests.ps1'
     $script:WindowsDeviceNoResultsMarker = 'WINDOWS_DEVICE_TEST_NO_RESULTS:'
     $script:WindowsDeviceTargetTimeoutMarker = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:'
+    $script:WindowsDeviceCleanupFailureMarker = 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:'
 
     $tokens = $null
     $parseErrors = $null
@@ -13,8 +14,31 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
+    $bindingPath = Join-Path $PSScriptRoot '../../../scripts/shared/Assert-ReplicationCertificationBinding.ps1'
+    $bindingTokens = $null
+    $bindingErrors = $null
+    $bindingAst = [System.Management.Automation.Language.Parser]::ParseFile(
+        $bindingPath,
+        [ref]$bindingTokens,
+        [ref]$bindingErrors)
+    if ($bindingErrors) {
+        throw ($bindingErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
+    }
+    foreach ($functionName in @(
+        'Get-ReplicationBindingFileDigest',
+        'Get-ReplicationDeviceTestFailureSignature',
+        'Read-ReplicationDeviceTestResultXmlStrict'
+    )) {
+        $function = $bindingAst.Find({
+            $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $args[0].Name -eq $functionName
+        }, $true)
+        Invoke-Expression $function.Extent.Text
+    }
+
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
+        'Test-DeviceTestStrictRegressionSelector',
         'Invoke-BoundedWindowsDeviceBuild',
         'Get-CategoryFiltersFromTestFilter',
         'ConvertTo-DeviceTestClassFilterValue',
@@ -36,6 +60,9 @@ BeforeAll {
         'Wait-ForPath',
         'ConvertTo-DeviceTestCount',
         'Get-DeviceTestResultSummary',
+        'Write-DeviceTestStrictEvidence',
+        'Complete-DeviceTestStrictEvidence',
+        'Copy-DeviceTestStrictResultsToDurableDirectory',
         'Invoke-WindowsDeviceTestApp'
     )) {
         $function = $ast.Find({
@@ -72,16 +99,64 @@ Describe 'Build isolation options' {
         $content | Should -Match '\$summaryClassFilter\s*=\s*\$IncludeClasses'
         $content | Should -Match '\$summaryMethodFilter\s*=\s*\$IncludeMethods'
         $content | Should -Match (
-            '(?s)-RequireClassIsolation:\(\s*-not \$RequireAppContainer -and\s*' +
+            '(?s)-RequireClassIsolation:\(\s*\(\s*-not \$RequireAppContainer -or\s*' +
+            '-not \[string\]::IsNullOrWhiteSpace\(\$StrictTestEvidencePath\)\)\s*-and\s*' +
             '-not \[string\]::IsNullOrWhiteSpace\(\$IncludeClasses\)\)')
         $content | Should -Not -Match '\$summaryClassFilter\s*=\s*if\s*\(-not\s+\$useCategoryFiltering\)'
+    }
+
+    It 'normalizes Mac Catalyst strict evidence to the replication platform name' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match ([regex]::Escape(
+            "-Platform `$(if (`$Platform -ceq 'maccatalyst') { 'catalyst' } else { `$Platform })"))
+    }
+
+    It 'admits only the immutable class-shaped strict selector used by desktop regression runs' {
+        $output = Join-Path $TestDrive 'regression'
+        $valid = @{
+            Project = 'Controls'
+            TestFilter = 'Category=Label'
+            IncludeClasses = 'Microsoft.Maui.DeviceTests.LabelTests'
+            IncludeMethods = ''
+            OutputDirectory = $output
+            StrictTestEvidencePath = (Join-Path $output 'strict-test-evidence.json')
+        }
+
+        Test-DeviceTestStrictRegressionSelector @valid | Should -BeTrue
+        foreach ($mutation in @(
+            @{ Project = 'Core' },
+            @{ IncludeMethods = 'HtmlTextInitializesCorrectly' },
+            @{ IncludeClasses = 'Microsoft.Maui.DeviceTests.Issue29282Tests' },
+            @{ IncludeClasses = (
+                'Microsoft.Maui.DeviceTests.LabelTests,' +
+                'Microsoft.Maui.DeviceTests.ButtonTests') },
+            @{ TestFilter = 'Category=Issue29282' },
+            @{ StrictTestEvidencePath = (Join-Path $TestDrive 'outside.json') }
+        )) {
+            $candidate = @{} + $valid
+            foreach ($name in $mutation.Keys) { $candidate[$name] = $mutation[$name] }
+            Test-DeviceTestStrictRegressionSelector @candidate | Should -BeFalse
+        }
+    }
+
+    It 'loads the strict XML parser only from the trusted runner tree' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match (
+            '(?s)\$trustedScriptRoot = Split-Path -Parent \(\s*' +
+            'Split-Path -Parent \(Split-Path -Parent \$PSScriptRoot\)\)')
+        $content | Should -Match (
+            "scripts/shared/Assert-ReplicationCertificationBinding\.ps1")
+        $content | Should -Match (
+            '(?s)\$strictEvidenceHelper.+?\[IO\.FileAttributes\]::ReparsePoint')
+        $content | Should -Not -Match (
+            'Join-Path \$SharedScriptsDir "Assert-ReplicationCertificationBinding\.ps1"')
     }
 
     It 'packages replication tests into the audited Controls AppContainer only' {
         $content = Get-Content $scriptPath -Raw
         $content | Should -Match '\[switch\]\$RequireWindowsAppContainer'
         $content | Should -Match (
-            "Windows replication permits only the Controls device-test package")
+            "Windows replication requires either one exact issue test or one strict sibling regression class")
         $content | Should -Match 'ReplicationWindowsControlsDeviceTestsManifest\.xml'
         $content | Should -Match '/p:WindowsPackageType=MSIX'
         $content | Should -Match '/p:PublishReadyToRun=false'
@@ -315,6 +390,117 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         } finally {
             Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
+    }
+
+    It 'applies the trusted packaged Windows class selector before execution and rejects unsafe selectors' {
+        $appDir = Join-Path $TestDrive 'windows-packaged-class-filter'
+        New-Item -ItemType Directory -Path $appDir -Force | Out-Null
+        $sourcePath = Join-Path $PSScriptRoot (
+            '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')
+        $targetsPath = Join-Path $PSScriptRoot (
+            '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets')
+        @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>
+'@ | Set-Content (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) -Encoding utf8NoBOM
+        @'
+var available = new[]
+{
+    "Microsoft.Maui.DeviceTests.LabelTests",
+    "Microsoft.Maui.DeviceTests.FormattedStringTests"
+};
+var selected = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES");
+Console.WriteLine("selected=" + string.Join(",", available.Where(value => value == selected)));
+'@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
+
+        $buildOutput = & dotnet build (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) --nologo --verbosity quiet `
+            "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
+            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
+        $app = Join-Path $appDir (
+            'bin/Debug/net8.0/TestUtils.DeviceTests.Runners.dll')
+
+        $safeOutput = @(& dotnet $app (
+                '--maui-replication-include-class=' +
+                'Microsoft.Maui.DeviceTests.LabelTests') 2>&1)
+        $LASTEXITCODE | Should -Be 0 -Because ($safeOutput -join [Environment]::NewLine)
+        $safeOutput | Should -Contain (
+            'selected=Microsoft.Maui.DeviceTests.LabelTests')
+        ($safeOutput -join [Environment]::NewLine) |
+            Should -Not -Match 'selected=.*FormattedStringTests'
+
+        $unsafeOutput = @(& dotnet $app (
+                '--maui-replication-include-class=' +
+                'Microsoft.Maui.DeviceTests.LabelTests;Microsoft.Maui.DeviceTests.FormattedStringTests') 2>&1)
+        $LASTEXITCODE | Should -Not -Be 0
+        ($unsafeOutput -join [Environment]::NewLine) |
+            Should -Match 'packaged device-test class selector is invalid'
+    }
+
+    It 'injects the trusted Windows class-filter override into the baseline graph build' {
+        $content = Get-Content $scriptPath -Raw
+        $content | Should -Match (
+            "scripts/shared/ReplicationWindowsDeviceTestClassFilter\.cs")
+        $content | Should -Match (
+            "scripts/shared/ReplicationWindowsDeviceTestClassFilter\.targets")
+        $content | Should -Match (
+            '(?s)\$windowsGraphBuildArgs = @\(.*?' +
+            'if \(\$strictRegressionSelector\)\s*\{\s*' +
+            '\$windowsGraphBuildArgs \+= \$windowsClassFilterBuildProperties\s*\}.*?' +
+            'Invoke-BoundedWindowsDeviceBuild')
+        $content | Should -Match (
+            '(?s)Start-WindowsDeviceTestProcess.*?' +
+            '-PackagedIncludeClass \$packagedIncludeClass')
+    }
+
+    It 'passes only the validated regression class to the packaged Windows process' {
+        $script:capturedPackagedArguments = $null
+        function ConvertTo-ReplicationWindowsAppArguments {
+            param([string[]]$Arguments)
+            $script:capturedPackagedArguments = @($Arguments)
+            return 'encoded arguments'
+        }
+        function Start-ReplicationWindowsAppContainerProcess {
+            param(
+                [string]$PackageName,
+                [string]$AppArguments,
+                [switch]$RequireWindow
+            )
+            return [pscustomobject]@{
+                Process = [pscustomobject]@{ Id = 42 }
+            }
+        }
+
+        $className = 'Microsoft.Maui.DeviceTests.LabelTests'
+        $null = Start-WindowsDeviceTestProcess `
+            -ArgumentList @('result.xml', '7') `
+            -IncludeClasses $className `
+            -PackagedIncludeClass $className `
+            -RequireAppContainer `
+            -PackageName 'Microsoft.Maui.Controls.DeviceTests'
+
+        $script:capturedPackagedArguments | Should -Be @(
+            'result.xml',
+            '7',
+            "--maui-replication-include-class=$className"
+        )
+        {
+            Start-WindowsDeviceTestProcess `
+                -ArgumentList @('result.xml', '7') `
+                -PackagedIncludeClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -RequireAppContainer `
+                -PackageName 'Microsoft.Maui.Controls.DeviceTests'
+        } | Should -Throw -ExpectedMessage (
+            '*packaged device-test class selector is invalid*')
     }
 
     It 'uses the built-in XHarness class include variable for Apple runs' {
@@ -1406,5 +1592,322 @@ Describe 'Get-DeviceTestResultSummary' {
                 -IncludeClasses 'Microsoft.Maui.DeviceTests.EntryHandlerTests' `
                 -IncludeMethods 'CompletedFiresOnRealEnterKeyPress;CompletedDoesNotFireOnIMECandidateEnter' } |
             Should -Throw -ExpectedMessage '*did not contain every requested method*Missing: CompletedDoesNotFireOnIMECandidateEnter*'
+    }
+
+    It 'emits exact strict identities, skip state, failure signatures, and source digests' {
+        $file = Join-Path $script:testDir 'TestResults-Strict.xml'
+        @'
+<assemblies>
+  <assembly total="3" passed="1" failed="1" skipped="1" errors="0">
+    <collection>
+      <test name="plain" type="Microsoft.Maui.DeviceTests.LabelTests" method="Plain" result="Pass" />
+      <test name="theory(value: &quot;&lt;b&gt;&quot;)" type="Microsoft.Maui.DeviceTests.LabelTests" method="Theory" result="Fail">
+        <failure exception-type="Xunit.Sdk.EqualException"><message>Expected: Html
+Actual: &lt;b&gt;Html&lt;/b&gt;</message><stack-trace>at Microsoft.Maui.DeviceTests.LabelTests.Theory() in /agent/_work/1/s/LabelTests.cs:line 42</stack-trace></failure>
+      </test>
+      <test name="known skip" type="Microsoft.Maui.DeviceTests.LabelTests" method="KnownSkip" result="Skip" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+
+        $summary.Records | Should -HaveCount 3
+        $summary.Records[1].displayName | Should -Be 'theory(value: "<b>")'
+        $summary.Records[1].failureSignature | Should -Match '^[0-9a-f]{64}$'
+        $summary.Records[2].outcome | Should -Be 'Skip'
+        $summary.ResultDigests | Should -HaveCount 1
+        $summary.ResultDigests[0].sha256 | Should -Match '^[0-9a-f]{64}$'
+    }
+
+    It 'distinguishes identical failure messages from different assertion frames' {
+        [xml]$first = @'
+<test result="Fail"><failure exception-type="Xunit.Sdk.EqualException"><message>Expected: Html</message><stack-trace>
+at Microsoft.Maui.DeviceTests.LabelTests.HtmlTextInitializesCorrectly() in /agent/a/LabelTests.Android.cs:line 42
+at Xunit.Assert.Equal() in /agent/a/Assert.cs:line 10
+</stack-trace></failure></test>
+'@
+        [xml]$second = @'
+<test result="Fail"><failure exception-type="Xunit.Sdk.EqualException"><message>Expected: Html</message><stack-trace>
+at Microsoft.Maui.DeviceTests.LabelTests.OtherAssertion() in /agent/b/LabelTests.Android.cs:line 42
+at Xunit.Assert.Equal() in /agent/b/Assert.cs:line 10
+</stack-trace></failure></test>
+'@
+
+        Get-ReplicationDeviceTestFailureSignature -Test $first.DocumentElement |
+            Should -Not -BeExactly (
+                Get-ReplicationDeviceTestFailureSignature -Test $second.DocumentElement)
+    }
+
+    It 'normalizes volatile failure paths and line numbers without losing frame identity' {
+        [xml]$first = @'
+<test result="Fail"><failure exception-type="Xunit.Sdk.EqualException"><message>Expected: Html</message><stack-trace>
+at Microsoft.Maui.DeviceTests.LabelTests.HtmlTextInitializesCorrectly() in /agent/a/LabelTests.Android.cs:line 42
+at Xunit.Assert.Equal() in /agent/a/Assert.cs:line 10
+</stack-trace></failure></test>
+'@
+        [xml]$second = @'
+<test result="Fail"><failure exception-type="Xunit.Sdk.EqualException"><message>Expected: Html</message><stack-trace>
+at Microsoft.Maui.DeviceTests.LabelTests.HtmlTextInitializesCorrectly() in D:\work\b\LabelTests.Android.cs:line 987
+at Xunit.Assert.Equal() in D:\work\b\Assert.cs:line 200
+</stack-trace></failure></test>
+'@
+
+        Get-ReplicationDeviceTestFailureSignature -Test $first.DocumentElement |
+            Should -BeExactly (
+                Get-ReplicationDeviceTestFailureSignature -Test $second.DocumentElement)
+    }
+
+    It 'fails strict evidence closed for duplicate identities' {
+        $file = Join-Path $script:testDir 'TestResults-Duplicate.xml'
+        @'
+<assemblies>
+  <assembly total="2" passed="2" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="same" type="Microsoft.Maui.DeviceTests.LabelTests" method="Theory" result="Pass" />
+      <test name="same" type="Microsoft.Maui.DeviceTests.LabelTests" method="Theory" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -RequireClassIsolation `
+                -StrictEvidence `
+                -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1)) } |
+            Should -Throw -ExpectedMessage '*duplicate test identity*'
+    }
+
+    It 'prohibits DTD processing in strict evidence XML' {
+        $file = Join-Path $script:testDir 'TestResults-Dtd.xml'
+        @'
+<!DOCTYPE assemblies [ <!ENTITY external SYSTEM "file:///etc/passwd"> ]>
+<assemblies><assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+<collection><test name="&external;" type="Microsoft.Maui.DeviceTests.LabelTests" method="Target" result="Pass" /></collection>
+</assembly></assemblies>
+'@ | Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -RequireClassIsolation `
+                -StrictEvidence `
+                -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1)) } |
+            Should -Throw
+    }
+
+    It 'rejects stale and incomplete strict evidence XML' {
+        $file = Join-Path $script:testDir 'TestResults-Stale.xml'
+        '<assemblies><assembly total="2" passed="1" failed="0" skipped="0" errors="0"><collection><test name="one" type="Microsoft.Maui.DeviceTests.LabelTests" method="One" result="Pass" /></collection></assembly></assemblies>' |
+            Set-Content $file -Encoding UTF8
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -RequireClassIsolation `
+                -StrictEvidence `
+                -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(1)) } |
+            Should -Throw -ExpectedMessage '*fresh bounded regular XML*'
+
+        { Get-DeviceTestResultSummary `
+                -ResultFiles @($file) `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -RequireClassIsolation `
+                -StrictEvidence `
+                -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1)) } |
+            Should -Throw -ExpectedMessage '*incomplete or inconsistent assembly totals*'
+    }
+
+    It 'writes a closed strict document and retains the exact source XML' {
+        $sourceDirectory = Join-Path $script:testDir 'strict-source'
+        $outputDirectory = Join-Path $script:testDir 'strict-output'
+        New-Item -ItemType Directory -Path $sourceDirectory, $outputDirectory -Force |
+            Out-Null
+        $file = Join-Path $sourceDirectory 'TestResults.xml'
+        @'
+<assemblies>
+  <assembly total="1" passed="1" failed="0" skipped="0" errors="0">
+    <collection>
+      <test name="existing label behavior" type="Microsoft.Maui.DeviceTests.LabelTests" method="ExistingBehavior" result="Pass" />
+    </collection>
+  </assembly>
+</assemblies>
+'@ | Set-Content $file -Encoding UTF8
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($file) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+        $script:OutputDirectory = $outputDirectory
+        $evidencePath = Join-Path $outputDirectory 'strict-test-evidence.json'
+
+        Write-DeviceTestStrictEvidence `
+            -Path $evidencePath `
+            -Summary $summary `
+            -RunStartedUtc ([datetime]::UtcNow.AddMinutes(-1)) `
+            -Project 'Controls' `
+            -Platform 'android' `
+            -TestFilter 'Category=Label' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests'
+
+        $evidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
+        @($evidence.PSObject.Properties.Name | Sort-Object -CaseSensitive) |
+            Should -Be @(
+                'completed', 'completedUtc', 'errors', 'failed', 'includeClass',
+                'passed', 'platform', 'project', 'records', 'resultFiles',
+                'runStartedUtc', 'schemaVersion', 'skipped', 'testFilter', 'total'
+            )
+        $retained = Join-Path $outputDirectory $evidence.resultFiles[0].name
+        (Get-FileHash -LiteralPath $retained -Algorithm SHA256).Hash.ToLowerInvariant() |
+            Should -Be $evidence.resultFiles[0].sha256
+    }
+
+    It 'removes early strict completion evidence when required cleanup fails' {
+        $outputDirectory = Join-Path $script:testDir 'cleanup-failure'
+        $sourceDirectory = Join-Path $script:testDir 'cleanup-failure-source'
+        New-Item -ItemType Directory -Path $outputDirectory, $sourceDirectory -Force |
+            Out-Null
+        $script:OutputDirectory = $outputDirectory
+        $evidencePath = Join-Path $outputDirectory 'strict-test-evidence.json'
+        $sourcePath = Join-Path $sourceDirectory 'TestResults.xml'
+        Set-Content -LiteralPath $sourcePath -Encoding utf8NoBOM -Value @'
+<assemblies><assembly total="1" passed="1" failed="0" skipped="0" errors="0"><collection>
+<test name="existing behavior" type="Microsoft.Maui.DeviceTests.LabelTests" method="ExistingBehavior" result="Pass" />
+</collection></assembly></assemblies>
+'@
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($sourcePath) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+        Set-Content -LiteralPath $evidencePath -Value '{"completed":true}' -Encoding utf8NoBOM
+        $errors = [Collections.Generic.List[string]]::new()
+        $errors.Add('package cleanup failed: access denied')
+
+        {
+            Complete-DeviceTestStrictEvidence `
+                -Path $evidencePath `
+                -Summary $summary `
+                -RunStartedUtc ([datetime]::UtcNow.AddMinutes(-1)) `
+                -Project 'Controls' `
+                -Platform 'windows' `
+                -TestFilter 'Category=Label' `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -ExecutionCompleted $true `
+                -CleanupErrors $errors
+        } | Should -Throw -ExpectedMessage '*WINDOWS_DEVICE_TEST_CLEANUP_FAILED:*'
+        Test-Path -LiteralPath $evidencePath | Should -BeFalse
+    }
+
+    It 'retains strict Windows XML after package LocalState cleanup' {
+        $outputDirectory = Join-Path $script:testDir 'durable-output'
+        $localStateDirectory = Join-Path $script:testDir 'package/LocalState'
+        New-Item -ItemType Directory `
+            -Path $outputDirectory, $localStateDirectory -Force |
+            Out-Null
+        $script:OutputDirectory = $outputDirectory
+        $sourcePath = Join-Path $localStateDirectory 'TestResults-Label.xml'
+        Set-Content -LiteralPath $sourcePath -Encoding utf8NoBOM -Value @'
+<assemblies><assembly total="1" passed="1" failed="0" skipped="0" errors="0"><collection>
+<test name="existing label behavior" type="Microsoft.Maui.DeviceTests.LabelTests" method="ExistingBehavior" result="Pass" />
+</collection></assembly></assemblies>
+'@
+        $started = [datetime]::UtcNow.AddMinutes(-1)
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($sourcePath) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc $started
+
+        $durableFiles = @(
+            Copy-DeviceTestStrictResultsToDurableDirectory `
+                -Summary $summary `
+                -OutputDirectory $outputDirectory `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.LabelTests' `
+                -ResultNotBeforeUtc $started
+        )
+        Remove-Item -LiteralPath (Split-Path -Parent $localStateDirectory) `
+            -Recurse -Force
+
+        Test-Path -LiteralPath $sourcePath | Should -BeFalse
+        $durableFiles.Count | Should -Be 1
+        Test-Path -LiteralPath $durableFiles[0] -PathType Leaf |
+            Should -BeTrue
+        $summary.ResultDigests[0].sourcePath |
+            Should -BeExactly ([IO.Path]::GetFullPath($durableFiles[0]))
+
+        $evidencePath = Join-Path $outputDirectory 'strict-test-evidence.json'
+        Complete-DeviceTestStrictEvidence `
+            -Path $evidencePath `
+            -Summary $summary `
+            -RunStartedUtc $started `
+            -Project 'Controls' `
+            -Platform 'windows' `
+            -TestFilter 'Category=Label' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -ExecutionCompleted $true `
+            -CleanupErrors ([Collections.Generic.List[string]]::new())
+
+        $evidence = Get-Content -LiteralPath $evidencePath -Raw |
+            ConvertFrom-Json
+        $retained = Join-Path $outputDirectory $evidence.resultFiles[0].name
+        $reparsed = Read-ReplicationDeviceTestResultXmlStrict `
+            -Path $retained `
+            -NotBeforeUtc $started `
+            -ExpectedClass 'Microsoft.Maui.DeviceTests.LabelTests'
+        $reparsed.Total | Should -Be 1
+        $reparsed.Records[0].type |
+            Should -BeExactly 'Microsoft.Maui.DeviceTests.LabelTests'
+    }
+
+    It 'publishes completed strict evidence after an ordinary test failure and clean teardown' {
+        $outputDirectory = Join-Path $script:testDir 'logical-failure'
+        $sourceDirectory = Join-Path $script:testDir 'logical-failure-source'
+        New-Item -ItemType Directory -Path $outputDirectory, $sourceDirectory -Force |
+            Out-Null
+        $script:OutputDirectory = $outputDirectory
+        $sourcePath = Join-Path $sourceDirectory 'TestResults.xml'
+        Set-Content -LiteralPath $sourcePath -Encoding utf8NoBOM -Value @'
+<assemblies><assembly total="1" passed="0" failed="1" skipped="0" errors="0"><collection>
+<test name="existing behavior" type="Microsoft.Maui.DeviceTests.LabelTests" method="ExistingBehavior" result="Fail">
+<failure exception-type="Xunit.Sdk.EqualException"><message>Expected one</message><stack-trace>
+at Microsoft.Maui.DeviceTests.LabelTests.ExistingBehavior() in /agent/LabelTests.cs:line 42
+</stack-trace></failure></test></collection></assembly></assemblies>
+'@
+        $summary = Get-DeviceTestResultSummary `
+            -ResultFiles @($sourcePath) `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -RequireClassIsolation `
+            -StrictEvidence `
+            -ResultNotBeforeUtc ([datetime]::UtcNow.AddMinutes(-1))
+        $evidencePath = Join-Path $outputDirectory 'strict-test-evidence.json'
+        $errors = [Collections.Generic.List[string]]::new()
+
+        Complete-DeviceTestStrictEvidence `
+            -Path $evidencePath `
+            -Summary $summary `
+            -RunStartedUtc ([datetime]::UtcNow.AddMinutes(-1)) `
+            -Project 'Controls' `
+            -Platform 'windows' `
+            -TestFilter 'Category=Label' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -ExecutionCompleted $true `
+            -CleanupErrors $errors
+
+        $evidence = Get-Content -LiteralPath $evidencePath -Raw | ConvertFrom-Json
+        $evidence.completed | Should -BeTrue
+        $evidence.failed | Should -Be 1
+        $evidence.records[0].outcome | Should -BeExactly 'Fail'
     }
 }

@@ -2050,6 +2050,8 @@ function Read-ReplicationManifest {
         'fixRepairApplied', 'fix_repair_applied',
         'fixRepairFindings', 'fix_repair_findings',
         'fixRegressionLane', 'fix_regression_lane',
+        'fixRegressionClass', 'fix_regression_class',
+        'fixRegressionEvidence', 'fix_regression_evidence',
         'fixApproach', 'fix_approach',
         'fixRejectedApproaches', 'fix_rejected_approaches',
         'fixPanel', 'fix_panel',
@@ -2540,6 +2542,17 @@ function Read-ReplicationManifest {
     } elseif (-not [string]::IsNullOrWhiteSpace($fixPatchName)) {
         throw 'Manifest names a fix patch but no fix files.'
     }
+    $fixRegressionEvidence = Get-ReplicationManifestDisclosure `
+        -Manifest $manifest `
+        -Name 'fixRegressionEvidence' `
+        -MaximumLength 128
+    if ($fixFiles.Count -gt 0) {
+        if ($fixRegressionEvidence -cne 'regression/regression-evidence.json') {
+            throw 'A fix candidate must name its trusted regression evidence.'
+        }
+    } elseif (-not [string]::IsNullOrWhiteSpace($fixRegressionEvidence)) {
+        throw 'Manifest names regression evidence but no fix files.'
+    }
 
     return [pscustomobject]@{
         IssueNumber = $manifestIssue
@@ -2567,6 +2580,8 @@ function Read-ReplicationManifest {
         FixUnchangedBehavior = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixUnchangedBehavior' -MaximumLength 600)
         FixSemanticBlastRadius = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixSemanticBlastRadius' -MaximumLength 800)
         FixRegressionLane = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionLane' -MaximumLength 120)
+        FixRegressionClass = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixRegressionClass' -MaximumLength 500)
+        FixRegressionEvidence = $fixRegressionEvidence
         FixApproach = (Get-ReplicationManifestDisclosure -Manifest $manifest -Name 'fixApproach' -MaximumLength 600)
         FixRejectedApproaches = @(Get-ReplicationManifestDisclosureList -Manifest $manifest -Name 'fixRejectedApproaches' -MaximumLength 300)
         FixPanel = @(Get-ReplicationManifestPropertyValue -Manifest $manifest -Name 'fixPanel')
@@ -5634,6 +5649,8 @@ function Assert-ReplicationTrustedBinding {
         [AllowEmptyString()][string]$TrustedTreeHash = '',
         [AllowEmptyString()][string]$TrustedPipelineSha256 = '',
         [AllowEmptyString()][string]$ReplicationBaseSha = '',
+        [AllowEmptyString()][string]$ExpectedRegressionCategory = '',
+        [AllowEmptyString()][string]$ExpectedRegressionClass = '',
         [switch]$RequireBinding
     )
 
@@ -5671,6 +5688,8 @@ function Assert-ReplicationTrustedBinding {
         -Selector $expectedSelector `
         -IssueNumber ([long]$Manifest.IssueNumber) `
         -Platform ([string]$Manifest.Platform) `
+        -ExpectedRegressionCategory $ExpectedRegressionCategory `
+        -ExpectedRegressionClass $ExpectedRegressionClass `
         -Context 'clean replication validation'
 
     # The manifest and the binding are two independent documents about the same
@@ -5843,6 +5862,7 @@ function Invoke-ReplicationCandidateValidation {
         # terms: modification-only, product paths only, and no wider than the
         # scope the manifest already committed to.
         $fixFiles = @()
+        $trustedRegressionSelection = $null
         $hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath)
         if ($hasFixPatch) {
             if (-not $hasPatch) {
@@ -5879,6 +5899,38 @@ function Invoke-ReplicationCandidateValidation {
                 -RepositoryRoot $repoPath `
                 -Paths $patchedPaths `
                 -PatchPath $FixPatchPath
+            $trustedRegressionBaselineSha = if (
+                -not [string]::IsNullOrWhiteSpace($ReplicationBaseSha)
+            ) {
+                $ReplicationBaseSha
+            } else {
+                [string]$manifest.BaseSha
+            }
+            $trustedRegressionSelection = Get-ReplicationRegressionLaneSelection `
+                -TestPath ([string]($manifest.ProposedFiles | Select-Object -First 1)) `
+                -RepositoryRoot $repoPath `
+                -BaselineSha $trustedRegressionBaselineSha `
+                -Platform ([string]$manifest.Platform)
+            if (-not $trustedRegressionSelection) {
+                throw 'The immutable baseline has no unambiguous bounded sibling regression lane.'
+            }
+            if ([string]$manifest.FixRegressionLane -cne
+                    [string]$trustedRegressionSelection.Category -or
+                [string]$manifest.FixRegressionClass -cne
+                    [string]$trustedRegressionSelection.TestClass) {
+                throw 'Manifest regression selector does not match the immutable baseline.'
+            }
+            $null = Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $(if ([string]::IsNullOrWhiteSpace($ArtifactRoot)) {
+                    $EvidenceDir
+                } else { $ArtifactRoot }) `
+                -ExpectedBaselineSha $trustedRegressionBaselineSha `
+                -ExpectedPlatform $manifest.Platform `
+                -ExpectedCategory ([string]$trustedRegressionSelection.Category) `
+                -ExpectedProject ([string]$trustedRegressionSelection.Project) `
+                -ExpectedProjectPath ([string]$trustedRegressionSelection.ProjectPath) `
+                -ExpectedClass ([string]$trustedRegressionSelection.TestClass) `
+                -ExpectedGeneratedTestPath ([string]$trustedRegressionSelection.GeneratedTestPath)
         } elseif (@($manifest.FixFiles).Count -gt 0) {
             throw 'The manifest names fix files but no fix patch was provided.'
         }
@@ -5978,6 +6030,12 @@ function Invoke-ReplicationCandidateValidation {
             -TrustedTreeHash $TrustedTreeHash `
             -TrustedPipelineSha256 $TrustedPipelineSha256 `
             -ReplicationBaseSha $ReplicationBaseSha `
+            -ExpectedRegressionCategory $(if ($trustedRegressionSelection) {
+                [string]$trustedRegressionSelection.Category
+            } else { '' }) `
+            -ExpectedRegressionClass $(if ($trustedRegressionSelection) {
+                [string]$trustedRegressionSelection.TestClass
+            } else { '' }) `
             -RequireBinding:$RequireCertificationBinding
 
         # A token, a proxy credential, or the run's own canary reaching an
@@ -6094,7 +6152,13 @@ function Invoke-ReplicationCandidateValidation {
                     Where-Object { $_ } | Select-Object -First 4)
             } else { @() }
             fixRegressionLane = if ($hasFixPatch) {
-                ConvertTo-ReplicationDisclosureText -Value $manifest.FixRegressionLane -MaximumLength 120
+                [string]$trustedRegressionSelection.Category
+            } else { '' }
+            fixRegressionClass = if ($hasFixPatch) {
+                [string]$trustedRegressionSelection.TestClass
+            } else { '' }
+            fixRegressionEvidence = if ($hasFixPatch) {
+                [string]$manifest.FixRegressionEvidence
             } else { '' }
             fixApproach = if ($hasFixPatch) {
                 ConvertTo-ReplicationDisclosureText -Value $manifest.FixApproach -MaximumLength 600

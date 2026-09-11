@@ -10420,14 +10420,29 @@ function Invoke-ReplicationFixPhase {
         [Math]::Min(
             $FixCandidateTimeoutMinutes,
             [int][Math]::Ceiling($baselineProbeMinutes * $VerificationRunCount)))
+    $regressionRunMinutes = [Math]::Max(
+        1,
+        [Math]::Min(
+            $FixCandidateTimeoutMinutes,
+            [int][Math]::Ceiling($baselineProbeMinutes)))
+    $regressionSelection = Get-ReplicationRegressionLaneSelection `
+        -TestPath $testRelativePath `
+        -RepositoryRoot $repoRoot `
+        -BaselineSha $BaseSha.ToLowerInvariant() `
+        -Platform $Platform
+    if (-not $regressionSelection) {
+        Write-Host 'No fix is attempted: the immutable baseline has no unambiguous bounded sibling regression lane.'
+        return $null
+    }
     $reviewTimeoutMinutes = [Math]::Min(20, $CopilotTimeoutMinutes)
     $postSelectionModelReserveMinutes = (
-        $reviewTimeoutMinutes + $FixCandidateTimeoutMinutes)
+        $reviewTimeoutMinutes + $FixCandidateTimeoutMinutes + (2 * $regressionRunMinutes))
     $actionReserveMinutes = Get-ReplicationFixActionReserve `
         -ReviewTimeoutMinutes $reviewTimeoutMinutes `
         -RepairTimeoutMinutes $FixCandidateTimeoutMinutes `
         -ObservedVerificationMinutes $observedVerificationMinutes `
         -VerificationTimeoutMinutes $FixCandidateTimeoutMinutes
+    $actionReserveMinutes += (3 * $regressionRunMinutes)
 
     # The baseline probe can consume a full verifier timeout after the previous
     # budget measurement. Recompute from the absolute step clock before the
@@ -10462,6 +10477,43 @@ function Invoke-ReplicationFixPhase {
             'review, repair, and final-arm envelope.')
         return $null
     }
+
+    $regressionRoot = Join-Path $ArtifactRoot 'regression'
+    $baselineRegressionDirectory = Join-Path $regressionRoot 'baseline'
+    try {
+        Invoke-ReplicationRegressionLaneRun `
+            -Selection $regressionSelection `
+            -OutputDirectory $baselineRegressionDirectory `
+            -TrustedScriptRoot $TrustedScriptRoot `
+            -TimeoutSeconds ($regressionRunMinutes * 60)
+        $null = Read-ReplicationRegressionRunEvidence `
+            -Path (Join-Path $baselineRegressionDirectory 'strict-test-evidence.json') `
+            -ExpectedPlatform $Platform `
+            -ExpectedProject ([string]$regressionSelection.Project) `
+            -ExpectedCategory ([string]$regressionSelection.Category) `
+            -ExpectedClass ([string]$regressionSelection.TestClass)
+    } catch {
+        Write-Host ('No fix is attempted: the trusted baseline sibling run was not complete. ' +
+            (ConvertTo-ReplicationSafeLog $_.Exception.Message 1000))
+        return $null
+    }
+
+    # The baseline lane consumed real device time. Recompute the available panel
+    # budget and retain both possible fix sibling runs in the post-selection
+    # reserve: the selected diff and, if needed, its sole repair.
+    $budgetMinutes = Get-ReplicationFixPanelBudget `
+        -ConfiguredBudgetMinutes $FixPanelBudgetMinutes `
+        -StepTimeoutMinutes $StepTimeoutMinutes `
+        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes `
+        -ReserveMinutes 15 `
+        -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+            -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+    $fixPanelStartedUtc = [DateTimeOffset]::UtcNow
+    $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
+        -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
+        -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+            -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+    $actionReserveMinutes -= $regressionRunMinutes
 
     $results = @(Invoke-ReplicationFixPanel `
         -ScopeFiles $scope.Files `
@@ -10503,6 +10555,7 @@ function Invoke-ReplicationFixPhase {
         -RepairTimeoutMinutes $FixCandidateTimeoutMinutes `
         -ObservedVerificationMinutes $observedVerificationMinutes `
         -VerificationTimeoutMinutes $FixCandidateTimeoutMinutes
+    $actionReserveMinutes += (2 * $regressionRunMinutes)
 
     $winnerAttempt = $passing[0]
     $rejected = @()
@@ -10596,6 +10649,55 @@ function Invoke-ReplicationFixPhase {
         $repairApplied = $true
     }
 
+    $regressionResult = Test-ReplicationFixRegression `
+        -Selection $regressionSelection `
+        -WinnerDiff $winnerAttempt.Diff `
+        -ScopeFiles $scope.Files `
+        -ReproductionPaths $GeneratedFiles `
+        -TrustedScriptRoot $TrustedScriptRoot `
+        -RegressionRoot $regressionRoot `
+        -TimeoutSeconds ($regressionRunMinutes * 60)
+    if (-not $regressionResult.Passed -and -not $repairApplied) {
+        $trustedRegressionReview = [pscustomobject]@{
+            Findings = @([pscustomobject]@{
+                Category = 'missing-evidence-coverage'
+                Grounding = 'runner'
+                Confidence = 'high'
+                Corroboration = 'deterministic'
+                Severity = 'blocking'
+                Detail = [string]$regressionResult.Detail
+            })
+        }
+        $repairPass = Invoke-ReplicationFixRepairPass `
+            -Review $trustedRegressionReview `
+            -WinnerAttempt $winnerAttempt `
+            -ScopeFiles $scope.Files `
+            -ReproductionPaths $GeneratedFiles `
+            -ProtectedPaths $protectedPaths `
+            -BaselineRelativePath $testRelativePath `
+            -TrustedScriptRoot $TrustedScriptRoot `
+            -FailureSummary $FailureSummary
+        if ($repairPass) {
+            $winnerAttempt = $repairPass.WinnerAttempt
+            $review = $null
+            $repairApplied = $true
+            $regressionResult = Test-ReplicationFixRegression `
+                -Selection $regressionSelection `
+                -WinnerDiff $winnerAttempt.Diff `
+                -ScopeFiles $scope.Files `
+                -ReproductionPaths $GeneratedFiles `
+                -TrustedScriptRoot $TrustedScriptRoot `
+                -RegressionRoot $regressionRoot `
+                -TimeoutSeconds ($regressionRunMinutes * 60)
+        }
+    }
+    if (-not $regressionResult.Passed) {
+        Write-Host ('No fix is published: deterministic sibling regression evidence failed. ' +
+            (ConvertTo-ReplicationSafeLog $regressionResult.Detail 1000))
+        Remove-Item -LiteralPath $fixPatchPath -Force -ErrorAction SilentlyContinue
+        return $null
+    }
+
     $finalArmTimeoutSeconds = [Math]::Min(
         $FixCandidateTimeoutMinutes * 60,
         $observedVerificationMinutes * 60)
@@ -10647,9 +10749,9 @@ function Invoke-ReplicationFixPhase {
         RepairApplied = $repairApplied
         RepairFindings = if ($repairPass) { @($repairPass.Findings) } else { @() }
         Panel = @(Get-ReplicationFixPanelRecord -Results $results -WinnerAttempt $winnerAttempt)
-        RegressionLane = (Get-ReplicationRegressionLaneCategory `
-            -TestPath $testRelativePath `
-            -RepositoryRoot $repoRoot)
+        RegressionLane = [string]$regressionSelection.Category
+        RegressionClass = [string]$regressionSelection.TestClass
+        RegressionEvidence = [string]$regressionResult.EvidencePath
     }
 }
 
@@ -10848,6 +10950,140 @@ function Get-ReplicationRegressionLaneCategory {
 
     if ($categories.Keys.Count -ne 1) { return '' }
     return ([string]@($categories.Keys)[0])
+}
+
+function Invoke-ReplicationRegressionLaneRun {
+    param(
+        [Parameter(Mandatory = $true)]$Selection,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+    )
+
+    $verificationScript = Join-Path $TrustedScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
+    $trustedSkillsRoot = Join-Path (Split-Path -Parent $TrustedScriptRoot) 'skills'
+    $verifierPath = Join-Path $trustedSkillsRoot (
+        'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
+    Invoke-LoggedChildProcess `
+        -ScriptPath $verificationScript `
+        -Arguments @(
+            '-IssueNumber', [string]$IssueNumber,
+            '-BaseSha', [string]$Selection.BaselineSha,
+            '-Platform', [string]$Selection.Platform,
+            '-TestType', 'DeviceTest',
+            '-TestFilter', "Category=$($Selection.Category)",
+            '-TestProject', [string]$Selection.Project,
+            '-TestProjectPath', [string]$Selection.ProjectPath,
+            '-TestClass', [string]$Selection.TestClass,
+            '-TestMethod', '',
+            '-ExpectedFailureSignature', 'regression-evidence',
+            '-VerifierPath', $verifierPath,
+            '-OutputDirectory', $OutputDirectory,
+            '-RunCount', '1',
+            '-RegressionEvidence'
+        ) `
+        -LogPath "$OutputDirectory-wrapper.log" `
+        -Description "Running trusted $($Selection.Category) sibling regression lane" `
+        -TimeoutSeconds $TimeoutSeconds
+}
+
+function Test-ReplicationFixRegression {
+    param(
+        [Parameter(Mandatory = $true)]$Selection,
+        [Parameter(Mandatory = $true)][string]$WinnerDiff,
+        [Parameter(Mandatory = $true)][string[]]$ScopeFiles,
+        [Parameter(Mandatory = $true)][string[]]$ReproductionPaths,
+        [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
+        [Parameter(Mandatory = $true)][string]$RegressionRoot,
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+    )
+
+    $patchPath = Join-Path $ArtifactRoot 'fix.patch'
+    [IO.File]::WriteAllText(
+        $patchPath, ($WinnerDiff + "`n"), [Text.UTF8Encoding]::new($false))
+    $fixDirectory = Join-Path $RegressionRoot 'fix'
+    Remove-Item -LiteralPath $fixDirectory -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path $RegressionRoot 'regression-evidence.json') `
+        -Force -ErrorAction SilentlyContinue
+
+    if (-not (Restore-ReplicationFixTree `
+                -TrustedScriptRoot $TrustedScriptRoot `
+                -ScopeFiles $ScopeFiles)) {
+        return [pscustomobject]@{ Passed = $false; Detail = 'The product baseline could not be restored.' }
+    }
+    & git apply --whitespace=nowarn -- $patchPath
+    if ($LASTEXITCODE -ne 0) {
+        return [pscustomobject]@{ Passed = $false; Detail = 'The selected product patch did not apply.' }
+    }
+
+    try {
+        $changedPaths = @(Get-ReplicationFixCandidateChanges -ExcludePaths $ReproductionPaths)
+        if ($changedPaths.Count -eq 0 -or
+            @($changedPaths | Where-Object { $ScopeFiles -cnotcontains $_ }).Count -gt 0) {
+            throw 'The selected product patch changed files outside its trusted scope.'
+        }
+        Assert-ReplicationFixSources `
+            -RepositoryRoot $repoRoot `
+            -Paths $changedPaths
+        Invoke-ReplicationRegressionLaneRun `
+            -Selection $Selection `
+            -OutputDirectory $fixDirectory `
+            -TrustedScriptRoot $TrustedScriptRoot `
+            -TimeoutSeconds $TimeoutSeconds
+    } catch {
+        return [pscustomobject]@{
+            Passed = $false
+            Detail = "The trusted sibling run was incomplete: $($_.Exception.Message)"
+        }
+    } finally {
+        Restore-ReplicationFixTree `
+            -TrustedScriptRoot $TrustedScriptRoot `
+            -ScopeFiles $ScopeFiles | Out-Null
+    }
+
+    $baselineRelative = 'regression/baseline/strict-test-evidence.json'
+    $fixRelative = 'regression/fix/strict-test-evidence.json'
+    $comparisonPath = Join-Path $RegressionRoot 'regression-evidence.json'
+    $document = [ordered]@{
+        schemaVersion = 1
+        baselineSha = [string]$Selection.BaselineSha
+        productPatchSha256 = Get-ReplicationBindingFileDigest -Path $patchPath
+        platform = [string]$Selection.Platform
+        project = [string]$Selection.Project
+        projectPath = [string]$Selection.ProjectPath
+        category = [string]$Selection.Category
+        testClass = [string]$Selection.TestClass
+        generatedTestPath = [string]$Selection.GeneratedTestPath
+        baselineResult = $baselineRelative
+        fixResult = $fixRelative
+        baselineResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $ArtifactRoot $baselineRelative)
+        fixResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $ArtifactRoot $fixRelative)
+        comparison = 'pass'
+    }
+    $document | ConvertTo-Json -Depth 8 |
+        Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+    try {
+        $null = Assert-ReplicationRegressionEvidence `
+            -ArtifactRoot $ArtifactRoot `
+            -ExpectedBaselineSha ([string]$Selection.BaselineSha) `
+            -ExpectedPlatform ([string]$Selection.Platform) `
+            -ExpectedCategory ([string]$Selection.Category) `
+            -ExpectedProject ([string]$Selection.Project) `
+            -ExpectedProjectPath ([string]$Selection.ProjectPath) `
+            -ExpectedClass ([string]$Selection.TestClass) `
+            -ExpectedGeneratedTestPath ([string]$Selection.GeneratedTestPath)
+    } catch {
+        Remove-Item -LiteralPath $comparisonPath -Force -ErrorAction SilentlyContinue
+        return [pscustomobject]@{ Passed = $false; Detail = $_.Exception.Message }
+    }
+
+    return [pscustomobject]@{
+        Passed = $true
+        Detail = "The exact $($Selection.TestClass) sibling identities did not regress."
+        EvidencePath = 'regression/regression-evidence.json'
+    }
 }
 
 function Write-ReplicationFixArmResults {
@@ -12331,6 +12567,8 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
                 } | Where-Object { $_ } | Select-Object -First 4)
             } else { @() }
             fixRegressionLane = if ($fixOutcome) { $fixOutcome.RegressionLane } else { $null }
+            fixRegressionClass = if ($fixOutcome) { $fixOutcome.RegressionClass } else { $null }
+            fixRegressionEvidence = if ($fixOutcome) { $fixOutcome.RegressionEvidence } else { $null }
             fixApproach = if ($fixOutcome) { $fixOutcome.Approach } else { $null }
             fixRejectedApproaches = if ($fixOutcome) { @($fixOutcome.RejectedApproaches) } else { @() }
             fixPanel = if ($fixOutcome) {
@@ -12390,6 +12628,12 @@ Explain in lighterTypesRejected why the previous tier could not observe it. Choo
             -Selector (Get-ReplicationBindingSelector `
                 -Selector $selectorContract `
                 -TestType $verifierTestType) `
+            -ExpectedRegressionCategory $(if ($fixOutcome) {
+                [string]$fixOutcome.RegressionLane
+            } else { '' }) `
+            -ExpectedRegressionClass $(if ($fixOutcome) {
+                [string]$fixOutcome.RegressionClass
+            } else { '' }) `
             -OutputPath $certificationBindingPath
         Write-Host "Certification binding written: $certificationBindingPath"
     }
