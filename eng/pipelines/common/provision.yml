@@ -4,6 +4,8 @@ parameters:
   skipSimulatorSetup: false
   # .NET NuGet caches
   clearCaches: true
+  # Opt-in retries for trusted provisioning that can fail on feed throttling.
+  provisioningRetryCount: 0
   # Android - JDK
   skipJdk: false
   # Android - SDK Packages
@@ -499,6 +501,7 @@ steps:
 - script: |
     dotnet tool restore --verbosity diag
   displayName: 'Restore .NET Tools'
+  retryCountOnTaskFailure: ${{ parameters.provisioningRetryCount }}
 
 ##################################################
 #              Provisioning Android              #
@@ -508,12 +511,14 @@ steps:
 - ${{ if ne(parameters.skipJdk, 'true') }}:
   - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision JDK'
+    retryCountOnTaskFailure: ${{ parameters.provisioningRetryCount }}
     condition: succeeded()
 
 # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
 - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
   - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ${{ parameters.checkoutDirectory }}/src/Provisioning/Provisioning.csproj -v:detailed
     displayName: 'Provision Android SDK - Common Packages'
+    retryCountOnTaskFailure: ${{ parameters.provisioningRetryCount }}
     condition: succeeded()
 
 # Provisioning Android - Android environment variables

@@ -190,6 +190,23 @@ Describe 'MAUI Copilot mode routing' {
         $fixture | Should -Match 'Assert\.Equal\(5d, handler\.PlatformView\.AttributedText\.GetCharacterSpacing\(\)\)'
     }
 
+    It 'retries trusted feed provisioning without changing review or verification defaults' {
+        $provision = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../eng/pipelines/common/provision.yml') -Raw
+        $provision | Should -Match 'provisioningRetryCount: 0'
+        foreach ($step in @('Restore .NET Tools', 'Provision JDK', 'Provision Android SDK - Common Packages')) {
+            $provision | Should -Match (
+                "displayName: '" + [regex]::Escape($step) +
+                "'\s+retryCountOnTaskFailure: \$\{\{ parameters\.provisioningRetryCount \}\}")
+        }
+        $script:Pipeline | Should -Match (
+            "(?s)if eq\(parameters\.Mode, 'replicate'\).*?provisioningRetryCount: 2")
+        $script:Pipeline | Should -Match (
+            "displayName: 'Provision trusted iOS workloads'\s+timeoutInMinutes: 35\s+retryCountOnTaskFailure: 2")
+        $script:Pipeline | Should -Not -Match (
+            "displayName: 'Replicate issue and author failing test'\s+retryCountOnTaskFailure")
+    }
+
     It 'uses shared iOS provisioning without an external isolation prerequisite' {
         $stage = [regex]::Match(
             $script:Pipeline,
