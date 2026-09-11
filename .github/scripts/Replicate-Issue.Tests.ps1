@@ -177,6 +177,7 @@ BeforeAll {
         'Get-ReplicationFixPanelBudget',
         'Get-ReplicationFixActionDeadlineUtc',
         'Get-ReplicationFixActionReserve',
+        'Get-ReplicationFixRegressionRunMinutes',
         'Get-ReplicationFixCandidateEligibility',
         'Invoke-ReplicationFixCandidateVerification',
         'Get-ReplicationFixCandidateModel',
@@ -19557,6 +19558,47 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
             Should -Be 110 -Because 'the native verifier remains bounded by its configured timeout'
     }
 
+    It 'gives run 15294711 twenty minutes per sibling class after its one-minute issue probe' {
+        # The trusted issue probe completed at 16:51:20 after less than one
+        # minute. It predicts three minutes for the three-run selected oracle,
+        # but cannot describe the rebuild/deploy/whole-class sibling workload.
+        Get-ReplicationFixRegressionRunMinutes `
+            -AvailableBudgetMinutes 150 `
+            -CandidateTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 3 `
+            -ReviewTimeoutMinutes 20 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 20
+    }
+
+    It 'caps distributed sibling runtime at the existing candidate timeout' {
+        Get-ReplicationFixRegressionRunMinutes `
+            -AvailableBudgetMinutes 300 `
+            -CandidateTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 3 `
+            -ReviewTimeoutMinutes 20 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 30 -Because 'the configured candidate timeout remains the sibling cap'
+    }
+
+    It 'refuses sibling execution when three complete runs do not fit the action envelope' {
+        Get-ReplicationFixRegressionRunMinutes `
+            -AvailableBudgetMinutes 91 `
+            -CandidateTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 3 `
+            -ReviewTimeoutMinutes 20 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 0
+
+        Get-ReplicationFixRegressionRunMinutes `
+            -AvailableBudgetMinutes 92 `
+            -CandidateTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 3 `
+            -ReviewTimeoutMinutes 20 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 1
+    }
+
     It 'fits the observed three-run Android verification without admitting another candidate' {
         # Build 15288659 measured a one-run baseline probe at 7.2 minutes and
         # three-run candidate verification at about 20.8 minutes. The scaled,
@@ -22098,7 +22140,9 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         function Test-ReplicationFixRegression {
             param(
                 $Selection, $WinnerDiff, $ScopeFiles, $ReproductionPaths,
-                $TrustedScriptRoot, $RegressionRoot, $TimeoutSeconds
+                $TrustedScriptRoot, $RegressionRoot, $TimeoutSeconds,
+                $ReservedAfterMinutes,
+                [DateTimeOffset]$AbsoluteDeadlineUtc = [DateTimeOffset]::MaxValue
             )
             $script:phaseOrder.Add('fix-regression')
             $script:fixRegressionCalls.Add([pscustomobject]@{
@@ -22109,6 +22153,8 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                 TrustedScriptRoot = [string]$TrustedScriptRoot
                 RegressionRoot = [string]$RegressionRoot
                 TimeoutSeconds = [int]$TimeoutSeconds
+                ReservedAfterMinutes = [int]$ReservedAfterMinutes
+                AbsoluteDeadlineUtc = [DateTimeOffset]$AbsoluteDeadlineUtc
             })
             $passed = if (
                 $script:fixRegressionOutcomeIndex -lt $script:fixRegressionOutcomes.Count
@@ -22280,6 +22326,9 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $script:regressionSelectionCalls[0].BaselineSha | Should -BeExactly ('a' * 40)
         $script:regressionRunCalls.Count | Should -Be 1
         $script:fixRegressionCalls.Count | Should -Be 1
+        $script:regressionRunCalls[0].TimeoutSeconds | Should -Be 720
+        $script:fixRegressionCalls[0].TimeoutSeconds | Should -Be 720
+        $script:fixRegressionCalls[0].ReservedAfterMinutes | Should -Be 44
         $script:regressionRunCalls[0].OutputDirectory |
             Should -BeExactly (Join-Path $script:ArtifactRoot 'regression/baseline')
         (Join-Path $script:fixRegressionCalls[0].RegressionRoot 'fix') |
@@ -22306,6 +22355,16 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $script:armCalls | Should -Be 0
     }
 
+    It 'does not start a sibling run when the remaining budget cannot fund all three lanes' {
+        $script:FixPanelBudgetMinutes = 84
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+
+        $script:regressionRunCalls | Should -BeNullOrEmpty
+        $script:panelCalls | Should -Be 0
+        $script:armCalls | Should -Be 0
+    }
+
     It 'refuses candidate admission when the job deadline is earlier than the step deadline' {
         $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(70)
 
@@ -22313,6 +22372,7 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         $script:panelCalls | Should -Be 0
         $script:phaseOrder | Should -BeNullOrEmpty
+        $script:regressionRunCalls | Should -BeNullOrEmpty
         $script:armCalls | Should -Be 0
     }
 
@@ -22339,8 +22399,8 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
 
         Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
         @($script:phaseOrder) |
-            Should -Be @('baseline-regression', 'review', 'fix-regression')
-        $script:fixRegressionCalls.Count | Should -Be 1
+            Should -Be @('baseline-regression', 'review')
+        $script:fixRegressionCalls.Count | Should -Be 0
         $script:armCalls | Should -Be 0
         $script:armResultsWritten | Should -Be 0
     }
@@ -22428,6 +22488,9 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $script:repairCalls | Should -Be 1
         $script:regressionRunCalls.Count | Should -Be 1
         $script:fixRegressionCalls.Count | Should -Be 2
+        @($script:regressionRunCalls.TimeoutSeconds) | Should -Be @(720)
+        @($script:fixRegressionCalls.TimeoutSeconds) | Should -Be @(720, 720)
+        @($script:fixRegressionCalls.ReservedAfterMinutes) | Should -Be @(44, 2)
         @($script:fixRegressionCalls.WinnerDiff) |
             Should -Be @('diff --git a b', 'regression repaired diff')
         @($script:phaseOrder) | Should -Be @(
@@ -22438,6 +22501,28 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
             'fix-regression',
             'arms')
         @($script:armDiffs) | Should -Be @('regression repaired diff')
+    }
+
+    It 'does not retry a consumed review repair after sibling regression fails' {
+        $script:reviewResult = [pscustomobject]@{
+            Findings = @([pscustomobject]@{
+                Category = 'grounded-product-defect'
+                Grounding = 'diff'
+                Confidence = 'high'
+                Corroboration = 'deterministic'
+                Detail = 'The candidate changes an existing encoded-input contract.'
+            })
+        }
+        $script:repairResult = $null
+        $script:fixRegressionOutcomes = @($false)
+
+        Invoke-ReplicationFixPhase @script:phaseArgs | Should -BeNullOrEmpty
+
+        $script:repairCalls | Should -Be 1
+        $script:fixRegressionCalls.Count | Should -Be 1
+        @($script:phaseOrder) |
+            Should -Be @('baseline-regression', 'review', 'repair', 'fix-regression')
+        $script:armCalls | Should -Be 0
     }
 
     It 'does not spend the action reserve on a comparison' {
@@ -22463,11 +22548,11 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
                   $VerificationTimeoutSeconds, $CandidateCount, $BudgetMinutes,
                   $CandidateTimeoutMinutes, $ObservedVerificationMinutes,
                   $PostSelectionModelReserveMinutes)
-            # With the instant fake verifier the action reserve is 54 minutes:
+            # With the instant fake verifier the action reserve is 76 minutes:
             # review, one repair, both final arms, and both possible fix-lane runs.
             # Move the fake absolute clock only after the admission checks, then
             # leave exactly that reserve before the execution deadline.
-            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(54.9)
+            $script:ReplicationExecutionDeadlineUtc = [DateTimeOffset]::UtcNow.AddMinutes(76.9)
             $script:panelResults
         }
 
@@ -22961,18 +23046,26 @@ public class T { }
 
     It 'reserves the baseline and both possible fix runs without increasing a budget' {
         $script:Source | Should -Match (
-            '\$actionReserveMinutes \+= \(3 \* \$regressionRunMinutes\)')
+            '\$actionReserveMinutes = \$baseActionReserveMinutes \+ \(3 \* \$regressionRunMinutes\)')
         $script:Source | Should -Match (
             '\$actionReserveMinutes -= \$regressionRunMinutes')
         $script:Source | Should -Match (
             '\$actionReserveMinutes \+= \(2 \* \$regressionRunMinutes\)')
+        ([regex]::Matches(
+                $script:Source,
+                '-TimeoutSeconds \(\$regressionRunMinutes \* 60\)')).Count |
+            Should -Be 3
+        ([regex]::Matches(
+                $script:Source,
+                '\$fixPanelStartedUtc = \[DateTimeOffset\]::UtcNow')).Count |
+            Should -Be 1 -Because 'the baseline sibling run must spend the original panel clock'
         $script:Source | Should -Not -Match (
             '\$FixPanelBudgetMinutes\s*\+=')
     }
 
     It 'offers the deterministic finding only to the one unused repair opportunity' {
         $script:Source | Should -Match (
-            'if \(-not \$regressionResult\.Passed -and -not \$repairApplied\)')
+            'if \(-not \$regressionResult\.Passed -and -not \$repairAttempted\)')
         $script:Source | Should -Match (
             "Corroboration = 'deterministic'")
         $script:Source | Should -Match (

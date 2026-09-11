@@ -6153,6 +6153,49 @@ function Get-ReplicationFixActionReserve {
         (2 * $boundedVerificationMinutes))
 }
 
+function Get-ReplicationFixRegressionRunMinutes {
+    <#
+        .SYNOPSIS
+            Divides genuine fix-phase slack among every possible sibling run.
+
+        .DESCRIPTION
+            A selected-issue probe is not a timing sample for rebuilding,
+            deploying, and executing an entire sibling class. First reserve one
+            complete candidate, review, the sole repair opportunity, and both
+            final causal arms. The remaining bounded panel/deadline budget is
+            divided equally among the immutable baseline, selected fix, and
+            possible repaired-fix sibling runs. Zero means the complete envelope
+            cannot fit and no sibling process may start.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][int]$AvailableBudgetMinutes,
+        [Parameter(Mandatory = $true)][int]$CandidateTimeoutMinutes,
+        [Parameter(Mandatory = $true)][double]$ObservedVerificationMinutes,
+        [Parameter(Mandatory = $true)][int]$ReviewTimeoutMinutes,
+        [Parameter(Mandatory = $true)][int]$VerificationTimeoutMinutes
+    )
+
+    $boundedVerificationMinutes = [Math]::Max(
+        1,
+        [Math]::Min(
+            $VerificationTimeoutMinutes,
+            [int][Math]::Ceiling($ObservedVerificationMinutes)))
+    $mandatoryMinutes = (
+        $CandidateTimeoutMinutes +
+        $boundedVerificationMinutes +
+        (Get-ReplicationFixActionReserve `
+            -ReviewTimeoutMinutes $ReviewTimeoutMinutes `
+            -RepairTimeoutMinutes $CandidateTimeoutMinutes `
+            -ObservedVerificationMinutes $boundedVerificationMinutes `
+            -VerificationTimeoutMinutes $VerificationTimeoutMinutes))
+    $siblingSlackMinutes = $AvailableBudgetMinutes - $mandatoryMinutes
+    if ($siblingSlackMinutes -lt 3) { return 0 }
+
+    return [Math]::Min(
+        $CandidateTimeoutMinutes,
+        [int][Math]::Floor($siblingSlackMinutes / 3))
+}
+
 function Get-ReplicationFixScopePathRejection {
     <#
         .SYNOPSIS
@@ -10439,11 +10482,6 @@ function Invoke-ReplicationFixPhase {
         [Math]::Min(
             $FixCandidateTimeoutMinutes,
             [int][Math]::Ceiling($baselineProbeMinutes * $VerificationRunCount)))
-    $regressionRunMinutes = [Math]::Max(
-        1,
-        [Math]::Min(
-            $FixCandidateTimeoutMinutes,
-            [int][Math]::Ceiling($baselineProbeMinutes)))
     $regressionSelection = Get-ReplicationRegressionLaneSelection `
         -TestPath $testRelativePath `
         -RepositoryRoot $repoRoot `
@@ -10454,14 +10492,11 @@ function Invoke-ReplicationFixPhase {
         return $null
     }
     $reviewTimeoutMinutes = [Math]::Min(20, $CopilotTimeoutMinutes)
-    $postSelectionModelReserveMinutes = (
-        $reviewTimeoutMinutes + $FixCandidateTimeoutMinutes + (2 * $regressionRunMinutes))
-    $actionReserveMinutes = Get-ReplicationFixActionReserve `
+    $baseActionReserveMinutes = Get-ReplicationFixActionReserve `
         -ReviewTimeoutMinutes $reviewTimeoutMinutes `
         -RepairTimeoutMinutes $FixCandidateTimeoutMinutes `
         -ObservedVerificationMinutes $observedVerificationMinutes `
         -VerificationTimeoutMinutes $FixCandidateTimeoutMinutes
-    $actionReserveMinutes += (3 * $regressionRunMinutes)
 
     # The baseline probe can consume a full verifier timeout after the previous
     # budget measurement. Recompute from the absolute step clock before the
@@ -10479,6 +10514,21 @@ function Invoke-ReplicationFixPhase {
         -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
         -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
             -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+    $regressionRunMinutes = Get-ReplicationFixRegressionRunMinutes `
+        -AvailableBudgetMinutes $budgetMinutes `
+        -CandidateTimeoutMinutes $FixCandidateTimeoutMinutes `
+        -ObservedVerificationMinutes $observedVerificationMinutes `
+        -ReviewTimeoutMinutes $reviewTimeoutMinutes `
+        -VerificationTimeoutMinutes $FixCandidateTimeoutMinutes
+    if ($regressionRunMinutes -le 0) {
+        Write-Host (
+            'No fix is attempted: the remaining bounded panel and execution budget ' +
+            'cannot contain the baseline, selected-fix, and possible repaired-fix sibling runs.')
+        return $null
+    }
+    $postSelectionModelReserveMinutes = (
+        $reviewTimeoutMinutes + $FixCandidateTimeoutMinutes + (2 * $regressionRunMinutes))
+    $actionReserveMinutes = $baseActionReserveMinutes + (3 * $regressionRunMinutes)
     $candidateCycleMinutes = (
         $FixCandidateTimeoutMinutes + $observedVerificationMinutes)
     if (-not (Test-ReplicationFixPanelCanStartCandidate `
@@ -10499,6 +10549,15 @@ function Invoke-ReplicationFixPhase {
 
     $regressionRoot = Join-Path $ArtifactRoot 'regression'
     $baselineRegressionDirectory = Join-Path $regressionRoot 'baseline'
+    $baselineRegressionRequirementMinutes = (
+        $candidateCycleMinutes +
+        $baseActionReserveMinutes +
+        (3 * $regressionRunMinutes))
+    if ([DateTimeOffset]::UtcNow.AddMinutes($baselineRegressionRequirementMinutes) -gt
+        $fixActionDeadlineUtc) {
+        Write-Host 'No fix is attempted: the deadline cannot contain the baseline sibling run and the complete candidate action envelope.'
+        return $null
+    }
     try {
         Invoke-ReplicationRegressionLaneRun `
             -Selection $regressionSelection `
@@ -10517,21 +10576,9 @@ function Invoke-ReplicationFixPhase {
         return $null
     }
 
-    # The baseline lane consumed real device time. Recompute the available panel
-    # budget and retain both possible fix sibling runs in the post-selection
-    # reserve: the selected diff and, if needed, its sole repair.
-    $budgetMinutes = Get-ReplicationFixPanelBudget `
-        -ConfiguredBudgetMinutes $FixPanelBudgetMinutes `
-        -StepTimeoutMinutes $StepTimeoutMinutes `
-        -ElapsedMinutes ([DateTimeOffset]::UtcNow - $replicationStartedUtc).TotalMinutes `
-        -ReserveMinutes 15 `
-        -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
-            -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
-    $fixPanelStartedUtc = [DateTimeOffset]::UtcNow
-    $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
-        -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
-        -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
-            -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+    # Keep the original panel start and deadline. Resetting either after this
+    # native run would turn elapsed baseline cost into newly available budget.
+    # Only the consumed baseline sibling allowance leaves the action reserve.
     $actionReserveMinutes -= $regressionRunMinutes
 
     $results = @(Invoke-ReplicationFixPanel `
@@ -10647,7 +10694,22 @@ function Invoke-ReplicationFixPhase {
         -WinnerAttempt $winnerAttempt `
         -TimeoutMinutes $reviewTimeoutMinutes
     $repairPass = $null
+    $repairAttempted = $false
     if (@(Get-ReplicationGroundedFixFindings -Review $review).Count -gt 0) {
+        $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
+            -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
+            -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+                -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+        $reviewRepairRequirementMinutes = (
+            $FixCandidateTimeoutMinutes +
+            $regressionRunMinutes +
+            (2 * $observedVerificationMinutes))
+        if ([DateTimeOffset]::UtcNow.AddMinutes($reviewRepairRequirementMinutes) -gt
+            $fixActionDeadlineUtc) {
+            Write-Host 'No fix is published: the deadline cannot contain the grounded repair, its sibling run, and both final causal arms.'
+            return $null
+        }
+        $repairAttempted = $true
         $repairPass = Invoke-ReplicationFixRepairPass `
             -Review $review `
             -WinnerAttempt $winnerAttempt `
@@ -10668,6 +10730,22 @@ function Invoke-ReplicationFixPhase {
         $repairApplied = $true
     }
 
+    $selectedRegressionRequirementMinutes = (
+        $regressionRunMinutes +
+        (2 * $observedVerificationMinutes))
+    if (-not $repairAttempted) {
+        $selectedRegressionRequirementMinutes += (
+            $FixCandidateTimeoutMinutes + $regressionRunMinutes)
+    }
+    $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
+        -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
+        -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+            -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+    if ([DateTimeOffset]::UtcNow.AddMinutes($selectedRegressionRequirementMinutes) -gt
+        $fixActionDeadlineUtc) {
+        Write-Host 'No fix is published: the deadline cannot contain the selected sibling run, possible repair sibling run, and both final causal arms.'
+        return $null
+    }
     $regressionResult = Test-ReplicationFixRegression `
         -Selection $regressionSelection `
         -WinnerDiff $winnerAttempt.Diff `
@@ -10675,8 +10753,30 @@ function Invoke-ReplicationFixPhase {
         -ReproductionPaths $GeneratedFiles `
         -TrustedScriptRoot $TrustedScriptRoot `
         -RegressionRoot $regressionRoot `
-        -TimeoutSeconds ($regressionRunMinutes * 60)
-    if (-not $regressionResult.Passed -and -not $repairApplied) {
+        -TimeoutSeconds ($regressionRunMinutes * 60) `
+        -ReservedAfterMinutes $(
+            if ($repairAttempted) {
+                2 * $observedVerificationMinutes
+            } else {
+                $FixCandidateTimeoutMinutes +
+                $regressionRunMinutes +
+                (2 * $observedVerificationMinutes)
+            }) `
+        -AbsoluteDeadlineUtc $fixActionDeadlineUtc
+    if (-not $regressionResult.Passed -and -not $repairAttempted) {
+        $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
+            -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
+            -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+                -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+        $regressionRepairRequirementMinutes = (
+            $FixCandidateTimeoutMinutes +
+            $regressionRunMinutes +
+            (2 * $observedVerificationMinutes))
+        if ([DateTimeOffset]::UtcNow.AddMinutes($regressionRepairRequirementMinutes) -gt
+            $fixActionDeadlineUtc) {
+            Write-Host 'No fix is published: the deadline cannot contain the sibling-driven repair, repaired sibling run, and both final causal arms.'
+            return $null
+        }
         $trustedRegressionReview = [pscustomobject]@{
             Findings = @([pscustomobject]@{
                 Category = 'missing-evidence-coverage'
@@ -10687,6 +10787,7 @@ function Invoke-ReplicationFixPhase {
                 Detail = [string]$regressionResult.Detail
             })
         }
+        $repairAttempted = $true
         $repairPass = Invoke-ReplicationFixRepairPass `
             -Review $trustedRegressionReview `
             -WinnerAttempt $winnerAttempt `
@@ -10700,6 +10801,17 @@ function Invoke-ReplicationFixPhase {
             $winnerAttempt = $repairPass.WinnerAttempt
             $review = $null
             $repairApplied = $true
+            $fixActionDeadlineUtc = Get-ReplicationFixActionDeadlineUtc `
+                -PanelStartedUtc $fixPanelStartedUtc -PanelBudgetMinutes $budgetMinutes `
+                -ExecutionDeadlineUtc (Get-Variable -Name ReplicationExecutionDeadlineUtc `
+                    -Scope Script -ValueOnly -ErrorAction SilentlyContinue)
+            $repairedRegressionRequirementMinutes = (
+                $regressionRunMinutes + (2 * $observedVerificationMinutes))
+            if ([DateTimeOffset]::UtcNow.AddMinutes(
+                    $repairedRegressionRequirementMinutes) -gt $fixActionDeadlineUtc) {
+                Write-Host 'No fix is published: the deadline cannot contain the repaired sibling run and both final causal arms.'
+                return $null
+            }
             $regressionResult = Test-ReplicationFixRegression `
                 -Selection $regressionSelection `
                 -WinnerDiff $winnerAttempt.Diff `
@@ -10707,7 +10819,9 @@ function Invoke-ReplicationFixPhase {
                 -ReproductionPaths $GeneratedFiles `
                 -TrustedScriptRoot $TrustedScriptRoot `
                 -RegressionRoot $regressionRoot `
-                -TimeoutSeconds ($regressionRunMinutes * 60)
+                -TimeoutSeconds ($regressionRunMinutes * 60) `
+                -ReservedAfterMinutes (2 * $observedVerificationMinutes) `
+                -AbsoluteDeadlineUtc $fixActionDeadlineUtc
         }
     }
     if (-not $regressionResult.Passed) {
@@ -11013,7 +11127,9 @@ function Test-ReplicationFixRegression {
         [Parameter(Mandatory = $true)][string[]]$ReproductionPaths,
         [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
         [Parameter(Mandatory = $true)][string]$RegressionRoot,
-        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds,
+        [int]$ReservedAfterMinutes = 0,
+        [DateTimeOffset]$AbsoluteDeadlineUtc = [DateTimeOffset]::MaxValue
     )
 
     $patchPath = Join-Path $ArtifactRoot 'fix.patch'
@@ -11043,6 +11159,10 @@ function Test-ReplicationFixRegression {
         Assert-ReplicationFixSources `
             -RepositoryRoot $repoRoot `
             -Paths $changedPaths
+        if ([DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds).AddMinutes(
+                $ReservedAfterMinutes) -gt $AbsoluteDeadlineUtc) {
+            throw 'The complete sibling run no longer fits before its reserved downstream work.'
+        }
         Invoke-ReplicationRegressionLaneRun `
             -Selection $Selection `
             -OutputDirectory $fixDirectory `
