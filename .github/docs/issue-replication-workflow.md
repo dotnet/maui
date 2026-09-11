@@ -346,6 +346,15 @@ build override passes the validated class into the packaged runner before
 execution, including when the build uses the older product baseline. It does
 not relax class isolation or broaden the AppContainer boundary.
 
+Trusted build cycles can regenerate tracked source outputs, such as
+`HybridWebView.js`. The fix phase reuses tracked verification cleanup at its
+baseline, candidate, sibling and final-arm boundaries, preserving the approved
+fix and generated test where each is still required. Model scope and protected
+source checks still precede verification; rejecting a candidate is not changed
+into acceptance by cleanup. Unexpected untracked paths remain errors, not files
+to delete. Failed scoped restoration or tracked-output cleanup prevents
+certification. No generated filename is exempted from scope validation.
+
 The evidence binds baseline, product patch, platform, project, selector and
 result-file digests. Clean validation re-derives the class/category from the
 baseline and reparses retained XML to compare every row with the JSON document;
