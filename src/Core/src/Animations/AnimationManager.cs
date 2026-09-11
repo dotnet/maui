@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Animations
 			// If this manager cannot run the animation, release any ownership callback.
 			if (_disposedValue || !Ticker.SystemEnabled)
 			{
-				animation.OnAnimationManagerDisposed();
+				animation.OnAnimationManagerDisposed(this);
 				return;
 			}
 
@@ -123,10 +123,11 @@ namespace Microsoft.Maui.Animations
 				if (disposing)
 				{
 					Animation[] animations = [.._animations];
+					_animations.Clear();
 
 					foreach (var animation in animations)
 					{
-						animation.OnAnimationManagerDisposed();
+						animation.OnAnimationManagerDisposed(this);
 					}
 
 					if (Ticker is IDisposable disposable)
