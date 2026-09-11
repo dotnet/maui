@@ -321,6 +321,16 @@ disclosed, not counted as coverage, and at least one sibling must pass in both
 runs. A deterministic regression can use the existing single repair opportunity,
 but cannot cause repeated repairs or larger execution budgets.
 
+The selected issue's one-test probe is not a timing estimate for the whole
+sibling class. Trusted code first reserves a complete candidate cycle, review,
+one repair and both final causal arms, then divides the remaining bounded
+budget among the baseline, selected-fix and possible repaired-fix sibling runs.
+Each allowance is capped by the existing candidate timeout and covers rebuild,
+deployment, execution and cleanup. Insufficient room prevents execution; the
+baseline cannot reset the original panel clock. Downstream work is rechecked
+against the earlier panel/execution deadline before each sibling run. A consumed
+repair opportunity cannot be used again, even when that repair returns no fix.
+
 Native theory display names can collide when the framework truncates complex
 arguments. Those rows remain separate in both the retained XML and JSON; no
 ordinal or guessed case ID is assigned. A duplicate group is accepted only when
