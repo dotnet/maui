@@ -947,6 +947,8 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         $caught | Should -Not -BeNullOrEmpty
         $caught.Exception.Message | Should -Match 'SIGABRT'
         $caught.Exception.Message | Should -Match 'aborted itself'
+        $caught.Exception.Message | Should -Match 'exit code alone does not establish'
+        $caught.Exception.Message | Should -Not -Match 'rather than a failed assertion'
     }
 
     It 'surfaces the failing step instead of the banner and stack frames' {
@@ -1183,10 +1185,15 @@ Describe 'A verdict rescued from the noise is classified as a verdict' {
     BeforeAll {
         $ast = [System.Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $PSScriptRoot 'Record-Reproduction.ps1'), [ref]$null, [ref]$null)
-        $fn = $ast.FindAll({ param($x)
-            $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-            $x.Name -eq 'Select-ReproductionDiagnosticLines' }, $true) | Select-Object -First 1
-        . ([scriptblock]::Create($fn.Extent.Text))
+        foreach ($name in @(
+            'Remove-ReproductionLogNoise',
+            'ConvertTo-SafeLogText',
+            'Select-ReproductionDiagnosticLines')) {
+            $fn = $ast.FindAll({ param($x)
+                $x -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $x.Name -eq $name }, $true) | Select-Object -First 1
+            . ([scriptblock]::Create($fn.Extent.Text))
+        }
 
         $replicate = [System.Management.Automation.Language.Parser]::ParseFile(
             (Join-Path (Split-Path -Parent $PSScriptRoot) 'Replicate-Issue.ps1'), [ref]$null, [ref]$null)
@@ -1219,6 +1226,50 @@ Describe 'A verdict rescued from the noise is classified as a verdict' {
         $summary = Select-ReproductionDiagnosticLines -Text $raw
 
         Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+    }
+
+    It 'keeps final verdicts ahead of long plan progress and teardown' {
+        $steps = 1..13 | ForEach-Object {
+            "STEP $_/13: Confirm the native observation after the reported runtime action."
+        }
+        $teardown = 1..30 | ForEach-Object {
+            "[8c114f7a][DevCon Factory] Releasing cached connection $_ for the device"
+        }
+        foreach ($case in @(
+            @{
+                Verdict = "REPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+                Terminated = $false
+            },
+            @{
+                Verdict = "Unhandled exception. System.InvalidOperationException: Expected element text to contain 'Observed:', actual 'Waiting'."
+                Terminated = $false
+            },
+            @{
+                Verdict = "REPLICATION_APP_TERMINATED step=13`nREPLICATION_NOT_REPRODUCED actual='NO BUG:'"
+                Terminated = $true
+            }
+        )) {
+            $raw = (@($steps) + @($case.Verdict) + @($teardown) +
+                @('Test failed with exit code 134')) -join "`n"
+            $summary = ConvertTo-SafeLogText (Select-ReproductionDiagnosticLines -Text $raw)
+
+            foreach ($line in ($case.Verdict -split "`n")) {
+                $summary | Should -Match ([regex]::Escape($line))
+            }
+            $summary.Length | Should -BeLessOrEqual 4096
+            Test-ReplicationAppTerminated -Text $summary | Should -Be $case.Terminated
+        }
+    }
+
+    It 'keeps the final attempted step without expanding the signal budget' {
+        $raw = (@(1..20 | ForEach-Object { "STEP $_/20: Inspect native state." }) +
+            @("REPLICATION_NOT_REPRODUCED actual='NO BUG:'")) -join "`n"
+        $summary = Select-ReproductionDiagnosticLines -Text $raw `
+            -MaximumSignalLines 3 -MaximumTailLines 0
+
+        @($summary -split ' \| ').Count | Should -Be 3
+        $summary | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        $summary | Should -Match 'STEP 20/20:'
     }
 
     It 'still calls a genuine termination a termination' {
