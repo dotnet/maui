@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics;
@@ -30,8 +29,6 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateTextHtml(this TextView textView, string text)
 		{
-			var htmlText = WebUtility.HtmlDecode(text);
-
 			// Track generation to prevent stale image-load callbacks from overwriting newer text
 			var generation = s_htmlGenerations.GetOrCreateValue(textView);
 			int currentGen = ++generation.Value;
@@ -45,11 +42,12 @@ namespace Microsoft.Maui.Platform
 
 				imageGetter ??= new ImageGetter(textView.Resources!, SetTextHtml);
 
+				// Let Android decode entities while parsing HTML so encoded brackets stay literal text.
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
-					textView.SetText(Html.FromHtml(htmlText, FromHtmlOptions.ModeCompact, imageGetter, null), BufferType.Spannable);
+					textView.SetText(Html.FromHtml(text, FromHtmlOptions.ModeCompact, imageGetter, null), BufferType.Spannable);
 				else
 #pragma warning disable CS0618 // Type or member is obsolete
-					textView.SetText(Html.FromHtml(htmlText, imageGetter, null), BufferType.Spannable);
+					textView.SetText(Html.FromHtml(text, imageGetter, null), BufferType.Spannable);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
