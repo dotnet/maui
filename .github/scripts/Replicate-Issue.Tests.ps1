@@ -3562,6 +3562,39 @@ InitializeComponent();
     Should -Throw "*XAML namespace 'system' is not allowed*"
     }
 
+    It 'accepts an initial TabbedPage root without post-load navigation scaffolding' {
+        $xaml = @'
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.MainPage">
+    <ContentPage Title="Initial tab">
+        <Button Text="Navigate" />
+    </ContentPage>
+</TabbedPage>
+'@
+        { Assert-GeneratedSandboxXaml -Source $xaml } | Should -Not -Throw
+        $script:Source | Should -Match 'use a TabbedPage root and matching MainPage C# base class'
+        $script:Source | Should -Match 'Do not manufacture an initial navigation hierarchy with Loaded/OnAppearing'
+    }
+
+    It 'keeps the expanded Sandbox page roots closed to unrelated hosts and namespaces' {
+        foreach ($rootName in @('Application', 'Shell', 'NavigationPage', 'ContentView')) {
+            $xaml = @"
+<$rootName xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           x:Class="Maui.Controls.Sample.MainPage" />
+"@
+            { Assert-GeneratedSandboxXaml -Source $xaml } | Should -Throw '*root*'
+        }
+        $xaml = @'
+<local:TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  xmlns:local="clr-namespace:Maui.Controls.Sample"
+                  x:Class="Maui.Controls.Sample.MainPage" />
+'@
+        { Assert-GeneratedSandboxXaml -Source $xaml } | Should -Throw '*root*'
+    }
+
     It 'uses a trusted Appium interpreter instead of agent-authored host code' {
         $script:Source | Should -Match 'appium-plan\.json'
         $script:Source | Should -Match 'RunReplicationAppiumPlan\.cs'

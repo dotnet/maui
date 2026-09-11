@@ -237,6 +237,42 @@ Describe 'MAUI Copilot mode routing' {
         }
     }
 
+    It 'pins Cake bootstrap sources after baseline checkout only in replication mode' {
+        $match = [regex]::Match(
+            $script:Pipeline,
+            '(?m)^          - pwsh: \|\r?\n(?<body>(?: {14}[^\r\n]*\r?\n)+) {12}displayName: ''Install \.NET and workloads''')
+        $match.Success | Should -BeTrue
+        $body = $match.Groups['body'].Value -replace '(?m)^ {14}', ''
+        $root = Join-Path $TestDrive 'baseline-cake-invocation'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        @'
+param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+$Arguments | ConvertTo-Json | Set-Content -LiteralPath './observed-arguments.json'
+'@ | Set-Content -LiteralPath (Join-Path $root 'build.ps1')
+
+        Push-Location $root
+        try {
+            foreach ($mode in @('replicate', 'review', 'feedback')) {
+                & ([scriptblock]::Create($body.Replace('${{ parameters.Mode }}', $mode)))
+                $observed = @(Get-Content -LiteralPath './observed-arguments.json' -Raw |
+                    ConvertFrom-Json)
+                $expected = @('--target=dotnet', '--configuration=Release', '--verbosity=diagnostic')
+                if ($mode -eq 'replicate') {
+                    $expected += '--nuget_source=https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json'
+                }
+                $observed | Should -Be $expected
+            }
+        } finally {
+            Pop-Location
+        }
+        $probeStage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
+        $probeStage | Should -Match (
+            'build\.ps1 --target=dotnet --configuration=Release --verbosity=normal ' +
+            '--nuget_source=https://pkgs\.dev\.azure\.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index\.json')
+    }
+
     It 'uses shared iOS provisioning without an external isolation prerequisite' {
         $stage = [regex]::Match(
             $script:Pipeline,

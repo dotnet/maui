@@ -14,10 +14,12 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
-Cake bootstrap tools and addins use explicit `dotnet-public` package-source
-URIs at their existing pinned versions. They do not query SDK-specific ephemeral
-feeds for unrelated tooling packages. Product/workload feeds remain unchanged;
-restore failures are not ignored, and trusted provisioning retries are bounded.
+The checked-in Cake directives pin bootstrap packages to `dotnet-public`, but
+replication switches to the product baseline before provisioning. Replication
+and the iOS harness probe therefore pass Cake's `--nuget_source` override at
+invocation time, so those baseline directives do not query SDK-specific
+ephemeral feeds for tooling. Package versions and product/workload restore feeds
+remain unchanged. Restore failures are not ignored and retries remain bounded.
 
 ## Running replication mode
 
@@ -128,6 +130,14 @@ bug caption; disclose an unsupported interaction instead.
 The trusted `doubleTap` action performs exactly two press/release cycles at the
 same located element in one bounded input sequence. It requires a locator and
 `value: null`; callers cannot supply a count, duration, or executable argument.
+
+MainPage normally has a ContentPage root. A report whose initial NavigationPage
+directly hosts a TabbedPage may instead use a TabbedPage XAML root and matching
+code-behind base class, with its initial children created before attachment.
+The existing application host remains unchanged. Do not recreate that initial
+tree with post-load navigation mutations; they introduce extra transitions
+before the reported trigger. Namespace, class-identity, source and host-write
+restrictions still apply.
 
 ## Test semantics
 
