@@ -20599,6 +20599,71 @@ Describe 'A candidate output directory is read as documentation, never as proof'
     }
 }
 
+Describe 'Trusted verification side effects are restored without erasing approved work' {
+    BeforeEach {
+        $script:cleanupRepo = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $script:cleanupRepo -Force | Out-Null
+        git -C $script:cleanupRepo init -q
+        git -C $script:cleanupRepo config user.email 'replication-tests@example.invalid'
+        git -C $script:cleanupRepo config user.name 'Replication Tests'
+        foreach ($relative in @(
+                'src/Fix.cs',
+                'tests/Issue1.cs',
+                'src/Core/src/Handlers/HybridWebView/HybridWebView.js')) {
+            $full = Join-Path $script:cleanupRepo $relative
+            New-Item -ItemType Directory -Path (Split-Path -Parent $full) -Force |
+                Out-Null
+            "baseline $relative" | Set-Content -LiteralPath $full -NoNewline
+        }
+        git -C $script:cleanupRepo add .
+        git -C $script:cleanupRepo commit -q -m baseline
+        $script:BaseSha = (git -C $script:cleanupRepo rev-parse HEAD).Trim()
+        Push-Location $script:cleanupRepo
+    }
+
+    AfterEach {
+        Pop-Location
+    }
+
+    It 'restores tracked build output while preserving the scoped fix and generated test bytes' {
+        'approved fix' | Set-Content -LiteralPath 'src/Fix.cs' -NoNewline
+        'approved test' | Set-Content -LiteralPath 'tests/Issue1.cs' -NoNewline
+        $generated = 'src/Core/src/Handlers/HybridWebView/HybridWebView.js'
+        'compiler output' | Set-Content -LiteralPath $generated -NoNewline
+
+        Restore-TrackedVerificationSideEffects `
+            -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs')
+
+        Get-Content -LiteralPath 'src/Fix.cs' -Raw | Should -BeExactly 'approved fix'
+        Get-Content -LiteralPath 'tests/Issue1.cs' -Raw | Should -BeExactly 'approved test'
+        Get-Content -LiteralPath $generated -Raw |
+            Should -BeExactly "baseline $generated"
+    }
+
+    It 'refuses an unexpected untracked path instead of deleting it' {
+        'unexpected' | Set-Content -LiteralPath 'unknown.txt' -NoNewline
+
+        {
+            Restore-TrackedVerificationSideEffects `
+                -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs')
+        } | Should -Throw '*unexpected untracked repository path*unknown.txt*'
+
+        Test-Path -LiteralPath 'unknown.txt' | Should -BeTrue
+    }
+
+    It 'surfaces a tracked cleanup failure instead of certifying the dirty tree' {
+        'compiler output' |
+            Set-Content -LiteralPath `
+                'src/Core/src/Handlers/HybridWebView/HybridWebView.js' -NoNewline
+        $script:BaseSha = '0000000000000000000000000000000000000000'
+
+        {
+            Restore-TrackedVerificationSideEffects `
+                -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs')
+        } | Should -Throw '*Failed to restore tracked verifier build side effects*'
+    }
+}
+
 Describe 'A failed fix never costs us a good reproduction' {
     BeforeEach {
         $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
@@ -20620,6 +20685,8 @@ Describe 'A failed fix never costs us a good reproduction' {
         # What the tree already carried when the panel started. Empty by
         # default, so a candidate is answerable for everything the stub reports.
         $script:gitPathsBefore = @()
+        $script:sideEffectCleanupCalls = [Collections.Generic.List[object]]::new()
+        $script:sideEffectCleanupFails = $false
 
         # Echoes the summary so the cross-pollination assertion is testing
         # what was actually passed rather than a constant.
@@ -20651,6 +20718,13 @@ Describe 'A failed fix never costs us a good reproduction' {
             param($TrustedScriptRoot, $ScopeFiles)
             $script:restoreCalls++
             return $script:restoreSucceeds
+        }
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles)
+            $script:sideEffectCleanupCalls.Add(@($PreservedFiles))
+            if ($script:sideEffectCleanupFails) {
+                throw 'tracked verification cleanup failed'
+            }
         }
         # The only thing that may call a candidate a fix. Defaults to a
         # measured failure, so a test that wants a Pass has to say so and the
@@ -21027,6 +21101,45 @@ class EntryHandler
         $results[0].Result | Should -Be 'Blocked'
         $results[0].Rejection | Should -Match 'Versions\.props'
         $results[0].Rejection | Should -Not -Match 'HybridWebView'
+    }
+
+    It 'cleans each trusted candidate build while preserving the scoped fix and generated test' {
+        $script:verificationPassed = $true
+        $scope = 'src/Core/src/Handlers/EntryHandler.cs'
+        $test = 'src/Controls/tests/Issue12345.cs'
+
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @($scope) `
+            -ReproductionPaths @($test) `
+            -CandidateCount 1
+
+        $results[0].Result | Should -Be 'Pass'
+        $script:sideEffectCleanupCalls | Should -HaveCount 1
+        @($script:sideEffectCleanupCalls[0]) | Should -Contain $scope
+        @($script:sideEffectCleanupCalls[0]) | Should -Contain $test
+    }
+
+    It 'rejects a new out-of-scope tracked edit before cleaning the rejected candidate' {
+        $scope = 'src/Core/src/Handlers/EntryHandler.cs'
+        $script:gitPaths = @($scope, 'eng/Versions.props')
+
+        $results = Invoke-ReplicationFixPanel @script:panelArgs `
+            -ScopeFiles @($scope) -CandidateCount 1
+
+        $results[0].Result | Should -Be 'Blocked'
+        $results[0].Rejection | Should -Match 'Versions\.props'
+        $script:verificationCalls | Should -HaveCount 0
+        $script:sideEffectCleanupCalls | Should -HaveCount 1
+    }
+
+    It 'surfaces candidate cleanup failure instead of retaining a passing candidate' {
+        $script:verificationPassed = $true
+        $script:sideEffectCleanupFails = $true
+
+        {
+            Invoke-ReplicationFixPanel @script:panelArgs `
+                -ScopeFiles $script:gitPaths -CandidateCount 1
+        } | Should -Throw '*tracked verification cleanup failed*'
     }
 }
 
@@ -21677,6 +21790,8 @@ Describe 'Proving the fix is what turned the reproduction green' {
         $script:appliedPathsBefore = @()
         $script:gitApplied = $false
         $script:gitApplySucceeds = $true
+        $script:sideEffectCleanupCalls = [Collections.Generic.List[object]]::new()
+        $script:sideEffectCleanupFailsOnCall = 0
         # Order matters more than count here: the scope has to be back at its
         # baseline *before* the winner is replayed onto it, which is the whole
         # of the defect this arm lost 26 passing candidates to.
@@ -21696,6 +21811,14 @@ Describe 'Proving the fix is what turned the reproduction green' {
             $script:eventOrder.Add('restore')
             if ($script:restoreFailsOnCall -eq $script:restoreCalls) { return $false }
             return $script:restoreSucceeds
+        }
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles)
+            $script:sideEffectCleanupCalls.Add(@($PreservedFiles))
+            if ($script:sideEffectCleanupFailsOnCall -eq
+                $script:sideEffectCleanupCalls.Count) {
+                throw 'tracked verification cleanup failed'
+            }
         }
         # Stubbed to a constant rather than reimplemented: what these Describes
         # measure is that the panel asks once per candidate. The rewind itself
@@ -21736,6 +21859,7 @@ Describe 'Proving the fix is what turned the reproduction green' {
             PatchPath = (Join-Path $script:armRepo 'winner.diff')
             FixOutputDirectory = $script:fixOut
             RestorationOutputDirectory = $script:restoreOut
+            ReproductionPaths = @('src/Controls/tests/Issue12345.cs')
         }
     }
 
@@ -21904,6 +22028,30 @@ Describe 'Proving the fix is what turned the reproduction green' {
         Invoke-ReplicationFixArms @script:armArgs | Should -BeNullOrEmpty
         $script:childRuns | Should -HaveCount 1
     }
+
+    It 'cleans build side effects after each arm without erasing the applied fix or test' {
+        Invoke-ReplicationFixArms @script:armArgs | Out-Null
+
+        $script:sideEffectCleanupCalls | Should -HaveCount 2
+        @($script:sideEffectCleanupCalls[0]) |
+            Should -Contain 'src/Core/src/Handlers/EntryHandler.cs'
+        @($script:sideEffectCleanupCalls[0]) |
+            Should -Contain 'src/Controls/tests/Issue12345.cs'
+        @($script:sideEffectCleanupCalls[1]) |
+            Should -Not -Contain 'src/Core/src/Handlers/EntryHandler.cs'
+        @($script:sideEffectCleanupCalls[1]) |
+            Should -Contain 'src/Controls/tests/Issue12345.cs'
+    }
+
+    It 'fails closed when final-arm build side effects cannot be restored' {
+        $script:sideEffectCleanupFailsOnCall = 1
+
+        {
+            Invoke-ReplicationFixArms @script:armArgs
+        } | Should -Throw '*tracked verification cleanup failed*'
+
+        $script:childRuns | Should -HaveCount 1
+    }
 }
 
 Describe 'Handing the arm counts to the gate' {
@@ -22042,6 +22190,9 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         $script:fixRegressionCalls = [Collections.Generic.List[object]]::new()
         $script:fixRegressionOutcomes = @($true)
         $script:fixRegressionOutcomeIndex = 0
+        $script:sideEffectCleanupCalls = [Collections.Generic.List[object]]::new()
+        $script:sideEffectCleanupFailsOnCall = 0
+        $script:fixBoundaryOrder = [Collections.Generic.List[string]]::new()
         $script:BaseSha = ('a' * 40)
         $script:Platform = 'android'
         $script:IssueNumber = 12345
@@ -22227,6 +22378,15 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         # probe's own refusal is covered where it is defined.
         $script:baselineStillRed = $true
         function Test-ReplicationFixBaselineStillRed { $script:baselineStillRed }
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles)
+            $script:fixBoundaryOrder.Add('cleanup')
+            $script:sideEffectCleanupCalls.Add(@($PreservedFiles))
+            if ($script:sideEffectCleanupFailsOnCall -eq
+                $script:sideEffectCleanupCalls.Count) {
+                throw 'tracked verification cleanup failed'
+            }
+        }
         function Set-ReplicationVerificationOutputDirectory {
             param($Arguments, $Directory) @($Arguments)
         }
@@ -22237,6 +22397,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                   $VerificationTimeoutSeconds, $CandidateCount, $BudgetMinutes,
                   $CandidateTimeoutMinutes)
             $script:panelCalls++
+            $script:fixBoundaryOrder.Add('panel')
             $script:panelResults
         }
         function Get-ReplicationFixComparisonSummary { param($Results) 'summary' }
@@ -22259,6 +22420,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         function Invoke-ReplicationFixReview {
             param($WinnerAttempt, $TimeoutMinutes)
             $script:phaseOrder.Add('review')
+            $script:fixBoundaryOrder.Add('review')
             $script:reviewResult
         }
         function Invoke-ReplicationFixRepairPass {
@@ -22266,6 +22428,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                   $ProtectedPaths, $BaselineRelativePath, $TrustedScriptRoot,
                   $FailureSummary)
             $script:phaseOrder.Add('repair')
+            $script:fixBoundaryOrder.Add('repair')
             $script:repairCalls++
             $script:repairResult
         }
@@ -22341,6 +22504,30 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
             Should -BeExactly 'regression/regression-evidence.json'
         @($script:phaseOrder) |
             Should -Be @('baseline-regression', 'review', 'fix-regression', 'arms')
+    }
+
+    It 'cleans inherited and trusted baseline and panel build side effects before repair' {
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result | Should -Not -BeNullOrEmpty
+        $script:sideEffectCleanupCalls | Should -HaveCount 4
+        foreach ($call in $script:sideEffectCleanupCalls) {
+            @($call) | Should -Be @(
+                'src/Controls/tests/DeviceTests/Elements/Entry/Issue12345.Android.cs')
+        }
+        $script:panelCalls | Should -Be 1
+    }
+
+    It 'fails closed when trusted baseline cleanup cannot restore the tree' {
+        $script:sideEffectCleanupFailsOnCall = 2
+
+        {
+            Invoke-ReplicationFixPhase @script:phaseArgs
+        } | Should -Throw '*tracked verification cleanup failed*'
+
+        $script:regressionRunCalls | Should -BeNullOrEmpty
+        $script:panelCalls | Should -Be 0
+        $script:armCalls | Should -Be 0
     }
 
     It 'does not start the first candidate when elapsed work leaves no actionable tail' {
@@ -22441,6 +22628,10 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         @($script:armDiffs) | Should -Be @('repaired diff')
         $result.RepairApplied | Should -BeTrue
         $result.Approach | Should -Match 'Preserve encoded HTML'
+        @($script:fixBoundaryOrder) |
+            Should -Be @(
+                'cleanup', 'cleanup', 'cleanup',
+                'panel', 'cleanup', 'review', 'repair')
     }
 
     It 'certifies the unchanged provisional patch exactly once when review requests no repair' {
@@ -23070,6 +23261,108 @@ public class T { }
             "Corroboration = 'deterministic'")
         $script:Source | Should -Match (
             'No fix is published: deterministic sibling regression evidence failed')
+    }
+}
+
+Describe 'A selected sibling run cannot leave trusted build output in the fix tree' {
+    BeforeEach {
+        $script:repoRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        $script:ArtifactRoot = Join-Path $script:repoRoot 'artifacts'
+        $script:regressionRoot = Join-Path $script:ArtifactRoot 'regression'
+        New-Item -ItemType Directory -Path $script:regressionRoot -Force | Out-Null
+        $script:cleanupCalls = [Collections.Generic.List[object]]::new()
+        $script:cleanupFails = $false
+        $script:restoreCalls = 0
+        $script:restoreFailsOnCall = 0
+        $script:scopePath = 'src/Core/src/Handlers/EntryHandler.cs'
+        $script:testPath = 'src/Controls/tests/Issue12345.iOS.cs'
+
+        function Restore-ReplicationFixTree {
+            param($TrustedScriptRoot, $ScopeFiles)
+            $script:restoreCalls++
+            if ($script:restoreCalls -eq $script:restoreFailsOnCall) { return $false }
+            return $true
+        }
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles)
+            $script:cleanupCalls.Add(@($PreservedFiles))
+            if ($script:cleanupFails) { throw 'selected sibling cleanup failed' }
+        }
+        function git {
+            $global:LASTEXITCODE = 0
+        }
+        function Get-ReplicationFixCandidateChanges {
+            param($ExcludePaths)
+            @($script:scopePath)
+        }
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths)
+        }
+        function Invoke-ReplicationRegressionLaneRun {
+            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+        }
+        function Get-ReplicationBindingFileDigest { 'a' * 64 }
+        function Assert-ReplicationRegressionEvidence { }
+
+        $script:selection = [pscustomobject]@{
+            BaselineSha = 'b' * 40
+            Platform = 'ios'
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+            Category = 'Label'
+            TestClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+            GeneratedTestPath = $script:testPath
+        }
+    }
+
+    It 'restores the applied patch then cleans tracked output while preserving the generated test' {
+        $result = Test-ReplicationFixRegression `
+            -Selection $script:selection `
+            -WinnerDiff 'diff --git a/x b/x' `
+            -ScopeFiles @($script:scopePath) `
+            -ReproductionPaths @($script:testPath) `
+            -TrustedScriptRoot '/trusted' `
+            -RegressionRoot $script:regressionRoot `
+            -TimeoutSeconds 60
+
+        $result.Passed | Should -BeTrue
+        $script:restoreCalls | Should -Be 2
+        $script:cleanupCalls | Should -HaveCount 1
+        @($script:cleanupCalls[0]) | Should -Be @($script:testPath)
+    }
+
+    It 'fails closed when selected sibling cleanup fails' {
+        $script:cleanupFails = $true
+
+        {
+            Test-ReplicationFixRegression `
+                -Selection $script:selection `
+                -WinnerDiff 'diff --git a/x b/x' `
+                -ScopeFiles @($script:scopePath) `
+                -ReproductionPaths @($script:testPath) `
+                -TrustedScriptRoot '/trusted' `
+                -RegressionRoot $script:regressionRoot `
+                -TimeoutSeconds 60
+        } | Should -Throw '*selected sibling cleanup failed*'
+    }
+
+    It 'does not certify or hide a failed scoped restore behind general build cleanup' {
+        $script:restoreFailsOnCall = 2
+
+        {
+            Test-ReplicationFixRegression `
+                -Selection $script:selection `
+                -WinnerDiff 'diff --git a/x b/x' `
+                -ScopeFiles @($script:scopePath) `
+                -ReproductionPaths @($script:testPath) `
+                -TrustedScriptRoot '/trusted' `
+                -RegressionRoot $script:regressionRoot `
+                -TimeoutSeconds 60
+        } | Should -Throw '*selected product patch could not be restored*'
+
+        $script:cleanupCalls | Should -HaveCount 0
+        Test-Path -LiteralPath (Join-Path $script:regressionRoot 'regression-evidence.json') |
+            Should -BeFalse
     }
 }
 

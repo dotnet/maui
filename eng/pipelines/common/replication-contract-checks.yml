@@ -455,6 +455,19 @@ steps:
         'What a certification binding records*accepts only all-pass candidates when duplicate baselines have different failure signatures'
         'What a certification binding records*does not count stable duplicate skips as executed sibling coverage'
         'Get-DeviceTestResultSummary*preserves the native Label result multiset with 53 rows and colliding MemberData names'
+        'Trusted verification side effects are restored without erasing approved work*restores tracked build output while preserving the scoped fix and generated test bytes'
+        'Trusted verification side effects are restored without erasing approved work*refuses an unexpected untracked path instead of deleting it'
+        'Trusted verification side effects are restored without erasing approved work*surfaces a tracked cleanup failure instead of certifying the dirty tree'
+        'A failed fix never costs us a good reproduction*cleans each trusted candidate build while preserving the scoped fix and generated test'
+        'A failed fix never costs us a good reproduction*rejects a new out-of-scope tracked edit before cleaning the rejected candidate'
+        'A failed fix never costs us a good reproduction*surfaces candidate cleanup failure instead of retaining a passing candidate'
+        'Proving the fix is what turned the reproduction green*cleans build side effects after each arm without erasing the applied fix or test'
+        'Proving the fix is what turned the reproduction green*fails closed when final-arm build side effects cannot be restored'
+        'Every way the fix phase can fail still ships the reproduction*cleans inherited and trusted baseline and panel build side effects before repair'
+        'Every way the fix phase can fail still ships the reproduction*fails closed when trusted baseline cleanup cannot restore the tree'
+        'A selected sibling run cannot leave trusted build output in the fix tree*restores the applied patch then cleans tracked output while preserving the generated test'
+        'A selected sibling run cannot leave trusted build output in the fix tree*fails closed when selected sibling cleanup fails'
+        'A selected sibling run cannot leave trusted build output in the fix tree*does not certify or hide a failed scoped restore behind general build cleanup'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
