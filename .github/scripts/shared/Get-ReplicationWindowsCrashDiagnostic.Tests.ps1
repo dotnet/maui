@@ -177,6 +177,38 @@ BeforeAll {
         $global:LASTEXITCODE = $script:StubDotnetExitCode
         return 'runner output'
     }
+
+    function New-ControlledExitProcess {
+        param([int]$ExitCode = 23)
+
+        $current = [Diagnostics.Process]::GetCurrentProcess()
+        try {
+            $hostPath = $current.Path
+        } finally {
+            $current.Dispose()
+        }
+        $startInfo = [Diagnostics.ProcessStartInfo]::new()
+        $startInfo.FileName = $hostPath
+        foreach ($argument in @(
+                '-NoLogo',
+                '-NoProfile',
+                '-NonInteractive',
+                '-Command',
+                "[Console]::In.ReadLine() | Out-Null; exit $ExitCode"
+            )) {
+            $startInfo.ArgumentList.Add($argument)
+        }
+        $startInfo.UseShellExecute = $false
+        $startInfo.RedirectStandardInput = $true
+        $process = [Diagnostics.Process]::new()
+        $process.StartInfo = $startInfo
+        if (-not $process.Start()) {
+            $process.Dispose()
+            throw 'Controlled child process did not start.'
+        }
+        $null = $process.Handle
+        return $process
+    }
 }
 
 Describe 'Replication Windows crash diagnostic XML selection' {
@@ -627,6 +659,13 @@ Describe 'BuildAndRunSandbox Windows crash diagnostic wiring' {
         }
     }
 
+    BeforeEach {
+        $script:DiagnosticLines = @()
+        Mock Write-Host {
+            $script:DiagnosticLines += [string]$Object
+        }
+    }
+
     It 'captures the validated live process identity before the Appium runner' {
         $captureIndex = $script:BuildAndRunSandboxSource.IndexOf(
             'Get-ReplicationWindowsCrashDiagnosticTarget')
@@ -650,29 +689,49 @@ Describe 'BuildAndRunSandbox Windows crash diagnostic wiring' {
     It 'preserves a nonzero production runner result when diagnostics throw' {
         $script:StubDotnetThrows = $false
         $script:StubDotnetExitCode = 37
+        $watchedProcess = New-ControlledExitProcess -ExitCode 23
+        $target = Get-ReplicationWindowsCrashDiagnosticTarget `
+            -Process $watchedProcess `
+            -ExpectedPackageFullName $script:FixturePackage
+        $watchedHandle = $watchedProcess.SafeHandle
         Mock Invoke-ReplicationWindowsCrashDiagnostic {
             throw 'diagnostic should not replace exit code'
         }
 
         $result = Invoke-ReplicationWindowsRunnerWithCrashDiagnostic `
             -Runner {
+                $watchedProcess.StandardInput.WriteLine('exit')
+                $watchedProcess.StandardInput.Close()
+                $watchedProcess.WaitForExit(2000) | Should -BeTrue
                 $output = @("" | & dotnet 'run' '--file' 'stub.cs' 2>&1)
                 [pscustomobject]@{
                     Output = $output
                     ExitCode = $LASTEXITCODE
                 }
             } `
-            -Target (New-DiagnosticTarget) `
-            -KnownProcessId $script:FixtureProcessId
+            -Target $target `
+            -WatchedProcess $watchedProcess `
+            -KnownProcessId $watchedProcess.Id
 
         $result.ExitCode | Should -BeExactly 37
         $result.Output | Should -Contain 'runner output'
         Should -Invoke Invoke-ReplicationWindowsCrashDiagnostic -Exactly 1
+        $script:DiagnosticLines -join "`n" |
+            Should -Match (
+                'status=unavailable reason=diagnostic-fault .*' +
+                'processState=exited processReason=exit-code-observed ' +
+                'processExitCode=0x00000017')
+        $watchedHandle.IsClosed | Should -BeTrue
     }
 
     It 'preserves the original production runner exception when diagnostics throw' {
         $script:StubDotnetThrows = $true
         $script:StubDotnetExitCode = 0
+        $watchedProcess = New-ControlledExitProcess -ExitCode 23
+        $target = Get-ReplicationWindowsCrashDiagnosticTarget `
+            -Process $watchedProcess `
+            -ExpectedPackageFullName $script:FixturePackage
+        $watchedHandle = $watchedProcess.SafeHandle
         Mock Invoke-ReplicationWindowsCrashDiagnostic {
             throw 'diagnostic replacement'
         }
@@ -680,14 +739,18 @@ Describe 'BuildAndRunSandbox Windows crash diagnostic wiring' {
         $caught = try {
             Invoke-ReplicationWindowsRunnerWithCrashDiagnostic `
                 -Runner {
+                    $watchedProcess.StandardInput.WriteLine('exit')
+                    $watchedProcess.StandardInput.Close()
+                    $watchedProcess.WaitForExit(2000) | Should -BeTrue
                     $output = @("" | & dotnet 'run' '--file' 'stub.cs' 2>&1)
                     [pscustomobject]@{
                         Output = $output
                         ExitCode = $LASTEXITCODE
                     }
                 } `
-                -Target (New-DiagnosticTarget) `
-                -KnownProcessId $script:FixtureProcessId
+                -Target $target `
+                -WatchedProcess $watchedProcess `
+                -KnownProcessId $watchedProcess.Id
             $null
         } catch {
             $_
@@ -696,6 +759,95 @@ Describe 'BuildAndRunSandbox Windows crash diagnostic wiring' {
         $caught.Exception.Message |
             Should -BeExactly 'original runner failure'
         Should -Invoke Invoke-ReplicationWindowsCrashDiagnostic -Exactly 1
+        $script:DiagnosticLines -join "`n" |
+            Should -Match (
+                'status=unavailable reason=diagnostic-fault .*' +
+                'processState=exited processReason=exit-code-observed ' +
+                'processExitCode=0x00000017')
+        $watchedHandle.IsClosed | Should -BeTrue
+    }
+
+    It 'observes a still-running validated process without killing it' {
+        $watchedProcess = New-ControlledExitProcess
+        try {
+            $target = Get-ReplicationWindowsCrashDiagnosticTarget `
+                -Process $watchedProcess `
+                -ExpectedPackageFullName $script:FixturePackage
+
+            $observation = Get-ReplicationWindowsProcessExitObservation `
+                -Process $watchedProcess `
+                -Target $target
+
+            $observation.State | Should -BeExactly 'running'
+            $observation.Reason | Should -BeExactly 'still-running'
+            $watchedProcess.HasExited | Should -BeFalse
+        } finally {
+            if (-not $watchedProcess.HasExited) {
+                $watchedProcess.StandardInput.WriteLine('exit')
+                $watchedProcess.StandardInput.Close()
+                $watchedProcess.WaitForExit(2000) | Should -BeTrue
+            }
+            $watchedProcess.Dispose()
+        }
+    }
+
+    It 'reports mismatched process identity as unavailable' {
+        $watchedProcess = New-ControlledExitProcess
+        try {
+            $target = Get-ReplicationWindowsCrashDiagnosticTarget `
+                -Process $watchedProcess `
+                -ExpectedPackageFullName $script:FixturePackage
+            $target.ProcessStartUtc = $target.ProcessStartUtc.AddTicks(1)
+
+            $observation = Get-ReplicationWindowsProcessExitObservation `
+                -Process $watchedProcess `
+                -Target $target
+
+            $observation.State | Should -BeExactly 'unavailable'
+            $observation.Reason | Should -BeExactly 'identity-mismatch'
+        } finally {
+            $watchedProcess.StandardInput.WriteLine('exit')
+            $watchedProcess.StandardInput.Close()
+            $watchedProcess.WaitForExit(2000) | Should -BeTrue
+            $watchedProcess.Dispose()
+        }
+    }
+
+    It 'reports disposed process metadata as unavailable' {
+        $watchedProcess = New-ControlledExitProcess
+        $target = Get-ReplicationWindowsCrashDiagnosticTarget `
+            -Process $watchedProcess `
+            -ExpectedPackageFullName $script:FixturePackage
+        $watchedProcess.Dispose()
+
+        $observation = Get-ReplicationWindowsProcessExitObservation `
+            -Process $watchedProcess `
+            -Target $target
+
+        $observation.State | Should -BeExactly 'unavailable'
+        $observation.Reason |
+            Should -BeExactly 'process-metadata-unavailable'
+    }
+
+    It 'formats a negative signed exit code only as fixed-width hexadecimal' {
+        $diagnostic = ConvertTo-ReplicationWindowsCrashDiagnosticResult `
+            -Status 'no-event' `
+            -Reason 'not-found' `
+            -KnownProcessId $script:FixtureProcessId
+        $observation = [pscustomobject]@{
+            State = 'exited'
+            Reason = 'exit-code-observed'
+            ExitCode = [int]-1073741819
+        }
+
+        $line = Format-ReplicationWindowsCrashDiagnostic `
+            -Diagnostic $diagnostic `
+            -ProcessObservation $observation
+
+        $line | Should -Match 'processExitCode=0xc0000005'
+        $line | Should -Not -Match '-1073741819|processExitCode=134'
+        [Text.Encoding]::UTF8.GetByteCount($line) |
+            Should -BeLessOrEqual 1024
     }
 
     It 'wires the executable production seam into isolated Windows only' {
@@ -704,6 +856,8 @@ Describe 'BuildAndRunSandbox Windows crash diagnostic wiring' {
                 'Invoke-ReplicationWindowsRunnerWithCrashDiagnostic')
         $script:BuildAndRunSandboxSource |
             Should -Match 'target-capture-failed'
+        $script:BuildAndRunSandboxSource |
+            Should -Match '-WatchedProcess \$windowsCrashDiagnosticProcess'
         $script:BuildAndRunSandboxSource |
             Should -Match 'Write-Error "Failed to run Appium test: \$_"'
         $script:BuildAndRunSandboxSource |

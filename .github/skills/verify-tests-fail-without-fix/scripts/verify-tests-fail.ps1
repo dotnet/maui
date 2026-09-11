@@ -774,7 +774,7 @@ function Invoke-TestRun {
                 $deviceParams.DeviceUdid = $script:BootedDeviceUdid
             }
 
-            $scriptOutput = Invoke-WithoutGhTokens { & $deviceTestScript @deviceParams 2>&1 }
+            $scriptOutput = Invoke-WithoutGhTokens { & $deviceTestScript @deviceParams *>&1 }
             $scriptOutput | Out-File -FilePath $LogFile -Force -Encoding utf8
             return $LogFile
         }
@@ -1677,6 +1677,18 @@ function Get-TestResultFromOutput {
     }
 
     $content = Get-Content $LogFile -Raw
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        return @{
+            Passed = $false
+            EnvError = $true
+            Error = "Test output log is empty; no execution result was produced: $LogFile"
+            Total = 0
+            PassCount = 0
+            FailCount = 0
+            Failed = 0
+            Skipped = 0
+        }
+    }
 
     # Does this run contain a NATIVE shared-library load failure (e.g. libSkiaSharp /
     # libHarfBuzzSharp DllNotFoundException) because the GATE AGENT lacks the native runtime?
@@ -1692,6 +1704,7 @@ function Get-TestResultFromOutput {
                                 $content -match '(?is)DllNotFoundException.{0,120}Unable to load')
 
     $envErrorPatterns = @(
+        @{ Pattern = "(?i)xharness (?:local dotnet tool help )?probe failed with exit"; Message = "XHarness command preflight failed before test execution"; SetupFailure = $true }
         @{ Pattern = "error ADB0010.*InstallFailedException"; Message = "App install failed (ADB broken pipe)" }
         @{ Pattern = "XHarness exit code:\s*83"; Message = "App failed to launch (XHarness exit 83)" }
         @{ Pattern = "XHarness exit code:\s*80"; Message = "App crashed during test run (XHarness exit 80 APP_CRASH)" }

@@ -11473,6 +11473,26 @@ try {
         if ($Platform -eq 'ios' -and [string]::IsNullOrWhiteSpace($DeviceUdid)) {
             throw 'DeviceUdid is required for iOS replication.'
         }
+        if ($Platform -eq 'ios') {
+            Invoke-ReplicationTrustedRestore `
+                -Target (Join-Path $repoRoot '.config/dotnet-tools.json') `
+                -Verb 'tool-restore' `
+                -TimeoutSeconds 600
+            Invoke-LoggedChildProcess `
+                -ScriptPath (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1') `
+                -Arguments @(
+                    '-Project', 'Controls',
+                    '-Platform', $Platform,
+                    '-RepositoryRoot', $repoRoot,
+                    '-DeviceUdid', $DeviceUdid,
+                    '-OutputDirectory', (Join-Path $sandboxArtifactDir 'xharness-preflight'),
+                    '-PreflightXHarnessOnly'
+                ) `
+                -LogPath (Join-Path $sandboxArtifactDir 'xharness-preflight.log') `
+                -Description 'Preflighting iOS XHarness before restore, generation, and product builds' `
+                -AllowDeviceControl `
+                -TimeoutSeconds 180
+        }
         $appleEntitlementsPath = ''
         $deviceTestEntitlementsPath = ''
         if ($Platform -eq 'catalyst') {

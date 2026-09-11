@@ -11403,6 +11403,17 @@ Describe 'A test that ran but found no element is not a build failure' {
 }
 
 Describe 'A missing device-harness verdict is not a test to repair' {
+    BeforeAll {
+        function Invoke-LoggedChildProcess {
+            param(
+                [string]$ScriptPath, [object[]]$Arguments,
+                [string]$LogPath, [string]$Description,
+                [switch]$AllowDeviceControl, [int]$TimeoutSeconds
+            )
+            throw 'The preparation test must mock child execution.'
+        }
+    }
+
     It 'recognises an Appium session that never opened in OneTimeSetUp' {
         # Build 15029298 spent four build repairs and every remaining attempt
         # asking the agent to fix compiler diagnostics that did not exist.
@@ -11500,6 +11511,59 @@ testResults-abc.xml for requested class(es) Microsoft.Maui.DeviceTests.ButtonTes
         $copilotIndex | Should -BeGreaterThan $preflightIndex
         $script:Source | Should -Match 'ANDROID XHARNESS PREFLIGHT ONLY SUCCEEDED'
         $script:Source | Should -Match 'ANDROID XHARNESS PREFLIGHT ONLY FAILED'
+    }
+
+    It 'restores and preflights iOS tools in the private environment before authoring' {
+        $ast = [Management.Automation.Language.Parser]::ParseInput(
+            $script:Source, [ref]$null, [ref]$null)
+        $branch = $ast.FindAll({
+            param($node)
+            $node -is [Management.Automation.Language.IfStatementAst] -and
+            $node.Extent.Text.Contains('Preflighting iOS XHarness before restore, generation, and product builds')
+        }, $true) | Sort-Object { $_.Extent.Text.Length } | Select-Object -First 1
+        $branch | Should -Not -BeNullOrEmpty
+        $script:preflightCalls = @()
+        $Platform = 'ios'
+        $DeviceUdid = 'test-simulator'
+        $repoRoot = $TestDrive
+        $trustedSkills = Join-Path $TestDrive 'trusted/skills'
+        $sandboxArtifactDir = Join-Path $TestDrive 'sandbox'
+        Mock Invoke-ReplicationTrustedRestore { $script:preflightCalls += 'restore' }
+        Mock Invoke-LoggedChildProcess { $script:preflightCalls += 'preflight' }
+
+        & ([scriptblock]::Create($branch.Extent.Text))
+
+        $script:preflightCalls | Should -Be @('restore', 'preflight')
+        Should -Invoke Invoke-ReplicationTrustedRestore -Exactly 1 -ParameterFilter {
+            $Verb -eq 'tool-restore' -and $TimeoutSeconds -eq 600 -and
+            $Target.Replace('\', '/').EndsWith('/.config/dotnet-tools.json')
+        }
+        Should -Invoke Invoke-LoggedChildProcess -Exactly 1 -ParameterFilter {
+            $AllowDeviceControl -and $TimeoutSeconds -eq 180 -and
+            $Arguments -contains '-PreflightXHarnessOnly' -and
+            ($Arguments -join '|') -match '-Platform\|ios'
+        }
+        $branch.Extent.StartOffset | Should -BeLessThan (
+            $script:Source.IndexOf('for ($attempt = 1; $attempt -le $MaxSandboxAttempts'))
+    }
+
+    It 'stops iOS preparation when private tool restoration fails' {
+        $ast = [Management.Automation.Language.Parser]::ParseInput(
+            $script:Source, [ref]$null, [ref]$null)
+        $branch = $ast.FindAll({
+            param($node)
+            $node -is [Management.Automation.Language.IfStatementAst] -and
+            $node.Extent.Text.Contains('Preflighting iOS XHarness before restore, generation, and product builds')
+        }, $true) | Sort-Object { $_.Extent.Text.Length } | Select-Object -First 1
+        $Platform = 'ios'
+        $DeviceUdid = 'test-simulator'
+        $repoRoot = $TestDrive
+        Mock Invoke-ReplicationTrustedRestore { throw 'private tool restoration failed' }
+        Mock Invoke-LoggedChildProcess {}
+
+        { & ([scriptblock]::Create($branch.Extent.Text)) } |
+            Should -Throw '*private tool restoration failed*'
+        Should -Invoke Invoke-LoggedChildProcess -Exactly 0
     }
 }
 

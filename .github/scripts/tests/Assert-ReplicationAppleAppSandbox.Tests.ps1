@@ -63,6 +63,7 @@ Describe 'Apple trusted host command boundary' {
             'scripts/BuildAndRunSandbox.ps1',
             'scripts/shared/Record-Reproduction.ps1',
             'scripts/shared/Invoke-ReplicationTestVerification.ps1',
+            'skills/run-device-tests/scripts/Run-DeviceTests.ps1',
             'scripts/Other.ps1'
         )) {
             $path = Join-Path $script:TrustedRoot $relative
@@ -73,6 +74,54 @@ Describe 'Apple trusted host command boundary' {
         $script:Environment = @{
             PATH = [Environment]::GetEnvironmentVariable('PATH')
         }
+    }
+
+    It 'admits only the exact command-only iOS XHarness preflight' {
+        $arguments = @(
+            '-Project', 'Controls', '-Platform', 'ios',
+            '-RepositoryRoot', $TestDrive,
+            '-DeviceUdid', 'DF99B4D8-050F-4E9F-BD52-60A3489D0BD5',
+            '-OutputDirectory', (Join-Path $TestDrive 'preflight'),
+            '-PreflightXHarnessOnly')
+        $command = Get-ReplicationAppleIsolatedCommand `
+            -Platform ios -TrustedRoot $script:TrustedRoot `
+            -ScriptPath (Join-Path $script:TrustedRoot 'skills/run-device-tests/scripts/Run-DeviceTests.ps1') `
+            -Arguments $arguments -Environment $script:Environment -OperatingSystem macos
+
+        $command.Boundary | Should -Be 'ios-review-host-no-network-isolation'
+        @($command.Arguments | Select-Object -Last 11) | Should -Be $arguments
+    }
+
+    It 'rejects preflight arguments that could run tests or reach the trusted tree' {
+        $arguments = @(
+            '-Project', 'Controls', '-Platform', 'ios',
+            '-RepositoryRoot', $TestDrive,
+            '-DeviceUdid', 'DF99B4D8-050F-4E9F-BD52-60A3489D0BD5',
+            '-OutputDirectory', (Join-Path $TestDrive 'preflight'),
+            '-PreflightXHarnessOnly')
+        foreach ($case in @('missing-flag', 'extra-flag', 'other-project', 'bad-device', 'trusted-output')) {
+            $changed = @($arguments)
+            switch ($case) {
+                'missing-flag' { $changed = @($arguments | Select-Object -SkipLast 1) }
+                'extra-flag' { $changed += '-BuildOnly' }
+                'other-project' { $changed[1] = 'Core' }
+                'bad-device' { $changed[7] = 'not-a-simulator' }
+                'trusted-output' { $changed[9] = Join-Path $script:TrustedRoot 'scripts' }
+            }
+            {
+                Get-ReplicationAppleIsolatedCommand `
+                    -Platform ios -TrustedRoot $script:TrustedRoot `
+                    -ScriptPath (Join-Path $script:TrustedRoot 'skills/run-device-tests/scripts/Run-DeviceTests.ps1') `
+                    -Arguments $changed -Environment $script:Environment -OperatingSystem macos
+            } | Should -Throw '*iOS XHarness preflight*'
+        }
+        {
+            Get-ReplicationAppleIsolatedCommand `
+                -Platform catalyst -TrustedRoot $script:TrustedRoot `
+                -ScriptPath (Join-Path $script:TrustedRoot 'skills/run-device-tests/scripts/Run-DeviceTests.ps1') `
+                -Arguments @('-Platform', 'catalyst', '-PreflightXHarnessOnly') `
+                -Environment $script:Environment -OperatingSystem macos
+        } | Should -Throw '*limited to exact trusted runners*'
     }
 
     It 'admits the exact Catalyst Sandbox runner with enforcement' {
