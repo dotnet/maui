@@ -5396,6 +5396,149 @@ index cc87be1f60..4791badc38 100644
         $result.fixPatch | Should -BeExactly 'fix.patch'
     }
 
+    It 'preserves grounded repair metadata through normalization and clean validation' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest | Add-Member -NotePropertyName fixRepairApplied `
+            -NotePropertyValue $true
+        $manifest | Add-Member -NotePropertyName fixRepairFindings `
+            -NotePropertyValue @(
+                'The provisional candidate regressed encoded HTML labels.'
+                'The repair preserved encoded and literal label behavior.'
+            )
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        $normalized = Read-ReplicationManifest `
+            -Path $fixture.ManifestPath `
+            -ExpectedIssueNumber $fixture.IssueNumber `
+            -ExpectedPlatform $fixture.Platform
+        $result = Invoke-FixtureValidation `
+            -Fixture $fixture `
+            -FixPatchPath $fixPatchPath
+
+        $normalized.FixRepairApplied | Should -BeTrue
+        $normalized.FixRepairFindings | Should -HaveCount 2
+        $result.fixRepairApplied | Should -BeTrue
+        $result.fixRepairFindings | Should -BeExactly @(
+            'The provisional candidate regressed encoded HTML labels.'
+            'The repair preserved encoded and literal label behavior.'
+        )
+        (Get-Content -LiteralPath $fixture.OutputPath -Raw |
+            ConvertFrom-Json).fixRepairApplied | Should -BeTrue
+    }
+
+    It 'rejects non-boolean and duplicate grounded repair flags' {
+        foreach ($kind in @('string', 'number', 'aliases')) {
+            $fixture = script:New-OracleFixture
+            $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+                ConvertFrom-Json -Depth 20
+            if ($kind -ceq 'aliases') {
+                $manifest | Add-Member -NotePropertyName fixRepairApplied `
+                    -NotePropertyValue $true
+                $manifest | Add-Member -NotePropertyName fix_repair_applied `
+                    -NotePropertyValue $true
+            } else {
+                $manifest | Add-Member -NotePropertyName fixRepairApplied `
+                    -NotePropertyValue $(if ($kind -ceq 'string') { 'true' } else { 1 })
+            }
+            Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+            { Read-ReplicationManifest `
+                    -Path $fixture.ManifestPath `
+                    -ExpectedIssueNumber $fixture.IssueNumber `
+                    -ExpectedPlatform $fixture.Platform } |
+                Should -Throw -Because "$kind must not be treated as a repair Boolean"
+        }
+    }
+
+    It 'bounds grounded repair findings to four safe strings' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest | Add-Member -NotePropertyName fixRepairApplied `
+            -NotePropertyValue $true
+        $manifest | Add-Member -NotePropertyName fixRepairFindings `
+            -NotePropertyValue @(
+                ('x' * 401)
+                [pscustomobject]@{ detail = 'not a string' }
+                'two'
+                'three'
+                'four'
+                'five'
+            )
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        $normalized = Read-ReplicationManifest `
+            -Path $fixture.ManifestPath `
+            -ExpectedIssueNumber $fixture.IssueNumber `
+            -ExpectedPlatform $fixture.Platform
+
+        $normalized.FixRepairFindings | Should -HaveCount 4
+        $normalized.FixRepairFindings[0].Length | Should -Be 400
+        $normalized.FixRepairFindings | Should -Not -Contain 'five'
+        @($normalized.FixRepairFindings | Where-Object {
+            $_ -isnot [string] -or $_.Length -gt 400
+        }) | Should -BeNullOrEmpty
+    }
+
+    It 'rejects duplicate grounded repair finding aliases' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest | Add-Member -NotePropertyName fixRepairFindings `
+            -NotePropertyValue @('one')
+        $manifest | Add-Member -NotePropertyName fix_repair_findings `
+            -NotePropertyValue @('one')
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Read-ReplicationManifest `
+                -Path $fixture.ManifestPath `
+                -ExpectedIssueNumber $fixture.IssueNumber `
+                -ExpectedPlatform $fixture.Platform } |
+            Should -Throw '*more than one alias*'
+    }
+
+    It 'normalizes snake-case grounded repair metadata to closed output types' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest | Add-Member -NotePropertyName fix_repair_applied `
+            -NotePropertyValue $true
+        $manifest | Add-Member -NotePropertyName fix_repair_findings `
+            -NotePropertyValue @('Grounded sibling regression repaired.')
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        $normalized = Read-ReplicationManifest `
+            -Path $fixture.ManifestPath `
+            -ExpectedIssueNumber $fixture.IssueNumber `
+            -ExpectedPlatform $fixture.Platform
+
+        $normalized.FixRepairApplied | Should -BeOfType ([bool])
+        $normalized.FixRepairApplied | Should -BeTrue
+        $normalized.FixRepairFindings.GetType() | Should -Be ([string[]])
+        $normalized.FixRepairFindings | Should -BeExactly @(
+            'Grounded sibling regression repaired.'
+        )
+    }
+
+    It 'rejects a scalar grounded repair findings property' {
+        $fixture = script:New-OracleFixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest | Add-Member -NotePropertyName fixRepairFindings `
+            -NotePropertyValue 'not an array'
+        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
+
+        { Read-ReplicationManifest `
+                -Path $fixture.ManifestPath `
+                -ExpectedIssueNumber $fixture.IssueNumber `
+                -ExpectedPlatform $fixture.Platform } |
+            Should -Throw '*must be an array*'
+    }
+
     It 'ignores fix arm results when no fix patch is published' {
         # Without this the run could claim the fix made the test green while
         # shipping no fix at all, which is the one claim a reviewer cannot check.
