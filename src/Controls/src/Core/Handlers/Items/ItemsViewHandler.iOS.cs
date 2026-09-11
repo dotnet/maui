@@ -10,12 +10,53 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView>, ISafeAreaScrollViewContainer where TItemsView : ItemsView
 	{
 		ItemsViewLayout _layout;
+		Rect? _delegatedSafeAreaFrame;
+		double _delegatedFrameTop;
+
+		public override void PlatformArrange(Rect frame)
+		{
+			if (_delegatedSafeAreaFrame is not null)
+			{
+				_delegatedSafeAreaFrame = frame;
+				frame = new Rect(frame.X, _delegatedFrameTop, frame.Width, frame.Bottom - _delegatedFrameTop);
+
+				if (PlatformView.Center.X == frame.Center.X &&
+					PlatformView.Center.Y == frame.Center.Y &&
+					PlatformView.Bounds.Width == frame.Width &&
+					PlatformView.Bounds.Height == frame.Height)
+				{
+					this.Invoke(nameof(IView.Frame), frame);
+					return;
+				}
+			}
+
+			base.PlatformArrange(frame);
+		}
+
+		void ISafeAreaScrollViewContainer.ApplyDelegatedFrame(Rect safeFrame, Rect delegatedFrame)
+		{
+			_delegatedSafeAreaFrame = safeFrame;
+			_delegatedFrameTop = delegatedFrame.Top;
+			base.PlatformArrange(delegatedFrame);
+		}
+
+		void ISafeAreaScrollViewContainer.ResetDelegatedFrame()
+		{
+			if (_delegatedSafeAreaFrame is not { } safeFrame)
+				return;
+
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
+			base.PlatformArrange(safeFrame);
+		}
 
 		protected override void DisconnectHandler(UIView platformView)
 		{
+			_delegatedSafeAreaFrame = null;
+			_delegatedFrameTop = 0;
 			ItemsView.ScrollToRequested -= ScrollToRequested;
 			Controller?.Disconnect();
 			base.DisconnectHandler(platformView);

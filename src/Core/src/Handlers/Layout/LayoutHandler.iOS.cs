@@ -122,6 +122,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(LayoutView platformView)
 		{
+			if (VirtualView is ISafeAreaLayout safeAreaLayout)
+				safeAreaLayout.DisconnectSafeArea();
+
 			base.DisconnectHandler(platformView);
 			platformView.ClearSubviews();
 		}

@@ -17,3 +17,4 @@ static Microsoft.Maui.Handlers.DatePickerHandler.MapFlowDirection(Microsoft.Maui
 override Microsoft.Maui.Platform.MauiTextField.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.NoCaretField.LayoutSubviews() -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
