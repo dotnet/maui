@@ -116,6 +116,9 @@ lines, then retain the most recent steps within the existing output budget.
 An exit code of 134 alone does not distinguish an app crash from a host-runner
 assertion failure; retained verdict and termination evidence determine the
 classification. Missing observations never count as successful reproduction.
+Thumbnails use the final scene of the normalized recording on every platform,
+with a small decoding margin. The original clip retains its pre-trigger lead-in;
+desktop teardown is excluded before choosing a frame.
 
 ## Test semantics
 

@@ -286,7 +286,7 @@ steps:
         'Kept footage stops where the scenario stopped*fails closed when no settled post-trigger scene can fit'
         'Kept footage stops where the scenario stopped*chooses a late thumbnail frame for restart-heavy captures'
         'Kept footage stops where the scenario stopped*keeps the thumbnail inside the final state of short mobile captures'
-        'Kept footage stops where the scenario stopped*keeps the original early thumbnail for captures without a settled device tail'
+        'Record-Reproduction safe inputs and evidence*uses the completed scene for desktop thumbnails instead of the initial state'
         'The fix panel stops before the step timeout kills the evidence*budgets candidate authoring and trusted verification as one cycle'
         'The fix panel stops before the step timeout kills the evidence*leaves room for two complete fix candidates after a ninety-minute reproduction'
         'The fix panel stops before the step timeout kills the evidence*refuses a candidate that cannot finish, rather than starting one that will be killed'

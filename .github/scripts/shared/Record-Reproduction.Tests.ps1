@@ -924,6 +924,22 @@ Describe 'Record-Reproduction safe inputs and evidence' {
         (24.0 / $speedUp) | Should -BeGreaterThan 5.9
     }
 
+    It 'uses the completed scene for desktop thumbnails instead of the initial state' {
+        foreach ($targetPlatform in @('windows', 'catalyst')) {
+            $harness = New-RecordingHarness
+            $null = Invoke-TestRecording `
+                -Harness $harness `
+                -Platform $targetPlatform `
+                -EvidenceDir (Join-Path $TestDrive "desktop-thumbnail-$targetPlatform")
+
+            $thumbnail = (Get-CommandRequest $harness 'Generate recording thumbnail')[0]
+            $seekIndex = [array]::IndexOf($thumbnail.ArgumentList, '-ss')
+            $seekIndex | Should -BeGreaterThan -1
+            [double]$thumbnail.ArgumentList[$seekIndex + 1] |
+                Should -Be ($harness.State.MediaInfo.DurationSeconds - 0.1)
+        }
+    }
+
     It 'names an abnormal exit code instead of only numbering it' {
         # iOS run 15011154 failed five times on "exit code 134" with no other
         # surviving text. 134 is SIGABRT, which calls for a different response
@@ -1379,23 +1395,19 @@ Describe 'Kept footage stops where the scenario stopped' {
     }
 
     It 'chooses a late thumbnail frame for restart-heavy captures' {
-        Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 -PreferSettledTail $true |
+        Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 |
             Should -Be 7.9
     }
 
     It 'keeps the thumbnail inside the final state of short mobile captures' {
         foreach ($duration in @(2.733, 2.0, 1.8)) {
             $seek = Get-ReproductionThumbnailTimeSeconds `
-                -DurationSeconds $duration -PreferSettledTail $true
+                -DurationSeconds $duration
             $seek | Should -BeGreaterThan ($duration - 0.2)
             $seek | Should -BeLessThan $duration
         }
     }
 
-    It 'keeps the original early thumbnail for captures without a settled device tail' {
-        Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 -PreferSettledTail $false |
-            Should -Be 1
-    }
 }
 
 Describe 'The element inventory has to reach the agent that must act on it' {
