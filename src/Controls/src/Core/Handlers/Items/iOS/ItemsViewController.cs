@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _initialized;
 		bool _laidOut;
 		bool _isEmpty = true;
+		bool _hasNoItems = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
@@ -46,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
 		List<string> _cellReuseIds = new List<string>();
+		List<WeakReference<TemplatedCell>> _realizedTemplatedCells = new List<WeakReference<TemplatedCell>>();
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -76,7 +79,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void Disconnect()
 		{
+			UnbindRealizedTemplatedCells();
 			DisposeItemsSource();
+		}
+
+		// Deterministically unbind every realized templated cell when this controller's handler
+		// disconnects (e.g. page popped), instead of relying on VisibleCells/recycling heuristics.
+		//
+		// Also the only place (with ClearMeasurementCells) that calls DetachFromItemsView() and
+		// disconnects each cell's Handler. Not done in TemplatedCell.Unbind() because that also
+		// runs during routine recycling, where removing the view mid-layout can corrupt native
+		// state (e.g. CarouselView). Here the CollectionView is going away, so
+		// it's safe to sever permanently.
+		void UnbindRealizedTemplatedCells()
+		{
+			for (int n = _realizedTemplatedCells.Count - 1; n >= 0; n--)
+			{
+				if (_realizedTemplatedCells[n].TryGetTarget(out var templatedCell))
+				{
+					if (templatedCell.PlatformHandler?.VirtualView is View view)
+					{
+						templatedCell.Unbind();
+						templatedCell.DetachFromItemsView();
+
+						// Recursive DisconnectHandlers() since the bound view (DataTemplate root)
+						// commonly has child views whose handlers also need disconnecting.
+						view.DisconnectHandlers();
+					}
+					else
+					{
+						templatedCell.Unbind();
+					}
+				}
+			}
+
+			_realizedTemplatedCells.Clear();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -134,10 +171,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CheckForEmptySource()
 		{
 			var wasEmpty = _isEmpty;
+			var hadNoItems = _hasNoItems;
 
-			_isEmpty = ItemsSource.ItemCount == 0;
+			_hasNoItems = ItemsSource.ItemCount == 0;
+			_isEmpty = IsEmptySource();
 
-			if (_isEmpty)
+			if (_hasNoItems)
 			{
 				ClearMeasurementCells();
 				ItemsViewLayout?.ClearCellSizeCache();
@@ -148,7 +187,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateEmptyViewVisibility(_isEmpty);
 			}
 
-			if (wasEmpty && !_isEmpty)
+			if (hadNoItems && !_hasNoItems)
 			{
 				// If we're going from empty to having stuff, it's possible that we've never actually measured
 				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
@@ -193,6 +232,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			CollectionView = collectionView;
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
@@ -529,9 +569,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
 			}
 
+			RegisterRealizedTemplatedCell(cell);
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
+		}
+
+		void RegisterRealizedTemplatedCell(TemplatedCell cell)
+		{
+			for (int n = _realizedTemplatedCells.Count - 1; n >= 0; n--)
+			{
+				if (!_realizedTemplatedCells[n].TryGetTarget(out var existingCell))
+				{
+					_realizedTemplatedCells.RemoveAt(n);
+					continue;
+				}
+
+				if (ReferenceEquals(existingCell, cell))
+				{
+					return;
+				}
+			}
+
+			_realizedTemplatedCells.Add(new WeakReference<TemplatedCell>(cell));
 		}
 
 		void ClearMeasurementCells()
@@ -540,6 +600,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 				measurementCell.Unbind();
+
+				// Discarded measurement cells are never reused and have no other strong references,
+				// so they can be GC'd before Disconnect() runs, leaking their handler if not
+				// disconnected here.
+				if (measurementCell.PlatformHandler?.VirtualView is View measurementView)
+				{
+					measurementCell.DetachFromItemsView();
+					measurementView.DisconnectHandlers();
+				}
 			}
 
 			_measurementCells.Clear();
@@ -779,7 +848,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
 
 			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
+			UpdateEmptyViewVisibility(IsEmptySource());
+		}
+
+		bool IsEmptySource()
+		{
+			if (ItemsSource is null)
+			{
+				return true;
+			}
+
+			return ItemsView is GroupableItemsView { IsGrouped: true }
+				? ItemsSource.GroupCount == 0
+				: ItemsSource.ItemCount == 0;
 		}
 
 		void UpdateEmptyViewVisibility(bool isEmpty)

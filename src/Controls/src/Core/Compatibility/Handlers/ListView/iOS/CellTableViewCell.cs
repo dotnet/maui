@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Compatibility;
 using ObjCRuntime;
 using UIKit;
@@ -13,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		WeakReference<Cell> _cell;
 #pragma warning restore CS0618 // Type or member is obsolete
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Callback is cleared in Dispose(bool) before the cell is released.")]
 		public Action<object, PropertyChangedEventArgs> PropertyChanged;
 
 		bool _disposed;
@@ -46,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
+					PropertyChanged = null;
 					_cell = null;
 				}
 			}
@@ -119,6 +122,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				PropertyChanged = null;
+
 #pragma warning disable CS0618 // Type or member is obsolete
 				if (Cell is Cell cell)
 				{

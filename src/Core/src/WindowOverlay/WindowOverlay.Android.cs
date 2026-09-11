@@ -83,9 +83,16 @@ namespace Microsoft.Maui
 			if (_nativeActivity?.Window != null)
 				_nativeActivity.Window.DecorView.LayoutChange -= DecorViewLayoutChange;
 
-			_nativeLayer?.RemoveView(_graphicsView);
+			if (_graphicsView is not null)
+			{
+				_graphicsView.Touch -= TouchLayerTouch;
+				_nativeLayer?.RemoveView(_graphicsView);
+				_graphicsView.Dispose();
+			}
 
 			_graphicsView = null;
+			_nativeLayer = null;
+			_nativeActivity = null;
 			IsPlatformViewInitialized = false;
 		}
 

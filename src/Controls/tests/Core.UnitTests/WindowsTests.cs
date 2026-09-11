@@ -969,6 +969,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void DerivedContentPageWithoutOverride_ReturnsFalse()
+		{
+			Assert.False(Window.CanConsumeBackNavigation(new DerivedContentPage()));
+		}
+
+		[Fact]
+		public void ContentPageWithBackButtonOverride_ReturnsTrue()
+		{
+			Assert.True(Window.CanConsumeBackNavigation(new ContentPageWithBackButtonOverride()));
+		}
+
+		[Fact]
+		public void NavigationPageWithBackButtonOverride_ReturnsTrue()
+		{
+			var nav = new NavigationPageWithBackButtonOverride(new ContentPage());
+			Assert.True(Window.CanConsumeBackNavigation(nav));
+		}
+
+		[Fact]
 		public void NavigationPage_SinglePage_ReturnsFalse()
 		{
 			// NavigationPage with only the root page — nothing to pop.
@@ -1119,6 +1138,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			item.Items.Add(section);
 			shell.Items.Add(item);
 			return shell;
+		}
+
+		class DerivedContentPage : ContentPage
+		{
+		}
+
+		class ContentPageWithBackButtonOverride : ContentPage
+		{
+			protected override bool OnBackButtonPressed() => true;
+		}
+
+		class NavigationPageWithBackButtonOverride : NavigationPage
+		{
+			public NavigationPageWithBackButtonOverride(Page root) : base(root)
+			{
+			}
+
+			protected override bool OnBackButtonPressed() => true;
 		}
 	}
 }
