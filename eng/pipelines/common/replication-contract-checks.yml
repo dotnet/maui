@@ -68,6 +68,7 @@ steps:
         'Replication orchestrator security boundary*Android Issue26505 Sandbox prompt guidance*keeps Sandbox-only Issue26505 guidance out of generated-test phases'
         'Replication orchestrator security boundary*scopes Issue33315 rendered-pixel generated-test guidance to Android Issue33315'
         'Replication orchestrator security boundary*scopes reusable native Label rendered-text guidance to Android and iOS generated-test phases'
+        'Replication orchestrator security boundary*keeps initial assignments out of invented post-attachment trigger buttons'
         'New-ReplicationControlVariant*allows reusable Android and iOS native Label rendered-text controls for different issue keys'
         'New-ReplicationControlVariant*rejects native Label rendered-text wrong handler label identity and native writes'
         'New-ReplicationControlVariant*rejects native Label rendered-text helper aliases overloads fabricated views and changed oracles'

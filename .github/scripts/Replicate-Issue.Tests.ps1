@@ -1850,6 +1850,19 @@ public partial class MainPage : ContentPage
             (New-CopilotPrompt -Phase sandbox) |
                 Should -Not -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
         }
+
+        It 'keeps initial assignments out of invented post-attachment trigger buttons' {
+            $script:IssueNumber = 29282
+            foreach ($platform in @('android', 'ios')) {
+                $script:Platform = $platform
+                $prompt = New-CopilotPrompt -Phase sandbox
+                $prompt | Should -Match 'Preserve the assignment phase, not just the property and value'
+                $prompt | Should -Match 'start with construction-time assignment'
+                $prompt | Should -Match 'Do not invent an initial "Ready" value or an "Apply" button'
+                $prompt | Should -Match 'use restartApp after recording starts to capture the initial render'
+                $prompt | Should -Match 'an explicitly reported runtime update must remain after attachment'
+            }
+        }
     }
 
     It 'rejects dangerous capabilities in generated Sandbox source' {
