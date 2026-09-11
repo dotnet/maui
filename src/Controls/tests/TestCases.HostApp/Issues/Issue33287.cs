@@ -28,7 +28,11 @@ public class Issue33287MainPage : ContentPage
 					Text = "Navigate to Second Page",
 					AutomationId = "NavigateButton",
 					Command = new Command(async () =>
-						await Navigation.PushAsync(new Issue33287SecondPage()))
+					{
+						var secondPage = new Issue33287SecondPage();
+						await Navigation.PushAsync(secondPage);
+						secondPage.ExposeBackButtonToAutomation();
+					})
 				},
 				new Label
 				{
@@ -42,24 +46,30 @@ public class Issue33287MainPage : ContentPage
 
 public class Issue33287SecondPage : ContentPage
 {
+	readonly Button _goBackButton;
+
 	public Issue33287SecondPage()
 	{
 		Title = "Second Page";
+
+		_goBackButton = new Button
+		{
+			Text = "Go Back",
+			Command = new Command(async () => await Navigation.PopAsync())
+		};
 
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
 			Children =
 			{
-				new Button
-				{
-					Text = "Go Back",
-					AutomationId = "GoBackButton",
-					Command = new Command(async () => await Navigation.PopAsync())
-				}
+				_goBackButton
 			}
 		};
 	}
+
+	internal void ExposeBackButtonToAutomation() =>
+		_goBackButton.AutomationId = "GoBackButton";
 
 	protected override async void OnAppearing()
 	{

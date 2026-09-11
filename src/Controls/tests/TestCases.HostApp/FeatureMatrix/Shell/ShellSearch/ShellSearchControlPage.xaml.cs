@@ -118,6 +118,14 @@ public partial class ShellSearchControlPage : Shell
 		SearchHandlerInstance.SetViewModel(_viewModel);
 		SearchHandlerInstance.Focused += OnSearchHandlerFocused;
 		SearchHandlerInstance.Unfocused += OnSearchHandlerUnfocused;
+
+		// SearchBoxVisibility=Collapsible requires a scrollable content view to hide/reveal
+		// the search bar via scroll gesture on iOS/MacCatalyst. On Windows a ScrollView here isn't needed and causes a persistent scrollbar to render in CI
+		// so only wrap the content in a ScrollView for the platforms that require it.
+		if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+		{
+			SearchContentPage.Content = new ScrollView { Content = MainStack };
+		}
 	}
 
 	void OnSearchHandlerFocused(object sender, EventArgs e)
