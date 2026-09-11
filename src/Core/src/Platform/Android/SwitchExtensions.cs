@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AndroidX.Core.Content;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 using MSwitch = Google.Android.Material.MaterialSwitch.MaterialSwitch;
 
@@ -14,6 +15,13 @@ namespace Microsoft.Maui.Platform
 		// Thread safety (no shared mutable state)
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultTrackTintCache = new();
 		static readonly ConditionalWeakTable<MSwitch, ColorStateList> _defaultThumbTintCache = new();
+
+		// Tracks SwitchCompat instances that have had a custom ThumbColor applied, so the
+		// platform default thumb tint is only rebuilt when a previously-set custom color is
+		// cleared. Default switches that never had a custom ThumbColor keep their native/theme
+		// thumb appearance untouched.
+		static readonly ConditionalWeakTable<ASwitch, object> _customThumbTintApplied = new();
+		static readonly object s_customThumbTintMarker = new();
 
 		public static void UpdateIsOn(this ASwitch aSwitch, ISwitch view)
 		{
@@ -48,7 +56,7 @@ namespace Microsoft.Maui.Platform
 					defaultTrackTintList = currentTint;
 				}
 			}
-			
+
 			var trackColor = view.TrackColor;
 
 			if (trackColor is not null)
@@ -95,7 +103,49 @@ namespace Microsoft.Maui.Platform
 				// Use ThumbTintList instead of SetColorFilter to preserve the thumb shadow
 				// SetColorFilter flattens the drawable and removes the shadow effect
 				aSwitch.ThumbTintList = ColorStateListExtensions.CreateDefault(thumbColor.ToPlatform());
+
+				// Remember that a custom tint was applied so the platform default can be
+				// restored if ThumbColor is later cleared to null.
+				_customThumbTintApplied.Remove(aSwitch);
+				_customThumbTintApplied.Add(aSwitch, s_customThumbTintMarker);
 			}
+			else if (_customThumbTintApplied.TryGetValue(aSwitch, out _))
+			{
+				// A custom tint was previously applied; simply clearing it (setting null)
+				// strips the native state-based colors and leaves a white/transparent thumb.
+				// Rebuild the platform default thumb tint from the current theme's checked,
+				// normal, and disabled state colors so the native appearance is restored.
+				aSwitch.ThumbTintList = aSwitch.GetDefaultThumbColorStateList();
+				_customThumbTintApplied.Remove(aSwitch);
+			}
+		}
+
+		// Recreates the platform default switch thumb tint per state:
+		//   disabled -> switch_thumb_disabled_material_(light|dark) (opaque grey)
+		//   checked  -> colorControlActivated
+		//   normal   -> colorSwitchThumbNormal
+		static ColorStateList? GetDefaultThumbColorStateList(this ASwitch aSwitch)
+		{
+			var context = aSwitch.Context;
+			if (context is null)
+			{
+				return null;
+			}
+
+			var normalColor = context.GetThemeAttrColor(Resource.Attribute.colorSwitchThumbNormal);
+			var activatedColor = context.GetThemeAttrColor(Resource.Attribute.colorControlActivated);
+
+			// The native disabled thumb is an opaque grey baked into
+			// @color/switch_thumb_disabled_material_(light|dark). It is NOT
+			// colorSwitchThumbNormal * disabledAlpha, which would produce a nearly
+			// transparent thumb on a light background.
+			var isDarkTheme = (context.Resources?.Configuration?.UiMode & UiMode.NightMask) == UiMode.NightYes;
+			var disabledColorRes = isDarkTheme
+				? Resource.Color.switch_thumb_disabled_material_dark
+				: Resource.Color.switch_thumb_disabled_material_light;
+			var disabledColor = ContextCompat.GetColor(context, disabledColorRes);
+
+			return ColorStateListExtensions.CreateSwitch(disabledColor, activatedColor, normalColor);
 		}
 
 		public static Drawable? GetDefaultSwitchTrackDrawable(this ASwitch aSwitch) =>

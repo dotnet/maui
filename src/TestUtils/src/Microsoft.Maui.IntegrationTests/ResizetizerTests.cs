@@ -1,3 +1,6 @@
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
+
 namespace Microsoft.Maui.IntegrationTests;
 
 [Trait("Category", "Build")]
@@ -100,6 +103,277 @@ public class ResizetizerTests : BaseBuildTest
 				"Windows was missing the image file.");
 	}
 
+	// Regression test for https://github.com/dotnet/maui/issues/23268: custom font assets were not
+	// copied into the Android assets folder on the *first* (clean) Release build — they only showed
+	// up after a second build. The fix makes _CollectMauiFontItems always run and map font paths
+	// predictively from @(MauiFont) instead of relying on a filesystem glob that was empty during
+	// first-build output inference. Release is required: the bug only reproduced in Release.
+	[Theory]
+	[InlineData("Release")]
+	public void FontsAreCopiedToAndroidAssetsOnFirstBuild(string config)
+	{
+		SetTestIdentifier(config);
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		// The default maui template registers <MauiFont Include="Resources\Fonts\*" />, which includes
+		// OpenSans-Regular.ttf, so building it exercises the font pipeline without extra assets.
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			"Unable to create template maui. Check test output for errors.");
+
+		var framework = $"{DotNetCurrent}-android";
+		var androidObjDir = Path.Combine(projectDir, "obj", config, framework);
+		const string fontFileName = "OpenSans-Regular.ttf";
+
+		// First (clean) build for Android only.
+		var firstBinlog = Path.Combine(projectDir, "first.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, binlogPath: firstBinlog, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build (first build). Check test output/attachments for errors.");
+
+		Assert.True(FontExistsInAndroidAssets(androidObjDir, fontFileName),
+			$"Font '{fontFileName}' was not copied into the Android assets folder under '{androidObjDir}' on the first build (regression #23268).");
+
+		// Second (incremental) build.
+		var secondBinlog = Path.Combine(projectDir, "second.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, framework: framework, properties: BuildProps, binlogPath: secondBinlog, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build (incremental build). Check test output/attachments for errors.");
+
+		// ProcessMauiFonts is incremental and should be skipped (up-to-date) on the second build,
+		// while the always-run _CollectMauiFontItems must still execute and re-register the items.
+		Assert.True(WasTargetSkipped(secondBinlog, "ProcessMauiFonts"),
+			"ProcessMauiFonts should have been skipped (up-to-date) on the incremental build.");
+		Assert.True(WasTargetExecuted(secondBinlog, "_CollectMauiFontItems"),
+			"_CollectMauiFontItems should run on every build, even when ProcessMauiFonts is skipped.");
+		Assert.True(FontExistsInAndroidAssets(androidObjDir, fontFileName),
+			$"Font '{fontFileName}' is missing from the Android assets folder after an incremental build.");
+	}
+
+	// Regression test for https://github.com/dotnet/maui/issues/33092 (consolidated from #35962):
+	// after a successful build, deleting the generated font/splash intermediate outputs must
+	// re-trigger ProcessMauiFonts / ProcessMauiSplashScreens on the next build. This is guaranteed by
+	// tracking the generated files in mauifont.outputs / mauisplash.outputs manifests that feed the
+	// targets' Outputs (see _ReadMauiFontOutputs / _ReadMauiSplashOutputs), replacing the old stamp
+	// files whose timestamps could stay newer than the deleted outputs. It first deletes only the
+	// Apple MauiInfo.plist to verify that its separate manifest entry re-triggers font processing.
+	// A final no-op build asserts both targets are skipped when nothing changed.
+	[Fact]
+	public void BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing()
+	{
+		SetTestIdentifier("MissingResizetizerOutputs");
+
+		// Builds every TFM of the default maui template (Android + iOS + MacCatalyst), which only
+		// fully builds on macOS, so this is gated accordingly. The Android first-build path is
+		// additionally covered on Windows by FontsAreCopiedToAndroidAssetsOnFirstBuild.
+		if (!TestEnvironment.IsMacOS)
+			return; // Skip: building the Apple TFMs (iOS/MacCatalyst) is only supported on macOS.
+
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+		const string config = "Debug";
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, output: _output),
+			$"Unable to create template maui. Check test output for errors.");
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+		var intermediateOutputRoots = GetResizetizerOutputRoots(projectDir, config);
+		AssertBuiltTargetPlatforms(intermediateOutputRoots);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var appleOutputRoots = intermediateOutputRoots
+			.Where(IsAppleTargetFramework)
+			.ToArray();
+		Assert.NotEmpty(appleOutputRoots);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing generated font plist '{plistPath}'.");
+			File.Delete(plistPath);
+		}
+
+		var plistRecoveryBinlogPath = Path.Combine(projectDir, "plist-recovery.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: plistRecoveryBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild missing font plists. Check test output/attachments for errors.");
+
+		AssertTargetExecuted(plistRecoveryBinlogPath, "ProcessMauiFonts", appleOutputRoots.Length);
+
+		foreach (var appleOutputRoot in appleOutputRoots)
+		{
+			var plistPath = Path.Combine(appleOutputRoot, "resizetizer", "f", "MauiInfo.plist");
+			Assert.True(File.Exists(plistPath), $"Missing regenerated font plist '{plistPath}'.");
+		}
+
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "f"));
+			DeleteDirectory(Path.Combine(intermediateOutputRoot, "resizetizer", "sp"));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to rebuild. Check test output/attachments for errors.");
+
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+
+		var noOpBinlogPath = Path.Combine(projectDir, "no-op.binlog");
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: BuildProps, binlogPath: noOpBinlogPath, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to no-op rebuild. Check test output/attachments for errors.");
+
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiFonts", intermediateOutputRoots.Count);
+		AssertTargetSkipped(noOpBinlogPath, "ProcessMauiSplashScreens", intermediateOutputRoots.Count);
+		AssertIntermediateOutputsExist(intermediateOutputRoots);
+	}
+
+	static bool FontExistsInAndroidAssets(string androidObjDir, string fontFileName)
+	{
+		// A registered AndroidAsset is staged by .NET for Android into $(IntermediateOutputPath)assets/,
+		// i.e. obj/{config}/{tfm}/assets/ — a deterministic path (no RID segment for a default build).
+		// The intermediate resizetizer copy under resizetizer/f/ is NOT proof of registration; only the
+		// staged copy under assets/ is. Confirmed empirically with a Release net*-android build.
+		return File.Exists(Path.Combine(androidObjDir, "assets", fontFileName));
+	}
+
+	static bool WasTargetSkipped(string binlogPath, string targetName)
+	{
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// Each project instance that reaches the target emits exactly one TargetStarted, followed by
+		// either an OutputsUpToDate skip (up-to-date) or real task execution (no OutputsUpToDate skip).
+		// PreviouslyBuiltSuccessfully skips from extra request edges add no TargetStarted, so the
+		// target is "skipped" only when it ran at least once and *every* started instance was
+		// up-to-date. Requiring started == upToDateSkips (rather than upToDateSkips > 0) avoids a false
+		// positive if some instance actually executed while another was up-to-date.
+		return started > 0 && started == upToDateSkips;
+	}
+
+	static bool WasTargetExecuted(string binlogPath, string targetName)
+	{
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		// Executions = started instances that did NOT end in an OutputsUpToDate skip. An always-run
+		// target (no Inputs/Outputs) requested via several edges still only adds
+		// PreviouslyBuiltSuccessfully skips (no OutputsUpToDate), so it correctly counts as executed.
+		return started - upToDateSkips > 0;
+	}
+
+	// Returns the number of TargetStarted events and the number of *up-to-date* skips
+	// (TargetSkipReason.OutputsUpToDate) for the target. Counting only OutputsUpToDate — rather than
+	// every TargetSkipped — is essential: when a target is requested through multiple edges (its own
+	// AfterTargets plus other targets' DependsOnTargets, e.g. ProcessMauiFonts pulled in by
+	// _CollectMauiFontItems and _ComputeAndroidResourcePaths), MSBuild emits a single OutputsUpToDate
+	// skip plus one PreviouslyBuiltSuccessfully skip per extra edge. A naive "any skip" or
+	// "started == skipped" check therefore misclassifies real multi-target builds.
+	static (int started, int upToDateSkips) GetTargetStatus(string binlogPath, string targetName)
+	{
+		int started = 0;
+		int upToDateSkips = 0;
+		if (File.Exists(binlogPath))
+		{
+			foreach (var record in new BinLogReader().ReadRecords(binlogPath))
+			{
+				switch (record.Args)
+				{
+					case TargetStartedEventArgs s when string.Equals(s.TargetName, targetName, StringComparison.Ordinal):
+						started++;
+						break;
+					case TargetSkippedEventArgs sk when string.Equals(sk.TargetName, targetName, StringComparison.Ordinal)
+						&& sk.SkipReason == TargetSkipReason.OutputsUpToDate:
+						upToDateSkips++;
+						break;
+				}
+			}
+		}
+		return (started, upToDateSkips);
+	}
+
+	static IReadOnlyList<string> GetResizetizerOutputRoots(string projectDir, string config)
+	{
+		var intermediateOutputPath = Path.Combine(projectDir, "obj", config);
+		var outputRoots = Directory
+			.GetFiles(intermediateOutputPath, "mauifont.outputs", SearchOption.AllDirectories)
+			.Select(Path.GetDirectoryName)
+			.Where(root => root is not null && File.Exists(Path.Combine(root, "mauisplash.outputs")))
+			.Cast<string>()
+			.OrderBy(root => root, StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+
+		Assert.NotEmpty(outputRoots);
+		return outputRoots;
+	}
+
+	static void AssertBuiltTargetPlatforms(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		// This is only reached from BuildRegeneratesFontsAndSplashWhenIntermediateOutputsAreMissing,
+		// which is gated to macOS (it builds the Apple TFMs), so only the Apple + Android roots are
+		// asserted here. Windows is covered separately by FontsAreCopiedToAndroidAssetsOnFirstBuild's
+		// sibling Windows lanes and CollectsAssets, and is never built by this macOS-only test.
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-android"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-ios"));
+		Assert.Contains(intermediateOutputRoots, root => ContainsTargetFramework(root, $"{DotNetCurrent}-maccatalyst"));
+	}
+
+	static bool ContainsTargetFramework(string path, string targetFramework) =>
+		path.Contains(targetFramework, StringComparison.OrdinalIgnoreCase);
+
+	static bool IsAppleTargetFramework(string path) =>
+		ContainsTargetFramework(path, $"{DotNetCurrent}-ios") ||
+		ContainsTargetFramework(path, $"{DotNetCurrent}-maccatalyst");
+
+	static void AssertIntermediateOutputsExist(IReadOnlyList<string> intermediateOutputRoots)
+	{
+		foreach (var intermediateOutputRoot in intermediateOutputRoots)
+		{
+			var fontsDir = Path.Combine(intermediateOutputRoot, "resizetizer", "f");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Regular.ttf")),
+				$"Missing OpenSans-Regular.ttf in {fontsDir}.");
+			Assert.True(File.Exists(Path.Combine(fontsDir, "OpenSans-Semibold.ttf")),
+				$"Missing OpenSans-Semibold.ttf in {fontsDir}.");
+
+			if (!ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-maccatalyst"))
+			{
+				var splashDir = Path.Combine(intermediateOutputRoot, "resizetizer", "sp");
+				// Assert a deterministic generated splash marker per platform instead of scanning the
+				// whole directory (confirmed with Release builds):
+				//  - Android: resizetizer/sp/drawable/maui_splash_image.xml
+				//  - iOS:     resizetizer/sp/MauiSplash.storyboard
+				var splashMarker = ContainsTargetFramework(intermediateOutputRoot, $"{DotNetCurrent}-android")
+					? Path.Combine(splashDir, "drawable", "maui_splash_image.xml")
+					: Path.Combine(splashDir, "MauiSplash.storyboard");
+				Assert.True(File.Exists(splashMarker),
+					$"Missing generated splash marker '{splashMarker}'.");
+			}
+		}
+	}
+
+	static void DeleteDirectory(string path)
+	{
+		if (Directory.Exists(path))
+			Directory.Delete(path, recursive: true);
+	}
+
+	static void AssertTargetSkipped(string binlogPath, string targetName, int minimumSkipCount)
+	{
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
+
+		// Count only up-to-date (OutputsUpToDate) skips — one per platform/project instance on a no-op
+		// build — via TargetSkippedEventArgs.SkipReason, instead of matching localized log text or
+		// counting the PreviouslyBuiltSuccessfully skips emitted for extra request edges.
+		var (_, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+
+		Assert.True(upToDateSkips >= minimumSkipCount,
+			$"Expected target '{targetName}' to be skipped as up-to-date at least {minimumSkipCount} times, but found {upToDateSkips}. See binlog: {binlogPath}");
+	}
+
+	static void AssertTargetExecuted(string binlogPath, string targetName, int minimumExecutionCount)
+	{
+		Assert.True(File.Exists(binlogPath), $"Binlog not found: {binlogPath}");
+
+		var (started, upToDateSkips) = GetTargetStatus(binlogPath, targetName);
+		var executions = started - upToDateSkips;
+
+		Assert.True(executions >= minimumExecutionCount,
+			$"Expected target '{targetName}' to execute at least {minimumExecutionCount} times, but found {executions}. See binlog: {binlogPath}");
+	}
 	[Theory]
 	[InlineData("maui", "mauilib", true)]
 	[InlineData("maui", "mauilib", false)]

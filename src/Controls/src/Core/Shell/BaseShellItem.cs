@@ -510,21 +510,25 @@ namespace Microsoft.Maui.Controls
 
 				if (OperatingSystem.IsAndroid())
 				{
-					object textColor;
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
+					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 
+					// Apply the default flyout item text color at the lowest specificity (like a stylesheet default)
+					// instead of through the "Default_FlyoutItemLabelStyle" class, which is applied at StyleLocal
+					// specificity. This lets a user-provided implicit "Style TargetType=Label" (or any explicit style)
+					// override the flyout item text color, matching iOS/Windows where no default color is set.
 					if (Application.Current == null)
 					{
-						textColor = Colors.Black.MultiplyAlpha(0.87f);
+						label.SetValue(Label.TextColorProperty, Colors.Black.MultiplyAlpha(0.87f), new SetterSpecificity());
 					}
 					else
 					{
-						textColor = new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White };
+						label.SetBinding(
+							Label.TextColorProperty,
+							new AppThemeBinding { Light = Colors.Black.MultiplyAlpha(0.87f), Dark = Colors.White },
+							new SetterSpecificity());
 					}
-
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.TextColorProperty, Value = textColor });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
-					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
 				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 				{

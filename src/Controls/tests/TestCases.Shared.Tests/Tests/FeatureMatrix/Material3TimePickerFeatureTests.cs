@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 
 public class Material3TimePickerFeatureTests : _GalleryUITest
 {
+	static AppiumQuery MaterialClockHour(string hour) => AppiumQuery.ByXPath($"//*[@text='{hour}']");
 	public override string GalleryPageName => "Time Picker Feature Matrix";
 
 	public Material3TimePickerFeatureTests(TestDevice device)
@@ -22,17 +23,57 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_InitialState_VerifyVisualState()
 	{
-		App.WaitForElement("TimePickerControl");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		App.Tap("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
 	[Test, Order(2)]
 	[Category(UITestCategories.Material3)]
-	public void Material3TimePicker_SetTimeAndCharacterSpacing_VerifyVisualState()
+	public void Material3TimePicker_ModifyOldTimeAndNewTime_VerifyVisualState()
 	{
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(MaterialClockHour("6"));
+		App.Tap(MaterialClockHour("6"));
 		App.WaitForElement("OK");
 		App.Tap("OK");
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(3)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_OldTimeAndNewTime_VerifyVisualState()
+	{
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(MaterialClockHour("7"));
+		App.Tap(MaterialClockHour("7"));
+		App.WaitForElement("OK");
+		App.Tap("OK");
+		App.WaitForElement("TimePickerControl");
+		App.Tap("TimePickerControl");
+		App.WaitForElement(MaterialClockHour("8"));
+		App.Tap(MaterialClockHour("8"));
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("07:00:00"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("06:00:00"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(4)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_SetTimeAndCharacterSpacing_VerifyVisualState()
+	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
 		App.WaitForElement("CharacterSpacingEntry");
@@ -46,7 +87,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 
 #if TEST_FAILS_ON_ANDROID // Issue Link - https://github.com/dotnet/maui/issues/30192
 
-	[Test, Order(3)]
+	[Test, Order(5)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFlowDirectionAndTime_VerifyVisualState()
 	{
@@ -61,7 +102,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 	}
 #endif
 
-	[Test, Order(4)]
+	[Test, Order(6)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetTimeAndTextColor_VerifyVisualState()
 	{
@@ -75,7 +116,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(5)]
+	[Test, Order(7)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
 	{
@@ -91,7 +132,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(6)]
+	[Test, Order(8)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontAttributesAndFontSize_VerifyVisualState()
 	{
@@ -108,7 +149,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(7)]
+	[Test, Order(9)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontAttributesAndFormat_VerifyVisualState()
 	{
@@ -134,7 +175,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(8)]
+	[Test, Order(10)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontFamilyAndFontSize_VerifyVisualState()
 	{
@@ -151,7 +192,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(9)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontFamilyAndFormat_VerifyVisualState()
 	{
@@ -177,7 +218,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(10)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFontSizeAndFormat_VerifyVisualState()
 	{
@@ -199,7 +240,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(11)]
+	[Test, Order(13)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetTimeAndIsEnabled_VerifyVisualState()
 	{
@@ -214,7 +255,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(12)]
+	[Test, Order(14)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetTimeAndIsVisible_VerifyVisualState()
 	{
@@ -227,7 +268,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		App.WaitForNoElement("TimePickerControl");
 	}
 
-	[Test, Order(13)]
+	[Test, Order(15)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetShadow_VerifyVisualState()
 	{
@@ -241,7 +282,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(14)]
+	[Test, Order(16)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFormat_t_AndTime_VerifyVisualState()
 	{
@@ -258,7 +299,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(15)]
+	[Test, Order(17)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFormatTAndTime_VerifyVisualState()
 	{
@@ -275,7 +316,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(16)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFormat_T_WithFontAttributes_VerifyVisualState()
 	{
@@ -294,7 +335,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(17)]
+	[Test, Order(19)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFormat_T_WithFontFamily_VerifyVisualState()
 	{
@@ -313,7 +354,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(18)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetFormat_T_WithFontSize_VerifyVisualState()
 	{
@@ -335,7 +376,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(19)]
+	[Test, Order(21)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetCulture_enUS_VerifyTimeFormat()
 	{
@@ -355,7 +396,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(20)]
+	[Test, Order(22)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetCulture_arEG_VerifyTimeFormat()
 	{
@@ -376,7 +417,7 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 
-	[Test, Order(21)]
+	[Test, Order(23)]
 	[Category(UITestCategories.Material3)]
 	public void Material3TimePicker_SetCulture_jaJP_VerifyTimeFormat()
 	{
@@ -394,6 +435,182 @@ public class Material3TimePickerFeatureTests : _GalleryUITest
 		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		var cultureFormatText = App.WaitForElement("CultureFormatLabel").GetText();
 		Assert.That(cultureFormatText, Is.EqualTo("Culture: ja-JP, Time: 17:30"));
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(24)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_ClearTime_UpdatesNullableTimeAndEventArgs()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("CultureUSButton");
+		App.Tap("CultureUSButton");
+		App.WaitForElement("ClearTimeButton");
+		App.Tap("ClearTimeButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("CultureFormatLabel").GetText(), Is.EqualTo("Culture: en-US, Time: No time selected"));
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("<null>"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("10:00:00"));
+	}
+
+	[Test, Order(24)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_ClearTimeThenSetTime_RoundTripsNullableTime()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("ClearTimeButton");
+		App.Tap("ClearTimeButton");
+		App.WaitForElement("TimeEntry");
+		App.ClearText("TimeEntry");
+		App.EnterText("TimeEntry", "11:30");
+		App.WaitForElement("SetTimeButton");
+		App.Tap("SetTimeButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("NewTimeSelectedLabel").GetText(), Is.EqualTo("11:30:00"));
+		Assert.That(App.WaitForElement("OldTimeSelectedLabel").GetText(), Is.EqualTo("<null>"));
+	}
+
+	[Test, Order(25)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_DisableFontAutoScaling_UpdatesBoundProperty()
+	{
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: True"));
+
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAutoScalingFalseButton");
+		App.Tap("FontAutoScalingFalseButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: False"));
+
+		App.Tap("Options");
+		App.WaitForElement("FontAutoScalingTrueButton");
+		App.Tap("FontAutoScalingTrueButton");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+
+		Assert.That(App.WaitForElement("FontAutoScalingStatusLabel").GetText(), Is.EqualTo("Scale: True"));
+	}
+
+	[Test, Order(26)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_IsOpenAndEvents_StaySynchronized()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("OpenTimePickerButton");
+		App.Tap("OpenTimePickerButton");
+
+#if ANDROID
+		App.WaitForElement("Cancel");
+		App.Tap("Cancel");
+#elif IOS
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif WINDOWS
+		App.WaitForElement("DismissButton");
+		App.Tap("DismissButton");
+#else
+		App.TapCoordinates(10, 10);
+#endif
+
+		Assert.That(App.WaitForElement("IsOpenStatusLabel").GetText(), Is.EqualTo("IsOpen: False"));
+		Assert.That(App.WaitForElement("OpenedCountLabel").GetText(), Is.EqualTo("Opened: 1"));
+		Assert.That(App.WaitForElement("ClosedCountLabel").GetText(), Is.EqualTo("Closed: 1"));
+		App.WaitForElement("OpenTimePickerButton");
+		App.Tap("OpenTimePickerButton");
+#if ANDROID
+		App.WaitForElement("OK");
+		App.Tap("OK");
+#elif IOS
+		App.WaitForElement("Done");
+		App.Tap("Done");
+#elif WINDOWS
+		App.WaitForElement("AcceptButton");
+		App.Tap("AcceptButton");
+#else
+		App.TapCoordinates(10, 10);
+#endif
+
+		Assert.That(App.WaitForElement("IsOpenStatusLabel").GetText(), Is.EqualTo("IsOpen: False"));
+		Assert.That(App.WaitForElement("OpenedCountLabel").GetText(), Is.EqualTo("Opened: 2"));
+		Assert.That(App.WaitForElement("ClosedCountLabel").GetText(), Is.EqualTo("Closed: 2"));
+	}
+
+	[Test, Order(27)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_SetTimeAndTextColorRed_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("TextColorRedButton");
+		App.Tap("TextColorRedButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(28)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_SetFontAttributesBold_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesBoldButton");
+		App.Tap("FontAttributesBoldButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(29)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_SetFontAttributesNone_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesItalicButton");
+		App.Tap("FontAttributesItalicButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontAttributesNoneButton");
+		App.Tap("FontAttributesNoneButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
+		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
+	}
+
+	[Test, Order(30)]
+	[Category(UITestCategories.Material3)]
+	public void Material3TimePicker_SetFontFamilyMontserratBold_VerifyVisualState()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("FontFamilyMontserratBoldButton");
+		App.Tap("FontFamilyMontserratBoldButton");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled("TimePickerControl");
 		VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }
