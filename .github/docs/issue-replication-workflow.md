@@ -132,8 +132,9 @@ bug caption; disclose an unsupported interaction instead.
 The trusted `doubleTap` action performs exactly two press/release cycles at the
 same located element in one bounded input sequence. It requires a locator and
 `value: null`; callers cannot supply a count, duration, or executable argument.
-Pointer sequences use a nonzero initial move because Mac2 rejects zero-duration
-moves. That driver-side rejection is an infrastructure failure, not app-crash
+Pointer sequences use a fixed 100 ms initial move, safely above XCTest's strict
+1 ms lower bound. The press/release intervals are unchanged. Driver-side
+duration rejection is an infrastructure failure, not app-crash
 evidence; explicit app-termination evidence still takes precedence.
 
 MainPage normally has a ContentPage root. A report whose initial NavigationPage

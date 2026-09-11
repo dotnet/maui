@@ -708,7 +708,8 @@ function Test-ReplicationElementValueMismatch {
 
 function Get-ReplicationDriverActionFailurePattern {
     # Mac2 rejects this trusted action argument before delivering input to the app.
-    return '(?i)Pointer move duration must be greater or equal to 1ms'
+    return '(?i)Pointer move duration must be greater or equal to 1ms|' +
+        'Invalid parameter not satisfying:\s*duration\s*>\s*0\.001\b'
 }
 
 function Test-ReplicationAppTerminated {

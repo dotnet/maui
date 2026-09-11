@@ -137,6 +137,7 @@ steps:
         'an abort exit code is not always a crash*preserves explicit app termination even when subsequent lookups time out'
         'an abort exit code is not always a crash*recognizes a text assertion without stack frames as a host failure rather than an app crash'
         'an abort exit code is not always a crash*keeps a Mac2 pointer-action rejection as infrastructure rather than inventing an app crash'
+        'an abort exit code is not always a crash*recognizes the XCTest strict pointer-duration assertion as a driver failure'
         'A gesture the driver supports is not refused on its behalf*uses a nonzero initial move for desktop drag actions'
         'an abort exit code is not always a crash*does not report an abort recovery when the log holds a plan verdict'
         'an abort exit code is not always a crash*still recovers an abort when the plan left no verdict'

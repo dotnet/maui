@@ -1174,9 +1174,9 @@ static void DoubleTap(
         isMousePointer ? PointerKind.Mouse : PointerKind.Touch,
         isMousePointer ? "mouse" : "finger");
     var sequence = new ActionSequence(pointer);
-    // WebDriverAgentMac rejects zero-duration pointer moves.
+    // Leave a margin above XCTest's strict 1 ms lower bound.
     sequence.AddAction(pointer.CreatePointerMove(
-        CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(1)));
+        CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(100)));
     sequence.AddAction(pointer.CreatePointerDown(button));
     sequence.AddAction(pointer.CreatePause(TimeSpan.FromMilliseconds(80)));
     sequence.AddAction(pointer.CreatePointerUp(button));
@@ -1216,7 +1216,7 @@ static void DragPath(
         isMousePointer ? "mouse" : "finger");
     var sequence = new ActionSequence(finger);
     sequence.AddAction(finger.CreatePointerMove(
-        CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(1)));
+        CoordinateOrigin.Viewport, x, y, TimeSpan.FromMilliseconds(100)));
     sequence.AddAction(finger.CreatePointerDown(button));
     sequence.AddAction(finger.CreatePause(TimeSpan.FromMilliseconds(250)));
 
