@@ -93,7 +93,10 @@ $script:ReplicationBindingEvidenceNames = @(
     'verification/fix-control-result.json',
     'verification/fix-control-console.log',
     'verification/restoration-result.json',
-    'verification/restoration-console.log'
+    'verification/restoration-console.log',
+    'regression/baseline/strict-test-evidence.json',
+    'regression/fix/strict-test-evidence.json',
+    'regression/regression-evidence.json'
 )
 
 function Get-ReplicationBindingFields {
@@ -142,6 +145,531 @@ function Get-ReplicationBindingFileDigest {
     }
 }
 
+function Get-ReplicationRegressionLaneSelection {
+    <#
+        .SYNOPSIS
+            Derives a bounded sibling lane exclusively from an immutable Git tree.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$TestPath,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$BaselineSha,
+        [Parameter(Mandatory = $true)][string]$Platform
+    )
+
+    if ($BaselineSha -cnotmatch '^[0-9a-f]{40}$' -or
+        $TestPath -cnotmatch '^src/Controls/tests/DeviceTests/[A-Za-z0-9._/-]+\.cs$' -or
+        $TestPath.Contains('..') -or $TestPath.Contains('\')) {
+        return $null
+    }
+    $directory = [IO.Path]::GetDirectoryName($TestPath).Replace('\', '/')
+    $component = [IO.Path]::GetFileName($directory)
+    $paths = @(& git -C $RepositoryRoot ls-tree -r --name-only $BaselineSha -- $directory)
+    if ($LASTEXITCODE -ne 0 -or $paths.Count -eq 0 -or $paths.Count -gt 64) {
+        return $null
+    }
+
+    $pairs = [Collections.Generic.List[object]]::new()
+    foreach ($pathValue in $paths) {
+        $path = ([string]$pathValue).Trim()
+        if ($path -ceq $TestPath -or
+            $path -cnotmatch '^[A-Za-z0-9._/-]+\.cs$' -or
+            ([IO.Path]::GetDirectoryName($path).Replace('\', '/')) -cne $directory) {
+            continue
+        }
+        $sizeText = (& git -C $RepositoryRoot cat-file -s "${BaselineSha}:$path" 2>$null |
+            Select-Object -First 1)
+        $size = 0L
+        if ($LASTEXITCODE -ne 0 -or
+            -not [long]::TryParse([string]$sizeText, [ref]$size) -or
+            $size -le 0 -or $size -gt 256KB) {
+            return $null
+        }
+        $content = (@(& git -C $RepositoryRoot show "${BaselineSha}:$path" 2>$null) -join "`n")
+        if ($LASTEXITCODE -ne 0) { return $null }
+        $namespaceMatch = [regex]::Match(
+            $content, '(?m)^\s*namespace\s+(?<namespace>[A-Za-z_][A-Za-z0-9_.]*)\s*(?:;|\{)')
+        if (-not $namespaceMatch.Success) { continue }
+        foreach ($match in [regex]::Matches(
+                $content,
+                '(?s)\[Category\(TestCategory\.(?<category>[A-Za-z][A-Za-z0-9_]*)\)\]' +
+                '.{0,1024}?\b(?:public\s+)?(?:sealed\s+|abstract\s+)?(?:partial\s+)?class\s+' +
+                '(?<class>[A-Za-z_][A-Za-z0-9_]*)')) {
+            $pairs.Add([pscustomobject]@{
+                Category = $match.Groups['category'].Value
+                Class = "$($namespaceMatch.Groups['namespace'].Value).$($match.Groups['class'].Value)"
+                SourcePath = $path
+            })
+        }
+    }
+
+    $distinct = @($pairs | Sort-Object Category, Class -Unique)
+    if ($distinct.Count -ne 1 -or $distinct[0].Category -cne $component) {
+        return $null
+    }
+    return [pscustomobject]@{
+        SchemaVersion = 1
+        BaselineSha = $BaselineSha
+        Platform = $Platform
+        Project = 'Controls'
+        ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        Category = [string]$distinct[0].Category
+        TestClass = [string]$distinct[0].Class
+        MetadataSourcePath = [string]$distinct[0].SourcePath
+        GeneratedTestPath = $TestPath
+    }
+}
+
+function Get-ReplicationDeviceTestFailureSignature {
+    param(
+        [Parameter(Mandatory = $true)][System.Xml.XmlElement]$Test
+    )
+
+    $failure = $Test.SelectSingleNode('./failure')
+    $message = if ($failure) {
+        $messageNode = $failure.SelectSingleNode('./message')
+        if ($messageNode) { [string]$messageNode.InnerText } else { '' }
+    } else {
+        [string]$Test.GetAttribute('message')
+    }
+    $exceptionType = if ($failure) {
+        [string]$failure.GetAttribute('exception-type')
+    } else { '' }
+    $stackNode = if ($failure) { $failure.SelectSingleNode('./stack-trace') } else { $null }
+    $stackFrames = [Collections.Generic.List[string]]::new()
+    if ($stackNode) {
+        foreach ($line in ([regex]::Replace(
+                    [string]$stackNode.InnerText, '\r\n?', "`n") -split "`n")) {
+            $frame = $line.Trim()
+            if ([string]::IsNullOrWhiteSpace($frame)) { continue }
+            $frame = [regex]::Replace(
+                $frame,
+                '\s+in\s+.+?:line\s+\d+\s*$',
+                '')
+            $frame = [regex]::Replace($frame, '\s+\[0x[0-9a-fA-F]+\]\s*$', '')
+            $frame = [regex]::Replace($frame, '\s+', ' ').Trim()
+            if ($frame -match '^(?:at\s+)?[A-Za-z_][A-Za-z0-9_.+`<>]*(?:\.[A-Za-z_][A-Za-z0-9_.+`<>]*)*\s*\(') {
+                $stackFrames.Add($frame)
+            }
+        }
+    }
+    if ($stackFrames.Count -eq 0) {
+        throw 'Strict device-test evidence requires every failed test to carry a stable stack frame.'
+    }
+
+    $canonical = (
+        $exceptionType.Trim() + "`n" +
+        ([regex]::Replace($message, '\r\n?', "`n")).Trim() + "`n" +
+        ($stackFrames -join "`n")).Trim()
+    if ([string]::IsNullOrWhiteSpace($exceptionType) -or
+        [string]::IsNullOrWhiteSpace($message)) {
+        throw 'Strict device-test evidence requires every failed test to carry an exception type and message.'
+    }
+
+    $bytes = [Text.Encoding]::UTF8.GetBytes($canonical)
+    return ([BitConverter]::ToString(
+        [Security.Cryptography.SHA256]::HashData($bytes)) -replace '-', '').ToLowerInvariant()
+}
+
+function Read-ReplicationDeviceTestResultXmlStrict {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][datetime]$NotBeforeUtc,
+        [Parameter(Mandatory = $true)][string]$ExpectedClass
+    )
+
+    if ($ExpectedClass -cnotmatch '^[A-Za-z_][A-Za-z0-9_.]{0,499}$') {
+        throw 'Strict device-test XML requires one valid expected class.'
+    }
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if ($item.PSIsContainer -or
+        $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $item.Length -le 0 -or
+        $item.Length -gt 10MB -or
+        $item.LastWriteTimeUtc -lt $NotBeforeUtc) {
+        throw "Strict device-test evidence requires a fresh bounded regular XML file: $Path"
+    }
+
+    $settings = [Xml.XmlReaderSettings]::new()
+    $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
+    $settings.XmlResolver = $null
+    $settings.MaxCharactersInDocument = 10MB
+    $reader = $null
+    try {
+        $reader = [Xml.XmlReader]::Create($item.FullName, $settings)
+        $xml = [Xml.XmlDocument]::new()
+        $xml.XmlResolver = $null
+        $xml.Load($reader)
+    } finally {
+        if ($reader) { $reader.Dispose() }
+    }
+    if ($xml.DocumentElement.LocalName -cne 'assemblies') {
+        throw "Strict device-test evidence requires an xUnit assemblies document: $Path"
+    }
+
+    $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
+    if ($assemblies.Count -lt 1 -or $assemblies.Count -gt 8) {
+        throw 'Strict device-test evidence requires between one and eight completed assemblies.'
+    }
+    $records = [Collections.Generic.List[object]]::new()
+    $totals = [ordered]@{ Total = 0; Passed = 0; Failed = 0; Skipped = 0; Errors = 0 }
+    foreach ($assembly in $assemblies) {
+        $counts = @{}
+        foreach ($name in @('total', 'passed', 'failed', 'skipped', 'errors')) {
+            $value = 0
+            if (-not [int]::TryParse([string]$assembly.GetAttribute($name), [ref]$value) -or
+                $value -lt 0) {
+                throw "Strict device-test evidence has an invalid '$name' assembly count."
+            }
+            $counts[$name] = $value
+        }
+        $rows = @($assembly.SelectNodes('.//test'))
+        if ($counts.errors -ne 0 -or
+            $counts.total -ne $rows.Count -or
+            ($counts.passed + $counts.failed + $counts.skipped) -ne $counts.total) {
+            throw 'Strict device-test evidence found incomplete or inconsistent assembly totals.'
+        }
+        $totals.Total += $counts.total
+        $totals.Passed += $counts.passed
+        $totals.Failed += $counts.failed
+        $totals.Skipped += $counts.skipped
+        $totals.Errors += $counts.errors
+
+        foreach ($test in $rows) {
+            $type = [string]$test.GetAttribute('type')
+            $method = [string]$test.GetAttribute('method')
+            $displayName = [string]$test.GetAttribute('name')
+            $outcome = [string]$test.GetAttribute('result')
+            if ($type -cne $ExpectedClass -or
+                $method -cnotmatch '^[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+                [string]::IsNullOrWhiteSpace($displayName) -or $displayName.Length -gt 1000 -or
+                $outcome -cnotin @('Pass', 'Fail', 'Skip')) {
+                throw 'Strict device-test evidence found a test with a missing identity, unexpected class, or unknown outcome.'
+            }
+            $records.Add([ordered]@{
+                type = $type
+                method = $method
+                displayName = $displayName
+                outcome = $outcome
+                failureSignature = if ($outcome -ceq 'Fail') {
+                    Get-ReplicationDeviceTestFailureSignature -Test $test
+                } else { '' }
+            })
+        }
+    }
+    if ($records.Count -lt 1 -or $records.Count -gt 256 -or
+        ($totals.Passed + $totals.Failed) -eq 0) {
+        throw 'Strict device-test evidence requires between 1 and 256 records and at least one executed test.'
+    }
+
+    return [pscustomobject]@{
+        Name = $item.Name
+        Sha256 = Get-ReplicationBindingFileDigest -Path $item.FullName
+        Total = $totals.Total
+        Passed = $totals.Passed
+        Failed = $totals.Failed
+        Skipped = $totals.Skipped
+        Errors = $totals.Errors
+        Records = @($records)
+    }
+}
+
+function Get-ReplicationRegressionJson {
+        param(
+            [Parameter(Mandatory = $true)][string]$Path,
+            [Parameter(Mandatory = $true)][string[]]$Fields,
+            [Parameter(Mandatory = $true)][string]$Context,
+            [ValidateRange(1, 1048576)][int]$MaximumBytes = 262144
+        )
+
+        $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+        if ($item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+            $item.Length -le 0 -or $item.Length -gt $MaximumBytes) {
+            throw "$Context must be a non-empty bounded regular file."
+        }
+        $raw = [IO.File]::ReadAllText($item.FullName)
+        $json = $null
+        try {
+            $json = [Text.Json.JsonDocument]::Parse($raw)
+            function Assert-NoDuplicateProperties {
+                param([Text.Json.JsonElement]$Element)
+                if ($Element.ValueKind -eq [Text.Json.JsonValueKind]::Object) {
+                    $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+                    foreach ($property in $Element.EnumerateObject()) {
+                        if (-not $names.Add($property.Name)) {
+                            throw "$Context contains a duplicate JSON property."
+                        }
+                        Assert-NoDuplicateProperties -Element $property.Value
+                    }
+                } elseif ($Element.ValueKind -eq [Text.Json.JsonValueKind]::Array) {
+                    foreach ($child in $Element.EnumerateArray()) {
+                        Assert-NoDuplicateProperties -Element $child
+                    }
+                }
+            }
+            Assert-NoDuplicateProperties -Element $json.RootElement
+        } finally {
+            if ($json) { $json.Dispose() }
+        }
+
+        $document = $raw | ConvertFrom-Json -Depth 12 -ErrorAction Stop
+        $actual = @($document.PSObject.Properties.Name | Sort-Object -CaseSensitive)
+        $expected = @($Fields | Sort-Object -CaseSensitive)
+        if (($actual -join "`n") -cne ($expected -join "`n")) {
+            throw "$Context has unexpected or missing fields."
+        }
+        return $document
+    }
+
+function Read-ReplicationRegressionRunEvidence {
+        param(
+            [Parameter(Mandatory = $true)][string]$Path,
+            [Parameter(Mandatory = $true)][string]$ExpectedPlatform,
+            [Parameter(Mandatory = $true)][string]$ExpectedProject,
+            [Parameter(Mandatory = $true)][string]$ExpectedCategory,
+            [Parameter(Mandatory = $true)][string]$ExpectedClass
+        )
+
+        $document = Get-ReplicationRegressionJson `
+            -Path $Path `
+            -Fields @(
+                'schemaVersion', 'completed', 'runStartedUtc', 'completedUtc',
+                'project', 'platform', 'testFilter', 'includeClass', 'records',
+                'resultFiles', 'total', 'passed', 'failed', 'skipped', 'errors') `
+            -Context 'Strict regression run evidence'
+        if ([int]$document.schemaVersion -ne 1 -or $document.completed -isnot [bool] -or
+            -not [bool]$document.completed) {
+            throw 'Strict regression run evidence does not record a completed schema-v1 run.'
+        }
+        if ([string]$document.platform -cne $ExpectedPlatform -or
+            [string]$document.project -cne $ExpectedProject -or
+            [string]$document.testFilter -cne "Category=$ExpectedCategory" -or
+            [string]$document.includeClass -cne $ExpectedClass) {
+            throw 'Strict regression run evidence does not match its trusted selector.'
+        }
+        $started = [datetime]::MinValue
+        $completed = [datetime]::MinValue
+        if (-not [datetime]::TryParse(
+                [string]$document.runStartedUtc,
+                [Globalization.CultureInfo]::InvariantCulture,
+                [Globalization.DateTimeStyles]::RoundtripKind,
+                [ref]$started) -or
+            -not [datetime]::TryParse(
+                [string]$document.completedUtc,
+                [Globalization.CultureInfo]::InvariantCulture,
+                [Globalization.DateTimeStyles]::RoundtripKind,
+                [ref]$completed) -or
+            $completed -lt $started) {
+            throw 'Strict regression run evidence has invalid completion timestamps.'
+        }
+
+        $sourceFiles = @($document.resultFiles)
+        if ($sourceFiles.Count -lt 1 -or $sourceFiles.Count -gt 8) {
+            throw 'Strict regression run evidence must bind between one and eight result files.'
+        }
+        $sourceNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        $xmlRecordMap = [ordered]@{}
+        $xmlTotals = [ordered]@{ Total = 0; Passed = 0; Failed = 0; Skipped = 0; Errors = 0 }
+        foreach ($source in $sourceFiles) {
+            $fields = @($source.PSObject.Properties.Name | Sort-Object -CaseSensitive)
+            if (($fields -join "`n") -cne "name`nsha256" -or
+                [string]$source.name -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}\.xml$' -or
+                [string]$source.sha256 -cnotmatch '^[0-9a-f]{64}$' -or
+                -not $sourceNames.Add([string]$source.name)) {
+                throw 'Strict regression run evidence contains invalid or duplicate result-file digests.'
+            }
+            $sourcePath = Join-Path (Split-Path -Parent $Path) ([string]$source.name)
+            $actualDigest = Get-ReplicationBindingFileDigest -Path $sourcePath
+            if ([string]$actualDigest -cne [string]$source.sha256) {
+                throw 'Strict regression run evidence source result digest does not match its XML file.'
+            }
+            $parsedXml = Read-ReplicationDeviceTestResultXmlStrict `
+                -Path $sourcePath `
+                -NotBeforeUtc $started `
+                -ExpectedClass $ExpectedClass
+            $xmlTotals.Total += $parsedXml.Total
+            $xmlTotals.Passed += $parsedXml.Passed
+            $xmlTotals.Failed += $parsedXml.Failed
+            $xmlTotals.Skipped += $parsedXml.Skipped
+            $xmlTotals.Errors += $parsedXml.Errors
+            foreach ($record in $parsedXml.Records) {
+                $identity = "$($record.type)`n$($record.method)`n$($record.displayName)"
+                if ($xmlRecordMap.Contains($identity)) {
+                    throw "Retained regression XML contains duplicate test identity '$($record.type).$($record.method) [$($record.displayName)]'."
+                }
+                $xmlRecordMap[$identity] = $record
+            }
+        }
+
+        $records = @($document.records)
+        if ($records.Count -lt 1 -or $records.Count -gt 256) {
+            throw 'Strict regression run evidence must contain between one and 256 test records.'
+        }
+        $recordMap = [ordered]@{}
+        foreach ($record in $records) {
+            $fields = @($record.PSObject.Properties.Name | Sort-Object -CaseSensitive)
+            if (($fields -join "`n") -cne "displayName`nfailureSignature`nmethod`noutcome`ntype") {
+                throw 'Strict regression run evidence contains a malformed test record.'
+            }
+            $type = [string]$record.type
+            $method = [string]$record.method
+            $displayName = [string]$record.displayName
+            $outcome = [string]$record.outcome
+            $signature = [string]$record.failureSignature
+            if ($type -cne $ExpectedClass -or
+                $method -cnotmatch '^[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+                [string]::IsNullOrWhiteSpace($displayName) -or $displayName.Length -gt 1000 -or
+                $outcome -cnotin @('Pass', 'Fail', 'Skip') -or
+                ($outcome -ceq 'Fail' -and $signature -cnotmatch '^[0-9a-f]{64}$') -or
+                ($outcome -cne 'Fail' -and $signature -cne '')) {
+                throw 'Strict regression run evidence contains an invalid test identity or outcome.'
+            }
+            $identity = "$type`n$method`n$displayName"
+            if ($recordMap.Contains($identity)) {
+                throw "Strict regression run evidence contains duplicate test identity '$type.$method [$displayName]'."
+            }
+            $recordMap[$identity] = [pscustomobject]@{
+                Outcome = $outcome
+                FailureSignature = $signature
+            }
+        }
+        foreach ($name in @('total', 'passed', 'failed', 'skipped', 'errors')) {
+            $value = 0
+            if (-not [int]::TryParse([string]$document.$name, [ref]$value) -or $value -lt 0 -or
+                $value -ne [int]$xmlTotals[
+                    $name.Substring(0, 1).ToUpperInvariant() + $name.Substring(1)]) {
+                throw 'Strict regression run evidence totals do not match retained XML.'
+            }
+        }
+        if ([int]$document.total -ne $records.Count -or
+            ([int]$document.passed + [int]$document.failed + [int]$document.skipped) -ne
+                [int]$document.total -or [int]$document.errors -ne 0) {
+            throw 'Strict regression run evidence contains inconsistent totals.'
+        }
+        if ($recordMap.Count -ne $xmlRecordMap.Count) {
+            throw 'Strict regression run evidence records do not match retained XML.'
+        }
+        foreach ($identity in $recordMap.Keys) {
+            if (-not $xmlRecordMap.Contains($identity) -or
+                [string]$recordMap[$identity].Outcome -cne
+                    [string]$xmlRecordMap[$identity].outcome -or
+                [string]$recordMap[$identity].FailureSignature -cne
+                    [string]$xmlRecordMap[$identity].failureSignature) {
+                throw 'Strict regression run evidence records do not match retained XML.'
+            }
+        }
+        if (@($recordMap.Values | Where-Object { $_.Outcome -ne 'Skip' }).Count -eq 0) {
+            throw 'Strict regression run evidence contains only skipped tests.'
+        }
+        return [pscustomobject]@{
+            Document = $document
+            Records = $recordMap
+            Digest = Get-ReplicationBindingFileDigest -Path $Path
+        }
+    }
+
+function Assert-ReplicationRegressionEvidence {
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory = $true)][string]$ArtifactRoot,
+            [Parameter(Mandatory = $true)][string]$ExpectedBaselineSha,
+            [Parameter(Mandatory = $true)][string]$ExpectedPlatform,
+            [string]$ExpectedCategory = '',
+            [string]$ExpectedProject = '',
+            [string]$ExpectedProjectPath = '',
+            [string]$ExpectedClass = '',
+            [string]$ExpectedGeneratedTestPath = ''
+        )
+
+        $evidencePath = Join-Path $ArtifactRoot 'regression/regression-evidence.json'
+        $evidence = Get-ReplicationRegressionJson `
+            -Path $evidencePath `
+            -Fields @(
+                'schemaVersion', 'baselineSha', 'productPatchSha256', 'platform',
+                'project', 'projectPath', 'category', 'testClass', 'generatedTestPath',
+                'baselineResult', 'fixResult', 'baselineResultSha256',
+                'fixResultSha256', 'comparison') `
+            -Context 'Regression evidence'
+        if ([int]$evidence.schemaVersion -ne 1 -or
+            [string]$evidence.baselineSha -cne $ExpectedBaselineSha.ToLowerInvariant() -or
+            [string]$evidence.platform -cne $ExpectedPlatform -or
+            [string]$evidence.productPatchSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+            [string]$evidence.comparison -cne 'pass') {
+            throw 'Regression evidence does not match its immutable run inputs.'
+        }
+        foreach ($expectation in @(
+            @{ Expected = $ExpectedCategory; Actual = [string]$evidence.category; Name = 'category' },
+            @{ Expected = $ExpectedProject; Actual = [string]$evidence.project; Name = 'project' },
+            @{ Expected = $ExpectedProjectPath; Actual = [string]$evidence.projectPath; Name = 'projectPath' },
+            @{ Expected = $ExpectedClass; Actual = [string]$evidence.testClass; Name = 'testClass' },
+            @{ Expected = $ExpectedGeneratedTestPath; Actual = [string]$evidence.generatedTestPath; Name = 'generatedTestPath' }
+        )) {
+            if (-not [string]::IsNullOrWhiteSpace($expectation.Expected) -and
+                $expectation.Expected -cne $expectation.Actual) {
+                throw "Regression evidence $($expectation.Name) does not match the trusted selector."
+            }
+        }
+        if ([string]$evidence.baselineResult -cne 'regression/baseline/strict-test-evidence.json' -or
+            [string]$evidence.fixResult -cne 'regression/fix/strict-test-evidence.json') {
+            throw 'Regression evidence uses an unexpected result path.'
+        }
+        $patchDigest = Get-ReplicationBindingFileDigest -Path (Join-Path $ArtifactRoot 'fix.patch')
+        if ([string]$evidence.productPatchSha256 -cne [string]$patchDigest) {
+            throw 'Regression evidence product patch digest does not match fix.patch.'
+        }
+
+        $baselinePath = Join-Path $ArtifactRoot ([string]$evidence.baselineResult)
+        $fixPath = Join-Path $ArtifactRoot ([string]$evidence.fixResult)
+        $baseline = Read-ReplicationRegressionRunEvidence `
+            -Path $baselinePath `
+            -ExpectedPlatform $ExpectedPlatform `
+            -ExpectedProject ([string]$evidence.project) `
+            -ExpectedCategory ([string]$evidence.category) `
+            -ExpectedClass ([string]$evidence.testClass)
+        $fix = Read-ReplicationRegressionRunEvidence `
+            -Path $fixPath `
+            -ExpectedPlatform $ExpectedPlatform `
+            -ExpectedProject ([string]$evidence.project) `
+            -ExpectedCategory ([string]$evidence.category) `
+            -ExpectedClass ([string]$evidence.testClass)
+        if ($baseline.Digest -cne [string]$evidence.baselineResultSha256 -or
+            $fix.Digest -cne [string]$evidence.fixResultSha256) {
+            throw 'Regression evidence does not bind the exact baseline and fix result documents.'
+        }
+
+        $baselineIds = @($baseline.Records.Keys | Sort-Object -CaseSensitive)
+        $fixIds = @($fix.Records.Keys | Sort-Object -CaseSensitive)
+        if (($baselineIds -join "`n") -cne ($fixIds -join "`n")) {
+            throw 'Regression baseline and fix runs did not execute the same exact test identities.'
+        }
+        $comparablePassingCount = 0
+        foreach ($identity in $baselineIds) {
+            $before = $baseline.Records[$identity]
+            $after = $fix.Records[$identity]
+            if ($before.Outcome -ceq 'Pass' -and $after.Outcome -ceq 'Pass') {
+                $comparablePassingCount++
+            }
+            $accepted = switch ($before.Outcome) {
+                'Pass' { $after.Outcome -ceq 'Pass' }
+                'Fail' {
+                    $after.Outcome -ceq 'Pass' -or
+                    ($after.Outcome -ceq 'Fail' -and
+                        $after.FailureSignature -ceq $before.FailureSignature)
+                }
+                'Skip' { $after.Outcome -in @('Skip', 'Pass') }
+                default { $false }
+            }
+            if (-not $accepted) {
+                $display = $identity -replace "`n", '.'
+                throw "Regression evidence detected an incompatible outcome for '$display': $($before.Outcome) -> $($after.Outcome)."
+            }
+        }
+        if ($comparablePassingCount -lt 1) {
+            throw 'Regression evidence contains no comparable passing sibling execution.'
+        }
+        return $evidence
+    }
 function ConvertTo-ReplicationBindingCanonicalText {
     <#
         .SYNOPSIS
@@ -300,6 +828,8 @@ function New-ReplicationCertificationBinding {
         [Parameter(Mandatory = $true)][string]$ExecutionHeadSha,
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$TrustedScripts,
         [object]$Selector,
+        [string]$ExpectedRegressionCategory = '',
+        [string]$ExpectedRegressionClass = '',
         [string]$OutputPath = ''
     )
 
@@ -327,6 +857,18 @@ function New-ReplicationCertificationBinding {
     $evidence = [ordered]@{}
     foreach ($name in $script:ReplicationBindingEvidenceNames) {
         $evidence[$name] = Get-ReplicationBindingFileDigest -Path (Join-Path $root $name)
+    }
+    if ($null -ne $evidence['fix.patch']) {
+        if ([string]::IsNullOrWhiteSpace($ExpectedRegressionCategory) -or
+            [string]::IsNullOrWhiteSpace($ExpectedRegressionClass)) {
+            throw 'Certification binding requires the trusted regression category and class for a fix.'
+        }
+        $null = Assert-ReplicationRegressionEvidence `
+            -ArtifactRoot $root `
+            -ExpectedBaselineSha $ReplicationBaseSha `
+            -ExpectedPlatform $Platform `
+            -ExpectedCategory $ExpectedRegressionCategory `
+            -ExpectedClass $ExpectedRegressionClass
     }
 
     $scripts = [ordered]@{}
@@ -467,6 +1009,8 @@ function Assert-ReplicationCertificationBinding {
         [object]$Selector,
         [long]$IssueNumber = 0,
         [string]$Platform = '',
+        [string]$ExpectedRegressionCategory = '',
+        [string]$ExpectedRegressionClass = '',
         [string]$Context = 'certification binding'
     )
 
@@ -557,6 +1101,23 @@ function Assert-ReplicationCertificationBinding {
     Compare-Field -Name 'fixPatchSha256' `
         -Expected (Get-ReplicationBindingValue -Source $boundEvidence -Name 'fix.patch') `
         -Actual (Get-ReplicationBindingValue -Source $Binding -Name 'fixPatchSha256')
+
+    $fixPatchDigest = Get-ReplicationBindingValue -Source $boundEvidence -Name 'fix.patch'
+    if ($null -ne $fixPatchDigest -and
+        -not [string]::IsNullOrWhiteSpace([string]$fixPatchDigest)) {
+        if ([string]::IsNullOrWhiteSpace($ExpectedRegressionCategory) -or
+            [string]::IsNullOrWhiteSpace($ExpectedRegressionClass)) {
+            throw "Certification binding requires trusted regression selector inputs ($Context)."
+        }
+        $null = Assert-ReplicationRegressionEvidence `
+            -ArtifactRoot $root `
+            -ExpectedBaselineSha ([string](Get-ReplicationBindingValue `
+                -Source $Binding -Name 'replicationBaseSha')) `
+            -ExpectedPlatform ([string](Get-ReplicationBindingValue `
+                -Source $Binding -Name 'platform')) `
+            -ExpectedCategory $ExpectedRegressionCategory `
+            -ExpectedClass $ExpectedRegressionClass
+    }
 
     if ($mismatches.Count -gt 0) {
         $detail = (@($mismatches | Sort-Object -CaseSensitive -Unique | Select-Object -First 12) -join ', ')

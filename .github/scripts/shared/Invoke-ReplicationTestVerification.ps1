@@ -34,9 +34,8 @@ param(
     [ValidateLength(1, 500)]
     [string]$TestClass,
 
-    [Parameter(Mandatory = $true)]
-    [ValidateLength(1, 500)]
-    [string]$TestMethod,
+    [AllowEmptyString()]
+    [string]$TestMethod = '',
 
     [Parameter(Mandatory = $true)]
     [ValidateLength(3, 1000)]
@@ -66,7 +65,11 @@ param(
     # repairs the test and starts again, so repeating a known-red run buys
     # nothing. A control arm has nothing to repair and its verdict discards work
     # that is already paid for, so it measures every run it was asked for.
-    [switch]$CompleteAllRuns
+    [switch]$CompleteAllRuns,
+
+    # Executes an immutable, class-scoped sibling lane and emits the runner's
+    # strict per-test evidence. This path does not grade the generated issue test.
+    [switch]$RegressionEvidence
 )
 
 $ErrorActionPreference = 'Stop'
@@ -299,18 +302,97 @@ function Get-ReplicationVerificationActualFailureMessage {
         -MaximumLength $MaximumLength
 }
 
-if (-not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
+if (-not $RegressionEvidence -and
+    -not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
 }
 if ($Platform -in @('windows', 'ios', 'catalyst') -and
     $TestType -ne 'DeviceTest') {
     throw "$Platform replication permits only isolated Controls device tests."
 }
+if (-not $RegressionEvidence -and [string]::IsNullOrWhiteSpace($TestMethod)) {
+    throw 'Targeted verification requires a test method.'
+}
+
+$repositoryRoot = (git rev-parse --show-toplevel).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($repositoryRoot)) {
+    throw 'Unable to resolve the repository root for trusted verification.'
+}
+
+if ($RegressionEvidence) {
+    if ($TestType -cne 'DeviceTest' -or
+        $TestProject -cne 'Controls' -or
+        $TestProjectPath -cne 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' -or
+        $TestFilter -cnotmatch '^Category=(?!Issue[1-9][0-9]*$)[A-Za-z][A-Za-z0-9_]{0,63}$' -or
+        $TestClass -cnotmatch '^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+        $TestClass -match "\.Issue$IssueNumber(?:Tests)?$" -or
+        -not [string]::IsNullOrWhiteSpace($TestMethod) -or
+        $RunCount -ne 1 -or $ExpectPass -or $CompleteAllRuns) {
+        throw 'Regression evidence requires one trusted DeviceTest category/class run.'
+    }
+    if (Test-Path -LiteralPath $OutputDirectory) {
+        throw 'Regression evidence requires a fresh output directory.'
+    }
+    $runner = Join-Path (
+        Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $VerifierPath))
+    ) 'run-device-tests/scripts/Run-DeviceTests.ps1'
+    if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
+        throw 'The trusted device-test runner is missing for regression evidence.'
+    }
+    $platformName = if ($Platform -ceq 'catalyst') { 'maccatalyst' } else { $Platform }
+    $strictEvidencePath = Join-Path $OutputDirectory 'strict-test-evidence.json'
+    $arguments = @(
+        '-NoLogo', '-NoProfile', '-NonInteractive',
+        '-File', $runner,
+        '-Project', $TestProject,
+        '-Platform', $platformName,
+        '-RepositoryRoot', $repositoryRoot,
+        '-Configuration', 'Debug',
+        '-NoRestore',
+        '-Rebuild',
+        '-TestFilter', $TestFilter,
+        '-IncludeClasses', $TestClass,
+        '-OutputDirectory', $OutputDirectory,
+        '-StrictTestEvidencePath', $strictEvidencePath,
+        '-Timeout', '00:30:00'
+    )
+    $trustedSkillsRoot = Split-Path -Parent (
+        Split-Path -Parent (Split-Path -Parent $VerifierPath))
+    $trustedRoot = Split-Path -Parent $trustedSkillsRoot
+    if ($Platform -ceq 'windows') {
+        $arguments += @('-RequireWindowsAppContainer', '-ReplicationTrustedRoot', $trustedRoot)
+    } elseif ($Platform -ceq 'catalyst') {
+        $arguments += @('-RequireMacCatalystAppSandbox', '-ReplicationTrustedRoot', $trustedRoot)
+    }
+
+    $startedUtc = [datetime]::UtcNow.AddSeconds(-1)
+    $savedSecrets = @{}
+    try {
+        foreach ($name in @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')) {
+            $savedSecrets[$name] = [Environment]::GetEnvironmentVariable($name)
+            [Environment]::SetEnvironmentVariable($name, $null)
+        }
+        & pwsh @arguments
+        $runnerExitCode = $LASTEXITCODE
+    } finally {
+        foreach ($name in $savedSecrets.Keys) {
+            [Environment]::SetEnvironmentVariable($name, $savedSecrets[$name])
+        }
+    }
+    $evidenceItem = Get-Item -LiteralPath $strictEvidencePath -Force -ErrorAction Stop
+    if ($runnerExitCode -notin @(0, 1) -or
+        $evidenceItem.PSIsContainer -or
+        $evidenceItem.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $evidenceItem.Length -le 0 -or $evidenceItem.Length -gt 256KB -or
+        $evidenceItem.LastWriteTimeUtc -lt $startedUtc) {
+        throw 'The sibling regression run did not produce fresh completed strict evidence.'
+    }
+    exit 0
+}
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $resultPath = Join-Path $OutputDirectory 'verification-result.json'
 $machineResultPath = Join-Path $OutputDirectory 'verifier-machine-result.json'
-$repositoryRoot = git rev-parse --show-toplevel
 $verificationRoot = Join-Path $repositoryRoot "CustomAgentLogsTmp/PRState/$IssueNumber/PRAgent/gate/verify-tests-fail"
 $secretNames = @('GH_TOKEN', 'GITHUB_TOKEN', 'COPILOT_GITHUB_TOKEN')
 

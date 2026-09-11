@@ -383,6 +383,44 @@ steps:
         'BuildAndRunSandbox Windows crash diagnostic wiring*preserves the original production runner exception when diagnostics throw'
         'BuildAndRunSandbox Windows crash diagnostic wiring*wires the executable production seam into isolated Windows only'
         'Capturing a trusted tree*names every key script individually'
+        'Replication sibling regression evidence*uses only the trusted device runner with a class-scoped category'
+        'Replication sibling regression evidence*requires one fresh run and does not permit method narrowing'
+        'Replication sibling regression evidence*preserves platform isolation without claiming iOS network isolation'
+        'Replication sibling regression evidence*removes credential variables around the child runner'
+        'A fix is regression-checked against the lane its neighbours declare*derives the Label class from the immutable baseline for issue 29282'
+        'A fix is regression-checked against the lane its neighbours declare*runs the immutable baseline before candidates and the selected fix before final arms'
+        'A fix is regression-checked against the lane its neighbours declare*reserves the baseline and both possible fix runs without increasing a budget'
+        'A fix is regression-checked against the lane its neighbours declare*offers the deterministic finding only to the one unused repair opportunity'
+        'Regression evidence clean-gate contract*requires every declared fix to name trusted regression evidence'
+        'Regression evidence clean-gate contract*rechecks the shared evidence contract against clean manifest inputs'
+        'What a certification binding records*rejects a pass-to-fail sibling regression even when aggregate totals could offset'
+        'What a certification binding records*allows an inherited failure only with the identical signature and allows it to become green'
+        'What a certification binding records*rejects a newly skipped test and identity-set drift'
+        'What a certification binding records*discloses stable skips but requires a comparable passing sibling'
+        'What a certification binding records*rejects malformed regression JSON with duplicate properties'
+        'Re-checking a certification binding*refuses retained regression XML mutated after validation'
+        'Build isolation options*normalizes Mac Catalyst strict evidence to the replication platform name'
+        'Get-DeviceTestResultSummary*emits exact strict identities, skip state, failure signatures, and source digests'
+        'Get-DeviceTestResultSummary*fails strict evidence closed for duplicate identities'
+        'Get-DeviceTestResultSummary*prohibits DTD processing in strict evidence XML'
+        'Get-DeviceTestResultSummary*rejects stale and incomplete strict evidence XML'
+        'Get-DeviceTestResultSummary*writes a closed strict document and retains the exact source XML'
+        'Every way the fix phase can fail still ships the reproduction*uses one bounded repair for deterministic sibling regression evidence before final arms'
+        'Replication sibling regression evidence*sends a Windows regression run through the production strict selector contract'
+        'What it takes to publish a fix alongside the reproduction*rejects a self-consistent generated issue class substituted for the immutable sibling lane'
+        'Regression evidence clean-gate contract*derives the sibling selector from the trusted baseline input rather than the manifest'
+        'What a certification binding records*treats volatile source roots and line numbers as the same failure location'
+        'Re-checking a certification binding*reparses retained XML when every attacker-controlled digest is updated'
+        'Build isolation options*admits only the immutable class-shaped strict selector used by desktop regression runs'
+        'Build isolation options*loads the strict XML parser only from the trusted runner tree'
+        'Get-DeviceTestResultSummary*distinguishes identical failure messages from different assertion frames'
+        'Get-DeviceTestResultSummary*normalizes volatile failure paths and line numbers without losing frame identity'
+        'Get-DeviceTestResultSummary*removes early strict completion evidence when required cleanup fails'
+        'Get-DeviceTestResultSummary*publishes completed strict evidence after an ordinary test failure and clean teardown'
+        'Cross-platform device test class filtering*applies the trusted packaged Windows class selector before execution and rejects unsafe selectors'
+        'Cross-platform device test class filtering*injects the trusted Windows class-filter override into the baseline graph build'
+        'Cross-platform device test class filtering*passes only the validated regression class to the packaged Windows process'
+        'Get-DeviceTestResultSummary*retains strict Windows XML after package LocalState cleanup'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
@@ -398,6 +436,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationWindowsCrashDiagnostic.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-TrustedTreeAttestation.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationCertificationBinding.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationIssueContext.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Detect-TestsInDiff.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"

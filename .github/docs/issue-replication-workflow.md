@@ -272,9 +272,41 @@ the unchanged fix-green and restoration-red arms exactly once. Review does not
 claim those final arms passed before they execute.
 
 A legitimate trigger-removed control remains required for publication; it is
-never fabricated. The recorded regression-lane category is not itself evidence
-that sibling tests ran. Four-arm issue certification does not establish that
-all pre-existing component contracts remain intact.
+never fabricated. Four-arm issue certification does not establish that
+pre-existing component contracts remain intact.
+
+### Separate sibling regression evidence
+
+A fix also requires a bounded sibling lane derived from the immutable baseline
+Git tree, not a model-selected class or a manifest claim. The current selector
+supports an unambiguous class/category in the generated Controls device test's
+component directory. A missing or ambiguous lane stops the fix attempt; other
+test projects and test tiers do not silently receive a success-shaped fallback.
+
+Trusted code runs that class on the unfixed baseline and the selected fix in
+separate fresh directories, with the existing platform execution boundaries.
+The exact issue test and its four-arm counts remain separate. Each sibling
+record retains its class, method, theory/display identity, outcome and normalized
+failure signature, including stack-frame identity. The identity set must match.
+A new failure, changed failure or newly skipped test rejects the fix; an
+inherited failure must keep its signature or become passing. Stable skips are
+disclosed, not counted as coverage, and at least one sibling must pass in both
+runs. A deterministic regression can use the existing single repair opportunity,
+but cannot cause repeated repairs or larger execution budgets.
+
+Strict completion is emitted only after required cleanup succeeds. Windows XML
+is preserved outside package LocalState before uninstall. A trusted, attested
+build override passes the validated class into the packaged runner before
+execution, including when the build uses the older product baseline. It does
+not relax class isolation or broaden the AppContainer boundary.
+
+The evidence binds baseline, product patch, platform, project, selector and
+result-file digests. Clean validation re-derives the class/category from the
+baseline and reparses retained XML to compare every row with the JSON document;
+updating self-reported digests alone cannot forge passing rows. The publisher
+rechecks the binding against the clean validator's class/category before
+credentials are used. Category metadata, aggregate totals, stale XML and
+incomplete cleanup are not substitute evidence.
 
 ## Negative control
 

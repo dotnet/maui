@@ -424,7 +424,34 @@ namespace Microsoft.Maui.Controls;
 	}
 
 '@
-        & git -C $Fixture.RepoRoot add README src/Controls/src/Core/Button/Button.cs
+        if ($Fixture.CandidatePath -match
+            '^src/Controls/tests/DeviceTests/Elements/(?<component>[A-Za-z][A-Za-z0-9_]*)/') {
+            $component = $Matches.component
+            Write-TestText `
+                -Path (Join-Path $Fixture.RepoRoot (
+                    "src/Controls/tests/DeviceTests/Elements/$component/${component}Tests.cs")) `
+                -Value @"
+namespace Microsoft.Maui.DeviceTests;
+
+[Category(TestCategory.$component)]
+public partial class ${component}Tests
+{
+    [Fact]
+    public void ExistingBehavior() { }
+}
+"@
+            foreach ($trustedFixtureSource in @(
+                'src/Controls/tests/DeviceTests/ControlsHandlerTestBase.cs',
+                'src/TestUtils/src/DeviceTests/AssertHelpers.cs'
+            )) {
+                $source = Join-Path $PSScriptRoot "../../../$trustedFixtureSource"
+                $target = Join-Path $Fixture.RepoRoot $trustedFixtureSource
+                New-Item -ItemType Directory -Path (Split-Path -Parent $target) `
+                    -Force | Out-Null
+                Copy-Item -LiteralPath $source -Destination $target -Force
+            }
+        }
+        & git -C $Fixture.RepoRoot add .
         & git -C $Fixture.RepoRoot commit --quiet --no-gpg-sign -m 'base'
         if ($LASTEXITCODE -ne 0) {
             throw 'Unable to create artifact-contract fixture git base.'
@@ -466,13 +493,21 @@ namespace Microsoft.Maui.Controls;
             testProject = switch ($Fixture.TestType) {
                 'UnitTest' { 'Core.UnitTests' }
                 'XamlUnitTest' { 'Controls.Xaml.UnitTests' }
-                'DeviceTest' { 'Core.DeviceTests' }
+                'DeviceTest' {
+                    if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                        'Controls'
+                    } else { 'Core.DeviceTests' }
+                }
                 'UITest' { 'Controls.TestCases.Shared.Tests' }
             }
             testProjectPath = switch ($Fixture.TestType) {
                 'UnitTest' { 'src/Core/tests/UnitTests/Core.UnitTests.csproj' }
                 'XamlUnitTest' { 'src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj' }
-                'DeviceTest' { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                'DeviceTest' {
+                    if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                        'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                    } else { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                }
                 'UITest' { 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj' }
             }
             testClassName = $Fixture.TestClassName
@@ -495,13 +530,21 @@ namespace Microsoft.Maui.Controls;
                 project = switch ($Fixture.TestType) {
                     'UnitTest' { 'Core.UnitTests' }
                     'XamlUnitTest' { 'Controls.Xaml.UnitTests' }
-                    'DeviceTest' { 'Core.DeviceTests' }
+                    'DeviceTest' {
+                        if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                            'Controls'
+                        } else { 'Core.DeviceTests' }
+                    }
                     'UITest' { 'Controls.TestCases.Shared.Tests' }
                 }
                 projectPath = switch ($Fixture.TestType) {
                     'UnitTest' { 'src/Core/tests/UnitTests/Core.UnitTests.csproj' }
                     'XamlUnitTest' { 'src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj' }
-                    'DeviceTest' { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                    'DeviceTest' {
+                        if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                            'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                        } else { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                    }
                     'UITest' { 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj' }
                 }
                 class = $Fixture.TestClassName
@@ -596,13 +639,21 @@ namespace Microsoft.Maui.Controls;
             testProject = switch ($Fixture.TestType) {
                 'UnitTest' { 'Core.UnitTests' }
                 'XamlUnitTest' { 'Controls.Xaml.UnitTests' }
-                'DeviceTest' { 'Core.DeviceTests' }
+                'DeviceTest' {
+                    if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                        'Controls'
+                    } else { 'Core.DeviceTests' }
+                }
                 'UITest' { 'Controls.TestCases.Shared.Tests' }
             }
             testProjectPath = switch ($Fixture.TestType) {
                 'UnitTest' { 'src/Core/tests/UnitTests/Core.UnitTests.csproj' }
                 'XamlUnitTest' { 'src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj' }
-                'DeviceTest' { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                'DeviceTest' {
+                    if ($Fixture.CandidatePath -like 'src/Controls/tests/DeviceTests/*') {
+                        'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                    } else { 'src/Core/tests/DeviceTests/Core.DeviceTests.csproj' }
+                }
                 'UITest' { 'src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj' }
             }
             testClass = $Fixture.TestClassName
@@ -5046,11 +5097,60 @@ public void Issue12345()
 }
 '@
 
+        function script:New-OracleDeterministicControlSource {
+            param([Parameter(Mandatory = $true)][object]$Fixture)
+
+            $parts = $Fixture.TestClassName.Split('.')
+            $className = $parts[-1]
+            $namespace = $parts[0..($parts.Count - 2)] -join '.'
+            return @"
+#if ANDROID
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace $namespace;
+
+public class $className : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue$($Fixture.IssueNumber)")]
+    public async Task $($Fixture.TestMethodName)()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));
+        var affectedLabel = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "<span>&lt</span>a",
+            TextType = global::Microsoft.Maui.TextType.Html
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedLabel.Text = "&lt;a";
+        }
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(
+            new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }),
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                Assert.Equal("<a", handler.PlatformView.Text);
+            });
+    }
+}
+#endif
+"@
+        }
+
         function script:Add-OracleControl {
             param([Parameter(Mandatory = $true)][object]$Fixture)
 
             $verificationRoot = Join-Path $Fixture.EvidenceDir 'verification'
-            $controlBaseline = New-DeterministicControlFixtureSource `
+            $controlBaseline = script:New-OracleDeterministicControlSource `
                 -Fixture $Fixture
             $controlVariant = $controlBaseline.Replace(
                 'var applyReportedTrigger = true;',
@@ -5146,7 +5246,7 @@ namespace Microsoft.Maui.Controls;
                 Remove-Item -LiteralPath (Join-Path $Fixture.RepoRoot $Target) -Force
             }
 
-            $fixPatchPath = Join-Path $Fixture.Root 'fix.patch'
+            $fixPatchPath = Join-Path $Fixture.EvidenceDir 'fix.patch'
             $tracked = -not $SkipProductFile
             if ($tracked) {
                 git -C $Fixture.RepoRoot ls-files --error-unmatch -- $Target 2>$null |
@@ -5184,9 +5284,88 @@ index cc87be1f60..4791badc38 100644
             $scope = if ($PSBoundParameters.ContainsKey('ScopeFiles')) { @($ScopeFiles) } else { @($Target) }
             Write-FixtureFixScope -Fixture $Fixture -Files $scope
             $manifest = Get-Content -LiteralPath $Fixture.ManifestPath -Raw | ConvertFrom-Json
+            $component = [regex]::Match(
+                $Fixture.CandidatePath,
+                '^src/Controls/tests/DeviceTests/Elements/(?<component>[A-Za-z][A-Za-z0-9_]*)/'
+            ).Groups['component'].Value
+            $regressionClass = "Microsoft.Maui.DeviceTests.${component}Tests"
             Add-Member -InputObject $manifest -NotePropertyName 'fixFiles' -NotePropertyValue $declared -Force
             if (@($declared).Count -gt 0) {
                 Add-Member -InputObject $manifest -NotePropertyName 'fixPatch' -NotePropertyValue 'fix.patch' -Force
+                Add-Member -InputObject $manifest -NotePropertyName 'fixRegressionLane' `
+                    -NotePropertyValue $component -Force
+                Add-Member -InputObject $manifest -NotePropertyName 'fixRegressionClass' `
+                    -NotePropertyValue $regressionClass -Force
+                Add-Member -InputObject $manifest -NotePropertyName 'fixRegressionEvidence' `
+                    -NotePropertyValue 'regression/regression-evidence.json' -Force
+
+                foreach ($arm in @('baseline', 'fix')) {
+                    $directory = Join-Path $Fixture.EvidenceDir "regression/$arm"
+                    New-Item -ItemType Directory -Path $directory -Force | Out-Null
+                    $xmlPath = Join-Path $directory 'source-result-1.xml'
+                    Write-TestText -Path $xmlPath -Value (
+                        '<assemblies><assembly total="1" passed="1" failed="0" skipped="0" errors="0">' +
+                        '<collection><test name="Existing behavior" ' +
+                        "type=`"$regressionClass`" " +
+                        'method="ExistingBehavior" result="Pass" />' +
+                        '</collection></assembly></assemblies>')
+                    Write-TestJson `
+                        -Path (Join-Path $directory 'strict-test-evidence.json') `
+                        -Value ([ordered]@{
+                            schemaVersion = 1
+                            completed = $true
+                            runStartedUtc = '2026-01-01T00:00:00.0000000Z'
+                            completedUtc = '2026-01-01T00:01:00.0000000Z'
+                            project = [string]$manifest.testProject
+                            platform = $Fixture.Platform
+                            testFilter = "Category=$component"
+                            includeClass = $regressionClass
+                            total = 1
+                            passed = 1
+                            failed = 0
+                            skipped = 0
+                            errors = 0
+                            records = @([ordered]@{
+                                type = $regressionClass
+                                method = 'ExistingBehavior'
+                                displayName = 'Existing behavior'
+                                outcome = 'Pass'
+                                failureSignature = ''
+                            })
+                            resultFiles = @([ordered]@{
+                                name = 'source-result-1.xml'
+                                sha256 = (Get-FileHash -LiteralPath $xmlPath -Algorithm SHA256).Hash.ToLowerInvariant()
+                            })
+                        })
+                }
+                $baselineResult = Join-Path $Fixture.EvidenceDir (
+                    'regression/baseline/strict-test-evidence.json')
+                $fixResult = Join-Path $Fixture.EvidenceDir (
+                    'regression/fix/strict-test-evidence.json')
+                Write-TestJson `
+                    -Path (Join-Path $Fixture.EvidenceDir 'regression/regression-evidence.json') `
+                    -Value ([ordered]@{
+                        schemaVersion = 1
+                        baselineSha = [string]$manifest.baseSha
+                        productPatchSha256 = (
+                            Get-FileHash -LiteralPath $fixPatchPath -Algorithm SHA256
+                        ).Hash.ToLowerInvariant()
+                        platform = $Fixture.Platform
+                        project = [string]$manifest.testProject
+                        projectPath = [string]$manifest.testProjectPath
+                        category = $component
+                        testClass = $regressionClass
+                        generatedTestPath = $Fixture.CandidatePath
+                        baselineResult = 'regression/baseline/strict-test-evidence.json'
+                        fixResult = 'regression/fix/strict-test-evidence.json'
+                        baselineResultSha256 = (
+                            Get-FileHash -LiteralPath $baselineResult -Algorithm SHA256
+                        ).Hash.ToLowerInvariant()
+                        fixResultSha256 = (
+                            Get-FileHash -LiteralPath $fixResult -Algorithm SHA256
+                        ).Hash.ToLowerInvariant()
+                        comparison = 'pass'
+                    })
             }
             Write-TestJson -Path $Fixture.ManifestPath -Value $manifest
 
@@ -5194,8 +5373,14 @@ index cc87be1f60..4791badc38 100644
         }
 
         function script:New-OracleFixture {
-            return script:Add-OracleControl `
-                -Fixture (ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture))
+            $fixture = ConvertTo-ArtifactContractFixture -Fixture (
+                New-ValidationFixture `
+                    -TestType 'DeviceTest' `
+                    -CandidatePath (
+                        'src/Controls/tests/DeviceTests/Elements/Label/' +
+                        'Issue12345.Android.cs'))
+            Write-FixtureDeviceResultDocument -Fixture $fixture
+            return script:Add-OracleControl -Fixture $fixture
         }
     }
 
@@ -5449,6 +5634,58 @@ index cc87be1f60..4791badc38 100644
                 -AddedContent '// Process.Start("not executable")' `
                 -Path $script:oracleFixTarget
         } | Should -Not -Throw
+    }
+
+    It 'rejects a self-consistent generated issue class substituted for the immutable sibling lane' {
+        $fixture = script:New-OracleFixture
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch -Fixture $fixture
+        $manifest = Get-Content -LiteralPath $fixture.ManifestPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $manifest.fixRegressionLane = 'Issue12345'
+        $manifest.fixRegressionClass = 'Microsoft.Maui.DeviceTests.Issue12345'
+        $manifest | ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $fixture.ManifestPath -Encoding utf8NoBOM
+
+        foreach ($arm in @('baseline', 'fix')) {
+            $directory = Join-Path $fixture.EvidenceDir "regression/$arm"
+            $xmlPath = Join-Path $directory 'source-result-1.xml'
+            Write-TestText -Path $xmlPath -Value (
+                '<assemblies><assembly total="1" passed="1" failed="0" skipped="0" errors="0">' +
+                '<collection><test name="generated issue" ' +
+                'type="Microsoft.Maui.DeviceTests.Issue12345" ' +
+                'method="ReproducesReportedFailure" result="Pass" />' +
+                '</collection></assembly></assemblies>')
+            $strictPath = Join-Path $directory 'strict-test-evidence.json'
+            $strict = Get-Content -LiteralPath $strictPath -Raw | ConvertFrom-Json -Depth 20
+            $strict.testFilter = 'Category=Issue12345'
+            $strict.includeClass = 'Microsoft.Maui.DeviceTests.Issue12345'
+            $strict.records[0].type = 'Microsoft.Maui.DeviceTests.Issue12345'
+            $strict.records[0].method = 'ReproducesReportedFailure'
+            $strict.records[0].displayName = 'generated issue'
+            $strict.resultFiles[0].sha256 = (
+                Get-FileHash -LiteralPath $xmlPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            $strict | ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $strictPath -Encoding utf8NoBOM
+        }
+        $comparisonPath = Join-Path $fixture.EvidenceDir 'regression/regression-evidence.json'
+        $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $comparison.category = 'Issue12345'
+        $comparison.testClass = 'Microsoft.Maui.DeviceTests.Issue12345'
+        $comparison.baselineResultSha256 = (
+            Get-FileHash -LiteralPath (
+                Join-Path $fixture.EvidenceDir $comparison.baselineResult
+            ) -Algorithm SHA256).Hash.ToLowerInvariant()
+        $comparison.fixResultSha256 = (
+            Get-FileHash -LiteralPath (
+                Join-Path $fixture.EvidenceDir $comparison.fixResult
+            ) -Algorithm SHA256).Hash.ToLowerInvariant()
+        $comparison | ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+
+        { Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPatchPath } |
+            Should -Throw '*does not match the immutable baseline*'
     }
 }
 
@@ -5995,32 +6232,21 @@ Describe 'The clean gate validates selector and quality disclosures' {
     }
 
     It 'withholds a fix when trusted negative-control evidence is missing' {
-        $fixture = ConvertTo-ArtifactContractFixture -Fixture (New-ValidationFixture)
-        $fixPath = Join-Path $fixture.Root 'fix.patch'
-        $productPath = 'src/Controls/src/Core/Button/Button.cs'
-        $productFile = Join-Path $fixture.RepoRoot $productPath
-        $productSource = Get-Content -LiteralPath $productFile -Raw
-        Write-TestText -Path $productFile -Value (
-            $productSource.Replace(
-                'namespace Microsoft.Maui.Controls;',
-                'namespace Microsoft.Maui.Controls; // narrow fix'))
-        [IO.File]::WriteAllText(
-            $fixPath,
-            ((git -C $fixture.RepoRoot diff --binary HEAD -- $productPath) -join "`n") + "`n",
-            [Text.UTF8Encoding]::new($false))
-        git -C $fixture.RepoRoot checkout -q HEAD -- $productPath
-        $manifest = Get-Content -Raw -LiteralPath $fixture.ManifestPath | ConvertFrom-Json
-        $manifest | Add-Member -NotePropertyName fixFiles `
-            -NotePropertyValue @($productPath) -Force
-        $manifest | Add-Member -NotePropertyName fixPatch `
-            -NotePropertyValue 'fix.patch' -Force
-        Write-TestJson -Path $fixture.ManifestPath -Value $manifest
-        Write-FixtureFixScope -Fixture $fixture `
-            -Files @($productPath)
+        $fixture = script:New-OracleFixture
+        foreach ($name in @(
+            'negative-control-result.json',
+            'negative-control-baseline.cs',
+            'negative-control-variant.cs'
+        )) {
+            Remove-Item -LiteralPath (
+                Join-Path $fixture.EvidenceDir "verification/$name") -Force
+        }
+        $fixPath = script:Add-OracleFixPatch -Fixture $fixture
 
         $result = Invoke-FixtureValidation -Fixture $fixture -FixPatchPath $fixPath
         $result.fixFiles | Should -BeNullOrEmpty
     }
+
 }
 
 Describe 'The clean gate binds a certification to the inputs it was earned on' {
@@ -6076,6 +6302,7 @@ Describe 'The clean gate binds a certification to the inputs it was earned on' {
                 Binding = $binding
                 Selector = $selector
             }
+
         }
 
         function script:Invoke-BoundValidation {
@@ -6101,6 +6328,7 @@ Describe 'The clean gate binds a certification to the inputs it was earned on' {
                 ReplicationBaseSha = $Bound.BaseSha
                 RequireCertificationBinding = $true
             }
+
             foreach ($key in $Override.Keys) { $parameters[$key] = $Override[$key] }
             return Invoke-ReplicationCandidateValidation @parameters
         }
@@ -6255,4 +6483,42 @@ Describe 'The clean gate binds a certification to the inputs it was earned on' {
         $result.validationPassed | Should -BeTrue
         $result.certificationBinding | Should -BeNullOrEmpty
     }
+}
+
+Describe 'Regression evidence clean-gate contract' {
+    BeforeAll {
+        $script:RegressionGateSource = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot 'Validate-ReplicationCandidate.ps1') -Raw
+    }
+
+    It 'requires every declared fix to name trusted regression evidence' {
+        $script:RegressionGateSource | Should -Match (
+            "fixRegressionEvidence -cne 'regression/regression-evidence\.json'")
+        $script:RegressionGateSource | Should -Match (
+            'A fix candidate must name its trusted regression evidence')
+    }
+
+    It 'rechecks the shared evidence contract against clean manifest inputs' {
+        $script:RegressionGateSource | Should -Match 'Assert-ReplicationRegressionEvidence'
+        foreach ($argument in @(
+            'ExpectedBaselineSha', 'ExpectedPlatform', 'ExpectedCategory',
+            'ExpectedProject', 'ExpectedProjectPath', 'ExpectedClass',
+            'ExpectedGeneratedTestPath'
+        )) {
+            $script:RegressionGateSource | Should -Match "-$argument"
+        }
+    }
+
+    It 'derives the sibling selector from the trusted baseline input rather than the manifest' {
+        $script:RegressionGateSource | Should -Match (
+            '(?s)\$trustedRegressionBaselineSha = if \(\s*' +
+            '-not \[string\]::IsNullOrWhiteSpace\(\$ReplicationBaseSha\)')
+        $script:RegressionGateSource | Should -Match (
+            'Get-ReplicationRegressionLaneSelection(?s).*?' +
+            '-BaselineSha \$trustedRegressionBaselineSha')
+        $script:RegressionGateSource | Should -Match (
+            'Assert-ReplicationRegressionEvidence(?s).*?' +
+            '-ExpectedBaselineSha \$trustedRegressionBaselineSha')
+    }
+
 }

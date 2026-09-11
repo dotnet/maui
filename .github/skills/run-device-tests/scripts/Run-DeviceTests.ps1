@@ -136,10 +136,55 @@ param(
     [string]$ReplicationTrustedRoot,
 
     [Parameter(Mandatory = $false)]
-    [switch]$RequireMacCatalystAppSandbox
+    [switch]$RequireMacCatalystAppSandbox,
+
+    # Replication regression runs opt into a closed, per-test machine document.
+    # Ordinary review runs keep their existing aggregate-only behavior.
+    [Parameter(Mandatory = $false)]
+    [string]$StrictTestEvidencePath
 )
 
 $ErrorActionPreference = "Stop"
+
+function Test-DeviceTestStrictRegressionSelector {
+    param(
+        [Parameter(Mandatory = $true)][string]$Project,
+        [Parameter(Mandatory = $true)][string]$TestFilter,
+        [Parameter(Mandatory = $true)][string]$IncludeClasses,
+        [AllowEmptyString()][string]$IncludeMethods = '',
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$StrictTestEvidencePath
+    )
+
+    $classes = @($IncludeClasses -split '[,;]' |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    if ($Project -cne 'Controls' -or
+        $TestFilter -cnotmatch '^Category=(?!Issue[1-9][0-9]*$)[A-Za-z][A-Za-z0-9_]{0,63}$' -or
+        $classes.Count -ne 1 -or
+        $classes[0] -cnotmatch '^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+        $classes[0] -match '\.Issue[1-9][0-9]*(?:Tests)?$' -or
+        -not [string]::IsNullOrWhiteSpace($IncludeMethods) -or
+        [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+        return $false
+    }
+    try {
+        $outputRoot = [IO.Path]::GetFullPath($OutputDirectory).TrimEnd(
+            [IO.Path]::DirectorySeparatorChar,
+            [IO.Path]::AltDirectorySeparatorChar)
+        $evidencePath = [IO.Path]::GetFullPath($StrictTestEvidencePath)
+    } catch {
+        return $false
+    }
+    return (
+        $evidencePath.StartsWith(
+            "$outputRoot$([IO.Path]::DirectorySeparatorChar)",
+            $(if ($IsWindows) {
+                [StringComparison]::OrdinalIgnoreCase
+            } else {
+                [StringComparison]::Ordinal
+            })) -and
+        [IO.Path]::GetFileName($evidencePath) -ceq 'strict-test-evidence.json')
+}
 
 # Determine default platform based on OS
 if (-not $Platform) {
@@ -155,6 +200,24 @@ $validPlatforms = if ($IsWindows) { @("android", "windows") } else { @("ios", "m
 if ($Platform -notin $validPlatforms) {
     Write-Error "Platform '$Platform' is not supported on this OS. Valid platforms: $($validPlatforms -join ', ')"
     exit 1
+}
+
+$strictEvidenceStartedUtc = [datetime]::UtcNow.AddSeconds(-1)
+$strictRegressionSelector = $false
+if (-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+    $strictRegressionSelector = Test-DeviceTestStrictRegressionSelector `
+        -Project $Project `
+        -TestFilter $TestFilter `
+        -IncludeClasses $IncludeClasses `
+        -IncludeMethods $IncludeMethods `
+        -OutputDirectory $OutputDirectory `
+        -StrictTestEvidencePath $StrictTestEvidencePath
+    if (-not $strictRegressionSelector) {
+        throw 'Strict device-test evidence requires one bounded Controls category/class selector and an evidence path inside its fresh output directory.'
+    }
+    if (Test-Path -LiteralPath $OutputDirectory) {
+        throw 'Strict device-test evidence requires a fresh output directory.'
+    }
 }
 
 # iOSVersion only applies to ios platform
@@ -987,6 +1050,8 @@ function Start-WindowsDeviceTestProcess {
 
         [string]$IncludeClasses,
 
+        [string]$PackagedIncludeClass = '',
+
         [switch]$RequireAppContainer,
 
         [string]$PackageName = ''
@@ -996,13 +1061,24 @@ function Start-WindowsDeviceTestProcess {
         if ([string]::IsNullOrWhiteSpace($PackageName)) {
             throw 'Windows AppContainer device-test launch requires a package name.'
         }
+        $packagedArguments = @($ArgumentList)
+        if (-not [string]::IsNullOrWhiteSpace($PackagedIncludeClass)) {
+            if ($PackagedIncludeClass -cnotmatch '^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+                $PackagedIncludeClass -match '\.Issue[1-9][0-9]*(?:Tests)?$') {
+                throw 'Windows packaged device-test class selector is invalid.'
+            }
+            $packagedArguments += "--maui-replication-include-class=$PackagedIncludeClass"
+        }
         $appArguments = ConvertTo-ReplicationWindowsAppArguments `
-            -Arguments $ArgumentList
+            -Arguments $packagedArguments
         $launch = Start-ReplicationWindowsAppContainerProcess `
             -PackageName $PackageName `
             -AppArguments $appArguments `
             -RequireWindow
         return $launch.Process
+    }
+    if (-not [string]::IsNullOrWhiteSpace($PackagedIncludeClass)) {
+        throw 'Windows packaged device-test class selection requires AppContainer execution.'
     }
 
     if ([string]::IsNullOrWhiteSpace($AppPath)) {
@@ -1106,7 +1182,11 @@ function Get-DeviceTestResultSummary {
         # XHarness must execute only the requested classes. If its runtime include filter
         # was ignored and the result XML contains any other class, fail descriptively
         # instead of accepting a broad-suite result as Gate evidence.
-        [switch]$RequireClassIsolation
+        [switch]$RequireClassIsolation,
+
+        [switch]$StrictEvidence,
+
+        [datetime]$ResultNotBeforeUtc = [datetime]::MinValue
     )
 
     $classList = @()
@@ -1118,6 +1198,10 @@ function Get-DeviceTestResultSummary {
     if (-not [string]::IsNullOrWhiteSpace($IncludeMethods)) {
         $methodList = @($IncludeMethods -split '[,;]' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
     }
+    if ($StrictEvidence -and
+        ($classList.Count -ne 1 -or $methodList.Count -ne 0 -or -not $RequireClassIsolation)) {
+        throw 'Strict device-test evidence requires one isolated class and no method narrowing.'
+    }
 
     $summary = @{
         Total = 0
@@ -1126,6 +1210,8 @@ function Get-DeviceTestResultSummary {
         Skipped = 0
         Errors = 0
         FailedTests = [System.Collections.Generic.List[string]]::new()
+        Records = [System.Collections.Generic.List[object]]::new()
+        ResultDigests = [System.Collections.Generic.List[object]]::new()
     }
 
     # Diagnostics for the class-filtered path: how many <test> nodes the file(s) held in
@@ -1145,6 +1231,41 @@ function Get-DeviceTestResultSummary {
 
     foreach ($file in $ResultFiles) {
         if (-not (Test-Path $file)) {
+            if ($StrictEvidence) {
+                throw "Strict device-test evidence result file is missing: $file"
+            }
+            continue
+        }
+
+        if ($StrictEvidence) {
+            $strictXml = Read-ReplicationDeviceTestResultXmlStrict `
+                -Path $file `
+                -NotBeforeUtc $ResultNotBeforeUtc `
+                -ExpectedClass $classList[0]
+            $summary.ResultDigests.Add([ordered]@{
+                name = $strictXml.Name
+                sha256 = $strictXml.Sha256
+                sourcePath = [IO.Path]::GetFullPath($file)
+            })
+            $summary.Total += $strictXml.Total
+            $summary.Passed += $strictXml.Passed
+            $summary.Failed += $strictXml.Failed
+            $summary.Skipped += $strictXml.Skipped
+            $summary.Errors += $strictXml.Errors
+            foreach ($record in $strictXml.Records) {
+                $summary.Records.Add($record)
+                if ($record.outcome -ceq 'Fail' -and
+                    $summary.FailedTests.Count -lt 20) {
+                    $failId = ConvertTo-AzdoSafeConsole `
+                        -Text "$($record.type).$($record.method)"
+                    if (-not $summary.FailedTests.Contains($failId)) {
+                        $summary.FailedTests.Add($failId)
+                    }
+                }
+            }
+            $null = $matchedClassNames.Add($classList[0])
+            $diagClassMatchCount += $strictXml.Total
+            $diagTotalTests += $strictXml.Total
             continue
         }
 
@@ -1252,8 +1373,9 @@ function Get-DeviceTestResultSummary {
                     $null = $matchedMethodNames.Add($testMethod)
                 }
 
+                $result = [string]$test.GetAttribute('result')
                 $summary.Total++
-                switch ([string]$test.GetAttribute('result')) {
+                switch ($result) {
                     'Pass' { $summary.Passed++ }
                     'Fail' {
                         $summary.Failed++
@@ -1274,6 +1396,9 @@ function Get-DeviceTestResultSummary {
             }
         }
         else {
+            if ($StrictEvidence) {
+                throw 'Strict device-test evidence requires an explicit class selector.'
+            }
             $assemblies = @($xml.SelectNodes('/assemblies/assembly'))
             foreach ($assembly in $assemblies) {
                 $summary.Total += ConvertTo-DeviceTestCount $assembly.total
@@ -1323,7 +1448,163 @@ function Get-DeviceTestResultSummary {
         throw "Device test result file(s) contained only skipped tests for class(es) '$IncludeClasses' (the target tests did not execute)."
     }
 
+    if ($StrictEvidence) {
+        if ($summary.Records.Count -eq 0 -or $summary.Records.Count -gt 256) {
+            throw 'Strict device-test evidence requires between 1 and 256 selected test records.'
+        }
+        $identities = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        foreach ($record in $summary.Records) {
+            $identity = "$($record.type)`n$($record.method)`n$($record.displayName)"
+            if (-not $identities.Add($identity)) {
+                throw "Strict device-test evidence contains a duplicate test identity: $($record.type).$($record.method) [$($record.displayName)]"
+            }
+        }
+        if ($summary.ResultDigests.Count -eq 0) {
+            throw 'Strict device-test evidence contains no source result digest.'
+        }
+    }
+
     return $summary
+}
+
+function Write-DeviceTestStrictEvidence {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][hashtable]$Summary,
+        [Parameter(Mandatory = $true)][datetime]$RunStartedUtc,
+        [Parameter(Mandatory = $true)][string]$Project,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [Parameter(Mandatory = $true)][string]$TestFilter,
+        [Parameter(Mandatory = $true)][string]$IncludeClasses
+    )
+
+    $fullPath = [IO.Path]::GetFullPath($Path)
+    $outputRoot = [IO.Path]::GetFullPath($OutputDirectory).TrimEnd(
+        [IO.Path]::DirectorySeparatorChar,
+        [IO.Path]::AltDirectorySeparatorChar)
+    if (-not $fullPath.StartsWith(
+            "$outputRoot$([IO.Path]::DirectorySeparatorChar)",
+            $(if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }))) {
+        throw 'Strict device-test evidence path must remain inside OutputDirectory.'
+    }
+    if (Test-Path -LiteralPath $fullPath) {
+        throw 'Strict device-test evidence refuses to overwrite a pre-existing result.'
+    }
+    if ($Summary.Records.Count -eq 0) {
+        throw 'Strict device-test evidence cannot describe an empty run.'
+    }
+    $boundResults = [Collections.Generic.List[object]]::new()
+    $index = 0
+    foreach ($result in @($Summary.ResultDigests)) {
+        $index++
+        $name = "source-result-$index.xml"
+        $destination = Join-Path ([IO.Path]::GetDirectoryName($fullPath)) $name
+        if (Test-Path -LiteralPath $destination) {
+            throw 'Strict device-test evidence refuses to overwrite a retained XML result.'
+        }
+        Copy-Item -LiteralPath ([string]$result.sourcePath) -Destination $destination
+        $boundResults.Add([ordered]@{
+            name = $name
+            sha256 = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
+        })
+    }
+
+    [ordered]@{
+        schemaVersion = 1
+        completed = $true
+        runStartedUtc = $RunStartedUtc.ToString('o')
+        completedUtc = [datetime]::UtcNow.ToString('o')
+        project = $Project
+        platform = $Platform
+        testFilter = $TestFilter
+        includeClass = $IncludeClasses
+        total = [int]$Summary.Total
+        passed = [int]$Summary.Passed
+        failed = [int]$Summary.Failed
+        skipped = [int]$Summary.Skipped
+        errors = [int]$Summary.Errors
+        records = @($Summary.Records)
+        resultFiles = @($boundResults)
+    } | ConvertTo-Json -Depth 8 |
+        Set-Content -LiteralPath $fullPath -Encoding utf8NoBOM
+}
+
+function Complete-DeviceTestStrictEvidence {
+    param(
+        [AllowEmptyString()][string]$Path,
+        [AllowNull()]$Summary,
+        [Parameter(Mandatory = $true)][datetime]$RunStartedUtc,
+        [Parameter(Mandatory = $true)][string]$Project,
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [AllowEmptyString()][string]$TestFilter,
+        [AllowEmptyString()][string]$IncludeClasses,
+        [Parameter(Mandatory = $true)][bool]$ExecutionCompleted,
+        [Parameter(Mandatory = $true)]$CleanupErrors
+    )
+
+    if ($CleanupErrors.Count -gt 0) {
+        if (-not [string]::IsNullOrWhiteSpace($Path)) {
+            Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        }
+        throw "$WindowsDeviceCleanupFailureMarker $($CleanupErrors -join '; ')"
+    }
+    if ([string]::IsNullOrWhiteSpace($Path)) { return }
+    if (-not $ExecutionCompleted -or -not $Summary) {
+        Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        return
+    }
+    Write-DeviceTestStrictEvidence `
+        -Path $Path `
+        -Summary $Summary `
+        -RunStartedUtc $RunStartedUtc `
+        -Project $Project `
+        -Platform $Platform `
+        -TestFilter $TestFilter `
+        -IncludeClasses $IncludeClasses
+}
+
+function Copy-DeviceTestStrictResultsToDurableDirectory {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Summary,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$ExpectedClass,
+        [Parameter(Mandatory = $true)][datetime]$ResultNotBeforeUtc
+    )
+
+    $outputRoot = [IO.Path]::GetFullPath($OutputDirectory)
+    $outputItem = Get-Item -LiteralPath $outputRoot -Force -ErrorAction Stop
+    if (-not $outputItem.PSIsContainer -or
+        $outputItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Strict Windows result destination must be a regular directory.'
+    }
+    if ($Summary.ResultDigests.Count -eq 0) {
+        throw 'Strict Windows result durability requires source result digests.'
+    }
+
+    $durableFiles = [Collections.Generic.List[string]]::new()
+    $index = 0
+    foreach ($result in @($Summary.ResultDigests)) {
+        $index++
+        $source = [IO.Path]::GetFullPath([string]$result.sourcePath)
+        $destination = Join-Path $outputRoot "windows-strict-result-$index.xml"
+        if (Test-Path -LiteralPath $destination) {
+            throw 'Strict Windows result durability refuses to overwrite a retained XML result.'
+        }
+        Copy-Item -LiteralPath $source -Destination $destination
+        $durable = Read-ReplicationDeviceTestResultXmlStrict `
+            -Path $destination `
+            -NotBeforeUtc $ResultNotBeforeUtc `
+            -ExpectedClass $ExpectedClass
+        if ($durable.Sha256 -cne [string]$result.sha256) {
+            Remove-Item -LiteralPath $destination -Force -ErrorAction SilentlyContinue
+            throw 'Strict Windows result changed while being copied to durable storage.'
+        }
+        $result.sourcePath = [IO.Path]::GetFullPath($destination)
+        $result.name = $durable.Name
+        $result.sha256 = $durable.Sha256
+        $durableFiles.Add([IO.Path]::GetFullPath($destination))
+    }
+    return $durableFiles.ToArray()
 }
 
 function Invoke-WindowsDeviceTestApp {
@@ -1344,6 +1625,8 @@ function Invoke-WindowsDeviceTestApp {
         [string]$IncludeClasses,
 
         [string]$IncludeMethods,
+
+        [AllowEmptyString()][string]$StrictTestEvidencePath = '',
 
         [string]$Timeout = "01:00:00",
 
@@ -1424,6 +1707,14 @@ function Invoke-WindowsDeviceTestApp {
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
 
     $resultFiles = @()
+    $packagedIncludeClass = if (
+        $RequireAppContainer -and
+        -not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)
+    ) {
+        $IncludeClasses
+    } else {
+        ''
+    }
 
     # Decide whether to drive the app via per-category discovery/index runs instead of a
     # single full-suite launch:
@@ -1446,6 +1737,7 @@ function Invoke-WindowsDeviceTestApp {
             -AppPath $AppPath `
             -ArgumentList @($resultFile, "-1") `
             -IncludeClasses $IncludeClasses `
+            -PackagedIncludeClass $packagedIncludeClass `
             -RequireAppContainer:$RequireAppContainer `
             -PackageName $PackageName
         if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
@@ -1510,6 +1802,7 @@ function Invoke-WindowsDeviceTestApp {
                 -AppPath $AppPath `
                 -ArgumentList @($resultFile, [string]$categoryIndex) `
                 -IncludeClasses $IncludeClasses `
+                -PackagedIncludeClass $packagedIncludeClass `
                 -RequireAppContainer:$RequireAppContainer `
                 -PackageName $PackageName
             $categoryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -1544,6 +1837,9 @@ function Invoke-WindowsDeviceTestApp {
                 if ($IncludeClasses) {
                     if (Test-Path -LiteralPath $categoryResultFile) {
                         try {
+                            if ($StrictTestEvidencePath) {
+                                throw 'Strict device-test evidence requires the runner process to complete.'
+                            }
                             $completedSummary = Get-DeviceTestResultSummary -ResultFiles @($categoryResultFile)
                             if ($completedSummary.Total -le 0) {
                                 throw "The result file contained no tests."
@@ -1579,6 +1875,7 @@ function Invoke-WindowsDeviceTestApp {
             -AppPath $AppPath `
             -ArgumentList @($resultFile) `
             -IncludeClasses $IncludeClasses `
+            -PackagedIncludeClass $packagedIncludeClass `
             -RequireAppContainer:$RequireAppContainer `
             -PackageName $PackageName
 
@@ -1601,6 +1898,9 @@ function Invoke-WindowsDeviceTestApp {
             if ($IncludeClasses) {
                 if (Test-Path -LiteralPath $resultFile) {
                     try {
+                        if ($StrictTestEvidencePath) {
+                            throw 'Strict device-test evidence requires the runner process to complete.'
+                        }
                         $completedSummary = Get-DeviceTestResultSummary `
                             -ResultFiles @($resultFile) `
                             -IncludeClasses $IncludeClasses `
@@ -1646,23 +1946,40 @@ function Invoke-WindowsDeviceTestApp {
         -IncludeClasses $summaryClassFilter `
         -IncludeMethods $summaryMethodFilter `
         -RequireClassIsolation:(
-            -not $RequireAppContainer -and
-            -not [string]::IsNullOrWhiteSpace($IncludeClasses))
+            (-not $RequireAppContainer -or
+                -not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) -and
+            -not [string]::IsNullOrWhiteSpace($IncludeClasses)) `
+        -StrictEvidence:(-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) `
+        -ResultNotBeforeUtc $(if ([string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+                [datetime]::MinValue
+            } else {
+                $strictEvidenceStartedUtc
+            })
     $script:WindowsDeviceTestSummary = $summary
     if ($RequireAppContainer) {
-        $publishedFiles = [Collections.Generic.List[string]]::new()
-        foreach ($resultPath in $resultFiles) {
-            $destination = Join-Path $OutputDirectory (
-                [IO.Path]::GetFileName($resultPath))
-            Copy-Item -LiteralPath $resultPath -Destination $destination -Force
-            $publishedFiles.Add($destination)
+        if (-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+            $script:WindowsDeviceTestResultFiles = @(
+                Copy-DeviceTestStrictResultsToDurableDirectory `
+                    -Summary $summary `
+                    -OutputDirectory $OutputDirectory `
+                    -ExpectedClass $IncludeClasses `
+                    -ResultNotBeforeUtc $strictEvidenceStartedUtc
+            )
+        } else {
+            $publishedFiles = [Collections.Generic.List[string]]::new()
+            foreach ($resultPath in $resultFiles) {
+                $destination = Join-Path $OutputDirectory (
+                    [IO.Path]::GetFileName($resultPath))
+                Copy-Item -LiteralPath $resultPath -Destination $destination -Force
+                $publishedFiles.Add($destination)
+            }
+            $script:WindowsDeviceTestResultFiles = $publishedFiles.ToArray()
         }
         if (Test-Path -LiteralPath $categoriesFile -PathType Leaf) {
             Copy-Item -LiteralPath $categoriesFile `
                 -Destination (Join-Path $OutputDirectory 'devicetestcategories.txt') `
                 -Force
         }
-        $script:WindowsDeviceTestResultFiles = $publishedFiles.ToArray()
     } else {
         $script:WindowsDeviceTestResultFiles = $resultFiles
     }
@@ -1738,20 +2055,28 @@ if (-not $RepoRoot -or -not (Test-Path -LiteralPath (Join-Path $RepoRoot '.git')
 # Import shared utilities
 $SharedScriptsDir = Join-Path $RepoRoot ".github/scripts/shared"
 . (Join-Path $SharedScriptsDir "shared-utils.ps1")
+$trustedScriptRoot = Split-Path -Parent (
+    Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
+$strictEvidenceHelper = Join-Path $trustedScriptRoot (
+    'scripts/shared/Assert-ReplicationCertificationBinding.ps1')
+if (-not (Test-Path -LiteralPath $strictEvidenceHelper -PathType Leaf) -or
+    (Get-Item -LiteralPath $strictEvidenceHelper -Force).Attributes -band
+        [IO.FileAttributes]::ReparsePoint) {
+    throw "Trusted strict evidence helper is unavailable: $strictEvidenceHelper"
+}
+. $strictEvidenceHelper
 if ($RequireWindowsAppContainer) {
     if ($Platform -ne 'windows' -or -not [OperatingSystem]::IsWindows()) {
         throw 'The replication AppContainer mode is available only for Windows device tests.'
     }
-    if (-not $NoRestore) {
-        throw 'Windows replication AppContainer tests require --no-restore.'
-    }
-    if ($Project -ne 'Controls') {
-        throw 'Windows replication permits only the Controls device-test package.'
-    }
-    if ($TestFilter -cnotmatch '^Issue[1-9][0-9]*$' -or
-        [string]::IsNullOrWhiteSpace($IncludeClasses) -or
-        [string]::IsNullOrWhiteSpace($IncludeMethods)) {
-        throw 'Windows replication requires one issue-keyed Controls test with exact class and method selectors.'
+    $issueSelector = (
+        $TestFilter -cmatch '^Issue[1-9][0-9]*$' -and
+        -not [string]::IsNullOrWhiteSpace($IncludeClasses) -and
+        -not [string]::IsNullOrWhiteSpace($IncludeMethods) -and
+        [string]::IsNullOrWhiteSpace($StrictTestEvidencePath))
+    if (-not $NoRestore -or $Project -cne 'Controls' -or
+        -not ($issueSelector -or $strictRegressionSelector)) {
+        throw 'Windows replication requires either one exact issue test or one strict sibling regression class in the Controls package.'
     }
     if ([string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
         throw 'Windows replication requires the attested trusted root.'
@@ -1763,10 +2088,16 @@ if ($RequireWindowsAppContainer) {
         'source-overrides/ReplicationWindowsControlsDeviceTestsManifest.xml')
     $windowsManifestOverrideTargets = Join-Path $ReplicationTrustedRoot (
         'scripts/shared/ReplicationWindowsAppContainerManifest.targets')
+    $windowsClassFilterSourcePath = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')
+    $windowsClassFilterOverrideTargets = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets')
     foreach ($trustedPath in @(
         $windowsHelperPath,
         $windowsManifestPath,
-        $windowsManifestOverrideTargets
+        $windowsManifestOverrideTargets,
+        $windowsClassFilterSourcePath,
+        $windowsClassFilterOverrideTargets
     )) {
         if (-not (Test-Path -LiteralPath $trustedPath -PathType Leaf) -or
             (Get-Item -LiteralPath $trustedPath -Force).Attributes -band
@@ -1792,11 +2123,14 @@ if ($RequireMacCatalystAppSandbox) {
     if ($Platform -ne 'maccatalyst' -or -not [OperatingSystem]::IsMacOS()) {
         throw 'The replication App Sandbox mode is available only for Mac Catalyst device tests.'
     }
-    if (-not $NoRestore -or $Project -ne 'Controls' -or
-        [string]::IsNullOrWhiteSpace($IncludeClasses) -or
-        [string]::IsNullOrWhiteSpace($IncludeMethods) -or
-        $TestFilter -cnotmatch '^Issue[1-9][0-9]*$') {
-        throw 'Mac Catalyst replication requires one no-restore issue-keyed Controls device test with exact selectors.'
+    $issueSelector = (
+        $TestFilter -cmatch '^Issue[1-9][0-9]*$' -and
+        -not [string]::IsNullOrWhiteSpace($IncludeClasses) -and
+        -not [string]::IsNullOrWhiteSpace($IncludeMethods) -and
+        [string]::IsNullOrWhiteSpace($StrictTestEvidencePath))
+    if (-not $NoRestore -or $Project -cne 'Controls' -or
+        -not ($issueSelector -or $strictRegressionSelector)) {
+        throw 'Mac Catalyst replication requires either one exact issue test or one strict sibling regression class in the Controls package.'
     }
     if ([string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
         throw 'Mac Catalyst replication requires the attested trusted root.'
@@ -1831,6 +2165,8 @@ $platformConfig = $PlatformConfigs[$Platform]
 $classFilterInjection = $null
 $windowsSigningCertificate = $null
 $windowsInstalledPackage = $null
+$strictEvidenceSummary = $null
+$strictEvidenceExecutionCompleted = $false
 
 try {
     # Validate prerequisites
@@ -1956,6 +2292,13 @@ try {
         $buildArgs += "/p:MauiCopilotClassFilterSourcePath=$($classFilterInjection.SourcePath)"
         $buildArgs += "/p:MauiCopilotClassFilterTargetProject=$($classFilterInjection.TargetProject)"
     }
+    if ($RequireWindowsAppContainer -and $strictRegressionSelector) {
+        $windowsClassFilterBuildProperties = @(
+            "/p:CustomAfterMicrosoftCSharpTargets=$windowsClassFilterOverrideTargets",
+            "/p:MauiReplicationWindowsClassFilterSource=$windowsClassFilterSourcePath"
+        )
+        $buildArgs += $windowsClassFilterBuildProperties
+    }
 
     # Add RuntimeIdentifier if specified
     # NOTE: For Windows we deliberately do NOT pass `-r` here; RuntimeIdentifierOverride
@@ -2023,6 +2366,9 @@ try {
                 )
                 if ($Rebuild) {
                     $windowsGraphBuildArgs += '-t:Rebuild'
+                }
+                if ($strictRegressionSelector) {
+                    $windowsGraphBuildArgs += $windowsClassFilterBuildProperties
                 }
                 Write-Host (
                     "Prebuilding Windows project graph: dotnet " +
@@ -2312,7 +2658,13 @@ try {
             -ResultFiles $catalystResultFiles `
             -IncludeClasses $IncludeClasses `
             -IncludeMethods $IncludeMethods `
-            -RequireClassIsolation
+            -RequireClassIsolation `
+            -StrictEvidence:(-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) `
+            -ResultNotBeforeUtc $(if ([string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+                    [datetime]::MinValue
+                } else {
+                    $strictEvidenceStartedUtc
+                })
         $script:XHarnessDeviceTestResultFiles = $catalystResultFiles
         $testExitCode = if (
             ($script:XHarnessDeviceTestSummary.Failed +
@@ -2478,7 +2830,13 @@ try {
                 -ResultFiles $xharnessResultFiles `
                 -IncludeClasses $IncludeClasses `
                 -IncludeMethods $IncludeMethods `
-                -RequireClassIsolation
+                -RequireClassIsolation `
+                -StrictEvidence:(-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) `
+                -ResultNotBeforeUtc $(if ([string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
+                        [datetime]::MinValue
+                    } else {
+                        $strictEvidenceStartedUtc
+                    })
             $script:XHarnessDeviceTestResultFiles = $xharnessResultFiles
             $testExitCode = if (($script:XHarnessDeviceTestSummary.Failed + $script:XHarnessDeviceTestSummary.Errors) -eq 0) { 0 } else { 1 }
 
@@ -2510,6 +2868,7 @@ try {
             -TestFilter $TestFilter `
             -IncludeClasses $IncludeClasses `
             -IncludeMethods $IncludeMethods `
+            -StrictTestEvidencePath $StrictTestEvidencePath `
             -Timeout $Timeout `
             -RequireAppContainer:$RequireWindowsAppContainer `
             -PackageName $(if ($windowsInstalledPackage) {
@@ -2540,6 +2899,17 @@ try {
     # ═══════════════════════════════════════════════════════════
     # RESULTS
     # ═══════════════════════════════════════════════════════════
+    if ($StrictTestEvidencePath) {
+        $strictEvidenceSummary = if ($script:XHarnessDeviceTestSummary) {
+            $script:XHarnessDeviceTestSummary
+        } else {
+            $script:WindowsDeviceTestSummary
+        }
+        if (-not $strictEvidenceSummary) {
+            throw 'Strict device-test evidence was requested but no completed scoped summary exists.'
+        }
+    }
+
     Write-Host ""
     Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host "  Test Results" -ForegroundColor Cyan
@@ -2595,6 +2965,7 @@ try {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Yellow
     }
 
+    $strictEvidenceExecutionCompleted = $true
     exit $testExitCode
 
 } finally {
@@ -2621,7 +2992,14 @@ try {
         Remove-Item -LiteralPath $classFilterInjection.Directory -Recurse -Force -ErrorAction SilentlyContinue
     }
     Pop-Location
-    if ($windowsCleanupErrors.Count -gt 0) {
-        throw "$WindowsDeviceCleanupFailureMarker $($windowsCleanupErrors -join '; ')"
-    }
+    Complete-DeviceTestStrictEvidence `
+        -Path $StrictTestEvidencePath `
+        -Summary $strictEvidenceSummary `
+        -RunStartedUtc $strictEvidenceStartedUtc `
+        -Project $Project `
+        -Platform $(if ($Platform -ceq 'maccatalyst') { 'catalyst' } else { $Platform }) `
+        -TestFilter $TestFilter `
+        -IncludeClasses $IncludeClasses `
+        -ExecutionCompleted $strictEvidenceExecutionCompleted `
+        -CleanupErrors $windowsCleanupErrors
 }

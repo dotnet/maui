@@ -4294,6 +4294,8 @@ stages:
                 -ReplicationBaseSha "$(replicationBaseSha)" `
                 -IssueNumber ${{ parameters.IssueNumber }} `
                 -Platform '${{ parameters.Platform }}' `
+                -ExpectedRegressionCategory ([string]$validated.fixRegressionLane) `
+                -ExpectedRegressionClass ([string]$validated.fixRegressionClass) `
                 -Context 'publisher recheck'
               foreach ($declared in @([string]$summary.bindingDigest, [string]$validated.certificationBinding.digest)) {
                 if ($declared -cne [string]$recheck.Digest) {
