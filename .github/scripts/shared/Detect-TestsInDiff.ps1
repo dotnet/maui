@@ -653,7 +653,7 @@ function Get-ChangedDeviceTestMethodsFromPatch {
         }
 
         if ($pendingTestAttribute -and
-            $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+            $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:(?:(?:global::)?System\.Threading\.Tasks\.)?(?:Task|ValueTask)(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
             $methodName = $matches[1]
             if ($isAddedLine -and $methods -notcontains $methodName) {
                 $methods.Add($methodName)
@@ -893,7 +893,7 @@ function Get-ChangedDeviceTestMethodsFromPatch {
             }
 
             if ($pendingSourceTestAttribute -and
-                $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:Task(?:<[^>]+>)?|ValueTask(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
+                $declaration -match '^\s*public\s+(?:(?:static|async|virtual|override|new)\s+)*(?:(?:(?:global::)?System\.Threading\.Tasks\.)?(?:Task|ValueTask)(?:<[^>]+>)?|void)\s+(\w+)\s*\(') {
                 $methodName = $matches[1]
                 $methodStartLine = if ($null -ne $sourceAttributeStartLine) {
                     [int]$sourceAttributeStartLine
