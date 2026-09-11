@@ -4476,14 +4476,8 @@ namespace Microsoft.Maui.Controls
         public double CharacterSpacing { get; set; }
         public Style Style { get; set; }
         public string Text { get; set; }
-        public TextType TextType { get; set; }
+        public global::Microsoft.Maui.TextType TextType { get; set; }
         public object TextColor { get; set; }
-    }
-
-    public enum TextType
-    {
-        Text = 0,
-        Html = 1
     }
 
     public enum FontAttributes
@@ -4644,6 +4638,12 @@ namespace Microsoft.Maui.Controls
 
 namespace Microsoft.Maui
 {
+    public enum TextType
+    {
+        Text = 0,
+        Html = 1
+    }
+
     public sealed class CategoryAttribute : System.Attribute
     {
         public CategoryAttribute(string value) { }
@@ -5485,7 +5485,8 @@ function Confirm-ReplicationTrustedOracleExpression {
         $allowedMemberRead = (
             ($memberAssembly -ceq
                 'Microsoft.Maui.Controls.ReplicationControlContract' -and
-                ($memberType.StartsWith(
+                ($memberType -ceq 'Microsoft.Maui.TextType' -or
+                    $memberType.StartsWith(
                         'Microsoft.Maui.Controls.',
                         [StringComparison]::Ordinal) -or
                     $memberType.StartsWith(
@@ -8694,7 +8695,7 @@ function New-ReplicationControlVariant {
                         [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
                     $initializerValueSymbol -is [Microsoft.CodeAnalysis.IFieldSymbol] -and
                     $initializerValueSymbol.ContainingType.ToString() -ceq
-                        'Microsoft.Maui.Controls.TextType' -and
+                        'Microsoft.Maui.TextType' -and
                     $initializerValueSymbol.ContainingAssembly.Name -ceq
                         $trustedContractAssembly)
             if (-not $validInitializerValue) {
@@ -9063,7 +9064,7 @@ function New-ReplicationControlVariant {
             $initialTextTypeSymbol -isnot [Microsoft.CodeAnalysis.IFieldSymbol] -or
             $initialTextTypeSymbol.Name -cne 'Text' -or
             $initialTextTypeSymbol.ContainingType.ToString() -cne
-                'Microsoft.Maui.Controls.TextType' -or
+                'Microsoft.Maui.TextType' -or
             $initialTextTypeSymbol.ContainingAssembly.Name -cne
                 $trustedContractAssembly) {
             & $throwTrustedWindowHelperViolation -Node $labelCreation `
@@ -9101,7 +9102,7 @@ function New-ReplicationControlVariant {
             $gateValueSymbol -isnot [Microsoft.CodeAnalysis.IFieldSymbol] -or
             $gateValueSymbol.Name -cne 'Html' -or
             $gateValueSymbol.ContainingType.ToString() -cne
-                'Microsoft.Maui.Controls.TextType' -or
+                'Microsoft.Maui.TextType' -or
             $gateValueSymbol.ContainingAssembly.Name -cne
                 $trustedContractAssembly) {
             & $throwTrustedWindowHelperViolation -Node $gateExpression `

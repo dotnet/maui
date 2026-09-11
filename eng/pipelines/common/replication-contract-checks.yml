@@ -135,6 +135,8 @@ steps:
         'Replication failure-only verification*passes the trusted pre-baseline device runner and project path to the verifier result'
         'Replication failure-only verification*rejects device verification that would write an empty project path'
         'Replication verifier metadata resolution*resolves the exact Controls device project path for the generated metadata handoff'
+        'Replication verifier metadata resolution*resolves fully qualified Task return types without losing the selected method'
+        'Detect-TestsInDiff added device-test methods*recognizes fully qualified Task and ValueTask return types'
         'Replication verifier metadata resolution*resolves a non-Controls device project with exact class isolation'
         'Manifest reproduction steps survive the gate*uses the publisher prose grammar in the orchestrator itself'
         'Manifest reproduction steps survive the gate*normalizes test proposal reproduction steps with the publisher prose contract'
@@ -190,6 +192,7 @@ steps:
         'New-ReplicationControlVariant*rejects Android Issue26505 native writes and broad native reads'
         'New-ReplicationControlVariant*prevents Android Issue26505 metadata cache bleed'
         'New-ReplicationControlVariant*does not add a broad Android native surface to the closed control contract'
+        'New-ReplicationControlVariant*binds native text profiles to the real TextType primitive namespace'
         'New-ReplicationControlVariant*allows Android Issue33315 Label rendered-pixel clipping oracle'
         'New-ReplicationControlVariant*allows Android Issue33315 harmless formatting trivia but rejects altered string literal'
         'New-ReplicationControlVariant*accepts the Android Issue33315 canonical prompt body without reconstruction'
@@ -301,6 +304,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationIssueContext.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Detect-TestsInDiff.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/verify-tests-fail-without-fix/scripts/Verify-TestsFail.Tests.ps1"
       )

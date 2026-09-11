@@ -6434,6 +6434,31 @@ public class Issue26505 : global::Microsoft.Maui.DeviceTests.ControlsHandlerTest
             Should -BeExactly 'DisabledDefaultPaddingFitsTextWithinButton'
     }
 
+    It 'resolves fully qualified Task return types without losing the selected method' {
+        $file = 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        $project = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        @'
+namespace Microsoft.Maui.DeviceTests;
+public class Issue29282Tests
+{
+    [Fact]
+    [Category("Issue29282")]
+    public async global::System.Threading.Tasks.Task RendersEncodedText()
+    {
+    }
+}
+'@ | Set-Content -LiteralPath (Join-Path $repoRoot $file)
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) -TestType DeviceTest -TestFilter Issue29282 `
+            -Platform android -DetectorPath $script:DetectorPath
+        $metadata.Project | Should -Be 'Controls'
+        $metadata.ClassName | Should -Be 'Microsoft.Maui.DeviceTests.Issue29282Tests'
+        $metadata.MethodName | Should -Be 'RendersEncodedText'
+    }
+
     It 'rejects ambiguous planned files instead of broadening the verifier run' {
         $files = @(
             'src/Core/tests/UnitTests/Issue37440FirstTests.cs',
@@ -11441,7 +11466,7 @@ public class Issue29282Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
         var affectedLabel = new global::Microsoft.Maui.Controls.Label
         {
             Text = "<span>&lt</span>a",
-            TextType = global::Microsoft.Maui.Controls.TextType.Html
+            TextType = global::Microsoft.Maui.TextType.Html
         };
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
@@ -11481,12 +11506,12 @@ public class Issue29668Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
         var affectedLabel = new global::Microsoft.Maui.Controls.Label
         {
             Text = "Character spacing",
-            TextType = global::Microsoft.Maui.Controls.TextType.Text
+            TextType = global::Microsoft.Maui.TextType.Text
         };
         var applyReportedTrigger = true;
         if (applyReportedTrigger)
         {
-            affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Html;
+            affectedLabel.TextType = global::Microsoft.Maui.TextType.Html;
         }
         await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(
             new global::Microsoft.Maui.Controls.Window(
@@ -12268,14 +12293,14 @@ namespace Generated
             'Text = "Character spacing"',
             'Text = ""')
         $wrongInitialMode = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
-            'TextType = global::Microsoft.Maui.Controls.TextType.Text',
-            'TextType = global::Microsoft.Maui.Controls.TextType.Html')
+            'TextType = global::Microsoft.Maui.TextType.Text',
+            'TextType = global::Microsoft.Maui.TextType.Html')
         $wrongGateMode = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
-            'affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Html;',
-            'affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Text;')
+            'affectedLabel.TextType = global::Microsoft.Maui.TextType.Html;',
+            'affectedLabel.TextType = global::Microsoft.Maui.TextType.Text;')
         $elseBypass = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
             "        }`n        await CreateHandlerAndAddToWindow",
-            "        }`n        else`n        {`n            affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Text;`n        }`n        await CreateHandlerAndAddToWindow")
+            "        }`n        else`n        {`n            affectedLabel.TextType = global::Microsoft.Maui.TextType.Text;`n        }`n        await CreateHandlerAndAddToWindow")
         $movedMutation = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
             '        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(',
             "        affectedLabel.CharacterSpacing = 5d;`n        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(").
@@ -13106,7 +13131,7 @@ namespace Microsoft.Maui.DeviceTests
         $contract | Should -Match 'public global::Microsoft\.Maui\.TextAlignment HorizontalTextAlignment'
         $contractTree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
             $contract, [Microsoft.CodeAnalysis.CSharp.CSharpParseOptions]::Default, 'contract.cs')
-        foreach ($typeName in @('Thickness', 'TextAlignment', 'SemanticHeadingLevel')) {
+        foreach ($typeName in @('Thickness', 'TextAlignment', 'SemanticHeadingLevel', 'TextType')) {
             $declarations = @($contractTree.GetRoot().DescendantNodes() | Where-Object {
                     $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.BaseTypeDeclarationSyntax] -and
                     $_.Identifier.ValueText -ceq $typeName
@@ -13128,6 +13153,36 @@ namespace Microsoft.Maui.DeviceTests
         $nativeTextView.Members[0].Identifier.ValueText | Should -Be 'Text'
         $contract | Should -Not -Match 'namespace\s+Android\.Widget'
         $contract | Should -Not -Match 'SetPadding|PaddingTop|PaddingBottom|Elevation'
+    }
+
+    It 'binds native text profiles to the real TextType primitive namespace' {
+        $primitive = Get-Content -LiteralPath (
+            Join-Path $PSScriptRoot '../../src/Core/src/Primitives/TextType.cs') -Raw
+        $primitive | Should -Match 'namespace Microsoft\.Maui;'
+        $primitive | Should -Match 'public enum TextType'
+        $script:TrustedNativeLabelTextBase |
+            Should -Match 'global::Microsoft\.Maui\.TextType\.Html'
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $script:TrustedNativeLabelTextBase `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        } | Should -Not -Throw
+        $wrongNamespace = $script:TrustedNativeLabelTextBase.Replace(
+            'global::Microsoft.Maui.TextType.Html',
+            'global::Microsoft.Maui.Controls.TextType.Html')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $wrongNamespace `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29282Tests' `
+                -ExpectedTestMethod 'ReproducesNativeLabelText' `
+                -Platform android `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
+        } | Should -Throw
     }
 
     It 'allows the captured Catalyst helper invocation with an inferred handler parameter' {

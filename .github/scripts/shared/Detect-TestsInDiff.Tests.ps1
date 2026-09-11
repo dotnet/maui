@@ -214,6 +214,22 @@ Describe 'Detect-TestsInDiff platform-specific methods' {
 }
 
 Describe 'Detect-TestsInDiff added device-test methods' {
+    It 'recognizes fully qualified Task and ValueTask return types' {
+        $patch = @'
+@@ -0,0 +1,8 @@
++[Fact]
++public async global::System.Threading.Tasks.Task RendersEncodedText()
++{
++}
++[Fact]
++public System.Threading.Tasks.ValueTask ReadsNativeValue()
++{
++}
+'@
+        @(Get-ChangedDeviceTestMethodsFromPatch -Patch $patch) |
+            Should -Be @('RendersEncodedText', 'ReadsNativeValue')
+    }
+
     It 'includes attributed Task and async Task methods but excludes public helpers' {
         $patch = @'
 @@ -0,0 +1,30 @@
