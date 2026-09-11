@@ -218,6 +218,7 @@ steps:
         'MAUI Copilot mode routing*keeps iOS replication simulator recovery on the configured Xcode'
         'MAUI Copilot mode routing*runs exactly the checked-in iOS fixture and retains native diagnostics'
         'MAUI Copilot mode routing*retries trusted feed provisioning without changing review or verification defaults'
+        'MAUI Copilot mode routing*resolves fixed Cake bootstrap packages from the approved stable feed only'
         'MAUI Copilot mode routing*uses shared iOS provisioning without an external isolation prerequisite'
         'Replication orchestrator security boundary*keeps platform-specific execution controls without an iOS attestation gate'
         'Apple trusted host command boundary*admits iOS Sandbox without advertising network isolation'

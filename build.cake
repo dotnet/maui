@@ -18,16 +18,16 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 // ADDINS
 //////////////////////////////////////////////////////////////////////
-#addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
-#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.Android.SdkManager&version=3.0.2"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.AppleSimulator&version=0.2.0"
+#addin "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=Cake.FileHelpers&version=3.2.1"
 #load "eng/cake/dotnet.cake"
 #load "eng/cake/helpers.cake"
 
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
-#tool "nuget:?package=nuget.commandline&version=6.6.1"
+#tool "nuget:https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json?package=nuget.commandline&version=6.6.1"
 
 
 //////////////////////////////////////////////////////////////////////
