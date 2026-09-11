@@ -110,6 +110,9 @@ class SourceGenContext(IndentedTextWriter writer, Compilation compilation, Sourc
 
 	public Dictionary<string, int> lastIdForName = [];
 
+	//extension containers brought in scope by a xmlns, keyed by the xmlns uri
+	internal Dictionary<string, INamedTypeSymbol[]>? extensionContainersInScope;
+
 	public void AddLocalMethod(string code)
 	{
 		if (ParentContext != null)

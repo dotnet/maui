@@ -30,4 +30,6 @@ MAUIX2010 | XamlParsing | Info | ExpressionNotSettable
 MAUIX2011 | XamlParsing | Warning | AmbiguousMemberWithStaticType
 MAUIX2012 | XamlParsing | Error | CSharpExpressionsRequirePreviewFeatures
 MAUIX2013 | XamlParsing | Error | AsyncLambdaNotSupported
+MAUIX2015 | XamlInflation | Error | ExtensionPropertyResolution
 MAUIX2017 | XamlInflation | Warning | DuplicatePropertyAssignment
+MAUIX2016 | XamlInflation | Error | ExtensionPropertyAmbiguous

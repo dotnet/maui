@@ -267,6 +267,12 @@ static class NodeSGExtensions
 	public static bool CanConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
 			=> CanConvertTo(valueNode, property, context, out _);
 
+	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context)
+	{
+		var typeConverter = toType.GetAttributes().FirstOrDefault(ad => ad.AttributeClass?.ToFQDisplayString() == "global::System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;
+		return CanConvertTo(valueNode, toType, typeConverter, context);
+	}
+
 	public static bool CanConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? converter, SourceGenContext context)
 	{
 		// C# expressions can be assigned to any type - trust the user's code

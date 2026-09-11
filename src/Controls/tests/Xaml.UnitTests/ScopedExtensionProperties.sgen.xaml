@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			xmlns:scoped="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensions"
+			x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.ScopedExtensionProperties">
+	<!-- an ordinary qualified property element whose owner is unrelated to the target: the qualifier is
+	     ignored and Resources resolves on the page. This is the shape ShadowBenchmark.xaml uses -->
+	<ContentView.Resources>
+		<ResourceDictionary>
+			<x:String x:Key="legacyKey">legacy value</x:String>
+		</ResourceDictionary>
+	</ContentView.Resources>
+	<StackLayout>
+		<!-- the container is brought in scope by the element's default xmlns -->
+		<Label x:Name="label0" ScopedTag="from the default xmlns" />
+
+		<!-- the container is in another assembly, mapped by the same xmlns -->
+		<Label x:Name="label1" ExternalScopedTag="from another assembly" />
+
+		<!-- Label.Text is an instance property and wins over the extension property of the same name -->
+		<Label x:Name="label2" Text="ordinary property wins" />
+
+		<!-- two containers in scope declare MostSpecific, for View and for Label: Label wins -->
+		<Label x:Name="label3" MostSpecific="from xaml" />
+
+		<!-- three containers in scope, two of them with incomparable receivers: the Label one wins whatever
+		     the enumeration order is. The Label candidate is on the last container here... -->
+		<Label x:Name="label5" ThreeWayLast="from xaml" />
+
+		<!-- ...and on the first one here -->
+		<Label x:Name="label6" ThreeWayFirst="from xaml" />
+
+		<!-- naming the container explicitly disambiguates what is otherwise ambiguous -->
+		<Label x:Name="label4" scoped:ScopedAmbiguousAExtensions.ScopedAmbiguous="explicit wins" />
+	</StackLayout>
+</ContentPage>
