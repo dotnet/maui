@@ -308,6 +308,10 @@ Missing, late, ambiguous, malformed and inaccessible events remain explicit
 diagnostic outcomes and never replace the original runner exit or exception.
 These observations cannot certify a crash or change a first-push failure into
 evidence for a reported second-push defect.
+Failure summaries retain the last such diagnostic ahead of generic errors and
+teardown only when the existing signal budget has room after actual outcomes.
+They do not increase the budget, displace a verdict, or recover diagnostic
+values lost by earlier runs.
 
 ## Safety boundary
 

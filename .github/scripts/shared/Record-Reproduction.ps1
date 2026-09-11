@@ -290,11 +290,21 @@ function Select-ReproductionDiagnosticLines {
     # Progress must not consume the outcome budget: iOS run 15288194 lost its
     # final assertion behind twelve STEP lines and subsequent driver teardown.
     $decisivePattern = '(?i)REPLICATION_[A-Z_]+|Unhandled exception|\u274C'
+    $hostDiagnosticPattern = '^NON-AUTHORITATIVE Windows crash diagnostic '
     $stepPattern = '^STEP \d+/\d+:'
     $decisive = @($lines | Where-Object { $_ -match $decisivePattern })
+    # Retain the bounded host diagnostic before generic errors can crowd it out,
+    # but never displace an outcome or treat the diagnostic as a verdict.
+    if ($MaximumSignalLines -gt $decisive.Count) {
+        $hostDiagnostic = @($lines |
+            Where-Object { $_ -match $hostDiagnosticPattern } |
+            Select-Object -Last 1)
+        $decisive = @($hostDiagnostic) + $decisive
+    }
     $generic = @($lines |
         Where-Object {
             $_ -notmatch $decisivePattern -and
+            $_ -notmatch $hostDiagnosticPattern -and
             $_ -notmatch $stepPattern -and
             $_ -match $signalPattern
         })

@@ -1289,6 +1289,51 @@ Describe 'A verdict rescued from the noise is classified as a verdict' {
         $summary | Should -Match 'STEP 20/20:'
     }
 
+    It 'retains bounded Windows diagnostics ahead of generic errors and teardown' {
+        foreach ($diagnostic in @(
+            'NON-AUTHORITATIVE Windows crash diagnostic status=found reason=correlated-application-error knownPid=4820 eventId=1000 recordId=9001 timeUtc=2026-09-11T10:47:00.000Z exceptionCode=0xc000027b module=Microsoft.UI.Xaml.dll moduleVersion=3.1.7.0 faultingOffset=0x1234',
+            'NON-AUTHORITATIVE Windows crash diagnostic status=no-event reason=not-found knownPid=4820'
+        )) {
+            $raw = (@(
+                'Unhandled exception. System.InvalidOperationException: REPLICATION_APP_TERMINATED step=4'
+            ) + @(1..25 | ForEach-Object { "Error: driver cleanup detail $_" }) +
+                @($diagnostic) +
+                @(1..40 | ForEach-Object { "Finishing remaining host cleanup $_" })) -join "`n"
+            $summary = ConvertTo-SafeLogText (Select-ReproductionDiagnosticLines -Text $raw)
+
+            $summary | Should -Match ([regex]::Escape($diagnostic))
+            $summary.Length | Should -BeLessOrEqual 4096
+            Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+        }
+    }
+
+    It 'retains Windows diagnostics without enlarging the budget or changing a negative verdict' {
+        $diagnostic = 'NON-AUTHORITATIVE Windows crash diagnostic status=no-event reason=not-found knownPid=4820'
+        $raw = (@($diagnostic) +
+            @(1..20 | ForEach-Object { "STEP $_/20: Inspect native state." }) +
+            @("REPLICATION_NOT_REPRODUCED actual='NO BUG:'")) -join "`n"
+        $summary = Select-ReproductionDiagnosticLines -Text $raw `
+            -MaximumSignalLines 3 -MaximumTailLines 0
+
+        @($summary -split ' \| ').Count | Should -Be 3
+        $summary | Should -Match ([regex]::Escape($diagnostic))
+        $summary | Should -Match 'REPLICATION_NOT_REPRODUCED'
+        $summary | Should -Match 'STEP 20/20:'
+        Test-ReplicationAppTerminated -Text $summary | Should -BeFalse
+    }
+
+    It 'does not displace an actual outcome with a Windows diagnostic' {
+        $raw = @(
+            'NON-AUTHORITATIVE Windows crash diagnostic status=no-event reason=not-found knownPid=4820'
+            'REPLICATION_APP_TERMINATED step=4'
+        ) -join "`n"
+        $summary = Select-ReproductionDiagnosticLines -Text $raw `
+            -MaximumSignalLines 1 -MaximumTailLines 0
+
+        $summary | Should -Be 'REPLICATION_APP_TERMINATED step=4'
+        Test-ReplicationAppTerminated -Text $summary | Should -BeTrue
+    }
+
     It 'still calls a genuine termination a termination' {
         $raw = @(
             'Sending animations idle reply with error: (null)'
