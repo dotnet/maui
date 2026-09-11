@@ -1229,16 +1229,11 @@ function Get-ReproductionPostSuccessSettleSeconds {
 
 function Get-ReproductionThumbnailTimeSeconds {
     param(
-        [Parameter(Mandatory = $true)][double]$DurationSeconds,
-        [Parameter(Mandatory = $true)][bool]$PreferSettledTail
+        [Parameter(Mandatory = $true)][double]$DurationSeconds
     )
 
-    if (-not $PreferSettledTail) {
-        return [Math]::Min(1.0, $DurationSeconds / 2.0)
-    }
-
     # Short captures can spend most of their duration in the pre-trigger state.
-    # Keep a small decoding margin, rather than discarding a third of the clip.
+    # The normalized clip excludes teardown; keep a small decoding margin.
     return $DurationSeconds - [Math]::Min(0.1, $DurationSeconds / 2.0)
 }
 
@@ -1773,8 +1768,7 @@ try {
 
     $thumbnailTime = ConvertTo-InvariantArgument (
         Get-ReproductionThumbnailTimeSeconds `
-            -DurationSeconds $mediaInfo.DurationSeconds `
-            -PreferSettledTail ($Platform -in @('android', 'ios')))
+            -DurationSeconds $mediaInfo.DurationSeconds)
     [void](Invoke-RequiredCommand `
         -FilePath 'ffmpeg' `
         -ArgumentList @(
