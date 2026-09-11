@@ -190,11 +190,11 @@ public class Issue33037NonShell : _IssuesUITest
 			var firstItemRect = App.WaitForElement("Item 0").GetRect();
 
 			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
-			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+			App.WaitForElement("Done");
 			App.SetOrientationLandscape();
-			App.WaitForElement("Issue33037FullScreenCoverDismissButton");
+			App.WaitForElement("Done");
 			App.SetOrientationPortrait();
-			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			App.WaitForElement("Done").Click();
 
 			var restoredTitleRect = GetExpandedNavigationTitleRect(title);
 			var restoredFirstItemRect = App.WaitForElement("Item 0").GetRect();
@@ -211,8 +211,8 @@ public class Issue33037NonShell : _IssuesUITest
 		finally
 		{
 			App.SetOrientationPortrait();
-			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
-				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			if (App.FindElements("Done").Any())
+				App.WaitForElement("Done").Click();
 			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
 		}
 	}
@@ -235,7 +235,7 @@ public class Issue33037NonShell : _IssuesUITest
 			var collapsedTitleRect = GetNavigationTitleRect(title);
 
 			App.WaitForElement("Issue33037ModalListViewCoverButton").Click();
-			App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			App.WaitForElement("Done").Click();
 
 			var titleAfterDismiss = GetNavigationTitleRect(title);
 			Assert.That(titleAfterDismiss.Height, Is.EqualTo(collapsedTitleRect.Height).Within(2),
@@ -255,8 +255,8 @@ public class Issue33037NonShell : _IssuesUITest
 		}
 		finally
 		{
-			if (App.FindElements("Issue33037FullScreenCoverDismissButton").Any())
-				App.WaitForElement("Issue33037FullScreenCoverDismissButton").Click();
+			if (App.FindElements("Done").Any())
+				App.WaitForElement("Done").Click();
 			App.WaitForElement("Issue33037ModalListViewCloseButton").Click();
 		}
 	}

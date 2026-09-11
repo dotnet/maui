@@ -3,6 +3,7 @@ using Microsoft.Maui.Layouts;
 using CoreAnimation;
 using Foundation;
 using Microsoft.Maui.Handlers;
+using SafariServices;
 using UIKit;
 #endif
 using ControlsPage = Microsoft.Maui.Controls.Page;
@@ -359,7 +360,7 @@ class Issue33037NonShellModalListViewPage : ContentPage
 			if (Handler is IPlatformViewHandler { ViewController: { } viewController })
 			{
 				viewController.PresentViewController(
-					new Issue33037FullScreenCoverViewController
+					new SFSafariViewController(new NSUrl("https://example.com"))
 					{
 						ModalPresentationStyle = UIModalPresentationStyle.FullScreen
 					},
@@ -407,44 +408,6 @@ class Issue33037NonShellModalListViewPage : ContentPage
 		Content = content;
 	}
 }
-
-#if IOS
-sealed class Issue33037FullScreenCoverViewController : UIViewController
-{
-	UIButton _dismissButton;
-
-	public override void ViewDidLoad()
-	{
-		base.ViewDidLoad();
-
-		View.BackgroundColor = UIColor.SystemBackground;
-		_dismissButton = UIButton.FromType(UIButtonType.System);
-		_dismissButton.AccessibilityIdentifier = "Issue33037FullScreenCoverDismissButton";
-		_dismissButton.SetTitle("Dismiss cover", UIControlState.Normal);
-		_dismissButton.TranslatesAutoresizingMaskIntoConstraints = false;
-		_dismissButton.TouchUpInside += OnDismiss;
-		View.AddSubview(_dismissButton);
-
-		NSLayoutConstraint.ActivateConstraints(
-		[
-			_dismissButton.CenterXAnchor.ConstraintEqualTo(View.CenterXAnchor),
-			_dismissButton.CenterYAnchor.ConstraintEqualTo(View.CenterYAnchor),
-			_dismissButton.WidthAnchor.ConstraintEqualTo(200),
-			_dismissButton.HeightAnchor.ConstraintEqualTo(50)
-		]);
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing && _dismissButton is not null)
-			_dismissButton.TouchUpInside -= OnDismiss;
-
-		base.Dispose(disposing);
-	}
-
-	void OnDismiss(object sender, EventArgs e) => DismissViewController(animated: true, completionHandler: null);
-}
-#endif
 
 class Issue33037ReporterScenarioPage : ContentPage
 {
