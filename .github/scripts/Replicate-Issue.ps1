@@ -10994,7 +10994,6 @@ function Invoke-ReplicationRegressionLaneRun {
             '-TestProject', [string]$Selection.Project,
             '-TestProjectPath', [string]$Selection.ProjectPath,
             '-TestClass', [string]$Selection.TestClass,
-            '-TestMethod', '',
             '-ExpectedFailureSignature', 'regression-evidence',
             '-VerifierPath', $verifierPath,
             '-OutputDirectory', $OutputDirectory,

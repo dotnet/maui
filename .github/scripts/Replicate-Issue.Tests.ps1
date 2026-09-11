@@ -22907,6 +22907,45 @@ public class T { }
         ($platformSource -join "`n") | Should -Match '\bHtmlTextInitializesCorrectly\s*\('
     }
 
+    It 'sends a class-wide sibling run through the real Apple argument boundary without empty tokens' {
+        . (Join-Path $PSScriptRoot 'shared/Assert-ReplicationAppleAppSandbox.ps1')
+        $IssueNumber = 38291
+        $trustedRoot = Join-Path $TestDrive 'sibling-command-root'
+        $trustedScriptRoot = Join-Path $trustedRoot 'scripts'
+        $verificationScript = Join-Path $trustedScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verificationScript) -Force | Out-Null
+        '# trusted fixture' | Set-Content -LiteralPath $verificationScript
+        $script:siblingCommand = $null
+        function Invoke-LoggedChildProcess {
+            param(
+                [string]$ScriptPath, [object[]]$Arguments,
+                [string]$LogPath, [string]$Description, [int]$TimeoutSeconds
+            )
+            $null = Get-ReplicationPwshArguments -ScriptPath $ScriptPath -Arguments $Arguments
+            $script:siblingCommand = Get-ReplicationAppleIsolatedCommand `
+                -Platform ios -TrustedRoot $trustedRoot -ScriptPath $ScriptPath `
+                -Arguments $Arguments -Environment @{} -OperatingSystem macos
+        }
+        $selection = [pscustomobject]@{
+            BaselineSha = '699f16e4c239cae5486c63ed472039aa5c4e6cf2'
+            Platform = 'ios'
+            Category = 'Label'
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+            TestClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+        }
+
+        Invoke-ReplicationRegressionLaneRun -Selection $selection `
+            -OutputDirectory (Join-Path $TestDrive 'sibling-output') `
+            -TrustedScriptRoot $trustedScriptRoot -TimeoutSeconds 120
+
+        $script:siblingCommand.Boundary | Should -Be 'ios-review-host-no-network-isolation'
+        $script:siblingCommand.Arguments | Should -Contain '-RegressionEvidence'
+        $script:siblingCommand.Arguments | Should -Not -Contain '-TestMethod'
+        @($script:siblingCommand.Arguments | Where-Object { [string]::IsNullOrEmpty($_) }).Count |
+            Should -Be 0
+    }
+
     It 'runs the immutable baseline before candidates and the selected fix before final arms' {
         $baseline = $script:Source.IndexOf(
             '-OutputDirectory $baselineRegressionDirectory')

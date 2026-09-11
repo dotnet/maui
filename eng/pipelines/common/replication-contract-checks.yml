@@ -438,6 +438,7 @@ steps:
         'BuildAndRunSandbox Windows crash diagnostic wiring*reports mismatched process identity as unavailable'
         'BuildAndRunSandbox Windows crash diagnostic wiring*reports disposed process metadata as unavailable'
         'BuildAndRunSandbox Windows crash diagnostic wiring*formats a negative signed exit code only as fixed-width hexadecimal'
+        'A fix is regression-checked against the lane its neighbours declare*sends a class-wide sibling run through the real Apple argument boundary without empty tokens'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
