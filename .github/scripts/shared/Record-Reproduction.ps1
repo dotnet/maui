@@ -1225,14 +1225,13 @@ function Get-ReproductionThumbnailTimeSeconds {
         [Parameter(Mandatory = $true)][bool]$PreferSettledTail
     )
 
-    if (-not $PreferSettledTail -or $DurationSeconds -le 2.0) {
+    if (-not $PreferSettledTail) {
         return [Math]::Min(1.0, $DurationSeconds / 2.0)
     }
 
-    # Android and iOS launch/restart evidence can legitimately begin on a black
-    # transition frame. The success path keeps a settled post-trigger tail, so
-    # use a late representative frame rather than the startup/relaunch frame.
-    return [Math]::Max(1.0, $DurationSeconds - [Math]::Min(1.0, $DurationSeconds / 3.0))
+    # Short captures can spend most of their duration in the pre-trigger state.
+    # Keep a small decoding margin, rather than discarding a third of the clip.
+    return $DurationSeconds - [Math]::Min(0.1, $DurationSeconds / 2.0)
 }
 
 function Invoke-TrustedReproduction {

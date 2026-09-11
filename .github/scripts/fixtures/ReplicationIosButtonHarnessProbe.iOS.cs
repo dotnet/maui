@@ -12,10 +12,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Fact]
 		[Category("ReplicationIosButtonHarnessProbe")]
-		public async Task RegisteredButtonAttachesToWindow()
+		public async Task RegisteredControlsAttachToWindow()
 		{
 			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
-				handlers.AddHandler<global::Microsoft.Maui.Controls.Button, ButtonHandler>()));
+			{
+				handlers.AddHandler<global::Microsoft.Maui.Controls.Button, ButtonHandler>();
+				handlers.AddHandler<global::Microsoft.Maui.Controls.Label, LabelHandler>();
+			}));
 
 			var button = new Button
 			{
@@ -35,6 +38,16 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.InRange(button.Height, 63d, 65d);
 					Assert.NotNull(handler.PlatformView.Window);
 					Assert.Equal("CI", handler.PlatformView.CurrentTitle);
+				});
+
+			var label = new Label { Text = "Native Label text" };
+			await CreateHandlerAndAddToWindow<LabelHandler>(
+				new Window(new ContentPage { Content = label }), async handler =>
+				{
+					await AssertEventually(() => label.Handler != null && label.IsLoaded);
+					Assert.Same(label.Handler, handler);
+					Assert.NotNull(handler.PlatformView.Window);
+					Assert.Equal("Native Label text", handler.PlatformView.Text);
 				});
 		}
 	}

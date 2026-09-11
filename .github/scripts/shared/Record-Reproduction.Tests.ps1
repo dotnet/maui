@@ -1329,7 +1329,16 @@ Describe 'Kept footage stops where the scenario stopped' {
 
     It 'chooses a late thumbnail frame for restart-heavy captures' {
         Get-ReproductionThumbnailTimeSeconds -DurationSeconds 8 -PreferSettledTail $true |
-            Should -Be 7
+            Should -Be 7.9
+    }
+
+    It 'keeps the thumbnail inside the final state of short mobile captures' {
+        foreach ($duration in @(2.733, 2.0, 1.8)) {
+            $seek = Get-ReproductionThumbnailTimeSeconds `
+                -DurationSeconds $duration -PreferSettledTail $true
+            $seek | Should -BeGreaterThan ($duration - 0.2)
+            $seek | Should -BeLessThan $duration
+        }
     }
 
     It 'keeps the original early thumbnail for captures without a settled device tail' {

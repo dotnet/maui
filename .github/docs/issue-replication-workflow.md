@@ -46,7 +46,7 @@ validated product fix, evidence publication, and draft PR.
 
 Use `Mode=ios-harness-probe`, `Platform=ios`, and both target numbers set to
 `0` on the trusted `copilot/replicate-issues-pipeline` branch to diagnose iOS
-workload, simulator, native Button attachment, and XHarness execution. This
+workload, simulator, native Button/Label attachment and text, and XHarness execution. This
 separate job uses the existing iOS pool, provisioning template, and device-test
 runner against the exact pipeline checkout. It inherits that checkout's shared
 Xcode pins to match its workloads, rather than the newer-Xcode override used by
