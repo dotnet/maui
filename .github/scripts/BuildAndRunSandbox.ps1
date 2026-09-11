@@ -146,6 +146,9 @@ function Resolve-CatalystSandboxAppPath {
 . "$PSScriptRoot/shared/Assert-ReplicationWindowsAppContainer.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationAppleAppSandbox.ps1"
 . "$PSScriptRoot/shared/Assert-ReplicationExecutionEnvironment.ps1"
+if ($Platform -eq 'windows' -and $EnforceNetworkIsolation) {
+    . "$PSScriptRoot/shared/Get-ReplicationWindowsCrashDiagnostic.ps1"
+}
 
 if ($PrepareAndroidHelpersOnly) {
     $null = Install-ReplicationAndroidAppiumHelpers -DeviceUdid $DeviceUdid
@@ -742,6 +745,9 @@ if ($Platform -eq "android") {
 
 Push-Location $SandboxAppiumDir
 
+$windowsCrashDiagnosticTarget = $null
+$windowsCrashDiagnosticUnavailableReason = $null
+$windowsCrashDiagnosticKnownProcessId = 0
 try {
     # Set trusted adapter inputs for the Appium runner.
     $env:DEVICE_UDID = $DeviceUdid
@@ -752,11 +758,22 @@ try {
             if ($processId -le 0) {
                 throw 'Windows replication AppContainer was not launched by the trusted host.'
             }
+            $windowsCrashDiagnosticKnownProcessId = $processId
             $process = Get-Process -Id $processId -ErrorAction Stop
             try {
                 $null = Assert-ReplicationWindowsAppContainerProcess `
                     -Process $process `
                     -ExpectedPackageFullName ([string]$windowsPackageState.packageFullName)
+                try {
+                    $windowsCrashDiagnosticTarget =
+                        Get-ReplicationWindowsCrashDiagnosticTarget `
+                            -Process $process `
+                            -ExpectedPackageFullName (
+                                [string]$windowsPackageState.packageFullName)
+                } catch {
+                    $windowsCrashDiagnosticUnavailableReason =
+                        'target-capture-failed'
+                }
             } finally {
                 $process.Dispose()
             }
@@ -779,12 +796,28 @@ try {
     if ($EnforceNetworkIsolation) {
         $appiumRunArguments += '--no-restore'
     }
-    $appiumOutput = "" | & dotnet @appiumRunArguments 2>&1
+    if ($Platform -eq 'windows' -and $EnforceNetworkIsolation) {
+        $windowsRunnerResult =
+            Invoke-ReplicationWindowsRunnerWithCrashDiagnostic `
+                -Runner {
+                    $output = @("" | & dotnet @appiumRunArguments 2>&1)
+                    [pscustomobject]@{
+                        Output = $output
+                        ExitCode = $LASTEXITCODE
+                    }
+                } `
+                -Target $windowsCrashDiagnosticTarget `
+                -KnownProcessId $windowsCrashDiagnosticKnownProcessId `
+                -UnavailableReason $windowsCrashDiagnosticUnavailableReason
+        $appiumOutput = @($windowsRunnerResult.Output)
+        $testExitCode = $windowsRunnerResult.ExitCode
+    } else {
+        $appiumOutput = "" | & dotnet @appiumRunArguments 2>&1
+        $testExitCode = $LASTEXITCODE
+    }
     
     # Display appium test output
     $appiumOutput | ForEach-Object { Write-Host $_ }
-    
-    $testExitCode = $LASTEXITCODE
     
     # Resolve the Android app PID through trusted adb after the plan completes.
     $sandboxPid = $null

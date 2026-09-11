@@ -349,6 +349,37 @@ steps:
         'A pull request that carries a fix says so*says nothing about a fix when there is none'
         'A pull request that carries a fix says so*describes the fix, its files, and the two commits that carry it'
         'A pull request that carries a fix says so*still describes a fix that carries no prose'
+        'Replication Windows crash diagnostic XML selection*captures the exact live process path and start time in trusted memory'
+        'Replication Windows crash diagnostic XML selection*selects an exactly correlated Application Error 1000 fixture'
+        'Replication Windows crash diagnostic XML selection*accepts a second exact fixture shape and uppercase hexadecimal PID'
+        'Replication Windows crash diagnostic XML selection*ignores System Execution ProcessID and uses named EventData ProcessId'
+        'Replication Windows crash diagnostic XML selection*does not correlate a different app at the same PID'
+        'Replication Windows crash diagnostic XML selection*does not correlate the same app at a different PID'
+        'Replication Windows crash diagnostic XML selection*does not correlate a different package identity'
+        'Replication Windows crash diagnostic XML selection*marks matching identity outside the bounded UTC window stale'
+        'Replication Windows crash diagnostic XML selection*marks a reused PID with another process creation time stale'
+        'Replication Windows crash diagnostic XML selection*rejects a blank creation time even when all other identity checks match'
+        'Replication Windows crash diagnostic XML selection*reports duplicated named EventData as unavailable'
+        'Replication Windows crash diagnostic XML selection*reports malformed XML input as unavailable'
+        'Replication Windows crash diagnostic XML selection*reports DTD XML input as unavailable'
+        'Replication Windows crash diagnostic XML selection*reports oversized XML without parsing or emitting it'
+        'Replication Windows crash diagnostic XML selection*reports no events explicitly'
+        'Replication Windows crash diagnostic XML selection*reports multiple exact records as ambiguous'
+        'Replication Windows crash diagnostic XML selection*rejects forged Azure logging syntax from every output field'
+        'Replication Windows crash diagnostic event query*uses one fixed structured server filter and bounded materialization'
+        'Replication Windows crash diagnostic event query*converts a query failure to a fixed non-authoritative reason'
+        'Replication Windows crash diagnostic event query*polls after no events and returns a delayed matching record'
+        'Replication Windows crash diagnostic event query*continues polling past a concurrent event with the wrong PID'
+        'Replication Windows crash diagnostic event query*continues polling past a concurrent event with the wrong app path'
+        'Replication Windows crash diagnostic event query*continues polling past a recycled PID with the wrong creation time'
+        'Replication Windows crash diagnostic event query*ends bounded polling explicitly when no event is ever published'
+        'Replication Windows crash diagnostic event query*terminates an actually blocking trusted query child within the total deadline'
+        'Replication Windows crash diagnostic event query*maps a bounded child timeout to a fixed unavailable diagnostic'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*captures the validated live process identity before the Appium runner'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*preserves a nonzero production runner result when diagnostics throw'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*preserves the original production runner exception when diagnostics throw'
+        'BuildAndRunSandbox Windows crash diagnostic wiring*wires the executable production seam into isolated Windows only'
+        'Capturing a trusted tree*names every key script individually'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
@@ -362,6 +393,8 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-ReplicationTestVerification.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Validate-ReplicationCandidate.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Record-Reproduction.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationWindowsCrashDiagnostic.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-TrustedTreeAttestation.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Get-ReplicationIssueContext.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/shared/Detect-TestsInDiff.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/skills/run-device-tests/scripts/Run-DeviceTests.Tests.ps1"
