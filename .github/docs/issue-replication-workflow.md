@@ -16,8 +16,10 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 
 The checked-in Cake directives pin bootstrap packages to `dotnet-public`, but
 replication switches to the product baseline before provisioning. Replication
-and the iOS harness probe therefore pass Cake's `--nuget_source` override at
-invocation time, so those baseline directives do not query SDK-specific
+therefore passes Cake's `--nuget_source` override at invocation time. The iOS
+harness probe supplies the equivalent task-scoped `CAKE_NUGET_SOURCE` setting,
+avoiding URL splitting by its child PowerShell `-File` invocation. Baseline
+directives consequently do not query SDK-specific
 ephemeral feeds for tooling. Package versions and product/workload restore feeds
 remain unchanged. Restore failures are not ignored and retries remain bounded.
 
@@ -130,6 +132,9 @@ bug caption; disclose an unsupported interaction instead.
 The trusted `doubleTap` action performs exactly two press/release cycles at the
 same located element in one bounded input sequence. It requires a locator and
 `value: null`; callers cannot supply a count, duration, or executable argument.
+Pointer sequences use a nonzero initial move because Mac2 rejects zero-duration
+moves. That driver-side rejection is an infrastructure failure, not app-crash
+evidence; explicit app-termination evidence still takes precedence.
 
 MainPage normally has a ContentPage root. A report whose initial NavigationPage
 directly hosts a TabbedPage may instead use a TabbedPage XAML root and matching

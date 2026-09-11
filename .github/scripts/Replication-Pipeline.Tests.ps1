@@ -275,8 +275,42 @@ $Arguments | ConvertTo-Json | Set-Content -LiteralPath './observed-arguments.jso
             $script:Pipeline,
             '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
         $probeStage | Should -Match (
-            'build\.ps1 --target=dotnet --configuration=Release --verbosity=normal ' +
-            '--nuget_source=https://pkgs\.dev\.azure\.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index\.json')
+            'CAKE_NUGET_SOURCE: https://pkgs\.dev\.azure\.com/dnceng/public/' +
+            '_packaging/dotnet-public/nuget/v3/index\.json')
+    }
+
+    It 'preserves the iOS probe Cake source across child PowerShell argument binding' {
+        $probeStage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
+        $source = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json'
+        [regex]::Matches($probeStage,
+            'CAKE_NUGET_SOURCE: ' + [regex]::Escape($source)).Count |
+            Should -Be 2
+        $probeStage | Should -Not -Match '--nuget_source='
+        $capture = Join-Path $TestDrive 'probe-build.ps1'
+        @'
+param([Parameter(ValueFromRemainingArguments = $true)][string[]]$ScriptArgs)
+[pscustomobject]@{
+    Source = $env:CAKE_NUGET_SOURCE
+    Arguments = @($ScriptArgs)
+} | ConvertTo-Json
+'@ | Set-Content -LiteralPath $capture
+
+        $previousSource = $env:CAKE_NUGET_SOURCE
+        try {
+            $env:CAKE_NUGET_SOURCE = $source
+            $pwsh = (Get-Process -Id $PID).Path
+            $observed = & $pwsh -NoProfile -File $capture `
+                --target=dotnet --configuration=Release --verbosity=normal |
+                ConvertFrom-Json
+            $LASTEXITCODE | Should -Be 0
+            $observed.Source | Should -BeExactly $source
+            $observed.Arguments | Should -Be @(
+                '--target=dotnet', '--configuration=Release', '--verbosity=normal')
+        } finally {
+            $env:CAKE_NUGET_SOURCE = $previousSource
+        }
     }
 
     It 'uses shared iOS provisioning without an external isolation prerequisite' {
