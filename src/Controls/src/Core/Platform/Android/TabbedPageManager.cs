@@ -120,7 +120,7 @@ public class TabbedPageManager
 
 		if (Element is not null)
 		{
-			UnsubscribeFromRequestedThemeChanged();
+			Application.Current!.RequestedThemeChanged -= OnRequestedThemeChanged;
 			Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 			((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 			Element.Appearing -= OnTabbedPageAppearing;
@@ -185,30 +185,10 @@ public class TabbedPageManager
 			previousPage = tabbedPage.CurrentPage;
 
 			((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
-			SubscribeToRequestedThemeChanged();
+			Application.Current!.RequestedThemeChanged += OnRequestedThemeChanged;
 
 			SetTabLayout();
 		}
-	}
-
-	void SubscribeToRequestedThemeChanged()
-	{
-		if (Application.Current is null)
-		{
-			return;
-		}
-
-		Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-	}
-
-	void UnsubscribeFromRequestedThemeChanged()
-	{
-		if (Application.Current is null)
-		{
-			return;
-		}
-
-		Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
 	}
 
 	void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)

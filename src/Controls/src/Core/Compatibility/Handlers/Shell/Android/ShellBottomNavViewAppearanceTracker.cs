@@ -180,6 +180,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_itemTextColor?.Dispose();
 				_itemIconTint?.Dispose();
+
 				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;

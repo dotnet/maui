@@ -1,10 +1,10 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 1418, "Android Material 3 TabbedPage selection color does not update with AppTheme", PlatformAffected.Android)]
-public class Issue38234TabbedPageTest : TabbedPage
+[Issue(IssueTracker.Github, 38234, "Android Material 3 TabbedPage selection color does not update with AppTheme", PlatformAffected.Android, issueTestNumber: 1)]
+public class Issue38234_TabbedPageTest : TabbedPage
 {
 	readonly AppTheme _originalUserAppTheme;
-	public Issue38234TabbedPageTest()
+	public Issue38234_TabbedPageTest()
 	{
 		var application = Application.Current!;
 
