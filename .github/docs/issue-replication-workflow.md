@@ -173,6 +173,16 @@ hierarchies, or simulated input. Static profile acceptance is not proof that a
 particular alternate input passes on a device: all four causal arms remain
 required.
 
+The Apple Label CharacterSpacing profile keeps a common managed spacing update
+after attachment while the trusted gate selects HTML versus plain-text mode
+before attachment. Its oracle calls the existing
+`AssertionExtensions.GetCharacterSpacing` on the same native Label's attributed
+text. The helper's repository blob and normalized source hash must match the
+reviewed immutable source. Only a matching positive integer-valued spacing
+literal up to 10000 is accepted; zero/missing native attributes cannot pass.
+The profile does not permit raw native attribute access, generated observers,
+or native writes, and retains the iOS/Mac Catalyst execution boundaries.
+
 The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
 Successful publication requires both:

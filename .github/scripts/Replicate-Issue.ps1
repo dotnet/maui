@@ -7721,9 +7721,23 @@ ANDROID GENERATED-TEST CONTRACT: Do not copy Catalyst or Windows window-helper e
         @'
 
 NATIVE LABEL RENDERED-TEXT PROFILE: Android and iOS Controls device tests may use one narrowly reusable native Label observation when the recorded defect is exactly the text rendered by a standard `Label`. This profile is keyed by the validated issue test identity, not by a special issue number. Use one issue-keyed file under `src/Controls/tests/DeviceTests/Elements/Label/` named `Issue<issue>Tests.Android.cs` or `Issue<issue>Tests.iOS.cs` as appropriate, one selected [Fact] method with [Category("Issue<issue>")], and an explicit `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` base.
-The selected method must have exactly five top-level statements: (1) `EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));`; (2) `var affectedLabel = new global::Microsoft.Maui.Controls.Label { ... };`, whose optional initializer sets only `Text` to a literal and/or `TextType` to a direct enum value; (3) `var applyReportedTrigger = true;`; (4) the single required gate, whose true branch assigns only `affectedLabel.Text` or `affectedLabel.TextType` and has no else branch—the initializer supplies any truthful non-defective alternate state; and (5) the directly awaited helper below. The issue context must supply the actual input, alternate, and expected rendered text; never invent them and never substitute a substring-only oracle.
+The selected method must have exactly five top-level statements: (1) `EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));`; (2) `var affectedLabel = new global::Microsoft.Maui.Controls.Label { ... };`, whose optional initializer sets only `Text` to a literal and/or `TextType` to a direct enum value; (3) `var applyReportedTrigger = true;`; (4) the single required gate, whose true branch assigns only `affectedLabel.Text` or `affectedLabel.TextType` and has no else branch—the initializer supplies any truthful non-defective alternate state; and (5) the directly awaited helper below. The issue context must supply the actual input and expected rendered text. The initializer's non-trigger value must be semantically equivalent and preserve exactly that expected visible text. Prefer an explicit report-supplied workaround. When the report documents enough input semantics to derive a bounded non-trigger candidate without adding visible content, the candidate may be used even if the recorded Sandbox did not contain that negative-control value; do not otherwise invent an input or fix. The same source candidate must remain unchanged across the baseline, control, fix, and revert arms. It earns acceptance only when all three control runs pass and all three reported-trigger baseline runs fail, never by inference. Never substitute a substring-only oracle.
 Write the helper exactly as `await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(new global::Microsoft.Maui.Controls.Window(new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }), async handler => { await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded); Assert.Equal("<issue-derived expected rendered text>", handler.PlatformView.Text); });`. Import `Microsoft.Maui.Hosting` and `using static Microsoft.Maui.DeviceTests.AssertHelpers;`. The final expected value must be a non-empty literal, and the actual value must be the direct native `handler.PlatformView.Text` read. Do not use managed `Label.Text` as the oracle, another Label, another handler, a fallback native object, nullable/coalescing access, computed captions, helper methods, aliases, extra callback statements, native writes, input simulation, or a larger hierarchy. Missing handler/native state must fail setup. If this exact shape cannot truthfully express the recorded scene, use the structured test-blocked channel.
 This exact profile requires Assert.Equal, overriding the general custom-message assertion guidance. Set expectedFailureSignature to text that xUnit actually emits, such as "Assert.Equal() Failure"; do not invent a custom message or replace the required oracle with Assert.True.
+'@
+    } else {
+        ''
+    }
+
+    $nativeLabelCharacterSpacingGeneratedTestGuidance = if (
+        $Platform -in @('ios', 'catalyst') -and
+        $Phase -in @('test-plan', 'test', 'repair')) {
+        @'
+
+NATIVE LABEL CHARACTERSPACING PROFILE: iOS and Mac Catalyst Controls device tests may use one narrowly reusable native observation when the recorded defect is a post-attachment `Label.CharacterSpacing` update whose native attributed-text kerning differs between plain Text and Html modes. This profile is selected from its complete validated shape, not merely its filename, and is keyed by the validated issue identity rather than a special issue number. Use one issue-keyed file under `src/Controls/tests/DeviceTests/Elements/Label/` named `Issue<issue>Tests.iOS.cs`, one selected [Fact] method with [Category("Issue<issue>")], and an explicit `global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase` base. Wrap the entire iOS source in exactly `#if IOS && !MACCATALYST` and `#endif`; wrap the entire Catalyst source in exactly `#if MACCATALYST` and `#endif`.
+The selected method has exactly five top-level statements: (1) the exact single Label-to-LabelHandler registration used by the rendered-text profile; (2) `var affectedLabel = new global::Microsoft.Maui.Controls.Label { Text = "<issue-derived non-empty literal>", TextType = global::Microsoft.Maui.Controls.TextType.Text };`; (3) `var applyReportedTrigger = true;`; (4) a gate with no else whose only statement is `affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Html;`; and (5) the directly awaited immutable `CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>` helper with the exact Window/ContentPage/affectedLabel tree. Plain Text is the unchanged control arm; do not move the CharacterSpacing update into the gate or before attachment.
+The async handler callback has exactly three statements in this order: the exact one-argument `await AssertEventually(() => affectedLabel.Handler != null && affectedLabel.IsLoaded);` readiness check, `affectedLabel.CharacterSpacing = <issue-derived finite positive integer-valued numeric literal>;`, and `Assert.Equal(<the same numeric literal>, handler.PlatformView.AttributedText.GetCharacterSpacing());`. Keep the spacing value at or below 10000. The actual value must be that direct observation chain on the same handler. `GetCharacterSpacing` is the existing public extension in `src/TestUtils/src/DeviceTests/AssertionExtensions.iOS.cs`; do not generate, shadow, alias, wrap, overload, or reimplement it, and never call raw GetAttribute/out/ref or native interop. Do not write AttributedText or native kerning, read managed CharacterSpacing as the oracle, introduce another Label/handler/local observation, add callback statements, or invoke arbitrary native APIs. The non-empty Label text and positive expectation make null, empty, or missing attributed text return zero and fail rather than pass.
+This exact profile requires Assert.Equal and exact equality only for a finite positive integer-valued spacing literal, overriding general floating-point/custom-message advice. Set expectedFailureSignature to the current xUnit text `Assert.Equal() Failure: Values differ`; do not invent a message or replace the required native oracle. If this exact common post-attachment mutation and native observation cannot truthfully express the issue, use the structured test-blocked channel.
 '@
     } else {
         ''
@@ -7984,6 +7998,7 @@ $issueSpecificTierGuidance
 $platformBoundaryGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
+$nativeLabelCharacterSpacingGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
@@ -8030,6 +8045,7 @@ Read the matching trusted skill under "$trustedSkills".
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
+$nativeLabelCharacterSpacingGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance
@@ -8073,6 +8089,7 @@ Failure summary: $(ConvertTo-ReplicationSafeLog $FailureSummary 1000)
 $appleNativeTypingGuidance
 $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
+$nativeLabelCharacterSpacingGeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance

@@ -1834,7 +1834,13 @@ public partial class MainPage : ContentPage
                     $prompt | Should -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
                     $prompt | Should -Match 'handler\.PlatformView\.Text'
                     $prompt | Should -Match 'overriding the general custom-message assertion guidance'
-                    $prompt | Should -Match 'issue context must supply the actual input, alternate, and expected rendered text'
+                    $prompt | Should -Match 'issue context must supply the actual input and expected rendered text'
+                    $prompt | Should -Match 'explicit report-supplied workaround'
+                    $prompt | Should -Match 'derive a bounded non-trigger candidate without adding visible content'
+                    $prompt | Should -Match 'recorded Sandbox did not contain that negative-control value'
+                    $prompt | Should -Match 'unchanged across the baseline, control, fix, and revert arms'
+                    $prompt | Should -Match 'all three control runs pass'
+                    $prompt | Should -Match 'all three reported-trigger baseline runs fail, never by inference'
                     $profile = [regex]::Match(
                         $prompt,
                         '(?s)NATIVE LABEL RENDERED-TEXT PROFILE:.*?(?=\r?\n[A-Z][A-Z -]+:|\r?\nTrusted |\r?\nDo not create|\z)')
@@ -1849,6 +1855,38 @@ public partial class MainPage : ContentPage
             $script:Platform = 'android'
             (New-CopilotPrompt -Phase sandbox) |
                 Should -Not -Match 'NATIVE LABEL RENDERED-TEXT PROFILE'
+        }
+
+        It 'scopes reusable native Label CharacterSpacing guidance to iOS and Catalyst issue identities' {
+            foreach ($case in @(
+                @{ Issue = 29668; Platform = 'ios'; Guard = '#if IOS && !MACCATALYST' }
+                @{ Issue = 40127; Platform = 'catalyst'; Guard = '#if MACCATALYST' }
+            )) {
+                $script:IssueNumber = $case.Issue
+                $script:Platform = $case.Platform
+                foreach ($phase in @('test-plan', 'test', 'repair')) {
+                    $prompt = New-CopilotPrompt -Phase $phase `
+                        -BaselineRelativePath "tests/Issue$($case.Issue)Tests.iOS.cs"
+                    $profile = [regex]::Match(
+                        $prompt,
+                        '(?s)NATIVE LABEL CHARACTERSPACING PROFILE:.*?(?=\r?\n[A-Z][A-Z -]+:|\r?\nTrusted |\r?\nDo not create|\z)')
+                    $profile.Success | Should -BeTrue
+                    $profile.Value | Should -Match ([regex]::Escape($case.Guard))
+                    $profile.Value | Should -Match 'affectedLabel\.CharacterSpacing = <issue-derived finite positive integer-valued numeric literal>'
+                    $profile.Value | Should -Match 'handler\.PlatformView\.AttributedText\.GetCharacterSpacing\(\)'
+                    $profile.Value | Should -Match 'Assert\.Equal\(\) Failure: Values differ'
+                    $profile.Value | Should -Match 'do not generate, shadow, alias, wrap, overload, or reimplement it'
+                    $profile.Value | Should -Not -Match 'Issue29668|Character spacing'
+                    $profile.Value | Should -Not -Match 'GetAttribute\('
+                }
+            }
+
+            $script:Platform = 'android'
+            (New-CopilotPrompt -Phase test-plan) |
+                Should -Not -Match 'NATIVE LABEL CHARACTERSPACING PROFILE'
+            $script:Platform = 'ios'
+            (New-CopilotPrompt -Phase sandbox) |
+                Should -Not -Match 'NATIVE LABEL CHARACTERSPACING PROFILE'
         }
 
         It 'keeps initial assignments out of invented post-attachment trigger buttons' {
@@ -11384,6 +11422,48 @@ public class Issue29282Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
     }
 }
 '@
+        $script:TrustedNativeLabelCharacterSpacingBase = @'
+#if IOS && !MACCATALYST
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue29668Tests : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue29668")]
+    public async Task CharacterSpacingUpdatesNativeAttributedText()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()));
+        var affectedLabel = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "Character spacing",
+            TextType = global::Microsoft.Maui.Controls.TextType.Text
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Html;
+        }
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(
+            new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }),
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedLabel.Handler != null && affectedLabel.IsLoaded);
+                affectedLabel.CharacterSpacing = 5d;
+                Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());
+            });
+    }
+}
+#endif
+'@
     }
 
     AfterAll {
@@ -12037,6 +12117,292 @@ namespace Generated
                 -Platform catalyst `
                 -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.iOS.cs'
         } | Should -Throw
+    }
+
+    It 'allows exact iOS and Catalyst native Label CharacterSpacing controls for different issue keys' {
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $script:TrustedNativeLabelCharacterSpacingBase `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $script:TrustedNativeLabelCharacterSpacingBase `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs' `
+                -Platform ios
+        } | Should -Not -Throw
+        $iosVariant = New-ReplicationControlVariant `
+            -BaselineSource $script:TrustedNativeLabelCharacterSpacingBase `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+            -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+            -Platform ios `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+        $iosVariant | Should -BeExactly (
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+                'var applyReportedTrigger = true;',
+                'var applyReportedTrigger = false;'))
+
+        $catalyst = $script:TrustedNativeLabelCharacterSpacingBase.
+            Replace('#if IOS && !MACCATALYST', '#if MACCATALYST').
+            Replace('Issue29668Tests', 'Issue40127Tests').
+            Replace('Issue29668', 'Issue40127').
+            Replace('"Character spacing"', '"Catalyst spacing"').
+            Replace('5d', '7d')
+        {
+            Assert-ReplicationGeneratedSourceSafety `
+                -Content $catalyst `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Label/Issue40127Tests.iOS.cs'
+            Assert-ReplicationPlatformSourceSafety `
+                -Content $catalyst `
+                -Path 'src/Controls/tests/DeviceTests/Elements/Label/Issue40127Tests.iOS.cs' `
+                -Platform catalyst
+        } | Should -Not -Throw
+        $catalystVariant = New-ReplicationControlVariant `
+            -BaselineSource $catalyst `
+            -Edits @($script:GateEdit) `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue40127Tests' `
+            -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+            -Platform catalyst `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue40127Tests.iOS.cs'
+        $catalystVariant | Should -BeExactly $catalyst.Replace(
+            'var applyReportedTrigger = true;',
+            'var applyReportedTrigger = false;')
+    }
+
+    It 'requires literal matching positive native Label CharacterSpacing values after attachment' {
+        $cases = @(
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+                'Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());',
+                'Assert.Equal(4d, handler.PlatformView.AttributedText.GetCharacterSpacing());'),
+            $script:TrustedNativeLabelCharacterSpacingBase.
+                Replace('affectedLabel.CharacterSpacing = 5d;', 'affectedLabel.CharacterSpacing = 0d;').
+                Replace('Assert.Equal(5d,', 'Assert.Equal(0d,'),
+            $script:TrustedNativeLabelCharacterSpacingBase.
+                Replace('affectedLabel.CharacterSpacing = 5d;', 'affectedLabel.CharacterSpacing = double.NaN;').
+                Replace('Assert.Equal(5d,', 'Assert.Equal(double.NaN,'),
+            $script:TrustedNativeLabelCharacterSpacingBase.
+                Replace('affectedLabel.CharacterSpacing = 5d;', 'affectedLabel.CharacterSpacing = double.PositiveInfinity;').
+                Replace('Assert.Equal(5d,', 'Assert.Equal(double.PositiveInfinity,'),
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+                'affectedLabel.CharacterSpacing = 5d;',
+                'affectedLabel.CharacterSpacing = 2d + 3d;'),
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace('5d', '10001d'),
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace('5d', '"5"'),
+            $script:TrustedNativeLabelCharacterSpacingBase.Replace('5d', 'true')
+        )
+        foreach ($candidate in $cases) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+                    -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'does not reserve native observation names as unrelated local identifiers' {
+        $baseline = $script:ControlBase.Replace(
+            'var applyReportedTrigger = true;',
+            "var CharacterSpacing = true;`n        var applyReportedTrigger = true;")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $baseline `
+                -Edits @($script:GateEdit)
+        } | Should -Not -Throw
+    }
+
+    It 'rejects native Label CharacterSpacing writes wrong identities and pre-attachment mutation' {
+        $nativeWrite = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());',
+            'handler.PlatformView.AttributedText = null;')
+        $rawKerningMutation = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());',
+            'handler.PlatformView.AttributedText.GetAttribute(UIKit.UIStringAttributeKey.KerningAdjustment, 0, out var range);')
+        $wrongLabel = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'new global::Microsoft.Maui.Controls.ContentPage { Content = affectedLabel }',
+            'new global::Microsoft.Maui.Controls.ContentPage { Content = new global::Microsoft.Maui.Controls.Label() }')
+        $wrongHandler = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>()',
+            'handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.ButtonHandler>()')
+        $emptyText = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'Text = "Character spacing"',
+            'Text = ""')
+        $wrongInitialMode = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'TextType = global::Microsoft.Maui.Controls.TextType.Text',
+            'TextType = global::Microsoft.Maui.Controls.TextType.Html')
+        $wrongGateMode = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Html;',
+            'affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Text;')
+        $elseBypass = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            "        }`n        await CreateHandlerAndAddToWindow",
+            "        }`n        else`n        {`n            affectedLabel.TextType = global::Microsoft.Maui.Controls.TextType.Text;`n        }`n        await CreateHandlerAndAddToWindow")
+        $movedMutation = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            '        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(',
+            "        affectedLabel.CharacterSpacing = 5d;`n        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>(").
+            Replace(
+                '                affectedLabel.CharacterSpacing = 5d;' + [Environment]::NewLine,
+                '')
+        foreach ($candidate in @(
+            $nativeWrite,
+            $rawKerningMutation,
+            $wrongLabel,
+            $wrongHandler,
+            $emptyText,
+            $wrongInitialMode,
+            $wrongGateMode,
+            $elseBypass,
+            $movedMutation
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+                    -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects native Label CharacterSpacing path category and platform-guard mismatches' {
+        $wrongCategory = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            '[Category("Issue29668")]',
+            '[Category("Issue29669")]')
+        $wrongIosGuard = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            '#if IOS && !MACCATALYST',
+            '#if IOS')
+        $wrongCatalystGuard = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            '#if IOS && !MACCATALYST',
+            '#if IOS || MACCATALYST')
+        foreach ($case in @(
+            @{
+                Source = $wrongCategory
+                Platform = 'ios'
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            }
+            @{
+                Source = $script:TrustedNativeLabelCharacterSpacingBase
+                Platform = 'ios'
+                Path = 'src/Controls/tests/DeviceTests/Elements/Button/Issue29668Tests.iOS.cs'
+            }
+            @{
+                Source = $wrongIosGuard
+                Platform = 'ios'
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            }
+            @{
+                Source = $wrongCatalystGuard
+                Platform = 'catalyst'
+                Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            }
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+                    -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+                    -Platform $case.Platform `
+                    -SourcePath $case.Path
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects native Label CharacterSpacing helper overload shadows and alternate source methods' {
+        $wrongOverload = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'AttributedText.GetCharacterSpacing()',
+            'AttributedText.GetCharacterSpacing(0)')
+        $helperAlias = $script:TrustedNativeLabelCharacterSpacingBase.
+            Replace(
+                'using System.Threading.Tasks;',
+                "using System.Threading.Tasks;`nusing NativeHelperAlias = Microsoft.Maui.DeviceTests.AssertionExtensions;").
+            Replace(
+                'handler.PlatformView.AttributedText.GetCharacterSpacing()',
+                'NativeHelperAlias.GetCharacterSpacing(handler.PlatformView.AttributedText)')
+        $shadowSource = @'
+namespace Generated
+{
+    public static class CharacterSpacingExtensions
+    {
+        public static double GetCharacterSpacing(
+            this Foundation.NSAttributedString text) => 5d;
+    }
+}
+'@
+        $shadowCall = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            'handler.PlatformView.AttributedText.GetCharacterSpacing()',
+            'Generated.CharacterSpacingExtensions.GetCharacterSpacing(handler.PlatformView.AttributedText)')
+        $sourceType = @'
+namespace Foundation
+{
+    public class NSAttributedString { }
+}
+'@
+        foreach ($case in @(
+            @{ Source = $wrongOverload; Additional = @() }
+            @{ Source = $helperAlias; Additional = @() }
+            @{ Source = $shadowCall; Additional = @($shadowSource) }
+            @{ Source = $script:TrustedNativeLabelCharacterSpacingBase; Additional = @($sourceType) }
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -AdditionalSources $case.Additional `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+                    -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects extra calls ref-out access and CharacterSpacing leakage outside the profile' {
+        $extraCall = $script:TrustedNativeLabelCharacterSpacingBase.Replace(
+            '                Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());',
+            "                global::System.Console.WriteLine(`"extra`");`n                Assert.Equal(5d, handler.PlatformView.AttributedText.GetCharacterSpacing());")
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $extraCall `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue29668Tests' `
+                -ExpectedTestMethod 'CharacterSpacingUpdatesNativeAttributedText' `
+                -Platform ios `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs'
+        } | Should -Throw
+
+        $outsideProfile = $script:ControlBase.Replace(
+            'label.IsVisible = false;',
+            'label.CharacterSpacing = 5d;')
+        {
+            New-ReplicationControlVariant `
+                -BaselineSource $outsideProfile `
+                -Edits @($script:GateEdit) `
+                -Platform windows `
+                -SourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.Windows.cs'
+        } | Should -Throw '*CharacterSpacing metadata is trusted only*'
+    }
+
+    It 'rejects a changed or unpinned immutable CharacterSpacing helper baseline' {
+        $fakeRoot = Join-Path $TestDrive 'character-spacing-helper-root'
+        $helperPath = Join-Path $fakeRoot 'src/TestUtils/src/DeviceTests/AssertionExtensions.iOS.cs'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $helperPath) -Force |
+            Out-Null
+        'changed helper source' | Set-Content -LiteralPath $helperPath
+        Mock git {
+            $global:LASTEXITCODE = 0
+            '5b48acba0e39fa1e8944676cb4bc58c314be0da8'
+        }
+
+        {
+            Get-ReplicationTrustedCharacterSpacingSource `
+                -RepositoryRoot $fakeRoot `
+                -GeneratedSourcePath 'src/Controls/tests/DeviceTests/Elements/Label/Issue29668Tests.iOS.cs' `
+                -Platform ios
+        } | Should -Throw '*differs from the reviewed immutable source*'
     }
 
     It 'keeps bitmap and layout metadata restricted on native Label text paths' {
