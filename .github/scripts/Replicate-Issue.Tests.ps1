@@ -1993,6 +1993,42 @@ public partial class MainPage : ContentPage
             }
         }
 
+        It 'guides unspecified tap hosts only in iOS Sandbox planning' {
+            foreach ($scenarioIssue in @(41777, 49191)) {
+                $script:IssueNumber = $scenarioIssue
+                $script:Platform = 'ios'
+                $prompt = New-CopilotPrompt -Phase sandbox
+                $prompt | Should -Match 'IOS TAP-COUNT HOST PLANNING'
+                $prompt | Should -Match 'leaves both the affected host type and recognizer composition unspecified'
+                $prompt | Should -Match 'Label with one TapGestureRecognizer and one PointerGestureRecognizer'
+            }
+            foreach ($targetPlatform in @('android', 'catalyst', 'windows')) {
+                $script:Platform = $targetPlatform
+                (New-CopilotPrompt -Phase sandbox) |
+                    Should -Not -Match 'IOS TAP-COUNT HOST PLANNING'
+            }
+            $script:Platform = 'ios'
+            foreach ($targetPhase in @('test-plan', 'test', 'repair')) {
+                (New-CopilotPrompt -Phase $targetPhase) |
+                    Should -Not -Match 'IOS TAP-COUNT HOST PLANNING'
+            }
+        }
+
+        It 'preserves specified and recorded hosts ahead of test capability preferences' {
+            $script:IssueNumber = 49191
+            $script:Platform = 'ios'
+            $prompt = New-CopilotPrompt -Phase sandbox
+
+            $prompt | Should -Match 'Preserve any explicitly reported host type, recognizer composition, nesting, and timing'
+            $prompt | Should -Match 'Never replace an explicitly specified or already recorded host'
+            $prompt | Should -Match 'not a substitute for the initially working tap callback'
+            $prompt | Should -Match 'assert its affected observation changes before the runtime update'
+            $prompt | Should -Match 'add restartApp only if the report requires a launch or restart transition'
+            $prompt | Should -Match 'For construction-time or launch observations on Android and iOS, use restartApp'
+            $prompt | Should -Match 'This planning preference does not expand the generated-test contract'
+            $prompt | Should -Match 'perform that real interaction and assert its affected observation before applying the update'
+        }
+
         It 'uses native Apple kerning rather than PNG encoding as Sandbox evidence' {
             $script:IssueNumber = 29668
             $nativeRead = @'
@@ -25361,6 +25397,42 @@ Describe 'A verdict the length cap discarded is not a crash' {
 
         (ConvertTo-ReplicationAttemptFailureSummary $message 1000).Length |
             Should -BeLessThan 1400
+    }
+
+    It 'retains an elided trusted text assertion instead of inferring an app crash' {
+        $failure = "Expected element text to equal 'BUG REPRODUCED:', actual 'BUG REPRODUCED: Single tap was delivered but not recognized'."
+        $message = $script:Head + " $failure " + $script:Teardown
+
+        ConvertTo-ReplicationSafeLog $message 1000 |
+            Should -Not -Match 'Expected element text to equal'
+        $summary = ConvertTo-ReplicationAttemptFailureSummary $message 1000
+        $summary | Should -Match 'Expected element text to equal'
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -BeExactly 'assertion-mismatch'
+        $summary.Length | Should -BeLessThan 1400
+    }
+
+    It 'retains an elided trusted action refusal within the existing recovery bound' {
+        $message = $script:Head +
+            ' Pointer move duration must be greater or equal to 1ms ' +
+            ('a' * 400) +
+            " Expected element text to equal 'Observed', actual 'Waiting'. " +
+            $script:Teardown
+
+        $summary = ConvertTo-ReplicationAttemptFailureSummary $message 1000
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -BeExactly 'recording-failed'
+        $summary.Length | Should -BeLessThan 1400
+    }
+
+    It 'keeps genuine termination above an elided trusted assertion failure' {
+        $message = $script:Head +
+            " REPLICATION_APP_TERMINATED step=4 Expected element text to equal 'Observed', actual 'Waiting'. " +
+            $script:Teardown
+        $summary = ConvertTo-ReplicationAttemptFailureSummary $message 1000
+
+        Get-ReplicationAttemptFailureKind -FailureSummary $summary |
+            Should -BeExactly 'app-terminated'
     }
 }
 

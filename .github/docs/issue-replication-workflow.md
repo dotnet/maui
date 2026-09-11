@@ -120,6 +120,10 @@ lines, then retain the most recent steps within the existing output budget.
 An exit code of 134 alone does not distinguish an app crash from a host-runner
 assertion failure; retained verdict and termination evidence determine the
 classification. Missing observations never count as successful reproduction.
+When the attempt summary's length cap removes a known host assertion or action
+failure, bounded recovery preserves that explanation rather than interpreting
+the remaining abort code as app death. Explicit termination and plan-verdict
+markers retain their existing precedence; absent observations are not invented.
 Thumbnails use the final scene of the normalized recording on every platform,
 with a small decoding margin. The original clip retains its pre-trigger lead-in;
 desktop teardown is excluded before choosing a frame.
@@ -248,6 +252,19 @@ same Border through the immutable attachment helper. Host type, issue-keyed
 path, child composition, runtime assignment and native oracle must match this
 closed variant; a recorded Border cannot be replaced with a Label to fit the
 other profile. Both variants require completed semantic helper validation.
+
+For iOS runtime tap-count reports that leave both the host and recognizer
+composition unspecified, Sandbox planning prefers the supported Label/Tap/Pointer
+scene. It must observe the affected callback before the initial interaction and
+verify its change afterward, before the runtime update. This is an initial
+planning preference only: explicitly reported types, composition, nesting and
+timing take precedence, and an already recorded host is never substituted to fit
+a test. Required unsupported hosts remain unsupported; no native API or source
+capability is added by the guidance.
+The trusted host cold-launches before recording and confirmation. A runtime-only
+sequence retains that initial screen rather than adding a redundant restart
+under the recording; launch-dependent reports still require their real launch
+transition to be recorded.
 
 The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
