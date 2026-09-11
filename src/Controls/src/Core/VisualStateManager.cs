@@ -377,12 +377,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var index = _internalList.IndexOf(item);
-			if (index < 0)
-				return false;
-
-			var removedItem = _internalList[index];
-			_internalList.RemoveAt(index);
-			DetachGroup(removedItem);
+			RemoveAt(index);
 			return true;
 		}
 
@@ -413,9 +408,13 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc />
 		public void RemoveAt(int index)
 		{
+			if (index < 0)
+			{
+				throw new ArgumentOutOfRangeException(nameof(index));
+			}
 			var item = _internalList[index];
-			_internalList.RemoveAt(index);
 			DetachGroup(item);
+			_internalList.RemoveAt(index);
 		}
 
 		public VisualStateGroup this[int index]
@@ -424,14 +423,18 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (value == null)
+				{
 					throw new ArgumentNullException(nameof(value));
+				}
 
 				var oldItem = _internalList[index];
 				if (ReferenceEquals(oldItem, value))
+				{
 					return;
+				}
 
-				_internalList[index] = value;
 				DetachGroup(oldItem);
+				_internalList[index] = value;
 				value.StatesChanged += ValidateAndNotify;
 				ValidateAndNotify(_internalList);
 			}
@@ -443,9 +446,14 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var state in group.States)
 			{
+				if (state is null)
+				{
+					continue;
+				}
+
 				foreach (var trigger in state.StateTriggers)
 				{
-					trigger.SendDetached();
+					trigger?.SendDetached();
 				}
 			}
 
