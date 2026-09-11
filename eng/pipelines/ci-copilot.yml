@@ -836,7 +836,7 @@ stages:
              rm -rf "$STAGED_SOURCE" 2>/dev/null || true
              mkdir -p "$TRUSTED"
              mkdir -p "$STAGED_SOURCE"
-             git -c core.autocrlf=false archive "${SOURCE_VERSION}" \
+             git -c core.autocrlf=false -c core.eol=lf archive "${SOURCE_VERSION}" \
                .github/scripts \
                .github/skills \
                eng/scripts \
@@ -3676,8 +3676,8 @@ stages:
               }
 
               # Stage from canonical Git blob bytes, not checkout bytes. git
-              # archive honors core.autocrlf, so override it explicitly or a
-              # Windows producer emits CRLF while this Ubuntu verifier emits LF.
+              # Both autocrlf and the platform's default eol affect archives.
+              # Pin both so Windows and Ubuntu derive identical text bytes.
               $referenceSourceRoot = Join-Path "$(Agent.TempDirectory)" 'trusted-source'
               Remove-Item -LiteralPath $referenceSourceRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $referenceSourceRoot -Force | Out-Null
@@ -3685,6 +3685,7 @@ stages:
               Remove-Item -LiteralPath $archivePath -Force -ErrorAction SilentlyContinue
               & git -C "$(Build.SourcesDirectory)" `
                 -c core.autocrlf=false `
+                -c core.eol=lf `
                 archive `
                 --format=tar `
                 "--output=$archivePath" `
@@ -4087,7 +4088,10 @@ stages:
               New-Item -ItemType Directory -Path $publisherSourceRoot -Force | Out-Null
               $publisherArchivePath = Join-Path "$(Agent.TempDirectory)" 'trusted-publisher-source.tar'
               Remove-Item -LiteralPath $publisherArchivePath -Force -ErrorAction SilentlyContinue
-              & git -C "$(Build.SourcesDirectory)" archive `
+              & git -C "$(Build.SourcesDirectory)" `
+                -c core.autocrlf=false `
+                -c core.eol=lf `
+                archive `
                 --format=tar `
                 "--output=$publisherArchivePath" `
                 $pinned `
@@ -4575,7 +4579,7 @@ stages:
              rm -rf "$STAGED_SOURCE" 2>/dev/null || true
              mkdir -p "$TRUSTED"
              mkdir -p "$STAGED_SOURCE"
-             git -c core.autocrlf=false archive "${SOURCE_VERSION}" \
+             git -c core.autocrlf=false -c core.eol=lf archive "${SOURCE_VERSION}" \
                .github/scripts \
                .github/skills \
                eng/scripts \
