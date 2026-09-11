@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -68,8 +69,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public UICollectionViewScrollDirection ScrollDirection { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal IPlatformViewHandler PlatformHandler { get; set; }
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal UIView PlatformView { get; set; }
 
 		CollectionViewHandler2 CollectionViewHandler
