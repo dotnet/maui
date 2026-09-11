@@ -984,6 +984,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateSearchVisibility(_searchController);
 			else if (e.PropertyName == SearchHandler.IsSearchEnabledProperty.PropertyName)
 				UpdateSearchIsEnabled(_searchController);
+			else if (e.PropertyName == SearchHandler.ShowsResultsProperty.PropertyName)
+				RecreateSearchController();
 			else if (e.Is(SearchHandler.AutomationIdProperty))
 			{
 				UpdateAutomationId();
@@ -1000,6 +1002,34 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateSearchBarIcon(_searchController.SearchBar, _searchHandler.ClearPlaceholderIcon, UISearchBarIcon.Bookmark);
 			}
+		}
+
+		void RecreateSearchController()
+		{
+			if (_searchHandler is null || NavigationItem is null)
+				return;
+
+			var query = _searchController?.SearchBar.Text;
+			var oldSearchController = _searchController;
+
+			DettachSearchController();
+			DisposeResultsRenderer();
+			oldSearchController?.Dispose();
+
+			AttachSearchController();
+
+			if (_searchController is not null && query is not null)
+				_searchController.SearchBar.Text = query;
+		}
+
+		void DisposeResultsRenderer()
+		{
+			if (_resultsRenderer is null)
+				return;
+
+			_resultsRenderer.ItemSelected -= OnSearchItemSelected;
+			_resultsRenderer.Dispose();
+			_resultsRenderer = null;
 		}
 
 		void UpdateAutomationId()
@@ -1100,6 +1130,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController = new UISearchController(_resultsRenderer?.ViewController);
+
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility != SearchBoxVisibility.Hidden)
 			{

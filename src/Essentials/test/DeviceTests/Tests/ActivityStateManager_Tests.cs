@@ -7,6 +7,8 @@
 #if __ANDROID__
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Android.OS;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
 
@@ -85,6 +87,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				l?.OnActivityResumed(activity);
 
 			Assert.Equal(1, invocations);
+		}
+
+		[Fact]
+		public async Task PendingRequest_IsAdoptedFromRecreatedActivityState()
+		{
+			const string stateKey = "ActivityStateManager_Tests.RequestOwner";
+			var requestState = new ActivityForResultRequestState<Java.Lang.String>(stateKey);
+			using var savedState = new Bundle();
+			using var result = new Java.Lang.String("selected");
+
+			var originalOwner = requestState.RestoreOrCreateOwner(null);
+			var pendingRequest = requestState.BeginRequest(originalOwner);
+			requestState.SaveOwner(savedState, originalOwner);
+
+			var recreatedOwner = requestState.RestoreOrCreateOwner(savedState);
+
+			Assert.Equal(originalOwner, recreatedOwner);
+			Assert.False(pendingRequest.IsCompleted);
+			Assert.True(requestState.TrySetResult(recreatedOwner, result));
+			Assert.Same(result, await pendingRequest);
 		}
 
 		// Reads the private 'lifecycleListener' field from ActivityStateManagerImplementation

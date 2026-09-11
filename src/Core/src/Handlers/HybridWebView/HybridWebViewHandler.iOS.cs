@@ -99,8 +99,15 @@ namespace Microsoft.Maui.Handlers
 			hybridPlatformWebView.SendRawMessage(hybridWebViewRawMessage.Message ?? "");
 		}
 
-		private void MessageReceived(Uri uri, string message)
+		private void MessageReceived(string? source, string message)
 		{
+			if (!Uri.TryCreate(source, UriKind.Absolute, out var sourceUri) ||
+				!AppOriginUri.IsBaseOf(sourceUri))
+			{
+				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogDebug("Ignoring web message from an unrecognized source.");
+				return;
+			}
+
 			MessageReceived(message);
 		}
 
@@ -136,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 			public void DidReceiveScriptMessage(WKUserContentController userContentController, WKScriptMessage message)
 			{
 				ArgumentNullException.ThrowIfNull(message);
-				Handler?.MessageReceived(AppOriginUri, ((NSString)message.Body).ToString());
+				Handler?.MessageReceived(message.FrameInfo.Request.Url?.AbsoluteString, ((NSString)message.Body).ToString());
 			}
 		}
 

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using Foundation;
@@ -196,8 +197,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ContentView.AddSubview(TextField);
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Text field is owned as a UIKit subview for the entry-cell lifetime.")]
 			public UITextField TextField { get; }
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is cleared in Dispose(bool) and renderer subscriptions are removed when cells are reused.")]
 			public event EventHandler KeyboardDoneButtonPressed;
 
 			public override void LayoutSubviews()
@@ -219,7 +222,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				TextField.VerticalAlignment = UIControlContentVerticalAlignment.Center;
 			}
 
+			[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Event is cleared in Dispose(bool) and renderer subscriptions are removed when cells are reused.")]
 			public event EventHandler TextFieldTextChanged;
+
+			protected override void Dispose(bool disposing)
+			{
+				if (disposing)
+				{
+					TextField.EditingChanged -= TextFieldOnEditingChanged;
+					TextField.ShouldReturn = null;
+					KeyboardDoneButtonPressed = null;
+					TextFieldTextChanged = null;
+				}
+
+				base.Dispose(disposing);
+			}
 
 			static bool OnShouldReturn(UITextField view)
 			{

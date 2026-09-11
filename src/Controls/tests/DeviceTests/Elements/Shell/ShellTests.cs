@@ -37,13 +37,24 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		protected virtual void SetupBuilder()
+		protected virtual void SetupBuilder() => SetupBuilder(null);
+
+		void SetupBuilder(Type shellHandlerType)
 		{
 			EnsureHandlerCreated(builder =>
 			{
+#if IOS || MACCATALYST
+				builder.ConfigureImageSources(services =>
+				{
+					services.AddService<IDelayedImageSource, DelayedImageSourceService>();
+				});
+#endif
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					SetupShellHandlers(handlers);
+					if (shellHandlerType != null)
+						handlers.AddHandler(typeof(Shell), shellHandlerType);
+
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
@@ -403,7 +414,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
-				#if ANDROID || IOS || MACCATALYST
+#if ANDROID || IOS || MACCATALYST
 				var shellContext = (IShellContext)shell.Handler;
 				await CheckFlyoutState(shellContext, true);
 				shell.FlyoutIsPresented = false;

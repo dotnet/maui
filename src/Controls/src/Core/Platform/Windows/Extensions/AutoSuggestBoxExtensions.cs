@@ -24,6 +24,11 @@ namespace Microsoft.Maui.Controls.Platform
 			"TextControlBackgroundDisabled"
 		};
 
+		internal static void UpdateSearchHandlerFont(this AutoSuggestBox platformControl, SearchHandler searchHandler, IFontManager fontManager)
+		{
+			platformControl.UpdateFont(searchHandler.ToFont(), fontManager);
+		}
+
 		internal static void UpdateSearchHandlerBackground(this AutoSuggestBox platformControl, SearchHandler searchHandler)
 		{
 			UpdateColors(platformControl.Resources, backgroundColorKeys, searchHandler.BackgroundColor?.ToPlatform());

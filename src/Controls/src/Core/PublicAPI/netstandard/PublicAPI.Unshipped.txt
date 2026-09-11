@@ -104,6 +104,7 @@ override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnPropertyChanged(string? propertyName = null) -> void
 override Microsoft.Maui.Controls.SwipeItemView.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.TitleBar.OnBindingContextChanged() -> void
+Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~static Microsoft.Maui.Controls.NavigationPage.GetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page) -> string
 ~static Microsoft.Maui.Controls.NavigationPage.SetBackButtonAccessibilityLabel(Microsoft.Maui.Controls.BindableObject page, string value) -> void
 static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length, Microsoft.Maui.Easing? easing, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<bool>!
