@@ -294,6 +294,21 @@ Outcomes:
 
 For an exact Windows app-crash report, the final trusted action may assert that the specific Sandbox process launched by the runner exited after a recorded ready-state check and exact trigger. Generic window loss, navigation, or a process that was already absent before the trigger remains infrastructure failure.
 
+Isolated Windows Sandbox runs also retain a bounded, non-authoritative crash
+diagnostic in the recording log. Trusted code captures the validated app's PID,
+creation time, executable path and package identity before Appium runs. An
+attested query child polls Application Error 1000 within one 10-second diagnostic
+budget, including bounded termination cleanup. It matches the exact PID, creation
+time, path, package and UTC window before reporting a record; another instance's
+event does not end polling. At most 16 events and 16 KB per event are read.
+Only a sanitized line of at most 1 KB is emitted: event identity/time, known PID,
+exception code, module basename/version and faulting offset. No raw event XML,
+message, stack, host path, dump or broad Application/WER export is retained.
+Missing, late, ambiguous, malformed and inaccessible events remain explicit
+diagnostic outcomes and never replace the original runner exit or exception.
+These observations cannot certify a crash or change a first-push failure into
+evidence for a reported second-push defect.
+
 ## Safety boundary
 
 Issue content and generated code are untrusted.
