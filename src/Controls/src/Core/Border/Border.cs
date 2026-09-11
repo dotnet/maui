@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// background, shape, padding, and more to create visually rich containers.
 	/// </remarks>
 	[ContentProperty(nameof(Content))]
-	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElement, ISafeAreaView2
+	public class Border : View, IContentView, IBorderView, IPaddingElement, ISafeAreaElementController, ISafeAreaView2
 	{
 		float[]? _strokeDashPattern;
 
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls
 		/// Provides the default value for the <see cref="SafeAreaEdges"/> property.
 		/// </summary>
 		/// <returns>The default safe area edges of <see cref="SafeAreaEdges.None"/>.</returns>
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}

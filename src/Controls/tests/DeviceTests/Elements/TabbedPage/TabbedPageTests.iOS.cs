@@ -186,7 +186,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});

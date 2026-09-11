@@ -121,6 +121,28 @@ $"""
 	}
 
 	[Fact]
+	public void RemovedName_NonBindableObjectRoot_DoesNotEmitNameScopeLookup()
+	{
+		var v1 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources">
+	<Label x:Name="RemovedLabel" />
+</ResourceDictionary>
+""";
+		var v2 =
+$"""
+<ResourceDictionary {MauiXmlns} x:Class="Test.TestResources" />
+""";
+		var compilation = CreateMauiCompilation();
+		var rootType = compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!;
+
+		var result = Generate(v1, v2, rootType: rootType);
+
+		Assert.NotNull(result);
+		Assert.DoesNotContain("NameScope.GetNameScope(this)", result!, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SinglePropertyChange_GeneratesMethodHeader()
 	{
 		var v1 = $"<ContentPage {MauiXmlns} x:Class=\"Test.TestPage\"><Label Text=\"Hello\" /></ContentPage>";

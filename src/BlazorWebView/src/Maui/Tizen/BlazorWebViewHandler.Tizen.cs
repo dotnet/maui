@@ -234,13 +234,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				contentRootDir,
 				hostPageRelativePath);
 
-			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
+			_ = BlazorWebViewStaticContentHotReload.TryAttachToWebViewManager(_webviewManager);
 
 			VirtualView.BlazorWebViewInitializing(new BlazorWebViewInitializingEventArgs());
-			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
-			{
-				WebView = PlatformView,
-			});
+			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs(PlatformView));
 
 			if (RootComponents != null)
 			{

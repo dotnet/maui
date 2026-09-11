@@ -51,3 +51,4 @@ static Microsoft.Maui.Authentication.Passkeys.CreateAsync(Microsoft.Maui.Authent
 static Microsoft.Maui.Authentication.Passkeys.CreateAsync(string! creationOptionsJson, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.PasskeyCreationResponse!>!
 static Microsoft.Maui.Authentication.Passkeys.Default.get -> Microsoft.Maui.Authentication.IPasskeys!
 static Microsoft.Maui.Authentication.Passkeys.IsSupported.get -> bool
+Microsoft.Maui.Media.Locale.Locale(string? language, string? country, string? name, string? id) -> void

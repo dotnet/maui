@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
@@ -9,8 +10,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
@@ -20,14 +21,14 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[InlineData("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false EnablePreviewFeatures=true")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "--with-avalonia", "", Skip = AvaloniaBuildSkipReason)]
 	[InlineData("maui", DotNetCurrent, "Release", false, "--with-avalonia", "TrimMode=partial", Skip = AvaloniaBuildSkipReason)]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "--empty", "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "--empty", "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "", "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
 	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
@@ -78,6 +79,169 @@ public class SimpleTemplateTest : BaseTemplateTests
 			$"Unable to create template {id}. Check test output for errors.");
 
 		AssertIncludesRootGitIgnore(projectDir);
+	}
+
+	[Fact]
+	public void SideBySideTemplateHelpIncludesSampleContentOnce()
+	{
+		var legacyTemplateDir = Path.Combine(TestDirectory, "legacy-template");
+		var legacyTemplateConfigDir = Path.Combine(legacyTemplateDir, ".template.config");
+		var customHive = Path.Combine(TestDirectory, "template-hive");
+		Directory.CreateDirectory(legacyTemplateConfigDir);
+
+		File.WriteAllText(Path.Combine(legacyTemplateConfigDir, "template.json"), """
+			{
+			  "$schema": "http://json.schemastore.org/template",
+			  "author": "Microsoft",
+			  "identity": "Microsoft.Maui.MauiApp.CSharp.10.0",
+			  "groupIdentity": "Microsoft.Maui.App",
+			  "precedence": "10",
+			  "name": ".NET MAUI App",
+			  "shortName": "maui",
+			  "sourceName": "MauiApp.1",
+			  "symbols": {
+			    "IncludeSampleContent": {
+			      "type": "parameter",
+			      "datatype": "bool",
+			      "defaultValue": "false",
+			      "displayName": "_Include sample content",
+			      "description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns."
+			    }
+			  }
+			}
+			""");
+		File.WriteAllText(Path.Combine(legacyTemplateConfigDir, "dotnetcli.host.json"), """
+			{
+			  "$schema": "https://json.schemastore.org/dotnetcli.host",
+			  "symbolInfo": {
+			    "IncludeSampleContent": {
+			      "longName": "sample-content",
+			      "shortName": "sc"
+			    }
+			  }
+			}
+			""");
+		File.WriteAllText(Path.Combine(legacyTemplateDir, "MauiApp.1.csproj"), "<Project />");
+
+		var templatePack = Path.Combine(
+			TestEnvironment.GetMauiDirectory(),
+			".dotnet",
+			"template-packs",
+			$"Microsoft.Maui.Templates.{DotNetCurrent.Split('.')[0]}.{MauiPackageVersion}.nupkg");
+		Assert.True(File.Exists(templatePack), $"Template pack '{templatePack}' does not exist.");
+
+		var installOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"--debug:custom-hive \"{customHive}\" install \"{legacyTemplateDir}\" \"{templatePack}\"",
+			out int installExitCode,
+			output: _output);
+		_output.WriteLine(installOutput);
+		Assert.True(installExitCode == 0, "Unable to install side-by-side template packs.");
+
+		var helpOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"--debug:custom-hive \"{customHive}\" maui --help",
+			out int helpExitCode,
+			output: _output);
+		_output.WriteLine(helpOutput);
+		Assert.True(helpExitCode == 0, "Unable to show side-by-side template help.");
+		AssertContains("--ui", helpOutput);
+		AssertContains("in the XAML experience.", helpOutput);
+		var sampleContentOptionCount = 0;
+		using var helpReader = new StringReader(helpOutput);
+		while (helpReader.ReadLine() is { } line)
+		{
+			if (line.Contains("--sample-content", StringComparison.Ordinal))
+				sampleContentOptionCount++;
+		}
+		Assert.Equal(1, sampleContentOptionCount);
+
+		foreach (var (options, expectAvalonia) in new[]
+		{
+			("--ui csharp --sample-content --no-restore", false),
+			("--ui csharp --sample-content --with-avalonia --no-restore", true),
+		})
+		{
+			var projectDir = Path.Combine(TestDirectory, expectAvalonia ? "csharp-sample-avalonia" : "csharp-sample");
+			var commandOutput = DotnetInternal.RunForOutput(
+				"new",
+				$"--debug:custom-hive \"{customHive}\" maui -o \"{projectDir}\" -f {DotNetCurrent} {options}",
+				out int exitCode,
+				output: _output);
+			Assert.True(exitCode == 0, $"Unable to create side-by-side template with '{options}'.");
+			AssertContains("Warning: The sample content option was not applied.", commandOutput);
+			AssertDoesNotContain("Warning: The Avalonia option was not applied.", commandOutput);
+			Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectContent = File.ReadAllText(projectFile);
+			Assert.Equal(expectAvalonia, projectContent.Contains("Avalonia.Controls.Maui", StringComparison.Ordinal));
+		}
+	}
+
+	[Theory]
+	[InlineData(DotNetCurrent, "Debug", "", "")]
+	[InlineData(DotNetCurrent, "Release", "", "TrimMode=partial")]
+	public void BuildMauiCSharpUI(string framework, string config, string additionalDotNetNewParams, string additionalDotNetBuildParams)
+	{
+		SetTestIdentifier(framework, config, additionalDotNetNewParams, additionalDotNetBuildParams);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		var dotnetNewParams = $"--ui csharp --no-restore {additionalDotNetNewParams}".TrimEnd();
+		Assert.True(DotnetInternal.New("maui", projectDir, framework, dotnetNewParams, output: _output),
+			"Unable to create template maui with --ui csharp. Check test output for errors.");
+
+		var mainPageFile = Path.Combine(projectDir, "MainPage.cs");
+		var appFile = Path.Combine(projectDir, "App.cs");
+		var appXamlFile = Path.Combine(projectDir, "App.xaml");
+		var appShellFile = Path.Combine(projectDir, "AppShell.cs");
+		Assert.True(File.Exists(appFile));
+		Assert.True(File.Exists(appShellFile));
+		Assert.True(File.Exists(mainPageFile));
+		Assert.True(File.Exists(appXamlFile));
+		Assert.True(File.Exists(Path.Combine(projectDir, "Resources", "Images", "dotnet_bot.png")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "App.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "AppShell.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "Resources", "Styles", "AppStyles.xaml")));
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+
+		var mainPageContent = File.ReadAllText(mainPageFile);
+		var appContent = File.ReadAllText(appFile);
+		var appShellContent = File.ReadAllText(appShellFile);
+		var appXamlContent = File.ReadAllText(appXamlFile);
+		var mauiProgramContent = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		var projectContent = File.ReadAllText(projectFile);
+		AssertContains("Margin = new Thickness(0, 20, 0, 0)", mainPageContent);
+		AssertContains("SemanticProperties.SetDescription(logo, \"dot net bot riding a rocket\")", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"Headline\")", mainPageContent);
+		AssertContains("SetDynamicResource(VisualElement.StyleProperty, \"SubHeadline\")", mainPageContent);
+		AssertDoesNotContain("HorizontalOptions = LayoutOptions.Center", mainPageContent);
+		AssertDoesNotContain("FontSize = 18", mainPageContent);
+		AssertDoesNotContain("FontAttributes = FontAttributes.Bold", mainPageContent);
+		AssertContains("HorizontalOptions = LayoutOptions.Fill", mainPageContent);
+		AssertContains("InitializeComponent();", appContent);
+		AssertContains($"Title = \"{Path.GetFileName(projectDir)}\";", appShellContent);
+		AssertContains("Resources/Styles/Colors.xaml", appXamlContent);
+		AssertContains("Resources/Styles/Styles.xaml", appXamlContent);
+		AssertDoesNotContain("CommunityToolkit.Maui", projectContent);
+		AssertDoesNotContain("CommunityToolkit.Mvvm", projectContent);
+		AssertDoesNotContain("Syncfusion.Maui.Toolkit", projectContent);
+		AssertDoesNotContain("UseMauiCommunityToolkit", mauiProgramContent);
+		AssertDoesNotContain("ConfigureSyncfusionToolkit", mauiProgramContent);
+
+		var buildProps = BuildProps;
+
+		if (additionalDotNetBuildParams is not "" and not null)
+		{
+			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
+		}
+
+		Assert.True(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
 	[Theory]
@@ -142,16 +306,16 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 	[Theory]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetBuildParams
-	// [InlineData("maui", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
-	// [InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[InlineData("maui-blazor", DotNetPrevious, "Release", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[InlineData("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	// [InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
-	// [InlineData("mauilib", DotNetPrevious, "Release", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Debug", true, "")]
+	[InlineData("mauilib", DotNetPrevious, "Release", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Debug", true, "")]
 	[InlineData("mauilib", DotNetCurrent, "Release", true, "TrimMode=partial")]
 	public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack, string additionalDotNetBuildParams)
@@ -247,8 +411,8 @@ public class SimpleTemplateTest : BaseTemplateTests
 	/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
 	/// </summary>
 	[Theory]
-	// [InlineData("mauilib", DotNetPrevious, "Debug")]
-	// [InlineData("mauilib", DotNetPrevious, "Release")]
+	[InlineData("mauilib", DotNetPrevious, "Debug")]
+	[InlineData("mauilib", DotNetPrevious, "Release")]
 	[InlineData("mauilib", DotNetCurrent, "Debug")]
 	[InlineData("mauilib", DotNetCurrent, "Release")]
 	public void PackCoreLib(string id, string framework, string config)
@@ -343,7 +507,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectDir = Path.Combine(TestDirectory, projectName);
 		var expectedProjectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\"", output: _output),
+		Assert.True(DotnetInternal.New("maui-aspire-servicedefaults", projectDir, additionalDotNetNewParams: $"-n \"{projectName}\" --skipRestore", output: _output),
 			$"Unable to create template maui-aspire-servicedefaults. Check test output for errors.");
 
 		// Verify the project file was created with the correct name (this was the bug)
@@ -362,12 +526,31 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.True(File.Exists(Path.Combine(projectDir, "Extensions.cs")),
 			"Expected Extensions.cs file was not created.");
 
-		// Verify the project file contains required properties
-		var projectContent = File.ReadAllText(expectedProjectFile);
-		Assert.True(projectContent.Contains("<IsAspireSharedProject>true</IsAspireSharedProject>", StringComparison.Ordinal),
-			"Project file should contain Aspire-specific properties.");
-		Assert.True(projectContent.Contains("<UseMauiCore>true</UseMauiCore>", StringComparison.Ordinal),
-			"Project file should contain UseMauiCore property.");
+		// Verify the current template was selected and contains the required MAUI properties.
+		var project = XDocument.Load(expectedProjectFile);
+		var targetFramework = project.Descendants("TargetFramework").Single().Value;
+		Assert.Equal(DotNetCurrent, targetFramework);
+		Assert.Equal("true", project.Descendants("IsAspireSharedProject").Single().Value);
+		Assert.Equal("true", project.Descendants("UseMauiCore").Single().Value);
+
+		var mauiCoreReference = project.Descendants("PackageReference")
+			.Single(element => string.Equals((string?)element.Attribute("Include"), "Microsoft.Maui.Core", StringComparison.Ordinal));
+		Assert.Equal("$(MauiVersion)", (string?)mauiCoreReference.Attribute("Version"));
+
+		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", target: "Restore", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
+			$"Project {Path.GetFileName(expectedProjectFile)} failed to restore. Check test output/attachments for errors.");
+
+		using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectDir, "obj", "project.assets.json")));
+		var mauiCoreVersion = assets.RootElement
+			.GetProperty("project")
+			.GetProperty("frameworks")
+			.GetProperty(DotNetCurrent)
+			.GetProperty("dependencies")
+			.GetProperty("Microsoft.Maui.Core")
+			.GetProperty("version")
+			.GetString();
+		Assert.NotNull(mauiCoreVersion);
+		Assert.Contains(MauiPackageVersion, mauiCoreVersion, StringComparison.Ordinal);
 
 		// Verify the project actually builds
 		Assert.True(DotnetInternal.Build(expectedProjectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true, output: _output),
@@ -422,7 +605,20 @@ public class SimpleTemplateTest : BaseTemplateTests
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 		// --with-avalonia is gated on the blank app: combining it with sample content must not wire Avalonia in.
-		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--with-avalonia --sample-content --no-restore", output: _output),
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} --with-avalonia --sample-content --no-restore",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The Avalonia option was not applied.", commandOutput);
+		AssertContains(
+			"Avalonia handlers do not currently support the XAML sample content. The generated project includes sample content without Avalonia.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The sample content option was not applied.", commandOutput);
+
+		Assert.True(File.Exists(projectFile),
 			"Unable to create template maui with --with-avalonia --sample-content. Check test output for errors.");
 
 		var csproj = File.ReadAllText(projectFile);
@@ -430,5 +626,69 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
 		AssertDoesNotContain("UseAvalonia", mauiProgram);
+
+		var appShell = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml"));
+		AssertContains("xmlns:sf=\"clr-namespace:Syncfusion.Maui.Toolkit.SegmentedControl;assembly=Syncfusion.Maui.Toolkit\"", appShell);
+		AssertContains("ContentTemplate=\"{DataTemplate pages:MainPage}\"", appShell);
+		AssertDoesNotContain("ContentTemplate=\"{DataTemplate local:MainPage}\"", appShell);
+
+		var appShellCodeBehind = File.ReadAllText(Path.Combine(projectDir, "AppShell.xaml.cs"));
+		AssertContains("using CommunityToolkit.Maui.Alerts;", appShellCodeBehind);
+
+		var styles = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Styles.xaml"));
+		AssertContains("Syncfusion.Maui.Toolkit.Shimmer", styles);
+
+		var colors = File.ReadAllText(Path.Combine(projectDir, "Resources", "Styles", "Colors.xaml"));
+		AssertContains("x:Key=\"DarkBackground\"", colors);
+	}
+
+	[Fact]
+	public void WithAvaloniaIsIncludedWithCSharpUI()
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.True(DotnetInternal.New("maui", projectDir, DotNetCurrent, "--ui csharp --with-avalonia --no-restore", output: _output),
+			"Unable to create template maui with --ui csharp --with-avalonia. Check test output for errors.");
+
+		var csproj = File.ReadAllText(projectFile);
+		AssertContains("Include=\"Avalonia.Controls.Maui\"", csproj);
+		AssertContains("Include=\"Avalonia.Controls.Maui.Desktop\"", csproj);
+
+		var mauiProgram = File.ReadAllText(Path.Combine(projectDir, "MauiProgram.cs"));
+		AssertContains(".UseAvaloniaApp(useSingleViewLifetime)", mauiProgram);
+		AssertContains(".UseAvaloniaEmbedding<AvaloniaApp>()", mauiProgram);
+
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+		Assert.False(File.Exists(Path.Combine(projectDir, "MainPage.xaml")));
+	}
+
+	[Theory]
+	[InlineData("--ui csharp --sample-content --no-restore", false)]
+	[InlineData("--ui csharp --sample-content --with-avalonia --no-restore", true)]
+	public void SampleContentIgnoredWithCSharpUIIsReported(string options, bool expectAvalonia)
+	{
+		SetTestIdentifier(options);
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		var commandOutput = DotnetInternal.RunForOutput(
+			"new",
+			$"maui -o \"{projectDir}\" -f {DotNetCurrent} {options}",
+			out var exitCode,
+			timeoutInSeconds: 300,
+			output: _output);
+		Assert.Equal(0, exitCode);
+		AssertContains("Warning: The sample content option was not applied.", commandOutput);
+		AssertContains(
+			"Sample content is only available with XAML. The generated project uses C# UI without sample content.",
+			commandOutput);
+		AssertDoesNotContain("Warning: The Avalonia option was not applied.", commandOutput);
+
+		Assert.False(Directory.Exists(Path.Combine(projectDir, "Pages")));
+		Assert.True(File.Exists(Path.Combine(projectDir, "MainPage.cs")));
+
+		var csproj = File.ReadAllText(projectFile);
+		Assert.Equal(expectAvalonia, csproj.Contains("Avalonia.Controls.Maui", StringComparison.Ordinal));
 	}
 }

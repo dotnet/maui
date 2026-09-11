@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController> instead.")]
 	public class ItemsViewDelegator<TItemsView, TViewController> : UICollectionViewDelegateFlowLayout, IScrollTrackingDelegator
 		where TItemsView : ItemsView
 		where TViewController : ItemsViewController<TItemsView>

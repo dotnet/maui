@@ -28,11 +28,9 @@ namespace Microsoft.Maui.Controls.Xaml;
 public static class XamlIncrementalHotReloadHandler
 {
 	/// <summary>
-	/// Generator-only entry point retained for backward compatibility with previously
-	/// compiled <c>InitializeComponent()</c> bodies. <see cref="XamlComponentRegistry.Register"/>
-	/// already records every page instance, so live-instance enumeration is sourced from
-	/// <see cref="XamlComponentRegistry.GetInstances"/>. This method only validates its
-	/// argument and respects the <c>IsIncrementalHotReloadEnabled</c> feature switch.
+	/// Generator-only entry point that registers every XAML root for live-instance enumeration.
+	/// Roots such as <see cref="Application"/> and <see cref="ResourceDictionary"/> may not contain
+	/// child components, so they cannot rely on component registration to be tracked.
 	/// </summary>
 	public static void Track(object instance)
 	{
@@ -42,8 +40,7 @@ public static class XamlIncrementalHotReloadHandler
 		if (!global::Microsoft.Maui.RuntimeFeature.IsIncrementalHotReloadEnabled)
 			return;
 
-		// No-op: XamlComponentRegistry.Register has already tracked this instance via
-		// its secondary type-indexed weak-reference list.
+		XamlComponentRegistry.RegisterComponent(instance, string.Empty);
 	}
 
 	/// <summary>

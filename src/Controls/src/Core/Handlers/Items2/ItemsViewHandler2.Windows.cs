@@ -1711,7 +1711,7 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 			return;
 		}
 
-		double offset = AlignToStart;
+		double offset = double.NaN;
 		switch (args.ScrollToPosition)
 		{
 			case ScrollToPosition.Start:

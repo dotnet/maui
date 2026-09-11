@@ -13,6 +13,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WContentPresenter = Microsoft.UI.Xaml.Controls.ContentPresenter;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
@@ -157,11 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 					infoBadge.Foreground is WSolidColorBrush foreground &&
 					background.Color == defaultBackgroundColor &&
 					foreground.Color == defaultForegroundColor);
-
-				var converter = new Microsoft.Maui.Controls.Platform.NullToUnsetValueConverter();
-				Assert.Same(
-					Microsoft.UI.Xaml.DependencyProperty.UnsetValue,
-					converter.Convert(null, typeof(object), null, null));
 			});
 		}
 

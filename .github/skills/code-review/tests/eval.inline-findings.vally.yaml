@@ -159,7 +159,7 @@ stimuli:
         - code-review
 
 scoring:
-  # This suite deliberately omits scoring.weights, so Vally 0.12 uses the
+  # This suite deliberately omits scoring.weights, so Vally uses the
   # unweighted mean of the two graders' [0,1] scores;
   # the stimulus passes when the mean across runs >= threshold, and the CI
   # check keys off that mean-vs-threshold `passed` property. Two graders (one

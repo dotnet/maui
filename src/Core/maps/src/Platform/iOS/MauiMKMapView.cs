@@ -99,16 +99,15 @@ namespace Microsoft.Maui.Maps.Platform
 		{
 			MKAnnotationView? mapPin;
 
+			// Resolved once: this block runs for every annotation entering the viewport and again
+			// on every pan/zoom, and both checks below need the concrete annotation type.
+			var annotationPeer = ResolveAnnotationPeer(annotation);
+
 			// https://bugzilla.xamarin.com/show_bug.cgi?id=26416
-			var userLocationAnnotation = Runtime.GetNSObject(annotation.Handle) as MKUserLocation;
-			if (userLocationAnnotation != null)
+			if (annotationPeer is MKUserLocation)
 				return null!;
 
-			// Handle cluster annotations. Binding skew (observed with the iOS 26.5/net11 preview.5
-			// bindings) sometimes hands us a cluster as a generic managed wrapper rather than the
-			// concrete MKClusterAnnotation, so a plain `is` check can miss a real cluster.
-			var clusterAnnotation = TryGetClusterAnnotation(annotation);
-			if (clusterAnnotation != null)
+			if (annotationPeer is MKClusterAnnotation clusterAnnotation)
 			{
 				return GetViewForClusterAnnotation(mapView, clusterAnnotation);
 			}
@@ -181,23 +180,18 @@ namespace Microsoft.Maui.Maps.Platform
 			return mapPin;
 		}
 
-		// Native class of MKClusterAnnotation, used to detect clusters by their real ObjC class
-		// rather than the managed peer type (which binding skew can report as a generic wrapper).
-		static readonly ObjCRuntime.Class s_clusterAnnotationClass = new(typeof(MKClusterAnnotation));
-
-		// Resolves a cluster annotation, isolating the binding-skew workaround in one place so a
-		// better native check can be swapped in later. Checking the native class (not the managed
-		// type name) also avoids using exceptions for the common non-cluster case.
-		static MKClusterAnnotation? TryGetClusterAnnotation(IMKAnnotation annotation)
-		{
-			if (annotation is MKClusterAnnotation clusterAnnotation)
-				return clusterAnnotation;
-
-			if (annotation is Foundation.NSObject nsObject && nsObject.IsKindOfClass(s_clusterAnnotationClass))
-				return Runtime.GetNSObject<MKClusterAnnotation>(annotation.Handle);
-
-			return null;
-		}
+		// Resolves the managed peer for an annotation MapKit handed us. The GetViewForAnnotation block
+		// receives its annotation as a marshalled protocol wrapper (MKAnnotationWrapper), which is an
+		// INativeObject but *not* an NSObject - so neither a managed `is MKClusterAnnotation` check nor
+		// an NSObject-based IsKindOfClass sees the cluster, and every cluster fell through to the
+		// default marker. Going through the handle picks the managed type from the native class, and
+		// works for an already-typed annotation too (the selection callbacks pass the latter).
+		// A zero handle means the peer is already gone - a disposed annotation reaching a MapKit
+		// callback still in flight - so callers take the no-cluster path instead of throwing on it.
+		static Foundation.NSObject? ResolveAnnotationPeer(IMKAnnotation? annotation) =>
+			annotation is null || annotation.Handle == IntPtr.Zero
+				? null
+				: Runtime.GetNSObject(annotation.Handle);
 
 		MKAnnotationView GetViewForClusterAnnotation(MKMapView mapView, MKClusterAnnotation clusterAnnotation)
 		{
@@ -711,7 +705,7 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 
 			// Handle cluster annotation selection
-			if (annotation is not null && TryGetClusterAnnotation(annotation) is MKClusterAnnotation clusterAnnotation)
+			if (ResolveAnnotationPeer(annotation) is MKClusterAnnotation clusterAnnotation)
 			{
 				OnClusterClicked(clusterAnnotation);
 				// Deselect the cluster annotation to allow re-selection

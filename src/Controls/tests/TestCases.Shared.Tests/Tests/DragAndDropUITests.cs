@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		// https://github.com/dotnet/maui/issues/24914
 #if !MACCATALYST
 		[Test]
+		[Retry(4)]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
 		{

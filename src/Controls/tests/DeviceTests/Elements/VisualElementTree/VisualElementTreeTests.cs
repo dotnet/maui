@@ -3,7 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -21,9 +25,12 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -31,31 +38,55 @@ namespace Microsoft.Maui.DeviceTests
 
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if IOS || MACCATALYST
-					if (includeNavigationViewHandler)
-					{
-						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-					}
-					else
-					{
-						handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
-					}
-#else
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-#endif
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every VisualElementTreeTests test run against both the NavigationPage renderer
+		// and handler. See VisualElementTreeNavigationHandlerTests.iOS.cs and
+		// RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 
 #if IOS || MACCATALYST
 		[Fact]
 		public async Task Handler_GetVisualTreeElements()
 		{
-			SetupBuilder(includeNavigationViewHandler: true);
+			// Handler-only: always exercises NavigationViewHandler, even when this test class
+			// is run as the base VisualElementTreeTests (Renderer-default) suite, since there is
+			// no separate handler-only subclass test for this scenario. Bypasses
+			// SetupBuilder/RegisterNavigationPageHandler so the subclass's default can't affect it.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
@@ -104,7 +135,28 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GetVisualTreeElements()
 		{
-			SetupBuilder(includeNavigationViewHandler: false);
+#if IOS || MACCATALYST
+			// Renderer-only: this test forces the old event-based NavigationImpl path
+			// (setForMaui:false) below, which NavigationRenderer supports but
+			// NavigationViewHandler does not implement via RequestNavigation (causes hangs).
+			// Register NavigationRenderer directly (not via SetupBuilder/RegisterNavigationPageHandler)
+			// so this stays Renderer-only even when inherited by VisualElementTreeNavigationHandlerTests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
+#else
+			SetupBuilder();
+#endif
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };

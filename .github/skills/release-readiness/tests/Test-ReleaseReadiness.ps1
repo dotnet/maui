@@ -726,6 +726,43 @@ if (-not (Test-Path $detectScriptPath)) {
             Assert-Eq -Label "  -> major=$($case.Major)"       -Expected $case.Major    -Actual ([int]$m.Groups[1].Value)
             Assert-Eq -Label "  -> previewN=$($case.PreviewN)" -Expected $case.PreviewN -Actual ([int]$m.Groups[2].Value)
         }
+
+        Write-Host "`n[Unit] RC branch/tag contracts" -ForegroundColor Cyan
+        foreach ($case in @(
+            @{ Branch = 'release/11.0.1xx-rc1'; Match = $true; Major = 11; RcN = 1 }
+            @{ Branch = 'release/11.0.1xx-rc2'; Match = $true; Major = 11; RcN = 2 }
+            @{ Branch = 'release/11.0.1xx-rc1-test'; Match = $false }
+            @{ Branch = 'release/11.0.1xx-preview7'; Match = $false }
+        )) {
+            $m = [regex]::Match($case.Branch, $Script:StrictRcBranchRegex)
+            Assert-Eq -Label "RC branch '$($case.Branch)' match=$($case.Match)" -Expected $case.Match -Actual $m.Success
+            if ($case.Match) {
+                Assert-Eq -Label "  -> RC major=$($case.Major)" -Expected $case.Major -Actual ([int]$m.Groups[1].Value)
+                Assert-Eq -Label "  -> rcN=$($case.RcN)" -Expected $case.RcN -Actual ([int]$m.Groups[2].Value)
+            }
+        }
+        foreach ($case in @(
+            @{ Tag = '11.0.0-rc.1.26425.128'; Match = $true; Major = 11; RcN = 1 }
+            @{ Tag = '11.0.0-rc.2.26450'; Match = $true; Major = 11; RcN = 2 }
+            @{ Tag = '11.0.0-rc.1'; Match = $false }
+            @{ Tag = '11.0.0-preview.7.26420.5'; Match = $false }
+        )) {
+            $m = [regex]::Match($case.Tag, $Script:StrictRcTagRegex)
+            Assert-Eq -Label "RC tag '$($case.Tag)' match=$($case.Match)" -Expected $case.Match -Actual $m.Success
+            if ($case.Match) {
+                Assert-Eq -Label "  -> RC tag major=$($case.Major)" -Expected $case.Major -Actual ([int]$m.Groups[1].Value)
+                Assert-Eq -Label "  -> RC tag number=$($case.RcN)" -Expected $case.RcN -Actual ([int]$m.Groups[2].Value)
+            }
+        }
+        $rcSet = Get-ShippedRcSet -RcTags @('11.0.0-rc.1.26425.128', '11.0.0-rc.1.26425.129')
+        Assert-Eq -Label 'RC shipped set collapses duplicate RC1 tags' -Expected 1 -Actual $rcSet.Count
+        Assert-Eq -Label 'RC shipped set contains RC1' -Expected $true -Actual $rcSet.Contains(1)
+        $rcTracker = New-RcTracker -Major 11 -RcNumber 1 -Mode 'in-flight' `
+            -BranchName 'release/11.0.1xx-rc1' -SurveyRef 'release/11.0.1xx-rc1' `
+            -HasRecentActivityCount 1
+        Assert-Eq -Label 'RC tracker canonical key' -Expected 'net11-rc1' -Actual $rcTracker.canonicalKey
+        Assert-Eq -Label 'RC tracker expected channel' -Expected '.NET 11.0.1xx SDK RC 1' -Actual $rcTracker.expectedChannelName
+        Assert-Eq -Label 'RC tracker milestone' -Expected '.NET 11.0-rc1' -Actual $rcTracker.milestoneName
     }
 
     # ─────────── Preview regression label inference ───────────
@@ -1254,8 +1291,10 @@ if (-not $SkipE2E) {
     $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
     $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
     $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRcTagsForMajor = (Get-Item function:Get-RcTagsForMajor).ScriptBlock
     $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
     $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetRemoteRcBranchesForMajor = (Get-Item function:Get-RemoteRcBranchesForMajor).ScriptBlock
     $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
     $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
@@ -1266,6 +1305,7 @@ if (-not $SkipE2E) {
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'main' }
         function Get-StableTagsForMajor { param([int]$Major) ,@('10.0.0', '10.0.90') }
         function Get-PreviewTagsForMajor { param([int]$Major) ,@() }
+        function Get-RcTagsForMajor { param([int]$Major) ,@() }
         function Get-RemoteSrBranchesForMajor {
             param([int]$Major)
             ,@([pscustomobject]@{
@@ -1274,6 +1314,7 @@ if (-not $SkipE2E) {
             })
         }
         function Get-RemotePreviewBranchesForMajor { param([int]$Major) ,@() }
+        function Get-RemoteRcBranchesForMajor { param([int]$Major) ,@() }
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
             if ($GitRef -eq "origin/$($script:SyntheticSrBranchName)") {
@@ -1360,8 +1401,10 @@ if (-not $SkipE2E) {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
         Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RcTagsForMajor $origGetRcTagsForMajor
         Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
         Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-RemoteRcBranchesForMajor $origGetRemoteRcBranchesForMajor
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
@@ -1379,8 +1422,10 @@ if (-not $SkipE2E) {
     $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
     $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
     $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRcTagsForMajor = (Get-Item function:Get-RcTagsForMajor).ScriptBlock
     $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
     $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetRemoteRcBranchesForMajor = (Get-Item function:Get-RemoteRcBranchesForMajor).ScriptBlock
     $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
     $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
@@ -1389,11 +1434,13 @@ if (-not $SkipE2E) {
         function Get-StableTagsForMajor { param([int]$Major) ,@() }
         $script:SyntheticPreviewTags = @('11.0.0-preview.5.26000.1')
         function Get-PreviewTagsForMajor { param([int]$Major) ,@($script:SyntheticPreviewTags) }
+        function Get-RcTagsForMajor { param([int]$Major) ,@() }
         function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
         function Get-RemotePreviewBranchesForMajor {
             param([int]$Major)
             ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview6'; previewNumber = 6 })
         }
+        function Get-RemoteRcBranchesForMajor { param([int]$Major) ,@() }
         $script:SyntheticPreviewIteration = 7
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
@@ -1449,42 +1496,45 @@ if (-not $SkipE2E) {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
         Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RcTagsForMajor $origGetRcTagsForMajor
         Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
         Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-RemoteRcBranchesForMajor $origGetRemoteRcBranchesForMajor
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
         Remove-Variable -Name SyntheticPreviewIteration,SyntheticPreviewTags -Scope Script -ErrorAction SilentlyContinue
     }
 
-    # Synthetic rc window: the pre-release train continues past the final preview
-    # into rc1/rc2, so the survey ref eventually reads label=rc rather than an
-    # eighth preview. Lane 4 only emits preview trackers, and this case used to
-    # fall into the same DarkGray "No active preview cycle" line that a major
-    # legitimately in SR phase prints — so the missing rc tracker was completely
-    # silent. Pin the warning, and pin that it does NOT fire for a genuinely
-    # inactive cycle (otherwise "always warn" would satisfy the first assertion).
+    # Synthetic RC window: RC1 is cut without a shipped tag. It must be emitted
+    # as its own lane, never invented as Preview 8.
     Write-Host "`n[Unit] Tracker detection synthetic rc window" -ForegroundColor Cyan
     $origGetMainBranchForVersion = (Get-Item function:Get-MainBranchForVersion).ScriptBlock
     $origGetStableTagsForMajor = (Get-Item function:Get-StableTagsForMajor).ScriptBlock
     $origGetPreviewTagsForMajor = (Get-Item function:Get-PreviewTagsForMajor).ScriptBlock
+    $origGetRcTagsForMajor = (Get-Item function:Get-RcTagsForMajor).ScriptBlock
     $origGetRemoteSrBranchesForMajor = (Get-Item function:Get-RemoteSrBranchesForMajor).ScriptBlock
     $origGetRemotePreviewBranchesForMajor = (Get-Item function:Get-RemotePreviewBranchesForMajor).ScriptBlock
+    $origGetRemoteRcBranchesForMajor = (Get-Item function:Get-RemoteRcBranchesForMajor).ScriptBlock
     $origGetVersionFromGitRef = (Get-Item function:Get-VersionFromGitRef).ScriptBlock
     $origGetRecentCommitCount = (Get-Item function:Get-RecentCommitCount).ScriptBlock
     $origInvokeGitOrFail = (Get-Item function:Invoke-GitOrFail).ScriptBlock
-    $origWriteWarning = (Get-Item function:Write-Warning -ErrorAction SilentlyContinue)
-    $script:rcWarnings = New-Object System.Collections.Generic.List[string]
     try {
         function Get-MainBranchForVersion { param([int]$Major, [string]$Repo) 'net11.0' }
         function Get-StableTagsForMajor { param([int]$Major) ,@() }
         # preview7 has shipped — the final preview of the major.
         function Get-PreviewTagsForMajor { param([int]$Major) ,@('11.0.0-preview.7.26000.1') }
+        $script:SyntheticRcTags = @()
+        function Get-RcTagsForMajor { param([int]$Major) ,@($script:SyntheticRcTags) }
         function Get-RemoteSrBranchesForMajor { param([int]$Major) ,@() }
         function Get-RemotePreviewBranchesForMajor {
             param([int]$Major)
             ,@([pscustomobject]@{ branch = 'release/11.0.1xx-preview7'; previewNumber = 7 })
         }
+        $script:SyntheticRcBranches = @()
+        $script:SyntheticPrereleaseLabel = 'preview'
+        $script:SyntheticPrereleaseIteration = 7
+        function Get-RemoteRcBranchesForMajor { param([int]$Major) ,@($script:SyntheticRcBranches) }
         function Get-RecentCommitCount { param([string]$Ref, [int]$Days) 1 }
         function Invoke-GitOrFail {
             param([string[]]$ArgList, [string]$FailureMessage)
@@ -1493,41 +1543,71 @@ if (-not $SkipE2E) {
             }
             return @()
         }
-        function Write-Warning { param([Parameter(ValueFromPipeline)][string]$Message) $script:rcWarnings.Add($Message) }
-
-        # net11.0 has been bumped past preview7 → rc1.
         function Get-VersionFromGitRef {
             param([string]$GitRef, [string]$Repo)
-            [pscustomobject]@{ Tag = '11.0.0'; PreLabel = 'rc'; PreIter = 1 }
+            [pscustomobject]@{
+                Tag = '11.0.0'
+                PreLabel = $script:SyntheticPrereleaseLabel
+                PreIter = $script:SyntheticPrereleaseIteration
+            }
         }
+        $preview7CutBeforeRcBump = Invoke-DetectionForMajor -Major 11
+        $rc1Candidate = @($preview7CutBeforeRcBump.trackers | Where-Object {
+            $_.branchType -eq 'rc' -and [int]$_.rcNumber -eq 1
+        })
+        Assert-Eq -Label "Preview 7 cut-before-bump emits one RC1 candidate" -Expected 1 -Actual $rc1Candidate.Count
+        Assert-Eq -Label "Preview 7 cut-before-bump RC1 surveys net11.0" -Expected 'net11.0' -Actual $rc1Candidate[0].surveyRef
+
+        $script:SyntheticRcBranches = @(
+            [pscustomobject]@{ branch = 'release/11.0.1xx-rc1'; rcNumber = 1 }
+        )
+        $preview7AfterRc1Cut = Invoke-DetectionForMajor -Major 11
+        $preview7Rc2Candidate = @($preview7AfterRc1Cut.trackers | Where-Object {
+            $_.branchType -eq 'rc' -and [int]$_.rcNumber -eq 2
+        })
+        Assert-Eq -Label "Preview 7 metadata after RC1 cut emits one RC2 candidate" `
+            -Expected 1 -Actual $preview7Rc2Candidate.Count
+        Assert-Eq -Label "Preview 7 metadata after RC1 cut keeps net11.0 covered" `
+            -Expected 'net11.0' -Actual $preview7Rc2Candidate[0].surveyRef
+
+        $script:SyntheticPrereleaseLabel = 'rc'
+        $script:SyntheticPrereleaseIteration = 1
         $rcSynthetic = Invoke-DetectionForMajor -Major 11
-        $rcCandidates = @($rcSynthetic.trackers | Where-Object { $_.branchType -eq 'preview' -and $_.mode -eq 'candidate' })
+        $preview8Candidates = @($rcSynthetic.trackers | Where-Object {
+            $_.branchType -eq 'preview' -and [int]$_.previewNumber -eq 8
+        })
+        $rc1Trackers = @($rcSynthetic.trackers | Where-Object {
+            $_.branchType -eq 'rc' -and [int]$_.rcNumber -eq 1
+        })
+        $rc2Candidates = @($rcSynthetic.trackers | Where-Object {
+            $_.branchType -eq 'rc' -and [int]$_.rcNumber -eq 2
+        })
 
-        Assert-Eq -Label "rc window emits no preview candidate tracker" -Expected 0 -Actual $rcCandidates.Count
-        Assert-Eq -Label "rc window warns instead of silently skipping" `
-                  -Expected $true -Actual ($script:rcWarnings.Count -gt 0)
-        Assert-Eq -Label "rc window warning names the missing rc tracker" `
-                  -Expected $true -Actual ([bool](@($script:rcWarnings) -match 'rc1'))
+        Assert-Eq -Label "RC window emits no Preview 8 tracker" -Expected 0 -Actual $preview8Candidates.Count
+        Assert-Eq -Label "RC1 discovery emits exactly one tracker" -Expected 1 -Actual $rc1Trackers.Count
+        Assert-Eq -Label "RC1 discovery uses in-flight mode for cut branch" -Expected 'in-flight' -Actual $rc1Trackers[0].mode
+        Assert-Eq -Label "RC1 discovery names expected channel" -Expected '.NET 11.0.1xx SDK RC 1' -Actual $rc1Trackers[0].expectedChannelName
+        Assert-Eq -Label "RC1 discovery uses RC milestone" -Expected '.NET 11.0-rc1' -Actual $rc1Trackers[0].milestoneName
+        Assert-Eq -Label "RC1 cut-before-bump emits one RC2 candidate" -Expected 1 -Actual $rc2Candidates.Count
+        Assert-Eq -Label "RC2 candidate surveys net11.0" -Expected 'net11.0' -Actual $rc2Candidates[0].surveyRef
 
-        # Negative control: an inactive pre-release cycle (SR phase) must stay quiet.
-        $script:rcWarnings.Clear()
-        function Get-VersionFromGitRef {
-            param([string]$GitRef, [string]$Repo)
-            [pscustomobject]@{ Tag = '11.0.100'; PreLabel = 'ci.main'; PreIter = 0 }
-        }
-        $null = Invoke-DetectionForMajor -Major 11
-        Assert-Eq -Label "inactive cycle does not emit the rc warning" -Expected 0 -Actual $script:rcWarnings.Count
+        $script:SyntheticRcTags = @('11.0.0-rc.1.26425.128')
+        $rcShipped = Invoke-DetectionForMajor -Major 11
+        Assert-Eq -Label "tagged RC1 tracker retires" -Expected 0 -Actual @(
+            $rcShipped.trackers | Where-Object { $_.branchType -eq 'rc' -and [int]$_.rcNumber -eq 1 }
+        ).Count
     } finally {
         Set-Item function:Get-MainBranchForVersion $origGetMainBranchForVersion
         Set-Item function:Get-StableTagsForMajor $origGetStableTagsForMajor
         Set-Item function:Get-PreviewTagsForMajor $origGetPreviewTagsForMajor
+        Set-Item function:Get-RcTagsForMajor $origGetRcTagsForMajor
         Set-Item function:Get-RemoteSrBranchesForMajor $origGetRemoteSrBranchesForMajor
         Set-Item function:Get-RemotePreviewBranchesForMajor $origGetRemotePreviewBranchesForMajor
+        Set-Item function:Get-RemoteRcBranchesForMajor $origGetRemoteRcBranchesForMajor
         Set-Item function:Get-VersionFromGitRef $origGetVersionFromGitRef
         Set-Item function:Get-RecentCommitCount $origGetRecentCommitCount
         Set-Item function:Invoke-GitOrFail $origInvokeGitOrFail
-        if ($origWriteWarning) { Set-Item function:Write-Warning $origWriteWarning.ScriptBlock }
-        else { Remove-Item function:Write-Warning -ErrorAction SilentlyContinue }
+        Remove-Variable -Name SyntheticRcTags,SyntheticRcBranches,SyntheticPrereleaseLabel,SyntheticPrereleaseIteration -Scope Script -ErrorAction SilentlyContinue
     }
 
     Write-Host "`n[Unit] Workflow preserves active hotfix tracker creation" -ForegroundColor Cyan
@@ -7495,6 +7575,7 @@ try {
     Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → raw ExitCode surfaced (42)" -Expected 42 -Actual $darc42.ExitCode
     Assert-Eq -Label "Invoke-DarcJson: darc exit 42 → NO truthy NoMatch flag (generic error, not no-match)" -Expected $false `
         -Actual ([bool](Get-AzdoProp $darc42 'NoMatch'))
+
 } finally {
     if ($null -ne $script:OrigDarcForExitTest) { Set-Item function:darc $script:OrigDarcForExitTest }
     else { Remove-Item function:darc -ErrorAction SilentlyContinue }
@@ -8398,6 +8479,143 @@ $prevScript = Join-Path $PSScriptRoot '..' 'scripts' 'Get-PreviewReadiness.ps1'
 . $prevScript -Branch 'release/11.0.1xx-preview6'
 Assert-PublicSanitizerEdgeCases -Lane 'Preview'
 
+Write-Host "`n[Unit] Prerelease dependency-flow wiring" -ForegroundColor Cyan
+Assert-Eq -Label 'RC1 channel derivation' -Expected '.NET 11.0.1xx SDK RC 1' `
+    -Actual (Get-PrereleaseChannelName -Major 11 -Stage rc -Number 1)
+Assert-Eq -Label 'Preview channel derivation remains unchanged' -Expected '.NET 11.0.1xx SDK Preview 7' `
+    -Actual (Get-PrereleaseChannelName -Major 11 -Stage preview -Number 7)
+
+$originalPrereleaseDarc = ${function:darc}
+function darc {
+    'No subscriptions found matching the specified criteria.'
+    $global:LASTEXITCODE = 42
+}
+try {
+    $emptySubscriptions = Invoke-PrereleaseDarcJson -DarcArgs @(
+        'get-subscriptions', '--target-repo', 'https://github.com/dotnet/maui',
+        '--target-branch', 'release/11.0.1xx-rc999'
+    )
+    Assert-Eq -Label "prerelease darc: exact empty-subscriptions exit 42 is successful" `
+        -Expected $true -Actual $emptySubscriptions.Success
+    Assert-Eq -Label "prerelease darc: exact empty-subscriptions result has zero rows" `
+        -Expected 0 -Actual @($emptySubscriptions.Data).Count
+
+    $sameTextForOtherCommand = Invoke-PrereleaseDarcJson -DarcArgs @(
+        'get-build', '--repo', 'https://github.com/dotnet/maui', '--commit', 'deadbeef'
+    )
+    Assert-Eq -Label "prerelease darc: empty-subscriptions text does not normalize other commands" `
+        -Expected $false -Actual $sameTextForOtherCommand.Success
+} finally {
+    if ($null -ne $originalPrereleaseDarc) { Set-Item function:darc $originalPrereleaseDarc }
+    else { Remove-Item function:darc -ErrorAction SilentlyContinue }
+}
+
+$rcBranch = 'release/11.0.1xx-rc1'
+$rcChannel = '.NET 11.0.1xx SDK RC 1'
+$rcSubscriptions = @(
+    [pscustomobject]@{
+        sourceRepository = 'https://github.com/dotnet/android'
+        targetRepository = 'https://github.com/dotnet/maui'
+        targetBranch = $rcBranch
+        channel = [pscustomobject]@{ name = $rcChannel }
+        enabled = $true
+    },
+    [pscustomobject]@{
+        sourceRepository = 'https://github.com/dotnet/macios'
+        targetRepository = 'https://github.com/dotnet/maui'
+        targetBranch = $rcBranch
+        channel = [pscustomobject]@{ name = $rcChannel }
+        enabled = $true
+    }
+)
+$successfulSubscriptions = [pscustomobject]@{ Success = $true; Data = $rcSubscriptions }
+$missingMappingChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $rcBranch `
+    -ExpectedChannelName $rcChannel -Stage rc `
+    -DefaultChannelsResult ([pscustomobject]@{ Success = $true; Data = @() }) `
+    -SubscriptionsResult $successfulSubscriptions)
+$missingMapping = $missingMappingChecks | Where-Object Area -eq 'MAUI outward default-channel mapping'
+Assert-Eq -Label 'missing RC default-channel mapping is blocking' -Expected 'BLOCKED' -Actual $missingMapping.Status
+Assert-Eq -Label 'missing mapping names expected branch and channel' -Expected $true `
+    -Actual ([bool]($missingMapping.Details -match [regex]::Escape($rcBranch) -and
+        $missingMapping.Details -match [regex]::Escape($rcChannel)))
+Assert-Eq -Label 'Android inbound subscription is separate and ready' -Expected 'READY' `
+    -Actual (($missingMappingChecks | Where-Object Area -eq 'Android inbound subscription').Status)
+Assert-Eq -Label 'macOS/iOS inbound subscription is separate and ready' -Expected 'READY' `
+    -Actual (($missingMappingChecks | Where-Object Area -eq 'macOS/iOS inbound subscription').Status)
+Assert-Eq -Label 'no VMR subscription is required' -Expected 'READY' `
+    -Actual (($missingMappingChecks | Where-Object Area -eq 'VMR reconciliation model').Status)
+
+$disabledVmrSubscription = [pscustomobject]@{
+    sourceRepository = 'https://github.com/dotnet/dotnet'
+    targetRepository = 'https://github.com/dotnet/maui'
+    targetBranch = $rcBranch
+    channel = [pscustomobject]@{ name = $rcChannel }
+    enabled = $false
+}
+$disabledVmrChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $rcBranch `
+    -ExpectedChannelName $rcChannel -Stage rc `
+    -DefaultChannelsResult ([pscustomobject]@{ Success = $true; Data = @() }) `
+    -SubscriptionsResult ([pscustomobject]@{
+        Success = $true
+        Data = @($rcSubscriptions) + @($disabledVmrSubscription)
+    }))
+Assert-Eq -Label 'disabled VMR subscription does not block local reconciliation model' -Expected 'READY' `
+    -Actual (($disabledVmrChecks | Where-Object Area -eq 'VMR reconciliation model').Status)
+
+$enabledVmrSubscription = $disabledVmrSubscription.PSObject.Copy()
+$enabledVmrSubscription.enabled = $true
+$enabledVmrChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $rcBranch `
+    -ExpectedChannelName $rcChannel -Stage rc `
+    -DefaultChannelsResult ([pscustomobject]@{ Success = $true; Data = @() }) `
+    -SubscriptionsResult ([pscustomobject]@{
+        Success = $true
+        Data = @($rcSubscriptions) + @($enabledVmrSubscription)
+    }))
+Assert-Eq -Label 'enabled VMR subscription blocks local reconciliation model' -Expected 'BLOCKED' `
+    -Actual (($enabledVmrChecks | Where-Object Area -eq 'VMR reconciliation model').Status)
+
+$presentMappingChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $rcBranch `
+    -ExpectedChannelName $rcChannel -Stage rc `
+    -DefaultChannelsResult ([pscustomobject]@{
+        Success = $true
+        Data = @([pscustomobject]@{
+            repository = 'https://github.com/dotnet/maui'
+            branch = $rcBranch
+            channel = [pscustomobject]@{ name = $rcChannel }
+            enabled = $true
+        })
+    }) `
+    -SubscriptionsResult $successfulSubscriptions)
+Assert-Eq -Label 'present enabled RC default-channel mapping is ready' -Expected 'READY' `
+    -Actual (($presentMappingChecks | Where-Object Area -eq 'MAUI outward default-channel mapping').Status)
+
+$singleRcSubscriptionResult = [pscustomobject]@{ Success = $true; Data = @($rcSubscriptions[0]) }
+$missingRcSubscriptionChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $rcBranch `
+    -ExpectedChannelName $rcChannel -Stage rc `
+    -DefaultChannelsResult ([pscustomobject]@{ Success = $true; Data = @() }) `
+    -SubscriptionsResult $singleRcSubscriptionResult)
+Assert-Eq -Label 'missing RC inbound subscription is blocking' -Expected 'BLOCKED' `
+    -Actual (($missingRcSubscriptionChecks | Where-Object Area -eq 'macOS/iOS inbound subscription').Status)
+
+$previewBranch = 'release/11.0.1xx-preview7'
+$previewChannel = '.NET 11.0.1xx SDK Preview 7'
+$previewAndroidSubscription = $rcSubscriptions[0].PSObject.Copy()
+$previewAndroidSubscription.targetBranch = $previewBranch
+$previewAndroidSubscription.channel = [pscustomobject]@{ name = $previewChannel }
+$missingPreviewSubscriptionChecks = @(Get-PrereleaseDependencyFlowChecks -Branch $previewBranch `
+    -ExpectedChannelName $previewChannel -Stage preview `
+    -DefaultChannelsResult ([pscustomobject]@{ Success = $true; Data = @() }) `
+    -SubscriptionsResult ([pscustomobject]@{ Success = $true; Data = @($previewAndroidSubscription) }))
+Assert-Eq -Label 'missing Preview inbound subscription remains non-blocking' -Expected 'WATCH' `
+    -Actual (($missingPreviewSubscriptionChecks | Where-Object Area -eq 'macOS/iOS inbound subscription').Status)
+
+$rcVersionReady = Get-PrereleaseVersionCheck -Mode in-flight -SurveyRef $rcBranch `
+    -Stage rc -Number 1 -Label rc -Iteration 1
+$rcVersionWrong = Get-PrereleaseVersionCheck -Mode in-flight -SurveyRef $rcBranch `
+    -Stage rc -Number 1 -Label preview -Iteration 7
+Assert-Eq -Label 'RC version metadata accepts rc/1' -Expected 'READY' -Actual $rcVersionReady.Status
+Assert-Eq -Label 'RC version metadata rejects preview/7' -Expected 'BLOCKED' -Actual $rcVersionWrong.Status
+
 $previewNotesBlock = @"
 <!-- release-readiness:human-notes:begin -->
 _Captain notes._
@@ -8597,8 +8815,8 @@ $preview8Iteration = Get-PreviewIterationCheck -Mode 'candidate' `
     -SurveyRef 'net11.0' -PreviewNumber 8 -Iteration '7'
 Assert-Eq -Label "preview iteration: Preview 8 candidate blocks until net11.0 is bumped" `
     -Expected 'BLOCKED' -Actual $preview8Iteration.Status
-Assert-Eq -Label "preview iteration: Preview 8 candidate expects iteration 8" `
-    -Expected $true -Actual ([bool]($preview8Iteration.Details -match 'expected 8'))
+Assert-Eq -Label "preview iteration: Preview 8 candidate expects preview/8 metadata" `
+    -Expected $true -Actual ([bool]($preview8Iteration.Details -match 'expected preview/8'))
 
 # =========================================================================
 # Internal official build health — definition 1095, offline fixtures only
@@ -11176,6 +11394,25 @@ Assert-Eq -Label "OS version 'iOS 18.0' does not drop a preview7 p/0 (M11/P7)" `
 $net10Preview6 = New-RelevanceIssue -Title 'Z' -Milestone '.NET 10' -Labels @('regressed-in-10-preview6')
 Assert-Eq -Label "regressed-in-10-preview6 NOT relevant for M11/P6" `
     -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net10Preview6 -Major 11 -Preview 6)
+
+# RC reports must use RC markers rather than treating RC1 as Preview 1.
+$net11Rc1 = New-RelevanceIssue -Title 'RC regression' -Milestone $null -Labels @('regressed-in-11-rc1')
+$net11Preview1 = New-RelevanceIssue -Title 'Preview regression' -Milestone $null -Labels @('regressed-in-11-preview1')
+$net11RcMilestone = New-RelevanceIssue -Title 'RC blocker' -Milestone '.NET 11.0-rc1' -Labels @('p/0')
+$net11PreviewMilestone = New-RelevanceIssue -Title 'Preview blocker' -Milestone '.NET 11.0-preview1' -Labels @('p/0')
+Assert-Eq -Label "regressed-in-11-rc1 relevant for M11/RC1" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11Rc1 -Major 11 -Stage rc -Number 1)
+Assert-Eq -Label "regressed-in-11-preview1 NOT relevant for M11/RC1" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net11Preview1 -Major 11 -Stage rc -Number 1)
+Assert-Eq -Label ".NET 11.0-rc1 milestone relevant for M11/RC1" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $net11RcMilestone -Major 11 -Stage rc -Number 1)
+Assert-Eq -Label ".NET 11.0-preview1 milestone NOT relevant for M11/RC1" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net11PreviewMilestone -Major 11 -Stage rc -Number 1)
+Assert-Eq -Label "RC1 marker NOT relevant for M11/Preview1" `
+    -Expected $false -Actual (Test-IssueReleaseRelevant -Issue $net11Rc1 -Major 11 -Stage preview -Number 1)
+$xcodeRcTitle = New-RelevanceIssue -Title 'Xcode 26 RC 1 crash' -Milestone '.NET 11.0' -Labels @('p/0')
+Assert-Eq -Label "tool RC marker does not hide a release-relevant Xcode issue" `
+    -Expected $true -Actual (Test-IssueReleaseRelevant -Issue $xcodeRcTitle -Major 11 -Stage rc -Number 2)
 
 # Direct unit coverage of the foreign-major detector.
 Assert-Eq -Label "foreign-major: 'regressed-in-10-*' is foreign to major 11" `

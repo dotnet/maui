@@ -357,7 +357,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellHandler)] // See RendererHandlerVariant.cs
 	public partial class ModalHandlerTests : ModalTests
 	{
-		protected override void SetupBuilder(bool includeNavigationViewHandler = true)
+		protected override void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{

@@ -418,7 +418,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void IViewHandler.PlatformArrange(Rect rect)
 		{
-			//TODO I don't think we need this
+			// The view controller hierarchy owns native layout.
 		}
 
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext)
