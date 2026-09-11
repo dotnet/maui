@@ -360,7 +360,7 @@ stages:
                 Write-Host '##vso[task.setvariable variable=iosNativeProbeStarted]true'
                 $code = Invoke-BuildTasksWatchdog `
                   -ShellPath '/bin/bash' `
-                  -ShellCommand 'pwsh -NoProfile -File .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -Configuration Debug -TestFilter ReplicationIosButtonHarnessProbe -IncludeClasses Microsoft.Maui.DeviceTests.ReplicationIosButtonHarnessProbe -IncludeMethods RegisteredButtonAttachesToWindow -OutputDirectory "$PROBE_ROOT/results" -Timeout 00:05:00 2>&1 | tee "$PROBE_ROOT/native-harness.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
+                  -ShellCommand 'pwsh -NoProfile -File .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Controls -Platform ios -Configuration Debug -TestFilter ReplicationIosButtonHarnessProbe -IncludeClasses Microsoft.Maui.DeviceTests.ReplicationIosButtonHarnessProbe -IncludeMethods RegisteredControlsAttachToWindow -OutputDirectory "$PROBE_ROOT/results" -Timeout 00:05:00 2>&1 | tee "$PROBE_ROOT/native-harness.log" | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g"' `
                   -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 30
                 if ($code -ne 0) {
                   throw "The trusted iOS native harness failed with exit code $code. Raw runner diagnostics are retained."
@@ -368,7 +368,7 @@ stages:
               } finally {
                 Remove-Item -LiteralPath $target -Force
               }
-            displayName: 'Run fixed trusted iOS Button fixture'
+            displayName: 'Run fixed trusted iOS Button and Label fixture'
             timeoutInMinutes: 35
             env:
               PROBE_ROOT: $(IosProbeRoot)

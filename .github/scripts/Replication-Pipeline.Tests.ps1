@@ -167,7 +167,7 @@ Describe 'MAUI Copilot mode routing' {
             '(?ms)^  - stage: ProbeIosHarness\r?\n.*?(?=^  - stage:|\z)').Value
         $stage | Should -Match 'Run-DeviceTests\.ps1 -Project Controls -Platform ios'
         $stage | Should -Match '-IncludeClasses Microsoft\.Maui\.DeviceTests\.ReplicationIosButtonHarnessProbe'
-        $stage | Should -Match '-IncludeMethods RegisteredButtonAttachesToWindow'
+        $stage | Should -Match '-IncludeMethods RegisteredControlsAttachToWindow'
         $stage | Should -Match 'refuses to overwrite an existing source file'
         $stage | Should -Match '(?s)finally \{\s+Remove-Item -LiteralPath \$target -Force'
         $stage | Should -Match 'Invoke-BuildTasksWatchdog'
@@ -183,6 +183,9 @@ Describe 'MAUI Copilot mode routing' {
         [regex]::Matches($fixture, '\[Fact\]').Count | Should -Be 1
         $fixture | Should -Match 'Assert\.NotNull\(handler\.PlatformView\.Window\)'
         $fixture | Should -Match 'Assert\.Equal\("CI", handler\.PlatformView\.CurrentTitle\)'
+        $fixture | Should -Match 'handlers\.AddHandler<global::Microsoft\.Maui\.Controls\.Label, LabelHandler>'
+        $fixture | Should -Match 'CreateHandlerAndAddToWindow<LabelHandler>'
+        $fixture | Should -Match 'Assert\.Equal\("Native Label text", handler\.PlatformView\.Text\)'
     }
 
     It 'uses shared iOS provisioning without an external isolation prerequisite' {
