@@ -76,6 +76,13 @@ to safe unknown fields.
 
 Replication targets `main` in the first version. The issue must describe a scenario that can be reconstructed from its text, inline snippets, and allowed raster screenshots.
 
+Issue ingestion preserves inline/fenced code literals, including HTML entities
+and XAML, as inert untrusted data rather than decoding or stripping them.
+Reported workarounds are retained in both agent and human context. Unsafe URLs,
+logging directives, and instruction markers are still filtered, including
+encoded forms, and attachment-looking text inside code is never downloaded.
+The agent must verify a workaround experimentally before using it as a control.
+
 ## What a successful run does
 
 1. Fetches and sanitizes the issue through the GitHub API.
