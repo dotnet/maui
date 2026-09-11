@@ -42,18 +42,18 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			popToRoot.IsVisible = Navigation.NavigationStack.Count > 1;
 		}
 
-		async void OnPushPage(object sender, EventArgs e)
+		async void OnPushPage(object? sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new ShellChromeGallery());
 		}
 
-		async void OnPopPage(object sender, EventArgs e)
+		async void OnPopPage(object? sender, EventArgs e)
 		{
 			if (Navigation.NavigationStack.Count > 1)
 				await Navigation.PopAsync();
 		}
 
-		async void OnPopToRoot(object sender, EventArgs e)
+		async void OnPopToRoot(object? sender, EventArgs e)
 		{
 			await Navigation.PopToRootAsync();
 		}
@@ -83,14 +83,14 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
-		void OnToggleFlyoutIsPresented(object sender, EventArgs e)
+		void OnToggleFlyoutIsPresented(object? sender, EventArgs e)
 		{
 			if (AppShell is null)
 				return;
 			AppShell.FlyoutIsPresented = !AppShell.FlyoutIsPresented;
 		}
 
-		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
+		void OnToggleFlyoutBackgroundColor(object? sender, EventArgs e)
 		{
 			if (AppShell is null)
 				return;
@@ -112,24 +112,24 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			flyoutBackgroundColor.Background = AppShell.FlyoutBackground;
 		}
 
-		void OnToggleNavBarHasShadow(object sender, EventArgs e)
+		void OnToggleNavBarHasShadow(object? sender, EventArgs e)
 		{
 			Shell.SetNavBarHasShadow(this, !Shell.GetNavBarHasShadow(this));
 		}
 
-		void OnToggleNavBarIsVisible(object sender, EventArgs e)
+		void OnToggleNavBarIsVisible(object? sender, EventArgs e)
 		{
 			Shell.SetNavBarIsVisible(this, !Shell.GetNavBarIsVisible(this));
 		}
 
-		void OnToggleBackButtonIsVisible(object sender, EventArgs e)
+		void OnToggleBackButtonIsVisible(object? sender, EventArgs e)
 		{
 			var backButtonBehavior = Shell.GetBackButtonBehavior(this) ?? new BackButtonBehavior();
 			backButtonBehavior.IsVisible = !backButtonBehavior.IsVisible;
 			Shell.SetBackButtonBehavior(this, backButtonBehavior);
 		}
 
-		void OnToggleSearchHandler(object sender, EventArgs e)
+		void OnToggleSearchHandler(object? sender, EventArgs e)
 		{
 			var searchHandler = Shell.GetSearchHandler(this);
 			if (searchHandler != null)
@@ -138,24 +138,24 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 				AddSearchHandler("text here");
 		}
 
-		void OnToggleTabBar(object sender, EventArgs e)
+		void OnToggleTabBar(object? sender, EventArgs e)
 		{
 			Shell.SetTabBarIsVisible(this, !Shell.GetTabBarIsVisible(this));
 		}
 
-		void OnToggleTabBarTitleColor(object sender, EventArgs e)
+		void OnToggleTabBarTitleColor(object? sender, EventArgs e)
 		{
 			var random = new Random();
 			Shell.SetTabBarTitleColor(Shell.Current.CurrentItem, Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)));
 		}
 
-		void OnToggleTabBarUnselectedColor(object sender, EventArgs e)
+		void OnToggleTabBarUnselectedColor(object? sender, EventArgs e)
 		{
 			var random = new Random();
 			Shell.SetTabBarUnselectedColor(Shell.Current.CurrentItem, Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)));
 		}
 
-		void OnToggleTabBarForegroundColor(object sender, EventArgs e)
+		void OnToggleTabBarForegroundColor(object? sender, EventArgs e)
 		{
 			var random = new Random();
 			Shell.SetTabBarForegroundColor(Shell.Current.CurrentItem, Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255)));

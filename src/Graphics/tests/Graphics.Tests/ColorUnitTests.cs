@@ -468,5 +468,37 @@ namespace Microsoft.Maui.Graphics.Tests
 				Assert.Equal(expected, actual);
 			}
 		}
+
+		[Fact]
+		public void ColorTypeIsSealed()
+		{
+			// Sealing Color guarantees every instance shares the same runtime type, so its
+			// record-generated equality (based on the ARGB value) can never be broken by a subclass.
+			Assert.True(typeof(Color).IsSealed);
+		}
+
+		[Fact]
+		public void EqualsIsValueBasedForSameArgbValue()
+		{
+			var color1 = new Color(1f, 0f, 0f, 1f);
+			var color2 = new Color(1f, 0f, 0f, 1f);
+
+			Assert.Equal(color1, color2);
+			Assert.True(color1 == color2);
+			Assert.True(color1.Equals(color2));
+			Assert.True(EqualityComparer<Color>.Default.Equals(color1, color2));
+			Assert.Equal(color1.GetHashCode(), color2.GetHashCode());
+		}
+
+		[Fact]
+		public void EqualsIsFalseForDifferentArgbValue()
+		{
+			var color1 = new Color(1f, 0f, 0f, 1f);
+			var color2 = new Color(0f, 1f, 0f, 1f);
+
+			Assert.NotEqual(color1, color2);
+			Assert.True(color1 != color2);
+			Assert.False(color1.Equals(color2));
+		}
 	}
 }

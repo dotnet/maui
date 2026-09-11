@@ -30,6 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		SearchHandler? _currentSearchHandler;
 		IShellAppearanceElement? _shellAppearanceElement;
 		readonly HashSet<ShellSection> _trackedShellSections = new();
+		readonly HashSet<ShellSection> _badgeTrackedSections = new();
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -43,8 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
 		{
-			if (PlatformView is not null)
-				PlatformView.Loaded -= OnNavigationViewLoaded;
+			PlatformView?.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
 			MapMenuItems();
@@ -76,8 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			base.ConnectHandler(platformView);
 
-			if (mauiNavView is not null)
-				mauiNavView.SelectionChanged += OnNavigationTabChanged;
+			mauiNavView?.SelectionChanged += OnNavigationTabChanged;
 
 			if (VirtualView.Parent is Shell shell)
 			{
@@ -105,8 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			platformView.Loaded -= OnNavigationViewLoaded;
 
-			if (_currentShellSection != null)
-				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
+			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
 			if (_currentSearchHandler != null)
 			{
@@ -114,6 +112,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentSearchHandler.ShowSoftInputRequested -= OnShowSoftInputRequested;
 				_currentSearchHandler.HideSoftInputRequested -= OnHideSoftInputRequested;
 			}
+
+			UntrackAllBadgeSections();
 
 			if (_shellItem?.Parent is IShellController controller)
 			{
@@ -146,6 +146,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					controller.RemoveAppearanceObserver(this);
 					((IShellItemController)_shellItem).ItemsCollectionChanged -= OnItemsChanged;
+					UntrackAllBadgeSections();
 				}
 
 				_shellItem = (ShellItem)view;
@@ -239,7 +240,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				tracked.PropertyChanged -= OnShellItemPropertyChanged;
 			}
-			
+
 			_trackedShellSections.Clear();
 
 			IShellItemController shellItemController = VirtualView;
@@ -317,6 +318,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					}
 
 					vm.Icon = iconSource?.CreateIconElement();
+					vm.BadgeText = bsi.BadgeText;
+					vm.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					vm.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
 				}
 			});
 
@@ -324,6 +328,69 @@ namespace Microsoft.Maui.Controls.Handlers
 				navView.SelectedItem = selectedItem;
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
+			TrackBadgeSections();
+		}
+
+		void TrackBadgeSections()
+		{
+			UntrackAllBadgeSections();
+
+			if (_shellItem is not IShellItemController shellItemController)
+				return;
+
+			foreach (var section in shellItemController.GetItems())
+			{
+				if (_badgeTrackedSections.Add(section))
+				{
+					section.PropertyChanged += OnShellSectionBadgePropertyChanged;
+				}
+			}
+		}
+
+		void UntrackAllBadgeSections()
+		{
+			foreach (var section in _badgeTrackedSections)
+			{
+				section.PropertyChanged -= OnShellSectionBadgePropertyChanged;
+			}
+			_badgeTrackedSections.Clear();
+		}
+
+		void OnShellSectionBadgePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != BaseShellItem.BadgeTextProperty.PropertyName &&
+				e.PropertyName != BaseShellItem.BadgeColorProperty.PropertyName &&
+				e.PropertyName != BaseShellItem.BadgeTextColorProperty.PropertyName)
+				return;
+
+			if (sender is not BaseShellItem bsi)
+				return;
+
+			// Find the matching ViewModel and update it directly
+			foreach (var navItem in _mainLevelTabs)
+			{
+				if (navItem.Data == bsi)
+				{
+					navItem.BadgeText = bsi.BadgeText;
+					navItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+					navItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
+					return;
+				}
+
+				if (navItem.MenuItemsSource is not null)
+				{
+					foreach (var subItem in navItem.MenuItemsSource)
+					{
+						if (subItem.Data == bsi)
+						{
+							subItem.BadgeText = bsi.BadgeText;
+							subItem.BadgeBackground = bsi.BadgeColor?.ToPlatform();
+							subItem.BadgeForeground = bsi.BadgeTextColor?.ToPlatform();
+							return;
+						}
+					}
+				}
+			}
 		}
 
 		void UpdateSearchHandler()
@@ -395,10 +462,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					UpdateQueryIcon();
 				}
-				else if (autoSuggestBox is not null)
+				else
 				{
 					// there is no current search handler, so hide the autoSuggestBox
-					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
+					autoSuggestBox?.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
 		}
@@ -633,10 +700,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentShellSection == VirtualView.CurrentItem)
 				return;
 
-			if (_currentShellSection != null)
-			{
-				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
-			}
+			_currentShellSection?.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
 
 			_currentShellSection = VirtualView.CurrentItem;
 
@@ -658,10 +722,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			MapMenuItems();
 
-			if (_currentShellSection != null)
-			{
-				_currentShellSection.PropertyChanged += OnCurrentShellSectionPropertyChanged;
-			}
+			_currentShellSection?.PropertyChanged += OnCurrentShellSectionPropertyChanged;
 		}
 
 		void OnCurrentShellSectionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

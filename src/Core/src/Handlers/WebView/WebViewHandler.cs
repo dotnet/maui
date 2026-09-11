@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Handlers
 	[nameof(IView.Background)] = MapBackground,
 #endif
 #if __ANDROID__
-			[nameof(WebViewClient)] = MapWebViewClient,
-			[nameof(WebChromeClient)] = MapWebChromeClient,
 			[nameof(WebView.Settings)] =  MapWebViewSettings
 #elif __IOS__ || MACCATALYST
 			[nameof(IWebView.FlowDirection)] = MapFlowDirection,

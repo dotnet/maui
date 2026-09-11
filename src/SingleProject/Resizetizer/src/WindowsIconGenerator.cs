@@ -9,15 +9,17 @@ namespace Microsoft.Maui.Resizetizer
 	/// </summary>
 	internal class WindowsIconGenerator
 	{
-		public WindowsIconGenerator(ResizeImageInfo info, string intermediateOutputPath, ILogger logger)
+		public WindowsIconGenerator(ResizeImageInfo info, string intermediateOutputPath, string inputsFile, ILogger logger)
 		{
 			Info = info;
 			Logger = logger;
 			IntermediateOutputPath = intermediateOutputPath;
+			InputsFile = inputsFile;
 		}
 
 		public ResizeImageInfo Info { get; private set; }
 		public string IntermediateOutputPath { get; private set; }
+		public string InputsFile { get; private set; }
 		public ILogger Logger { get; private set; }
 
 		public ResizedImageInfo Generate()
@@ -28,17 +30,13 @@ namespace Microsoft.Maui.Resizetizer
 			string destination = Path.Combine(destinationFolder, $"{fileName}.ico");
 			Directory.CreateDirectory(destinationFolder);
 
-			var (sourceExists, sourceModified) = Utils.FileExists(Info.Filename);
-			var (destinationExists, destinationModified) = Utils.FileExists(destination);
-
 			Logger.Log($"Generating ICO: {destination}");
 
 			var tools = new SkiaSharpAppIconTools(Info, Logger);
 			var dpi = new DpiPath(fileName, 1.0m, size: new SKSize(64, 64));
 
-			if (destinationModified > sourceModified)
+			if (Resizer.IsUpToDate(new[] { Info.Filename, Info.ForegroundFilename }, destination, InputsFile, Logger, Info.ItemSpec))
 			{
-				Logger.Log($"Skipping `{Info.Filename}` => `{destination}` file is up to date.");
 				return new ResizedImageInfo { Dpi = dpi, Filename = destination };
 			}
 

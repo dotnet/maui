@@ -383,11 +383,24 @@
       ]
     },
     "InteractivityLocation": {
-      "type": "generated",
-      "generator": "constant",
-      "parameters": {
-        "value": "InteractiveGlobal"
-      }
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "InteractivePerPage",
+      "displayName": "Interactivity _location",
+      "description": "Chooses which components will have interactive rendering enabled",
+      "isEnabled": "(InteractivityPlatform != \"None\")",
+      "choices": [
+        {
+          "choice": "InteractivePerPage",
+          "displayName": "Per page/component",
+          "description": "Interactivity is applied on a per-page or per-component basis"
+        },
+        {
+          "choice": "InteractiveGlobal",
+          "displayName": "Global",
+          "description": "Interactivity is applied at the root level"
+        }
+      ]
     },
     "UseWebAssembly": {
       "type": "computed",
@@ -403,12 +416,6 @@
       "defaultValue": "true",
       "displayName": "_Include sample pages",
       "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
-    },
-    "Empty": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
     },
     "empty": {
       "type": "parameter",
@@ -432,7 +439,7 @@
     },
     "SampleContent": {
       "type": "computed",
-      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || ((!Empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")) && (!empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))))"
+      "value": "(((IncludeSampleContent && (HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\"))) || (!empty && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")))"
     },
     "AllInteractive": {
       "type": "parameter",

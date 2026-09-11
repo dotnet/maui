@@ -62,14 +62,21 @@ namespace Microsoft.Maui.IntegrationTests
 				if (true) return; // Skip: "Running Apple templates is only supported on macOS."
 		}
 
-		// [InlineData("maui", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Debug", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		// [InlineData("maui-blazor", "Release", DotNetPrevious, "iossimulator-x64", RuntimeVariant.Mono, null)]
-		
+		// DotNetPrevious test methods
+		[Fact]
+		public void RunOniOS_Previous_MauiDebug() => RunOniOS("maui", "Debug", DotNetPrevious, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_Previous_MauiRelease() => RunOniOS("maui", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_Previous_BlazorDebug() => RunOniOS("maui-blazor", "Debug", DotNetPrevious, RuntimeVariant.Mono, null);
+
+		[Fact]
+		public void RunOniOS_Previous_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetPrevious, RuntimeVariant.Mono, null);
 
 		// Individual test methods for each configuration to enable parallel CI runs
-		// CI uses --filter "Name=TestMethodName" to run each test in a separate job
+		// CI uses --filter "FullyQualifiedName~TestMethodName" to run each test in a separate job
 		[Fact]
 		public void RunOniOS_MauiDebug() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.Mono, null);
 
@@ -84,6 +91,22 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Fact]
 		public void RunOniOS_BlazorRelease() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.Mono, null);
+
+		// CoreCLR test variants
+		[Fact]
+		public void RunOniOS_MauiDebug_CoreCLR() => RunOniOS("maui", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiRelease_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_MauiReleaseTrimFull_CoreCLR() => RunOniOS("maui", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, "full");
+
+		[Fact]
+		public void RunOniOS_BlazorDebug_CoreCLR() => RunOniOS("maui-blazor", "Debug", DotNetCurrent, RuntimeVariant.CoreCLR, null);
+
+		[Fact]
+		public void RunOniOS_BlazorRelease_CoreCLR() => RunOniOS("maui-blazor", "Release", DotNetCurrent, RuntimeVariant.CoreCLR, null);
 
 		// TODO: Re-enable once ASP.NET Core fixes trimmer warning IL2111 with Blazor Router.NotFoundPage
 		// Issue: https://github.com/dotnet/aspnetcore/issues/63951
@@ -115,7 +138,11 @@ namespace Microsoft.Maui.IntegrationTests
 			var buildProps = BuildProps;
 			var runtimeIdentifier = "";
 
-			if (runtimeVariant == RuntimeVariant.NativeAOT)
+			if (runtimeVariant == RuntimeVariant.CoreCLR)
+			{
+				buildProps.Add("UseMonoRuntime=false");
+			}
+			else if (runtimeVariant == RuntimeVariant.NativeAOT)
 			{
 				buildProps.Add("PublishAot=true");
 				buildProps.Add("PublishAotUsingRuntimePack=true"); // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060

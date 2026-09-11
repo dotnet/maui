@@ -108,7 +108,6 @@ $UnitTestProjects = @{
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/"
-    "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/"
 }
 
 $UnitTestProjectPaths = @{
@@ -120,7 +119,6 @@ $UnitTestProjectPaths = @{
     "Essentials.UnitTests"             = "src/Essentials/test/UnitTests/Essentials.UnitTests.csproj"
     "Graphics.Tests"                   = "src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj"
     "Resizetizer.UnitTests"            = "src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj"
-    "Compatibility.Core.UnitTests"     = "src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj"
 }
 
 # ============================================================

@@ -9,11 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			// TODO: net11 - Remove MaterialShapeableImageView and always use MauiShapeableImageView
-			// once MauiShapeableImageView has public API changes that support Material3.
-			ShapeableImageView platformView = RuntimeFeature.IsMaterial3Enabled
-				? new MaterialShapeableImageView(Context)
-				: new MauiShapeableImageView(Context);
+			var platformView = new MauiShapeableImageView(Context, RuntimeFeature.IsMaterial3Enabled);
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);

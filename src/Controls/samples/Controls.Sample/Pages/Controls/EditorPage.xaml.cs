@@ -13,30 +13,30 @@ namespace Maui.Controls.Sample.Pages
 			UpdateEditorBackground();
 		}
 
-		void OnEditorCompleted(object sender, EventArgs e)
+		void OnEditorCompleted(object? sender, EventArgs e)
 		{
-			var text = ((Editor)sender).Text;
+			var text = ((Editor)sender!).Text;
 			DisplayAlertAsync("Completed", text, "Ok");
 		}
 
-		void OnEditorFocused(object sender, FocusEventArgs e)
+		void OnEditorFocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((Editor)sender).Text;
+			var text = ((Editor)sender!).Text;
 			DisplayAlertAsync("Focused", text, "Ok");
 		}
 
-		void OnEditorUnfocused(object sender, FocusEventArgs e)
+		void OnEditorUnfocused(object? sender, FocusEventArgs e)
 		{
-			var text = ((Editor)sender).Text;
+			var text = ((Editor)sender!).Text;
 			DisplayAlertAsync("Unfocused", text, "Ok");
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			UpdateEditorBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object? sender, System.EventArgs e)
 		{
 			BackgroundEditor.Background = null;
 		}

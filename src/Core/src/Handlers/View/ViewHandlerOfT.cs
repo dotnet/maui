@@ -13,7 +13,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : ViewHandler, IViewHandler
+	public abstract partial class ViewHandler<TVirtualView, TPlatformView> : ViewHandler, IViewHandler, IViewHandler<TVirtualView, TPlatformView>
 		where TVirtualView : class, IView
 #if !(NETSTANDARD || !PLATFORM) || IOS || ANDROID || WINDOWS || TIZEN
 		where TPlatformView : PlatformView
