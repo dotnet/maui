@@ -76,12 +76,6 @@ namespace Maui.Controls.Sample
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
-#if ANDROID
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-			{
-				appBuilder.Services.AddMauiBlazorWebView();
-			}
-#endif
 
 			// Add file logging if MAUI_LOG_FILE environment variable is set
 			var logFilePath = GetFileLogPath();
