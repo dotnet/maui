@@ -301,6 +301,7 @@ stages:
 
           - template: common/provision.yml
             parameters:
+              provisioningRetryCount: 2
               skipProvisionator: true
               skipJdk: true
               skipAndroidCommonSdks: true
@@ -320,6 +321,7 @@ stages:
               exit $code
             displayName: 'Provision trusted iOS workloads'
             timeoutInMinutes: 35
+            retryCountOnTaskFailure: 2
             env:
               PROBE_ROOT: $(IosProbeRoot)
 
@@ -1375,6 +1377,8 @@ stages:
           # Provision SDKs (same parameters as ui-tests-steps.yml)
           - template: common/provision.yml
             parameters:
+              ${{ if eq(parameters.Mode, 'replicate') }}:
+                provisioningRetryCount: 2
               skipXcode: ${{ or(eq(parameters.Platform, 'android'), eq(parameters.Platform, 'windows')) }}
               skipProvisionator: true
               skipJdk: ${{ ne(parameters.Platform, 'android') }}
