@@ -4436,6 +4436,7 @@ namespace Microsoft.Maui.Controls
         public static BindableProperty BackgroundProperty { get; }
         public double Height { get; }
         public double HeightRequest { get; set; }
+        public bool InputTransparent { get; set; }
         public bool IsLoaded { get; }
         public bool IsVisible { get; set; }
         public double Width { get; }
@@ -4488,6 +4489,10 @@ namespace Microsoft.Maui.Controls
         public string Text { get; set; }
         public global::Microsoft.Maui.TextType TextType { get; set; }
         public object TextColor { get; set; }
+    }
+    public class Border : View
+    {
+        public View Content { get; set; }
     }
 
     public enum FontAttributes
@@ -4769,6 +4774,15 @@ namespace Microsoft.Maui.Handlers
         }
         public global::Microsoft.Maui.IMauiContext MauiContext { get; }
     }
+    public class BorderHandler : global::Microsoft.Maui.IElementHandler
+    {
+        public global::Microsoft.Maui.Platform.ContentView PlatformView { get; }
+        object global::Microsoft.Maui.IElementHandler.PlatformView
+        {
+            get;
+        }
+        public global::Microsoft.Maui.IMauiContext MauiContext { get; }
+    }
     public class LayoutHandler { }
     public class ScrollViewHandler { }
 }
@@ -4984,6 +4998,8 @@ namespace Microsoft.UI.Xaml.Controls
 
 namespace Microsoft.Maui.Platform
 {
+    public class ContentView : global::UIKit.UIView { }
+
     public static class ColorExtensions
     {
         public static global::Windows.UI.Color ToWindowsColor(
@@ -6183,6 +6199,10 @@ function New-ReplicationControlVariant {
         $normalizedSourcePathForProfile,
         '^src/Controls/tests/DeviceTests/Elements/Label/Issue(?<issue>[1-9][0-9]*)(?:Tests)?\.(?<platform>Android|iOS)\.cs$',
         [Text.RegularExpressions.RegexOptions]::CultureInvariant)
+    $nativeTapGestureCountProfileMatch = [regex]::Match(
+        $normalizedSourcePathForProfile,
+        '^src/Controls/tests/DeviceTests/Elements/(?<host>Label|Border)/Issue(?<issue>[1-9][0-9]*)(?:Tests)?\.iOS\.cs$',
+        [Text.RegularExpressions.RegexOptions]::CultureInvariant)
     $nativeLabelTextProfilePlatform = if ($Platform -ceq 'android') {
         'Android'
     } elseif ($Platform -ceq 'ios') {
@@ -6209,20 +6229,27 @@ function New-ReplicationControlVariant {
         $hasNativeLabelCharacterSpacingShape
     $hasNativeLabelTapGestureCountShape =
         $Platform -ceq 'ios' -and
-        $nativeLabelProfileMatch.Success -and
-        $nativeLabelProfileMatch.Groups['platform'].Value -ceq 'iOS' -and
+        $nativeTapGestureCountProfileMatch.Success -and
         @($root.DescendantNodes() | Where-Object {
                 $_ -is
                     [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
                 $_.Type.ToString() -ceq
                     'global::Microsoft.Maui.Controls.TapGestureRecognizer'
             }).Count -ne 0 -and
-        @($root.DescendantNodes() | Where-Object {
-                $_ -is
-                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
-                $_.Type.ToString() -ceq
-                    'global::Microsoft.Maui.Controls.PointerGestureRecognizer'
-            }).Count -ne 0 -and
+        (($nativeTapGestureCountProfileMatch.Groups['host'].Value -ceq 'Label' -and
+                @($root.DescendantNodes() | Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
+                        $_.Type.ToString() -ceq
+                            'global::Microsoft.Maui.Controls.PointerGestureRecognizer'
+                    }).Count -ne 0) -or
+            ($nativeTapGestureCountProfileMatch.Groups['host'].Value -ceq 'Border' -and
+                @($root.DescendantNodes() | Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -and
+                        $_.Type.ToString() -ceq
+                            'global::Microsoft.Maui.Controls.Border'
+                    }).Count -ne 0)) -and
         @($root.DescendantNodes() | Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -and
                 $_.Identifier.ValueText -ceq 'OfType' -and
@@ -6257,7 +6284,13 @@ function New-ReplicationControlVariant {
     }
     $nativeLabelTapGestureCountProfileIssue =
         if ($isNativeLabelTapGestureCountProfile) {
-        $nativeLabelProfileMatch.Groups['issue'].Value
+        $nativeTapGestureCountProfileMatch.Groups['issue'].Value
+    } else {
+        ''
+    }
+    $nativeTapGestureCountProfileHost =
+        if ($isNativeLabelTapGestureCountProfile) {
+        $nativeTapGestureCountProfileMatch.Groups['host'].Value
     } else {
         ''
     }
@@ -6476,11 +6509,20 @@ function New-ReplicationControlVariant {
                 if ($isNativeLabelTapGestureCountProfile -and
                     (($namespaceName -ceq 'Microsoft.Maui.Controls' -and
                             $_.Identifier.ValueText -cin @(
+                                'Border',
                                 'IGestureRecognizer',
                                 'GestureRecognizer',
+                                'Label',
                                 'TapGestureRecognizer',
                                 'PointerGestureRecognizer'
                             )) -or
+                        ($namespaceName -ceq 'Microsoft.Maui.Handlers' -and
+                            $_.Identifier.ValueText -cin @(
+                                'BorderHandler',
+                                'LabelHandler'
+                            )) -or
+                        ($namespaceName -ceq 'Microsoft.Maui.Platform' -and
+                            $_.Identifier.ValueText -ceq 'ContentView') -or
                         ($namespaceName -ceq 'System.Linq' -and
                             $_.Identifier.ValueText -ceq 'Enumerable'))) {
                     return $true
@@ -7275,6 +7317,9 @@ function New-ReplicationControlVariant {
             $type.ToString() -ceq 'Foundation.NSAttributedString')
     }
     $nativeLabelTapGestureCountScopedTypes = @(
+        'Microsoft.Maui.Controls.Border',
+        'Microsoft.Maui.Handlers.BorderHandler',
+        'Microsoft.Maui.Platform.ContentView',
         'Microsoft.Maui.Controls.IGestureRecognizer',
         'Microsoft.Maui.Controls.GestureRecognizer',
         'Microsoft.Maui.Controls.TapGestureRecognizer',
@@ -7300,6 +7345,12 @@ function New-ReplicationControlVariant {
     $isNativeLabelTapGestureCountScopedSymbol = {
         param([AllowNull()][Microsoft.CodeAnalysis.ISymbol]$Symbol)
         if ($null -eq $Symbol) { return $false }
+        if ($Symbol -is [Microsoft.CodeAnalysis.IPropertySymbol] -and
+            $Symbol.Name -ceq 'InputTransparent' -and
+            $Symbol.ContainingType.ToString() -ceq
+                'Microsoft.Maui.Controls.VisualElement') {
+            return $true
+        }
         if ($Symbol -is [Microsoft.CodeAnalysis.IMethodSymbol]) {
             $definition = if ($null -ne $Symbol.ReducedFrom) {
                 $Symbol.ReducedFrom
@@ -7761,10 +7812,16 @@ function New-ReplicationControlVariant {
             [Parameter(Mandatory = $true)][string]$HandlerTypeSyntax,
             [Parameter(Mandatory = $true)][string]$ViewTypeName,
             [Parameter(Mandatory = $true)][string]$HandlerTypeName,
+            [string]$SecondViewTypeSyntax = '',
+            [string]$SecondHandlerTypeSyntax = '',
+            [string]$SecondViewTypeName = '',
+            [string]$SecondHandlerTypeName = '',
             [Parameter(Mandatory = $true)]
             [AllowEmptyCollection()]
             [Collections.Generic.HashSet[int]]$AcceptedInvocations
         )
+        $hasSecondRegistration =
+            -not [string]::IsNullOrWhiteSpace($SecondViewTypeSyntax)
 
         $throwRegistrationViolation = {
             param(
@@ -7911,11 +7968,19 @@ function New-ReplicationControlVariant {
                 [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
             $handlersLambda.AsyncKeyword.RawKind -ne 0 -or
             $handlersLambda.Parameter.Identifier.ValueText -cne 'handlers' -or
-            $handlersLambda.Body -isnot
-                [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
+            ((-not $hasSecondRegistration -and
+                    $handlersLambda.Body -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) -or
+                ($hasSecondRegistration -and
+                    $handlersLambda.Body -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.BlockSyntax]))) {
             & $throwRegistrationViolation `
                 -Node $handlersLambda `
-                -Reason 'use the exact expression lambda handlers => handlers.AddHandler<...>().'
+                -Reason $(if ($hasSecondRegistration) {
+                    'use an exact handlers block containing only the two required AddHandler calls.'
+                } else {
+                    'use the exact expression lambda handlers => handlers.AddHandler<...>().'
+                })
         }
         $handlersParameter = $semanticModel.GetDeclaredSymbol($handlersLambda.Parameter)
         if ($handlersParameter -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
@@ -7930,68 +7995,106 @@ function New-ReplicationControlVariant {
                 -Reason 'the handlers lambda parameter must be the trusted MAUI handler collection.'
         }
 
-        $addInvocation = $handlersLambda.Body
-        $addMethod = $semanticModel.GetSymbolInfo($addInvocation).Symbol
-        $addAccess = $addInvocation.Expression
-        $addGenericName = if ($addAccess -is
-                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
-            $addAccess.Name -is
-                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
-            $addAccess.Name
+        $addInvocations = if ($hasSecondRegistration) {
+            if ($handlersLambda.Body.Statements.Count -ne 2 -or
+                @($handlersLambda.Body.Statements | Where-Object {
+                        $_ -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionStatementSyntax] -or
+                        $_.Expression -isnot
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]
+                    }).Count -ne 0) {
+                & $throwRegistrationViolation -Node $handlersLambda.Body -Reason (
+                    'the handlers block must contain exactly the required Border and Label registrations.')
+            }
+            @($handlersLambda.Body.Statements | ForEach-Object { $_.Expression })
         } else {
-            $null
+            @($handlersLambda.Body)
         }
-        if ($addAccess -isnot
-                [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
-            $addAccess.Expression -isnot
-                [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
-            -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
-                $semanticModel.GetSymbolInfo($addAccess.Expression).Symbol,
-                $handlersParameter) -or
-            $addGenericName -isnot
-                [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -or
-            $addGenericName.Identifier.ValueText -cne 'AddHandler' -or
-            $addGenericName.TypeArgumentList.Arguments.Count -ne 2 -or
-            $addGenericName.TypeArgumentList.Arguments[0].ToString() -cne
-                $ViewTypeSyntax -or
-            $addGenericName.TypeArgumentList.Arguments[1].ToString() -cne
-                $HandlerTypeSyntax -or
-            $addInvocation.ArgumentList.Arguments.Count -ne 0 -or
-            $addMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
-            $addMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
-            $addMethod.IsStatic -or
-            $addMethod.ReturnsVoid -ne $true -or
-            $addMethod.ContainingAssembly.Name -cne
-                'Microsoft.Maui.Controls.ReplicationControlContract' -or
-            $addMethod.ContainingType.ToString() -cne
-                'Microsoft.Maui.Hosting.HandlerCollection' -or
-            $addMethod.Name -cne 'AddHandler' -or
-            $addMethod.Arity -ne 2 -or
-            $addMethod.Parameters.Length -ne 0 -or
-            $addMethod.TypeArguments.Length -ne 2 -or
-            $addMethod.TypeArguments[0].ToString() -cne
-                $ViewTypeName -or
-            $addMethod.TypeArguments[1].ToString() -cne
-                $HandlerTypeName -or
-            @($addMethod.Locations | Where-Object {
-                    $_.IsInSource
-                }).Count -ne 0 -or
-            @($addMethod.TypeArguments | Where-Object {
-                    @($_.Locations | Where-Object { $_.IsInSource }).Count -ne 0
-                }).Count -ne 0) {
-            & $throwRegistrationViolation `
-                -Node $addInvocation `
-                -Reason (
-                    "AddHandler must register only trusted $viewTypeShortName -> " +
-                    "$handlerTypeShortName metadata.")
+        $registrationSpecifications = @(
+            @{
+                ViewSyntax = $ViewTypeSyntax
+                HandlerSyntax = $HandlerTypeSyntax
+                ViewName = $ViewTypeName
+                HandlerName = $HandlerTypeName
+            })
+        if ($hasSecondRegistration) {
+            $registrationSpecifications += @{
+                ViewSyntax = $SecondViewTypeSyntax
+                HandlerSyntax = $SecondHandlerTypeSyntax
+                ViewName = $SecondViewTypeName
+                HandlerName = $SecondHandlerTypeName
+            }
+        }
+        for ($registrationIndex = 0;
+            $registrationIndex -lt $registrationSpecifications.Count;
+            $registrationIndex++) {
+            $specification = $registrationSpecifications[$registrationIndex]
+            $addInvocation = $addInvocations[$registrationIndex]
+            $addMethod = $semanticModel.GetSymbolInfo($addInvocation).Symbol
+            $addAccess = $addInvocation.Expression
+            $addGenericName = if ($addAccess -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -and
+                $addAccess.Name -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax]) {
+                $addAccess.Name
+            } else {
+                $null
+            }
+            if ($addAccess -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax] -or
+                $addAccess.Expression -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($addAccess.Expression).Symbol,
+                    $handlersParameter) -or
+                $addGenericName -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax] -or
+                $addGenericName.Identifier.ValueText -cne 'AddHandler' -or
+                $addGenericName.TypeArgumentList.Arguments.Count -ne 2 -or
+                $addGenericName.TypeArgumentList.Arguments[0].ToString() -cne
+                    $specification.ViewSyntax -or
+                $addGenericName.TypeArgumentList.Arguments[1].ToString() -cne
+                    $specification.HandlerSyntax -or
+                $addInvocation.ArgumentList.Arguments.Count -ne 0 -or
+                $addMethod -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $addMethod.MethodKind -ne [Microsoft.CodeAnalysis.MethodKind]::Ordinary -or
+                $addMethod.IsStatic -or
+                $addMethod.ReturnsVoid -ne $true -or
+                $addMethod.ContainingAssembly.Name -cne
+                    'Microsoft.Maui.Controls.ReplicationControlContract' -or
+                $addMethod.ContainingType.ToString() -cne
+                    'Microsoft.Maui.Hosting.HandlerCollection' -or
+                $addMethod.Name -cne 'AddHandler' -or
+                $addMethod.Arity -ne 2 -or
+                $addMethod.Parameters.Length -ne 0 -or
+                $addMethod.TypeArguments.Length -ne 2 -or
+                $addMethod.TypeArguments[0].ToString() -cne
+                    $specification.ViewName -or
+                $addMethod.TypeArguments[1].ToString() -cne
+                    $specification.HandlerName -or
+                @($addMethod.Locations | Where-Object {
+                        $_.IsInSource
+                    }).Count -ne 0 -or
+                @($addMethod.TypeArguments | Where-Object {
+                        @($_.Locations | Where-Object { $_.IsInSource }).Count -ne 0
+                    }).Count -ne 0) {
+                $expectedViewShortName =
+                    ([string]$specification.ViewName).Split('.')[-1]
+                $expectedHandlerShortName =
+                    ([string]$specification.HandlerName).Split('.')[-1]
+                & $throwRegistrationViolation -Node $addInvocation -Reason (
+                    "AddHandler must register only trusted $expectedViewShortName -> " +
+                    "$expectedHandlerShortName metadata.")
+            }
         }
 
         [void]$AcceptedInvocations.Add(
             $ensureInvocation.SpanStart)
         [void]$AcceptedInvocations.Add(
             $configureInvocation.SpanStart)
-        [void]$AcceptedInvocations.Add(
-            $addInvocation.SpanStart)
+        foreach ($addInvocation in $addInvocations) {
+            [void]$AcceptedInvocations.Add($addInvocation.SpanStart)
+        }
     }
     $validateAndroidIssue26505HelperInvocation = {
         param(
@@ -9567,6 +9670,18 @@ function New-ReplicationControlVariant {
                     'with no alternate or nested conditional source.')
         }
 
+        $isBorderTapGestureCountProfile =
+            $nativeTapGestureCountProfileHost -ceq 'Border'
+        $tapProfileHost = if ($isBorderTapGestureCountProfile) {
+            'Border'
+        } else {
+            'Label'
+        }
+        $tapProfileHandler = if ($isBorderTapGestureCountProfile) {
+            'BorderHandler'
+        } else {
+            'LabelHandler'
+        }
         $expectedCategory = "Issue$nativeLabelTapGestureCountProfileIssue"
         $issueCategories = @($selectedAttributes | Where-Object {
                 $attributeSymbol = $semanticModel.GetSymbolInfo($_).Symbol
@@ -9589,26 +9704,45 @@ function New-ReplicationControlVariant {
         }
 
         $statements = @($testMethod[0].Body.Statements)
-        if ($statements.Count -ne 6 -or
-            $AwaitExpression.Parent -ne $statements[5] -or
-            $statements[3] -ne $localDeclaration -or
-            $statements[4] -ne $gate) {
+        $expectedStatementCount = if ($isBorderTapGestureCountProfile) { 7 } else { 6 }
+        $gateDeclarationIndex = if ($isBorderTapGestureCountProfile) { 4 } else { 3 }
+        $gateIndex = $gateDeclarationIndex + 1
+        $awaitIndex = $gateIndex + 1
+        if ($statements.Count -ne $expectedStatementCount -or
+            $AwaitExpression.Parent -ne $statements[$awaitIndex] -or
+            $statements[$gateDeclarationIndex] -ne $localDeclaration -or
+            $statements[$gateIndex] -ne $gate) {
             & $throwTrustedWindowHelperViolation -Node $testMethod[0].Body `
                 -HelperSymbol $HelperMethod -Reason (
-                    'the native Label tap-count method must contain exactly six ' +
-                    'top-level statements in order: one Label handler registration, ' +
-                    'the affected tap declaration, the affected Label declaration, ' +
-                    'the gate declaration, the gate, and the directly awaited helper.')
+                    "the native $tapProfileHost tap-count method must contain exactly " +
+                    "$expectedStatementCount bounded top-level statements in the " +
+                    'reviewed registration, affected-control, gate, and helper order.')
         }
-        & $validateExactSingleHandlerRegistrationStatement `
-            -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
-            -ProfileDescription 'native Label tap-count profile' `
-            -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
-            -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
-            -ViewTypeName 'Microsoft.Maui.Controls.Label' `
-            -HandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
-            -AcceptedInvocations `
-                $acceptedNativeLabelTapGestureCountRegistrationInvocations
+        if ($isBorderTapGestureCountProfile) {
+            & $validateExactSingleHandlerRegistrationStatement `
+                -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
+                -ProfileDescription 'native Border tap-count profile' `
+                -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Border' `
+                -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.BorderHandler' `
+                -ViewTypeName 'Microsoft.Maui.Controls.Border' `
+                -HandlerTypeName 'Microsoft.Maui.Handlers.BorderHandler' `
+                -SecondViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
+                -SecondHandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
+                -SecondViewTypeName 'Microsoft.Maui.Controls.Label' `
+                -SecondHandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
+                -AcceptedInvocations `
+                    $acceptedNativeLabelTapGestureCountRegistrationInvocations
+        } else {
+            & $validateExactSingleHandlerRegistrationStatement `
+                -RegistrationStatement $statements[0] -HelperMethod $HelperMethod `
+                -ProfileDescription 'native Label tap-count profile' `
+                -ViewTypeSyntax 'global::Microsoft.Maui.Controls.Label' `
+                -HandlerTypeSyntax 'global::Microsoft.Maui.Handlers.LabelHandler' `
+                -ViewTypeName 'Microsoft.Maui.Controls.Label' `
+                -HandlerTypeName 'Microsoft.Maui.Handlers.LabelHandler' `
+                -AcceptedInvocations `
+                    $acceptedNativeLabelTapGestureCountRegistrationInvocations
+        }
 
         $tapStatement = $statements[1]
         $tapDeclarator = if ($tapStatement -is
@@ -9692,6 +9826,7 @@ function New-ReplicationControlVariant {
         $targetCount = [int]$targetConstant.Value
         $targetToken = $targetLiteral.Token.Text
 
+        if (-not $isBorderTapGestureCountProfile) {
         $labelStatement = $statements[2]
         $labelDeclarator = if ($labelStatement -is
                 [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
@@ -9808,6 +9943,197 @@ function New-ReplicationControlVariant {
                     'GestureRecognizers must contain the exact affectedTap and exactly ' +
                     'one new external PointerGestureRecognizer, in that order.')
         }
+        $hostSymbol = $labelSymbol
+        $hostVariableName = 'affectedLabel'
+        } else {
+            $childStatement = $statements[2]
+            $childDeclarator = if ($childStatement -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
+                $childStatement.Declaration.Type.ToString() -ceq 'var' -and
+                $childStatement.Declaration.Variables.Count -eq 1) {
+                $childStatement.Declaration.Variables[0]
+            }
+            $childSymbol = if ($null -ne $childDeclarator) {
+                $semanticModel.GetDeclaredSymbol($childDeclarator)
+            }
+            $childCreation = if ($null -ne $childDeclarator -and
+                $null -ne $childDeclarator.Initializer) {
+                $childDeclarator.Initializer.Value
+            }
+            $childConstructor = if ($childCreation -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+                $semanticModel.GetSymbolInfo($childCreation).Symbol
+            }
+            if ($null -eq $childDeclarator -or
+                $childDeclarator.Identifier.ValueText -cne 'tapLabel' -or
+                $childSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                $childSymbol.Type.ToString() -cne 'Microsoft.Maui.Controls.Label' -or
+                $childSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $childCreation -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                $childCreation.Type.ToString() -cne
+                    'global::Microsoft.Maui.Controls.Label' -or
+                ($childCreation.ArgumentList -and
+                    $childCreation.ArgumentList.Arguments.Count -ne 0) -or
+                $childConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $childConstructor.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $null -eq $childCreation.Initializer -or
+                $childCreation.Initializer.Expressions.Count -ne 2) {
+                & $throwTrustedWindowHelperViolation -Node $childStatement `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'the Border profile requires exactly one tapLabel child with ' +
+                        'non-empty literal Text and InputTransparent = true.')
+            }
+            $childInitializers = @{}
+            foreach ($initializer in $childCreation.Initializer.Expressions) {
+                if ($initializer -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                    $initializer.RawKind -ne
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                    $initializer.Left -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    & $throwTrustedWindowHelperViolation -Node $initializer `
+                        -HelperSymbol $HelperMethod -Reason (
+                            'tapLabel accepts only literal Text and InputTransparent = true.')
+                }
+                $name = $initializer.Left.Identifier.ValueText
+                $property = $semanticModel.GetSymbolInfo($initializer.Left).Symbol
+                if ($name -cnotin @('Text', 'InputTransparent') -or
+                    $childInitializers.ContainsKey($name) -or
+                    $property -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $property.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                    ($name -ceq 'Text' -and
+                        ($property.ContainingType.ToString() -cne
+                                'Microsoft.Maui.Controls.Label' -or
+                            $property.Type.SpecialType -ne
+                                [Microsoft.CodeAnalysis.SpecialType]::System_String)) -or
+                    ($name -ceq 'InputTransparent' -and
+                        ($property.ContainingType.ToString() -cne
+                                'Microsoft.Maui.Controls.VisualElement' -or
+                            $property.Type.SpecialType -ne
+                                [Microsoft.CodeAnalysis.SpecialType]::System_Boolean))) {
+                    & $throwTrustedWindowHelperViolation -Node $initializer `
+                        -HelperSymbol $HelperMethod -Reason (
+                            'tapLabel requires each external Text and InputTransparent ' +
+                            'property exactly once.')
+                }
+                $childInitializers[$name] = $initializer.Right
+            }
+            $childText = $childInitializers['Text']
+            $childInputTransparent = $childInitializers['InputTransparent']
+            if ($childText -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+                $childText.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::StringLiteralExpression -or
+                [string]::IsNullOrEmpty([string]$childText.Token.Value) -or
+                $childInputTransparent -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LiteralExpressionSyntax] -or
+                $childInputTransparent.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::TrueLiteralExpression) {
+                & $throwTrustedWindowHelperViolation -Node $childCreation `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'tapLabel Text must be a non-empty literal and InputTransparent ' +
+                        'must be the literal true.')
+            }
+
+            $borderStatement = $statements[3]
+            $borderDeclarator = if ($borderStatement -is
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.LocalDeclarationStatementSyntax] -and
+                $borderStatement.Declaration.Type.ToString() -ceq 'var' -and
+                $borderStatement.Declaration.Variables.Count -eq 1) {
+                $borderStatement.Declaration.Variables[0]
+            }
+            $borderSymbol = if ($null -ne $borderDeclarator) {
+                $semanticModel.GetDeclaredSymbol($borderDeclarator)
+            }
+            $borderCreation = if ($null -ne $borderDeclarator -and
+                $null -ne $borderDeclarator.Initializer) {
+                $borderDeclarator.Initializer.Value
+            }
+            $borderConstructor = if ($borderCreation -is
+                [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax]) {
+                $semanticModel.GetSymbolInfo($borderCreation).Symbol
+            }
+            if ($null -eq $borderDeclarator -or
+                $borderDeclarator.Identifier.ValueText -cne 'affectedBorder' -or
+                $borderSymbol -isnot [Microsoft.CodeAnalysis.ILocalSymbol] -or
+                $borderSymbol.Type.ToString() -cne 'Microsoft.Maui.Controls.Border' -or
+                $borderSymbol.Type.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $borderCreation -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax] -or
+                $borderCreation.Type.ToString() -cne
+                    'global::Microsoft.Maui.Controls.Border' -or
+                ($borderCreation.ArgumentList -and
+                    $borderCreation.ArgumentList.Arguments.Count -ne 0) -or
+                $borderConstructor -isnot [Microsoft.CodeAnalysis.IMethodSymbol] -or
+                $borderConstructor.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                $null -eq $borderCreation.Initializer -or
+                $borderCreation.Initializer.Expressions.Count -ne 2) {
+                & $throwTrustedWindowHelperViolation -Node $borderStatement `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'declare exactly one external affectedBorder with tapLabel content ' +
+                        'and exactly one affectedTap gesture.')
+            }
+            $borderInitializers = @{}
+            foreach ($initializer in $borderCreation.Initializer.Expressions) {
+                if ($initializer -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.AssignmentExpressionSyntax] -or
+                    $initializer.RawKind -ne
+                        [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::SimpleAssignmentExpression -or
+                    $initializer.Left -isnot
+                        [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax]) {
+                    & $throwTrustedWindowHelperViolation -Node $initializer `
+                        -HelperSymbol $HelperMethod -Reason (
+                            'affectedBorder accepts only Content and GestureRecognizers.')
+                }
+                $name = $initializer.Left.Identifier.ValueText
+                $property = $semanticModel.GetSymbolInfo($initializer.Left).Symbol
+                if ($name -cnotin @('Content', 'GestureRecognizers') -or
+                    $borderInitializers.ContainsKey($name) -or
+                    $property -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
+                    $property.ContainingAssembly.Name -cne $trustedContractAssembly -or
+                    ($name -ceq 'Content' -and
+                        ($property.ContainingType.ToString() -cne
+                                'Microsoft.Maui.Controls.Border' -or
+                            $property.Type.ToString() -cne
+                                'Microsoft.Maui.Controls.View')) -or
+                    ($name -ceq 'GestureRecognizers' -and
+                        ($property.ContainingType.ToString() -cne
+                                'Microsoft.Maui.Controls.View' -or
+                            $property.Type.ToString() -cne
+                                'System.Collections.Generic.IList<Microsoft.Maui.Controls.IGestureRecognizer>'))) {
+                    & $throwTrustedWindowHelperViolation -Node $initializer `
+                        -HelperSymbol $HelperMethod -Reason (
+                            'affectedBorder requires each external Content and ' +
+                            'GestureRecognizers property exactly once.')
+                }
+                $borderInitializers[$name] = $initializer.Right
+            }
+            $contentEntry = $borderInitializers['Content']
+            $borderGestures = $borderInitializers['GestureRecognizers']
+            if ($contentEntry -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($contentEntry).Symbol,
+                    $childSymbol) -or
+                $borderGestures -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.InitializerExpressionSyntax] -or
+                $borderGestures.RawKind -ne
+                    [int][Microsoft.CodeAnalysis.CSharp.SyntaxKind]::CollectionInitializerExpression -or
+                $borderGestures.Expressions.Count -ne 1 -or
+                $borderGestures.Expressions[0] -isnot
+                    [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -or
+                -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
+                    $semanticModel.GetSymbolInfo($borderGestures.Expressions[0]).Symbol,
+                    $tapSymbol)) {
+                & $throwTrustedWindowHelperViolation -Node $borderCreation `
+                    -HelperSymbol $HelperMethod -Reason (
+                        'affectedBorder must contain the exact tapLabel and exactly the ' +
+                        'affectedTap gesture, with no PointerGestureRecognizer.')
+            }
+            $hostSymbol = $borderSymbol
+            $hostVariableName = 'affectedBorder'
+        }
 
         if ($gate.Else) {
             & $throwTrustedWindowHelperViolation -Node $gate.Else `
@@ -9867,25 +10193,29 @@ function New-ReplicationControlVariant {
         }
         $windowCreation = $Invocation.ArgumentList.Arguments[0].Expression
         $callback = $Invocation.ArgumentList.Arguments[1].Expression
+        $expectedTapWindowSyntax =
+            'newglobal::Microsoft.Maui.Controls.Window(' +
+            'newglobal::Microsoft.Maui.Controls.ContentPage{Content=' +
+            $hostVariableName + '})'
         if ([regex]::Replace($windowCreation.ToString(), '\s+', '') -cne
-            'newglobal::Microsoft.Maui.Controls.Window(newglobal::Microsoft.Maui.Controls.ContentPage{Content=affectedLabel})') {
+            $expectedTapWindowSyntax) {
             & $throwTrustedWindowHelperViolation -Node $windowCreation `
                 -HelperSymbol $HelperMethod -Reason (
-                    'attach only the exact pre-gate affectedLabel in the trusted ' +
+                    "attach only the exact pre-gate $hostVariableName in the trusted " +
                     'Window and ContentPage tree.')
         }
-        $windowLabelIdentifiers = @($windowCreation.DescendantNodes() |
+        $windowHostIdentifiers = @($windowCreation.DescendantNodes() |
             Where-Object {
                 $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
-                $_.Identifier.ValueText -ceq 'affectedLabel'
+                $_.Identifier.ValueText -ceq $hostVariableName
             })
-        if ($windowLabelIdentifiers.Count -ne 1 -or
+        if ($windowHostIdentifiers.Count -ne 1 -or
             -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
-                $semanticModel.GetSymbolInfo($windowLabelIdentifiers[0]).Symbol,
-                $labelSymbol)) {
+                $semanticModel.GetSymbolInfo($windowHostIdentifiers[0]).Symbol,
+                $hostSymbol)) {
             & $throwTrustedWindowHelperViolation -Node $windowCreation `
                 -HelperSymbol $HelperMethod -Reason (
-                    'the Window must contain the exact pre-gate affectedLabel instance.')
+                    "the Window must contain the exact pre-gate $hostVariableName instance.")
         }
         if ($callback -isnot
                 [Microsoft.CodeAnalysis.CSharp.Syntax.SimpleLambdaExpressionSyntax] -or
@@ -9901,12 +10231,12 @@ function New-ReplicationControlVariant {
         $handlerSymbol = $semanticModel.GetDeclaredSymbol($callback.Parameter)
         if ($handlerSymbol -isnot [Microsoft.CodeAnalysis.IParameterSymbol] -or
             $handlerSymbol.Type.ToString() -cne
-                'Microsoft.Maui.Handlers.LabelHandler' -or
+                "Microsoft.Maui.Handlers.$tapProfileHandler" -or
             $handlerSymbol.Type.ContainingAssembly.Name -cne
                 $trustedContractAssembly) {
             & $throwTrustedWindowHelperViolation -Node $callback.Parameter `
                 -HelperSymbol $HelperMethod -Reason (
-                    'the callback parameter must bind to the external LabelHandler.')
+                    "the callback parameter must bind to the external $tapProfileHandler.")
         }
 
         $readinessStatement = $callback.Body.Statements[0]
@@ -9918,8 +10248,11 @@ function New-ReplicationControlVariant {
                 [Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax]) {
             $readinessStatement.Expression.Expression
         }
+        $expectedReadinessSyntax =
+            "awaitAssertEventually(()=>$hostVariableName.Handler!=null&&" +
+            "$hostVariableName.IsLoaded);"
         if ([regex]::Replace($readinessStatement.ToString(), '\s+', '') -cne
-                'awaitAssertEventually(()=>affectedLabel.Handler!=null&&affectedLabel.IsLoaded);' -or
+                $expectedReadinessSyntax -or
             $null -eq $readinessInvocation -or
             -not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
                 $semanticModel.GetSymbolInfo($readinessInvocation).Symbol,
@@ -9927,19 +10260,19 @@ function New-ReplicationControlVariant {
             & $throwTrustedWindowHelperViolation -Node $readinessStatement `
                 -HelperSymbol $HelperMethod -Reason (
                     'the callback must first await the exact immutable ' +
-                    'AssertEventually helper for affectedLabel.Handler and IsLoaded.')
+                    "AssertEventually helper for $hostVariableName.Handler and IsLoaded.")
         }
         foreach ($identifier in @($readinessStatement.DescendantNodes() |
                 Where-Object {
                     $_ -is [Microsoft.CodeAnalysis.CSharp.Syntax.IdentifierNameSyntax] -and
-                    $_.Identifier.ValueText -ceq 'affectedLabel'
+                    $_.Identifier.ValueText -ceq $hostVariableName
                 })) {
             if (-not [Microsoft.CodeAnalysis.SymbolEqualityComparer]::Default.Equals(
                     $semanticModel.GetSymbolInfo($identifier).Symbol,
-                    $labelSymbol)) {
+                    $hostSymbol)) {
                 & $throwTrustedWindowHelperViolation -Node $identifier `
                     -HelperSymbol $HelperMethod -Reason (
-                        'the readiness predicate must observe the exact attached Label.')
+                        "the readiness predicate must observe the exact attached $tapProfileHost.")
             }
         }
 
@@ -10073,7 +10406,7 @@ function New-ReplicationControlVariant {
             & $throwTrustedWindowHelperViolation -Node $nativeCount `
                 -HelperSymbol $HelperMethod -Reason (
                     'the native gesture collection must come directly from the same ' +
-                    'selected LabelHandler.PlatformView.')
+                    "selected $tapProfileHandler.PlatformView.")
         }
         if ($nativeCountProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
             $nativeCountProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
@@ -10130,7 +10463,7 @@ function New-ReplicationControlVariant {
             & $throwTrustedWindowHelperViolation -Node $gestureCollection `
                 -HelperSymbol $HelperMethod -Reason (
                     'the native gesture collection must come directly from the same ' +
-                    'selected LabelHandler.PlatformView.')
+                    "selected $tapProfileHandler.PlatformView.")
         }
         $handlerIdentifier = $gestureCollection.Expression.Expression
         $platformViewProperty =
@@ -10145,7 +10478,7 @@ function New-ReplicationControlVariant {
             $platformViewProperty -isnot [Microsoft.CodeAnalysis.IPropertySymbol] -or
             $platformViewProperty.ContainingAssembly.Name -cne $trustedContractAssembly -or
             $platformViewProperty.ContainingType.ToString() -cne
-                'Microsoft.Maui.Handlers.LabelHandler' -or
+                "Microsoft.Maui.Handlers.$tapProfileHandler" -or
             $platformViewProperty.Name -cne 'PlatformView' -or
             $gestureRecognizersProperty -isnot
                 [Microsoft.CodeAnalysis.IPropertySymbol] -or
@@ -12246,7 +12579,12 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
             $invokedName -ceq 'CreateHandlerAndAddToWindow' -and
             (& $isExactTrustedDirectHandlerWindowHelperMethod `
                 -Method $awaitedMethod `
-                -ExpectedHandlerType 'Microsoft.Maui.Handlers.LabelHandler')
+                -ExpectedHandlerType $(if (
+                    $nativeTapGestureCountProfileHost -ceq 'Border') {
+                    'Microsoft.Maui.Handlers.BorderHandler'
+                } else {
+                    'Microsoft.Maui.Handlers.LabelHandler'
+                }))
         if ($Platform -ceq 'android' -and
             $isTrustedAndroidIssue26505Helper) {
             & $validateAndroidIssue26505HelperInvocation `
@@ -12793,7 +13131,7 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
     if ($isNativeLabelTapGestureCountProfile -and
         $acceptedNativeLabelTapGestureCountHelperInvocations.Count -ne 1) {
         throw (
-            'The native Label tap-count profile requires exactly one validated ' +
+            'The native iOS tap-count profile requires exactly one validated ' +
             'immutable attachment helper and its same-handler native oracle.')
     }
 
@@ -13011,6 +13349,34 @@ await CreateHandlerAndAddToWindow<global::Microsoft.Maui.DeviceTests.Stubs.Windo
         $typeLine = $tree.GetLineSpan(
             $scopedNativeLabelTapGestureCountTypeSyntax[0].Span
         ).StartLinePosition.Line + 1
+        $scopedType =
+            $semanticModel.GetTypeInfo(
+                $scopedNativeLabelTapGestureCountTypeSyntax[0]).Type
+        if ($null -eq $scopedType) {
+            $scopedType = $semanticModel.GetSymbolInfo(
+                $scopedNativeLabelTapGestureCountTypeSyntax[0]).Symbol
+        }
+        if ($null -ne $scopedType -and
+            ($scopedType.ToString() -ceq 'Microsoft.Maui.Controls.Border' -or
+                $scopedNativeLabelTapGestureCountTypeSyntax[0].ToString() -ceq
+                    'global::Microsoft.Maui.Controls.Border')) {
+            $declarator = @(
+                $scopedNativeLabelTapGestureCountTypeSyntax[0].Ancestors() |
+                    Where-Object {
+                        $_ -is
+                            [Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclaratorSyntax]
+                    } | Select-Object -First 1)
+            $localName = if ($declarator.Count -eq 1) {
+                $declarator[0].Identifier.ValueText
+            } else {
+                '<unknown>'
+            }
+            throw (
+                'The selected test method may not instantiate profile-scoped runtime ' +
+                "types. Local '$localName' has type '$scopedType' " +
+                "($($scopedType.TypeKind)) outside the closed trusted contract in " +
+                "'$SourcePath' line $typeLine.")
+        }
         throw (
             'Native Label tap-count metadata is trusted only for the exact ' +
             "reviewed iOS profile; type '$(

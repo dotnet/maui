@@ -1920,6 +1920,37 @@ public partial class MainPage : ContentPage
                 Should -Not -Match 'NATIVE LABEL TAP-COUNT PROFILE'
         }
 
+        It 'advertises the exact iOS native Border tap-count variant without host substitution' {
+            $script:IssueNumber = 41777
+            $script:Platform = 'ios'
+            foreach ($phase in @('test-plan', 'test', 'repair')) {
+                $prompt = New-CopilotPrompt -Phase $phase `
+                    -BaselineRelativePath 'tests/Issue41777Tests.iOS.cs'
+                $profile = [regex]::Match(
+                    $prompt,
+                    '(?s)NATIVE BORDER TAP-COUNT VARIANT:.*?(?=\r?\n[A-Z][A-Z -]+:|\r?\nTrusted |\r?\nDo not create|\z)')
+                $profile.Success | Should -BeTrue
+                $profile.Value | Should -Match 'Elements/Border/'
+                $profile.Value | Should -Match 'Border-to-BorderHandler followed by Label-to-LabelHandler'
+                $profile.Value | Should -Match 'InputTransparent = true'
+                $profile.Value | Should -Match 'Content = tapLabel, GestureRecognizers = \{ affectedTap \}'
+                $profile.Value | Should -Match 'CreateHandlerAndAddToWindow<global::Microsoft\.Maui\.Handlers\.BorderHandler>'
+                $profile.Value | Should -Match 'affectedBorder\.Handler != null && affectedBorder\.IsLoaded'
+                $profile.Value | Should -Match 'Do not add a PointerGestureRecognizer'
+                $profile.Value | Should -Match 'substitute a Label host'
+                $profile.Value | Should -Not -Match 'Issue38291|Issue41777|TAP_PAD'
+            }
+
+            foreach ($platform in @('android', 'catalyst', 'windows')) {
+                $script:Platform = $platform
+                (New-CopilotPrompt -Phase test-plan) |
+                    Should -Not -Match 'NATIVE BORDER TAP-COUNT VARIANT'
+            }
+            $script:Platform = 'ios'
+            (New-CopilotPrompt -Phase sandbox) |
+                Should -Not -Match 'NATIVE BORDER TAP-COUNT VARIANT'
+        }
+
         It 'keeps initial assignments out of invented post-attachment trigger buttons' {
             $script:IssueNumber = 29282
             foreach ($platform in @('android', 'ios')) {
@@ -12079,6 +12110,69 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
 }
 #endif
 '@
+        $script:TrustedNativeBorderTapGestureCountBase = @'
+#if IOS && !MACCATALYST
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
+using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
+namespace Microsoft.Maui.DeviceTests;
+
+public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
+{
+    [Fact]
+    [Category("Issue38291")]
+    public async Task RuntimeTapCountUpdatesNativeRecognizer()
+    {
+        EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(handlers =>
+        {
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Border, global::Microsoft.Maui.Handlers.BorderHandler>();
+            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();
+        }));
+        var affectedTap = new global::Microsoft.Maui.Controls.TapGestureRecognizer
+        {
+            NumberOfTapsRequired = 1
+        };
+        var tapLabel = new global::Microsoft.Maui.Controls.Label
+        {
+            Text = "Tap target",
+            InputTransparent = true
+        };
+        var affectedBorder = new global::Microsoft.Maui.Controls.Border
+        {
+            Content = tapLabel,
+            GestureRecognizers =
+            {
+                affectedTap
+            }
+        };
+        var applyReportedTrigger = true;
+        if (applyReportedTrigger)
+        {
+            affectedTap.NumberOfTapsRequired = 2;
+        }
+        await CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.BorderHandler>(
+            new global::Microsoft.Maui.Controls.Window(
+                new global::Microsoft.Maui.Controls.ContentPage { Content = affectedBorder }),
+            async handler =>
+            {
+                await AssertEventually(
+                    () => affectedBorder.Handler != null && affectedBorder.IsLoaded);
+                affectedTap.NumberOfTapsRequired = 1;
+                Assert.Equal(
+                    (nuint)1,
+                    handler.PlatformView.GestureRecognizers
+                        .OfType<global::UIKit.UITapGestureRecognizer>()
+                        .Single()
+                        .NumberOfTapsRequired);
+            });
+    }
+}
+#endif
+'@
     }
 
     AfterAll {
@@ -12825,6 +12919,271 @@ namespace Generated
         }
     }
 
+    It 'allows exact iOS native Border tap-count controls for different issue keys' {
+        foreach ($case in @(
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase
+                    Issue = '38291'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.
+                        Replace('Issue38291Tests', 'Issue41777Tests').
+                        Replace('Issue38291', 'Issue41777').
+                        Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 3').
+                        Replace('NumberOfTapsRequired = 2', 'NumberOfTapsRequired = 4').
+                        Replace('(nuint)1', '(nuint)3')
+                    Issue = '41777'
+                }
+            )) {
+            $path = "src/Controls/tests/DeviceTests/Elements/Border/Issue$(
+                $case.Issue)Tests.iOS.cs"
+            {
+                Assert-ReplicationGeneratedSourceSafety `
+                    -Content $case.Source -Path $path
+                Assert-ReplicationPlatformSourceSafety `
+                    -Content $case.Source -Path $path -Platform ios
+            } | Should -Not -Throw
+            $variant = New-ReplicationControlVariant `
+                -BaselineSource $case.Source `
+                -Edits @($script:GateEdit) `
+                -ExpectedTestClass "Microsoft.Maui.DeviceTests.Issue$(
+                    $case.Issue)Tests" `
+                -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                -Platform ios `
+                -SourcePath $path
+            $variant | Should -BeExactly $case.Source.Replace(
+                'var applyReportedTrigger = true;',
+                'var applyReportedTrigger = false;')
+        }
+    }
+
+    It 'rejects iOS native Border tap-count cross-host paths and handlers' {
+        foreach ($case in @(
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Label/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeLabelTapGestureCountBase
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '[Category("Issue38291")]',
+                        '[Category("Issue38292")]')
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.
+                        Replace(
+                            'CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.BorderHandler>',
+                            'CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.LabelHandler>')
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.
+                        Replace(
+                            'Content = affectedBorder',
+                            'Content = tapLabel')
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+            )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath $case.Path
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects malformed iOS native Border tap-count child and gesture composition' {
+        foreach ($source in @(
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    'Text = "Tap target",',
+                    'Text = "",'),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    'InputTransparent = true',
+                    'InputTransparent = false'),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    '            Content = tapLabel,',
+                    '            Content = new global::Microsoft.Maui.Controls.Label(),'),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    '                affectedTap',
+                    '                affectedTap,' + "`n" +
+                    '                new global::Microsoft.Maui.Controls.PointerGestureRecognizer()'),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    '                affectedTap',
+                    '                affectedTap,' + "`n" +
+                    '                new global::Microsoft.Maui.Controls.TapGestureRecognizer()'),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    '            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();',
+                    ''),
+                $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                    '            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();',
+                    '            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();' +
+                    "`n" +
+                    '            handlers.AddHandler<global::Microsoft.Maui.Controls.Label, global::Microsoft.Maui.Handlers.LabelHandler>();')
+            )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects native Border tap-count count drift receiver drift and generated shadows' {
+        $shadowCases = @(
+            @'
+namespace Microsoft.Maui.Controls
+{
+    public class Border { }
+}
+'@,
+            @'
+namespace Microsoft.Maui.Handlers
+{
+    public class BorderHandler { }
+}
+'@,
+            @'
+namespace Microsoft.Maui.Platform
+{
+    public class ContentView { }
+}
+'@
+        )
+        foreach ($case in @(
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.
+                        Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 0').
+                        Replace('(nuint)1', '(nuint)0')
+                    Additional = @()
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.
+                        Replace('NumberOfTapsRequired = 1', 'NumberOfTapsRequired = 11').
+                        Replace('(nuint)1', '(nuint)11')
+                    Additional = @()
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        'NumberOfTapsRequired = 2;',
+                        'NumberOfTapsRequired = 1 + 1;')
+                    Additional = @()
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        'NumberOfTapsRequired = 2;',
+                        'NumberOfTapsRequired = true;')
+                    Additional = @()
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        'handler.PlatformView.GestureRecognizers',
+                        '((global::UIKit.UIView)handler.PlatformView).GestureRecognizers')
+                    Additional = @()
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase
+                    Additional = @($shadowCases[0])
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase
+                    Additional = @($shadowCases[1])
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase
+                    Additional = @($shadowCases[2])
+                }
+            )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -AdditionalSources $case.Additional `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform ios `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+            } | Should -Throw
+        }
+    }
+
+    It 'rejects relocated actions managed oracles and platform leakage for native Border tap-count' {
+        foreach ($case in @(
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '                affectedTap.NumberOfTapsRequired = 1;' + "`n",
+                        '')
+                    Platform = 'ios'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '                affectedTap.NumberOfTapsRequired = 1;',
+                        '                Assert.Equal(1, affectedTap.NumberOfTapsRequired);')
+                    Platform = 'ios'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        'CreateHandlerAndAddToWindow<global::Microsoft.Maui.Handlers.BorderHandler>',
+                        'MissingHelper<global::Microsoft.Maui.Handlers.BorderHandler>')
+                    Platform = 'ios'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '                Assert.Equal(',
+                        "                handler.PlatformView.GestureRecognizers[0] = null;`n" +
+                        '                Assert.Equal(')
+                    Platform = 'ios'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '                Assert.Equal(',
+                        "                Assert.NotNull(handler.PlatformView);`n" +
+                        '                Assert.Equal(')
+                    Platform = 'ios'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '#if IOS && !MACCATALYST',
+                        '#if MACCATALYST')
+                    Platform = 'catalyst'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+                @{
+                    Source = $script:TrustedNativeBorderTapGestureCountBase.Replace(
+                        '#if IOS && !MACCATALYST',
+                        '#if ANDROID')
+                    Platform = 'android'
+                    Path = 'src/Controls/tests/DeviceTests/Elements/Border/Issue38291Tests.iOS.cs'
+                }
+            )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $case.Source `
+                    -Edits @($script:GateEdit) `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.Issue38291Tests' `
+                    -ExpectedTestMethod 'RuntimeTapCountUpdatesNativeRecognizer' `
+                    -Platform $case.Platform `
+                    -SourcePath $case.Path
+            } | Should -Throw
+        }
+    }
+
     It 'matches the real managed gesture declarations and iOS native mapping' {
         $sourceRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
         $tapSource = Get-Content -LiteralPath (
@@ -12837,6 +13196,14 @@ namespace Generated
             Join-Path $sourceRoot (
                 'src/Controls/src/Core/Platform/GestureManager/' +
                 'GesturePlatformManager.iOS.cs')) -Raw
+        $borderSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot 'src/Controls/src/Core/Border/Border.cs') -Raw
+        $visualElementSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot (
+                'src/Controls/src/Core/VisualElement/VisualElement.cs')) -Raw
+        $borderHandlerSource = Get-Content -LiteralPath (
+            Join-Path $sourceRoot (
+                'src/Core/src/Handlers/Border/BorderHandler.iOS.cs')) -Raw
 
         $tapSource | Should -Match (
             '(?s)namespace Microsoft\.Maui\.Controls.*?' +
@@ -12849,6 +13216,11 @@ namespace Generated
         $iosMappingSource | Should -Match (
             '(?s)new UITapGestureRecognizer\(action\).*?' +
             'NumberOfTapsRequired = \(uint\)tapGesture\.NumberOfTapsRequired')
+        $borderSource | Should -Match (
+            '(?s)public class Border : View.*?public View\? Content')
+        $visualElementSource | Should -Match 'public bool InputTransparent'
+        $borderHandlerSource | Should -Match (
+            'BorderHandler : ViewHandler<IBorderView, ContentView>')
     }
 
     It 'rejects tap-count syntax markers without a validated attachment and native oracle' {

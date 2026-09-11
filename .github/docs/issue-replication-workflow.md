@@ -241,6 +241,14 @@ writes, alternate views, generated observers, or other platforms. A native
 infrastructure probe exercises the non-trigger observation path separately
 from issue reproduction and four-arm fix verification.
 
+The separate iOS Border-hosted variant retains one tap recognizer and one
+literal-text child Label with InputTransparent enabled, without adding a
+PointerGestureRecognizer. It requires exact Border/Label registrations and the
+same Border through the immutable attachment helper. Host type, issue-keyed
+path, child composition, runtime assignment and native oracle must match this
+closed variant; a recorded Border cannot be replaced with a Label to fit the
+other profile. Both variants require completed semantic helper validation.
+
 The draft PR contains both the regression test and the validated product fix. A reproduction-only result is never published as a PR.
 
 Successful publication requires both:
