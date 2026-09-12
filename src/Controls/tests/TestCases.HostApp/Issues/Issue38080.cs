@@ -104,7 +104,7 @@ public class Issue38080 : NavigationPage
 		};
 	}
 
-	static Label CreateFillerRow(int row, string? automationId)
+	static Label CreateFillerRow(int row, string automationId)
 	{
 		return new Label
 		{
