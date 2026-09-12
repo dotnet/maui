@@ -19,6 +19,20 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal string? UrlCanceled { get; set; }
 
+		/// <inheritdoc/>
+		public override bool NeedsContainer => true;
+
+		/// <inheritdoc/>
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// Native child clipping both bounds WebView drawing and lets HWUI reject
+			// off-screen nodes before invoking Chromium during overscroll (#38080).
+			if (ContainerView is ViewGroup container)
+				container.SetClipChildren(true);
+		}
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiWebView(this, Context!)
@@ -75,6 +89,10 @@ namespace Microsoft.Maui.Handlers
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
+			if (ContainerView?.Parent is ViewGroup containerParent)
+				containerParent.RemoveView(ContainerView);
+			HasContainer = false;
+
 			if (platformView.Parent is ViewGroup parent)
 				parent.RemoveView(platformView);
 			platformView.RemoveAllViews();

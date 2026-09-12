@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Views;
 using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -7,6 +8,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, AWebView>
 	{
+		/// <inheritdoc/>
+		public override bool NeedsContainer => true;
+
+		/// <inheritdoc/>
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// Use native child clipping, including HWUI's off-screen rejection,
+			// rather than an explicit WebView ClipBounds rectangle (#38080).
+			if (ContainerView is ViewGroup container)
+				container.SetClipChildren(true);
+		}
+
 		protected override AWebView CreatePlatformView()
 		{
 			var platformView = new MauiHybridWebView(this, Context!)
@@ -68,7 +83,9 @@ namespace Microsoft.Maui.Handlers
 			//platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-
+			if (ContainerView?.Parent is ViewGroup containerParent)
+				containerParent.RemoveView(ContainerView);
+			HasContainer = false;
 
 			base.DisconnectHandler(platformView);
 		}
