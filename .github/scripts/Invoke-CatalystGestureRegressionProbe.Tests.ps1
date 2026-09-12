@@ -2024,6 +2024,54 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         }
     }
 
+    It 'retains timeout status and effective allocation for an empty child log' {
+        $root = Join-Path $script:ScratchRoot 'empty-timeout-log'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        $log = Join-Path $root 'process.log'
+        $result = Invoke-CatalystProbeBoundedProcess `
+            -FileName (Get-Command pwsh -CommandType Application |
+                Select-Object -First 1).Source `
+            -ArgumentList @('-NoProfile', '-NonInteractive', '-Command',
+            '[Threading.Thread]::Sleep(30000)') `
+            -WorkingDirectory $root `
+            -Environment (Get-CatalystProbeRuntimeEnvironment `
+                -RuntimeRoot (Join-Path $root 'runtime')) `
+            -TimeoutSeconds 12 `
+            -TaskDeadline (New-CatalystTestTaskDeadline -RemainingSeconds 30) `
+            -LogPath $log
+
+        $result.TimedOut | Should -BeTrue
+        $result.ExitCode | Should -Be 124
+        $result.EffectiveProcessSeconds | Should -Be 2
+        $text = Get-Content -LiteralPath $log -Raw
+        $text | Should -Match 'exitCode: 124'
+        $text | Should -Match 'timedOut: True'
+        $text | Should -Match 'effectiveProcessSeconds: 2'
+        $text | Should -Match 'effectiveTimeoutSeconds: 12'
+    }
+
+    It 'retains an ordinary child failure without classifying it as a timeout' {
+        $root = Join-Path $script:ScratchRoot 'ordinary-failure-log'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        $log = Join-Path $root 'process.log'
+        $result = Invoke-CatalystProbeBoundedProcess `
+            -FileName (Get-Command pwsh -CommandType Application |
+                Select-Object -First 1).Source `
+            -ArgumentList @('-NoProfile', '-NonInteractive', '-Command', 'exit 7') `
+            -WorkingDirectory $root `
+            -Environment (Get-CatalystProbeRuntimeEnvironment `
+                -RuntimeRoot (Join-Path $root 'runtime')) `
+            -TimeoutSeconds 30 `
+            -TaskDeadline (New-CatalystTestTaskDeadline -RemainingSeconds 60) `
+            -LogPath $log
+
+        $result.TimedOut | Should -BeFalse
+        $result.ExitCode | Should -Be 7
+        $text = Get-Content -LiteralPath $log -Raw
+        $text | Should -Match 'exitCode: 7'
+        $text | Should -Match 'timedOut: False'
+    }
+
     It 'fails bounded owned-app cleanup when signature validation stalls' {
         $context = New-CatalystTestCleanupContext -Name 'stalled-signature'
         Mock Invoke-CatalystProbeBoundedProcess {
@@ -2890,6 +2938,10 @@ Describe 'Closed production composite diagnostic seam' {
             $script:IosPreparationDeadlines.Add($TaskDeadline)
             $script:IosPreparationArguments.Add(
                 "$FileName $(@($ArgumentList) -join ' ')")
+            if ($ArgumentList[0] -ceq 'simctl' -and
+                $ArgumentList[1] -ceq 'list') {
+                $TimeoutSeconds | Should -Be $script:CatalystProbeCoordinationBudgetSeconds
+            }
             switch ($script:IosPreparationCalls) {
                 1 {
                     [pscustomobject]@{
@@ -2962,6 +3014,117 @@ Describe 'Closed production composite diagnostic seam' {
         ($script:IosPreparationArguments -join "`n") | Should -Not -Match (
             '(?i)\b(?:downloadPlatform|runtime\s+add|xcode-select\s+-s|' +
             'simctl\s+runtime\s+add)\b')
+    }
+
+    It 'allows a slow installed-runtime query within the original coordination deadline' {
+        $root = Join-Path $TestDrive 'slow-runtime-query'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment = Get-CatalystProbeRuntimeEnvironment `
+                -RuntimeRoot (Join-Path $root 'runtime')
+            LogDirectory = $root
+            OwnedIosSimulator = $null
+        }
+        $script:RealRuntimeProcess = (Get-Command Invoke-CatalystProbeBoundedProcess).ScriptBlock
+        $script:RuntimeQueryCalls = 0
+        $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 180
+        Mock Get-CatalystProbeXcodePath { '/Applications/Xcode_26.0.1.app' }
+        Mock Invoke-CatalystProbeBoundedProcess {
+            [object]::ReferenceEquals($TaskDeadline, $deadline) | Should -BeTrue
+            if ($FileName -ceq '/usr/bin/xcode-select') {
+                return [pscustomobject]@{
+                    TimedOut = $false; ExitCode = 0
+                    Stdout = '/Applications/Xcode_26.0.1.app/Contents/Developer'
+                }
+            }
+            if ($ArgumentList[2] -ceq 'runtimes') {
+                $script:RuntimeQueryCalls++
+                return & $script:RealRuntimeProcess `
+                    -FileName (Get-Command pwsh -CommandType Application |
+                        Select-Object -First 1).Source `
+                    -ArgumentList @('-NoProfile', '-NonInteractive', '-Command',
+                    '[Threading.Thread]::Sleep(12000); ''{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}''') `
+                    -WorkingDirectory $WorkingDirectory `
+                    -Environment $Environment `
+                    -TimeoutSeconds $TimeoutSeconds `
+                    -TaskDeadline $TaskDeadline `
+                    -LogPath $LogPath
+            }
+            if ($ArgumentList[2] -ceq 'devicetypes') {
+                return [pscustomobject]@{
+                    TimedOut = $false; ExitCode = 0
+                    Stdout = '{"devicetypes":[{"name":"iPhone 11 Pro","identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}'
+                }
+            }
+            if ($ArgumentList[2] -ceq 'devices') {
+                return [pscustomobject]@{
+                    TimedOut = $false; ExitCode = 0
+                    Stdout = '{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[{"udid":"12345678-1234-1234-1234-123456789ABC","deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro","isAvailable":true,"state":"Booted"}]}}'
+                }
+            }
+            ($ArgumentList -join ' ') | Should -BeExactly (
+                'simctl bootstatus 12345678-1234-1234-1234-123456789ABC -b')
+            [pscustomobject]@{ TimedOut = $false; ExitCode = 0; Stdout = '' }
+        }
+
+        $result = Invoke-CatalystProbePrepareIosSimulator `
+            -Context $context -CoordinationDeadline $deadline
+        $result.udid | Should -BeExactly '12345678-1234-1234-1234-123456789ABC'
+        $result.createdByProbe | Should -BeFalse
+        $script:RuntimeQueryCalls | Should -Be 1
+    }
+
+    It 'does not reset the coordination deadline for a late runtime query or retry it' {
+        $root = Join-Path $TestDrive 'late-runtime-query'
+        New-Item -ItemType Directory -Path $root | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment = Get-CatalystProbeRuntimeEnvironment `
+                -RuntimeRoot (Join-Path $root 'runtime')
+            LogDirectory = $root
+            OwnedIosSimulator = $null
+        }
+        $script:RealRuntimeProcess = (Get-Command Invoke-CatalystProbeBoundedProcess).ScriptBlock
+        $script:RuntimeQueryCalls = 0
+        $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 180
+        Mock Get-CatalystProbeXcodePath { '/Applications/Xcode_26.0.1.app' }
+        Mock Invoke-CatalystProbeBoundedProcess {
+            [object]::ReferenceEquals($TaskDeadline, $deadline) | Should -BeTrue
+            if ($FileName -ceq '/usr/bin/xcode-select') {
+                $TaskDeadline.DeadlineTimestamp =
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (12 * [long]$TaskDeadline.Frequency)
+                return [pscustomobject]@{
+                    TimedOut = $false; ExitCode = 0
+                    Stdout = '/Applications/Xcode_26.0.1.app/Contents/Developer'
+                }
+            }
+            ($ArgumentList -join ' ') | Should -BeExactly 'simctl list runtimes --json'
+            $script:RuntimeQueryCalls++
+            & $script:RealRuntimeProcess `
+                -FileName (Get-Command pwsh -CommandType Application |
+                    Select-Object -First 1).Source `
+                -ArgumentList @('-NoProfile', '-NonInteractive', '-Command',
+                '[Threading.Thread]::Sleep(30000)') `
+                -WorkingDirectory $WorkingDirectory `
+                -Environment $Environment `
+                -TimeoutSeconds $TimeoutSeconds `
+                -TaskDeadline $TaskDeadline `
+                -LogPath $LogPath
+        }
+
+        {
+            Invoke-CatalystProbePrepareIosSimulator `
+                -Context $context -CoordinationDeadline $deadline
+        } | Should -Throw '*could not inspect installed runtimes (exitCode=124, timedOut=True)*'
+        $context.OwnedIosSimulator | Should -BeNullOrEmpty
+        $script:RuntimeQueryCalls | Should -Be 1
+        $log = Get-Content -LiteralPath (
+            Join-Path $root 'ios-installed-runtimes.log') -Raw
+        $log | Should -Match 'requestedTimeoutSeconds: 180'
+        $log | Should -Match 'effectiveTimeoutSeconds: 1[12]'
+        $log | Should -Match 'effectiveProcessSeconds: [12]'
     }
 
     It 'retains owned simulator identity when preboot fails without provisioning fallback' {
