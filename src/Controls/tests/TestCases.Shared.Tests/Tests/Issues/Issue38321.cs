@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Grouped CollectionView with GridItemsLayout throws ArgumentOutOfRangeException after an item is removed";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 1)]
 		public void GroupedCollectionViewRemovalsUseCurrentAdapterPositions()
 		{
 			App.WaitForElement("RemoveItemButton");
