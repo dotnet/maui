@@ -28,6 +28,7 @@ var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("AN
 var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
 var deviceCleanupEnabled = Argument("cleanup", true);
 var useCoreClr = Argument("coreclr", false);
+var avdManagerToolPath = Argument("avdmanager-tool", "");
 
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
@@ -61,6 +62,11 @@ Information("Build Target Framework: {0}", targetFramework);
 Information("Use CoreCLR: {0}", useCoreClr);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
+if (!string.IsNullOrEmpty(avdManagerToolPath))
+{
+	avdSettings.ToolPath = new FilePath(avdManagerToolPath);
+	Information("Android AVD Manager Tool: {0}", avdManagerToolPath);
+}
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
 var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = androidSdkRoot };
 emuSettings = AdjustEmulatorSettingsForCI(emuSettings);

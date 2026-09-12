@@ -190,6 +190,12 @@ steps:
         throw "runIssue38080 cannot be combined with the category testFilter parameter."
       }
 
+      $avdManagerTool = Join-Path $env:ANDROID_SDK_ROOT "cmdline-tools/19.0/bin/avdmanager"
+      if (!(Test-Path -LiteralPath $avdManagerTool -PathType Leaf)) {
+        throw "Verified command-line tools 19.0 avdmanager is unavailable at '$avdManagerTool'."
+      }
+
+      $command += " --avdmanager-tool=""$avdManagerTool"""
       $testFilter = "FullyQualifiedName=Microsoft.Maui.TestCases.Tests.Issues.Issue38080.FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash"
     } else {
       "${{ parameters.testFilter }}".Split(",") | ForEach {
