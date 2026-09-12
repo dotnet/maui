@@ -1,13 +1,13 @@
 ---
 name: pr-review
-description: "End-to-end PR reviewer for dotnet/maui. Orchestrates 3 phases — Pre-Flight, Try-Fix, Report. Gate runs separately before this skill. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or 'fix issue #XXXXX'."
+description: "End-to-end PR reviewer for dotnet/maui when a pull request already exists. Orchestrates 3 phases — Pre-Flight, Try-Fix, Report. Gate runs separately before this skill. Use when asked to 'review PR #XXXXX', 'work on PR #XXXXX', or continue/fix an issue through its existing PR. For an issue with no PR yet, use issue-fixer instead."
 ---
 
 # PR Review — 3-Phase Orchestrator
 
 End-to-end PR review workflow that orchestrates phases to explore independent fix alternatives and produce a recommendation.
 
-**Trigger phrases:** "review PR #XXXXX", "work on PR #XXXXX", "fix issue #XXXXX"
+**Trigger phrases:** "review PR #XXXXX", "work on PR #XXXXX", "continue PR #XXXXX", "fix issue #XXXXX through PR #YYYYY"
 
 > 🚨 **NEVER** use `gh pr review --approve` or `--request-changes`. AI agents must NEVER post review comments.
 > 🚨 **DO NOT post any comments to the PR.** This skill only produces output files in `CustomAgentLogsTmp/PRState/`.
