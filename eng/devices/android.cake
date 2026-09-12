@@ -90,7 +90,19 @@ Teardown(context =>
 	// For the uitest-prepare target, just leave the virtual device running
 	if (!string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
 	{
-		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+		try
+		{
+			if (runIssue38080)
+				CaptureIssue38080Diagnostics();
+		}
+		catch (Exception ex)
+		{
+			Warning("Failed to capture issue 38080 diagnostics before cleanup: {0}", ex.Message);
+		}
+		finally
+		{
+			CleanUpVirtualDevice(emulatorProcess, avdSettings);
+		}
 	}
 });
 
@@ -623,6 +635,85 @@ void WriteLogCat(string filename = null)
 	}
 
 	Information("Logcat written to {0}", location);
+}
+
+void CaptureIssue38080Diagnostics()
+{
+	var outputDirectory = GetLogDirectory()
+		.Combine("issue38080")
+		.Combine("before-cleanup");
+	EnsureDirectoryExists(outputDirectory);
+
+	var adb = new DirectoryPath(androidSdkRoot)
+		.Combine("platform-tools")
+		.CombineWithFilePath("adb");
+
+	if (!FileExists(adb))
+	{
+		System.IO.File.WriteAllText(
+			outputDirectory.CombineWithFilePath("adb-path-error.txt").FullPath,
+			$"Provisioned Android SDK adb was not found: '{adb}'.");
+		return;
+	}
+
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "shell", "getprop");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "shell", "dumpsys", "webviewupdate");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "shell", "dumpsys", "SurfaceFlinger");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "logcat", "-d");
+
+	var tombstones = outputDirectory.Combine("tombstones");
+	EnsureDirectoryExists(tombstones);
+	CaptureIssue38080AdbCommand(
+		adb,
+		outputDirectory,
+		"tombstone-pull.txt",
+		"pull",
+		"/data/tombstones",
+		tombstones.FullPath);
+}
+
+void CaptureIssue38080AdbCommand(
+	FilePath adb,
+	DirectoryPath outputDirectory,
+	string outputFileName,
+	params string[] arguments)
+{
+	var standardOutput = new List<string>();
+	var standardError = new List<string>();
+	var processArguments = new ProcessArgumentBuilder();
+	foreach (var argument in arguments)
+		processArguments.AppendQuoted(argument);
+
+	var settings = new ProcessSettings
+	{
+		Arguments = processArguments,
+		RedirectStandardOutput = true,
+		RedirectStandardError = true,
+		RedirectedStandardOutputHandler = line =>
+		{
+			standardOutput.Add(line);
+			return line;
+		},
+		RedirectedStandardErrorHandler = line =>
+		{
+			standardError.Add(line);
+			return line;
+		},
+		Timeout = 30000,
+	};
+
+	var output = outputDirectory.CombineWithFilePath(outputFileName);
+	try
+	{
+		Information("Capturing issue 38080 diagnostics: {0} {1}", adb, processArguments);
+		var exitCode = StartProcess(adb.FullPath, settings);
+		System.IO.File.WriteAllLines(output.FullPath, new[] { $"ExitCode: {exitCode}" }.Concat(standardOutput).Concat(standardError));
+	}
+	catch (Exception ex)
+	{
+		System.IO.File.WriteAllLines(output.FullPath, new[] { $"Command failed: {ex.Message}" }.Concat(standardOutput).Concat(standardError));
+		Warning("Issue 38080 diagnostic command failed: {0}", ex.Message);
+	}
 }
 
 void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin, bool headless)
