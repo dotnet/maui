@@ -1,7 +1,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Build tasks always needed first -->
   <ItemGroup Condition="'$(BuildDeviceTests)' != 'true'">
-    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" BuildInParallel="false"/>
+    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" BuildInParallel="false">
+      <AdditionalProperties>BuildTaskOnlyBuild=true</AdditionalProperties>
+    </ProjectToBuild>
   </ItemGroup>
 
   <!-- Pack only: Microsoft.Maui.Packages -->

@@ -18,6 +18,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(AppThemeBindingPage), "AppThemeBindings",
 				"Devices typically include light and dark themes, which each refer to a broad set of appearance preferences that can be set at the operating system level. Applications should respect these system themes, and respond immediately when the system theme changes."),
 
+			new SectionModel(typeof(StatusBarThemePage), "StatusBarTheme",
+				"Controls the appearance of OS-drawn status bar icons (clock, battery, signal) on mobile platforms independently of the app theme."),
+
 			new SectionModel(typeof(BrushesPage), "Brushes",
 				"A brush enables you to paint an area, such as the background of a control, using different approaches."),
 
@@ -71,6 +74,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ToolbarPage), "Toolbar",
 				"Toolbar items are buttons that are typically displayed in the navigation bar."),
+
+			new SectionModel(typeof(ToolbarBadgePage), "Toolbar Badges",
+				"Badge notifications on toolbar items using BadgeText and BadgeColor properties."),
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),

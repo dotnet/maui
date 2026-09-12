@@ -38,6 +38,32 @@ namespace Microsoft.Maui.Controls.Platform
 
 			UpdateBackButtonVisibility(platformToolbar, toolbar);
 
+			// Set Narrator text for the back button when a custom label is provided.
+			// We save the default value before first override and restore it when the label is cleared,
+			// so WinUI's default "Back" announcement is preserved.
+			if (platformToolbar.NavigationViewBackButton is not null)
+			{
+				var backButton = platformToolbar.NavigationViewBackButton;
+				var accessibilityLabel = toolbar.BackButtonAccessibilityLabel;
+
+				if (!string.IsNullOrEmpty(accessibilityLabel))
+				{
+					// Save the default value before first override
+					if (backButton.Tag is not string)
+					{
+						backButton.Tag = Microsoft.UI.Xaml.Automation.AutomationProperties.GetName(backButton);
+					}
+
+					Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(backButton, accessibilityLabel);
+				}
+				else if (backButton.Tag is string savedDefault)
+				{
+					// Restore the original default ("Back") when the custom label is cleared
+					Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(backButton, savedDefault);
+					backButton.Tag = null;
+				}
+			}
+
 			toolbar.Handler?.UpdateValue(nameof(Toolbar.BarBackground));
 		}
 

@@ -1,8 +1,10 @@
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Widget;
 using Bumptech.Glide;
@@ -58,29 +60,34 @@ namespace Microsoft.Maui.DeviceTests
 
 			var service = new FileImageSourceService();
 
-			// get an image
-			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			var drawable1 = result1.Value;
-			var bitmapDrawable1 = Assert.IsType<BitmapDrawable>(drawable1);
-			var bitmap1 = bitmapDrawable1.Bitmap;
+			// Load + dispose inside a non-inlined helper so the result/drawable/bitmap
+			// locals leave the active stack frame before TryCollectFile runs its GC loop.
+			// Trim/AOT codegen can keep locals rooted longer than IL position implies, which
+			// would cause Glide's MemoryCache to retain the bitmap after Dispose() and make
+			// the TryCollectFile probe report the bitmap is still cached. See PR #34573.
+			Bitmap bitmap1 = await LoadAndDisposeBitmapAsync(service, imageSource);
 
-			// release
-			result1.Dispose();
-
-			// try collect it
+			// try collect it - dispose should have released Glide's strong refs
 			var collected = await TryCollectFile(bitmapFile);
 			Assert.True(collected);
 
-			// get the image again
-			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			var drawable2 = result2.Value;
-			var bitmapDrawable2 = Assert.IsType<BitmapDrawable>(drawable2);
-			var bitmap2 = bitmapDrawable2.Bitmap;
+			Bitmap bitmap2 = await LoadAndDisposeBitmapAsync(service, imageSource);
 
 			// make sure it WAS collected and we got a new image
 			Assert.NotEqual(bitmap1, bitmap2);
+		}
 
-			result2.Dispose();
+		// The [MethodImpl(NoInlining)] hint together with isolating the result/drawable
+		// locals to a separate frame ensures the IImageSourceServiceResult goes out of
+		// scope before the caller's TryCollectFile probe runs its GC loop.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static async Task<Bitmap> LoadAndDisposeBitmapAsync(FileImageSourceService service, FileImageSourceStub imageSource)
+		{
+			var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(result.Value);
+			var bitmap = bitmapDrawable.Bitmap;
+			result.Dispose();
+			return bitmap;
 		}
 
 		[Fact]
@@ -220,6 +227,53 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			result2.Dispose();
+		}
+
+		[Fact]
+		public async Task DisposingTheResultFromInsideTheLoadCallbackDoesNotThrow()
+		{
+			// The dispose Runnable handed to the callback is MauiCustomTarget.clear(), and the
+			// callback itself runs on Glide's own onResourceReady stack. Glide rejects a clear()
+			// issued from inside one of its target callbacks (SingleRequest.assertNotCallingCallbacks),
+			// so running it there threw. That is not an exotic position to be in: ImageLoaderCallbackBase
+			// completes its TaskCompletionSource synchronously, so every consumer that disposes the
+			// result in its await continuation lands on exactly this stack. clear() posts to the main
+			// looper now, so the call has to come back clean.
+			var bitmapFile = CreateBitmapFile(100, 100, Colors.Red);
+			var callback = new DisposeInsideCallbackStub();
+
+			PlatformInterop.LoadImageFromFile(MauiProgram.DefaultContext, bitmapFile, callback);
+
+			var (loaded, disposeError) = await callback.Result;
+
+			// Asserted so a load that quietly failed cannot pass this as "dispose did not throw".
+			Assert.True(loaded);
+			Assert.Null(disposeError);
+		}
+
+		class DisposeInsideCallbackStub : Java.Lang.Object, IImageLoaderCallback
+		{
+			// Asynchronous continuations so awaiting the result does not resume the test body
+			// inside the very callback the test is measuring.
+			readonly TaskCompletionSource<(bool Loaded, Exception DisposeError)> _tcs =
+				new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+			public Task<(bool Loaded, Exception DisposeError)> Result => _tcs.Task;
+
+			public void OnComplete(Java.Lang.Boolean success, Drawable drawable, Java.Lang.IRunnable dispose)
+			{
+				var loaded = success?.BooleanValue() == true;
+
+				try
+				{
+					dispose?.Run();
+					_tcs.TrySetResult((loaded, null));
+				}
+				catch (Exception ex)
+				{
+					_tcs.TrySetResult((loaded, ex));
+				}
+			}
 		}
 
 		async Task<bool> TryCollectFile(string bitmapFile)

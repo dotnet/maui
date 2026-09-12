@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Hedef DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "Örnek _sayfalar ekle",
   "symbols/IncludeSampleContent/description": "Temel kullanım düzenlerini göstermek için örnek sayfaların ve stil oluşturma özelliklerinin eklenip eklenmeyeceğini yapılandırır.",
-  "symbols/Empty/description": "Temel kullanım düzenlerini gösteren örnek sayfaların ve stil oluşturma özelliklerinin atlanıp atlanmayacağını yapılandırır."
+  "symbols/empty/description": "Temel kullanım düzenlerini gösteren örnek sayfaların ve stil oluşturma özelliklerinin atlanıp atlanmayacağını yapılandırır."
 }

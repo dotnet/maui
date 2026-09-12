@@ -56,7 +56,8 @@ namespace Microsoft.Maui.Controls
 				e.IsOneOf(
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty,
 					PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty) ||
-				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty))
+				e.Is(FlyoutPage.FlyoutLayoutBehaviorProperty) ||
+				e.Is(NavigationPage.BackButtonAccessibilityLabelProperty))
 			{
 				ApplyChanges(_currentNavigationPage);
 			}
@@ -181,14 +182,14 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
-			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
+			var drawerToggleVisible = Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
 #if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
 				&& !anyPagesPushed.Value
 #endif
-				)
-				_drawerToggleVisible = true;
-			else
-				_drawerToggleVisible = false;
+				;
+
+			var drawerToggleVisibleChanged = _drawerToggleVisible != drawerToggleVisible;
+			_drawerToggleVisible = drawerToggleVisible;
 
 			// Once we have better logic inside core to handle backbutton visiblity this
 			// code should all go away.
@@ -218,6 +219,11 @@ namespace Microsoft.Maui.Controls
 
 				_userChanged = false;
 			}
+
+			// Notified last so that BackButtonVisible (which takes precedence in the navigation slot)
+			// is already up to date when platform backends react to the drawer toggle change.
+			if (drawerToggleVisibleChanged)
+				NotifyPropertyChanged(nameof(DrawerToggleVisible));
 		}
 
 		void ApplyChanges(NavigationPage navigationPage)
@@ -245,10 +251,16 @@ namespace Microsoft.Maui.Controls
 			else
 				BarHeight = null;
 
-			if (previousPage != null)
+			if (previousPage is not null)
+			{
 				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+				BackButtonAccessibilityLabel = NavigationPage.GetBackButtonAccessibilityLabel(previousPage);
+			}
 			else
+			{
 				BackButtonTitle = null;
+				BackButtonAccessibilityLabel = null;
+			}
 
 			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 

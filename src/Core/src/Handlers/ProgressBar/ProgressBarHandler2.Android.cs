@@ -2,8 +2,7 @@ using Google.Android.Material.ProgressIndicator;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: Material3 - make it public in .net 11
-internal class ProgressBarHandler2 : ProgressBarHandler
+public class ProgressBarHandler2 : ProgressBarHandler
 {
 	protected override LinearProgressIndicator CreatePlatformView()
 	{

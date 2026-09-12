@@ -53,7 +53,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_shellFlyoutContentManager = _tableViewController?.ShellFlyoutContentManager;
 			AddChildViewController(_tableViewController);
 
-			context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			// Only the compatibility renderer subscribes here; handlers use mapper-driven updates.
+			if (context is not Handlers.ShellHandler)
+			{
+				context.Shell.PropertyChanged += HandleShellPropertyChanged;
+			}
 		}
 
 		protected virtual ShellTableViewController CreateShellTableViewController()
@@ -92,14 +96,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		void UpdateFlowDirection()
+		internal void UpdateFlowDirection()
 		{
 			_tableViewController.View.UpdateFlowDirection(_shellContext.Shell);
 			_headerView?.UpdateFlowDirection(_shellContext.Shell);
 			_footerView?.UpdateFlowDirection(_shellContext.Shell);
 		}
 
-		void UpdateFlyoutHeader()
+		internal void UpdateFlyoutHeader()
 		{
 			var header = ((IShellController)_shellContext.Shell).FlyoutHeader;
 
@@ -138,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_tableViewController.HeaderView = _headerView;
 		}
 
-		void UpdateFlyoutFooter()
+		internal void UpdateFlyoutFooter()
 		{
 			UpdateFlyoutFooter(((IShellController)_shellContext.Shell).FlyoutFooter);
 		}
@@ -272,7 +276,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		protected virtual void UpdateBackground()
+		internal protected virtual void UpdateBackground()
 		{
 			var color = _shellContext.Shell.FlyoutBackgroundColor;
 			var brush = _shellContext.Shell.FlyoutBackground;
@@ -402,7 +406,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlowDirection();
 		}
 
-		void UpdateFlyoutContent()
+		internal void UpdateFlyoutContent()
 		{
 			var view = (_shellContext.Shell as IShellController).FlyoutContent;
 
@@ -419,6 +423,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_uIViews[ContentIndex] = _shellFlyoutContentManager.ContentView;
 			AddViewInCorrectOrder(_uIViews[ContentIndex], previousIndex);
 			_shellFlyoutContentManager.UpdateHeaderSize();
+		}
+
+		internal void UpdateFlyoutHeaderBehavior()
+		{
+			_shellFlyoutContentManager.OnFlyoutHeaderBehaviorChanged();
+		}
+
+		internal void UpdateVerticalScrollMode()
+		{
+			_shellFlyoutContentManager.UpdateVerticalScrollMode();
 		}
 
 		public override void ViewWillAppear(bool animated)

@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages
 
 		public string ShellTitle { get; set; } = "Welcome to Shell";
 
-		void OnChangeTabBarBackgroundColor(object sender, EventArgs e)
+		void OnChangeTabBarBackgroundColor(object? sender, EventArgs e)
 		{
 			var random = new Random();
 

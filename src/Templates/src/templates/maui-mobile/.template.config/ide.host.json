@@ -21,10 +21,28 @@
       "persistenceScopeName": "maui"
     },
     {
-      "id": "IncludeSampleContent",
+      "id": "UI",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
+    },
+    {
+      "id": "IncludeSampleContent",
+      "isVisible": false
+    },
+    {
+      "id": "IncludeSampleContentIde",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "maui"
+    },
+    {
+      "id": "WithAvalonia",
+      "isVisible": false
+    },
+    {
+      "id": "avaloniaControlsMauiVersion",
+      "isVisible": false
     }
   ]
 }

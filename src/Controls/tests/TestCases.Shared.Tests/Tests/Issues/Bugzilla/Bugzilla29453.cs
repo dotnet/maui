@@ -21,6 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entryText");
 			App.Tap("entryText");
 			App.EnterText("entryText", "XF");
+#if ANDROID
+			App.Tap("entryText");
+#endif
 			App.PressEnter();
 			App.WaitForElement("Page1");
 		}

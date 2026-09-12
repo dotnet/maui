@@ -9,7 +9,11 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -20,19 +24,22 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-#endif
-
-#if IOS || MACCATALYST
-using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+using Microsoft.Maui.Controls.Platform.Compatibility;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Type shellHandlerType = null)
+		protected virtual void SetupBuilder() => SetupBuilder(null);
+
+		void SetupBuilder(Type shellHandlerType)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -48,14 +55,32 @@ namespace Microsoft.Maui.DeviceTests
 					if (shellHandlerType != null)
 						handlers.AddHandler(typeof(Shell), shellHandlerType);
 
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every ShellTests test run against both the NavigationPage renderer and handler.
+		// See ShellNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
 		}
 #if !MACCATALYST
 		[Fact]
@@ -107,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 				Shell.SetSearchHandler(shell, new SearchHandler() { SearchBoxVisibility = SearchBoxVisibility.Expanded });
 			});
 
-			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 				await OnNavigatedToAsync(shell.CurrentPage);
@@ -366,7 +391,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutBehavior = FlyoutBehavior.Locked;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnFrameSetToNotEmpty(flyoutContent);
 
@@ -387,11 +412,19 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutIsPresented = true;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
-				await CheckFlyoutState(handler, true);
+#if ANDROID || IOS || MACCATALYST
+				var shellContext = (IShellContext)shell.Handler;
+				await CheckFlyoutState(shellContext, true);
 				shell.FlyoutIsPresented = false;
-				await CheckFlyoutState(handler, false);
+				await CheckFlyoutState(shellContext, false);
+#else
+				var shellContext = (ShellHandler)shell.Handler;
+				await CheckFlyoutState(shellContext, true);
+				shell.FlyoutIsPresented = false;
+				await CheckFlyoutState(shellContext, false);
+#endif
 			});
 		}
 #endif
@@ -405,13 +438,13 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
-				Assert.False(IsBackButtonVisible(handler));
+				Assert.False(IsBackButtonVisible(shell.Handler));
 				await shell.Navigation.PushAsync(new ContentPage());
-				Assert.True(IsBackButtonVisible(handler));
+				Assert.True(IsBackButtonVisible(shell.Handler));
 				await shell.Navigation.PopAsync();
-				Assert.False(IsBackButtonVisible(handler));
+				Assert.False(IsBackButtonVisible(shell.Handler));
 			});
 		}
 
@@ -438,7 +471,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await shell.Navigation.PushAsync(pushedPage);
 				await shell.Navigation.PopAsync();
@@ -458,7 +491,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				Assert.False(IsBackButtonVisible(shell.Handler));
 				await shell.Navigation.PushAsync(new ContentPage());
@@ -501,7 +534,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(tabBar);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnNavigatedToAsync(page1);
 				shell.CurrentItem = page2;
@@ -530,7 +563,7 @@ namespace Microsoft.Maui.DeviceTests
 				};
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				// TODO MAUI Fix this 
 				await Task.Delay(100);
@@ -580,14 +613,14 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnLoadedAsync(page1);
-				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+				Assert.Equal(titleView1.ToPlatform(), GetTitleView(shell.Handler));
 
 				bool viewIsTitleView(IView view)
 				{
-					return view.Handler != null && view.ToPlatform() == GetTitleView(handler);
+					return view.Handler != null && view.ToPlatform() == GetTitleView(shell.Handler);
 				}
 
 				await shell.GoToAsync("//Item2");
@@ -632,7 +665,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				var initialHandler = page1.Handler;
 				await shell.GoToAsync("//Item2");
@@ -655,7 +688,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(shellContent2);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				IShellController shellController = shell;
 				var currentItem = shell.CurrentItem;
@@ -728,7 +761,7 @@ namespace Microsoft.Maui.DeviceTests
 				return value;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				// TODO MAUI Fix this 
 				await Task.Delay(100);
@@ -747,7 +780,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem = new ContentPage();
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				Assert.False(IsBackButtonVisible(shell.Handler));
 				var secondPage = new ContentPage();
@@ -805,7 +838,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnNavigatedToAsync(page1);
 
@@ -953,7 +986,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			WeakReference pageReference = null;
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
@@ -1101,7 +1134,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(rootItem);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			await CreateHandlerAndAddToWindow(shell, async () =>
 			{
 				rootItem.IsVisible = true;
 

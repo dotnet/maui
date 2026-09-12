@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 
@@ -60,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static T Prepare<T>(T view)
 			where T : View
 		{
-			view.Handler = new AnimationReadyHandler();
+			view.Handler = new AnimationReadyHandler<TTicker>(new TestAnimationManager(new TTicker()));
 
 			return view;
 		}
@@ -88,6 +89,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				if (serviceType == typeof(IAnimationManager))
 					return _animationManager;
+
+				// Optional services are probed via GetService(typeof(...)) and are expected to
+				// return null when not registered (per the IServiceProvider contract).
+				if (serviceType == typeof(IGesturePlatformManagerFactory))
+					return null;
 
 				throw new NotSupportedException($"Attempting to get service type {serviceType}");
 			}

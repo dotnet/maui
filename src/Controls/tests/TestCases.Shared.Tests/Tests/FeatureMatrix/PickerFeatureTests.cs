@@ -6,6 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public class PickerFeatureTests : _GalleryUITest
 	{
+		string doneButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 		public const string PickerFeatureMatrix = "Picker Feature Matrix";
 		public override string GalleryPageName => PickerFeatureMatrix;
 
@@ -42,8 +43,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyPickerScreenshot();
 
 #if IOS
-			App.WaitForElement("Done");
-			App.Tap("Done");
+			App.WaitForElement(doneButton);
+			App.Tap(doneButton);
 #elif WINDOWS
 			App.Tap("Option 2 - Second option");
 #endif

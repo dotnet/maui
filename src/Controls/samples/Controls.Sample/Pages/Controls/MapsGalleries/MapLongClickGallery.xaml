@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+    x:Class="Maui.Controls.Sample.Pages.MapsGalleries.MapLongClickGallery"
+    Title="Map Long Click">
+    <Grid RowDefinitions="Auto, Auto, *">
+        <Label x:Name="InstructionLabel" 
+               Grid.Row="0" 
+               Text="Long press on the map to add a pin at that location" 
+               HorizontalOptions="Center" 
+               Margin="10"/>
+        <Label x:Name="StatusLabel" 
+               Grid.Row="1" 
+               Text="No long press detected yet" 
+               HorizontalOptions="Center" 
+               Margin="10"
+               FontAttributes="Bold"/>
+        <maps:Map x:Name="map" 
+                  Grid.Row="2"
+                  MapLongClicked="OnMapLongClicked"/>
+    </Grid>
+</ContentPage>

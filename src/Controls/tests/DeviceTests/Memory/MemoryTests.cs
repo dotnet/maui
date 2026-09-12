@@ -26,14 +26,18 @@ using Xunit.Sdk;
 namespace Microsoft.Maui.DeviceTests.Memory;
 
 [Category(TestCategory.Memory)]
+#if IOS || MACCATALYST
+// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+// MemoryTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler.
+[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+// MemoryTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+// instead, so PagesDoNotLeak(typeof(TabbedPage)) runs against both variants.
+[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 public class MemoryTests : ControlsHandlerTestBase
 {
-	// Subclasses used to enable memory tests for CV2 handlers
-	public class CollectionView2 : CollectionView { }
-	public class CarouselView2 : CarouselView { }
-
-
-	void SetupBuilder()
+	void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
 		{
@@ -43,11 +47,18 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
-				handlers.AddHandler<CarouselView, CarouselViewHandler>();
-				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if IOS || MACCATALYST
-				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
-				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
+				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+#else
+				handlers.AddHandler<CarouselView, CarouselViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
@@ -91,26 +102,54 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<WebView, WebViewHandler>();
 
 #if IOS || MACCATALYST
-				handlers.AddHandler<NavigationPage, NavigationRenderer>();
-				handlers.AddHandler<TabbedPage, TabbedRenderer>();
-				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
+				handlers.AddHandler(typeof(NavigationPage), includeNavigationViewHandler ? typeof(NavigationViewHandler) : typeof(NavigationRenderer));
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
-				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
-				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
 #endif
+				RegisterFlyoutPageHandler(handlers);
+				RegisterTabbedPageHandler(handlers);
 			});
 		});
 	}
 
-	[Theory("Pages Do Not Leak")]
-	[InlineData(typeof(ContentPage))]
-	[InlineData(typeof(NavigationPage))]
-	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
-	[InlineData(typeof(TabbedPage))]
-	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+	// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; MemoryTests_FlyoutViewHandler
+	// overrides this to exercise FlyoutViewHandler instead.
+	protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
 	{
-		SetupBuilder();
+#if IOS || MACCATALYST
+		handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
+#else
+		handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
+	}
+
+	// The base class exercises TabbedRenderer on iOS/MacCatalyst; MemoryTests_TabbedViewHandler
+	// overrides this to exercise TabbedViewHandler instead.
+	protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<TabbedPage, TabbedRenderer>();
+#else
+		handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+#endif
+	}
+
+	[Theory("Pages Do Not Leak")]
+	[InlineData(typeof(ContentPage), true)]
+	[InlineData(typeof(NavigationPage), true)]
+#if IOS || MACCATALYST
+	// Also verify NavigationPage doesn't leak when using the legacy NavigationRenderer, not just
+	// the NavigationViewHandler above. See RendererHandlerVariant.cs.
+	[InlineData(typeof(NavigationPage), false)]
+#endif
+	// Issue #27411 (partially) and #33918 have been fixed - NavigationPage no longer leaks on Android
+	[InlineData(typeof(TabbedPage), true)]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ContentPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(NavigationPage))]
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(TabbedPage))]
+	public async Task PagesDoNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type, bool includeNavigationViewHandler)
+	{
+		SetupBuilder(includeNavigationViewHandler);
 
 		var references = new List<WeakReference>();
 		var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
@@ -252,10 +291,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TableView))]
 #pragma warning restore CS0618 // Type or member is obsolete
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
+	// CollectionViewHandler2 remains rooted in this test; see https://github.com/dotnet/maui/issues/29619.
+#if !IOS && !MACCATALYST
 	[InlineData(typeof(CollectionView))]
-#if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
-	[InlineData(typeof(CarouselView2))]
 #endif
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
@@ -598,10 +636,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
-#if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
-#endif
-	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
+	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -639,19 +674,10 @@ public class MemoryTests : ControlsHandlerTestBase
 
 
 #if IOS || MACCATALYST
-			var cv1handler = cv.Handler as CollectionViewHandler;
-			var cv2handler = cv.Handler as CollectionViewHandler2;
-
-			if (cv1handler is not null)
-			{
-				controllerReference = new WeakReference(cv1handler.Controller);
-			}
-			else if (cv2handler is not null)
-			{
-				controllerReference = new WeakReference(cv2handler.Controller);
-			}
-			cv1handler = null;
-			cv2handler = null;
+			var collectionViewHandler = cv.Handler as CollectionViewHandler2;
+			Assert.NotNull(collectionViewHandler);
+			controllerReference = new WeakReference(collectionViewHandler.Controller);
+			collectionViewHandler = null;
 #else
 			controllerReference = new WeakReference(new object());
 #endif
@@ -672,7 +698,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(PointerGestureRecognizer))]
 	[InlineData(typeof(SwipeGestureRecognizer))]
 	[InlineData(typeof(TapGestureRecognizer))]
-	public async Task GestureDoesNotLeak(Type type)
+	public async Task GestureDoesNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 
@@ -731,7 +757,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
-			var carousel = new CarouselView2
+			var carousel = new CarouselView
 			{
 				ItemsSource = Enumerable.Range(1, 5).Select(static i => $"Item {i}").ToList(),
 				ItemTemplate = new DataTemplate(static () => new Label
@@ -793,7 +819,7 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
 #pragma warning restore CS0618 // Type or member is obsolete
-	public async Task CellsDoNotLeak(Type type)
+	public async Task CellsDoNotLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
 

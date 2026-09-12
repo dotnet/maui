@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -17,6 +17,12 @@ public class Issue33287MainPage : ContentPage
 	{
 		Title = "Issue 33287";
 
+		var statusLabel = new Label
+		{
+			Text = "Waiting for alert request",
+			AutomationId = "AlertStatusLabel"
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
@@ -29,7 +35,8 @@ public class Issue33287MainPage : ContentPage
 					AutomationId = "NavigateButton",
 					Command = new Command(async () =>
 					{
-						var secondPage = new Issue33287SecondPage();
+						var secondPage = new Issue33287SecondPage(status =>
+							statusLabel.Text = status);
 						await Navigation.PushAsync(secondPage);
 						secondPage.ExposeBackButtonToAutomation();
 					})
@@ -38,7 +45,8 @@ public class Issue33287MainPage : ContentPage
 				{
 					Text = "MainPage",
 					AutomationId = "MainPageLabel"
-				}
+				},
+				statusLabel
 			}
 		};
 	}
@@ -48,9 +56,10 @@ public class Issue33287SecondPage : ContentPage
 {
 	readonly Button _goBackButton;
 
-	public Issue33287SecondPage()
+	public Issue33287SecondPage(Action<string> updateStatus)
 	{
 		Title = "Second Page";
+		PropertyChanged += OnPropertyChanged;
 
 		_goBackButton = new Button
 		{
@@ -66,23 +75,22 @@ public class Issue33287SecondPage : ContentPage
 				_goBackButton
 			}
 		};
+
+		void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName != nameof(Window) || Window is not null)
+				return;
+
+			PropertyChanged -= OnPropertyChanged;
+			updateStatus("Page detached");
+
+			// The original NRE occurs synchronously while creating the alert request.
+			// A detached page may keep the returned task pending until it is reattached.
+			_ = DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
+			updateStatus("Alert request returned");
+		}
 	}
 
 	internal void ExposeBackButtonToAutomation() =>
 		_goBackButton.AutomationId = "GoBackButton";
-
-	protected override async void OnAppearing()
-	{
-		base.OnAppearing();
-
-		// Wait long enough for the user/test to navigate back
-#if MACCATALYST
-		await Task.Delay(4000);
-#else
-		await Task.Delay(2000);
-#endif
-
-		// Without the fix this throws NullReferenceException and crashes the app
-		await DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
-	}
 }
