@@ -88,6 +88,15 @@ Trusted baseline prewarming precedes the fixture/candidate bytes. Native runs
 retain matching Catalyst boundaries, signed App Sandbox entitlements, live
 network denial and exact class isolation.
 
+Trusted setup and verification can regenerate tracked build output. The fixed
+probe restores that output from its pinned baseline while preserving and
+rechecking the exact product and fixture bytes. Pre-execution scope checks still
+reject dirty input; unknown untracked paths, staged changes, protected-input
+mutations, failed restoration and incomplete cleanup remain fatal. Cleanup
+shares the existing task/cycle deadlines and never deletes an unknown file.
+Only an admitted build phase can restore its tracked output; finalization does
+not erase a change rejected by a pre-execution scope guard.
+
 A successful diagnostic requires both baseline facts to pass, followed by both
 known-negative facts reaching their expected native assertions. Missing or
 incomplete XML, extra/skipped tests, environment failures, unexpected negative

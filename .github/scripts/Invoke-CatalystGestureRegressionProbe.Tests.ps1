@@ -108,7 +108,7 @@ $($rows -join "`n")
                 [ordered]@{
                     name = [IO.Path]::GetFileName($resultPath)
                     sha256 = (Get-FileHash -LiteralPath $resultPath -Algorithm SHA256).
-                        Hash.ToLowerInvariant()
+                    Hash.ToLowerInvariant()
                 }
             )
             total = 2
@@ -133,7 +133,7 @@ $($rows -join "`n")
         return [pscustomobject]@{
             EntryTimestamp = $now
             DeadlineTimestamp =
-                $now + ([long]$RemainingSeconds * [long]$frequency)
+            $now + ([long]$RemainingSeconds * [long]$frequency)
             Frequency = $frequency
             BudgetSeconds = $RemainingSeconds
         }
@@ -159,6 +159,172 @@ $($rows -join "`n")
             LogDirectory = $logs
             ActiveDeadline = New-CatalystTestTaskDeadline -RemainingSeconds 30
             ActiveReserveSeconds = 0
+        }
+    }
+
+    function Invoke-CatalystTestGit {
+        param(
+            [Parameter(Mandatory = $true)][string]$Repository,
+            [Parameter(Mandatory = $true)][string[]]$Arguments
+        )
+
+        $output = @(& git -C $Repository @Arguments 2>&1)
+        if ($LASTEXITCODE -ne 0) {
+            throw "Scratch Git command failed: git $($Arguments -join ' ')`n$($output -join "`n")"
+        }
+        return ($output -join "`n").TrimEnd("`r", "`n")
+    }
+
+    function New-CatalystTestGitCase {
+        param([Parameter(Mandatory = $true)][string]$Name)
+
+        $root = Join-Path $script:ScratchRoot $Name
+        $repository = Join-Path $root 'repository'
+        $trusted = Join-Path $root 'trusted'
+        $workspace = Join-Path $root 'workspace'
+        $agentTemp = Join-Path $root 'agent-temp'
+        foreach ($directory in @($repository, $trusted, $workspace, $agentTemp)) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
+        $product = Join-Path $repository $script:CatalystProbeProductPath
+        $trackedOutput = Join-Path $repository (
+            'src/Core/src/Handlers/HybridWebView/HybridWebView.js')
+        $fixture = Join-Path $trusted $script:CatalystProbeFixtureRelativePath
+        foreach ($parent in @(
+                (Split-Path -Parent $product),
+                (Split-Path -Parent $trackedOutput),
+                (Split-Path -Parent $fixture))) {
+            New-Item -ItemType Directory -Path $parent -Force | Out-Null
+        }
+        [IO.File]::WriteAllText($product, "baseline`n")
+        [IO.File]::WriteAllText($trackedOutput, "generated baseline`n")
+        [IO.File]::WriteAllText($fixture, "fixed fixture`n")
+        Invoke-CatalystTestGit -Repository $repository -Arguments @('init', '--quiet') |
+            Out-Null
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'config', 'user.email', 'catalyst-probe-tests@example.invalid') | Out-Null
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'config', 'user.name', 'Catalyst Probe Tests') | Out-Null
+        Invoke-CatalystTestGit -Repository $repository -Arguments @('add', '--all') |
+            Out-Null
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'commit', '--quiet', '-m', 'baseline') | Out-Null
+        $baselineCommit = Invoke-CatalystTestGit -Repository $repository `
+            -Arguments @('rev-parse', 'HEAD')
+        $baselineBlob = Invoke-CatalystTestGit -Repository $repository `
+            -Arguments @('rev-parse', "HEAD:$($script:CatalystProbeProductPath)")
+        [IO.File]::WriteAllText($product, "negative`n")
+        $negativeFileSha256 =
+        (Get-FileHash -LiteralPath $product -Algorithm SHA256).Hash.ToLowerInvariant()
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'add', '--', $script:CatalystProbeProductPath) | Out-Null
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'commit', '--quiet', '-m', 'negative') | Out-Null
+        $negativeCommit = Invoke-CatalystTestGit -Repository $repository `
+            -Arguments @('rev-parse', 'HEAD')
+        $negativeBlob = Invoke-CatalystTestGit -Repository $repository `
+            -Arguments @('rev-parse', "HEAD:$($script:CatalystProbeProductPath)")
+        Invoke-CatalystTestGit -Repository $repository -Arguments @(
+            'checkout', '--quiet', '--detach', $baselineCommit) | Out-Null
+
+        $original = [ordered]@{
+            BaselineCommit = $script:CatalystProbeBaselineCommit
+            NegativeCommit = $script:CatalystProbeNegativeCommit
+            BaselineBlob = $script:CatalystProbeBaselineBlob
+            NegativeBlob = $script:CatalystProbeNegativeBlob
+            BaselineFileSha256 = $script:CatalystProbeBaselineFileSha256
+            NegativeFileSha256 = $script:CatalystProbeNegativeFileSha256
+            FixtureSha256 = $script:CatalystProbeFixtureSha256
+        }
+        $script:CatalystProbeBaselineCommit = $baselineCommit
+        $script:CatalystProbeNegativeCommit = $negativeCommit
+        $script:CatalystProbeBaselineBlob = $baselineBlob
+        $script:CatalystProbeNegativeBlob = $negativeBlob
+        $script:CatalystProbeBaselineFileSha256 =
+        (Get-FileHash -LiteralPath $product -Algorithm SHA256).Hash.ToLowerInvariant()
+        $script:CatalystProbeNegativeFileSha256 = $negativeFileSha256
+        $script:CatalystProbeFixtureSha256 =
+        (Get-FileHash -LiteralPath $fixture -Algorithm SHA256).Hash.ToLowerInvariant()
+
+        return [pscustomobject]@{
+            Root = $root
+            Repository = $repository
+            Trusted = $trusted
+            Workspace = $workspace
+            AgentTemp = $agentTemp
+            Output = Join-Path $workspace 'proof'
+            Runtime = Join-Path $agentTemp 'catalyst-gesture-runtime'
+            Attestation = Join-Path $root 'trusted-tree.json'
+            Product = $product
+            TrackedOutput = $trackedOutput
+            Fixture = $fixture
+            FixtureTarget =
+            Join-Path $repository $script:CatalystProbeFixtureTargetRelativePath
+            OriginalConstants = $original
+        }
+    }
+
+    function Restore-CatalystTestGitConstants {
+        param([Parameter(Mandatory = $true)][pscustomobject]$Case)
+
+        $script:CatalystProbeBaselineCommit = $Case.OriginalConstants.BaselineCommit
+        $script:CatalystProbeNegativeCommit = $Case.OriginalConstants.NegativeCommit
+        $script:CatalystProbeBaselineBlob = $Case.OriginalConstants.BaselineBlob
+        $script:CatalystProbeNegativeBlob = $Case.OriginalConstants.NegativeBlob
+        $script:CatalystProbeBaselineFileSha256 =
+        $Case.OriginalConstants.BaselineFileSha256
+        $script:CatalystProbeNegativeFileSha256 =
+        $Case.OriginalConstants.NegativeFileSha256
+        $script:CatalystProbeFixtureSha256 = $Case.OriginalConstants.FixtureSha256
+    }
+
+    function New-CatalystTestGitContext {
+        param(
+            [Parameter(Mandatory = $true)][pscustomobject]$Case,
+            [ValidateSet('setup', 'baseline', 'negative')][string]$State = 'setup'
+        )
+
+        New-Item -ItemType Directory -Path $Case.Output -Force | Out-Null
+        $logs = Join-Path $Case.Output 'logs'
+        New-Item -ItemType Directory -Path $logs -Force | Out-Null
+        $deadline = New-CatalystTestTaskDeadline
+        return [pscustomobject]@{
+            ExpectedSourceVersion = 'a' * 40
+            RepositoryRoot = $Case.Repository
+            TrustedRoot = $Case.Trusted
+            TrustedTreeAttestation = $Case.Attestation
+            OutputDirectory = $Case.Output
+            LogDirectory = $logs
+            RuntimeEnvironment =
+            Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $Case.Runtime
+            TaskDeadline = $deadline
+            ActiveDeadline = $deadline
+            ActiveReserveSeconds = 0
+            TrustedFixturePath = $Case.Fixture
+            FixtureTargetPath = $Case.FixtureTarget
+            ProductPath = $Case.Product
+            RepositoryState = $State
+            InitialRepositoryStatus = ''
+        }
+    }
+
+    function Invoke-CatalystTestGitProcess {
+        param(
+            [Parameter(Mandatory = $true)][string[]]$ArgumentList,
+            [Parameter(Mandatory = $true)][string]$WorkingDirectory
+        )
+
+        $stdout = Invoke-CatalystTestGit `
+            -Repository $WorkingDirectory `
+            -Arguments $ArgumentList
+        return [pscustomobject]@{
+            ExitCode = 0
+            TimedOut = $false
+            Stdout = $stdout
+            Stderr = ''
+            StartedUtc = 'start'
+            CompletedUtc = 'end'
+            LogSha256 = 'a' * 64
         }
     }
 }
@@ -237,7 +403,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             CATALYST_PROBE_OUTPUT_ROOT = $output
             CATALYST_PROBE_RUNTIME_ROOT = $runtime
             CATALYST_GESTURE_JOB_DEADLINE_UTC =
-                [DateTimeOffset]::UtcNow.AddMinutes(60).ToString('O')
+            [DateTimeOffset]::UtcNow.AddMinutes(60).ToString('O')
             CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS = '300'
             BUILD_SOURCEVERSION = ('a' * 40)
             PIPELINE_WORKSPACE = $workspace
@@ -271,6 +437,542 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         Should -Invoke Get-CatalystProbeHostFacts -Times 1 -Exactly
     }
 
+    It 'restores trusted setup tracked output before requiring the real initialization baseline' {
+        $case = New-CatalystTestGitCase -Name 'tracked-output-initialization'
+        Set-Content -LiteralPath $case.Attestation -Value '{}' -Encoding utf8NoBOM
+        [IO.File]::WriteAllText($case.TrackedOutput, "regenerated by build tasks`n")
+        $taskDeadline = New-CatalystTestTaskDeadline
+        $containerResult = Join-Path $case.Root 'fresh-profile/TestResults.xUnit.xml'
+        Mock Get-CatalystProbeHostFacts {
+            [pscustomobject]@{ IsMacOS = $true; Architecture = 'arm64' }
+        }
+        Mock Get-CatalystProbeContainerResultPath { $containerResult }
+        Mock Assert-CatalystProbeTrustedTree {}
+
+        $saved = @{}
+        $bindings = [ordered]@{
+            TF_BUILD = 'true'
+            BUILD_SOURCESDIRECTORY = $case.Repository
+            CATALYST_PROBE_TRUSTED_ROOT = $case.Trusted
+            CATALYST_PROBE_OUTPUT_ROOT = $case.Output
+            CATALYST_PROBE_RUNTIME_ROOT = $case.Runtime
+            CATALYST_GESTURE_JOB_DEADLINE_UTC =
+            [DateTimeOffset]::UtcNow.AddMinutes(60).ToString('O')
+            CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS = '300'
+            BUILD_SOURCEVERSION = ('a' * 40)
+            PIPELINE_WORKSPACE = $case.Workspace
+            AGENT_TEMPDIRECTORY = $case.AgentTemp
+        }
+        try {
+            foreach ($name in $bindings.Keys) {
+                $saved[$name] = [Environment]::GetEnvironmentVariable($name)
+                [Environment]::SetEnvironmentVariable($name, $bindings[$name])
+            }
+            $context = Initialize-CatalystGestureProbeContext `
+                -ExpectedSourceVersion ('a' * 40) `
+                -RepositoryRoot $case.Repository `
+                -TrustedRoot $case.Trusted `
+                -TrustedTreeAttestation $case.Attestation `
+                -OutputDirectory $case.Output `
+                -TaskDeadline $taskDeadline
+
+            $context.RepositoryState | Should -BeExactly 'setup'
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1', '--untracked-files=all')) |
+                Should -BeNullOrEmpty
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+        } finally {
+            foreach ($name in $bindings.Keys) {
+                [Environment]::SetEnvironmentVariable($name, $saved[$name])
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'restores tracked output after the trusted Catalyst prewarm' {
+        $case = New-CatalystTestGitCase -Name 'tracked-output-prewarm'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -ceq 'git') {
+                    return Invoke-CatalystTestGitProcess `
+                        -ArgumentList $ArgumentList `
+                        -WorkingDirectory $WorkingDirectory
+                }
+                $FileName | Should -BeExactly 'dotnet'
+                [IO.File]::WriteAllText(
+                    $case.TrackedOutput,
+                    "regenerated by trusted prewarm`n")
+                [pscustomobject]@{ ExitCode = 0; TimedOut = $false }
+            }
+
+            Invoke-CatalystProbeTrustedRestore -Context $context
+
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1', '--untracked-files=all')) |
+                Should -BeNullOrEmpty
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'retains rejected pre-execution changes through the real outer finalizer' {
+        $case = New-CatalystTestGitCase -Name 'rejected-input-outer-finalizer'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            $context | Add-Member ResultPath (Join-Path $case.Output 'catalyst-gesture-probe.json')
+            $context | Add-Member JobDeadlineUtc ([DateTimeOffset]::UtcNow.AddHours(1).ToString('O'))
+            $context | Add-Member ArtifactTailSeconds 300
+            $script:RejectedInputContext = $context
+            Set-Content -LiteralPath $case.Attestation -Value '{}' -Encoding utf8NoBOM
+            Mock Read-TrustedTreeAttestation { [pscustomobject]@{ treeHash = 'b' * 64 } }
+            Mock Initialize-CatalystGestureProbeContext { $script:RejectedInputContext }
+            Mock New-CatalystProbeFixedPatch { Join-Path $case.Root 'unused.patch' }
+            Mock Assert-CatalystProbeFixedPatchPolicy {}
+            Mock Invoke-CatalystProbeTrustedRestore {}
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Copy-CatalystProbeFixture {
+                New-Item -ItemType Directory -Path (Split-Path $case.FixtureTarget) -Force |
+                    Out-Null
+                Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+                $Context.RepositoryState = 'baseline'
+                [IO.File]::WriteAllText($case.TrackedOutput, "rejected before execution`n")
+            }
+            Mock Get-ReplicationAppleIsolatedCommand {
+                [pscustomobject]@{
+                    FilePath = 'mock-native-verifier'
+                    Arguments = @()
+                    Environment = $context.RuntimeEnvironment
+                }
+            }
+            Mock Stop-CatalystProbeOwnedApplication { 0 }
+            Mock Invoke-CatalystProbeBoundedProcess {
+                throw 'native verifier must not launch for rejected input'
+            } -ParameterFilter { $FileName -cne 'git' }
+
+            {
+                Invoke-CatalystGestureRegressionProbeCore `
+                    -ExpectedSourceVersion ('a' * 40) `
+                    -RepositoryRoot $case.Repository `
+                    -TrustedRoot $case.Trusted `
+                    -TrustedTreeAttestation $case.Attestation `
+                    -OutputDirectory $case.Output `
+                    -TaskDeadline $context.TaskDeadline
+            } | Should -Throw '*scope contains tracked verification output*'
+
+            Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly `
+                -ParameterFilter { $FileName -cne 'git' }
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "rejected before execution`n"
+            (Get-Content -LiteralPath $case.FixtureTarget -Raw) |
+                Should -BeExactly "fixed fixture`n"
+            $result = Get-Content -LiteralPath $context.ResultPath -Raw | ConvertFrom-Json
+            $result.outcome | Should -BeExactly 'inconclusive'
+            $result.cleanup.completed | Should -BeFalse
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects dirty input before trusted prewarm without restoring it' {
+        $case = New-CatalystTestGitCase -Name 'rejected-prewarm-input'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            [IO.File]::WriteAllText($case.TrackedOutput, "rejected before prewarm`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                throw 'dotnet must not launch for rejected input'
+            } -ParameterFilter { $FileName -cne 'git' }
+
+            { Invoke-CatalystProbeTrustedRestore -Context $context } |
+                Should -Throw '*scope contains tracked verification output*'
+            Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly `
+                -ParameterFilter { $FileName -cne 'git' }
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "rejected before prewarm`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'restores output from failed trusted prewarm within that phase' {
+        $case = New-CatalystTestGitCase -Name 'failed-prewarm-output'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -ceq 'git') {
+                    return Invoke-CatalystTestGitProcess `
+                        -ArgumentList $ArgumentList -WorkingDirectory $WorkingDirectory
+                }
+                [IO.File]::WriteAllText($case.TrackedOutput, "failed prewarm output`n")
+                [pscustomobject]@{ ExitCode = 1; TimedOut = $false }
+            }
+
+            { Invoke-CatalystProbeTrustedRestore -Context $context } |
+                Should -Throw '*trusted prewarm failed*'
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects dirty pre-execution scope instead of treating it as trusted cycle output' {
+        $case = New-CatalystTestGitCase -Name 'dirty-cycle-input'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            New-Item -ItemType Directory -Path (Split-Path -Parent $case.FixtureTarget) `
+                -Force | Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            [IO.File]::WriteAllText($case.TrackedOutput, "dirty before verifier`n")
+            Mock Get-ReplicationAppleIsolatedCommand {
+                [pscustomobject]@{
+                    FilePath = 'mock-native-verifier'
+                    Arguments = @()
+                    Environment = $context.RuntimeEnvironment
+                }
+            }
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                throw 'native verifier must not launch for dirty input'
+            } -ParameterFilter { $FileName -cne 'git' }
+
+            { Invoke-CatalystProbeCycle -Kind baseline -Context $context } |
+                Should -Throw '*scope contains tracked verification output*'
+            Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly `
+                -ParameterFilter { $FileName -cne 'git' }
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "dirty before verifier`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects unknown untracked paths without deleting or restoring anything' {
+        $case = New-CatalystTestGitCase -Name 'unknown-untracked'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            New-Item -ItemType Directory -Path (Split-Path -Parent $case.FixtureTarget) `
+                -Force | Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            $unknown = Join-Path $case.Repository 'unexpected.txt'
+            [IO.File]::WriteAllText($unknown, "foreign`n")
+            [IO.File]::WriteAllText($case.TrackedOutput, "dirty output`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+
+            {
+                Restore-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $context `
+                    -State baseline
+            } | Should -Throw '*unexpected untracked repository path*'
+            Test-Path -LiteralPath $unknown | Should -BeTrue
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "dirty output`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects staged tracked output without altering it' {
+        $case = New-CatalystTestGitCase -Name 'staged-output'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            [IO.File]::WriteAllText($case.TrackedOutput, "staged output`n")
+            Invoke-CatalystTestGit -Repository $case.Repository -Arguments @(
+                'add', '--', 'src/Core/src/Handlers/HybridWebView/HybridWebView.js') |
+                Out-Null
+            Mock Assert-CatalystProbeTrustedTree {}
+
+            {
+                Restore-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $context `
+                    -State setup
+            } | Should -Throw '*refuses staged repository path*'
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1')) |
+                Should -Match '^M  src/Core/src/Handlers/HybridWebView/HybridWebView\.js$'
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "staged output`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects protected product and fixture mutations without erasing them' {
+        $productCase = New-CatalystTestGitCase -Name 'mutated-product'
+        try {
+            $context = New-CatalystTestGitContext -Case $productCase -State setup
+            [IO.File]::WriteAllText($productCase.Product, "unexpected product`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+            {
+                Restore-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $context `
+                    -State setup
+            } | Should -Throw '*product bytes changed outside the fixed contract*'
+            (Get-Content -LiteralPath $productCase.Product -Raw) |
+                Should -BeExactly "unexpected product`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $productCase
+        }
+
+        $fixtureCase = New-CatalystTestGitCase -Name 'mutated-fixture'
+        try {
+            $context = New-CatalystTestGitContext -Case $fixtureCase -State baseline
+            New-Item -ItemType Directory `
+                -Path (Split-Path -Parent $fixtureCase.FixtureTarget) -Force |
+                Out-Null
+            [IO.File]::WriteAllText($fixtureCase.FixtureTarget, "unexpected fixture`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+            {
+                Restore-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $context `
+                    -State baseline
+            } | Should -Throw '*fixture bytes changed outside the fixed contract*'
+            (Get-Content -LiteralPath $fixtureCase.FixtureTarget -Raw) |
+                Should -BeExactly "unexpected fixture`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $fixtureCase
+        }
+    }
+
+    It 'fails closed when tracked output restoration fails or times out' {
+        foreach ($mode in @('failure', 'timeout')) {
+            $case = New-CatalystTestGitCase -Name "restore-$mode"
+            try {
+                $context = New-CatalystTestGitContext -Case $case -State setup
+                [IO.File]::WriteAllText($case.TrackedOutput, "$mode output`n")
+                $script:RestorationFailureMode = $mode
+                Mock Assert-CatalystProbeTrustedTree {}
+                Mock Invoke-CatalystProbeBoundedProcess {
+                    if ($FileName -ceq 'git' -and $ArgumentList[0] -ceq 'restore') {
+                        return [pscustomobject]@{
+                            ExitCode = if ($script:RestorationFailureMode -ceq 'failure') {
+                                1
+                            } else { 124 }
+                            TimedOut = $script:RestorationFailureMode -ceq 'timeout'
+                        }
+                    }
+                    return Invoke-CatalystTestGitProcess `
+                        -ArgumentList $ArgumentList `
+                        -WorkingDirectory $WorkingDirectory
+                }
+
+                {
+                    Restore-CatalystProbeTrackedVerificationSideEffects `
+                        -Context $context `
+                        -State setup
+                } | Should -Throw '*tracked verification-output restoration*'
+                (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                    Should -BeExactly "$mode output`n"
+            } finally {
+                Restore-CatalystTestGitConstants -Case $case
+            }
+        }
+    }
+
+    It 'fails closed when restoration reports success but leaves a dirty tracked path' {
+        $case = New-CatalystTestGitCase -Name 'restore-still-dirty'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State setup
+            [IO.File]::WriteAllText($case.TrackedOutput, "first dirty output`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                $result = Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+                if ($FileName -ceq 'git' -and $ArgumentList[0] -ceq 'restore') {
+                    [IO.File]::WriteAllText($case.TrackedOutput, "still dirty output`n")
+                }
+                return $result
+            }
+
+            {
+                Restore-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $context `
+                    -State setup
+            } | Should -Throw '*scope contains tracked verification output*'
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "still dirty output`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'leaves protected and unknown paths untouched when final cleanup scope is invalid' {
+        $case = New-CatalystTestGitCase -Name 'invalid-final-cleanup'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State negative
+            New-Item -ItemType Directory -Path (Split-Path -Parent $case.FixtureTarget) `
+                -Force | Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            [IO.File]::WriteAllText($case.Product, "negative`n")
+            [IO.File]::WriteAllText($case.TrackedOutput, "cycle output`n")
+            $unknown = Join-Path $case.Repository 'foreign-existing.xml'
+            [IO.File]::WriteAllText($unknown, "<foreign />`n")
+            Mock Stop-CatalystProbeOwnedApplication { 0 }
+            Mock Assert-CatalystProbeTrustedTree {}
+
+            { Restore-CatalystProbeRepository -Context $context } |
+                Should -Throw '*unexpected untracked repository path*'
+            (Get-Content -LiteralPath $case.Product -Raw) |
+                Should -BeExactly "negative`n"
+            (Get-Content -LiteralPath $case.FixtureTarget -Raw) |
+                Should -BeExactly "fixed fixture`n"
+            Test-Path -LiteralPath $unknown | Should -BeTrue
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "cycle output`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects tracked output before applying the known-negative product image' {
+        $case = New-CatalystTestGitCase -Name 'dirty-negative-input'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            New-Item -ItemType Directory `
+                -Path (Split-Path -Parent $case.FixtureTarget) -Force |
+                Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            [IO.File]::WriteAllText($case.TrackedOutput, "dirty before apply`n")
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                throw 'known-negative apply must not run for dirty input'
+            } -ParameterFilter {
+                $FileName -ceq 'git' -and $ArgumentList[0] -ceq 'apply'
+            }
+
+            {
+                Enable-CatalystProbeKnownNegative `
+                    -Context $context `
+                    -PatchPath (Join-Path $case.Root 'unused.patch')
+            } | Should -Throw '*scope contains tracked verification output*'
+            Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly `
+                -ParameterFilter {
+                $FileName -ceq 'git' -and $ArgumentList[0] -ceq 'apply'
+            }
+            (Get-Content -LiteralPath $case.Product -Raw) |
+                Should -BeExactly "baseline`n"
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "dirty before apply`n"
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'finishes repository cleanup after tracked cycle output is restored' {
+        $case = New-CatalystTestGitCase -Name 'final-output-cleanup'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State negative
+            New-Item -ItemType Directory `
+                -Path (Split-Path -Parent $case.FixtureTarget) -Force |
+                Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            [IO.File]::WriteAllText($case.Product, "negative`n")
+            [IO.File]::WriteAllText($case.TrackedOutput, "final cycle output`n")
+            Mock Stop-CatalystProbeOwnedApplication { 0 }
+            Mock Assert-CatalystProbeTrustedTree {}
+
+            Restore-CatalystProbeTrackedVerificationSideEffects `
+                -Context $context -State negative
+            Restore-CatalystProbeRepository -Context $context
+
+            Test-Path -LiteralPath $case.FixtureTarget | Should -BeFalse
+            (Get-Content -LiteralPath $case.Product -Raw) |
+                Should -BeExactly "baseline`n"
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1', '--untracked-files=all')) |
+                Should -BeNullOrEmpty
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'restores tracked output within both native cycle deadlines' {
+        $case = New-CatalystTestGitCase -Name 'tracked-output-native-cycles'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            New-Item -ItemType Directory `
+                -Path (Split-Path -Parent $case.FixtureTarget) -Force |
+                Out-Null
+            Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
+            $script:ActiveNativeCycleKind = $null
+            $script:NativeCycleStarted = $false
+            $script:OriginalNativeDeadline = $context.ActiveDeadline
+            Mock Get-ReplicationAppleIsolatedCommand {
+                [pscustomobject]@{
+                    FilePath = 'mock-native-verifier'
+                    Arguments = @()
+                    Environment = $context.RuntimeEnvironment
+                }
+            }
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Stop-CatalystProbeOwnedApplication { 0 }
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -ceq 'git') {
+                    if ($script:NativeCycleStarted) {
+                        [object]::ReferenceEquals(
+                            $TaskDeadline,
+                            $script:OriginalNativeDeadline) | Should -BeFalse
+                        $ReserveSeconds | Should -Be 10
+                    }
+                    return Invoke-CatalystTestGitProcess `
+                        -ArgumentList $ArgumentList `
+                        -WorkingDirectory $WorkingDirectory
+                }
+                $FileName | Should -BeExactly 'mock-native-verifier'
+                $ReserveSeconds | Should -Be 30
+                $script:NativeCycleStarted = $true
+                [IO.File]::WriteAllText(
+                    $case.TrackedOutput,
+                    "regenerated by $script:ActiveNativeCycleKind native cycle`n")
+                New-CatalystTestEvidence `
+                    -Directory (Join-Path $case.Output $script:ActiveNativeCycleKind) `
+                    -Outcome $(if ($script:ActiveNativeCycleKind -ceq 'baseline') {
+                        'Pass'
+                    } else {
+                        'Fail'
+                    }) | Out-Null
+                [pscustomobject]@{
+                    ExitCode = 0
+                    TimedOut = $false
+                    StartedUtc = 'start'
+                    CompletedUtc = 'end'
+                    LogSha256 = 'a' * 64
+                }
+            }
+
+            $script:ActiveNativeCycleKind = 'baseline'
+            $baseline = Invoke-CatalystProbeCycle -Kind baseline -Context $context
+            $baseline.passed | Should -Be 2
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+
+            [IO.File]::WriteAllText($case.Product, "negative`n")
+            $context.RepositoryState = 'negative'
+            $script:ActiveNativeCycleKind = 'negative'
+            $script:NativeCycleStarted = $false
+            $negative = Invoke-CatalystProbeCycle -Kind negative -Context $context
+            $negative.failed | Should -Be 2
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1', '--untracked-files=all')) |
+                Should -BeExactly (
+                    " M $($script:CatalystProbeProductPath)`n" +
+                    "?? $($script:CatalystProbeFixtureTargetRelativePath)")
+        } finally {
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
     It 'rejects a non-macOS host at the real initialization boundary' {
         $caseRoot = Join-Path $script:ScratchRoot 'non-macos-initialization'
         foreach ($directory in @('repository', 'trusted', 'output')) {
@@ -294,11 +996,11 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         } | Should -Throw '*fresh arm64 macOS Azure job*'
         Should -Invoke Get-CatalystProbeHostFacts -Times 1 -Exactly
         ([regex]::Matches(
-                $script:ProbeSource,
-                '\[OperatingSystem\]::IsMacOS\(\)')).Count | Should -Be 1
+            $script:ProbeSource,
+            '\[OperatingSystem\]::IsMacOS\(\)')).Count | Should -Be 1
         ([regex]::Matches(
-                $script:ProbeSource,
-                'RuntimeInformation\]::\s*\r?\n?\s*OSArchitecture')).Count |
+            $script:ProbeSource,
+            'RuntimeInformation\]::\s*\r?\n?\s*OSArchitecture')).Count |
             Should -Be 1
     }
 
@@ -436,14 +1138,14 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         Mock Assert-CatalystProbeDeadlineAdmission {}
         Mock New-CatalystProbeFixedPatch {
             $minimumSeconds =
-                $script:CatalystProbePrewarmBudgetSeconds +
-                (2 * $script:CatalystProbeCycleBudgetSeconds) +
-                $script:CatalystProbePatchApplyBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds +
-                $script:CatalystProbeSummaryBudgetSeconds
+            $script:CatalystProbePrewarmBudgetSeconds +
+            (2 * $script:CatalystProbeCycleBudgetSeconds) +
+            $script:CatalystProbePatchApplyBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds
             $taskDeadline.DeadlineTimestamp =
-                [Diagnostics.Stopwatch]::GetTimestamp() +
-                ([long]($minimumSeconds - 1) * [long]$taskDeadline.Frequency)
+            [Diagnostics.Stopwatch]::GetTimestamp() +
+            ([long]($minimumSeconds - 1) * [long]$taskDeadline.Frequency)
             Join-Path $caseRoot 'negative.patch'
         }
         Mock Assert-CatalystProbeFixedPatchPolicy {}
@@ -490,14 +1192,14 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             ActiveReserveSeconds = 180
         }
         $identities = @($script:CatalystProbeMethods | ForEach-Object {
-            [ordered]@{
-                type = $script:CatalystProbeClass
-                method = $_
-                displayName = "$($script:CatalystProbeClass).$_"
-                outcome = 'Pass'
-                failureSignature = ''
-            }
-        })
+                [ordered]@{
+                    type = $script:CatalystProbeClass
+                    method = $_
+                    displayName = "$($script:CatalystProbeClass).$_"
+                    outcome = 'Pass'
+                    failureSignature = ''
+                }
+            })
 
         Mock Read-TrustedTreeAttestation {
             [pscustomobject]@{ treeHash = 'b' * 64 }
@@ -562,6 +1264,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             FixtureTargetPath = $fixtureTarget
             ProductPath = $product
             InitialRepositoryStatus = ''
+            RepositoryState = 'baseline'
             RuntimeEnvironment = $environment
             JobDeadlineUtc = [DateTimeOffset]::UtcNow.AddHours(1).ToString('O')
             ArtifactTailSeconds = 300
@@ -570,17 +1273,17 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             ActiveReserveSeconds = 180
         }
         $identities = @($script:CatalystProbeMethods | ForEach-Object {
-            [ordered]@{
-                type = $script:CatalystProbeClass
-                method = $_
-                displayName = "$($script:CatalystProbeClass).$_"
-            }
-        })
+                [ordered]@{
+                    type = $script:CatalystProbeClass
+                    method = $_
+                    displayName = "$($script:CatalystProbeClass).$_"
+                }
+            })
         $script:CleanupGitCalls = 0
         $script:CleanupDeadlineReferences =
-            [Collections.Generic.List[object]]::new()
+        [Collections.Generic.List[object]]::new()
         $script:CleanupEffectiveTimeouts =
-            [Collections.Generic.List[int]]::new()
+        [Collections.Generic.List[int]]::new()
 
         Mock Read-TrustedTreeAttestation {
             [pscustomobject]@{ treeHash = 'b' * 64 }
@@ -611,6 +1314,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         }
         Mock Stop-CatalystProbeOwnedApplication { 0 }
         Mock Assert-CatalystProbeTrustedTree {}
+        Mock Assert-CatalystProbeRepositoryState {}
         Mock Invoke-CatalystProbeBoundedProcess {
             $script:CleanupGitCalls++
             $script:CleanupDeadlineReferences.Add($TaskDeadline)
@@ -622,11 +1326,11 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             $script:CleanupEffectiveTimeouts.Add($effective)
             if ($script:CleanupGitCalls -eq 1) {
                 $TaskDeadline.DeadlineTimestamp =
-                    [Diagnostics.Stopwatch]::GetTimestamp() +
-                    (2 * [long]$TaskDeadline.Frequency)
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (2 * [long]$TaskDeadline.Frequency)
             } elseif ($script:CleanupGitCalls -eq 2) {
                 $TaskDeadline.DeadlineTimestamp =
-                    [Diagnostics.Stopwatch]::GetTimestamp()
+                [Diagnostics.Stopwatch]::GetTimestamp()
             }
             [pscustomobject]@{
                 TimedOut = $false
@@ -702,7 +1406,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $parentPath = Join-Path $root 'parent.ps1'
         $recordPath = Join-Path $root 'owned-child.txt'
         $pwshPath = (Get-Command pwsh -CommandType Application |
-            Select-Object -First 1).Source
+                Select-Object -First 1).Source
         $escapedPwsh = $pwshPath.Replace("'", "''")
         $escapedRecord = $recordPath.Replace("'", "''")
         $parentSource = @"
@@ -792,15 +1496,22 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                 [StringComparer]::Ordinal)
             ActiveDeadline = $originalDeadline
             ActiveReserveSeconds = 180
+            RepositoryState = 'baseline'
         }
         $script:CycleExecutionDeadline = $null
         $script:CycleCleanupDeadline = $null
+        $script:CycleRestorationDeadline = $null
         Mock Get-ReplicationAppleIsolatedCommand {
             [pscustomobject]@{
                 FilePath = 'pwsh'; Arguments = @(); Environment = $context.RuntimeEnvironment
             }
         }
         Mock Assert-CatalystProbeTrustedTree {}
+        Mock Assert-CatalystProbeRepositoryState {}
+        Mock Restore-CatalystProbeTrackedVerificationSideEffects {
+            $script:CycleRestorationDeadline = $Context.ActiveDeadline
+            $Context.ActiveReserveSeconds | Should -Be 10
+        }
         Mock Invoke-CatalystProbeBoundedProcess {
             $script:CycleExecutionDeadline = $TaskDeadline
             $ReserveSeconds | Should -Be 30
@@ -822,6 +1533,9 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $result.passed | Should -Be 2
         [object]::ReferenceEquals(
             $script:CycleExecutionDeadline, $script:CycleCleanupDeadline) | Should -BeTrue
+        [object]::ReferenceEquals(
+            $script:CycleExecutionDeadline, $script:CycleRestorationDeadline) |
+            Should -BeTrue
         $script:CycleExecutionDeadline.BudgetSeconds | Should -BeLessOrEqual 480
         [object]::ReferenceEquals($context.ActiveDeadline, $originalDeadline) | Should -BeTrue
         $context.ActiveReserveSeconds | Should -Be 180
@@ -863,8 +1577,8 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                 'Microsoft.Maui.Controls.DeviceTests'
             } elseif ($ArgumentList -contains 'Print :CFBundleIdentifier') {
                 $TaskDeadline.DeadlineTimestamp =
-                    [Diagnostics.Stopwatch]::GetTimestamp() +
-                    (3 * [long]$TaskDeadline.Frequency)
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (3 * [long]$TaskDeadline.Frequency)
                 'com.microsoft.maui.controls.devicetests'
             } elseif ($ArgumentList -contains '--entitlements') {
                 '<plist><dict><key>com.apple.security.app-sandbox</key><true/></dict></plist>'
@@ -885,139 +1599,139 @@ Describe 'Fixed report-only Catalyst gesture probe' {
     }
 
     It 'keeps private SDK and package caches outside every published proof path' {
-            $caseRoot = Join-Path $script:ScratchRoot 'private-cache-separation'
-            $agentTemp = Join-Path $caseRoot 'agent-temp'
-            $output = Join-Path $caseRoot 'pipeline-workspace/proof'
-            $repository = Join-Path $caseRoot 'pipeline-workspace/repository'
-            $trusted = Join-Path $caseRoot 'artifact-staging/trusted'
-            foreach ($directory in @($agentTemp, $output, $repository, $trusted)) {
-                New-Item -ItemType Directory -Path $directory -Force | Out-Null
-            }
-            $runtime = Join-Path $agentTemp 'catalyst-gesture-runtime'
-            $resolved = Resolve-CatalystProbePrivateRuntimeRoot `
-                -RuntimeRoot $runtime `
+        $caseRoot = Join-Path $script:ScratchRoot 'private-cache-separation'
+        $agentTemp = Join-Path $caseRoot 'agent-temp'
+        $output = Join-Path $caseRoot 'pipeline-workspace/proof'
+        $repository = Join-Path $caseRoot 'pipeline-workspace/repository'
+        $trusted = Join-Path $caseRoot 'artifact-staging/trusted'
+        foreach ($directory in @($agentTemp, $output, $repository, $trusted)) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
+        $runtime = Join-Path $agentTemp 'catalyst-gesture-runtime'
+        $resolved = Resolve-CatalystProbePrivateRuntimeRoot `
+            -RuntimeRoot $runtime `
+            -AgentTempDirectory $agentTemp `
+            -OutputDirectory $output `
+            -RepositoryRoot $repository `
+            -TrustedRoot $trusted
+        $environment = Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $resolved
+
+        Test-CatalystProbePathOverlap -First $resolved -Second $output |
+            Should -BeFalse
+        Test-CatalystProbePathOverlap `
+            -First $environment['NUGET_PACKAGES'] `
+            -Second $output | Should -BeFalse
+        Test-CatalystProbePathOverlap `
+            -First $environment['DOTNET_CLI_HOME'] `
+            -Second $output | Should -BeFalse
+        $script:Stage | Should -Match (
+            'CatalystGestureRuntimeRoot: \$\(Agent\.TempDirectory\)/catalyst-gesture-runtime')
+        $script:Stage | Should -Match "targetPath: '\$\(CatalystGestureProbeRoot\)'"
+        $script:Stage | Should -Not -Match (
+            "targetPath: '\$\(CatalystGestureRuntimeRoot\)'")
+        $resultJson = New-CatalystProbeResult `
+            -ExpectedSourceVersion ('a' * 40) `
+            -TrustedTreeHash ('b' * 64) `
+            -TrustedTreeAttestationSha256 ('c' * 64) |
+            ConvertTo-Json -Depth 12
+        $resultJson | Should -Not -Match (
+            'nuget-packages|dotnet-home|unit-test-token|agent-temp')
+
+        {
+            Resolve-CatalystProbePrivateRuntimeRoot `
+                -RuntimeRoot (Join-Path $output 'runtime') `
                 -AgentTempDirectory $agentTemp `
                 -OutputDirectory $output `
                 -RepositoryRoot $repository `
                 -TrustedRoot $trusted
-            $environment = Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $resolved
-
-            Test-CatalystProbePathOverlap -First $resolved -Second $output |
-                Should -BeFalse
-            Test-CatalystProbePathOverlap `
-                -First $environment['NUGET_PACKAGES'] `
-                -Second $output | Should -BeFalse
-            Test-CatalystProbePathOverlap `
-                -First $environment['DOTNET_CLI_HOME'] `
-                -Second $output | Should -BeFalse
-            $script:Stage | Should -Match (
-                'CatalystGestureRuntimeRoot: \$\(Agent\.TempDirectory\)/catalyst-gesture-runtime')
-            $script:Stage | Should -Match "targetPath: '\$\(CatalystGestureProbeRoot\)'"
-            $script:Stage | Should -Not -Match (
-                "targetPath: '\$\(CatalystGestureRuntimeRoot\)'")
-            $resultJson = New-CatalystProbeResult `
-                -ExpectedSourceVersion ('a' * 40) `
-                -TrustedTreeHash ('b' * 64) `
-                -TrustedTreeAttestationSha256 ('c' * 64) |
-                ConvertTo-Json -Depth 12
-            $resultJson | Should -Not -Match (
-                'nuget-packages|dotnet-home|unit-test-token|agent-temp')
-
-            {
-                Resolve-CatalystProbePrivateRuntimeRoot `
-                    -RuntimeRoot (Join-Path $output 'runtime') `
-                    -AgentTempDirectory $agentTemp `
-                    -OutputDirectory $output `
-                    -RepositoryRoot $repository `
-                    -TrustedRoot $trusted
-            } | Should -Throw '*fixed Agent.TempDirectory root*'
+        } | Should -Throw '*fixed Agent.TempDirectory root*'
     }
 
     It 'rejects the former retry envelope and reserves a runnable evidence tail' {
-            $started = [DateTimeOffset]::Parse('2026-09-12T00:00:00Z')
-            $fixed = Get-CatalystProbeFixedPipelineBudget -StartedUtc $started
-            $fixed.requiredSeconds | Should -Be 4920
-            $fixed.slackSeconds | Should -Be 480
-            $fixed.configuredTaskEnvelopeSeconds | Should -Be 5220
-            $fixed.configuredTaskSlackSeconds | Should -Be 180
-            @($fixed.phases | Where-Object { $_.retryCount -ne 0 }).Count |
-                Should -Be 0
-            ($fixed.checkoutTimeoutSeconds +
-                $fixed.validationTimeoutSeconds +
-                $fixed.availableAfterValidationSeconds) | Should -BeLessOrEqual 6000
+        $started = [DateTimeOffset]::Parse('2026-09-12T00:00:00Z')
+        $fixed = Get-CatalystProbeFixedPipelineBudget -StartedUtc $started
+        $fixed.requiredSeconds | Should -Be 4920
+        $fixed.slackSeconds | Should -Be 480
+        $fixed.configuredTaskEnvelopeSeconds | Should -Be 5220
+        $fixed.configuredTaskSlackSeconds | Should -Be 180
+        @($fixed.phases | Where-Object { $_.retryCount -ne 0 }).Count |
+            Should -Be 0
+        ($fixed.checkoutTimeoutSeconds +
+        $fixed.validationTimeoutSeconds +
+        $fixed.availableAfterValidationSeconds) | Should -BeLessOrEqual 6000
 
-            $taskTimeouts = [ordered]@{
-                'Validate closed Catalyst probe inputs before setup' = 2
-                'Capture fixed Catalyst trusted tree' = 2
-                'Attest fixed Catalyst trusted tree' = 3
-                'Fetch fixed public product objects and detach baseline' = 4
-                'Select fixed preinstalled Catalyst Xcode' = 3
-                'Restore pinned baseline tools' = 5
-                'Provision baseline Catalyst SDK and workloads' = 17
-                'Build baseline MSBuild tasks only' = 12
-                'Run fixed report-only Catalyst gesture A/B' = 36
-                'Preserve report-only Catalyst probe evidence' = 5
+        $taskTimeouts = [ordered]@{
+            'Validate closed Catalyst probe inputs before setup' = 2
+            'Capture fixed Catalyst trusted tree' = 2
+            'Attest fixed Catalyst trusted tree' = 3
+            'Fetch fixed public product objects and detach baseline' = 4
+            'Select fixed preinstalled Catalyst Xcode' = 3
+            'Restore pinned baseline tools' = 5
+            'Provision baseline Catalyst SDK and workloads' = 17
+            'Build baseline MSBuild tasks only' = 12
+            'Run fixed report-only Catalyst gesture A/B' = 36
+            'Preserve report-only Catalyst probe evidence' = 5
+        }
+        $script:Stage | Should -Match (
+            '(?ms)- checkout: self.*?persistCredentials: false\r?\n' +
+            '\s+timeoutInMinutes: 5')
+        $configuredMinutes = 5 # checkout
+        foreach ($entry in $taskTimeouts.GetEnumerator()) {
+            $match = [regex]::Match(
+                $script:Stage,
+                "(?ms)displayName: '$([regex]::Escape($entry.Key))'\r?\n" +
+                "\s+(?:condition: .*\r?\n\s+)?timeoutInMinutes: (\d+)")
+            $match.Success | Should -BeTrue -Because (
+                "$($entry.Key) must retain a bounded timeout")
+            [int]$match.Groups[1].Value | Should -Be $entry.Value
+            $configuredMinutes += [int]$match.Groups[1].Value
+        }
+        $configuredMinutes | Should -Be 94
+        $configuredMinutes | Should -BeLessThan 100
+
+        $formerEnvelope = @(
+            [ordered]@{
+                name = 'workload-bootstrap'
+                maximumSeconds = 1800
+                retryCount = 2
             }
-            $script:Stage | Should -Match (
-                '(?ms)- checkout: self.*?persistCredentials: false\r?\n' +
-                '\s+timeoutInMinutes: 5')
-            $configuredMinutes = 5 # checkout
-            foreach ($entry in $taskTimeouts.GetEnumerator()) {
-                $match = [regex]::Match(
-                    $script:Stage,
-                    "(?ms)displayName: '$([regex]::Escape($entry.Key))'\r?\n" +
-                    "\s+(?:condition: .*\r?\n\s+)?timeoutInMinutes: (\d+)")
-                $match.Success | Should -BeTrue -Because (
-                    "$($entry.Key) must retain a bounded timeout")
-                [int]$match.Groups[1].Value | Should -Be $entry.Value
-                $configuredMinutes += [int]$match.Groups[1].Value
+            [ordered]@{
+                name = 'build-tasks'
+                maximumSeconds = 1200
+                retryCount = 0
             }
-            $configuredMinutes | Should -Be 94
-            $configuredMinutes | Should -BeLessThan 100
+            [ordered]@{
+                name = 'report-only-probe'
+                maximumSeconds = 2400
+                retryCount = 0
+            }
+        )
+        {
+            Assert-CatalystProbeBudgetSchedule `
+                -Phases $formerEnvelope `
+                -AvailableSeconds 5400 `
+                -ArtifactTailSeconds 300
+        } | Should -Throw '*worst-case phase and retry envelope*'
 
-            $formerEnvelope = @(
-                [ordered]@{
-                    name = 'workload-bootstrap'
-                    maximumSeconds = 1800
-                    retryCount = 2
-                }
-                [ordered]@{
-                    name = 'build-tasks'
-                    maximumSeconds = 1200
-                    retryCount = 0
-                }
-                [ordered]@{
-                    name = 'report-only-probe'
-                    maximumSeconds = 2400
-                    retryCount = 0
-                }
-            )
-            {
-                Assert-CatalystProbeBudgetSchedule `
-                    -Phases $formerEnvelope `
-                    -AvailableSeconds 5400 `
-                    -ArtifactTailSeconds 300
-            } | Should -Throw '*worst-case phase and retry envelope*'
-
-            $deadline = $started.AddSeconds(1000).ToString('O')
-            {
-                Assert-CatalystProbeDeadlineAdmission `
-                    -DeadlineUtc $deadline `
-                    -Phase 'bounded test' `
-                    -PhaseBudgetSeconds 600 `
-                    -RemainingPhaseBudgetSeconds 100 `
-                    -ArtifactTailSeconds 300 `
-                    -NowUtc $started
-            } | Should -Not -Throw
-            {
-                Assert-CatalystProbeDeadlineAdmission `
-                    -DeadlineUtc $deadline `
-                    -Phase 'late bounded test' `
-                    -PhaseBudgetSeconds 600 `
-                    -RemainingPhaseBudgetSeconds 100 `
-                    -ArtifactTailSeconds 300 `
-                    -NowUtc $started.AddSeconds(1)
-            } | Should -Throw '*evidence-publication tail*'
+        $deadline = $started.AddSeconds(1000).ToString('O')
+        {
+            Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $deadline `
+                -Phase 'bounded test' `
+                -PhaseBudgetSeconds 600 `
+                -RemainingPhaseBudgetSeconds 100 `
+                -ArtifactTailSeconds 300 `
+                -NowUtc $started
+        } | Should -Not -Throw
+        {
+            Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $deadline `
+                -Phase 'late bounded test' `
+                -PhaseBudgetSeconds 600 `
+                -RemainingPhaseBudgetSeconds 100 `
+                -ArtifactTailSeconds 300 `
+                -NowUtc $started.AddSeconds(1)
+        } | Should -Throw '*evidence-publication tail*'
     }
 
     It 'derives one fixed monotonic deadline from the final task entry' {
@@ -1028,14 +1742,14 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $saved = @{}
         try {
             foreach ($name in $names) {
-               $saved[$name] = [Environment]::GetEnvironmentVariable($name)
+                $saved[$name] = [Environment]::GetEnvironmentVariable($name)
             }
             [Environment]::SetEnvironmentVariable(
-               $names[0],
-               [string][Diagnostics.Stopwatch]::GetTimestamp())
+                $names[0],
+                [string][Diagnostics.Stopwatch]::GetTimestamp())
             [Environment]::SetEnvironmentVariable(
-               $names[1],
-               [string][Diagnostics.Stopwatch]::Frequency)
+                $names[1],
+                [string][Diagnostics.Stopwatch]::Frequency)
             [Environment]::SetEnvironmentVariable($names[2], '2040')
 
             $deadline = New-CatalystProbeTaskDeadline
@@ -1049,26 +1763,26 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             $script:CatalystProbeCoordinationBudgetSeconds | Should -Be 180
             $script:CatalystProbeTaskTimeoutSeconds | Should -Be 2160
             ($script:CatalystProbeCoordinationBudgetSeconds +
-                $script:CatalystProbePrewarmBudgetSeconds +
-                (2 * $script:CatalystProbeCycleBudgetSeconds) +
-                $script:CatalystProbePatchApplyBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds +
-                $script:CatalystProbeSummaryBudgetSeconds) | Should -Be 2040
+            $script:CatalystProbePrewarmBudgetSeconds +
+            (2 * $script:CatalystProbeCycleBudgetSeconds) +
+            $script:CatalystProbePatchApplyBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) | Should -Be 2040
             (Get-CatalystProbeDeadlineRemainingSeconds -Deadline $deadline) |
-               Should -BeGreaterThan 2037
+                Should -BeGreaterThan 2037
 
             [Environment]::SetEnvironmentVariable($names[2], '2041')
             { New-CatalystProbeTaskDeadline } |
-               Should -Throw '*fixed monotonic task-entry deadline*'
+                Should -Throw '*fixed monotonic task-entry deadline*'
         } finally {
             foreach ($name in $names) {
-               [Environment]::SetEnvironmentVariable($name, $saved[$name])
+                [Environment]::SetEnvironmentVariable($name, $saved[$name])
             }
         }
 
         ([regex]::Matches(
-               $script:Stage,
-               'CATALYST_PROBE_TASK_ENTRY_TIMESTAMP')).Count | Should -Be 1
+            $script:Stage,
+            'CATALYST_PROBE_TASK_ENTRY_TIMESTAMP')).Count | Should -Be 1
         $script:Stage | Should -Match (
             "(?ms)- pwsh: \|\r?\n" +
             "\s+\`$env:CATALYST_PROBE_TASK_ENTRY_TIMESTAMP = " +
@@ -1084,11 +1798,11 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             [ref]$parseErrors)
         $parseErrors.Count | Should -Be 0
         $boundedCalls = @($ast.FindAll({
-            param($node)
-            $node -is [Management.Automation.Language.CommandAst] -and
-            $node.GetCommandName() -ceq 'Invoke-CatalystProbeBoundedProcess'
-        }, $true))
-        $boundedCalls.Count | Should -Be 6
+                    param($node)
+                    $node -is [Management.Automation.Language.CommandAst] -and
+                    $node.GetCommandName() -ceq 'Invoke-CatalystProbeBoundedProcess'
+                }, $true))
+        $boundedCalls.Count | Should -Be 7
         foreach ($call in $boundedCalls) {
             $call.Extent.Text | Should -Match '-TaskDeadline'
         }
