@@ -422,6 +422,40 @@ rechecks the binding against the clean validator's class/category before
 credentials are used. Category metadata, aggregate totals, stale XML and
 incomplete cleanup are not substitute evidence.
 
+#### Fixed Catalyst companion for shared gesture changes
+
+An iOS fix whose validated scope is the single
+`src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs` file
+also requires the fixed Catalyst mapping companion. Mixed iOS scopes containing
+that file are rejected rather than bypassing the companion. Other platforms
+retain their existing primary-lane behavior.
+
+The original iOS sibling lane runs first; it is not replaced by the companion.
+Fixture staging, the Catalyst child, evidence parsing and cleanup consume the
+remainder of the same monotonic sibling-slot deadline. Expiry cannot become a
+passing result, and no repair opportunity or causal repetition is added.
+
+Trusted setup restores one iOS/Catalyst Controls graph and performs both offline
+builds before generated source exists. The later iOS test-planning boundary
+validates the prepared assets instead of restoring over them. Readiness is
+published only after both builds, unchanged-assets checks and bounded cleanup.
+The companion constructs an exact Catalyst outer and child boundary with the
+existing App Sandbox and no-network file channel; it is not an iOS execution-mode
+override.
+
+The fixture is copied only from the attested trusted tree to its fixed temporary
+target, checked against its pinned hash and removed before the ordinary one-test
+patch is created. Unexpectedly mutated fixture bytes are rejected and preserved.
+Both `SecondaryToBothCreatesNativeTap` and `SecondaryToPrimaryCreatesNativeTap`
+must pass on baseline and candidate, with no skips or missing raw XML.
+
+Affected fixes require schema-v2 regression evidence binding both the primary
+lane and the companion. Producer, clean validator and publisher use validated
+actual fix paths and their own trusted fixture; missing path expectations,
+omitted companion data, substituted hashes or changed native identities cannot
+authorize a fix. Unaffected fixes keep schema-v1 evidence. The mapping fixture
+does not claim coverage of input delivery, accessibility or subscription lifetime.
+
 ## Negative control
 
 A red test proves only that the test is red. After the reproduction verifies, the workflow runs the same test a second time with the reported trigger removed and requires it to pass.

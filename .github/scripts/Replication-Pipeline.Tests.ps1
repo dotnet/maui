@@ -2661,6 +2661,12 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
         $recheckIndex | Should -BeLessThan $credentialIndex
 
         $script:PublishStage | Should -Match 'Assert-ReplicationCertificationBinding'
+        $script:PublishStage | Should -Match (
+            "'fixtures/ReplicationGesturePlatformManagerRegression\.iOS\.cs'")
+        $fixtureStageIndex = $script:PublishStage.IndexOf(
+            "'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'")
+        $fixtureStageIndex | Should -BeGreaterThan -1
+        $fixtureStageIndex | Should -BeLessThan $credentialIndex
         $completeScanIndex = $script:PublishStage.IndexOf(
             'Assert-ReplicationFixSources')
         $bindingIndex = $script:PublishStage.IndexOf(
@@ -2674,6 +2680,10 @@ Describe 'Certification happens on a fresh agent that holds no credential' {
         $script:PublishStage | Should -Match 'Assert-ReplicationNoSecretMarkers'
         $script:PublishStage | Should -Match 'The credentialless validation stage produced no result'
         $script:PublishStage | Should -Match 'The validation result was produced at a different pipeline revision'
+        $script:PublishStage | Should -Match '-ExpectedFixPaths \$validatedFixFiles'
+        $script:PublishStage | Should -Match (
+            '(?s)-TrustedFixturePath \(Join-Path \$publisherRoot\s*`\s*' +
+            '''ReplicationGesturePlatformManagerRegression\.iOS\.cs''\)')
         # The publisher consumes the decision; it never makes it.
         $script:PublishStage | Should -Not -Match 'Validate-ReplicationCandidate\.ps1"? `'
         $script:PublishStage | Should -Not -Match '-RequireCertificationBinding'

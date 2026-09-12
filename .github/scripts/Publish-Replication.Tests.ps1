@@ -55,6 +55,7 @@ BeforeAll {
         'Get-ReplicationIndependentReviewBlock',
         'Get-ReplicationFixPanelBlock',
         'Get-ValidatedFixFiles',
+            'Assert-ReplicationPublisherFixEvidence',
         'Test-ReplicationPublishableFix',
         'Assert-ReplicationStagedFix',
         'Remove-ReplicationPlatformTitlePrefix',
@@ -1564,6 +1565,115 @@ Describe 'A pull request that carries a fix says so' {
         $body = script:Get-FixBody -Candidate $candidate
 
         $body | Should -Not -Match '##vso'
+    }
+}
+
+Describe 'The publisher independently rechecks fixed Catalyst companion evidence' {
+    BeforeEach {
+        $script:publisherRegressionArguments = $null
+        $script:publisherRejectEvidence = $false
+        $script:publisherFixPatch = Join-Path $TestDrive 'fix.patch'
+        Set-Content -LiteralPath $script:publisherFixPatch `
+            -Value 'diff --git a/x b/x' -Encoding utf8NoBOM
+        function Assert-ReplicationFixSources {
+            param($RepositoryRoot, $Paths, $PatchPath)
+        }
+        function Get-ReplicationFixFilesFromPatch {
+            param($Path, $AllowedPaths)
+            @($AllowedPaths | ForEach-Object {
+                    [pscustomobject]@{ Path = [string]$_ }
+                })
+        }
+        function Assert-ReplicationRegressionEvidence {
+            param(
+                $ArtifactRoot, $ExpectedBaselineSha, $ExpectedPlatform,
+                $ExpectedCategory, $ExpectedClass, $ExpectedFixPaths,
+                $TrustedFixturePath
+            )
+            $script:publisherRegressionArguments = [pscustomobject]@{
+                ArtifactRoot = $ArtifactRoot
+                BaselineSha = $ExpectedBaselineSha
+                Platform = $ExpectedPlatform
+                Category = $ExpectedCategory
+                Class = $ExpectedClass
+                FixPaths = @($ExpectedFixPaths)
+                Fixture = $TrustedFixturePath
+            }
+            if ($script:publisherRejectEvidence) {
+                throw 'fixed Catalyst companion evidence was rejected'
+            }
+        }
+    }
+
+    It 'derives the GPM requirement from validated fix files and uses the trusted fixture' {
+        $gpmPath =
+        'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        $candidate = [pscustomobject]@{
+            fixFiles = @($gpmPath)
+            baseSha = 'a' * 40
+            platform = 'ios'
+            fixRegressionLane = 'Label'
+            fixRegressionClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+        }
+
+        $files = @(Assert-ReplicationPublisherFixEvidence `
+                -Candidate $candidate `
+                -FixPatchPath $script:publisherFixPatch `
+                -RepositoryRoot $TestDrive `
+                -ScriptRoot (Join-Path $PSScriptRoot 'shared'))
+
+        $files | Should -Be @($gpmPath)
+        $script:publisherRegressionArguments.FixPaths | Should -Be @($gpmPath)
+        $script:publisherRegressionArguments.Platform | Should -BeExactly 'ios'
+        $script:publisherRegressionArguments.Fixture |
+            Should -BeExactly (Join-Path $PSScriptRoot (
+                    'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'))
+    }
+
+    It 'refuses publication when the independent companion recheck rejects the artifacts' {
+        $script:publisherRejectEvidence = $true
+        $candidate = [pscustomobject]@{
+            fixFiles = @(
+                'src/Controls/src/Core/Platform/GestureManager/' +
+                'GesturePlatformManager.iOS.cs')
+            baseSha = 'a' * 40
+            platform = 'ios'
+            fixRegressionLane = 'Label'
+            fixRegressionClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+        }
+
+        { Assert-ReplicationPublisherFixEvidence `
+                -Candidate $candidate `
+                -FixPatchPath $script:publisherFixPatch `
+                -RepositoryRoot $TestDrive `
+                -ScriptRoot (Join-Path $PSScriptRoot 'shared') } |
+            Should -Throw '*companion evidence was rejected*'
+    }
+
+    It 'refuses a validated GPM claim when the actual fix patch names another path' {
+        function Get-ReplicationFixFilesFromPatch {
+            param($Path, $AllowedPaths)
+            @([pscustomobject]@{
+                    Path = 'src/Controls/src/Core/Label/Label.cs'
+                })
+        }
+        $candidate = [pscustomobject]@{
+            fixFiles = @(
+                'src/Controls/src/Core/Platform/GestureManager/' +
+                'GesturePlatformManager.iOS.cs')
+            baseSha = 'a' * 40
+            platform = 'ios'
+            fixRegressionLane = 'Label'
+            fixRegressionClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+        }
+
+        { Assert-ReplicationPublisherFixEvidence `
+                -Candidate $candidate `
+                -FixPatchPath $script:publisherFixPatch `
+                -RepositoryRoot $TestDrive `
+                -ScriptRoot (Join-Path $PSScriptRoot 'shared') } |
+            Should -Throw '*do not match the clean validated fix files*'
+        $script:publisherRegressionArguments | Should -BeNullOrEmpty
     }
 }
 

@@ -1688,17 +1688,69 @@ query {
     }
 }
 
+function Assert-ReplicationPublisherFixEvidence {
+    param(
+        [Parameter(Mandatory = $true)]$Candidate,
+        [Parameter(Mandatory = $true)][AllowEmptyString()][string]$FixPatchPath,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$ScriptRoot
+    )
+
+    $validatedFixFiles = @(Get-ValidatedFixFiles -Candidate $Candidate)
+    if ([string]::IsNullOrWhiteSpace($FixPatchPath) -or
+        -not (Test-Path -LiteralPath $FixPatchPath -PathType Leaf) -or
+        $validatedFixFiles.Count -eq 0) {
+        throw 'A validated product fix is required; reproduction-only pull requests are not published.'
+    }
+
+    $parsedFixFiles = @(Get-ReplicationFixFilesFromPatch `
+            -Path $FixPatchPath `
+            -AllowedPaths $validatedFixFiles)
+    $actualFixPaths = @($parsedFixFiles | ForEach-Object { [string]$_.Path })
+    if ($actualFixPaths.Count -ne $validatedFixFiles.Count -or
+        @($validatedFixFiles | Where-Object {
+                $_ -cnotin $actualFixPaths
+            }).Count -gt 0) {
+        throw 'The fix patch paths do not match the clean validated fix files.'
+    }
+    $null = Assert-ReplicationFixSources `
+        -RepositoryRoot $RepositoryRoot `
+        -Paths $actualFixPaths `
+        -PatchPath $FixPatchPath
+    $companionFixtureCandidates = @(
+        (Join-Path $ScriptRoot 'ReplicationGesturePlatformManagerRegression.iOS.cs'),
+        (Join-Path (Split-Path -Parent $ScriptRoot) (
+            'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'))
+    )
+    $trustedCompanionFixture = @($companionFixtureCandidates | Where-Object {
+            Test-Path -LiteralPath $_ -PathType Leaf
+        } | Select-Object -First 1)
+    $artifactRoot = Split-Path -Parent ([IO.Path]::GetFullPath($FixPatchPath))
+    $null = Assert-ReplicationRegressionEvidence `
+        -ArtifactRoot $artifactRoot `
+        -ExpectedBaselineSha ([string]$Candidate.baseSha) `
+        -ExpectedPlatform ([string]$Candidate.platform) `
+        -ExpectedCategory ([string]$Candidate.fixRegressionLane) `
+        -ExpectedClass ([string]$Candidate.fixRegressionClass) `
+        -ExpectedFixPaths $actualFixPaths `
+        -TrustedFixturePath $(if ($trustedCompanionFixture.Count -eq 1) {
+            [string]$trustedCompanionFixture[0]
+        } else { '' })
+
+    return $actualFixPaths
+}
+
 $candidate = Get-Content -LiteralPath $ValidatedCandidatePath -Raw | ConvertFrom-Json -Depth 50
 if ($candidate.validationPassed -ne $true) {
     throw 'Candidate validation did not pass; a pull request will not be created.'
 }
 
-$validatedFixFiles = @(Get-ValidatedFixFiles -Candidate $candidate)
-$hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath) -and
-    (Test-Path -LiteralPath $FixPatchPath -PathType Leaf)
-if (-not $hasFixPatch -or $validatedFixFiles.Count -eq 0) {
-    throw 'A validated product fix is required; reproduction-only pull requests are not published.'
-}
+$validatedFixFiles = @(Assert-ReplicationPublisherFixEvidence `
+        -Candidate $candidate `
+        -FixPatchPath $FixPatchPath `
+        -RepositoryRoot $RepositoryRoot `
+        -ScriptRoot $PSScriptRoot)
+$hasFixPatch = $true
 
 $evidence = Get-Content -LiteralPath $PublishedEvidencePath -Raw | ConvertFrom-Json -Depth 20
 $context = Get-Content -LiteralPath $IssueContextPath -Raw | ConvertFrom-Json -Depth 20

@@ -162,6 +162,8 @@ BeforeAll {
         'Assert-ReplicationWindowsRestoreAssets',
         'Remove-ReplicationRuntimeCache',
         'Invoke-ReplicationTrustedRestore',
+            'Invoke-ReplicationAppleCompanionPrewarm',
+            'Assert-ReplicationAppleCompanionPrewarmRetained',
         'Invoke-ReplicationWindowsTwoPhaseRestore',
         'Get-ReplicationPlannedRestoreTargets',
         'Restore-TrackedVerificationSideEffects',
@@ -209,6 +211,10 @@ BeforeAll {
         'Get-ReplicationFixArmEvidence',
         'Get-ReplicationRegressionLaneCategory',
         'Invoke-ReplicationRegressionLaneRun',
+            'Get-ReplicationRegressionSlotRemainingSeconds',
+            'Invoke-ReplicationCatalystCompanionChildProcess',
+            'Invoke-ReplicationFixedCatalystCompanionRun',
+            'Invoke-ReplicationRegressionCompositeRun',
         'Test-ReplicationFixRegression',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
@@ -255,6 +261,9 @@ BeforeAll {
     }
     foreach ($name in @(
         'Get-ReplicationBindingFileDigest',
+            'Get-ReplicationFixedCompanionRequirement',
+            'Assert-ReplicationFixedCompanionFixture',
+            'Assert-ReplicationFixedCompanionRun',
         'Get-ReplicationDeviceTestFailureSignature',
         'Get-ReplicationRegressionJson',
         'Get-ReplicationRegressionLaneSelection',
@@ -278,6 +287,20 @@ BeforeAll {
     $script:ReplicationOracleIndependenceValues = @('independent', 'coupled', 'not-applicable', 'unknown')
     $script:ReplicationRiskApplicabilityValues = @('required', 'not-applicable', 'unknown')
     $script:ReplicationReviewCategories = @('grounded-product-defect', 'missing-evidence-coverage', 'advisory-hardening', 'unsupported-speculative', 'unknown')
+    $script:ReplicationCatalystCompanionProductPath =
+    'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+    $script:ReplicationCatalystCompanionFixtureRelativePath =
+    'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
+    $script:ReplicationCatalystCompanionFixtureTargetPath =
+    'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
+    $script:ReplicationCatalystCompanionFixtureSha256 =
+    '9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+    $script:ReplicationCatalystCompanionClass =
+    'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+    $script:ReplicationCatalystCompanionMethods = @(
+        'SecondaryToBothCreatesNativeTap',
+        'SecondaryToPrimaryCreatesNativeTap'
+    )
     $script:ReplicationReviewGroundingValues = @('source', 'runner', 'diff', 'source-and-runner', 'none', 'unknown')
     $script:ReplicationReviewConfidenceValues = @('high', 'medium', 'low', 'unknown')
     $script:ReplicationReviewCorroborationValues = @('deterministic', 'independent', 'multiple', 'none', 'unknown')
@@ -20662,6 +20685,58 @@ Describe 'Trusted verification side effects are restored without erasing approve
                 -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs')
         } | Should -Throw '*Failed to restore tracked verifier build side effects*'
     }
+
+    It 'uses the supplied monotonic deadline for status restore and final verification' {
+        $generated = 'src/Core/src/Handlers/HybridWebView/HybridWebView.js'
+        'compiler output' | Set-Content -LiteralPath $generated -NoNewline
+        $previousRepoRoot = Get-Variable -Name repoRoot -Scope Script `
+            -ErrorAction SilentlyContinue
+        $previousSecretNames = Get-Variable -Name allSecretNames -Scope Script `
+            -ErrorAction SilentlyContinue
+        $script:repoRoot = $script:cleanupRepo
+        $script:allSecretNames = @()
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            & $ScriptBlock
+        }
+        function Get-ReplicationRuntimeEnvironment {
+            @{ PATH = [Environment]::GetEnvironmentVariable('PATH') }
+        }
+        function Assert-ReplicationExecutionEnvironment {
+            param($Environment, $Context)
+            $Environment
+        }
+        $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
+        (30L * [Diagnostics.Stopwatch]::Frequency)
+        try {
+            Restore-TrackedVerificationSideEffects `
+                -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs') `
+                -DeadlineTimestamp $deadline
+            'unexpected' | Set-Content -LiteralPath 'unknown.txt' -NoNewline
+            {
+                Restore-TrackedVerificationSideEffects `
+                    -PreservedFiles @('src/Fix.cs', 'tests/Issue1.cs') `
+                    -DeadlineTimestamp $deadline
+            } | Should -Throw '*unexpected untracked repository path*unknown.txt*'
+            Test-Path -LiteralPath 'unknown.txt' | Should -BeTrue
+        } finally {
+            if ($null -ne $previousRepoRoot) {
+                $script:repoRoot = $previousRepoRoot.Value
+            } else {
+                Remove-Variable -Name repoRoot -Scope Script `
+                    -ErrorAction SilentlyContinue
+            }
+            if ($null -ne $previousSecretNames) {
+                $script:allSecretNames = $previousSecretNames.Value
+            } else {
+                Remove-Variable -Name allSecretNames -Scope Script `
+                    -ErrorAction SilentlyContinue
+            }
+        }
+
+        Get-Content -LiteralPath $generated -Raw |
+            Should -BeExactly "baseline $generated"
+    }
 }
 
 Describe 'A failed fix never costs us a good reproduction' {
@@ -22291,7 +22366,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
         function Test-ReplicationFixRegression {
             param(
                 $Selection, $WinnerDiff, $ScopeFiles, $ReproductionPaths,
-                $TrustedScriptRoot, $RegressionRoot, $TimeoutSeconds,
+                $CompanionRequirement, $TrustedScriptRoot, $RegressionRoot, $TimeoutSeconds,
                 $ReservedAfterMinutes,
                 [DateTimeOffset]$AbsoluteDeadlineUtc = [DateTimeOffset]::MaxValue
             )
@@ -22301,6 +22376,7 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                 WinnerDiff = [string]$WinnerDiff
                 ScopeFiles = @($ScopeFiles)
                 ReproductionPaths = @($ReproductionPaths)
+                    CompanionRequirement = $CompanionRequirement
                 TrustedScriptRoot = [string]$TrustedScriptRoot
                 RegressionRoot = [string]$RegressionRoot
                 TimeoutSeconds = [int]$TimeoutSeconds
@@ -22360,7 +22436,8 @@ Describe 'Every way the fix phase can fail still ships the reproduction' {
                 -ExpectedProject ([string]$Selection.Project) `
                 -ExpectedProjectPath ([string]$Selection.ProjectPath) `
                 -ExpectedClass ([string]$Selection.TestClass) `
-                -ExpectedGeneratedTestPath ([string]$Selection.GeneratedTestPath)
+                -ExpectedGeneratedTestPath ([string]$Selection.GeneratedTestPath) `
+                -ExpectedFixPaths $ScopeFiles
             return [pscustomobject]@{
                 Passed = $true
                 Detail = 'The exact trusted sibling identities did not regress.'
@@ -22489,9 +22566,12 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $script:regressionSelectionCalls[0].BaselineSha | Should -BeExactly ('a' * 40)
         $script:regressionRunCalls.Count | Should -Be 1
         $script:fixRegressionCalls.Count | Should -Be 1
-        $script:regressionRunCalls[0].TimeoutSeconds | Should -Be 720
+        $script:regressionRunCalls[0].TimeoutSeconds | Should -BeLessOrEqual 720
+        $script:regressionRunCalls[0].TimeoutSeconds | Should -BeGreaterOrEqual 718
         $script:fixRegressionCalls[0].TimeoutSeconds | Should -Be 720
         $script:fixRegressionCalls[0].ReservedAfterMinutes | Should -Be 44
+        $script:fixRegressionCalls[0].CompanionRequirement |
+            Should -BeNullOrEmpty
         $script:regressionRunCalls[0].OutputDirectory |
             Should -BeExactly (Join-Path $script:ArtifactRoot 'regression/baseline')
         (Join-Path $script:fixRegressionCalls[0].RegressionRoot 'fix') |
@@ -22504,6 +22584,104 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
             Should -BeExactly 'regression/regression-evidence.json'
         @($script:phaseOrder) |
             Should -Be @('baseline-regression', 'review', 'fix-regression', 'arms')
+    }
+
+    It 'carries the mandatory Catalyst requirement through baseline and selected runs' {
+        $gpmPath =
+        'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        $script:Platform = 'ios'
+        $script:scope.Files = @($gpmPath)
+        $script:panelResults[0].ChangedPaths = @($gpmPath)
+        $script:evidenceExpectedFixPaths = @()
+        function Assert-ReplicationRegressionEvidence {
+            param($ExpectedFixPaths)
+            $script:evidenceExpectedFixPaths = @($ExpectedFixPaths)
+        }
+        $script:compositeRequirements = [Collections.Generic.List[object]]::new()
+        function Invoke-ReplicationRegressionCompositeRun {
+            param(
+                $Selection, $CompanionRequirement, $PrimaryOutputDirectory,
+                $CompanionOutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:phaseOrder.Add('baseline-regression')
+            $script:compositeRequirements.Add($CompanionRequirement)
+            $script:regressionRunCalls.Add([pscustomobject]@{
+                    OutputDirectory = $PrimaryOutputDirectory
+                    TimeoutSeconds = $TimeoutSeconds
+                })
+            Write-StrictRegressionRunFixture `
+                -OutputDirectory $PrimaryOutputDirectory `
+                -Selection $Selection
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result | Should -Not -BeNullOrEmpty
+        $script:compositeRequirements | Should -HaveCount 1
+        $script:compositeRequirements[0].Id |
+            Should -BeExactly 'gesture-platform-manager-catalyst-v1'
+        $script:fixRegressionCalls | Should -HaveCount 1
+        $script:fixRegressionCalls[0].CompanionRequirement.Id |
+            Should -BeExactly 'gesture-platform-manager-catalyst-v1'
+        $script:evidenceExpectedFixPaths | Should -Be @($gpmPath)
+    }
+
+    It 'carries the mandatory Catalyst requirement through the repaired-candidate run' {
+        $gpmPath =
+        'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        $script:Platform = 'ios'
+        $script:scope.Files = @($gpmPath)
+        $script:panelResults[0].ChangedPaths = @($gpmPath)
+        $script:evidenceExpectedFixPaths = @()
+        function Assert-ReplicationRegressionEvidence {
+            param($ExpectedFixPaths)
+            $script:evidenceExpectedFixPaths = @($ExpectedFixPaths)
+        }
+        $script:reviewResult = [pscustomobject]@{
+            Findings = @([pscustomobject]@{
+                    Category = 'grounded-product-defect'
+                    Grounding = 'diff'
+                    Confidence = 'high'
+                    Corroboration = 'deterministic'
+                    Detail = 'Repair the candidate.'
+                })
+        }
+        $script:repairResult = [pscustomobject]@{
+            WinnerAttempt = [pscustomobject]@{
+                Attempt = 1
+                Model = 'gpt-5.4'
+                Result = 'Pass'
+                Diff = 'repaired diff'
+                ChangedPaths = @($gpmPath)
+                Approach = 'Repair the candidate.'
+            }
+            Findings = @($script:reviewResult.Findings)
+        }
+        $script:compositeRequirements = [Collections.Generic.List[object]]::new()
+        function Invoke-ReplicationRegressionCompositeRun {
+            param(
+                $Selection, $CompanionRequirement, $PrimaryOutputDirectory,
+                $CompanionOutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:phaseOrder.Add('baseline-regression')
+            $script:compositeRequirements.Add($CompanionRequirement)
+            $script:regressionRunCalls.Add([pscustomobject]@{
+                    OutputDirectory = $PrimaryOutputDirectory
+                    TimeoutSeconds = $TimeoutSeconds
+                })
+            Write-StrictRegressionRunFixture `
+                -OutputDirectory $PrimaryOutputDirectory `
+                -Selection $Selection
+        }
+
+        $result = Invoke-ReplicationFixPhase @script:phaseArgs
+
+        $result.RepairApplied | Should -BeTrue
+        $script:compositeRequirements[0].Id |
+            Should -BeExactly 'gesture-platform-manager-catalyst-v1'
+        $script:fixRegressionCalls | Should -HaveCount 1
+        $script:fixRegressionCalls[0].WinnerDiff | Should -BeExactly 'repaired diff'
+        $script:fixRegressionCalls[0].CompanionRequirement.Id |
+            Should -BeExactly 'gesture-platform-manager-catalyst-v1'
+        $script:evidenceExpectedFixPaths | Should -Be @($gpmPath)
     }
 
     It 'cleans inherited and trusted baseline and panel build side effects before repair' {
@@ -22679,7 +22857,9 @@ Set-Content -LiteralPath $state -Value (@{ RevertedFiles = @($EditableFiles) } |
         $script:repairCalls | Should -Be 1
         $script:regressionRunCalls.Count | Should -Be 1
         $script:fixRegressionCalls.Count | Should -Be 2
-        @($script:regressionRunCalls.TimeoutSeconds) | Should -Be @(720)
+        $script:regressionRunCalls | Should -HaveCount 1
+        $script:regressionRunCalls[0].TimeoutSeconds | Should -BeLessOrEqual 720
+        $script:regressionRunCalls[0].TimeoutSeconds | Should -BeGreaterOrEqual 718
         @($script:fixRegressionCalls.TimeoutSeconds) | Should -Be @(720, 720)
         @($script:fixRegressionCalls.ReservedAfterMinutes) | Should -Be @(44, 2)
         @($script:fixRegressionCalls.WinnerDiff) |
@@ -23224,7 +23404,7 @@ public class T { }
 
     It 'runs the immutable baseline before candidates and the selected fix before final arms' {
         $baseline = $script:Source.IndexOf(
-            '-OutputDirectory $baselineRegressionDirectory')
+            '-PrimaryOutputDirectory $baselineRegressionDirectory')
         $panel = $script:Source.IndexOf('$results = @(Invoke-ReplicationFixPanel')
         $fix = $script:Source.IndexOf('$regressionResult = Test-ReplicationFixRegression')
         $arms = $script:Source.IndexOf('$armEvidence = Invoke-ReplicationFixArms')
@@ -23325,7 +23505,7 @@ Describe 'A selected sibling run cannot leave trusted build output in the fix tr
             -RegressionRoot $script:regressionRoot `
             -TimeoutSeconds 60
 
-        $result.Passed | Should -BeTrue
+        $result.Passed | Should -BeTrue -Because $result.Detail
         $script:restoreCalls | Should -Be 2
         $script:cleanupCalls | Should -HaveCount 1
         @($script:cleanupCalls[0]) | Should -Be @($script:testPath)
@@ -27615,5 +27795,494 @@ Describe 'The candidate carries a binding to the inputs it was earned on' {
         $sign = $manifestWriter.IndexOf('New-ReplicationCertificationBinding', [StringComparison]::Ordinal)
         $verify | Should -BeGreaterOrEqual 0
         $verify | Should -BeLessThan $sign
+    }
+}
+
+Describe 'Production Catalyst regression companion orchestration' {
+    It 'runs the immutable primary lane first and gives Catalyst only the declining slot remainder' {
+        $script:order = [Collections.Generic.List[string]]::new()
+        $script:primaryTimeout = 0
+        $script:companionDeadline = 0L
+        function Invoke-ReplicationRegressionLaneRun {
+            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:order.Add('primary')
+            $script:primaryTimeout = $TimeoutSeconds
+            Start-Sleep -Milliseconds 20
+        }
+        function Invoke-ReplicationFixedCatalystCompanionRun {
+            param($Requirement, $OutputDirectory, $TrustedScriptRoot, $DeadlineTimestamp)
+            $script:order.Add('catalyst')
+            $script:companionDeadline = $DeadlineTimestamp
+        }
+
+        Invoke-ReplicationRegressionCompositeRun `
+            -Selection ([pscustomobject]@{}) `
+            -CompanionRequirement ([pscustomobject]@{ Id = 'fixed' }) `
+            -PrimaryOutputDirectory 'primary' `
+            -CompanionOutputDirectory 'catalyst' `
+            -TrustedScriptRoot 'trusted' `
+            -TimeoutSeconds 30
+
+        @($script:order) | Should -Be @('primary', 'catalyst')
+        $script:primaryTimeout | Should -BeLessOrEqual 30
+        $script:companionDeadline | Should -BeGreaterThan 0
+    }
+
+    It 'keeps unaffected sibling runs on the existing primary-only behavior' {
+        $script:order = [Collections.Generic.List[string]]::new()
+        function Invoke-ReplicationRegressionLaneRun {
+            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:order.Add('primary')
+        }
+        function Invoke-ReplicationFixedCatalystCompanionRun {
+            throw 'Catalyst must not run for an unaffected fix.'
+        }
+
+        Invoke-ReplicationRegressionCompositeRun `
+            -Selection ([pscustomobject]@{}) `
+            -CompanionRequirement $null `
+            -PrimaryOutputDirectory 'primary' `
+            -TrustedScriptRoot 'trusted' `
+            -TimeoutSeconds 30
+
+        @($script:order) | Should -Be @('primary')
+    }
+
+    It 'fails the composite gate after a passing primary when Catalyst fails' {
+        $script:order = [Collections.Generic.List[string]]::new()
+        function Invoke-ReplicationRegressionLaneRun {
+            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            $script:order.Add('primary')
+        }
+        function Invoke-ReplicationFixedCatalystCompanionRun {
+            param($Requirement, $OutputDirectory, $TrustedScriptRoot, $DeadlineTimestamp)
+            $script:order.Add('catalyst')
+            throw 'fixed Catalyst companion failed'
+        }
+
+        { Invoke-ReplicationRegressionCompositeRun `
+                -Selection ([pscustomobject]@{}) `
+                -CompanionRequirement ([pscustomobject]@{ Id = 'fixed' }) `
+                -PrimaryOutputDirectory 'primary' `
+                -CompanionOutputDirectory 'catalyst' `
+                -TrustedScriptRoot 'trusted' `
+                -TimeoutSeconds 30 } |
+            Should -Throw '*Catalyst companion failed*'
+        @($script:order) | Should -Be @('primary', 'catalyst')
+    }
+
+    It 'constructs the fixed child with an exact Catalyst outer boundary and allowlisted environment' {
+        $script:TrustedRoot = 'trusted-root'
+        $script:allSecretNames = @('GH_TOKEN')
+        $script:boundaryPlatform = ''
+        $script:boundedEnvironment = $null
+        $script:boundedCatalystTimeout = 0
+        function Get-ReplicationRuntimeEnvironment { return @{ PATH = '/usr/bin' } }
+        function Get-ReplicationEffectiveTimeoutSeconds { param($TimeoutSeconds) $TimeoutSeconds }
+        function Assert-ReplicationTrustedTree { param($Context) }
+        function Get-ReplicationAppleIsolatedCommand {
+            param($Platform, $TrustedRoot, $ScriptPath, $Arguments, $Environment)
+            $script:boundaryPlatform = $Platform
+            Start-Sleep -Milliseconds 1100
+            return [pscustomobject]@{
+                FilePath = 'pwsh'
+                Arguments = @('-NoProfile')
+                Environment = $Environment
+            }
+        }
+
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            & $ScriptBlock
+        }
+        function Invoke-BoundedProcess {
+            param($FilePath, $Arguments, $TimeoutSeconds, $Environment,
+                [switch]$TimeoutAlreadyBounded)
+            $script:boundedEnvironment = $Environment
+            $script:boundedCatalystTimeout = $TimeoutSeconds
+            return [pscustomobject]@{
+                Output = @()
+                ExitCode = 0
+                TimedOut = $false
+            }
+        }
+
+        Invoke-ReplicationCatalystCompanionChildProcess `
+            -ScriptPath 'trusted-runner.ps1' `
+            -Arguments @('-Platform', 'catalyst') `
+            -LogPath (Join-Path $TestDrive 'catalyst.log') `
+            -DeadlineTimestamp (
+            [Diagnostics.Stopwatch]::GetTimestamp() +
+            (4L * [Diagnostics.Stopwatch]::Frequency))
+
+        $script:boundaryPlatform | Should -BeExactly 'catalyst'
+        $script:boundedEnvironment.Keys | Should -Be @('PATH')
+        $script:boundedCatalystTimeout | Should -BeLessOrEqual 2
+    }
+}
+
+Describe 'Production Catalyst companion prewarm orchestration' {
+    BeforeEach {
+        $script:prewarmCommands = [Collections.Generic.List[object]]::new()
+        $script:retainedExpectedSha = ''
+        $script:prewarmDigest =
+        '1925d910e3c62890151f8eff5038481e1cb0b8792140ff593a7de43d0bd16725'
+        $script:repoRoot = $TestDrive
+        $script:TrustedRoot = Join-Path $TestDrive 'trusted'
+        $script:replicationNugetPackages = Join-Path $TestDrive 'packages'
+        function Get-ReplicationAppleCompanionPrewarmPlan {
+            [pscustomobject]@{
+                ProjectPath = (Join-Path $TestDrive 'Controls.DeviceTests.csproj')
+                Commands = @(
+                    [pscustomobject]@{
+                        Arguments = @(
+                            'restore', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
+                            '--force-evaluate')
+                    },
+                    [pscustomobject]@{
+                        Arguments = @(
+                            'build', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
+                            '--no-restore', '--framework', 'net10.0-ios')
+                    },
+                    [pscustomobject]@{
+                        Arguments = @(
+                            'build', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
+                            '--no-restore', '--framework', 'net10.0-maccatalyst')
+                    })
+            }
+        }
+
+        function Assert-InitialReplicationWorktree {
+            param($DeadlineTimestamp)
+        }
+        function Assert-ReplicationTrustedTree {
+            param($Context)
+        }
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles, $DeadlineTimestamp)
+        }
+        function Invoke-ReplicationTrustedRestore {
+            param(
+                $Target, $AdditionalArguments, $Verb, $TimeoutSeconds,
+                $DeadlineTimestamp)
+            $script:prewarmCommands.Add([pscustomobject]@{
+                    Target = $Target
+                    Arguments = @($AdditionalArguments)
+                    Verb = $Verb
+                    TimeoutSeconds = $TimeoutSeconds
+                })
+        }
+        function Assert-ReplicationAppleCompanionAssets {
+            param($RepositoryRoot, $ExpectedSha256)
+            $script:retainedExpectedSha = [string]$ExpectedSha256
+            if ($script:rejectRetainedAssets) {
+                throw 'Apple companion project.assets.json changed after the graph restore.'
+            }
+            [pscustomobject]@{ AssetsSha256 = $script:prewarmDigest }
+        }
+        $script:rejectRetainedAssets = $false
+        Remove-Variable -Name AppleCompanionAssetsSha256 -Scope Script `
+            -ErrorAction SilentlyContinue
+    }
+
+    It 'prepares one dual graph and both no-restore builds under one bounded deadline' {
+        $assets = Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 600
+
+        $script:prewarmCommands | Should -HaveCount 3
+        @($script:prewarmCommands.Verb) | Should -Be @('restore', 'build', 'build')
+        @($script:prewarmCommands[1].Arguments) | Should -Contain 'net10.0-ios'
+        @($script:prewarmCommands[2].Arguments) |
+            Should -Contain 'net10.0-maccatalyst'
+        @($script:prewarmCommands.TimeoutSeconds | Where-Object {
+                $_ -lt 1 -or $_ -gt 600
+            }) | Should -BeNullOrEmpty
+        $assets.AssetsSha256 | Should -BeExactly $script:prewarmDigest
+        $script:AppleCompanionAssetsSha256 |
+            Should -BeExactly $script:prewarmDigest
+    }
+
+    It 'fails the planned-test boundary when later work clobbers dual-Apple assets' {
+        $script:AppleCompanionAssetsSha256 = $script:prewarmDigest
+        $script:rejectRetainedAssets = $true
+
+        { Assert-ReplicationAppleCompanionPrewarmRetained } |
+            Should -Throw '*changed after the graph restore*'
+        $script:retainedExpectedSha | Should -BeExactly $script:prewarmDigest
+    }
+
+    It 'rejects changed restore assets before starting the second offline build' {
+        $script:currentPrewarmDigest = $script:prewarmDigest
+        function Invoke-ReplicationTrustedRestore {
+            param(
+                $Target, $AdditionalArguments, $Verb, $TimeoutSeconds,
+                $DeadlineTimestamp)
+            $script:prewarmCommands.Add($Verb)
+            if ($Verb -eq 'build') { $script:currentPrewarmDigest = 'b' * 64 }
+        }
+        function Assert-ReplicationAppleCompanionAssets {
+            param($RepositoryRoot, $ExpectedSha256)
+            if ($ExpectedSha256 -and $ExpectedSha256 -cne $script:currentPrewarmDigest) {
+                throw 'Apple companion project.assets.json changed after the graph restore.'
+            }
+            [pscustomobject]@{ AssetsSha256 = $script:currentPrewarmDigest }
+        }
+        { Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 60 } |
+            Should -Throw '*changed after the graph restore*'
+        $script:prewarmCommands | Should -HaveCount 2
+    }
+
+    It 'charges plan construction to the production prewarm deadline' {
+        $script:slowPrewarmPlan = Get-ReplicationAppleCompanionPrewarmPlan
+        Mock Get-ReplicationAppleCompanionPrewarmPlan {
+            Start-Sleep -Milliseconds 2100
+            $script:slowPrewarmPlan
+        }
+        { Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 2 } |
+            Should -Throw '*deadline*'
+        $script:prewarmCommands | Should -HaveCount 0
+    }
+
+    It 'clears stale readiness and admits no build when the worktree preguard rejects' {
+        $script:AppleCompanionAssetsSha256 = 'c' * 64
+        function Assert-InitialReplicationWorktree {
+            param($DeadlineTimestamp)
+            throw 'unexpected staged product mutation'
+        }
+
+        { Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 60 } |
+            Should -Throw '*unexpected staged product mutation*'
+
+        $script:AppleCompanionAssetsSha256 | Should -BeNullOrEmpty
+        $script:prewarmCommands | Should -HaveCount 0
+    }
+
+    It 'does not advertise readiness when bounded post-build cleanup exhausts the deadline' {
+        $script:cleanupExpired = $false
+        function Restore-TrackedVerificationSideEffects {
+            param($PreservedFiles, $DeadlineTimestamp)
+            $script:cleanupExpired = $true
+        }
+        Mock Get-ReplicationRegressionSlotRemainingSeconds {
+            if ($script:cleanupExpired) {
+                throw 'The shared dual-Apple companion prewarm deadline was exhausted.'
+            }
+            60
+        }
+
+        { Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 60 } |
+            Should -Throw '*deadline was exhausted*'
+
+        $script:prewarmCommands | Should -HaveCount 3
+        $script:AppleCompanionAssetsSha256 | Should -BeNullOrEmpty
+    }
+
+    It 'prewarms before generated source and validates retention instead of restoring again' {
+        $prewarm = $script:Source.IndexOf(
+            '$null = Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds 600')
+        $sandboxGeneration = $script:Source.IndexOf(
+            "Invoke-ReplicationCopilot ``",
+            $prewarm)
+        $retention = $script:Source.IndexOf(
+            '$null = Assert-ReplicationAppleCompanionPrewarmRetained',
+            $sandboxGeneration)
+
+        $prewarm | Should -BeGreaterThan -1
+        $prewarm | Should -BeLessThan $sandboxGeneration
+        $retention | Should -BeGreaterThan $sandboxGeneration
+    }
+}
+
+Describe 'Immutable Catalyst companion fixture staging' {
+    BeforeEach {
+        $script:repoRoot = Join-Path $TestDrive 'repo'
+        $script:IssueNumber = 37445
+        $script:BaseSha = 'a' * 40
+        $trustedBase = Join-Path $TestDrive 'trusted'
+        $script:fixtureTrustedScripts = Join-Path $trustedBase 'scripts'
+        $fixtureDirectory = Join-Path $script:fixtureTrustedScripts 'fixtures'
+        $targetDirectory = Join-Path $script:repoRoot (
+            'src/Controls/tests/DeviceTests')
+        New-Item -ItemType Directory -Path $fixtureDirectory -Force | Out-Null
+        New-Item -ItemType Directory -Path $targetDirectory -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs')) `
+            -Destination (Join-Path $fixtureDirectory (
+                'ReplicationGesturePlatformManagerRegression.iOS.cs'))
+        $script:fixtureTarget = Join-Path $targetDirectory (
+            'ReplicationGesturePlatformManagerRegression.iOS.cs')
+        Microsoft.PowerShell.Management\Remove-Item `
+            -LiteralPath $script:fixtureTarget -Force -ErrorAction SilentlyContinue
+        $script:fixtureObservedDuringRun = $false
+        $script:fixtureChildFails = $false
+        $script:fixtureChildArguments = @()
+        function Invoke-ReplicationCatalystCompanionChildProcess {
+            param($ScriptPath, $Arguments, $LogPath, $DeadlineTimestamp)
+            $script:fixtureChildArguments = @($Arguments)
+            $script:fixtureObservedDuringRun =
+            (Test-Path -LiteralPath $script:fixtureTarget -PathType Leaf) -and
+            ((Get-FileHash -LiteralPath $script:fixtureTarget -Algorithm SHA256).
+            Hash.ToLowerInvariant() -ceq
+            $script:ReplicationCatalystCompanionFixtureSha256)
+            if ($script:fixtureChildFails) {
+                throw 'simulated Catalyst execution failure'
+            }
+        }
+        function Assert-ReplicationFixedCompanionRun {
+            param($Path, $Requirement)
+        }
+        $script:fixtureRequirement = Get-ReplicationFixedCompanionRequirement `
+            -Platform ios `
+            -FixPaths @($script:ReplicationCatalystCompanionProductPath)
+    }
+
+    It 'stages the exact fixture only for the child run and removes it afterward' {
+        Invoke-ReplicationFixedCatalystCompanionRun `
+            -Requirement $script:fixtureRequirement `
+            -OutputDirectory (Join-Path $TestDrive 'evidence') `
+            -TrustedScriptRoot $script:fixtureTrustedScripts `
+            -DeadlineTimestamp (
+            [Diagnostics.Stopwatch]::GetTimestamp() +
+            (30L * [Diagnostics.Stopwatch]::Frequency))
+
+        $script:fixtureObservedDuringRun | Should -BeTrue
+        $platformIndex = [Array]::IndexOf(
+            [object[]]$script:fixtureChildArguments, '-Platform')
+        $platformIndex | Should -BeGreaterOrEqual 0
+        $script:fixtureChildArguments[$platformIndex + 1] |
+            Should -BeExactly 'catalyst'
+        $script:fixtureChildArguments | Should -Contain '-RegressionEvidence'
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
+    }
+
+    It 'removes the staged fixture when the Catalyst child fails' {
+        $script:fixtureChildFails = $true
+
+        { Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (30L * [Diagnostics.Stopwatch]::Frequency)) } |
+            Should -Throw '*simulated Catalyst execution failure*'
+
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
+    }
+
+    It 'fails closed when the staged fixture cannot be removed' {
+        function Remove-Item {
+            param($LiteralPath, [switch]$Force, $ErrorAction)
+        }
+
+        { Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (30L * [Diagnostics.Stopwatch]::Frequency)) } |
+            Should -Throw '*fixture cleanup failed*'
+
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeTrue
+        Microsoft.PowerShell.Management\Remove-Item `
+            -LiteralPath Function:\Remove-Item -Force
+        Microsoft.PowerShell.Management\Remove-Item `
+            -LiteralPath $script:fixtureTarget -Force
+    }
+
+    It 'rejects a tampered trusted fixture before invoking the Catalyst child' {
+        Add-Content -LiteralPath (Join-Path (
+                $script:fixtureTrustedScripts) (
+                'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs')) `
+            -Value '// tampered'
+
+        { Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (30L * [Diagnostics.Stopwatch]::Frequency)) } |
+            Should -Throw '*digest does not match trusted policy*'
+
+        $script:fixtureObservedDuringRun | Should -BeFalse
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
+    }
+
+    It 'refuses to replace an existing fixture target' {
+        Set-Content -LiteralPath $script:fixtureTarget `
+            -Value 'existing' -Encoding utf8NoBOM
+
+        { Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (30L * [Diagnostics.Stopwatch]::Frequency)) } |
+            Should -Throw '*refuses to replace*'
+
+        Get-Content -LiteralPath $script:fixtureTarget -Raw |
+            Should -Match 'existing'
+    }
+
+    It 'preserves unexpectedly modified fixture bytes after child execution' {
+        function Invoke-ReplicationCatalystCompanionChildProcess {
+            param($ScriptPath, $Arguments, $LogPath, $DeadlineTimestamp)
+            Add-Content -LiteralPath $script:fixtureTarget -Value '// unexpected mutation'
+        }
+        {
+            Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'mutated-evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (60L * [Diagnostics.Stopwatch]::Frequency))
+        } | Should -Throw '*digest*'
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeTrue
+        Get-Content -LiteralPath $script:fixtureTarget -Raw |
+            Should -Match 'unexpected mutation'
+    }
+
+    It 'rejects evidence parsing that exhausts the shared companion slot' {
+        $script:fixtureSlotExpired = $false
+        Mock Get-ReplicationRegressionSlotRemainingSeconds {
+            if ($script:fixtureSlotExpired) { throw 'The shared regression slot deadline was exhausted.' }
+            60
+        }
+        Mock Assert-ReplicationFixedCompanionRun { $script:fixtureSlotExpired = $true }
+        {
+            Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'late-evidence') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (60L * [Diagnostics.Stopwatch]::Frequency))
+        } | Should -Throw '*deadline was exhausted*'
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
+    }
+
+    It 'rejects fixture cleanup that exhausts the shared companion slot' {
+        $script:fixtureSlotExpired = $false
+        Mock Get-ReplicationRegressionSlotRemainingSeconds {
+            if ($script:fixtureSlotExpired) { throw 'The shared regression slot deadline was exhausted.' }
+            60
+        }
+        Mock Remove-Item {
+            [IO.File]::Delete($LiteralPath)
+            $script:fixtureSlotExpired = $true
+        } -ParameterFilter { $LiteralPath -ceq $script:fixtureTarget }
+        {
+            Invoke-ReplicationFixedCatalystCompanionRun `
+                -Requirement $script:fixtureRequirement `
+                -OutputDirectory (Join-Path $TestDrive 'late-cleanup') `
+                -TrustedScriptRoot $script:fixtureTrustedScripts `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (60L * [Diagnostics.Stopwatch]::Frequency))
+        } | Should -Throw '*deadline was exhausted*'
+        Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
     }
 }

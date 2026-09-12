@@ -4447,13 +4447,7 @@ stages:
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'
-              # A replicate run can spend an hour on a device before this job
-              # starts. When the pipeline ref moves in the meantime, the
-              # checkout lands on the newer tip and this job validates artifacts
-              # from one commit with scripts from another. A live run was
-              # rejected for a manifest field that did not exist in either
-              # script at the commit the run was queued from. Pin to the same
-              # commit the replicate stage captured its trusted scripts at.
+              # Pin publication to the same trusted revision as replication.
               $pinned = '$(Build.SourceVersion)'
               if ($pinned -notmatch '^[0-9a-f]{40}$') {
                   throw "Build.SourceVersion is not a commit SHA: $pinned"
@@ -4496,10 +4490,7 @@ stages:
               $trustedRoot = Join-Path "$(Agent.TempDirectory)" "trusted-replication-publisher"
               Remove-Item -LiteralPath $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
               New-Item -ItemType Directory -Path $trustedRoot -Force | Out-Null
-              # Paths are relative to .github/scripts because not every trusted
-              # script lives in shared/. Find-RegressionRisks.ps1 sits one level
-              # up, was therefore never staged, and the PR body's regression
-              # cross-reference silently reported nothing from the day it landed.
+              # Stage both shared helpers and their fixed trusted inputs.
               foreach ($relative in @(
                 'shared/Assert-ReplicationTestGuard.ps1',
                 'shared/Get-ReplicationCertification.ps1',
@@ -4515,6 +4506,7 @@ stages:
                 'shared/Publish-ReplicationOutcome.ps1',
                 'shared/Publish-ReplicationEvidence.ps1',
                 'shared/Publish-ReplicationPR.ps1',
+                'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs',
                 'Find-RegressionRisks.ps1'
               )) {
                 $source = Join-Path $publisherSourceRoot ".github/scripts/$relative"
@@ -4676,6 +4668,9 @@ stages:
                 -Platform '${{ parameters.Platform }}' `
                 -ExpectedRegressionCategory ([string]$validated.fixRegressionLane) `
                 -ExpectedRegressionClass ([string]$validated.fixRegressionClass) `
+                -ExpectedFixPaths $validatedFixFiles `
+                -TrustedFixturePath (Join-Path $publisherRoot `
+                  'ReplicationGesturePlatformManagerRegression.iOS.cs') `
                 -Context 'publisher recheck'
               foreach ($declared in @([string]$summary.bindingDigest, [string]$validated.certificationBinding.digest)) {
                 if ($declared -cne [string]$recheck.Digest) {

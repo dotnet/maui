@@ -5699,6 +5699,8 @@ function Assert-ReplicationTrustedBinding {
         [AllowEmptyString()][string]$ReplicationBaseSha = '',
         [AllowEmptyString()][string]$ExpectedRegressionCategory = '',
         [AllowEmptyString()][string]$ExpectedRegressionClass = '',
+            [AllowEmptyCollection()][string[]]$ExpectedFixPaths = @(),
+            [AllowEmptyString()][string]$TrustedFixturePath = '',
         [switch]$RequireBinding
     )
 
@@ -5738,6 +5740,8 @@ function Assert-ReplicationTrustedBinding {
         -Platform ([string]$Manifest.Platform) `
         -ExpectedRegressionCategory $ExpectedRegressionCategory `
         -ExpectedRegressionClass $ExpectedRegressionClass `
+            -ExpectedFixPaths $ExpectedFixPaths `
+            -TrustedFixturePath $TrustedFixturePath `
         -Context 'clean replication validation'
 
     # The manifest and the binding are two independent documents about the same
@@ -5910,6 +5914,8 @@ function Invoke-ReplicationCandidateValidation {
         # terms: modification-only, product paths only, and no wider than the
         # scope the manifest already committed to.
         $fixFiles = @()
+            $patchedPaths = @()
+            $trustedCompanionFixturePath = ''
         $trustedRegressionSelection = $null
         $hasFixPatch = -not [string]::IsNullOrWhiteSpace($FixPatchPath)
         if ($hasFixPatch) {
@@ -5930,6 +5936,9 @@ function Invoke-ReplicationCandidateValidation {
                 -Path $FixPatchPath `
                 -AllowedPaths @($trustedFixScope.Files))
             $patchedPaths = @($fixFiles | ForEach-Object { $_.Path })
+                $trustedCompanionFixturePath = Join-Path (
+                    Split-Path -Parent $PSScriptRoot) (
+                    'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs')
             foreach ($declared in @($manifest.FixFiles)) {
                 if ($declared -cnotin $patchedPaths) {
                     throw 'The manifest names a fix file the fix patch never modifies.'
@@ -5978,7 +5987,9 @@ function Invoke-ReplicationCandidateValidation {
                 -ExpectedProject ([string]$trustedRegressionSelection.Project) `
                 -ExpectedProjectPath ([string]$trustedRegressionSelection.ProjectPath) `
                 -ExpectedClass ([string]$trustedRegressionSelection.TestClass) `
-                -ExpectedGeneratedTestPath ([string]$trustedRegressionSelection.GeneratedTestPath)
+                    -ExpectedGeneratedTestPath ([string]$trustedRegressionSelection.GeneratedTestPath) `
+                    -ExpectedFixPaths $patchedPaths `
+                    -TrustedFixturePath $trustedCompanionFixturePath
         } elseif (@($manifest.FixFiles).Count -gt 0) {
             throw 'The manifest names fix files but no fix patch was provided.'
         }
@@ -6084,6 +6095,10 @@ function Invoke-ReplicationCandidateValidation {
             -ExpectedRegressionClass $(if ($trustedRegressionSelection) {
                 [string]$trustedRegressionSelection.TestClass
             } else { '' }) `
+                -ExpectedFixPaths $patchedPaths `
+                -TrustedFixturePath $(if ($hasFixPatch) {
+                    $trustedCompanionFixturePath
+                } else { '' }) `
             -RequireBinding:$RequireCertificationBinding
 
         # A token, a proxy credential, or the run's own canary reaching an
