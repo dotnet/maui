@@ -516,9 +516,26 @@ steps:
         'Catalyst gesture pipeline isolation*routes one standalone fresh-Azure report-only mode'
         'Catalyst gesture pipeline isolation*rejects every open input combination before setup or fetch'
         'Catalyst gesture pipeline isolation*does not inherit credentials or enter review replication publication or model paths'
-        'Catalyst gesture pipeline isolation*prewarms only the Catalyst graph and keeps both cycles bounded'
+        'Catalyst gesture pipeline isolation*prewarms the fixed dual-Apple graph and keeps both cycles bounded'
         'Catalyst gesture pipeline isolation*selects the fixed baseline Xcode instead of the review override'
         'Catalyst gesture pipeline isolation*rejects a selected Xcode version that differs from the immutable baseline'
+        'Closed dual-Apple companion prewarm plan*returns one graph restore followed by exact no-restore iOS and Catalyst builds'
+        'Closed dual-Apple companion prewarm plan*has no platform source fixture command or signing overrides'
+        'Strict dual-Apple assets validation*accepts both plain and RID targets plus both framework declarations'
+        'Strict dual-Apple assets validation*binds versioned framework keys to their exact target aliases'
+        'Strict dual-Apple assets validation*rejects a missing iOS runtime target'
+        'Strict dual-Apple assets validation*rejects a missing Catalyst runtime target'
+        'Strict dual-Apple assets validation*rejects a missing original framework declaration'
+        'Strict dual-Apple assets validation*rejects a missing framework alias'
+        'Strict dual-Apple assets validation*rejects framework declarations outside NuGet restore metadata'
+        'Strict dual-Apple assets validation*rejects malformed assets'
+        'Strict dual-Apple assets validation*rejects a symlinked assets file'
+        'Fixed report-only Catalyst gesture probe*charges preguard and plan work to the same prewarm deadline'
+        'Fixed report-only Catalyst gesture probe*runs restore then both offline builds against one diminishing phase deadline'
+        'Fixed report-only Catalyst gesture probe*rejects assets clobbered by the first build before the Catalyst build'
+        'Fixed report-only Catalyst gesture probe*restores tracked output when the later Catalyst build fails'
+        'Fixed report-only Catalyst gesture probe*never returns readiness for a failed command'
+        'Fixed report-only Catalyst gesture probe*never returns readiness for a timed-out command'
         'MAUI Copilot mode routing*isolates the fixed Catalyst A-B probe from production replication and publication'
       )
       $config = New-PesterConfiguration
@@ -526,6 +543,7 @@ steps:
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Invoke-CatalystGestureRegressionProbe.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/shared/Replication-AppleCompanionPrewarm.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationAppleAppSandbox.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"
