@@ -12,17 +12,21 @@
 
     Until now that recommendation was only *rendered* in the AI Summary comment, so a
     human had to copy it across by hand. This script closes that last mile: it parses
-    the recommendation and applies it with `gh pr edit`, which makes it the squash-merge
-    commit message.
+    the recommendation and applies it through the GitHub REST API, which makes it the
+    squash-merge commit message without requiring GraphQL-only token scopes.
 
     Deliberately conservative — it does nothing unless Phase 4 explicitly recommended an
-    update, and it never discards author signal:
+    update, the raw submitted PR won the candidate comparison, and it never discards author
+    signal:
 
       * Keep-as-is verdict  -> no-op (Phase 4 said the current metadata is already good).
+      * Candidate won       -> no-op (candidate-only behavior is not on the PR branch yet).
       * Unparseable content -> no-op (never guess at a replacement).
       * No net change       -> no-op (avoids edit churn / notification spam).
-      * Triage prefixes     -> preserved ([WIP], [inflight regression], [net11.0], ...).
-                              Un-WIP-ing a PR is the author's call, not the bot's.
+      * Triage prefixes     -> known workflow/branch tags are preserved
+                              ([WIP], [inflight regression], [net11.0], ...).
+                              Component tags are replaced by the recommendation so titles
+                              do not become "[Component][Platform] Component: ...".
       * Testing-note block  -> preserved. Phase 4 is told to omit the repo's required
                               "test the resulting artifacts" note from its recommendation,
                               so applying the body verbatim would silently delete it.
@@ -33,11 +37,16 @@
 .PARAMETER ContentFile
     Path to pr-finalize/content.md. Auto-discovered from PRNumber when omitted.
 
+.PARAMETER WinnerFile
+    Path to PRAgent/winner.json. Auto-discovered next to the pr-finalize directory when
+    omitted. Automatic edits are allowed only when the manifest names the raw `pr`
+    candidate as the winner.
+
 .PARAMETER Repo
     Target repo in owner/name form. Defaults to dotnet/maui.
 
 .PARAMETER DryRun
-    Print what would be applied without calling `gh pr edit`.
+    Print what would be applied without updating the pull request.
 
 .EXAMPLE
     ./apply-pr-finalize.ps1 -PRNumber 36769
@@ -54,7 +63,14 @@ param(
     [string]$ContentFile,
 
     [Parameter(Mandatory = $false)]
+    [string]$WinnerFile,
+
+    [Parameter(Mandatory = $false)]
     [string]$Repo = "dotnet/maui",
+
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ExpectedHeadSha = '',
 
     [Parameter(Mandatory = $false)]
     [switch]$DryRun
@@ -65,7 +81,8 @@ $ErrorActionPreference = 'Stop'
 
 # Platform tags are owned by the recommendation itself (the pr-finalize title formula is
 # "[Platform] Component: What changed"), so they are never re-prepended from the old title.
-# Everything else in a leading [bracket] run is author/triage signal and is preserved.
+# Only known workflow/branch tags in a leading [bracket] run are preserved. Generic
+# component tags are owned by the recommendation and must not be prepended again.
 #
 # Deliberately excludes "net": a "[net11.0]" tag marks a backport target branch, not a
 # platform, and dropping it would erase real triage signal.
@@ -97,6 +114,23 @@ function ConvertTo-AzdoSafeConsole {
     return ($Text -replace '[\r\n\f\v]+', ' ') -replace '##(?=\[|vso\[)', '## '
 }
 
+function Test-ExpectedHeadMatches {
+    param(
+        [AllowEmptyString()]
+        [string]$CurrentHeadSha,
+
+        [AllowEmptyString()]
+        [string]$ExpectedHeadSha
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedHeadSha)) {
+        return $true
+    }
+
+    return -not [string]::IsNullOrWhiteSpace($CurrentHeadSha) -and
+        $CurrentHeadSha.Equals($ExpectedHeadSha, [StringComparison]::OrdinalIgnoreCase)
+}
+
 function Test-FinalizeIsNoOp {
     <#
     .SYNOPSIS
@@ -115,6 +149,88 @@ function Test-FinalizeIsNoOp {
     # Mirrors Test-PhaseContentIsNoOp("pr-finalize") in post-ai-summary-comment.ps1 so the
     # comment and the apply step agree on what "no change recommended" looks like.
     return [bool]($normalized -match '✅\s*Current title and description accurately reflect the change\s*[—-]\s*recommend keeping as-is')
+}
+
+function Get-FinalizeApplyDecision {
+    <#
+    .SYNOPSIS
+        Decides whether the recommendation may be applied to the live PR.
+    .DESCRIPTION
+        Phase 4 runs after candidate comparison. A pr-plus-reviewer or try-fix winner may
+        describe code that exists only in a temporary sandbox, so applying its metadata
+        would make the PR claim unsubmitted behavior and tests. Fail closed unless the
+        machine-readable manifest explicitly says the raw `pr` candidate won.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$WinnerFile
+    )
+
+    if ([string]::IsNullOrWhiteSpace($WinnerFile)) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'No winner manifest path was provided.'
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath $WinnerFile)) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest is missing.'
+        }
+    }
+
+    try {
+        $manifest = Get-Content -Raw -LiteralPath $WinnerFile -Encoding UTF8 -ErrorAction Stop |
+            ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest could not be parsed.'
+        }
+    }
+
+    if ($null -eq $manifest) {
+        return [pscustomobject]@{
+            ShouldApply = $false
+            Winner      = ''
+            Reason      = 'The winner manifest is empty.'
+        }
+    }
+
+    $winner = if ($manifest.PSObject.Properties['winner']) {
+        ([string]$manifest.winner).Trim()
+    } else {
+        ''
+    }
+
+    if ($winner -eq 'pr' -and
+        $manifest.PSObject.Properties['isPRFix'] -and
+        $manifest.isPRFix -eq $true) {
+        return [pscustomobject]@{
+            ShouldApply = $true
+            Winner      = $winner
+            Reason      = 'The raw submitted PR won.'
+        }
+    }
+
+    $reason = if ($winner -match '^(?:pr-plus-reviewer|try-fix-\d+)$') {
+        "Candidate '$winner' won; its changes are not on the PR branch."
+    } elseif ($winner -eq 'pr') {
+        "The winner manifest is inconsistent for the raw PR candidate."
+    } else {
+        "The winner manifest contains an unsupported winner."
+    }
+
+    return [pscustomobject]@{
+        ShouldApply = $false
+        Winner      = $winner
+        Reason      = $reason
+    }
 }
 
 function Get-FinalizeRecommendation {
@@ -137,12 +253,14 @@ function Get-FinalizeRecommendation {
     $normalized = $Content -replace "`r`n", "`n"
 
     # Each recommendation is a "**Recommended <field>**" label followed by a fenced block.
-    # Fence length varies (the Phase 4 prompt nests fences), so match 3+ backticks and
-    # require the closing fence to be at least as long as the opening one.
-    $pattern = '(?im)^\s*\*\*Recommended\s+{0}\*\*\s*\n+(?<fence>`{{3,}})[^\n]*\n(?<value>.*?)\n?\k<fence>\s*(?:\n|$)'
+    # The description can itself contain same-length fenced examples. Its outer closing
+    # fence must therefore be the final non-whitespace content, rather than the first fence
+    # matching the opening length.
+    $titlePattern = '(?im)^\s*\*\*Recommended\s+title\*\*\s*\n+(?<fence>`{3,})[^\n]*\n(?<value>.*?)\n\k<fence>[ \t]*(?:\n|$)'
+    $bodyPattern = '(?im)^\s*\*\*Recommended\s+description\*\*\s*\n+(?<fence>`{3,})[^\n]*\n(?<value>.*?)\n\k<fence>[ \t]*(?:\n[ \t]*)*\z'
 
-    $titleMatch = [regex]::Match($normalized, ($pattern -f 'title'), [System.Text.RegularExpressions.RegexOptions]::Singleline)
-    $bodyMatch = [regex]::Match($normalized, ($pattern -f 'description'), [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $titleMatch = [regex]::Match($normalized, $titlePattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+    $bodyMatch = [regex]::Match($normalized, $bodyPattern, [System.Text.RegularExpressions.RegexOptions]::Singleline)
 
     if (-not $titleMatch.Success -or -not $bodyMatch.Success) { return $null }
 
@@ -165,8 +283,8 @@ function Merge-PreservedTitlePrefix {
     .DESCRIPTION
         Phase 4 writes a clean "[Platform] Component: What changed" title, which can drop
         tags that carry real workflow meaning — [WIP], [inflight regression], [net11.0].
-        Those are restored in their original order. Platform tags are skipped (the
-        recommendation supplies its own), as is any tag already present.
+        Those are restored in their original order. Platform and component tags are skipped
+        (the recommendation supplies those), as is any tag already present.
     #>
     param(
         [Parameter(Mandatory = $true)]
@@ -197,6 +315,28 @@ function Merge-PreservedTitlePrefix {
         # (e.g. "iOS18" -> "ios") so versioned platform tags still match.
         $firstWord = ($tag -split '[\s/]')[0].TrimEnd('0123456789.')
         if ($script:PlatformPrefixes -contains $firstWord.ToLowerInvariant()) { continue }
+
+        # Preserve only well-known workflow or branch markers. Treating every syntactically
+        # safe bracket as triage signal also preserved component tags such as
+        # "[BlazorWebView]", producing titles like
+        # "[BlazorWebView][Android] BlazorWebView: ...".
+        $normalizedTag = $tag.ToLowerInvariant()
+        $isKnownStatusTag = $normalizedTag -in @(
+            'wip',
+            'draft',
+            'dnm',
+            'do not merge',
+            'automated',
+            'revert',
+            'main',
+            'servicing'
+        )
+        $isKnownBranchTag =
+            $normalizedTag -match '^inflight(?:$|[ /-])' -or
+            $normalizedTag -match '^release/' -or
+            $normalizedTag -match '^backport(?:$|[ /-])' -or
+            $normalizedTag -match '^net\s*\d+(?:\.\d+)*(?:[ /-][a-z0-9][a-z0-9._/-]*)?$'
+        if (-not ($isKnownStatusTag -or $isKnownBranchTag)) { continue }
 
         # Already carried over by the recommendation (in any position)?
         if ($RecommendedTitle -match ('(?i)\[\s*' + [regex]::Escape($tag) + '\s*\]')) { continue }
@@ -252,6 +392,33 @@ function Merge-PreservedBodyPreamble {
     if ([string]::IsNullOrWhiteSpace($preamble)) { return $RecommendedBody }
 
     return "$preamble`n`n$RecommendedBody"
+}
+
+function New-PullRequestUpdatePayload {
+    <#
+    .SYNOPSIS
+        Builds the minimal REST payload for the changed PR metadata fields.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [bool]$TitleChanged,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Title,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$BodyChanged,
+
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Body
+    )
+
+    $payload = [ordered]@{}
+    if ($TitleChanged) { $payload['title'] = $Title }
+    if ($BodyChanged) { $payload['body'] = $Body }
+    return $payload
 }
 
 function New-ExclusiveTempFile {
@@ -335,6 +502,18 @@ if (-not (Test-Path -LiteralPath $ContentFile)) {
     exit 0
 }
 
+if ([string]::IsNullOrWhiteSpace($WinnerFile)) {
+    $finalizeDir = Split-Path -Parent $ContentFile
+    $prAgentDir = Split-Path -Parent $finalizeDir
+    $WinnerFile = Join-Path $prAgentDir 'winner.json'
+}
+
+$applyDecision = Get-FinalizeApplyDecision -WinnerFile $WinnerFile
+if (-not $applyDecision.ShouldApply) {
+    Write-Host "     ⏭️  Leaving PR metadata unchanged: $(ConvertTo-AzdoSafeConsole $applyDecision.Reason)" -ForegroundColor Gray
+    exit 0
+}
+
 $content = Get-Content -Raw -LiteralPath $ContentFile -Encoding UTF8
 
 if (Test-FinalizeIsNoOp -Content $content) {
@@ -353,14 +532,26 @@ if (-not $recommendation) {
 # re-attach, so we would silently strip the repo's required testing note.
 $prJson = $null
 try {
-    $prJson = gh pr view $PRNumber --repo $Repo --json title,body 2>$null | ConvertFrom-Json
+    $prOutput = @(& gh api "repos/$Repo/pulls/$PRNumber" 2>$null)
+    $readExitCode = $LASTEXITCODE
+    if ($readExitCode -ne 0) {
+        throw "gh api exited with code $readExitCode."
+    }
+    $prJson = ($prOutput -join "`n") | ConvertFrom-Json
 } catch {
     Write-Host "     ⚠️  Could not read the current PR metadata ($(ConvertTo-AzdoSafeConsole "$_")) — skipping to avoid clobbering it." -ForegroundColor Yellow
     exit 0
 }
 
 if (-not $prJson) {
-    Write-Host "     ⚠️  'gh pr view' returned no metadata for #$PRNumber — skipping to avoid clobbering it." -ForegroundColor Yellow
+    Write-Host "     ⚠️  GitHub REST API returned no metadata for #$PRNumber — skipping to avoid clobbering it." -ForegroundColor Yellow
+    exit 0
+}
+
+$currentHeadSha = if ($prJson.PSObject.Properties['head'] -and $prJson.head -and
+    $prJson.head.PSObject.Properties['sha']) { [string]$prJson.head.sha } else { '' }
+if (-not (Test-ExpectedHeadMatches -CurrentHeadSha $currentHeadSha -ExpectedHeadSha $ExpectedHeadSha)) {
+    Write-Host "     ⏭️  Leaving PR metadata unchanged because the PR head advanced after this review snapshot." -ForegroundColor Yellow
     exit 0
 }
 
@@ -402,31 +593,33 @@ if ($DryRun) {
         }
         Write-Host "     --- end preview ---" -ForegroundColor DarkGray
     }
-    Write-Host "     🔍 DryRun — would apply the above (no gh pr edit issued)." -ForegroundColor Yellow
+    Write-Host "     🔍 DryRun — would apply the above (no pull request update issued)." -ForegroundColor Yellow
     exit 0
 }
 
-$bodyFile = $null
+$payloadFile = $null
 try {
-    $bodyFile = New-ExclusiveTempFile -Prefix "pr-finalize-body-$PRNumber"
-    $newBody | Set-Content -LiteralPath $bodyFile -Encoding UTF8
+    $payload = New-PullRequestUpdatePayload `
+        -TitleChanged $titleChanged `
+        -Title $newTitle `
+        -BodyChanged $bodyChanged `
+        -Body $newBody
+    $payloadFile = New-ExclusiveTempFile -Prefix "pr-finalize-payload-$PRNumber"
+    $payload | ConvertTo-Json -Compress | Set-Content -LiteralPath $payloadFile -Encoding UTF8 -NoNewline
 
-    $ghArgs = @('pr', 'edit', "$PRNumber", '--repo', $Repo)
-    if ($titleChanged) { $ghArgs += @('--title', $newTitle) }
-    if ($bodyChanged) { $ghArgs += @('--body-file', $bodyFile) }
-
+    $ghArgs = @('api', "repos/$Repo/pulls/$PRNumber", '--method', 'PATCH', '--input', $payloadFile, '--silent')
     $output = & gh @ghArgs 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "     ✅ Applied the recommended PR title/description." -ForegroundColor Green
     } else {
         # Non-fatal: the review comment still carries the recommendation for a human.
-        # gh echoes back the title/body it was given, so this is PR-derived too.
-        Write-Host "     ⚠️  gh pr edit failed (non-fatal): $(ConvertTo-AzdoSafeConsole ($output -join ' '))" -ForegroundColor Yellow
+        # The API error may quote title/body validation details, so sanitize it too.
+        Write-Host "     ⚠️  GitHub REST update failed (non-fatal): $(ConvertTo-AzdoSafeConsole ($output -join ' '))" -ForegroundColor Yellow
     }
 } catch {
     Write-Host "     ⚠️  Failed to apply the PR finalize recommendation (non-fatal): $(ConvertTo-AzdoSafeConsole "$_")" -ForegroundColor Yellow
 } finally {
-    if ($bodyFile) { Remove-Item -LiteralPath $bodyFile -Force -ErrorAction SilentlyContinue }
+    if ($payloadFile) { Remove-Item -LiteralPath $payloadFile -Force -ErrorAction SilentlyContinue }
 }
 
 exit 0

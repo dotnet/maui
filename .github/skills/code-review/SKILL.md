@@ -175,9 +175,12 @@ must read every supporting file and apply the applicable
 Step 3 after those checks.
 
 For a live `pr_number`, delegate to the `maui-expert-reviewer` agent
-(`.github/agents/maui-expert-reviewer.md`) which runs per-dimension sub-agent
-evaluation. The agent's sole output is `inline-findings.json` — file:line
-comments in GitHub Review API format.
+(`.github/agents/maui-expert-reviewer.md`) with model `gpt-5.3-codex`, which
+runs per-dimension sub-agent evaluation. Keeping the expert reviewer on a
+different GPT optimization profile from the GPT-5.6 Sol orchestrator reduces
+correlated review misses without crossing provider families. The agent's sole
+output is `inline-findings.json` — file:line comments in GitHub Review API
+format.
 
 **After the agent finishes:**
 

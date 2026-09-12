@@ -78,8 +78,21 @@ param(
     # before the untrusted CopilotReview phase runs. Passed to post-ai-summary-comment.ps1 so
     # the APPROVE veto never trusts the agent-writable gate-result.txt in the worktree/artifact.
     [Parameter(Mandatory = $false)]
-    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', '')]
-    [string]$TrustedGateResult = ''
+    [ValidateSet('PASSED', 'SKIPPED', 'INCONCLUSIVE', 'FAILED', 'TIMEDOUT', '')]
+    [string]$TrustedGateResult = '',
+
+    # Immutable PR head captured by the trusted Setup task. Post uses this to bind
+    # review artifacts to the commit that Gate and CopilotReview actually evaluated,
+    # and to avoid applying labels or metadata to a newer live PR head.
+    [Parameter(Mandatory = $false)]
+    [ValidatePattern('^$|^[0-9a-fA-F]{40}$')]
+    [string]$ReviewedCommit = '',
+
+    # Fast test-run toggle for local/diagnostic runs. When set, the Gate phase skips
+    # STEP 2-4 (UI-category detection, regression tests, and the device/UI test
+    # verification) and reports SKIPPED, so no emulator/simulator is required.
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipGate
 )
 
 $ErrorActionPreference = 'Stop'
@@ -121,11 +134,158 @@ $runGate          = -not $Phase -or $Phase -eq 'Gate'
 $runCopilotReview = -not $Phase -or $Phase -eq 'CopilotReview'
 $runPost          = -not $Phase -or $Phase -eq 'Post'
 
+function Test-PhaseRequiresReviewWorktree {
+    param([string]$PhaseName)
+    return $PhaseName -in @('Gate', 'CopilotReview')
+}
+
+function Resolve-UITestCategoryRefresh {
+    param(
+        [string]$GateCategories,
+        [string]$RefreshedCategories
+    )
+
+    $gate = $GateCategories.Trim()
+    $refreshed = $RefreshedCategories.Trim()
+    if ($refreshed -eq 'NONE') {
+        return 'NONE'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($refreshed) -and $refreshed -ne 'ALL') {
+        return $refreshed
+    }
+    if (-not [string]::IsNullOrWhiteSpace($gate) -and $gate -notin @('ALL', 'NONE')) {
+        return $gate
+    }
+
+    return 'ALL'
+}
+
+function Get-GateReportRetryClass {
+    param([string]$ReportContent)
+
+    if ([string]::IsNullOrWhiteSpace($ReportContent)) {
+        return ''
+    }
+
+    $match = [regex]::Match(
+        $ReportContent,
+        '<!-- GATE-RETRY-CLASS:\s*(definitive-failure|skip-permanent|retryable)\s*-->\s*$',
+        [System.Text.RegularExpressions.RegexOptions]::Singleline
+    )
+    return $(if ($match.Success) { $match.Groups[1].Value } else { '' })
+}
+
+function Test-GateReportIsRetryableEnvironmentError {
+    param([string]$ReportContent)
+
+    if ([string]::IsNullOrWhiteSpace($ReportContent)) {
+        return $false
+    }
+    if ((Get-GateReportRetryClass -ReportContent $ReportContent) -eq 'definitive-failure') {
+        return $false
+    }
+    return $ReportContent -match 'ENV ERROR'
+}
+
+function Get-GateRetryBudgetMinutes {
+    param(
+        [double]$TaskTimeoutMinutes,
+        [double]$CleanupMarginMinutes
+    )
+
+    if ($TaskTimeoutMinutes -le 0) {
+        throw 'Gate task timeout must be greater than zero.'
+    }
+    if ($CleanupMarginMinutes -lt 0) {
+        throw 'Gate retry cleanup margin cannot be negative.'
+    }
+
+    return [Math]::Max(0, $TaskTimeoutMinutes - $CleanupMarginMinutes)
+}
+
+function Test-GateRetryFitsBudget {
+    param(
+        [double]$ElapsedMinutes,
+        [double]$AverageAttemptMinutes,
+        [double]$RetryBudgetMinutes
+    )
+
+    return (($ElapsedMinutes + $AverageAttemptMinutes) -lt $RetryBudgetMinutes)
+}
+
+function Invoke-ReviewGitCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    $output = git @Arguments 2>&1
+    return [pscustomobject]@{
+        ExitCode = $LASTEXITCODE
+        Output = (@($output) -join [Environment]::NewLine)
+    }
+}
+
+function Get-FetchedRemoteBranchSha {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RemoteName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BranchName
+    )
+
+    $fetchResult = Invoke-ReviewGitCommand -Arguments @('fetch', $RemoteName, $BranchName)
+    if ($fetchResult.ExitCode -ne 0) {
+        $detail = if ([string]::IsNullOrWhiteSpace($fetchResult.Output)) { '' } else { "`n$($fetchResult.Output)" }
+        throw "Failed to fetch the latest target branch '$BranchName' from '$RemoteName'. Review setup is inconclusive due to a retryable environment/infrastructure failure.$detail"
+    }
+
+    $remoteRef = "$RemoteName/$BranchName"
+    $resolveResult = Invoke-ReviewGitCommand -Arguments @('rev-parse', $remoteRef)
+    $sha = ([string]$resolveResult.Output).Trim()
+    if ($resolveResult.ExitCode -ne 0 -or $sha -notmatch '^[0-9a-fA-F]{40}$') {
+        throw "Fetched target branch '$BranchName', but could not resolve '$remoteRef'. Review setup is inconclusive due to a retryable environment/infrastructure failure."
+    }
+
+    return $sha
+}
+
 # Resolve the scripts directory — use TrustedScriptsDir if provided (CI),
 # otherwise use the repo's own .github/ directory (local dev).
 $ScriptsDir    = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'scripts' }     else { $PSScriptRoot }
 $SkillsDir     = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'skills' }      else { Join-Path $PSScriptRoot '../skills' }
 $EngScriptsDir = if ($TrustedScriptsDir) { Join-Path $TrustedScriptsDir 'eng-scripts' } else { Join-Path $PSScriptRoot '../../eng/scripts' }
+
+$ghRetryHelper = Join-Path $ScriptsDir 'shared/Invoke-GhCommandWithRetry.ps1'
+if (-not (Test-Path -LiteralPath $ghRetryHelper -PathType Leaf)) {
+    throw "Required GitHub retry helper not found: $ghRetryHelper"
+}
+. $ghRetryHelper
+
+function Get-SetupOutcomePath {
+    $outcomeDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    New-Item -ItemType Directory -Force -Path $outcomeDir | Out-Null
+    return (Join-Path $outcomeDir 'setup-outcome.txt')
+}
+
+function Set-SetupOutcome {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('COMPLETED', 'MERGE_CONFLICT')]
+        [string]$Outcome
+    )
+
+    $Outcome | Set-Content -LiteralPath (Get-SetupOutcomePath) -Encoding UTF8 -NoNewline
+}
+
+if ($runSetup) {
+    Remove-Item -LiteralPath (Get-SetupOutcomePath) -Force -ErrorAction SilentlyContinue
+}
 
 $commentCleanupScript = Join-Path $ScriptsDir "shared/Remove-StaleMauiBotComments.ps1"
 if (Test-Path $commentCleanupScript) {
@@ -205,8 +365,18 @@ $copilotVersion = (& copilot --version 2>&1 | Out-String).Trim()
 if (-not $copilotVersion) { $copilotVersion = $copilotCmd.Source }
 Write-Host "  ✅ Copilot CLI: $copilotVersion" -ForegroundColor Green
 
-$prInfo = gh pr view $PRNumber --json title,state,body 2>$null | ConvertFrom-Json
-if (-not $prInfo) { Write-Error "PR #$PRNumber not found"; exit 1 }
+$prInfoJson = Invoke-GhCommandWithRetry `
+    -Arguments @('api', "repos/dotnet/maui/pulls/$PRNumber") `
+    -Description "read PR #$PRNumber metadata" `
+    -AllowNotFound `
+    -RequireOutput
+if ($null -eq $prInfoJson) { Write-Error "PR #$PRNumber not found (GitHub returned HTTP 404)"; exit 1 }
+try {
+    $prInfo = $prInfoJson | ConvertFrom-Json -ErrorAction Stop
+} catch {
+    Write-Error "GitHub returned invalid metadata for PR #$PRNumber after a successful API call: $($_.Exception.Message)"
+    exit 1
+}
 Write-Host "  ✅ PR: $($prInfo.title)" -ForegroundColor Green
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -251,6 +421,22 @@ if ($DryRun) {
     # Auto-detect CI environment
     $isCI = $env:CI -or $env:TF_BUILD -or $env:GITHUB_ACTIONS -or $env:BUILD_BUILDID
 
+    # Detect the PR's TARGET (base) branch. PRs targeting the inflight release
+    # branches ('inflight/current', 'inflight/candidate') carry release-specific
+    # code that has diverged from main, so squash-merging them onto the (main-based)
+    # pipeline branch produces false conflicts / build breaks. For those we test the
+    # PR head branch AS-IS instead of merging it onto the pipeline base. PRs targeting
+    # main or a netN.0 feature branch keep the squash-merge-onto-pipeline behavior.
+    $baseRefName = [string]$prInfo.base.ref
+    if ($baseRefName) { $baseRefName = $baseRefName.Trim() }
+    $inflightTargets = @('inflight/current', 'inflight/candidate')
+    $isInflightTarget = $baseRefName -and ($inflightTargets -contains $baseRefName)
+    if ($isInflightTarget) {
+        Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' (inflight release branch) — will test the PR branch directly (no squash-merge onto the pipeline base)." -ForegroundColor Cyan
+    } elseif ($baseRefName) {
+        Write-Host "  🎯 PR #$PRNumber targets '$baseRefName' — squash-merge onto pipeline base." -ForegroundColor Gray
+    }
+
     # Capture original branch so error paths can restore it (not `git checkout -` which is unreliable)
     $originalBranch = git branch --show-current 2>$null
     if (-not $originalBranch) { $originalBranch = git rev-parse HEAD 2>$null }
@@ -282,6 +468,7 @@ if ($DryRun) {
         $baseSha = git rev-parse --short HEAD 2>$null
         Write-Host "  📌 Review base: main @ $baseSha" -ForegroundColor Cyan
     }
+    $reviewedBaseSha = ([string](git rev-parse HEAD 2>$null)).Trim()
 
     # Create review branch
     Write-Host "  🔀 Creating review branch: $reviewBranch" -ForegroundColor Cyan
@@ -300,22 +487,90 @@ if ($DryRun) {
     if ($LASTEXITCODE -ne 0) {
         # Fork PR — get fork info
         Write-Host "  📥 Fetching from fork..." -ForegroundColor Cyan
-        $forkInfo = gh pr view $PRNumber --json headRepositoryOwner,headRefName,headRepository 2>$null | ConvertFrom-Json
-        if (-not $forkInfo -or -not $forkInfo.headRepositoryOwner) {
-            Write-Error "Failed to fetch PR #$PRNumber (not found on origin or fork)"
+        $forkOwner = [string]$prInfo.head.repo.owner.login
+        $forkRepo = [string]$prInfo.head.repo.name
+        $forkRef = [string]$prInfo.head.ref
+        if ([string]::IsNullOrWhiteSpace($forkOwner) -or
+            [string]::IsNullOrWhiteSpace($forkRepo) -or
+            [string]::IsNullOrWhiteSpace($forkRef)) {
+            Write-Error "Failed to fetch PR #${PRNumber}: GitHub did not return usable fork metadata."
             git checkout $originalBranch 2>$null
             exit 1
         }
-        $forkUrl = "https://github.com/$($forkInfo.headRepositoryOwner.login)/$($forkInfo.headRepository.name).git"
-        $fetchOutput = git fetch $forkUrl "$($forkInfo.headRefName):$tempBranch" 2>&1
+        $forkUrl = "https://github.com/$forkOwner/$forkRepo.git"
+        $fetchOutput = git fetch $forkUrl "${forkRef}:$tempBranch" 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Error "Failed to fetch from fork: $forkUrl`n$fetchOutput"
             git checkout $originalBranch 2>$null
             exit 1
         }
     }
+    $reviewedPrHeadSha = ([string](git rev-parse $tempBranch 2>$null)).Trim()
+    if ($reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "Could not resolve the immutable PR head for review."
+        exit 1
+    }
 
     # ── Merge PR commits (squash) ──
+    # For inflight-targeted PRs, DON'T squash-merge onto the pipeline base — reset the
+    # review branch to the PR head so we test the PR's code exactly as it sits on its
+    # inflight base. (Trusted scripts already live in $TRUSTED, copied in Setup before
+    # any branch switch, so resetting the worktree here does not lose pipeline fixes.)
+    if ($isInflightTarget) {
+        Write-Host "  🎯 Testing PR branch on the LATEST inflight base — resetting to PR head ($tempBranch), then merging origin/$baseRefName..." -ForegroundColor Cyan
+        git reset --hard $tempBranch 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            git branch -D $tempBranch 2>$null
+            Write-Error "Failed to reset review branch to PR head for inflight-targeted PR #$PRNumber"; exit 1
+        }
+        # Merge the CURRENT inflight base so base-branch fixes that landed AFTER the PR branched
+        # are included (e.g. #36787 fixed the inflight/current build breaks after #36776 was cut).
+        # Otherwise the gate rebuilds the stale/broken base and the gate + UI tests never run.
+        try {
+            $reviewedBaseSha = Get-FetchedRemoteBranchSha -RemoteName 'origin' -BranchName $baseRefName
+        } catch {
+            $fetchError = $_.Exception.Message
+            git checkout $originalBranch 2>$null
+            git branch -D $reviewBranch 2>$null
+            git branch -D $tempBranch 2>$null
+            Write-Error $fetchError
+            exit 1
+        }
+        git -c user.email=copilot@github.com -c user.name=Copilot merge --no-edit "origin/$baseRefName" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            # Genuine conflict between the PR head and the latest inflight base — the PR must
+            # rebase. Report it exactly like the squash-merge conflict path and bail.
+            git merge --abort 2>$null
+            git checkout $originalBranch 2>$null
+            git branch -D $reviewBranch 2>$null
+            git branch -D $tempBranch 2>$null
+            if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+                Remove-StaleMauiBotIssueComments `
+                    -PRNumber $PRNumber `
+                    -IncludeMergeConflict `
+                    -IncludeReviewIncomplete `
+                    -Reason "stale merge-conflict or review-incomplete notice"
+            }
+            $conflictBody = @"
+<!-- MAUI_BOT_MERGE_CONFLICT -->
+⚠️ **Merge Conflict Detected** — This PR conflicts with its target branch ``$baseRefName``. Please rebase onto the target branch and resolve the conflicts.
+"@
+            try { gh pr comment $PRNumber --body $conflictBody 2>&1 | Out-Null } catch { }
+            Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
+            Write-Error "Merge conflicts between PR #$PRNumber head and latest '$baseRefName'. Review cannot proceed until conflicts are resolved."
+            exit 1
+        }
+        git branch -D $tempBranch 2>$null | Out-Null
+        if (Get-Command Remove-StaleMauiBotIssueComments -ErrorAction SilentlyContinue) {
+            Remove-StaleMauiBotIssueComments `
+                -PRNumber $PRNumber `
+                -IncludeMergeConflict `
+                -Reason "resolved merge-conflict notice"
+        }
+        $headCommit = git log --oneline -1 2>$null
+        Write-Host "  ✅ Review branch ready (PR head + latest $baseRefName): $reviewBranch" -ForegroundColor Green
+        Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
+    } else {
     Write-Host "  🔀 Merging PR commits (squashed)..." -ForegroundColor Cyan
     git merge --squash $tempBranch 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
@@ -370,7 +625,8 @@ if ($DryRun) {
             Remove-StaleMauiBotIssueComments `
                 -PRNumber $PRNumber `
                 -IncludeMergeConflict `
-                -Reason "stale merge-conflict notice"
+                -IncludeReviewIncomplete `
+                -Reason "stale merge-conflict or review-incomplete notice"
         }
 
         # Post a comment on the PR about merge conflicts
@@ -385,6 +641,7 @@ if ($DryRun) {
             Write-Host "  ⚠️ Could not post merge conflict comment (non-fatal): $_" -ForegroundColor Yellow
         }
 
+        Set-SetupOutcome -Outcome 'MERGE_CONFLICT'
         Write-Error "Merge conflicts for PR #$PRNumber. Review cannot proceed until conflicts are resolved."
         exit 1
     }
@@ -396,13 +653,15 @@ if ($DryRun) {
     $headCommit = git log --oneline -1 2>$null
     Write-Host "  ✅ Review branch ready: $reviewBranch" -ForegroundColor Green
     Write-Host "  📝 HEAD: $headCommit" -ForegroundColor Gray
+    }
+    $reviewedTreeSha = ([string](git rev-parse HEAD 2>$null)).Trim()
 }
 
 } # end if ($runSetup)
 
 # End of Setup phase — write sentinel and exit early
 if ($Phase -eq 'Setup') {
-    # Sentinel signals to Tasks 2-4 that Setup completed successfully (PR merged).
+    # Sentinel signals to the Gate and CopilotReview phases that Setup completed successfully.
     $sentinelDir = if ($TrustedScriptsDir) {
         Split-Path $TrustedScriptsDir -Parent
     } else {
@@ -410,7 +669,22 @@ if ($Phase -eq 'Setup') {
         New-Item -ItemType Directory -Force -Path $d | Out-Null
         $d
     }
+    if ($baseRefName -notmatch '^(main|net[0-9]+\.0|inflight/[a-z0-9][a-z0-9._-]*|release/[0-9]+\.[0-9]+\.[0-9]+xx(-[a-z0-9.]+)?)$' -or
+        $reviewedBaseSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        $reviewedPrHeadSha -notmatch '^[0-9a-fA-F]{40}$' -or
+        $reviewedTreeSha -notmatch '^[0-9a-fA-F]{40}$') {
+        Write-Error "Setup could not persist a validated immutable review snapshot."
+        exit 1
+    }
+    ([ordered]@{
+        baseRefName = $baseRefName
+        baseSha = $reviewedBaseSha
+        prHeadSha = $reviewedPrHeadSha
+        reviewTreeSha = $reviewedTreeSha
+    } | ConvertTo-Json -Depth 4) |
+        Set-Content (Join-Path $sentinelDir "review-snapshot.json") -Encoding UTF8
     "OK" | Set-Content (Join-Path $sentinelDir "setup-complete") -Encoding UTF8
+    Set-SetupOutcome -Outcome 'COMPLETED'
     # Persist PR metadata so the CopilotReview phase can evaluate the existing title/
     # description for the pr-finalize (Phase 4) step. `gh pr view` is unreliable in the
     # CopilotReview phase after the squash-merge checkout, and $prInfo is only populated
@@ -427,15 +701,27 @@ if ($Phase -eq 'Setup') {
     exit 0
 }
 
-# Overlay the trusted, branch-aware infra scripts over the worktree. The gate's
+# Overlay the trusted, branch-aware test infrastructure over the worktree. The gate's
 # verify-tests-fail.ps1 (and try-fix candidate validation) invoke the WORKTREE's
 # Run-DeviceTests.ps1 / BuildAndRunHostApp.ps1 — they resolve their own RepoRoot from .git, so
 # they must physically live in the worktree. Without this overlay they would be the PR branch's
 # possibly-stale copies: e.g. a net11 PR whose branch still hardcodes net10.0-android would build
 # the wrong TFM and fail NETSDK1005. Mirrors the deep-UI-test stage's "Restore trusted scripts"
 # step and enforces security rule 3 (no PR-controlled infra .ps1 runs with tokens in scope).
-# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. The src/
-# tree stays base + PR. No-op outside CI (when -TrustedScriptsDir is not supplied).
+# MUST be re-applied after every `git reset --hard`, which would otherwise revert it. Catalyst
+# additionally receives a narrow trusted source patch for the screenshot harness: ordinary
+# reviewer-branch src/ edits are discarded when Setup switches to the PR base. No-op outside CI.
+function Stop-TrustedCatalystOverlayFailure {
+    param([Parameter(Mandatory = $true)][string]$Message)
+
+    if ($Phase -eq 'Gate') {
+        Write-Host "  ⚠️ $Message Gate verification did not start; classifying this trusted-overlay failure as infrastructure/inconclusive." -ForegroundColor Yellow
+        exit 3
+    }
+
+    throw $Message
+}
+
 function Restore-TrustedScripts {
     param([string]$TrustedScriptsDir, [string]$RepoRoot)
     if (-not $TrustedScriptsDir) { return }
@@ -455,10 +741,38 @@ function Restore-TrustedScripts {
     if ($restored) {
         Write-Host "  🔒 Restored trusted .github/scripts, .github/skills, eng/scripts over the worktree (branch-aware + trusted infra)" -ForegroundColor Cyan
     }
+
+    if ($Platform -in @('catalyst', 'maccatalyst')) {
+        $sourceOverride = Join-Path $TrustedScriptsDir 'source-overrides/catalyst-retina-screenshot.patch'
+        if (-not (Test-Path $sourceOverride -PathType Leaf)) {
+            Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override is missing: $sourceOverride"
+        }
+
+        Push-Location $RepoRoot
+        try {
+            git apply --reverse --check --whitespace=nowarn -- $sourceOverride 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "  🔒 Trusted Catalyst screenshot override is already present" -ForegroundColor Cyan
+            } else {
+                git apply --check --whitespace=nowarn -- $sourceOverride
+                if ($LASTEXITCODE -ne 0) {
+                    Stop-TrustedCatalystOverlayFailure -Message "Trusted Catalyst screenshot override no longer applies cleanly; the PR or target branch changed UITest.cs."
+                }
+
+                git apply --whitespace=nowarn -- $sourceOverride
+                if ($LASTEXITCODE -ne 0) {
+                    Stop-TrustedCatalystOverlayFailure -Message "Failed to apply trusted Catalyst screenshot override."
+                }
+                Write-Host "  🔒 Applied trusted Catalyst Retina screenshot override" -ForegroundColor Cyan
+            }
+        } finally {
+            Pop-Location
+        }
+    }
 }
 
-# ─── Sentinel check: verify Setup completed before running later phases ───
-if ($Phase -and $Phase -ne 'Setup') {
+# ─── Sentinel check: verify Setup completed before running worktree phases ───
+if (Test-PhaseRequiresReviewWorktree -PhaseName $Phase) {
     $sentinelDir = if ($TrustedScriptsDir) {
         Split-Path $TrustedScriptsDir -Parent
     } else {
@@ -1109,7 +1423,12 @@ function Write-CopilotTokenUsageRecord {
 
 # ─── Helper: Invoke Copilot ──────────────────────────────────────────────────
 function Invoke-CopilotStep {
-    param([string]$StepName, [string]$Prompt)
+    param(
+        [string]$StepName,
+        [string]$Prompt,
+        [ValidateRange(30, 10000)]
+        [int]$MaxAiCredits = 1500
+    )
 
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
@@ -1149,9 +1468,9 @@ function Invoke-CopilotStep {
     # Use JSON output format to stream live progress of agent activity.
     # --secret-env-vars: defense-in-depth — strips named tokens from copilot's
     # shell/MCP subprocess env even if they somehow appear (e.g., via variable groups).
-    # Model is overridable via $env:COPILOT_REVIEW_MODEL so contributors without internal-model access
-    # can run this script (e.g., with 'claude-opus-4.6' or 'claude-sonnet-4.6').
-    $copilotModel = if ($env:COPILOT_REVIEW_MODEL) { $env:COPILOT_REVIEW_MODEL } else { 'gpt-5.5' }
+    # Keep the direct reviewer on the approved GPT model. Try-fix alternatives are
+    # selected per attempt by the pr-review skill, not per Copilot process.
+    $copilotModel = 'gpt-5.6-sol'
     if ([string]::IsNullOrWhiteSpace($modelName)) {
         $modelName = $copilotModel
     }
@@ -1177,8 +1496,39 @@ function Invoke-CopilotStep {
             $env:OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT = 'false'
         }
 
-        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
+        # Copilot validates COPILOT_GITHUB_TOKEN through GitHub at startup. Both
+        # transient 401 responses and GitHub service/rate-limit failures can kill
+        # the process before it writes any review artifacts. Keep the historical
+        # three-attempt bound for ordinary auth failures, but allow a longer,
+        # exponentially backed-off window for confirmed 429/5xx/network failures.
+        $maxCopilotAuthAttempts = 5
+        $maxNonServiceAuthAttempts = 3
+        $copilotAuthRetryBaseDelaySec = 20
+        $copilotRetryReason = 'GitHub auth-validation failure'
+        $copilotRetryLimitForDisplay = $maxCopilotAuthAttempts
+        for ($copilotAttempt = 1; $copilotAttempt -le $maxCopilotAuthAttempts; $copilotAttempt++) {
+        $authValidationFailed = $false
+        $transientAuthServiceFailure = $false
+        $authValidationStatus = ''
+        if ($copilotAttempt -gt 1) {
+            Write-Host "  🔄 Retrying Copilot (attempt $copilotAttempt/$copilotRetryLimitForDisplay) after $copilotRetryReason..." -ForegroundColor Yellow
+        }
+
+        & copilot -p $Prompt --allow-all --output-format json --model $copilotModel --context long_context --effort max --max-ai-credits $MaxAiCredits --secret-env-vars=GH_TOKEN,COPILOT_GITHUB_TOKEN,GITHUB_TOKEN 2>&1 | ForEach-Object {
             $line = $_.ToString()
+            if ($line -match '(?i)could not be validated|Bad credentials|Failed to fetch PAT user login') {
+                $authValidationFailed = $true
+            }
+            if ($line -match '(?i)Failed to fetch PAT user login \((\d{3})\)' -or
+                $line -match '(?i)\bHTTP\s+(\d{3})\b') {
+                $authValidationStatus = "HTTP $($matches[1])"
+            }
+            if (Test-GhCommandFailureIsTransient -Detail $line) {
+                $transientAuthServiceFailure = $true
+            }
+            if ($authValidationStatus -match '^HTTP (408|429|500|502|503|504)$') {
+                $transientAuthServiceFailure = $true
+            }
             try {
                 $event = $line | ConvertFrom-Json -ErrorAction Stop
                 switch ($event.type) {
@@ -1324,6 +1674,28 @@ function Invoke-CopilotStep {
                 }
             }
         }
+        $copilotAttemptExit = $LASTEXITCODE
+        $copilotAttemptLimit = if ($transientAuthServiceFailure) {
+            $maxCopilotAuthAttempts
+        } else {
+            $maxNonServiceAuthAttempts
+        }
+        $copilotRetryLimitForDisplay = $copilotAttemptLimit
+        if ($copilotAttemptExit -eq 0 -or -not $authValidationFailed -or $copilotAttempt -ge $copilotAttemptLimit) { break }
+
+        $statusSuffix = if ($authValidationStatus) { " ($authValidationStatus)" } else { '' }
+        $copilotRetryReason = if ($transientAuthServiceFailure) {
+            "a transient GitHub auth-validation service failure$statusSuffix"
+        } else {
+            "a GitHub auth-validation failure$statusSuffix"
+        }
+        $copilotAuthRetryDelaySec = [Math]::Min(
+            120,
+            $copilotAuthRetryBaseDelaySec * [Math]::Pow(2, $copilotAttempt - 1)
+        )
+        Write-Host "  ⚠️ Copilot exited $copilotAttemptExit after $copilotRetryReason; retrying in ${copilotAuthRetryDelaySec}s..." -ForegroundColor Yellow
+        Start-Sleep -Seconds $copilotAuthRetryDelaySec
+        } # end transient-auth retry loop
     } finally {
         foreach ($key in $savedOtel.Keys) {
             if ($null -eq $savedOtel[$key]) {
@@ -1376,6 +1748,39 @@ function Invoke-CopilotStep {
 
 if ($runGate) {
 
+if ($SkipGate) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
+    Write-Host "║  STEP 2-4 SKIPPED (-SkipGate): fast test mode              ║" -ForegroundColor Yellow
+    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Yellow
+    Write-Host "  ⏭️  No UI-category detection, regression, or device/UI tests run." -ForegroundColor Gray
+
+    # Emit NONE so the downstream RunDeepUITests stage is skipped (no device tests).
+    Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]NONE"
+    Write-Host "##vso[task.setvariable variable=detectedPlatform;isOutput=true]$Platform"
+
+    $gateResult = "SKIPPED"
+
+    # Persist SKIPPED to both the trusted staging-root copy (read by the Gate task to
+    # freeze the RunGate.gateResult output var) and the display copy in the artifact.
+    $gateVerdictDir = if ($TrustedScriptsDir) {
+        Split-Path $TrustedScriptsDir -Parent
+    } else {
+        Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    }
+    New-Item -ItemType Directory -Force -Path $gateVerdictDir | Out-Null
+    $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
+    New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
+    $gateResult | Set-Content (Join-Path $gateVerdictDir "gate-result.txt") -Encoding UTF8
+    $gateResult | Set-Content (Join-Path $gateOutputDir "gate-result.txt") -Encoding UTF8
+    @"
+### Gate Result: ⚠️ SKIPPED
+
+Gate skipped (``-SkipGate`` fast test mode). No UI/device tests were run for this pipeline invocation.
+"@ | Set-Content (Join-Path $gateOutputDir "content.md") -Encoding UTF8
+    Write-Host "  📄 Gate result persisted: SKIPPED (fast test mode)" -ForegroundColor Gray
+} else {
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║  STEP 2: DETECT UI TEST CATEGORIES                       ║" -ForegroundColor Cyan
@@ -1386,7 +1791,7 @@ $uitestCategories = ""
 $detectScript = Join-Path $EngScriptsDir "detect-ui-test-categories.ps1"
 if (Test-Path $detectScript) {
     try {
-        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" 2>&1
+        $detectOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" 2>&1
         $detectOutput | ForEach-Object { Write-Host "  $_" }
 
         foreach ($line in $detectOutput) {
@@ -1395,7 +1800,7 @@ if (Test-Path $detectScript) {
             # the explicit "run all" sentinel emitted by the run-all returns in
             # detect-ui-test-categories.ps1; treating it as "marker not seen"
             # would lose that distinction.
-            if ($lineStr -match 'UITestCategoryList;isOutput=true\](.*)$') {
+            if ($lineStr -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') {
                 $uitestCategories = $Matches[1]
             }
         }
@@ -1527,8 +1932,11 @@ if ($risksData -and ($risksData.result -eq 'REVERT' -or $risksData.result -eq 'O
         $regrTestDetails = @()
 
         $regrPlatform = if ($Platform) { $Platform } else { "android" }
-        $uiTestRunner = Join-Path $ScriptsDir "BuildAndRunHostApp.ps1"
-        $deviceTestRunner = Join-Path $SkillsDir "run-device-tests/scripts/Run-DeviceTests.ps1"
+        # Invoke the trusted copies overlaid into the review worktree, not the staging
+        # directory. Both runners resolve RepoRoot from $PSScriptRoot and therefore
+        # cannot build the PR when launched from the trusted-scripts staging tree.
+        $uiTestRunner = Join-Path $RepoRoot ".github/scripts/BuildAndRunHostApp.ps1"
+        $deviceTestRunner = Join-Path $RepoRoot ".github/skills/run-device-tests/scripts/Run-DeviceTests.ps1"
 
         foreach ($t in $regressionTests) {
             Write-Host ""
@@ -1664,19 +2072,13 @@ Write-Host "╚═════════════════════�
 $gateOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/gate"
 New-Item -ItemType Directory -Force -Path $gateOutputDir | Out-Null
 
-# Detect tests in PR
-Write-Host "  🔍 Detecting tests in PR #$PRNumber..." -ForegroundColor Cyan
-$testDetectScript = Join-Path $ScriptsDir "shared/Detect-TestsInDiff.ps1"
-if (Test-Path $testDetectScript) {
-    $testDetectScript = (Resolve-Path $testDetectScript).Path
-    & pwsh -NoProfile -File $testDetectScript -PRNumber $PRNumber 2>&1 | ForEach-Object { Write-Host "    $_" }
-} else {
-    Write-Host "    ⚠️ Detect-TestsInDiff.ps1 not found at $testDetectScript" -ForegroundColor Yellow
-}
-
 # Determine platform for gate
 $gatePlatform = if ($Platform) { $Platform } else { "android" }
 Write-Host "  🧪 Running gate on platform: $gatePlatform" -ForegroundColor Cyan
+
+# The verifier detects tests from the committed review snapshot. Do not query
+# the live PR here: a new commit during a retry must not change Gate selection.
+Write-Host "  🔍 Test detection is pinned to the prepared review snapshot." -ForegroundColor Cyan
 
 $verifyScript = [System.IO.Path]::GetFullPath((Join-Path $SkillsDir "verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1"))
 if (-not (Test-Path $verifyScript)) {
@@ -1689,6 +2091,21 @@ if (-not (Test-Path $verifyScript)) {
 $maxGateAttempts = 3
 $gateExitCode = 1
 $gateOutput = @()
+$gateLoopStart = Get-Date
+# The pipeline passes its actual RunGate task timeout from the SAME YAML variable
+# used by timeoutInMinutes. Derive the retry budget from that value while reserving
+# enough time for result serialization and task cleanup. A local run with no task
+# timeout stays bounded only by $maxGateAttempts. GATE_RETRY_BUDGET_MINUTES remains
+# an explicit override for diagnostics.
+$gateTaskTimeoutMin = if ($env:GATE_TASK_TIMEOUT_MINUTES) { [double]$env:GATE_TASK_TIMEOUT_MINUTES } else { 0 }
+$gateCleanupMarginMin = if ($env:GATE_RETRY_CLEANUP_MARGIN_MINUTES) { [double]$env:GATE_RETRY_CLEANUP_MARGIN_MINUTES } else { 10 }
+$gateRetryBudgetMin = if ($env:GATE_RETRY_BUDGET_MINUTES) {
+    [double]$env:GATE_RETRY_BUDGET_MINUTES
+} elseif ($gateTaskTimeoutMin -gt 0) {
+    Get-GateRetryBudgetMinutes -TaskTimeoutMinutes $gateTaskTimeoutMin -CleanupMarginMinutes $gateCleanupMarginMin
+} else {
+    [double]::PositiveInfinity
+}
 # Path is fixed across attempts — define once, then clear per-iteration so a stale
 # report from attempt N-1 can't be misclassified as the current attempt's output.
 $gateContentFile = Join-Path $gateOutputDir "verify-tests-fail/verification-report.md"
@@ -1725,19 +2142,26 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     # and reports whether the new tests fail without any fix. Passing the flag
     # would force the script to error out for those PRs.
     # Note: NOT wrapped in Invoke-WithoutGhTokens here — verify-tests-fail.ps1
-    # itself needs GH_TOKEN to invoke Detect-TestsInDiff.ps1 (which calls `gh api`
-    # to enumerate PR files). The script wraps its OWN dotnet/host-app/device-test
-    # subprocess invocations internally to strip the token before PR code runs.
+    # may need GH_TOKEN to resolve PR base metadata when no pinned local snapshot
+    # is available. Test selection itself uses merge-base..HEAD in this review
+    # worktree. The script strips tokens around every PR-controlled subprocess.
     $gateOutput = & pwsh -NoProfile -File "$verifyScript" -Platform $gatePlatform -PRNumber $PRNumber 2>&1
     $gateExitCode = $LASTEXITCODE
     $gateOutput | ForEach-Object { Write-Host "    $_" }
 
     # Check if this was an ENV ERROR (emulator timeout, ADB failure, etc.)
     $isEnvError = $false
-    if ($gateExitCode -ne 0) {
+    if ($gateExitCode -eq 2) {
+        # Exit 2 = deterministic "no runnable tests detected in the PR diff". This is a
+        # SKIPPED verdict, NOT an infra failure — the script writes no report by design.
+        # Do NOT treat the missing report as an env error and do NOT retry (retrying just
+        # re-runs detection 3× and, worse, the persistent-missing-report path below then
+        # forces INCONCLUSIVE for what is really a clean SKIPPED). Break immediately.
+        Write-Host "  ⏭️ Gate detected no runnable tests (exit 2) — SKIPPED, not retrying" -ForegroundColor Yellow
+    } elseif ($gateExitCode -ne 0) {
         if (Test-Path $gateContentFile) {
             $gateContent = Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue
-            if ($gateContent -match 'ENV ERROR') {
+            if (Test-GateReportIsRetryableEnvironmentError -ReportContent $gateContent) {
                 $isEnvError = $true
                 Write-Host "  ⚠️ Environment error detected (attempt $gateAttempt/$maxGateAttempts)" -ForegroundColor Yellow
             }
@@ -1754,17 +2178,47 @@ for ($gateAttempt = 1; $gateAttempt -le $maxGateAttempts; $gateAttempt++) {
     if ($gateExitCode -eq 0 -or -not $isEnvError) {
         break  # Real pass or real failure — don't retry
     }
+    # A PERMANENT env error is deterministic across retries on the same agent — a missing
+    # snapshot baseline (added separately by a maintainer), a cross-machine baseline residual,
+    # or a fix that only touches a different platform will produce the IDENTICAL INCONCLUSIVE
+    # on every attempt. verify-tests-fail.ps1 tags these in the report with the machine token
+    # `GATE-RETRY-CLASS: skip-permanent`. Retrying them just burns ~16min/attempt of agent time
+    # for no new information (Windows #36561/14687382 spent ~48min retrying a "Baseline snapshot
+    # not yet created" 3× before the same verdict). Stop now, still reporting INCONCLUSIVE
+    # ($isEnvError stays true → $gateExitCode = 3 below). Only TRANSIENT infra flakes fall
+    # through to the retry path.
+    if (Test-Path $gateContentFile) {
+        $gateRetryClass = Get-GateReportRetryClass -ReportContent (Get-Content $gateContentFile -Raw -ErrorAction SilentlyContinue)
+        if ($gateRetryClass -eq 'skip-permanent') {
+            $permElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
+            Write-Host ("  ⏭️ Env error is deterministic/permanent (e.g. missing snapshot baseline, or an identical crash on both the without-fix and with-fix runs) — not retrying; another attempt would waste ~{0:N0}m for the identical INCONCLUSIVE. Reporting INCONCLUSIVE." -f ($permElapsedMin / $gateAttempt)) -ForegroundColor Yellow
+            break
+        }
+    }
+    # Wall-clock budget guard (see $gateRetryBudgetMin above). Each attempt can be
+    # very slow when device tests crash — XHarness APP_CRASH is only detected after
+    # the per-test timeout and the device-test runner retries internally — so 3 full
+    # outer retries can exceed the configured RunGate task timeout and get the task
+    # KILLED before it can report INCONCLUSIVE (-> Unknown badges). If another attempt
+    # at the observed average pace would consume the cleanup margin, stop now and
+    # report a clean INCONCLUSIVE ($isEnvError stays true -> $gateExitCode = 3 below).
+    $gateElapsedMin = ((Get-Date) - $gateLoopStart).TotalMinutes
+    $gateAvgMin = $gateElapsedMin / $gateAttempt
+    if (-not (Test-GateRetryFitsBudget -ElapsedMinutes $gateElapsedMin -AverageAttemptMinutes $gateAvgMin -RetryBudgetMinutes $gateRetryBudgetMin)) {
+        Write-Host ("  ⏱️ Gate retry budget reached ({0:N0}m elapsed, ~{1:N0}m/attempt, budget {2}m) — stopping retries and reporting INCONCLUSIVE rather than risking a task-timeout kill (which would drop gateResult and render the badges Unknown)." -f $gateElapsedMin, $gateAvgMin, $gateRetryBudgetMin) -ForegroundColor Yellow
+        break
+    }
     if ($gateAttempt -lt $maxGateAttempts) {
         Write-Host "  ⏳ Waiting 30s before retry..." -ForegroundColor DarkGray
         Start-Sleep -Seconds 30
     }
 }
 if ($isEnvError) {
-    # Reachable only if EVERY iteration was an env error: real pass/fail
-    # iterations `break` out of the loop (so $isEnvError would be reset to $false
-    # at the top of the next iteration but we'd never get here). $isEnvError
-    # here means "all $maxGateAttempts attempts hit env errors" — not "any".
-    Write-Host "  ⚠️ All $maxGateAttempts gate attempts hit environment errors" -ForegroundColor Yellow
+    # Reachable when the loop ended while still in an env-error state — either
+    # EVERY attempt hit an env error, or we stopped early because another attempt
+    # would have blown the retry budget (real pass/fail iterations `break` with
+    # $isEnvError = $false, so we never get here for those).
+    Write-Host "  ⚠️ Gate could not verify the fix — all attempts hit environment errors (or the retry budget was reached)" -ForegroundColor Yellow
     # Persistent env error = the gate could not verify anything. Report INCONCLUSIVE
     # (exit 3) rather than letting it fall through to FAILED, so infra flakes don't
     # masquerade as a broken fix.
@@ -1829,7 +2283,16 @@ function Get-GateFallbackDetails {
     if ($Tail -match '(?i)build failed|\berror\s+[A-Z]{2,}\d+\b') {
         $likely += "Build error before any test could run."
     }
-    if ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)') {
+    # Device/simulator BOOT failure — the pool agent could not start a usable device (e.g. an
+    # iOS agent whose every SimRuntime is "Invalid" / "Failed to boot device" / "No iPhone
+    # simulator found", or an Android emulator/xharness install that never came online). The
+    # gate never ran a single test, so this is transient infra, NOT a problem with the PR.
+    # (PR #35706 iOS: agent had zero usable runtimes; PR #36572 Android: xharness install failure.)
+    $platLabel = if ($ReviewedPlatform) { $ReviewedPlatform } else { "device" }
+    if ($Tail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)|No (?:preferred )?device (?:pre-installed|found)') {
+        $likely += "Could not boot the $platLabel simulator/emulator on the CI agent — the pool machine had no usable device runtime, so no test could run. Transient infra, not a problem with the PR; re-running the review (``/review rerun``) usually resolves it."
+    }
+    elseif ($Tail -match '(?i)emulator.*(?:timeout|failed|not.found)|adb.*(?:server|crashed)|xharness.*(?:failed|timeout)|Install failure|Test command cannot continue') {
         $likely += "Device/emulator setup failed (env error class)."
     }
     if ($Tail -match '(?i)merge.conflict|conflict.*merge.base') {
@@ -1897,12 +2360,28 @@ No tests were detected in this PR.
     } else {
         $resultIcon = switch ($gateResult) { "PASSED" { "✅" } "INCONCLUSIVE" { "⚠️" } default { "❌" } }
         $fallbackDetails = Get-GateFallbackDetails -Tail $gateLogTail -ExitCode $gateExitCode -VerifyDir (Join-Path $gateOutputDir "verify-tests-fail") -ReviewedPlatform $gatePlatform
+        # When the report is missing, explain WHY as specifically as the log allows
+        # instead of the alarming, generic "exited before writing a report". Each
+        # branch gives an honest root cause + a clear next step so an INCONCLUSIVE
+        # gate never looks like a PR problem. (PRs #35706 iOS, #36572 Android boot;
+        # #36109 exit-3 infra; #36209 device-test app crash before writing results.)
+        $gateLeadIn = if ($gateLogTail -match '(?i)Failed to boot device|No (?:iPhone|iPad|iOS|Android)\b[^\n]*simulator found|Invalid runtime:|Failed to create (?:iPhone|iPad)') {
+            "> ⚠️ The gate could not run: the $($gatePlatform.ToUpper()) simulator/emulator failed to boot on the CI agent (transient infra). This is **not** a problem with the PR — comment ``/review`` to try again."
+        } elseif ($gateLogTail -match '(?i)empty or not valid XML|likely crashed or exited before writing|app likely crashed|APP_CRASH|XHarness exit code:\s*80|test result file[^\n]*is empty') {
+            "> ⚠️ The gate launched the test app but it **crashed or exited before writing its results** on the CI agent, so no pass/fail could be recorded (the result file was empty/invalid). This is almost always a transient app/infrastructure flake — **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent."
+        } elseif ($gateLogTail -match '(?i)APP_LAUNCH_FAILURE|XHarness exit code:\s*83|could not find/launch the app|package[^\n]*install[^\n]*fail|XHarness exit 78') {
+            "> ⚠️ The gate could not **launch** the test app on the CI agent (app install/launch failure — transient infra), so the fix could not be verified. This is **not** a problem with your PR. Comment ``/review`` to retry on a fresh agent."
+        } elseif ($gateExitCode -eq 3) {
+            "> ⚠️ The gate could not **conclusively** verify the fix on this run: it hit an environment/infrastructure error while building or running the tests (exit code 3 = INCONCLUSIVE), so no reliable pass/fail was produced. This is **not** a problem with your PR — comment ``/review`` to retry on a fresh agent. The diagnostics below show what was captured before it stopped."
+        } else {
+            "> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report (exit code ``$gateExitCode``). This is usually a transient CI-agent issue, **not** a problem with your PR — comment ``/review`` to retry. Diagnostics below."
+        }
         @"
 ### Gate Result: $resultIcon $gateResult
 
 **Platform:** $($gatePlatform.ToUpper())
 
-> ⚠️ ``verify-tests-fail.ps1`` exited before writing a verification report. Diagnostics below.
+$gateLeadIn
 
 $fallbackDetails
 
@@ -1958,6 +2437,8 @@ if ($detectScript) {
 $uitestCategories | Set-Content (Join-Path $gateVerdictDir "uitest-categories.txt") -Encoding UTF8
 
 } # end if (-not $skipGateAndTryFix)
+
+} # end else (-not $SkipGate)
 
 } # end if ($runGate)
 
@@ -2038,6 +2519,7 @@ $gateStatusForPrompt = switch ($gateResult) {
     "PASSED" { "Gate ✅ PASSED — tests FAIL without fix, PASS with fix." }
     "SKIPPED" { "Gate ⚠️ SKIPPED — no tests detected in this PR. Consider suggesting the author add tests." }
     "INCONCLUSIVE" { "Gate ⚠️ INCONCLUSIVE — the tests could not be built/run (build or environment error), so the fix is UNVERIFIED. Do NOT treat this as a failing fix and do NOT request changes solely because of the gate; review the code on its merits." }
+    "TIMEDOUT" { "Gate ⏱️ TIMEDOUT — test verification did not finish, so the fix is UNVERIFIED and is not eligible for approval." }
     default { "Gate ❌ FAILED — tests did NOT behave as expected." }
 }
 
@@ -2067,29 +2549,37 @@ Run these AFTER your primary test command succeeds. If any regression test fails
     }
 }
 
-# ── STEP 5a: Try-Fix — iterative candidate generation (Copilot call 1) ────
+# ── STEP 5a: Try-Fix — bounded two-candidate generation (Copilot call 1) ────
+# The two alternative-fix models are selected per attempt by the pr-review skill.
+# A hard Copilot credit cap backs up the prompt's wall-clock/candidate limits so a
+# complex PR cannot spend the full 180-minute task budget in STEP 5a and prevent
+# the final expert comparison from running.
 $step5aPrompt = @"
-Generate alternative fix candidates for PR #$PRNumber using an iterative expert-review-and-test loop.
+Generate a bounded set of alternative fix candidates for PR #$PRNumber.
+
+## HARD EXECUTION CONTRACT
+
+- Produce **at most two candidates total**.
+- Launch **no more than two child task invocations**, sequentially and with ``mode: "sync"``. Attempt both in order unless the remaining STEP 5a budget makes the second unsafe:
+  1. ``gpt-5.3-codex`` — invoke the ``try-fix`` skill once.
+  2. ``gpt-5.6-sol`` — invoke the ``try-fix`` skill once.
+- Do not launch cross-pollination, final-audit, rubber-duck, or follow-up reviewer agents.
+- Do not invoke ``maui-expert-reviewer`` separately for each candidate. The ``try-fix`` skill's inline expert self-review is sufficient for this phase.
+- Each candidate gets one implementation/test pass and at most one focused correction/retest. If it still fails or is blocked, record that result and move on.
+- Never run an unrequested full test suite. Use only the detected primary test and the mandatory regression tests listed below.
+- Keep this entire STEP 5a within 90 minutes. Persist the aggregate after every candidate. If time is tight, stop launching work, write the partial aggregate honestly, and return so STEP 5b can finish the review.
 
 ## Phase 1 — Pre-Flight (context only)
-Use the pr-review skill's pre-flight phase to gather context about the issue and PR. Do NOT modify code.
+Gather issue/PR context and inspect the diff directly. Do NOT modify code and do NOT launch a separate expert-review agent; the dedicated expert pass runs in STEP 5b.
 Write summary to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``.
 
-## Phase 2 — Iterative Try-Fix loop
-For each candidate, follow this cycle:
-
-1. **Generate** — Use the code-review skill with the maui-expert-reviewer agent to analyze the problem and generate a fix candidate. Each candidate must explore a DIFFERENT approach from the PR's current fix and from previous candidates. The expert reviewer provides domain-specific guidance for MAUI (handlers, platform specifics, layout, etc.).
-2. **Test** — Run the candidate against the gate criteria and regression tests. Record pass/fail.
-3. **Learn** — If the candidate failed, feed the failure details (test output, error messages) back to the expert reviewer to inform the next candidate.
-4. **Repeat or stop** — Generate the next candidate incorporating lessons from failures. Stop when:
-   - A candidate passes ALL tests and is demonstrably better than the PR's fix, OR
-   - You've exhausted meaningfully different approaches (don't generate trivial variations)
-
-Number candidates sequentially (``try-fix-1``, ``try-fix-2``, ``try-fix-3``, ...).
+## Phase 2 — Two bounded Try-Fix attempts
+Invoke the ``try-fix`` skill once per model listed above. Candidate 2 must use the recorded result from candidate 1 to avoid repeating the same approach, but must not re-open or re-run candidate 1.
 
 For each candidate:
 - Write output to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix-{N}/content.md``
 - Include: approach description, diff, test results, failure analysis (if failed)
+- Immediately update ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md`` before starting any later work.
 
 Aggregate all try-fix narrative to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md``.
 $regressionTestInstruction
@@ -2102,7 +2592,11 @@ Do NOT re-run gate verification. The gate phase is handled separately.
 ⚠️ Do NOT create or overwrite ``gate/content.md`` — it is already generated by the gate script with detailed test output.
 "@
 
-Invoke-CopilotStep -StepName "STEP 5a: TRY-FIX" -Prompt $step5aPrompt | Out-Null
+# Copilot AI credits include delegated-agent turns. Live builds 14894808/14/17
+# proved that 60 credits expired during pre-flight before candidate 1 could even
+# launch. 2000 still bounds a pathological session while leaving enough budget
+# for the two explicitly capped try-fix agents.
+Invoke-CopilotStep -StepName "STEP 5a: TRY-FIX" -Prompt $step5aPrompt -MaxAiCredits 2000 | Out-Null
 
 # Restore review branch between copilot calls
 git checkout $reviewBranch 2>$null | Out-Null
@@ -2157,12 +2651,130 @@ if (-not $prCurrentTitle -or -not $prCurrentBody) {
 if (-not $prCurrentTitle) { $prCurrentTitle = '(unknown — could not fetch; do not assume it is missing)' }
 if (-not $prCurrentBody) { $prCurrentBody = '(could not fetch description — evaluate against the diff; do not assume the PR has no description)' }
 if ($prCurrentBody.Length -gt 4000) { $prCurrentBody = $prCurrentBody.Substring(0, 4000) + "`n...(description truncated for prompt)..." }
+
+# Provision the single reviewer-refinement sandbox before invoking Copilot.
+# Live build 14916232 proved that leaving this to the agent can validate the raw
+# PR worktree by mistake, while builds 14916232/14916250 both proved that a
+# detached candidate without .buildtasks fails before its code is compiled.
+$prPlusSandboxBase = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEMPDIRECTORY)) {
+    $env:AGENT_TEMPDIRECTORY
+} else {
+    [IO.Path]::GetTempPath()
+}
+$prPlusSandboxRoot = Join-Path $prPlusSandboxBase "pr-$PRNumber-pr-plus-reviewer"
+$prPlusArtifactRoot = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer"
+$legacyPrPlusSandboxArtifact = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-plus-reviewer-sandbox"
+$prPlusSandboxCreated = $false
+$prPlusBuildTasksReady = $false
+$prPlusCandidateBaseCommit = ''
+$prPlusSandboxStatus = 'UNAVAILABLE'
+
+try {
+    & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+    if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+        Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction Stop
+    }
+    & git -C $RepoRoot worktree prune --expire now | Out-Null
+    & git -C $RepoRoot worktree add --detach $prPlusSandboxRoot HEAD
+    if ($LASTEXITCODE -ne 0) {
+        throw "git worktree add exited with code $LASTEXITCODE"
+    }
+    $prPlusSandboxCreated = $true
+
+    # Inflight review branches receive current reviewer infrastructure as an
+    # uncommitted overlay after resetting to the PR head. Reapply that overlay
+    # to the detached candidate and checkpoint it so subsequent diffs contain
+    # only the expert reviewer's product/test changes.
+    Restore-TrustedScripts -TrustedScriptsDir $TrustedScriptsDir -RepoRoot $prPlusSandboxRoot
+    $trustedOverlayChanges = @(git -C $prPlusSandboxRoot status --porcelain 2>$null)
+    if ($trustedOverlayChanges.Count -gt 0) {
+        & git -C $prPlusSandboxRoot add -A
+        if ($LASTEXITCODE -ne 0) {
+            throw "failed to stage the trusted candidate overlay"
+        }
+        & git -C $prPlusSandboxRoot `
+            -c user.email=copilot@github.com `
+            -c user.name=Copilot `
+            commit -m "Trusted reviewer infrastructure overlay" 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "failed to checkpoint the trusted candidate overlay"
+        }
+    }
+    $prPlusCandidateBaseCommit = (& git -C $prPlusSandboxRoot rev-parse HEAD 2>$null).Trim()
+    if ([string]::IsNullOrWhiteSpace($prPlusCandidateBaseCommit)) {
+        throw "could not resolve the candidate baseline commit"
+    }
+
+    if (Test-Path -LiteralPath $prPlusArtifactRoot) {
+        Remove-Item -LiteralPath $prPlusArtifactRoot -Recurse -Force -ErrorAction Stop
+    }
+    if (Test-Path -LiteralPath $legacyPrPlusSandboxArtifact) {
+        Remove-Item -LiteralPath $legacyPrPlusSandboxArtifact -Recurse -Force -ErrorAction Stop
+    }
+    New-Item -ItemType Directory -Path $prPlusArtifactRoot -Force | Out-Null
+
+    $rawBuildTasks = Join-Path $RepoRoot '.buildtasks'
+    $candidateBuildTasks = Join-Path $prPlusSandboxRoot '.buildtasks'
+    if (Test-Path -LiteralPath $rawBuildTasks) {
+        try {
+            Copy-Item -LiteralPath $rawBuildTasks -Destination $candidateBuildTasks -Recurse -Force -ErrorAction Stop
+            $prPlusBuildTasksReady =
+                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Controls.Build.Tasks.dll')) -and
+                (Test-Path -LiteralPath (Join-Path $candidateBuildTasks 'Microsoft.Maui.Resizetizer.dll'))
+        } catch {
+            Write-Host "  ⚠️ Could not seed candidate .buildtasks; candidate setup must rebuild them if needed: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    }
+
+    $prPlusSandboxStatus = if ($prPlusBuildTasksReady) {
+        'READY_WITH_BUILDTASKS'
+    } else {
+        'READY_WITHOUT_BUILDTASKS'
+    }
+    Write-Host "  ✅ Prepared pr-plus-reviewer sandbox: $prPlusSandboxRoot ($prPlusSandboxStatus)" -ForegroundColor Green
+} catch {
+    $prPlusSandboxStatus = "UNAVAILABLE: $($_.Exception.Message)"
+    Write-Host "  ⚠️ Could not prepare pr-plus-reviewer sandbox: $($_.Exception.Message)" -ForegroundColor Yellow
+    if ($prPlusSandboxCreated) {
+        & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        & git -C $RepoRoot worktree prune --expire now | Out-Null
+        $prPlusSandboxCreated = $false
+    }
+}
+
 $step5bPrompt = @"
 Run expert code review of PR #$PRNumber's fix and compare against all try-fix candidates from STEP 5a.
 
 Read context from:
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pre-flight/content.md``
 - ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/try-fix/content.md`` (and individual try-fix-{N}/content.md files)
+
+## HARD EXECUTION CONTRACT
+
+- Invoke the ``maui-expert-reviewer`` / ``code-review`` path **once only**. Do not launch a second audit, final-audit agent, rubber-duck pass, or per-candidate reviewer.
+- Write ``inline-findings.json`` and the initial expert evaluation before attempting any candidate refinement.
+- If reviewer feedback can improve the PR, apply at most one consolidated ``pr-plus-reviewer`` patch and run each required targeted validation command once. Do not enter an iterative repair/retest loop and do not run a full suite unless it is the explicitly required test command.
+- Whether validation passes, fails, or is blocked, proceed immediately to the comparative report. Record uncertainty instead of repeatedly refining the candidate.
+- Always write ``report/content.md``, ``winner.json``, and ``pr-finalize/content.md`` before optional investigation. Required output files take priority over additional testing.
+
+## REQUIRED pr-plus-reviewer sandbox
+
+- Raw PR worktree (read-only for candidate refinement): ``$RepoRoot``
+- Exact pre-created candidate worktree: ``$prPlusSandboxRoot``
+- Candidate baseline commit after trusted infrastructure overlay: ``$prPlusCandidateBaseCommit``
+- Exact persistent candidate artifact root: ``$prPlusArtifactRoot``
+- Sandbox status: ``$prPlusSandboxStatus``
+- Use this exact candidate worktree. Do not create another worktree or sandbox, and never create one under ``CustomAgentLogsTmp``.
+- Before editing or validating, run ``git -C "$prPlusSandboxRoot" rev-parse --show-toplevel`` and require the resolved path to equal ``$prPlusSandboxRoot``. If the sandbox is unavailable or identity does not match, record ``pr-plus-reviewer`` as blocked; never modify or validate against the raw PR worktree.
+- Treat ``$prPlusCandidateBaseCommit`` as the immutable candidate baseline and do not commit reviewer changes. It already includes any trusted script/source overlay needed to validate main, netN.0, and inflight-targeted PRs.
+- Run every candidate command from the candidate root with ``Push-Location "$prPlusSandboxRoot"`` / ``Pop-Location`` (or an equivalent explicit working-directory option). Invoke scripts from that same root. An output path rooted at ``$RepoRoot`` proves the raw PR ran and MUST NOT be counted as candidate validation.
+- The pipeline copied its already-built ``.buildtasks`` into the candidate when the status is ``READY_WITH_BUILDTASKS``. If the status is ``READY_WITHOUT_BUILDTASKS`` and a required validation needs MAUI build tasks, build ``Microsoft.Maui.BuildTasks.slnf`` once in the candidate before the validation command. If the candidate itself changes build-task sources, rebuild that solution once even when copied tasks exist.
+- Before validation, require ``git -C "$prPlusSandboxRoot" diff --check "$prPlusCandidateBaseCommit"``. Persist ``git -C "$prPlusSandboxRoot" diff --binary "$prPlusCandidateBaseCommit"`` as ``$prPlusArtifactRoot/reviewer.patch`` and the complete candidate diff against the PR base as ``$prPlusArtifactRoot/candidate.patch``.
+- Write every candidate summary and validation log by its absolute path under ``$prPlusArtifactRoot``. Do not write persistent output using a relative ``CustomAgentLogsTmp`` path while the current directory is the sandbox, because that output will be deleted with the sandbox.
+- Persist only candidate diffs, focused validation logs, and the candidate summary under ``CustomAgentLogsTmp``. The sandbox is temporary and must not be copied into review artifacts.
 
 ## Phase 1 — Expert reviewer evaluation of the PR fix
 Use the code-review skill with the maui-expert-reviewer agent to evaluate the PR's existing fix. Apply the reviewer's actionable feedback in a sandbox copy and treat the result as a candidate named ``pr-plus-reviewer``.
@@ -2176,6 +2788,12 @@ Compare ALL candidates:
 - All ``try-fix-N`` candidates from STEP 5a
 Pick the single winning candidate. **Candidates that failed regression tests MUST be ranked lower than candidates that passed them.**
 Write the comparative analysis to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/report/content.md``.
+
+The report's first non-empty line MUST be exactly one of:
+- ``## ✅ Final Recommendation: APPROVE``
+- ``## ⚠️ Final Recommendation: REQUEST CHANGES``
+
+Do not substitute ``## Result``, ``**Winner:**``, or other wording for this required line. Use ``REQUEST CHANGES`` when ``pr-plus-reviewer`` or any ``try-fix-N`` wins because the submitted PR still needs the winning changes. Use ``APPROVE`` only when the raw ``pr`` candidate wins, the trusted Gate permits approval, and the expert review found no blocking errors or discussion items.
 
 ## Phase 3 — Winner manifest (REQUIRED)
 Write ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json`` with this exact schema:
@@ -2203,7 +2821,10 @@ PR #$PRNumber's CURRENT description:
 $prCurrentBody
 
 Steps:
-1. Compare the CURRENT title and description above against the actual diff and the winning fix.
+1. Compare the CURRENT title and description above against the raw submitted PR diff only.
+   The winning candidate may exist only in a temporary sandbox. Never describe
+   ``pr-plus-reviewer`` or ``try-fix-*`` behavior, tests, test counts, cleanup, or files
+   unless those changes are already present in the submitted PR HEAD.
 2. Judge quality: is the title specific (platform prefix + component + what changed) and is the description accurate and complete (what changed and why, key files, platform notes, dependency/issue links)?
 3. Write your result to ``CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md``:
    - **If the current title AND description already accurately and completely describe the change**, do NOT invent a replacement and do NOT add optional notes — this whole section is omitted when the metadata is already good. Write EXACTLY this single line and nothing else: ``✅ Current title and description accurately reflect the change — recommend keeping as-is.``
@@ -2219,7 +2840,9 @@ Steps:
 <improved description — preserve good existing content, fix/extend as needed; omit the repo testing-note boilerplate>
 ``````
 
-Base everything strictly on the real changes (do not invent features). Keep this file focused on the title + description assessment only.
+Base everything strictly on changes already present in the submitted PR HEAD (do not invent
+features or advertise an unsubmitted candidate). Keep this file focused on the title +
+description assessment only.
 
 $platformInstruction
 $autonomousRules
@@ -2228,7 +2851,29 @@ $autonomousRules
 Do NOT re-run gate verification.
 "@
 
-Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt | Out-Null
+# The expert reviewer delegates relevant dimensions internally. The former
+# 70-credit cap stopped that child after only six tool calls, before it could
+# write findings. Keep a finite cap, but size it for one complete expert pass.
+try {
+    Invoke-CopilotStep -StepName "STEP 5b: EXPERT REVIEW + COMPARE" -Prompt $step5bPrompt -MaxAiCredits 1500 | Out-Null
+} finally {
+    if (Test-Path -LiteralPath $legacyPrPlusSandboxArtifact) {
+        Remove-Item -LiteralPath $legacyPrPlusSandboxArtifact -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "  🧹 Removed legacy candidate sandbox from review artifacts" -ForegroundColor DarkGray
+    }
+    if ($prPlusSandboxCreated) {
+        & git -C $RepoRoot worktree remove --force --force $prPlusSandboxRoot 2>$null | Out-Null
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Remove-Item -LiteralPath $prPlusSandboxRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        & git -C $RepoRoot worktree prune --expire now | Out-Null
+        if (Test-Path -LiteralPath $prPlusSandboxRoot) {
+            Write-Host "  ⚠️ Could not fully remove pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor Yellow
+        } else {
+            Write-Host "  🧹 Removed pr-plus-reviewer sandbox: $prPlusSandboxRoot" -ForegroundColor DarkGray
+        }
+    }
+}
 
 # Diagnostic: check what STEP 5b produced
 Write-Host ""
@@ -2277,35 +2922,56 @@ if ($detectScript -and (Test-Path $detectScript) -and (Test-Path $aiCategoriesFi
         $aiCategoriesArg = (Get-Content $aiCategoriesFile -Raw).Trim()
         if (-not [string]::IsNullOrWhiteSpace($aiCategoriesArg)) {
             Write-Host "  🔁 Refreshing UI category detection with AI tier..." -ForegroundColor Cyan
-            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -AiCategories $aiCategoriesArg 2>&1
+            $refreshOutput = & pwsh -NoProfile -File $detectScript -PrNumber "$PRNumber" -Platform "$Platform" -AiCategories $aiCategoriesArg 2>&1
             $refreshOutput | ForEach-Object { Write-Host "    $_" }
 
             $refreshedCategories = $uitestCategories
             foreach ($line in $refreshOutput) {
-                if ($line.ToString() -match 'UITestCategoryList;isOutput=true\](.*)$') {
+                if ($line.ToString() -match '^##vso\[task\.setvariable variable=UITestCategoryList;isOutput=true\](.*)$') {
                     $refreshedCategories = $Matches[1]
                 }
             }
 
             # Re-emit the AzDO output variable so Stage 2 (RunDeepUITests)
             # picks up the AI-refreshed category list, not the pre-AI one.
-            if ($refreshedCategories -ne $uitestCategories) {
-                $refreshedForOutput = if ($refreshedCategories -eq 'NONE') { 'NONE' }
-                                      elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) { 'ALL' }
-                                      else { $refreshedCategories }
-                Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+            #
+            # CRITICAL (do not simplify back to blank -> 'ALL'): a blank/whitespace
+            # AI-refresh result must NEVER clobber a good file-based gate detection
+            # with 'ALL'. The RunDeepUITests stage condition SKIPS on 'ALL' (running
+            # the full matrix reliably hits the 240-min timeout and yields zero TRX),
+            # so downgrading to 'ALL' surfaces the "No UI test results were produced"
+            # warning on PRs that DID have specific, runnable categories. The AI tier
+            # often returns nothing usable; when it does, fall back to the SPECIFIC
+            # gate-detected categories ($uitestCategories) and only emit 'ALL' as a
+            # last resort when the gate itself found no specific categories.
+            # (Observed on PR #36448: gate detected 'Material3,ViewBaseTests' but the
+            # blank AI refresh downgraded it to 'ALL' -> deep stage skipped -> warning.)
+            $refreshedForOutput = Resolve-UITestCategoryRefresh `
+                -GateCategories $uitestCategories `
+                -RefreshedCategories $refreshedCategories
+            # Always emit so RunReview.detectedCategories is authoritative (the stage
+            # coalesce prefers RunReview over RunGate); never leave a downgrade in place.
+            Write-Host "##vso[task.setvariable variable=detectedCategories;isOutput=true]$refreshedForOutput"
+            if ($refreshedForOutput -ne $uitestCategories) {
                 Write-Host "  🔁 Updated detectedCategories output: $refreshedForOutput" -ForegroundColor Green
+            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories) -or $refreshedCategories -eq 'ALL') {
+                Write-Host "  🔁 AI refresh returned no usable categories — preserving gate-detected categories: $refreshedForOutput" -ForegroundColor Green
+            } else {
+                Write-Host "  🔁 Categories unchanged after AI refresh: $refreshedForOutput" -ForegroundColor DarkGray
             }
 
             $uitestOutputDir = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/uitests"
             $uitestContentFile = Join-Path $uitestOutputDir "content.md"
 
-            if ($refreshedCategories -eq 'NONE') {
+            # Use $refreshedForOutput (the resolved value Stage 2 will actually act
+            # on), not the raw $refreshedCategories, so the posted comment matches
+            # what runs (a blank AI refresh now keeps the specific gate categories).
+            if ($refreshedForOutput -eq 'NONE') {
                 "No UI test categories needed for this PR (no UI-relevant changes)." | Set-Content $uitestContentFile -Encoding UTF8
-            } elseif ([string]::IsNullOrWhiteSpace($refreshedCategories)) {
+            } elseif ($refreshedForOutput -eq 'ALL' -or [string]::IsNullOrWhiteSpace($refreshedForOutput)) {
                 "Full UI test matrix will run (no specific categories detected from PR changes)." | Set-Content $uitestContentFile -Encoding UTF8
             } else {
-                "**Detected UI test categories:** ``$refreshedCategories``" | Set-Content $uitestContentFile -Encoding UTF8
+                "**Detected UI test categories:** ``$refreshedForOutput``" | Set-Content $uitestContentFile -Encoding UTF8
             }
         }
     } catch {
@@ -2343,49 +3009,13 @@ $trustedGateResultForPost = if (-not [string]::IsNullOrWhiteSpace($TrustedGateRe
     $gateResult
 }
 
-# ─── Gate posting (moved here so only the Post task needs GH_TOKEN) ──────
-$postGateScript = Join-Path $ScriptsDir "post-gate-comment.ps1"
-if (Test-Path $postGateScript) {
-    try {
-        if ($DryRun) {
-            & $postGateScript -PRNumber $PRNumber -DryRun
-        } else {
-            & $postGateScript -PRNumber $PRNumber
-        }
-    } catch {
-        Write-Host "  ⚠️ Failed to post gate comment (non-fatal): $_" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  ⚠️ post-gate-comment.ps1 not found" -ForegroundColor Yellow
-}
-
-# Apply gate result label
-$gatePassLabel = "s/agent-gate-passed"
-$gateFaillabel = "s/agent-gate-failed"
-$gateSkipLabel = "s/agent-gate-skipped"
-$allGateLabels = @($gatePassLabel, $gateFaillabel, $gateSkipLabel)
-
-$addLabel = switch ($gateResult) {
-    "PASSED"  { $gatePassLabel }
-    "SKIPPED" { $gateSkipLabel }
-    "INCONCLUSIVE" { $gateSkipLabel }  # build/env error — gate could not verify; do NOT apply gate-failed
-    default   { $gateFaillabel }
-}
-$removeLabels = $allGateLabels | Where-Object { $_ -ne $addLabel }
-
-if (-not $DryRun) {
-    foreach ($lbl in $removeLabels) {
-        gh pr edit $PRNumber --remove-label $lbl --repo dotnet/maui 2>$null | Out-Null
-    }
-    gh pr edit $PRNumber --add-label $addLabel --repo dotnet/maui 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "  🏷️ Label: $addLabel" -ForegroundColor Cyan
-    } else {
-        Write-Host "  ⚠️ Failed to apply label $addLabel" -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  [DRY RUN] Would set label: $addLabel" -ForegroundColor Magenta
-}
+# ─── Gate posting ────────────────────────────────────────────────────────
+# The standalone post-gate-comment.ps1 was removed in 67b1a9a316e ("Merge gate
+# result into the unified AI Summary comment"): the gate verdict is now rendered
+# directly into the AI Summary review (see "### Gate Result:" blocks above) and
+# reflected by the single Apply-AgentLabels call in STEP 7. That shared helper
+# owns all mutually-exclusive label transitions and uses the REST API, avoiding
+# duplicate GraphQL mutations and stale skipped-gate labels.
 
 # ═════════════════════════════════════════════════════════════════════════════
 #  STEP 5.5: Apply the Phase 4 (pr-finalize) title/description recommendation
@@ -2409,7 +3039,13 @@ if ($env:SKIP_PR_FINALIZE_APPLY -eq 'true') {
             # Resolve content.md from $RepoRoot rather than letting the script fall back to
             # the current directory — the Post phase's cwd is not guaranteed to be the repo.
             $finalizeContent = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/pr-finalize/content.md"
-            $applyArgs = @{ PRNumber = $PRNumber; ContentFile = $finalizeContent }
+            $finalizeWinner = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/winner.json"
+            $applyArgs = @{
+                PRNumber = $PRNumber
+                ContentFile = $finalizeContent
+                WinnerFile = $finalizeWinner
+                ExpectedHeadSha = $ReviewedCommit
+            }
             if ($DryRun) { $applyArgs.DryRun = $true }
             & $applyFinalizeScript @applyArgs
         } catch {
@@ -2452,9 +3088,9 @@ if (Test-Path $reviewScript) {
     try {
         Write-Host "  📝 Posting PR review summary..." -ForegroundColor Cyan
         if ($DryRun) {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -DryRun
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit -DryRun
         } else {
-            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost
+            $reviewOutput = & $reviewScript -PRNumber $PRNumber -TrustedGateResult $trustedGateResultForPost -ReviewedCommit $ReviewedCommit
         }
         # Capture review ID from script output (format: AI_SUMMARY_REVIEW_ID=<id>)
         $idLine = $reviewOutput | Where-Object { $_ -match '^AI_SUMMARY_REVIEW_ID=' } | Select-Object -Last 1
@@ -2499,13 +3135,14 @@ if (Test-Path $winnerFile) {
         # Validation
         $allowed = @('pr','pr-plus-reviewer','try-fix-1','try-fix-2','try-fix-3','try-fix-4')
         if (-not $winner.winner -or $allowed -notcontains $winner.winner) {
-            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $($winner.winner) — falling back to PR-fix path" -ForegroundColor Yellow
+            $invalidWinner = ConvertTo-AzdoSafeConsole ([string]$winner.winner)
+            Write-Host "  ⚠️ winner.json has invalid 'winner' value: $invalidWinner — falling back to PR-fix path" -ForegroundColor Yellow
             $winner = $null
         } elseif ($winner.winner -in @('pr','pr-plus-reviewer') -and $winner.isPRFix -ne $true) {
-            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=true — overriding" -ForegroundColor Yellow
+            Write-Host "  ⚠️ winner.json: '$(ConvertTo-AzdoSafeConsole ([string]$winner.winner))' must have isPRFix=true — overriding" -ForegroundColor Yellow
             $winner.isPRFix = $true
         } elseif ($winner.winner -like 'try-fix-*' -and $winner.isPRFix -ne $false) {
-            Write-Host "  ⚠️ winner.json: '$($winner.winner)' must have isPRFix=false — overriding" -ForegroundColor Yellow
+            Write-Host "  ⚠️ winner.json: '$(ConvertTo-AzdoSafeConsole ([string]$winner.winner))' must have isPRFix=false — overriding" -ForegroundColor Yellow
             $winner.isPRFix = $false
         }
         if ($winner -and $winner.isPRFix -eq $false -and [string]::IsNullOrWhiteSpace($winner.candidateDiff)) {
@@ -2513,7 +3150,7 @@ if (Test-Path $winnerFile) {
             $winner = $null
         }
         if ($winner) {
-            Write-Host "  🏆 Winning candidate: $($winner.winner) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
+            Write-Host "  🏆 Winning candidate: $(ConvertTo-AzdoSafeConsole ([string]$winner.winner)) (isPRFix=$($winner.isPRFix))" -ForegroundColor Cyan
         }
     } catch {
         Write-Host "  ⚠️ Failed to parse winner.json (non-fatal): $_ — falling back to PR-fix path" -ForegroundColor Yellow
@@ -2539,25 +3176,34 @@ if (Get-Command Dismiss-StaleMauiBotTryFixReviews -ErrorAction SilentlyContinue)
 }
 
 if ($isPRWinner) {
-    # Post inline review comments (file:line findings from expert-reviewer agent)
-    $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+    # Defer the inline expert review (file:line findings) to Stage 3 so it posts
+    # together with the AI Summary review. Rather than posting here — during the
+    # Review stage, before the deep UI tests have run — write a sentinel next to
+    # inline-findings.json. Both files round-trip to Stage 3 via the CopilotLogs
+    # artifact, where post-inline-review.ps1 posts them alongside the AI summary.
+    # This couples the two posts (per request) and, as a bonus, avoids duplicate
+    # inline posts across Review-stage infra retries (Stage 3 posts once).
     $findingsFile = Join-Path $RepoRoot "CustomAgentLogsTmp/PRState/$PRNumber/PRAgent/inline-findings.json"
-    if ((Test-Path $inlineScript) -and (Test-Path $findingsFile)) {
-        try {
-            Write-Host "  📝 Posting inline review comments..." -ForegroundColor Cyan
-            if ($DryRun) {
-                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -DryRun
-            } else {
-                & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile
+    if (Test-Path $findingsFile) {
+        if ($DryRun) {
+            # Local preview only: show what Stage 3 would post (no sentinel needed).
+            $inlineScript = Join-Path $summaryScriptsDir "post-inline-review.ps1"
+            if (Test-Path $inlineScript) {
+                Write-Host "  📝 [DryRun] Previewing deferred inline review..." -ForegroundColor Cyan
+                try { & $inlineScript -PRNumber $PRNumber -FindingsFile $findingsFile -ReviewedCommit $ReviewedCommit -DryRun }
+                catch { Write-Host "  ⚠️ Inline preview failed (non-fatal): $_" -ForegroundColor Yellow }
             }
-            Write-Host "  ✅ Inline review comments posted" -ForegroundColor Green
-        } catch {
-            Write-Host "  ⚠️ Inline review posting failed (non-fatal): $_" -ForegroundColor Yellow
+        } else {
+            try {
+                $sentinelFile = Join-Path (Split-Path -Parent $findingsFile) "inline-findings.post.ok"
+                Set-Content -Path $sentinelFile -Value "defer-to-stage3" -Encoding UTF8 -NoNewline
+                Write-Host "  📝 Inline findings deferred to Stage 3 (posts with the AI summary)" -ForegroundColor Cyan
+            } catch {
+                Write-Host "  ⚠️ Failed to write inline-findings sentinel (non-fatal): $_" -ForegroundColor Yellow
+            }
         }
     } else {
-        if (-not (Test-Path $findingsFile)) {
-            Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
-        }
+        Write-Host "  ℹ️ No inline findings file — agent may not have produced findings" -ForegroundColor Gray
     }
 } else {
     # Non-PR candidate details are now merged into the unified AI Summary
@@ -2577,10 +3223,16 @@ Write-Host "║  STEP 7: APPLY LABELS                                     ║" -
 Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Blue
 
 $labelHelperPath = Join-Path $ScriptsDir "shared/Update-AgentLabels.ps1"
-if (Test-Path $labelHelperPath) {
+if ($env:DEFER_COMMENT_TO_STAGE3 -eq 'true') {
+    Write-Host "  ⏭️ Label application deferred to Stage 3 with the final snapshot-bound summary" -ForegroundColor Gray
+} elseif (Test-Path $labelHelperPath) {
     try {
         . $labelHelperPath
-        Apply-AgentLabels -PRNumber $PRNumber -RepoRoot $RepoRoot
+        Apply-AgentLabels `
+            -PRNumber $PRNumber `
+            -RepoRoot $RepoRoot `
+            -TrustedGateResult $trustedGateResultForPost `
+            -ExpectedHeadSha $ReviewedCommit
         Write-Host "  ✅ Labels applied" -ForegroundColor Green
     } catch {
         Write-Host "  ⚠️ Label application failed (non-fatal): $_" -ForegroundColor Yellow
