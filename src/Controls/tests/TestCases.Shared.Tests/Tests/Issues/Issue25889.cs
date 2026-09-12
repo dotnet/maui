@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView RemainingItemsThresholdReachedCommand not Firing";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 6)]
 		public void RemainingItemsThresholdReachedCommandFired()
 		{
 			App.WaitForElement("collectionView");

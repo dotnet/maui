@@ -31,7 +31,12 @@ This document provides specific guidance for GitHub Copilot when writing UI test
    - Create corresponding Appium-based NUnit tests that inherit from `_IssuesUITest`
    - Use the `AutomationId` values to locate and interact with UI elements
    - Follow naming convention: `IssueXXXXX.cs` (matches the HostApp page file)
-   - Include appropriate `[Category(UITestCategories.XYZ)]` attributes (only ONE per test)
+   - Include one functional `[Category(UITestCategories.XYZ)]` attribute per test
+   - CollectionView tests use `[ShardedTestCategory(UITestCategories.CollectionView, shard: N)]`, which exposes both the `CollectionView` umbrella and one numbered CI shard category
+   - Omitted `shard` defaults to shard 1 so a new test cannot silently cease running; the rebalancing skill assigns the durable shard
+   - Put `ShardedTestCategory` on each test method; never put it on the class
+   - A fixture split across shards must initialize every shard in `FixtureSetup`; never use an `Order(1)` test as setup for later tests
+   - Dedicated stages using `testConfigurationArgs` (for example `ios_ui_tests_mono_cv1`) are separate configuration coverage and are not ordinary category-matrix shard entries
    - Test should validate expected behavior through UI interactions and assertions
 
 ### Base Class and Infrastructure
@@ -351,7 +356,7 @@ grep -r "tolerance:" src/Controls/tests/TestCases.Shared.Tests/Tests/
 
 ### Category Guidelines
 - Use appropriate categories from `UITestCategories`
-- **Only ONE** `[Category]` attribute per test
+- Use only one functional category attribute per test: either `[Category]` or `[ShardedTestCategory]`
 - Pick the most specific category that applies
 
 ### Test Categories
@@ -543,7 +548,7 @@ Verify the following checklist before committing UI tests:
 - [ ] Ensure file names follow the `IssueXXXXX` pattern and match between projects
 - [ ] Ensure test methods have descriptive names
 - [ ] Verify test inherits from `_IssuesUITest`
-- [ ] Confirm only ONE `[Category]` attribute per test
+- [ ] Confirm only one functional `[Category]` or `[ShardedTestCategory]` attribute per test
 - [ ] No inline `#if` directives in test code (use extension methods)
 - [ ] Test passes locally on at least one platform
 

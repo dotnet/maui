@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void SelectedItemVisualIsCleared()
 		{
 			App.WaitForElement("lblItem");

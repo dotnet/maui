@@ -17,7 +17,7 @@ public class Issue8870 : _IssuesUITest
 	public override string Issue => "[Bug] CollectionView with HTML Labels Freeze the Screen on Rotation";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 	public void RotatingCollectionViewWithHTMLShouldNotHangOrCrash()

@@ -13,7 +13,7 @@ public class Issue34666 : _IssuesUITest
 	public override string Issue => "Disabling RefreshView cascades IsEnabled=false to its child CollectionView, preventing scrolling";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void CollectionViewDoesNotScrollWhenRefreshViewDisabled()
 	{
 		App.WaitForElement("Baboon");

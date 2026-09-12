@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "category": "CollectionView",
+  "targetMinutes": 60.0,
+  "safetyMarginMinutes": 2.0,
+  "planningLimitMinutes": 58.0,
+  "shardCount": 7,
+  "maxProjectedMinutes": 54.5,
+  "platforms": [
+    "AndroidCoreCLR",
+    "AndroidMono",
+    "iOS18.5",
+    "iOSLatest",
+    "MacCatalyst",
+    "WinUI"
+  ],
+  "fixedOverheadMinutes": {
+    "AndroidCoreCLR": 33.732989,
+    "AndroidMono": 37.509889,
+    "iOS18.5": 15.9011,
+    "iOSLatest": 9.170772,
+    "MacCatalyst": 16.062489,
+    "WinUI": 20.449283
+  },
+  "projectedShardMinutes": {
+    "CollectionView1": {
+      "AndroidCoreCLR": 40.898,
+      "AndroidMono": 44.055,
+      "iOS18.5": 23.433,
+      "iOSLatest": 16.548,
+      "MacCatalyst": 54.492,
+      "WinUI": 24.15
+    },
+    "CollectionView2": {
+      "AndroidCoreCLR": 42.359,
+      "AndroidMono": 45.211,
+      "iOS18.5": 23.879,
+      "iOSLatest": 16.86,
+      "MacCatalyst": 54.488,
+      "WinUI": 24.473
+    },
+    "CollectionView3": {
+      "AndroidCoreCLR": 46.487,
+      "AndroidMono": 49.569,
+      "iOS18.5": 24.355,
+      "iOSLatest": 17.674,
+      "MacCatalyst": 54.5,
+      "WinUI": 24.124
+    },
+    "CollectionView4": {
+      "AndroidCoreCLR": 40.994,
+      "AndroidMono": 43.839,
+      "iOS18.5": 21.28,
+      "iOSLatest": 15.108,
+      "MacCatalyst": 54.498,
+      "WinUI": 24.431
+    },
+    "CollectionView5": {
+      "AndroidCoreCLR": 43.009,
+      "AndroidMono": 45.417,
+      "iOS18.5": 21.322,
+      "iOSLatest": 15.409,
+      "MacCatalyst": 54.497,
+      "WinUI": 25.835
+    },
+    "CollectionView6": {
+      "AndroidCoreCLR": 42.321,
+      "AndroidMono": 45.558,
+      "iOS18.5": 20.673,
+      "iOSLatest": 14.771,
+      "MacCatalyst": 54.489,
+      "WinUI": 25.465
+    },
+    "CollectionView7": {
+      "AndroidCoreCLR": 45.49,
+      "AndroidMono": 48.752,
+      "iOS18.5": 21.15,
+      "iOSLatest": 15.341,
+      "MacCatalyst": 54.493,
+      "WinUI": 25.084
+    }
+  },
+  "evidence": {
+    "type": "AzureDevOps",
+    "organization": "https://dev.azure.com/dnceng-public",
+    "project": "public",
+    "definitionId": 313,
+    "buildIds": [
+      1561395,
+      1563447,
+      1570916,
+      1571507
+    ],
+    "statistic": "Per-test/platform p80 of ordinary category-matrix run totals; p80 nearest-rank successful observed overhead per platform",
+    "fixedOverheadPopulation": "Successful CategoryMatrixShard jobs when available; otherwise successful UmbrellaBaseline jobs. Overhead is job wall time minus test-run wall time.",
+    "configurationStagePolicy": "Dedicated testConfigurationArgs stages are recorded separately and excluded from ordinary category-matrix projections."
+  },
+  "configurationStageEvidence": {
+    "sampleCount": 3356,
+    "jobCount": 8,
+    "fixedOverheadMinutesP80": {
+      "iOS18.5": 20.222717,
+      "iOSLatest": 20.938267
+    },
+    "projectionPolicy": "Recorded separately and excluded from ordinary category-matrix projections."
+  },
+  "unmatchedEvidenceCount": 32,
+  "disabledUnmeasuredTestCount": 68,
+  "imputedTestCount": 31,
+  "limitations": [
+    "Projections use historical per-test p80 durations and measured job overhead; they are estimates, not guarantees.",
+    "Assignments must project strictly below target minus the 2 minute safety margin.",
+    "Dedicated testConfigurationArgs stages are retained as separate evidence and do not reduce ordinary category-matrix projections.",
+    "Methods in fixtures containing NUnit Order attributes are assigned together so ordered setup and state remain available.",
+    "Tests without samples on a platform contribute zero to that platform because they were not executed there.",
+    "When explicitly enabled, unmeasured active tests use the maximum measured duration from their class/platform (or platform-wide maximum)."
+  ]
+}
