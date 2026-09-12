@@ -8,9 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
-	internal class StreamWrapper : Stream
+	internal class StreamWrapper : Stream, IImageSourceCacheStream
 	{
 		readonly Stream _wrapped;
+		readonly bool _canCache;
+		readonly long? _expectedLength;
+		readonly CancellationToken _cancellationToken;
 		IDisposable _additionalDisposable;
 
 		public StreamWrapper(Stream wrapped)
@@ -19,13 +22,30 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public StreamWrapper(Stream wrapped, IDisposable additionalDisposable)
+			: this(wrapped, additionalDisposable, canCache: true, expectedLength: null, default)
+		{
+		}
+
+		StreamWrapper(
+			Stream wrapped,
+			IDisposable additionalDisposable,
+			bool canCache,
+			long? expectedLength,
+			CancellationToken cancellationToken)
 		{
 			if (wrapped == null)
 				throw new ArgumentNullException(nameof(wrapped));
 
 			_wrapped = wrapped;
 			_additionalDisposable = additionalDisposable;
+			_canCache = canCache;
+			_expectedLength = expectedLength;
+			_cancellationToken = cancellationToken;
 		}
+
+		public bool CanCache => _canCache;
+
+		public long? ExpectedLength => _expectedLength;
 
 		public override bool CanRead
 		{
@@ -62,7 +82,32 @@ namespace Microsoft.Maui.Controls
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
-			return _wrapped.Read(buffer, offset, count);
+			_cancellationToken.ThrowIfCancellationRequested();
+			try
+			{
+				return _wrapped.Read(buffer, offset, count);
+			}
+			catch (Exception ex) when (
+				(ex is IOException || ex is ObjectDisposedException) &&
+				_cancellationToken.IsCancellationRequested)
+			{
+				throw new OperationCanceledException(_cancellationToken);
+			}
+		}
+
+		public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		{
+			_cancellationToken.ThrowIfCancellationRequested();
+			try
+			{
+				return await _wrapped.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+			}
+			catch (Exception ex) when (
+				(ex is IOException || ex is ObjectDisposedException) &&
+				_cancellationToken.IsCancellationRequested)
+			{
+				throw new OperationCanceledException(_cancellationToken);
+			}
 		}
 
 		public override long Seek(long offset, SeekOrigin origin)
@@ -90,20 +135,77 @@ namespace Microsoft.Maui.Controls
 			base.Dispose(disposing);
 		}
 
-		public static async Task<Stream> GetStreamAsync(Uri uri, CancellationToken cancellationToken, HttpClient client)
+		public static async Task<Stream> GetStreamAsync(
+			Uri uri,
+			CancellationToken cancellationToken,
+			HttpClient client,
+			CancellationToken responseCancellationToken = default)
 		{
-			var response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
-			if (!response.IsSuccessStatusCode)
+			HttpResponseMessage response = null;
+			try
 			{
-				Application.Current?.FindMauiContext()?.CreateLogger<StreamWrapper>()?
-						.LogWarning("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
+				response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+				if (!response.IsSuccessStatusCode)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<StreamWrapper>()?
+							.LogWarning("Could not retrieve {Uri}, status code {StatusCode}", uri, response.StatusCode);
 
-				return null;
+					response.Dispose();
+					response = null;
+					client.Dispose();
+					return null;
+				}
+
+				var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+				// The response and client own the live network stream and must outlive the caller's reads.
+				var owner = new HttpResponseOwner(response, client, responseCancellationToken);
+				response = null;
+				return new StreamWrapper(
+					stream,
+					owner,
+					canCache: owner.Response.Headers.CacheControl?.NoStore != true,
+					expectedLength: owner.Response.Content.Headers.ContentLength,
+					responseCancellationToken);
+			}
+			catch
+			{
+				response?.Dispose();
+				client.Dispose();
+				throw;
+			}
+		}
+
+		sealed class HttpResponseOwner : IDisposable
+		{
+			readonly HttpClient _client;
+			readonly CancellationTokenRegistration _cancellationRegistration;
+			int _disposed;
+
+			public HttpResponseOwner(HttpResponseMessage response, HttpClient client, CancellationToken cancellationToken)
+			{
+				Response = response;
+				_client = client;
+				_cancellationRegistration = cancellationToken.Register(
+					static state => ((HttpResponseOwner)state).DisposeResources(),
+					this);
 			}
 
-			// the HttpResponseMessage needs to be disposed of after the calling code is done with the stream
-			// otherwise the stream may get disposed before the caller can use it
-			return new StreamWrapper(await response.Content.ReadAsStreamAsync().ConfigureAwait(false), response);
+			public HttpResponseMessage Response { get; }
+
+			public void Dispose()
+			{
+				_cancellationRegistration.Dispose();
+				DisposeResources();
+			}
+
+			void DisposeResources()
+			{
+				if (Interlocked.Exchange(ref _disposed, 1) != 0)
+					return;
+
+				Response.Dispose();
+				_client.Dispose();
+			}
 		}
 	}
 }

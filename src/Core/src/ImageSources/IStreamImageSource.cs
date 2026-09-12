@@ -9,4 +9,15 @@ namespace Microsoft.Maui
 	{
 		Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default);
 	}
+
+	internal interface IStreamImageSourceWithCache : IStreamImageSource
+	{
+	}
+
+	internal interface IImageSourceCacheStream
+	{
+		bool CanCache { get; }
+
+		long? ExpectedLength { get; }
+	}
 }
