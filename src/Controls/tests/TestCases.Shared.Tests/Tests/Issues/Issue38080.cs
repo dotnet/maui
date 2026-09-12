@@ -25,19 +25,19 @@ public class Issue38080 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash()
 	{
-		App.WaitForElement(HomeMarker);
-		App.Tap(NavigateButton);
-		App.WaitForElement(ReproPageMarker);
-		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(HomeMarker));
+		App.Tap(AppiumQuery.ByAccessibilityId(NavigateButton));
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(ReproPageMarker));
+		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 
 		FastFlingUp();
 		FastFlingUp();
-		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
+		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 
 		for (var pass = 0; pass < 3; pass++)
 		{
 			ScrollUntilDisplayed(WebViewMarker, FastFlingDown);
-			var webView = App.WaitForElement(WebViewMarker);
+			var webView = App.WaitForElement(AppiumQuery.ByAccessibilityId(WebViewMarker));
 			Assert.That(webView.IsDisplayed(), Is.True);
 			Assert.That(webView.GetRect().Width, Is.GreaterThan(0));
 			Assert.That(webView.GetRect().Height, Is.GreaterThan(0));
@@ -45,24 +45,24 @@ public class Issue38080 : _IssuesUITest
 			ScrollUntilDisplayed(BottomMarker, FastFlingDown);
 			FastFlingDown();
 			FastFlingDown();
-			Assert.That(App.WaitForElement(BottomMarker).IsDisplayed(), Is.True);
+			Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(BottomMarker)).IsDisplayed(), Is.True);
 
 			ScrollUntilDisplayed(WebViewMarker, FastFlingUp);
 			ScrollUntilDisplayed(TopMarker, FastFlingUp);
 			FastFlingUp();
 			FastFlingUp();
-			Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
+			Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 		}
 
 		App.Back();
-		App.WaitForElement(HomeMarker);
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(HomeMarker));
 	}
 
 	void ScrollUntilDisplayed(string automationId, System.Action gesture)
 	{
 		for (var attempt = 0; attempt < 10; attempt++)
 		{
-			if (App.FindElements(automationId).Any(element => element.IsDisplayed()))
+			if (App.FindElements(AppiumQuery.ByAccessibilityId(automationId)).Any(element => element.IsDisplayed()))
 				return;
 
 			gesture();
@@ -74,23 +74,23 @@ public class Issue38080 : _IssuesUITest
 	void FastFlingDown()
 	{
 		App.ScrollDown(
-			ReproPageMarker,
+			AppiumQuery.ByAccessibilityId(ReproPageMarker),
 			ScrollStrategy.Gesture,
 			swipePercentage: 0.9,
 			swipeSpeed: 100,
 			withInertia: true);
-		App.WaitForElement(ReproPageMarker);
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(ReproPageMarker));
 	}
 
 	void FastFlingUp()
 	{
 		App.ScrollUp(
-			ReproPageMarker,
+			AppiumQuery.ByAccessibilityId(ReproPageMarker),
 			ScrollStrategy.Gesture,
 			swipePercentage: 0.9,
 			swipeSpeed: 100,
 			withInertia: true);
-		App.WaitForElement(ReproPageMarker);
+		App.WaitForElement(AppiumQuery.ByAccessibilityId(ReproPageMarker));
 	}
 }
 #endif
