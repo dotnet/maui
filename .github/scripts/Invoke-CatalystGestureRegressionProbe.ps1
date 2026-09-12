@@ -694,6 +694,32 @@ function Get-CatalystProbeRepositoryStatus {
         -LogName "git-status-$([guid]::NewGuid().ToString('N')).log"
 }
 
+function Get-CatalystProbeRepositoryStatusEntries {
+    param([Parameter(Mandatory = $true)][pscustomobject]$Context)
+
+    $status = Invoke-CatalystProbeGitText `
+        -ArgumentList @('status', '--porcelain=v1', '-z', '--untracked-files=all') `
+        -Context $Context `
+        -LogName "git-status-z-$([guid]::NewGuid().ToString('N')).log"
+    if ([string]::IsNullOrEmpty($status)) {
+        return @()
+    }
+
+    $entries = [Collections.Generic.List[object]]::new()
+    foreach ($record in $status.Split(
+            [char]0,
+            [StringSplitOptions]::RemoveEmptyEntries)) {
+        if ($record.Length -lt 4 -or $record[2] -cne ' ') {
+            throw 'Catalyst probe received malformed bounded Git status output.'
+        }
+        $entries.Add([pscustomobject]@{
+            Status = $record.Substring(0, 2)
+            Path = $record.Substring(3).Replace('\', '/')
+        })
+    }
+    return @($entries)
+}
+
 function Get-CatalystProbeWorkingProductBlob {
     param(
         [Parameter(Mandatory = $true)][pscustomobject]$Context,
@@ -708,6 +734,133 @@ function Get-CatalystProbeWorkingProductBlob {
             $script:CatalystProbeProductPath) `
         -Context $Context `
         -LogName $LogName
+}
+
+function Get-CatalystProbeTrackedVerificationSideEffects {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('setup', 'baseline', 'negative')][string]$State
+    )
+
+    Assert-CatalystProbeTrustedTree -Context $Context
+    $expectedProductSha256 = if ($State -ceq 'negative') {
+        $script:CatalystProbeNegativeFileSha256
+    } else {
+        $script:CatalystProbeBaselineFileSha256
+    }
+    $expectedProductBlob = if ($State -ceq 'negative') {
+        $script:CatalystProbeNegativeBlob
+    } else {
+        $script:CatalystProbeBaselineBlob
+    }
+    if ((Get-CatalystProbeFileSha256 -Path $Context.ProductPath) -cne
+        $expectedProductSha256) {
+        throw "Catalyst probe $State product bytes changed outside the fixed contract."
+    }
+    if ((Get-CatalystProbeWorkingProductBlob `
+            -Context $Context `
+            -LogName "git-$State-protected-product-$([guid]::NewGuid().ToString('N')).log") -cne
+        $expectedProductBlob) {
+        throw "Catalyst probe $State product blob changed outside the fixed contract."
+    }
+
+    $fixtureExpected = $State -cne 'setup'
+    if ($fixtureExpected) {
+        if (-not (Test-Path -LiteralPath $Context.FixtureTargetPath -PathType Leaf) -or
+            (Get-CatalystProbeFileSha256 -Path $Context.FixtureTargetPath) -cne
+                $script:CatalystProbeFixtureSha256) {
+            throw "Catalyst probe $State fixture bytes changed outside the fixed contract."
+        }
+    } elseif (Test-Path -LiteralPath $Context.FixtureTargetPath) {
+        throw 'Catalyst probe setup unexpectedly contains the fixed fixture target.'
+    }
+
+    $restorePaths = [Collections.Generic.List[string]]::new()
+    $fixtureSeen = $false
+    $productSeen = $false
+    foreach ($entry in @(Get-CatalystProbeRepositoryStatusEntries -Context $Context)) {
+        $status = [string]$entry.Status
+        $path = [string]$entry.Path
+        if ($status[0] -cne ' ' -and $status[0] -cne '?') {
+            throw "Catalyst probe refuses staged repository path: $path"
+        }
+        if ($status -ceq '??') {
+            if ($fixtureExpected -and
+                $path -ceq $script:CatalystProbeFixtureTargetRelativePath -and
+                -not $fixtureSeen) {
+                $fixtureSeen = $true
+                continue
+            }
+            throw "Catalyst probe found an unexpected untracked repository path: $path"
+        }
+        if ($status -cnotin @(' M', ' D', ' T')) {
+            throw "Catalyst probe refuses unexpected tracked status '$status' for path: $path"
+        }
+        if ($path -ceq $script:CatalystProbeProductPath) {
+            if ($State -cne 'negative' -or $status -cne ' M' -or $productSeen) {
+                throw 'Catalyst probe protected product has an unexpected repository state.'
+            }
+            $productSeen = $true
+            continue
+        }
+        [void]$restorePaths.Add($path)
+    }
+    if ($fixtureExpected -ne $fixtureSeen -or
+        (($State -ceq 'negative') -ne $productSeen)) {
+        throw "Catalyst probe repository does not match its closed $State state."
+    }
+    return @($restorePaths)
+}
+
+function Assert-CatalystProbeRepositoryState {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('setup', 'baseline', 'negative')][string]$State
+    )
+
+    $unexpected = @(
+        Get-CatalystProbeTrackedVerificationSideEffects `
+            -Context $Context `
+            -State $State)
+    if ($unexpected.Count -ne 0) {
+        throw "Catalyst probe $State scope contains tracked verification output: $($unexpected[0])"
+    }
+}
+
+function Restore-CatalystProbeTrackedVerificationSideEffects {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('setup', 'baseline', 'negative')][string]$State
+    )
+
+    $restorePaths = @(
+        Get-CatalystProbeTrackedVerificationSideEffects `
+            -Context $Context `
+            -State $State)
+    if ($restorePaths.Count -gt 0) {
+        $restore = Invoke-CatalystProbeBoundedProcess `
+            -FileName 'git' `
+            -ArgumentList (@(
+                'restore', '--source', $script:CatalystProbeBaselineCommit,
+                '--worktree', '--') + $restorePaths) `
+            -WorkingDirectory $Context.RepositoryRoot `
+            -Environment $Context.RuntimeEnvironment `
+            -TimeoutSeconds 120 `
+            -TaskDeadline $Context.ActiveDeadline `
+            -ReserveSeconds $Context.ActiveReserveSeconds `
+            -LogPath (Join-Path $Context.LogDirectory (
+                "git-restore-tracked-output-$State-$([guid]::NewGuid().ToString('N')).log"))
+        if ($restore.TimedOut) {
+            throw 'Catalyst probe tracked verification-output restoration timed out.'
+        }
+        if ($restore.ExitCode -ne 0) {
+            throw 'Catalyst probe tracked verification-output restoration failed.'
+        }
+    }
+    Assert-CatalystProbeRepositoryState -Context $Context -State $State
 }
 
 function Get-CatalystProbeContainerResultPath {
@@ -854,6 +1007,7 @@ function Initialize-CatalystGestureProbeContext {
         JobDeadlineUtc = $parsedJobDeadline.ToUniversalTime().ToString('O')
         ArtifactTailSeconds = $artifactTailSeconds
         InitialRepositoryStatus = $null
+        RepositoryState = 'setup'
     }
     $context.RuntimeEnvironment =
         Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $runtimeRoot
@@ -917,10 +1071,13 @@ function Initialize-CatalystGestureProbeContext {
         $script:CatalystProbeBaselineBlob) {
         throw 'Catalyst probe baseline product working blob is not the fixed preimage.'
     }
-    $context.InitialRepositoryStatus = Get-CatalystProbeRepositoryStatus -Context $context
-    if (-not [string]::IsNullOrEmpty($context.InitialRepositoryStatus)) {
-        throw 'Catalyst probe requires a clean fresh-Azure baseline checkout.'
+    $observedStatus = Get-CatalystProbeRepositoryStatus -Context $context
+    if (-not [string]::IsNullOrEmpty($observedStatus)) {
+        Restore-CatalystProbeTrackedVerificationSideEffects `
+            -Context $context `
+            -State setup
     }
+    $context.InitialRepositoryStatus = ''
     return $context
 }
 
@@ -954,6 +1111,7 @@ function Copy-CatalystProbeFixture {
     param([Parameter(Mandatory = $true)][pscustomobject]$Context)
 
     Assert-CatalystProbeTrustedTree -Context $Context
+    Assert-CatalystProbeRepositoryState -Context $Context -State setup
     if (Test-Path -LiteralPath $Context.FixtureTargetPath) {
         throw 'Catalyst probe refuses to replace an existing fixture target.'
     }
@@ -962,6 +1120,8 @@ function Copy-CatalystProbeFixture {
         $script:CatalystProbeFixtureSha256) {
         throw 'Copied Catalyst probe fixture failed its immutable digest check.'
     }
+    $Context.RepositoryState = 'baseline'
+    Assert-CatalystProbeRepositoryState -Context $Context -State baseline
 }
 
 function Invoke-CatalystProbeTrustedRestore {
@@ -993,21 +1153,28 @@ function Invoke-CatalystProbeTrustedRestore {
             Timeout = 180
         }
     )
-    foreach ($command in $commands) {
-        Assert-CatalystProbeTrustedTree -Context $Context
-        $result = Invoke-CatalystProbeBoundedProcess `
-            -FileName 'dotnet' `
-            -ArgumentList $command.Arguments `
-            -WorkingDirectory $Context.RepositoryRoot `
-            -Environment $Context.RuntimeEnvironment `
-            -TimeoutSeconds $command.Timeout `
-            -TaskDeadline $Context.ActiveDeadline `
-            -ReserveSeconds $Context.ActiveReserveSeconds `
-            -LogPath (Join-Path $Context.LogDirectory $command.Name)
-        Assert-CatalystProbeTrustedTree -Context $Context
-        if ($result.TimedOut -or $result.ExitCode -ne 0) {
-            throw "Catalyst trusted prewarm failed; see $($command.Name)."
+    Assert-CatalystProbeRepositoryState -Context $Context -State setup
+    try {
+        foreach ($command in $commands) {
+            Assert-CatalystProbeTrustedTree -Context $Context
+            $result = Invoke-CatalystProbeBoundedProcess `
+                -FileName 'dotnet' `
+                -ArgumentList $command.Arguments `
+                -WorkingDirectory $Context.RepositoryRoot `
+                -Environment $Context.RuntimeEnvironment `
+                -TimeoutSeconds $command.Timeout `
+                -TaskDeadline $Context.ActiveDeadline `
+                -ReserveSeconds $Context.ActiveReserveSeconds `
+                -LogPath (Join-Path $Context.LogDirectory $command.Name)
+            Assert-CatalystProbeTrustedTree -Context $Context
+            if ($result.TimedOut -or $result.ExitCode -ne 0) {
+                throw "Catalyst trusted prewarm failed; see $($command.Name)."
+            }
         }
+    } finally {
+        Restore-CatalystProbeTrackedVerificationSideEffects `
+            -Context $Context `
+            -State setup
     }
 }
 
@@ -1339,7 +1506,12 @@ function Invoke-CatalystProbeCycle {
         -ScriptPath $verificationScriptPath `
         -Arguments $arguments `
         -Environment $Context.RuntimeEnvironment
+    $expectedState = if ($Kind -ceq 'baseline') { 'baseline' } else { 'negative' }
+    if ([string]$Context.RepositoryState -cne $expectedState) {
+        throw "Catalyst probe $Kind cycle was requested outside its closed repository state."
+    }
     Assert-CatalystProbeTrustedTree -Context $Context
+    Assert-CatalystProbeRepositoryState -Context $Context -State $expectedState
     $cycleSeconds = Get-CatalystProbeProcessTimeoutSeconds `
         -Deadline $Context.ActiveDeadline `
         -RequestedSeconds $script:CatalystProbeCycleBudgetSeconds `
@@ -1370,9 +1542,29 @@ function Invoke-CatalystProbeCycle {
             -LogPath (Join-Path $Context.LogDirectory "$Kind-verifier.log")
     } finally {
         $cycleContext.ActiveReserveSeconds = 10
-        $cleanupStoppedCount =
-            Stop-CatalystProbeOwnedApplication -Context $cycleContext
-        Assert-CatalystProbeTrustedTree -Context $Context
+        $cycleCleanupErrors = [Collections.Generic.List[string]]::new()
+        try {
+            $cleanupStoppedCount =
+                Stop-CatalystProbeOwnedApplication -Context $cycleContext
+        } catch {
+            $cycleCleanupErrors.Add("owned process cleanup: $($_.Exception.Message)")
+        }
+        try {
+            Assert-CatalystProbeTrustedTree -Context $Context
+        } catch {
+            $cycleCleanupErrors.Add("trusted-tree cleanup: $($_.Exception.Message)")
+        }
+        try {
+            Restore-CatalystProbeTrackedVerificationSideEffects `
+                -Context $cycleContext `
+                -State $expectedState
+        } catch {
+            $cycleCleanupErrors.Add(
+                "tracked verification-output cleanup: $($_.Exception.Message)")
+        }
+        if ($cycleCleanupErrors.Count -ne 0) {
+            throw "Catalyst $Kind cycle cleanup failed: $($cycleCleanupErrors -join '; ')"
+        }
     }
     if ($processResult.TimedOut) {
         throw "Catalyst $Kind cycle exceeded its fixed eight-minute budget."
@@ -1414,6 +1606,10 @@ function Enable-CatalystProbeKnownNegative {
     )
 
     Assert-CatalystProbeTrustedTree -Context $Context
+    if ([string]$Context.RepositoryState -cne 'baseline') {
+        throw 'Catalyst probe known-negative apply requires the closed baseline state.'
+    }
+    Assert-CatalystProbeRepositoryState -Context $Context -State baseline
 
     $apply = Invoke-CatalystProbeBoundedProcess `
         -FileName 'git' `
@@ -1443,6 +1639,8 @@ function Enable-CatalystProbeKnownNegative {
     if ($status -cne $expectedStatus -and $status -cne $expectedReverse) {
         throw 'Catalyst probe found repository changes outside its fixture and product path.'
     }
+    $Context.RepositoryState = 'negative'
+    Assert-CatalystProbeRepositoryState -Context $Context -State negative
 }
 
 function Restore-CatalystProbeRepository {
@@ -1457,53 +1655,66 @@ function Restore-CatalystProbeRepository {
     } catch {
         $errors.Add("owned process cleanup: $($_.Exception.Message)")
     }
+    $scopeValidated = $false
     try {
-        if (Test-Path -LiteralPath $Context.FixtureTargetPath) {
-            Remove-Item -LiteralPath $Context.FixtureTargetPath -Force
-        }
+        # Admitted build phases own their output cleanup. Do not erase a change
+        # that their pre-execution scope guard rejected.
+        Assert-CatalystProbeRepositoryState `
+            -Context $Context `
+            -State ([string]$Context.RepositoryState)
+        $scopeValidated = $true
     } catch {
-        $errors.Add("fixture cleanup: $($_.Exception.Message)")
+        $errors.Add("repository scope: $($_.Exception.Message)")
     }
-    try {
-        $restore = Invoke-CatalystProbeBoundedProcess `
-            -FileName 'git' `
-            -ArgumentList @(
-                'restore', '--source', $script:CatalystProbeBaselineCommit,
-                '--', $script:CatalystProbeProductPath) `
-            -WorkingDirectory $Context.RepositoryRoot `
-            -Environment $Context.RuntimeEnvironment `
-            -TimeoutSeconds 120 `
-            -TaskDeadline $Context.ActiveDeadline `
-            -ReserveSeconds 0 `
-            -LogPath (Join-Path $Context.LogDirectory 'git-restore-product.log')
-        if ($restore.TimedOut -or $restore.ExitCode -ne 0) {
-            throw 'fixed product restore failed'
+    if ($scopeValidated) {
+        try {
+            if (Test-Path -LiteralPath $Context.FixtureTargetPath) {
+                Remove-Item -LiteralPath $Context.FixtureTargetPath -Force
+            }
+        } catch {
+            $errors.Add("fixture cleanup: $($_.Exception.Message)")
         }
-        if ((Get-CatalystProbeFileSha256 -Path $Context.ProductPath) -cne
-            $script:CatalystProbeBaselineFileSha256) {
-            throw 'restored product digest is incorrect'
+        try {
+            $restore = Invoke-CatalystProbeBoundedProcess `
+                -FileName 'git' `
+                -ArgumentList @(
+                    'restore', '--source', $script:CatalystProbeBaselineCommit,
+                    '--', $script:CatalystProbeProductPath) `
+                -WorkingDirectory $Context.RepositoryRoot `
+                -Environment $Context.RuntimeEnvironment `
+                -TimeoutSeconds 120 `
+                -TaskDeadline $Context.ActiveDeadline `
+                -ReserveSeconds 0 `
+                -LogPath (Join-Path $Context.LogDirectory 'git-restore-product.log')
+            if ($restore.TimedOut -or $restore.ExitCode -ne 0) {
+                throw 'fixed product restore failed'
+            }
+            if ((Get-CatalystProbeFileSha256 -Path $Context.ProductPath) -cne
+                $script:CatalystProbeBaselineFileSha256) {
+                throw 'restored product digest is incorrect'
+            }
+            if ((Get-CatalystProbeWorkingProductBlob `
+                    -Context $Context `
+                    -LogName 'git-restored-working-blob.log') -cne
+                $script:CatalystProbeBaselineBlob) {
+                throw 'restored product blob is incorrect'
+            }
+        } catch {
+            $errors.Add("product cleanup: $($_.Exception.Message)")
         }
-        if ((Get-CatalystProbeWorkingProductBlob `
-                -Context $Context `
-                -LogName 'git-restored-working-blob.log') -cne
-            $script:CatalystProbeBaselineBlob) {
-            throw 'restored product blob is incorrect'
+        try {
+            Assert-CatalystProbeTrustedTree -Context $Context
+        } catch {
+            $errors.Add("trusted-tree cleanup: $($_.Exception.Message)")
         }
-    } catch {
-        $errors.Add("product cleanup: $($_.Exception.Message)")
-    }
-    try {
-        Assert-CatalystProbeTrustedTree -Context $Context
-    } catch {
-        $errors.Add("trusted-tree cleanup: $($_.Exception.Message)")
-    }
-    try {
-        $finalStatus = Get-CatalystProbeRepositoryStatus -Context $Context
-        if ($finalStatus -cne $Context.InitialRepositoryStatus) {
-            throw 'repository status differs from the observed pre-probe status'
+        try {
+            $finalStatus = Get-CatalystProbeRepositoryStatus -Context $Context
+            if ($finalStatus -cne $Context.InitialRepositoryStatus) {
+                throw 'repository status differs from the observed pre-probe status'
+            }
+        } catch {
+            $errors.Add("repository cleanup: $($_.Exception.Message)")
         }
-    } catch {
-        $errors.Add("repository cleanup: $($_.Exception.Message)")
     }
     if ($errors.Count -ne 0) {
         throw "Catalyst probe cleanup failed: $($errors -join '; ')"
