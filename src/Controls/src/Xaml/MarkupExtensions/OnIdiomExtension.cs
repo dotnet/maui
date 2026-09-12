@@ -120,6 +120,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (Converter != null)
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
+			return ConvertValue(value, propertyType, bp, pi, serviceProvider);
+		}
+
+		static object ConvertValue(object value, Type propertyType, BindableProperty bp, PropertyInfo pi, IServiceProvider serviceProvider)
+		{
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
 			if (converterProvider != null)
 			{

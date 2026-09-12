@@ -41,11 +41,16 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			Matrix matx = matxPrevious;
 
-			if (geoSrc is GeometryGroup)
+			if (geoSrc is GeometryGroup geometryGroup)
 			{
-				foreach (Geometry geoChild in (geoSrc as GeometryGroup).Children)
+				var children = geometryGroup.Children;
+				if (children is null)
+					return;
+
+				foreach (Geometry geoChild in children)
 				{
-					FlattenGeometry(pathGeoDst, geoChild, tolerance, matx);
+					if (geoChild is not null)
+						FlattenGeometry(pathGeoDst, geoChild, tolerance, matx);
 				}
 			}
 			else if (geoSrc is LineGeometry)

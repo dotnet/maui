@@ -17,9 +17,6 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-#if IOS
-using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
-#endif
 #if WINDOWS
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 #endif
@@ -31,6 +28,10 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
 #endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// TabbedPageTests_TabbedViewHandler subclass overrides registration to exercise
+	// TabbedViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
@@ -47,11 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					RegisterNavigationPageHandler(handlers);
 
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-#else
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-#endif
+					RegisterTabbedPageHandler(handlers);
 				});
 
 				additionalCreationActions?.Invoke(builder);
@@ -67,6 +64,18 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// Registers the TabbedPage handler mapping for this test variant. The base class exercises
+		// TabbedRenderer on iOS/MacCatalyst; TabbedPageTests_TabbedViewHandler overrides this to
+		// exercise TabbedViewHandler instead, so every test below runs against both variants.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 		}
 
@@ -111,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			tabbedPage.BarTextColor = Colors.Red;
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(tabbedPage, async handler =>
 			{
 				// Pre iOS15 you couldn't set the text color of the unselected tab
 				// so only android/windows currently set the color of both
@@ -150,7 +159,7 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.SelectedTabColor = Colors.Red;
 			tabbedPage.UnselectedTabColor = Colors.Purple;
 
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(tabbedPage, async handler =>
 			{
 				// Pre iOS15 you couldn't set the text color of the unselected tab
 				// so only android/windows currently set the color of both
@@ -336,7 +345,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});
@@ -511,7 +520,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+					RegisterTabbedPageHandler(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 				});
 			});

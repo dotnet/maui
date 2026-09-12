@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,13 +26,17 @@ using Xunit.Sdk;
 namespace Microsoft.Maui.DeviceTests.Memory;
 
 [Category(TestCategory.Memory)]
+#if IOS || MACCATALYST
+// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+// MemoryTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler.
+[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+// MemoryTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+// instead, so PagesDoNotLeak(typeof(TabbedPage)) runs against both variants.
+[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 public class MemoryTests : ControlsHandlerTestBase
 {
-	// Subclasses used to enable memory tests for CV2 handlers
-	public class CollectionView2 : CollectionView { }
-	public class CarouselView2 : CarouselView { }
-
-
 	void SetupBuilder(bool includeNavigationViewHandler = true)
 	{
 		EnsureHandlerCreated(builder =>
@@ -42,11 +47,18 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<Button, ButtonHandler>();
-				handlers.AddHandler<CarouselView, CarouselViewHandler>();
-				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if IOS || MACCATALYST
-				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
-				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
+				handlers.AddHandler<CarouselView, CarouselViewHandler2>();
+				handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+#else
+				handlers.AddHandler<CarouselView, CarouselViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
+				handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
@@ -94,15 +106,32 @@ public class MemoryTests : ControlsHandlerTestBase
 #else
 				handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 #endif
-#if IOS || MACCATALYST
-				handlers.AddHandler<TabbedPage, TabbedRenderer>();
-				handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
-#else
-				handlers.AddHandler<TabbedPage, TabbedViewHandler>();
-				handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
-#endif
+				RegisterFlyoutPageHandler(handlers);
+				RegisterTabbedPageHandler(handlers);
 			});
 		});
+	}
+
+	// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; MemoryTests_FlyoutViewHandler
+	// overrides this to exercise FlyoutViewHandler instead.
+	protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<FlyoutPage, PhoneFlyoutPageRenderer>();
+#else
+		handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+#endif
+	}
+
+	// The base class exercises TabbedRenderer on iOS/MacCatalyst; MemoryTests_TabbedViewHandler
+	// overrides this to exercise TabbedViewHandler instead.
+	protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+	{
+#if IOS || MACCATALYST
+		handlers.AddHandler<TabbedPage, TabbedRenderer>();
+#else
+		handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+#endif
 	}
 
 	[Theory("Pages Do Not Leak")]
@@ -227,9 +256,11 @@ public class MemoryTests : ControlsHandlerTestBase
 #pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Grid))]
-#if TESTS_FAILS_ON_WINDOWS //For more information, see: https://github.com/dotnet/maui/issues/35985
+	[InlineData(typeof(StackLayout))]
+	[InlineData(typeof(VerticalStackLayout))]
+	[InlineData(typeof(HorizontalStackLayout))]
+	[InlineData(typeof(AbsoluteLayout))]
 	[InlineData(typeof(HybridWebView))]
-#endif
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
@@ -250,9 +281,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SearchBar))]
 	[InlineData(typeof(Slider))]
-#if TESTS_FAILS_ON_IOS && TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Stepper))]
-#endif
 	[InlineData(typeof(SwipeView))]
 #if TESTS_FAILS_ON_MACCATALYST //For more information, see: https://github.com/dotnet/maui/issues/35985
 	[InlineData(typeof(Switch))]
@@ -262,10 +291,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TableView))]
 #pragma warning restore CS0618 // Type or member is obsolete
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
+	// CollectionViewHandler2 remains rooted in this test; see https://github.com/dotnet/maui/issues/29619.
+#if !IOS && !MACCATALYST
 	[InlineData(typeof(CollectionView))]
-#if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] - Fails, Check https://github.com/dotnet/maui/issues/29619
-	[InlineData(typeof(CarouselView2))]
 #endif
 	public async Task HandlerDoesNotLeak([DynamicallyAccessedMembers(System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
@@ -356,9 +384,37 @@ public class MemoryTests : ControlsHandlerTestBase
 			}
 #pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
+			var viewHandler = view.Handler;
+			Assert.NotNull(viewHandler);
+
+			if (view is HybridWebView)
+			{
+#if WINDOWS
+				// Await WebView2's own readiness API instead of polling or using a fixed delay.
+				// EnsureCoreWebView2Async completes exactly when initialization finishes (or
+				// immediately if already initialized), so there's no magic timeout/interval to tune.
+				if (viewHandler.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 webView2)
+				{
+					await webView2.EnsureCoreWebView2Async();
+				}
+#endif
+			}
+
 			viewReference = new WeakReference(view);
-			handlerReference = new WeakReference(view.Handler);
-			platformViewReference = new WeakReference(view.Handler.PlatformView);
+			handlerReference = new WeakReference(viewHandler);
+			platformViewReference = new WeakReference(viewHandler.PlatformView);
+
+			// Explicitly disconnect the child view's handler before letting it fall out of
+			// scope. Real apps tear down handlers this way (e.g. when a page/element is
+			// removed), and some platform views (e.g. UIStepper on iOS 26+) rely on this
+			// deterministic teardown path to release native-side retains that a bare GC
+			// pass can't reach on its own.
+			if (viewHandler is IViewHandler disconnectableHandler)
+			{
+				disconnectableHandler.DisconnectHandler();
+			}
+
+			view.Handler = null;
 		});
 
 		await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
@@ -466,11 +522,120 @@ public class MemoryTests : ControlsHandlerTestBase
 		WeakReference PlatformViewReference,
 		PointCollection RootedOriginalPoints);
 
+#if IOS || MACCATALYST
+	[Fact("TableView Source Replacement Unsubscribes Previous Source")]
+	public async Task TableViewSourceReplacementUnsubscribesPreviousSource()
+	{
+		SetupBuilder();
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var tableView = new TableView(new TableRoot());
+			var renderer = CreateHandler<TableViewRenderer>(tableView);
+#pragma warning restore CS0618 // Type or member is obsolete
+			var platformView = (UIKit.UITableView)((IElementHandler)renderer).PlatformView;
+			var previousSource = platformView.Source;
+			var initialSubscribers = GetModelChangedSubscribers(tableView);
+
+			Assert.NotNull(previousSource);
+			Assert.Single(initialSubscribers);
+			previousSource.NumberOfSections(platformView);
+			var previousSourceGestureCount = platformView.GestureRecognizers?.Length ?? 0;
+#pragma warning disable CS0618 // Type or member is obsolete
+			tableView.HasUnevenRows = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var replacementSubscribers = GetModelChangedSubscribers(tableView);
+			var replacementSource = platformView.Source;
+			replacementSource.NumberOfSections(platformView);
+			Assert.NotSame(previousSource, platformView.Source);
+			Assert.Single(replacementSubscribers);
+			Assert.NotSame(initialSubscribers[0].Target, replacementSubscribers[0].Target);
+			Assert.Equal(previousSourceGestureCount, platformView.GestureRecognizers?.Length ?? 0);
+
+			renderer.Dispose();
+		});
+	}
+
+	[Fact("ContextActionsCell Disposal Unsubscribes Cell")]
+	public async Task ContextActionsCellDisposalUnsubscribesCell()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+#pragma warning disable CS0618 // Type or member is obsolete
+			var cell = new ViewCell();
+			cell.ContextActions.Add(new MenuItem { Text = "Action" });
+#pragma warning restore CS0618 // Type or member is obsolete
+			using var tableView = new UIKit.UITableView();
+			using var nativeCell = new CellTableViewCell(UIKit.UITableViewCellStyle.Default, "ContextActionsCellTest")
+			{
+				Cell = cell
+			};
+			var contextActionsCell = new ContextActionsCell();
+
+			contextActionsCell.Update(tableView, cell, nativeCell);
+			Assert.Contains(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+
+			contextActionsCell.Dispose();
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(cell), subscriber => ReferenceEquals(subscriber.Target, contextActionsCell));
+			Assert.Same(cell, ((Microsoft.Maui.Controls.Compatibility.INativeElementView)contextActionsCell).Element);
+			contextActionsCell.SizeThatFits(new CoreGraphics.CGSize(100, 44));
+		});
+	}
+
+	[Fact("Secondary Toolbar Item Disposal Unsubscribes After Custom View Replacement")]
+	public async Task SecondaryToolbarItemDisposalUnsubscribesAfterCustomViewReplacement()
+	{
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var item = new ToolbarItem
+			{
+				Order = ToolbarItemOrder.Secondary
+			};
+			var nativeItem = Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(item);
+			using var originalContent = Assert.IsAssignableFrom<UIKit.UIControl>(nativeItem.CustomView);
+			using var replacementView = new UIKit.UIView();
+			var activationCount = 0;
+			item.Command = new Command(() => activationCount++);
+
+			Assert.Contains(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
+
+			nativeItem.CustomView = replacementView;
+			item.Text = "Updated";
+			item.IconImageSource = new FileImageSource();
+			item.IsEnabled = false;
+			Assert.True(originalContent.Enabled);
+			Assert.Same(replacementView, nativeItem.CustomView);
+			nativeItem.Dispose();
+
+			Assert.DoesNotContain(GetPropertyChangedSubscribers(item), subscriber => ReferenceEquals(subscriber.Target, nativeItem));
+			originalContent.SendActionForControlEvents(UIKit.UIControlEvent.TouchUpInside);
+			Assert.Equal(1, activationCount);
+		});
+	}
+
+	static Delegate[] GetModelChangedSubscribers(object tableView)
+	{
+#pragma warning disable CS0618 // Type or member is obsolete
+		var eventField = typeof(TableView).GetField("ModelChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+#pragma warning restore CS0618 // Type or member is obsolete
+		Assert.NotNull(eventField);
+		return (eventField.GetValue(tableView) as MulticastDelegate)?.GetInvocationList() ?? [];
+	}
+
+	static Delegate[] GetPropertyChangedSubscribers(BindableObject bindable)
+	{
+		var eventField = typeof(BindableObject).GetField("PropertyChanged", BindingFlags.Instance | BindingFlags.NonPublic);
+		Assert.NotNull(eventField);
+		return (eventField.GetValue(bindable) as MulticastDelegate)?.GetInvocationList() ?? [];
+	}
+#endif
+
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
-#if IOS || MACCATALYST
-	//[InlineData(typeof(CollectionView2))] Fails, Check https://github.com/dotnet/maui/issues/29619
-#endif
 	public async Task CollectionViewHeaderFooterDoesntLeak([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 	{
 		SetupBuilder();
@@ -509,19 +674,10 @@ public class MemoryTests : ControlsHandlerTestBase
 
 
 #if IOS || MACCATALYST
-			var cv1handler = cv.Handler as CollectionViewHandler;
-			var cv2handler = cv.Handler as CollectionViewHandler2;
-
-			if (cv1handler is not null)
-			{
-				controllerReference = new WeakReference(cv1handler.Controller);
-			}
-			else if (cv2handler is not null)
-			{
-				controllerReference = new WeakReference(cv2handler.Controller);
-			}
-			cv1handler = null;
-			cv2handler = null;
+			var collectionViewHandler = cv.Handler as CollectionViewHandler2;
+			Assert.NotNull(collectionViewHandler);
+			controllerReference = new WeakReference(collectionViewHandler.Controller);
+			collectionViewHandler = null;
 #else
 			controllerReference = new WeakReference(new object());
 #endif
@@ -601,7 +757,7 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
-			var carousel = new CarouselView2
+			var carousel = new CarouselView
 			{
 				ItemsSource = Enumerable.Range(1, 5).Select(static i => $"Item {i}").ToList(),
 				ItemTemplate = new DataTemplate(static () => new Label

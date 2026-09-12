@@ -15,7 +15,7 @@ internal readonly struct BindingHandler
 {
 	/// <summary>The expression to get the parent object (e.g., "vm => vm" or "vm => vm.User").</summary>
 	public string ParentExpression { get; }
-	
+
 	/// <summary>The property name to subscribe to (e.g., "Name").</summary>
 	public string PropertyName { get; }
 
@@ -33,10 +33,10 @@ internal readonly struct LocalCapture
 {
 	/// <summary>The original expression in the XAML (e.g., "this.TaxRate" or "this.GetMultiplier()").</summary>
 	public string OriginalExpression { get; }
-	
+
 	/// <summary>The capture variable name (e.g., "__capture_TaxRate").</summary>
 	public string CaptureVariable { get; }
-	
+
 	/// <summary>The member name being captured (e.g., "TaxRate" or "GetMultiplier").</summary>
 	public string MemberName { get; }
 
@@ -59,16 +59,16 @@ internal readonly struct ExpressionAnalysisResult
 {
 	/// <summary>Handlers for INPC subscription.</summary>
 	public List<BindingHandler> Handlers { get; }
-	
+
 	/// <summary>Local values that need to be captured.</summary>
 	public List<LocalCapture> Captures { get; }
-	
+
 	/// <summary>The transformed expression with this.X replaced by __capture_X.</summary>
 	public string TransformedExpression { get; }
-	
+
 	/// <summary>Whether this expression has any binding properties (needs TypedBinding).</summary>
 	public bool HasBindingProperties => Handlers.Count > 0;
-	
+
 	/// <summary>Whether this expression has local captures.</summary>
 	public bool HasLocalCaptures => Captures.Count > 0;
 
@@ -115,27 +115,29 @@ internal static class ExpressionAnalyzer
 	{
 		var memberName = match.Groups[1].Value;
 		var afterMatch = match.Index + match.Length;
-		
+
 		// Skip whitespace
 		while (afterMatch < text.Length && char.IsWhiteSpace(text[afterMatch]))
 			afterMatch++;
-		
+
 		if (afterMatch >= text.Length || text[afterMatch] != '(')
 		{
 			// Not a method call, shouldn't happen but handle gracefully
 			return (match.Value, memberName);
 		}
-		
+
 		// Find the matching closing parenthesis
 		var parenStart = afterMatch;
 		var depth = 1;
 		var pos = parenStart + 1;
-		
+
 		while (pos < text.Length && depth > 0)
 		{
 			var c = text[pos];
-			if (c == '(') depth++;
-			else if (c == ')') depth--;
+			if (c == '(')
+				depth++;
+			else if (c == ')')
+				depth--;
 			else if (c == '\'' || c == '"')
 			{
 				// Skip string literals
@@ -143,20 +145,22 @@ internal static class ExpressionAnalyzer
 				pos++;
 				while (pos < text.Length && text[pos] != quote)
 				{
-					if (text[pos] == '\\') pos++; // Skip escaped char
+					if (text[pos] == '\\')
+						pos++; // Skip escaped char
 					pos++;
 				}
 			}
 			pos++;
 		}
-		
+
 		// Cap pos to text.Length to handle unterminated strings gracefully
-		if (pos > text.Length) pos = text.Length;
-		
+		if (pos > text.Length)
+			pos = text.Length;
+
 		// Extract the full expression and invocation part
 		var fullExpression = text.Substring(match.Index, pos - match.Index);
 		var invocationPart = memberName + text.Substring(parenStart, pos - parenStart);
-		
+
 		return (fullExpression, invocationPart);
 	}
 
@@ -169,37 +173,37 @@ internal static class ExpressionAnalyzer
 		var captures = new List<LocalCapture>();
 		var capturedInvocations = new HashSet<string>(StringComparer.Ordinal);
 		var methodIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
-		
+
 		// Parse as an expression and walk the syntax tree
 		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
-		
+
 		foreach (var node in root.DescendantNodes())
 		{
 			// Look for standalone method invocations (not member access like obj.Method())
-			if (node is InvocationExpressionSyntax invocation && 
+			if (node is InvocationExpressionSyntax invocation &&
 				invocation.Expression is IdentifierNameSyntax identifier)
 			{
 				var methodName = identifier.Identifier.Text;
-				
+
 				// Skip if this method name was captured via this.Method() syntax
 				if (alreadyCaptured.Contains(methodName))
 					continue;
-				
+
 				// Skip if this is a method on the DataType (will be transformed to __source.X)
 				if (dataType != null && HasMethod(dataType, methodName))
 					continue;
-				
+
 				// Check if method exists on rootType (local page/view method)
 				if (HasMethod(rootType, methodName))
 				{
 					// Extract the full invocation text including arguments
 					var invocationText = invocation.ToString();
-					
+
 					// Skip if this exact invocation was already captured
 					if (!capturedInvocations.Add(invocationText))
 						continue;
-					
+
 					// Use per-method indexed capture variable
 					// e.g., GetA() -> __capture_GetA, GetB() -> __capture_GetB, GetA() again -> __capture_GetA_1
 					if (!methodIndexes.TryGetValue(methodName, out var index))
@@ -211,23 +215,23 @@ internal static class ExpressionAnalyzer
 					{
 						methodIndexes[methodName] = index + 1;
 					}
-					
-					var captureVar = index == 0 
-						? $"__capture_{methodName}" 
+
+					var captureVar = index == 0
+						? $"__capture_{methodName}"
 						: $"__capture_{methodName}_{index}";
-					
+
 					// The invocation expression is the full call (e.g., "GetMultiplier()")
 					captures.Add(new LocalCapture(invocationText, captureVar, methodName, invocationText));
 				}
 			}
 		}
-		
+
 		// Mark method names as captured for downstream processing
 		foreach (var capture in captures)
 		{
 			alreadyCaptured.Add(capture.MemberName);
 		}
-		
+
 		return captures;
 	}
 
@@ -257,7 +261,7 @@ internal static class ExpressionAnalyzer
 	/// <param name="dataType">Optional DataType symbol to filter handlers (only include members on this type)</param>
 	/// <param name="rootType">Optional root type (page/view) to identify local members that need capturing</param>
 	/// <returns>Analysis result with handlers, captures, and transformed expression</returns>
-	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null, ITypeSymbol? rootType = null)
+	public static ExpressionAnalysisResult Analyze(string expression, string sourceParameterName = "__source", ITypeSymbol? dataType = null, ITypeSymbol? rootType = null, Compilation? compilation = null)
 	{
 		var captures = new List<LocalCapture>();
 		var transformedExpression = expression;
@@ -267,13 +271,13 @@ internal static class ExpressionAnalyzer
 
 		// Handle special prefixes first
 		// Strip leading dot prefix (e.g., ".Name" -> "Name")
-		if (transformedExpression.TrimStart().StartsWith(".", StringComparison.Ordinal) 
+		if (transformedExpression.TrimStart().StartsWith(".", StringComparison.Ordinal)
 			&& !transformedExpression.TrimStart().StartsWith("..", StringComparison.Ordinal))
 		{
 			var trimmed = transformedExpression.TrimStart();
 			transformedExpression = trimmed.Substring(1); // Remove the leading dot
 		}
-		
+
 		// Strip BindingContext. prefix (e.g., "BindingContext.Name" -> "Name")
 		if (transformedExpression.TrimStart().StartsWith("BindingContext.", StringComparison.Ordinal))
 		{
@@ -284,15 +288,15 @@ internal static class ExpressionAnalyzer
 		// Find all this.X patterns and replace with __capture_X
 		var matches = ThisPrefixPattern.Matches(transformedExpression);
 		var seenCaptures = new HashSet<string>();
-		
+
 		foreach (Match match in matches)
 		{
 			var memberName = match.Groups[1].Value;
 			if (!seenCaptures.Add(memberName))
 				continue;
-				
+
 			var captureVar = $"__capture_{memberName}";
-			
+
 			// Check if this is a method call - if so, extract the full invocation including arguments
 			if (IsMethodCall(match, transformedExpression))
 			{
@@ -340,6 +344,9 @@ internal static class ExpressionAnalyzer
 				if (h.PropertyName == ".")
 					return true;
 
+				if (IsStaticTypeHandler(h, sourceParameterName, dataType, rootType, compilation))
+					return false;
+
 				if (h.ParentExpression == sourceParameterName)
 					return HasProperty(dataType, h.PropertyName);
 
@@ -369,6 +376,46 @@ internal static class ExpressionAnalyzer
 		return new ExpressionAnalysisResult(handlers, captures, transformedExpression, isSettable);
 	}
 
+	private static bool IsStaticTypeHandler(BindingHandler handler, string sourceParameterName, ITypeSymbol dataType, ITypeSymbol? rootType, Compilation? compilation)
+	{
+		if (compilation == null)
+			return false;
+
+		var chain = GetHandlerChain(handler, sourceParameterName);
+		if (chain.Count == 0)
+			return false;
+
+		var rootIdentifier = chain[0];
+		if (HasProperty(dataType, rootIdentifier))
+			return false;
+
+		for (var i = chain.Count; i >= 1; i--)
+		{
+			if (MemberResolver.ResolvesToType(compilation, string.Join(".", chain.Take(i)), MemberResolver.GetContainingNamespace(rootType)))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static List<string> GetHandlerChain(BindingHandler handler, string sourceParameterName)
+	{
+		var chain = new List<string>();
+		if (handler.ParentExpression == sourceParameterName)
+		{
+			chain.Add(handler.PropertyName);
+			return chain;
+		}
+
+		var sourcePrefix = sourceParameterName + ".";
+		if (!handler.ParentExpression.StartsWith(sourcePrefix, StringComparison.Ordinal))
+			return chain;
+
+		chain.AddRange(handler.ParentExpression.Substring(sourcePrefix.Length).Split('.'));
+		chain.Add(handler.PropertyName);
+		return chain;
+	}
+
 	/// <summary>
 	/// Checks if the expression is a simple property chain (e.g., "Name" or "User.DisplayName").
 	/// Returns false for expressions with operators, method calls, or other complex constructs.
@@ -377,7 +424,7 @@ internal static class ExpressionAnalyzer
 	private static bool IsSimplePropertyChain(string expression)
 	{
 		var trimmed = expression.Trim();
-		
+
 		// Strip leading prefixes that we normalize
 		if (trimmed.StartsWith(".", StringComparison.Ordinal) && !trimmed.StartsWith("..", StringComparison.Ordinal))
 			trimmed = trimmed.Substring(1);
@@ -387,7 +434,7 @@ internal static class ExpressionAnalyzer
 		// Parse and check the syntax
 		var tree = CSharpSyntaxTree.ParseText(trimmed, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
-		
+
 		// Get the expression (skip compilation unit wrapper)
 		var expr = root.DescendantNodes().OfType<ExpressionSyntax>().FirstOrDefault();
 		if (expr == null)
@@ -407,7 +454,7 @@ internal static class ExpressionAnalyzer
 			// Simple identifier: "Name"
 			IdentifierNameSyntax => true,
 			// Member access: "User.Name" - check both parts
-			MemberAccessExpressionSyntax memberAccess => 
+			MemberAccessExpressionSyntax memberAccess =>
 				IsSettableExpression(memberAccess.Expression) && memberAccess.Name is IdentifierNameSyntax,
 			// Null-conditional access: "User?.Name" - settable in C# 13+ (guaranteed on .NET 10+)
 			ConditionalAccessExpressionSyntax conditionalAccess =>
@@ -427,7 +474,7 @@ internal static class ExpressionAnalyzer
 			// .Name
 			MemberBindingExpressionSyntax memberBinding => memberBinding.Name is IdentifierNameSyntax,
 			// .Nested.Name
-			MemberAccessExpressionSyntax memberAccess => 
+			MemberAccessExpressionSyntax memberAccess =>
 				IsSettableWhenAccessed(memberAccess.Expression) && memberAccess.Name is IdentifierNameSyntax,
 			_ => false
 		};
@@ -441,28 +488,28 @@ internal static class ExpressionAnalyzer
 		// Parse as an expression and walk the syntax tree
 		var tree = CSharpSyntaxTree.ParseText(expression, new CSharpParseOptions(kind: SourceCodeKind.Script));
 		var root = tree.GetRoot();
-		
+
 		// Find all root identifiers that are directly on the DataType
 		var identifiersToTransform = new List<(int start, int length, string replacement)>();
-		
+
 		foreach (var node in root.DescendantNodes())
 		{
 			if (node is IdentifierNameSyntax identifier)
 			{
 				var identifierName = identifier.Identifier.Text;
-				
+
 				// Skip if it's a captured variable
 				if (identifierName.StartsWith("__capture_", StringComparison.Ordinal))
 					continue;
-				
+
 				// Skip if it's part of this.X (already handled as capture)
 				if (capturedIdentifiers.Contains(identifierName))
 					continue;
-				
+
 				// Skip if it's the right side of a member access (e.g., User.Name - skip "Name")
 				if (identifier.Parent is MemberAccessExpressionSyntax memberAccess && memberAccess.Name == identifier)
 					continue;
-				
+
 				// Check if this is a root-level invocation (not already prefixed)
 				// e.g., GetDisplayName() should become __source.GetDisplayName()
 				if (identifier.Parent is InvocationExpressionSyntax invocation && invocation.Expression == identifier)
@@ -474,7 +521,7 @@ internal static class ExpressionAnalyzer
 					}
 					continue;
 				}
-				
+
 				// Check if this identifier exists on the DataType
 				if (HasMember(dataType, identifierName))
 				{
@@ -482,14 +529,14 @@ internal static class ExpressionAnalyzer
 				}
 			}
 		}
-		
+
 		// Apply transformations in reverse order to preserve positions
 		var result = expression;
 		foreach (var (start, length, replacement) in identifiersToTransform.OrderByDescending(t => t.start))
 		{
 			result = result.Substring(0, start) + replacement + result.Substring(start + length);
 		}
-		
+
 		return result;
 	}
 
@@ -573,12 +620,12 @@ internal static class ExpressionAnalyzer
 			// Skip if this identifier is part of a member access expression
 			if (identifier.Parent is MemberAccessExpressionSyntax)
 				continue;
-			
+
 			// Skip if this identifier is the method name in an invocation
 			// e.g., GetDisplayName in "GetDisplayName()" - parent chain: IdentifierName -> InvocationExpression
 			if (identifier.Parent is InvocationExpressionSyntax)
 				continue;
-			
+
 			// This is a standalone identifier - add handler for it
 			handlers.Add(new BindingHandler(sourceParameterName, identifier.Identifier.Text));
 		}
@@ -662,7 +709,7 @@ internal static class ExpressionAnalyzer
 		{
 			var propertyName = chain[i];
 			handlers.Add(new BindingHandler(parentPath, propertyName));
-			
+
 			// Build up the parent path for the next level
 			parentPath = parentPath + "." + propertyName;
 		}

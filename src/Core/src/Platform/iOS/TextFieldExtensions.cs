@@ -279,7 +279,19 @@ namespace Microsoft.Maui.Platform
 
 			return renderer.CreateImage((context) =>
 			{
-				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				// Draw a bitmap-backed copy of the clear button's image rather than the image itself.
+				// Drawing the image directly produced reduced alpha, and since the SourceIn fill below
+				// caps the final color's alpha at the drawn shape's alpha, that reduced alpha made the
+				// tinted clear button appear dimmed. Drawing a plain CGImage-backed UIImage avoids this
+				// and renders at full opacity.
+				var bitmapImage = image.CGImage is CGImage cgImage
+					? new UIImage(cgImage, image.CurrentScale, image.Orientation)
+					: image;
+				// bitmapImage's Size can be smaller than the original image's Size, so drawing it at
+				// CGPoint.Empty shifts it to the top-left instead of centering it. Center it manually
+				// to preserve the original image's rendered position.
+				var origin = new CGPoint((size.Width - bitmapImage.Size.Width) / 2, (size.Height - bitmapImage.Size.Height) / 2);
+				bitmapImage.Draw(origin, CGBlendMode.Normal, 1.0f);
 				color.ColorWithAlpha(1.0f).SetFill();
 
 				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);

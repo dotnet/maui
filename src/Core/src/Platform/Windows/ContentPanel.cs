@@ -251,6 +251,16 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
+			// WinUI has a native crash when a geometric clip is assigned directly to a
+			// SwipeControl's element visual (regardless of load timing):
+			// https://github.com/microsoft/microsoft-ui-xaml/issues/10321
+			// Skip clipping the content in that case; the Border's stroke/path still renders,
+			// only the SwipeView's corners won't be visually clipped to the border shape.
+			if (Content is UI.Xaml.Controls.SwipeControl)
+			{
+				return;
+			}
+
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 
 			// Prevent clip collision: When ContentView is inside Border, let WrapperView handle 

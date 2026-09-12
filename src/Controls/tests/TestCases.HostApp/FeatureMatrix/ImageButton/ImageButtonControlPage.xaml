@@ -30,6 +30,11 @@
                              IsVisible="{Binding IsVisible}"
                              Shadow="{Binding Shadow}"
                              FlowDirection="{Binding FlowDirection}"
+                             BackgroundColor="{Binding BackgroundColor}"
+                             Opacity="{Binding ImageButtonOpacity}"
+                             InputTransparent="{Binding InputTransparent}"
+                             Rotation="{Binding ImageButtonRotation}"
+                             Scale="{Binding ImageButtonScale}"
                              WidthRequest="350"
                              HeightRequest="450"
                              AutomationId="ImageButtonControl"/>

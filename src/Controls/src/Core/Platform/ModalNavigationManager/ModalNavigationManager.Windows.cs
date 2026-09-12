@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Windowing;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -13,11 +14,39 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool _firstActivated;
 
+		// Tracks the AppWindow subscription used to update the top modal's title bar
+		// when the user enters or exits full-screen while a modal is visible.
+		AppWindow? _appWindowForPresenterChanges;
+
+		// Captured at subscription time from the WinUI Window (a DependencyObject with a
+		// guaranteed non-null DispatcherQueue). AppWindow.DispatcherQueue returns null because
+		// AppWindow does not implement IDispatcherQueueObject, so we cannot use sender.DispatcherQueue
+		// in the Changed event handler.
+		Microsoft.UI.Dispatching.DispatcherQueue? _windowDispatcherQueue;
+
 		partial void InitializePlatform()
 		{
 			_window.Created += (_, _) => SyncModalStackWhenPlatformIsReady();
-			_window.Destroying += (_, _) => _firstActivated = false;
+			_window.Destroying += (_, _) =>
+			{
+				_firstActivated = false;
+				UnsubscribeFromPresenterChanges();
+			};
 			_window.Activated += OnWindowActivated;
+			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
+		}
+
+		void OnPlatformWindowHandlerChanging(object? sender, HandlerChangingEventArgs e)
+		{
+			// When the WinUI window handler is recreated (e.g., activity recreation on Windows),
+			// the AppWindow instance may change. Clear the subscription to the old AppWindow so
+			// that SubscribeToPresenterChanges() can attach to the new one when the modal stack
+			// is resynced after the handler is reconnected.
+			if (e.OldHandler is not null)
+			{
+				_firstActivated = false;
+				UnsubscribeFromPresenterChanges();
+			}
 		}
 
 		void OnWindowActivated(object? sender, EventArgs e)
@@ -118,6 +147,19 @@ namespace Microsoft.Maui.Controls.Platform
 					var windowManager = modalContext.GetNavigationRootManager();
 					if (windowManager is not null)
 					{
+						// The NavigationRootManager constructor unconditionally reserves 32px for the
+						// title bar based on ExtendsContentIntoTitleBar (true by default). Suppress
+						// this reservation when the app has hidden the title bar (IsVisible = false)
+						// or when running in full-screen mode (no OS window controls to avoid).
+						// This also clears the InputNonClientPointerSource passthrough regions, fixing
+						// the unclickable top area that would otherwise remain in full-screen mode.
+						// Use the same predicate as the pop/presenter-change paths so all paths agree.
+						bool showTitleBarOnPush = !IsWindowFullScreen() && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
+						if (!showTitleBarOnPush)
+						{
+							windowManager.SetTitleBarVisibility(false);
+						}
+
 						// Set the titlebar on the new navigation root
 						if (previousPage is not null &&
 							previousPage.GetParentWindow() is Window window &&
@@ -130,21 +172,47 @@ namespace Microsoft.Maui.Controls.Platform
 						_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
 						windowManager.Connect(platform);
 						Container.AddPage(windowManager.RootView);
+
+						// Subscribe once (when first modal is pushed) so that full-screen
+						// entry/exit while the modal is shown updates the modal's title bar.
+						if (_platformModalPages.Count == 1)
+						{
+							SubscribeToPresenterChanges();
+						}
 					}
 				}
 				// popping modal
 				else
 				{
+					// Unsubscribe from presenter changes once the last modal is popped.
+					if (_platformModalPages.Count == 0)
+					{
+						UnsubscribeFromPresenterChanges();
+					}
+
 					var context = newPage.FindMauiContext();
 					var windowManager = context?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
-					// Toggle the titlebar visibility on the new page
 					var navRoot = context.GetNavigationRootManager();
+					// Combine presenter state with the app's explicit TitleBar.IsVisible setting.
+					// Casting to the concrete TitleBar type is safe — ModalNavigationManager is in the
+					// same assembly and TitleBar is the only platform implementation on Windows.
+					// Defaults to true (show title bar) when no custom TitleBar is set.
+					bool showTitleBar = !IsWindowFullScreen() && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
+
 					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
 					{
+						// Always restore the visual containers to Visible. The reserved height
+						// (WindowTitleBarContentControlMinHeight via navRoot.SetTitleBarVisibility below)
+						// will be 0 in full-screen, so no space is taken. Keeping the container Visible
+						// avoids a permanent collapse when the window later exits full-screen after
+						// the modal has already been dismissed. Height is restored by the
+						// WM_STYLECHANGING handler in MauiWinUIWindow when the window leaves full-screen.
 						wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Visible);
 					}
+
+					navRoot?.SetTitleBarVisibility(showTitleBar);
 
 					// Restore the titlebar
 					if (previousPage is not null &&
@@ -168,6 +236,98 @@ namespace Microsoft.Maui.Controls.Platform
 					"Changing the current page is only allowed if it's being called from the same UI thread." +
 					"Please ensure that the new page is in the same UI thread as the current page.", error);
 			}
+		}
+
+		// Returns true when the window is currently in full-screen presentation mode.
+		bool IsWindowFullScreen()
+		{
+			var platformWindow = WindowMauiContext?.GetPlatformWindow();
+			if (platformWindow is null)
+			{
+				return false;
+			}
+
+			return platformWindow.GetAppWindow()?.Presenter?.Kind == AppWindowPresenterKind.FullScreen;
+		}
+
+		// Subscribes to AppWindow.Changed (once) when the first modal is pushed so that
+		// entering or exiting full-screen while a modal is visible is handled correctly.
+		void SubscribeToPresenterChanges()
+		{
+			if (_appWindowForPresenterChanges is not null)
+			{
+				return;
+			}
+
+			var platformWindow = WindowMauiContext?.GetPlatformWindow();
+			if (platformWindow is null)
+			{
+				return;
+			}
+
+			var appWindow = platformWindow.GetAppWindow();
+			if (appWindow is null)
+			{
+				return;
+			}
+
+			_windowDispatcherQueue = platformWindow.DispatcherQueue;
+			_appWindowForPresenterChanges = appWindow;
+			_appWindowForPresenterChanges.Changed += OnAppWindowPresenterChanged;
+		}
+
+		// Removes the AppWindow.Changed subscription when the last modal is popped or
+		// the window is being destroyed.
+		void UnsubscribeFromPresenterChanges()
+		{
+			if (_appWindowForPresenterChanges is null)
+			{
+				return;
+			}
+
+			_appWindowForPresenterChanges.Changed -= OnAppWindowPresenterChanged;
+			_appWindowForPresenterChanges = null;
+			_windowDispatcherQueue = null;
+		}
+
+		// Fires whenever the window's AppWindow.Presenter changes (e.g., windowed ↔ full-screen).
+		// Updates the top-most modal's NavigationRootManager so its title bar height and margins
+		// match the new presenter mode.
+		void OnAppWindowPresenterChanged(AppWindow sender, AppWindowChangedEventArgs args)
+		{
+			if (!args.DidPresenterChange)
+			{
+				return;
+			}
+
+			// AppWindow.Changed is not guaranteed to fire on the UI thread, so marshal ALL
+			// MAUI/WinUI state reads (modal list, MauiContext, Presenter) onto the dispatcher.
+			// This avoids races with modal pop/disconnect and COM apartment violations.
+			// Re-check that a modal is still present at dispatch time before acting.
+			// NOTE: sender.DispatcherQueue is null for AppWindow (it does not implement
+			// IDispatcherQueueObject), so we use the window's DispatcherQueue captured at
+			// subscription time instead.
+			_windowDispatcherQueue?.TryEnqueue(() =>
+			{
+				if (_platformModalPages.Count == 0)
+				{
+					return;
+				}
+
+				var topModal = _platformModalPages[_platformModalPages.Count - 1];
+				var rootManager = topModal.FindMauiContext()?.GetNavigationRootManager();
+				if (rootManager is null)
+				{
+					return;
+				}
+
+				bool isFullScreen = sender.Presenter?.Kind == AppWindowPresenterKind.FullScreen;
+				// Combine presenter state with the app's explicit TitleBar.IsVisible setting so that
+				// an app that intentionally hides its TitleBar does not have the reservation forced
+				// back on when leaving full-screen. Defaults to true when no TitleBar is set.
+				bool showTitleBar = !isFullScreen && ((_window.TitleBar as TitleBar)?.IsVisible ?? true);
+				rootManager.SetTitleBarVisibility(showTitleBar);
+			});
 		}
 	}
 }

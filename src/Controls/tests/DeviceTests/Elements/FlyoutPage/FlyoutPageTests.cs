@@ -16,16 +16,16 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
-#if IOS || MACCATALYST
-using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
-#endif
-
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.FlyoutPage)]
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// FlyoutPageHandlerTests subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
 	public partial class FlyoutPageTests : ControlsHandlerTestBase
 	{
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+					RegisterFlyoutPageHandler(handlers);
 					RegisterNavigationPageHandler(handlers);
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
@@ -55,6 +55,17 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
 #else
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// FlyoutPageHandlerTests overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 #endif
 		}
 
@@ -112,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 					new NavigationPage(new ContentPage() { Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, (handler) =>
 			{
 				// validate that nothing crashes
 
@@ -132,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 					new NavigationPage(new ContentPage() { Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				var details2 = new NavigationPage(new ContentPage() { Title = "Detail" });
 
@@ -158,7 +169,7 @@ namespace Microsoft.Maui.DeviceTests
 					new ContentPage() { Title = "Detail" },
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				var details2 = new ContentPage() { Title = "Detail" };
 				var flyoutView = flyoutPage.ToPlatform();
@@ -211,7 +222,7 @@ namespace Microsoft.Maui.DeviceTests
 				FlowDirection = (isRtl) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
 			});
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return;
@@ -259,7 +270,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			flyoutPage.Detail = first;
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<IElementHandler>(flyoutPage, async (handler) =>
 			{
 				Assert.False(IsBackButtonVisible(handler));
 

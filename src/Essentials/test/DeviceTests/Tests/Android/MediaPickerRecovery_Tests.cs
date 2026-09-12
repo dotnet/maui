@@ -1008,18 +1008,51 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 		}
 
 		[Fact]
-		public async Task ActivityForResultRequest_Rejects_Concurrent_Launch()
+		public async Task ActivityForResultRequest_Rejects_Concurrent_Launch_For_Same_Owner()
 		{
-			var captureForResult = new TestMediaCaptureForResult(RecoveredMediaPickerResultKind.CapturePhoto);
-			var activeTaskCompletionSource = new TaskCompletionSource<JavaBoolean>(TaskCreationOptions.RunContinuationsAsynchronously);
-			var activeLaunchCompletionSourceField = typeof(ActivityForResultRequest<TakePicture, JavaBoolean>)
-				.GetField("activeLaunchCompletionSource", BindingFlags.Instance | BindingFlags.NonPublic);
-			Assert.NotNull(activeLaunchCompletionSourceField);
+			var requestState = new ActivityForResultRequestState<JavaBoolean>("MediaPickerRecovery_Tests.RequestOwner");
+			var owner = requestState.RestoreOrCreateOwner(null);
+			var otherOwner = requestState.RestoreOrCreateOwner(null);
+			var pendingRequest = requestState.BeginRequest(owner);
 
-			// Seed the base request as if Launch already has one in-process activity result pending.
-			activeLaunchCompletionSourceField.SetValue(captureForResult, activeTaskCompletionSource);
+			await Assert.ThrowsAsync<InvalidOperationException>(() => requestState.BeginRequest(owner));
 
-			await Assert.ThrowsAsync<InvalidOperationException>(() => captureForResult.Launch(AndroidUri.Empty));
+			var otherPendingRequest = requestState.BeginRequest(otherOwner);
+			Assert.False(pendingRequest.IsCompleted);
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(owner, JavaBoolean.True,
+				_ => Assert.False(pendingRequest.IsCompleted)));
+			Assert.True((await WaitForCompletion(pendingRequest)).BooleanValue());
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(otherOwner, JavaBoolean.False));
+			Assert.False((await WaitForCompletion(otherPendingRequest)).BooleanValue());
+
+			var nextRequest = requestState.BeginRequest(owner);
+			Assert.False(nextRequest.IsCompleted);
+			Assert.True(requestState.TrySetCanceled(owner));
+			await Assert.ThrowsAnyAsync<OperationCanceledException>(() => nextRequest);
+		}
+
+		[Fact]
+		public async Task ActivityForResultRequest_Result_Callback_Failure_Faults_Only_Owning_Launch()
+		{
+			var requestState = new ActivityForResultRequestState<JavaBoolean>("MediaPickerRecovery_Tests.RequestOwner");
+			var owner = requestState.RestoreOrCreateOwner(null);
+			var otherOwner = requestState.RestoreOrCreateOwner(null);
+			var pendingRequest = requestState.BeginRequest(owner);
+			var otherPendingRequest = requestState.BeginRequest(otherOwner);
+			var expectedException = new IOException("Unable to record the accepted result.");
+
+			Assert.True(requestState.TrySetResult(owner, JavaBoolean.True, _ => throw expectedException));
+			var exception = await Assert.ThrowsAsync<IOException>(() => WaitForCompletion(pendingRequest));
+			Assert.Same(expectedException, exception);
+			Assert.False(requestState.HasPendingRequest(owner));
+			Assert.False(otherPendingRequest.IsCompleted);
+
+			Assert.True(requestState.TrySetResult(otherOwner, JavaBoolean.True));
+			Assert.True((await WaitForCompletion(otherPendingRequest)).BooleanValue());
 		}
 
 		[Fact]

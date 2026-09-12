@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellFlyoutLayoutManager(IShellContext context)
 		{
 			_context = context;
-			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+
+			// Only the compatibility renderer subscribes here; handlers use mapper-driven updates.
+			if (context is not Handlers.ShellHandler)
+			{
+				_context.Shell.PropertyChanged += OnShellPropertyChanged;
+			}
+
 			ShellController.StructureChanged += OnStructureChanged;
 		}
 
@@ -77,8 +83,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					sv.Scrolled += ScrollViewScrolled;
 					removeScrolledEvent = () => sv.Scrolled -= ScrollViewScrolled;
-					void ScrollViewScrolled(object sender, ScrolledEventArgs e) =>
-						OnScrolled((nfloat)sv.ScrollY);
+					void ScrollViewScrolled(object sender, ScrolledEventArgs e)
+					{
+						// Use the event only for timing and read the offset from the native view.
+						// OnScrolled works in native offsets (which rest at -headerHeight, since
+						// SetHeaderContentInset carries the header in ContentInset), while the
+						// value ScrollY reports depends on which renderer is in play — the default
+						// handler publishes content coordinates, the compatibility renderer raw
+						// ContentOffset — so converting from it would be right for one and wrong
+						// for the other. With no native view there is no usable offset: in this
+						// convention 0 is not neutral but "scrolled past the header", so skip
+						// rather than collapse the header.
+						if (ScrollView is { } nativeScrollView)
+							OnScrolled(nativeScrollView.ContentOffset.Y);
+					}
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (Content is CollectionView cv)
@@ -209,7 +227,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void SetHeaderContentInset()
 		{
-			if (ScrollView is null)
+			// ScrollView may not be attached to a window yet.
+			if (ScrollView is null || ScrollView.Window is null)
 				return;
 
 			var offset = ScrollView.ContentInset.Top;
@@ -366,11 +385,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
-				SetHeaderContentInset();
-				LayoutParallax();
+				OnFlyoutHeaderBehaviorChanged();
 			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
+		}
+
+		internal void OnFlyoutHeaderBehaviorChanged()
+		{
+			SetHeaderContentInset();
+			LayoutParallax();
 		}
 
 		public void ViewDidLoad()

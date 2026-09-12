@@ -408,6 +408,53 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SharedStyleTriggersHaveIndependentSpecificity()
+		{
+			var style = new Style(typeof(Label))
+			{
+				Triggers = {
+					new Trigger(typeof(Label)) {
+						Property = VisualElement.IsEnabledProperty,
+						Value = false,
+						Setters = { new Setter { Property = VisualElement.ScaleProperty, Value = 2d } },
+					},
+					new Trigger(typeof(Label)) {
+						Property = VisualElement.IsVisibleProperty,
+						Value = false,
+						Setters = { new Setter { Property = VisualElement.ScaleProperty, Value = 3d } },
+					},
+				}
+			};
+			var first = new Label { IsEnabled = false, IsVisible = false };
+			var second = new Label();
+			Assert.Null(first._triggerSpecificity);
+			Assert.Null(second._triggerSpecificity);
+
+			first.Style = second.Style = style;
+			Assert.Equal(2, first._triggerSpecificity.Count);
+			Assert.Equal(2, second._triggerSpecificity.Count);
+			Assert.NotSame(first._triggerSpecificity, second._triggerSpecificity);
+			Assert.Equal(3d, first.Scale);
+			Assert.Equal(1d, second.Scale);
+
+			second.IsEnabled = false;
+			Assert.Equal(2d, second.Scale);
+			Assert.Equal(3d, first.Scale);
+			first.IsVisible = true;
+			Assert.Equal(2d, first.Scale);
+
+			first.Style = null;
+			Assert.Empty(first._triggerSpecificity);
+			Assert.Equal(1d, first.Scale);
+			Assert.Equal(2, second._triggerSpecificity.Count);
+			Assert.Equal(2d, second.Scale);
+
+			first.Style = style;
+			Assert.Equal(2d, first.Scale);
+			Assert.Equal(2d, second.Scale);
+		}
+
+		[Fact]
 		//https://bugzilla.xamarin.com/show_bug.cgi?id=28556
 		public void TriggersAppliedAfterSetters()
 		{

@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+#if IOS || MACCATALYST
+using CarouselViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2;
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -23,7 +28,15 @@ namespace Microsoft.Maui.DeviceTests
 	// NavigationViewHandler instead, so every test below runs against both variants.
 #if IOS || MACCATALYST
 	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_FlyoutViewHandler subclass overrides registration to exercise
+	// FlyoutViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
 #endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// NavigationPageTests_TabbedViewHandler subclass overrides registration to exercise
+	// TabbedViewHandler instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
 		protected virtual void SetupBuilder()
@@ -33,6 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					RegisterNavigationPageHandlers(handlers);
+					RegisterFlyoutPageHandler(handlers);
 					RegisterCommonHandlers(handlers);
 				});
 			});
@@ -44,23 +58,49 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
 #else
 			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+			RegisterTabbedPageHandler(handlers);
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_TabbedViewHandler overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#else
 			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
 		}
 
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// NavigationPageTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#endif
+		}
+
 		// Handlers shared by every NavigationPage test variant, regardless of which
-		// NavigationPage/TabbedPage handler mapping is registered above.
+		// NavigationPage/TabbedPage or FlyoutPage handler mapping is registered above.
 		protected static void RegisterCommonHandlers(IMauiHandlersCollection handlers)
 		{
-			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 			handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 			handlers.AddHandler<Border, BorderHandler>();
 			handlers.AddHandler<Button, ButtonHandler>();
 			handlers.AddHandler<CarouselView, CarouselViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
+#endif
 			handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 			handlers.AddHandler<IContentView, ContentViewHandler>();
 			handlers.AddHandler<Label, LabelHandler>();
 			handlers.AddHandler<Layout, LayoutHandler>();
@@ -69,7 +109,6 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.AddHandler<Shape, ShapeViewHandler>();
 			handlers.AddHandler<Window, WindowHandlerStub>();
 		}
-
 		[Fact]
 		public async Task PoppingNavigationPageDoesntCrash()
 		{

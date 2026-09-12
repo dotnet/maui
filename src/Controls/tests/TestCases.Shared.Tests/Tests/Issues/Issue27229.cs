@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CollectionView, EmptyView Fills Available Space By Default";
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
+		[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 		public void CollectionViewEmptyViewFillsAvailableSpaceByDefault()
 		{
 			App.WaitForElement("ReadyToTest");
