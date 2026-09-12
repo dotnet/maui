@@ -88,24 +88,37 @@ steps:
       mkdir -p "$host_diagnostics"
 
       sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+      emulator="$sdk_root/emulator/emulator"
+      emulator_lib64="$sdk_root/emulator/lib64"
       qemu="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64"
-      if [[ -z "$sdk_root" || ! -x "$qemu" ]]; then
-        echo "Provisioned Android emulator QEMU binary was not found: '$qemu'."
+      if [[ -z "$sdk_root" || ! -x "$emulator" || ! -d "$emulator_lib64" || ! -x "$qemu" ]]; then
+        echo "Provisioned Android emulator runtime was not found under '$sdk_root/emulator'."
         exit 1
       fi
 
-      /usr/bin/ldd "$qemu" > "$host_diagnostics/qemu-ldd-before.txt" 2>&1
-      if grep -Fq "libpulse.so.0 => not found" "$host_diagnostics/qemu-ldd-before.txt"; then
-        timeout 120s sudo -n apt-get update -qq \
-          > "$host_diagnostics/apt-libpulse0.txt" 2>&1
-        timeout 120s sudo -n apt-get install -y -qq --no-install-recommends libpulse0 \
-          >> "$host_diagnostics/apt-libpulse0.txt" 2>&1
-      fi
+      timeout 120s sudo -n apt-get update -qq \
+        > "$host_diagnostics/apt-libpulse0.txt" 2>&1
+      timeout 120s sudo -n apt-get install -y -qq --no-install-recommends libpulse0 \
+        >> "$host_diagnostics/apt-libpulse0.txt" 2>&1
 
-      /usr/bin/ldd "$qemu" > "$host_diagnostics/ldd.txt" 2>&1
-      if grep -Fq "=> not found" "$host_diagnostics/ldd.txt"; then
+      # Match the emulator launcher's bundled C++ runtime lookup when inspecting QEMU directly.
+      qemu_ld_library_path="$emulator_lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      ldd_exit_code=0
+      LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu" \
+        > "$host_diagnostics/ldd.txt" 2>&1 || ldd_exit_code=$?
+      if [[ "$ldd_exit_code" -ne 0 ]] || grep -Fq "=> not found" "$host_diagnostics/ldd.txt"; then
         echo "Android emulator QEMU still has unresolved shared libraries."
         cat "$host_diagnostics/ldd.txt"
+        exit 1
+      fi
+
+      launcher_exit_code=0
+      timeout 30s "$emulator" -version \
+        > "$host_diagnostics/version.txt" 2>&1 || launcher_exit_code=$?
+      echo "ExitCode: $launcher_exit_code" >> "$host_diagnostics/version.txt"
+      if [[ "$launcher_exit_code" -ne 0 ]]; then
+        echo "Android emulator launcher failed after restoring QEMU prerequisites."
+        cat "$host_diagnostics/version.txt"
         exit 1
       fi
     displayName: Verify Issue 38080 emulator runtime prerequisites
@@ -170,7 +183,6 @@ steps:
       }
 
       emulator="$sdk_root/emulator/emulator"
-      capture_host_command "$host_diagnostics/version.txt" "$emulator" -version
       capture_host_command "$host_diagnostics/acceleration.txt" "$emulator" -accel-check
       capture_host_command "$host_diagnostics/kvm.txt" /usr/bin/ls -l /dev/kvm
     displayName: Verify Pixel 8a device definition
