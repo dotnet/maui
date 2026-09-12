@@ -1,0 +1,231 @@
+parameters:
+- name: jobName
+  type: string
+- name: displayName
+  type: string
+- name: variant
+  type: string
+  values:
+  - base
+  - head
+- name: commitSha
+  type: string
+- name: prNumber
+  type: number
+- name: platform
+  type: string
+  values:
+  - ios
+  - maccatalyst
+  - android
+  - windows
+- name: pool
+  type: object
+
+jobs:
+- job: ${{ parameters.jobName }}
+  displayName: ${{ parameters.displayName }}
+  timeoutInMinutes: 150
+  pool: ${{ parameters.pool }}
+  workspace:
+    clean: all
+  steps:
+  - checkout: self
+    fetchDepth: 0
+    clean: true
+    persistCredentials: false
+
+  - pwsh: |
+      $prNumber = 0
+      if (-not [int]::TryParse($env:DEVICE_PERFORMANCE_PR_NUMBER, [ref]$prNumber) -or $prNumber -le 0) {
+        throw "prNumber must be a positive integer before fetching or building a device performance PR."
+      }
+    displayName: Validate device performance PR number
+    env:
+      DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+
+  - pwsh: |
+      $trustedRoot = "$(Agent.TempDirectory)/device-performance-harness"
+      Remove-Item $trustedRoot -Recurse -Force -ErrorAction SilentlyContinue
+      New-Item -ItemType Directory -Force -Path $trustedRoot | Out-Null
+      Copy-Item "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/TestCategory.cs" `
+        -Destination "$trustedRoot/TestCategory.cs"
+      Copy-Item "$(Build.SourcesDirectory)/eng/scripts/Merge-DevicePerformanceCategories.ps1" `
+        -Destination "$trustedRoot/"
+
+      $paths = @(
+        "src/Controls/tests/DeviceTests/Performance",
+        "src/Core/tests/DeviceTests.Shared/DeviceTestSharedHelpers.cs",
+        "src/Core/tests/DeviceTests.Shared/DevicePerformanceResult.cs",
+        "src/TestUtils/src/DeviceTests.Runners/HeadlessRunner/Windows/ControlsHeadlessTestRunner.cs"
+      )
+
+      foreach ($relativePath in $paths) {
+        $source = Join-Path "$(Build.SourcesDirectory)" $relativePath
+        $destination = Join-Path $trustedRoot $relativePath
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+        Copy-Item $source -Destination $destination -Recurse -Force
+      }
+    displayName: Snapshot trusted performance harness
+
+  - ${{ if ne(parameters.platform, 'windows') }}:
+    - bash: |
+        set -euo pipefail
+
+        SHA="$DEVICE_PERFORMANCE_COMMIT_SHA"
+        if [ -z "$SHA" ]; then
+          echo "Commit SHA is required."
+          exit 1
+        fi
+
+        if ! git cat-file -e "$SHA^{commit}" 2>/dev/null; then
+          git fetch --quiet --no-tags origin \
+            "+refs/pull/${DEVICE_PERFORMANCE_PR_NUMBER}/head:refs/remotes/origin/device-performance-pr"
+        fi
+
+        git cat-file -e "$SHA^{commit}"
+        git checkout --detach "$SHA"
+        git remote set-url origin https://github.com/dotnet/maui.git
+        git config --local --unset-all http.https://github.com/.extraheader 2>/dev/null || true
+        echo "Building ${{ parameters.variant }} at $(git rev-parse HEAD)"
+      displayName: Checkout pinned ${{ parameters.variant }} commit
+      env:
+        DEVICE_PERFORMANCE_COMMIT_SHA: ${{ parameters.commitSha }}
+        DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - pwsh: |
+        $sha = $env:DEVICE_PERFORMANCE_COMMIT_SHA
+        if ([string]::IsNullOrWhiteSpace($sha)) {
+          throw "Commit SHA is required."
+        }
+        & git cat-file -e "$sha^{commit}" 2>$null
+        if ($LASTEXITCODE -ne 0) {
+          git fetch --quiet --no-tags origin `
+            "+refs/pull/$env:DEVICE_PERFORMANCE_PR_NUMBER/head:refs/remotes/origin/device-performance-pr"
+        }
+        git cat-file -e "$sha^{commit}"
+        if ($LASTEXITCODE -ne 0) {
+          throw "Requested commit is unavailable: $sha"
+        }
+        git checkout --detach $sha
+        git remote set-url origin https://github.com/dotnet/maui.git
+        git config --local --unset-all http.https://github.com/.extraheader 2>$null
+        Write-Host "Building ${{ parameters.variant }} at $(& git rev-parse HEAD)"
+      displayName: Checkout pinned ${{ parameters.variant }} commit
+      env:
+        DEVICE_PERFORMANCE_COMMIT_SHA: ${{ parameters.commitSha }}
+        DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+
+  - pwsh: |
+      Copy-Item "$(Agent.TempDirectory)/device-performance-harness/src/*" `
+        -Destination "$(Build.SourcesDirectory)/src" `
+        -Recurse `
+        -Force
+      & "$(Agent.TempDirectory)/device-performance-harness/Merge-DevicePerformanceCategories.ps1" `
+        -TrustedCategoryPath "$(Agent.TempDirectory)/device-performance-harness/TestCategory.cs" `
+        -TargetCategoryPath "$(Build.SourcesDirectory)/src/Controls/tests/DeviceTests/TestCategory.cs"
+    displayName: Overlay trusted performance harness
+
+  - template: /eng/pipelines/common/provision.yml@self
+    parameters:
+      checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+      skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      onlyAndroidPlatformDefaultApis: true
+      skipAndroidEmulatorImages: true
+      skipAndroidCreateAvds: true
+      skipProvisionator: true
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+      skipSimulatorSetup: true
+      skipInternalFeeds: true
+
+  - ${{ if ne(parameters.platform, 'windows') }}:
+    - script: ./build.sh -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf /p:IncludeIosTargetFrameworks=false /p:IncludeAndroidTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /p:IncludeTizenTargetFrameworks=false /p:TreatWarningsAsErrors=false
+      displayName: Build MSBuild tasks
+
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - script: .\build.cmd -restore -build -configuration Release -projects Microsoft.Maui.BuildTasks.slnf /p:IncludeIosTargetFrameworks=false /p:IncludeAndroidTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /p:IncludeTizenTargetFrameworks=false /p:TreatWarningsAsErrors=false
+      displayName: Build MSBuild tasks
+
+  - ${{ if eq(parameters.platform, 'ios') }}:
+    - script: ./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /p:IncludeIosTargetFrameworks=true /p:IncludeAndroidTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /p:IncludeTizenTargetFrameworks=false /p:TreatWarningsAsErrors=false
+      displayName: Build iOS performance app
+
+  - ${{ if eq(parameters.platform, 'maccatalyst') }}:
+    - script: ./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /p:IncludeIosTargetFrameworks=false /p:IncludeAndroidTargetFrameworks=false /p:IncludeMacCatalystTargetFrameworks=true /p:IncludeWindowsTargetFrameworks=false /p:IncludeTizenTargetFrameworks=false /p:TreatWarningsAsErrors=false
+      displayName: Build MacCatalyst performance app
+
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - script: ./build.sh -restore -build -configuration Release /p:BuildDeviceTests=true /p:IncludeIosTargetFrameworks=false /p:IncludeAndroidTargetFrameworks=true /p:IncludeMacCatalystTargetFrameworks=false /p:IncludeWindowsTargetFrameworks=false /p:IncludeTizenTargetFrameworks=false /p:TreatWarningsAsErrors=false
+      displayName: Build Android performance app
+
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - pwsh: |
+        $project = "src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj"
+        $frameworks = (& dotnet msbuild $project `
+          -getProperty:TargetFrameworks `
+          /p:IncludeIosTargetFrameworks=false `
+          /p:IncludeAndroidTargetFrameworks=false `
+          /p:IncludeMacCatalystTargetFrameworks=false `
+          /p:IncludeWindowsTargetFrameworks=true `
+          /p:IncludeTizenTargetFrameworks=false |
+          Select-Object -Last 1).Trim()
+        $framework = ($frameworks -split ';')[0]
+        if ([string]::IsNullOrWhiteSpace($framework) -or $framework -notmatch '-windows') {
+          throw "Could not resolve a Windows device-test target framework: '$frameworks'."
+        }
+
+        dotnet publish $project `
+          -c Release `
+          -f $framework `
+          /p:RuntimeIdentifierOverride=win-x64 `
+          /p:UseMonoRuntime=false `
+          /p:SelfContained=true `
+          /p:WindowsPackageType=None `
+          /p:_MauiDeviceTestUnpackaged=true `
+          /p:ExtraDefineConstants=UNPACKAGED `
+          /p:IncludeIosTargetFrameworks=false `
+          /p:IncludeAndroidTargetFrameworks=false `
+          /p:IncludeMacCatalystTargetFrameworks=false `
+          /p:IncludeWindowsTargetFrameworks=true `
+          /p:IncludeTizenTargetFrameworks=false `
+          /p:TreatWarningsAsErrors=false
+        if ($LASTEXITCODE -ne 0) {
+          throw "Windows performance app publish failed."
+        }
+      displayName: Build Windows performance app
+
+  - pwsh: |
+      $actualCommitSha = (& git rev-parse HEAD).Trim()
+      if ($actualCommitSha -ne $env:DEVICE_PERFORMANCE_COMMIT_SHA) {
+        throw "Built commit '$actualCommitSha' does not match requested commit '$env:DEVICE_PERFORMANCE_COMMIT_SHA'."
+      }
+      $runtimeVariant = if ($env:DEVICE_PERFORMANCE_PLATFORM -eq "windows") { "coreclr" } else { "mono" }
+
+      $metadata = [ordered]@{
+        schemaVersion = 1
+        repository = "dotnet/maui"
+        pullRequestNumber = [int]$env:DEVICE_PERFORMANCE_PR_NUMBER
+        variant = $env:DEVICE_PERFORMANCE_VARIANT
+        platform = $env:DEVICE_PERFORMANCE_PLATFORM
+        commitSha = $actualCommitSha
+        harnessSha = "$(Build.SourceVersion)"
+        runtimeVariant = $runtimeVariant
+        sdkVersion = (& dotnet --version).Trim()
+      }
+
+      $metadataPath = "$(System.DefaultWorkingDirectory)/artifacts/bin/device-performance-build-metadata.json"
+      New-Item -ItemType Directory -Force -Path (Split-Path -Parent $metadataPath) | Out-Null
+      $metadata | ConvertTo-Json | Set-Content $metadataPath -Encoding UTF8
+    displayName: Record trusted build provenance
+    env:
+      DEVICE_PERFORMANCE_COMMIT_SHA: ${{ parameters.commitSha }}
+      DEVICE_PERFORMANCE_PR_NUMBER: ${{ parameters.prNumber }}
+      DEVICE_PERFORMANCE_VARIANT: ${{ parameters.variant }}
+      DEVICE_PERFORMANCE_PLATFORM: ${{ parameters.platform }}
+
+  - publish: $(System.DefaultWorkingDirectory)/artifacts/bin
+    displayName: Publish ${{ parameters.variant }} device-test apps
+    artifact: device_performance_${{ parameters.variant }}
