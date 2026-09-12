@@ -71,6 +71,51 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(success);
 		}
 
+		[Theory]
+		[InlineData(false, false)]
+		[InlineData(false, true)]
+		[InlineData(true, false)]
+		[InlineData(true, true)]
+		public async Task ClearingBarBackgroundRestoresMaterial3Background(bool bottomTabs, bool useBrush)
+		{
+			if (!RuntimeFeature.IsMaterial3Enabled)
+				return;
+
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
+			{
+				var tabbedPageManager = tabbedPage.TabbedPageManager;
+				var originalBackground = bottomTabs
+					? tabbedPageManager.BottomNavigationView.Background
+					: tabbedPageManager.TabLayout.Background;
+				Assert.NotNull(originalBackground);
+
+				if (useBrush)
+					tabbedPage.BarBackground = SolidColorBrush.Red;
+				else
+					tabbedPage.BarBackgroundColor = Colors.Red;
+
+				var customBackground = bottomTabs
+					? tabbedPageManager.BottomNavigationView.Background
+					: tabbedPageManager.TabLayout.Background;
+				Assert.NotSame(originalBackground, customBackground);
+
+				if (useBrush)
+					tabbedPage.BarBackground = null;
+				else
+					tabbedPage.BarBackgroundColor = null;
+
+				var restoredBackground = bottomTabs
+					? tabbedPageManager.BottomNavigationView.Background
+					: tabbedPageManager.TabLayout.Background;
+				Assert.Same(originalBackground, restoredBackground);
+
+				return Task.CompletedTask;
+			});
+		}
+
 		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
