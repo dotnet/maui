@@ -631,6 +631,15 @@ steps:
         'Strict prepared iOS simulator execution*bypasses generic emulator startup and permits only bounded read-only simctl queries'
         'Strict prepared iOS simulator execution*retains ordinary emulator startup only when strict prepared mode is absent'
         'Apple trusted host command boundary*admits only the exact prepared iOS simulator binding for strict verification'
+        'Apple trusted host command boundary*validates matching prepared-device binding with production-ordered environment'
+        'Apple trusted host command boundary*validates missing prepared-device binding with production-ordered environment'
+        'Apple trusted host command boundary*validates mismatched prepared-device binding with production-ordered environment'
+        'Apple trusted host command boundary*validates matching prepared-device binding with hashtable environment'
+        'Apple trusted host command boundary*validates missing prepared-device binding with hashtable environment'
+        'Apple trusted host command boundary*validates mismatched prepared-device binding with hashtable environment'
+        'Apple trusted host command boundary*validates matching prepared-device binding with generic-dictionary environment'
+        'Apple trusted host command boundary*validates missing prepared-device binding with generic-dictionary environment'
+        'Apple trusted host command boundary*validates mismatched prepared-device binding with generic-dictionary environment'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
