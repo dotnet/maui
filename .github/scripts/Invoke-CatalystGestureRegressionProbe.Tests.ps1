@@ -2481,7 +2481,7 @@ Describe 'Closed production composite diagnostic seam' {
 
     It 'loads only the fixed production APIs instead of copying their implementations' {
         foreach ($name in @(
-                'Invoke-ReplicationAppleCompanionPrewarm',
+                'Invoke-ReplicationFixedCatalystCompositePrewarm',
                 'Get-ReplicationRegressionLaneSelection',
                 'Get-ReplicationFixedCompanionRequirement',
                 'Invoke-ReplicationRegressionCompositeRun',
@@ -2498,6 +2498,125 @@ Describe 'Closed production composite diagnostic seam' {
         $script:ProductionSource | Should -Match (
             '(?s)Test-ReplicationFixRegression.*?' +
             'Write-ReplicationRegressionEvidenceDocument')
+    }
+
+    It 'requires pinned private tool restore and command-only XHarness proof before the dual-Apple graph' {
+        $productionFunction = [regex]::Match(
+            $script:ProductionSource,
+            '(?ms)^function Invoke-ReplicationFixedCatalystCompositePrewarm\b.*?^}').
+        Value
+        $productionFunction | Should -Not -BeNullOrEmpty
+        $toolRestore = $productionFunction.IndexOf(
+            "Invoke-ReplicationTrustedRestore",
+            [StringComparison]::Ordinal)
+        $xharnessPreflight = $productionFunction.IndexOf(
+            "Invoke-LoggedChildProcess",
+            [StringComparison]::Ordinal)
+        $graphPrewarm = $productionFunction.IndexOf(
+            "Invoke-ReplicationAppleCompanionPrewarm",
+            [StringComparison]::Ordinal)
+
+        $toolRestore | Should -BeGreaterThan -1
+        $xharnessPreflight | Should -BeGreaterThan $toolRestore
+        $graphPrewarm | Should -BeGreaterThan $xharnessPreflight
+        $productionFunction | Should -Match "-Verb 'tool-restore'"
+        $productionFunction | Should -Match "'-PreflightXHarnessOnly'"
+        $productionFunction | Should -Match '-DeadlineTimestamp \$DeadlineTimestamp'
+        $script:ProbeSource | Should -Match (
+            '(?s)Invoke-CatalystProbeProductionPrewarm.*?' +
+            'Invoke-ReplicationFixedCatalystCompositePrewarm.*?' +
+            '\$Deadline\.DeadlineTimestamp')
+    }
+
+    It 'passes the original prewarm deadline and prepared simulator into the production module' {
+        $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 600
+        $module = New-Module -Name 'Maui.CatalystProductionCompositeProbe.Test' `
+            -ScriptBlock {
+            $DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+            function Invoke-ReplicationFixedCatalystCompositePrewarm {
+                param([long]$DeadlineTimestamp)
+                [pscustomobject]@{
+                    DeadlineTimestamp = $DeadlineTimestamp
+                    EnvironmentUdid =
+                    [Environment]::GetEnvironmentVariable(
+                        'MAUI_REPLICATION_DEVICE_UDID')
+                }
+            }
+        }
+        $previous = [Environment]::GetEnvironmentVariable(
+            'MAUI_REPLICATION_DEVICE_UDID')
+        try {
+            $result = Invoke-CatalystProbeProductionPrewarm `
+                -Module $module `
+                -Deadline $deadline
+        } finally {
+            Remove-Module -ModuleInfo $module -Force
+        }
+
+        $result.DeadlineTimestamp |
+            Should -BeExactly $deadline.DeadlineTimestamp
+        $result.EnvironmentUdid |
+            Should -BeExactly 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $restored = [Environment]::GetEnvironmentVariable(
+            'MAUI_REPLICATION_DEVICE_UDID')
+        if ([string]::IsNullOrEmpty($previous)) {
+            $restored | Should -BeNullOrEmpty
+        } else {
+            $restored | Should -BeExactly $previous
+        }
+    }
+
+    It 'accepts only the exact expanded production prewarm log catalog' {
+        $root = Join-Path $TestDrive 'expanded-prewarm-logs'
+        $paths = @(
+            'prewarm-build-ios-simulator-no-restore.log'
+            'prewarm-build-maccatalyst-no-restore.log'
+            'prewarm-restore-dual-apple-graph.log'
+            'tool-restore.log'
+            'xharness-command-probe/xharness-help-tail.log'
+            'xharness-command-probe/xharness-help.log'
+            'xharness-preflight-child.log'
+            'xharness-preflight/xharness-help-tail.log'
+            'xharness-preflight/xharness-help.log'
+            'xharness-preflight/xharness-preflight.log'
+        )
+        foreach ($relativePath in $paths) {
+            $path = Join-Path $root $relativePath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $path) `
+                -Force | Out-Null
+            'bounded' | Set-Content -LiteralPath $path -Encoding utf8NoBOM
+        }
+
+        $logs = @(Get-CatalystProbeProductionPrewarmLogs -PrewarmRoot $root)
+
+        @($logs.name) | Should -Be $paths
+        @($logs.sha256 | Where-Object {
+                $_ -cnotmatch '^[0-9a-f]{64}$'
+            }) | Should -BeNullOrEmpty
+    }
+
+    It 'rejects a missing private tool restore log from production prewarm evidence' {
+        $root = Join-Path $TestDrive 'missing-tool-prewarm-log'
+        $paths = @(
+            'prewarm-build-ios-simulator-no-restore.log'
+            'prewarm-build-maccatalyst-no-restore.log'
+            'prewarm-restore-dual-apple-graph.log'
+            'xharness-command-probe/xharness-help-tail.log'
+            'xharness-command-probe/xharness-help.log'
+            'xharness-preflight-child.log'
+            'xharness-preflight/xharness-help-tail.log'
+            'xharness-preflight/xharness-help.log'
+            'xharness-preflight/xharness-preflight.log'
+        )
+        foreach ($relativePath in $paths) {
+            $path = Join-Path $root $relativePath
+            New-Item -ItemType Directory -Path (Split-Path -Parent $path) `
+                -Force | Out-Null
+            'bounded' | Set-Content -LiteralPath $path -Encoding utf8NoBOM
+        }
+
+        { Get-CatalystProbeProductionPrewarmLogs -PrewarmRoot $root } |
+            Should -Throw '*exact bounded command logs*'
     }
 
     It 'keeps each production composite on one fixed 480 second deadline' {
@@ -3371,8 +3490,21 @@ Describe 'Closed production composite diagnostic seam' {
         Mock Invoke-CatalystProbeProductionPrewarm {
             $prewarmRoot = Join-Path $output 'production-composite/prewarm'
             New-Item -ItemType Directory -Path $prewarmRoot -Force | Out-Null
-            foreach ($name in @('restore.log', 'ios.log', 'catalyst.log')) {
-                Set-Content -LiteralPath (Join-Path $prewarmRoot $name) `
+            foreach ($name in @(
+                    'prewarm-build-ios-simulator-no-restore.log',
+                    'prewarm-build-maccatalyst-no-restore.log',
+                    'prewarm-restore-dual-apple-graph.log',
+                    'tool-restore.log',
+                    'xharness-command-probe/xharness-help-tail.log',
+                    'xharness-command-probe/xharness-help.log',
+                    'xharness-preflight-child.log',
+                    'xharness-preflight/xharness-help-tail.log',
+                    'xharness-preflight/xharness-help.log',
+                    'xharness-preflight/xharness-preflight.log')) {
+                $path = Join-Path $prewarmRoot $name
+                New-Item -ItemType Directory -Path (Split-Path -Parent $path) `
+                    -Force | Out-Null
+                Set-Content -LiteralPath $path `
                     -Value 'bounded' -Encoding utf8NoBOM
             }
             [pscustomobject]@{
@@ -3463,6 +3595,9 @@ Describe 'Closed production composite diagnostic seam' {
         $result.baseline.primary.skipped | Should -Be 5
         $result.baseline.companion.passed | Should -Be 2
         $result.negative.companion.failed | Should -Be 2
+        $result.prewarm.privateToolRestore | Should -BeTrue
+        $result.prewarm.xharnessCommandPreflight | Should -BeTrue
+        @($result.prewarm.commandLogs) | Should -HaveCount 10
         $result.baseline.primary.rawXml[0].name | Should -BeExactly 'label.xml'
         $result.negative.companion.rawXml[0].name |
             Should -BeExactly 'catalyst.xml'

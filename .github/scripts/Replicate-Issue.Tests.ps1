@@ -163,6 +163,7 @@ BeforeAll {
         'Remove-ReplicationRuntimeCache',
         'Invoke-ReplicationTrustedRestore',
             'Invoke-ReplicationAppleCompanionPrewarm',
+            'Invoke-ReplicationFixedCatalystCompositePrewarm',
             'Assert-ReplicationAppleCompanionPrewarmRetained',
         'Invoke-ReplicationWindowsTwoPhaseRestore',
         'Get-ReplicationPlannedRestoreTargets',
@@ -233,6 +234,8 @@ BeforeAll {
         }, $true)
         Invoke-Expression $function.Extent.Text
     }
+    $script:RealInvokeReplicationTrustedRestore =
+    (Get-Command Invoke-ReplicationTrustedRestore).ScriptBlock
     # The selector and quality contract are shared with the clean validator.
     # Load only its function definitions: dot-sourcing the command-line script
     # would overwrite Pester's script-scope fixture variables such as repoRoot.
@@ -28126,16 +28129,19 @@ Describe 'Production Catalyst companion prewarm orchestration' {
                 ProjectPath = (Join-Path $TestDrive 'Controls.DeviceTests.csproj')
                 Commands = @(
                     [pscustomobject]@{
+                        LogName = 'prewarm-restore-dual-apple-graph.log'
                         Arguments = @(
                             'restore', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
                             '--force-evaluate')
                     },
                     [pscustomobject]@{
+                        LogName = 'prewarm-build-ios-simulator-no-restore.log'
                         Arguments = @(
                             'build', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
                             '--no-restore', '--framework', 'net10.0-ios')
                     },
                     [pscustomobject]@{
+                        LogName = 'prewarm-build-maccatalyst-no-restore.log'
                         Arguments = @(
                             'build', (Join-Path $TestDrive 'Controls.DeviceTests.csproj'),
                             '--no-restore', '--framework', 'net10.0-maccatalyst')
@@ -28155,13 +28161,19 @@ Describe 'Production Catalyst companion prewarm orchestration' {
         function Invoke-ReplicationTrustedRestore {
             param(
                 $Target, $AdditionalArguments, $Verb, $TimeoutSeconds,
-                $DeadlineTimestamp)
+                $DeadlineTimestamp, $FixedProbeResultLogPath)
             $script:prewarmCommands.Add([pscustomobject]@{
                     Target = $Target
                     Arguments = @($AdditionalArguments)
                     Verb = $Verb
                     TimeoutSeconds = $TimeoutSeconds
+                    DeadlineTimestamp = $DeadlineTimestamp
+                    FixedProbeResultLogPath = $FixedProbeResultLogPath
                 })
+            if (-not [string]::IsNullOrWhiteSpace($FixedProbeResultLogPath)) {
+                'bounded' | Set-Content -LiteralPath $FixedProbeResultLogPath `
+                    -Encoding utf8NoBOM
+            }
         }
         function Assert-ReplicationAppleCompanionAssets {
             param($RepositoryRoot, $ExpectedSha256)
@@ -28174,6 +28186,11 @@ Describe 'Production Catalyst companion prewarm orchestration' {
         $script:rejectRetainedAssets = $false
         Remove-Variable -Name AppleCompanionAssetsSha256 -Scope Script `
             -ErrorAction SilentlyContinue
+    }
+
+    AfterEach {
+        $script:FixedCatalystCompositeProbeLibraryOnly = $false
+        $script:RequirePreparedIosSimulator = $false
     }
 
     It 'prepares one dual graph and both no-restore builds under one bounded deadline' {
@@ -28265,6 +28282,355 @@ Describe 'Production Catalyst companion prewarm orchestration' {
 
         $script:prewarmCommands | Should -HaveCount 3
         $script:AppleCompanionAssetsSha256 | Should -BeNullOrEmpty
+    }
+
+    It 'restores pinned private tools and proves iOS XHarness before the dual-Apple graph' {
+        $root = Join-Path $TestDrive 'closed-production-prewarm'
+        $script:repoRoot = Join-Path $root 'repo'
+        $script:TrustedRoot = Join-Path $root 'trusted'
+        $script:trustedSkills = Join-Path $script:TrustedRoot 'skills'
+        $script:replicationRuntimeRoot = Join-Path $root 'runtime'
+        $script:replicationHome = Join-Path $script:replicationRuntimeRoot 'home'
+        $script:replicationGradleHome = Join-Path $script:replicationRuntimeRoot 'gradle'
+        $script:replicationDotnetHome = Join-Path $script:replicationRuntimeRoot 'dotnet'
+        $script:replicationNugetPackages = Join-Path $script:replicationRuntimeRoot 'nuget'
+        $script:replicationAndroidHome = Join-Path $script:replicationRuntimeRoot 'android'
+        $script:replicationCacheHome = Join-Path $script:replicationRuntimeRoot 'cache'
+        $script:Platform = 'ios'
+        $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $script:RequirePreparedIosSimulator = $true
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $outputRoot = Join-Path $root 'published'
+        $manifest = Join-Path $script:repoRoot '.config/dotnet-tools.json'
+        $runner = Join-Path $script:trustedSkills (
+            'run-device-tests/scripts/Run-DeviceTests.ps1')
+        New-Item -ItemType Directory -Path (
+            Split-Path -Parent $manifest), (
+            Split-Path -Parent $runner), $outputRoot -Force | Out-Null
+        '{}' | Set-Content -LiteralPath $manifest -Encoding utf8NoBOM
+        '# trusted runner' | Set-Content -LiteralPath $runner -Encoding utf8NoBOM
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $oldDeviceUdid = $env:MAUI_REPLICATION_DEVICE_UDID
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        $env:MAUI_REPLICATION_DEVICE_UDID = $script:DeviceUdid
+        $script:closedPrewarmOrder =
+        [Collections.Generic.List[string]]::new()
+        $script:closedPrewarmDeadlines =
+        [Collections.Generic.List[long]]::new()
+        $script:closedPrewarmEnvironments =
+        [Collections.Generic.List[object]]::new()
+        function Invoke-ReplicationTrustedRestore {
+            param(
+                $Target, $AdditionalArguments, $Verb, $TimeoutSeconds,
+                $DeadlineTimestamp, $FixedProbeResultLogPath)
+            $script:closedPrewarmOrder.Add([string]$Verb)
+            $script:closedPrewarmDeadlines.Add([long]$DeadlineTimestamp)
+            $script:closedPrewarmEnvironments.Add(
+                (Get-ReplicationRuntimeEnvironment))
+            if ($Verb -ceq 'tool-restore') {
+                $Target | Should -BeExactly $manifest
+                @($AdditionalArguments) | Should -BeNullOrEmpty
+            }
+            'bounded' | Set-Content -LiteralPath $FixedProbeResultLogPath `
+                -Encoding utf8NoBOM
+        }
+        function Invoke-LoggedChildProcess {
+            param(
+                $ScriptPath, $Arguments, $LogPath, $Description,
+                $TimeoutSeconds, $DeadlineTimestamp)
+            $script:closedPrewarmOrder.Add('xharness-preflight')
+            $script:closedPrewarmDeadlines.Add([long]$DeadlineTimestamp)
+            $script:closedPrewarmEnvironments.Add(
+                (Get-ReplicationRuntimeEnvironment))
+            $ScriptPath | Should -BeExactly $runner
+            @($Arguments) | Should -Be @(
+                '-Project', 'Controls',
+                '-Platform', 'ios',
+                '-RepositoryRoot', $script:repoRoot,
+                '-DeviceUdid', $script:DeviceUdid,
+                '-OutputDirectory', (Join-Path $outputRoot (
+                        'production-composite/prewarm')),
+                '-PreflightXHarnessOnly')
+            'bounded' | Set-Content -LiteralPath $LogPath -Encoding utf8NoBOM
+            foreach ($name in @(
+                    'production-composite/prewarm/xharness-command-probe/xharness-help.log',
+                    'production-composite/prewarm/xharness-command-probe/xharness-help-tail.log',
+                    'production-composite/prewarm/xharness-preflight/xharness-preflight.log',
+                    'production-composite/prewarm/xharness-preflight/xharness-help.log',
+                    'production-composite/prewarm/xharness-preflight/xharness-help-tail.log')) {
+                $runnerLogPath = Join-Path $outputRoot $name
+                New-Item -ItemType Directory -Path (
+                    Split-Path -Parent $runnerLogPath) -Force | Out-Null
+                'bounded' | Set-Content -LiteralPath (
+                    $runnerLogPath) -Encoding utf8NoBOM
+            }
+        }
+        function Get-ReplicationExecutionEnvironment {
+            param($Additional)
+            return $Additional
+        }
+        $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
+        (60L * [Diagnostics.Stopwatch]::Frequency)
+        try {
+            $assets = Invoke-ReplicationFixedCatalystCompositePrewarm `
+                -DeadlineTimestamp $deadline
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+            $env:MAUI_REPLICATION_DEVICE_UDID = $oldDeviceUdid
+        }
+
+        @($script:closedPrewarmOrder) | Should -Be @(
+            'tool-restore', 'xharness-preflight', 'restore', 'build', 'build')
+        @($script:closedPrewarmDeadlines | Select-Object -Unique) |
+            Should -Be @($deadline)
+        foreach ($environment in $script:closedPrewarmEnvironments) {
+            $environment.DOTNET_CLI_HOME |
+                Should -BeExactly $script:replicationDotnetHome
+            $environment.NUGET_PACKAGES |
+                Should -BeExactly $script:replicationNugetPackages
+        }
+        $assets.AssetsSha256 | Should -BeExactly $script:prewarmDigest
+    }
+
+    It 'stops before XHarness and graph work when the private tool restore fails' {
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:Platform = 'ios'
+        $script:RequirePreparedIosSimulator = $true
+        $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $script:repoRoot = Join-Path $TestDrive 'tool-failure/repo'
+        $script:TrustedRoot = Join-Path $TestDrive 'tool-failure/trusted'
+        $script:trustedSkills = Join-Path $script:TrustedRoot 'skills'
+        $outputRoot = Join-Path $TestDrive 'tool-failure/output'
+        foreach ($path in @(
+                (Join-Path $script:repoRoot '.config'),
+                (Join-Path $script:trustedSkills 'run-device-tests/scripts'),
+                $outputRoot)) {
+            New-Item -ItemType Directory -Path $path -Force | Out-Null
+        }
+        '{}' | Set-Content -LiteralPath (
+            Join-Path $script:repoRoot '.config/dotnet-tools.json')
+        '# trusted runner' | Set-Content -LiteralPath (
+            Join-Path $script:trustedSkills (
+                'run-device-tests/scripts/Run-DeviceTests.ps1'))
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $oldDeviceUdid = $env:MAUI_REPLICATION_DEVICE_UDID
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        $env:MAUI_REPLICATION_DEVICE_UDID = $script:DeviceUdid
+        function Invoke-LoggedChildProcess {}
+        Mock Invoke-ReplicationTrustedRestore { throw 'private tool restore failed' }
+        Mock Invoke-LoggedChildProcess {}
+        Mock Invoke-ReplicationAppleCompanionPrewarm {}
+        try {
+            {
+                Invoke-ReplicationFixedCatalystCompositePrewarm `
+                    -DeadlineTimestamp (
+                    [Diagnostics.Stopwatch]::GetTimestamp() +
+                    (60L * [Diagnostics.Stopwatch]::Frequency))
+            } | Should -Throw '*private tool restore failed*'
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+            $env:MAUI_REPLICATION_DEVICE_UDID = $oldDeviceUdid
+        }
+        Should -Invoke Invoke-LoggedChildProcess -Times 0 -Exactly
+        Should -Invoke Invoke-ReplicationAppleCompanionPrewarm -Times 0 -Exactly
+    }
+
+    It 'stops before the dual-Apple graph when command-only XHarness proof fails' {
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:Platform = 'ios'
+        $script:RequirePreparedIosSimulator = $true
+        $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $script:repoRoot = Join-Path $TestDrive 'help-failure/repo'
+        $script:TrustedRoot = Join-Path $TestDrive 'help-failure/trusted'
+        $script:trustedSkills = Join-Path $script:TrustedRoot 'skills'
+        $outputRoot = Join-Path $TestDrive 'help-failure/output'
+        foreach ($path in @(
+                (Join-Path $script:repoRoot '.config'),
+                (Join-Path $script:trustedSkills 'run-device-tests/scripts'),
+                $outputRoot)) {
+            New-Item -ItemType Directory -Path $path -Force | Out-Null
+        }
+        '{}' | Set-Content -LiteralPath (
+            Join-Path $script:repoRoot '.config/dotnet-tools.json')
+        '# trusted runner' | Set-Content -LiteralPath (
+            Join-Path $script:trustedSkills (
+                'run-device-tests/scripts/Run-DeviceTests.ps1'))
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $oldDeviceUdid = $env:MAUI_REPLICATION_DEVICE_UDID
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        $env:MAUI_REPLICATION_DEVICE_UDID = $script:DeviceUdid
+        function Invoke-LoggedChildProcess {}
+        Mock Invoke-ReplicationTrustedRestore {}
+        Mock Invoke-LoggedChildProcess { throw 'XHarness help command failed' }
+        Mock Invoke-ReplicationAppleCompanionPrewarm {}
+        try {
+            {
+                Invoke-ReplicationFixedCatalystCompositePrewarm `
+                    -DeadlineTimestamp (
+                    [Diagnostics.Stopwatch]::GetTimestamp() +
+                    (60L * [Diagnostics.Stopwatch]::Frequency))
+            } | Should -Throw '*XHarness help command failed*'
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+            $env:MAUI_REPLICATION_DEVICE_UDID = $oldDeviceUdid
+        }
+        Should -Invoke Invoke-ReplicationTrustedRestore -Times 1 -Exactly
+        Should -Invoke Invoke-LoggedChildProcess -Times 1 -Exactly
+        Should -Invoke Invoke-ReplicationAppleCompanionPrewarm -Times 0 -Exactly
+        $body = [regex]::Match(
+            $script:Source,
+            '(?ms)^function Invoke-ReplicationFixedCatalystCompositePrewarm\b.*?^}').
+        Value
+        $body | Should -Not -BeNullOrEmpty
+        $body | Should -Not -Match 'Start-Emulator|downloadPlatform|runtime\s+add'
+    }
+
+    It 'validates a closed tool log path before starting the restore process' {
+        $root = Join-Path $TestDrive 'tool-log-prevalidation'
+        $script:repoRoot = Join-Path $root 'repo'
+        $manifest = Join-Path $script:repoRoot '.config/dotnet-tools.json'
+        $outputRoot = Join-Path $root 'published'
+        New-Item -ItemType Directory -Path (
+            Split-Path -Parent $manifest), $outputRoot -Force | Out-Null
+        '{}' | Set-Content -LiteralPath $manifest -Encoding utf8NoBOM
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        $script:boundedRestoreCalls = 0
+        function Assert-InitialReplicationWorktree { param($DeadlineTimestamp) }
+        function Assert-ReplicationTrustedTree { param($Context) }
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            & $ScriptBlock
+        }
+        function Invoke-BoundedProcess {
+            $script:boundedRestoreCalls++
+            [pscustomobject]@{
+                ExitCode = 0
+                TimedOut = $false
+                Output = @('restored')
+            }
+        }
+        try {
+            {
+                & $script:RealInvokeReplicationTrustedRestore `
+                    -Target $manifest `
+                    -Verb tool-restore `
+                    -FixedProbeResultLogPath (
+                    Join-Path $root 'outside/tool-restore.log')
+            } | Should -Throw '*escaped its fixed published root*'
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+        }
+        $script:boundedRestoreCalls | Should -Be 0
+    }
+
+    It 'routes closed tool restore evidence without requiring ordinary artifact directories' {
+        $root = Join-Path $TestDrive 'closed-tool-log'
+        $script:repoRoot = Join-Path $root 'repo'
+        $manifest = Join-Path $script:repoRoot '.config/dotnet-tools.json'
+        $outputRoot = Join-Path $root 'published'
+        $prewarmRoot = Join-Path $outputRoot 'production-composite/prewarm'
+        New-Item -ItemType Directory -Path (
+            Split-Path -Parent $manifest), $prewarmRoot -Force | Out-Null
+        '{}' | Set-Content -LiteralPath $manifest -Encoding utf8NoBOM
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:allSecretNames = @()
+        $script:sandboxArtifactDir = Join-Path $root 'missing-ordinary-artifacts'
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        function Assert-InitialReplicationWorktree { param($DeadlineTimestamp) }
+        function Assert-ReplicationTrustedTree { param($Context) }
+        function Get-ReplicationRuntimeEnvironment { return @{ PATH = '/usr/bin' } }
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            & $ScriptBlock
+        }
+        function Invoke-BoundedProcess {
+            [pscustomobject]@{
+                ExitCode = 0
+                TimedOut = $false
+                Output = @('restored fixed XHarness tool')
+            }
+        }
+        $fixedLog = Join-Path $prewarmRoot 'tool-restore.log'
+        try {
+            & $script:RealInvokeReplicationTrustedRestore `
+                -Target $manifest `
+                -Verb tool-restore `
+                -FixedProbeResultLogPath $fixedLog
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+        }
+
+        Get-Content -LiteralPath $fixedLog -Raw |
+            Should -Match 'restored fixed XHarness tool'
+        Test-Path -LiteralPath $script:sandboxArtifactDir |
+            Should -BeFalse
+    }
+
+    It 'retains bounded closed tool failure evidence before rejecting prewarm' {
+        $root = Join-Path $TestDrive 'closed-tool-failure-log'
+        $script:repoRoot = Join-Path $root 'repo'
+        $manifest = Join-Path $script:repoRoot '.config/dotnet-tools.json'
+        $outputRoot = Join-Path $root 'published'
+        $prewarmRoot = Join-Path $outputRoot 'production-composite/prewarm'
+        New-Item -ItemType Directory -Path (
+            Split-Path -Parent $manifest), $prewarmRoot -Force | Out-Null
+        '{}' | Set-Content -LiteralPath $manifest -Encoding utf8NoBOM
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:allSecretNames = @()
+        $script:sandboxArtifactDir = Join-Path $root 'missing-ordinary-artifacts'
+        $oldOutputRoot = $env:CATALYST_PROBE_OUTPUT_ROOT
+        $env:CATALYST_PROBE_OUTPUT_ROOT = $outputRoot
+        function Assert-InitialReplicationWorktree { param($DeadlineTimestamp) }
+        function Assert-ReplicationTrustedTree { param($Context) }
+        function Get-ReplicationRuntimeEnvironment { return @{ PATH = '/usr/bin' } }
+        function Invoke-WithoutReplicationSecrets {
+            param($Names, $ScriptBlock)
+            & $ScriptBlock
+        }
+        function Invoke-BoundedProcess {
+            [pscustomobject]@{
+                ExitCode = 1
+                TimedOut = $false
+                Output = @('local XHarness resolver unavailable')
+            }
+        }
+        function Get-ReplicationFailureDetails {
+            param($Output)
+            return (@($Output) -join "`n")
+        }
+        $fixedLog = Join-Path $prewarmRoot 'tool-restore.log'
+        try {
+            {
+                & $script:RealInvokeReplicationTrustedRestore `
+                    -Target $manifest `
+                    -Verb tool-restore `
+                    -FixedProbeResultLogPath $fixedLog
+            } | Should -Throw '*Trusted restore failed*'
+        } finally {
+            $env:CATALYST_PROBE_OUTPUT_ROOT = $oldOutputRoot
+        }
+
+        Get-Content -LiteralPath $fixedLog -Raw |
+            Should -Match 'exit=1; timedOut=False'
+        Get-Content -LiteralPath $fixedLog -Raw |
+            Should -Match 'local XHarness resolver unavailable'
+        Test-Path -LiteralPath $script:sandboxArtifactDir |
+            Should -BeFalse
+    }
+
+    It 'rejects an external Apple prewarm deadline outside the closed diagnostic' {
+        $script:FixedCatalystCompositeProbeLibraryOnly = $false
+        {
+            Invoke-ReplicationAppleCompanionPrewarm `
+                -TimeoutSeconds 60 `
+                -DeadlineTimestamp (
+                [Diagnostics.Stopwatch]::GetTimestamp() +
+                (60L * [Diagnostics.Stopwatch]::Frequency))
+        } | Should -Throw '*external dual-Apple prewarm deadline is reserved*'
+        $script:prewarmCommands | Should -HaveCount 0
     }
 
     It 'prewarms before generated source and validates retention instead of restoring again' {

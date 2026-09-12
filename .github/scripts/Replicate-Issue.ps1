@@ -9427,6 +9427,33 @@ function Invoke-ReplicationTrustedRestore {
     if (-not (Test-Path -LiteralPath $fullTarget -PathType Leaf)) {
         throw "Trusted restore target does not exist: $fullTarget"
     }
+    $fixedProbeLogPath = ''
+    if (-not [string]::IsNullOrWhiteSpace($FixedProbeResultLogPath)) {
+        if (-not $FixedCatalystCompositeProbeLibraryOnly) {
+            throw 'Only the closed production-composite diagnostic may retain a trusted prewarm log.'
+        }
+        $fixedProbeLogPath = [IO.Path]::GetFullPath($FixedProbeResultLogPath)
+        $probeOutputRoot =
+        [IO.Path]::GetFullPath([string]$env:CATALYST_PROBE_OUTPUT_ROOT)
+        if (-not (Test-PathInsideRoot `
+                    -Path $fixedProbeLogPath `
+                    -Root $probeOutputRoot) -or
+            (Test-Path -LiteralPath $fixedProbeLogPath)) {
+            throw (
+                'The production-composite prewarm log escaped its fixed ' +
+                'published root or would overwrite existing evidence.')
+        }
+        $fixedProbeLogParent = Split-Path -Parent $fixedProbeLogPath
+        $parentItem = Get-Item -LiteralPath $fixedProbeLogParent `
+            -Force -ErrorAction Stop
+        if (-not $parentItem.PSIsContainer -or
+            $parentItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The production-composite prewarm log parent is not a regular directory.'
+        }
+        Assert-NoReparsePointInParentPath `
+            -Path $fixedProbeLogPath `
+            -Root $probeOutputRoot
+    }
 
     $restoreArguments = @($Verb, $fullTarget) + @($AdditionalArguments)
     if ($Verb -eq 'tool-restore') {
@@ -9435,7 +9462,12 @@ function Invoke-ReplicationTrustedRestore {
         if ($fullTarget -cne $toolManifest -or $AdditionalArguments.Count -ne 0) {
             throw 'Trusted tool restore requires the baseline manifest without additional arguments.'
         }
-        Assert-InitialReplicationWorktree
+        if ($DeadlineTimestamp -gt 0) {
+            Assert-InitialReplicationWorktree `
+                -DeadlineTimestamp $DeadlineTimestamp
+        } else {
+            Assert-InitialReplicationWorktree
+        }
         $restoreArguments = @('tool', 'restore', '--tool-manifest', $toolManifest)
     }
     $null = Assert-ReplicationTrustedTree -Context "before trusted restore of $(Split-Path -Leaf $fullTarget)"
@@ -9458,7 +9490,16 @@ function Invoke-ReplicationTrustedRestore {
     } finally {
         $null = Assert-ReplicationTrustedTree -Context "after trusted restore of $(Split-Path -Leaf $fullTarget)"
     }
-    if ($Verb -eq 'tool-restore') {
+    $boundedLog = @(
+        "exit=$([int]$result.ExitCode); timedOut=$([bool]$result.TimedOut)"
+        ConvertTo-ReplicationSafeLog `
+            -Value (@($result.Output) -join "`n") `
+            -MaximumLength 65536
+    )
+    if (-not [string]::IsNullOrWhiteSpace($fixedProbeLogPath)) {
+        $boundedLog |
+            Set-Content -LiteralPath $fixedProbeLogPath -Encoding utf8NoBOM
+    } elseif ($Verb -eq 'tool-restore') {
         @(
             "exit=$([int]$result.ExitCode); timedOut=$([bool]$result.TimedOut)"
             ConvertTo-ReplicationSafeLog -Value (@($result.Output) -join "`n") -MaximumLength 65536
@@ -9471,25 +9512,6 @@ function Invoke-ReplicationTrustedRestore {
             "(exit $([int]$result.ExitCode), timedOut=$([bool]$result.TimedOut)). " +
             $details)
     }
-    if (-not [string]::IsNullOrWhiteSpace($FixedProbeResultLogPath)) {
-        if (-not $FixedCatalystCompositeProbeLibraryOnly) {
-            throw 'Only the closed production-composite diagnostic may retain a trusted prewarm log.'
-        }
-        $fullLogPath = [IO.Path]::GetFullPath($FixedProbeResultLogPath)
-        $probeOutputRoot =
-        [IO.Path]::GetFullPath([string]$env:CATALYST_PROBE_OUTPUT_ROOT)
-        if (-not (Test-PathInsideRoot -Path $fullLogPath -Root $probeOutputRoot)) {
-            throw 'The production-composite prewarm log escaped its fixed published root.'
-        }
-        New-Item -ItemType Directory -Path (Split-Path -Parent $fullLogPath) `
-            -Force | Out-Null
-        @(
-            "exit=$([int]$result.ExitCode); timedOut=$([bool]$result.TimedOut)"
-            ConvertTo-ReplicationSafeLog `
-                -Value (@($result.Output) -join "`n") `
-                -MaximumLength 65536
-        ) | Set-Content -LiteralPath $fullLogPath -Encoding utf8NoBOM
-    }
     if ($DeadlineTimestamp -gt 0) {
         $null = Get-ReplicationRegressionSlotRemainingSeconds `
             -DeadlineTimestamp $DeadlineTimestamp `
@@ -9499,7 +9521,10 @@ function Invoke-ReplicationTrustedRestore {
 
 function Invoke-ReplicationAppleCompanionPrewarm {
     [CmdletBinding()]
-    param([ValidateRange(1, 600)][int]$TimeoutSeconds = 600)
+    param(
+        [ValidateRange(1, 600)][int]$TimeoutSeconds = 600,
+        [long]$DeadlineTimestamp = 0
+    )
 
     $script:AppleCompanionAssetsSha256 = ''
     $fixedProbeMode = [bool](Get-Variable `
@@ -9507,8 +9532,20 @@ function Invoke-ReplicationAppleCompanionPrewarm {
             -Scope Script `
             -ValueOnly `
             -ErrorAction SilentlyContinue)
-    $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
-    ([long]$TimeoutSeconds * [Diagnostics.Stopwatch]::Frequency)
+    if ($DeadlineTimestamp -gt 0 -and -not $fixedProbeMode) {
+        throw (
+            'An external dual-Apple prewarm deadline is reserved for the ' +
+            'closed production-composite diagnostic.')
+    }
+    $deadline = if ($DeadlineTimestamp -gt 0) {
+        $null = Get-ReplicationRegressionSlotRemainingSeconds `
+            -DeadlineTimestamp $DeadlineTimestamp `
+            -Description 'dual-Apple companion prewarm'
+        $DeadlineTimestamp
+    } else {
+        [Diagnostics.Stopwatch]::GetTimestamp() +
+        ([long]$TimeoutSeconds * [Diagnostics.Stopwatch]::Frequency)
+    }
     Assert-InitialReplicationWorktree -DeadlineTimestamp $deadline
     $plan = Get-ReplicationAppleCompanionPrewarmPlan `
         -RepositoryRoot $repoRoot `
@@ -9577,6 +9614,93 @@ function Invoke-ReplicationAppleCompanionPrewarm {
         -Description 'dual-Apple companion prewarm'
     $script:AppleCompanionAssetsSha256 = [string]$assets.AssetsSha256
     return $assets
+}
+
+function Invoke-ReplicationFixedCatalystCompositePrewarm {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][long]$DeadlineTimestamp)
+
+    if (-not $FixedCatalystCompositeProbeLibraryOnly -or
+        $Platform -cne 'ios' -or
+        -not $RequirePreparedIosSimulator -or
+        $DeviceUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$' -or
+        $env:MAUI_REPLICATION_DEVICE_UDID -cne $DeviceUdid) {
+        throw (
+            'The closed production-composite prewarm requires its exact ' +
+            'prepared iOS simulator binding.')
+    }
+    $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
+        -DeadlineTimestamp $DeadlineTimestamp `
+        -Description 'closed production-composite prewarm'
+    if ($remaining -gt 600) {
+        throw 'The closed production-composite prewarm cannot exceed 600 seconds.'
+    }
+
+    $outputRoot =
+    [IO.Path]::GetFullPath([string]$env:CATALYST_PROBE_OUTPUT_ROOT)
+    $outputItem = Get-Item -LiteralPath $outputRoot -Force -ErrorAction Stop
+    if (-not $outputItem.PSIsContainer -or
+        $outputItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'The closed production-composite output root is not a regular directory.'
+    }
+    $prewarmRoot = Join-Path $outputRoot 'production-composite/prewarm'
+    if (Test-Path -LiteralPath $prewarmRoot) {
+        throw 'The closed production-composite prewarm requires a fresh evidence root.'
+    }
+    $toolManifest = [IO.Path]::GetFullPath(
+        (Join-Path $repoRoot '.config/dotnet-tools.json'))
+    $runnerPath = [IO.Path]::GetFullPath(
+        (Join-Path $trustedSkills 'run-device-tests/scripts/Run-DeviceTests.ps1'))
+    foreach ($trustedFile in @($toolManifest, $runnerPath)) {
+        $item = Get-Item -LiteralPath $trustedFile -Force -ErrorAction Stop
+        if ($item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The closed production-composite prewarm requires regular trusted inputs.'
+        }
+    }
+    Assert-InitialReplicationWorktree -DeadlineTimestamp $DeadlineTimestamp
+    $null = Assert-ReplicationTrustedTree `
+        -Context 'before closed production-composite tool prewarm'
+    New-Item -ItemType Directory -Path $prewarmRoot -Force | Out-Null
+    Assert-NoReparsePointInParentPath `
+        -Path (Join-Path $prewarmRoot 'tool-restore.log') `
+        -Root $outputRoot
+
+    $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
+        -DeadlineTimestamp $DeadlineTimestamp `
+        -Description 'closed production-composite tool restore'
+    Invoke-ReplicationTrustedRestore `
+        -Target $toolManifest `
+        -Verb 'tool-restore' `
+        -TimeoutSeconds $remaining `
+        -DeadlineTimestamp $DeadlineTimestamp `
+        -FixedProbeResultLogPath (Join-Path $prewarmRoot 'tool-restore.log')
+
+    $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
+        -DeadlineTimestamp $DeadlineTimestamp `
+        -Description 'closed production-composite XHarness preflight'
+    Invoke-LoggedChildProcess `
+        -ScriptPath $runnerPath `
+        -Arguments @(
+        '-Project', 'Controls',
+        '-Platform', 'ios',
+        '-RepositoryRoot', $repoRoot,
+        '-DeviceUdid', $DeviceUdid,
+        '-OutputDirectory', $prewarmRoot,
+        '-PreflightXHarnessOnly'
+    ) `
+        -LogPath (Join-Path $prewarmRoot 'xharness-preflight-child.log') `
+        -Description 'Preflighting fixed production-composite iOS XHarness' `
+        -TimeoutSeconds $remaining `
+        -DeadlineTimestamp $DeadlineTimestamp
+
+    $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
+        -DeadlineTimestamp $DeadlineTimestamp `
+        -Description 'closed production-composite dual-Apple graph'
+    return Invoke-ReplicationAppleCompanionPrewarm `
+        -TimeoutSeconds $remaining `
+        -DeadlineTimestamp $DeadlineTimestamp
 }
 
 function Assert-ReplicationAppleCompanionPrewarmRetained {

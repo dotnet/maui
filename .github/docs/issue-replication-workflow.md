@@ -91,11 +91,15 @@ Trusted baseline prewarming precedes the fixture/candidate bytes. Native runs
 retain matching Catalyst boundaries, signed App Sandbox entitlements, live
 network denial and exact class isolation.
 
-The fixed diagnostic prewarms the Controls project for both iOS Simulator arm64
-and Mac Catalyst arm64. One graph restore retains both framework/RID pairs,
+The fixed diagnostic restores the pinned baseline CLI tools into its private
+execution cache and proves XHarness command-only resolution before prewarming
+the Controls project for both iOS Simulator arm64 and Mac Catalyst arm64. It
+does not rely on tools restored into the pipeline bootstrap's different cache.
+One graph restore retains both framework/RID pairs,
 followed by two Debug `--no-restore` builds with no intervening restore. Missing
 targets or a changed assets digest fail readiness. Restore, builds, validation
-and cleanup share the existing 600-second prewarm allowance. This proves baseline
+and cleanup, including private tool restore and command-only preflight, share the
+existing 600-second prewarm deadline without restarting it. This proves baseline
 build readiness only, not iOS test execution or production companion activation.
 
 Trusted setup and verification can regenerate tracked build output. The fixed
