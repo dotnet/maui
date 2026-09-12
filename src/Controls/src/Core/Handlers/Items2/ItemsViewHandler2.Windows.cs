@@ -782,7 +782,10 @@ public abstract class ItemsViewHandler2<TItemsView> : ViewHandler<TItemsView, WI
 		bool noTemplate = ItemsView.ItemTemplate is null;
 		bool isMeasureAllItems = ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureAllItems;
 
-		layout.ItemsStretch = (noTemplate && isMeasureAllItems)
+		bool isHorizontalLayout = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
+		// Uniform stretching gives an untemplated horizontal grid enough width to scroll,
+		// but on a vertical grid it also inflates row height and creates large blank gaps.
+		layout.ItemsStretch = (isHorizontalLayout && noTemplate && isMeasureAllItems)
 			? UniformGridLayoutItemsStretch.Uniform
 			: UniformGridLayoutItemsStretch.Fill;
 		layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
