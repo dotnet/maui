@@ -126,9 +126,13 @@ must be rejected specifically for the demonstrated Catalyst regression; missing
 XML, wrong identities, environment errors, unexpected negative passes or cleanup
 failures remain inconclusive. Each complete primary-plus-companion cycle keeps
 the existing eight-minute slot. Simulator preparation and module loading consume
-the existing coordination allowance within the task-entry deadline. Cleanup and
-result writing remain bounded; no provisioning retry or production budget is
-added. Private runtime/package caches stay outside published artifact paths.
+the existing 180-second coordination allowance within the task-entry deadline.
+Read-only runtime/device discovery shares that same deadline, including process
+termination, instead of receiving a separate short execution cap. Child logs
+retain exit status, timeout status, effective allocation and timestamps even when
+the command emits no output. Cleanup and result writing remain bounded; no
+provisioning retry or production budget is added. Private runtime/package caches
+stay outside published artifact paths.
 
 Production functions are loaded through a closed private-module library seam
 bound to the fixed Azure identity, source revision, baseline and report-only

@@ -823,20 +823,28 @@ function Invoke-CatalystProbeBoundedProcess {
         }
         $stdout = $stdoutTask.GetAwaiter().GetResult()
         $stderr = $stderrTask.GetAwaiter().GetResult()
+        $exitCode = if ($timedOut) { 124 } else { $process.ExitCode }
+        $completed = [DateTimeOffset]::UtcNow
         $combined = ConvertTo-CatalystProbeLogData -Text (
+            "exitCode: $exitCode`ntimedOut: $timedOut`n" +
+            "requestedTimeoutSeconds: $TimeoutSeconds`n" +
+            "effectiveTimeoutSeconds: $effectiveTotalSeconds`n" +
+            "effectiveProcessSeconds: $effectiveProcessSeconds`n" +
+            "startedUtc: $($started.ToString('O'))`n" +
+            "completedUtc: $($completed.ToString('O'))`n" +
             "stdout:`n$stdout`nstderr:`n$stderr")
         [IO.File]::WriteAllText(
             [IO.Path]::GetFullPath($LogPath),
             $combined,
             [Text.UTF8Encoding]::new($false))
         return [pscustomobject]@{
-            ExitCode = if ($timedOut) { 124 } else { $process.ExitCode }
+            ExitCode = $exitCode
             TimedOut = $timedOut
             RequestedTimeoutSeconds = $TimeoutSeconds
             EffectiveTimeoutSeconds = $effectiveTotalSeconds
             EffectiveProcessSeconds = $effectiveProcessSeconds
             StartedUtc = $started.ToString('O')
-            CompletedUtc = [DateTimeOffset]::UtcNow.ToString('O')
+            CompletedUtc = $completed.ToString('O')
             Stdout = $stdout
             Stderr = $stderr
             LogSha256 = Get-CatalystProbeFileSha256 -Path $LogPath
@@ -2155,16 +2163,19 @@ function Invoke-CatalystProbePrepareIosSimulator {
         $developer.Stdout.Trim() -cne $expectedDeveloper) {
         throw 'Production composite iOS preparation is not using fixed Xcode 26.0.1.'
     }
+    # Discovery can initialize CoreSimulator. All reads spend the same existing
+    # coordination allowance, including process termination, without retries.
     $runtimes = Invoke-CatalystProbeBoundedProcess `
         -FileName '/usr/bin/xcrun' `
         -ArgumentList @('simctl', 'list', 'runtimes', '--json') `
         -WorkingDirectory $Context.RepositoryRoot `
         -Environment $Context.RuntimeEnvironment `
-        -TimeoutSeconds 20 `
+        -TimeoutSeconds $script:CatalystProbeCoordinationBudgetSeconds `
         -TaskDeadline $CoordinationDeadline `
         -LogPath (Join-Path $Context.LogDirectory 'ios-installed-runtimes.log')
     if ($runtimes.TimedOut -or $runtimes.ExitCode -ne 0) {
-        throw 'Production composite iOS preparation could not inspect installed runtimes.'
+        throw ("Production composite iOS preparation could not inspect installed runtimes " +
+            "(exitCode=$($runtimes.ExitCode), timedOut=$($runtimes.TimedOut)).")
     }
     $runtimeDocument = $runtimes.Stdout | ConvertFrom-Json -Depth 8
     $installedIos = @($runtimeDocument.runtimes | Where-Object {
@@ -2181,11 +2192,12 @@ function Invoke-CatalystProbePrepareIosSimulator {
         -ArgumentList @('simctl', 'list', 'devicetypes', '--json') `
         -WorkingDirectory $Context.RepositoryRoot `
         -Environment $Context.RuntimeEnvironment `
-        -TimeoutSeconds 20 `
+        -TimeoutSeconds $script:CatalystProbeCoordinationBudgetSeconds `
         -TaskDeadline $CoordinationDeadline `
         -LogPath (Join-Path $Context.LogDirectory 'ios-installed-devicetypes.log')
     if ($deviceTypes.TimedOut -or $deviceTypes.ExitCode -ne 0) {
-        throw 'Production composite iOS preparation could not inspect installed device types.'
+        throw ("Production composite iOS preparation could not inspect installed device types " +
+            "(exitCode=$($deviceTypes.ExitCode), timedOut=$($deviceTypes.TimedOut)).")
     }
     $deviceTypeDocument = $deviceTypes.Stdout | ConvertFrom-Json -Depth 8
     $matchingTypes = @($deviceTypeDocument.devicetypes | Where-Object {
@@ -2202,11 +2214,12 @@ function Invoke-CatalystProbePrepareIosSimulator {
         -ArgumentList @('simctl', 'list', 'devices', '--json') `
         -WorkingDirectory $Context.RepositoryRoot `
         -Environment $Context.RuntimeEnvironment `
-        -TimeoutSeconds 20 `
+        -TimeoutSeconds $script:CatalystProbeCoordinationBudgetSeconds `
         -TaskDeadline $CoordinationDeadline `
         -LogPath (Join-Path $Context.LogDirectory 'ios-installed-devices.log')
     if ($devices.TimedOut -or $devices.ExitCode -ne 0) {
-        throw 'Production composite iOS preparation could not inspect installed devices.'
+        throw ("Production composite iOS preparation could not inspect installed devices " +
+            "(exitCode=$($devices.ExitCode), timedOut=$($devices.TimedOut)).")
     }
     $deviceDocument = $devices.Stdout | ConvertFrom-Json -Depth 12
     $runtimeProperty = $deviceDocument.devices.PSObject.Properties[
