@@ -92,7 +92,7 @@ Teardown(context =>
 	{
 		try
 		{
-			if (runIssue38080)
+			if (runIssue38080 && !string.IsNullOrEmpty(DEVICE_UDID))
 				CaptureIssue38080Diagnostics();
 		}
 		catch (Exception ex)
@@ -656,10 +656,10 @@ void CaptureIssue38080Diagnostics()
 		return;
 	}
 
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "shell", "getprop");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "shell", "dumpsys", "webviewupdate");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "shell", "dumpsys", "SurfaceFlinger");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "logcat", "-d");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "-s", DEVICE_UDID, "shell", "getprop");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "-s", DEVICE_UDID, "shell", "dumpsys", "webviewupdate");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "-s", DEVICE_UDID, "shell", "dumpsys", "SurfaceFlinger");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "-s", DEVICE_UDID, "logcat", "-d");
 
 	var tombstones = outputDirectory.Combine("tombstones");
 	EnsureDirectoryExists(tombstones);
@@ -667,6 +667,8 @@ void CaptureIssue38080Diagnostics()
 		adb,
 		outputDirectory,
 		"tombstone-pull.txt",
+		"-s",
+		DEVICE_UDID,
 		"pull",
 		"/data/tombstones",
 		tombstones.FullPath);
