@@ -15,6 +15,7 @@ parameters:
   testConfigurationArgs: ''
   skipProvisioning: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  runIssue38080: false
 
 steps:
 - task: DownloadPipelineArtifact@2
@@ -80,6 +81,18 @@ steps:
     ${{ if eq(parameters.platform, 'catalyst') }}:
       openSslArgs: '' # Do not use legacy openssl for Catalyst builds
 
+- ${{ if eq(parameters.runIssue38080, true) }}:
+  - bash: |
+      set -euo pipefail
+      mkdir -p "$(LogDirectory)"
+      avdmanager list device > "$(LogDirectory)/android-device-definitions.txt"
+      if ! grep -Eq 'id: [0-9]+ or "pixel_8a"' "$(LogDirectory)/android-device-definitions.txt"; then
+        echo "Required Android device definition pixel_8a is unavailable."
+        cat "$(LogDirectory)/android-device-definitions.txt"
+        exit 1
+      fi
+    displayName: Verify Pixel 8a device definition
+
 - task: PowerShell@2
   condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
   inputs:
@@ -138,12 +151,21 @@ steps:
 
     $testFilter = ""
     $testConfigrationArgs = "${{ parameters.testConfigurationArgs }}"
+    $runIssue38080 = "${{ parameters.runIssue38080 }}" -eq "true"
 
-    "${{ parameters.testFilter }}".Split(",") | ForEach {
-      $testFilter += "TestCategory=" + $_ + "|"
+    if ($runIssue38080) {
+      if ("${{ parameters.testFilter }}") {
+        throw "runIssue38080 cannot be combined with the category testFilter parameter."
+      }
+
+      $testFilter = "FullyQualifiedName=Microsoft.Maui.TestCases.Tests.Issues.Issue38080.FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash"
+    } else {
+      "${{ parameters.testFilter }}".Split(",") | ForEach {
+        $testFilter += "TestCategory=" + $_ + "|"
+      }
+
+      $testFilter = $testFilter.TrimEnd("|")
     }
-
-    $testFilter = $testFilter.TrimEnd("|")
 
     # Cake does not allow empty parameters, so check if our filter is empty before adding it
     if ($testConfigrationArgs) {
@@ -166,6 +188,20 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+
+- ${{ if eq(parameters.runIssue38080, true) }}:
+  - bash: |
+      set +e
+      mkdir -p "$(LogDirectory)/issue38080"
+      adb shell getprop > "$(LogDirectory)/issue38080/getprop.txt" 2>&1
+      adb shell dumpsys webviewupdate > "$(LogDirectory)/issue38080/webview-provider.txt" 2>&1
+      adb shell dumpsys SurfaceFlinger > "$(LogDirectory)/issue38080/surfaceflinger.txt" 2>&1
+      adb logcat -d > "$(LogDirectory)/issue38080/logcat.txt" 2>&1
+      adb pull /data/tombstones "$(LogDirectory)/issue38080/tombstones" \
+        > "$(LogDirectory)/issue38080/tombstone-pull.txt" 2>&1
+      exit 0
+    displayName: Capture Issue 38080 Android diagnostics
+    condition: always()
 
 - bash: |
     cat ${BASH_SOURCE[0]}

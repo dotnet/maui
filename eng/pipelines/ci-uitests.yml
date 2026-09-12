@@ -64,6 +64,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: RunIssue38080
+    displayName: 'Run only the Android WebView overscroll regression on API 36'
+    type: boolean
+    default: false
+
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -148,41 +153,94 @@ parameters:
 
 stages:
 
-  - template: common/ui-tests.yml
-    parameters:
-      # Select pools based on pipeline - internal vs public
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        androidPool: ${{ parameters.androidPoolInternal }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
-        iosPool: ${{ parameters.iosPoolInternal }}
-        windowsPool: ${{ parameters.windowsPoolInternal }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
-        macosPool: ${{ parameters.macosPoolInternal }}
-      ${{ else }}:
-        androidPool: ${{ parameters.androidPoolPublic }}
-        androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
-        iosPool: ${{ parameters.iosPoolPublic }}
-        windowsPool: ${{ parameters.windowsPoolPublic }}
-        windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
-        macosPool: ${{ parameters.macosPoolPublic }}
-      # BuildNativeAOT is false by default, but true in devdiv environment
-      BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
-      RunNativeAOT: ${{ parameters.RunNativeAOT }}
-      ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ '18.5', 'latest' ]
-      ${{ else }}:
-        androidApiLevels: [ 30 ]
-        iosVersions: [ 'latest' ]
-      projects:
-        - name: controls
-          desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
-          app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
+  - ${{ if eq(parameters.RunIssue38080, false) }}:
+    - template: common/ui-tests.yml
+      parameters:
+        # Select pools based on pipeline - internal vs public
+        ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+          androidPool: ${{ parameters.androidPoolInternal }}
+          androidLinuxPool: ${{ parameters.androidPoolLinuxInternal }}
+          iosPool: ${{ parameters.iosPoolInternal }}
+          windowsPool: ${{ parameters.windowsPoolInternal }}
+          windowsBuildPool: ${{ parameters.windowsBuildPoolInternal }}
+          macosPool: ${{ parameters.macosPoolInternal }}
+        ${{ else }}:
+          androidPool: ${{ parameters.androidPoolPublic }}
+          androidLinuxPool: ${{ parameters.androidPoolLinuxPublic }}
+          iosPool: ${{ parameters.iosPoolPublic }}
+          windowsPool: ${{ parameters.windowsPoolPublic }}
+          windowsBuildPool: ${{ parameters.windowsBuildPoolPublic }}
+          macosPool: ${{ parameters.macosPoolPublic }}
+        # BuildNativeAOT is false by default, but true in devdiv environment
+        BuildNativeAOT: ${{ or(parameters.BuildNativeAOT, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}
+        RunNativeAOT: ${{ parameters.RunNativeAOT }}
+        ${{ if or(parameters.BuildEverything, ne(variables['Build.Reason'], 'PullRequest')) }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ '18.5', 'latest' ]
+        ${{ else }}:
+          androidApiLevels: [ 30 ]
+          iosVersions: [ 'latest' ]
+        projects:
+          - name: controls
+            desc: Controls
+            androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+            android: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+            app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+            iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+            ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.iOS.Tests/Controls.TestCases.iOS.Tests.csproj
+            winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
+            mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
 
+  - ${{ if eq(parameters.RunIssue38080, true) }}:
+    - stage: build_issue38080
+      displayName: Build Issue 38080 Android UITest
+      dependsOn: []
+      jobs:
+        - job: build_issue38080
+          displayName: Build Issue 38080 Android HostApp
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            pool: ${{ parameters.androidPoolInternal }}
+          ${{ else }}:
+            pool: ${{ parameters.androidPoolPublic }}
+          variables:
+            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+          steps:
+            - checkout: self
+              persistCredentials: false
+            - template: common/ui-tests-build-sample.yml
+              parameters:
+                platform: android
+                runtimeVariant: Mono
+                skipProvisioning: true
 
+    - stage: test_issue38080
+      displayName: Test Issue 38080 on Android API 36 Pixel 8a
+      dependsOn: build_issue38080
+      jobs:
+        - job: test_issue38080
+          displayName: Issue 38080 Android API 36 Pixel 8a
+          timeoutInMinutes: 60
+          workspace:
+            clean: all
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            pool: ${{ parameters.androidPoolLinuxInternal }}
+          ${{ else }}:
+            pool: ${{ parameters.androidPoolLinuxPublic }}
+          variables:
+            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+            APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+          steps:
+            - checkout: self
+              persistCredentials: false
+            - template: common/ui-tests-steps.yml
+              parameters:
+                platform: android
+                version: 36
+                path: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj
+                app: $(Pipeline.Workspace)/Controls.TestCases.HostApp/
+                device: android-emulator-64_36
+                deviceType: pixel_8a
+                runtimeVariant: Mono
+                runIssue38080: true
+                skipProvisioning: true
