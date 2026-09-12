@@ -475,6 +475,127 @@ $($rows -join "`n")
         }
     }
 
+    function New-CatalystTestProductionCompositeModule {
+        param(
+            [Parameter(Mandatory = $true)][pscustomobject]$Case,
+            [Parameter(Mandatory = $true)]
+            [ValidateSet(
+                'none',
+                'tracked-success',
+                'tracked-throw',
+                'unknown',
+                'staged',
+                'product',
+                'fixture')]
+            [string]$Action
+        )
+
+        return New-Module `
+            -Name "Catalyst.Composite.Cleanup.$([guid]::NewGuid().ToString('N'))" `
+            -ArgumentList @(
+            $Case.Repository,
+            $Case.TrackedOutput,
+            $Case.Product,
+            $Case.FixtureTarget,
+            $Action) `
+            -ScriptBlock {
+            param(
+                $Repository,
+                $TrackedOutput,
+                $Product,
+                $FixtureTarget,
+                $CompositeAction)
+
+            $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+            $script:RequirePreparedIosSimulator = $true
+            $script:trustedScripts = 'trusted-scripts'
+            $script:InvocationCount = 0
+            $script:CapturedDeadline = $null
+            function Invoke-ReplicationRegressionCompositeRun {
+                param(
+                    $Selection, $CompanionRequirement,
+                    $PrimaryOutputDirectory, $CompanionOutputDirectory,
+                    $TrustedScriptRoot, $TimeoutSeconds, $DeadlineTimestamp,
+                    $DeviceUdid, [switch]$RequirePreparedIosSimulator)
+
+                $script:InvocationCount++
+                $script:CapturedDeadline = [long]$DeadlineTimestamp
+                switch ($CompositeAction) {
+                    'none' { return }
+                    'tracked-success' {
+                        [IO.File]::WriteAllText(
+                            $TrackedOutput, "production output`n")
+                        return
+                    }
+                    'tracked-throw' {
+                        [IO.File]::WriteAllText(
+                            $TrackedOutput, "production output before throw`n")
+                        throw 'fixed production child failure'
+                    }
+                    'unknown' {
+                        [IO.File]::WriteAllText(
+                            (Join-Path $Repository 'foreign-production-output.txt'),
+                            "foreign`n")
+                        return
+                    }
+                    'staged' {
+                        [IO.File]::WriteAllText(
+                            $TrackedOutput, "staged production output`n")
+                        $relative = [IO.Path]::GetRelativePath(
+                            $Repository, $TrackedOutput).Replace('\', '/')
+                        $null = & git -C $Repository add -- $relative
+                        if ($LASTEXITCODE -ne 0) {
+                            throw 'Scratch Git staging failed.'
+                        }
+                        return
+                    }
+                    'product' {
+                        [IO.File]::WriteAllText(
+                            $Product, "unexpected production product`n")
+                        return
+                    }
+                    'fixture' {
+                        New-Item -ItemType Directory `
+                            -Path (Split-Path -Parent $FixtureTarget) -Force |
+                            Out-Null
+                        [IO.File]::WriteAllText(
+                            $FixtureTarget, "unexpected production fixture`n")
+                        return
+                    }
+                }
+            }
+        }
+    }
+
+    function Invoke-CatalystTestProductionCompositeWrapper {
+        param(
+            [Parameter(Mandatory = $true)]
+            [System.Management.Automation.PSModuleInfo]$Module,
+            [Parameter(Mandatory = $true)][pscustomobject]$Context,
+            [Parameter(Mandatory = $true)]
+            [ValidateSet('baseline', 'negative')][string]$State,
+            [Parameter(Mandatory = $true)][pscustomobject]$Deadline
+        )
+
+        $parameters = @{
+            Module = $Module
+            Selection = [pscustomobject]@{ Category = 'Label' }
+            Requirement = [pscustomobject]@{ Id = 'fixed' }
+            PrimaryOutputDirectory = 'primary'
+            CompanionOutputDirectory = 'catalyst'
+            Deadline = $Deadline
+        }
+        $command =
+        Get-Command Invoke-CatalystProbeProductionComposite -ErrorAction Stop
+        if ($command.Parameters.ContainsKey('Context')) {
+            $parameters['Context'] = $Context
+        }
+        if ($command.Parameters.ContainsKey('State')) {
+            $parameters['State'] = $State
+        }
+        Invoke-CatalystProbeProductionComposite @parameters
+    }
+
     function Invoke-CatalystTestGitProcess {
         param(
             [Parameter(Mandatory = $true)][string[]]$ArgumentList,
@@ -2673,6 +2794,15 @@ Describe 'Closed production composite diagnostic seam' {
             $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
             $selection = [pscustomobject]@{ Category = 'Label' }
             $requirement = [pscustomobject]@{ Id = 'fixed' }
+            $context = [pscustomobject]@{
+                ProductionComposite = $true
+                RepositoryState = 'baseline'
+                ActiveDeadline = $deadline
+                ActiveReserveSeconds = 0
+            }
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Assert-CatalystProbeRepositoryState {}
+            Mock Restore-CatalystProbeTrackedVerificationSideEffects {}
 
             Invoke-CatalystProbeProductionComposite `
                 -Module $module `
@@ -2680,7 +2810,9 @@ Describe 'Closed production composite diagnostic seam' {
                 -Requirement $requirement `
                 -PrimaryOutputDirectory 'primary' `
                 -CompanionOutputDirectory 'catalyst' `
-                -Deadline $deadline
+                -Deadline $deadline `
+                -Context $context `
+                -State baseline
             $captured = & $module { $script:CapturedComposite }
 
             $captured.Selection | Should -Be $selection
@@ -2692,6 +2824,424 @@ Describe 'Closed production composite diagnostic seam' {
             $captured.DeadlineTimestamp | Should -Be $deadline.DeadlineTimestamp
         } finally {
             Remove-Module -ModuleInfo $module -Force
+        }
+    }
+
+    It 'restores baseline tracked output from a successful production composite before returning' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-baseline-output'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action tracked-success
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+            $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
+
+            Invoke-CatalystTestProductionCompositeWrapper `
+                -Module $module `
+                -Context $context `
+                -State baseline `
+                -Deadline $deadline
+
+            {
+                Assert-CatalystProbeRepositoryState `
+                    -Context $context `
+                    -State baseline
+            } | Should -Not -Throw
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            (& $module { $script:InvocationCount }) | Should -Be 1
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'restores negative tracked output while preserving the fixed product postimage' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-negative-output'
+        $module = $null
+        try {
+            [IO.File]::WriteAllText($case.Product, "negative`n")
+            $context = New-CatalystTestGitContext -Case $case -State negative
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action tracked-success
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+            $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
+
+            Invoke-CatalystTestProductionCompositeWrapper `
+                -Module $module `
+                -Context $context `
+                -State negative `
+                -Deadline $deadline
+
+            {
+                Assert-CatalystProbeRepositoryState `
+                    -Context $context `
+                    -State negative
+            } | Should -Not -Throw
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            (Get-Content -LiteralPath $case.Product -Raw) |
+                Should -BeExactly "negative`n"
+            (& $module { $script:InvocationCount }) | Should -Be 1
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'restores tracked output from a throwing production child and propagates its original error' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-throw-output'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action tracked-throw
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw 'fixed production child failure'
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            {
+                Assert-CatalystProbeRepositoryState `
+                    -Context $context `
+                    -State baseline
+            } | Should -Not -Throw
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects dirty tracked production input before the child without erasing it' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-dirty-input'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            [IO.File]::WriteAllText(
+                $case.TrackedOutput, "dirty admitted input`n")
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action none
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw '*scope contains tracked verification output*'
+            (& $module { $script:InvocationCount }) | Should -Be 0
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "dirty admitted input`n"
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'preserves and rejects unknown untracked output created by the production child' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-unknown-output'
+        $module = $null
+        $unknown = Join-Path $case.Repository 'foreign-production-output.txt'
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action unknown
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw '*unexpected untracked repository path*'
+            Test-Path -LiteralPath $unknown -PathType Leaf | Should -BeTrue
+            (Get-Content -LiteralPath $unknown -Raw) |
+                Should -BeExactly "foreign`n"
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'preserves and rejects staged tracked output created by the production child' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-staged-output'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action staged
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw '*refuses staged repository path*'
+            (Invoke-CatalystTestGit -Repository $case.Repository `
+                -Arguments @('status', '--porcelain=v1')) |
+                Should -Match (
+                    '^M  src/Core/src/Handlers/HybridWebView/HybridWebView\.js$')
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "staged production output`n"
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'preserves and rejects a protected product mutation created by the production child' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-product-output'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action product
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw '*product bytes changed outside the fixed contract*'
+            (Get-Content -LiteralPath $case.Product -Raw) |
+                Should -BeExactly "unexpected production product`n"
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'preserves and rejects a fixture mutation created by the production child' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-fixture-output'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action fixture
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw '*fixed fixture target*'
+            Test-Path -LiteralPath $case.FixtureTarget -PathType Leaf |
+                Should -BeTrue
+            (Get-Content -LiteralPath $case.FixtureTarget -Raw) |
+                Should -BeExactly "unexpected production fixture`n"
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'uses the same absolute production deadline for every tracked-output restoration operation' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-cleanup-deadline'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action tracked-success
+            $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
+            $script:ProductionCleanupDeadlines =
+            [Collections.Generic.List[long]]::new()
+            $script:ProductionCleanupReserves =
+            [Collections.Generic.List[int]]::new()
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                $script:ProductionCleanupDeadlines.Add(
+                    [long]$TaskDeadline.DeadlineTimestamp)
+                $script:ProductionCleanupReserves.Add([int]$ReserveSeconds)
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+
+            Invoke-CatalystTestProductionCompositeWrapper `
+                -Module $module `
+                -Context $context `
+                -State baseline `
+                -Deadline $deadline
+
+            $script:ProductionCleanupDeadlines.Count | Should -BeGreaterThan 0
+            @($script:ProductionCleanupDeadlines | Select-Object -Unique) |
+                Should -Be @([long]$deadline.DeadlineTimestamp)
+            @($script:ProductionCleanupReserves | Select-Object -Unique) |
+                Should -Be @(0)
+            (& $module { $script:CapturedDeadline }) |
+                Should -Be ([long]$deadline.DeadlineTimestamp)
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
+        }
+    }
+
+    It 'rejects an expired production slot after restoring its tracked output' {
+        $case = New-CatalystTestGitCase -Name 'production-composite-expired-cleanup'
+        $module = $null
+        try {
+            $context = New-CatalystTestGitContext -Case $case -State baseline
+            $context | Add-Member ProductionComposite $true
+            $module = New-CatalystTestProductionCompositeModule `
+                -Case $case `
+                -Action tracked-success
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Invoke-CatalystProbeBoundedProcess {
+                if ($FileName -cne 'git') {
+                    throw 'Only scratch Git is admitted by this regression.'
+                }
+                Invoke-CatalystTestGitProcess `
+                    -ArgumentList $ArgumentList `
+                    -WorkingDirectory $WorkingDirectory
+            }
+            Mock Get-CatalystProbeProcessTimeoutSeconds {
+                if ($Description -ceq
+                    'baseline production composite restoration') {
+                    throw 'synthetic production deadline exhausted'
+                }
+                return 480
+            }
+
+            {
+                Invoke-CatalystTestProductionCompositeWrapper `
+                    -Module $module `
+                    -Context $context `
+                    -State baseline `
+                    -Deadline (
+                    New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            } | Should -Throw 'synthetic production deadline exhausted'
+            (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
+                Should -BeExactly "generated baseline`n"
+            (& $module { $script:InvocationCount }) | Should -Be 1
+        } finally {
+            if ($null -ne $module) {
+                Remove-Module -ModuleInfo $module -Force
+            }
+            Restore-CatalystTestGitConstants -Case $case
         }
     }
 
@@ -2718,13 +3268,25 @@ Describe 'Closed production composite diagnostic seam' {
             }
         }
         try {
+            $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
+            $context = [pscustomobject]@{
+                ProductionComposite = $true
+                RepositoryState = 'baseline'
+                ActiveDeadline = $deadline
+                ActiveReserveSeconds = 0
+            }
+            Mock Assert-CatalystProbeTrustedTree {}
+            Mock Assert-CatalystProbeRepositoryState {}
+            Mock Restore-CatalystProbeTrackedVerificationSideEffects {}
             Invoke-CatalystProbeProductionComposite `
                 -Module $module `
                 -Selection ([pscustomobject]@{ Category = 'Label' }) `
                 -Requirement ([pscustomobject]@{ Id = 'fixed' }) `
                 -PrimaryOutputDirectory 'primary' `
                 -CompanionOutputDirectory 'catalyst' `
-                -Deadline (New-CatalystTestTaskDeadline -RemainingSeconds 480)
+                -Deadline $deadline `
+                -Context $context `
+                -State baseline
             $captured = & $module { $script:CapturedComposite }
 
             $captured.DeviceUdid | Should -BeExactly $udid
@@ -3434,6 +3996,10 @@ Describe 'Closed production composite diagnostic seam' {
         $script:ProductionCompositeCalls = 0
         $script:ProductionCompositeDeadlines =
         [Collections.Generic.List[object]]::new()
+        $script:ProductionCompositeStates =
+        [Collections.Generic.List[string]]::new()
+        $script:ProductionCompositeContexts =
+        [Collections.Generic.List[object]]::new()
         $selection = [pscustomobject]@{
             BaselineSha = $script:CatalystProbeBaselineCommit
             Platform = 'ios'
@@ -3526,6 +4092,8 @@ Describe 'Closed production composite diagnostic seam' {
         Mock Invoke-CatalystProbeProductionComposite {
             $script:ProductionCompositeCalls++
             $script:ProductionCompositeDeadlines.Add($Deadline)
+            $script:ProductionCompositeStates.Add([string]$State)
+            $script:ProductionCompositeContexts.Add($Context)
             if ($script:ProductionCompositeCalls -eq 2) {
                 throw $script:CatalystProbeExpectedCompanionRejection
             }
@@ -3606,6 +4174,10 @@ Describe 'Closed production composite diagnostic seam' {
         foreach ($deadline in $script:ProductionCompositeDeadlines) {
             $deadline.BudgetSeconds | Should -Be 480
         }
+        @($script:ProductionCompositeStates) |
+            Should -Be @('baseline', 'negative')
+        @($script:ProductionCompositeContexts | Select-Object -Unique) |
+            Should -Be @($script:ProductionCoreContext)
     }
 }
 
