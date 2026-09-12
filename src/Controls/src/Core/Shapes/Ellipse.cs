@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
@@ -33,15 +34,20 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		public override PathF GetPath()
 		{
+			return GetPath(GetPathStrokeInset());
+		}
+
+		internal override PathF GetPath(double strokeInset)
+		{
 			var width = WidthForPathComputation;
 			var height = HeightForPathComputation;
 
 			var path = new PathF();
 
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
+			float x = (float)strokeInset / 2;
+			float y = (float)strokeInset / 2;
+			float w = (float)(width - strokeInset);
+			float h = (float)(height - strokeInset);
 
 			path.AppendEllipse(x, y, w, h);
 
