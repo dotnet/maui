@@ -261,7 +261,7 @@ steps:
       }
 
       $command += " --run-issue-38080=true"
-      $testFilter = "FullyQualifiedName=Microsoft.Maui.TestCases.Tests.Issues.Issue38080.FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash"
+      $testFilter = "FullyQualifiedName=Microsoft.Maui.TestCases.Tests.Issues.Issue38080\(Android\).FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash"
     } else {
       "${{ parameters.testFilter }}".Split(",") | ForEach {
         $testFilter += "TestCategory=" + $_ + "|"
@@ -293,6 +293,34 @@ steps:
     APPIUM_HOME: $(APPIUM_HOME)
     ${{ if eq(parameters.runIssue38080, true) }}:
       ANDROID_AVD_HOME: $(ANDROID_AVD_HOME)
+
+- ${{ if eq(parameters.runIssue38080, true) }}:
+  - pwsh: |
+      $expectedTestName = "FastOverscrollAndBackNavigationWithOffscreenWebViewDoesNotCrash"
+      $trxFiles = @(Get-ChildItem -LiteralPath "$(TestResultsDirectory)" -Filter "*.trx" -File)
+      if ($trxFiles.Count -ne 1) {
+        throw "Issue 38080 expected exactly one TRX file, but found $($trxFiles.Count)."
+      }
+
+      [xml]$trx = Get-Content -LiteralPath $trxFiles[0].FullName -Raw -Encoding UTF8
+      $namespace = New-Object System.Xml.XmlNamespaceManager($trx.NameTable)
+      $namespace.AddNamespace("t", "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")
+      $counters = $trx.SelectSingleNode("//t:ResultSummary/t:Counters", $namespace)
+      if (-not $counters) {
+        throw "Issue 38080 TRX '$($trxFiles[0].FullName)' has no result counters."
+      }
+
+      $executed = [int]$counters.GetAttribute("executed")
+      $matchingResults = @(
+        $trx.SelectNodes("//t:UnitTestResult", $namespace) |
+          Where-Object { $_.GetAttribute("testName") -eq $expectedTestName }
+      )
+      if ($executed -ne 1 -or $matchingResults.Count -ne 1) {
+        throw "Issue 38080 expected one executed '$expectedTestName' result, but TRX reports executed=$executed and matchingResults=$($matchingResults.Count)."
+      }
+
+      Write-Host "Verified one executed Issue 38080 test result in '$($trxFiles[0].FullName)'."
+    displayName: Verify Issue 38080 test executed
 
 - ${{ if eq(parameters.runIssue38080, true) }}:
   - bash: |

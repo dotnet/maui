@@ -425,7 +425,9 @@ string SanitizeTestResultsFilename(string input)
     string resultFilename = input
         .Replace("|", "_")
         .Replace("TestCategory=", "")
-        .Replace("FullyQualifiedName=", "");
+        .Replace("FullyQualifiedName=", "")
+        .Replace(@"\(", "(")
+        .Replace(@"\)", ")");
 
     return resultFilename;
 }
