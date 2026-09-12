@@ -11,7 +11,7 @@ public class Issue34271 : _IssuesUITest
 	public override string Issue => "CollectionView scroll position resets to top after ScrollTo last item when Picker is dismissed";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView)]
 	public void CollectionViewScrollPositionPreservedAfterPickerDismiss()
 	{
 		// Scroll CollectionView to the last item (Proboscis Monkey)

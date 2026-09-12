@@ -13,7 +13,7 @@ public class Issue8308 : _IssuesUITest
 	public override string Issue => "[Bug] [iOS] Cannot access a disposed object. Object name: 'GroupableItemsViewController`1";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 7)]
 	public void NavigatingBackToCollectionViewShouldNotCrash()
 	{
 		App.WaitForElement("Instructions");

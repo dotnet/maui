@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using System.Windows.Input;
 using CoreGraphics;
@@ -1256,7 +1257,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// controller, so this temporary hookup doesn't permanently clobber other delegate behavior.
 		sealed class SearchItemSelectedDelegate : UISearchControllerDelegate
 		{
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The callback is retained only until the one-shot delegate handles search dismissal.")]
 			readonly Action _onDismissed;
+			[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The previous delegate is retained only until it is restored after search dismissal.")]
 			readonly IUISearchControllerDelegate? _previousDelegate;
 			bool _fired;
 
