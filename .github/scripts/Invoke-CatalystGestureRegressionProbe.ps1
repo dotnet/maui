@@ -2417,14 +2417,29 @@ function Invoke-CatalystProbeProductionPrewarm {
         [Parameter(Mandatory = $true)][pscustomobject]$Deadline
     )
 
-    $timeout = Get-CatalystProbeProcessTimeoutSeconds `
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
         -Deadline $Deadline `
         -RequestedSeconds $script:CatalystProbePrewarmBudgetSeconds `
         -Description 'production dual-Apple prewarm'
-    return & $Module {
-        param($TimeoutSeconds)
-        Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds $TimeoutSeconds
-    } $timeout
+    $preparedUdid = & $Module { [string]$DeviceUdid }
+    if ($preparedUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+        throw 'The production prewarm module lost its prepared simulator binding.'
+    }
+    $priorRuntimeUdid =
+    [Environment]::GetEnvironmentVariable('MAUI_REPLICATION_DEVICE_UDID')
+    [Environment]::SetEnvironmentVariable(
+        'MAUI_REPLICATION_DEVICE_UDID', $preparedUdid)
+    try {
+        return & $Module {
+            param($DeadlineTimestamp)
+            Invoke-ReplicationFixedCatalystCompositePrewarm `
+                -DeadlineTimestamp $DeadlineTimestamp
+        } ([long]$Deadline.DeadlineTimestamp)
+    } finally {
+        [Environment]::SetEnvironmentVariable(
+            'MAUI_REPLICATION_DEVICE_UDID', $priorRuntimeUdid)
+    }
 }
 
 function Assert-CatalystProbeProductionAssetsRetained {
@@ -2432,6 +2447,57 @@ function Assert-CatalystProbeProductionAssetsRetained {
         [System.Management.Automation.PSModuleInfo]$Module)
 
     return & $Module { Assert-ReplicationAppleCompanionPrewarmRetained }
+}
+
+function Get-CatalystProbeProductionPrewarmLogs {
+    param([Parameter(Mandatory = $true)][string]$PrewarmRoot)
+
+    $root = [IO.Path]::GetFullPath($PrewarmRoot)
+    $rootItem = Get-Item -LiteralPath $root -Force -ErrorAction Stop
+    if (-not $rootItem.PSIsContainer -or
+        $rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Production composite prewarm evidence root is not a regular directory.'
+    }
+    $expected = @(
+        'prewarm-build-ios-simulator-no-restore.log'
+        'prewarm-build-maccatalyst-no-restore.log'
+        'prewarm-restore-dual-apple-graph.log'
+        'tool-restore.log'
+        'xharness-command-probe/xharness-help-tail.log'
+        'xharness-command-probe/xharness-help.log'
+        'xharness-preflight-child.log'
+        'xharness-preflight/xharness-help-tail.log'
+        'xharness-preflight/xharness-help.log'
+        'xharness-preflight/xharness-preflight.log'
+    )
+    $entries = @(Get-ChildItem -LiteralPath $root -Recurse -Force)
+    if (@($entries | Where-Object {
+                $_.Attributes -band [IO.FileAttributes]::ReparsePoint
+            }).Count -ne 0) {
+        throw 'Production composite prewarm evidence contains a linked entry.'
+    }
+    $files = @($entries | Where-Object { -not $_.PSIsContainer })
+    if (@($files | Where-Object {
+                $_.Length -lt 1 -or $_.Length -gt 256KB
+            }).Count -ne 0) {
+        throw 'Production composite prewarm evidence contains an empty or oversized log.'
+    }
+    $relativeFiles = @($files | ForEach-Object {
+            [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\', '/')
+        } | Sort-Object)
+    if ($relativeFiles.Count -ne $expected.Count -or
+        (Compare-Object -ReferenceObject $expected -DifferenceObject $relativeFiles)) {
+        throw 'Production composite prewarm did not retain its exact bounded command logs.'
+    }
+    return @($files | Sort-Object {
+            [IO.Path]::GetRelativePath($root, $_.FullName).Replace('\', '/')
+        } | ForEach-Object {
+            [ordered]@{
+                name = ([IO.Path]::GetRelativePath(
+                        $root, $_.FullName)).Replace('\', '/')
+                sha256 = Get-CatalystProbeFileSha256 -Path $_.FullName
+            }
+        })
 }
 
 function Invoke-CatalystProbeProductionComposite {
@@ -2847,16 +2913,8 @@ function Invoke-CatalystGestureRegressionProbeCore {
         Assert-CatalystProbeProductionAssetsRetained -Module $productionModule
         $prewarmLogRoot = Join-Path $context.OutputDirectory (
             'production-composite/prewarm')
-        $prewarmLogs = @(Get-ChildItem -LiteralPath $prewarmLogRoot -File -Force |
-                Sort-Object Name | ForEach-Object {
-                    [ordered]@{
-                        name = $_.Name
-                        sha256 = Get-CatalystProbeFileSha256 -Path $_.FullName
-                    }
-                })
-        if ($prewarmLogs.Count -ne 3) {
-            throw 'Production composite prewarm did not retain all three bounded command logs.'
-        }
+        $prewarmLogs = @(Get-CatalystProbeProductionPrewarmLogs `
+                -PrewarmRoot $prewarmLogRoot)
         $null = Get-CatalystProbeProcessTimeoutSeconds `
             -Deadline $prewarmDeadline `
             -RequestedSeconds 1 `
@@ -2867,6 +2925,8 @@ function Invoke-CatalystGestureRegressionProbeCore {
             assetsSha256 = [string]$retainedAssets.AssetsSha256
             targetPairs = @($retainedAssets.TargetPairs)
             commandLogs = $prewarmLogs
+            privateToolRestore = $true
+            xharnessCommandPreflight = $true
             fullIosBuild = $true
             fullCatalystBuild = $true
             noRestoreBuilds = $true
