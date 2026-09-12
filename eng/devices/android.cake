@@ -28,7 +28,7 @@ var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("AN
 var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
 var deviceCleanupEnabled = Argument("cleanup", true);
 var useCoreClr = Argument("coreclr", false);
-var avdManagerToolPath = Argument("avdmanager-tool", "");
+var runIssue38080 = Argument("run-issue-38080", false);
 
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
@@ -62,10 +62,19 @@ Information("Build Target Framework: {0}", targetFramework);
 Information("Use CoreCLR: {0}", useCoreClr);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
-if (!string.IsNullOrEmpty(avdManagerToolPath))
+if (runIssue38080)
 {
-	avdSettings.ToolPath = new FilePath(avdManagerToolPath);
-	Information("Android AVD Manager Tool: {0}", avdManagerToolPath);
+	var avdManagerToolPath = new DirectoryPath(androidSdkRoot)
+		.Combine("cmdline-tools")
+		.Combine("19.0")
+		.Combine("bin")
+		.CombineWithFilePath("avdmanager");
+
+	if (!FileExists(avdManagerToolPath))
+		throw new Exception($"Issue 38080 requires command-line tools 19.0 at '{avdManagerToolPath}'.");
+
+	avdSettings.ToolPath = avdManagerToolPath;
+	Information("Issue 38080 AVD Manager Tool: {0}", avdManagerToolPath);
 }
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
 var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = androidSdkRoot };
@@ -465,6 +474,9 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// create the new AVD
 					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 					AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+
+					if (runIssue38080 && !AndroidAvdListAvds(avdSettings).Any(avd => string.Equals(avd.Name, avdName, StringComparison.Ordinal)))
+						throw new Exception($"Failed to create required issue 38080 AVD '{avdName}'.");
 				}
 
 				// Pre-authorize ADB keys before starting emulator to avoid "device unauthorized" errors
