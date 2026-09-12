@@ -3,6 +3,7 @@
 
 BeforeAll {
     . (Join-Path $PSScriptRoot '../shared/Assert-ReplicationAppleAppSandbox.ps1')
+    . (Join-Path $PSScriptRoot '../shared/Assert-ReplicationExecutionEnvironment.ps1')
     $script:SandboxEntitlements = Join-Path $PSScriptRoot (
         '../../../src/Controls/samples/Controls.Sample.Sandbox/Platforms/MacCatalyst/ReplicationNetworkIsolation.entitlements')
     $script:DeviceEntitlements = Join-Path $PSScriptRoot (
@@ -356,6 +357,72 @@ Describe 'Apple trusted host command boundary' {
                     -Environment $script:Environment -OperatingSystem macos
             } | Should -Throw '*strict prepared iOS simulator*'
         }
+    }
+
+    foreach ($case in @(
+            @{ Binding = 'matching'; Dictionary = 'production-ordered' }
+            @{ Binding = 'missing'; Dictionary = 'production-ordered' }
+            @{ Binding = 'mismatched'; Dictionary = 'production-ordered' }
+            @{ Binding = 'matching'; Dictionary = 'hashtable' }
+            @{ Binding = 'missing'; Dictionary = 'hashtable' }
+            @{ Binding = 'mismatched'; Dictionary = 'hashtable' }
+            @{ Binding = 'matching'; Dictionary = 'generic-dictionary' }
+            @{ Binding = 'missing'; Dictionary = 'generic-dictionary' }
+            @{ Binding = 'mismatched'; Dictionary = 'generic-dictionary' }
+        )) {
+        It "validates $($case.Binding) prepared-device binding with $($case.Dictionary) environment" -ForEach $case {
+            $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+            $environment = Get-ReplicationExecutionEnvironment -Inherited @{
+                PATH = $script:Environment.PATH
+                MAUI_REPLICATION_DEVICE_UDID = $udid
+                GH_TOKEN = 'must-not-reach-the-runner'
+            }
+            $environment.GetType().FullName |
+                Should -BeExactly 'System.Collections.Specialized.OrderedDictionary'
+            $environment.Contains('GH_TOKEN') | Should -BeFalse
+            switch ($Dictionary) {
+                'hashtable' {
+                    $environment = @{} + $environment
+                }
+                'generic-dictionary' {
+                    $generic = [Collections.Generic.Dictionary[string, string]]::new(
+                        [StringComparer]::Ordinal)
+                    foreach ($entry in $environment.GetEnumerator()) {
+                        $generic.Add([string]$entry.Key, [string]$entry.Value)
+                    }
+                    $environment = $generic
+                }
+            }
+            switch ($Binding) {
+                'missing' { $null = $environment.Remove('MAUI_REPLICATION_DEVICE_UDID') }
+                'mismatched' {
+                    $environment['MAUI_REPLICATION_DEVICE_UDID'] =
+                    'FFFFFFFF-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+                }
+            }
+            $arguments = @(
+                '-Platform', 'ios', '-TestType', 'DeviceTest',
+                '-TestFilter', 'Category=Label',
+                '-TestClass', 'Microsoft.Maui.DeviceTests.LabelTests',
+                '-DeviceUdid', $udid, '-RequirePreparedIosSimulator',
+                '-RegressionEvidence')
+            $invoke = {
+                Get-ReplicationAppleIsolatedCommand `
+                    -Platform ios -TrustedRoot $script:TrustedRoot `
+                    -ScriptPath (Join-Path $script:TrustedRoot (
+                        'scripts/shared/Invoke-ReplicationTestVerification.ps1')) `
+                    -Arguments $arguments -Environment $environment -OperatingSystem macos
+            }
+            if ($Binding -ceq 'matching') {
+                $command = & $invoke
+                $command.Boundary | Should -BeExactly 'ios-review-host-no-network-isolation'
+                [object]::ReferenceEquals($command.Environment, $environment) | Should -BeTrue
+                @($command.Arguments | Select-Object -Skip 5) | Should -Be $arguments
+            } else {
+                $invoke | Should -Throw '*requires one exact regression device binding*'
+            }
+        }
+
     }
 
     It 'retains iOS runner argument and test-tier restrictions' {

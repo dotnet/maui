@@ -768,7 +768,7 @@ function Get-ReplicationAppleIsolatedCommand {
                     $preparedFilter -cne 'Category=Label' -or
                     $preparedClass -cne
                     'Microsoft.Maui.DeviceTests.LabelTests' -or
-                    -not $Environment.ContainsKey(
+                    -not ([Collections.IDictionary]$Environment).Contains(
                         'MAUI_REPLICATION_DEVICE_UDID') -or
                     [string]$Environment['MAUI_REPLICATION_DEVICE_UDID'] -cne
                     $preparedDeviceUdid) {
