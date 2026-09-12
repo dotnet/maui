@@ -1815,6 +1815,28 @@ Describe 'Fixed report-only Catalyst gesture probe' {
 }
 
 Describe 'Catalyst gesture pipeline isolation' {
+    It 'selects the fixed baseline Xcode instead of the review override' {
+        $script:Stage | Should -Not -Match 'REQUIRED_XCODE'
+        Get-CatalystProbeXcodePath | Should -BeExactly '/Applications/Xcode_26.0.1.app'
+        $script:Stage | Should -Match '\$xcode = Get-CatalystProbeXcodePath'
+        $script:Stage | Should -Match 'Assert-CatalystProbeXcodeVersion -VersionOutput \$xcodeVersion'
+        $script:Stage.IndexOf('Assert-CatalystProbeXcodeVersion') |
+            Should -BeLessThan $script:Stage.IndexOf("--target=dotnet ")
+    }
+
+    It 'rejects a selected Xcode version that differs from the immutable baseline' {
+        { Assert-CatalystProbeXcodeVersion -VersionOutput @(
+                'Xcode 26.0.1', 'Build version 17A400') } | Should -Not -Throw
+        { Assert-CatalystProbeXcodeVersion -VersionOutput @(
+                'Xcode 26.5', 'Build version 17F42') } |
+            Should -Throw '*requires the fixed baseline Xcode 26.0.1*'
+        { Assert-CatalystProbeXcodeVersion -VersionOutput @(
+                'Xcode 26.0.1', 'Build version 17A400', 'unexpected output') } |
+            Should -Throw '*requires the fixed baseline Xcode 26.0.1*'
+        { Assert-CatalystProbeXcodeVersion -VersionOutput @() } |
+            Should -Throw '*requires the fixed baseline Xcode 26.0.1*'
+    }
+
     It 'routes one standalone fresh-Azure report-only mode' {
         $script:Pipeline | Should -Match '(?m)^\s+- catalyst-gesture-probe\s*$'
         $script:Stage | Should -Not -BeNullOrEmpty

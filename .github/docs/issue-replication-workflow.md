@@ -84,6 +84,9 @@ commits: baseline `40590267d8057fd5c044e5bfea77a9dd31fef29f` and known-negative
 `e456312886ee33fc0e69307e030c3028597ee32e`. Only the fixed gesture-manager
 product path is replayed, after exact pre/postimage identity and complete-source
 checks. No caller can supply another patch, source, class or execution platform.
+The probe selects the baseline's preinstalled Xcode 26.0.1 and checks the selected
+version before provisioning. It does not inherit the newer review-target Xcode
+override or disable the SDK's Xcode compatibility check.
 Trusted baseline prewarming precedes the fixture/candidate bytes. Native runs
 retain matching Catalyst boundaries, signed App Sandbox entitlements, live
 network denial and exact class isolation.

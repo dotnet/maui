@@ -517,6 +517,8 @@ steps:
         'Catalyst gesture pipeline isolation*rejects every open input combination before setup or fetch'
         'Catalyst gesture pipeline isolation*does not inherit credentials or enter review replication publication or model paths'
         'Catalyst gesture pipeline isolation*prewarms only the Catalyst graph and keeps both cycles bounded'
+        'Catalyst gesture pipeline isolation*selects the fixed baseline Xcode instead of the review override'
+        'Catalyst gesture pipeline isolation*rejects a selected Xcode version that differs from the immutable baseline'
         'MAUI Copilot mode routing*isolates the fixed Catalyst A-B probe from production replication and publication'
       )
       $config = New-PesterConfiguration
