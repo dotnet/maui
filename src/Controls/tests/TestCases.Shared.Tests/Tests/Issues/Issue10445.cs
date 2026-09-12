@@ -22,4 +22,24 @@ public class Issue10445 : _IssuesUITest
 		// Verify the Shell renders correctly with a gradient background
 		VerifyScreenshot();
 	}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void ShellBackgroundTransitionsFromGradientToSolidAndDefault()
+	{
+		Exception? exception = null;
+		App.WaitForElement("GradientInfoLabel");
+		App.Tap("GradientInfoLabel");
+		App.WaitForElement("Shell.Background should display solid blue in the navigation and tab bars.");
+		VerifyScreenshotOrSetException(ref exception, "ShellBackgroundChangesFromGradientToSolid", retryTimeout: TimeSpan.FromSeconds(2));
+
+		App.Tap("GradientInfoLabel");
+		App.WaitForElement("Shell.Background should display the platform default in the navigation and tab bars.");
+		VerifyScreenshotOrSetException(ref exception, "ShellBackgroundResetsToDefault", retryTimeout: TimeSpan.FromSeconds(2));
+
+		if (exception is not null)
+		{
+			throw exception;
+		}
+	}
 }

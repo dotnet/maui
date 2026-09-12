@@ -78,8 +78,19 @@ namespace Microsoft.Maui.Controls
 		public double FlyoutWidth => _doubleArray[0];
 		public double FlyoutHeight => _doubleArray[1];
 
+		// Color-only fallback for platforms that don't consume the raw brush ladder (Windows, Tizen, iOS < 15).
 		Color IShellAppearanceElement.EffectiveTabBarBackgroundColor =>
 			TabBarBackgroundColor ?? BackgroundColor;
+
+		// Full tab bar background precedence: TabBarBackgroundColor > Shell.Background > Shell.BackgroundColor.
+		internal Brush EffectiveTabBarBackground =>
+			TabBarBackgroundColor is not null
+				? new SolidColorBrush(TabBarBackgroundColor)
+				: !Brush.IsNullOrEmpty(Background)
+					? Background
+					: BackgroundColor is not null
+						? new SolidColorBrush(BackgroundColor)
+						: null;
 
 		Color IShellAppearanceElement.EffectiveTabBarDisabledColor =>
 			TabBarDisabledColor ?? DisabledColor;
