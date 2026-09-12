@@ -13,6 +13,8 @@ namespace UITest.Appium
 
 		public CommandResponse Execute(string commandName, IDictionary<string, object> parameters)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("appium_command", commandName);
+
 			foreach (var command in _commands)
 			{
 				if (command.IsCommandSupported(commandName))

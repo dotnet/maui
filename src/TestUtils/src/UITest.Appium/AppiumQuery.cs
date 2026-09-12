@@ -83,6 +83,8 @@ namespace UITest.Appium
 #nullable disable
 		public IUIElement FindElement(AppiumApp appiumApp)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("find_element", _queryStr);
+
 			// e.g. class=button&id=MyButton
 			string[] querySplit = _queryStr.Split(QuerySeparatorToken);
 			string queryStr = querySplit[0];
@@ -111,6 +113,8 @@ namespace UITest.Appium
 
 		public IReadOnlyCollection<IUIElement> FindElements(AppiumApp appiumApp)
 		{
+			using var performanceTrace = UITestPerformanceTrace.Measure("find_elements", _queryStr);
+
 			// e.g. class=button&id=MyButton
 			string[] querySplit = _queryStr.Split(QuerySeparatorToken);
 			string queryStr = querySplit[0];
