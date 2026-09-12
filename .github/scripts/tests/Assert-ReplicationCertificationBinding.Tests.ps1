@@ -27,6 +27,7 @@ BeforeAll {
             'scripts/templates/RunReplicationAppiumPlan.cs' = ('4' * 64)
             'skills/run-device-tests/scripts/Run-DeviceTests.ps1' = ('5' * 64)
         }
+
     }
 
     function script:New-SelectorContract {
@@ -173,6 +174,157 @@ BeforeAll {
             BindingPath = $bindingPath
             Binding = $binding
         }
+    }
+
+    function script:New-CatalystCompanionBindingFixture {
+        $fixture = script:New-BindingFixture -WithFix
+        $trustedFixture = Join-Path $fixture.Root 'trusted-fixture.cs'
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                '../fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs')) `
+            -Destination $trustedFixture
+
+        foreach ($arm in @('baseline', 'fix')) {
+            $primaryPath = Join-Path $fixture.Artifacts (
+                "regression/$arm/strict-test-evidence.json")
+            $primary = Get-Content -LiteralPath $primaryPath -Raw |
+                ConvertFrom-Json -Depth 20
+            $primary.platform = 'ios'
+            $primary | ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $primaryPath -Encoding utf8NoBOM
+
+            $directory = Join-Path $fixture.Artifacts "regression/catalyst-$arm"
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+            $xmlPath = Join-Path $directory 'source-result-1.xml'
+            Set-Content -LiteralPath $xmlPath -Encoding utf8NoBOM -Value (
+                '<assemblies><assembly total="2" passed="2" failed="0" skipped="0" errors="0">' +
+                '<collection><test name="Secondary to both" type="' +
+                'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression" ' +
+                'method="SecondaryToBothCreatesNativeTap" result="Pass" />' +
+                '<test name="Secondary to primary" type="' +
+                'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression" ' +
+                'method="SecondaryToPrimaryCreatesNativeTap" result="Pass" />' +
+                '</collection></assembly></assemblies>')
+            [ordered]@{
+                schemaVersion = 1
+                completed = $true
+                runStartedUtc = '2026-01-01T00:00:00.0000000Z'
+                completedUtc = '2026-01-01T00:01:00.0000000Z'
+                project = 'Controls'
+                platform = 'catalyst'
+                testFilter = 'Category=Gesture'
+                includeClass =
+                'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+                total = 2
+                passed = 2
+                failed = 0
+                skipped = 0
+                errors = 0
+                records = @(
+                    [ordered]@{
+                        type = 'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+                        method = 'SecondaryToBothCreatesNativeTap'
+                        displayName = 'Secondary to both'
+                        outcome = 'Pass'
+                        failureSignature = ''
+                    },
+                    [ordered]@{
+                        type = 'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+                        method = 'SecondaryToPrimaryCreatesNativeTap'
+                        displayName = 'Secondary to primary'
+                        outcome = 'Pass'
+                        failureSignature = ''
+                    }
+                )
+                resultFiles = @([ordered]@{
+                        name = 'source-result-1.xml'
+                        sha256 = (Get-FileHash $xmlPath -Algorithm SHA256).Hash.ToLowerInvariant()
+                    })
+            } | ConvertTo-Json -Depth 8 |
+                Set-Content -LiteralPath (Join-Path $directory (
+                        'strict-test-evidence.json')) -Encoding utf8NoBOM
+        }
+
+        $comparisonPath = Join-Path $fixture.Artifacts (
+            'regression/regression-evidence.json')
+        $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+            ConvertFrom-Json -Depth 20 -AsHashtable
+        $comparison.schemaVersion = 2
+        $comparison.platform = 'ios'
+        $comparison.baselineResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $fixture.Artifacts ([string]$comparison.baselineResult))
+        $comparison.fixResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $fixture.Artifacts ([string]$comparison.fixResult))
+        $comparison.companion = [ordered]@{
+            id = 'gesture-platform-manager-catalyst-v1'
+            fixturePath =
+            'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
+            fixtureTargetPath =
+            'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
+            fixtureSha256 =
+            '9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+            platform = 'catalyst'
+            project = 'Controls'
+            projectPath =
+            'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+            category = 'Gesture'
+            testClass =
+            'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+            methods = @(
+                'SecondaryToBothCreatesNativeTap',
+                'SecondaryToPrimaryCreatesNativeTap')
+            baselineResult =
+            'regression/catalyst-baseline/strict-test-evidence.json'
+            fixResult = 'regression/catalyst-fix/strict-test-evidence.json'
+            baselineResultSha256 = Get-ReplicationBindingFileDigest -Path (
+                Join-Path $fixture.Artifacts (
+                    'regression/catalyst-baseline/strict-test-evidence.json'))
+            fixResultSha256 = Get-ReplicationBindingFileDigest -Path (
+                Join-Path $fixture.Artifacts (
+                    'regression/catalyst-fix/strict-test-evidence.json'))
+            comparison = 'pass'
+        }
+        $comparison | ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+
+        $binding = New-ReplicationCertificationBinding `
+            -IssueNumber 12345 `
+            -Platform 'ios' `
+            -ArtifactRoot $fixture.Artifacts `
+            -TrustedSourceVersion $script:SourceVersion `
+            -TrustedTreeHash $script:TreeHash `
+            -PipelineSha256 $script:PipelineSha `
+            -ReplicationBaseSha $script:BaseSha `
+            -ExecutionHeadSha $script:HeadSha `
+            -TrustedScripts (script:New-TrustedScriptIdentities) `
+            -Selector (Get-ReplicationBindingSelector `
+                -Selector (script:New-SelectorContract) -TestType 'DeviceTest') `
+            -ExpectedRegressionCategory 'Label' `
+            -ExpectedRegressionClass 'Microsoft.Maui.DeviceTests.LabelTests' `
+            -ExpectedFixPaths @(
+            'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+            -TrustedFixturePath $trustedFixture `
+            -OutputPath $fixture.BindingPath
+        $fixture.Binding = $binding
+        $fixture | Add-Member -NotePropertyName TrustedFixture `
+            -NotePropertyValue $trustedFixture
+        return $fixture
+    }
+
+    function script:New-DowngradedGpmRegressionFixture {
+        $fixture = script:New-CatalystCompanionBindingFixture
+        $path = 'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        $patchPath = Join-Path $fixture.Artifacts 'fix.patch'
+        Set-Content -LiteralPath $patchPath -Encoding utf8NoBOM -Value (
+            "diff --git a/$path b/$path`n--- a/$path`n+++ b/$path`n@@ -1 +1 @@`n-old`n+new")
+        $comparisonPath = Join-Path $fixture.Artifacts 'regression/regression-evidence.json'
+        $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+            ConvertFrom-Json -AsHashtable
+        $comparison.schemaVersion = 1
+        [void]$comparison.Remove('companion')
+        $comparison.productPatchSha256 = Get-ReplicationBindingFileDigest -Path $patchPath
+        $comparison | ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+        return $fixture
     }
 
     function script:Set-RegressionFixtureRecord {
@@ -1097,5 +1249,173 @@ Describe 'Reading a certification binding document' {
         & ln -s $decoy $victim
         { script:Invoke-BindingCheck -Fixture $fixture } |
             Should -Throw '*not a link*'
+    }
+}
+
+Describe 'Fixed Catalyst production companion binding' {
+    It 'activates only for the singleton iOS GesturePlatformManager product path' {
+        $path =
+        'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        $required = Get-ReplicationFixedCompanionRequirement `
+            -Platform ios -FixPaths @($path)
+        $required.Id | Should -BeExactly 'gesture-platform-manager-catalyst-v1'
+        @($required.Methods).Count | Should -Be 2
+        Get-ReplicationFixedCompanionRequirement `
+            -Platform ios `
+            -FixPaths @('src/Controls/src/Core/Label/Label.cs') |
+            Should -BeNullOrEmpty
+    }
+
+    It 'rejects mixed scope containing the fixed GesturePlatformManager path' {
+        {
+            Get-ReplicationFixedCompanionRequirement `
+                -Platform ios `
+                -FixPaths @(
+                'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs',
+                'src/Controls/src/Core/Label/Label.cs')
+        } | Should -Throw '*rejects mixed product-fix scope*'
+    }
+
+    It 'keeps Catalyst GPM fixes on their existing primary regression lane' {
+        $path = 'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+        Get-ReplicationFixedCompanionRequirement -Platform catalyst -FixPaths @($path) |
+            Should -BeNullOrEmpty
+        Get-ReplicationFixedCompanionRequirement -Platform catalyst -FixPaths @(
+            $path, 'src/Controls/src/Core/Label/Label.cs') | Should -BeNullOrEmpty
+    }
+
+    It 'rejects an iOS regression downgrade when validated fix paths are omitted' {
+        $fixture = script:New-DowngradedGpmRegressionFixture
+        {
+            Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $fixture.Artifacts `
+                -ExpectedBaselineSha $script:BaseSha `
+                -ExpectedPlatform ios `
+                -ExpectedCategory Label `
+                -ExpectedClass Microsoft.Maui.DeviceTests.LabelTests
+        } | Should -Throw '*requires validated fix paths*'
+    }
+
+    It 'refuses to create an iOS fix binding without validated fix paths' {
+        $fixture = script:New-DowngradedGpmRegressionFixture
+        {
+            New-ReplicationCertificationBinding `
+                -IssueNumber 12345 -Platform ios -ArtifactRoot $fixture.Artifacts `
+                -TrustedSourceVersion $script:SourceVersion `
+                -TrustedTreeHash $script:TreeHash -PipelineSha256 $script:PipelineSha `
+                -ReplicationBaseSha $script:BaseSha -ExecutionHeadSha $script:HeadSha `
+                -TrustedScripts (script:New-TrustedScriptIdentities) `
+                -Selector (Get-ReplicationBindingSelector `
+                    -Selector (script:New-SelectorContract) -TestType DeviceTest) `
+                -ExpectedRegressionCategory Label `
+                -ExpectedRegressionClass Microsoft.Maui.DeviceTests.LabelTests
+        } | Should -Throw '*requires validated fix paths*'
+    }
+
+    It 'accepts exact two-pass baseline and candidate Catalyst evidence' {
+        $fixture = script:New-CatalystCompanionBindingFixture
+        {
+            Assert-ReplicationCertificationBinding `
+                -Binding $fixture.BindingPath `
+                -ArtifactRoot $fixture.Artifacts `
+                -TrustedSourceVersion $script:SourceVersion `
+                -ReplicationBaseSha $script:BaseSha `
+                -IssueNumber 12345 -Platform ios `
+                -ExpectedRegressionCategory Label `
+                -ExpectedRegressionClass Microsoft.Maui.DeviceTests.LabelTests `
+                -ExpectedFixPaths @(
+                'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+                -TrustedFixturePath $fixture.TrustedFixture
+        } | Should -Not -Throw
+    }
+
+    It 'rejects a changed trusted Catalyst fixture' {
+        $fixture = script:New-CatalystCompanionBindingFixture
+        Add-Content -LiteralPath $fixture.TrustedFixture -Value '// tampered'
+        {
+            Assert-ReplicationCertificationBinding `
+                -Binding $fixture.BindingPath `
+                -ArtifactRoot $fixture.Artifacts `
+                -TrustedSourceVersion $script:SourceVersion `
+                -ReplicationBaseSha $script:BaseSha `
+                -IssueNumber 12345 -Platform ios `
+                -ExpectedRegressionCategory Label `
+                -ExpectedRegressionClass Microsoft.Maui.DeviceTests.LabelTests `
+                -ExpectedFixPaths @(
+                'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+                -TrustedFixturePath $fixture.TrustedFixture
+        } | Should -Throw '*fixture digest*'
+    }
+
+    It 'rejects fixed Catalyst evidence when its raw XML is missing' {
+        $fixture = script:New-CatalystCompanionBindingFixture
+        Remove-Item -LiteralPath (Join-Path $fixture.Artifacts (
+                'regression/catalyst-fix/source-result-1.xml')) -Force
+
+        {
+            Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $fixture.Artifacts `
+                -ExpectedBaselineSha $script:BaseSha `
+                -ExpectedPlatform ios `
+                -ExpectedCategory Label `
+                -ExpectedClass Microsoft.Maui.DeviceTests.LabelTests `
+                -ExpectedFixPaths @(
+                'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+                -TrustedFixturePath $fixture.TrustedFixture
+        } | Should -Throw '*source result digest does not match*'
+    }
+
+    It 'rejects a skipped fixed Catalyst baseline' {
+        $fixture = script:New-CatalystCompanionBindingFixture
+        $strictPath = Join-Path $fixture.Artifacts (
+            'regression/catalyst-baseline/strict-test-evidence.json')
+        $strict = Get-Content -LiteralPath $strictPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $strict.passed = 1
+        $strict.skipped = 1
+        $strict.records[0].outcome = 'Skip'
+        $strict | ConvertTo-Json -Depth 20 |
+            Set-Content -LiteralPath $strictPath -Encoding utf8NoBOM
+
+        {
+            Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $fixture.Artifacts `
+                -ExpectedBaselineSha $script:BaseSha `
+                -ExpectedPlatform ios `
+                -ExpectedCategory Label `
+                -ExpectedClass Microsoft.Maui.DeviceTests.LabelTests `
+                -ExpectedFixPaths @(
+                'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+                -TrustedFixturePath $fixture.TrustedFixture
+        } | Should -Throw
+    }
+
+    It 'rejects missing duplicate and reordered fixed Catalyst methods' {
+        foreach ($methods in @(
+                @('SecondaryToBothCreatesNativeTap'),
+                @('SecondaryToBothCreatesNativeTap', 'SecondaryToBothCreatesNativeTap'),
+                @('SecondaryToPrimaryCreatesNativeTap', 'SecondaryToBothCreatesNativeTap')
+            )) {
+            $fixture = script:New-CatalystCompanionBindingFixture
+            $comparisonPath = Join-Path $fixture.Artifacts (
+                'regression/regression-evidence.json')
+            $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+                ConvertFrom-Json -Depth 20
+            $comparison.companion.methods = $methods
+            $comparison | ConvertTo-Json -Depth 20 |
+                Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+
+            {
+                Assert-ReplicationRegressionEvidence `
+                    -ArtifactRoot $fixture.Artifacts `
+                    -ExpectedBaselineSha $script:BaseSha `
+                    -ExpectedPlatform ios `
+                    -ExpectedCategory Label `
+                    -ExpectedClass Microsoft.Maui.DeviceTests.LabelTests `
+                    -ExpectedFixPaths @(
+                    'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs') `
+                    -TrustedFixturePath $fixture.TrustedFixture
+            } | Should -Throw '*missing, reordered, or unexpected methods*'
+        }
     }
 }

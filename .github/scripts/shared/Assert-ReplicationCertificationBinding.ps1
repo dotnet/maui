@@ -96,8 +96,111 @@ $script:ReplicationBindingEvidenceNames = @(
     'verification/restoration-console.log',
     'regression/baseline/strict-test-evidence.json',
     'regression/fix/strict-test-evidence.json',
+    'regression/catalyst-baseline/strict-test-evidence.json',
+    'regression/catalyst-baseline/source-result-1.xml',
+    'regression/catalyst-fix/strict-test-evidence.json',
+    'regression/catalyst-fix/source-result-1.xml',
     'regression/regression-evidence.json'
 )
+
+$script:ReplicationCatalystCompanionProductPath =
+'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+$script:ReplicationCatalystCompanionFixtureRelativePath =
+'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
+$script:ReplicationCatalystCompanionFixtureTargetPath =
+'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
+$script:ReplicationCatalystCompanionFixtureSha256 =
+'9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+$script:ReplicationCatalystCompanionClass =
+'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+$script:ReplicationCatalystCompanionMethods = @(
+    'SecondaryToBothCreatesNativeTap',
+    'SecondaryToPrimaryCreatesNativeTap'
+)
+
+function Get-ReplicationFixedCompanionRequirement {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Platform,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$FixPaths
+    )
+
+    $normalized = @($FixPaths | ForEach-Object {
+            ([string]$_).Replace('\', '/')
+        } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Sort-Object -CaseSensitive -Unique)
+    $containsTarget = $normalized -ccontains
+    $script:ReplicationCatalystCompanionProductPath
+    if (-not $containsTarget -or $Platform -cne 'ios') {
+        return $null
+    }
+    if ($normalized.Count -ne 1) {
+        throw 'The fixed GesturePlatformManager companion rejects mixed product-fix scope.'
+    }
+
+    return [pscustomobject]@{
+        Id = 'gesture-platform-manager-catalyst-v1'
+        ProductPath = $script:ReplicationCatalystCompanionProductPath
+        FixtureRelativePath = $script:ReplicationCatalystCompanionFixtureRelativePath
+        FixtureTargetPath = $script:ReplicationCatalystCompanionFixtureTargetPath
+        FixtureSha256 = $script:ReplicationCatalystCompanionFixtureSha256
+        Platform = 'catalyst'
+        Project = 'Controls'
+        ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        Category = 'Gesture'
+        TestClass = $script:ReplicationCatalystCompanionClass
+        Methods = @($script:ReplicationCatalystCompanionMethods)
+    }
+}
+
+function Assert-ReplicationFixedCompanionFixture {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if ($item.PSIsContainer -or
+        $item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $item.Length -le 0 -or $item.Length -gt 256KB) {
+        throw 'The fixed Catalyst companion fixture must be a bounded regular no-link file.'
+    }
+    $digest = Get-ReplicationBindingFileDigest -Path $item.FullName
+    if ($digest -cne $script:ReplicationCatalystCompanionFixtureSha256) {
+        throw 'The fixed Catalyst companion fixture digest does not match trusted policy.'
+    }
+    return $digest
+}
+
+function Assert-ReplicationFixedCompanionRun {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]$Requirement
+    )
+
+    $run = Read-ReplicationRegressionRunEvidence `
+        -Path $Path `
+        -ExpectedPlatform ([string]$Requirement.Platform) `
+        -ExpectedProject ([string]$Requirement.Project) `
+        -ExpectedCategory ([string]$Requirement.Category) `
+        -ExpectedClass ([string]$Requirement.TestClass)
+    $document = $run.Document
+    if ([int]$document.total -ne 2 -or [int]$document.passed -ne 2 -or
+        [int]$document.failed -ne 0 -or [int]$document.skipped -ne 0 -or
+        [int]$document.errors -ne 0 -or @($document.resultFiles).Count -ne 1 -or
+        [string]$document.resultFiles[0].name -cne 'source-result-1.xml') {
+        throw 'The fixed Catalyst companion requires exactly two passing tests and retained raw XML.'
+    }
+    $methods = @($document.records | ForEach-Object { [string]$_.method } |
+            Sort-Object -CaseSensitive)
+    $expectedMethods = @($Requirement.Methods | Sort-Object -CaseSensitive)
+    if (($methods -join "`n") -cne ($expectedMethods -join "`n") -or
+        @($methods | Sort-Object -CaseSensitive -Unique).Count -ne 2) {
+        throw 'The fixed Catalyst companion executed missing, duplicate, or unexpected methods.'
+    }
+    return $run
+}
 
 function Get-ReplicationBindingFields {
     return @($script:ReplicationBindingFields)
@@ -598,19 +701,39 @@ function Assert-ReplicationRegressionEvidence {
             [string]$ExpectedProject = '',
             [string]$ExpectedProjectPath = '',
             [string]$ExpectedClass = '',
-            [string]$ExpectedGeneratedTestPath = ''
+        [string]$ExpectedGeneratedTestPath = '',
+        [AllowEmptyCollection()][string[]]$ExpectedFixPaths = @(),
+        [string]$TrustedFixturePath = ''
         )
 
         $evidencePath = Join-Path $ArtifactRoot 'regression/regression-evidence.json'
+    if ($ExpectedPlatform -ceq 'ios') {
+        if ($null -eq $ExpectedFixPaths -or $ExpectedFixPaths.Count -eq 0) {
+            throw 'iOS regression evidence requires validated fix paths from the trusted patch parser.'
+        }
+        foreach ($path in $ExpectedFixPaths) {
+            if ([string]::IsNullOrWhiteSpace($path)) {
+                throw 'iOS regression evidence requires validated fix paths from the trusted patch parser.'
+            }
+        }
+    }
+    $requirement = Get-ReplicationFixedCompanionRequirement `
+        -Platform $ExpectedPlatform `
+        -FixPaths $ExpectedFixPaths
+    $expectedSchemaVersion = if ($requirement) { 2 } else { 1 }
+    $fields = @(
+        'schemaVersion', 'baselineSha', 'productPatchSha256', 'platform',
+        'project', 'projectPath', 'category', 'testClass', 'generatedTestPath',
+        'baselineResult', 'fixResult', 'baselineResultSha256',
+        'fixResultSha256', 'comparison')
+    if ($expectedSchemaVersion -eq 2) {
+        $fields += 'companion'
+    }
         $evidence = Get-ReplicationRegressionJson `
             -Path $evidencePath `
-            -Fields @(
-                'schemaVersion', 'baselineSha', 'productPatchSha256', 'platform',
-                'project', 'projectPath', 'category', 'testClass', 'generatedTestPath',
-                'baselineResult', 'fixResult', 'baselineResultSha256',
-                'fixResultSha256', 'comparison') `
+        -Fields $fields `
             -Context 'Regression evidence'
-        if ([int]$evidence.schemaVersion -ne 1 -or
+    if ([int]$evidence.schemaVersion -ne $expectedSchemaVersion -or
             [string]$evidence.baselineSha -cne $ExpectedBaselineSha.ToLowerInvariant() -or
             [string]$evidence.platform -cne $ExpectedPlatform -or
             [string]$evidence.productPatchSha256 -cnotmatch '^[0-9a-f]{64}$' -or
@@ -696,6 +819,62 @@ function Assert-ReplicationRegressionEvidence {
         if ($comparablePassingCount -lt 1) {
             throw 'Regression evidence contains no comparable passing sibling execution.'
         }
+
+    if ($requirement) {
+        if ([string]::IsNullOrWhiteSpace($TrustedFixturePath)) {
+            throw 'The fixed Catalyst companion requires the trusted fixture path.'
+        }
+        $fixtureDigest = Assert-ReplicationFixedCompanionFixture `
+            -Path $TrustedFixturePath
+        $companion = $evidence.companion
+        $actualFields = @($companion.PSObject.Properties.Name |
+                Sort-Object -CaseSensitive)
+        $expectedFields = @(
+            'id', 'fixturePath', 'fixtureTargetPath', 'fixtureSha256',
+            'platform', 'project', 'projectPath', 'category', 'testClass',
+            'methods', 'baselineResult', 'fixResult', 'baselineResultSha256',
+            'fixResultSha256', 'comparison') | Sort-Object -CaseSensitive
+        if (($actualFields -join "`n") -cne ($expectedFields -join "`n")) {
+            throw 'Fixed Catalyst companion evidence has unexpected or missing fields.'
+        }
+        foreach ($entry in @(
+                @{ Name = 'id'; Expected = $requirement.Id },
+                @{ Name = 'fixturePath'; Expected = $requirement.FixtureRelativePath },
+                @{ Name = 'fixtureTargetPath'; Expected = $requirement.FixtureTargetPath },
+                @{ Name = 'fixtureSha256'; Expected = $fixtureDigest },
+                @{ Name = 'platform'; Expected = $requirement.Platform },
+                @{ Name = 'project'; Expected = $requirement.Project },
+                @{ Name = 'projectPath'; Expected = $requirement.ProjectPath },
+                @{ Name = 'category'; Expected = $requirement.Category },
+                @{ Name = 'testClass'; Expected = $requirement.TestClass },
+                @{ Name = 'comparison'; Expected = 'pass' }
+            )) {
+            if ([string]$companion.($entry.Name) -cne [string]$entry.Expected) {
+                throw "Fixed Catalyst companion evidence has an invalid $($entry.Name)."
+            }
+        }
+        $methods = @($companion.methods | ForEach-Object { [string]$_ })
+        if (($methods -join "`n") -cne (@($requirement.Methods) -join "`n")) {
+            throw 'Fixed Catalyst companion evidence has missing, reordered, or unexpected methods.'
+        }
+        if ([string]$companion.baselineResult -cne
+            'regression/catalyst-baseline/strict-test-evidence.json' -or
+            [string]$companion.fixResult -cne
+            'regression/catalyst-fix/strict-test-evidence.json') {
+            throw 'Fixed Catalyst companion evidence uses an unexpected result path.'
+        }
+        $companionBaseline = Assert-ReplicationFixedCompanionRun `
+            -Path (Join-Path $ArtifactRoot ([string]$companion.baselineResult)) `
+            -Requirement $requirement
+        $companionFix = Assert-ReplicationFixedCompanionRun `
+            -Path (Join-Path $ArtifactRoot ([string]$companion.fixResult)) `
+            -Requirement $requirement
+        if ($companionBaseline.Digest -cne
+            [string]$companion.baselineResultSha256 -or
+            $companionFix.Digest -cne [string]$companion.fixResultSha256) {
+            throw 'Fixed Catalyst companion evidence does not bind its exact strict results.'
+        }
+    }
         return $evidence
     }
 function ConvertTo-ReplicationBindingCanonicalText {
@@ -858,6 +1037,8 @@ function New-ReplicationCertificationBinding {
         [object]$Selector,
         [string]$ExpectedRegressionCategory = '',
         [string]$ExpectedRegressionClass = '',
+        [AllowEmptyCollection()][string[]]$ExpectedFixPaths = @(),
+        [string]$TrustedFixturePath = '',
         [string]$OutputPath = ''
     )
 
@@ -896,7 +1077,9 @@ function New-ReplicationCertificationBinding {
             -ExpectedBaselineSha $ReplicationBaseSha `
             -ExpectedPlatform $Platform `
             -ExpectedCategory $ExpectedRegressionCategory `
-            -ExpectedClass $ExpectedRegressionClass
+            -ExpectedClass $ExpectedRegressionClass `
+            -ExpectedFixPaths $ExpectedFixPaths `
+            -TrustedFixturePath $TrustedFixturePath
     }
 
     $scripts = [ordered]@{}
@@ -1039,6 +1222,8 @@ function Assert-ReplicationCertificationBinding {
         [string]$Platform = '',
         [string]$ExpectedRegressionCategory = '',
         [string]$ExpectedRegressionClass = '',
+        [AllowEmptyCollection()][string[]]$ExpectedFixPaths = @(),
+        [string]$TrustedFixturePath = '',
         [string]$Context = 'certification binding'
     )
 
@@ -1144,7 +1329,9 @@ function Assert-ReplicationCertificationBinding {
             -ExpectedPlatform ([string](Get-ReplicationBindingValue `
                 -Source $Binding -Name 'platform')) `
             -ExpectedCategory $ExpectedRegressionCategory `
-            -ExpectedClass $ExpectedRegressionClass
+            -ExpectedClass $ExpectedRegressionClass `
+            -ExpectedFixPaths $ExpectedFixPaths `
+            -TrustedFixturePath $TrustedFixturePath
     }
 
     if ($mismatches.Count -gt 0) {

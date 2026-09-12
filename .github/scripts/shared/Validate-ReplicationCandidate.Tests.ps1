@@ -106,7 +106,7 @@ $(if ($TestType -ceq 'DeviceTest') { "[Category(`"Issue$IssueNumber`")]`n" })pub
         if ($TestType -cin @('DeviceTest', 'UITest')) {
             $symbol = @{
                 android  = 'ANDROID'
-                ios      = 'IOS'
+                ios      = 'IOS && !MACCATALYST'
                 catalyst = 'MACCATALYST'
                 windows  = 'WINDOWS'
             }[$Platform]
@@ -424,6 +424,22 @@ namespace Microsoft.Maui.Controls;
 	}
 
 '@
+        if ($Fixture.Platform -ceq 'ios') {
+            Write-TestText `
+                -Path (Join-Path $Fixture.RepoRoot (
+                    'src/Controls/src/Core/Platform/GestureManager/' +
+                    'GesturePlatformManager.iOS.cs')) `
+                -Value @'
+namespace Microsoft.Maui.Controls;
+
+	public partial class Button
+	{
+		void Update()
+			=> Handler?.UpdateValue(nameof(Text));
+	}
+
+'@
+        }
         if ($Fixture.CandidatePath -match
             '^src/Controls/tests/DeviceTests/Elements/(?<component>[A-Za-z][A-Za-z0-9_]*)/') {
             $component = $Matches.component
@@ -5103,8 +5119,14 @@ public void Issue12345()
             $parts = $Fixture.TestClassName.Split('.')
             $className = $parts[-1]
             $namespace = $parts[0..($parts.Count - 2)] -join '.'
+            $platformSymbol = @{
+                android = 'ANDROID'
+                ios = 'IOS && !MACCATALYST'
+                catalyst = 'MACCATALYST'
+                windows = 'WINDOWS'
+            }[$Fixture.Platform]
             return @"
-#if ANDROID
+#if $platformSymbol
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
@@ -5373,14 +5395,135 @@ index cc87be1f60..4791badc38 100644
         }
 
         function script:New-OracleFixture {
+            param([string]$Platform = 'android')
+
+            $platformSuffix = @{
+                android = 'Android'
+                ios = 'iOS'
+                catalyst = 'MacCatalyst'
+                windows = 'Windows'
+            }[$Platform]
             $fixture = ConvertTo-ArtifactContractFixture -Fixture (
                 New-ValidationFixture `
+                    -Platform $Platform `
                     -TestType 'DeviceTest' `
                     -CandidatePath (
                         'src/Controls/tests/DeviceTests/Elements/Label/' +
-                        'Issue12345.Android.cs'))
+                    "Issue12345.$platformSuffix.cs"))
             Write-FixtureDeviceResultDocument -Fixture $fixture
             return script:Add-OracleControl -Fixture $fixture
+        }
+
+        function script:Add-OracleCatalystCompanion {
+            param([Parameter(Mandatory = $true)][object]$Fixture)
+
+            $class =
+            'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+            $methods = @(
+                'SecondaryToBothCreatesNativeTap',
+                'SecondaryToPrimaryCreatesNativeTap')
+            foreach ($arm in @('baseline', 'fix')) {
+                $primaryPath = Join-Path $Fixture.EvidenceDir (
+                    "regression/$arm/strict-test-evidence.json")
+                $primary = Get-Content -LiteralPath $primaryPath -Raw |
+                    ConvertFrom-Json -Depth 20
+                $primary.platform = 'ios'
+                Write-TestJson -Path $primaryPath -Value $primary
+
+                $directory = Join-Path $Fixture.EvidenceDir "regression/catalyst-$arm"
+                New-Item -ItemType Directory -Path $directory -Force | Out-Null
+                $xmlPath = Join-Path $directory 'source-result-1.xml'
+                Write-TestText -Path $xmlPath -Value (
+                    '<assemblies><assembly total="2" passed="2" failed="0" skipped="0" errors="0">' +
+                    "<collection><test name=`"Secondary to both`" type=`"$class`" " +
+                    "method=`"$($methods[0])`" result=`"Pass`" />" +
+                    "<test name=`"Secondary to primary`" type=`"$class`" " +
+                    "method=`"$($methods[1])`" result=`"Pass`" />" +
+                    '</collection></assembly></assemblies>')
+                Write-TestJson `
+                    -Path (Join-Path $directory 'strict-test-evidence.json') `
+                    -Value ([ordered]@{
+                        schemaVersion = 1
+                        completed = $true
+                        runStartedUtc = '2026-01-01T00:00:00.0000000Z'
+                        completedUtc = '2026-01-01T00:01:00.0000000Z'
+                        project = 'Controls'
+                        platform = 'catalyst'
+                        testFilter = 'Category=Gesture'
+                        includeClass = $class
+                        total = 2
+                        passed = 2
+                        failed = 0
+                        skipped = 0
+                        errors = 0
+                        records = @(
+                            [ordered]@{
+                                type = $class
+                                method = $methods[0]
+                                displayName = 'Secondary to both'
+                                outcome = 'Pass'
+                                failureSignature = ''
+                            },
+                            [ordered]@{
+                                type = $class
+                                method = $methods[1]
+                                displayName = 'Secondary to primary'
+                                outcome = 'Pass'
+                                failureSignature = ''
+                            })
+                        resultFiles = @([ordered]@{
+                                name = 'source-result-1.xml'
+                                sha256 = (
+                                    Get-FileHash -LiteralPath $xmlPath -Algorithm SHA256
+                                ).Hash.ToLowerInvariant()
+                            })
+                    })
+            }
+
+            $comparisonPath = Join-Path $Fixture.EvidenceDir (
+                'regression/regression-evidence.json')
+            $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+                ConvertFrom-Json -Depth 20 -AsHashtable
+            $comparison.schemaVersion = 2
+            $comparison.platform = 'ios'
+            $comparison.baselineResultSha256 = (
+                Get-FileHash -LiteralPath (
+                    Join-Path $Fixture.EvidenceDir ([string]$comparison.baselineResult)
+                ) -Algorithm SHA256).Hash.ToLowerInvariant()
+            $comparison.fixResultSha256 = (
+                Get-FileHash -LiteralPath (
+                    Join-Path $Fixture.EvidenceDir ([string]$comparison.fixResult)
+                ) -Algorithm SHA256).Hash.ToLowerInvariant()
+            $comparison.companion = [ordered]@{
+                id = 'gesture-platform-manager-catalyst-v1'
+                fixturePath =
+                'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
+                fixtureTargetPath =
+                'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
+                fixtureSha256 =
+                '9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+                platform = 'catalyst'
+                project = 'Controls'
+                projectPath =
+                'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+                category = 'Gesture'
+                testClass = $class
+                methods = $methods
+                baselineResult =
+                'regression/catalyst-baseline/strict-test-evidence.json'
+                fixResult = 'regression/catalyst-fix/strict-test-evidence.json'
+                baselineResultSha256 = (
+                    Get-FileHash -LiteralPath (Join-Path $Fixture.EvidenceDir (
+                            'regression/catalyst-baseline/strict-test-evidence.json'
+                        )) -Algorithm SHA256).Hash.ToLowerInvariant()
+                fixResultSha256 = (
+                    Get-FileHash -LiteralPath (Join-Path $Fixture.EvidenceDir (
+                            'regression/catalyst-fix/strict-test-evidence.json'
+                        )) -Algorithm SHA256).Hash.ToLowerInvariant()
+                comparison = 'pass'
+            }
+            Write-TestJson -Path $comparisonPath -Value $comparison
+            return $Fixture
         }
     }
 
@@ -5394,6 +5537,81 @@ index cc87be1f60..4791badc38 100644
         $result.certificationLevel | Should -BeExactly 'certified-oracle'
         $result.fixFiles | Should -Be @($script:oracleFixTarget)
         $result.fixPatch | Should -BeExactly 'fix.patch'
+    }
+
+    It 'accepts the mandatory fixed Catalyst companion for an iOS GPM fix' {
+        $fixture = script:New-OracleFixture -Platform ios
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -Target (
+            'src/Controls/src/Core/Platform/GestureManager/' +
+            'GesturePlatformManager.iOS.cs')
+        $null = script:Add-OracleCatalystCompanion -Fixture $fixture
+
+        $result = Invoke-FixtureValidation `
+            -Fixture $fixture `
+            -FixPatchPath $fixPatchPath
+
+        $result.certificationLevel | Should -BeExactly 'certified-oracle'
+        $result.fixFiles | Should -Be @(
+            'src/Controls/src/Core/Platform/GestureManager/' +
+            'GesturePlatformManager.iOS.cs')
+    }
+
+    It 'rejects an iOS GPM fix that omits its mandatory Catalyst companion' {
+        $fixture = script:New-OracleFixture -Platform ios
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -Target (
+            'src/Controls/src/Core/Platform/GestureManager/' +
+            'GesturePlatformManager.iOS.cs')
+
+        { Invoke-FixtureValidation `
+                -Fixture $fixture `
+                -FixPatchPath $fixPatchPath } |
+            Should -Throw '*unexpected or missing fields*'
+    }
+
+    It 'rejects an iOS GPM companion whose raw Catalyst XML is missing' {
+        $fixture = script:New-OracleFixture -Platform ios
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -Target (
+            'src/Controls/src/Core/Platform/GestureManager/' +
+            'GesturePlatformManager.iOS.cs')
+        $null = script:Add-OracleCatalystCompanion -Fixture $fixture
+        Remove-Item -LiteralPath (Join-Path $fixture.EvidenceDir (
+                'regression/catalyst-fix/source-result-1.xml')) -Force
+
+        { Invoke-FixtureValidation `
+                -Fixture $fixture `
+                -FixPatchPath $fixPatchPath } |
+            Should -Throw '*source result digest does not match*'
+    }
+
+    It 'rejects an iOS GPM companion that forges the immutable fixture hash' {
+        $fixture = script:New-OracleFixture -Platform ios
+        $null = script:Add-OracleArms -Fixture $fixture
+        $fixPatchPath = script:Add-OracleFixPatch `
+            -Fixture $fixture `
+            -Target (
+            'src/Controls/src/Core/Platform/GestureManager/' +
+            'GesturePlatformManager.iOS.cs')
+        $null = script:Add-OracleCatalystCompanion -Fixture $fixture
+        $comparisonPath = Join-Path $fixture.EvidenceDir (
+            'regression/regression-evidence.json')
+        $comparison = Get-Content -LiteralPath $comparisonPath -Raw |
+            ConvertFrom-Json -Depth 20
+        $comparison.companion.fixtureSha256 = '0' * 64
+        Write-TestJson -Path $comparisonPath -Value $comparison
+
+        { Invoke-FixtureValidation `
+                -Fixture $fixture `
+                -FixPatchPath $fixPatchPath } |
+            Should -Throw '*invalid fixtureSha256*'
     }
 
     It 'preserves grounded repair metadata through normalization and clean validation' {
