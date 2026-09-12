@@ -85,7 +85,13 @@ steps:
   - bash: |
       set -euo pipefail
       mkdir -p "$(LogDirectory)"
-      avdmanager list device > "$(LogDirectory)/android-device-definitions.txt"
+      sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+      avdmanager="$sdk_root/cmdline-tools/13.0/bin/avdmanager"
+      if [[ -z "$sdk_root" || ! -x "$avdmanager" ]]; then
+        echo "Provisioned Android SDK or avdmanager was not found: '$avdmanager'."
+        exit 1
+      fi
+      "$avdmanager" list device > "$(LogDirectory)/android-device-definitions.txt"
       if ! grep -Eq 'id: [0-9]+ or "pixel_8a"' "$(LogDirectory)/android-device-definitions.txt"; then
         echo "Required Android device definition pixel_8a is unavailable."
         cat "$(LogDirectory)/android-device-definitions.txt"
@@ -193,11 +199,18 @@ steps:
   - bash: |
       set +e
       mkdir -p "$(LogDirectory)/issue38080"
-      timeout 30s adb shell getprop > "$(LogDirectory)/issue38080/getprop.txt" 2>&1
-      timeout 30s adb shell dumpsys webviewupdate > "$(LogDirectory)/issue38080/webview-provider.txt" 2>&1
-      timeout 30s adb shell dumpsys SurfaceFlinger > "$(LogDirectory)/issue38080/surfaceflinger.txt" 2>&1
-      timeout 30s adb logcat -d > "$(LogDirectory)/issue38080/logcat.txt" 2>&1
-      timeout 30s adb pull /data/tombstones "$(LogDirectory)/issue38080/tombstones" \
+      sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+      adb="$sdk_root/platform-tools/adb"
+      if [[ -z "$sdk_root" || ! -x "$adb" ]]; then
+        echo "Provisioned Android SDK or adb was not found: '$adb'." \
+          > "$(LogDirectory)/issue38080/adb-path-error.txt"
+        exit 0
+      fi
+      timeout 30s "$adb" shell getprop > "$(LogDirectory)/issue38080/getprop.txt" 2>&1
+      timeout 30s "$adb" shell dumpsys webviewupdate > "$(LogDirectory)/issue38080/webview-provider.txt" 2>&1
+      timeout 30s "$adb" shell dumpsys SurfaceFlinger > "$(LogDirectory)/issue38080/surfaceflinger.txt" 2>&1
+      timeout 30s "$adb" logcat -d > "$(LogDirectory)/issue38080/logcat.txt" 2>&1
+      timeout 30s "$adb" pull /data/tombstones "$(LogDirectory)/issue38080/tombstones" \
         > "$(LogDirectory)/issue38080/tombstone-pull.txt" 2>&1
       exit 0
     displayName: Capture Issue 38080 Android diagnostics
