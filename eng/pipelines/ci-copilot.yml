@@ -27,6 +27,9 @@ parameters:
       # Trusted host-capability diagnostic only; creates and destroys an empty
       # Hypervisor.framework VM without guest code, devices, or networking.
       - ios-vm-capability-probe
+      # Fixed trusted Mac Catalyst A/B control only; never certifies or publishes
+      # issue or product outcomes.
+      - catalyst-gesture-probe
 
   - name: PRNumber
     displayName: 'Pull Request Number'
@@ -394,6 +397,384 @@ stages:
             inputs:
               targetPath: '$(IosProbeRoot)'
               artifact: 'IosHarnessProbe'
+              publishLocation: 'pipeline'
+
+  - stage: ProbeCatalystGestureRegression
+    displayName: 'Probe fixed Mac Catalyst gesture A/B control'
+    dependsOn: []
+    condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'catalyst-gesture-probe'))
+    jobs:
+      - job: ProbeCatalystGestureRegression
+        pool: ${{ parameters.macPool }}
+        timeoutInMinutes: 100
+        workspace:
+          clean: all
+        variables:
+          CatalystGestureProbeRoot: $(Pipeline.Workspace)/CatalystGestureProbe
+          CatalystGestureTrustedRoot: $(Build.ArtifactStagingDirectory)/catalyst-gesture-trusted
+          CatalystGestureAttestationRoot: $(Agent.TempDirectory)/catalyst-gesture-attestation
+          CatalystGestureRuntimeRoot: $(Agent.TempDirectory)/catalyst-gesture-runtime
+        steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 1
+            fetchTags: false
+            persistCredentials: false
+            timeoutInMinutes: 5
+
+          # This validation is deliberately the first executable step. Invalid
+          # combinations stop before provisioning, public-object fetch, or tests.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $booleans = @(
+                $env:PARAM_PUBLISH_OUTCOME,
+                $env:PARAM_SUPERSEDE,
+                $env:PARAM_ANDROID_PREFLIGHT,
+                $env:PARAM_ANDROID_NATIVE_PROBE)
+              if ($env:PARAM_MODE -cne 'catalyst-gesture-probe' -or
+                  $env:PARAM_PLATFORM -cne 'catalyst' -or
+                  $env:PARAM_PR_NUMBER -cne '0' -or
+                  $env:PARAM_ISSUE_NUMBER -cne '0' -or
+                  $env:PARAM_REVIEW_REPOSITORY -cne 'dotnet/maui' -or
+                  @($booleans | Where-Object { $_.ToLowerInvariant() -cne 'false' }).Count -ne 0) {
+                throw ('catalyst-gesture-probe requires Platform=catalyst, PRNumber=0, ' +
+                  'IssueNumber=0, ReviewRepository=dotnet/maui, and every publication, ' +
+                  'supersession, and Android probe flag disabled.')
+              }
+              if ($env:DEFINITION_ID -cne '27723' -or
+                  $env:BUILD_REPOSITORY_NAME -cne 'dotnet/maui') {
+                throw 'catalyst-gesture-probe is restricted to dotnet/maui Azure definition 27723.'
+              }
+              $head = & git rev-parse HEAD
+              if ($LASTEXITCODE -ne 0 -or
+                  $env:BUILD_SOURCEVERSION -cnotmatch '^[0-9a-f]{40}$' -or
+                  $head -cne $env:BUILD_SOURCEVERSION -or
+                  $env:BUILD_SOURCEBRANCH -cne 'refs/heads/copilot/replicate-issues-pipeline') {
+                throw 'The Catalyst gesture probe requires the exact trusted pipeline checkout.'
+              }
+              $status = @(& git status --porcelain=v1 --untracked-files=all)
+              if ($LASTEXITCODE -ne 0 -or $status.Count -ne 0) {
+                throw 'The trusted Catalyst gesture probe checkout is not clean.'
+              }
+              New-Item -ItemType Directory -Path $env:PROBE_ROOT -Force | Out-Null
+              . (Join-Path $env:BUILD_SOURCESDIRECTORY (
+                '.github/scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedTreeAttestation (Join-Path $env:BUILD_SOURCESDIRECTORY (
+                  '.github/scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -OutputDirectory $env:PROBE_ROOT
+              $budget = Get-CatalystProbeFixedPipelineBudget `
+                -StartedUtc ([DateTimeOffset]::UtcNow)
+              $budget | ConvertTo-Json -Depth 8 | Set-Content (
+                Join-Path $env:PROBE_ROOT 'budget.json') -Encoding utf8
+              Write-Host (
+                "##vso[task.setvariable variable=CATALYST_GESTURE_JOB_DEADLINE_UTC]" +
+                $budget.safeJobDeadlineUtc)
+              Write-Host (
+                "##vso[task.setvariable variable=CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS]" +
+                $budget.artifactTailSeconds)
+              [ordered]@{
+                schemaVersion = 1
+                mode = 'catalyst-gesture-probe'
+                pipelineCommit = $head
+                baselineCommit = '40590267d8057fd5c044e5bfea77a9dd31fef29f'
+                negativeCommit = 'e456312886ee33fc0e69307e030c3028597ee32e'
+                productPath = 'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+                fixtureSha256 = '9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+                reportOnly = $true
+                certifiesIssue = $false
+                certifiesProduct = $false
+                publishesOutcome = $false
+                invokesModel = $false
+                safeJobDeadlineUtc = $budget.safeJobDeadlineUtc
+                artifactTailSeconds = $budget.artifactTailSeconds
+              } | ConvertTo-Json -Depth 4 | Set-Content (
+                Join-Path $env:PROBE_ROOT 'scope.json') -Encoding utf8
+              Write-Host "##vso[build.updatebuildnumber]Catalyst fixed gesture A-B probe $(Build.BuildId)"
+            displayName: 'Validate closed Catalyst probe inputs before setup'
+            timeoutInMinutes: 2
+            env:
+              PARAM_MODE: ${{ parameters.Mode }}
+              PARAM_PLATFORM: ${{ parameters.Platform }}
+              PARAM_PR_NUMBER: ${{ parameters.PRNumber }}
+              PARAM_ISSUE_NUMBER: ${{ parameters.IssueNumber }}
+              PARAM_REVIEW_REPOSITORY: ${{ parameters.ReviewRepository }}
+              PARAM_PUBLISH_OUTCOME: ${{ parameters.PublishIssueOutcome }}
+              PARAM_SUPERSEDE: ${{ parameters.SupersedeExisting }}
+              PARAM_ANDROID_PREFLIGHT: ${{ parameters.AndroidHarnessPreflightOnly }}
+              PARAM_ANDROID_NATIVE_PROBE: ${{ parameters.AndroidHarnessNativeProbeOnly }}
+              DEFINITION_ID: $(System.DefinitionId)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+
+          # Materialize every executable helper and the fixed fixture from the
+          # validated pipeline revision before detaching the worktree.
+          - bash: |
+              set -euo pipefail
+              SOURCE_VERSION="$(Build.SourceVersion)"
+              TRUSTED="$(CatalystGestureTrustedRoot)"
+              ATTESTATION_ROOT="$(CatalystGestureAttestationRoot)"
+              if ! [[ "$SOURCE_VERSION" =~ ^[0-9a-f]{40}$ ]]; then
+                echo "Invalid immutable pipeline source version." >&2
+                exit 1
+              fi
+              rm -rf "$TRUSTED" "$ATTESTATION_ROOT"
+              mkdir -p "$TRUSTED" "$ATTESTATION_ROOT"
+              git -c core.autocrlf=false -c core.eol=lf archive "$SOURCE_VERSION" \
+                .github/scripts \
+                .github/skills \
+                eng/scripts \
+                eng/pipelines/ci-copilot.yml \
+                src/Controls/tests/DeviceTests/Platforms/MacCatalyst/ReplicationNetworkIsolation.entitlements |
+                tar -xf - -C "$TRUSTED"
+              mv "$TRUSTED/.github/scripts" "$TRUSTED/scripts"
+              mv "$TRUSTED/.github/skills" "$TRUSTED/skills"
+              mv "$TRUSTED/eng/scripts" "$TRUSTED/eng-scripts"
+              mkdir -p "$TRUSTED/source-overrides"
+              cp "$TRUSTED/src/Controls/tests/DeviceTests/Platforms/MacCatalyst/ReplicationNetworkIsolation.entitlements" \
+                "$TRUSTED/source-overrides/ReplicationMacCatalystControlsDeviceTests.entitlements"
+              rm -rf "$TRUSTED/.github" "$TRUSTED/src"
+              chmod -R a-w "$TRUSTED"
+            displayName: 'Capture fixed Catalyst trusted tree'
+            timeoutInMinutes: 2
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              $trusted = $env:TRUSTED_ROOT
+              . (Join-Path $trusted 'scripts/shared/Assert-TrustedTreeAttestation.ps1')
+              $sourceVersion = $env:BUILD_SOURCEVERSION.ToLowerInvariant()
+              $attestationPath = Join-Path $env:ATTESTATION_ROOT 'trusted-tree.json'
+              $attestation = New-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -SourceVersion $sourceVersion `
+                -PipelineDefinitionPath (Join-Path $trusted 'eng/pipelines/ci-copilot.yml') `
+                -OutputPath $attestationPath
+              $null = Assert-TrustedTreeAttestation `
+                -TrustedRoot $trusted `
+                -Attestation $attestationPath `
+                -ExpectedSourceVersion $sourceVersion `
+                -Context 'Catalyst gesture trusted capture'
+              Copy-Item -LiteralPath $attestationPath -Destination (
+                Join-Path $env:PROBE_ROOT 'trusted-tree-attestation.json')
+              Write-Host "##vso[task.setvariable variable=CATALYST_GESTURE_ATTESTATION]$attestationPath"
+              Write-Host "Catalyst trusted tree: $($attestation.treeHash)"
+            displayName: 'Attest fixed Catalyst trusted tree'
+            timeoutInMinutes: 3
+            env:
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              ATTESTATION_ROOT: $(CatalystGestureAttestationRoot)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+
+          # Fetch only the two fixed public objects. The known-negative tree is
+          # never checked out; only its single product-path diff is replayed.
+          - bash: |
+              set -euo pipefail
+              BASELINE='40590267d8057fd5c044e5bfea77a9dd31fef29f'
+              NEGATIVE='e456312886ee33fc0e69307e030c3028597ee32e'
+              PRODUCT='src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+              PUBLIC='https://github.com/dotnet/maui.git'
+              env -i PATH="$PATH" HOME="$HOME" GIT_TERMINAL_PROMPT=0 \
+                git -c credential.helper= -c core.askPass= -c credential.interactive=never \
+                -c http.extraheader= fetch --no-tags --force "$PUBLIC" "$BASELINE" "$NEGATIVE"
+              test "$(git cat-file -t "$BASELINE")" = commit
+              test "$(git cat-file -t "$NEGATIVE")" = commit
+              test "$(git rev-parse "$BASELINE:$PRODUCT")" = 68393011a77138e20c05194e268e0751b5bb3198
+              test "$(git rev-parse "$NEGATIVE:$PRODUCT")" = 3e79d48f36a378f7618694d1472812288cbd82e0
+              test "$(git diff --name-status "$BASELINE" "$NEGATIVE" -- "$PRODUCT")" = $'M\t'"$PRODUCT"
+              git checkout --detach --force "$BASELINE"
+              test "$(git rev-parse HEAD)" = "$BASELINE"
+              test -z "$(git status --porcelain=v1 --untracked-files=all)"
+            displayName: 'Fetch fixed public product objects and detach baseline'
+            timeoutInMinutes: 4
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path $env:TRUSTED_ROOT (
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+              $null = Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $env:JOB_DEADLINE `
+                -Phase 'fixed Xcode selection' `
+                -PhaseBudgetSeconds 180 `
+                -RemainingPhaseBudgetSeconds 3900 `
+                -ArtifactTailSeconds 300
+              if ($env:REQUIRED_XCODE -cnotmatch '^[0-9]+(?:\.[0-9]+){1,2}$') {
+                throw 'Catalyst gesture probe requires one fixed numeric Xcode version.'
+              }
+              $xcode = "/Applications/Xcode_$($env:REQUIRED_XCODE).app"
+              if (-not (Test-Path -LiteralPath $xcode -PathType Container)) {
+                throw "Required Catalyst gesture Xcode is unavailable: $xcode"
+              }
+              & /usr/bin/sudo /usr/bin/xcode-select -s "$xcode/Contents/Developer"
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Catalyst gesture probe could not select its fixed Xcode.'
+              }
+              & /usr/bin/xcodebuild -version
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Catalyst gesture probe could not verify its fixed Xcode.'
+              }
+              & /usr/bin/sudo /usr/bin/xcodebuild -license accept
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Catalyst gesture probe could not accept the preinstalled Xcode license.'
+              }
+              & /usr/bin/sudo /usr/bin/xcodebuild -runFirstLaunch
+              if ($LASTEXITCODE -ne 0) {
+                throw 'Catalyst gesture probe could not finish bounded Xcode first-launch setup.'
+              }
+            displayName: 'Select fixed preinstalled Catalyst Xcode'
+            timeoutInMinutes: 3
+            env:
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+              JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+              REQUIRED_XCODE: $(REQUIRED_XCODE)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path $env:TRUSTED_ROOT (
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+              $null = Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $env:JOB_DEADLINE `
+                -Phase 'pinned tool restore' `
+                -PhaseBudgetSeconds 240 `
+                -RemainingPhaseBudgetSeconds 3660 `
+                -ArtifactTailSeconds 300
+              . (Join-Path $env:TRUSTED_ROOT 'scripts/shared/Resolve-BuildShell.ps1')
+              $code = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'dotnet tool restore --verbosity minimal 2>&1 | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g" | tee "$PROBE_ROOT/tools.log"' `
+                -DirectFileName 'dotnet' `
+                -DirectArgument @('tool', 'restore', '--verbosity', 'minimal') `
+                -TimeoutMinutes 4
+              exit $code
+            displayName: 'Restore pinned baseline tools'
+            timeoutInMinutes: 5
+            env:
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+              JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+              CAKE_NUGET_SOURCE: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path $env:TRUSTED_ROOT (
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+              $null = Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $env:JOB_DEADLINE `
+                -Phase 'baseline SDK and workload bootstrap' `
+                -PhaseBudgetSeconds 900 `
+                -RemainingPhaseBudgetSeconds 2760 `
+                -ArtifactTailSeconds 300
+              . (Join-Path $env:TRUSTED_ROOT 'scripts/shared/Resolve-BuildShell.ps1')
+              $code = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet --configuration=Release --verbosity=normal 2>&1 | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g" | tee "$PROBE_ROOT/workloads.log"' `
+                -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 15
+              exit $code
+            displayName: 'Provision baseline Catalyst SDK and workloads'
+            timeoutInMinutes: 17
+            env:
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+              JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+              CAKE_NUGET_SOURCE: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
+
+          - pwsh: Write-Host "##vso[task.prependpath]$(DotNet.Dir)"
+            displayName: 'Use baseline repository .NET'
+
+          # This is the canonical eng/cake/dotnet.cake BuildTaskOnlyBuild=true
+          # recipe; do not inject CI=true and accidentally enable every Apple TFM.
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path $env:TRUSTED_ROOT (
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+              $null = Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $env:JOB_DEADLINE `
+                -Phase 'baseline MSBuild tasks' `
+                -PhaseBudgetSeconds 600 `
+                -RemainingPhaseBudgetSeconds 2160 `
+                -ArtifactTailSeconds 300
+              . (Join-Path $env:TRUSTED_ROOT 'scripts/shared/Resolve-BuildShell.ps1')
+              $code = Invoke-BuildTasksWatchdog `
+                -ShellPath '/bin/bash' `
+                -ShellCommand 'pwsh -NoProfile -File ./build.ps1 --target=dotnet-buildtasks --configuration=Release --verbosity=normal 2>&1 | tr -d "\r" | sed -E "s/##vso\[[^]]*\]//g" | tee "$PROBE_ROOT/buildtasks.log"' `
+                -DirectFileName 'pwsh' -DirectArgument @() -TimeoutMinutes 10
+              exit $code
+            displayName: 'Build baseline MSBuild tasks only'
+            timeoutInMinutes: 12
+            env:
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+              JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+              CAKE_NUGET_SOURCE: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
+
+          - pwsh: |
+              $env:CATALYST_PROBE_TASK_ENTRY_TIMESTAMP = [string][Diagnostics.Stopwatch]::GetTimestamp()
+              $env:CATALYST_PROBE_TASK_STOPWATCH_FREQUENCY = [string][Diagnostics.Stopwatch]::Frequency
+              $env:CATALYST_PROBE_TASK_BUDGET_SECONDS = '2040'
+              $ErrorActionPreference = 'Stop'
+              . (Join-Path $env:TRUSTED_ROOT (
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1')) `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+              $null = Assert-CatalystProbeDeadlineAdmission `
+                -DeadlineUtc $env:JOB_DEADLINE `
+                -Phase 'report-only Catalyst A-B probe' `
+                -PhaseBudgetSeconds 2160 `
+                -ArtifactTailSeconds 300
+              & (Join-Path $env:TRUSTED_ROOT 'scripts/Invoke-CatalystGestureRegressionProbe.ps1') `
+                -ExpectedSourceVersion $env:BUILD_SOURCEVERSION `
+                -RepositoryRoot $env:BUILD_SOURCESDIRECTORY `
+                -TrustedRoot $env:TRUSTED_ROOT `
+                -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
+                -OutputDirectory $env:PROBE_ROOT
+            displayName: 'Run fixed report-only Catalyst gesture A/B'
+            timeoutInMinutes: 36
+            env:
+              CATALYST_PROBE_TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              CATALYST_PROBE_OUTPUT_ROOT: $(CatalystGestureProbeRoot)
+              CATALYST_PROBE_RUNTIME_ROOT: $(CatalystGestureRuntimeRoot)
+              CATALYST_GESTURE_JOB_DEADLINE_UTC: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+              CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS: $(CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS)
+              TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
+              PROBE_ROOT: $(CatalystGestureProbeRoot)
+              JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Preserve report-only Catalyst probe evidence'
+            condition: always()
+            timeoutInMinutes: 5
+            inputs:
+              targetPath: '$(CatalystGestureProbeRoot)'
+              artifact: 'CatalystGestureRegressionProbe'
               publishLocation: 'pipeline'
 
   # This manual mode proves the real MauiBot branch-push and draft-PR transport

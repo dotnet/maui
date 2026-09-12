@@ -11,6 +11,7 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 | `replication-checks` | None | Focused trusted pipeline-contract checks without devices |
 | `ios-harness-probe` | None | Run one checked-in iOS infrastructure fixture without issue generation or publication |
 | `ios-vm-capability-probe` | None | Probe host Hypervisor.framework capabilities without running a guest or authorizing generated execution |
+| `catalyst-gesture-probe` | Fixed immutable baseline/negative pair | Report-only native Catalyst regression proof; no model or publication |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -71,6 +72,36 @@ Use `Mode=ios-vm-capability-probe`, `Platform=ios`, and both target numbers set 
 Hypervisor.framework VM without guest execution, devices, or networking.
 Neither probe authorizes generated execution or proves network isolation;
 normal iOS replication uses the review-host controls described above.
+
+Use `Mode=catalyst-gesture-probe`, `Platform=catalyst`, `PRNumber=0`,
+`IssueNumber=0`, and `ReviewRepository=dotnet/maui` on the trusted
+`copilot/replicate-issues-pipeline` branch in definition27723. Publication,
+supersession and Android probe flags must all be false. This standalone fresh
+CI job never enters review, issue generation, model invocation or publication.
+
+The probe admits only its checked-in two-fact Catalyst fixture and fixed public
+commits: baseline `40590267d8057fd5c044e5bfea77a9dd31fef29f` and known-negative
+`e456312886ee33fc0e69307e030c3028597ee32e`. Only the fixed gesture-manager
+product path is replayed, after exact pre/postimage identity and complete-source
+checks. No caller can supply another patch, source, class or execution platform.
+Trusted baseline prewarming precedes the fixture/candidate bytes. Native runs
+retain matching Catalyst boundaries, signed App Sandbox entitlements, live
+network denial and exact class isolation.
+
+A successful diagnostic requires both baseline facts to pass, followed by both
+known-negative facts reaching their expected native assertions. Missing or
+incomplete XML, extra/skipped tests, environment failures, unexpected negative
+passes and cleanup failures do not demonstrate the regression. Each cycle is
+bounded to eight minutes within one task-entry deadline covering initialization,
+preparation, cleanup and result writing. Cleanup operations share a single
+bounded allowance. The job keeps a reserved evidence tail without
+provisioning retries or increasing production replication budgets. Private
+runtime/package caches remain outside the published artifact root.
+
+`CatalystGestureRegressionProbe` retains the fixed input identities, fixture
+hash, strict native results and diagnostic logs. Success demonstrates this
+negative control only: it neither certifies a fix nor enables a production
+companion lane. Existing iOS Label sibling coverage remains unchanged.
 
 The feedback snapshot is data-only and bounded. In addition to the discussion
 surfaces it includes normalized `qualityContract`, typed `selector`, `evidence`,

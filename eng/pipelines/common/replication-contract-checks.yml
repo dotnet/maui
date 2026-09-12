@@ -480,11 +480,35 @@ steps:
         'A pull request that carries a fix says so*does not attribute a runner-grounded repair to independent-review findings'
         'The pull request body reports the independent review*distinguishes review-driven repair from review of the repaired patch'
         'The pull request body records the try-fix panel, not only its winner*marks a repaired panel winner only as the provisional starting point'
+        'Fixed report-only Catalyst gesture probe*uses only immutable public product and fixture inputs'
+        'Fixed report-only Catalyst gesture probe*initializes the real Azure boundary before binding its container result path'
+        'Fixed report-only Catalyst gesture probe*keeps private SDK and package caches outside every published proof path'
+        'Fixed report-only Catalyst gesture probe*rejects the former retry envelope and reserves a runnable evidence tail'
+        'Fixed report-only Catalyst gesture probe*rejects a non-macOS host at the real initialization boundary'
+        'Fixed report-only Catalyst gesture probe*rejects slow initialization and patch preparation before native prewarm'
+        'Fixed report-only Catalyst gesture probe*shares one cleanup deadline across three Git operations and retains a failure summary'
+        'Fixed report-only Catalyst gesture probe*derives one fixed monotonic deadline from the final task entry'
+        'Fixed report-only Catalyst gesture probe*bounds redirected pipe draining when an exited parent leaves a live descendant'
+        'Fixed report-only Catalyst gesture probe*fails bounded owned-app cleanup when signature validation stalls'
+        'Fixed report-only Catalyst gesture probe*shares the cleanup deadline across signed identity commands and owned process waits'
+        'Fixed report-only Catalyst gesture probe*keeps cycle execution cleanup and evidence inside the same reserved deadline'
+        'Fixed report-only Catalyst gesture probe*runs the same exact two facts through the strict Catalyst boundary'
+        'Fixed report-only Catalyst gesture probe*accepts a passing baseline and the expected native assertion negative'
+        'Fixed report-only Catalyst gesture probe*fails closed when the known-negative unexpectedly passes'
+        'Fixed report-only Catalyst gesture probe*fails closed on incomplete strict XML evidence'
+        'Fixed report-only Catalyst gesture probe*overrides a demonstrated A/B result when cleanup fails'
+        'Fixed report-only Catalyst gesture probe*strips credentials and Azure commands from every bounded child log'
+        'Catalyst gesture pipeline isolation*routes one standalone fresh-Azure report-only mode'
+        'Catalyst gesture pipeline isolation*rejects every open input combination before setup or fetch'
+        'Catalyst gesture pipeline isolation*does not inherit credentials or enter review replication publication or model paths'
+        'Catalyst gesture pipeline isolation*prewarms only the Catalyst graph and keeps both cycles bounded'
+        'MAUI Copilot mode routing*isolates the fixed Catalyst A-B probe from production replication and publication'
       )
       $config = New-PesterConfiguration
       $config.Run.Path = @(
         "$(Build.SourcesDirectory)/.github/scripts/Replicate-Issue.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-Pipeline.Tests.ps1"
+        "$(Build.SourcesDirectory)/.github/scripts/Invoke-CatalystGestureRegressionProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/tests/Assert-ReplicationAppleAppSandbox.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-IosVmCapabilityProbe.Tests.ps1"
         "$(Build.SourcesDirectory)/.github/scripts/Replication-AndroidNativeProbe.Tests.ps1"

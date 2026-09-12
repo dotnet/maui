@@ -34,6 +34,7 @@ Describe 'MAUI Copilot mode routing' {
         $script:Pipeline | Should -Match "(?s)- name: Mode.*?default: review.*?values:\s+- review\s+- replicate\s+- feedback\s+- publication-smoke"
         $script:Pipeline | Should -Match '(?m)^\s+- replication-checks\s*$'
         $script:Pipeline | Should -Match '(?m)^\s+- ios-vm-capability-probe\s*$'
+        $script:Pipeline | Should -Match '(?m)^\s+- catalyst-gesture-probe\s*$'
         $script:Pipeline | Should -Match "(?s)- name: PRNumber.*?default: 0"
         $script:Pipeline | Should -Match "(?s)- name: IssueNumber.*?default: 0"
     }
@@ -130,6 +131,55 @@ Describe 'MAUI Copilot mode routing' {
         $stage | Should -Not -Match (
             'persistCredentials: true|GH_TOKEN|COPILOT_GITHUB_TOKEN|SYSTEM_ACCESSTOKEN|' +
             'Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1|SetEnvironmentVariable|git (fetch|checkout|merge|apply)')
+    }
+
+    It 'isolates the fixed Catalyst A-B probe from production replication and publication' {
+        $stage = [regex]::Match(
+            $script:Pipeline,
+            '(?ms)^  - stage: ProbeCatalystGestureRegression\r?\n.*?(?=^  - stage:|\z)').Value
+        $stage | Should -Not -BeNullOrEmpty
+        $stage | Should -Match "eq\('\$\{\{ parameters\.Mode \}\}', 'catalyst-gesture-probe'\)"
+        $stage | Should -Match 'dependsOn: \[\]'
+        $stage | Should -Match 'pool: \$\{\{ parameters\.macPool \}\}'
+        $stage | Should -Match 'persistCredentials: false'
+        $stage | Should -Match (
+            'catalyst-gesture-probe requires Platform=catalyst, PRNumber=0')
+        $stage | Should -Match 'ReviewRepository=dotnet/maui'
+        $stage | Should -Match 'restricted to dotnet/maui Azure definition 27723'
+        $stage | Should -Match 'Invoke-CatalystGestureRegressionProbe\.ps1'
+        $stage | Should -Match 'artifact: ''CatalystGestureRegressionProbe'''
+        $stage | Should -Match (
+            'CatalystGestureRuntimeRoot: \$\(Agent\.TempDirectory\)/catalyst-gesture-runtime')
+        $stage | Should -Match 'Get-CatalystProbeFixedPipelineBudget'
+        $stage | Should -Match 'Assert-CatalystProbeDeadlineAdmission'
+        ([regex]::Matches(
+                $stage,
+                'CATALYST_PROBE_TASK_ENTRY_TIMESTAMP')).Count | Should -Be 1
+        $stage | Should -Match (
+            "(?ms)- pwsh: \|\r?\n" +
+            "\s+\`$env:CATALYST_PROBE_TASK_ENTRY_TIMESTAMP = " +
+            "\[string\]\[Diagnostics\.Stopwatch\]::GetTimestamp\(\).*?" +
+            "\`$env:CATALYST_PROBE_TASK_BUDGET_SECONDS = '2040'.*?" +
+            "displayName: 'Run fixed report-only Catalyst gesture A/B'\r?\n" +
+            "\s+timeoutInMinutes: 36")
+        $stage | Should -Match 'timeoutInMinutes: 36'
+        $stage | Should -Not -Match 'retryCountOnTaskFailure'
+        $stage | Should -Match (
+            '(?s)Preserve report-only Catalyst probe evidence.*?condition: always\(\).*?' +
+            'timeoutInMinutes: 5')
+        $stage | Should -Not -Match (
+            'persistCredentials: true|GH_TOKEN|GITHUB_TOKEN|COPILOT_GITHUB_TOKEN|' +
+            'SYSTEM_ACCESSTOKEN|Replicate-Issue\.ps1|Publish-ReplicationPR\.ps1|' +
+            'PublishTestResults')
+        foreach ($stageName in @(
+                'ReviewPR', 'ValidateReplication', 'PublishReplication',
+                'AnalyzeCopilotTokenUsage')) {
+            $productionStage = [regex]::Match(
+                $script:Pipeline,
+                "(?ms)^  - stage: $stageName\r?\n.*?(?=^  - stage:|\z)").Value
+            $productionStage | Should -Not -Match (
+                "parameters\.Mode \}\}', 'catalyst-gesture-probe'")
+        }
     }
 
     It 'uses checkout Xcode pins for the iOS probe and replication' {
