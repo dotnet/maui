@@ -81,6 +81,9 @@ var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = androidSdkRoot };
 emuSettings = AdjustEmulatorSettingsForCI(emuSettings);
 
 AndroidEmulatorProcess emulatorProcess = null;
+System.Diagnostics.Process issue38080EmulatorProcess = null;
+var issue38080EmulatorStandardOutput = new System.Collections.Concurrent.ConcurrentQueue<string>();
+var issue38080EmulatorStandardError = new System.Collections.Concurrent.ConcurrentQueue<string>();
 
 var dotnetToolPath = GetDotnetToolPath();
 LogSetupInfo(dotnetToolPath);
@@ -90,12 +93,23 @@ Teardown(context =>
 	// For the uitest-prepare target, just leave the virtual device running
 	if (!string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
 	{
-		try
+		if (runIssue38080)
 		{
-			if (runIssue38080 && emulatorProcess != null)
-				CaptureIssue38080Diagnostics();
+			try
+			{
+				if (issue38080EmulatorProcess != null)
+				{
+					WriteIssue38080EmulatorProcessDiagnostics(issue38080EmulatorProcess, "before-cleanup");
+					if (!issue38080EmulatorProcess.HasExited)
+						CaptureIssue38080Diagnostics();
+				}
+			}
+			finally
+			{
+				CleanUpIssue38080VirtualDevice(issue38080EmulatorProcess, avdSettings);
+			}
 		}
-		finally
+		else
 		{
 			CleanUpVirtualDevice(emulatorProcess, avdSettings);
 		}
@@ -517,7 +531,15 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 
 				// start the emulator
 				Information("Starting Emulator: {0}...", avdName);
-				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
+				if (runIssue38080)
+				{
+					CaptureIssue38080AvdConfiguration(avdName);
+					issue38080EmulatorProcess = StartIssue38080Emulator(avdName);
+				}
+				else
+				{
+					emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
+				}
 			}
 		}).WaitAsync(TimeSpan.FromSeconds(EmulatorStartProcessTimeoutSeconds));
 	}
@@ -597,6 +619,49 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 	}
 }
 
+void CleanUpIssue38080VirtualDevice(System.Diagnostics.Process emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
+{
+	try
+	{
+		if (emulatorProcess != null && !emulatorProcess.HasExited)
+		{
+			var outputDirectory = GetIssue38080LogDirectory().Combine("emulator-process");
+			EnsureDirectoryExists(outputDirectory);
+			var adb = new DirectoryPath(androidSdkRoot).Combine("platform-tools").CombineWithFilePath("adb");
+			CaptureIssue38080Command(adb, outputDirectory, "emulator-kill.txt", "-e", "emu", "kill");
+
+			if (!emulatorProcess.WaitForExit(5000))
+			{
+				try
+				{
+					emulatorProcess.Kill(entireProcessTree: true);
+				}
+				catch (InvalidOperationException) when (emulatorProcess.HasExited)
+				{
+					// The process exited between the timeout and the kill request.
+				}
+
+				if (!emulatorProcess.HasExited && !emulatorProcess.WaitForExit(30000))
+					throw new TimeoutException("Issue 38080 emulator process did not exit after cleanup.");
+			}
+		}
+	}
+	finally
+	{
+		try
+		{
+			WriteIssue38080EmulatorProcessDiagnostics(emulatorProcess, "after-cleanup");
+		}
+		finally
+		{
+			emulatorProcess?.Dispose();
+
+			if (deviceCreate)
+				AndroidAvdDelete(androidAvd, avdSettings);
+		}
+	}
+}
+
 void WriteLogCat(string filename = null)
 {
 	if (string.IsNullOrWhiteSpace(filename))
@@ -635,9 +700,7 @@ void WriteLogCat(string filename = null)
 
 void CaptureIssue38080Diagnostics()
 {
-	var outputDirectory = GetLogDirectory()
-		.Combine("issue38080")
-		.Combine("before-cleanup");
+	var outputDirectory = GetIssue38080LogDirectory().Combine("before-cleanup");
 	EnsureDirectoryExists(outputDirectory);
 
 	var adb = new DirectoryPath(androidSdkRoot)
@@ -653,17 +716,17 @@ void CaptureIssue38080Diagnostics()
 		return;
 	}
 
-	if (!CaptureIssue38080AdbCommand(adb, outputDirectory, "device-state.txt", "-e", "get-state"))
+	if (!CaptureIssue38080Command(adb, outputDirectory, "device-state.txt", "-e", "get-state"))
 		return;
 
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "-e", "shell", "getprop");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "-e", "shell", "dumpsys", "webviewupdate");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "-e", "shell", "dumpsys", "SurfaceFlinger");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "-e", "logcat", "-d");
+	CaptureIssue38080Command(adb, outputDirectory, "getprop.txt", "-e", "shell", "getprop");
+	CaptureIssue38080Command(adb, outputDirectory, "webview-provider.txt", "-e", "shell", "dumpsys", "webviewupdate");
+	CaptureIssue38080Command(adb, outputDirectory, "surfaceflinger.txt", "-e", "shell", "dumpsys", "SurfaceFlinger");
+	CaptureIssue38080Command(adb, outputDirectory, "logcat.txt", "-e", "logcat", "-d");
 
 	var tombstones = outputDirectory.Combine("tombstones");
 	EnsureDirectoryExists(tombstones);
-	CaptureIssue38080AdbCommand(
+	CaptureIssue38080Command(
 		adb,
 		outputDirectory,
 		"tombstone-pull.txt",
@@ -673,8 +736,125 @@ void CaptureIssue38080Diagnostics()
 		tombstones.FullPath);
 }
 
-bool CaptureIssue38080AdbCommand(
-	FilePath adb,
+DirectoryPath GetIssue38080LogDirectory() =>
+	GetLogDirectory().Combine("issue38080");
+
+void CaptureIssue38080AvdConfiguration(string avdName)
+{
+	var outputDirectory = GetIssue38080LogDirectory().Combine("emulator-host");
+	EnsureDirectoryExists(outputDirectory);
+
+	var avdDirectory = new DirectoryPath(
+		System.IO.Path.Combine(
+			Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+			".android",
+			"avd"));
+	var avdConfig = avdDirectory.Combine($"{avdName}.avd").CombineWithFilePath("config.ini");
+	var avdIni = avdDirectory.CombineWithFilePath($"{avdName}.ini");
+
+	if (FileExists(avdConfig))
+		CopyFile(avdConfig, outputDirectory.CombineWithFilePath("avd-config.ini"));
+	else
+		Warning("Issue 38080 AVD config was not found: {0}", avdConfig);
+
+	if (FileExists(avdIni))
+		CopyFile(avdIni, outputDirectory.CombineWithFilePath("avd.ini"));
+	else
+		Warning("Issue 38080 AVD descriptor was not found: {0}", avdIni);
+}
+
+System.Diagnostics.Process StartIssue38080Emulator(string avdName)
+{
+	var emulator = new DirectoryPath(androidSdkRoot).Combine("emulator").CombineWithFilePath("emulator");
+	if (!FileExists(emulator))
+		throw new Exception($"Issue 38080 requires the Android emulator at '{emulator}'.");
+
+	var startInfo = new System.Diagnostics.ProcessStartInfo
+	{
+		FileName = emulator.FullPath,
+		UseShellExecute = false,
+		RedirectStandardOutput = true,
+		RedirectStandardError = true,
+		CreateNoWindow = true,
+	};
+	foreach (var argument in new[]
+	{
+		"-avd", avdName,
+		"-gpu", "swiftshader_indirect",
+		"-no-window",
+		"-no-snapshot",
+		"-no-audio",
+		"-no-boot-anim",
+	})
+	{
+		startInfo.ArgumentList.Add(argument);
+	}
+
+	var process = new System.Diagnostics.Process
+	{
+		StartInfo = startInfo,
+		EnableRaisingEvents = true,
+	};
+	process.OutputDataReceived += (_, args) =>
+	{
+		if (args.Data != null)
+			issue38080EmulatorStandardOutput.Enqueue(args.Data);
+	};
+	process.ErrorDataReceived += (_, args) =>
+	{
+		if (args.Data != null)
+			issue38080EmulatorStandardError.Enqueue(args.Data);
+	};
+
+	if (!process.Start())
+		throw new Exception("Issue 38080 Android emulator process did not start.");
+
+	process.BeginOutputReadLine();
+	process.BeginErrorReadLine();
+
+	var outputDirectory = GetIssue38080LogDirectory().Combine("emulator-process");
+	EnsureDirectoryExists(outputDirectory);
+	System.IO.File.WriteAllLines(
+		outputDirectory.CombineWithFilePath("launch.txt").FullPath,
+		new[]
+		{
+			$"ProcessId: {process.Id}",
+			$"Executable: {emulator}",
+			$"Arguments: {string.Join(" ", startInfo.ArgumentList)}",
+		});
+
+	return process;
+}
+
+void WriteIssue38080EmulatorProcessDiagnostics(System.Diagnostics.Process emulatorProcess, string snapshotName)
+{
+	var outputDirectory = GetIssue38080LogDirectory().Combine("emulator-process");
+	EnsureDirectoryExists(outputDirectory);
+
+	var status = new List<string>();
+	if (emulatorProcess == null)
+	{
+		status.Add("ProcessStarted: False");
+	}
+	else
+	{
+		status.Add("ProcessStarted: True");
+		status.Add($"ProcessId: {emulatorProcess.Id}");
+		status.Add($"HasExited: {emulatorProcess.HasExited}");
+		if (emulatorProcess.HasExited)
+		{
+			emulatorProcess.WaitForExit();
+			status.Add($"ExitCode: {emulatorProcess.ExitCode}");
+		}
+	}
+
+	System.IO.File.WriteAllLines(outputDirectory.CombineWithFilePath($"status-{snapshotName}.txt").FullPath, status);
+	System.IO.File.WriteAllLines(outputDirectory.CombineWithFilePath($"stdout-{snapshotName}.txt").FullPath, issue38080EmulatorStandardOutput.ToArray());
+	System.IO.File.WriteAllLines(outputDirectory.CombineWithFilePath($"stderr-{snapshotName}.txt").FullPath, issue38080EmulatorStandardError.ToArray());
+}
+
+bool CaptureIssue38080Command(
+	FilePath executable,
 	DirectoryPath outputDirectory,
 	string outputFileName,
 	params string[] arguments)
@@ -691,14 +871,14 @@ bool CaptureIssue38080AdbCommand(
 	};
 
 	var output = outputDirectory.CombineWithFilePath(outputFileName);
-	Information("Capturing issue 38080 diagnostics: {0} {1}", adb, processArguments);
-	using (var process = StartAndReturnProcess(adb, settings))
+	Information("Capturing issue 38080 diagnostics: {0} {1}", executable, processArguments);
+	using (var process = StartAndReturnProcess(executable, settings))
 	{
 		var timedOut = !process.WaitForExit(30000);
 		if (timedOut)
 		{
 			if (!process.WaitForExit(5000))
-				throw new TimeoutException($"Issue 38080 diagnostic process could not be stopped: {adb} {processArguments}");
+				throw new TimeoutException($"Issue 38080 diagnostic process could not be stopped: {executable} {processArguments}");
 		}
 
 		process.WaitForExit();
@@ -710,9 +890,9 @@ bool CaptureIssue38080AdbCommand(
 				.Concat(process.GetStandardError()));
 
 		if (timedOut)
-			Warning("Issue 38080 diagnostic command timed out after 30 seconds: {0} {1}", adb, processArguments);
+			Warning("Issue 38080 diagnostic command timed out after 30 seconds: {0} {1}", executable, processArguments);
 		else if (exitCode != 0)
-			Warning("Issue 38080 diagnostic command exited with code {0}: {1} {2}", exitCode, adb, processArguments);
+			Warning("Issue 38080 diagnostic command exited with code {0}: {1} {2}", exitCode, executable, processArguments);
 
 		return !timedOut && exitCode == 0;
 	}
@@ -870,8 +1050,17 @@ void PrepareDevice(bool waitForBoot)
         // Wait for the emulator to finish booting
         var waited = 0;
         var total = EmulatorBootTimeoutSeconds;
-        while (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+        while (true)
 		{
+			if (runIssue38080 && issue38080EmulatorProcess?.HasExited == true)
+			{
+				WriteIssue38080EmulatorProcessDiagnostics(issue38080EmulatorProcess, "startup-exit");
+				throw new Exception($"Issue 38080 Android emulator exited with code {issue38080EmulatorProcess.ExitCode} before completing boot.");
+			}
+
+			if (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() == "1")
+				break;
+
 		    System.Threading.Thread.Sleep(1000);
 
             Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);

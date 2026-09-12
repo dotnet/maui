@@ -122,6 +122,22 @@ steps:
       fi
       echo "$resolved_avdmanager" > "$(LogDirectory)/resolved-avdmanager.txt"
       echo "##vso[task.prependpath]$tools19"
+
+      host_diagnostics="$(LogDirectory)/issue38080/emulator-host"
+      mkdir -p "$host_diagnostics"
+      capture_host_command() {
+        output="$1"
+        shift
+        exit_code=0
+        timeout 10s "$@" > "$output" 2>&1 || exit_code=$?
+        echo "ExitCode: $exit_code" >> "$output"
+      }
+
+      emulator="$sdk_root/emulator/emulator"
+      capture_host_command "$host_diagnostics/version.txt" "$emulator" -version
+      capture_host_command "$host_diagnostics/acceleration.txt" "$emulator" -accel-check
+      capture_host_command "$host_diagnostics/ldd.txt" /usr/bin/ldd "$emulator"
+      capture_host_command "$host_diagnostics/kvm.txt" /usr/bin/ls -l /dev/kvm
     displayName: Verify Pixel 8a device definition
     timeoutInMinutes: 5
 
