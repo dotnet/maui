@@ -629,37 +629,47 @@ void CleanUpIssue38080VirtualDevice(System.Diagnostics.Process emulatorProcess, 
 			EnsureDirectoryExists(outputDirectory);
 			var adb = new DirectoryPath(androidSdkRoot).Combine("platform-tools").CombineWithFilePath("adb");
 			CaptureIssue38080Command(adb, outputDirectory, "emulator-kill.txt", "-e", "emu", "kill");
-
-			if (!emulatorProcess.WaitForExit(5000))
-			{
-				try
-				{
-					emulatorProcess.Kill(entireProcessTree: true);
-				}
-				catch (InvalidOperationException) when (emulatorProcess.HasExited)
-				{
-					// The process exited between the timeout and the kill request.
-				}
-
-				if (!emulatorProcess.HasExited && !emulatorProcess.WaitForExit(30000))
-					throw new TimeoutException("Issue 38080 emulator process did not exit after cleanup.");
-			}
 		}
 	}
 	finally
 	{
 		try
 		{
-			WriteIssue38080EmulatorProcessDiagnostics(emulatorProcess, "after-cleanup");
+			StopIssue38080EmulatorProcess(emulatorProcess);
 		}
 		finally
 		{
-			emulatorProcess?.Dispose();
+			try
+			{
+				WriteIssue38080EmulatorProcessDiagnostics(emulatorProcess, "after-cleanup");
+			}
+			finally
+			{
+				emulatorProcess?.Dispose();
 
-			if (deviceCreate)
-				AndroidAvdDelete(androidAvd, avdSettings);
+				if (deviceCreate)
+					AndroidAvdDelete(androidAvd, avdSettings);
+			}
 		}
 	}
+}
+
+void StopIssue38080EmulatorProcess(System.Diagnostics.Process emulatorProcess)
+{
+	if (emulatorProcess == null || emulatorProcess.HasExited || emulatorProcess.WaitForExit(5000))
+		return;
+
+	try
+	{
+		emulatorProcess.Kill(entireProcessTree: true);
+	}
+	catch (InvalidOperationException) when (emulatorProcess.HasExited)
+	{
+		// The process exited between the timeout and the kill request.
+	}
+
+	if (!emulatorProcess.HasExited && !emulatorProcess.WaitForExit(30000))
+		throw new TimeoutException("Issue 38080 emulator process did not exit after cleanup.");
 }
 
 void WriteLogCat(string filename = null)
@@ -772,6 +782,7 @@ System.Diagnostics.Process StartIssue38080Emulator(string avdName)
 	var startInfo = new System.Diagnostics.ProcessStartInfo
 	{
 		FileName = emulator.FullPath,
+		WorkingDirectory = Context.Environment.WorkingDirectory.FullPath,
 		UseShellExecute = false,
 		RedirectStandardOutput = true,
 		RedirectStandardError = true,
@@ -806,9 +817,21 @@ System.Diagnostics.Process StartIssue38080Emulator(string avdName)
 			issue38080EmulatorStandardError.Enqueue(args.Data);
 	};
 
-	if (!process.Start())
+	var started = false;
+	try
+	{
+		started = process.Start();
+	}
+	finally
+	{
+		if (!started)
+			process.Dispose();
+	}
+
+	if (!started)
 		throw new Exception("Issue 38080 Android emulator process did not start.");
 
+	issue38080EmulatorProcess = process;
 	process.BeginOutputReadLine();
 	process.BeginErrorReadLine();
 
