@@ -90,8 +90,10 @@ steps:
       sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
       emulator="$sdk_root/emulator/emulator"
       emulator_lib64="$sdk_root/emulator/lib64"
+      emulator_qt_lib="$emulator_lib64/qt/lib"
       qemu="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64"
-      if [[ -z "$sdk_root" || ! -x "$emulator" || ! -d "$emulator_lib64" || ! -x "$qemu" ]]; then
+      qemu_headless="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64-headless"
+      if [[ -z "$sdk_root" || ! -x "$emulator" || ! -d "$emulator_lib64" || ! -d "$emulator_qt_lib" || ! -x "$qemu" || ! -x "$qemu_headless" ]]; then
         echo "Provisioned Android emulator runtime was not found under '$sdk_root/emulator'."
         exit 1
       fi
@@ -100,17 +102,6 @@ steps:
         > "$host_diagnostics/apt-libpulse0.txt" 2>&1
       timeout 120s sudo -n apt-get install -y -qq --no-install-recommends libpulse0 \
         >> "$host_diagnostics/apt-libpulse0.txt" 2>&1
-
-      # Match the emulator launcher's bundled C++ runtime lookup when inspecting QEMU directly.
-      qemu_ld_library_path="$emulator_lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-      ldd_exit_code=0
-      LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu" \
-        > "$host_diagnostics/ldd.txt" 2>&1 || ldd_exit_code=$?
-      if [[ "$ldd_exit_code" -ne 0 ]] || grep -Fq "=> not found" "$host_diagnostics/ldd.txt"; then
-        echo "Android emulator QEMU still has unresolved shared libraries."
-        cat "$host_diagnostics/ldd.txt"
-        exit 1
-      fi
 
       launcher_exit_code=0
       timeout 30s "$emulator" -version \
@@ -121,6 +112,22 @@ steps:
         cat "$host_diagnostics/version.txt"
         exit 1
       fi
+
+      # The launcher adds both bundled roots and selects the headless QEMU binary for -no-window.
+      qemu_ld_library_path="$emulator_lib64:$emulator_qt_lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      headless_ldd_exit_code=0
+      LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu_headless" \
+        > "$host_diagnostics/headless-ldd.txt" 2>&1 || headless_ldd_exit_code=$?
+      if [[ "$headless_ldd_exit_code" -ne 0 ]] || grep -Fq "=> not found" "$host_diagnostics/headless-ldd.txt"; then
+        echo "Headless Android emulator QEMU still has unresolved shared libraries."
+        cat "$host_diagnostics/headless-ldd.txt"
+        exit 1
+      fi
+
+      gui_ldd_exit_code=0
+      LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu" \
+        > "$host_diagnostics/ldd.txt" 2>&1 || gui_ldd_exit_code=$?
+      echo "ExitCode: $gui_ldd_exit_code" >> "$host_diagnostics/ldd.txt"
     displayName: Verify Issue 38080 emulator runtime prerequisites
     timeoutInMinutes: 5
 
