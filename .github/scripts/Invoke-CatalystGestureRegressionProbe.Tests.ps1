@@ -262,20 +262,10 @@ $($rows -join "`n")
             -Outcome Fail
 
         $canonicalPatch = Join-Path $root 'known-negative-product.patch'
-        $repositoryRoot = [IO.Path]::GetFullPath(
-            (Join-Path $PSScriptRoot '../..'))
-        $patchLines = @(& git -C $repositoryRoot diff `
-                --binary --full-index --no-color `
-                $script:CatalystProbeBaselineCommit `
-                $script:CatalystProbeNegativeCommit `
-                -- $script:CatalystProbeProductPath)
-        if ($LASTEXITCODE -ne 0) {
-            throw 'Could not materialize the immutable test patch.'
-        }
-        [IO.File]::WriteAllText(
-            $canonicalPatch,
-            "$($patchLines -join "`n")`n",
-            [Text.UTF8Encoding]::new($false))
+        # Unit checks run in shallow checkouts without the historical product commits.
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                'fixtures/ReplicationGesturePlatformManagerKnownNegative.patch')) `
+            -Destination $canonicalPatch
         (Get-FileHash -LiteralPath $canonicalPatch -Algorithm SHA256).
         Hash.ToLowerInvariant() | Should -BeExactly $script:CatalystProbePatchSha256
 
@@ -2388,6 +2378,14 @@ Describe 'Fixed report-only Catalyst gesture probe' {
 }
 
 Describe 'Closed production composite diagnostic seam' {
+    It 'materializes the canonical unit patch without repository history' {
+        Mock git { throw 'Unit fixture setup must not query historical Git objects.' }
+        $case = New-CatalystTestRealProductionV2Case -Name 'history-independent-patch'
+        (Get-FileHash -LiteralPath $case.CanonicalPatch -Algorithm SHA256).
+        Hash.ToLowerInvariant() | Should -BeExactly $script:CatalystProbePatchSha256
+        Should -Invoke git -Times 0 -Exactly
+    }
+
     BeforeEach {
         Mock Get-CatalystProbeHostFacts {
             [pscustomobject]@{ IsMacOS = $true; Architecture = 'arm64' }

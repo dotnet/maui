@@ -580,6 +580,7 @@ steps:
         'Fixed report-only Catalyst gesture probe*fails closed when the Catalyst baseline contains a skipped fact'
         'Fixed report-only Catalyst gesture probe*fails closed when strict Catalyst evidence names a different method'
         'Closed production composite diagnostic seam*rejects direct command-line access to the production library seam'
+        'Closed production composite diagnostic seam*materializes the canonical unit patch without repository history'
         'Closed production composite diagnostic seam*rejects dot-sourcing the production seam from any other module'
         'Closed production composite diagnostic seam*loads only the fixed production APIs instead of copying their implementations'
         'Closed production composite diagnostic seam*keeps each production composite on one fixed 480 second deadline'
