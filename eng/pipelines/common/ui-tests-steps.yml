@@ -193,15 +193,16 @@ steps:
   - bash: |
       set +e
       mkdir -p "$(LogDirectory)/issue38080"
-      adb shell getprop > "$(LogDirectory)/issue38080/getprop.txt" 2>&1
-      adb shell dumpsys webviewupdate > "$(LogDirectory)/issue38080/webview-provider.txt" 2>&1
-      adb shell dumpsys SurfaceFlinger > "$(LogDirectory)/issue38080/surfaceflinger.txt" 2>&1
-      adb logcat -d > "$(LogDirectory)/issue38080/logcat.txt" 2>&1
-      adb pull /data/tombstones "$(LogDirectory)/issue38080/tombstones" \
+      timeout 30s adb shell getprop > "$(LogDirectory)/issue38080/getprop.txt" 2>&1
+      timeout 30s adb shell dumpsys webviewupdate > "$(LogDirectory)/issue38080/webview-provider.txt" 2>&1
+      timeout 30s adb shell dumpsys SurfaceFlinger > "$(LogDirectory)/issue38080/surfaceflinger.txt" 2>&1
+      timeout 30s adb logcat -d > "$(LogDirectory)/issue38080/logcat.txt" 2>&1
+      timeout 30s adb pull /data/tombstones "$(LogDirectory)/issue38080/tombstones" \
         > "$(LogDirectory)/issue38080/tombstone-pull.txt" 2>&1
       exit 0
     displayName: Capture Issue 38080 Android diagnostics
     condition: always()
+    timeoutInMinutes: 5
 
 - bash: |
     cat ${BASH_SOURCE[0]}

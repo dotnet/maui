@@ -69,7 +69,8 @@ public class Issue38080 : NavigationPage
 				$"Loaded:{navigationCompleted};Width:{platformView?.Width ?? 0};Height:{platformView?.Height ?? 0};" +
 				$"Attached:{platformView?.IsAttachedToWindow == true};Hardware:{platformView?.IsHardwareAccelerated == true}");
 
-			if (navigationCompleted &&
+			if (topMarker.AutomationId is null &&
+				navigationCompleted &&
 				platformView is { Width: > 0, Height: > 0, IsAttachedToWindow: true, IsHardwareAccelerated: true })
 			{
 				topMarker.AutomationId = "Issue38080TopMarker";
