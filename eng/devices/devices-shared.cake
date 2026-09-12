@@ -422,7 +422,10 @@ void ExecuteWithRetries(Func<int> action, int retries)
 
 string SanitizeTestResultsFilename(string input)
 {
-    string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
+    string resultFilename = input
+        .Replace("|", "_")
+        .Replace("TestCategory=", "")
+        .Replace("FullyQualifiedName=", "");
 
     return resultFilename;
 }
