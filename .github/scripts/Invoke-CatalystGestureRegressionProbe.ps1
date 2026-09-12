@@ -2507,7 +2507,10 @@ function Invoke-CatalystProbeProductionComposite {
         [Parameter(Mandatory = $true)]$Requirement,
         [Parameter(Mandatory = $true)][string]$PrimaryOutputDirectory,
         [Parameter(Mandatory = $true)][string]$CompanionOutputDirectory,
-        [Parameter(Mandatory = $true)][pscustomobject]$Deadline
+        [Parameter(Mandatory = $true)][pscustomobject]$Deadline,
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('baseline', 'negative')][string]$State
     )
 
     $preparedUdid = & $Module { [string]$DeviceUdid }
@@ -2515,32 +2518,60 @@ function Invoke-CatalystProbeProductionComposite {
         '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
         throw 'The production composite module lost its prepared simulator binding.'
     }
+    if (-not $Context.PSObject.Properties['ProductionComposite'] -or
+        -not [bool]$Context.ProductionComposite -or
+        [string]$Context.RepositoryState -cne $State -or
+        [int]$Deadline.BudgetSeconds -ne $script:CatalystProbeCycleBudgetSeconds) {
+        throw 'The production composite wrapper is outside its admitted closed phase.'
+    }
+    $phaseContext = $Context.PSObject.Copy()
+    $phaseContext.ActiveDeadline = $Deadline
+    $phaseContext.ActiveReserveSeconds = 0
+    Assert-CatalystProbeTrustedTree -Context $phaseContext
+    Assert-CatalystProbeRepositoryState `
+        -Context $phaseContext `
+        -State $State
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $Deadline `
+        -RequestedSeconds $script:CatalystProbeCycleBudgetSeconds `
+        -Description "$State production composite"
+
     $priorRuntimeUdid =
     [Environment]::GetEnvironmentVariable('MAUI_REPLICATION_DEVICE_UDID')
     [Environment]::SetEnvironmentVariable(
         'MAUI_REPLICATION_DEVICE_UDID', $preparedUdid)
     try {
-        & $Module {
-            param(
-                $Selection,
-                $Requirement,
-                $PrimaryOutputDirectory,
-                $CompanionOutputDirectory,
-                $TimeoutSeconds,
-                $DeadlineTimestamp)
-            Invoke-ReplicationRegressionCompositeRun `
-                -Selection $Selection `
-                -CompanionRequirement $Requirement `
-                -PrimaryOutputDirectory $PrimaryOutputDirectory `
-                -CompanionOutputDirectory $CompanionOutputDirectory `
-                -TrustedScriptRoot $trustedScripts `
-                -TimeoutSeconds $TimeoutSeconds `
-                -DeadlineTimestamp $DeadlineTimestamp `
-                -DeviceUdid $DeviceUdid `
-                -RequirePreparedIosSimulator:$RequirePreparedIosSimulator
-        } $Selection $Requirement $PrimaryOutputDirectory `
-            $CompanionOutputDirectory $script:CatalystProbeCycleBudgetSeconds `
-        ([long]$Deadline.DeadlineTimestamp)
+        try {
+            & $Module {
+                param(
+                    $Selection,
+                    $Requirement,
+                    $PrimaryOutputDirectory,
+                    $CompanionOutputDirectory,
+                    $TimeoutSeconds,
+                    $DeadlineTimestamp)
+                Invoke-ReplicationRegressionCompositeRun `
+                    -Selection $Selection `
+                    -CompanionRequirement $Requirement `
+                    -PrimaryOutputDirectory $PrimaryOutputDirectory `
+                    -CompanionOutputDirectory $CompanionOutputDirectory `
+                    -TrustedScriptRoot $trustedScripts `
+                    -TimeoutSeconds $TimeoutSeconds `
+                    -DeadlineTimestamp $DeadlineTimestamp `
+                    -DeviceUdid $DeviceUdid `
+                    -RequirePreparedIosSimulator:$RequirePreparedIosSimulator
+            } $Selection $Requirement $PrimaryOutputDirectory `
+                $CompanionOutputDirectory $script:CatalystProbeCycleBudgetSeconds `
+            ([long]$Deadline.DeadlineTimestamp)
+        } finally {
+            Restore-CatalystProbeTrackedVerificationSideEffects `
+                -Context $phaseContext `
+                -State $State
+            $null = Get-CatalystProbeProcessTimeoutSeconds `
+                -Deadline $Deadline `
+                -RequestedSeconds 1 `
+                -Description "$State production composite restoration"
+        }
     } finally {
         [Environment]::SetEnvironmentVariable(
             'MAUI_REPLICATION_DEVICE_UDID', $priorRuntimeUdid)
@@ -2971,7 +3002,9 @@ function Invoke-CatalystGestureRegressionProbeCore {
             -Requirement $requirement `
             -PrimaryOutputDirectory $baselinePrimaryRoot `
             -CompanionOutputDirectory $baselineCompanionRoot `
-            -Deadline $baselineDeadline
+            -Deadline $baselineDeadline `
+            -Context $context `
+            -State baseline
         $baselinePrimary = Assert-CatalystProbePrimaryRun `
             -Path (Join-Path $baselinePrimaryRoot 'strict-test-evidence.json') `
             -Selection $selection
@@ -3073,7 +3106,9 @@ function Invoke-CatalystGestureRegressionProbeCore {
                 -Requirement $requirement `
                 -PrimaryOutputDirectory $negativePrimaryRoot `
                 -CompanionOutputDirectory $negativeCompanionRoot `
-                -Deadline $negativeDeadline
+                -Deadline $negativeDeadline `
+                -Context $context `
+                -State negative
             throw 'The production composite unexpectedly accepted the fixed known-negative postimage.'
         } catch {
             $productionRejection =

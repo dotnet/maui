@@ -110,6 +110,10 @@ mutations, failed restoration and incomplete cleanup remain fatal. Cleanup
 shares the existing task/cycle deadlines and never deletes an unknown file.
 Only an admitted build phase can restore its tracked output; finalization does
 not erase a change rejected by a pre-execution scope guard.
+The closed production composite uses the same phase-owned restoration after
+its primary and companion execution, before accepting evidence or propagating
+the expected negative result. Admission happens before that cleanup scope;
+restoration and its completion checks consume the original composite deadline.
 
 A successful diagnostic exercises the actual production composite functions:
 the immutable-baseline-derived iOS Label lane first, then the fixed Catalyst
