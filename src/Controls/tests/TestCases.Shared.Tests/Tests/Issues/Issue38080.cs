@@ -1,5 +1,5 @@
 #if ANDROID
-using System;
+using System.Linq;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,7 +13,7 @@ public class Issue38080 : _IssuesUITest
 	const string NavigateButton = "Issue38080NavigateButton";
 	const string ReproPageMarker = "Issue38080ReproPageMarker";
 	const string TopMarker = "Issue38080TopMarker";
-	const int FlingCount = 8;
+	const string WebViewMarker = "Issue38080WebView";
 
 	public Issue38080(TestDevice device) : base(device)
 	{
@@ -27,51 +27,48 @@ public class Issue38080 : _IssuesUITest
 	{
 		App.WaitForElement(HomeMarker);
 		App.Tap(NavigateButton);
-		App.WaitForElement(TopMarker);
-		App.WaitForElement("Issue38080WebView");
-
-		Assert.That(
-			App.WaitForTextToBePresentInElement(
-				TopMarker,
-				"Loaded:True",
-				timeout: TimeSpan.FromSeconds(10)),
-			Is.True,
-			"The offline WebView content did not finish loading.");
-
-		var status = App.FindElement(TopMarker).GetText();
-		Assert.That(status, Does.Contain("Attached:True"));
-		Assert.That(status, Does.Contain("Hardware:True"));
-		Assert.That(status, Does.Not.Contain("Width:0"));
-		Assert.That(status, Does.Not.Contain("Height:0"));
-
-		var webView = App.FindElement("Issue38080WebView").GetRect();
-		Assert.That(webView.Width, Is.GreaterThan(0));
-		Assert.That(webView.Height, Is.GreaterThan(0));
+		App.WaitForElement(ReproPageMarker);
+		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
 
 		FastFlingUp();
 		FastFlingUp();
 		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
 
-		for (var i = 0; i < FlingCount; i++)
+		for (var pass = 0; pass < 3; pass++)
 		{
+			ScrollUntilDisplayed(WebViewMarker, FastFlingDown);
+			var webView = App.WaitForElement(WebViewMarker);
+			Assert.That(webView.IsDisplayed(), Is.True);
+			Assert.That(webView.GetRect().Width, Is.GreaterThan(0));
+			Assert.That(webView.GetRect().Height, Is.GreaterThan(0));
+
+			ScrollUntilDisplayed(BottomMarker, FastFlingDown);
 			FastFlingDown();
-		}
+			FastFlingDown();
+			Assert.That(App.WaitForElement(BottomMarker).IsDisplayed(), Is.True);
 
-		Assert.That(App.WaitForElement(BottomMarker).IsDisplayed(), Is.True);
-		FastFlingDown();
-		Assert.That(App.WaitForElement(BottomMarker).IsDisplayed(), Is.True);
-
-		for (var i = 0; i < FlingCount; i++)
-		{
+			ScrollUntilDisplayed(WebViewMarker, FastFlingUp);
+			ScrollUntilDisplayed(TopMarker, FastFlingUp);
 			FastFlingUp();
+			FastFlingUp();
+			Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
 		}
-
-		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
-		FastFlingUp();
-		Assert.That(App.WaitForElement(TopMarker).IsDisplayed(), Is.True);
 
 		App.Back();
 		App.WaitForElement(HomeMarker);
+	}
+
+	void ScrollUntilDisplayed(string automationId, System.Action gesture)
+	{
+		for (var attempt = 0; attempt < 10; attempt++)
+		{
+			if (App.FindElements(automationId).Any(element => element.IsDisplayed()))
+				return;
+
+			gesture();
+		}
+
+		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
 	}
 
 	void FastFlingDown()

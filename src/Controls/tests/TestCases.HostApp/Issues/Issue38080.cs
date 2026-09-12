@@ -45,7 +45,7 @@ public class Issue38080 : NavigationPage
 			Spacing = 12
 		};
 
-		var topMarker = CreateFillerRow(1, "Issue38080TopMarker");
+		var topMarker = CreateFillerRow(1, null);
 		content.Children.Add(topMarker);
 
 		for (var row = 2; row <= 50; row++)
@@ -64,9 +64,16 @@ public class Issue38080 : NavigationPage
 		void UpdateWebViewStatus()
 		{
 			var platformView = webView.Handler?.PlatformView as Android.Webkit.WebView;
-			topMarker.Text =
+			Android.Util.Log.Info(
+				"Issue38080",
 				$"Loaded:{navigationCompleted};Width:{platformView?.Width ?? 0};Height:{platformView?.Height ?? 0};" +
-				$"Attached:{platformView?.IsAttachedToWindow == true};Hardware:{platformView?.IsHardwareAccelerated == true}";
+				$"Attached:{platformView?.IsAttachedToWindow == true};Hardware:{platformView?.IsHardwareAccelerated == true}");
+
+			if (navigationCompleted &&
+				platformView is { Width: > 0, Height: > 0, IsAttachedToWindow: true, IsHardwareAccelerated: true })
+			{
+				topMarker.AutomationId = "Issue38080TopMarker";
+			}
 		}
 
 		webView.Loaded += (_, _) => UpdateWebViewStatus();
