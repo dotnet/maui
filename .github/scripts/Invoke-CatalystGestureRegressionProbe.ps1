@@ -32,43 +32,43 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $script:CatalystProbeBaselineCommit =
-    '40590267d8057fd5c044e5bfea77a9dd31fef29f'
+'40590267d8057fd5c044e5bfea77a9dd31fef29f'
 $script:CatalystProbeNegativeCommit =
-    'e456312886ee33fc0e69307e030c3028597ee32e'
+'e456312886ee33fc0e69307e030c3028597ee32e'
 $script:CatalystProbeProductPath =
-    'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
+'src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs'
 $script:CatalystProbeBaselineBlob =
-    '68393011a77138e20c05194e268e0751b5bb3198'
+'68393011a77138e20c05194e268e0751b5bb3198'
 $script:CatalystProbeNegativeBlob =
-    '3e79d48f36a378f7618694d1472812288cbd82e0'
+'3e79d48f36a378f7618694d1472812288cbd82e0'
 $script:CatalystProbeBaselineFileSha256 =
-    'bc69873cba98ef8aac4dda183439e18a8fe47973598f1d50fb9b40ce43c343f0'
+'bc69873cba98ef8aac4dda183439e18a8fe47973598f1d50fb9b40ce43c343f0'
 $script:CatalystProbeNegativeFileSha256 =
-    'de13d4752e3e13b62d44932ae5a10f479fc798aca1e7fc4bd7d0f489934b4c08'
+'de13d4752e3e13b62d44932ae5a10f479fc798aca1e7fc4bd7d0f489934b4c08'
 $script:CatalystProbePatchSha256 =
-    '07ae3f4da0a04ebcf22c2d395994b4dd68fb66c9ae38889c0dc5d782e2655775'
+'07ae3f4da0a04ebcf22c2d395994b4dd68fb66c9ae38889c0dc5d782e2655775'
 $script:CatalystProbeFixtureRelativePath =
-    'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
+'scripts/fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs'
 $script:CatalystProbeFixtureTargetRelativePath =
-    'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
+'src/Controls/tests/DeviceTests/ReplicationGesturePlatformManagerRegression.iOS.cs'
 $script:CatalystProbeFixtureSha256 =
-    '9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
+'9df820c9d684243f88dd4cc39c8090071299cba5e1731e8857e686aec66a0794'
 $script:CatalystProbeClass =
-    'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
+'Microsoft.Maui.DeviceTests.ReplicationGesturePlatformManagerRegression'
 $script:CatalystProbeMethods = @(
     'SecondaryToBothCreatesNativeTap'
     'SecondaryToPrimaryCreatesNativeTap'
 )
 $script:CatalystProbeProjectPath =
-    'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
 $script:CatalystProbeTargetFramework = 'net10.0-maccatalyst'
 $script:CatalystProbeRuntimeIdentifier = 'maccatalyst-arm64'
 $script:CatalystProbeXcodeVersion = '26.0.1'
 $script:CatalystProbeCycleBudgetSeconds = 480
 $script:CatalystProbeCycleEvidenceBudgetSeconds = 30
 $script:CatalystProbeVerifierBudgetSeconds =
-    $script:CatalystProbeCycleBudgetSeconds -
-    $script:CatalystProbeCycleEvidenceBudgetSeconds
+$script:CatalystProbeCycleBudgetSeconds -
+$script:CatalystProbeCycleEvidenceBudgetSeconds
 $script:CatalystProbePrewarmBudgetSeconds = 600
 $script:CatalystProbePatchApplyBudgetSeconds = 120
 $script:CatalystProbeCoordinationBudgetSeconds = 180
@@ -79,6 +79,7 @@ $script:CatalystProbeArtifactTailSeconds = 300
 $script:CatalystProbeCleanupBudgetSeconds = 120
 $script:CatalystProbeSummaryBudgetSeconds = 60
 $script:CatalystProbeProcessTerminationSeconds = 10
+$script:CatalystProbePrewarmCleanupReserveSeconds = 30
 $script:CatalystProbeForbiddenEnvironmentNames = @(
     'GH_TOKEN'
     'GITHUB_TOKEN'
@@ -122,7 +123,7 @@ function Get-CatalystProbeHostFacts {
     return [pscustomobject]@{
         IsMacOS = [OperatingSystem]::IsMacOS()
         Architecture = [Runtime.InteropServices.RuntimeInformation]::
-            OSArchitecture.ToString().ToLowerInvariant()
+        OSArchitecture.ToString().ToLowerInvariant()
     }
 }
 
@@ -137,16 +138,16 @@ function Assert-CatalystProbeHostBoundary {
 
 function New-CatalystProbeTaskDeadline {
     $accountedSeconds =
-        $script:CatalystProbeCoordinationBudgetSeconds +
-        $script:CatalystProbePrewarmBudgetSeconds +
-        (2 * $script:CatalystProbeCycleBudgetSeconds) +
-        $script:CatalystProbePatchApplyBudgetSeconds +
-        $script:CatalystProbeCleanupBudgetSeconds +
-        $script:CatalystProbeSummaryBudgetSeconds
+    $script:CatalystProbeCoordinationBudgetSeconds +
+    $script:CatalystProbePrewarmBudgetSeconds +
+    (2 * $script:CatalystProbeCycleBudgetSeconds) +
+    $script:CatalystProbePatchApplyBudgetSeconds +
+    $script:CatalystProbeCleanupBudgetSeconds +
+    $script:CatalystProbeSummaryBudgetSeconds
     if ($accountedSeconds -ne $script:CatalystProbeOverallBudgetSeconds -or
         $script:CatalystProbeOverallBudgetSeconds +
-            $script:CatalystProbeTaskTerminationReserveSeconds -ne
-            $script:CatalystProbeTaskTimeoutSeconds) {
+        $script:CatalystProbeTaskTerminationReserveSeconds -ne
+        $script:CatalystProbeTaskTimeoutSeconds) {
         throw 'Catalyst probe internal task budget is inconsistent.'
     }
     $entryText = [Environment]::GetEnvironmentVariable(
@@ -183,8 +184,8 @@ function Get-CatalystProbeDeadlineRemainingSeconds {
     param([Parameter(Mandatory = $true)][pscustomobject]$Deadline)
 
     $remainingTicks =
-        [long]$Deadline.DeadlineTimestamp -
-        [Diagnostics.Stopwatch]::GetTimestamp()
+    [long]$Deadline.DeadlineTimestamp -
+    [Diagnostics.Stopwatch]::GetTimestamp()
     return [int][Math]::Floor(
         [double]$remainingTicks / [double]$Deadline.Frequency)
 }
@@ -193,7 +194,7 @@ function Get-CatalystProbeDeadlineRemainingMilliseconds {
     param([Parameter(Mandatory = $true)][pscustomobject]$Deadline)
 
     return [int][Math]::Max(0, [Math]::Floor(
-        ([long]$Deadline.DeadlineTimestamp -
+            ([long]$Deadline.DeadlineTimestamp -
             [Diagnostics.Stopwatch]::GetTimestamp()) * 1000.0 /
             [long]$Deadline.Frequency))
 }
@@ -208,7 +209,7 @@ function Get-CatalystProbeProcessTimeoutSeconds {
     )
 
     $remainingSeconds =
-        Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
+    Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
     $availableSeconds = $remainingSeconds - $ReserveSeconds
     if ($availableSeconds -lt 1) {
         throw ("Catalyst probe refuses '$Description': its monotonic task deadline " +
@@ -226,7 +227,7 @@ function Assert-CatalystProbeTaskPhaseAdmission {
     )
 
     $remainingSeconds =
-        Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
+    Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
     if ($remainingSeconds -lt $RequiredSeconds) {
         throw "Catalyst probe has insufficient monotonic task time for $Description."
     }
@@ -242,7 +243,7 @@ function Get-CatalystProbeTerminationWaitMilliseconds {
     )
 
     $remainingSeconds =
-        Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
+    Get-CatalystProbeDeadlineRemainingSeconds -Deadline $Deadline
     $availableSeconds = [Math]::Max(0, $remainingSeconds - $ReserveSeconds)
     return [Math]::Min(
         $MaximumWaitSeconds * 1000,
@@ -261,9 +262,41 @@ function New-CatalystProbeCleanupDeadline {
     return [pscustomobject]@{
         EntryTimestamp = $now
         DeadlineTimestamp =
-            $now + ([long]$availableSeconds * [long]$TaskDeadline.Frequency)
+        $now + ([long]$availableSeconds * [long]$TaskDeadline.Frequency)
         Frequency = [long]$TaskDeadline.Frequency
         BudgetSeconds = $availableSeconds
+    }
+}
+
+function New-CatalystProbePrewarmDeadline {
+    param([Parameter(Mandatory = $true)][pscustomobject]$TaskDeadline)
+
+    $downstreamReserveSeconds =
+    (2 * $script:CatalystProbeCycleBudgetSeconds) +
+    $script:CatalystProbePatchApplyBudgetSeconds +
+    $script:CatalystProbeCleanupBudgetSeconds +
+    $script:CatalystProbeSummaryBudgetSeconds
+    $parentRemainingSeconds =
+    Get-CatalystProbeDeadlineRemainingSeconds -Deadline $TaskDeadline
+    $availableSeconds = [Math]::Min(
+        $script:CatalystProbePrewarmBudgetSeconds,
+        $parentRemainingSeconds - $downstreamReserveSeconds)
+    if ($availableSeconds -lt 1) {
+        throw ('Catalyst probe refuses dual-Apple prewarm: its monotonic task ' +
+            "deadline must retain $downstreamReserveSeconds seconds downstream.")
+    }
+    $now = [Diagnostics.Stopwatch]::GetTimestamp()
+    return [pscustomobject]@{
+        EntryTimestamp = $now
+        DeadlineTimestamp = [Math]::Min(
+            [long]$TaskDeadline.DeadlineTimestamp -
+            ([long]$downstreamReserveSeconds * [long]$TaskDeadline.Frequency),
+            $now + ([long]$availableSeconds * [long]$TaskDeadline.Frequency))
+        Frequency = [long]$TaskDeadline.Frequency
+        BudgetSeconds = $availableSeconds
+        ParentEntryTimestamp = [long]$TaskDeadline.EntryTimestamp
+        ParentDeadlineTimestamp = [long]$TaskDeadline.DeadlineTimestamp
+        DownstreamReserveSeconds = $downstreamReserveSeconds
     }
 }
 
@@ -325,8 +358,8 @@ function Test-CatalystProbePathOverlap {
         [IO.Path]::AltDirectorySeparatorChar)
     $separator = [IO.Path]::DirectorySeparatorChar
     return $firstPath -ceq $secondPath -or
-        $firstPath.StartsWith("$secondPath$separator", [StringComparison]::Ordinal) -or
-        $secondPath.StartsWith("$firstPath$separator", [StringComparison]::Ordinal)
+    $firstPath.StartsWith("$secondPath$separator", [StringComparison]::Ordinal) -or
+    $secondPath.StartsWith("$firstPath$separator", [StringComparison]::Ordinal)
 }
 
 function Resolve-CatalystProbePrivateRuntimeRoot {
@@ -448,7 +481,7 @@ function Assert-CatalystProbeDeadlineAdmission {
         [ValidateRange(1, 7200)][int]$PhaseBudgetSeconds,
         [ValidateRange(0, 7200)][int]$RemainingPhaseBudgetSeconds = 0,
         [ValidateRange(1, 3600)][int]$ArtifactTailSeconds =
-            $script:CatalystProbeArtifactTailSeconds,
+        $script:CatalystProbeArtifactTailSeconds,
         [DateTimeOffset]$NowUtc = [DateTimeOffset]::UtcNow
     )
 
@@ -461,7 +494,7 @@ function Assert-CatalystProbeDeadlineAdmission {
         throw 'Catalyst probe job deadline is not a valid immutable timestamp.'
     }
     $requiredSeconds =
-        $PhaseBudgetSeconds + $RemainingPhaseBudgetSeconds + $ArtifactTailSeconds
+    $PhaseBudgetSeconds + $RemainingPhaseBudgetSeconds + $ArtifactTailSeconds
     $remainingSeconds = [Math]::Floor(
         ($deadline.ToUniversalTime() - $NowUtc.ToUniversalTime()).TotalSeconds)
     if ($remainingSeconds -lt $requiredSeconds) {
@@ -555,9 +588,9 @@ function Invoke-CatalystProbeBoundedProcess {
         EntryTimestamp = $operationStart
         DeadlineTimestamp = [Math]::Min(
             [long]$TaskDeadline.DeadlineTimestamp -
-                ([long]$ReserveSeconds * [long]$TaskDeadline.Frequency),
+            ([long]$ReserveSeconds * [long]$TaskDeadline.Frequency),
             $operationStart +
-                ([long]$effectiveTotalSeconds * [long]$TaskDeadline.Frequency))
+            ([long]$effectiveTotalSeconds * [long]$TaskDeadline.Frequency))
         Frequency = [long]$TaskDeadline.Frequency
         BudgetSeconds = $effectiveTotalSeconds
     }
@@ -601,17 +634,17 @@ function Invoke-CatalystProbeBoundedProcess {
         $stdoutTask = $process.StandardOutput.ReadToEndAsync($readCancellation.Token)
         $stderrTask = $process.StandardError.ReadToEndAsync($readCancellation.Token)
         $processWaitMilliseconds = [Math]::Max(0, [Math]::Min(
-            $effectiveProcessSeconds * 1000,
-            (Get-CatalystProbeDeadlineRemainingMilliseconds -Deadline $operationDeadline) -
+                $effectiveProcessSeconds * 1000,
+                (Get-CatalystProbeDeadlineRemainingMilliseconds -Deadline $operationDeadline) -
                 ($terminationSeconds * 1000)))
         if (-not $process.WaitForExit([int]$processWaitMilliseconds)) {
             $timedOut = $true
             $process.Kill($true)
             $terminationWaitAttempted = $true
             $terminationWaitMilliseconds =
-                Get-CatalystProbeTerminationWaitMilliseconds `
-                    -Deadline $operationDeadline `
-                    -MaximumWaitSeconds $terminationSeconds
+            Get-CatalystProbeTerminationWaitMilliseconds `
+                -Deadline $operationDeadline `
+                -MaximumWaitSeconds $terminationSeconds
             if (-not $process.WaitForExit($terminationWaitMilliseconds)) {
                 throw "Catalyst probe could not terminate timed-out command '$FileName'."
             }
@@ -658,9 +691,9 @@ function Invoke-CatalystProbeBoundedProcess {
             $process.Kill($true)
             if (-not $terminationWaitAttempted) {
                 $terminationWaitMilliseconds =
-                    Get-CatalystProbeTerminationWaitMilliseconds `
-                        -Deadline $operationDeadline `
-                        -MaximumWaitSeconds $terminationSeconds
+                Get-CatalystProbeTerminationWaitMilliseconds `
+                    -Deadline $operationDeadline `
+                    -MaximumWaitSeconds $terminationSeconds
                 if ($terminationWaitMilliseconds -gt 0) {
                     [void]$process.WaitForExit($terminationWaitMilliseconds)
                 }
@@ -731,9 +764,9 @@ function Get-CatalystProbeRepositoryStatusEntries {
             throw 'Catalyst probe received malformed bounded Git status output.'
         }
         $entries.Add([pscustomobject]@{
-            Status = $record.Substring(0, 2)
-            Path = $record.Substring(3).Replace('\', '/')
-        })
+                Status = $record.Substring(0, 2)
+                Path = $record.Substring(3).Replace('\', '/')
+            })
     }
     return @($entries)
 }
@@ -746,10 +779,10 @@ function Get-CatalystProbeWorkingProductBlob {
 
     return Invoke-CatalystProbeGitText `
         -ArgumentList @(
-            'hash-object',
-            "--path=$($script:CatalystProbeProductPath)",
-            '--',
-            $script:CatalystProbeProductPath) `
+        'hash-object',
+        "--path=$($script:CatalystProbeProductPath)",
+        '--',
+        $script:CatalystProbeProductPath) `
         -Context $Context `
         -LogName $LogName
 }
@@ -777,8 +810,8 @@ function Get-CatalystProbeTrackedVerificationSideEffects {
         throw "Catalyst probe $State product bytes changed outside the fixed contract."
     }
     if ((Get-CatalystProbeWorkingProductBlob `
-            -Context $Context `
-            -LogName "git-$State-protected-product-$([guid]::NewGuid().ToString('N')).log") -cne
+                -Context $Context `
+                -LogName "git-$State-protected-product-$([guid]::NewGuid().ToString('N')).log") -cne
         $expectedProductBlob) {
         throw "Catalyst probe $State product blob changed outside the fixed contract."
     }
@@ -787,7 +820,7 @@ function Get-CatalystProbeTrackedVerificationSideEffects {
     if ($fixtureExpected) {
         if (-not (Test-Path -LiteralPath $Context.FixtureTargetPath -PathType Leaf) -or
             (Get-CatalystProbeFileSha256 -Path $Context.FixtureTargetPath) -cne
-                $script:CatalystProbeFixtureSha256) {
+            $script:CatalystProbeFixtureSha256) {
             throw "Catalyst probe $State fixture bytes changed outside the fixed contract."
         }
     } elseif (Test-Path -LiteralPath $Context.FixtureTargetPath) {
@@ -931,17 +964,17 @@ function Initialize-CatalystGestureProbeContext {
         throw 'Catalyst probe requires the fresh pipeline workspace boundary.'
     }
     $agentTempDirectory =
-        [Environment]::GetEnvironmentVariable('AGENT_TEMPDIRECTORY')
+    [Environment]::GetEnvironmentVariable('AGENT_TEMPDIRECTORY')
     $requestedRuntimeRoot =
-        [Environment]::GetEnvironmentVariable('CATALYST_PROBE_RUNTIME_ROOT')
+    [Environment]::GetEnvironmentVariable('CATALYST_PROBE_RUNTIME_ROOT')
     if ([string]::IsNullOrWhiteSpace($agentTempDirectory) -or
         [string]::IsNullOrWhiteSpace($requestedRuntimeRoot)) {
         throw 'Catalyst probe requires its fixed private Agent.TempDirectory cache root.'
     }
     $jobDeadlineUtc =
-        [Environment]::GetEnvironmentVariable('CATALYST_GESTURE_JOB_DEADLINE_UTC')
+    [Environment]::GetEnvironmentVariable('CATALYST_GESTURE_JOB_DEADLINE_UTC')
     $artifactTailText =
-        [Environment]::GetEnvironmentVariable('CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS')
+    [Environment]::GetEnvironmentVariable('CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS')
     $artifactTailSeconds = 0
     $parsedJobDeadline = [DateTimeOffset]::MinValue
     if ([string]::IsNullOrWhiteSpace($jobDeadlineUtc) -or
@@ -951,7 +984,7 @@ function Initialize-CatalystGestureProbeContext {
             [Globalization.DateTimeStyles]::RoundtripKind,
             [ref]$parsedJobDeadline) -or
         $parsedJobDeadline.ToUniversalTime() -gt
-            [DateTimeOffset]::UtcNow.AddSeconds(5400) -or
+        [DateTimeOffset]::UtcNow.AddSeconds(5400) -or
         -not [int]::TryParse($artifactTailText, [ref]$artifactTailSeconds) -or
         $artifactTailSeconds -ne $script:CatalystProbeArtifactTailSeconds) {
         throw 'Catalyst probe requires its fixed job deadline and evidence tail.'
@@ -963,7 +996,7 @@ function Initialize-CatalystGestureProbeContext {
     $repositoryPrefix = $repositoryRoot.TrimEnd(
         [IO.Path]::DirectorySeparatorChar,
         [IO.Path]::AltDirectorySeparatorChar) +
-        [IO.Path]::DirectorySeparatorChar
+    [IO.Path]::DirectorySeparatorChar
     if ($outputDirectory -ceq $repositoryRoot -or
         $outputDirectory.StartsWith($repositoryPrefix, [StringComparison]::Ordinal) -or
         $trustedRoot -ceq $repositoryRoot -or
@@ -1016,8 +1049,8 @@ function Initialize-CatalystGestureProbeContext {
         TaskDeadline = $TaskDeadline
         ActiveDeadline = $TaskDeadline
         ActiveReserveSeconds =
-            $script:CatalystProbeCleanupBudgetSeconds +
-            $script:CatalystProbeSummaryBudgetSeconds
+        $script:CatalystProbeCleanupBudgetSeconds +
+        $script:CatalystProbeSummaryBudgetSeconds
         TrustedFixturePath = $trustedFixturePath
         FixtureTargetPath = $fixtureTargetPath
         ProductPath = $productPath
@@ -1028,7 +1061,7 @@ function Initialize-CatalystGestureProbeContext {
         RepositoryState = 'setup'
     }
     $context.RuntimeEnvironment =
-        Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $runtimeRoot
+    Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $runtimeRoot
 
     Assert-CatalystProbeTrustedTree -Context $context
     if ((Get-CatalystProbeFileSha256 -Path $trustedFixturePath) -cne
@@ -1072,8 +1105,8 @@ function Initialize-CatalystGestureProbeContext {
     }
     $pathDiff = Invoke-CatalystProbeGitText `
         -ArgumentList @(
-            'diff', '--name-status', $script:CatalystProbeBaselineCommit,
-            $script:CatalystProbeNegativeCommit, '--', $script:CatalystProbeProductPath) `
+        'diff', '--name-status', $script:CatalystProbeBaselineCommit,
+        $script:CatalystProbeNegativeCommit, '--', $script:CatalystProbeProductPath) `
         -Context $context `
         -LogName 'git-product-name-status.log'
     if ($pathDiff -cne "M`t$($script:CatalystProbeProductPath)") {
@@ -1084,8 +1117,8 @@ function Initialize-CatalystGestureProbeContext {
         throw 'Catalyst probe baseline product file does not match its fixed digest.'
     }
     if ((Get-CatalystProbeWorkingProductBlob `
-            -Context $context `
-            -LogName 'git-baseline-working-blob.log') -cne
+                -Context $context `
+                -LogName 'git-baseline-working-blob.log') -cne
         $script:CatalystProbeBaselineBlob) {
         throw 'Catalyst probe baseline product working blob is not the fixed preimage.'
     }
@@ -1108,10 +1141,10 @@ function New-CatalystProbeFixedPatch {
     }
     $patch = Invoke-CatalystProbeGitText `
         -ArgumentList @(
-            'diff', '--binary', '--full-index', '--no-color',
-            $script:CatalystProbeBaselineCommit,
-            $script:CatalystProbeNegativeCommit,
-            '--', $script:CatalystProbeProductPath) `
+        'diff', '--binary', '--full-index', '--no-color',
+        $script:CatalystProbeBaselineCommit,
+        $script:CatalystProbeNegativeCommit,
+        '--', $script:CatalystProbeProductPath) `
         -Context $Context `
         -LogName 'git-product-patch.log'
     [IO.File]::WriteAllText(
@@ -1145,54 +1178,96 @@ function Copy-CatalystProbeFixture {
 function Invoke-CatalystProbeTrustedRestore {
     param([Parameter(Mandatory = $true)][pscustomobject]$Context)
 
-    $platformProperties = @(
-        '-p:IncludeMacCatalystTargetFrameworks=true'
-        '-p:IncludeIosTargetFrameworks=false'
-        '-p:IncludeAndroidTargetFrameworks=false'
-        '-p:IncludeWindowsTargetFrameworks=false'
-        '-p:IncludeMacOSTargetFrameworks=false'
-        '-p:IncludeTizenTargetFrameworks=false'
-    )
-    $projectPath = Join-Path $Context.RepositoryRoot $script:CatalystProbeProjectPath
-    $packages = $Context.RuntimeEnvironment['NUGET_PACKAGES']
-    $commands = @(
-        @{
-            Name = 'restore-catalyst-graph.log'
-            Arguments = @('restore', $projectPath, '--packages', $packages) +
-                $platformProperties
-            Timeout = 420
-        },
-        @{
-            Name = 'restore-catalyst-top-rid.log'
-            Arguments = @(
-                'restore', $projectPath, '--packages', $packages,
-                '--no-dependencies', '-r', $script:CatalystProbeRuntimeIdentifier) +
-                $platformProperties
-            Timeout = 180
-        }
-    )
-    Assert-CatalystProbeRepositoryState -Context $Context -State setup
+    $phaseContext = $Context.PSObject.Copy()
+    $phaseContext.ActiveDeadline =
+    New-CatalystProbePrewarmDeadline -TaskDeadline $Context.TaskDeadline
+    $phaseContext.ActiveReserveSeconds =
+    $script:CatalystProbePrewarmCleanupReserveSeconds
+    # The preguard is deliberately outside the admitted phase's finally. Rejected
+    # input belongs to the caller and must never be "cleaned" as build output.
+    Assert-CatalystProbeRepositoryState -Context $phaseContext -State setup
+    $plan = Get-ReplicationAppleCompanionPrewarmPlan `
+        -RepositoryRoot $Context.RepositoryRoot `
+        -TrustedRoot $Context.TrustedRoot `
+        -PackagesPath $Context.RuntimeEnvironment['NUGET_PACKAGES']
+    $assets = $null
+    $restoreIdentity = $null
+    $buildIdentities = [Collections.Generic.List[object]]::new()
+    $validationCount = 0
+    $cleanupCompleted = $false
     try {
-        foreach ($command in $commands) {
-            Assert-CatalystProbeTrustedTree -Context $Context
+        foreach ($command in @($plan.Commands)) {
+            Assert-CatalystProbeTrustedTree -Context $phaseContext
             $result = Invoke-CatalystProbeBoundedProcess `
                 -FileName 'dotnet' `
                 -ArgumentList $command.Arguments `
-                -WorkingDirectory $Context.RepositoryRoot `
-                -Environment $Context.RuntimeEnvironment `
-                -TimeoutSeconds $command.Timeout `
-                -TaskDeadline $Context.ActiveDeadline `
-                -ReserveSeconds $Context.ActiveReserveSeconds `
-                -LogPath (Join-Path $Context.LogDirectory $command.Name)
-            Assert-CatalystProbeTrustedTree -Context $Context
+                -WorkingDirectory $phaseContext.RepositoryRoot `
+                -Environment $phaseContext.RuntimeEnvironment `
+                -TimeoutSeconds $command.TimeoutSeconds `
+                -TaskDeadline $phaseContext.ActiveDeadline `
+                -ReserveSeconds $phaseContext.ActiveReserveSeconds `
+                -LogPath (Join-Path $phaseContext.LogDirectory $command.LogName)
+            Assert-CatalystProbeTrustedTree -Context $phaseContext
+            $null = @(
+                Get-CatalystProbeTrackedVerificationSideEffects `
+                    -Context $phaseContext `
+                    -State setup)
             if ($result.TimedOut -or $result.ExitCode -ne 0) {
-                throw "Catalyst trusted prewarm failed; see $($command.Name)."
+                throw "Catalyst trusted dual-Apple prewarm failed; see $($command.LogName)."
+            }
+            if ($command.Kind -ceq 'restore') {
+                $assets = Assert-ReplicationAppleCompanionAssets `
+                    -RepositoryRoot $phaseContext.RepositoryRoot
+                $validationCount++
+                $restoreIdentity = [ordered]@{
+                    name = [string]$command.Name
+                    logName = [string]$command.LogName
+                    logSha256 = [string]$result.LogSha256
+                }
+            } else {
+                if ($null -eq $assets) {
+                    throw 'Catalyst trusted dual-Apple prewarm build preceded asset validation.'
+                }
+                $postBuildAssets = Assert-ReplicationAppleCompanionAssets `
+                    -RepositoryRoot $phaseContext.RepositoryRoot `
+                    -ExpectedSha256 $assets.AssetsSha256
+                $validationCount++
+                $buildIdentities.Add([ordered]@{
+                        targetFramework = [string]$command.TargetFramework
+                        runtimeIdentifier = [string]$command.RuntimeIdentifier
+                        configuration = 'Debug'
+                        noRestore = $true
+                        logName = [string]$command.LogName
+                        logSha256 = [string]$result.LogSha256
+                        assetsSha256 = [string]$postBuildAssets.AssetsSha256
+                    })
             }
         }
     } finally {
+        $phaseContext.ActiveReserveSeconds = 0
         Restore-CatalystProbeTrackedVerificationSideEffects `
-            -Context $Context `
+            -Context $phaseContext `
             -State setup
+        $cleanupCompleted = $true
+    }
+    if (-not $cleanupCompleted -or $null -eq $restoreIdentity -or
+        $buildIdentities.Count -ne 2 -or $validationCount -ne 3) {
+        throw 'Catalyst trusted dual-Apple prewarm did not complete its closed proof.'
+    }
+    return [pscustomobject][ordered]@{
+        ready = $true
+        phaseBudgetSeconds = [int]$phaseContext.ActiveDeadline.BudgetSeconds
+        cleanupCompleted = $cleanupCompleted
+        restore = $restoreIdentity
+        assets = [ordered]@{
+            sha256 = [string]$assets.AssetsSha256
+            targetPairs = @($assets.TargetPairs)
+            originalTargetFrameworks = @($assets.OriginalTargetFrameworks)
+            frameworks = @($assets.Frameworks)
+            validationCount = $validationCount
+            unchangedThroughBuilds = $true
+        }
+        builds = @($buildIdentities)
     }
 }
 
@@ -1401,7 +1476,7 @@ function Assert-CatalystProbeCycleEvidence {
         throw 'Catalyst probe evidence must contain exactly two completed, non-skipped facts.'
     }
     $methods = @($records | ForEach-Object { [string]$_.method } |
-        Sort-Object -CaseSensitive)
+            Sort-Object -CaseSensitive)
     if (($methods -join "`n") -cne
         ($script:CatalystProbeMethods -join "`n") -or
         @($methods | Select-Object -Unique).Count -ne 2) {
@@ -1444,21 +1519,21 @@ function Assert-CatalystProbeCycleEvidence {
     return [pscustomobject]@{
         StrictEvidenceSha256 = [string]$evidence.Digest
         ResultFiles = @($document.resultFiles | ForEach-Object {
-            [ordered]@{
-                name = [string]$_.name
-                sha256 = [string]$_.sha256
-            }
-        })
-        Identities = @($records | Sort-Object method -CaseSensitive |
-            ForEach-Object {
                 [ordered]@{
-                    type = [string]$_.type
-                    method = [string]$_.method
-                    displayName = [string]$_.displayName
-                    outcome = [string]$_.outcome
-                    failureSignature = [string]$_.failureSignature
+                    name = [string]$_.name
+                    sha256 = [string]$_.sha256
                 }
             })
+        Identities = @($records | Sort-Object method -CaseSensitive |
+                ForEach-Object {
+                    [ordered]@{
+                        type = [string]$_.type
+                        method = [string]$_.method
+                        displayName = [string]$_.displayName
+                        outcome = [string]$_.outcome
+                        failureSignature = [string]$_.failureSignature
+                    }
+                })
         Total = [int]$document.total
         Passed = [int]$document.passed
         Failed = [int]$document.failed
@@ -1474,10 +1549,10 @@ function Assert-CatalystProbeOwnedContainerResult {
     )
 
     $containerDigest =
-        Get-CatalystProbeFileSha256 -Path $Context.ContainerResultPath
+    Get-CatalystProbeFileSha256 -Path $Context.ContainerResultPath
     $retainedDigests = @($Cycle.resultFiles | ForEach-Object {
-        [string]$_.sha256
-    })
+            [string]$_.sha256
+        })
     if ($retainedDigests.Count -ne 1 -or
         $retainedDigests[0] -cne $containerDigest) {
         throw 'Catalyst probe container result is not the exact retained XML from this cycle.'
@@ -1541,7 +1616,7 @@ function Invoke-CatalystProbeCycle {
         EntryTimestamp = $cycleStart
         DeadlineTimestamp = [Math]::Min(
             [long]$Context.ActiveDeadline.DeadlineTimestamp -
-                ([long]$Context.ActiveReserveSeconds * [long]$Context.ActiveDeadline.Frequency),
+            ([long]$Context.ActiveReserveSeconds * [long]$Context.ActiveDeadline.Frequency),
             $cycleStart + ([long]$cycleSeconds * [long]$Context.ActiveDeadline.Frequency))
         Frequency = [long]$Context.ActiveDeadline.Frequency
         BudgetSeconds = $cycleSeconds
@@ -1563,7 +1638,7 @@ function Invoke-CatalystProbeCycle {
         $cycleCleanupErrors = [Collections.Generic.List[string]]::new()
         try {
             $cleanupStoppedCount =
-                Stop-CatalystProbeOwnedApplication -Context $cycleContext
+            Stop-CatalystProbeOwnedApplication -Context $cycleContext
         } catch {
             $cycleCleanupErrors.Add("owned process cleanup: $($_.Exception.Message)")
         }
@@ -1646,8 +1721,8 @@ function Enable-CatalystProbeKnownNegative {
         throw 'Catalyst probe applied product file does not match the fixed negative postimage.'
     }
     if ((Get-CatalystProbeWorkingProductBlob `
-            -Context $Context `
-            -LogName 'git-negative-working-blob.log') -cne
+                -Context $Context `
+                -LogName 'git-negative-working-blob.log') -cne
         $script:CatalystProbeNegativeBlob) {
         throw 'Catalyst probe applied product working blob is not the fixed postimage.'
     }
@@ -1665,7 +1740,7 @@ function Restore-CatalystProbeRepository {
     param([Parameter(Mandatory = $true)][pscustomobject]$Context)
 
     $Context.ActiveDeadline =
-        New-CatalystProbeCleanupDeadline -TaskDeadline $Context.TaskDeadline
+    New-CatalystProbeCleanupDeadline -TaskDeadline $Context.TaskDeadline
     $Context.ActiveReserveSeconds = 0
     $errors = [Collections.Generic.List[string]]::new()
     try {
@@ -1696,8 +1771,8 @@ function Restore-CatalystProbeRepository {
             $restore = Invoke-CatalystProbeBoundedProcess `
                 -FileName 'git' `
                 -ArgumentList @(
-                    'restore', '--source', $script:CatalystProbeBaselineCommit,
-                    '--', $script:CatalystProbeProductPath) `
+                'restore', '--source', $script:CatalystProbeBaselineCommit,
+                '--', $script:CatalystProbeProductPath) `
                 -WorkingDirectory $Context.RepositoryRoot `
                 -Environment $Context.RuntimeEnvironment `
                 -TimeoutSeconds 120 `
@@ -1712,8 +1787,8 @@ function Restore-CatalystProbeRepository {
                 throw 'restored product digest is incorrect'
             }
             if ((Get-CatalystProbeWorkingProductBlob `
-                    -Context $Context `
-                    -LogName 'git-restored-working-blob.log') -cne
+                        -Context $Context `
+                        -LogName 'git-restored-working-blob.log') -cne
                 $script:CatalystProbeBaselineBlob) {
                 throw 'restored product blob is incorrect'
             }
@@ -1788,12 +1863,13 @@ function New-CatalystProbeResult {
             summarySeconds = $script:CatalystProbeSummaryBudgetSeconds
             azureTaskSeconds = $script:CatalystProbeTaskTimeoutSeconds
             azureTerminationReserveSeconds =
-                $script:CatalystProbeTaskTerminationReserveSeconds
+            $script:CatalystProbeTaskTerminationReserveSeconds
             artifactTailSeconds = $script:CatalystProbeArtifactTailSeconds
             jobDeadlineUtc = $null
             taskRemainingAtSummarySeconds = $null
             retries = 0
         }
+        prewarm = $null
         baseline = $null
         negative = $null
         cleanup = [ordered]@{
@@ -1861,20 +1937,20 @@ function Invoke-CatalystGestureRegressionProbeCore {
     $started = [DateTimeOffset]::UtcNow
     try {
         $minimumRemainingWorkSeconds =
-            $script:CatalystProbePrewarmBudgetSeconds +
-            (2 * $script:CatalystProbeCycleBudgetSeconds) +
-            $script:CatalystProbePatchApplyBudgetSeconds +
-            $script:CatalystProbeCleanupBudgetSeconds +
-            $script:CatalystProbeSummaryBudgetSeconds
+        $script:CatalystProbePrewarmBudgetSeconds +
+        (2 * $script:CatalystProbeCycleBudgetSeconds) +
+        $script:CatalystProbePatchApplyBudgetSeconds +
+        $script:CatalystProbeCleanupBudgetSeconds +
+        $script:CatalystProbeSummaryBudgetSeconds
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds $minimumRemainingWorkSeconds `
             -Description 'initialization, patch preparation, and both cycles'
         $attestationDocument =
-            Read-TrustedTreeAttestation -Path $TrustedTreeAttestation
+        Read-TrustedTreeAttestation -Path $TrustedTreeAttestation
         $result.trustedTreeHash = [string]$attestationDocument.treeHash
         $result.trustedTreeAttestationSha256 =
-            Get-CatalystProbeFileSha256 -Path $TrustedTreeAttestation
+        Get-CatalystProbeFileSha256 -Path $TrustedTreeAttestation
         $context = Initialize-CatalystGestureProbeContext `
             -ExpectedSourceVersion $ExpectedSourceVersion `
             -RepositoryRoot $RepositoryRoot `
@@ -1896,41 +1972,41 @@ function Invoke-CatalystGestureRegressionProbeCore {
             -Deadline $TaskDeadline `
             -RequiredSeconds $minimumRemainingWorkSeconds `
             -Description 'prewarm and both native cycles'
-        Invoke-CatalystProbeTrustedRestore -Context $context
+        $result.prewarm = Invoke-CatalystProbeTrustedRestore -Context $context
         Copy-CatalystProbeFixture -Context $context
 
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds (
-                (2 * $script:CatalystProbeCycleBudgetSeconds) +
-                $script:CatalystProbePatchApplyBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds +
-                $script:CatalystProbeSummaryBudgetSeconds) `
+            (2 * $script:CatalystProbeCycleBudgetSeconds) +
+            $script:CatalystProbePatchApplyBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
             -Description 'both native cycles'
         $null = Assert-CatalystProbeDeadlineAdmission `
             -DeadlineUtc $context.JobDeadlineUtc `
             -Phase 'baseline and negative cycles' `
             -PhaseBudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
             -RemainingPhaseBudgetSeconds (
-                $script:CatalystProbeCycleBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds) `
+            $script:CatalystProbeCycleBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds) `
             -ArtifactTailSeconds $context.ArtifactTailSeconds
         $result.baseline = Invoke-CatalystProbeCycle `
             -Kind 'baseline' `
             -Context $context
         $result.baseline | Add-Member -NotePropertyName containerResultSha256 `
             -NotePropertyValue (
-                Assert-CatalystProbeOwnedContainerResult `
-                    -Context $context `
-                    -Cycle $result.baseline)
+            Assert-CatalystProbeOwnedContainerResult `
+                -Context $context `
+                -Cycle $result.baseline)
 
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds (
-                $script:CatalystProbeCycleBudgetSeconds +
-                $script:CatalystProbePatchApplyBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds +
-                $script:CatalystProbeSummaryBudgetSeconds) `
+            $script:CatalystProbeCycleBudgetSeconds +
+            $script:CatalystProbePatchApplyBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
             -Description 'fixed patch application and known-negative cycle'
         Enable-CatalystProbeKnownNegative `
             -Context $context `
@@ -1938,9 +2014,9 @@ function Invoke-CatalystGestureRegressionProbeCore {
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds (
-                $script:CatalystProbeCycleBudgetSeconds +
-                $script:CatalystProbeCleanupBudgetSeconds +
-                $script:CatalystProbeSummaryBudgetSeconds) `
+            $script:CatalystProbeCycleBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
             -Description 'known-negative cycle'
         $null = Assert-CatalystProbeDeadlineAdmission `
             -DeadlineUtc $context.JobDeadlineUtc `
@@ -1953,16 +2029,16 @@ function Invoke-CatalystGestureRegressionProbeCore {
             -Context $context
         $result.negative | Add-Member -NotePropertyName containerResultSha256 `
             -NotePropertyValue (
-                Assert-CatalystProbeOwnedContainerResult `
-                    -Context $context `
-                    -Cycle $result.negative)
+            Assert-CatalystProbeOwnedContainerResult `
+                -Context $context `
+                -Cycle $result.negative)
 
         $baselineIds = @($result.baseline.identities | ForEach-Object {
-            "$($_.type)`n$($_.method)`n$($_.displayName)"
-        })
+                "$($_.type)`n$($_.method)`n$($_.displayName)"
+            })
         $negativeIds = @($result.negative.identities | ForEach-Object {
-            "$($_.type)`n$($_.method)`n$($_.displayName)"
-        })
+                "$($_.type)`n$($_.method)`n$($_.displayName)"
+            })
         if (($baselineIds -join "`n--identity--`n") -cne
             ($negativeIds -join "`n--identity--`n")) {
             throw 'Catalyst A/B cycles did not execute the same exact test identities.'
@@ -1980,10 +2056,10 @@ function Invoke-CatalystGestureRegressionProbeCore {
                 Restore-CatalystProbeRepository -Context $context
                 $result.cleanup.completed = $true
                 $result.cleanup.fixtureRemoved =
-                    -not (Test-Path -LiteralPath $context.FixtureTargetPath)
+                -not (Test-Path -LiteralPath $context.FixtureTargetPath)
                 $result.cleanup.productRestored =
-                    (Get-CatalystProbeFileSha256 -Path $context.ProductPath) -ceq
-                        $script:CatalystProbeBaselineFileSha256
+                (Get-CatalystProbeFileSha256 -Path $context.ProductPath) -ceq
+                $script:CatalystProbeBaselineFileSha256
                 $result.cleanup.repositoryStatusRestored = $true
                 $result.cleanup.trustedTreeRestored = $true
             } catch {
@@ -1997,7 +2073,7 @@ function Invoke-CatalystGestureRegressionProbeCore {
         $result['startedUtc'] = $started.ToString('O')
         $result['completedUtc'] = [DateTimeOffset]::UtcNow.ToString('O')
         $result.budget.taskRemainingAtSummarySeconds =
-            Get-CatalystProbeDeadlineRemainingSeconds -Deadline $TaskDeadline
+        Get-CatalystProbeDeadlineRemainingSeconds -Deadline $TaskDeadline
         $resultPath = if ($context) {
             $context.ResultPath
         } else {
@@ -2032,7 +2108,8 @@ if ($MyInvocation.InvocationName -cne '.') {
             'Assert-ReplicationExecutionEnvironment.ps1',
             'Assert-ReplicationTestGuard.ps1',
             'Assert-ReplicationCertificationBinding.ps1',
-            'Assert-ReplicationAppleAppSandbox.ps1')) {
+            'Assert-ReplicationAppleAppSandbox.ps1',
+            'Replication-AppleCompanionPrewarm.ps1')) {
         . (Join-Path $sharedRoot $helper)
     }
     $null = Invoke-CatalystGestureRegressionProbeCore `
