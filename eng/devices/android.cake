@@ -92,12 +92,8 @@ Teardown(context =>
 	{
 		try
 		{
-			if (runIssue38080 && !string.IsNullOrEmpty(DEVICE_UDID))
+			if (runIssue38080 && emulatorProcess != null)
 				CaptureIssue38080Diagnostics();
-		}
-		catch (Exception ex)
-		{
-			Warning("Failed to capture issue 38080 diagnostics before cleanup: {0}", ex.Message);
 		}
 		finally
 		{
@@ -653,13 +649,17 @@ void CaptureIssue38080Diagnostics()
 		System.IO.File.WriteAllText(
 			outputDirectory.CombineWithFilePath("adb-path-error.txt").FullPath,
 			$"Provisioned Android SDK adb was not found: '{adb}'.");
+		Warning("Provisioned Android SDK adb was not found: '{0}'.", adb);
 		return;
 	}
 
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "-s", DEVICE_UDID, "shell", "getprop");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "-s", DEVICE_UDID, "shell", "dumpsys", "webviewupdate");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "-s", DEVICE_UDID, "shell", "dumpsys", "SurfaceFlinger");
-	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "-s", DEVICE_UDID, "logcat", "-d");
+	if (!CaptureIssue38080AdbCommand(adb, outputDirectory, "device-state.txt", "-e", "get-state"))
+		return;
+
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "getprop.txt", "-e", "shell", "getprop");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "webview-provider.txt", "-e", "shell", "dumpsys", "webviewupdate");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "surfaceflinger.txt", "-e", "shell", "dumpsys", "SurfaceFlinger");
+	CaptureIssue38080AdbCommand(adb, outputDirectory, "logcat.txt", "-e", "logcat", "-d");
 
 	var tombstones = outputDirectory.Combine("tombstones");
 	EnsureDirectoryExists(tombstones);
@@ -667,21 +667,18 @@ void CaptureIssue38080Diagnostics()
 		adb,
 		outputDirectory,
 		"tombstone-pull.txt",
-		"-s",
-		DEVICE_UDID,
+		"-e",
 		"pull",
 		"/data/tombstones",
 		tombstones.FullPath);
 }
 
-void CaptureIssue38080AdbCommand(
+bool CaptureIssue38080AdbCommand(
 	FilePath adb,
 	DirectoryPath outputDirectory,
 	string outputFileName,
 	params string[] arguments)
 {
-	var standardOutput = new List<string>();
-	var standardError = new List<string>();
 	var processArguments = new ProcessArgumentBuilder();
 	foreach (var argument in arguments)
 		processArguments.AppendQuoted(argument);
@@ -691,30 +688,33 @@ void CaptureIssue38080AdbCommand(
 		Arguments = processArguments,
 		RedirectStandardOutput = true,
 		RedirectStandardError = true,
-		RedirectedStandardOutputHandler = line =>
-		{
-			standardOutput.Add(line);
-			return line;
-		},
-		RedirectedStandardErrorHandler = line =>
-		{
-			standardError.Add(line);
-			return line;
-		},
-		Timeout = 30000,
 	};
 
 	var output = outputDirectory.CombineWithFilePath(outputFileName);
-	try
+	Information("Capturing issue 38080 diagnostics: {0} {1}", adb, processArguments);
+	using (var process = StartAndReturnProcess(adb, settings))
 	{
-		Information("Capturing issue 38080 diagnostics: {0} {1}", adb, processArguments);
-		var exitCode = StartProcess(adb.FullPath, settings);
-		System.IO.File.WriteAllLines(output.FullPath, new[] { $"ExitCode: {exitCode}" }.Concat(standardOutput).Concat(standardError));
-	}
-	catch (Exception ex)
-	{
-		System.IO.File.WriteAllLines(output.FullPath, new[] { $"Command failed: {ex.Message}" }.Concat(standardOutput).Concat(standardError));
-		Warning("Issue 38080 diagnostic command failed: {0}", ex.Message);
+		var timedOut = !process.WaitForExit(30000);
+		if (timedOut)
+		{
+			if (!process.WaitForExit(5000))
+				throw new TimeoutException($"Issue 38080 diagnostic process could not be stopped: {adb} {processArguments}");
+		}
+
+		process.WaitForExit();
+		var exitCode = process.GetExitCode();
+		System.IO.File.WriteAllLines(
+			output.FullPath,
+			new[] { $"TimedOut: {timedOut}", $"ExitCode: {exitCode}" }
+				.Concat(process.GetStandardOutput())
+				.Concat(process.GetStandardError()));
+
+		if (timedOut)
+			Warning("Issue 38080 diagnostic command timed out after 30 seconds: {0} {1}", adb, processArguments);
+		else if (exitCode != 0)
+			Warning("Issue 38080 diagnostic command exited with code {0}: {1} {2}", exitCode, adb, processArguments);
+
+		return !timedOut && exitCode == 0;
 	}
 }
 
