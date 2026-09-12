@@ -729,6 +729,54 @@ function Get-ReplicationAppleIsolatedCommand {
             if ($testType -cne 'DeviceTest') {
                 throw 'Apple replication permits only device tests through the trusted runner.'
             }
+            $strictPreparedCount = @($values | Where-Object {
+                    $_ -ceq '-RequirePreparedIosSimulator'
+                }).Count
+            if ($strictPreparedCount -gt 0) {
+                $preparedDeviceArgumentCount = @($values | Where-Object {
+                        $_ -ceq '-DeviceUdid'
+                    }).Count
+                $preparedFilterArgumentCount = @($values | Where-Object {
+                        $_ -ceq '-TestFilter'
+                    }).Count
+                $preparedClassArgumentCount = @($values | Where-Object {
+                        $_ -ceq '-TestClass'
+                    }).Count
+                if ($strictPreparedCount -ne 1 -or
+                    $preparedDeviceArgumentCount -ne 1 -or
+                    $preparedFilterArgumentCount -ne 1 -or
+                    $preparedClassArgumentCount -ne 1) {
+                    throw (
+                        'Apple strict prepared iOS simulator verification ' +
+                        'requires one exact regression device binding.')
+                }
+                $preparedDeviceUdid = Get-ReplicationAppleSingleArgumentValue `
+                    -Arguments $values `
+                    -Name '-DeviceUdid'
+                $preparedFilter = Get-ReplicationAppleSingleArgumentValue `
+                    -Arguments $values `
+                    -Name '-TestFilter'
+                $preparedClass = Get-ReplicationAppleSingleArgumentValue `
+                    -Arguments $values `
+                    -Name '-TestClass'
+                if ($Platform -cne 'ios' -or
+                    @($values | Where-Object {
+                            $_ -ceq '-RegressionEvidence'
+                        }).Count -ne 1 -or
+                    $preparedDeviceUdid -cnotmatch
+                    '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$' -or
+                    $preparedFilter -cne 'Category=Label' -or
+                    $preparedClass -cne
+                    'Microsoft.Maui.DeviceTests.LabelTests' -or
+                    -not $Environment.ContainsKey(
+                        'MAUI_REPLICATION_DEVICE_UDID') -or
+                    [string]$Environment['MAUI_REPLICATION_DEVICE_UDID'] -cne
+                    $preparedDeviceUdid) {
+                    throw (
+                        'Apple strict prepared iOS simulator verification ' +
+                        'requires one exact regression device binding.')
+                }
+            }
         }
     }
 

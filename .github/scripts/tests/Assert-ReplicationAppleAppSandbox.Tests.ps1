@@ -311,6 +311,53 @@ Describe 'Apple trusted host command boundary' {
         }
     }
 
+    It 'admits only the exact prepared iOS simulator binding for strict verification' {
+        $runner = Join-Path $script:TrustedRoot (
+            'scripts/shared/Invoke-ReplicationTestVerification.ps1')
+        $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $arguments = @(
+            '-Platform', 'ios',
+            '-TestType', 'DeviceTest',
+            '-TestFilter', 'Category=Label',
+            '-TestClass', 'Microsoft.Maui.DeviceTests.LabelTests',
+            '-DeviceUdid', $udid,
+            '-RequirePreparedIosSimulator',
+            '-RegressionEvidence')
+        $preparedEnvironment = @{} + $script:Environment
+        $preparedEnvironment['MAUI_REPLICATION_DEVICE_UDID'] = $udid
+
+        $command = Get-ReplicationAppleIsolatedCommand `
+            -Platform ios -TrustedRoot $script:TrustedRoot `
+            -ScriptPath $runner -Arguments $arguments `
+            -Environment $preparedEnvironment -OperatingSystem macos
+
+        $command.Arguments | Should -Contain $udid
+        $command.Arguments | Should -Contain '-RequirePreparedIosSimulator'
+        foreach ($invalid in @(
+                @(
+                    '-Platform', 'ios', '-TestType', 'DeviceTest',
+                    '-RequirePreparedIosSimulator', '-RegressionEvidence'),
+                @(
+                    '-Platform', 'ios', '-TestType', 'DeviceTest',
+                    '-DeviceUdid', 'not-a-uuid',
+                    '-RequirePreparedIosSimulator', '-RegressionEvidence'),
+                @(
+                    '-Platform', 'ios', '-TestType', 'DeviceTest',
+                    '-DeviceUdid', $udid, '-RequirePreparedIosSimulator'),
+                @(
+                    '-Platform', 'ios', '-TestType', 'DeviceTest',
+                    '-DeviceUdid', $udid,
+                    '-RequirePreparedIosSimulator', '-RegressionEvidence')
+            )) {
+            {
+                Get-ReplicationAppleIsolatedCommand `
+                    -Platform ios -TrustedRoot $script:TrustedRoot `
+                    -ScriptPath $runner -Arguments $invalid `
+                    -Environment $script:Environment -OperatingSystem macos
+            } | Should -Throw '*strict prepared iOS simulator*'
+        }
+    }
+
     It 'retains iOS runner argument and test-tier restrictions' {
         foreach ($case in @(
             @{

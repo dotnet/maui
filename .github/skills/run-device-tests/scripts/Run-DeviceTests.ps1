@@ -124,6 +124,9 @@ param(
     [string]$DeviceUdid,
 
     [Parameter(Mandatory = $false)]
+    [switch]$RequirePreparedIosSimulator,
+
+    [Parameter(Mandatory = $false)]
     [string]$RepositoryRoot,
 
     [Parameter(Mandatory = $false)]
@@ -186,6 +189,127 @@ function Test-DeviceTestStrictRegressionSelector {
         [IO.Path]::GetFileName($evidencePath) -ceq 'strict-test-evidence.json')
 }
 
+function Invoke-PreparedIosSimctlReadOnlyQuery {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('runtimes', 'devices')]
+        [string]$Query,
+        [ValidateRange(1, 20)][int]$TimeoutSeconds = 15
+    )
+
+    $arguments = if ($Query -ceq 'runtimes') {
+        @('simctl', 'list', 'runtimes', '--json')
+    } else {
+        @('simctl', 'list', 'devices', 'available', '--json')
+    }
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = '/usr/bin/xcrun'
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.CreateNoWindow = $true
+    foreach ($argument in $arguments) {
+        $null = $startInfo.ArgumentList.Add($argument)
+    }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (-not $process.Start()) {
+            throw "Could not start the fixed read-only simctl $Query query."
+        }
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            try { $process.Kill($true) } catch {}
+            throw "The fixed read-only simctl $Query query timed out."
+        }
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) {
+            $safeError = (($stderr -replace '[\r\n\f\v]+', ' ') -replace
+                '##(?=\[|vso\[)', '## ').Trim()
+            if ($safeError.Length -gt 2048) {
+                $safeError = $safeError.Substring(0, 2048)
+            }
+            throw (
+                "The fixed read-only simctl $Query query failed with exit " +
+                "$($process.ExitCode): $safeError")
+        }
+        if ([Text.Encoding]::UTF8.GetByteCount($stdout) -gt 1MB) {
+            throw "The fixed read-only simctl $Query response exceeded its bound."
+        }
+        try {
+            return $stdout | ConvertFrom-Json -Depth 16 -ErrorAction Stop
+        } catch {
+            throw "The fixed read-only simctl $Query response was malformed."
+        }
+    } finally {
+        $process.Dispose()
+    }
+}
+
+function Assert-PreparedIosSimulatorReady {
+    [CmdletBinding()]
+    param([Parameter(Mandatory = $true)][string]$DeviceUdid)
+
+    $expectedRuntime =
+    'com.apple.CoreSimulator.SimRuntime.iOS-26-0'
+    $expectedDeviceType =
+    'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro'
+    if ($DeviceUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+        throw 'Strict prepared iOS execution requires one exact uppercase simulator UUID.'
+    }
+    $runtimeDocument =
+    Invoke-PreparedIosSimctlReadOnlyQuery -Query 'runtimes'
+    $matchingRuntimes = @($runtimeDocument.runtimes | Where-Object {
+            [string]$_.identifier -ceq $expectedRuntime -and
+            [bool]$_.isAvailable
+        })
+    if ($matchingRuntimes.Count -ne 1) {
+        throw (
+            'The strict prepared simulator requires the fixed installed ' +
+            'iOS 26.0 runtime.')
+    }
+
+    $deviceDocument =
+    Invoke-PreparedIosSimctlReadOnlyQuery -Query 'devices'
+    $matchingDevices = [Collections.Generic.List[object]]::new()
+    foreach ($runtime in @($deviceDocument.devices.PSObject.Properties)) {
+        foreach ($device in @($runtime.Value)) {
+            if ([string]$device.udid -ceq $DeviceUdid) {
+                $matchingDevices.Add([pscustomobject]@{
+                        RuntimeIdentifier = [string]$runtime.Name
+                        Device = $device
+                    })
+            }
+        }
+    }
+    if ($matchingDevices.Count -ne 1) {
+        throw 'The strict prepared simulator is no longer available.'
+    }
+    $match = $matchingDevices[0]
+    if ([string]$match.RuntimeIdentifier -cne $expectedRuntime) {
+        throw (
+            'The strict prepared simulator is not bound to the fixed ' +
+            'installed iOS 26.0 runtime.')
+    }
+    if (-not [bool]$match.Device.isAvailable -or
+        [string]$match.Device.state -cne 'Booted' -or
+        [string]$match.Device.deviceTypeIdentifier -cne $expectedDeviceType) {
+        throw (
+            'The strict prepared simulator must remain available, already-booted, ' +
+            'and bound to the fixed device type; recovery is forbidden.')
+    }
+    return [pscustomobject]@{
+        DeviceUdid = $DeviceUdid
+        RuntimeIdentifier = $expectedRuntime
+        RuntimeVersion = '26.0'
+    }
+}
+
 # Determine default platform based on OS
 if (-not $Platform) {
     if ($IsWindows) {
@@ -218,6 +342,24 @@ if (-not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)) {
     if (Test-Path -LiteralPath $OutputDirectory) {
         throw 'Strict device-test evidence requires a fresh output directory.'
     }
+}
+$preparedIosSimulatorBinding = $null
+if ($RequirePreparedIosSimulator) {
+    if ($Platform -cne 'ios' -or -not $strictRegressionSelector -or
+        $BuildOnly -or $PreflightXHarnessOnly -or
+        $Configuration -cne 'Debug' -or -not $NoRestore -or -not $Rebuild -or
+        $SkipXcodeVersionCheck -or
+        $TestFilter -cne 'Category=Label' -or
+        $IncludeClasses -cne 'Microsoft.Maui.DeviceTests.LabelTests' -or
+        $env:MAUI_REPLICATION_DEVICE_UDID -cne $DeviceUdid -or
+        (-not [string]::IsNullOrWhiteSpace($iOSVersion) -and
+        $iOSVersion -cne '26.0')) {
+        throw (
+            'RequirePreparedIosSimulator is valid only for an iOS ' +
+            'DeviceTest regression-evidence run against the fixed runtime.')
+    }
+    $preparedIosSimulatorBinding =
+    Assert-PreparedIosSimulatorReady -DeviceUdid $DeviceUdid
 }
 
 # iOSVersion only applies to ios platform
@@ -2544,61 +2686,64 @@ try {
         Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Cyan
         Write-Host ""
 
-        # Use Start-Emulator.ps1 to detect/boot device
-        $startEmulatorPath = Join-Path $SharedScriptsDir "Start-Emulator.ps1"
-        
-        $emulatorArgs = @("-File", $startEmulatorPath, "-Platform", $platformConfig.EmulatorPlatform)
-        if ($DeviceUdid) {
-            $emulatorArgs += "-DeviceUdid", $DeviceUdid
-        }
-        
-        $emulatorOutput = & pwsh @emulatorArgs 2>&1
-        
-        # Extract UDID from output (last line, trimmed)
-        $deviceUdidToUse = ($emulatorOutput | Select-Object -Last 1).ToString().Trim()
-        
-        # Validate UDID format based on platform
-        $validUdid = $false
-        switch ($Platform) {
-            "ios" {
-                $validUdid = $deviceUdidToUse -match '^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$'
+        if ($RequirePreparedIosSimulator) {
+            $preparedIosSimulatorBinding =
+            Assert-PreparedIosSimulatorReady -DeviceUdid $DeviceUdid
+            $deviceUdidToUse = [string]$preparedIosSimulatorBinding.DeviceUdid
+            $DetectedIOSVersion =
+            [string]$preparedIosSimulatorBinding.RuntimeVersion
+            Write-Host (
+                "✓ Strict prepared iOS simulator remains ready: " +
+                $deviceUdidToUse) -ForegroundColor Green
+        } else {
+            # Use Start-Emulator.ps1 to detect/boot device
+            $startEmulatorPath = Join-Path $SharedScriptsDir "Start-Emulator.ps1"
+            $emulatorArgs = @("-File", $startEmulatorPath, "-Platform", $platformConfig.EmulatorPlatform)
+            if ($DeviceUdid) {
+                $emulatorArgs += "-DeviceUdid", $DeviceUdid
             }
-            "android" {
-                $validUdid = $deviceUdidToUse -match '^emulator-\d+$' -or $deviceUdidToUse -match '^[a-zA-Z0-9]+$'
-            }
-        }
-        
-        if (-not $validUdid) {
-            Write-Error "Failed to get valid device UDID. Got: $deviceUdidToUse"
-            Write-Host "Full output:" -ForegroundColor Red
-            $emulatorOutput | ForEach-Object { Write-Host $_ }
-            exit 1
-        }
-        
-        Write-Host ""
-        Write-Host "✓ Device ready: $deviceUdidToUse" -ForegroundColor Green
-
-        # Extract iOS version from the booted simulator for XHarness targeting
-        if ($Platform -eq "ios" -and -not $iOSVersion) {
-            Write-Host ""
-            Write-Host "Detecting iOS version from simulator..." -ForegroundColor Gray
-            
-            try {
-                $simListJson = xcrun simctl list devices available -j | ConvertFrom-Json
-                
-                foreach ($runtime in $simListJson.devices.PSObject.Properties) {
-                    $device = $runtime.Value | Where-Object { $_.udid -eq $deviceUdidToUse }
-                    if ($device) {
-                        # Extract version from runtime key (e.g., "com.apple.CoreSimulator.SimRuntime.iOS-18-5" -> "18.5")
-                        if ($runtime.Name -match 'iOS-(\d+)-(\d+)') {
-                            $DetectedIOSVersion = "$($matches[1]).$($matches[2])"
-                            Write-Host "✓ Detected iOS version: $DetectedIOSVersion" -ForegroundColor Green
-                        }
-                        break
-                    }
+            $emulatorOutput = & pwsh @emulatorArgs 2>&1
+            # Extract UDID from output (last line, trimmed)
+            $deviceUdidToUse = ($emulatorOutput | Select-Object -Last 1).ToString().Trim()
+            # Validate UDID format based on platform
+            $validUdid = $false
+            switch ($Platform) {
+                "ios" {
+                    $validUdid = $deviceUdidToUse -match '^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$'
                 }
-            } catch {
-                Write-Warning "Could not detect iOS version from simulator. Continuing without version in target."
+                "android" {
+                    $validUdid = $deviceUdidToUse -match '^emulator-\d+$' -or $deviceUdidToUse -match '^[a-zA-Z0-9]+$'
+                }
+            }
+            if (-not $validUdid) {
+                Write-Error "Failed to get valid device UDID. Got: $deviceUdidToUse"
+                Write-Host "Full output:" -ForegroundColor Red
+                $emulatorOutput | ForEach-Object { Write-Host $_ }
+                exit 1
+            }
+            Write-Host ""
+            Write-Host "✓ Device ready: $deviceUdidToUse" -ForegroundColor Green
+
+            # Extract iOS version from the booted simulator for XHarness targeting
+            if ($Platform -eq "ios" -and -not $iOSVersion) {
+                Write-Host ""
+                Write-Host "Detecting iOS version from simulator..." -ForegroundColor Gray
+                try {
+                    $simListJson = xcrun simctl list devices available -j | ConvertFrom-Json
+                    foreach ($runtime in $simListJson.devices.PSObject.Properties) {
+                        $device = $runtime.Value | Where-Object { $_.udid -eq $deviceUdidToUse }
+                        if ($device) {
+                            # Extract version from runtime key (e.g., "com.apple.CoreSimulator.SimRuntime.iOS-18-5" -> "18.5")
+                            if ($runtime.Name -match 'iOS-(\d+)-(\d+)') {
+                                $DetectedIOSVersion = "$($matches[1]).$($matches[2])"
+                                Write-Host "✓ Detected iOS version: $DetectedIOSVersion" -ForegroundColor Green
+                            }
+                            break
+                        }
+                    }
+                } catch {
+                    Write-Warning "Could not detect iOS version from simulator. Continuing without version in target."
+                }
             }
         }
     }

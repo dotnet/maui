@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Runs the fixed Mac Catalyst gesture A/B infrastructure probe.
+    Runs the fixed iOS plus Mac Catalyst production-composite diagnostic.
 
 .DESCRIPTION
     This is a report-only, trusted-code diagnostic. It runs one checked-in fixture
@@ -59,11 +59,26 @@ $script:CatalystProbeMethods = @(
     'SecondaryToBothCreatesNativeTap'
     'SecondaryToPrimaryCreatesNativeTap'
 )
+$script:CatalystProbePrimaryAnchorPath =
+'src/Controls/tests/DeviceTests/Elements/Label/ReplicationProductionCompositeProbe.iOS.cs'
+$script:CatalystProbePrimaryCategory = 'Label'
+$script:CatalystProbePrimaryClass =
+'Microsoft.Maui.DeviceTests.LabelTests'
+$script:CatalystProbeProductionModuleName =
+'Maui.CatalystProductionCompositeProbe'
+$script:CatalystProbeExpectedCompanionRejection =
+'The fixed Catalyst companion requires exactly two passing tests and retained raw XML.'
 $script:CatalystProbeProjectPath =
 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
 $script:CatalystProbeTargetFramework = 'net10.0-maccatalyst'
 $script:CatalystProbeRuntimeIdentifier = 'maccatalyst-arm64'
 $script:CatalystProbeXcodeVersion = '26.0.1'
+$script:CatalystProbeIosRuntimeIdentifier =
+'com.apple.CoreSimulator.SimRuntime.iOS-26-0'
+$script:CatalystProbeIosDeviceType =
+'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro'
+$script:CatalystProbeIosDeviceName =
+'Maui Catalyst Production Composite Probe'
 $script:CatalystProbeCycleBudgetSeconds = 480
 $script:CatalystProbeCycleEvidenceBudgetSeconds = 30
 $script:CatalystProbeVerifierBudgetSeconds =
@@ -134,6 +149,87 @@ function Assert-CatalystProbeHostBoundary {
         throw 'The Catalyst gesture probe requires a fresh arm64 macOS Azure job.'
     }
     return $facts
+}
+
+function Assert-CatalystProbeClosedAzureIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string]$ExpectedSourceVersion,
+        [Parameter(Mandatory = $true)][string]$RepositoryRoot,
+        [Parameter(Mandatory = $true)][string]$TrustedRoot,
+        [Parameter(Mandatory = $true)][string]$TrustedTreeAttestation,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory
+    )
+
+    $null = Assert-CatalystProbeHostBoundary
+    if ([string]$env:TF_BUILD -ine 'true' -or
+        $env:SYSTEM_DEFINITIONID -cne '27723' -or
+        $env:BUILD_REPOSITORY_NAME -cne 'dotnet/maui' -or
+        $env:BUILD_SOURCEBRANCH -cne
+        'refs/heads/copilot/replicate-issues-pipeline' -or
+        $env:CATALYST_PROBE_MODE -cne 'catalyst-gesture-probe') {
+        throw 'The Catalyst probe requires its exact closed Azure pipeline identity.'
+    }
+    if ($ExpectedSourceVersion -cnotmatch '^[0-9a-f]{40}$' -or
+        $env:BUILD_SOURCEVERSION -cne $ExpectedSourceVersion) {
+        throw 'Catalyst probe source version is not the validated pipeline source.'
+    }
+
+    $agentTemp = [string]$env:AGENT_TEMPDIRECTORY
+    $pipelineWorkspace = [string]$env:PIPELINE_WORKSPACE
+    if ([string]::IsNullOrWhiteSpace($agentTemp) -or
+        [string]::IsNullOrWhiteSpace($pipelineWorkspace)) {
+        throw 'The Catalyst probe requires its closed Azure workspace roots.'
+    }
+    $agentTemp = [IO.Path]::GetFullPath($agentTemp)
+    $pipelineWorkspace = [IO.Path]::GetFullPath($pipelineWorkspace)
+    $expectedRuntime = Join-Path $agentTemp 'catalyst-gesture-runtime'
+    foreach ($binding in @(
+            @{ Actual = $RepositoryRoot; Environment = 'BUILD_SOURCESDIRECTORY' },
+            @{ Actual = $TrustedRoot; Environment = 'CATALYST_PROBE_TRUSTED_ROOT' },
+            @{ Actual = $TrustedTreeAttestation;
+                Environment = 'CATALYST_PROBE_TRUSTED_ATTESTATION' },
+            @{ Actual = $OutputDirectory;
+                Environment = 'CATALYST_PROBE_OUTPUT_ROOT' },
+            @{ Actual = $expectedRuntime;
+                Environment = 'CATALYST_PROBE_RUNTIME_ROOT' })) {
+        $bound = [string][Environment]::GetEnvironmentVariable(
+            $binding.Environment)
+        if ([string]::IsNullOrWhiteSpace($bound) -or
+            [IO.Path]::GetFullPath([string]$binding.Actual) -cne
+            [IO.Path]::GetFullPath($bound)) {
+            throw "Catalyst probe path does not match $($binding.Environment)."
+        }
+    }
+    foreach ($root in @(
+            $agentTemp,
+            $pipelineWorkspace,
+            $RepositoryRoot,
+            $TrustedRoot)) {
+        $item = Get-Item -LiteralPath $root -Force -ErrorAction Stop
+        if (-not $item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The Catalyst probe requires regular closed Azure roots.'
+        }
+    }
+    if (Test-Path -LiteralPath $OutputDirectory) {
+        $output = Get-Item -LiteralPath $OutputDirectory -Force
+        if (-not $output.PSIsContainer -or
+            $output.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The Catalyst probe requires a regular published output root.'
+        }
+    }
+    $attestation = Get-Item -LiteralPath $TrustedTreeAttestation `
+        -Force -ErrorAction Stop
+    if ($attestation.PSIsContainer -or
+        $attestation.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'The Catalyst probe requires a regular trusted-tree attestation.'
+    }
+    Assert-CatalystProbeTrustedTree -Context ([pscustomobject]@{
+            TrustedRoot = [IO.Path]::GetFullPath($TrustedRoot)
+            TrustedTreeAttestation =
+            [IO.Path]::GetFullPath($TrustedTreeAttestation)
+            ExpectedSourceVersion = $ExpectedSourceVersion
+        })
 }
 
 function New-CatalystProbeTaskDeadline {
@@ -297,6 +393,66 @@ function New-CatalystProbePrewarmDeadline {
         ParentEntryTimestamp = [long]$TaskDeadline.EntryTimestamp
         ParentDeadlineTimestamp = [long]$TaskDeadline.DeadlineTimestamp
         DownstreamReserveSeconds = $downstreamReserveSeconds
+    }
+}
+
+function New-CatalystProbeCoordinationDeadline {
+    param([Parameter(Mandatory = $true)][pscustomobject]$TaskDeadline)
+
+    $downstreamReserveSeconds =
+    $script:CatalystProbePrewarmBudgetSeconds +
+    (2 * $script:CatalystProbeCycleBudgetSeconds) +
+    $script:CatalystProbePatchApplyBudgetSeconds +
+    $script:CatalystProbeCleanupBudgetSeconds +
+    $script:CatalystProbeSummaryBudgetSeconds
+    $deadlineTimestamp = [Math]::Min(
+        [long]$TaskDeadline.EntryTimestamp +
+        ([long]$script:CatalystProbeCoordinationBudgetSeconds *
+        [long]$TaskDeadline.Frequency),
+        [long]$TaskDeadline.DeadlineTimestamp -
+        ([long]$downstreamReserveSeconds * [long]$TaskDeadline.Frequency))
+    if ($deadlineTimestamp -le [Diagnostics.Stopwatch]::GetTimestamp()) {
+        throw 'Catalyst probe exhausted coordination before production composite setup completed.'
+    }
+    return [pscustomobject]@{
+        EntryTimestamp = [long]$TaskDeadline.EntryTimestamp
+        DeadlineTimestamp = $deadlineTimestamp
+        Frequency = [long]$TaskDeadline.Frequency
+        BudgetSeconds = $script:CatalystProbeCoordinationBudgetSeconds
+        DownstreamReserveSeconds = $downstreamReserveSeconds
+    }
+}
+
+function New-CatalystProbeFixedPhaseDeadline {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$TaskDeadline,
+        [Parameter(Mandatory = $true)][ValidateRange(1, 600)]
+        [int]$BudgetSeconds,
+        [Parameter(Mandatory = $true)][ValidateRange(0, 1800)]
+        [int]$DownstreamReserveSeconds,
+        [Parameter(Mandatory = $true)][string]$Description
+    )
+
+    $parentRemainingSeconds =
+    Get-CatalystProbeDeadlineRemainingSeconds -Deadline $TaskDeadline
+    $availableSeconds = [Math]::Min(
+        $BudgetSeconds,
+        $parentRemainingSeconds - $DownstreamReserveSeconds)
+    if ($availableSeconds -lt 1) {
+        throw (
+            "Catalyst probe refuses $Description because its monotonic task " +
+            "deadline must retain $DownstreamReserveSeconds seconds downstream.")
+    }
+    $now = [Diagnostics.Stopwatch]::GetTimestamp()
+    return [pscustomobject]@{
+        EntryTimestamp = $now
+        DeadlineTimestamp = [Math]::Min(
+            [long]$TaskDeadline.DeadlineTimestamp -
+            ([long]$DownstreamReserveSeconds * [long]$TaskDeadline.Frequency),
+            $now + ([long]$availableSeconds * [long]$TaskDeadline.Frequency))
+        Frequency = [long]$TaskDeadline.Frequency
+        BudgetSeconds = $availableSeconds
+        DownstreamReserveSeconds = $DownstreamReserveSeconds
     }
 }
 
@@ -816,7 +972,9 @@ function Get-CatalystProbeTrackedVerificationSideEffects {
         throw "Catalyst probe $State product blob changed outside the fixed contract."
     }
 
-    $fixtureExpected = $State -cne 'setup'
+    $productionComposite = $Context.PSObject.Properties['ProductionComposite'] -and
+    [bool]$Context.ProductionComposite
+    $fixtureExpected = -not $productionComposite -and $State -cne 'setup'
     if ($fixtureExpected) {
         if (-not (Test-Path -LiteralPath $Context.FixtureTargetPath -PathType Leaf) -or
             (Get-CatalystProbeFileSha256 -Path $Context.FixtureTargetPath) -cne
@@ -935,7 +1093,12 @@ function Initialize-CatalystGestureProbeContext {
         [Parameter(Mandatory = $true)][pscustomobject]$TaskDeadline
     )
 
-    $null = Assert-CatalystProbeHostBoundary
+    Assert-CatalystProbeClosedAzureIdentity `
+        -ExpectedSourceVersion $ExpectedSourceVersion `
+        -RepositoryRoot $RepositoryRoot `
+        -TrustedRoot $TrustedRoot `
+        -TrustedTreeAttestation $TrustedTreeAttestation `
+        -OutputDirectory $OutputDirectory
     $tfBuild = [Environment]::GetEnvironmentVariable('TF_BUILD')
     if ([string]::IsNullOrWhiteSpace($tfBuild) -or
         $tfBuild.ToLowerInvariant() -cne 'true') {
@@ -944,6 +1107,8 @@ function Initialize-CatalystGestureProbeContext {
     foreach ($binding in @(
             @{ Environment = 'BUILD_SOURCESDIRECTORY'; Value = $RepositoryRoot },
             @{ Environment = 'CATALYST_PROBE_TRUSTED_ROOT'; Value = $TrustedRoot },
+            @{ Environment = 'CATALYST_PROBE_TRUSTED_ATTESTATION'; Value =
+                $TrustedTreeAttestation },
             @{ Environment = 'CATALYST_PROBE_OUTPUT_ROOT'; Value = $OutputDirectory })) {
         $bound = [Environment]::GetEnvironmentVariable($binding.Environment)
         if ([string]::IsNullOrWhiteSpace($bound) -or
@@ -1059,6 +1224,8 @@ function Initialize-CatalystGestureProbeContext {
         ArtifactTailSeconds = $artifactTailSeconds
         InitialRepositoryStatus = $null
         RepositoryState = 'setup'
+        ProductionComposite = $true
+        OwnedIosSimulator = $null
     }
     $context.RuntimeEnvironment =
     Get-CatalystProbeRuntimeEnvironment -RuntimeRoot $runtimeRoot
@@ -1156,6 +1323,56 @@ function New-CatalystProbeFixedPatch {
         throw 'Catalyst probe fixed product patch has an unexpected digest.'
     }
     return $patchPath
+}
+
+function Copy-CatalystProbeProductionValidationPatch {
+    param(
+        [Parameter(Mandatory = $true)][string]$PatchPath,
+        [Parameter(Mandatory = $true)][string]$EvidenceArtifactRoot
+    )
+
+    $evidenceRoot = [IO.Path]::GetFullPath($EvidenceArtifactRoot)
+    if ([IO.Path]::GetFileName($evidenceRoot) -cne 'production-composite') {
+        throw 'Catalyst probe production validation requires its fixed evidence root.'
+    }
+    $outputRoot = Split-Path -Parent $evidenceRoot
+    $expectedSource = Join-Path $outputRoot 'known-negative-product.patch'
+    if ([IO.Path]::GetFullPath($PatchPath) -cne
+        [IO.Path]::GetFullPath($expectedSource)) {
+        throw 'Catalyst probe production validation requires its canonical fixed patch.'
+    }
+    $rootItem = Get-Item -LiteralPath $evidenceRoot -Force -ErrorAction Stop
+    if (-not $rootItem.PSIsContainer -or
+        $rootItem.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'Catalyst probe production validation requires a regular evidence root.'
+    }
+    if ((Get-CatalystProbeFileSha256 -Path $PatchPath) -cne
+        $script:CatalystProbePatchSha256) {
+        throw 'Catalyst probe canonical patch does not match its immutable digest.'
+    }
+
+    $targetPath = Join-Path $evidenceRoot 'fix.patch'
+    if (Test-Path -LiteralPath $targetPath) {
+        throw 'Catalyst probe refuses to replace its production validation patch.'
+    }
+    [IO.File]::Copy(
+        [IO.Path]::GetFullPath($PatchPath),
+        [IO.Path]::GetFullPath($targetPath),
+        $false)
+    try {
+        if ((Get-CatalystProbeFileSha256 -Path $targetPath) -cne
+            $script:CatalystProbePatchSha256 -or
+            (Get-CatalystProbeFileSha256 -Path $PatchPath) -cne
+            $script:CatalystProbePatchSha256) {
+            throw 'Catalyst probe staged patch does not match its immutable digest.'
+        }
+    } catch {
+        if (Test-Path -LiteralPath $targetPath -PathType Leaf) {
+            Remove-Item -LiteralPath $targetPath -Force
+        }
+        throw
+    }
+    return $targetPath
 }
 
 function Copy-CatalystProbeFixture {
@@ -1727,9 +1944,16 @@ function Enable-CatalystProbeKnownNegative {
         throw 'Catalyst probe applied product working blob is not the fixed postimage.'
     }
     $status = Get-CatalystProbeRepositoryStatus -Context $Context
-    $expectedStatus = " M $($script:CatalystProbeProductPath)`n?? $($script:CatalystProbeFixtureTargetRelativePath)"
+    $productionComposite = $Context.PSObject.Properties['ProductionComposite'] -and
+    [bool]$Context.ProductionComposite
+    $expectedStatus = if ($productionComposite) {
+        " M $($script:CatalystProbeProductPath)"
+    } else {
+        " M $($script:CatalystProbeProductPath)`n?? $($script:CatalystProbeFixtureTargetRelativePath)"
+    }
     $expectedReverse = "?? $($script:CatalystProbeFixtureTargetRelativePath)`n M $($script:CatalystProbeProductPath)"
-    if ($status -cne $expectedStatus -and $status -cne $expectedReverse) {
+    if ($status -cne $expectedStatus -and
+        (-not $productionComposite -and $status -cne $expectedReverse)) {
         throw 'Catalyst probe found repository changes outside its fixture and product path.'
     }
     $Context.RepositoryState = 'negative'
@@ -1814,6 +2038,566 @@ function Restore-CatalystProbeRepository {
     }
 }
 
+function New-CatalystProbeProductionCompositeModule {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)][pscustomobject]$CoordinationDeadline,
+        [Parameter(Mandatory = $true)][pscustomobject]$PreparedSimulator
+    )
+
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $CoordinationDeadline `
+        -RequestedSeconds $script:CatalystProbeCoordinationBudgetSeconds `
+        -Description 'production composite module loading'
+    Assert-CatalystProbeTrustedTree -Context $Context
+    $preparedUdid = [string]$PreparedSimulator.udid
+    $contextPreparedUdid = if ($null -ne $Context.OwnedIosSimulator) {
+        [string]$Context.OwnedIosSimulator.udid
+    } else { '' }
+    if (-not [bool]$PreparedSimulator.installedOnly -or
+        $preparedUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$' -or
+        $contextPreparedUdid -cne $preparedUdid -or
+        @($PreparedSimulator.installedRuntimeIdentifiers).Count -ne 1 -or
+        [string]$PreparedSimulator.installedRuntimeIdentifiers[0] -cne
+        $script:CatalystProbeIosRuntimeIdentifier) {
+        throw (
+            'The production composite private module requires the exact ' +
+            'installed prepared iOS simulator identity.')
+    }
+    $orchestratorPath = Join-Path $Context.TrustedRoot 'scripts/Replicate-Issue.ps1'
+    $item = Get-Item -LiteralPath $orchestratorPath -Force -ErrorAction Stop
+    if ($item.PSIsContainer -or
+        $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        throw 'The production composite orchestrator must be an attested regular file.'
+    }
+    $agentTemp = [IO.Path]::GetFullPath(
+        [Environment]::GetEnvironmentVariable('AGENT_TEMPDIRECTORY'))
+    $privateArtifactRoot = Join-Path $agentTemp (
+        'catalyst-production-composite-private')
+    $privateRuntimeRoot = Join-Path $agentTemp (
+        'catalyst-production-composite-runtime')
+    foreach ($path in @($privateArtifactRoot, $privateRuntimeRoot)) {
+        if (Test-Path -LiteralPath $path) {
+            throw 'The production composite private module refuses to reuse its private roots.'
+        }
+    }
+    New-Item -ItemType Directory -Path $privateArtifactRoot | Out-Null
+    $contextPath = Join-Path $privateArtifactRoot 'unused-report-only-context'
+    $priorPreparedUdid =
+    [Environment]::GetEnvironmentVariable('CATALYST_PROBE_PREPARED_IOS_UDID')
+    [Environment]::SetEnvironmentVariable(
+        'CATALYST_PROBE_PREPARED_IOS_UDID', $preparedUdid)
+    try {
+        $module = New-Module `
+            -Name $script:CatalystProbeProductionModuleName `
+            -ScriptBlock {
+            param($Path, $Parameters)
+            . $Path @Parameters
+        } `
+            -ArgumentList $orchestratorPath, @{
+            IssueNumber = 1
+            Platform = 'ios'
+            BaseSha = $script:CatalystProbeBaselineCommit
+            ContextPath = $contextPath
+            TrustedRoot = $Context.TrustedRoot
+            ArtifactRoot = $privateArtifactRoot
+            TrustedTreeAttestationPath = $Context.TrustedTreeAttestation
+            TrustedSourceVersion = $Context.ExpectedSourceVersion
+            DeviceUdid = $preparedUdid
+            StepTimeoutMinutes = 0
+            Model = ''
+            FixedCatalystCompositeProbeLibraryOnly = $true
+            RequirePreparedIosSimulator = $true
+        }
+    } catch {
+        if (-not (Get-ChildItem -LiteralPath $privateArtifactRoot -Force |
+                    Select-Object -First 1)) {
+            Remove-Item -LiteralPath $privateArtifactRoot -Force
+        }
+        throw
+    } finally {
+        [Environment]::SetEnvironmentVariable(
+            'CATALYST_PROBE_PREPARED_IOS_UDID', $priorPreparedUdid)
+    }
+    if ($null -eq $module -or
+        [string]$module.Name -cne $script:CatalystProbeProductionModuleName) {
+        throw 'The fixed production-composite private module did not load.'
+    }
+    $Context | Add-Member -NotePropertyName ProductionPrivateArtifactRoot `
+        -NotePropertyValue $privateArtifactRoot -Force
+    $Context | Add-Member -NotePropertyName ProductionPrivateRuntimeRoot `
+        -NotePropertyValue $privateRuntimeRoot -Force
+    Assert-CatalystProbeTrustedTree -Context $Context
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $CoordinationDeadline `
+        -RequestedSeconds 1 `
+        -Description 'production composite module loading'
+    return $module
+}
+
+function Invoke-CatalystProbePrepareIosSimulator {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [Parameter(Mandatory = $true)][pscustomobject]$CoordinationDeadline
+    )
+
+    $developer = Invoke-CatalystProbeBoundedProcess `
+        -FileName '/usr/bin/xcode-select' `
+        -ArgumentList @('-p') `
+        -WorkingDirectory $Context.RepositoryRoot `
+        -Environment $Context.RuntimeEnvironment `
+        -TimeoutSeconds 20 `
+        -TaskDeadline $CoordinationDeadline `
+        -LogPath (Join-Path $Context.LogDirectory 'ios-xcode-select.log')
+    $expectedDeveloper = "$(Get-CatalystProbeXcodePath)/Contents/Developer"
+    if ($developer.TimedOut -or $developer.ExitCode -ne 0 -or
+        $developer.Stdout.Trim() -cne $expectedDeveloper) {
+        throw 'Production composite iOS preparation is not using fixed Xcode 26.0.1.'
+    }
+    $runtimes = Invoke-CatalystProbeBoundedProcess `
+        -FileName '/usr/bin/xcrun' `
+        -ArgumentList @('simctl', 'list', 'runtimes', '--json') `
+        -WorkingDirectory $Context.RepositoryRoot `
+        -Environment $Context.RuntimeEnvironment `
+        -TimeoutSeconds 20 `
+        -TaskDeadline $CoordinationDeadline `
+        -LogPath (Join-Path $Context.LogDirectory 'ios-installed-runtimes.log')
+    if ($runtimes.TimedOut -or $runtimes.ExitCode -ne 0) {
+        throw 'Production composite iOS preparation could not inspect installed runtimes.'
+    }
+    $runtimeDocument = $runtimes.Stdout | ConvertFrom-Json -Depth 8
+    $installedIos = @($runtimeDocument.runtimes | Where-Object {
+            [string]$_.identifier -ceq
+            $script:CatalystProbeIosRuntimeIdentifier -and
+            [bool]$_.isAvailable
+        })
+    if ($installedIos.Count -ne 1) {
+        throw ('Production composite iOS preparation requires the exact ' +
+            'already-installed iOS 26.0 runtime.')
+    }
+    $deviceTypes = Invoke-CatalystProbeBoundedProcess `
+        -FileName '/usr/bin/xcrun' `
+        -ArgumentList @('simctl', 'list', 'devicetypes', '--json') `
+        -WorkingDirectory $Context.RepositoryRoot `
+        -Environment $Context.RuntimeEnvironment `
+        -TimeoutSeconds 20 `
+        -TaskDeadline $CoordinationDeadline `
+        -LogPath (Join-Path $Context.LogDirectory 'ios-installed-devicetypes.log')
+    if ($deviceTypes.TimedOut -or $deviceTypes.ExitCode -ne 0) {
+        throw 'Production composite iOS preparation could not inspect installed device types.'
+    }
+    $deviceTypeDocument = $deviceTypes.Stdout | ConvertFrom-Json -Depth 8
+    $matchingTypes = @($deviceTypeDocument.devicetypes | Where-Object {
+            [string]$_.identifier -ceq $script:CatalystProbeIosDeviceType -and
+            [string]$_.name -ceq 'iPhone 11 Pro'
+        })
+    if ($matchingTypes.Count -ne 1) {
+        throw ('Production composite iOS preparation requires the fixed installed ' +
+            'iPhone 11 Pro device type.')
+    }
+
+    $devices = Invoke-CatalystProbeBoundedProcess `
+        -FileName '/usr/bin/xcrun' `
+        -ArgumentList @('simctl', 'list', 'devices', '--json') `
+        -WorkingDirectory $Context.RepositoryRoot `
+        -Environment $Context.RuntimeEnvironment `
+        -TimeoutSeconds 20 `
+        -TaskDeadline $CoordinationDeadline `
+        -LogPath (Join-Path $Context.LogDirectory 'ios-installed-devices.log')
+    if ($devices.TimedOut -or $devices.ExitCode -ne 0) {
+        throw 'Production composite iOS preparation could not inspect installed devices.'
+    }
+    $deviceDocument = $devices.Stdout | ConvertFrom-Json -Depth 12
+    $runtimeProperty = $deviceDocument.devices.PSObject.Properties[
+    $script:CatalystProbeIosRuntimeIdentifier]
+    if ($null -eq $runtimeProperty) {
+        throw 'Production composite iOS preparation could not bind devices to its runtime.'
+    }
+    $bootedMatchingDevices = @($runtimeProperty.Value | Where-Object {
+            [bool]$_.isAvailable -and
+            [string]$_.state -ceq 'Booted' -and
+            [string]$_.deviceTypeIdentifier -ceq
+            $script:CatalystProbeIosDeviceType -and
+            [string]$_.udid -cmatch
+            '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$'
+        })
+    if ($bootedMatchingDevices.Count -gt 1) {
+        throw 'Production composite iOS preparation found ambiguous booted simulators.'
+    }
+    $selected = $null
+    if ($bootedMatchingDevices.Count -eq 1) {
+        $selected = [pscustomobject]@{
+            udid = [string]$bootedMatchingDevices[0].udid
+            installedRuntimeIdentifiers = @(
+                $script:CatalystProbeIosRuntimeIdentifier)
+            xcodeDeveloperPath = $expectedDeveloper
+            installedOnly = $true
+            createdByProbe = $false
+            bootedByProbe = $false
+            bootAttemptedByProbe = $false
+        }
+        $Context.OwnedIosSimulator = $selected
+    }
+
+    if ($null -eq $selected) {
+        $created = Invoke-CatalystProbeBoundedProcess `
+            -FileName '/usr/bin/xcrun' `
+            -ArgumentList @(
+            'simctl', 'create',
+            $script:CatalystProbeIosDeviceName,
+            $script:CatalystProbeIosDeviceType,
+            $script:CatalystProbeIosRuntimeIdentifier) `
+            -WorkingDirectory $Context.RepositoryRoot `
+            -Environment $Context.RuntimeEnvironment `
+            -TimeoutSeconds 30 `
+            -TaskDeadline $CoordinationDeadline `
+            -LogPath (Join-Path $Context.LogDirectory 'ios-simulator-create.log')
+        $udid = $created.Stdout.Trim().ToUpperInvariant()
+        if ($created.TimedOut -or $created.ExitCode -ne 0 -or
+            $udid -cnotmatch
+            '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+            throw 'Production composite iOS preparation could not create its owned simulator.'
+        }
+        $selected = [pscustomobject]@{
+            udid = $udid
+            installedRuntimeIdentifiers = @($script:CatalystProbeIosRuntimeIdentifier)
+            xcodeDeveloperPath = $expectedDeveloper
+            installedOnly = $true
+            createdByProbe = $true
+            bootedByProbe = $false
+            bootAttemptedByProbe = $true
+        }
+        $Context.OwnedIosSimulator = $selected
+        $boot = Invoke-CatalystProbeBoundedProcess `
+            -FileName '/usr/bin/xcrun' `
+            -ArgumentList @('simctl', 'boot', $udid) `
+            -WorkingDirectory $Context.RepositoryRoot `
+            -Environment $Context.RuntimeEnvironment `
+            -TimeoutSeconds 30 `
+            -TaskDeadline $CoordinationDeadline `
+            -LogPath (Join-Path $Context.LogDirectory 'ios-simulator-boot.log')
+        if ($boot.TimedOut -or $boot.ExitCode -ne 0) {
+            throw 'Production composite iOS preparation could not boot its owned simulator.'
+        }
+        $selected.bootedByProbe = $true
+    }
+    $ready = Invoke-CatalystProbeBoundedProcess `
+        -FileName '/usr/bin/xcrun' `
+        -ArgumentList @('simctl', 'bootstatus', ([string]$selected.udid), '-b') `
+        -WorkingDirectory $Context.RepositoryRoot `
+        -Environment $Context.RuntimeEnvironment `
+        -TimeoutSeconds $script:CatalystProbeCoordinationBudgetSeconds `
+        -TaskDeadline $CoordinationDeadline `
+        -LogPath (Join-Path $Context.LogDirectory 'ios-simulator-bootstatus.log')
+    if ($ready.TimedOut -or $ready.ExitCode -ne 0) {
+        throw 'Production composite iOS simulator did not become ready.'
+    }
+    return $selected
+}
+
+function Remove-CatalystProbeOwnedIosSimulator {
+    param(
+        [Parameter(Mandatory = $true)][pscustomobject]$Context,
+        [AllowNull()][pscustomobject]$Simulator,
+        [Parameter(Mandatory = $true)][pscustomobject]$CleanupDeadline
+    )
+
+    if ($null -eq $Simulator -or -not [bool]$Simulator.createdByProbe) {
+        return
+    }
+    $udid = [string]$Simulator.udid
+    if ($udid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+        throw 'Catalyst probe refuses to clean a simulator with an invalid identity.'
+    }
+    $errors = [Collections.Generic.List[string]]::new()
+    $bootWasAttempted = if (
+        $Simulator.PSObject.Properties['bootAttemptedByProbe']) {
+        [bool]$Simulator.bootAttemptedByProbe
+    } else {
+        [bool]$Simulator.bootedByProbe
+    }
+    if ($bootWasAttempted) {
+        try {
+            $shutdown = Invoke-CatalystProbeBoundedProcess `
+                -FileName '/usr/bin/xcrun' `
+                -ArgumentList @('simctl', 'shutdown', $udid) `
+                -WorkingDirectory $Context.RepositoryRoot `
+                -Environment $Context.RuntimeEnvironment `
+                -TimeoutSeconds 30 `
+                -TaskDeadline $CleanupDeadline `
+                -LogPath (Join-Path $Context.LogDirectory 'ios-simulator-shutdown.log')
+            if ($shutdown.TimedOut -or $shutdown.ExitCode -ne 0) {
+                throw 'owned simulator shutdown failed'
+            }
+        } catch {
+            $errors.Add($_.Exception.Message)
+        }
+    }
+    try {
+        $delete = Invoke-CatalystProbeBoundedProcess `
+            -FileName '/usr/bin/xcrun' `
+            -ArgumentList @('simctl', 'delete', $udid) `
+            -WorkingDirectory $Context.RepositoryRoot `
+            -Environment $Context.RuntimeEnvironment `
+            -TimeoutSeconds 30 `
+            -TaskDeadline $CleanupDeadline `
+            -LogPath (Join-Path $Context.LogDirectory 'ios-simulator-delete.log')
+        if ($delete.TimedOut -or $delete.ExitCode -ne 0) {
+            throw 'owned simulator deletion failed'
+        }
+    } catch {
+        $errors.Add($_.Exception.Message)
+    }
+    if ($errors.Count -ne 0) {
+        throw "Catalyst probe owned simulator cleanup failed: $($errors -join '; ')"
+    }
+}
+
+function Get-CatalystProbeProductionCompositeSelection {
+    param(
+        [Parameter(Mandatory = $true)][System.Management.Automation.PSModuleInfo]$Module,
+        [Parameter(Mandatory = $true)][pscustomobject]$Context
+    )
+
+    if (Test-Path -LiteralPath (
+            Join-Path $Context.RepositoryRoot $script:CatalystProbePrimaryAnchorPath)) {
+        throw 'The fixed Label metadata anchor must remain absent from the worktree.'
+    }
+    $values = & $Module {
+        param($RepositoryRoot, $BaselineSha, $AnchorPath, $ProductPath)
+        $selection = Get-ReplicationRegressionLaneSelection `
+            -TestPath $AnchorPath `
+            -RepositoryRoot $RepositoryRoot `
+            -BaselineSha $BaselineSha `
+            -Platform 'ios'
+        $requirement = Get-ReplicationFixedCompanionRequirement `
+            -Platform 'ios' `
+            -FixPaths @($ProductPath)
+        return [pscustomobject]@{
+            Selection = $selection
+            Requirement = $requirement
+        }
+    } $Context.RepositoryRoot $script:CatalystProbeBaselineCommit `
+        $script:CatalystProbePrimaryAnchorPath $script:CatalystProbeProductPath
+    if ($null -eq $values.Selection -or
+        [string]$values.Selection.Category -cne
+        $script:CatalystProbePrimaryCategory -or
+        [string]$values.Selection.TestClass -cne $script:CatalystProbePrimaryClass -or
+        [string]$values.Selection.Platform -cne 'ios' -or
+        [string]$values.Selection.BaselineSha -cne
+        $script:CatalystProbeBaselineCommit -or
+        [string]$values.Selection.GeneratedTestPath -cne
+        $script:CatalystProbePrimaryAnchorPath -or
+        $null -eq $values.Requirement -or
+        [string]$values.Requirement.Id -cne
+        'gesture-platform-manager-catalyst-v1') {
+        throw 'The immutable baseline did not derive the fixed Label plus Catalyst composite.'
+    }
+    return $values
+}
+
+function Invoke-CatalystProbeProductionPrewarm {
+    param(
+        [Parameter(Mandatory = $true)][System.Management.Automation.PSModuleInfo]$Module,
+        [Parameter(Mandatory = $true)][pscustomobject]$Deadline
+    )
+
+    $timeout = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $Deadline `
+        -RequestedSeconds $script:CatalystProbePrewarmBudgetSeconds `
+        -Description 'production dual-Apple prewarm'
+    return & $Module {
+        param($TimeoutSeconds)
+        Invoke-ReplicationAppleCompanionPrewarm -TimeoutSeconds $TimeoutSeconds
+    } $timeout
+}
+
+function Assert-CatalystProbeProductionAssetsRetained {
+    param([Parameter(Mandatory = $true)]
+        [System.Management.Automation.PSModuleInfo]$Module)
+
+    return & $Module { Assert-ReplicationAppleCompanionPrewarmRetained }
+}
+
+function Invoke-CatalystProbeProductionComposite {
+    param(
+        [Parameter(Mandatory = $true)][System.Management.Automation.PSModuleInfo]$Module,
+        [Parameter(Mandatory = $true)]$Selection,
+        [Parameter(Mandatory = $true)]$Requirement,
+        [Parameter(Mandatory = $true)][string]$PrimaryOutputDirectory,
+        [Parameter(Mandatory = $true)][string]$CompanionOutputDirectory,
+        [Parameter(Mandatory = $true)][pscustomobject]$Deadline
+    )
+
+    $preparedUdid = & $Module { [string]$DeviceUdid }
+    if ($preparedUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$') {
+        throw 'The production composite module lost its prepared simulator binding.'
+    }
+    $priorRuntimeUdid =
+    [Environment]::GetEnvironmentVariable('MAUI_REPLICATION_DEVICE_UDID')
+    [Environment]::SetEnvironmentVariable(
+        'MAUI_REPLICATION_DEVICE_UDID', $preparedUdid)
+    try {
+        & $Module {
+            param(
+                $Selection,
+                $Requirement,
+                $PrimaryOutputDirectory,
+                $CompanionOutputDirectory,
+                $TimeoutSeconds,
+                $DeadlineTimestamp)
+            Invoke-ReplicationRegressionCompositeRun `
+                -Selection $Selection `
+                -CompanionRequirement $Requirement `
+                -PrimaryOutputDirectory $PrimaryOutputDirectory `
+                -CompanionOutputDirectory $CompanionOutputDirectory `
+                -TrustedScriptRoot $trustedScripts `
+                -TimeoutSeconds $TimeoutSeconds `
+                -DeadlineTimestamp $DeadlineTimestamp `
+                -DeviceUdid $DeviceUdid `
+                -RequirePreparedIosSimulator:$RequirePreparedIosSimulator
+        } $Selection $Requirement $PrimaryOutputDirectory `
+            $CompanionOutputDirectory $script:CatalystProbeCycleBudgetSeconds `
+        ([long]$Deadline.DeadlineTimestamp)
+    } finally {
+        [Environment]::SetEnvironmentVariable(
+            'MAUI_REPLICATION_DEVICE_UDID', $priorRuntimeUdid)
+    }
+}
+
+function Assert-CatalystProbePrimaryRun {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]$Selection
+    )
+
+    $run = Read-ReplicationRegressionRunEvidence `
+        -Path $Path `
+        -ExpectedPlatform 'ios' `
+        -ExpectedProject ([string]$Selection.Project) `
+        -ExpectedCategory $script:CatalystProbePrimaryCategory `
+        -ExpectedClass $script:CatalystProbePrimaryClass
+    if ([int]$run.Document.failed -ne 0 -or
+        [int]$run.Document.errors -ne 0 -or
+        [int]$run.Document.passed -lt 1) {
+        throw 'The production composite Label primary lane did not remain non-regressing.'
+    }
+    return $run
+}
+
+function Confirm-CatalystProbeExpectedProductionRejection {
+    param([Parameter(Mandatory = $true)]
+        [Management.Automation.ErrorRecord]$ErrorRecord)
+
+    if ($ErrorRecord.Exception.Message -cne
+        $script:CatalystProbeExpectedCompanionRejection) {
+        throw $ErrorRecord
+    }
+    return $ErrorRecord.Exception.Message
+}
+
+function Invoke-CatalystProbeProductionV2Validation {
+    param(
+        [Parameter(Mandatory = $true)][System.Management.Automation.PSModuleInfo]$Module,
+        [Parameter(Mandatory = $true)]$Selection,
+        [Parameter(Mandatory = $true)]$Requirement,
+        [Parameter(Mandatory = $true)][string]$EvidenceArtifactRoot,
+        [Parameter(Mandatory = $true)][string]$PatchPath,
+        [Parameter(Mandatory = $true)][string]$TrustedFixturePath,
+        [Parameter(Mandatory = $true)][pscustomobject]$Deadline
+    )
+
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $Deadline `
+        -RequestedSeconds 1 `
+        -Description 'production v2 patch staging'
+    $null = Copy-CatalystProbeProductionValidationPatch `
+        -PatchPath $PatchPath `
+        -EvidenceArtifactRoot $EvidenceArtifactRoot
+    $result = $null
+    $validationError = $null
+    try {
+        $result = & $Module {
+            param(
+                $Selection,
+                $Requirement,
+                $EvidenceArtifactRoot,
+                $PatchPath,
+                $TrustedFixturePath,
+                $ProductPath)
+            $path = Write-ReplicationRegressionEvidenceDocument `
+                -Selection $Selection `
+                -CompanionRequirement $Requirement `
+                -EvidenceArtifactRoot $EvidenceArtifactRoot `
+                -ProductPatchPath $PatchPath
+            $null = Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $EvidenceArtifactRoot `
+                -ExpectedBaselineSha ([string]$Selection.BaselineSha) `
+                -ExpectedPlatform 'ios' `
+                -ExpectedCategory ([string]$Selection.Category) `
+                -ExpectedProject ([string]$Selection.Project) `
+                -ExpectedProjectPath ([string]$Selection.ProjectPath) `
+                -ExpectedClass ([string]$Selection.TestClass) `
+                -ExpectedGeneratedTestPath ([string]$Selection.GeneratedTestPath) `
+                -ExpectedFixPaths @($ProductPath) `
+                -TrustedFixturePath $TrustedFixturePath
+            return $path
+        } $Selection $Requirement $EvidenceArtifactRoot $PatchPath `
+            $TrustedFixturePath $script:CatalystProbeProductPath
+    } catch {
+        $validationError = $_
+    }
+    $null = Get-CatalystProbeProcessTimeoutSeconds `
+        -Deadline $Deadline `
+        -RequestedSeconds 1 `
+        -Description 'production v2 evidence validation'
+    if ($validationError) {
+        throw $validationError
+    }
+    return $result
+}
+
+function Remove-CatalystProbeProductionCompositeModule {
+    param(
+        [AllowNull()][System.Management.Automation.PSModuleInfo]$Module,
+        [Parameter(Mandatory = $true)][pscustomobject]$Context
+    )
+
+    $moduleCleanupError = $null
+    if ($Module) {
+        try {
+            & $Module {
+                param($DeadlineTimestamp)
+                Remove-ReplicationRuntimeCache -DeadlineTimestamp $DeadlineTimestamp
+            } ([long]$Context.ActiveDeadline.DeadlineTimestamp)
+        } catch {
+            $moduleCleanupError = $_
+        } finally {
+            Remove-Module -ModuleInfo $Module -Force
+        }
+    }
+    if ($Context.PSObject.Properties['ProductionPrivateArtifactRoot']) {
+        $privateRoot = [string]$Context.ProductionPrivateArtifactRoot
+        $remaining = @(Get-ChildItem -LiteralPath $privateRoot -Force `
+                -ErrorAction SilentlyContinue)
+        if ($remaining.Count -ne 0) {
+            throw 'The production composite private artifact root contains unexpected bytes.'
+        }
+        Remove-Item -LiteralPath $privateRoot -Force
+    }
+    if ($Context.PSObject.Properties['ProductionPrivateRuntimeRoot'] -and
+        (Test-Path -LiteralPath (
+            [string]$Context.ProductionPrivateRuntimeRoot))) {
+        throw 'The production composite private runtime cache was not removed.'
+    }
+    if ($moduleCleanupError) {
+        throw $moduleCleanupError
+    }
+}
+
 function New-CatalystProbeResult {
     param(
         [Parameter(Mandatory = $true)][string]$ExpectedSourceVersion,
@@ -1822,7 +2606,7 @@ function New-CatalystProbeResult {
     )
 
     return [ordered]@{
-        schemaVersion = 1
+        schemaVersion = 2
         mode = 'catalyst-gesture-probe'
         reportOnly = $true
         outcome = 'inconclusive'
@@ -1830,6 +2614,7 @@ function New-CatalystProbeResult {
         sourceVersion = $ExpectedSourceVersion
         trustedTreeHash = $TrustedTreeHash
         trustedTreeAttestationSha256 = $TrustedTreeAttestationSha256
+        trustedImplementation = $null
         fixedInputs = [ordered]@{
             repository = 'https://github.com/dotnet/maui.git'
             baselineCommit = $script:CatalystProbeBaselineCommit
@@ -1843,13 +2628,25 @@ function New-CatalystProbeResult {
             productPatchSha256 = $script:CatalystProbePatchSha256
             fixtureSha256 = $script:CatalystProbeFixtureSha256
         }
-        selector = [ordered]@{
-            platform = 'catalyst'
-            project = 'Controls'
-            category = 'Gesture'
-            class = $script:CatalystProbeClass
-            methods = @($script:CatalystProbeMethods)
-            expectedNativeTapCounts = 'public native UI Tap: 0 -> 1; NumberRequired: 2'
+        scope = 'known-bad-postimage-replay-only'
+        selectors = [ordered]@{
+            primary = [ordered]@{
+                platform = 'ios'
+                project = 'Controls'
+                category = $script:CatalystProbePrimaryCategory
+                class = $script:CatalystProbePrimaryClass
+                metadataAnchor = $script:CatalystProbePrimaryAnchorPath
+                metadataAnchorIsGeneratedTest = $false
+            }
+            companion = [ordered]@{
+                platform = 'catalyst'
+                project = 'Controls'
+                category = 'Gesture'
+                class = $script:CatalystProbeClass
+                methods = @($script:CatalystProbeMethods)
+                expectedNativeTapCounts =
+                'public native UI Tap: 0 -> 1; NumberRequired: 2'
+            }
         }
         budget = [ordered]@{
             cycleCountMaximum = 2
@@ -1870,18 +2667,25 @@ function New-CatalystProbeResult {
             retries = 0
         }
         prewarm = $null
+        simulator = $null
         baseline = $null
         negative = $null
+        expectedV2Rejection = $null
         cleanup = [ordered]@{
             completed = $false
+            simulatorRemoved = $false
             fixtureRemoved = $false
             productRestored = $false
             repositoryStatusRestored = $false
             trustedTreeRestored = $false
         }
         assertions = [ordered]@{
-            baseline = 'exact-two-pass'
-            negative = 'exact-two-expected-Assert.Single-empty-failures'
+            baselinePrimary = 'fresh strict iOS Label multiset with no failures'
+            baselineCompanion = 'exact-two-pass'
+            negativePrimary = 'fresh strict iOS Label multiset unchanged from baseline'
+            negativeCompanion =
+            'exact-two-expected-Assert.Single-empty-failures'
+            productionV2 = 'must-reject-known-negative-Catalyst-result'
         }
         exclusions = [ordered]@{
             certifiesIssue = $false
@@ -1889,13 +2693,22 @@ function New-CatalystProbeResult {
             publishesOutcome = $false
             mutatesPullRequest = $false
             invokesModel = $false
-            activatesProductionCompanions = $false
+            executesProductionComposite = $true
             executesIssueLinkedCode = $false
+            generatedIssueTest = $false
         }
         profileBoundary = [ordered]@{
             requiresFreshAzureJob = $true
             initialContainerResultRequiredAbsent = $true
             deletesPreexistingContainerResult = $false
+            ios = 'ios-review-host-no-network-isolation'
+            iosIndependentOutboundIsolation = $false
+            catalyst = 'signed-app-sandbox-live-outbound-deny'
+        }
+        limitations = [ordered]@{
+            assetsFileRetained = $false
+            assetsContinuity =
+            'validated by attested production code before and after native execution'
         }
         failure = $null
     }
@@ -1927,9 +2740,17 @@ function Invoke-CatalystGestureRegressionProbeCore {
         [Parameter(Mandatory = $true)][pscustomobject]$TaskDeadline
     )
 
+    Assert-CatalystProbeClosedAzureIdentity `
+        -ExpectedSourceVersion $ExpectedSourceVersion `
+        -RepositoryRoot $RepositoryRoot `
+        -TrustedRoot $TrustedRoot `
+        -TrustedTreeAttestation $TrustedTreeAttestation `
+        -OutputDirectory $OutputDirectory
     $context = $null
+    $productionModule = $null
     $probeError = $null
     $cleanupError = $null
+    $summaryError = $null
     $result = New-CatalystProbeResult `
         -ExpectedSourceVersion $ExpectedSourceVersion `
         -TrustedTreeHash 'unavailable' `
@@ -1958,22 +2779,87 @@ function Invoke-CatalystGestureRegressionProbeCore {
             -TrustedTreeAttestation $TrustedTreeAttestation `
             -OutputDirectory $OutputDirectory `
             -TaskDeadline $TaskDeadline
+        $result.trustedImplementation = [ordered]@{}
+        foreach ($relativePath in @(
+                'scripts/Replicate-Issue.ps1',
+                'scripts/Invoke-CatalystGestureRegressionProbe.ps1',
+                'scripts/shared/Assert-ReplicationCertificationBinding.ps1',
+                'scripts/shared/Replication-AppleCompanionPrewarm.ps1')) {
+            $result.trustedImplementation[$relativePath] =
+            Get-CatalystProbeFileSha256 -Path (
+                Join-Path $context.TrustedRoot $relativePath)
+        }
         $result.budget.jobDeadlineUtc = $context.JobDeadlineUtc
         $null = Assert-CatalystProbeDeadlineAdmission `
             -DeadlineUtc $context.JobDeadlineUtc `
             -Phase 'complete report-only probe' `
             -PhaseBudgetSeconds $script:CatalystProbeOverallBudgetSeconds `
             -ArtifactTailSeconds $context.ArtifactTailSeconds
+        $coordinationDeadline =
+        New-CatalystProbeCoordinationDeadline -TaskDeadline $TaskDeadline
+        $context.ActiveDeadline = $coordinationDeadline
+        $context.ActiveReserveSeconds = 0
         $patchPath = New-CatalystProbeFixedPatch -Context $context
         Assert-CatalystProbeFixedPatchPolicy `
             -Context $context `
             -PatchPath $patchPath
+        $result.simulator = Invoke-CatalystProbePrepareIosSimulator `
+            -Context $context `
+            -CoordinationDeadline $coordinationDeadline
+        $productionModule = New-CatalystProbeProductionCompositeModule `
+            -Context $context `
+            -CoordinationDeadline $coordinationDeadline `
+            -PreparedSimulator $result.simulator
+        $productionInputs = Get-CatalystProbeProductionCompositeSelection `
+            -Module $productionModule `
+            -Context $context
+        $selection = $productionInputs.Selection
+        $requirement = $productionInputs.Requirement
+        $null = Get-CatalystProbeProcessTimeoutSeconds `
+            -Deadline $coordinationDeadline `
+            -RequestedSeconds 1 `
+            -Description 'production composite coordination'
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds $minimumRemainingWorkSeconds `
             -Description 'prewarm and both native cycles'
-        $result.prewarm = Invoke-CatalystProbeTrustedRestore -Context $context
-        Copy-CatalystProbeFixture -Context $context
+        $prewarmDeadline =
+        New-CatalystProbePrewarmDeadline -TaskDeadline $TaskDeadline
+        $context.ActiveDeadline = $prewarmDeadline
+        $context.ActiveReserveSeconds = 0
+        $prewarm = Invoke-CatalystProbeProductionPrewarm `
+            -Module $productionModule `
+            -Deadline $prewarmDeadline
+        $retainedAssets =
+        Assert-CatalystProbeProductionAssetsRetained -Module $productionModule
+        $prewarmLogRoot = Join-Path $context.OutputDirectory (
+            'production-composite/prewarm')
+        $prewarmLogs = @(Get-ChildItem -LiteralPath $prewarmLogRoot -File -Force |
+                Sort-Object Name | ForEach-Object {
+                    [ordered]@{
+                        name = $_.Name
+                        sha256 = Get-CatalystProbeFileSha256 -Path $_.FullName
+                    }
+                })
+        if ($prewarmLogs.Count -ne 3) {
+            throw 'Production composite prewarm did not retain all three bounded command logs.'
+        }
+        $null = Get-CatalystProbeProcessTimeoutSeconds `
+            -Deadline $prewarmDeadline `
+            -RequestedSeconds 1 `
+            -Description 'production dual-Apple prewarm evidence'
+        $result.prewarm = [ordered]@{
+            ready = $true
+            phaseBudgetSeconds = [int]$prewarmDeadline.BudgetSeconds
+            assetsSha256 = [string]$retainedAssets.AssetsSha256
+            targetPairs = @($retainedAssets.TargetPairs)
+            commandLogs = $prewarmLogs
+            fullIosBuild = $true
+            fullCatalystBuild = $true
+            noRestoreBuilds = $true
+        }
+        $context.RepositoryState = 'baseline'
+        Assert-CatalystProbeRepositoryState -Context $context -State baseline
 
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
@@ -1991,14 +2877,71 @@ function Invoke-CatalystGestureRegressionProbeCore {
             $script:CatalystProbeCycleBudgetSeconds +
             $script:CatalystProbeCleanupBudgetSeconds) `
             -ArtifactTailSeconds $context.ArtifactTailSeconds
-        $result.baseline = Invoke-CatalystProbeCycle `
-            -Kind 'baseline' `
-            -Context $context
-        $result.baseline | Add-Member -NotePropertyName containerResultSha256 `
-            -NotePropertyValue (
-            Assert-CatalystProbeOwnedContainerResult `
-                -Context $context `
-                -Cycle $result.baseline)
+        $productionRoot = Join-Path $context.OutputDirectory 'production-composite'
+        $regressionRoot = Join-Path $productionRoot 'regression'
+        $baselinePrimaryRoot = Join-Path $regressionRoot 'baseline'
+        $baselineCompanionRoot = Join-Path $regressionRoot 'catalyst-baseline'
+        $baselineDeadline = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $TaskDeadline `
+            -BudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
+            -DownstreamReserveSeconds (
+            $script:CatalystProbePatchApplyBudgetSeconds +
+            $script:CatalystProbeCycleBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
+            -Description 'baseline production composite'
+        $context.ActiveDeadline = $baselineDeadline
+        $context.ActiveReserveSeconds = 0
+        Invoke-CatalystProbeProductionComposite `
+            -Module $productionModule `
+            -Selection $selection `
+            -Requirement $requirement `
+            -PrimaryOutputDirectory $baselinePrimaryRoot `
+            -CompanionOutputDirectory $baselineCompanionRoot `
+            -Deadline $baselineDeadline
+        $baselinePrimary = Assert-CatalystProbePrimaryRun `
+            -Path (Join-Path $baselinePrimaryRoot 'strict-test-evidence.json') `
+            -Selection $selection
+        $baselineCompanion = Assert-CatalystProbeCycleEvidence `
+            -Kind baseline `
+            -StrictEvidencePath (
+            Join-Path $baselineCompanionRoot 'strict-test-evidence.json')
+        $null = Assert-CatalystProbeProductionAssetsRetained `
+            -Module $productionModule
+        if (Test-Path -LiteralPath $context.FixtureTargetPath) {
+            throw 'Production composite baseline left its transient Catalyst fixture behind.'
+        }
+        Assert-CatalystProbeRepositoryState -Context $context -State baseline
+        $null = Get-CatalystProbeProcessTimeoutSeconds `
+            -Deadline $baselineDeadline `
+            -RequestedSeconds 1 `
+            -Description 'baseline production composite evidence'
+        $result.baseline = [ordered]@{
+            primary = [ordered]@{
+                strictEvidenceSha256 = [string]$baselinePrimary.Digest
+                total = [int]$baselinePrimary.Document.total
+                passed = [int]$baselinePrimary.Document.passed
+                skipped = [int]$baselinePrimary.Document.skipped
+                failed = [int]$baselinePrimary.Document.failed
+                rawXml = @($baselinePrimary.Document.resultFiles |
+                        ForEach-Object {
+                            [ordered]@{
+                                name = [string]$_.name
+                                sha256 = [string]$_.sha256
+                            }
+                        })
+            }
+            companion = [ordered]@{
+                strictEvidenceSha256 =
+                [string]$baselineCompanion.StrictEvidenceSha256
+                identities = @($baselineCompanion.Identities)
+                total = [int]$baselineCompanion.Total
+                passed = [int]$baselineCompanion.Passed
+                skipped = [int]$baselineCompanion.Skipped
+                failed = [int]$baselineCompanion.Failed
+                rawXml = @($baselineCompanion.ResultFiles)
+            }
+        }
 
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
@@ -2008,9 +2951,23 @@ function Invoke-CatalystGestureRegressionProbeCore {
             $script:CatalystProbeCleanupBudgetSeconds +
             $script:CatalystProbeSummaryBudgetSeconds) `
             -Description 'fixed patch application and known-negative cycle'
+        $patchDeadline = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $TaskDeadline `
+            -BudgetSeconds $script:CatalystProbePatchApplyBudgetSeconds `
+            -DownstreamReserveSeconds (
+            $script:CatalystProbeCycleBudgetSeconds +
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
+            -Description 'fixed known-negative patch'
+        $context.ActiveDeadline = $patchDeadline
+        $context.ActiveReserveSeconds = 0
         Enable-CatalystProbeKnownNegative `
             -Context $context `
             -PatchPath $patchPath
+        $null = Get-CatalystProbeProcessTimeoutSeconds `
+            -Deadline $patchDeadline `
+            -RequestedSeconds 1 `
+            -Description 'fixed known-negative patch'
         $null = Assert-CatalystProbeTaskPhaseAdmission `
             -Deadline $TaskDeadline `
             -RequiredSeconds (
@@ -2024,27 +2981,117 @@ function Invoke-CatalystGestureRegressionProbeCore {
             -PhaseBudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
             -RemainingPhaseBudgetSeconds $script:CatalystProbeCleanupBudgetSeconds `
             -ArtifactTailSeconds $context.ArtifactTailSeconds
-        $result.negative = Invoke-CatalystProbeCycle `
-            -Kind 'negative' `
-            -Context $context
-        $result.negative | Add-Member -NotePropertyName containerResultSha256 `
-            -NotePropertyValue (
-            Assert-CatalystProbeOwnedContainerResult `
-                -Context $context `
-                -Cycle $result.negative)
+        $negativePrimaryRoot = Join-Path $regressionRoot 'fix'
+        $negativeCompanionRoot = Join-Path $regressionRoot 'catalyst-fix'
+        $negativeDeadline = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $TaskDeadline `
+            -BudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
+            -DownstreamReserveSeconds (
+            $script:CatalystProbeCleanupBudgetSeconds +
+            $script:CatalystProbeSummaryBudgetSeconds) `
+            -Description 'known-negative production composite'
+        $context.ActiveDeadline = $negativeDeadline
+        $context.ActiveReserveSeconds = 0
+        $productionRejection = $null
+        try {
+            Invoke-CatalystProbeProductionComposite `
+                -Module $productionModule `
+                -Selection $selection `
+                -Requirement $requirement `
+                -PrimaryOutputDirectory $negativePrimaryRoot `
+                -CompanionOutputDirectory $negativeCompanionRoot `
+                -Deadline $negativeDeadline
+            throw 'The production composite unexpectedly accepted the fixed known-negative postimage.'
+        } catch {
+            $productionRejection =
+            Confirm-CatalystProbeExpectedProductionRejection -ErrorRecord $_
+        }
+        $negativePrimary = Assert-CatalystProbePrimaryRun `
+            -Path (Join-Path $negativePrimaryRoot 'strict-test-evidence.json') `
+            -Selection $selection
+        $negativeCompanion = Assert-CatalystProbeCycleEvidence `
+            -Kind negative `
+            -StrictEvidencePath (
+            Join-Path $negativeCompanionRoot 'strict-test-evidence.json')
+        $null = Assert-CatalystProbeProductionAssetsRetained `
+            -Module $productionModule
+        if (Test-Path -LiteralPath $context.FixtureTargetPath) {
+            throw 'Production composite negative run left its transient Catalyst fixture behind.'
+        }
+        Assert-CatalystProbeRepositoryState -Context $context -State negative
+        $result.negative = [ordered]@{
+            primary = [ordered]@{
+                strictEvidenceSha256 = [string]$negativePrimary.Digest
+                total = [int]$negativePrimary.Document.total
+                passed = [int]$negativePrimary.Document.passed
+                skipped = [int]$negativePrimary.Document.skipped
+                failed = [int]$negativePrimary.Document.failed
+                rawXml = @($negativePrimary.Document.resultFiles |
+                        ForEach-Object {
+                            [ordered]@{
+                                name = [string]$_.name
+                                sha256 = [string]$_.sha256
+                            }
+                        })
+            }
+            companion = [ordered]@{
+                strictEvidenceSha256 =
+                [string]$negativeCompanion.StrictEvidenceSha256
+                identities = @($negativeCompanion.Identities)
+                total = [int]$negativeCompanion.Total
+                passed = [int]$negativeCompanion.Passed
+                skipped = [int]$negativeCompanion.Skipped
+                failed = [int]$negativeCompanion.Failed
+                rawXml = @($negativeCompanion.ResultFiles)
+                productionRejection = $productionRejection
+            }
+        }
 
-        $baselineIds = @($result.baseline.identities | ForEach-Object {
+        $baselineIds = @($result.baseline.companion.identities | ForEach-Object {
                 "$($_.type)`n$($_.method)`n$($_.displayName)"
             })
-        $negativeIds = @($result.negative.identities | ForEach-Object {
+        $negativeIds = @($result.negative.companion.identities | ForEach-Object {
                 "$($_.type)`n$($_.method)`n$($_.displayName)"
             })
         if (($baselineIds -join "`n--identity--`n") -cne
             ($negativeIds -join "`n--identity--`n")) {
-            throw 'Catalyst A/B cycles did not execute the same exact test identities.'
+            throw 'Production Catalyst composite runs did not execute the same exact identities.'
         }
-        $result.outcome = 'baseline-pass/negative-regression-demonstrated'
-        $result.reason = 'fixed-native-tap-regression-reproduced'
+
+        $v2Rejection = $null
+        try {
+            $null = Invoke-CatalystProbeProductionV2Validation `
+                -Module $productionModule `
+                -Selection $selection `
+                -Requirement $requirement `
+                -EvidenceArtifactRoot $productionRoot `
+                -PatchPath $patchPath `
+                -TrustedFixturePath $context.TrustedFixturePath `
+                -Deadline $negativeDeadline
+            throw 'Production v2 evidence unexpectedly accepted the known-negative Catalyst result.'
+        } catch {
+            $v2Rejection =
+            Confirm-CatalystProbeExpectedProductionRejection -ErrorRecord $_
+        }
+        $rejectedV2Path = Join-Path $regressionRoot 'regression-evidence.json'
+        if (-not (Test-Path -LiteralPath $rejectedV2Path -PathType Leaf)) {
+            throw 'Production v2 rejection did not retain its rejected evidence document.'
+        }
+        $result.expectedV2Rejection = [ordered]@{
+            rejected = $true
+            reason = $v2Rejection
+            document = 'production-composite/regression/regression-evidence.json'
+            documentSha256 =
+            Get-CatalystProbeFileSha256 -Path $rejectedV2Path
+            certifiable = $false
+        }
+        $null = Get-CatalystProbeProcessTimeoutSeconds `
+            -Deadline $negativeDeadline `
+            -RequestedSeconds 1 `
+            -Description 'known-negative production composite evidence'
+        $result.outcome =
+        'production-composite-baseline-pass/known-negative-rejected'
+        $result.reason = 'fixed-production-composite-rejection-demonstrated'
     } catch {
         $probeError = $_
         $result.outcome = 'inconclusive'
@@ -2052,8 +3099,62 @@ function Invoke-CatalystGestureRegressionProbeCore {
         $result.failure = Get-CatalystProbeSafeError -Message $_.Exception.Message
     } finally {
         if ($context) {
+            $cleanupFailures = [Collections.Generic.List[string]]::new()
+            $cleanupDeadline = $null
             try {
-                Restore-CatalystProbeRepository -Context $context
+                $cleanupDeadline = New-CatalystProbeFixedPhaseDeadline `
+                    -TaskDeadline $TaskDeadline `
+                    -BudgetSeconds $script:CatalystProbeCleanupBudgetSeconds `
+                    -DownstreamReserveSeconds $script:CatalystProbeSummaryBudgetSeconds `
+                    -Description 'production composite cleanup'
+                $context.ActiveDeadline = $cleanupDeadline
+                $context.ActiveReserveSeconds = 0
+            } catch {
+                $cleanupFailures.Add("cleanup admission: $($_.Exception.Message)")
+            }
+            if ($cleanupDeadline) {
+                try {
+                    $ownedSimulator = if (
+                        $context.PSObject.Properties['OwnedIosSimulator']) {
+                        $context.OwnedIosSimulator
+                    } else {
+                        $null
+                    }
+                    Remove-CatalystProbeOwnedIosSimulator `
+                        -Context $context `
+                        -Simulator $ownedSimulator `
+                        -CleanupDeadline $cleanupDeadline
+                    $result.cleanup.simulatorRemoved = $true
+                } catch {
+                    $cleanupFailures.Add(
+                        "simulator cleanup: $($_.Exception.Message)")
+                }
+                try {
+                    Restore-CatalystProbeRepository -Context $context
+                } catch {
+                    $cleanupFailures.Add(
+                        "repository cleanup: $($_.Exception.Message)")
+                }
+                try {
+                    Remove-CatalystProbeProductionCompositeModule `
+                        -Module $productionModule `
+                        -Context $context
+                    $productionModule = $null
+                } catch {
+                    $cleanupFailures.Add(
+                        "production module cleanup: $($_.Exception.Message)")
+                }
+                try {
+                    $null = Get-CatalystProbeProcessTimeoutSeconds `
+                        -Deadline $cleanupDeadline `
+                        -RequestedSeconds 1 `
+                        -Description 'production composite cleanup'
+                } catch {
+                    $cleanupFailures.Add(
+                        "cleanup deadline: $($_.Exception.Message)")
+                }
+            }
+            if ($cleanupFailures.Count -eq 0) {
                 $result.cleanup.completed = $true
                 $result.cleanup.fixtureRemoved =
                 -not (Test-Path -LiteralPath $context.FixtureTargetPath)
@@ -2062,14 +3163,24 @@ function Invoke-CatalystGestureRegressionProbeCore {
                 $script:CatalystProbeBaselineFileSha256
                 $result.cleanup.repositoryStatusRestored = $true
                 $result.cleanup.trustedTreeRestored = $true
-            } catch {
-                $cleanupError = $_
+            } else {
+                $cleanupError = [Management.Automation.ErrorRecord]::new(
+                    [InvalidOperationException]::new(
+                        "Catalyst probe cleanup failed: $($cleanupFailures -join '; ')"),
+                    'CatalystProbeCleanupFailed',
+                    [Management.Automation.ErrorCategory]::InvalidOperation,
+                    $context)
                 $result.outcome = 'inconclusive'
                 $result.reason = 'cleanup-failed-closed'
                 $result.failure = Get-CatalystProbeSafeError `
-                    -Message $_.Exception.Message
+                    -Message $cleanupError.Exception.Message
             }
         }
+        $summaryDeadline = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $TaskDeadline `
+            -BudgetSeconds $script:CatalystProbeSummaryBudgetSeconds `
+            -DownstreamReserveSeconds 0 `
+            -Description 'production composite summary'
         $result['startedUtc'] = $started.ToString('O')
         $result['completedUtc'] = [DateTimeOffset]::UtcNow.ToString('O')
         $result.budget.taskRemainingAtSummarySeconds =
@@ -2085,8 +3196,24 @@ function Invoke-CatalystGestureRegressionProbeCore {
                 -Force | Out-Null
         }
         Write-CatalystProbeResult -Result $result -Path $resultPath
+        try {
+            $null = Get-CatalystProbeProcessTimeoutSeconds `
+                -Deadline $summaryDeadline `
+                -RequestedSeconds 1 `
+                -Description 'production composite summary'
+        } catch {
+            $summaryError = $_
+            $result.outcome = 'inconclusive'
+            $result.reason = 'summary-deadline-exhausted'
+            $result.failure = Get-CatalystProbeSafeError `
+                -Message $_.Exception.Message
+            Write-CatalystProbeResult -Result $result -Path $resultPath
+        }
     }
 
+    if ($summaryError) {
+        throw $summaryError
+    }
     if ($cleanupError) {
         throw $cleanupError
     }
@@ -2094,8 +3221,8 @@ function Invoke-CatalystGestureRegressionProbeCore {
         throw $probeError
     }
     if ($result.outcome -cne
-        'baseline-pass/negative-regression-demonstrated') {
-        throw 'Catalyst gesture A/B probe did not demonstrate the fixed negative control.'
+        'production-composite-baseline-pass/known-negative-rejected') {
+        throw 'Catalyst gesture probe did not demonstrate the production composite rejection.'
     }
     return [pscustomobject]$result
 }

@@ -27,7 +27,8 @@ parameters:
       # Trusted host-capability diagnostic only; creates and destroys an empty
       # Hypervisor.framework VM without guest code, devices, or networking.
       - ios-vm-capability-probe
-      # Fixed trusted Mac Catalyst A/B control only; never certifies or publishes
+      # Fixed trusted iOS plus Mac Catalyst production-composite diagnostic only;
+      # never certifies or publishes
       # issue or product outcomes.
       - catalyst-gesture-probe
 
@@ -400,7 +401,7 @@ stages:
               publishLocation: 'pipeline'
 
   - stage: ProbeCatalystGestureRegression
-    displayName: 'Probe fixed Mac Catalyst gesture A/B control'
+    displayName: 'Probe fixed iOS plus Mac Catalyst production composite'
     dependsOn: []
     condition: and(not(canceled()), eq('${{ parameters.Mode }}', 'catalyst-gesture-probe'))
     jobs:
@@ -476,7 +477,7 @@ stages:
                 "##vso[task.setvariable variable=CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS]" +
                 $budget.artifactTailSeconds)
               [ordered]@{
-                schemaVersion = 1
+                schemaVersion = 2
                 mode = 'catalyst-gesture-probe'
                 pipelineCommit = $head
                 baselineCommit = '40590267d8057fd5c044e5bfea77a9dd31fef29f'
@@ -488,11 +489,17 @@ stages:
                 certifiesProduct = $false
                 publishesOutcome = $false
                 invokesModel = $false
+                executesProductionComposite = $true
+                scope = 'known-bad-postimage-replay-only'
+                generatedIssueTest = $false
+                primaryBoundary = 'ios-review-host-no-network-isolation'
+                primaryIndependentOutboundIsolation = $false
+                companionBoundary = 'signed-app-sandbox-live-outbound-deny'
                 safeJobDeadlineUtc = $budget.safeJobDeadlineUtc
                 artifactTailSeconds = $budget.artifactTailSeconds
               } | ConvertTo-Json -Depth 4 | Set-Content (
                 Join-Path $env:PROBE_ROOT 'scope.json') -Encoding utf8
-              Write-Host "##vso[build.updatebuildnumber]Catalyst fixed gesture A-B probe $(Build.BuildId)"
+              Write-Host "##vso[build.updatebuildnumber]Catalyst production composite probe $(Build.BuildId)"
             displayName: 'Validate closed Catalyst probe inputs before setup'
             timeoutInMinutes: 2
             env:
@@ -745,7 +752,7 @@ stages:
                 -OutputDirectory $env:PROBE_ROOT
               $null = Assert-CatalystProbeDeadlineAdmission `
                 -DeadlineUtc $env:JOB_DEADLINE `
-                -Phase 'report-only Catalyst A-B probe' `
+                -Phase 'report-only production composite probe' `
                 -PhaseBudgetSeconds 2160 `
                 -ArtifactTailSeconds 300
               & (Join-Path $env:TRUSTED_ROOT 'scripts/Invoke-CatalystGestureRegressionProbe.ps1') `
@@ -754,12 +761,14 @@ stages:
                 -TrustedRoot $env:TRUSTED_ROOT `
                 -TrustedTreeAttestation $env:TRUSTED_ATTESTATION `
                 -OutputDirectory $env:PROBE_ROOT
-            displayName: 'Run fixed report-only Catalyst gesture A/B'
+            displayName: 'Run fixed report-only production composite'
             timeoutInMinutes: 36
             env:
               CATALYST_PROBE_TRUSTED_ROOT: $(CatalystGestureTrustedRoot)
+              CATALYST_PROBE_TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
               CATALYST_PROBE_OUTPUT_ROOT: $(CatalystGestureProbeRoot)
               CATALYST_PROBE_RUNTIME_ROOT: $(CatalystGestureRuntimeRoot)
+              CATALYST_PROBE_MODE: catalyst-gesture-probe
               CATALYST_GESTURE_JOB_DEADLINE_UTC: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
               CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS: $(CATALYST_GESTURE_ARTIFACT_TAIL_SECONDS)
               TRUSTED_ROOT: $(CatalystGestureTrustedRoot)

@@ -168,6 +168,7 @@ pwsh .github/skills/run-device-tests/scripts/Run-DeviceTests.ps1 -Project Core -
 - Simulator/emulator selection and boot logic is handled by `.github/scripts/shared/Start-Emulator.ps1`
 - xharness manages test execution and reporting for iOS/MacCatalyst/Android
 - Class-filtered XHarness retries use isolated child output directories; Android also uses a per-run result filename so stale diagnostics or device-side XML cannot be reused
+- The trusted composite diagnostic uses strict prepared-iOS mode to bind an already-booted simulator through the verifier to XHarness. This mode validates the exact device/runtime without calling `Start-Emulator.ps1` or provisioning/recovery; ordinary runs retain their existing setup behavior.
 - Windows runs the built device-test app directly and reads its xUnit XML results, matching `eng/devices/windows.cake`
 
 ## Test Filtering
