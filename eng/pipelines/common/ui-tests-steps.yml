@@ -86,18 +86,44 @@ steps:
       set -euo pipefail
       mkdir -p "$(LogDirectory)"
       sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-      avdmanager="$sdk_root/cmdline-tools/13.0/bin/avdmanager"
-      if [[ -z "$sdk_root" || ! -x "$avdmanager" ]]; then
-        echo "Provisioned Android SDK or avdmanager was not found: '$avdmanager'."
+      sdkmanager13="$sdk_root/cmdline-tools/13.0/bin/sdkmanager"
+      tools19="$sdk_root/cmdline-tools/19.0/bin"
+      if [[ -z "$sdk_root" || ! -x "$sdkmanager13" ]]; then
+        echo "Provisioned Android SDK or sdkmanager was not found: '$sdkmanager13'."
         exit 1
       fi
-      "$avdmanager" list device > "$(LogDirectory)/android-device-definitions.txt"
+
+      if ! timeout 180s "$sdkmanager13" --sdk_root="$sdk_root" "cmdline-tools;19.0" \
+        > "$(LogDirectory)/cmdline-tools-19-install.txt" 2>&1; then
+        cat "$(LogDirectory)/cmdline-tools-19-install.txt"
+        exit 1
+      fi
+
+      avdmanager="$tools19/avdmanager"
+      sdkmanager19="$tools19/sdkmanager"
+      if [[ ! -x "$avdmanager" || ! -x "$sdkmanager19" ]]; then
+        echo "Command-line tools 19.0 were not installed under '$tools19'."
+        exit 1
+      fi
+
+      timeout 30s "$sdkmanager19" --version > "$(LogDirectory)/cmdline-tools-version.txt"
+      timeout 30s "$avdmanager" list device > "$(LogDirectory)/android-device-definitions.txt"
       if ! grep -Eq 'id: [0-9]+ or "pixel_8a"' "$(LogDirectory)/android-device-definitions.txt"; then
         echo "Required Android device definition pixel_8a is unavailable."
         cat "$(LogDirectory)/android-device-definitions.txt"
         exit 1
       fi
+
+      export PATH="$tools19:$PATH"
+      resolved_avdmanager="$(command -v avdmanager)"
+      if [[ "$resolved_avdmanager" != "$avdmanager" ]]; then
+        echo "Expected avdmanager '$avdmanager' but resolved '$resolved_avdmanager'."
+        exit 1
+      fi
+      echo "$resolved_avdmanager" > "$(LogDirectory)/resolved-avdmanager.txt"
+      echo "##vso[task.prependpath]$tools19"
     displayName: Verify Pixel 8a device definition
+    timeoutInMinutes: 5
 
 - task: PowerShell@2
   condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
