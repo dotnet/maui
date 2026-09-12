@@ -1,0 +1,349 @@
+diff --git a/src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs b/src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs
+index 68393011a77138e20c05194e268e0751b5bb3198..3e79d48f36a378f7618694d1472812288cbd82e0 100644
+--- a/src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs
++++ b/src/Controls/src/Core/Platform/GestureManager/GesturePlatformManager.iOS.cs
+@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
+ using System.Collections.Specialized;
+ using System.Diagnostics.CodeAnalysis;
+ using System.Threading.Tasks;
+-using System.Reflection;
+ using System.Runtime.Versioning;
+ using CoreGraphics;
+ using Foundation;
+@@ -660,100 +659,7 @@ namespace Microsoft.Maui.Controls.Platform
+ 			bool dragFound = false;
+ 			bool dropFound = false;
+ 
+-			if (PlatformView != null &&
+-				_handler.VirtualView is View v &&
+-				v.HasAccessibleTapGesture() &&
+-				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) != UIAccessibilityTrait.Button)
+-			{
+-				PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+-				_addedFlags |= UIAccessibilityTrait.Button;
+-
+-				// Ensure container views are marked as accessibility elements so VoiceOver
+-				// can announce the Button trait and make the container focusable for VoiceOver.
+-				// Skip if IsAccessibilityElement is already true (e.g. set by SemanticExtensions for a
+-				// Hint/Description on this layout) — when the container is already a leaf accessibility
+-				// element, ShouldGroupAccessibilityChildren is ignored by UIKit and would be redundant.
+-				//
+-				// LIMITATION (Path A — gesture-only, no Hint/Description): Setting
+-				// ShouldGroupAccessibilityChildren = true alone does NOT make the layout focusable to
+-				// VoiceOver; UIKit only focuses views whose IsAccessibilityElement is true. So for a
+-				// tappable layout without any Semantics set, VoiceOver still navigates directly to the
+-				// individual children, the Button trait above is silenced, and the
+-				// AccessibilityActivateCallback registered below is never reached via VoiceOver.
+-				// This is a pre-existing UIKit constraint, intentionally not addressed by this fix
+-				// (which targets the Hint scenario from issue #34380).
+-				if (!PlatformView.ShouldGroupAccessibilityChildren
+-					&& !PlatformView.IsAccessibilityElement
+-					&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
+-				{
+-					// Capture the pre-existing value so cleanup can restore it (mirrors the
+-					// _defaultAccessibilityRespondsToUserInteraction pattern below).
+-					_defaultShouldGroupAccessibilityChildren = PlatformView.ShouldGroupAccessibilityChildren;
+-					PlatformView.ShouldGroupAccessibilityChildren = true;
+-					_setShouldGroupAccessibilityChildren = true;
+-				}
+-
+-				// UIKit's default accessibilityActivate() simulates touch events which are intermittently
+-				// unreliable for UITapGestureRecognizer (especially on macOS Catalyst Ctrl+Option+Space).
+-				// Bypass that path by directly invoking SendTapped on the MAUI TapGestureRecognizer for
+-				// both iOS and Catalyst. VoiceOver activation is a single semantic event — UIKit's
+-				// simulated-touch path also does not honor NumberOfTapsRequired > 1 from a VoiceOver
+-				// activation, so the direct path does not regress that scenario and makes activation
+-				// reliable across both platforms.
+-				// This block is decoupled from the grouping block above so it also registers when
+-				// SemanticExtensions already promoted the container (layout with Hint + gesture).
+-				// Note: Only Microsoft.Maui.Platform.MauiView exposes AccessibilityActivateCallback,
+-				// so layouts whose platform view is not a MauiView (e.g. Border, ScrollView, custom
+-				// container handlers) fall back to UIKit's default simulated-touch activation path.
+-				if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
+-					_handler.VirtualView is global::Microsoft.Maui.ILayout)
+-				{
+-					var weakThis = new WeakReference<GesturePlatformManager>(this);
+-
+-					mauiView.AccessibilityActivateCallback = () =>
+-					{
+-						if (!weakThis.TryGetTarget(out var manager))
+-						{
+-							return false;
+-						}
+-
+-						var view = manager._handler?.VirtualView as View;
+-
+-						if (view is null)
+-						{
+-							return false;
+-						}
+-
+-						// Honor the same gates UIKit's touch dispatch would have applied. VoiceOver
+-						// activation bypasses UIKit's hit-testing/touch path, so without these
+-						// guards a disabled or input-transparent layout would still fire its tap.
+-						if (!view.IsEnabled || view.InputTransparent)
+-						{
+-							return false;
+-						}
+-
+-						if (view.HasAccessibleTapGesture(out var tap))
+-						{
+-							tap.SendTapped(view);
+-							return true;
+-						}
+-
+-						return false;
+-					};
+-
+-					_setAccessibilityActivateCallback = true;
+-				}
+-
+-				if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)
+-#if TVOS
+-				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+-#endif
+-					)
+-				{
+-					_defaultAccessibilityRespondsToUserInteraction = PlatformView.AccessibilityRespondsToUserInteraction;
+-					PlatformView.AccessibilityRespondsToUserInteraction = true;
+-				}
+-			}
++			ApplyAccessibilityState();
+ 
+ 			_interactions.Clear();
+ 
+@@ -892,8 +798,14 @@ namespace Microsoft.Maui.Controls.Platform
+ 
+ 		void OnTapGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+ 		{
+-			if (e.Is(TapGestureRecognizer.ButtonsProperty))
+-				LoadRecognizers();
++			if (e.Is(TapGestureRecognizer.ButtonsProperty) ||
++				e.Is(TapGestureRecognizer.NumberOfTapsRequiredProperty))
++			{
++				if (sender is TapGestureRecognizer tapGestureRecognizer)
++				{
++					ReloadTapGestureRecognizers(tapGestureRecognizer);
++				}
++			}
+ 		}
+ 
+ 		void OnSwipeGestureRecognizerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+@@ -962,6 +874,109 @@ namespace Microsoft.Maui.Controls.Platform
+ 		}
+ 
+ 		void GestureRecognizersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
++		{
++			ResetAccessibilityState();
++			LoadRecognizers();
++		}
++
++		void ReloadTapGestureRecognizers(TapGestureRecognizer tapGestureRecognizer)
++		{
++			var recognizersToReload = new List<IGestureRecognizer>();
++
++			foreach (var mapping in _gestureRecognizers)
++			{
++				if (TryGetTapGestureRecognizer(mapping.Key, out TapGestureRecognizer? mappedTapGestureRecognizer) &&
++					ReferenceEquals(mappedTapGestureRecognizer, tapGestureRecognizer))
++				{
++					recognizersToReload.Add(mapping.Key);
++				}
++			}
++
++			if (recognizersToReload.Count == 0)
++				return;
++
++			for (int i = 0; i < recognizersToReload.Count; i++)
++			{
++				var recognizer = recognizersToReload[i];
++				var nativeRecognizers = _gestureRecognizers[recognizer];
++				_gestureRecognizers.Remove(recognizer);
++
++				tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
++
++				foreach (var uiRecognizer in nativeRecognizers)
++				{
++					if (uiRecognizer is null)
++						continue;
++
++					PlatformView?.RemoveGestureRecognizer(uiRecognizer);
++					uiRecognizer.ShouldReceiveTouch = null;
++					uiRecognizer.Dispose();
++				}
++			}
++
++			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
++			{
++				var interactions = PlatformView.Interactions;
++				for (int i = interactions.Length - 1; i >= 0; i--)
++				{
++					if (interactions[i] is FakeRightClickContextMenuInteraction fakeRightClickInteraction &&
++						ReferenceEquals(fakeRightClickInteraction.TapGestureRecognizer, tapGestureRecognizer))
++					{
++						PlatformView.RemoveInteraction(fakeRightClickInteraction);
++					}
++				}
++
++				for (int i = _interactions.Count - 1; i >= 0; i--)
++				{
++					if (_interactions[i] is FakeRightClickContextMenuInteraction fakeRightClickInteraction &&
++						ReferenceEquals(fakeRightClickInteraction.TapGestureRecognizer, tapGestureRecognizer))
++					{
++						_interactions.RemoveAt(i);
++					}
++				}
++			}
++
++			ResetAccessibilityState();
++			ApplyAccessibilityState();
++
++			for (int i = 0; i < recognizersToReload.Count; i++)
++			{
++				var recognizer = recognizersToReload[i];
++
++				if (TryGetTapGestureRecognizer(recognizer, out var updatedTapGestureRecognizer) &&
++					updatedTapGestureRecognizer != null)
++				{
++					updatedTapGestureRecognizer.PropertyChanged += OnTapGestureRecognizerPropertyChanged;
++				}
++
++				if (AddFakeRightClickForMacCatalyst(recognizer) == ButtonsMask.Secondary)
++				{
++					continue;
++				}
++
++				var nativeRecognizers = GetPlatformRecognizer(recognizer);
++
++				if (nativeRecognizers is null)
++				{
++					continue;
++				}
++
++				_gestureRecognizers[recognizer] = nativeRecognizers;
++
++				foreach (var nativeRecognizer in nativeRecognizers)
++				{
++					if (nativeRecognizer != null && PlatformView != null)
++					{
++						_proxy ??= new ShouldReceiveTouchProxy(this);
++						nativeRecognizer.ShouldReceiveTouch = _proxy.ShouldReceiveTouch;
++
++						PlatformView.AddGestureRecognizer(nativeRecognizer);
++					}
++				}
++			}
++		}
++
++		void ResetAccessibilityState()
+ 		{
+ 			if (PlatformView != null)
+ 			{
+@@ -978,7 +993,106 @@ namespace Microsoft.Maui.Controls.Platform
+ 
+ 			_addedFlags = UIAccessibilityTrait.None;
+ 			_defaultAccessibilityRespondsToUserInteraction = null;
+-			LoadRecognizers();
++		}
++
++		void ApplyAccessibilityState()
++		{
++			if (PlatformView == null ||
++				_handler.VirtualView is not View v ||
++				!v.HasAccessibleTapGesture() ||
++				(PlatformView.AccessibilityTraits & UIAccessibilityTrait.Button) == UIAccessibilityTrait.Button)
++			{
++				return;
++			}
++
++			PlatformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
++			_addedFlags |= UIAccessibilityTrait.Button;
++
++			// Ensure container views are marked as accessibility elements so VoiceOver
++			// can announce the Button trait and make the container focusable for VoiceOver.
++			// Skip if IsAccessibilityElement is already true (e.g. set by SemanticExtensions for a
++			// Hint/Description on this layout) — when the container is already a leaf accessibility
++			// element, ShouldGroupAccessibilityChildren is ignored by UIKit and would be redundant.
++			//
++			// LIMITATION (Path A — gesture-only, no Hint/Description): Setting
++			// ShouldGroupAccessibilityChildren = true alone does NOT make the layout focusable to
++			// VoiceOver; UIKit only focuses views whose IsAccessibilityElement is true. So for a
++			// tappable layout without any Semantics set, VoiceOver still navigates directly to the
++			// individual children, the Button trait above is silenced, and the
++			// AccessibilityActivateCallback registered below is never reached via VoiceOver.
++			// This is a pre-existing UIKit constraint, intentionally not addressed by this fix
++			// (which targets the Hint scenario from issue #34380).
++			if (!PlatformView.ShouldGroupAccessibilityChildren
++				&& !PlatformView.IsAccessibilityElement
++				&& _handler.VirtualView is global::Microsoft.Maui.ILayout)
++			{
++				// Capture the pre-existing value so cleanup can restore it (mirrors the
++				// _defaultAccessibilityRespondsToUserInteraction pattern below).
++				_defaultShouldGroupAccessibilityChildren = PlatformView.ShouldGroupAccessibilityChildren;
++				PlatformView.ShouldGroupAccessibilityChildren = true;
++				_setShouldGroupAccessibilityChildren = true;
++			}
++
++			// UIKit's default accessibilityActivate() simulates touch events which are intermittently
++			// unreliable for UITapGestureRecognizer (especially on macOS Catalyst Ctrl+Option+Space).
++			// Bypass that path by directly invoking SendTapped on the MAUI TapGestureRecognizer for
++			// both iOS and Catalyst. VoiceOver activation is a single semantic event — UIKit's
++			// simulated-touch path also does not honor NumberOfTapsRequired > 1 from a VoiceOver
++			// activation, so the direct path does not regress that scenario and makes activation
++			// reliable across both platforms.
++			// This block is decoupled from the grouping block above so it also registers when
++			// SemanticExtensions already promoted the container (layout with Hint + gesture).
++			// Note: Only Microsoft.Maui.Platform.MauiView exposes AccessibilityActivateCallback,
++			// so layouts whose platform view is not a MauiView (e.g. Border, ScrollView, custom
++			// container handlers) fall back to UIKit's default simulated-touch activation path.
++			if (PlatformView is Microsoft.Maui.Platform.MauiView mauiView &&
++				_handler.VirtualView is global::Microsoft.Maui.ILayout)
++			{
++				var weakThis = new WeakReference<GesturePlatformManager>(this);
++
++				mauiView.AccessibilityActivateCallback = () =>
++				{
++					if (!weakThis.TryGetTarget(out var manager))
++					{
++						return false;
++					}
++
++					var view = manager._handler?.VirtualView as View;
++
++					if (view is null)
++					{
++						return false;
++					}
++
++					// Honor the same gates UIKit's touch dispatch would have applied. VoiceOver
++					// activation bypasses UIKit's hit-testing/touch path, so without these
++					// guards a disabled or input-transparent layout would still fire its tap.
++					if (!view.IsEnabled || view.InputTransparent)
++					{
++						return false;
++					}
++
++					if (view.HasAccessibleTapGesture(out var tap))
++					{
++						tap.SendTapped(view);
++						return true;
++					}
++
++					return false;
++				};
++
++				_setAccessibilityActivateCallback = true;
++			}
++
++			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13)
++#if TVOS
++			|| OperatingSystem.IsTvOSVersionAtLeast(11)
++#endif
++				)
++			{
++				_defaultAccessibilityRespondsToUserInteraction = PlatformView.AccessibilityRespondsToUserInteraction;
++				PlatformView.AccessibilityRespondsToUserInteraction = true;
++			}
+ 		}
+ 
+ 		// Reverts any accessibility-related state this manager set on the platform view when a

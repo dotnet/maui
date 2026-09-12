@@ -17,6 +17,8 @@
 /docs/**/*.xml text eol=lf
 .github/scripts/tests/fixtures/WindowsGeneratedSandboxAppxManifest.xml binary
 .github/scripts/tests/fixtures/WindowsGeneratedDeviceTestsAppxManifest.xml binary
+# Unified-diff context retains the original source indentation and blank context lines.
+.github/scripts/fixtures/ReplicationGesturePlatformManagerKnownNegative.patch text eol=lf whitespace=-blank-at-eol,-space-before-tab
 
 # avoid overriding GitInfo.txt on merge
 GitInfo.txt merge=ours
