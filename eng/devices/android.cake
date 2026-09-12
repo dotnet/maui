@@ -62,8 +62,18 @@ Information("Build Target Framework: {0}", targetFramework);
 Information("Use CoreCLR: {0}", useCoreClr);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
+DirectoryPath issue38080AvdHome = null;
 if (runIssue38080)
 {
+	var avdHome = EnvironmentVariable("ANDROID_AVD_HOME");
+	if (string.IsNullOrWhiteSpace(avdHome) || !System.IO.Path.IsPathFullyQualified(avdHome))
+		throw new Exception($"Issue 38080 requires an absolute ANDROID_AVD_HOME, but received '{avdHome}'.");
+
+	issue38080AvdHome = new DirectoryPath(avdHome);
+	EnsureDirectoryExists(issue38080AvdHome);
+	System.Environment.SetEnvironmentVariable("ANDROID_AVD_HOME", issue38080AvdHome.FullPath);
+	Information("Issue 38080 AVD Home: {0}", issue38080AvdHome);
+
 	var avdManagerToolPath = new DirectoryPath(androidSdkRoot)
 		.Combine("cmdline-tools")
 		.Combine("19.0")
@@ -501,6 +511,9 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 						throw new Exception($"Failed to create required issue 38080 AVD '{avdName}'.");
 				}
 
+				if (runIssue38080)
+					ValidateAndCaptureIssue38080Avd(avdName);
+
 				// Pre-authorize ADB keys before starting emulator to avoid "device unauthorized" errors
 				Information("Pre-authorizing ADB keys for emulator...");
 				try
@@ -511,7 +524,9 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// Copy the public key to the AVD directory so it's trusted from boot
 					var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 					var adbKeyPubSource = System.IO.Path.Combine(homeDir, ".android", "adbkey.pub");
-					var avdPath = System.IO.Path.Combine(homeDir, ".android", "avd", $"{avdName}.avd");
+					var avdPath = runIssue38080
+						? issue38080AvdHome.Combine($"{avdName}.avd").FullPath
+						: System.IO.Path.Combine(homeDir, ".android", "avd", $"{avdName}.avd");
 					var avdAdbKeysDest = System.IO.Path.Combine(avdPath, "adbkey.pub");
 
 					if (System.IO.File.Exists(adbKeyPubSource) && System.IO.Directory.Exists(avdPath))
@@ -533,7 +548,6 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				Information("Starting Emulator: {0}...", avdName);
 				if (runIssue38080)
 				{
-					CaptureIssue38080AvdConfiguration(avdName);
 					issue38080EmulatorProcess = StartIssue38080Emulator(avdName);
 				}
 				else
@@ -749,28 +763,37 @@ void CaptureIssue38080Diagnostics()
 DirectoryPath GetIssue38080LogDirectory() =>
 	GetLogDirectory().Combine("issue38080");
 
-void CaptureIssue38080AvdConfiguration(string avdName)
+void ValidateAndCaptureIssue38080Avd(string avdName)
 {
 	var outputDirectory = GetIssue38080LogDirectory().Combine("emulator-host");
 	EnsureDirectoryExists(outputDirectory);
 
-	var avdDirectory = new DirectoryPath(
-		System.IO.Path.Combine(
-			Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-			".android",
-			"avd"));
-	var avdConfig = avdDirectory.Combine($"{avdName}.avd").CombineWithFilePath("config.ini");
-	var avdIni = avdDirectory.CombineWithFilePath($"{avdName}.ini");
+	var avdConfig = issue38080AvdHome.Combine($"{avdName}.avd").CombineWithFilePath("config.ini");
+	var avdIni = issue38080AvdHome.CombineWithFilePath($"{avdName}.ini");
 
-	if (FileExists(avdConfig))
-		CopyFile(avdConfig, outputDirectory.CombineWithFilePath("avd-config.ini"));
-	else
-		Warning("Issue 38080 AVD config was not found: {0}", avdConfig);
+	if (!FileExists(avdConfig))
+		throw new Exception($"Issue 38080 AVD config was not found: '{avdConfig}'.");
 
-	if (FileExists(avdIni))
-		CopyFile(avdIni, outputDirectory.CombineWithFilePath("avd.ini"));
-	else
-		Warning("Issue 38080 AVD descriptor was not found: {0}", avdIni);
+	if (!FileExists(avdIni))
+		throw new Exception($"Issue 38080 AVD descriptor was not found: '{avdIni}'.");
+
+	CopyFile(avdConfig, outputDirectory.CombineWithFilePath("avd-config.ini"));
+	CopyFile(avdIni, outputDirectory.CombineWithFilePath("avd.ini"));
+	System.IO.File.WriteAllText(
+		outputDirectory.CombineWithFilePath("avd-home.txt").FullPath,
+		issue38080AvdHome.FullPath);
+
+	var emulator = new DirectoryPath(androidSdkRoot).Combine("emulator").CombineWithFilePath("emulator");
+	var emulatorAvds = outputDirectory.CombineWithFilePath("emulator-list-avds.txt");
+	if (!CaptureIssue38080Command(emulator, outputDirectory, "emulator-list-avds.txt", "-list-avds"))
+		throw new Exception("Android emulator failed to list issue 38080 AVDs.");
+
+	if (!System.IO.File.ReadAllLines(emulatorAvds.FullPath)
+		.Skip(2)
+		.Any(line => string.Equals(line.Trim(), avdName, StringComparison.Ordinal)))
+	{
+		throw new Exception($"Android emulator did not discover required issue 38080 AVD '{avdName}' in '{issue38080AvdHome}'.");
+	}
 }
 
 System.Diagnostics.Process StartIssue38080Emulator(string avdName)
@@ -788,6 +811,7 @@ System.Diagnostics.Process StartIssue38080Emulator(string avdName)
 		RedirectStandardError = true,
 		CreateNoWindow = true,
 	};
+	startInfo.Environment["ANDROID_AVD_HOME"] = issue38080AvdHome.FullPath;
 	foreach (var argument in new[]
 	{
 		"-avd", avdName,

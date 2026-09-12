@@ -84,8 +84,44 @@ steps:
 - ${{ if eq(parameters.runIssue38080, true) }}:
   - bash: |
       set -euo pipefail
+      host_diagnostics="$(LogDirectory)/issue38080/emulator-host"
+      mkdir -p "$host_diagnostics"
+
+      sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+      qemu="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64"
+      if [[ -z "$sdk_root" || ! -x "$qemu" ]]; then
+        echo "Provisioned Android emulator QEMU binary was not found: '$qemu'."
+        exit 1
+      fi
+
+      /usr/bin/ldd "$qemu" > "$host_diagnostics/qemu-ldd-before.txt" 2>&1
+      if grep -Fq "libpulse.so.0 => not found" "$host_diagnostics/qemu-ldd-before.txt"; then
+        timeout 120s sudo -n apt-get update -qq \
+          > "$host_diagnostics/apt-libpulse0.txt" 2>&1
+        timeout 120s sudo -n apt-get install -y -qq --no-install-recommends libpulse0 \
+          >> "$host_diagnostics/apt-libpulse0.txt" 2>&1
+      fi
+
+      /usr/bin/ldd "$qemu" > "$host_diagnostics/ldd.txt" 2>&1
+      if grep -Fq "=> not found" "$host_diagnostics/ldd.txt"; then
+        echo "Android emulator QEMU still has unresolved shared libraries."
+        cat "$host_diagnostics/ldd.txt"
+        exit 1
+      fi
+    displayName: Verify Issue 38080 emulator runtime prerequisites
+    timeoutInMinutes: 5
+
+- ${{ if eq(parameters.runIssue38080, true) }}:
+  - bash: |
+      set -euo pipefail
       mkdir -p "$(LogDirectory)"
       sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+      issue_avd_home="$(Agent.TempDirectory)/maui-issue38080-avd-$(Build.BuildId)-$(System.JobAttempt)"
+      mkdir -p "$issue_avd_home"
+      export ANDROID_AVD_HOME="$issue_avd_home"
+      echo "$issue_avd_home" > "$(LogDirectory)/issue38080-avd-home.txt"
+      echo "##vso[task.setvariable variable=ANDROID_AVD_HOME]$issue_avd_home"
+
       sdkmanager13="$sdk_root/cmdline-tools/13.0/bin/sdkmanager"
       tools19="$sdk_root/cmdline-tools/19.0/bin"
       if [[ -z "$sdk_root" || ! -x "$sdkmanager13" ]]; then
@@ -136,7 +172,6 @@ steps:
       emulator="$sdk_root/emulator/emulator"
       capture_host_command "$host_diagnostics/version.txt" "$emulator" -version
       capture_host_command "$host_diagnostics/acceleration.txt" "$emulator" -accel-check
-      capture_host_command "$host_diagnostics/ldd.txt" /usr/bin/ldd "$emulator"
       capture_host_command "$host_diagnostics/kvm.txt" /usr/bin/ls -l /dev/kvm
     displayName: Verify Pixel 8a device definition
     timeoutInMinutes: 5
@@ -237,6 +272,8 @@ steps:
     retryCountOnTaskFailure: 1
   env:
     APPIUM_HOME: $(APPIUM_HOME)
+    ${{ if eq(parameters.runIssue38080, true) }}:
+      ANDROID_AVD_HOME: $(ANDROID_AVD_HOME)
 
 - ${{ if eq(parameters.runIssue38080, true) }}:
   - bash: |
