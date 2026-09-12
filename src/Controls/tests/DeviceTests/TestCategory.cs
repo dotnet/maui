@@ -35,6 +35,11 @@
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
 		public const string Path = "Path";
+		public const string PerformanceCarouselViewSwipe = nameof(PerformanceCarouselViewSwipe);
+		public const string PerformanceCarouselViewWheelSnap = nameof(PerformanceCarouselViewWheelSnap);
+		public const string PerformanceCollectionViewItemsUpdate = nameof(PerformanceCollectionViewItemsUpdate);
+		public const string PerformanceCollectionViewScroll = nameof(PerformanceCollectionViewScroll);
+		public const string PerformanceHandlerPropertyUpdate = nameof(PerformanceHandlerPropertyUpdate);
 		public const string Picker = "Picker";
 		public const string RadioButton = "RadioButton";
 		public const string RefreshView = "RefreshView";

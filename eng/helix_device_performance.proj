@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <PropertyGroup>
+    <HelixType>test/devices/performance/</HelixType>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild Condition="'$(HelixBuild)' == ''">local</HelixBuild>
+    <HelixSource Condition="'$(HelixSource)' == ''">pr/maui/device-performance/</HelixSource>
+    <Creator Condition="'$(Creator)' == ''">maui</Creator>
+
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'ios'">osx.15.arm64.maui.open</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst'">osx.15.arm64.maui.open</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'android'">ubuntu.2204.amd64.android.33.open</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'windows'">windows.11.amd64.client.open</HelixTargetQueues>
+
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'ios' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'maccatalyst' and '$(HelixInternal)' == 'True'">osx.15.arm64.iphone.maui</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'android' and '$(HelixInternal)' == 'True'">ubuntu.2204.amd64.android.33</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(TargetOS)' == 'windows' and '$(HelixInternal)' == 'True'">windows.11.amd64.client</HelixTargetQueues>
+
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+    <IncludeXHarnessCli>true</IncludeXHarnessCli>
+    <IncludeXHarnessCli Condition="'$(TargetOS)' == 'windows'">false</IncludeXHarnessCli>
+    <EnableAzurePipelinesReporter Condition="'$(SYSTEM_ACCESSTOKEN)' != ''">true</EnableAzurePipelinesReporter>
+    <EnableAzurePipelinesReporter Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">false</EnableAzurePipelinesReporter>
+    <FailOnTestFailure>true</FailOnTestFailure>
+
+    <RepoRoot Condition="'$(RepoRoot)' == '' and '$(BUILD_SOURCESDIRECTORY)' != ''">$(BUILD_SOURCESDIRECTORY)/</RepoRoot>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../'))</RepoRoot>
+
+    <AndroidPackageName Condition="'$(AndroidPackageName)' == ''">com.microsoft.maui.controls.devicetests</AndroidPackageName>
+    <AndroidInstrumentation Condition="'$(AndroidInstrumentation)' == ''">com.microsoft.maui.controls.devicetests.TestInstrumentation</AndroidInstrumentation>
+    <PerformanceRepository Condition="'$(PerformanceRepository)' == ''">dotnet/maui</PerformanceRepository>
+    <PerformanceExpectedVariantRuns Condition="'$(PerformanceExpectedVariantRuns)' == ''">2</PerformanceExpectedVariantRuns>
+    <PerformanceAuthorArgument Condition="'$(PerformancePullRequestAuthor)' != ''">-PullRequestAuthor "$(PerformancePullRequestAuthor)"</PerformanceAuthorArgument>
+    <PerformanceOutputDirectory>perf-results</PerformanceOutputDirectory>
+  </PropertyGroup>
+
+  <Target Name="ValidatePerformanceInputs" BeforeTargets="Build">
+    <Error Condition="'$(TargetOS)' != 'ios' and '$(TargetOS)' != 'maccatalyst' and '$(TargetOS)' != 'android' and '$(TargetOS)' != 'windows'"
+           Text="TargetOS must be ios, maccatalyst, android, or windows." />
+    <Error Condition="'$(PerformancePayloadArchive)' == ''"
+           Text="PerformancePayloadArchive is required." />
+    <Error Condition="!Exists('$(PerformancePayloadArchive)')"
+           Text="PerformancePayloadArchive does not exist: $(PerformancePayloadArchive)" />
+    <Error Condition="'$(BaseAppRelativePath)' == ''"
+           Text="BaseAppRelativePath is required." />
+    <Error Condition="'$(HeadAppRelativePath)' == ''"
+           Text="HeadAppRelativePath is required." />
+    <Error Condition="'$(BaseCommitSha)' == ''"
+           Text="BaseCommitSha is required." />
+    <Error Condition="'$(HeadCommitSha)' == ''"
+           Text="HeadCommitSha is required." />
+    <Error Condition="'$(PerformanceExpectedScenario)' == ''"
+           Text="PerformanceExpectedScenario is required." />
+    <Error Condition="'$(PerformancePullRequestNumber)' == '' or '$(PerformancePullRequestNumber)' == '0'"
+           Text="PerformancePullRequestNumber is required." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(PerformancePullRequestAuthor)', '\A(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?(?:\[bot\])?)?\z'))"
+           Text="PerformancePullRequestAuthor must be a GitHub login or empty." />
+    <Error Condition="'$(PerformanceHarnessSha)' == ''"
+           Text="PerformanceHarnessSha is required." />
+    <Error Condition="'$(PerformanceAzdoBuildId)' == ''"
+           Text="PerformanceAzdoBuildId is required." />
+    <Error Condition="'$(PerformanceAzdoBuildUrl)' == ''"
+           Text="PerformanceAzdoBuildUrl is required." />
+    <Error Condition="'$(PerformanceBaseRuntimeVariant)' == '' or '$(PerformanceHeadRuntimeVariant)' == ''"
+           Text="Base and head runtime variants are required." />
+    <Error Condition="'$(PerformanceBaseSdkVersion)' == '' or '$(PerformanceHeadSdkVersion)' == ''"
+           Text="Base and head SDK versions are required." />
+  </Target>
+
+  <ItemGroup>
+    <HelixCorrelationPayload Include="$(RepoRoot)eng/scripts/Run-DevicePerformanceComparison.ps1">
+      <Destination>eng/scripts/Run-DevicePerformanceComparison.ps1</Destination>
+    </HelixCorrelationPayload>
+    <HelixCorrelationPayload Include="$(RepoRoot)eng/scripts/Parse-DevicePerformanceResults.ps1">
+      <Destination>eng/scripts/Parse-DevicePerformanceResults.ps1</Destination>
+    </HelixCorrelationPayload>
+    <HelixCorrelationPayload Include="$(RepoRoot)eng/scripts/Compare-DevicePerformanceResults.ps1">
+      <Destination>eng/scripts/Compare-DevicePerformanceResults.ps1</Destination>
+    </HelixCorrelationPayload>
+    <HelixCorrelationPayload Include="$(RepoRoot)eng/scripts/Run-DevicePerformanceComparison.helix.sh">
+      <Destination>eng/scripts/Run-DevicePerformanceComparison.helix.sh</Destination>
+    </HelixCorrelationPayload>
+    <HelixCorrelationPayload Include="$(RepoRoot)eng/scripts/Run-WindowsDevicePerformanceComparison.ps1">
+      <Destination>eng/scripts/Run-WindowsDevicePerformanceComparison.ps1</Destination>
+    </HelixCorrelationPayload>
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixWorkItem Include="DevicePerformance-$(TargetOS)" Condition="'$(TargetOS)' != 'windows'">
+      <PayloadArchive>$(PerformancePayloadArchive)</PayloadArchive>
+      <Timeout>03:00:00</Timeout>
+      <DownloadFilesFromResults>perf-results/comparison-summary.json;perf-results/comparison-summary.md;perf-results/results.json;perf-results/run-plan.json</DownloadFilesFromResults>
+      <Command>bash "$HELIX_CORRELATION_PAYLOAD/eng/scripts/Run-DevicePerformanceComparison.helix.sh" -Platform "$(TargetOS)" -BaseApp "$HELIX_WORKITEM_ROOT/$(BaseAppRelativePath)" -HeadApp "$HELIX_WORKITEM_ROOT/$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" $(PerformanceAuthorArgument) -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -AndroidPackageName "$(AndroidPackageName)" -AndroidInstrumentation "$(AndroidInstrumentation)" -OutputDirectory "$HELIX_WORKITEM_UPLOAD_ROOT/$(PerformanceOutputDirectory)" -XHarnessMode helix</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="DevicePerformance-windows" Condition="'$(TargetOS)' == 'windows'">
+      <PayloadArchive>$(PerformancePayloadArchive)</PayloadArchive>
+      <Timeout>03:00:00</Timeout>
+      <DownloadFilesFromResults>perf-results/comparison-summary.json;perf-results/comparison-summary.md;perf-results/results.json;perf-results/run-plan.json</DownloadFilesFromResults>
+      <Command>powershell -NoProfile -ExecutionPolicy Bypass -File "%HELIX_CORRELATION_PAYLOAD%\eng\scripts\Run-WindowsDevicePerformanceComparison.ps1" -BaseApp "%HELIX_WORKITEM_ROOT%\$(BaseAppRelativePath)" -HeadApp "%HELIX_WORKITEM_ROOT%\$(HeadAppRelativePath)" -BaseCommitSha "$(BaseCommitSha)" -HeadCommitSha "$(HeadCommitSha)" -ExpectedScenario "$(PerformanceExpectedScenario)" -Repository "$(PerformanceRepository)" -PullRequestNumber "$(PerformancePullRequestNumber)" $(PerformanceAuthorArgument) -HarnessSha "$(PerformanceHarnessSha)" -AzdoBuildId "$(PerformanceAzdoBuildId)" -AzdoBuildUrl "$(PerformanceAzdoBuildUrl)" -BaseRuntimeVariant "$(PerformanceBaseRuntimeVariant)" -HeadRuntimeVariant "$(PerformanceHeadRuntimeVariant)" -BaseSdkVersion "$(PerformanceBaseSdkVersion)" -HeadSdkVersion "$(PerformanceHeadSdkVersion)" -ExpectedVariantRuns "$(PerformanceExpectedVariantRuns)" -OutputDirectory "%HELIX_WORKITEM_UPLOAD_ROOT%\$(PerformanceOutputDirectory)"</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>
