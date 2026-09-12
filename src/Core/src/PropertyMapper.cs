@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if HANDLER_INSTRUMENTATION
+using Microsoft.Maui.Diagnostics;
+#endif
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -62,7 +65,21 @@ namespace Microsoft.Maui
 			{
 				if (action is not null)
 				{
+#if HANDLER_INSTRUMENTATION
+					if (!HandlerInstrumentation.HasListeners)
+					{
+						action(viewHandler, virtualView);
+						return true;
+					}
+
+					using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
+					{
+						action(viewHandler, virtualView);
+					}
+#else
 					action(viewHandler, virtualView);
+#endif
+
 					return true;
 				}
 
@@ -76,7 +93,21 @@ namespace Microsoft.Maui
 
 			if (mapper is not null)
 			{
+#if HANDLER_INSTRUMENTATION
+				if (!HandlerInstrumentation.HasListeners)
+				{
+					mapper(viewHandler, virtualView);
+					return true;
+				}
+
+				using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, key))
+				{
+					mapper(viewHandler, virtualView);
+				}
+#else
 				mapper(viewHandler, virtualView);
+#endif
+
 				return true;
 			}
 
@@ -138,11 +169,33 @@ namespace Microsoft.Maui
 			var pass = PropertyMapperPassScope.BeginPass(viewHandler, keys);
 			try
 			{
+#if HANDLER_INSTRUMENTATION
+				if (!HandlerInstrumentation.HasListeners)
+				{
+					for (int i = 0; i < mappers.Count; i++)
+					{
+						pass.CurrentKeyIndex = i;
+						mappers[i](viewHandler, virtualView);
+					}
+
+					return;
+				}
+
+				for (int i = 0; i < mappers.Count; i++)
+				{
+					pass.CurrentKeyIndex = i;
+					using (HandlerInstrumentation.StartWhenListening("MapProperty", viewHandler, virtualView, keys[i]))
+					{
+						mappers[i](viewHandler, virtualView);
+					}
+				}
+#else
 				for (int i = 0; i < mappers.Count; i++)
 				{
 					pass.CurrentKeyIndex = i;
 					mappers[i](viewHandler, virtualView);
 				}
+#endif
 			}
 			finally
 			{

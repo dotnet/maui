@@ -214,6 +214,29 @@ These tests can be run using the Test Explorer in VS, or from the command line w
 dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
 ```
 
+## Handler Initialization Attribution
+
+`Microsoft.Maui` contains opt-in instrumentation that attributes handler initialization time
+(`ElementHandler.SetVirtualView`, `PropertyMapper.UpdateProperties`/`UpdateProperty`) using
+`System.Diagnostics.Activity`. It is **compile-time** opt-in: it is only compiled when the
+`MauiEnableHandlerInstrumentation` MSBuild property is set to `true`, which defines the
+`HANDLER_INSTRUMENTATION` constant. A default build compiles none of it, so the handler/mapper hot
+paths are unchanged.
+
+```bash
+# Build Core (and anything referencing it) with the instrumentation compiled in
+dotnet build src/Core/src/Core.csproj -p:MauiEnableHandlerInstrumentation=true
+
+# Build and run the Core unit tests with the instrumented code path (also run in CI)
+dotnet cake --target=dotnet-test-handler-instrumentation
+```
+
+The spans are emitted on the same `ActivitySource` name/version as the rest of MAUI's diagnostics
+(`Microsoft.Maui`, `1.0.0`, see `DiagnosticsIdentity`), so a single `ActivityListener` subscription
+observes handler, mapper, and layout spans. Emitted operations: `SetVirtualView`,
+`CreatePlatformElement`, `AssignHandler`, `ConnectHandler`, `ResolveMapper`, `UpdateProperties`, and
+`MapProperty` (tagged with `element.type`, `handler.type`, and, for `MapProperty`, `mapper.property`).
+
 ## Running Device Tests on Helix
 
 .NET MAUI now supports running device tests on [.NET Engineering Services Helix](https://helix.dot.net) using XHarness. Helix provides cloud-based device testing infrastructure that enables running tests across multiple platforms and devices in parallel.
