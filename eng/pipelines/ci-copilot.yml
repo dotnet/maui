@@ -603,10 +603,8 @@ stages:
                 -PhaseBudgetSeconds 180 `
                 -RemainingPhaseBudgetSeconds 3900 `
                 -ArtifactTailSeconds 300
-              if ($env:REQUIRED_XCODE -cnotmatch '^[0-9]+(?:\.[0-9]+){1,2}$') {
-                throw 'Catalyst gesture probe requires one fixed numeric Xcode version.'
-              }
-              $xcode = "/Applications/Xcode_$($env:REQUIRED_XCODE).app"
+              # The fixed product baseline pins 26.0.1, independently of review targets.
+              $xcode = Get-CatalystProbeXcodePath
               if (-not (Test-Path -LiteralPath $xcode -PathType Container)) {
                 throw "Required Catalyst gesture Xcode is unavailable: $xcode"
               }
@@ -614,10 +612,12 @@ stages:
               if ($LASTEXITCODE -ne 0) {
                 throw 'Catalyst gesture probe could not select its fixed Xcode.'
               }
-              & /usr/bin/xcodebuild -version
+              $xcodeVersion = @(& /usr/bin/xcodebuild -version)
               if ($LASTEXITCODE -ne 0) {
                 throw 'Catalyst gesture probe could not verify its fixed Xcode.'
               }
+              Assert-CatalystProbeXcodeVersion -VersionOutput $xcodeVersion
+              Write-Host ($xcodeVersion -join "`n")
               & /usr/bin/sudo /usr/bin/xcodebuild -license accept
               if ($LASTEXITCODE -ne 0) {
                 throw 'Catalyst gesture probe could not accept the preinstalled Xcode license.'
@@ -633,7 +633,6 @@ stages:
               TRUSTED_ATTESTATION: $(CATALYST_GESTURE_ATTESTATION)
               PROBE_ROOT: $(CatalystGestureProbeRoot)
               JOB_DEADLINE: $(CATALYST_GESTURE_JOB_DEADLINE_UTC)
-              REQUIRED_XCODE: $(REQUIRED_XCODE)
 
           - pwsh: |
               $ErrorActionPreference = 'Stop'

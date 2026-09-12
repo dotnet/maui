@@ -63,6 +63,7 @@ $script:CatalystProbeProjectPath =
     'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
 $script:CatalystProbeTargetFramework = 'net10.0-maccatalyst'
 $script:CatalystProbeRuntimeIdentifier = 'maccatalyst-arm64'
+$script:CatalystProbeXcodeVersion = '26.0.1'
 $script:CatalystProbeCycleBudgetSeconds = 480
 $script:CatalystProbeCycleEvidenceBudgetSeconds = 30
 $script:CatalystProbeVerifierBudgetSeconds =
@@ -87,6 +88,23 @@ $script:CatalystProbeForbiddenEnvironmentNames = @(
     'SYSTEMVSSCONNECTION'
     'ENDPOINT_AUTH_SYSTEMVSSCONNECTION'
 )
+
+function Get-CatalystProbeXcodePath {
+    return "/Applications/Xcode_$($script:CatalystProbeXcodeVersion).app"
+}
+
+function Assert-CatalystProbeXcodeVersion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()][string[]]$VersionOutput
+    )
+
+    if ($VersionOutput.Count -ne 2 -or
+        $VersionOutput[0] -cne "Xcode $($script:CatalystProbeXcodeVersion)" -or
+        $VersionOutput[1] -cnotmatch '^Build version [A-Za-z0-9]{1,32}$') {
+        throw "Catalyst probe requires the fixed baseline Xcode $($script:CatalystProbeXcodeVersion)."
+    }
+}
 
 function Get-CatalystProbeFileSha256 {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -1741,6 +1759,7 @@ function New-CatalystProbeResult {
             repository = 'https://github.com/dotnet/maui.git'
             baselineCommit = $script:CatalystProbeBaselineCommit
             negativeCommit = $script:CatalystProbeNegativeCommit
+            xcodeVersion = $script:CatalystProbeXcodeVersion
             productPath = $script:CatalystProbeProductPath
             baselineBlob = $script:CatalystProbeBaselineBlob
             negativeBlob = $script:CatalystProbeNegativeBlob
