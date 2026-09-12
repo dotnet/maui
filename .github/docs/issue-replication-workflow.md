@@ -11,7 +11,7 @@ The `maui-copilot` Azure DevOps pipeline supports these manual modes:
 | `replication-checks` | None | Focused trusted pipeline-contract checks without devices |
 | `ios-harness-probe` | None | Run one checked-in iOS infrastructure fixture without issue generation or publication |
 | `ios-vm-capability-probe` | None | Probe host Hypervisor.framework capabilities without running a guest or authorizing generated execution |
-| `catalyst-gesture-probe` | Fixed immutable baseline/negative pair | Report-only native Catalyst regression proof; no model or publication |
+| `catalyst-gesture-probe` | Fixed immutable baseline/negative pair | Report-only production iOS/Catalyst composite replay; no model or publication |
 
 `review` remains the default. Comment-triggered `/replicate` support is intentionally deferred; use the Azure Pipeline **Run pipeline** form during the initial rollout.
 
@@ -107,20 +107,42 @@ shares the existing task/cycle deadlines and never deletes an unknown file.
 Only an admitted build phase can restore its tracked output; finalization does
 not erase a change rejected by a pre-execution scope guard.
 
-A successful diagnostic requires both baseline facts to pass, followed by both
-known-negative facts reaching their expected native assertions. Missing or
-incomplete XML, extra/skipped tests, environment failures, unexpected negative
-passes and cleanup failures do not demonstrate the regression. Each cycle is
-bounded to eight minutes within one task-entry deadline covering initialization,
-preparation, cleanup and result writing. Cleanup operations share a single
-bounded allowance. The job keeps a reserved evidence tail without
-provisioning retries or increasing production replication budgets. Private
-runtime/package caches remain outside the published artifact root.
+A successful diagnostic exercises the actual production composite functions:
+the immutable-baseline-derived iOS Label lane first, then the fixed Catalyst
+companion, on both baseline and the known-negative postimage. It uses only an
+already-installed iOS simulator runtime. The selected simulator's exact identity
+is bound through the private module, production lane, verifier and device runner.
+Strict prepared-device execution performs bounded read-only validation and never
+enters generic emulator startup, provisioning or recovery. A missing, stopped or
+mismatched simulator fails instead of selecting another device. Ordinary runner
+behavior remains unchanged when this stricter mode is absent.
+The primary lane retains its normal
+identity-multiset comparison, including disclosed stable skips; the Catalyst
+baseline must pass both facts and the known-negative must reach both expected
+native assertions with no skipped facts.
 
-`CatalystGestureRegressionProbe` retains the fixed input identities, fixture
-hash, strict native results and diagnostic logs. Success demonstrates this
-negative control only: it neither certifies a fix nor enables a production
-companion lane. Existing iOS Label sibling coverage remains unchanged.
+The production v2 writer and validator are reused. The known-negative document
+must be rejected specifically for the demonstrated Catalyst regression; missing
+XML, wrong identities, environment errors, unexpected negative passes or cleanup
+failures remain inconclusive. Each complete primary-plus-companion cycle keeps
+the existing eight-minute slot. Simulator preparation and module loading consume
+the existing coordination allowance within the task-entry deadline. Cleanup and
+result writing remain bounded; no provisioning retry or production budget is
+added. Private runtime/package caches stay outside published artifact paths.
+
+Production functions are loaded through a closed private-module library seam
+bound to the fixed Azure identity, source revision, baseline and report-only
+mode. It does not enter normal issue orchestration, model invocation or
+publication, and cannot be used as a general source/platform override. The
+positive issue sentinel and absent Label-directory selection anchor are metadata
+only: no generated issue test or issue certification is claimed.
+
+`CatalystGestureRegressionProbe` retains fixed input identities, fixture hash,
+separate primary/companion baseline/negative XML and strict JSON, rejected v2
+evidence and diagnostic logs. Success demonstrates a known-bad production replay,
+not a new issue fix, product certification or publication. The iOS execution mode
+still does not claim independent outbound-network isolation; Catalyst retains
+its signed App Sandbox and live outbound denial.
 
 The feedback snapshot is data-only and bounded. In addition to the discussion
 surfaces it includes normalized `qualityContract`, typed `selector`, `evidence`,

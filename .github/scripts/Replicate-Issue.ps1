@@ -102,11 +102,38 @@ param(
     [ValidateRange(0, 600)]
     [int]$StepTimeoutMinutes = 240,
 
-    [string]$Model = ''
+    [string]$Model = '',
+
+    [switch]$FixedCatalystCompositeProbeLibraryOnly,
+
+    [switch]$RequirePreparedIosSimulator
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 3.0
+
+$fixedCatalystCompositeProbeWasDotSourced =
+$MyInvocation.InvocationName -ceq '.'
+$fixedCatalystCompositeProbeModuleName = if (
+    $null -ne $ExecutionContext.SessionState.Module
+) {
+    [string]$ExecutionContext.SessionState.Module.Name
+} else { '' }
+$fixedCatalystCompositeProbeRequestedModel = $Model
+if ($FixedCatalystCompositeProbeLibraryOnly -and (
+        -not $fixedCatalystCompositeProbeWasDotSourced -or
+        $fixedCatalystCompositeProbeModuleName -cne
+        'Maui.CatalystProductionCompositeProbe')) {
+    throw (
+        'FixedCatalystCompositeProbeLibraryOnly is available only while dot-sourcing ' +
+        'the trusted orchestrator inside its fixed private module.')
+}
+if ($RequirePreparedIosSimulator -and
+    -not $FixedCatalystCompositeProbeLibraryOnly) {
+    throw (
+        'RequirePreparedIosSimulator is reserved for the fixed ' +
+        'production-composite private library.')
+}
 
 if ($PreflightXHarnessOnly -and $Platform -ne 'android') {
     throw 'XHarness-only replication diagnostics require Platform=android.'
@@ -250,8 +277,12 @@ $replicationRuntimeParent = if (-not [string]::IsNullOrWhiteSpace($env:AGENT_TEM
 } else {
     [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 }
-$replicationRuntimeRoot = Join-Path $replicationRuntimeParent (
-    "maui-replication-runtime-$IssueNumber-$PID")
+$replicationRuntimeRoot = if ($FixedCatalystCompositeProbeLibraryOnly) {
+    Join-Path $replicationRuntimeParent 'catalyst-production-composite-runtime'
+} else {
+    Join-Path $replicationRuntimeParent (
+        "maui-replication-runtime-$IssueNumber-$PID")
+}
 $replicationHome = Join-Path $replicationRuntimeRoot 'home'
 $replicationGradleHome = Join-Path $replicationRuntimeRoot 'gradle'
 $replicationDotnetHome = Join-Path $replicationRuntimeRoot 'dotnet'
@@ -9317,15 +9348,25 @@ function Assert-ReplicationWindowsRestoreAssets {
 }
 
 function Remove-ReplicationRuntimeCache {
+    param([long]$DeadlineTimestamp = 0)
+
     if (-not (Test-Path -LiteralPath $replicationRuntimeRoot)) {
         return
     }
 
     try {
+        $shutdownTimeout = 30
+        if ($DeadlineTimestamp -gt 0) {
+            $shutdownTimeout = [Math]::Min(
+                $shutdownTimeout,
+                (Get-ReplicationRegressionSlotRemainingSeconds `
+                    -DeadlineTimestamp $DeadlineTimestamp `
+                    -Description 'replication runtime-cache cleanup'))
+        }
         $shutdown = Invoke-BoundedProcess `
             -FilePath 'dotnet' `
             -Arguments @('build-server', 'shutdown') `
-            -TimeoutSeconds 30 `
+            -TimeoutSeconds $shutdownTimeout `
             -Environment (Get-ReplicationRuntimeEnvironment)
         if ($shutdown.TimedOut -or [int]$shutdown.ExitCode -ne 0) {
             Write-Warning (
@@ -9338,14 +9379,32 @@ function Remove-ReplicationRuntimeCache {
 
     $lastError = $null
     for ($attempt = 1; $attempt -le 10; $attempt++) {
+        if ($DeadlineTimestamp -gt 0) {
+            $null = Get-ReplicationRegressionSlotRemainingSeconds `
+                -DeadlineTimestamp $DeadlineTimestamp `
+                -Description 'replication runtime-cache cleanup'
+        }
         try {
             Remove-Item -LiteralPath $replicationRuntimeRoot -Recurse -Force `
                 -ErrorAction Stop
+            if ($DeadlineTimestamp -gt 0) {
+                $null = Get-ReplicationRegressionSlotRemainingSeconds `
+                    -DeadlineTimestamp $DeadlineTimestamp `
+                    -Description 'replication runtime-cache cleanup'
+            }
             return
         } catch {
             $lastError = $_
             if ($attempt -lt 10) {
-                Start-Sleep -Seconds 3
+                if ($DeadlineTimestamp -gt 0) {
+                    $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
+                        -DeadlineTimestamp $DeadlineTimestamp `
+                        -Description 'replication runtime-cache cleanup'
+                    Start-Sleep -Milliseconds (
+                        [Math]::Min(3000, [Math]::Max(1, $remaining * 1000)))
+                } else {
+                    Start-Sleep -Seconds 3
+                }
             }
         }
     }
@@ -9360,7 +9419,8 @@ function Invoke-ReplicationTrustedRestore {
         [AllowEmptyCollection()][string[]]$AdditionalArguments = @(),
         [ValidateSet('restore', 'build', 'tool-restore')][string]$Verb = 'restore',
         [int]$TimeoutSeconds = 1800,
-        [long]$DeadlineTimestamp = 0
+        [long]$DeadlineTimestamp = 0,
+        [string]$FixedProbeResultLogPath = ''
     )
 
     $fullTarget = [IO.Path]::GetFullPath($Target)
@@ -9411,6 +9471,25 @@ function Invoke-ReplicationTrustedRestore {
             "(exit $([int]$result.ExitCode), timedOut=$([bool]$result.TimedOut)). " +
             $details)
     }
+    if (-not [string]::IsNullOrWhiteSpace($FixedProbeResultLogPath)) {
+        if (-not $FixedCatalystCompositeProbeLibraryOnly) {
+            throw 'Only the closed production-composite diagnostic may retain a trusted prewarm log.'
+        }
+        $fullLogPath = [IO.Path]::GetFullPath($FixedProbeResultLogPath)
+        $probeOutputRoot =
+        [IO.Path]::GetFullPath([string]$env:CATALYST_PROBE_OUTPUT_ROOT)
+        if (-not (Test-PathInsideRoot -Path $fullLogPath -Root $probeOutputRoot)) {
+            throw 'The production-composite prewarm log escaped its fixed published root.'
+        }
+        New-Item -ItemType Directory -Path (Split-Path -Parent $fullLogPath) `
+            -Force | Out-Null
+        @(
+            "exit=$([int]$result.ExitCode); timedOut=$([bool]$result.TimedOut)"
+            ConvertTo-ReplicationSafeLog `
+                -Value (@($result.Output) -join "`n") `
+                -MaximumLength 65536
+        ) | Set-Content -LiteralPath $fullLogPath -Encoding utf8NoBOM
+    }
     if ($DeadlineTimestamp -gt 0) {
         $null = Get-ReplicationRegressionSlotRemainingSeconds `
             -DeadlineTimestamp $DeadlineTimestamp `
@@ -9423,6 +9502,11 @@ function Invoke-ReplicationAppleCompanionPrewarm {
     param([ValidateRange(1, 600)][int]$TimeoutSeconds = 600)
 
     $script:AppleCompanionAssetsSha256 = ''
+    $fixedProbeMode = [bool](Get-Variable `
+            -Name FixedCatalystCompositeProbeLibraryOnly `
+            -Scope Script `
+            -ValueOnly `
+            -ErrorAction SilentlyContinue)
     $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
     ([long]$TimeoutSeconds * [Diagnostics.Stopwatch]::Frequency)
     Assert-InitialReplicationWorktree -DeadlineTimestamp $deadline
@@ -9445,12 +9529,25 @@ function Invoke-ReplicationAppleCompanionPrewarm {
         $remaining = Get-ReplicationRegressionSlotRemainingSeconds `
             -DeadlineTimestamp $deadline `
             -Description 'dual-Apple companion prewarm'
-        Invoke-ReplicationTrustedRestore `
-            -Target ([string]$plan.ProjectPath) `
-            -Verb ([string]$arguments[0]) `
-            -AdditionalArguments @($arguments[2..($arguments.Count - 1)]) `
-            -TimeoutSeconds $remaining `
-            -DeadlineTimestamp $deadline
+        $probePrewarmLogPath = if ($fixedProbeMode) {
+            Join-Path (
+                Join-Path (
+                    [IO.Path]::GetFullPath(
+                        [string]$env:CATALYST_PROBE_OUTPUT_ROOT)) (
+                    'production-composite/prewarm')) (
+                [string]$command.LogName)
+        } else { '' }
+        $restoreParameters = @{
+            Target = [string]$plan.ProjectPath
+            Verb = [string]$arguments[0]
+            AdditionalArguments = @($arguments[2..($arguments.Count - 1)])
+            TimeoutSeconds = $remaining
+            DeadlineTimestamp = $deadline
+        }
+        if ($fixedProbeMode) {
+            $restoreParameters['FixedProbeResultLogPath'] = $probePrewarmLogPath
+        }
+        Invoke-ReplicationTrustedRestore @restoreParameters
         $null = Get-ReplicationRegressionSlotRemainingSeconds `
             -DeadlineTimestamp $deadline `
             -Description 'dual-Apple companion prewarm'
@@ -9659,7 +9756,8 @@ function Invoke-LoggedChildProcess {
         [Parameter(Mandatory = $true)]
         [ValidateRange(1, 10800)]
         [int]$TimeoutSeconds,
-        [switch]$AllowDeviceControl
+        [switch]$AllowDeviceControl,
+        [long]$DeadlineTimestamp = 0
     )
 
     # Every trusted runner started from here builds, deploys, or executes
@@ -9715,6 +9813,13 @@ function Invoke-LoggedChildProcess {
                 -TimeoutSeconds $effectiveTimeoutSeconds
         }
         $boundarySetup = $false
+        if ($DeadlineTimestamp -gt 0) {
+            $effectiveTimeoutSeconds = [Math]::Min(
+                $effectiveTimeoutSeconds,
+                (Get-ReplicationRegressionSlotRemainingSeconds `
+                    -DeadlineTimestamp $DeadlineTimestamp `
+                    -Description 'primary regression child'))
+        }
         $runResult = Invoke-WithoutReplicationSecrets -Names $allSecretNames -ScriptBlock {
             Invoke-BoundedProcess `
                 -FilePath $isolatedCommand.FilePath `
@@ -9773,6 +9878,11 @@ function Invoke-LoggedChildProcess {
                 }
             }
         }
+    }
+    if ($DeadlineTimestamp -gt 0) {
+        $null = Get-ReplicationRegressionSlotRemainingSeconds `
+            -DeadlineTimestamp $DeadlineTimestamp `
+            -Description 'primary regression child'
     }
     if ($runResult.TimedOut) {
         $failureDetails = Get-ReplicationFailureDetails -Output $output
@@ -11305,33 +11415,61 @@ function Invoke-ReplicationRegressionLaneRun {
         [Parameter(Mandatory = $true)]$Selection,
         [Parameter(Mandatory = $true)][string]$OutputDirectory,
         [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
-        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds,
+        [long]$DeadlineTimestamp = 0,
+        [string]$DeviceUdid = '',
+        [switch]$RequirePreparedIosSimulator
     )
 
+    if ($RequirePreparedIosSimulator -and (
+            -not $FixedCatalystCompositeProbeLibraryOnly -or
+            [string]$Selection.Platform -cne 'ios' -or
+            [string]$Selection.Project -cne 'Controls' -or
+            [string]$Selection.Category -cne 'Label' -or
+            [string]$Selection.TestClass -cne
+            'Microsoft.Maui.DeviceTests.LabelTests' -or
+            $DeviceUdid -cnotmatch
+            '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')) {
+        throw (
+            'Strict prepared iOS simulator execution is reserved for the ' +
+            'fixed private iOS production-composite lane.')
+    }
     $verificationScript = Join-Path $TrustedScriptRoot 'shared/Invoke-ReplicationTestVerification.ps1'
     $trustedSkillsRoot = Join-Path (Split-Path -Parent $TrustedScriptRoot) 'skills'
     $verifierPath = Join-Path $trustedSkillsRoot (
         'verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
-    Invoke-LoggedChildProcess `
-        -ScriptPath $verificationScript `
-        -Arguments @(
-            '-IssueNumber', [string]$IssueNumber,
-            '-BaseSha', [string]$Selection.BaselineSha,
-            '-Platform', [string]$Selection.Platform,
-            '-TestType', 'DeviceTest',
-            '-TestFilter', "Category=$($Selection.Category)",
-            '-TestProject', [string]$Selection.Project,
-            '-TestProjectPath', [string]$Selection.ProjectPath,
-            '-TestClass', [string]$Selection.TestClass,
-            '-ExpectedFailureSignature', 'regression-evidence',
-            '-VerifierPath', $verifierPath,
-            '-OutputDirectory', $OutputDirectory,
-            '-RunCount', '1',
-            '-RegressionEvidence'
-        ) `
-        -LogPath "$OutputDirectory-wrapper.log" `
-        -Description "Running trusted $($Selection.Category) sibling regression lane" `
-        -TimeoutSeconds $TimeoutSeconds
+    $verificationArguments = @(
+        '-IssueNumber', [string]$IssueNumber,
+        '-BaseSha', [string]$Selection.BaselineSha,
+        '-Platform', [string]$Selection.Platform,
+        '-TestType', 'DeviceTest',
+        '-TestFilter', "Category=$($Selection.Category)",
+        '-TestProject', [string]$Selection.Project,
+        '-TestProjectPath', [string]$Selection.ProjectPath,
+        '-TestClass', [string]$Selection.TestClass,
+        '-ExpectedFailureSignature', 'regression-evidence',
+        '-VerifierPath', $verifierPath,
+        '-OutputDirectory', $OutputDirectory,
+        '-RunCount', '1',
+        '-RegressionEvidence'
+    )
+    if (-not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+        $verificationArguments += @('-DeviceUdid', $DeviceUdid)
+    }
+    if ($RequirePreparedIosSimulator) {
+        $verificationArguments += '-RequirePreparedIosSimulator'
+    }
+    $childArguments = @{
+        ScriptPath = $verificationScript
+        Arguments = $verificationArguments
+        LogPath = "$OutputDirectory-wrapper.log"
+        Description = "Running trusted $($Selection.Category) sibling regression lane"
+        TimeoutSeconds = $TimeoutSeconds
+    }
+    if ($DeadlineTimestamp -gt 0) {
+        $childArguments['DeadlineTimestamp'] = $DeadlineTimestamp
+    }
+    Invoke-LoggedChildProcess @childArguments
 }
 
 function Get-ReplicationRegressionSlotRemainingSeconds {
@@ -11533,11 +11671,29 @@ function Invoke-ReplicationRegressionCompositeRun {
         [Parameter(Mandatory = $true)][string]$PrimaryOutputDirectory,
         [string]$CompanionOutputDirectory = '',
         [Parameter(Mandatory = $true)][string]$TrustedScriptRoot,
-        [Parameter(Mandatory = $true)][int]$TimeoutSeconds
+        [Parameter(Mandatory = $true)][int]$TimeoutSeconds,
+        [long]$DeadlineTimestamp = 0,
+        [string]$DeviceUdid = '',
+        [switch]$RequirePreparedIosSimulator
     )
 
-    $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
+    if ($RequirePreparedIosSimulator -and (
+            [string]$Selection.Platform -cne 'ios' -or
+            [string]$Selection.Project -cne 'Controls' -or
+            [string]$Selection.Category -cne 'Label' -or
+            [string]$Selection.TestClass -cne
+            'Microsoft.Maui.DeviceTests.LabelTests' -or
+            $DeviceUdid -cnotmatch
+            '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')) {
+        throw 'The strict prepared simulator is valid only for an exact iOS primary lane.'
+    }
+    $maximumDeadline = [Diagnostics.Stopwatch]::GetTimestamp() +
     ([long]$TimeoutSeconds * [Diagnostics.Stopwatch]::Frequency)
+    $deadline = if ($DeadlineTimestamp -gt 0) {
+        [Math]::Min($DeadlineTimestamp, $maximumDeadline)
+    } else {
+        $maximumDeadline
+    }
     $primaryRemaining = Get-ReplicationRegressionSlotRemainingSeconds `
         -DeadlineTimestamp $deadline `
         -Description 'primary regression slot'
@@ -11545,7 +11701,10 @@ function Invoke-ReplicationRegressionCompositeRun {
         -Selection $Selection `
         -OutputDirectory $PrimaryOutputDirectory `
         -TrustedScriptRoot $TrustedScriptRoot `
-        -TimeoutSeconds $primaryRemaining
+        -TimeoutSeconds $primaryRemaining `
+        -DeadlineTimestamp $deadline `
+        -DeviceUdid $DeviceUdid `
+        -RequirePreparedIosSimulator:$RequirePreparedIosSimulator
     if ($CompanionRequirement) {
         if ([string]::IsNullOrWhiteSpace($CompanionOutputDirectory)) {
             throw 'The mandatory Catalyst companion output directory is missing.'
@@ -11556,6 +11715,72 @@ function Invoke-ReplicationRegressionCompositeRun {
             -TrustedScriptRoot $TrustedScriptRoot `
             -DeadlineTimestamp $deadline
     }
+    $null = Get-ReplicationRegressionSlotRemainingSeconds `
+        -DeadlineTimestamp $deadline `
+        -Description 'primary-plus-Catalyst regression slot'
+}
+
+function Write-ReplicationRegressionEvidenceDocument {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Selection,
+        [AllowNull()]$CompanionRequirement,
+        [Parameter(Mandatory = $true)][string]$EvidenceArtifactRoot,
+        [Parameter(Mandatory = $true)][string]$ProductPatchPath
+    )
+
+    $regressionRoot = Join-Path $EvidenceArtifactRoot 'regression'
+    $comparisonPath = Join-Path $regressionRoot 'regression-evidence.json'
+    $baselineRelative = 'regression/baseline/strict-test-evidence.json'
+    $fixRelative = 'regression/fix/strict-test-evidence.json'
+    $document = [ordered]@{
+        schemaVersion = if ($CompanionRequirement) { 2 } else { 1 }
+        baselineSha = [string]$Selection.BaselineSha
+        productPatchSha256 = Get-ReplicationBindingFileDigest `
+            -Path $ProductPatchPath
+        platform = [string]$Selection.Platform
+        project = [string]$Selection.Project
+        projectPath = [string]$Selection.ProjectPath
+        category = [string]$Selection.Category
+        testClass = [string]$Selection.TestClass
+        generatedTestPath = [string]$Selection.GeneratedTestPath
+        baselineResult = $baselineRelative
+        fixResult = $fixRelative
+        baselineResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $EvidenceArtifactRoot $baselineRelative)
+        fixResultSha256 = Get-ReplicationBindingFileDigest `
+            -Path (Join-Path $EvidenceArtifactRoot $fixRelative)
+        comparison = 'pass'
+    }
+    if ($CompanionRequirement) {
+        $companionBaselineRelative =
+        'regression/catalyst-baseline/strict-test-evidence.json'
+        $companionFixRelative =
+        'regression/catalyst-fix/strict-test-evidence.json'
+        $document['companion'] = [ordered]@{
+            id = [string]$CompanionRequirement.Id
+            fixturePath = [string]$CompanionRequirement.FixtureRelativePath
+            fixtureTargetPath = [string]$CompanionRequirement.FixtureTargetPath
+            fixtureSha256 = [string]$CompanionRequirement.FixtureSha256
+            platform = [string]$CompanionRequirement.Platform
+            project = [string]$CompanionRequirement.Project
+            projectPath = [string]$CompanionRequirement.ProjectPath
+            category = [string]$CompanionRequirement.Category
+            testClass = [string]$CompanionRequirement.TestClass
+            methods = @($CompanionRequirement.Methods)
+            baselineResult = $companionBaselineRelative
+            fixResult = $companionFixRelative
+            baselineResultSha256 = Get-ReplicationBindingFileDigest `
+                -Path (Join-Path $EvidenceArtifactRoot $companionBaselineRelative)
+            fixResultSha256 = Get-ReplicationBindingFileDigest `
+                -Path (Join-Path $EvidenceArtifactRoot $companionFixRelative)
+            comparison = 'pass'
+        }
+    }
+    New-Item -ItemType Directory -Path $regressionRoot -Force | Out-Null
+    $document | ConvertTo-Json -Depth 8 |
+        Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+    return $comparisonPath
 }
 
 function Test-ReplicationFixRegression {
@@ -11636,54 +11861,11 @@ function Test-ReplicationFixRegression {
             -PreservedFiles $ReproductionPaths
     }
 
-    $baselineRelative = 'regression/baseline/strict-test-evidence.json'
-    $fixRelative = 'regression/fix/strict-test-evidence.json'
-    $comparisonPath = Join-Path $RegressionRoot 'regression-evidence.json'
-    $document = [ordered]@{
-        schemaVersion = if ($CompanionRequirement) { 2 } else { 1 }
-        baselineSha = [string]$Selection.BaselineSha
-        productPatchSha256 = Get-ReplicationBindingFileDigest -Path $patchPath
-        platform = [string]$Selection.Platform
-        project = [string]$Selection.Project
-        projectPath = [string]$Selection.ProjectPath
-        category = [string]$Selection.Category
-        testClass = [string]$Selection.TestClass
-        generatedTestPath = [string]$Selection.GeneratedTestPath
-        baselineResult = $baselineRelative
-        fixResult = $fixRelative
-        baselineResultSha256 = Get-ReplicationBindingFileDigest `
-            -Path (Join-Path $ArtifactRoot $baselineRelative)
-        fixResultSha256 = Get-ReplicationBindingFileDigest `
-            -Path (Join-Path $ArtifactRoot $fixRelative)
-        comparison = 'pass'
-    }
-    if ($CompanionRequirement) {
-        $companionBaselineRelative =
-        'regression/catalyst-baseline/strict-test-evidence.json'
-        $companionFixRelative =
-        'regression/catalyst-fix/strict-test-evidence.json'
-        $document['companion'] = [ordered]@{
-            id = [string]$CompanionRequirement.Id
-            fixturePath = [string]$CompanionRequirement.FixtureRelativePath
-            fixtureTargetPath = [string]$CompanionRequirement.FixtureTargetPath
-            fixtureSha256 = [string]$CompanionRequirement.FixtureSha256
-            platform = [string]$CompanionRequirement.Platform
-            project = [string]$CompanionRequirement.Project
-            projectPath = [string]$CompanionRequirement.ProjectPath
-            category = [string]$CompanionRequirement.Category
-            testClass = [string]$CompanionRequirement.TestClass
-            methods = @($CompanionRequirement.Methods)
-            baselineResult = $companionBaselineRelative
-            fixResult = $companionFixRelative
-            baselineResultSha256 = Get-ReplicationBindingFileDigest `
-                -Path (Join-Path $ArtifactRoot $companionBaselineRelative)
-            fixResultSha256 = Get-ReplicationBindingFileDigest `
-                -Path (Join-Path $ArtifactRoot $companionFixRelative)
-            comparison = 'pass'
-        }
-    }
-    $document | ConvertTo-Json -Depth 8 |
-        Set-Content -LiteralPath $comparisonPath -Encoding utf8NoBOM
+    $comparisonPath = Write-ReplicationRegressionEvidenceDocument `
+        -Selection $Selection `
+        -CompanionRequirement $CompanionRequirement `
+        -EvidenceArtifactRoot $ArtifactRoot `
+        -ProductPatchPath $patchPath
     try {
         $evidenceArguments = @{
             ArtifactRoot = $ArtifactRoot
@@ -11792,6 +11974,117 @@ function Write-BlockedCandidate {
         verificationResult = $null
         patch = $null
     } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $candidatePath -Encoding utf8NoBOM
+}
+
+function Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission {
+    [CmdletBinding()]
+    param()
+
+    if (-not $FixedCatalystCompositeProbeLibraryOnly -or
+        -not $fixedCatalystCompositeProbeWasDotSourced -or
+        $fixedCatalystCompositeProbeModuleName -cne
+        'Maui.CatalystProductionCompositeProbe') {
+        throw 'The fixed production-composite library seam requires its private dot-sourced module.'
+    }
+    if ([string]$env:TF_BUILD -ine 'true' -or
+        $env:SYSTEM_DEFINITIONID -cne '27723' -or
+        $env:BUILD_REPOSITORY_NAME -cne 'dotnet/maui' -or
+        $env:BUILD_SOURCEBRANCH -cne
+        'refs/heads/copilot/replicate-issues-pipeline' -or
+        $env:CATALYST_PROBE_MODE -cne 'catalyst-gesture-probe') {
+        throw 'The fixed production-composite library seam requires its exact closed Azure pipeline identity.'
+    }
+    if ($TrustedSourceVersion -cnotmatch '^[0-9a-f]{40}$' -or
+        $env:BUILD_SOURCEVERSION -cne $TrustedSourceVersion -or
+        $IssueNumber -ne 1 -or
+        $Platform -cne 'ios' -or
+        $BaseSha -cne '40590267d8057fd5c044e5bfea77a9dd31fef29f' -or
+        -not [string]::IsNullOrWhiteSpace(
+            $fixedCatalystCompositeProbeRequestedModel) -or
+        $PreflightXHarnessOnly -or $AndroidHarnessNativeProbeOnly -or
+        $StepTimeoutMinutes -ne 0) {
+        throw 'The fixed production-composite library seam received an open or mismatched execution input.'
+    }
+    if (-not $RequirePreparedIosSimulator -or
+        $DeviceUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$' -or
+        $env:CATALYST_PROBE_PREPARED_IOS_UDID -cne $DeviceUdid) {
+        throw (
+            'The fixed production-composite library seam requires its exact ' +
+            'strict prepared iOS simulator binding.')
+    }
+
+    $agentTemp = [IO.Path]::GetFullPath([string]$env:AGENT_TEMPDIRECTORY)
+    $expectedArtifactRoot = Join-Path $agentTemp (
+        'catalyst-production-composite-private')
+    $expectedRuntimeRoot = Join-Path $agentTemp (
+        'catalyst-production-composite-runtime')
+    $expectedContextPath = Join-Path $expectedArtifactRoot (
+        'unused-report-only-context')
+    $publishedOutputRoot =
+    [IO.Path]::GetFullPath([string]$env:CATALYST_PROBE_OUTPUT_ROOT)
+    foreach ($binding in @(
+            @{ Actual = $repoRoot; Expected = $env:BUILD_SOURCESDIRECTORY },
+            @{ Actual = $TrustedRoot; Expected = $env:CATALYST_PROBE_TRUSTED_ROOT },
+            @{ Actual = $TrustedTreeAttestationPath; Expected =
+                $env:CATALYST_PROBE_TRUSTED_ATTESTATION },
+            @{ Actual = $ArtifactRoot; Expected = $expectedArtifactRoot },
+            @{ Actual = $replicationRuntimeRoot; Expected = $expectedRuntimeRoot },
+            @{ Actual = $ContextPath; Expected = $expectedContextPath })) {
+        if ([string]::IsNullOrWhiteSpace([string]$binding.Expected) -or
+            [IO.Path]::GetFullPath([string]$binding.Actual) -cne
+            [IO.Path]::GetFullPath([string]$binding.Expected)) {
+            throw 'The fixed production-composite library seam received a mismatched closed path binding.'
+        }
+    }
+    foreach ($root in @($agentTemp, $ArtifactRoot, $publishedOutputRoot)) {
+        $item = Get-Item -LiteralPath $root -Force -ErrorAction Stop
+        if (-not $item.PSIsContainer -or
+            $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            throw 'The fixed production-composite library seam requires regular private roots.'
+        }
+    }
+    if (-not (Test-PathInsideRoot `
+                -Path $publishedOutputRoot `
+                -Root $env:PIPELINE_WORKSPACE) -or
+        (Test-PathInsideRoot -Path $publishedOutputRoot -Root $repoRoot) -or
+        (Test-PathInsideRoot -Path $publishedOutputRoot -Root $TrustedRoot) -or
+        (Test-PathInsideRoot -Path $ArtifactRoot -Root $env:PIPELINE_WORKSPACE) -or
+        (Test-PathInsideRoot -Path $replicationRuntimeRoot -Root $env:PIPELINE_WORKSPACE) -or
+        (Test-PathInsideRoot -Path $ArtifactRoot -Root $TrustedRoot) -or
+        (Test-PathInsideRoot -Path $replicationRuntimeRoot -Root $TrustedRoot) -or
+        (Test-PathInsideRoot -Path $ArtifactRoot -Root $repoRoot) -or
+        (Test-PathInsideRoot -Path $replicationRuntimeRoot -Root $repoRoot)) {
+        throw 'The fixed production-composite private roots overlap source, trusted, or published roots.'
+    }
+
+    $runtimeEnvironment = Get-ReplicationRuntimeEnvironment
+    $head = Invoke-BoundedProcess `
+        -FilePath 'git' `
+        -Arguments @('-C', $repoRoot, 'rev-parse', 'HEAD') `
+        -TimeoutSeconds 30 `
+        -Environment $runtimeEnvironment
+    if ($head.TimedOut -or $head.ExitCode -ne 0 -or
+        (@($head.Output) -join '').Trim() -cne $BaseSha) {
+        throw 'The fixed production-composite library seam is not on its immutable baseline.'
+    }
+    $status = Invoke-BoundedProcess `
+        -FilePath 'git' `
+        -Arguments @(
+        '-C', $repoRoot, 'status', '--porcelain=v1', '--untracked-files=all') `
+        -TimeoutSeconds 30 `
+        -Environment $runtimeEnvironment
+    if ($status.TimedOut -or $status.ExitCode -ne 0 -or
+        -not [string]::IsNullOrWhiteSpace((@($status.Output) -join "`n"))) {
+        throw 'The fixed production-composite library seam requires a clean immutable baseline.'
+    }
+    $null = Assert-ReplicationTrustedTree `
+        -Context 'fixed production-composite private module admission'
+}
+
+if ($FixedCatalystCompositeProbeLibraryOnly) {
+    Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission
+    return
 }
 
 New-Item -ItemType Directory -Path @(

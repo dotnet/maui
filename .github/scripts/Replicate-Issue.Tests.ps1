@@ -215,6 +215,8 @@ BeforeAll {
             'Invoke-ReplicationCatalystCompanionChildProcess',
             'Invoke-ReplicationFixedCatalystCompanionRun',
             'Invoke-ReplicationRegressionCompositeRun',
+            'Write-ReplicationRegressionEvidenceDocument',
+            'Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission',
         'Test-ReplicationFixRegression',
         'Invoke-ReplicationFixArms',
         'Write-ReplicationFixArmResults',
@@ -23402,6 +23404,96 @@ public class T { }
             Should -Be 0
     }
 
+    It 'forwards the exact prepared iOS simulator through the production regression lane' {
+        $script:IssueNumber = 1
+        $priorLibraryMode = Get-Variable `
+            -Name FixedCatalystCompositeProbeLibraryOnly `
+            -Scope Script -ErrorAction SilentlyContinue
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:capturedPreparedSimulatorArguments = $null
+        function Invoke-LoggedChildProcess {
+            param(
+                $ScriptPath, $Arguments, $LogPath, $Description,
+                $TimeoutSeconds, $DeadlineTimestamp)
+            $script:capturedPreparedSimulatorArguments = @($Arguments)
+        }
+        $selection = [pscustomobject]@{
+            BaselineSha = 'a' * 40
+            Platform = 'ios'
+            Project = 'Controls'
+            ProjectPath = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+            Category = 'Label'
+            TestClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+        }
+        $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+
+        try {
+            Invoke-ReplicationRegressionLaneRun `
+                -Selection $selection `
+                -OutputDirectory (Join-Path $TestDrive 'prepared-ios-lane') `
+                -TrustedScriptRoot (Join-Path $TestDrive 'trusted/scripts') `
+                -TimeoutSeconds 120 `
+                -DeviceUdid $udid `
+                -RequirePreparedIosSimulator
+        } finally {
+            if ($null -ne $priorLibraryMode) {
+                $script:FixedCatalystCompositeProbeLibraryOnly =
+                [bool]$priorLibraryMode.Value
+            } else {
+                Remove-Variable -Name FixedCatalystCompositeProbeLibraryOnly `
+                    -Scope Script -ErrorAction SilentlyContinue
+            }
+        }
+
+        $deviceIndex = [Array]::IndexOf(
+            $script:capturedPreparedSimulatorArguments, '-DeviceUdid')
+        $deviceIndex | Should -BeGreaterOrEqual 0
+        $script:capturedPreparedSimulatorArguments[$deviceIndex + 1] |
+            Should -BeExactly $udid
+        @($script:capturedPreparedSimulatorArguments |
+                Where-Object { $_ -ceq '-RequirePreparedIosSimulator' }) |
+                Should -HaveCount 1
+    }
+
+    It 'keeps the prepared iOS simulator binding on the primary half of one composite deadline' {
+        $script:capturedCompositeDevice = $null
+        $script:capturedCompositeStrict = $false
+        function Invoke-ReplicationRegressionLaneRun {
+            param(
+                $Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds,
+                $DeadlineTimestamp, $DeviceUdid,
+                [switch]$RequirePreparedIosSimulator)
+            $script:capturedCompositeDevice = $DeviceUdid
+            $script:capturedCompositeStrict =
+            [bool]$RequirePreparedIosSimulator
+        }
+        function Invoke-ReplicationFixedCatalystCompanionRun {
+            param($Requirement, $OutputDirectory, $TrustedScriptRoot, $DeadlineTimestamp)
+        }
+        $deadline = [Diagnostics.Stopwatch]::GetTimestamp() +
+        (30L * [Diagnostics.Stopwatch]::Frequency)
+        $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+
+        Invoke-ReplicationRegressionCompositeRun `
+            -Selection ([pscustomobject]@{
+                Platform = 'ios'
+                Project = 'Controls'
+                Category = 'Label'
+                TestClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+            }) `
+            -CompanionRequirement ([pscustomobject]@{ Id = 'fixed' }) `
+            -PrimaryOutputDirectory 'primary' `
+            -CompanionOutputDirectory 'catalyst' `
+            -TrustedScriptRoot 'trusted' `
+            -TimeoutSeconds 30 `
+            -DeadlineTimestamp $deadline `
+            -DeviceUdid $udid `
+            -RequirePreparedIosSimulator
+
+        $script:capturedCompositeDevice | Should -BeExactly $udid
+        $script:capturedCompositeStrict | Should -BeTrue
+    }
+
     It 'runs the immutable baseline before candidates and the selected fix before final arms' {
         $baseline = $script:Source.IndexOf(
             '-PrimaryOutputDirectory $baselineRegressionDirectory')
@@ -27802,11 +27894,15 @@ Describe 'Production Catalyst regression companion orchestration' {
     It 'runs the immutable primary lane first and gives Catalyst only the declining slot remainder' {
         $script:order = [Collections.Generic.List[string]]::new()
         $script:primaryTimeout = 0
+        $script:primaryDeadline = 0L
         $script:companionDeadline = 0L
         function Invoke-ReplicationRegressionLaneRun {
-            param($Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds)
+            param(
+                $Selection, $OutputDirectory, $TrustedScriptRoot, $TimeoutSeconds,
+                $DeadlineTimestamp)
             $script:order.Add('primary')
             $script:primaryTimeout = $TimeoutSeconds
+            $script:primaryDeadline = $DeadlineTimestamp
             Start-Sleep -Milliseconds 20
         }
         function Invoke-ReplicationFixedCatalystCompanionRun {
@@ -27815,17 +27911,21 @@ Describe 'Production Catalyst regression companion orchestration' {
             $script:companionDeadline = $DeadlineTimestamp
         }
 
+        $fixedDeadline = [Diagnostics.Stopwatch]::GetTimestamp() +
+        (30L * [Diagnostics.Stopwatch]::Frequency)
         Invoke-ReplicationRegressionCompositeRun `
             -Selection ([pscustomobject]@{}) `
             -CompanionRequirement ([pscustomobject]@{ Id = 'fixed' }) `
             -PrimaryOutputDirectory 'primary' `
             -CompanionOutputDirectory 'catalyst' `
             -TrustedScriptRoot 'trusted' `
-            -TimeoutSeconds 30
+            -TimeoutSeconds 30 `
+            -DeadlineTimestamp $fixedDeadline
 
         @($script:order) | Should -Be @('primary', 'catalyst')
         $script:primaryTimeout | Should -BeLessOrEqual 30
-        $script:companionDeadline | Should -BeGreaterThan 0
+        $script:primaryDeadline | Should -Be $fixedDeadline
+        $script:companionDeadline | Should -Be $fixedDeadline
     }
 
     It 'keeps unaffected sibling runs on the existing primary-only behavior' {
@@ -27918,6 +28018,97 @@ Describe 'Production Catalyst regression companion orchestration' {
         $script:boundaryPlatform | Should -BeExactly 'catalyst'
         $script:boundedEnvironment.Keys | Should -Be @('PATH')
         $script:boundedCatalystTimeout | Should -BeLessOrEqual 2
+    }
+
+    It 'writes the same closed evidence schema used by normal production' {
+        $root = Join-Path $TestDrive 'production-evidence-writer'
+        foreach ($relative in @(
+                'regression/baseline/strict-test-evidence.json',
+                'regression/fix/strict-test-evidence.json',
+                'regression/catalyst-baseline/strict-test-evidence.json',
+                'regression/catalyst-fix/strict-test-evidence.json')) {
+            $path = Join-Path $root $relative
+            New-Item -ItemType Directory -Path (Split-Path $path) -Force |
+                Out-Null
+            Set-Content -LiteralPath $path -Value '{}' -Encoding utf8NoBOM
+        }
+        $patch = Join-Path $root 'fixed.patch'
+        Set-Content -LiteralPath $patch -Value 'fixed' -Encoding utf8NoBOM
+        function Get-ReplicationBindingFileDigest {
+            param($Path)
+            return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).
+            Hash.ToLowerInvariant()
+        }
+        $selection = [pscustomobject]@{
+            BaselineSha = '4' * 40
+            Platform = 'ios'
+            Project = 'Controls'
+            ProjectPath = 'device.csproj'
+            Category = 'Label'
+            TestClass = 'Microsoft.Maui.DeviceTests.LabelTests'
+            GeneratedTestPath = 'absent-label-anchor.cs'
+        }
+        $requirement = [pscustomobject]@{
+            Id = 'gesture-platform-manager-catalyst-v1'
+            FixtureRelativePath = 'scripts/fixtures/fixed.cs'
+            FixtureTargetPath = 'src/Controls/tests/DeviceTests/fixed.cs'
+            FixtureSha256 = '9' * 64
+            Platform = 'catalyst'
+            Project = 'Controls'
+            ProjectPath = 'device.csproj'
+            Category = 'Gesture'
+            TestClass = 'Microsoft.Maui.DeviceTests.Fixed'
+            Methods = @('One', 'Two')
+        }
+
+        $path = Write-ReplicationRegressionEvidenceDocument `
+            -Selection $selection `
+            -CompanionRequirement $requirement `
+            -EvidenceArtifactRoot $root `
+            -ProductPatchPath $patch
+        $document = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+
+        $document.schemaVersion | Should -Be 2
+        $document.category | Should -BeExactly 'Label'
+        $document.companion.platform | Should -BeExactly 'catalyst'
+        @($document.companion.methods) | Should -Be @('One', 'Two')
+        $document.companion.fixtureSha256 | Should -BeExactly ('9' * 64)
+        $script:Source | Should -Match (
+            '(?s)Test-ReplicationFixRegression.*?' +
+            'Write-ReplicationRegressionEvidenceDocument')
+    }
+
+    It 'keeps unaffected evidence on schema version one' {
+        $root = Join-Path $TestDrive 'production-evidence-writer-v1'
+        foreach ($relative in @(
+                'regression/baseline/strict-test-evidence.json',
+                'regression/fix/strict-test-evidence.json')) {
+            $path = Join-Path $root $relative
+            New-Item -ItemType Directory -Path (Split-Path $path) -Force |
+                Out-Null
+            Set-Content -LiteralPath $path -Value '{}' -Encoding utf8NoBOM
+        }
+        $patch = Join-Path $root 'fixed.patch'
+        Set-Content -LiteralPath $patch -Value 'fixed' -Encoding utf8NoBOM
+        $selection = [pscustomobject]@{
+            BaselineSha = '4' * 40
+            Platform = 'android'
+            Project = 'Controls'
+            ProjectPath = 'device.csproj'
+            Category = 'Button'
+            TestClass = 'Microsoft.Maui.DeviceTests.ButtonTests'
+            GeneratedTestPath = 'generated.cs'
+        }
+
+        $path = Write-ReplicationRegressionEvidenceDocument `
+            -Selection $selection `
+            -CompanionRequirement $null `
+            -EvidenceArtifactRoot $root `
+            -ProductPatchPath $patch
+        $document = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+
+        $document.schemaVersion | Should -Be 1
+        $document.PSObject.Properties.Name | Should -Not -Contain 'companion'
     }
 }
 
@@ -28126,6 +28317,7 @@ Describe 'Immutable Catalyst companion fixture staging' {
             if ($script:fixtureChildFails) {
                 throw 'simulated Catalyst execution failure'
             }
+
         }
         function Assert-ReplicationFixedCompanionRun {
             param($Path, $Requirement)
@@ -28284,5 +28476,131 @@ Describe 'Immutable Catalyst companion fixture staging' {
                 (60L * [Diagnostics.Stopwatch]::Frequency))
         } | Should -Throw '*deadline was exhausted*'
         Test-Path -LiteralPath $script:fixtureTarget | Should -BeFalse
+    }
+}
+
+Describe 'Fixed Catalyst production-library admission' {
+    BeforeEach {
+        $script:admissionEnvironment = @{}
+        foreach ($name in @(
+                'TF_BUILD', 'SYSTEM_DEFINITIONID', 'BUILD_REPOSITORY_NAME',
+                'BUILD_SOURCEBRANCH', 'BUILD_SOURCEVERSION',
+                'CATALYST_PROBE_MODE', 'AGENT_TEMPDIRECTORY',
+                'BUILD_SOURCESDIRECTORY', 'CATALYST_PROBE_TRUSTED_ROOT',
+                'CATALYST_PROBE_TRUSTED_ATTESTATION',
+                'CATALYST_PROBE_OUTPUT_ROOT', 'PIPELINE_WORKSPACE',
+                'CATALYST_PROBE_PREPARED_IOS_UDID')) {
+            $script:admissionEnvironment[$name] =
+            [Environment]::GetEnvironmentVariable($name)
+        }
+        $script:FixedCatalystCompositeProbeLibraryOnly = $true
+        $script:fixedCatalystCompositeProbeWasDotSourced = $true
+        $script:fixedCatalystCompositeProbeModuleName =
+        'Maui.CatalystProductionCompositeProbe'
+        $script:fixedCatalystCompositeProbeRequestedModel = ''
+        $script:IssueNumber = 1
+        $script:Platform = 'ios'
+        $script:BaseSha = '40590267d8057fd5c044e5bfea77a9dd31fef29f'
+        $script:PreflightXHarnessOnly = $false
+        $script:AndroidHarnessNativeProbeOnly = $false
+        $script:StepTimeoutMinutes = 0
+        $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $script:RequirePreparedIosSimulator = $true
+        $script:TrustedSourceVersion = 'a' * 40
+        $env:TF_BUILD = 'True'
+        $env:SYSTEM_DEFINITIONID = '27723'
+        $env:BUILD_REPOSITORY_NAME = 'dotnet/maui'
+        $env:BUILD_SOURCEBRANCH =
+        'refs/heads/copilot/replicate-issues-pipeline'
+        $env:CATALYST_PROBE_MODE = 'catalyst-gesture-probe'
+        $env:CATALYST_PROBE_PREPARED_IOS_UDID = $script:DeviceUdid
+    }
+
+    AfterEach {
+        foreach ($name in $script:admissionEnvironment.Keys) {
+            [Environment]::SetEnvironmentVariable(
+                $name, $script:admissionEnvironment[$name])
+        }
+    }
+
+    It 'rejects a source version that differs from the pipeline identity' {
+        $env:BUILD_SOURCEVERSION = 'b' * 40
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*open or mismatched execution input*'
+    }
+
+    It 'rejects a sentinel issue other than one' {
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+        $script:IssueNumber = 2
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*open or mismatched execution input*'
+    }
+
+    It 'rejects a primary platform other than iOS' {
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+        $script:Platform = 'catalyst'
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*open or mismatched execution input*'
+    }
+
+    It 'rejects an execution mode other than the fixed report-only mode' {
+        $env:CATALYST_PROBE_MODE = 'replicate'
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*exact closed Azure pipeline identity*'
+    }
+
+    It 'rejects a missing strict prepared iOS simulator binding in the private library' {
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+        $script:RequirePreparedIosSimulator = $false
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*strict prepared iOS simulator binding*'
+    }
+
+    It 'rejects a mismatched prepared iOS simulator identity in the private library' {
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+        $env:CATALYST_PROBE_PREPARED_IOS_UDID =
+        '11111111-2222-3333-4444-555555555555'
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*prepared iOS simulator binding*'
+    }
+
+    It 'rejects a malformed prepared iOS simulator identity in the private library' {
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+        $script:DeviceUdid = 'not-a-simulator'
+        $env:CATALYST_PROBE_PREPARED_IOS_UDID = $script:DeviceUdid
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*prepared iOS simulator binding*'
+    }
+
+    It 'rejects a private artifact path outside the fixed Agent Temp root' {
+        $root = Join-Path $TestDrive 'closed-admission'
+        $script:repoRoot = Join-Path $root 'repo'
+        $script:TrustedRoot = Join-Path $root 'trusted'
+        $script:TrustedTreeAttestationPath =
+        Join-Path $root 'attestation/trusted-tree.json'
+        $script:ArtifactRoot = Join-Path $root 'wrong-artifacts'
+        $script:replicationRuntimeRoot =
+        Join-Path $root 'agent/catalyst-production-composite-runtime'
+        $script:ContextPath = Join-Path $root (
+            'agent/catalyst-production-composite-private/' +
+            'unused-report-only-context')
+        $env:AGENT_TEMPDIRECTORY = Join-Path $root 'agent'
+        $env:BUILD_SOURCESDIRECTORY = $script:repoRoot
+        $env:CATALYST_PROBE_TRUSTED_ROOT = $script:TrustedRoot
+        $env:CATALYST_PROBE_TRUSTED_ATTESTATION =
+        $script:TrustedTreeAttestationPath
+        $env:CATALYST_PROBE_OUTPUT_ROOT = Join-Path $root 'workspace/output'
+        $env:PIPELINE_WORKSPACE = Join-Path $root 'workspace'
+        $env:BUILD_SOURCEVERSION = $script:TrustedSourceVersion
+
+        { Assert-ReplicationFixedCatalystCompositeProbeLibraryAdmission } |
+            Should -Throw '*mismatched closed path binding*'
     }
 }

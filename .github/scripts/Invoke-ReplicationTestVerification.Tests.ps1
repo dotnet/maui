@@ -1513,4 +1513,96 @@ exit 1
         }
         Test-DeviceTestStrictRegressionSelector @guardArguments | Should -BeTrue
     }
+
+    It 'forwards the exact strict prepared iOS simulator to the trusted device runner' {
+        $trustedRoot = Join-Path $TestDrive 'trusted-prepared-ios'
+        $verifier = Join-Path $trustedRoot (
+            'skills/verify-tests-fail-without-fix/scripts/verify-tests-fail.ps1')
+        $runner = Join-Path $trustedRoot (
+            'skills/run-device-tests/scripts/Run-DeviceTests.ps1')
+        New-Item -ItemType Directory -Path (Split-Path -Parent $verifier) -Force |
+            Out-Null
+        New-Item -ItemType Directory -Path (Split-Path -Parent $runner) -Force |
+            Out-Null
+        Set-Content -LiteralPath $verifier -Value '# trusted verifier marker' `
+            -Encoding utf8NoBOM
+        Set-Content -LiteralPath $runner -Encoding utf8NoBOM -Value @'
+param(
+    [string]$Project, [string]$Platform, [string]$RepositoryRoot,
+    [string]$Configuration, [switch]$NoRestore, [switch]$Rebuild,
+    [string]$TestFilter, [string]$IncludeClasses, [string]$OutputDirectory,
+    [string]$StrictTestEvidencePath, [timespan]$Timeout,
+    [string]$DeviceUdid, [switch]$RequirePreparedIosSimulator
+)
+New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+[ordered]@{
+    Platform = $Platform
+    DeviceUdid = $DeviceUdid
+    RequirePreparedIosSimulator = [bool]$RequirePreparedIosSimulator
+} | ConvertTo-Json | Set-Content -LiteralPath (
+    Join-Path $OutputDirectory 'captured-prepared-ios.json') -Encoding utf8NoBOM
+'{"completed":true}' | Set-Content -LiteralPath $StrictTestEvidencePath -Encoding utf8NoBOM
+exit 0
+'@
+        $output = Join-Path $TestDrive 'prepared-ios-regression-evidence'
+        $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $priorDeviceUdid = $env:MAUI_REPLICATION_DEVICE_UDID
+        try {
+            $env:MAUI_REPLICATION_DEVICE_UDID = $udid
+            & pwsh -NoProfile -File $scriptPath `
+                -IssueNumber 1 `
+                -BaseSha ('a' * 40) `
+                -Platform ios `
+                -TestType DeviceTest `
+                -TestFilter 'Category=Label' `
+                -TestProject Controls `
+                -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
+                -TestClass Microsoft.Maui.DeviceTests.LabelTests `
+                -TestMethod '' `
+                -ExpectedFailureSignature sibling `
+                -VerifierPath $verifier `
+                -OutputDirectory $output `
+                -DeviceUdid $udid `
+                -RequirePreparedIosSimulator `
+                -RegressionEvidence *> $null
+        } finally {
+            $env:MAUI_REPLICATION_DEVICE_UDID = $priorDeviceUdid
+        }
+
+        $LASTEXITCODE | Should -Be 0
+        $captured = Get-Content -LiteralPath (
+            Join-Path $output 'captured-prepared-ios.json') -Raw |
+            ConvertFrom-Json
+        $captured.Platform | Should -BeExactly 'ios'
+        $captured.DeviceUdid | Should -BeExactly $udid
+        $captured.RequirePreparedIosSimulator | Should -BeTrue
+    }
+
+    It 'rejects a strict prepared simulator outside iOS regression evidence before runner execution' {
+        $output = Join-Path $TestDrive 'rejected-prepared-catalyst'
+        $verifier = Join-Path $TestDrive 'unused-verifier.ps1'
+        Set-Content -LiteralPath $verifier -Value '# unused' -Encoding utf8NoBOM
+
+        $message = @(& pwsh -NoProfile -File $scriptPath `
+                -IssueNumber 1 `
+                -BaseSha ('a' * 40) `
+                -Platform catalyst `
+                -TestType DeviceTest `
+                -TestFilter 'Category=Gesture' `
+                -TestProject Controls `
+                -TestProjectPath src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj `
+                -TestClass Microsoft.Maui.DeviceTests.LabelTests `
+                -TestMethod '' `
+                -ExpectedFailureSignature sibling `
+                -VerifierPath $verifier `
+                -OutputDirectory $output `
+                -DeviceUdid 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE' `
+                -RequirePreparedIosSimulator `
+                -RegressionEvidence 2>&1)
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $message -join "`n" | Should -Match (
+            'strict prepared simulator requires iOS DeviceTest regression evidence')
+        Test-Path -LiteralPath $output | Should -BeFalse
+    }
 }

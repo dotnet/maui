@@ -147,6 +147,17 @@ Describe 'MAUI Copilot mode routing' {
         $stage | Should -Match 'ReviewRepository=dotnet/maui'
         $stage | Should -Match 'restricted to dotnet/maui Azure definition 27723'
         $stage | Should -Match 'Invoke-CatalystGestureRegressionProbe\.ps1'
+        $stage | Should -Match 'CATALYST_PROBE_MODE: catalyst-gesture-probe'
+        $stage | Should -Match (
+            'CATALYST_PROBE_TRUSTED_ATTESTATION: \$\(CATALYST_GESTURE_ATTESTATION\)')
+        $stage | Should -Match "schemaVersion = 2"
+        $stage | Should -Match "scope = 'known-bad-postimage-replay-only'"
+        $stage | Should -Match 'executesProductionComposite = \$true'
+        $stage | Should -Match 'generatedIssueTest = \$false'
+        $stage | Should -Match (
+            "primaryBoundary = 'ios-review-host-no-network-isolation'")
+        $stage | Should -Match (
+            "companionBoundary = 'signed-app-sandbox-live-outbound-deny'")
         $stage | Should -Match 'artifact: ''CatalystGestureRegressionProbe'''
         $stage | Should -Match (
             'CatalystGestureRuntimeRoot: \$\(Agent\.TempDirectory\)/catalyst-gesture-runtime')
@@ -160,7 +171,7 @@ Describe 'MAUI Copilot mode routing' {
             "\s+\`$env:CATALYST_PROBE_TASK_ENTRY_TIMESTAMP = " +
             "\[string\]\[Diagnostics\.Stopwatch\]::GetTimestamp\(\).*?" +
             "\`$env:CATALYST_PROBE_TASK_BUDGET_SECONDS = '2040'.*?" +
-            "displayName: 'Run fixed report-only Catalyst gesture A/B'\r?\n" +
+            "displayName: 'Run fixed report-only production composite'\r?\n" +
             "\s+timeoutInMinutes: 36")
         $stage | Should -Match 'timeoutInMinutes: 36'
         $stage | Should -Not -Match 'retryCountOnTaskFailure'

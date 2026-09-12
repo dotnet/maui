@@ -3,6 +3,8 @@
 
 BeforeAll {
     $script:ProbePath = Join-Path $PSScriptRoot 'Invoke-CatalystGestureRegressionProbe.ps1'
+    $script:ProductionPath = Join-Path $PSScriptRoot 'Replicate-Issue.ps1'
+    $script:ProductionSource = Get-Content -LiteralPath $script:ProductionPath -Raw
     $script:PrewarmPath = Join-Path $PSScriptRoot (
         'shared/Replication-AppleCompanionPrewarm.ps1')
     $script:PipelinePath = Join-Path $PSScriptRoot '../../eng/pipelines/ci-copilot.yml'
@@ -21,6 +23,24 @@ BeforeAll {
     . (Join-Path $PSScriptRoot 'shared/Assert-ReplicationCertificationBinding.ps1')
     . (Join-Path $PSScriptRoot 'shared/Assert-ReplicationAppleAppSandbox.ps1')
     . (Join-Path $PSScriptRoot 'shared/Replication-AppleCompanionPrewarm.ps1')
+    $productionTokens = $null
+    $productionParseErrors = $null
+    $productionAst = [Management.Automation.Language.Parser]::ParseFile(
+        $script:ProductionPath,
+        [ref]$productionTokens,
+        [ref]$productionParseErrors)
+    if ($productionParseErrors.Count -ne 0) {
+        throw 'Replicate-Issue.ps1 did not parse while loading the production writer.'
+    }
+    $productionWriter = @($productionAst.FindAll({
+                param($node)
+                $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+                $node.Name -ceq 'Write-ReplicationRegressionEvidenceDocument'
+            }, $true))
+    if ($productionWriter.Count -ne 1) {
+        throw 'The production regression evidence writer was not found exactly once.'
+    }
+    Invoke-Expression $productionWriter[0].Extent.Text
     . $script:ProbePath `
         -ExpectedSourceVersion ('a' * 40) `
         -RepositoryRoot $PSScriptRoot `
@@ -37,23 +57,27 @@ BeforeAll {
             [Parameter(Mandatory = $true)][string]$Directory,
             [Parameter(Mandatory = $true)]
             [ValidateSet('Pass', 'Fail')][string]$Outcome,
-            [switch]$Incomplete
+            [switch]$Incomplete,
+            [string]$Platform = 'catalyst',
+            [string]$Category = 'Gesture',
+            [string]$Class = $script:CatalystProbeClass,
+            [string[]]$Methods = $script:CatalystProbeMethods
         )
 
         New-Item -ItemType Directory -Path $Directory -Force | Out-Null
         $resultPath = Join-Path $Directory 'xunit-test-results.xml'
         $passed = if ($Outcome -ceq 'Pass') { 2 } else { 0 }
         $failed = if ($Outcome -ceq 'Fail') { 2 } else { 0 }
-        $rows = foreach ($method in $script:CatalystProbeMethods) {
-            $name = "$($script:CatalystProbeClass).$method"
+        $rows = foreach ($method in $Methods) {
+            $name = "$Class.$method"
             if ($Outcome -ceq 'Pass') {
-                "      <test name=`"$name`" type=`"$($script:CatalystProbeClass)`" method=`"$method`" result=`"Pass`" time=`"0.01`" />"
+                "      <test name=`"$name`" type=`"$Class`" method=`"$method`" result=`"Pass`" time=`"0.01`" />"
             } else {
                 @"
-      <test name="$name" type="$($script:CatalystProbeClass)" method="$method" result="Fail" time="0.01">
+      <test name="$name" type="$Class" method="$method" result="Fail" time="0.01">
         <failure exception-type="Xunit.Sdk.SingleException">
           <message>Assert.Single() Failure: The collection was empty</message>
-          <stack-trace>at $($script:CatalystProbeClass).&lt;&gt;c__DisplayClass0_0.&lt;$method&gt;b__0()
+          <stack-trace>at $Class.&lt;&gt;c__DisplayClass0_0.&lt;$method&gt;b__0()
 at Microsoft.Maui.Controls.HandlerTestBase.InvokeOnMainThreadAsync()</stack-trace>
         </failure>
       </test>
@@ -64,7 +88,7 @@ at Microsoft.Maui.Controls.HandlerTestBase.InvokeOnMainThreadAsync()</stack-trac
 <?xml version="1.0" encoding="utf-8"?>
 <assemblies>
   <assembly name="Controls.DeviceTests" total="2" passed="$passed" failed="$failed" skipped="0" errors="0" time="0.02">
-    <collection total="2" passed="$passed" failed="$failed" skipped="0" name="Gesture">
+    <collection total="2" passed="$passed" failed="$failed" skipped="0" name="$Category">
 $($rows -join "`n")
     </collection>
   </assembly>
@@ -104,9 +128,9 @@ $($rows -join "`n")
             runStartedUtc = $started.ToString('O')
             completedUtc = [DateTimeOffset]::UtcNow.ToString('O')
             project = 'Controls'
-            platform = 'catalyst'
-            testFilter = 'Category=Gesture'
-            includeClass = $script:CatalystProbeClass
+            platform = $Platform
+            testFilter = "Category=$Category"
+            includeClass = $Class
             records = @($records)
             resultFiles = @(
                 [ordered]@{
@@ -140,6 +164,142 @@ $($rows -join "`n")
             $now + ([long]$RemainingSeconds * [long]$frequency)
             Frequency = $frequency
             BudgetSeconds = $RemainingSeconds
+        }
+    }
+
+    function Invoke-CatalystTestClosedIdentityFailure {
+        param(
+            [Parameter(Mandatory = $true)][string]$EnvironmentName,
+            [Parameter(Mandatory = $true)][string]$InvalidValue
+        )
+
+        $root = Join-Path $script:ScratchRoot (
+            "closed-identity-$EnvironmentName-$([guid]::NewGuid().ToString('N'))")
+        $repository = Join-Path $root 'repository'
+        $trusted = Join-Path $root 'trusted'
+        $workspace = Join-Path $root 'workspace'
+        $agentTemp = Join-Path $root 'agent-temp'
+        $output = Join-Path $workspace 'CatalystGestureProbe'
+        $attestationRoot = Join-Path $agentTemp 'catalyst-gesture-attestation'
+        $attestation = Join-Path $attestationRoot 'trusted-tree.json'
+        foreach ($directory in @(
+                $repository, $trusted, $workspace, $agentTemp,
+                $output, $attestationRoot)) {
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+        }
+        Set-Content -LiteralPath $attestation -Value '{}' -Encoding utf8NoBOM
+        $source = 'a' * 40
+        $bindings = [ordered]@{
+            TF_BUILD = 'True'
+            SYSTEM_DEFINITIONID = '27723'
+            BUILD_REPOSITORY_NAME = 'dotnet/maui'
+            BUILD_SOURCEBRANCH = 'refs/heads/copilot/replicate-issues-pipeline'
+            BUILD_SOURCEVERSION = $source
+            CATALYST_PROBE_MODE = 'catalyst-gesture-probe'
+            BUILD_SOURCESDIRECTORY = $repository
+            CATALYST_PROBE_TRUSTED_ROOT = $trusted
+            CATALYST_PROBE_TRUSTED_ATTESTATION = $attestation
+            CATALYST_PROBE_OUTPUT_ROOT = $output
+            CATALYST_PROBE_RUNTIME_ROOT = (
+                Join-Path $agentTemp 'catalyst-gesture-runtime')
+            PIPELINE_WORKSPACE = $workspace
+            AGENT_TEMPDIRECTORY = $agentTemp
+        }
+        $bindings[$EnvironmentName] = $InvalidValue
+        $saved = @{}
+        $patchCalls = 0
+        $prepareCalls = 0
+        $caught = $null
+        try {
+            foreach ($name in $bindings.Keys) {
+                $saved[$name] = [Environment]::GetEnvironmentVariable($name)
+                [Environment]::SetEnvironmentVariable($name, $bindings[$name])
+            }
+            try {
+                Assert-CatalystProbeClosedAzureIdentity `
+                    -ExpectedSourceVersion $source `
+                    -RepositoryRoot $repository `
+                    -TrustedRoot $trusted `
+                    -TrustedTreeAttestation $attestation `
+                    -OutputDirectory $output
+                $patchCalls++
+                $prepareCalls++
+            } catch {
+                $caught = $_
+            }
+        } finally {
+            foreach ($name in $bindings.Keys) {
+                [Environment]::SetEnvironmentVariable($name, $saved[$name])
+            }
+        }
+        return [pscustomobject]@{
+            Error = $caught
+            PatchCalls = $patchCalls
+            PrepareCalls = $prepareCalls
+        }
+    }
+
+    function New-CatalystTestRealProductionV2Case {
+        param([Parameter(Mandatory = $true)][string]$Name)
+
+        $root = Join-Path $script:ScratchRoot $Name
+        $productionRoot = Join-Path $root 'production-composite'
+        $regressionRoot = Join-Path $productionRoot 'regression'
+        foreach ($arm in @('baseline', 'fix')) {
+            $null = New-CatalystTestEvidence `
+                -Directory (Join-Path $regressionRoot $arm) `
+                -Outcome Pass `
+                -Platform ios `
+                -Category Label `
+                -Class $script:CatalystProbePrimaryClass `
+                -Methods @('ExistingBehavior', 'SecondBehavior')
+        }
+        $null = New-CatalystTestEvidence `
+            -Directory (Join-Path $regressionRoot 'catalyst-baseline') `
+            -Outcome Pass
+        $null = New-CatalystTestEvidence `
+            -Directory (Join-Path $regressionRoot 'catalyst-fix') `
+            -Outcome Fail
+
+        $canonicalPatch = Join-Path $root 'known-negative-product.patch'
+        $repositoryRoot = [IO.Path]::GetFullPath(
+            (Join-Path $PSScriptRoot '../..'))
+        $patchLines = @(& git -C $repositoryRoot diff `
+                --binary --full-index --no-color `
+                $script:CatalystProbeBaselineCommit `
+                $script:CatalystProbeNegativeCommit `
+                -- $script:CatalystProbeProductPath)
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Could not materialize the immutable test patch.'
+        }
+        [IO.File]::WriteAllText(
+            $canonicalPatch,
+            "$($patchLines -join "`n")`n",
+            [Text.UTF8Encoding]::new($false))
+        (Get-FileHash -LiteralPath $canonicalPatch -Algorithm SHA256).
+        Hash.ToLowerInvariant() | Should -BeExactly $script:CatalystProbePatchSha256
+
+        $selection = [pscustomobject]@{
+            BaselineSha = $script:CatalystProbeBaselineCommit
+            Platform = 'ios'
+            Project = 'Controls'
+            ProjectPath = $script:CatalystProbeProjectPath
+            Category = 'Label'
+            TestClass = $script:CatalystProbePrimaryClass
+            GeneratedTestPath = $script:CatalystProbePrimaryAnchorPath
+        }
+        $requirement = Get-ReplicationFixedCompanionRequirement `
+            -Platform ios `
+            -FixPaths @($script:CatalystProbeProductPath)
+        return [pscustomobject]@{
+            Root = $root
+            ProductionRoot = $productionRoot
+            CanonicalPatch = $canonicalPatch
+            ExpectedPatch = Join-Path $productionRoot 'fix.patch'
+            Selection = $selection
+            Requirement = $requirement
+            TrustedFixture = Join-Path $PSScriptRoot (
+                'fixtures/ReplicationGesturePlatformManagerRegression.iOS.cs')
         }
     }
 
@@ -454,8 +614,13 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $saved = @{}
         $bindings = [ordered]@{
             TF_BUILD = 'true'
+            SYSTEM_DEFINITIONID = '27723'
+            BUILD_REPOSITORY_NAME = 'dotnet/maui'
+            BUILD_SOURCEBRANCH = 'refs/heads/copilot/replicate-issues-pipeline'
+            CATALYST_PROBE_MODE = 'catalyst-gesture-probe'
             BUILD_SOURCESDIRECTORY = $repository
             CATALYST_PROBE_TRUSTED_ROOT = $trusted
+            CATALYST_PROBE_TRUSTED_ATTESTATION = $attestation
             CATALYST_PROBE_OUTPUT_ROOT = $output
             CATALYST_PROBE_RUNTIME_ROOT = $runtime
             CATALYST_GESTURE_JOB_DEADLINE_UTC =
@@ -508,8 +673,13 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $saved = @{}
         $bindings = [ordered]@{
             TF_BUILD = 'true'
+            SYSTEM_DEFINITIONID = '27723'
+            BUILD_REPOSITORY_NAME = 'dotnet/maui'
+            BUILD_SOURCEBRANCH = 'refs/heads/copilot/replicate-issues-pipeline'
+            CATALYST_PROBE_MODE = 'catalyst-gesture-probe'
             BUILD_SOURCESDIRECTORY = $case.Repository
             CATALYST_PROBE_TRUSTED_ROOT = $case.Trusted
+            CATALYST_PROBE_TRUSTED_ATTESTATION = $case.Attestation
             CATALYST_PROBE_OUTPUT_ROOT = $case.Output
             CATALYST_PROBE_RUNTIME_ROOT = $case.Runtime
             CATALYST_GESTURE_JOB_DEADLINE_UTC =
@@ -602,29 +772,40 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             $script:RejectedInputContext = $context
             Set-Content -LiteralPath $case.Attestation -Value '{}' -Encoding utf8NoBOM
             Mock Read-TrustedTreeAttestation { [pscustomobject]@{ treeHash = 'b' * 64 } }
+            Mock Get-CatalystProbeFileSha256 {
+                if ($Path -ceq $script:RejectedInputContext.ProductPath) {
+                    $script:CatalystProbeBaselineFileSha256
+                } elseif ($Path -ceq $script:RejectedInputContext.FixtureTargetPath) {
+                    $script:CatalystProbeFixtureSha256
+                } else {
+                    'c' * 64
+                }
+            }
+            Mock Assert-CatalystProbeClosedAzureIdentity {}
             Mock Initialize-CatalystGestureProbeContext { $script:RejectedInputContext }
             Mock New-CatalystProbeFixedPatch { Join-Path $case.Root 'unused.patch' }
             Mock Assert-CatalystProbeFixedPatchPolicy {}
-            Mock Invoke-CatalystProbeTrustedRestore {}
             Mock Assert-CatalystProbeTrustedTree {}
-            Mock Copy-CatalystProbeFixture {
+            Mock Invoke-CatalystProbePrepareIosSimulator {
+                [pscustomobject]@{ udid = 'fixed'; installedOnly = $true }
+            }
+            Mock New-CatalystProbeProductionCompositeModule {
+                New-Module -Name $script:CatalystProbeProductionModuleName `
+                    -ScriptBlock {}
+            }
+            Mock Get-CatalystProbeProductionCompositeSelection {
                 New-Item -ItemType Directory -Path (Split-Path $case.FixtureTarget) -Force |
                     Out-Null
                 Copy-Item -LiteralPath $case.Fixture -Destination $case.FixtureTarget
                 $Context.RepositoryState = 'baseline'
                 [IO.File]::WriteAllText($case.TrackedOutput, "rejected before execution`n")
+                Assert-CatalystProbeRepositoryState -Context $Context -State baseline
             }
-            Mock Get-ReplicationAppleIsolatedCommand {
-                [pscustomobject]@{
-                    FilePath = 'mock-native-verifier'
-                    Arguments = @()
-                    Environment = $context.RuntimeEnvironment
-                }
-            }
+            Mock Remove-CatalystProbeProductionCompositeModule {}
             Mock Stop-CatalystProbeOwnedApplication { 0 }
-            Mock Invoke-CatalystProbeBoundedProcess {
+            Mock Invoke-CatalystProbeProductionPrewarm {
                 throw 'native verifier must not launch for rejected input'
-            } -ParameterFilter { $FileName -cne 'git' }
+            }
 
             {
                 Invoke-CatalystGestureRegressionProbeCore `
@@ -636,8 +817,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                     -TaskDeadline $context.TaskDeadline
             } | Should -Throw '*scope contains tracked verification output*'
 
-            Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly `
-                -ParameterFilter { $FileName -cne 'git' }
+            Should -Invoke Invoke-CatalystProbeProductionPrewarm -Times 0 -Exactly
             (Get-Content -LiteralPath $case.TrackedOutput -Raw) |
                 Should -BeExactly "rejected before execution`n"
             (Get-Content -LiteralPath $case.FixtureTarget -Raw) |
@@ -1336,17 +1516,20 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             'requires an initially absent container result')
         $script:ProbeSource | Should -Match 'deletesPreexistingContainerResult = \$false'
         $script:ProbeSource | Should -Match "GetEnvironmentVariable\('TF_BUILD'\)"
-        $restoreIndex = $script:ProbeSource.LastIndexOf(
-            'Invoke-CatalystProbeTrustedRestore -Context $context')
-        $fixtureIndex = $script:ProbeSource.LastIndexOf(
-            'Copy-CatalystProbeFixture -Context $context')
-        $baselineIndex = $script:ProbeSource.LastIndexOf(
-            '$result.baseline = Invoke-CatalystProbeCycle')
-        $negativeIndex = $script:ProbeSource.LastIndexOf(
+        $coreSource = [regex]::Match(
+            $script:ProbeSource,
+            '(?s)function Invoke-CatalystGestureRegressionProbeCore \{.*?' +
+            '\n\}\n\nif \(\$MyInvocation\.InvocationName').Value
+        $restoreIndex = $coreSource.IndexOf(
+            'Invoke-CatalystProbeProductionPrewarm')
+        $baselineIndex = $coreSource.IndexOf(
+            'Invoke-CatalystProbeProductionComposite')
+        $negativeIndex = $coreSource.IndexOf(
             'Enable-CatalystProbeKnownNegative')
-        $restoreIndex | Should -BeLessThan $fixtureIndex
-        $fixtureIndex | Should -BeLessThan $baselineIndex
+        $restoreIndex | Should -BeLessThan $baselineIndex
         $baselineIndex | Should -BeLessThan $negativeIndex
+        $script:ProbeSource | Should -Match (
+            'fixed Label metadata anchor must remain absent')
     }
 
     It 'runs the same exact two facts through the strict Catalyst boundary' {
@@ -1412,6 +1595,81 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         } | Should -Throw '*completed schema-v1 run*'
     }
 
+    It 'fails closed when retained Catalyst raw XML is missing' {
+        $strictPath = New-CatalystTestEvidence `
+            -Directory (Join-Path $script:ScratchRoot 'missing-raw-xml') `
+            -Outcome Pass
+        Remove-Item -LiteralPath (Join-Path (
+                Split-Path -Parent $strictPath) 'xunit-test-results.xml') -Force
+
+        {
+            Assert-CatalystProbeCycleEvidence `
+                -Kind baseline `
+                -StrictEvidencePath $strictPath
+        } | Should -Throw
+    }
+
+    It 'fails closed when the Catalyst baseline contains a skipped fact' {
+        $strictPath = New-CatalystTestEvidence `
+            -Directory (Join-Path $script:ScratchRoot 'baseline-skip') `
+            -Outcome Pass
+        $root = Split-Path -Parent $strictPath
+        $xmlPath = Join-Path $root 'xunit-test-results.xml'
+        $xml = Get-Content -LiteralPath $xmlPath -Raw
+        $firstMethod = $script:CatalystProbeMethods[0]
+        $xml = $xml.Replace('total="2" passed="2" failed="0" skipped="0"',
+            'total="2" passed="1" failed="0" skipped="1"')
+        $xml = $xml.Replace(
+            "method=`"$firstMethod`" result=`"Pass`"",
+            "method=`"$firstMethod`" result=`"Skip`"")
+        [IO.File]::WriteAllText(
+            $xmlPath, $xml, [Text.UTF8Encoding]::new($false))
+        $strict = Get-Content -LiteralPath $strictPath -Raw | ConvertFrom-Json
+        $strict.passed = 1
+        $strict.skipped = 1
+        $strict.records[0].outcome = 'Skip'
+        $strict.resultFiles[0].sha256 =
+        (Get-FileHash -LiteralPath $xmlPath -Algorithm SHA256).
+        Hash.ToLowerInvariant()
+        $strict | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath $strictPath -Encoding utf8NoBOM
+
+        {
+            Assert-CatalystProbeCycleEvidence `
+                -Kind baseline `
+                -StrictEvidencePath $strictPath
+        } | Should -Throw '*non-skipped facts*'
+    }
+
+    It 'fails closed when strict Catalyst evidence names a different method' {
+        $strictPath = New-CatalystTestEvidence `
+            -Directory (Join-Path $script:ScratchRoot 'wrong-method') `
+            -Outcome Pass
+        $root = Split-Path -Parent $strictPath
+        $xmlPath = Join-Path $root 'xunit-test-results.xml'
+        $oldMethod = $script:CatalystProbeMethods[0]
+        $newMethod = 'DifferentGestureFact'
+        $xml = (Get-Content -LiteralPath $xmlPath -Raw).Replace(
+            $oldMethod, $newMethod)
+        [IO.File]::WriteAllText(
+            $xmlPath, $xml, [Text.UTF8Encoding]::new($false))
+        $strict = Get-Content -LiteralPath $strictPath -Raw | ConvertFrom-Json
+        $strict.records[0].method = $newMethod
+        $strict.records[0].displayName =
+        "$($script:CatalystProbeClass).$newMethod"
+        $strict.resultFiles[0].sha256 =
+        (Get-FileHash -LiteralPath $xmlPath -Algorithm SHA256).
+        Hash.ToLowerInvariant()
+        $strict | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath $strictPath -Encoding utf8NoBOM
+
+        {
+            Assert-CatalystProbeCycleEvidence `
+                -Kind baseline `
+                -StrictEvidencePath $strictPath
+        } | Should -Throw '*wrong test identities*'
+    }
+
     It 'rejects slow initialization and patch preparation before native prewarm' {
         $caseRoot = Join-Path $script:ScratchRoot 'slow-patch-preparation'
         New-Item -ItemType Directory -Path $caseRoot -Force | Out-Null
@@ -1422,6 +1680,8 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         Set-Content -LiteralPath $product -Value 'product' -Encoding utf8NoBOM
         $taskDeadline = New-CatalystTestTaskDeadline
         $script:SlowPatchContext = [pscustomobject]@{
+            RepositoryRoot = $caseRoot
+            TrustedRoot = $caseRoot
             OutputDirectory = $caseRoot
             ResultPath = $resultPath
             FixtureTargetPath = Join-Path $caseRoot 'fixture.cs'
@@ -1443,6 +1703,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                 'c' * 64
             }
         }
+        Mock Assert-CatalystProbeClosedAzureIdentity {}
         Mock Initialize-CatalystGestureProbeContext { $script:SlowPatchContext }
         Mock Assert-CatalystProbeDeadlineAdmission {}
         Mock New-CatalystProbeFixedPatch {
@@ -1458,7 +1719,21 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             Join-Path $caseRoot 'negative.patch'
         }
         Mock Assert-CatalystProbeFixedPatchPolicy {}
-        Mock Invoke-CatalystProbeTrustedRestore {}
+        Mock Invoke-CatalystProbePrepareIosSimulator {
+            [pscustomobject]@{ udid = 'fixed'; installedOnly = $true }
+        }
+        Mock New-CatalystProbeProductionCompositeModule {
+            New-Module -Name $script:CatalystProbeProductionModuleName `
+                -ScriptBlock {}
+        }
+        Mock Get-CatalystProbeProductionCompositeSelection {
+            [pscustomobject]@{
+                Selection = [pscustomobject]@{}
+                Requirement = [pscustomobject]@{}
+            }
+        }
+        Mock Invoke-CatalystProbeProductionPrewarm {}
+        Mock Remove-CatalystProbeProductionCompositeModule {}
         Mock Restore-CatalystProbeRepository {}
 
         {
@@ -1471,7 +1746,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                 -TaskDeadline $taskDeadline
         } | Should -Throw '*insufficient monotonic task time for prewarm*'
 
-        Should -Invoke Invoke-CatalystProbeTrustedRestore -Times 0 -Exactly
+        Should -Invoke Invoke-CatalystProbeProductionPrewarm -Times 0 -Exactly
         $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
         $result.outcome | Should -Be 'inconclusive'
         $result.reason | Should -Be 'probe-failed-closed'
@@ -1513,6 +1788,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         Mock Read-TrustedTreeAttestation {
             [pscustomobject]@{ treeHash = 'b' * 64 }
         }
+        Mock Assert-CatalystProbeClosedAzureIdentity {}
         Mock Initialize-CatalystGestureProbeContext { $script:CoreTestContext }
         Mock New-CatalystProbeFixedPatch { Join-Path $caseRoot 'negative.patch' }
         Mock Assert-CatalystProbeFixedPatchPolicy {}
@@ -1604,6 +1880,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                 'c' * 64
             }
         }
+        Mock Assert-CatalystProbeClosedAzureIdentity {}
         Mock Initialize-CatalystGestureProbeContext {
             $script:SharedCleanupContext
         }
@@ -1652,15 +1929,8 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             }
         }
 
-        {
-            Invoke-CatalystGestureRegressionProbeCore `
-                -ExpectedSourceVersion ('a' * 40) `
-                -RepositoryRoot $caseRoot `
-                -TrustedRoot $caseRoot `
-                -TrustedTreeAttestation $attestation `
-                -OutputDirectory $caseRoot `
-                -TaskDeadline $taskDeadline
-        } | Should -Throw '*Catalyst probe cleanup failed*monotonic task deadline*'
+        { Restore-CatalystProbeRepository -Context $script:SharedCleanupContext } |
+            Should -Throw '*Catalyst probe cleanup failed*monotonic task deadline*'
 
         $script:CleanupGitCalls | Should -Be 3
         $script:CleanupDeadlineReferences.Count | Should -Be 3
@@ -1672,12 +1942,6 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $script:CleanupEffectiveTimeouts.Count | Should -Be 2
         $script:CleanupEffectiveTimeouts[0] | Should -BeLessOrEqual 120
         $script:CleanupEffectiveTimeouts[1] | Should -BeLessOrEqual 2
-        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-        $result.outcome | Should -Be 'inconclusive'
-        $result.reason | Should -Be 'cleanup-failed-closed'
-        $result.budget.taskRemainingAtSummarySeconds | Should -BeGreaterThan 0
-        $result.budget.azureTaskSeconds | Should -Be 2160
-        $result.budget.azureTerminationReserveSeconds | Should -Be 120
     }
 
     It 'strips credentials and Azure commands from every bounded child log' {
@@ -1978,7 +2242,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             'Restore pinned baseline tools' = 5
             'Provision baseline Catalyst SDK and workloads' = 17
             'Build baseline MSBuild tasks only' = 12
-            'Run fixed report-only Catalyst gesture A/B' = 36
+            'Run fixed report-only production composite' = 36
             'Preserve report-only Catalyst probe evidence' = 5
         }
         $script:Stage | Should -Match (
@@ -2096,7 +2360,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
             "(?ms)- pwsh: \|\r?\n" +
             "\s+\`$env:CATALYST_PROBE_TASK_ENTRY_TIMESTAMP = " +
             "\[string\]\[Diagnostics\.Stopwatch\]::GetTimestamp\(\).*?" +
-            "displayName: 'Run fixed report-only Catalyst gesture A/B'\r?\n" +
+            "displayName: 'Run fixed report-only production composite'\r?\n" +
             "\s+timeoutInMinutes: 36")
 
         $tokens = $null
@@ -2111,7 +2375,7 @@ Describe 'Fixed report-only Catalyst gesture probe' {
                     $node -is [Management.Automation.Language.CommandAst] -and
                     $node.GetCommandName() -ceq 'Invoke-CatalystProbeBoundedProcess'
                 }, $true))
-        $boundedCalls.Count | Should -Be 7
+        $boundedCalls.Count | Should -Be 16
         foreach ($call in $boundedCalls) {
             $call.Extent.Text | Should -Match '-TaskDeadline'
         }
@@ -2120,6 +2384,932 @@ Describe 'Fixed report-only Catalyst gesture probe' {
         $script:ProbeSource | Should -Match (
             'Get-CatalystProbeDeadlineRemainingMilliseconds -Deadline \$operationDeadline')
         $script:ProbeSource | Should -Not -Match 'WaitForExit\(30000\)'
+    }
+}
+
+Describe 'Closed production composite diagnostic seam' {
+    BeforeEach {
+        Mock Get-CatalystProbeHostFacts {
+            [pscustomobject]@{ IsMacOS = $true; Architecture = 'arm64' }
+        }
+    }
+
+    It 'rejects direct command-line access to the production library seam' {
+        $output = @(& pwsh -NoLogo -NoProfile -NonInteractive `
+                -File $script:ProductionPath `
+                -IssueNumber 1 `
+                -Platform ios `
+                -BaseSha ('4' * 40) `
+                -ContextPath 'unused' `
+                -TrustedRoot 'unused' `
+                -ArtifactRoot 'unused' `
+                -TrustedTreeAttestationPath 'unused' `
+                -TrustedSourceVersion ('a' * 40) `
+                -StepTimeoutMinutes 0 `
+                -FixedCatalystCompositeProbeLibraryOnly 2>&1)
+
+        $LASTEXITCODE | Should -Not -Be 0
+        $output -join "`n" | Should -Match (
+            '(?s)available only while.*dot-sourcing the trusted orchestrator inside its fixed private module')
+    }
+
+    It 'rejects dot-sourcing the production seam from any other module' {
+        {
+            $null = New-Module -Name 'Untrusted.Catalyst.Module' -ScriptBlock {
+                param($Path)
+                . $Path `
+                    -IssueNumber 1 `
+                    -Platform ios `
+                    -BaseSha ('4' * 40) `
+                    -ContextPath 'unused' `
+                    -TrustedRoot 'unused' `
+                    -ArtifactRoot 'unused' `
+                    -TrustedTreeAttestationPath 'unused' `
+                    -TrustedSourceVersion ('a' * 40) `
+                    -StepTimeoutMinutes 0 `
+                    -FixedCatalystCompositeProbeLibraryOnly
+            } -ArgumentList $script:ProductionPath
+        } | Should -Throw (
+            '*available only while dot-sourcing*fixed private module*')
+    }
+
+    It 'loads only the fixed production APIs instead of copying their implementations' {
+        foreach ($name in @(
+                'Invoke-ReplicationAppleCompanionPrewarm',
+                'Get-ReplicationRegressionLaneSelection',
+                'Get-ReplicationFixedCompanionRequirement',
+                'Invoke-ReplicationRegressionCompositeRun',
+                'Write-ReplicationRegressionEvidenceDocument',
+                'Assert-ReplicationRegressionEvidence')) {
+            $script:ProbeSource | Should -Match ([regex]::Escape($name))
+        }
+        $script:ProbeSource | Should -Match (
+            'FixedCatalystCompositeProbeLibraryOnly = \$true')
+        $script:ProbeSource | Should -Not -Match (
+            'function Invoke-ReplicationRegressionCompositeRun')
+        $script:ProductionSource | Should -Match (
+            'function Write-ReplicationRegressionEvidenceDocument')
+        $script:ProductionSource | Should -Match (
+            '(?s)Test-ReplicationFixRegression.*?' +
+            'Write-ReplicationRegressionEvidenceDocument')
+    }
+
+    It 'keeps each production composite on one fixed 480 second deadline' {
+        $task = New-CatalystTestTaskDeadline -RemainingSeconds 2040
+        $baseline = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $task `
+            -BudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
+            -DownstreamReserveSeconds 780 `
+            -Description 'baseline test'
+        $negative = New-CatalystProbeFixedPhaseDeadline `
+            -TaskDeadline $task `
+            -BudgetSeconds $script:CatalystProbeCycleBudgetSeconds `
+            -DownstreamReserveSeconds 180 `
+            -Description 'negative test'
+
+        $baseline.BudgetSeconds | Should -Be 480
+        $negative.BudgetSeconds | Should -Be 480
+        $baseline.DeadlineTimestamp | Should -BeLessOrEqual (
+            $task.DeadlineTimestamp -
+            (780L * [Diagnostics.Stopwatch]::Frequency))
+        $negative.DeadlineTimestamp | Should -BeLessOrEqual (
+            $task.DeadlineTimestamp -
+            (180L * [Diagnostics.Stopwatch]::Frequency))
+        $script:ProbeSource | Should -Match (
+            '(?s)Invoke-CatalystProbeProductionComposite.*?' +
+            '-DeadlineTimestamp \$DeadlineTimestamp')
+    }
+
+    It 'passes the exact external cycle deadline into the production composite' {
+        $module = New-Module -Name 'Catalyst.Composite.Wrapper.Test' -ScriptBlock {
+            $script:CapturedComposite = $null
+            $script:trustedScripts = 'trusted-scripts'
+            $script:DeviceUdid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+            $script:RequirePreparedIosSimulator = $true
+            function Invoke-ReplicationRegressionCompositeRun {
+                param(
+                    $Selection, $CompanionRequirement,
+                    $PrimaryOutputDirectory, $CompanionOutputDirectory,
+                    $TrustedScriptRoot, $TimeoutSeconds, $DeadlineTimestamp,
+                    $DeviceUdid, [switch]$RequirePreparedIosSimulator)
+                $script:CapturedComposite = [pscustomobject]@{
+                    Selection = $Selection
+                    Requirement = $CompanionRequirement
+                    PrimaryOutputDirectory = $PrimaryOutputDirectory
+                    CompanionOutputDirectory = $CompanionOutputDirectory
+                    TrustedScriptRoot = $TrustedScriptRoot
+                    TimeoutSeconds = $TimeoutSeconds
+                    DeadlineTimestamp = $DeadlineTimestamp
+                }
+            }
+
+        }
+        try {
+            $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 480
+            $selection = [pscustomobject]@{ Category = 'Label' }
+            $requirement = [pscustomobject]@{ Id = 'fixed' }
+
+            Invoke-CatalystProbeProductionComposite `
+                -Module $module `
+                -Selection $selection `
+                -Requirement $requirement `
+                -PrimaryOutputDirectory 'primary' `
+                -CompanionOutputDirectory 'catalyst' `
+                -Deadline $deadline
+            $captured = & $module { $script:CapturedComposite }
+
+            $captured.Selection | Should -Be $selection
+            $captured.Requirement | Should -Be $requirement
+            $captured.PrimaryOutputDirectory | Should -BeExactly 'primary'
+            $captured.CompanionOutputDirectory | Should -BeExactly 'catalyst'
+            $captured.TrustedScriptRoot | Should -BeExactly 'trusted-scripts'
+            $captured.TimeoutSeconds | Should -Be 480
+            $captured.DeadlineTimestamp | Should -Be $deadline.DeadlineTimestamp
+        } finally {
+            Remove-Module -ModuleInfo $module -Force
+        }
+    }
+
+    It 'forwards the module-bound prepared simulator into every production primary run' {
+        $udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $module = New-Module -Name 'Catalyst.Prepared.Composite.Test' `
+            -ArgumentList $udid -ScriptBlock {
+            param($PreparedUdid)
+            $script:DeviceUdid = $PreparedUdid
+            $script:RequirePreparedIosSimulator = $true
+            $script:trustedScripts = 'trusted-scripts'
+            $script:CapturedComposite = $null
+            function Invoke-ReplicationRegressionCompositeRun {
+                param(
+                    $Selection, $CompanionRequirement,
+                    $PrimaryOutputDirectory, $CompanionOutputDirectory,
+                    $TrustedScriptRoot, $TimeoutSeconds, $DeadlineTimestamp,
+                    $DeviceUdid, [switch]$RequirePreparedIosSimulator)
+                $script:CapturedComposite = [pscustomobject]@{
+                    DeviceUdid = $DeviceUdid
+                    RequirePreparedIosSimulator =
+                    [bool]$RequirePreparedIosSimulator
+                }
+            }
+        }
+        try {
+            Invoke-CatalystProbeProductionComposite `
+                -Module $module `
+                -Selection ([pscustomobject]@{ Category = 'Label' }) `
+                -Requirement ([pscustomobject]@{ Id = 'fixed' }) `
+                -PrimaryOutputDirectory 'primary' `
+                -CompanionOutputDirectory 'catalyst' `
+                -Deadline (New-CatalystTestTaskDeadline -RemainingSeconds 480)
+            $captured = & $module { $script:CapturedComposite }
+
+            $captured.DeviceUdid | Should -BeExactly $udid
+            $captured.RequirePreparedIosSimulator | Should -BeTrue
+        } finally {
+            Remove-Module -ModuleInfo $module -Force
+        }
+    }
+
+    It 'binds private module creation to the installed prepared simulator identity' {
+        $moduleFunction = [regex]::Match(
+            $script:ProbeSource,
+            '(?ms)^function New-CatalystProbeProductionCompositeModule\b.*?^}').Value
+        $coreFunction = [regex]::Match(
+            $script:ProbeSource,
+            '(?ms)^function Invoke-CatalystGestureRegressionProbeCore\b.*?^}').Value
+
+        $moduleFunction | Should -Match '\$PreparedSimulator'
+        $moduleFunction | Should -Match (
+            '\$preparedUdid\s*=\s*\[string\]\$PreparedSimulator\.udid')
+        $moduleFunction | Should -Match 'DeviceUdid\s*=\s*\$preparedUdid'
+        $moduleFunction | Should -Match (
+            'RequirePreparedIosSimulator\s*=\s*\$true')
+        $coreFunction | Should -Match (
+            '(?s)New-CatalystProbeProductionCompositeModule.*?' +
+            '-PreparedSimulator \$result\.simulator')
+    }
+
+    It 'rejects a mismatched prepared simulator before private module or child access' {
+        Mock Get-CatalystProbeProcessTimeoutSeconds { 60 }
+        Mock Assert-CatalystProbeTrustedTree {}
+        Mock New-Module {
+            throw 'Private module creation must remain unreachable.'
+        }
+        $context = [pscustomobject]@{
+            OwnedIosSimulator = [pscustomobject]@{
+                udid = 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+            }
+        }
+        $prepared = [pscustomobject]@{
+            udid = '11111111-2222-3333-4444-555555555555'
+            installedOnly = $true
+            installedRuntimeIdentifiers = @(
+                'com.apple.CoreSimulator.SimRuntime.iOS-26-0')
+        }
+
+        {
+            New-CatalystProbeProductionCompositeModule `
+                -Context $context `
+                -CoordinationDeadline (
+                New-CatalystTestTaskDeadline -RemainingSeconds 180) `
+                -PreparedSimulator $prepared
+        } | Should -Throw '*installed prepared iOS simulator identity*'
+
+        Should -Invoke New-Module -Times 0 -Exactly
+    }
+
+    It 'invokes the shared production v2 writer before its trusted validator' {
+        Mock Copy-CatalystProbeProductionValidationPatch {
+            Join-Path $EvidenceArtifactRoot 'fix.patch'
+        }
+        $module = New-Module -Name 'Catalyst.V2.Wrapper.Test' -ScriptBlock {
+            $script:V2Calls = [Collections.Generic.List[string]]::new()
+            function Write-ReplicationRegressionEvidenceDocument {
+                param(
+                    $Selection, $CompanionRequirement,
+                    $EvidenceArtifactRoot, $ProductPatchPath)
+                $script:V2Calls.Add('writer')
+                return (Join-Path $EvidenceArtifactRoot (
+                        'regression/regression-evidence.json'))
+            }
+            function Assert-ReplicationRegressionEvidence {
+                param(
+                    $ArtifactRoot, $ExpectedBaselineSha, $ExpectedPlatform,
+                    $ExpectedCategory, $ExpectedProject, $ExpectedProjectPath,
+                    $ExpectedClass, $ExpectedGeneratedTestPath,
+                    $ExpectedFixPaths, $TrustedFixturePath)
+                $script:V2Calls.Add('validator')
+                if ((@($ExpectedFixPaths) -join '') -cne (
+                        'src/Controls/src/Core/Platform/GestureManager/' +
+                        'GesturePlatformManager.iOS.cs')) {
+                    throw 'wrong fixed path'
+                }
+            }
+
+        }
+        try {
+            $selection = [pscustomobject]@{
+                BaselineSha = $script:CatalystProbeBaselineCommit
+                Platform = 'ios'
+                Category = 'Label'
+                Project = 'Controls'
+                ProjectPath = 'device.csproj'
+                TestClass = $script:CatalystProbePrimaryClass
+                GeneratedTestPath = $script:CatalystProbePrimaryAnchorPath
+            }
+            $requirement = [pscustomobject]@{ Id = 'fixed' }
+            $root = Join-Path $TestDrive 'v2-wrapper'
+            $null = Invoke-CatalystProbeProductionV2Validation `
+                -Module $module `
+                -Selection $selection `
+                -Requirement $requirement `
+                -EvidenceArtifactRoot $root `
+                -PatchPath (Join-Path $root 'negative.patch') `
+                -TrustedFixturePath (Join-Path $root 'fixture.cs') `
+                -Deadline (New-CatalystTestTaskDeadline -RemainingSeconds 30)
+
+            @(& $module { @($script:V2Calls) }) |
+                Should -Be @('writer', 'validator')
+        } finally {
+            Remove-Module -ModuleInfo $module -Force
+        }
+    }
+
+    It 'reaches the expected Catalyst rejection with the real production writer and validator' {
+        $case = New-CatalystTestRealProductionV2Case `
+            -Name 'real-production-v2-rejection'
+        $stagedPatch = Copy-CatalystProbeProductionValidationPatch `
+            -PatchPath $case.CanonicalPatch `
+            -EvidenceArtifactRoot $case.ProductionRoot
+
+        $stagedPatch | Should -BeExactly $case.ExpectedPatch
+        (Get-FileHash -LiteralPath $stagedPatch -Algorithm SHA256).
+        Hash.ToLowerInvariant() | Should -BeExactly $script:CatalystProbePatchSha256
+        $null = Write-ReplicationRegressionEvidenceDocument `
+            -Selection $case.Selection `
+            -CompanionRequirement $case.Requirement `
+            -EvidenceArtifactRoot $case.ProductionRoot `
+            -ProductPatchPath $case.CanonicalPatch
+
+        {
+            Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $case.ProductionRoot `
+                -ExpectedBaselineSha $script:CatalystProbeBaselineCommit `
+                -ExpectedPlatform ios `
+                -ExpectedCategory Label `
+                -ExpectedProject Controls `
+                -ExpectedProjectPath $script:CatalystProbeProjectPath `
+                -ExpectedClass $script:CatalystProbePrimaryClass `
+                -ExpectedGeneratedTestPath $script:CatalystProbePrimaryAnchorPath `
+                -ExpectedFixPaths @($script:CatalystProbeProductPath) `
+                -TrustedFixturePath $case.TrustedFixture
+        } | Should -Throw $script:CatalystProbeExpectedCompanionRejection
+    }
+
+    It 'rejects a tampered canonical patch before staging production validation bytes' {
+        $case = New-CatalystTestRealProductionV2Case `
+            -Name 'tampered-production-v2-patch'
+        Add-Content -LiteralPath $case.CanonicalPatch -Value '# tampered'
+
+        {
+            Copy-CatalystProbeProductionValidationPatch `
+                -PatchPath $case.CanonicalPatch `
+                -EvidenceArtifactRoot $case.ProductionRoot
+        } | Should -Throw '*immutable digest*'
+        Test-Path -LiteralPath $case.ExpectedPatch | Should -BeFalse
+    }
+
+    It 'rejects real production validation after its staged fixed patch is removed' {
+        $case = New-CatalystTestRealProductionV2Case `
+            -Name 'missing-production-v2-patch'
+        $null = Copy-CatalystProbeProductionValidationPatch `
+            -PatchPath $case.CanonicalPatch `
+            -EvidenceArtifactRoot $case.ProductionRoot
+        $null = Write-ReplicationRegressionEvidenceDocument `
+            -Selection $case.Selection `
+            -CompanionRequirement $case.Requirement `
+            -EvidenceArtifactRoot $case.ProductionRoot `
+            -ProductPatchPath $case.CanonicalPatch
+        Remove-Item -LiteralPath $case.ExpectedPatch -Force
+
+        {
+            Assert-ReplicationRegressionEvidence `
+                -ArtifactRoot $case.ProductionRoot `
+                -ExpectedBaselineSha $script:CatalystProbeBaselineCommit `
+                -ExpectedPlatform ios `
+                -ExpectedCategory Label `
+                -ExpectedProject Controls `
+                -ExpectedProjectPath $script:CatalystProbeProjectPath `
+                -ExpectedClass $script:CatalystProbePrimaryClass `
+                -ExpectedGeneratedTestPath $script:CatalystProbePrimaryAnchorPath `
+                -ExpectedFixPaths @($script:CatalystProbeProductPath) `
+                -TrustedFixturePath $case.TrustedFixture
+        } | Should -Throw '*fix.patch*'
+    }
+
+    It 'does not classify an unknown production failure as the expected negative' {
+        $expected = [Management.Automation.ErrorRecord]::new(
+            [InvalidOperationException]::new(
+                $script:CatalystProbeExpectedCompanionRejection),
+            'expected', 'InvalidData', $null)
+        $unknown = [Management.Automation.ErrorRecord]::new(
+            [InvalidOperationException]::new('missing raw XML'),
+            'unknown', 'InvalidData', $null)
+
+        Confirm-CatalystProbeExpectedProductionRejection `
+            -ErrorRecord $expected | Should -BeExactly (
+            $script:CatalystProbeExpectedCompanionRejection)
+        {
+            Confirm-CatalystProbeExpectedProductionRejection `
+                -ErrorRecord $unknown
+        } | Should -Throw '*missing raw XML*'
+    }
+
+    It 'binds the private seam to the fixed Azure identity and report-only inputs' {
+        foreach ($literal in @(
+                'Maui.CatalystProductionCompositeProbe',
+                '27723',
+                'refs/heads/copilot/replicate-issues-pipeline',
+                'catalyst-gesture-probe',
+                '40590267d8057fd5c044e5bfea77a9dd31fef29f',
+                'catalyst-production-composite-private',
+                'catalyst-production-composite-runtime')) {
+            $script:ProductionSource | Should -Match ([regex]::Escape($literal))
+        }
+        $script:ProductionSource | Should -Match '\$IssueNumber -ne 1'
+        $script:ProductionSource | Should -Match '\$Platform -cne ''ios'''
+        $script:ProductionSource | Should -Match '\$StepTimeoutMinutes -ne 0'
+        $script:Stage | Should -Match (
+            'CATALYST_PROBE_MODE: catalyst-gesture-probe')
+    }
+
+    It 'uses an already-installed iOS runtime and the exact production boundaries' {
+        $script:ProbeSource | Should -Match (
+            "'simctl', 'list', 'runtimes', '--json'")
+        $script:ProbeSource | Should -Match (
+            'already-installed iOS 26\.0 runtime')
+        $script:ProbeSource | Should -Not -Match (
+            'Start-Emulator\.ps1')
+        $script:ProbeSource | Should -Match (
+            "'simctl', 'list', 'devicetypes', '--json'")
+        $script:ProbeSource | Should -Match (
+            "'simctl', 'list', 'devices', '--json'")
+        $script:ProbeSource | Should -Match (
+            "'simctl', 'create'")
+        $script:ProbeSource | Should -Match (
+            "'simctl', 'boot'")
+        $script:ProbeSource | Should -Match (
+            "Get-ReplicationRegressionLaneSelection[\s\S]*?-Platform 'ios'")
+        $script:ProbeSource | Should -Match (
+            "Get-ReplicationFixedCompanionRequirement[\s\S]*?-Platform 'ios'")
+        $script:ProbeSource | Should -Match (
+            "ios = 'ios-review-host-no-network-isolation'")
+        $script:ProbeSource | Should -Match (
+            "catalyst = 'signed-app-sandbox-live-outbound-deny'")
+    }
+
+    It 'rejects a wrong Azure definition before patch or simulator preparation' {
+        $observed = Invoke-CatalystTestClosedIdentityFailure `
+            -EnvironmentName SYSTEM_DEFINITIONID `
+            -InvalidValue 1
+
+        $observed.Error | Should -Not -BeNullOrEmpty
+        $observed.Error.Exception.Message |
+            Should -Match 'exact closed Azure pipeline identity'
+        $observed.PatchCalls | Should -Be 0
+        $observed.PrepareCalls | Should -Be 0
+    }
+
+    It 'rejects a wrong Azure branch before patch or simulator preparation' {
+        $observed = Invoke-CatalystTestClosedIdentityFailure `
+            -EnvironmentName BUILD_SOURCEBRANCH `
+            -InvalidValue refs/heads/main
+
+        $observed.Error | Should -Not -BeNullOrEmpty
+        $observed.Error.Exception.Message |
+            Should -Match 'exact closed Azure pipeline identity'
+        $observed.PatchCalls | Should -Be 0
+        $observed.PrepareCalls | Should -Be 0
+    }
+
+    It 'rejects a wrong probe mode before patch or simulator preparation' {
+        $observed = Invoke-CatalystTestClosedIdentityFailure `
+            -EnvironmentName CATALYST_PROBE_MODE `
+            -InvalidValue production
+
+        $observed.Error | Should -Not -BeNullOrEmpty
+        $observed.Error.Exception.Message |
+            Should -Match 'exact closed Azure pipeline identity'
+        $observed.PatchCalls | Should -Be 0
+        $observed.PrepareCalls | Should -Be 0
+    }
+
+    It 'rejects a wrong source version before patch or simulator preparation' {
+        $observed = Invoke-CatalystTestClosedIdentityFailure `
+            -EnvironmentName BUILD_SOURCEVERSION `
+            -InvalidValue ('b' * 40)
+
+        $observed.Error | Should -Not -BeNullOrEmpty
+        $observed.Error.Exception.Message |
+            Should -Match 'validated pipeline source'
+        $observed.PatchCalls | Should -Be 0
+        $observed.PrepareCalls | Should -Be 0
+    }
+
+    It 'orders the complete Azure identity guard before mutable production coordination' {
+        $coreStart = $script:ProbeSource.IndexOf(
+            'function Invoke-CatalystGestureRegressionProbeCore')
+        $core = $script:ProbeSource.Substring($coreStart)
+        $identity = $core.IndexOf('Assert-CatalystProbeClosedAzureIdentity')
+        $patch = $core.IndexOf('New-CatalystProbeFixedPatch')
+        $prepare = $core.IndexOf('Invoke-CatalystProbePrepareIosSimulator')
+
+        $identity | Should -BeGreaterOrEqual 0
+        $identity | Should -BeLessThan $patch
+        $identity | Should -BeLessThan $prepare
+    }
+
+    It 'charges installed-runtime inspection and simulator preboot to one coordination deadline' {
+        $root = Join-Path $TestDrive 'ios-coordination'
+        $logs = Join-Path $root 'logs'
+        New-Item -ItemType Directory -Path $logs -Force | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment =
+            [Collections.Generic.Dictionary[string, string]]::new(
+                [StringComparer]::Ordinal)
+            LogDirectory = $logs
+            OwnedIosSimulator = $null
+        }
+        $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 180
+        $script:IosPreparationCalls = 0
+        $script:IosPreparationDeadlines =
+        [Collections.Generic.List[object]]::new()
+        $script:IosPreparationArguments =
+        [Collections.Generic.List[string]]::new()
+        Mock Get-CatalystProbeXcodePath { '/Applications/Xcode_26.0.1.app' }
+        Mock Invoke-CatalystProbeBoundedProcess {
+            $script:IosPreparationCalls++
+            $script:IosPreparationDeadlines.Add($TaskDeadline)
+            $script:IosPreparationArguments.Add(
+                "$FileName $(@($ArgumentList) -join ' ')")
+            switch ($script:IosPreparationCalls) {
+                1 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '/Applications/Xcode_26.0.1.app/Contents/Developer'
+                    }
+                }
+                2 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","name":"iOS 26.0","version":"26.0","isAvailable":true}]}'
+                    }
+                }
+                3 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"devicetypes":[{"name":"iPhone 11 Pro","identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}'
+                    }
+                }
+                4 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[]}}'
+                    }
+                }
+                5 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '12345678-1234-1234-1234-123456789ABC'
+                    }
+                }
+                default {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = 'ready'
+                    }
+                }
+            }
+        }
+
+        $result = Invoke-CatalystProbePrepareIosSimulator `
+            -Context $context `
+            -CoordinationDeadline $deadline
+
+        $result.udid | Should -BeExactly '12345678-1234-1234-1234-123456789ABC'
+        $result.installedOnly | Should -BeTrue
+        $result.createdByProbe | Should -BeTrue
+        $result.bootedByProbe | Should -BeTrue
+        $script:IosPreparationCalls | Should -Be 7
+        foreach ($observed in $script:IosPreparationDeadlines) {
+            [object]::ReferenceEquals($deadline, $observed) | Should -BeTrue
+        }
+        @($script:IosPreparationArguments) | Should -Be @(
+            '/usr/bin/xcode-select -p',
+            '/usr/bin/xcrun simctl list runtimes --json',
+            '/usr/bin/xcrun simctl list devicetypes --json',
+            '/usr/bin/xcrun simctl list devices --json',
+            ('/usr/bin/xcrun simctl create ' +
+            'Maui Catalyst Production Composite Probe ' +
+            'com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro ' +
+            'com.apple.CoreSimulator.SimRuntime.iOS-26-0'),
+            '/usr/bin/xcrun simctl boot 12345678-1234-1234-1234-123456789ABC',
+            '/usr/bin/xcrun simctl bootstatus 12345678-1234-1234-1234-123456789ABC -b')
+        ($script:IosPreparationArguments -join "`n") | Should -Not -Match (
+            '(?i)\b(?:downloadPlatform|runtime\s+add|xcode-select\s+-s|' +
+            'simctl\s+runtime\s+add)\b')
+    }
+
+    It 'retains owned simulator identity when preboot fails without provisioning fallback' {
+        $root = Join-Path $TestDrive 'ios-preboot-failure'
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment =
+            [Collections.Generic.Dictionary[string, string]]::new(
+                [StringComparer]::Ordinal)
+            LogDirectory = $root
+            OwnedIosSimulator = $null
+        }
+        $script:PrebootFailureCalls = 0
+        Mock Get-CatalystProbeXcodePath { '/Applications/Xcode_26.0.1.app' }
+        Mock Invoke-CatalystProbeBoundedProcess {
+            $script:PrebootFailureCalls++
+            switch ($script:PrebootFailureCalls) {
+                1 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '/Applications/Xcode_26.0.1.app/Contents/Developer'
+                    }
+                }
+                2 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}'
+                    }
+                }
+                3 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"devicetypes":[{"name":"iPhone 11 Pro","identifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}'
+                    }
+                }
+                4 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[]}}'
+                    }
+                }
+                5 {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 0
+                        Stdout = '12345678-1234-1234-1234-123456789ABC'
+                    }
+                }
+                default {
+                    [pscustomobject]@{
+                        TimedOut = $false
+                        ExitCode = 1
+                        Stdout = ''
+                    }
+                }
+            }
+        }
+
+        {
+            Invoke-CatalystProbePrepareIosSimulator `
+                -Context $context `
+                -CoordinationDeadline (
+                New-CatalystTestTaskDeadline -RemainingSeconds 180)
+        } | Should -Throw '*could not boot its owned simulator*'
+        $context.OwnedIosSimulator.createdByProbe | Should -BeTrue
+        $context.OwnedIosSimulator.bootAttemptedByProbe | Should -BeTrue
+        $context.OwnedIosSimulator.bootedByProbe | Should -BeFalse
+        $script:PrebootFailureCalls | Should -Be 6
+    }
+
+    It 'cleans only a simulator device created by the probe' {
+        $root = Join-Path $TestDrive 'owned-ios-cleanup'
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment =
+            [Collections.Generic.Dictionary[string, string]]::new(
+                [StringComparer]::Ordinal)
+            LogDirectory = $root
+        }
+        $deadline = New-CatalystTestTaskDeadline -RemainingSeconds 120
+        $script:OwnedCleanupArguments = [Collections.Generic.List[string]]::new()
+        Mock Invoke-CatalystProbeBoundedProcess {
+            $script:OwnedCleanupArguments.Add(@($ArgumentList) -join ' ')
+            [pscustomobject]@{
+                TimedOut = $false
+                ExitCode = 0
+                Stdout = ''
+            }
+        }
+
+        Remove-CatalystProbeOwnedIosSimulator `
+            -Context $context `
+            -Simulator ([pscustomobject]@{
+                udid = '12345678-1234-1234-1234-123456789ABC'
+                createdByProbe = $true
+                bootedByProbe = $true
+            }) `
+            -CleanupDeadline $deadline
+
+        @($script:OwnedCleanupArguments) | Should -Be @(
+            'simctl shutdown 12345678-1234-1234-1234-123456789ABC',
+            'simctl delete 12345678-1234-1234-1234-123456789ABC')
+    }
+
+    It 'does not mutate a preexisting booted simulator during cleanup' {
+        $root = Join-Path $TestDrive 'foreign-ios-cleanup'
+        New-Item -ItemType Directory -Path $root -Force | Out-Null
+        $context = [pscustomobject]@{
+            RepositoryRoot = $root
+            RuntimeEnvironment =
+            [Collections.Generic.Dictionary[string, string]]::new(
+                [StringComparer]::Ordinal)
+            LogDirectory = $root
+        }
+        Mock Invoke-CatalystProbeBoundedProcess {
+            throw 'foreign simulator cleanup must not invoke simctl'
+        }
+
+        Remove-CatalystProbeOwnedIosSimulator `
+            -Context $context `
+            -Simulator ([pscustomobject]@{
+                udid = '12345678-1234-1234-1234-123456789ABC'
+                createdByProbe = $false
+                bootedByProbe = $false
+            }) `
+            -CleanupDeadline (
+            New-CatalystTestTaskDeadline -RemainingSeconds 120)
+
+        Should -Invoke Invoke-CatalystProbeBoundedProcess -Times 0 -Exactly
+    }
+
+    It 'labels the retained result as a non-certifying known-bad replay' {
+        $result = New-CatalystProbeResult `
+            -ExpectedSourceVersion ('a' * 40) `
+            -TrustedTreeHash ('b' * 64) `
+            -TrustedTreeAttestationSha256 ('c' * 64)
+
+        $result.schemaVersion | Should -Be 2
+        $result.scope | Should -BeExactly 'known-bad-postimage-replay-only'
+        $result.exclusions.certifiesIssue | Should -BeFalse
+        $result.exclusions.certifiesProduct | Should -BeFalse
+        $result.exclusions.publishesOutcome | Should -BeFalse
+        $result.exclusions.mutatesPullRequest | Should -BeFalse
+        $result.exclusions.invokesModel | Should -BeFalse
+        $result.exclusions.generatedIssueTest | Should -BeFalse
+        $result.selectors.primary.metadataAnchorIsGeneratedTest | Should -BeFalse
+        $result.limitations.assetsFileRetained | Should -BeFalse
+    }
+
+    It 'accepts only the exact strict known-negative rejection in the production flow' {
+        $root = Join-Path $TestDrive 'production-core'
+        $output = Join-Path $root 'output'
+        $trusted = Join-Path $root 'trusted'
+        $logs = Join-Path $output 'logs'
+        $attestation = Join-Path $root 'trusted-tree.json'
+        $product = Join-Path $root 'product.cs'
+        $fixture = Join-Path $root 'fixture.cs'
+        New-Item -ItemType Directory -Path $output, $trusted, $logs -Force |
+            Out-Null
+        Set-Content -LiteralPath $attestation -Value '{}' -Encoding utf8NoBOM
+        Set-Content -LiteralPath $product -Value 'baseline' -Encoding utf8NoBOM
+        $task = New-CatalystTestTaskDeadline
+        $script:ProductionCoreContext = [pscustomobject]@{
+            ExpectedSourceVersion = 'a' * 40
+            RepositoryRoot = $root
+            TrustedRoot = $trusted
+            TrustedTreeAttestation = $attestation
+            OutputDirectory = $output
+            ResultPath = Join-Path $output 'catalyst-gesture-probe.json'
+            LogDirectory = $logs
+            FixtureTargetPath = $fixture
+            TrustedFixturePath = Join-Path $trusted (
+                $script:CatalystProbeFixtureRelativePath)
+            ProductPath = $product
+            JobDeadlineUtc = [DateTimeOffset]::UtcNow.AddHours(1).ToString('O')
+            ArtifactTailSeconds = 300
+            TaskDeadline = $task
+            ActiveDeadline = $task
+            ActiveReserveSeconds = 0
+            RepositoryState = 'setup'
+        }
+        $script:ProductionCompositeCalls = 0
+        $script:ProductionCompositeDeadlines =
+        [Collections.Generic.List[object]]::new()
+        $selection = [pscustomobject]@{
+            BaselineSha = $script:CatalystProbeBaselineCommit
+            Platform = 'ios'
+            Project = 'Controls'
+            ProjectPath = $script:CatalystProbeProjectPath
+            Category = 'Label'
+            TestClass = $script:CatalystProbePrimaryClass
+            GeneratedTestPath = $script:CatalystProbePrimaryAnchorPath
+        }
+        $requirement = [pscustomobject]@{
+            Id = 'gesture-platform-manager-catalyst-v1'
+        }
+        $identities = @($script:CatalystProbeMethods | ForEach-Object {
+                [ordered]@{
+                    type = $script:CatalystProbeClass
+                    method = $_
+                    displayName = "$($script:CatalystProbeClass).$_"
+                    outcome = 'Pass'
+                    failureSignature = ''
+                }
+            })
+
+        Mock Read-TrustedTreeAttestation {
+            [pscustomobject]@{ treeHash = 'b' * 64 }
+        }
+        Mock Get-CatalystProbeFileSha256 {
+            if ($Path -ceq $script:ProductionCoreContext.ProductPath) {
+                $script:CatalystProbeBaselineFileSha256
+            } else {
+                'c' * 64
+            }
+        }
+        Mock Assert-CatalystProbeClosedAzureIdentity {}
+        Mock Initialize-CatalystGestureProbeContext {
+            $script:ProductionCoreContext
+        }
+        Mock New-CatalystProbeFixedPatch {
+            Join-Path $output 'known-negative-product.patch'
+        }
+        Mock Assert-CatalystProbeFixedPatchPolicy {}
+        Mock Invoke-CatalystProbePrepareIosSimulator {
+            [pscustomobject]@{ udid = 'SIMULATOR'; installedOnly = $true }
+        }
+        Mock New-CatalystProbeProductionCompositeModule {
+            New-Module -Name $script:CatalystProbeProductionModuleName `
+                -ScriptBlock {}
+        }
+        Mock Get-CatalystProbeProductionCompositeSelection {
+            [pscustomobject]@{
+                Selection = $selection
+                Requirement = $requirement
+            }
+        }
+        Mock Invoke-CatalystProbeProductionPrewarm {
+            $prewarmRoot = Join-Path $output 'production-composite/prewarm'
+            New-Item -ItemType Directory -Path $prewarmRoot -Force | Out-Null
+            foreach ($name in @('restore.log', 'ios.log', 'catalyst.log')) {
+                Set-Content -LiteralPath (Join-Path $prewarmRoot $name) `
+                    -Value 'bounded' -Encoding utf8NoBOM
+            }
+            [pscustomobject]@{
+                AssetsSha256 = 'd' * 64
+                TargetPairs = @(
+                    'net10.0-ios/iossimulator-arm64',
+                    'net10.0-maccatalyst/maccatalyst-arm64')
+            }
+        }
+        Mock Assert-CatalystProbeProductionAssetsRetained {
+            [pscustomobject]@{
+                AssetsSha256 = 'd' * 64
+                TargetPairs = @(
+                    'net10.0-ios/iossimulator-arm64',
+                    'net10.0-maccatalyst/maccatalyst-arm64')
+            }
+        }
+        Mock Assert-CatalystProbeRepositoryState {}
+        Mock Invoke-CatalystProbeProductionComposite {
+            $script:ProductionCompositeCalls++
+            $script:ProductionCompositeDeadlines.Add($Deadline)
+            if ($script:ProductionCompositeCalls -eq 2) {
+                throw $script:CatalystProbeExpectedCompanionRejection
+            }
+        }
+        Mock Assert-CatalystProbePrimaryRun {
+            [pscustomobject]@{
+                Digest = 'e' * 64
+                Document = [pscustomobject]@{
+                    total = 10
+                    passed = 5
+                    skipped = 5
+                    failed = 0
+                    resultFiles = @([pscustomobject]@{
+                            name = 'label.xml'
+                            sha256 = 'f' * 64
+                        })
+                }
+            }
+        }
+        Mock Assert-CatalystProbeCycleEvidence {
+            [pscustomobject]@{
+                StrictEvidenceSha256 = '1' * 64
+                ResultFiles = @([pscustomobject]@{
+                        name = 'catalyst.xml'
+                        sha256 = '2' * 64
+                    })
+                Identities = $identities
+                Total = 2
+                Passed = if ($Kind -ceq 'baseline') { 2 } else { 0 }
+                Failed = if ($Kind -ceq 'negative') { 2 } else { 0 }
+                Skipped = 0
+                Errors = 0
+            }
+        }
+        Mock Enable-CatalystProbeKnownNegative {
+            $Context.RepositoryState = 'negative'
+        }
+        Mock Invoke-CatalystProbeProductionV2Validation {
+            $path = Join-Path $EvidenceArtifactRoot (
+                'regression/regression-evidence.json')
+            New-Item -ItemType Directory -Path (Split-Path $path) -Force |
+                Out-Null
+            Set-Content -LiteralPath $path -Value '{}' -Encoding utf8NoBOM
+            throw $script:CatalystProbeExpectedCompanionRejection
+        }
+        Mock Restore-CatalystProbeRepository {}
+        Mock Remove-CatalystProbeProductionCompositeModule {}
+        Mock Assert-CatalystProbeDeadlineAdmission {}
+
+        $result = Invoke-CatalystGestureRegressionProbeCore `
+            -ExpectedSourceVersion ('a' * 40) `
+            -RepositoryRoot $root `
+            -TrustedRoot $trusted `
+            -TrustedTreeAttestation $attestation `
+            -OutputDirectory $output `
+            -TaskDeadline $task
+
+        $result.outcome | Should -BeExactly (
+            'production-composite-baseline-pass/known-negative-rejected')
+        $result.expectedV2Rejection.rejected | Should -BeTrue
+        $result.expectedV2Rejection.certifiable | Should -BeFalse
+        $result.cleanup.completed | Should -BeTrue
+        $result.cleanup.fixtureRemoved | Should -BeTrue
+        $result.cleanup.productRestored | Should -BeTrue
+        $result.trustedImplementation.'scripts/Replicate-Issue.ps1' |
+            Should -BeExactly ('c' * 64)
+        $result.baseline.primary.skipped | Should -Be 5
+        $result.baseline.companion.passed | Should -Be 2
+        $result.negative.companion.failed | Should -Be 2
+        $result.baseline.primary.rawXml[0].name | Should -BeExactly 'label.xml'
+        $result.negative.companion.rawXml[0].name |
+            Should -BeExactly 'catalyst.xml'
+        $script:ProductionCompositeCalls | Should -Be 2
+        $script:ProductionCompositeDeadlines | Should -HaveCount 2
+        foreach ($deadline in $script:ProductionCompositeDeadlines) {
+            $deadline.BudgetSeconds | Should -Be 480
+        }
     }
 }
 
@@ -2174,7 +3364,7 @@ Describe 'Catalyst gesture pipeline isolation' {
         $fetch = $script:Stage.IndexOf(
             "displayName: 'Fetch fixed public product objects and detach baseline'")
         $run = $script:Stage.IndexOf(
-            "displayName: 'Run fixed report-only Catalyst gesture A/B'")
+            "displayName: 'Run fixed report-only production composite'")
         $validate | Should -BeGreaterThan -1
         $validate | Should -BeLessThan $capture
         $capture | Should -BeLessThan $fetch

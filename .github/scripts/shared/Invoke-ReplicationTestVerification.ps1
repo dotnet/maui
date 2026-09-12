@@ -69,7 +69,11 @@ param(
 
     # Executes an immutable, class-scoped sibling lane and emits the runner's
     # strict per-test evidence. This path does not grade the generated issue test.
-    [switch]$RegressionEvidence
+    [switch]$RegressionEvidence,
+
+    [string]$DeviceUdid = '',
+
+    [switch]$RequirePreparedIosSimulator
 )
 
 $ErrorActionPreference = 'Stop'
@@ -302,6 +306,31 @@ function Get-ReplicationVerificationActualFailureMessage {
         -MaximumLength $MaximumLength
 }
 
+if ($RequirePreparedIosSimulator -and (
+        -not $RegressionEvidence -or $TestType -cne 'DeviceTest' -or
+        $Platform -cne 'ios' -or
+        $TestProject -cne 'Controls' -or
+        $TestProjectPath -cne
+        'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj' -or
+        $TestFilter -cne 'Category=Label' -or
+        $TestClass -cne 'Microsoft.Maui.DeviceTests.LabelTests' -or
+        -not [string]::IsNullOrWhiteSpace($TestMethod) -or
+        $DeviceUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$' -or
+        $env:MAUI_REPLICATION_DEVICE_UDID -cne $DeviceUdid)) {
+    throw (
+        'A strict prepared simulator requires iOS DeviceTest regression evidence ' +
+        'and one exact uppercase simulator UUID.')
+}
+if (-not [string]::IsNullOrWhiteSpace($DeviceUdid) -and (
+        -not $RegressionEvidence -or $TestType -cne 'DeviceTest' -or
+        $Platform -cne 'ios' -or
+        $DeviceUdid -cnotmatch
+        '^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$')) {
+    throw (
+        'A device identifier is accepted only for exact iOS DeviceTest ' +
+        'regression evidence.')
+}
 if (-not $RegressionEvidence -and
     -not (Test-Path -LiteralPath $VerifierPath -PathType Leaf)) {
     throw "Trusted failure-only verifier was not found: $VerifierPath"
@@ -363,6 +392,12 @@ if ($RegressionEvidence) {
         $arguments += @('-RequireWindowsAppContainer', '-ReplicationTrustedRoot', $trustedRoot)
     } elseif ($Platform -ceq 'catalyst') {
         $arguments += @('-RequireMacCatalystAppSandbox', '-ReplicationTrustedRoot', $trustedRoot)
+    } elseif ($Platform -ceq 'ios' -and
+        -not [string]::IsNullOrWhiteSpace($DeviceUdid)) {
+        $arguments += @('-DeviceUdid', $DeviceUdid)
+        if ($RequirePreparedIosSimulator) {
+            $arguments += '-RequirePreparedIosSimulator'
+        }
     }
 
     $startedUtc = [datetime]::UtcNow.AddSeconds(-1)

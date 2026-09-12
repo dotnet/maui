@@ -39,6 +39,8 @@ BeforeAll {
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
         'Test-DeviceTestStrictRegressionSelector',
+            'Invoke-PreparedIosSimctlReadOnlyQuery',
+            'Assert-PreparedIosSimulatorReady',
         'Invoke-BoundedWindowsDeviceBuild',
         'Get-CategoryFiltersFromTestFilter',
         'ConvertTo-DeviceTestClassFilterValue',
@@ -2001,5 +2003,135 @@ at Microsoft.Maui.DeviceTests.LabelTests.ExistingBehavior() in /agent/LabelTests
         $evidence.completed | Should -BeTrue
         $evidence.failed | Should -Be 1
         $evidence.records[0].outcome | Should -BeExactly 'Fail'
+    }
+}
+
+Describe 'Strict prepared iOS simulator execution' {
+    It 'accepts only the exact available booted simulator in the fixed installed runtime' {
+        function Invoke-PreparedIosSimctlReadOnlyQuery {
+            param([string]$Query)
+            if ($Query -ceq 'runtimes') {
+                return @'
+{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}
+'@ | ConvertFrom-Json
+            }
+            return @'
+{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[{"udid":"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE","state":"Booted","isAvailable":true,"deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}}
+'@ | ConvertFrom-Json
+        }
+
+        $binding = Assert-PreparedIosSimulatorReady `
+            -DeviceUdid 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+
+        $binding.DeviceUdid |
+            Should -BeExactly 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        $binding.RuntimeIdentifier |
+            Should -BeExactly 'com.apple.CoreSimulator.SimRuntime.iOS-26-0'
+        $binding.RuntimeVersion | Should -BeExactly '26.0'
+    }
+
+    It 'rejects the prepared simulator when it is no longer booted' {
+        function Invoke-PreparedIosSimctlReadOnlyQuery {
+            param([string]$Query)
+            if ($Query -ceq 'runtimes') {
+                return @'
+{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}
+'@ | ConvertFrom-Json
+            }
+            return @'
+{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[{"udid":"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE","state":"Shutdown","isAvailable":true,"deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}}
+'@ | ConvertFrom-Json
+        }
+
+        {
+            Assert-PreparedIosSimulatorReady `
+                -DeviceUdid 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        } | Should -Throw '*already-booted*'
+    }
+
+    It 'rejects the prepared simulator when it belongs to a different runtime' {
+        function Invoke-PreparedIosSimctlReadOnlyQuery {
+            param([string]$Query)
+            if ($Query -ceq 'runtimes') {
+                return @'
+{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}
+'@ | ConvertFrom-Json
+            }
+            return @'
+{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-25-0":[{"udid":"AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE","state":"Booted","isAvailable":true,"deviceTypeIdentifier":"com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro"}]}}
+'@ | ConvertFrom-Json
+        }
+
+        {
+            Assert-PreparedIosSimulatorReady `
+                -DeviceUdid 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        } | Should -Throw '*fixed installed iOS 26.0 runtime*'
+    }
+
+    It 'rejects the prepared simulator when it vanishes before launch' {
+        function Invoke-PreparedIosSimctlReadOnlyQuery {
+            param([string]$Query)
+            if ($Query -ceq 'runtimes') {
+                return @'
+{"runtimes":[{"identifier":"com.apple.CoreSimulator.SimRuntime.iOS-26-0","isAvailable":true}]}
+'@ | ConvertFrom-Json
+            }
+            return @'
+{"devices":{"com.apple.CoreSimulator.SimRuntime.iOS-26-0":[]}}
+'@ | ConvertFrom-Json
+        }
+
+        {
+            Assert-PreparedIosSimulatorReady `
+                -DeviceUdid 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE'
+        } | Should -Throw '*no longer available*'
+    }
+
+    It 'bypasses generic emulator startup and permits only bounded read-only simctl queries' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $queryFunction = $ast.Find({
+                $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+                $args[0].Name -ceq 'Invoke-PreparedIosSimctlReadOnlyQuery'
+            }, $true)
+        if (-not $queryFunction) {
+            throw "Function 'Invoke-PreparedIosSimctlReadOnlyQuery' not found"
+        }
+        $querySource = $queryFunction.Extent.Text
+        $setupStart = $source.IndexOf(
+            'if ($platformConfig.EmulatorPlatform)')
+        $setupEnd = $source.IndexOf('# TEST PHASE', $setupStart)
+        $setup = $source.Substring($setupStart, $setupEnd - $setupStart)
+        $buildPhase = $source.IndexOf('# BUILD PHASE')
+        $firstPreparedCheck = $source.IndexOf(
+            'Assert-PreparedIosSimulatorReady')
+
+        $source | Should -Match '\[switch\]\$RequirePreparedIosSimulator'
+        $firstPreparedCheck | Should -BeGreaterThan 0
+        $firstPreparedCheck | Should -BeLessThan $buildPhase
+        $setup | Should -Match (
+            '(?s)if \(\$RequirePreparedIosSimulator\).*?' +
+            'Assert-PreparedIosSimulatorReady.*?else\s*\{.*?Start-Emulator\.ps1')
+        $querySource | Should -Match 'WaitForExit\('
+        $querySource | Should -Match "'list'"
+        $querySource | Should -Not -Match (
+            "'(?:create|boot|shutdown|delete|runtime|download|install|xcode-select)'")
+        $source | Should -Match (
+            '(?s)"--device", \$deviceUdidToUse')
+    }
+
+    It 'retains ordinary emulator startup only when strict prepared mode is absent' {
+        $source = Get-Content -LiteralPath $scriptPath -Raw
+        $setupStart = $source.IndexOf(
+            'if ($platformConfig.EmulatorPlatform)')
+        $setupEnd = $source.IndexOf('# TEST PHASE', $setupStart)
+        $setup = $source.Substring($setupStart, $setupEnd - $setupStart)
+
+        $setup | Should -Match (
+            '(?s)if \(\$RequirePreparedIosSimulator\)\s*\{.*?' +
+            '\}\s*else\s*\{.*?Start-Emulator\.ps1')
+        @([regex]::Matches(
+                $setup,
+                '\$startEmulatorPath\s*=\s*Join-Path[^\r\n]+Start-Emulator\.ps1')) |
+            Should -HaveCount 1
     }
 }
