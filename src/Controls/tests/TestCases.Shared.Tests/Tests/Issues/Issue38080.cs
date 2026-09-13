@@ -30,6 +30,10 @@ public class Issue38080 : _IssuesUITest
 		App.WaitForElement(ReproPageMarker);
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 
+		ScrollUntilDisplayed(WebViewMarker, FastFlingDown);
+		AssertWebViewDisplayed();
+		ScrollUntilDisplayed(TopMarker, FastFlingUp);
+
 		FastFlingUp();
 		FastFlingUp();
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
@@ -37,10 +41,7 @@ public class Issue38080 : _IssuesUITest
 		for (var pass = 0; pass < 3; pass++)
 		{
 			ScrollUntilDisplayed(WebViewMarker, FastFlingDown);
-			var webView = App.WaitForElement(WebViewMarker);
-			Assert.That(webView.IsDisplayed(), Is.True);
-			Assert.That(webView.GetRect().Width, Is.GreaterThan(0));
-			Assert.That(webView.GetRect().Height, Is.GreaterThan(0));
+			AssertWebViewDisplayed();
 
 			ScrollUntilDisplayed(BottomMarker, FastFlingDown);
 			FastFlingDown();
@@ -56,6 +57,14 @@ public class Issue38080 : _IssuesUITest
 
 		App.Back();
 		App.WaitForElement(HomeMarker);
+	}
+
+	void AssertWebViewDisplayed()
+	{
+		var webView = App.WaitForElement(WebViewMarker);
+		Assert.That(webView.IsDisplayed(), Is.True);
+		Assert.That(webView.GetRect().Width, Is.GreaterThan(0));
+		Assert.That(webView.GetRect().Height, Is.GreaterThan(0));
 	}
 
 	void ScrollUntilDisplayed(string automationId, System.Action gesture)
