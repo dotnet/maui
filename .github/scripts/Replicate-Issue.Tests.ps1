@@ -12439,6 +12439,13 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
 
     It 'accepts only the exact Windows Issue34738 Shell native profile' {
         $source = Get-ReplicationWindowsIssue34738TestSource
+        $source |
+            Should -Match 'Issue34738IsBlue\(Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
+        $source |
+            Should -Match 'Issue34738IsGreen\(Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
+        $source |
+            Should -Match 'Issue34738DescribeColor\(\s*Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
+        $source | Should -Not -Match '\(\s*Brush brush\)'
         $control = New-ReplicationControlVariant `
             -BaselineSource $source `
             -Edits @($script:GateEdit) `

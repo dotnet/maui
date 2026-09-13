@@ -6254,15 +6254,16 @@ namespace Microsoft.Maui.DeviceTests
             }
         }
 
-        static bool Issue34738IsBlue(Brush brush) =>
+        static bool Issue34738IsBlue(Microsoft.UI.Xaml.Media.Brush brush) =>
             brush is SolidColorBrush solidColorBrush &&
             solidColorBrush.Color == Microsoft.UI.Colors.Blue;
 
-        static bool Issue34738IsGreen(Brush brush) =>
+        static bool Issue34738IsGreen(Microsoft.UI.Xaml.Media.Brush brush) =>
             brush is SolidColorBrush solidColorBrush &&
             solidColorBrush.Color == Microsoft.UI.Colors.Green;
 
-        static string Issue34738DescribeColor(Brush brush) =>
+        static string Issue34738DescribeColor(
+            Microsoft.UI.Xaml.Media.Brush brush) =>
             brush is SolidColorBrush solidColorBrush
                 ? solidColorBrush.Color.ToString()
                 : "<non-solid>";
