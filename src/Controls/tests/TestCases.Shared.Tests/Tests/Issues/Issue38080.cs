@@ -13,6 +13,9 @@ public class Issue38080 : _IssuesUITest
 	const string NavigateButton = "Issue38080NavigateButton";
 	const string ReproPageMarker = "Issue38080ReproPageMarker";
 	const string TopMarker = "Issue38080TopMarker";
+	const string WarmupContinueButton = "Issue38080WarmupContinueButton";
+	const string WarmupReadyMarker = "Issue38080WarmupReadyMarker";
+	const string WarmupWebViewMarker = "Issue38080WarmupWebView";
 	const string WebViewMarker = "Issue38080WebView";
 
 	public Issue38080(TestDevice device) : base(device)
@@ -27,6 +30,18 @@ public class Issue38080 : _IssuesUITest
 	{
 		App.WaitForElement(HomeMarker);
 		App.Tap(NavigateButton);
+		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(WarmupReadyMarker)).IsDisplayed(), Is.True);
+
+		var warmupWebView = App.WaitForElement(WarmupWebViewMarker);
+		Assert.That(warmupWebView.IsDisplayed(), Is.True);
+		Assert.That(warmupWebView.GetRect().Width, Is.GreaterThan(0));
+		Assert.That(warmupWebView.GetRect().Height, Is.GreaterThan(0));
+		Assert.That(App.WaitForElement(WarmupContinueButton).IsEnabled(), Is.True);
+
+		if (!SaveUIDiagnosticInfo("Issue38080-WarmupReady"))
+			throw new InvalidOperationException("Could not capture the Issue 38080 warm-up viewport.");
+
+		App.Tap(WarmupContinueButton);
 		App.WaitForElement(ReproPageMarker);
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 

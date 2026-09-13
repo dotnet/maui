@@ -19,9 +19,8 @@ public class Issue38080 : NavigationPage
 				AutomationId = "Issue38080NavigateButton",
 				Text = "Open WebView overscroll repro"
 			};
-			navigateButton.Clicked += async (_, _) => await Navigation.PushAsync(CreateReproPage());
 
-			Content = new VerticalStackLayout
+			var homeContent = new VerticalStackLayout
 			{
 				VerticalOptions = LayoutOptions.Center,
 				Children =
@@ -34,6 +33,103 @@ public class Issue38080 : NavigationPage
 					navigateButton
 				}
 			};
+
+			navigateButton.Clicked += (_, _) => ShowWarmup();
+			Content = homeContent;
+
+			void ShowWarmup()
+			{
+				var warmupStatus = new Label
+				{
+					Text = "Preparing WebView provider"
+				};
+				var continueButton = new Button
+				{
+					AutomationId = "Issue38080WarmupContinueButton",
+					IsEnabled = false,
+					Text = "Continue to overscroll repro"
+				};
+				var warmupWebView = new WebView
+				{
+					AutomationId = "Issue38080WarmupWebView",
+					HeightRequest = 220,
+					Source = new HtmlWebViewSource { Html = Html }
+				};
+				var navigationCompleted = false;
+				var ready = false;
+
+				void UpdateWarmupStatus()
+				{
+					var platformView = warmupWebView.Handler?.PlatformView as Android.Webkit.WebView;
+					ready =
+						navigationCompleted &&
+						platformView is { Width: > 0, Height: > 0, IsAttachedToWindow: true, IsHardwareAccelerated: true };
+
+					Android.Util.Log.Info(
+						"Issue38080",
+						$"WarmupLoaded:{navigationCompleted};Width:{platformView?.Width ?? 0};Height:{platformView?.Height ?? 0};" +
+						$"Attached:{platformView?.IsAttachedToWindow == true};Hardware:{platformView?.IsHardwareAccelerated == true};Ready:{ready}");
+
+					warmupStatus.AutomationId = ready ? "Issue38080WarmupReadyMarker" : null;
+					warmupStatus.Text = ready ? "WebView provider ready" : "Preparing WebView provider";
+					continueButton.IsEnabled = ready;
+				}
+
+				void OnWarmupLoaded(object sender, EventArgs e) => UpdateWarmupStatus();
+				void OnWarmupSizeChanged(object sender, EventArgs e) => UpdateWarmupStatus();
+				void OnWarmupNavigated(object sender, WebNavigatedEventArgs e)
+				{
+					navigationCompleted = true;
+					UpdateWarmupStatus();
+				}
+
+				var warmupContent = new VerticalStackLayout
+				{
+					Padding = 12,
+					Spacing = 12,
+					Children =
+					{
+						warmupStatus,
+						warmupWebView,
+						continueButton
+					}
+				};
+
+				async void OnContinueClicked(object sender, EventArgs e)
+				{
+					UpdateWarmupStatus();
+
+					if (!ready)
+						throw new InvalidOperationException("The Issue 38080 warm-up WebView is not ready.");
+
+					continueButton.IsEnabled = false;
+					continueButton.Clicked -= OnContinueClicked;
+					warmupWebView.Loaded -= OnWarmupLoaded;
+					warmupWebView.SizeChanged -= OnWarmupSizeChanged;
+					warmupWebView.Navigated -= OnWarmupNavigated;
+
+					var handler = warmupWebView.Handler ??
+						throw new InvalidOperationException("The Issue 38080 warm-up WebView handler is missing.");
+					var platformView = handler.PlatformView as Android.Webkit.WebView ??
+						throw new InvalidOperationException("The Issue 38080 warm-up native WebView is missing.");
+
+					Content = homeContent;
+					warmupContent.Children.Remove(warmupWebView);
+					handler.DisconnectHandler();
+					platformView.Dispose();
+
+					Android.Util.Log.Info("Issue38080", "WarmupDisposed:True");
+
+					await Navigation.PushAsync(CreateReproPage());
+				}
+
+				warmupWebView.Loaded += OnWarmupLoaded;
+				warmupWebView.SizeChanged += OnWarmupSizeChanged;
+				warmupWebView.Navigated += OnWarmupNavigated;
+				continueButton.Clicked += OnContinueClicked;
+
+				Content = warmupContent;
+			}
 		}
 	}
 
