@@ -30,9 +30,9 @@ public class Issue38080 : _IssuesUITest
 		App.WaitForElement(ReproPageMarker);
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 
-		ScrollUntilDisplayed(WebViewMarker, FastFlingDown);
+		ScrollUntilDisplayed(WebViewMarker, SlowDragDown);
 		AssertWebViewDisplayed();
-		ScrollUntilDisplayed(TopMarker, FastFlingUp);
+		ScrollUntilDisplayed(TopMarker, SlowDragUp);
 
 		FastFlingUp();
 		FastFlingUp();
@@ -82,6 +82,28 @@ public class Issue38080 : _IssuesUITest
 		}
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
+	}
+
+	void SlowDragDown()
+	{
+		App.ScrollDown(
+			ReproPageMarker,
+			ScrollStrategy.Gesture,
+			swipePercentage: 0.5,
+			swipeSpeed: 1000,
+			withInertia: false);
+		App.WaitForElement(ReproPageMarker);
+	}
+
+	void SlowDragUp()
+	{
+		App.ScrollUp(
+			ReproPageMarker,
+			ScrollStrategy.Gesture,
+			swipePercentage: 0.5,
+			swipeSpeed: 1000,
+			withInertia: false);
+		App.WaitForElement(ReproPageMarker);
 	}
 
 	void FastFlingDown()
