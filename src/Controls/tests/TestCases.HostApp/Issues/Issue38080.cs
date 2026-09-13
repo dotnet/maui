@@ -70,7 +70,9 @@ public class Issue38080 : NavigationPage
 						$"WarmupLoaded:{navigationCompleted};Width:{platformView?.Width ?? 0};Height:{platformView?.Height ?? 0};" +
 						$"Attached:{platformView?.IsAttachedToWindow == true};Hardware:{platformView?.IsHardwareAccelerated == true};Ready:{ready}");
 
-					warmupStatus.AutomationId = ready ? "Issue38080WarmupReadyMarker" : null;
+					if (ready && warmupStatus.AutomationId is null)
+						warmupStatus.AutomationId = "Issue38080WarmupReadyMarker";
+
 					warmupStatus.Text = ready ? "WebView provider ready" : "Preparing WebView provider";
 					continueButton.IsEnabled = ready;
 				}
