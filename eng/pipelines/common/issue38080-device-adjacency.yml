@@ -1,0 +1,266 @@
+parameters:
+  configuration: Release
+  targetFrameworkVersion: net10.0
+
+steps:
+- template: enable-kvm.yml
+
+- template: provision.yml
+  parameters:
+    skipJdk: false
+    skipAndroidCommonSdks: false
+    skipAndroidPlatformApis: true
+    onlyAndroidPlatformDefaultApis: true
+    skipAndroidEmulatorImages: false
+    skipAndroidCreateAvds: true
+    androidEmulatorApiLevel: 36
+    skipXcode: true
+    skipSimulatorSetup: true
+    skipProvisionator: true
+
+- bash: |
+    set -euo pipefail
+    host_diagnostics="$(LogDirectory)/issue38080/emulator-host"
+    mkdir -p "$host_diagnostics"
+
+    sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+    emulator="$sdk_root/emulator/emulator"
+    emulator_lib64="$sdk_root/emulator/lib64"
+    emulator_qt_lib="$emulator_lib64/qt/lib"
+    qemu="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64"
+    qemu_headless="$sdk_root/emulator/qemu/linux-x86_64/qemu-system-x86_64-headless"
+    if [[ -z "$sdk_root" || ! -x "$emulator" || ! -d "$emulator_lib64" || ! -d "$emulator_qt_lib" || ! -x "$qemu" || ! -x "$qemu_headless" ]]; then
+      echo "Provisioned Android emulator runtime was not found under '$sdk_root/emulator'."
+      exit 1
+    fi
+
+    timeout 120s sudo -n apt-get update -qq \
+      > "$host_diagnostics/apt-libpulse0.txt" 2>&1
+    timeout 120s sudo -n apt-get install -y -qq --no-install-recommends libpulse0 \
+      >> "$host_diagnostics/apt-libpulse0.txt" 2>&1
+
+    launcher_exit_code=0
+    timeout 30s "$emulator" -version \
+      > "$host_diagnostics/version.txt" 2>&1 || launcher_exit_code=$?
+    echo "ExitCode: $launcher_exit_code" >> "$host_diagnostics/version.txt"
+    if [[ "$launcher_exit_code" -ne 0 ]]; then
+      echo "Android emulator launcher failed after restoring QEMU prerequisites."
+      cat "$host_diagnostics/version.txt"
+      exit 1
+    fi
+
+    qemu_ld_library_path="$emulator_lib64:$emulator_qt_lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    headless_ldd_exit_code=0
+    LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu_headless" \
+      > "$host_diagnostics/headless-ldd.txt" 2>&1 || headless_ldd_exit_code=$?
+    if [[ "$headless_ldd_exit_code" -ne 0 ]] || grep -Fq "=> not found" "$host_diagnostics/headless-ldd.txt"; then
+      echo "Headless Android emulator QEMU still has unresolved shared libraries."
+      cat "$host_diagnostics/headless-ldd.txt"
+      exit 1
+    fi
+
+    gui_ldd_exit_code=0
+    LD_LIBRARY_PATH="$qemu_ld_library_path" /usr/bin/ldd "$qemu" \
+      > "$host_diagnostics/ldd.txt" 2>&1 || gui_ldd_exit_code=$?
+    echo "ExitCode: $gui_ldd_exit_code" >> "$host_diagnostics/ldd.txt"
+  displayName: Verify Issue 38080 emulator runtime prerequisites
+  timeoutInMinutes: 5
+
+- bash: |
+    set -euo pipefail
+    mkdir -p "$(LogDirectory)"
+    sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+    issue_avd_home="$(Agent.TempDirectory)/maui-issue38080-avd-$(Build.BuildId)-$(System.JobAttempt)"
+    mkdir -p "$issue_avd_home"
+    export ANDROID_AVD_HOME="$issue_avd_home"
+    echo "$issue_avd_home" > "$(LogDirectory)/issue38080-avd-home.txt"
+    echo "##vso[task.setvariable variable=ANDROID_AVD_HOME]$issue_avd_home"
+
+    sdkmanager13="$sdk_root/cmdline-tools/13.0/bin/sdkmanager"
+    tools19="$sdk_root/cmdline-tools/19.0/bin"
+    if [[ -z "$sdk_root" || ! -x "$sdkmanager13" ]]; then
+      echo "Provisioned Android SDK or sdkmanager was not found: '$sdkmanager13'."
+      exit 1
+    fi
+
+    if ! timeout 180s "$sdkmanager13" --sdk_root="$sdk_root" "cmdline-tools;19.0" \
+      > "$(LogDirectory)/cmdline-tools-19-install.txt" 2>&1; then
+      cat "$(LogDirectory)/cmdline-tools-19-install.txt"
+      exit 1
+    fi
+
+    avdmanager="$tools19/avdmanager"
+    sdkmanager19="$tools19/sdkmanager"
+    if [[ ! -x "$avdmanager" || ! -x "$sdkmanager19" ]]; then
+      echo "Command-line tools 19.0 were not installed under '$tools19'."
+      exit 1
+    fi
+
+    timeout 30s "$sdkmanager19" --version > "$(LogDirectory)/cmdline-tools-version.txt"
+    timeout 30s "$avdmanager" list device > "$(LogDirectory)/android-device-definitions.txt"
+    if ! grep -Eq 'id: [0-9]+ or "pixel_8a"' "$(LogDirectory)/android-device-definitions.txt"; then
+      echo "Required Android device definition pixel_8a is unavailable."
+      cat "$(LogDirectory)/android-device-definitions.txt"
+      exit 1
+    fi
+
+    export PATH="$tools19:$PATH"
+    resolved_avdmanager="$(command -v avdmanager)"
+    if [[ "$resolved_avdmanager" != "$avdmanager" ]]; then
+      echo "Expected avdmanager '$avdmanager' but resolved '$resolved_avdmanager'."
+      exit 1
+    fi
+    echo "$resolved_avdmanager" > "$(LogDirectory)/resolved-avdmanager.txt"
+    echo "##vso[task.prependpath]$tools19"
+
+    host_diagnostics="$(LogDirectory)/issue38080/emulator-host"
+    mkdir -p "$host_diagnostics"
+    capture_host_command() {
+      output="$1"
+      shift
+      exit_code=0
+      timeout 10s "$@" > "$output" 2>&1 || exit_code=$?
+      echo "ExitCode: $exit_code" >> "$output"
+    }
+
+    emulator="$sdk_root/emulator/emulator"
+    capture_host_command "$host_diagnostics/acceleration.txt" "$emulator" -accel-check
+    capture_host_command "$host_diagnostics/kvm.txt" /usr/bin/ls -l /dev/kvm
+  displayName: Verify Pixel 8a device definition
+  timeoutInMinutes: 5
+
+- pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+  displayName: Install .NET
+  retryCountOnTaskFailure: 2
+  env:
+    DOTNET_TOKEN: ''
+    PRIVATE_BUILD: ''
+
+- pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+  displayName: Add .NET to PATH
+
+- script: dotnet cake --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
+  displayName: Build the MSBuild Tasks
+  env:
+    DOTNET_TOKEN: ''
+    PRIVATE_BUILD: ''
+    GITHUB_TOKEN: ''
+    GH_TOKEN: ''
+    COPILOT_GITHUB_TOKEN: ''
+    SYSTEM_ACCESSTOKEN: ''
+
+- bash: |
+    set -euo pipefail
+    mkdir -p "$(LogDirectory)/build-core"
+    dotnet cake eng/devices/android.cake \
+      --target=buildOnly \
+      --build-issue-38080-device-adjacency=true \
+      --project="$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" \
+      --device=android-emulator-64_36 \
+      --apiversion=36 \
+      --configuration="${{ parameters.configuration }}" \
+      --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" \
+      --create=false \
+      --boot=false \
+      --binlog="$(LogDirectory)/build-core" \
+      --workloads=local \
+      --verbosity=diagnostic
+  displayName: Build Core Android device tests
+  env:
+    DOTNET_TOKEN: ''
+    PRIVATE_BUILD: ''
+    GITHUB_TOKEN: ''
+    GH_TOKEN: ''
+    COPILOT_GITHUB_TOKEN: ''
+    SYSTEM_ACCESSTOKEN: ''
+
+- bash: |
+    set -euo pipefail
+    mkdir -p "$(LogDirectory)/build-controls"
+    dotnet cake eng/devices/android.cake \
+      --target=buildOnly \
+      --build-issue-38080-device-adjacency=true \
+      --project="$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" \
+      --device=android-emulator-64_36 \
+      --apiversion=36 \
+      --configuration="${{ parameters.configuration }}" \
+      --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" \
+      --create=false \
+      --boot=false \
+      --binlog="$(LogDirectory)/build-controls" \
+      --workloads=local \
+      --verbosity=diagnostic
+  displayName: Build Controls Android device tests
+  env:
+    DOTNET_TOKEN: ''
+    PRIVATE_BUILD: ''
+    GITHUB_TOKEN: ''
+    GH_TOKEN: ''
+    COPILOT_GITHUB_TOKEN: ''
+    SYSTEM_ACCESSTOKEN: ''
+
+- bash: |
+    set -euo pipefail
+    run_root="$(Issue38080AdjacencyRoot)"
+    if [[ -e "$run_root/run-started.txt" || -e "$run_root/results" ]]; then
+      echo "Issue 38080 adjacency output path is not fresh: '$run_root'."
+      exit 1
+    fi
+
+    mkdir -p "$run_root/results" "$(LogDirectory)"
+    touch "$run_root/run-started.txt"
+
+    dotnet cake eng/devices/android.cake \
+      --target=issue38080-device-adjacency \
+      --run-issue-38080-device-adjacency=true \
+      --issue-38080-run-key="$(Build.BuildId)-$(System.JobAttempt)" \
+      --issue-38080-source-version="$(Build.SourceVersion)" \
+      --issue-38080-core-device-tests="$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj" \
+      --issue-38080-controls-device-tests="$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj" \
+      --device=android-emulator-64_36 \
+      --apiversion=36 \
+      --skin=pixel_8a \
+      --configuration="${{ parameters.configuration }}" \
+      --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" \
+      --create=true \
+      --boot=true \
+      --wait=true \
+      --headless=true \
+      --results="$run_root/results" \
+      --binlog="$(LogDirectory)" \
+      --workloads=local \
+      --verbosity=diagnostic
+  displayName: Run Issue 38080 native adjacency tests
+  env:
+    ANDROID_AVD_HOME: $(ANDROID_AVD_HOME)
+    DOTNET_TOKEN: ''
+    PRIVATE_BUILD: ''
+    GITHUB_TOKEN: ''
+    GH_TOKEN: ''
+    COPILOT_GITHUB_TOKEN: ''
+    SYSTEM_ACCESSTOKEN: ''
+
+- pwsh: |
+    & "$(System.DefaultWorkingDirectory)/eng/scripts/Verify-Issue38080DeviceResults.ps1" `
+      -ResultsRoot "$(Issue38080AdjacencyRoot)/results" `
+      -RunMarker "$(Issue38080AdjacencyRoot)/run-started.txt" `
+      -ExpectedRunKey "$(Build.BuildId)-$(System.JobAttempt)" `
+      -ExpectedSourceVersion "$(Build.SourceVersion)"
+  displayName: Verify Issue 38080 native adjacency results
+  condition: always()
+
+- task: PublishTestResults@2
+  displayName: Publish Issue 38080 native adjacency results
+  condition: always()
+  inputs:
+    testResultsFormat: xUnit
+    testResultsFiles: '$(Issue38080AdjacencyRoot)/results/**/testResults-*.xml'
+    testRunTitle: 'Issue 38080 Android API 36 native adjacency'
+    failTaskOnFailedTests: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Issue 38080 native adjacency evidence
+  condition: always()
+  inputs:
+    PathtoPublish: $(Issue38080AdjacencyRoot)
+    artifactName: drop-$(System.StageName)-$(System.JobName)-$(System.JobAttempt)

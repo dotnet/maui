@@ -69,6 +69,11 @@ parameters:
     type: boolean
     default: false
 
+  - name: RunIssue38080DeviceAdjacency
+    displayName: 'Run only the Issue 38080 Android device-test adjacency checks on API 36'
+    type: boolean
+    default: false
+
   # Internal pools (dnceng)
   - name: androidPoolInternal
     type: object
@@ -153,7 +158,7 @@ parameters:
 
 stages:
 
-  - ${{ if eq(parameters.RunIssue38080, false) }}:
+  - ${{ if and(eq(parameters.RunIssue38080, false), eq(parameters.RunIssue38080DeviceAdjacency, false)) }}:
     - template: common/ui-tests.yml
       parameters:
         # Select pools based on pipeline - internal vs public
@@ -191,7 +196,7 @@ stages:
             winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.WinUI.Tests/Controls.TestCases.WinUI.Tests.csproj
             mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/TestCases.Mac.Tests/Controls.TestCases.Mac.Tests.csproj
 
-  - ${{ if eq(parameters.RunIssue38080, true) }}:
+  - ${{ if and(eq(parameters.RunIssue38080, true), eq(parameters.RunIssue38080DeviceAdjacency, false)) }}:
     - stage: build_issue38080
       displayName: Build Issue 38080 Android UITest
       dependsOn: []
@@ -244,3 +249,43 @@ stages:
                 runtimeVariant: Mono
                 runIssue38080: true
                 skipProvisioning: true
+
+  - ${{ if and(eq(parameters.RunIssue38080, false), eq(parameters.RunIssue38080DeviceAdjacency, true)) }}:
+    - stage: test_issue38080_device_adjacency
+      displayName: Test Issue 38080 native adjacency on Android API 36
+      dependsOn: []
+      jobs:
+        - job: test_issue38080_device_adjacency
+          displayName: Issue 38080 Android API 36 native adjacency
+          timeoutInMinutes: 75
+          workspace:
+            clean: all
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            pool: ${{ parameters.androidPoolLinuxInternal }}
+          ${{ else }}:
+            pool: ${{ parameters.androidPoolLinuxPublic }}
+          variables:
+            Issue38080AdjacencyRoot: $(Agent.TempDirectory)/issue38080-device-adjacency-$(Build.BuildId)-$(System.JobAttempt)
+            LogDirectory: $(Agent.TempDirectory)/issue38080-device-adjacency-$(Build.BuildId)-$(System.JobAttempt)/logs
+          steps:
+            - checkout: self
+              persistCredentials: false
+            - template: common/issue38080-device-adjacency.yml
+
+  - ${{ if and(eq(parameters.RunIssue38080, true), eq(parameters.RunIssue38080DeviceAdjacency, true)) }}:
+    - stage: invalid_issue38080_selection
+      displayName: Reject conflicting Issue 38080 modes
+      dependsOn: []
+      jobs:
+        - job: invalid_issue38080_selection
+          displayName: Select one Issue 38080 mode
+          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+            pool: ${{ parameters.androidPoolLinuxInternal }}
+          ${{ else }}:
+            pool: ${{ parameters.androidPoolLinuxPublic }}
+          steps:
+            - checkout: none
+            - bash: |
+                echo "RunIssue38080 and RunIssue38080DeviceAdjacency cannot both be enabled."
+                exit 1
+              displayName: Reject conflicting Issue 38080 modes

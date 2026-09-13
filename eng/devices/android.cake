@@ -29,6 +29,19 @@ var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESU
 var deviceCleanupEnabled = Argument("cleanup", true);
 var useCoreClr = Argument("coreclr", false);
 var runIssue38080 = Argument("run-issue-38080", false);
+var runIssue38080DeviceAdjacency = Argument("run-issue-38080-device-adjacency", false);
+var buildIssue38080DeviceAdjacency = Argument("build-issue-38080-device-adjacency", false);
+var useIssue38080Runtime = runIssue38080 || runIssue38080DeviceAdjacency;
+var issue38080CoreDeviceTests = Argument("issue-38080-core-device-tests", "");
+var issue38080ControlsDeviceTests = Argument("issue-38080-controls-device-tests", "");
+var issue38080RunKey = Argument("issue-38080-run-key", "");
+var issue38080SourceVersion = Argument("issue-38080-source-version", "");
+var issue38080RunId = runIssue38080DeviceAdjacency ? Guid.NewGuid().ToString("N") : "";
+
+if (runIssue38080DeviceAdjacency &&
+	(!System.Text.RegularExpressions.Regex.IsMatch(issue38080RunKey, @"\A[0-9]+-[0-9]+\z") ||
+	 !System.Text.RegularExpressions.Regex.IsMatch(issue38080SourceVersion, @"\A[0-9a-f]{40}\z")))
+	throw new Exception("Issue 38080 adjacency requires an exact build/attempt key and source commit.");
 
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
@@ -63,7 +76,7 @@ Information("Use CoreCLR: {0}", useCoreClr);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 DirectoryPath issue38080AvdHome = null;
-if (runIssue38080)
+if (useIssue38080Runtime)
 {
 	var avdHome = EnvironmentVariable("ANDROID_AVD_HOME");
 	if (string.IsNullOrWhiteSpace(avdHome) || !System.IO.Path.IsPathFullyQualified(avdHome))
@@ -103,7 +116,7 @@ Teardown(context =>
 	// For the uitest-prepare target, just leave the virtual device running
 	if (!string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
 	{
-		if (runIssue38080)
+		if (useIssue38080Runtime)
 		{
 			try
 			{
@@ -131,6 +144,19 @@ Task("connectToDevice")
 	{
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
+		if (runIssue38080DeviceAdjacency)
+		{
+			foreach (var device in AdbDevices(adbSettings))
+			{
+				if (!System.Text.RegularExpressions.Regex.IsMatch(device.Serial, @"\Aemulator-[0-9]+\z"))
+					continue;
+
+				var settings = new AdbToolSettings { SdkRoot = androidSdkRoot, Serial = device.Serial };
+				if (string.Equals(GetIssue38080AvdName(settings), androidAvd, StringComparison.Ordinal))
+					throw new Exception($"Issue 38080 refuses pre-existing device '{device.Serial}' for this invocation's AVD.");
+			}
+		}
+
 		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
 		await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
 	});
@@ -151,6 +177,75 @@ Task("testOnly")
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
+	});
+
+Task("issue38080-device-adjacency")
+	.IsDependentOn("connectToDevice")
+	.WithCriteria(runIssue38080DeviceAdjacency)
+	.Does(() =>
+	{
+		if (string.IsNullOrWhiteSpace(issue38080CoreDeviceTests) || !System.IO.Path.IsPathFullyQualified(issue38080CoreDeviceTests))
+			throw new Exception($"Issue 38080 requires an absolute Core device-test project path, but received '{issue38080CoreDeviceTests}'.");
+
+		if (string.IsNullOrWhiteSpace(issue38080ControlsDeviceTests) || !System.IO.Path.IsPathFullyQualified(issue38080ControlsDeviceTests))
+			throw new Exception($"Issue 38080 requires an absolute Controls device-test project path, but received '{issue38080ControlsDeviceTests}'.");
+
+		if (string.IsNullOrWhiteSpace(testResultsPath) || !System.IO.Path.IsPathFullyQualified(testResultsPath))
+			throw new Exception($"Issue 38080 requires an absolute test-results path, but received '{testResultsPath}'.");
+
+		var runs = new[]
+		{
+			new
+			{
+				Name = "Core WebView",
+				Project = issue38080CoreDeviceTests,
+				Filter = "Category=WebView",
+				Results = new DirectoryPath(testResultsPath).Combine("core-webview").FullPath,
+			},
+			new
+			{
+				Name = "Core View",
+				Project = issue38080CoreDeviceTests,
+				Filter = "Category=View",
+				Results = new DirectoryPath(testResultsPath).Combine("core-view").FullPath,
+			},
+			new
+			{
+				Name = "Controls HybridWebView",
+				Project = issue38080ControlsDeviceTests,
+				Filter = "Category=HybridWebView",
+				Results = new DirectoryPath(testResultsPath).Combine("controls-hybridwebview").FullPath,
+			},
+		};
+
+		var failures = new List<string>();
+		foreach (var run in runs)
+		{
+			try
+			{
+				Information("Running Issue 38080 adjacency tests: {0} ({1})", run.Name, run.Filter);
+				ExecuteTests(
+					run.Project,
+					testDevice,
+					"",
+					run.Results,
+					configuration,
+					targetFramework,
+					adbSettings,
+					dotnetToolPath,
+					deviceBootWait,
+					"",
+					run.Filter);
+			}
+			catch (Exception ex)
+			{
+				Error("Issue 38080 adjacency run '{0}' failed: {1}", run.Name, ex);
+				failures.Add($"{run.Name}: {ex.Message}");
+			}
+		}
+
+		if (failures.Any())
+			throw new Exception("One or more Issue 38080 adjacency runs failed:" + System.Environment.NewLine + string.Join(System.Environment.NewLine, failures));
 	});
 
 Task("build")
@@ -197,6 +292,10 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath, bool useCoreClr)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
+	if (buildIssue38080DeviceAdjacency &&
+		projectName != "Core.DeviceTests" && projectName != "Controls.DeviceTests")
+		throw new Exception("Issue 38080 adjacency builds only Core and Controls device-test projects.");
+
 	bool isUsingCoreClr = useCoreClr.ToString().Equals("true", StringComparison.CurrentCultureIgnoreCase);
 	var monoRuntime = isUsingCoreClr ? "coreclr" : "mono";
 	var binlog = $"{binDir}/{projectName}-{config}-{monoRuntime}-android.binlog";
@@ -219,12 +318,16 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 			{
 				args.Append("/p:UseMonoRuntime=false");
 			}
+			if (buildIssue38080DeviceAdjacency && projectName == "Controls.DeviceTests")
+				// Keep the existing unrelated SwipeView warning visible without disabling analyzers.
+				args.Append("/p:WarningsNotAsErrors=xUnit2031");
+
 			return args;
 		}
 	});
 }
 
-void ExecuteTests(string project, string device, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
+void ExecuteTests(string project, string device, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation, string deviceTestFilter = "")
 {
 	CleanResults(resultsDir);
 
@@ -247,16 +350,67 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 
 	PrepareDevice(waitDevice);
 
+	var invocationId = runIssue38080DeviceAdjacency ? Guid.NewGuid().ToString("N") : "";
+	var resultFileName = $"testResults-{invocationId}.xml";
+	var startedUtc = DateTimeOffset.UtcNow;
+	void WriteAdjacencyIdentity(bool completed, bool succeeded)
+	{
+		EnsureDirectoryExists(resultsDir);
+		System.IO.File.WriteAllLines(
+			new DirectoryPath(resultsDir).CombineWithFilePath("run-identity.txt").FullPath,
+			new[]
+			{
+				$"RunKey: {issue38080RunKey}",
+				$"RunId: {issue38080RunId}",
+				$"InvocationId: {invocationId}",
+				$"SourceVersion: {issue38080SourceVersion}",
+				$"Project: {System.IO.Path.GetFileNameWithoutExtension(project)}",
+				$"PackageName: {appPackageName}",
+				$"Instrumentation: {instrumentation}",
+				$"Filter: {deviceTestFilter}",
+				$"DeviceSerial: {DEVICE_UDID}",
+				$"DeviceArchitecture: {deviceArch}",
+				$"ApiLevel: {DEVICE_VERSION}",
+				$"AvdName: {androidAvd}",
+				$"ResultFileName: {resultFileName}",
+				$"StartedUtc: {startedUtc:O}",
+				$"CompletedUtc: {(completed ? DateTimeOffset.UtcNow.ToString("O") : "")}",
+				$"Succeeded: {succeeded}",
+			});
+	}
+
+	if (runIssue38080DeviceAdjacency)
+		WriteAdjacencyIdentity(completed: false, succeeded: false);
+
 	var settings = new DotNetToolSettings
 	{
 		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness android test " +
-			$"--app=\"{testApp}\" " +
-			$"--package-name=\"{appPackageName}\" " +
-			$"--instrumentation=\"{instrumentation}\" " +
-			$"--device-arch=\"{deviceArch}\" " +
-			$"--output-directory=\"{resultsDir}\" " +
-			$"--verbosity=\"Debug\" ")
+		ArgumentCustomization = args =>
+		{
+			args.Append("run xharness android test " +
+				$"--app=\"{testApp}\" " +
+				$"--package-name=\"{appPackageName}\" " +
+				$"--instrumentation=\"{instrumentation}\" " +
+				$"--device-arch=\"{deviceArch}\" " +
+				$"--output-directory=\"{resultsDir}\" " +
+				$"--verbosity=\"Debug\" ");
+
+			if (runIssue38080DeviceAdjacency)
+			{
+				if (string.IsNullOrEmpty(DEVICE_UDID))
+					throw new Exception("Issue 38080 adjacency tests require an explicitly bound Android device.");
+
+				if (string.IsNullOrEmpty(deviceTestFilter))
+					throw new Exception("Issue 38080 adjacency tests require a fixed category filter.");
+
+				args.Append("--device-id").AppendQuoted(DEVICE_UDID);
+				args.Append("--arg").AppendQuoted($"TestFilter={deviceTestFilter}");
+				args.Append("--arg").AppendQuoted($"results-file-name={resultFileName}");
+				args.Append("--timeout").AppendQuoted("00:15:00");
+			}
+
+			return args;
+		}
 	};
 
 	bool testsFailed = true;
@@ -267,6 +421,9 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 	}
 	finally
 	{
+		if (runIssue38080DeviceAdjacency)
+			WriteAdjacencyIdentity(completed: true, succeeded: !testsFailed);
+
 		if (testsFailed)
 		{
 			// uncomment if you want to copy the test app to the results directory for any reason
@@ -468,7 +625,13 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	if (api == 27 && deviceArch == "arm64-v8a")
 		sdk = "google_apis";
 
-	androidAvd = $"Emulator_{api}";
+	if (runIssue38080DeviceAdjacency &&
+		(!emulator || api != 36 || deviceArch != "x86_64" || deviceSkin != "pixel_8a"))
+		throw new Exception("Issue 38080 adjacency requires the API 36 x86_64 Pixel 8a emulator.");
+
+	androidAvd = runIssue38080DeviceAdjacency
+		? $"Issue38080Adjacency_{issue38080RunKey.Replace('-', '_')}_{issue38080RunId}"
+		: $"Emulator_{api}";
 	androidAvdImage = $"system-images;android-{api};{sdk};{deviceArch}";
 
 	Information("Going to run image: {0}", androidAvdImage);
@@ -507,11 +670,11 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 					AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
 
-					if (runIssue38080 && !AndroidAvdListAvds(avdSettings).Any(avd => string.Equals(avd.Name, avdName, StringComparison.Ordinal)))
+					if (useIssue38080Runtime && !AndroidAvdListAvds(avdSettings).Any(avd => string.Equals(avd.Name, avdName, StringComparison.Ordinal)))
 						throw new Exception($"Failed to create required issue 38080 AVD '{avdName}'.");
 				}
 
-				if (runIssue38080)
+				if (useIssue38080Runtime)
 					ValidateAndCaptureIssue38080Avd(avdName);
 
 				// Pre-authorize ADB keys before starting emulator to avoid "device unauthorized" errors
@@ -524,7 +687,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 					// Copy the public key to the AVD directory so it's trusted from boot
 					var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 					var adbKeyPubSource = System.IO.Path.Combine(homeDir, ".android", "adbkey.pub");
-					var avdPath = runIssue38080
+					var avdPath = useIssue38080Runtime
 						? issue38080AvdHome.Combine($"{avdName}.avd").FullPath
 						: System.IO.Path.Combine(homeDir, ".android", "avd", $"{avdName}.avd");
 					var avdAdbKeysDest = System.IO.Path.Combine(avdPath, "adbkey.pub");
@@ -546,7 +709,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 
 				// start the emulator
 				Information("Starting Emulator: {0}...", avdName);
-				if (runIssue38080)
+				if (useIssue38080Runtime)
 				{
 					issue38080EmulatorProcess = StartIssue38080Emulator(avdName);
 				}
@@ -1044,6 +1207,59 @@ void GetDevices(string version, string toolPath)
 	DotNetTool("tool", settings);
 }
 
+string GetIssue38080AvdName(AdbToolSettings settings)
+{
+	var name = SafeAdbShell("getprop ro.boot.qemu.avd_name", settings).FirstOrDefault()?.Trim() ?? "";
+	return string.IsNullOrEmpty(name)
+		? SafeAdbShell("getprop ro.kernel.qemu.avd_name", settings).FirstOrDefault()?.Trim() ?? ""
+		: name;
+}
+
+bool TryResolveIssue38080AdjacencyDevice()
+{
+	var matches = new List<string>();
+	var diagnostics = new List<string>();
+
+	foreach (var device in AdbDevices(adbSettings))
+	{
+		if (!System.Text.RegularExpressions.Regex.IsMatch(device.Serial, @"\Aemulator-[0-9]+\z"))
+			continue;
+
+		var serialSettings = new AdbToolSettings { SdkRoot = androidSdkRoot, Serial = device.Serial };
+		var apiLevel = SafeAdbShell("getprop ro.build.version.sdk", serialSettings).FirstOrDefault()?.Trim() ?? "";
+		var avdName = GetIssue38080AvdName(serialSettings);
+		diagnostics.Add($"Serial: {device.Serial}; ApiLevel: {apiLevel}; AvdName: {avdName}");
+
+		if (string.Equals(apiLevel, "36", StringComparison.Ordinal) &&
+			string.Equals(avdName, androidAvd, StringComparison.Ordinal))
+			matches.Add(device.Serial);
+	}
+
+	if (matches.Count > 1)
+		throw new Exception($"Issue 38080 found multiple API 36 devices for owned AVD '{androidAvd}': {string.Join(", ", matches)}.");
+
+	if (matches.Count == 0)
+		return false;
+
+	DEVICE_UDID = matches[0];
+	DEVICE_VERSION = "36";
+	adbSettings.Serial = DEVICE_UDID;
+
+	var outputDirectory = GetIssue38080LogDirectory().Combine("device-binding");
+	EnsureDirectoryExists(outputDirectory);
+	System.IO.File.WriteAllLines(
+		outputDirectory.CombineWithFilePath("resolved-device.txt").FullPath,
+		diagnostics.Concat(new[]
+		{
+			$"SelectedSerial: {DEVICE_UDID}",
+			$"ExpectedAvdName: {androidAvd}",
+			$"ExpectedApiLevel: 36",
+		}));
+
+	Information("Bound Issue 38080 adjacency tests to owned device {0} ({1}, API 36).", DEVICE_UDID, androidAvd);
+	return true;
+}
+
 IEnumerable<string> SafeAdbShell(string command, AdbToolSettings settings, int timeoutSeconds = AdbCommandTimeoutSeconds)
 {
 	try
@@ -1099,13 +1315,21 @@ void PrepareDevice(bool waitForBoot)
         var total = EmulatorBootTimeoutSeconds;
         while (true)
 		{
-			if (runIssue38080 && issue38080EmulatorProcess?.HasExited == true)
+			if (useIssue38080Runtime && issue38080EmulatorProcess?.HasExited == true)
 			{
 				WriteIssue38080EmulatorProcessDiagnostics(issue38080EmulatorProcess, "startup-exit");
 				throw new Exception($"Issue 38080 Android emulator exited with code {issue38080EmulatorProcess.ExitCode} before completing boot.");
 			}
 
-			if (SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() == "1")
+			var canQueryBootState = true;
+			if (runIssue38080DeviceAdjacency && string.IsNullOrEmpty(DEVICE_UDID))
+			{
+				canQueryBootState = TryResolveIssue38080AdjacencyDevice();
+				if (canQueryBootState)
+					settings.Serial = DEVICE_UDID;
+			}
+
+			if (canQueryBootState && SafeAdbShell("getprop sys.boot_completed", settings).FirstOrDefault() == "1")
 				break;
 
 		    System.Threading.Thread.Sleep(1000);
