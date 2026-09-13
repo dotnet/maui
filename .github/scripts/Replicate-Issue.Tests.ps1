@@ -1989,9 +1989,10 @@ public partial class MainPage : ContentPage
                 $prompt | Should -Match 'Issue34738 affected tab foreground mismatch'
                 $prompt | Should -Match 'var expectedIsEnabled = affectedTab\.IsEnabled;'
                 $prompt | Should -Match 'nativeAffectedTab\.IsEnabled == expectedIsEnabled'
-                $prompt | Should -Match 'HaveSameColor\(affectedTitle\.Foreground, referenceTitle\.Foreground\)'
-                $prompt | Should -Match 'IsGreen\(affectedTitle\.Foreground\)'
-                $prompt | Should -Not -Match 'SetTabBarUnselectedColor'
+                $prompt | Should -Match 'Issue34738IsBlue\(referenceTitle\.Foreground\)'
+                $prompt | Should -Match 'Issue34738IsBlue\(affectedTitle\.Foreground\)'
+                $prompt | Should -Match 'Issue34738IsGreen\(affectedTitle\.Foreground\)'
+                $prompt | Should -Match 'SetTabBarUnselectedColor\(shell, enabledColor\)'
                 $prompt | Should -Not -Match 'SetTabBarForegroundColor'
                 $prompt | Should -Not -Match 'SetTabBarTitleColor'
             }
@@ -12425,12 +12426,17 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                 var expectedIsEnabled = nativeAffectedTab.IsEnabled;
                 var titleMatches = expectedIsEnabled
 '@)
-        $explicitEnabledColor = $source.Replace(
-            '                Shell.SetTabBarDisabledColor(shell, disabledColor);',
+        $allGreenStyling = $source.Replace(
+            '                Shell.SetTabBarUnselectedColor(shell, enabledColor);',
             @'
-                Shell.SetTabBarDisabledColor(shell, disabledColor);
                 Shell.SetTabBarUnselectedColor(shell, disabledColor);
 '@)
+        $missingIndependentReferenceCheck = $source.Replace(
+            @'
+                    Issue34738IsBlue(referenceTitle.Foreground) &&
+                    Issue34738IsBlue(referenceIcon.Foreground) &&
+'@,
+            '')
         $mutations = @(
             $source.Replace(
                 'var expectedIsEnabled = affectedTab.IsEnabled;',
@@ -12439,13 +12445,14 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                 'nativeAffectedTab.IsEnabled == expectedIsEnabled &&',
                 'nativeReferenceTab.IsEnabled == expectedIsEnabled &&'),
             $source.Replace(
-                'HaveSameColor(affectedTitle.Foreground, referenceTitle.Foreground)',
-                'HaveSameColor(affectedTitle.Foreground, affectedTitle.Foreground)'),
+                '? Issue34738IsBlue(affectedTitle.Foreground)',
+                '? Issue34738IsBlue(referenceTitle.Foreground)'),
             $source.Replace(
-                ': IsGreen(affectedIcon.Foreground);',
-                ': HaveSameColor(affectedIcon.Foreground, referenceIcon.Foreground);'),
+                ': Issue34738IsGreen(affectedIcon.Foreground);',
+                ': Issue34738IsBlue(affectedIcon.Foreground);'),
             $lateStateSnapshot,
-            $explicitEnabledColor
+            $allGreenStyling,
+            $missingIndependentReferenceCheck
         )
 
         foreach ($candidate in $mutations) {

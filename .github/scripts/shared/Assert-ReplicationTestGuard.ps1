@@ -6140,12 +6140,14 @@ namespace Microsoft.Maui.DeviceTests
         public async Task DisabledTabUsesTabBarDisabledColor()
         {
             SetupBuilder();
+            var enabledColor = Microsoft.Maui.Graphics.Colors.Blue;
             var disabledColor = Microsoft.Maui.Graphics.Colors.Green;
-            var selectedTab = CreateTab("Selected Tab");
-            var enabledReferenceTab = CreateTab("Enabled Reference Tab");
-            var affectedTab = CreateTab("Disabled Tab");
+            var selectedTab = Issue34738CreateTab("Selected Tab");
+            var enabledReferenceTab = Issue34738CreateTab("Enabled Reference Tab");
+            var affectedTab = Issue34738CreateTab("Disabled Tab");
             var shell = await CreateShellAsync(shell =>
             {
+                Shell.SetTabBarUnselectedColor(shell, enabledColor);
                 Shell.SetTabBarDisabledColor(shell, disabledColor);
                 shell.Items.Add(new TabBar
                 {
@@ -6168,23 +6170,23 @@ namespace Microsoft.Maui.DeviceTests
             {
                 await AssertHelpers.AssertEventually(
                     () => shell.CurrentItem?.Handler?.PlatformView is MauiNavigationView navigationView &&
-                        Descendants(navigationView)
+                        Issue34738Descendants(navigationView)
                             .OfType<NavigationViewItem>()
                             .Any(item =>
                                 item.Content?.ToString() == enabledReferenceTab.Title &&
-                                Descendants(item).OfType<TextBlock>().Any(text =>
+                                Issue34738Descendants(item).OfType<TextBlock>().Any(text =>
                                     text.Text == enabledReferenceTab.Title) &&
-                                Descendants(item).OfType<IconElement>().Any()) &&
-                        Descendants(navigationView)
+                                Issue34738Descendants(item).OfType<IconElement>().Any()) &&
+                        Issue34738Descendants(navigationView)
                             .OfType<NavigationViewItem>()
                             .Any(item =>
                                 item.Content?.ToString() == affectedTab.Title &&
-                                Descendants(item).OfType<TextBlock>().Any(text =>
+                                Issue34738Descendants(item).OfType<TextBlock>().Any(text =>
                                     text.Text == affectedTab.Title) &&
-                                Descendants(item).OfType<IconElement>().Any()));
+                                Issue34738Descendants(item).OfType<IconElement>().Any()));
                 var navigationView =
                     (MauiNavigationView)shell.CurrentItem.Handler.PlatformView;
-                var nativeTabs = Descendants(navigationView)
+                var nativeTabs = Issue34738Descendants(navigationView)
                     .OfType<NavigationViewItem>()
                     .ToArray();
                 var nativeReferenceTab = Assert.Single(
@@ -6194,34 +6196,37 @@ namespace Microsoft.Maui.DeviceTests
                     nativeTabs,
                     item => item.Content?.ToString() == affectedTab.Title);
                 var referenceTitle = Assert.Single(
-                    Descendants(nativeReferenceTab)
+                    Issue34738Descendants(nativeReferenceTab)
                         .OfType<TextBlock>()
                         .Where(text => text.Text == enabledReferenceTab.Title));
                 var affectedTitle = Assert.Single(
-                    Descendants(nativeAffectedTab)
+                    Issue34738Descendants(nativeAffectedTab)
                         .OfType<TextBlock>()
                         .Where(text => text.Text == affectedTab.Title));
                 var referenceIcon = Assert.Single(
-                    Descendants(nativeReferenceTab).OfType<IconElement>());
+                    Issue34738Descendants(nativeReferenceTab).OfType<IconElement>());
                 var affectedIcon = Assert.Single(
-                    Descendants(nativeAffectedTab).OfType<IconElement>());
+                    Issue34738Descendants(nativeAffectedTab).OfType<IconElement>());
                 var titleMatches = expectedIsEnabled
-                    ? HaveSameColor(affectedTitle.Foreground, referenceTitle.Foreground)
-                    : IsGreen(affectedTitle.Foreground);
+                    ? Issue34738IsBlue(affectedTitle.Foreground)
+                    : Issue34738IsGreen(affectedTitle.Foreground);
                 var iconMatches = expectedIsEnabled
-                    ? HaveSameColor(affectedIcon.Foreground, referenceIcon.Foreground)
-                    : IsGreen(affectedIcon.Foreground);
+                    ? Issue34738IsBlue(affectedIcon.Foreground)
+                    : Issue34738IsGreen(affectedIcon.Foreground);
 
                 Assert.True(
+                    nativeReferenceTab.IsEnabled &&
+                    Issue34738IsBlue(referenceTitle.Foreground) &&
+                    Issue34738IsBlue(referenceIcon.Foreground) &&
                     affectedTab.IsEnabled == expectedIsEnabled &&
                     nativeAffectedTab.IsEnabled == expectedIsEnabled &&
                     titleMatches &&
                     iconMatches,
-                    $"Issue34738 affected tab foreground mismatch: expected enabled={expectedIsEnabled}, managed enabled={affectedTab.IsEnabled}, native enabled={nativeAffectedTab.IsEnabled}, title={DescribeColor(affectedTitle.Foreground)}, icon={DescribeColor(affectedIcon.Foreground)}.");
+                    $"Issue34738 affected tab foreground mismatch: expected enabled={expectedIsEnabled}, managed enabled={affectedTab.IsEnabled}, native enabled={nativeAffectedTab.IsEnabled}, reference title={Issue34738DescribeColor(referenceTitle.Foreground)}, reference icon={Issue34738DescribeColor(referenceIcon.Foreground)}, affected title={Issue34738DescribeColor(affectedTitle.Foreground)}, affected icon={Issue34738DescribeColor(affectedIcon.Foreground)}.");
             });
         }
 
-        static Tab CreateTab(string title) =>
+        static Tab Issue34738CreateTab(string title) =>
             new()
             {
                 Title = title,
@@ -6235,7 +6240,8 @@ namespace Microsoft.Maui.DeviceTests
                 }
             };
 
-        static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+        static IEnumerable<DependencyObject> Issue34738Descendants(
+            DependencyObject parent)
         {
             var count = VisualTreeHelper.GetChildrenCount(parent);
             for (var index = 0; index < count; index++)
@@ -6243,21 +6249,20 @@ namespace Microsoft.Maui.DeviceTests
                 var child = VisualTreeHelper.GetChild(parent, index);
                 yield return child;
 
-                foreach (var descendant in Descendants(child))
+                foreach (var descendant in Issue34738Descendants(child))
                     yield return descendant;
             }
         }
 
-        static bool IsGreen(Brush brush) =>
+        static bool Issue34738IsBlue(Brush brush) =>
+            brush is SolidColorBrush solidColorBrush &&
+            solidColorBrush.Color == Microsoft.UI.Colors.Blue;
+
+        static bool Issue34738IsGreen(Brush brush) =>
             brush is SolidColorBrush solidColorBrush &&
             solidColorBrush.Color == Microsoft.UI.Colors.Green;
 
-        static bool HaveSameColor(Brush actual, Brush expected) =>
-            actual is SolidColorBrush actualColorBrush &&
-            expected is SolidColorBrush expectedColorBrush &&
-            actualColorBrush.Color == expectedColorBrush.Color;
-
-        static string DescribeColor(Brush brush) =>
+        static string Issue34738DescribeColor(Brush brush) =>
             brush is SolidColorBrush solidColorBrush
                 ? solidColorBrush.Color.ToString()
                 : "<non-solid>";
