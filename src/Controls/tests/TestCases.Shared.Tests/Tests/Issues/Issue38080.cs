@@ -32,14 +32,14 @@ public class Issue38080 : _IssuesUITest
 		App.Tap(NavigateButton);
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(WarmupReadyMarker)).IsDisplayed(), Is.True);
 
+		if (!SaveUIDiagnosticInfo("Issue38080-WarmupReady"))
+			throw new InvalidOperationException("Could not capture the Issue 38080 warm-up viewport.");
+
 		var warmupWebView = App.WaitForElement(WarmupWebViewMarker);
 		Assert.That(warmupWebView.IsDisplayed(), Is.True);
 		Assert.That(warmupWebView.GetRect().Width, Is.GreaterThan(0));
 		Assert.That(warmupWebView.GetRect().Height, Is.GreaterThan(0));
 		Assert.That(App.WaitForElement(WarmupContinueButton).IsEnabled(), Is.True);
-
-		if (!SaveUIDiagnosticInfo("Issue38080-WarmupReady"))
-			throw new InvalidOperationException("Could not capture the Issue 38080 warm-up viewport.");
 
 		App.Tap(WarmupContinueButton);
 		App.WaitForElement(ReproPageMarker);
