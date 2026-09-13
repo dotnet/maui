@@ -22,6 +22,9 @@ public class Issue38080 : _IssuesUITest
 		$"//android.webkit.WebView[@package='{AppPackage}' and not(ancestor::android.webkit.WebView)]");
 	static readonly AppiumQuery WarmupWebViewQuery = AppiumQuery.ByXPath(
 		$"//android.webkit.WebView[@package='{AppPackage}' and not(ancestor::android.webkit.WebView)]");
+	static readonly AppiumQuery ReproFillerRowsQuery = AppiumQuery.ByXPath(
+		$"//android.widget.ScrollView[@resource-id='{AppPackage}:id/{ReproPageMarker}']" +
+		"//android.widget.TextView[starts-with(@text, 'Filler row ')]");
 
 	public Issue38080(TestDevice device) : base(device)
 	{
@@ -123,9 +126,21 @@ public class Issue38080 : _IssuesUITest
 			else if (FindElementsForMarker(BottomMarker).Any(element => element.IsDisplayed()))
 				reposition = SlowDragUp;
 
+			if (reposition is null)
+			{
+				var visibleRows = App.FindElements(ReproFillerRowsQuery)
+					.Where(element => element.IsDisplayed())
+					.Select(element => element.GetText())
+					.ToArray();
+				if (AreFillerRowsWithin(visibleRows, 1, 50))
+					reposition = SlowDragDown;
+				else if (AreFillerRowsWithin(visibleRows, 51, 100))
+					reposition = SlowDragUp;
+			}
+
 			if (reposition is not null)
 			{
-				TestContext.WriteLine("Issue38080 fast search exhausted; positioning the intermediate WebView from a verified edge with at most 10 slow real drags.");
+				TestContext.WriteLine("Issue38080 fast search exhausted; positioning the intermediate WebView from a verified edge or filler-row range with at most 10 slow real drags.");
 				PrepareUntilDisplayed(WebViewMarker, reposition, "RepositionWebView");
 				return;
 			}
@@ -135,6 +150,18 @@ public class Issue38080 : _IssuesUITest
 			TestContext.Error.WriteLine($"Could not capture the viewport while locating '{automationId}': the app is not running.");
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
+	}
+
+	static bool AreFillerRowsWithin(string?[] texts, int first, int last)
+	{
+		const string prefix = "Filler row ";
+		return texts.Length > 0 && texts.All(text =>
+			text is not null &&
+			text.StartsWith(prefix, StringComparison.Ordinal) &&
+			int.TryParse(text.AsSpan(prefix.Length), System.Globalization.NumberStyles.None,
+				System.Globalization.CultureInfo.InvariantCulture, out var row) &&
+			row >= first && row <= last &&
+			text == prefix + row.ToString(System.Globalization.CultureInfo.InvariantCulture));
 	}
 
 	void FlingOuterScrollView(System.Action gesture)
