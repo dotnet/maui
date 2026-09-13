@@ -278,7 +278,12 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			{
 				var actualItem = visualElement.BindingContext;
 				bool isSelected = object.Equals(ItemsView.SelectedItem, actualItem) || ItemsView.SelectedItems.Contains(actualItem);
-				VisualStateManager.GoToState(visualElement, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
+				// Use IsItemSelected instead of GoToState directly so that ChangeVisualState()
+				// has the correct selected state when a pointer-enter/leave or IsEnabled change
+				// fires later. IsElementInSelectedState() reads IsItemSelected, so bypassing it
+				// here (as was done before PR #35421) caused PointerOver-exit and re-enable
+				// events to incorrectly transition the item to Normal instead of Selected.
+				visualElement.IsItemSelected = isSelected;
 
 				// When the item template defines a "Selected" visual state, MAUI
 				// handles the selection appearance. Suppress the native WinUI
@@ -448,10 +453,9 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 			case ItemsViewSelectionMode.Multiple:
 				PlatformView.DeselectAll();
 
-				// Use safe enumeration to avoid ArgumentOutOfRangeException during collection updates
-				int index = 0;
-				foreach (var nativeItem in itemList)
+				for (int index = 0; index < itemList.Count; index++)
 				{
+					var nativeItem = itemList[index];
 					if (nativeItem is ItemTemplateContext2 itemPair && ItemsView.SelectedItems.Contains(itemPair.Item))
 					{
 						PlatformView.Select(index);
@@ -460,7 +464,6 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 					{
 						PlatformView.Select(index);
 					}
-					index++;
 				}
 				break;
 			case ItemsViewSelectionMode.None:
@@ -474,20 +477,18 @@ public partial class CollectionViewHandler2 : ReorderableItemsViewHandler2<Reord
 	}
 
 	/// <summary>
-	/// Finds the index of the specified item in the collection view source, using a single-pass
-	/// iteration. Returns -1 if the item is not found.
+	/// Finds the index without enumerating the projected <see cref="ICollectionView"/>. Returns -1 if the item is not found.
 	/// </summary>
 	static int FindItemIndexInSource(ICollectionView itemList, object targetItem)
 	{
-		int index = 0;
-		foreach (var nativeItem in itemList)
+		for (int index = 0; index < itemList.Count; index++)
 		{
+			var nativeItem = itemList[index];
 			var actualItem = nativeItem is ItemTemplateContext2 itc ? itc.Item : nativeItem;
 			if (object.Equals(actualItem, targetItem))
 			{
 				return index;
 			}
-			index++;
 		}
 		return -1;
 	}

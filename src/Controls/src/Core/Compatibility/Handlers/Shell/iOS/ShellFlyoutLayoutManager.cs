@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public ShellFlyoutLayoutManager(IShellContext context)
 		{
 			_context = context;
-			_context.Shell.PropertyChanged += OnShellPropertyChanged;
+
+			// Only the compatibility renderer subscribes here; handlers use mapper-driven updates.
+			if (context is not Handlers.ShellHandler)
+			{
+				_context.Shell.PropertyChanged += OnShellPropertyChanged;
+			}
+
 			ShellController.StructureChanged += OnStructureChanged;
 		}
 
@@ -77,8 +83,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					sv.Scrolled += ScrollViewScrolled;
 					removeScrolledEvent = () => sv.Scrolled -= ScrollViewScrolled;
-					void ScrollViewScrolled(object sender, ScrolledEventArgs e) =>
-						OnScrolled((nfloat)sv.ScrollY);
+					void ScrollViewScrolled(object sender, ScrolledEventArgs e)
+					{
+						// Use the event only for timing and read the offset from the native view.
+						// OnScrolled works in native offsets (which rest at -headerHeight, since
+						// SetHeaderContentInset carries the header in ContentInset), while the
+						// value ScrollY reports depends on which renderer is in play — the default
+						// handler publishes content coordinates, the compatibility renderer raw
+						// ContentOffset — so converting from it would be right for one and wrong
+						// for the other. With no native view there is no usable offset: in this
+						// convention 0 is not neutral but "scrolled past the header", so skip
+						// rather than collapse the header.
+						if (ScrollView is { } nativeScrollView)
+							OnScrolled(nativeScrollView.ContentOffset.Y);
+					}
 				}
 #pragma warning disable CS0618 // Type or member is obsolete
 				else if (Content is CollectionView cv)
@@ -209,7 +227,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void SetHeaderContentInset()
 		{
-			if (ScrollView is null)
+			// ScrollView may not be attached to a window yet.
+			if (ScrollView is null || ScrollView.Window is null)
 				return;
 
 			var offset = ScrollView.ContentInset.Top;
@@ -221,23 +240,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 				}
 
-				var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
-				if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
-				{
-					// For Default/Fixed, the scroll view frame is positioned below the header by LayoutContent,
-					// so no top content inset is needed and no content offset compensation should be applied.
-					// Applying the compensation (offset = oldInset - 0) would incorrectly scroll the content
-					// down by the old inset amount, hiding the first flyout item behind the header.
-					ScrollView.ContentInset = new UIEdgeInsets(0, 0, 0, 0);
-					UpdateVerticalScrollMode();
-					return;
-				}
-				else
-				{
-					// For Scroll/CollapseOnScroll, the scroll view overlaps the header so the header
-					// can scroll away or shrink. We use content inset to push items below it initially.
-					ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
-				}
+				// We take the measured header height without margin, since the margin is already accounted for in the positioning of the scroll view itself.
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
 			}
 			else
 			{
@@ -325,41 +329,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
-			double contentYOffset = 0;
+			var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
-			if (ShouldHonorSafeArea(HeaderView?.View) ||
-				(HeaderView is null && ShouldHonorSafeArea(Content)))
+			// Honor ISafeAreaView.IgnoreSafeArea and explicit margins (same as LayoutHeader)
+			nfloat safeAreaTop = 0;
+			if (ShouldHonorSafeArea(HeaderView?.View) || (HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
-				// We add the safe area if margin is not explicitly set. This matches the header behavior.
-				contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+				safeAreaTop = safeAreaInsets.Top;
 			}
+			nfloat safeAreaBottom = safeAreaInsets.Bottom;
+
+			var contentY = parentBounds.Y + safeAreaTop;
+			var contentHeight = parentBounds.Height - safeAreaTop - safeAreaBottom - footerHeight;
 
 			if (HeaderView is not null)
 			{
 				if (ScrollView is null)
 				{
-					// The margin is already managed by MAUI's layout system, so we don't need to add it here and we just offset the content by the header's height.				
-					contentYOffset += HeaderView.Frame.Height;
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here
+					// and we just offset the content by the header's height.
+					contentY += HeaderView.Frame.Height;
+					contentHeight -= HeaderView.Frame.Height;
 				}
 				else
 				{
-					var headerBehavior = _context.Shell.FlyoutHeaderBehavior;
-					if (headerBehavior == FlyoutHeaderBehavior.Default || headerBehavior == FlyoutHeaderBehavior.Fixed)
-					{
-						// For Default/Fixed, position the scroll view below the header so items
-						// cannot scroll behind it. No content inset is needed in this case.
-						contentYOffset += HeaderView.Frame.Height;
-					}
-					else
-					{
-						// For Scroll/CollapseOnScroll, the scroll view overlaps the header so the header
-						// can scroll away or shrink. The content inset is managed by SetHeaderContentInset.
-						contentYOffset += HeaderView.View.Margin.VerticalThickness;
-					}
+					// For ScrollView, we need to consider the margin, but we should not consider the header height, since it should overlap with the scroll view.
+					// The content inset is already managed by SetHeaderContentInset.
+					var marginOffset = (nfloat)HeaderView.View.Margin.VerticalThickness;
+					contentY += marginOffset;
+					contentHeight -= marginOffset;
 				}
 			}
 
-			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
+			var contentFrame = new Rect(parentBounds.X, contentY, parentBounds.Width, contentHeight);
 			if (Content is null)
 			{
 				ContentView.Frame = contentFrame.AsCGRect();
@@ -383,11 +385,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(Shell.FlyoutHeaderBehaviorProperty))
 			{
-				SetHeaderContentInset();
-				LayoutParallax();
+				OnFlyoutHeaderBehaviorChanged();
 			}
 			else if (e.Is(Shell.FlyoutVerticalScrollModeProperty))
+			{
 				UpdateVerticalScrollMode();
+			}
+		}
+
+		internal void OnFlyoutHeaderBehaviorChanged()
+		{
+			SetHeaderContentInset();
+			LayoutParallax();
 		}
 
 		public void ViewDidLoad()

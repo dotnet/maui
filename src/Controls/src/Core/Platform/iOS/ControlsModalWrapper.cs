@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal class ControlsModalWrapper : ModalWrapper, IUIAdaptivePresentationControllerDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "The modal handler is owned by this wrapper while presented and is released in Dispose.")]
 		IPlatformViewHandler? _modal;
 		bool _isDisposed;
 		Page Page => ((Page?)_modal?.VirtualView) ?? throw new InvalidOperationException("Page cannot be null here");
@@ -23,11 +25,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 				{
 					var result = style.ToPlatformModalPresentationStyle();
-
-					if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
-					{
-						result = UIKit.UIModalPresentationStyle.FullScreen;
-					}
 
 					if (result == UIKit.UIModalPresentationStyle.FullScreen)
 					{
@@ -206,6 +203,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return ChildViewControllers.Last();
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "The modal page PropertyChanged subscription is removed in Dispose before the modal handler is released.")]
 		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)

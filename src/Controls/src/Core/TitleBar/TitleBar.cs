@@ -54,6 +54,40 @@ namespace Microsoft.Maui.Controls
 #if MACCATALYST
 		static int GetMacCatalystLeadingMargin() =>
 			OperatingSystem.IsMacCatalystVersionAtLeast(26) ? MacCatalystMarginLiquidGlass : MacCatalystMargin;
+
+		bool IsMacCatalystFullScreen()
+		{
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16)
+				&& Window?.Handler?.PlatformView is UIKit.UIWindow uiwindow)
+			{
+				return uiwindow.WindowScene?.FullScreen ?? false;
+			}
+
+			return false;
+		}
+
+		void ApplyMacCatalystMargin()
+		{
+			if (!_isDefaultControlTemplate)
+			{
+				return;
+			}
+
+			if (_templateRoot is not Grid contentGrid)
+			{
+				return;
+			}
+
+			if (IsMacCatalystFullScreen())
+			{
+				contentGrid.Margin = new Thickness(0);
+				return;
+			}
+
+			contentGrid.Margin = FlowDirection == FlowDirection.RightToLeft
+				? new Thickness(0, 0, GetMacCatalystLeadingMargin(), 0)
+				: new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0);
+		}
 #endif
 
 		// Margin space (150px) required for Windows title bar system buttons
@@ -87,9 +121,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
+		/// <summary>Bindable property for <see cref="TitleFontAttributes"/>.</summary>
+		public static readonly BindableProperty TitleFontAttributesProperty =
+			BindableProperty.Create(nameof(TitleFontAttributes), typeof(FontAttributes),
+				typeof(TitleBar), FontAttributes.None);
+
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldLeadingContent)
 			{
@@ -103,58 +142,58 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(LeadingHiddenState);
+				titleBar.ApplyVisibleState(LeadingHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(LeadingVisibleState);
+				titleBar.ApplyVisibleState(LeadingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			var imageSource = newValue as ImageSource;
 			if (imageSource is null || imageSource.IsEmpty)
 			{
-				titlebar.ApplyVisibleState(IconHiddenState);
+				titleBar.ApplyVisibleState(IconHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(IconVisibleState);
+				titleBar.ApplyVisibleState(IconVisibleState);
 			}
 		}
 
 		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(TitleHiddenState);
+				titleBar.ApplyVisibleState(TitleHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(TitleVisibleState);
+				titleBar.ApplyVisibleState(TitleVisibleState);
 			}
 		}
 
 		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(SubtitleHiddenState);
+				titleBar.ApplyVisibleState(SubtitleHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(SubtitleVisibleState);
+				titleBar.ApplyVisibleState(SubtitleVisibleState);
 			}
 		}
 
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldContent)
 			{
@@ -168,18 +207,18 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(ContentHiddenState);
+				titleBar.ApplyVisibleState(ContentHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(ContentVisibleState);
+				titleBar.ApplyVisibleState(ContentVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 
 			if (oldValue is BindableObject oldTrailingContent)
 			{
@@ -193,11 +232,11 @@ namespace Microsoft.Maui.Controls
 
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(TrailingHiddenState);
+				titleBar.ApplyVisibleState(TrailingHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(TrailingVisibleState);
+				titleBar.ApplyVisibleState(TrailingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
@@ -302,6 +341,16 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ForegroundColorProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets the <see cref="FontAttributes"/> applied to the title text.
+		/// Defaults to <see cref="FontAttributes.None"/>.
+		/// </summary>
+		public FontAttributes TitleFontAttributes
+		{
+			get => (FontAttributes)GetValue(TitleFontAttributesProperty);
+			set => SetValue(TitleFontAttributesProperty, value);
+		}
+
 		/// <inheritdoc/>
 		public IList<IView> PassthroughElements { get; private set; }
 
@@ -313,11 +362,18 @@ namespace Microsoft.Maui.Controls
 
 		static ControlTemplate? _defaultTemplate;
 		View? _templateRoot;
+#if MACCATALYST
+		bool _isDefaultControlTemplate;
+#endif
 
 		public TitleBar()
 		{
 			PassthroughElements = new List<IView>();
 			PropertyChanged += TitleBar_PropertyChanged;
+
+#if MACCATALYST
+			SizeChanged += OnSizeChanged;
+#endif
 
 			if (ControlTemplate is null)
 			{
@@ -325,9 +381,21 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+#if MACCATALYST
+		void OnSizeChanged(object? sender, EventArgs e)
+		{
+			ApplyMacCatalystMargin();
+		}
+#endif
+
 		internal void Cleanup()
 		{
 			PropertyChanged -= TitleBar_PropertyChanged;
+
+#if MACCATALYST
+			SizeChanged -= OnSizeChanged;
+#endif
+
 			if (Window is not null)
 			{
 				Window.Activated -= Window_Activated;
@@ -358,6 +426,11 @@ namespace Microsoft.Maui.Controls
 				: TitleBarLTRState;
 
 			ApplyVisibleState(flowDirectionState);
+
+#if MACCATALYST
+			ApplyMacCatalystMargin();
+#endif
+
 		}
 
 		internal void ApplyVisibleState(string stateGroup)
@@ -390,6 +463,10 @@ namespace Microsoft.Maui.Controls
 			var controlTemplate = (this as IControlTemplated);
 
 			_templateRoot = controlTemplate?.TemplateRoot as View;
+
+#if MACCATALYST
+			_isDefaultControlTemplate = ReferenceEquals(ControlTemplate, DefaultTemplate);
+#endif
 
 			if (controlTemplate?.GetTemplateChild(TitleBarLeading) is IView leadingContent)
 			{
@@ -428,7 +505,7 @@ namespace Microsoft.Maui.Controls
 			var contentGrid = new Grid()
 			{
 #if MACCATALYST
-				Margin = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0),
+				Margin = new Thickness(0),
 #endif
 				HorizontalOptions = LayoutOptions.Fill,
 				ColumnDefinitions =
@@ -526,6 +603,11 @@ namespace Microsoft.Maui.Controls
 			titleLabel.SetBinding(
 				Label.TextColorProperty,
 				static (TitleBar tb) => tb.ForegroundColor,
+				source: RelativeBindingSource.TemplatedParent);
+
+			titleLabel.SetBinding(
+				Label.FontAttributesProperty,
+				static (TitleBar tb) => tb.TitleFontAttributes,
 				source: RelativeBindingSource.TemplatedParent);
 
 			var activeVisualState = new VisualState() { Name = TitleBarActiveState };
@@ -630,30 +712,30 @@ namespace Microsoft.Maui.Controls
 
 			// Left-to-Right state (default)
 			var ltrState = new VisualState() { Name = TitleBarLTRState };
+
+#if !MACCATALYST
 			ltrState.Setters.Add(new Setter()
 			{
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
-#if MACCATALYST
-				Value = new Thickness(GetMacCatalystLeadingMargin(), 0, 0, 0)  // System buttons on left in macOS
-#else
 				Value = new Thickness(0, 0, WindowsMargin, 0)  // System buttons on right in Windows
-#endif
 			});
+#endif
+
 			flowDirectionGroup.States.Add(ltrState);
 
 			// Right-to-Left state
 			var rtlState = new VisualState() { Name = TitleBarRTLState };
+
+#if !MACCATALYST
 			rtlState.Setters.Add(new Setter()
 			{
 				Property = MarginProperty,
 				TargetName = TemplateRootName,
-#if MACCATALYST
-				Value = new Thickness(0, 0, GetMacCatalystLeadingMargin(), 0)  // System buttons on right in macOS RTL
-#else
 				Value = new Thickness(WindowsMargin, 0, 0, 0)  // System buttons on left in Windows RTL
-#endif
 			});
+#endif
+
 			flowDirectionGroup.States.Add(rtlState);
 
 			visualStateGroups.Add(flowDirectionGroup);

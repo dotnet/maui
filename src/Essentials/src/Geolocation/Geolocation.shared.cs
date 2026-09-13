@@ -176,10 +176,10 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IGeolocation Default =>
-			defaultImplementation ??= new GeolocationImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new GeolocationImplementation());
 
 		internal static void SetDefault(IGeolocation? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	partial class GeolocationImplementation : IGeolocation

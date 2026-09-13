@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 instead.")]
 	public partial class CarouselViewHandler : ItemsViewHandler<CarouselView>
 	{
 		ItemsViewLayout _layout;
@@ -35,8 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		// TODO: Change the modifier to public in .NET 11.
-		internal static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
+		public static void MapIsEnabled(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			handler.Controller?.CollectionView?.UpdateIsEnabled(carouselView);
 		}

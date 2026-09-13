@@ -16,39 +16,39 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	private readonly ModalErrorHandler _errorHandler;
 
 	[ObservableProperty]
-	private string _name = string.Empty;
+	public partial string Name { get; set; } = string.Empty;
 
 	[ObservableProperty]
-	private string _description = string.Empty;
+	public partial string Description { get; set; } = string.Empty;
 
 	[ObservableProperty]
-	private List<ProjectTask> _tasks = [];
+	public partial List<ProjectTask> Tasks { get; set; } = [];
 
 	[ObservableProperty]
-	private List<Category> _categories = [];
+	public partial List<Category> Categories { get; set; } = [];
 
 	[ObservableProperty]
-	private Category? _category;
+	public partial Category? Category { get; set; }
 
 	[ObservableProperty]
-	private int _categoryIndex = -1;
+	public partial int CategoryIndex { get; set; } = -1;
 
 	[ObservableProperty]
-	private List<Tag> _allTags = [];
+	public partial List<Tag> AllTags { get; set; } = [];
 
 	public IList<object> SelectedTags { get; set; } = new List<object>();
 
 	[ObservableProperty]
-	private IconData _icon;
+	public partial IconData Icon { get; set; } = null!;
 
 	[ObservableProperty]
-	bool _isBusy;
+	public partial bool IsBusy { get; set; }
 
 	[ObservableProperty]
-	private bool _isCategoryPickerExpanded;
+	public partial bool IsCategoryPickerExpanded { get; set; }
 
 	[ObservableProperty]
-	private List<IconData> _icons =	new List<IconData>
+	public partial List<IconData> Icons { get; set; } = new List<IconData>
 	{
 		new IconData { Icon = FluentUI.ribbon_24_regular, Description = "Ribbon Icon" },
 		new IconData { Icon = FluentUI.ribbon_star_24_regular, Description = "Ribbon Star Icon" },
@@ -60,19 +60,11 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 	};
 
 	[ObservableProperty]
-	private ProjectTask? selectedTask;
+	public partial ProjectTask? SelectedTask { get; set; }
 
-	private bool _canDelete;
-
-	public bool CanDelete
-	{
-		get => _canDelete;
-		set
-		{
-			_canDelete = value;
-			DeleteCommand.NotifyCanExecuteChanged();
-        }
-    }
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
+	public partial bool CanDelete { get; set; }
 
     public bool HasCompletedTasks
 		=> _project?.Tasks.Any(t => t.IsCompleted) ?? false;
@@ -84,7 +76,7 @@ public partial class ProjectDetailPageModel : ObservableObject, IQueryAttributab
 		_categoryRepository = categoryRepository;
 		_tagRepository = tagRepository;
 		_errorHandler = errorHandler;
-		_icon = _icons.First();
+		Icon = Icons.First();
 		Tasks = [];
 	}
 

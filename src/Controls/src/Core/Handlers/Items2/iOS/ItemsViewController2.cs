@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public const int EmptyTag = 333;
 		readonly WeakReference<TItemsView> _itemsView;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public Items.IItemsViewSource ItemsSource { get; protected set; }
 		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
@@ -214,26 +215,52 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var collectionView = CollectionView;
 			var visibleCells = collectionView.VisibleCells;
-			List<TemplatedCell2> invalidatedCells = null;
+			List<NSIndexPath> invalidatedIndexPaths = null;
 
 			var visibleCellsLength = visibleCells.Length;
 			for (int n = 0; n < visibleCellsLength; n++)
 			{
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					invalidatedCells ??= [];
-					invalidatedCells.Add(cell);
+					var indexPath = collectionView.IndexPathForCell(cell);
+					if (indexPath is not null && Items.IndexPathHelpers.IsIndexPathValid(ItemsSource, indexPath))
+					{
+						invalidatedIndexPaths ??= [];
+						invalidatedIndexPaths.Add(indexPath);
+					}
 				}
 			}
 
-			if (invalidatedCells is not null)
+			if (invalidatedIndexPaths is not null)
 			{
+				var indexPathsArray = invalidatedIndexPaths.ToArray();
+
+				// Workaround for layout issue observed on iPadOS 18+ with UICollectionViewCompositionalLayout
+				// where self-sizing cells can cause scroll position jumps during invalidation
+				if (ShouldApplyCellReConfiguration())
+				{
+					// Wrap in PerformWithoutAnimation to prevent ReconfigureItems from animating
+					// the scroll position adjustment that would otherwise occur during the layout pass.
+					UIView.PerformWithoutAnimation(() =>
+					{
+						// Use ReconfigureItems (iOS 15+) which is designed for size changes
+						// without full cell recreation - more efficient than ReloadItems
+						collectionView.ReconfigureItems(indexPathsArray);
+					});
+				}
+
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedCells.Select(CollectionView.IndexPathForCell).ToArray());
+				layoutInvalidationContext.InvalidateItems(indexPathsArray);
 				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
 
+		static bool ShouldApplyCellReConfiguration()
+		{
+			return OperatingSystem.IsIOSVersionAtLeast(15);
+		}
+
+    [UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		private void MovedToWindow(object sender, EventArgs e)
 		{
 			if (CollectionView?.Window != null)
@@ -318,6 +345,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				itemsView.UpdateFlowDirection(ItemsView);
 				foreach (var child in ItemsView.LogicalChildrenInternal)
 				{
+					// Skip the empty view element — its flow direction is handled
+					// separately in AlignEmptyView to avoid double application
+					if (child == _emptyViewFormsElement)
+					{
+						continue;
+					}
+
 					if (child is VisualElement ve && ve.Handler?.PlatformView is UIView view)
 					{
 						view.UpdateFlowDirection(ve);
@@ -332,12 +366,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						cell.Label.UpdateFlowDirection(ItemsView);
 					}
 				}
-	
+
 				CollectionView.UpdateFlowDirection(ItemsView);
 			}
 
 			if (_emptyViewDisplayed)
 			{
+				UpdateEmptyViewFlowDirection();
 				AlignEmptyView();
 			}
 
@@ -473,6 +508,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
+		// True when the CV has no items AND no EmptyView is showing.
+		// Uses _isEmpty field (defaults to true, updated in CheckForEmptySource) rather than
+		// ItemsSource?.ItemCount == 0 to correctly handle a null ItemsSource.
+		// Exposed so the handler can avoid the expansive-size fallback without
+		// reaching into _emptyViewDisplayed or ItemsSource directly.
+		internal bool IsEmpty => _isEmpty && !_emptyViewDisplayed;
+
 		internal UICollectionViewScrollDirection GetScrollDirection()
 		{
 			return ScrollDirection;
@@ -541,35 +583,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			bool isRtl;
+			// Keep the empty view inside the collection view so its pan gesture can drive pull-to-refresh.
+			// In RTL, cancel the collection layout's coordinate-system flip; content flow direction is applied below.
+			var transform = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+				? CGAffineTransform.MakeScale(-1, 1)
+				: CGAffineTransform.MakeIdentity();
 
-			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
-				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
-			else
-				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
-
-			if (isRtl)
+			if (!_emptyUIView.Transform.Equals(transform))
 			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					return;
-				}
-
-				FlipEmptyView();
-			}
-			else
-			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					FlipEmptyView();
-				}
+				_emptyUIView.Transform = transform;
 			}
 		}
 
-		void FlipEmptyView()
+		void UpdateEmptyViewFlowDirection()
 		{
-			// Flip the empty view 180 degrees around the X axis 
-			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
+			if (_emptyViewFormsElement is not null)
+			{
+				if (_emptyViewFormsElement.Handler?.PlatformView is UIView emptyView)
+				{
+					emptyView.UpdateFlowDirection(_emptyViewFormsElement);
+				}
+			}
+			else if (_emptyUIView is UILabel label)
+			{
+				// For UILabel, set the text alignment to center to ensure consistent behavior with Windows and Android
+				label.TextAlignment = UITextAlignment.Center;
+				label.SemanticContentAttribute = ItemsView.FlowDirection switch
+				{
+					FlowDirection.RightToLeft => UISemanticContentAttribute.ForceRightToLeft,
+					FlowDirection.LeftToRight => UISemanticContentAttribute.ForceLeftToRight,
+					_ => CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft
+						? UISemanticContentAttribute.ForceRightToLeft
+						: UISemanticContentAttribute.ForceLeftToRight
+				};
+			}
 		}
 
 		void ShowEmptyView()
@@ -587,9 +634,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
+			UpdateEmptyViewFlowDirection();
 			LayoutEmptyView();
 
-			AlignEmptyView();
 			_emptyViewDisplayed = true;
 		}
 
@@ -638,7 +685,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 			}
 
-			_emptyUIView.Frame = frame;
+			if (!_emptyUIView.Frame.Equals(frame))
+			{
+				// UIKit's Frame is undefined under a non-identity transform.
+				_emptyUIView.Transform = CGAffineTransform.MakeIdentity();
+				_emptyUIView.Frame = frame;
+			}
+
+			AlignEmptyView();
 
 			return frame;
 		}

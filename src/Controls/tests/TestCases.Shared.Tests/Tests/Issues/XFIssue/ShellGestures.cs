@@ -15,10 +15,6 @@ public class ShellGestures : _IssuesUITest
 	const string SwipeGestureSuccessId = "SwipeGestureSuccessId";
 	const string TableViewTitle = "Table View";
 	const string TableViewId = "TableViewId";
-	const string ListViewTitle = "List View";
-	const string ListViewId = "ListViewId";
-
-
 	public override string Issue => "Shell Gestures Test";
 	[Test]
 	[Category(UITestCategories.Gestures)]
@@ -42,16 +38,5 @@ public class ShellGestures : _IssuesUITest
 		App.WaitForNoElement("section1");
 	}
 
-	[Test]
-	[Category(UITestCategories.ListView)]
-	public void ListViewScroll()
-	{
-		App.TapInShellFlyout(ListViewTitle);
-		App.WaitForElement(ListViewId);
-		App.ScrollDown(ListViewId, ScrollStrategy.Gesture, 0.20, 200);
-
-		// Verifying that first item in ListView is not visible also confirms that the ListView has scrolled.
-		App.WaitForNoElement("0 Entry");
-	}
 }
 #endif

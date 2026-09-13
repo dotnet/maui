@@ -9,6 +9,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
+	[Obsolete("This type is obsolete on iOS and Mac Catalyst. Use Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewController2<TItemsView> instead.")]
 	public class SelectableItemsViewController<TItemsView> : StructuredItemsViewController<TItemsView>
 		where TItemsView : SelectableItemsView
 	{
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
 			{
 				return;
 			}
@@ -35,7 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView?.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null || !ItemsView.IsEnabled)
 			{
 				return;
 			}
@@ -185,6 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateSelectionMode()
 		{
 			var mode = ItemsView.SelectionMode;
+			var isEnabled = ItemsView.IsEnabled;
 
 			switch (mode)
 			{
@@ -194,13 +196,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
-					CollectionView.AllowsSelection = true;
+					CollectionView.AllowsSelection = isEnabled;
 					CollectionView.AllowsMultipleSelection = false;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
-					CollectionView.AllowsSelection = true;
-					CollectionView.AllowsMultipleSelection = true;
+					CollectionView.AllowsSelection = isEnabled;
+					CollectionView.AllowsMultipleSelection = isEnabled;
 					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}

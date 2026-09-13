@@ -99,6 +99,24 @@ namespace Microsoft.Maui.Platform
 			textField.UpdateFont(textStyle, fontManager);
 		}
 
+		internal static void UpdateClearButtonVisibility(this UISearchBar uiSearchBar, bool hasText)
+		{
+			if (OperatingSystem.IsMacCatalyst())
+			{
+				var clearButton = uiSearchBar.GetClearButton();
+
+				if (clearButton != null)
+				{
+					var shouldHide = !hasText;
+
+					if (clearButton.Hidden != shouldHide)
+					{
+						clearButton.Hidden = shouldHide;
+					}
+				}
+			}
+		}
+
 		public static void UpdateVerticalTextAlignment(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UpdateVerticalTextAlignment(searchBar, null);
@@ -425,23 +443,28 @@ namespace Microsoft.Maui.Platform
 			int cursorPosition = searchBar.CursorPosition;
 			int selectionLength = searchBar.SelectionLength;
 
-			void UpdateSelection()
-			{
-				if (textField is not null && textField.Handle != IntPtr.Zero)
-				{
-					UITextPosition start = GetSelectionStart(textField, cursorPosition, out int startOffset);
-					UITextPosition end = GetSelectionEnd(textField, start, startOffset, selectionLength);
-					textField.SelectedTextRange = textField.GetTextRange(start, end);
-				}
-			}
-
 			if (searchBar.IsFocused)
 			{
-				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(UpdateSelection);
+				DispatchSelectionUpdate(textField, cursorPosition, selectionLength);
 			}
 			else
 			{
-				UpdateSelection();
+				UpdateSelection(textField, cursorPosition, selectionLength);
+			}
+		}
+
+		static void DispatchSelectionUpdate(UITextField textField, int cursorPosition, int selectionLength)
+		{
+			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() => UpdateSelection(textField, cursorPosition, selectionLength));
+		}
+
+		static void UpdateSelection(UITextField textField, int cursorPosition, int selectionLength)
+		{
+			if (textField is not null && textField.Handle != IntPtr.Zero)
+			{
+				UITextPosition start = GetSelectionStart(textField, cursorPosition, out int startOffset);
+				UITextPosition end = GetSelectionEnd(textField, start, startOffset, selectionLength);
+				textField.SelectedTextRange = textField.GetTextRange(start, end);
 			}
 		}
 
@@ -460,5 +483,7 @@ namespace Microsoft.Maui.Platform
 			var end = textField.GetPosition(start, endOffset - startOffset);
 			return end ?? start;
 		}
+		internal static UIButton? GetClearButton(this UISearchBar searchBar) =>
+			searchBar.GetSearchTextField()?.ValueForKey(new NSString("clearButton")) as UIButton;
 	}
 }

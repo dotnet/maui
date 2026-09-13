@@ -13,10 +13,12 @@ public class TimePickerViewModel : INotifyPropertyChanged
 	private string _fontFamily;
 	private double _fontSize = -1.0d;
 	private string _format = "hh:mm tt";
+	private bool _fontAutoScalingEnabled = true;
 	private bool _isEnabled = true;
+	private bool _isOpen;
 	private bool _isVisible = true;
 	private Shadow _shadow;
-	private TimeSpan _time = new TimeSpan(10, 0, 0);
+	private TimeSpan? _time = new TimeSpan(10, 0, 0);
 	private Color _textColor;
 	private CultureInfo _culture;
 
@@ -95,6 +97,19 @@ public class TimePickerViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool FontAutoScalingEnabled
+	{
+		get => _fontAutoScalingEnabled;
+		set
+		{
+			if (_fontAutoScalingEnabled != value)
+			{
+				_fontAutoScalingEnabled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public bool IsEnabled
 	{
 		get => _isEnabled;
@@ -103,6 +118,19 @@ public class TimePickerViewModel : INotifyPropertyChanged
 			if (_isEnabled != value)
 			{
 				_isEnabled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsOpen
+	{
+		get => _isOpen;
+		set
+		{
+			if (_isOpen != value)
+			{
+				_isOpen = value;
 				OnPropertyChanged();
 			}
 		}
@@ -134,7 +162,7 @@ public class TimePickerViewModel : INotifyPropertyChanged
 		}
 	}
 
-	public TimeSpan Time
+	public TimeSpan? Time
 	{
 		get => _time;
 		set
@@ -173,6 +201,24 @@ public class TimePickerViewModel : INotifyPropertyChanged
 	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
+
+	public void ResetToDefaults()
+	{
+		CharacterSpacing = 0.0d;
+		FlowDirection = FlowDirection.MatchParent;
+		FontAttributes = FontAttributes.None;
+		FontFamily = null;
+		FontSize = -1.0d;
+		Format = "hh:mm tt";
+		FontAutoScalingEnabled = true;
+		IsEnabled = true;
+		IsOpen = false;
+		IsVisible = true;
+		Shadow = null;
+		Time = new TimeSpan(10, 0, 0);
+		TextColor = null;
+		Culture = new CultureInfo("en-US");
+	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{

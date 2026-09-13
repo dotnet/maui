@@ -14,8 +14,8 @@
             <NavigationViewItem.InfoBadge>
                 <InfoBadge
                     Value="{Binding BadgeValue}"
-                    Background="{Binding BadgeBackground}"
-                    Foreground="{Binding BadgeForeground}"
+                    Background="{Binding BadgeBackground, TargetNullValue={ThemeResource InfoBadgeBackground}}"
+                    Foreground="{Binding BadgeForeground, TargetNullValue={ThemeResource InfoBadgeForeground}}"
                     Visibility="{Binding BadgeVisibility}" />
             </NavigationViewItem.InfoBadge>
         </NavigationViewItem>

@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Runtime.CompilerServices;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Text;
 using Android.Views;
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Platform
 	public static class TextViewExtensions
 	{
 		static readonly ConditionalWeakTable<TextView, StrongBox<int>> s_htmlGenerations = new();
+		static readonly ConditionalWeakTable<TextView, ColorStateList> defaultTextColors = new();
 
 		public static void UpdateTextPlainText(this TextView textView, IText label)
 		{
@@ -54,12 +56,29 @@ namespace Microsoft.Maui.Platform
 			SetTextHtml();
 		}
 
-		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle)
-		{
-			var textColor = textStyle.TextColor;
+		public static void UpdateTextColor(this TextView textView, ITextStyle textStyle) =>
+			textView.UpdateTextColor(textStyle.TextColor);
 
-			if (textColor != null)
-				textView.SetTextColor(textColor.ToPlatform());
+		// Applies an already-resolved text color, restoring the cached themed default when the color
+		// is null. Callers that resolve the color themselves (for example the SwipeItem handler, which
+		// also applies a background-contrast fallback) route through here so a later null still resets
+		// the TextView instead of leaving a stale color.
+		internal static void UpdateTextColor(this TextView textView, Microsoft.Maui.Graphics.Color? textColor)
+		{
+			// Cache the original themed TextColors the first time this control is updated.
+			if (textView.TextColors is ColorStateList currentColors)
+			{
+				defaultTextColors.GetValue(textView, _ => currentColors);
+			}
+
+			if (textColor is null)
+			{
+				var defaultColors = defaultTextColors.TryGetValue(textView, out var cached) ? cached : null;
+				textView.SetTextColor(defaultColors);
+				return;
+			}
+
+			textView.SetTextColor(textColor.ToPlatform());
 		}
 
 		public static void UpdateFont(this TextView textView, ITextStyle textStyle, IFontManager fontManager)

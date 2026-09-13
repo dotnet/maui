@@ -34,20 +34,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			nameof(InputTransparent), typeof(bool), typeof(VisualElement), default(bool),
+			nameof(InputTransparent), typeof(bool), typeof(VisualElement), BooleanBoxes.FalseBox,
 			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
-		/// <summary>
-		/// Gets the explicit value of <see cref="IsEnabled"/> set directly on this element,
-		/// before coercion by <see cref="IsEnabledCore"/> which factors in parent state.
-		/// </summary>
-		internal bool IsExplicitlyEnabled => _isEnabledExplicit;
-
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
-			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
+			typeof(VisualElement), BooleanBoxes.TrueBox, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly(nameof(X), typeof(double), typeof(VisualElement), default(double));
 
@@ -276,7 +270,7 @@ namespace Microsoft.Maui.Controls
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
-		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
+		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), BooleanBoxes.TrueBox,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
@@ -642,7 +636,7 @@ namespace Microsoft.Maui.Controls
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
-			set { SetValue(InputTransparentProperty, value); }
+			set { SetValue(InputTransparentProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -655,7 +649,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
-			set { SetValue(IsEnabledProperty, value); }
+			set { SetValue(IsEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -728,7 +722,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
-			set { SetValue(IsVisibleProperty, value); }
+			set { SetValue(IsVisibleProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -1191,7 +1185,10 @@ namespace Microsoft.Maui.Controls
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged -= OnResourcesChanged;
 				_resources = value;
-				OnResourcesChanged(value);
+				// Use key-only propagation with an on-demand resolver to avoid resolving lazy resources (issue #35500).
+				OnResourcesChangedKeys(
+					value?.MergedResourcesKeys,
+					key => value is not null && value.TryGetValue(key, out var resource) ? resource : null);
 				if (_resources != null)
 					((IResourceDictionary)_resources).ValuesChanged += OnResourcesChanged;
 				OnPropertyChanged();
@@ -1616,8 +1613,9 @@ namespace Microsoft.Maui.Controls
 
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 			foreach (KeyValuePair<string, object> value in values)
 			{
 				if (innerKeys.Add(value.Key))
@@ -1644,15 +1642,16 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1680,10 +1679,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys);
 		}
@@ -1699,15 +1698,16 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			// Build a set of keys we already have in our resources (child takes precedence)
+			// Build a set of keys we already have in our resources (child takes precedence).
+			// Iterate keys only to avoid resolving lazy resources (issue #35500).
 			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
-			foreach (KeyValuePair<string, object> c in Resources)
-				innerKeys.Add(c.Key);
+			foreach (string key in Resources.Keys)
+				innerKeys.Add(key);
 
 			// Filter parent keys - only include keys we don't have, except style classes which get merged
 			var filteredKeys = new List<string>();
 			var mergedStyleClasses = new List<KeyValuePair<string, object>>();
-			
+
 			foreach (string key in keys)
 			{
 				if (innerKeys.Add(key))
@@ -1733,10 +1733,10 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			
+
 			if (mergedStyleClasses.Count > 0)
 				OnResourcesChanged(mergedStyleClasses);
-			
+
 			if (filteredKeys.Count != 0)
 				OnResourcesChangedKeys(filteredKeys, resolver);
 		}
@@ -1761,6 +1761,29 @@ namespace Microsoft.Maui.Controls
 		internal void ChangeVisualStateInternal() => ChangeVisualState();
 
 		bool _isPointerOver;
+		bool _isItemSelected;
+
+		/// <summary>
+		/// Gets or sets whether this element is in the Selected visual state.
+		/// Platform handlers (CollectionView, Shell flyout, IndicatorView) use this property
+		/// to select/deselect items. The setter includes an equality guard to avoid redundant
+		/// state recomputation and routes through <see cref="ChangeVisualState"/> so that
+		/// IsEnabled and other state priorities (Disabled, PointerOver, Normal) are respected.
+		/// </summary>
+		internal bool IsItemSelected
+		{
+			get => _isItemSelected;
+			set
+			{
+				if (_isItemSelected == value)
+				{
+					return;
+				}
+
+				_isItemSelected = value;
+				ChangeVisualState();
+			}
+		}
 
 		internal bool IsPointerOver
 		{
@@ -1782,26 +1805,37 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsEnabled)
+			try
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
-			}
-			else
-			{
-				bool isSelected = this.IsElementInSelectedState();
-				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
-												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else
+				{
+					bool isSelected = this.IsElementInSelectedState();
+					string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+													: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
 
-				VisualStateManager.GoToState(this, targetState);
-			}
+					VisualStateManager.GoToState(this, targetState);
+				}
 
-			if (IsEnabled)
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
+			}
+			catch (InvalidOperationException)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// Swallow "PlatformView cannot be null here" thrown when a visual state cascade fans out
+				// during handler disconnect (e.g. on Windows: navigating away from a focused control runs
+				// UpdateIsFocused(false) inside DisconnectHandler -> ChangeVisualState -> VSM Setter ->
+				// mapper -> strongly-typed PlatformView accessor). The handler/PlatformView has already
+				// been released, so there is nothing for the mapper to update. See dotnet/maui#27101.
 			}
 		}
 
@@ -1843,10 +1877,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._isEnabledExplicit = (bool)value;
-				return visualElement.IsEnabledCore;
+				return BooleanBoxes.Box(visualElement.IsEnabledCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -1866,10 +1900,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is VisualElement visualElement)
 			{
 				visualElement._inputTransparentExplicit = (bool)value;
-				return visualElement.InputTransparentCore;
+				return BooleanBoxes.Box(visualElement.InputTransparentCore);
 			}
 
-			return false;
+			return BooleanBoxes.FalseBox;
 		}
 
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -2179,7 +2213,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>
@@ -2570,6 +2604,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		partial void HandlePlatformUnloadedLoaded();
+
+#if IOS || MACCATALYST
+		/// <summary>
+		/// Re-evaluates the platform loaded/unloaded state for this element.
+		/// Called by handlers when the platform view enters the window asynchronously
+		/// (e.g., UINavigationController.ViewDidAppear under UITabBarController)
+		/// and the initial KVO-based loaded watcher may not have fired.
+		/// </summary>
+		internal void RefreshPlatformLoadedStatus() => HandlePlatformUnloadedLoaded();
+#endif
 
 		internal IView? ParentView => ((this as IView)?.Parent as IView);
 #nullable disable

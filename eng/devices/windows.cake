@@ -71,15 +71,43 @@ Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
 {
-	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key
+	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key.
+	// Open read-only first so we can detect an existing cert without requiring admin. Only escalate
+	// to ReadWrite (which requires admin on LocalMachine) when we actually need to create the cert.
 	var localTrustedPeopleStore = new X509Store("TrustedPeople", StoreLocation.LocalMachine);
-	localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
+	localTrustedPeopleStore.Open(OpenFlags.ReadOnly);
+	var expectedSubject = "CN=" + certCN;
+	certificateThumbprint = localTrustedPeopleStore.Certificates
+		.Cast<X509Certificate2>()
+		.FirstOrDefault(c => c.Subject == expectedSubject)?.Thumbprint;
+	localTrustedPeopleStore.Close();
 
-	// We need to have the key also in CurrentUser -> My so that the msix can be built and signed
-	// with the key by passing the key's thumbprint to the build
-	var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
-	currentUserMyStore.Open(OpenFlags.ReadWrite);
-	certificateThumbprint = localTrustedPeopleStore.Certificates.FirstOrDefault(c => c.Subject.Contains(certCN))?.Thumbprint;
+	// If a cert exists, verify it has a usable user-scoped private key in CurrentUser\My. A cert
+	// installed by an older version of this script may reference a private key in the machine key
+	// container (C:\ProgramData\Microsoft\Crypto\...), which is unreadable from a non-elevated
+	// process — signtool would then fail mid-build with an opaque "No certificates were found that
+	// met all the given criteria". If unusable, remove the stale entries and fall through to the
+	// creation path below.
+	if (!string.IsNullOrEmpty(certificateThumbprint) && !IsCurrentUserSigningCertUsable(certificateThumbprint))
+	{
+		Information("Existing cert {0} has no usable user-scoped private key; removing and recreating.", certificateThumbprint);
+		try
+		{
+			RemoveCertByThumbprint(StoreLocation.LocalMachine, "TrustedPeople", certificateThumbprint);
+			RemoveCertByThumbprint(StoreLocation.CurrentUser, "My", certificateThumbprint);
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Cert " + certificateThumbprint + " exists in LocalMachine\\TrustedPeople but its private key " +
+				"is not accessible from this non-elevated process, and removing the stale cert also requires " +
+				"elevation. Please remove the stale entries manually and re-run this task elevated once:\n" +
+				"  Remove-Item Cert:\\LocalMachine\\TrustedPeople\\" + certificateThumbprint + "\n" +
+				"  Remove-Item Cert:\\CurrentUser\\My\\" + certificateThumbprint,
+				ex);
+		}
+		certificateThumbprint = null;
+	}
 
 	if (string.IsNullOrEmpty(certificateThumbprint))
 	{
@@ -111,17 +139,109 @@ Task("GenerateMsixCert")
 			cert.FriendlyName = certCN;
 		}
 
-		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+		// Store the private key in the *user* key container (not the machine container) so the
+		// current non-elevated user can use it to sign. LocalMachine\TrustedPeople only needs the
+		// cert's public key for sideload trust validation, so a user-scope private key is enough.
+		// Using MachineKeySet here would put the key in C:\ProgramData\Microsoft\Crypto\...
+		// which is unreadable from a non-admin process — signtool then fails with "No certificates
+		// were found that met all the given criteria" even though the cert is visible in the store.
+		var tmpCert = new X509Certificate2(cert.Export(X509ContentType.Pfx), "", X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.PersistKeySet);
 		certificateThumbprint = tmpCert.Thumbprint;
-		localTrustedPeopleStore.Add(tmpCert);
+
+		// Writing to LocalMachine\TrustedPeople requires admin. If we don't have it, fail with a
+		// clear message rather than the raw "Access is denied" from the store.
+		try
+		{
+			localTrustedPeopleStore.Open(OpenFlags.ReadWrite);
+			localTrustedPeopleStore.Add(tmpCert);
+			localTrustedPeopleStore.Close();
+		}
+		catch (System.Security.Cryptography.CryptographicException ex)
+		{
+			throw new Exception(
+				"Failed to install signing cert into LocalMachine\\TrustedPeople. " +
+				"This step requires an elevated (administrator) shell on first run. " +
+				"After the cert is created once, subsequent runs can be performed without elevation.",
+				ex);
+		}
+
+		// CurrentUser\My only needs admin if the process doesn't own the profile, so do it after
+		// the LocalMachine write succeeded.
+		var currentUserMyStore = new X509Store("My", StoreLocation.CurrentUser);
+		currentUserMyStore.Open(OpenFlags.ReadWrite);
 		currentUserMyStore.Add(tmpCert);
+		currentUserMyStore.Close();
+	}
+	else
+	{
+		Information("Reusing existing cert {0} from CurrentUser\\My.", certificateThumbprint);
 	}
 
-	localTrustedPeopleStore.Close();
-	currentUserMyStore.Close();
-
-	Information("Cert thumbprint: " + certificateThumbprint ?? "null");
+	Information("Cert thumbprint: {0}", certificateThumbprint ?? "null");
 });
+
+// Verifies the cert with the given thumbprint exists in CurrentUser\My and that its private key
+// can actually be used for signing. Uses SignData rather than ExportParameters because reading
+// public parameters never touches the private key container and would succeed even when the key
+// material lives in an inaccessible machine key container.
+bool IsCurrentUserSigningCertUsable(string thumbprint)
+{
+	var store = new X509Store("My", StoreLocation.CurrentUser);
+	try
+	{
+		store.Open(OpenFlags.ReadOnly);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert == null || !cert.HasPrivateKey)
+		{
+			return false;
+		}
+		try
+		{
+			using var key = cert.GetRSAPrivateKey();
+			if (key == null)
+			{
+				return false;
+			}
+			// Exercise the actual signing path; throws CryptographicException when the private key
+			// material is in a container we can't access.
+			key.SignData(Array.Empty<byte>(), System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+			return true;
+		}
+		catch (System.Security.Cryptography.CryptographicException)
+		{
+			return false;
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
+
+// Removes the cert with the given thumbprint from the specified store. Propagates
+// CryptographicException so the caller can surface a meaningful error when removal requires
+// elevation we don't have.
+void RemoveCertByThumbprint(StoreLocation location, string storeName, string thumbprint)
+{
+	var store = new X509Store(storeName, location);
+	try
+	{
+		store.Open(OpenFlags.ReadWrite);
+		var cert = store.Certificates
+			.Cast<X509Certificate2>()
+			.FirstOrDefault(c => c.Thumbprint == thumbprint);
+		if (cert != null)
+		{
+			store.Remove(cert);
+		}
+	}
+	finally
+	{
+		store.Close();
+	}
+}
 
 Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
@@ -201,29 +321,20 @@ Task("buildOnly")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-// Helper function to wait for a specific test result file with timeout
-Func<string, string, bool> WaitForCategoryTestResult = (string expectedFile, string categoryName) => {
-	var timeoutInSeconds = 480; // 8 minutes per category
-	var waited = 0;
-	
-	Information($"Waiting for test results file: {expectedFile}");
-	
-	while (!FileExists(expectedFile) && waited < timeoutInSeconds) {
-		System.Threading.Thread.Sleep(1000);
-		waited++;
-		
-		if (waited % 10 == 0) { // Log every 10 seconds
-			Information($"Still waiting for {categoryName} test results... ({waited}s)");
-		}
-	}
-	
-	if (FileExists(expectedFile)) {
-		Information($"✓ Found test results for {categoryName} after {waited} seconds");
-		return true;
-	} else {
-		Warning($"✗ Timeout waiting for {categoryName} test results after {waited} seconds");
+// Launch a packaged app via IApplicationActivationManager and wait for it to fully exit.
+// This gives us the real PID (Start-Process shell:AppsFolder\... only returns the launcher PID),
+// so we can synchronously wait for the test runner to finish and release its result-file handle.
+// Returns true if the app exited cleanly within the timeout.
+Func<string, string, int, bool> LaunchPackagedAndWait = (string appArgs, string description, int timeoutSeconds) => {
+	var scriptPath = MakeAbsolute((FilePath)"./Run-PackagedAppAndWait.ps1").FullPath;
+	var psArgs = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" -PackageName \"{PACKAGEID}\" -AppArguments \"{appArgs.Replace("\"", "\\\"")}\" -TimeoutSeconds {timeoutSeconds}";
+	Information($"Launching packaged app ({description}): {appArgs}");
+	var exitCode = StartProcess("powershell", psArgs);
+	if (exitCode != 0) {
+		Warning($"Run-PackagedAppAndWait exited with code {exitCode} for {description}");
 		return false;
 	}
+	return true;
 };
 
 // Helper function to filter categories based on testFilter parameter
@@ -350,28 +461,41 @@ Task("testOnly")
 		var cerPath = cerPaths.First();
 		Information($"Found MSIX, installing: {msixPath}");
 
+		int InstallAppxPackage(FilePath path) {
+			var absPath = MakeAbsolute(path).FullPath;
+			Information("Installing MSIX: {0}", absPath);
+			// $ProgressPreference='SilentlyContinue' suppresses Add-AppxPackage's
+			// progress output which otherwise chokes cake's stdout pipe.
+			return StartProcess("powershell",
+				"-NoProfile -Command \"$ProgressPreference='SilentlyContinue'; Add-AppxPackage -Path '" + absPath + "'; if (-not $?) { exit 1 }\"");
+		}
+
 		// Install dependencies
 		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
 		foreach (var dep in dependencies) {
-			Information("Installing Dependency MSIX: {0}", dep);
 			try {
-				StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
-			} catch { 
+				var depExit = InstallAppxPackage(dep);
+				if (depExit != 0) {
+					Warning($"Failed to install dependency (exit code {depExit}): {dep}");
+				}
+			} catch {
 				Warning($"Failed to install dependency: {dep}");
 			}
 		}
 
 		// Install the DeviceTests app
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		var installExit = InstallAppxPackage(msixPath);
+		if (installExit != 0) {
+			throw new Exception($"Failed to install app MSIX (exit code {installExit}): {msixPath}");
+		}
 
 		if (isControlsProjectTestRun)
 		{
-			// Start the app once, this will trigger the discovery of the test categories
-			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
-			StartProcess("powershell", startArgsInitial);
-
-			Information($"Waiting 10 seconds for category discovery to finish...");
-			System.Threading.Thread.Sleep(10000);
+			// Start the app once to trigger the discovery of the test categories; we wait
+			// for the actual app process to exit, then read the categories file.
+			if (!LaunchPackagedAndWait($"\"{testResultsFile}\" \"-1\"", "category discovery", 120)) {
+				throw new Exception("Category discovery run did not complete successfully");
+			}
 
 			if (!FileExists(testsToRunFile)) {
 				throw new Exception("Test categories file was not created during discovery phase");
@@ -395,15 +519,10 @@ Task("testOnly")
 				var expectedResultFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}_{categoryName}.xml";
 				
 				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
-				
-				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + originalIndex + "\"";
-				Information(startArgs);
 
-				// Start the DeviceTests app for packaged
-				StartProcess("powershell", startArgs);
-
-				// Wait for this specific category's results
-				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+				// Start the DeviceTests app and wait for the process to exit, then verify the result file exists.
+				var launched = LaunchPackagedAndWait($"\"{testResultsFile}\" \"{originalIndex}\"", $"category {categoryName}", 480);
+				if (launched && FileExists(expectedResultFile)) {
 					completedCategories.Add(categoryName);
 					Information($"✓ Category {categoryName} completed successfully");
 				} else {
@@ -414,15 +533,9 @@ Task("testOnly")
 		}
 		else
 		{
-			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
-
-			Information(startArgs);
-
-			// Start the DeviceTests app for packaged
-			StartProcess("powershell", startArgs);
-			
-			// Wait for the single test result file
-			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+			// Start the DeviceTests app and wait for it to fully exit.
+			var launched = LaunchPackagedAndWait($"\"{testResultsFile}\"", "All Tests", 480);
+			if (launched && FileExists(testResultsFile)) {
 				completedCategories.Add("All Tests");
 			} else {
 				failedCategories.Add("All Tests");
@@ -433,11 +546,10 @@ Task("testOnly")
 	{
 		if (isControlsProjectTestRun)
 		{
-			// Start the app once, this will trigger the discovery of the test categories
+			// Start the app once, this will trigger the discovery of the test categories.
+			// Cake's StartProcess blocks until the unpackaged exe exits, so the discovery
+			// file is fully flushed by the time this returns.
 			StartProcess(TEST_APP, testResultsFile + " -1");
-			
-			Information($"Waiting 10 seconds for category discovery to finish...");
-			System.Threading.Thread.Sleep(10000);
 
 			if (!FileExists(testsToRunFile)) {
 				throw new Exception("Test categories file was not created during discovery phase");
@@ -462,25 +574,24 @@ Task("testOnly")
 				
 				Information($"Running category {originalIndex}: {categoryName} (filtered {i + 1}/{filteredCategories.Length})");
 				
-				// Start the DeviceTests app for unpackaged
+				// Start the DeviceTests app for unpackaged — StartProcess blocks until exit.
 				StartProcess(TEST_APP, testResultsFile + " " + originalIndex);
 
-				// Wait for this specific category's results
-				if (WaitForCategoryTestResult(expectedResultFile, categoryName)) {
+				if (FileExists(expectedResultFile)) {
 					completedCategories.Add(categoryName);
 					Information($"✓ Category {categoryName} completed successfully");
 				} else {
 					failedCategories.Add(categoryName);
-					Error($"✗ Category {categoryName} failed or timed out");
+					Error($"✗ Category {categoryName} did not produce a result file: {expectedResultFile}");
 				}
 			}
 		}
 		else
 		{
+			// StartProcess blocks until the unpackaged exe exits.
 			StartProcess(TEST_APP, testResultsFile);
-			
-			// Wait for the single test result file
-			if (WaitForCategoryTestResult(testResultsFile, "All Tests")) {
+
+			if (FileExists(testResultsFile)) {
 				completedCategories.Add("All Tests");
 			} else {
 				failedCategories.Add("All Tests");

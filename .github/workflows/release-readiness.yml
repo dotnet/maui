@@ -1,0 +1,576 @@
+name: Release Readiness
+
+# Unified release-readiness workflow. Each day:
+#  1. detect-trackers: invoke Find-ReleaseReadinessTrackers -AllActiveMajors to enumerate every
+#     active in-flight/candidate branch across all active majors (SR + Preview + RC).
+#  2. matrix expansion: emit one matrix job per tracker (≤ a handful per day).
+#  3. per-tracker readiness: dispatch the right report script based on branchType
+#     ('sr' -> Get-ReleaseReadiness.ps1; 'preview'/'rc' -> Get-PreviewReadiness.ps1)
+#     and write a daily "[Release Readiness]" issue idempotently:
+#       - reuse open tracker issue by canonicalKey marker if it already exists
+#       - otherwise close any older daily issues for the same tracker and create a new one
+#       - skip new-issue creation when the tracker has zero recent commits AND no open tracker issue
+#  4. validate: PR-trigger path runs the same scripts but only validates output — no issue creation.
+#
+# Permissions: the cron/dispatch path requires `issues: write`; PR validation runs with the minimum.
+
+on:
+  schedule:
+    # Every 3h from 08:30 to 20:30 UTC, all 7 days. Runs more often (vs the old
+    # weekdays-only 08:30) so a material change (CI flip, new source PR, milestone
+    # gate) is picked up within ~3h instead of a day — WITHOUT spamming watchers:
+    # the SR engine's semantic-hash no-op skips `gh issue edit` when nothing
+    # material changed, and issue-body edits are notification-silent regardless.
+    - cron: "30 8-20/3 * * *"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Restrict to a single branch (e.g. release/10.0.1xx-sr8 or release/11.0.1xx-preview6). Empty = all detected trackers."
+        required: false
+        default: ""
+      create_issue:
+        description: "Create/update the daily public Release Readiness issue(s)"
+        type: boolean
+        required: false
+        default: true
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '.github/workflows/release-readiness.yml'
+      - '.github/skills/release-readiness/**'
+      - '.github/scripts/shared/MauiReleaseVersioning.psm1'
+
+  # ── Scoped base-repo event triggers (refresh ONLY the affected tracker) ──
+  # These keep trackers fresh between the 3-hourly schedule when a MATERIAL
+  # signal changes, without a full fan-out. The "Detect release trackers" step
+  # maps each event to a BRANCH_FILTER / MAJOR_FILTER so only the relevant
+  # tracker(s) recompute (see that step). All are BASE-REPO events — no fork
+  # code is ever checked out or executed — and every attacker-influencable
+  # field (issue/milestone title, label name) is read via env:, never inlined
+  # into a run: block. pull_request_target is deliberately NOT used (fork
+  # secret-exfil vector).
+  issues:
+    # A regressed-in-* / high-priority label added or an issue closed changes
+    # the regression + high-priority sections of the affected major's tracker.
+    types: [labeled, closed]
+  milestone:
+    # Creating/closing a milestone flips ship-check gates (e.g. the preview
+    # milestone existence check).
+    types: [created, closed]
+  push:
+    # A push advances HEAD on a tracked line, which is exactly what flips CI
+    # freshness to stale. No path filter: any commit on these branches matters.
+    branches:
+      - main
+      - net11.0
+      - 'release/**'
+
+permissions:
+  contents: read
+
+# Run-level concurrency. Keyed by event + PR/branch so redundant runs of the SAME
+# kind collapse. cancel-in-progress is TRUE only for pull_request (a new push
+# supersedes a stale validation — saves CI) and FALSE for every writer event
+# (schedule / workflow_dispatch / push / issues / milestone): such a run must
+# never be cancelled mid-flight, because its per-tracker job may be part-way
+# through a `gh issue edit` that splices human-authored Release Captain Notes.
+# cancel-in-progress:false does NOT let bursts pile up — GitHub keeps at most one
+# in-progress run plus one pending run per group and cancels any older PENDING
+# run, so a flurry of pushes/labels collapses to (running + latest-pending)
+# without ever killing the in-flight writer. That bounds the request budget while
+# keeping the issue edit atomic. NOTE: this run-level group only serializes runs
+# of the SAME event kind. The real cross-run guard against two DIFFERENT event
+# kinds racing the same tracker's issue edit is the per-tracker concurrency group
+# on the per-tracker-report job below.
+concurrency:
+  # The pushed branch (github.ref_name) is folded into the key so a burst of pushes to
+  # DIFFERENT tracked branches (main / net11.0 / release/**) does NOT collapse into one
+  # 'push-all' group and drop a needed per-branch refresh when pending-run supersede
+  # cancels the older PENDING run. For non-push events ref_name resolves to the default
+  # branch, so their keys are unchanged (pull_request → PR number; workflow_dispatch →
+  # inputs.branch; schedule/issues/milestone → default branch, i.e. one group each).
+  group: release-readiness-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.branch || github.ref_name || 'all' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────
+  # Job 1 — detect trackers and emit a JSON matrix
+  # ────────────────────────────────────────────────────────────────────
+  detect-trackers:
+    name: Detect release trackers
+    runs-on: ubuntu-latest
+    # Skip PR validation runs (handled by the validate job) and never run on a
+    # fork — the writer path manages issues on github.repository, so restrict the
+    # whole pipeline to the canonical repo (mirrors the org gate in rebase.yml).
+    if: github.event_name != 'pull_request' && github.repository == 'dotnet/maui'
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      has-trackers: ${{ steps.detect.outputs.has-trackers }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Find-Trackers needs full history + tags for tag-existence detection
+
+      - name: Detect release-readiness trackers
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Raw event context. SECURITY: every attacker-influencable field
+          # (issue label names, milestone title) is passed as an env var here and
+          # parsed with jq/grep in the script below — NONE is interpolated into
+          # the run: block via ${{ }}, so untrusted text can never reach the shell
+          # as code. github.ref_name / inputs.branch are likewise env-passed.
+          EVENT_NAME:      ${{ github.event_name }}
+          DISPATCH_BRANCH: ${{ inputs.branch }}
+          PUSH_REF_NAME:   ${{ github.ref_name }}
+          LABELS_JSON:     ${{ toJson(github.event.issue.labels) }}
+          MILESTONE_TITLE: ${{ github.event.milestone.title }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # ── Resolve the triggering event → scope filters ────────────────────
+          # BRANCH_FILTER matches a tracker's branchName/surveyRef exactly;
+          # MAJOR_FILTER is a comma-list of .NET majors matched against
+          # .majorVersion. FANOUT=1 marks the ONLY events for which an empty filter
+          # means "refresh ALL trackers": schedule and workflow_dispatch. For every
+          # scoped EVENT trigger (push / issues / milestone) FANOUT stays 0, so an
+          # empty filter yields an EMPTY matrix and the pipeline short-circuits
+          # (has-trackers=false) instead of fanning out to every tracker. An
+          # unrelated issue close, a non-`regressed-in` label, or a non-versioned
+          # milestone must NOT recompute the world — the 3-hourly schedule backstops
+          # full coverage. This reuses the existing single-tracker plumbing
+          # (workflow_dispatch already fed BRANCH_FILTER) so events only recompute
+          # the tracker(s) they actually affect.
+          BRANCH_FILTER=""
+          MAJOR_FILTER=""
+          FANOUT="0"
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              # Manual refresh. Empty branch ⇒ intentional full fan-out (FANOUT=1);
+              # a specific branch narrows via BRANCH_FILTER below.
+              BRANCH_FILTER="${DISPATCH_BRANCH:-}"
+              FANOUT="1"
+              ;;
+            push)
+              # A push advances HEAD on exactly one branch → refresh the tracker
+              # that surveys it (SR branchName, or a preview surveyRef like net11.0).
+              # A branch with no tracker (e.g. main during an SR-only phase) yields
+              # an empty matrix and the pipeline short-circuits.
+              BRANCH_FILTER="${PUSH_REF_NAME:-}"
+              ;;
+            issues)
+              # Union of the .NET majors named by this issue's regressed-in-<major>*
+              # labels (covers both `labeled` — the new label is already in the set
+              # — and `closed`). Reduced to digits so nothing but a version number
+              # reaches jq. An issue that names no tracked major yields an empty
+              # MAJOR_FILTER and (FANOUT=0) an EMPTY matrix → the run short-circuits
+              # rather than recomputing every tracker for an unrelated close/label.
+              # The next scheduled run still covers it.
+              MAJOR_FILTER="$(
+                printf '%s' "${LABELS_JSON:-[]}" \
+                  | jq -r '.[]?.name // empty' 2>/dev/null \
+                  | grep -oiE 'regressed-in-[0-9]+' \
+                  | grep -oE '[0-9]+' | sort -u | paste -sd, - || true
+              )"
+              ;;
+            milestone)
+              # First version-looking number in the milestone title (".NET 11" →
+              # 11, "10.0.1xx-sr8" → 10). Digits only; a non-versioned title
+              # (e.g. "Backlog") yields an empty MAJOR_FILTER and (FANOUT=0) an
+              # empty matrix → skip, not a full fan-out.
+              MAJOR_FILTER="$(
+                printf '%s' "${MILESTONE_TITLE:-}" \
+                  | grep -oE '[0-9]+' | head -1 || true
+              )"
+              ;;
+            schedule)
+              # The recurring cron: the ONE event that intentionally recomputes
+              # every tracker. Empty filters + FANOUT=1 ⇒ full fan-out.
+              FANOUT="1"
+              ;;
+            *)
+              # Any future/unrecognized event: leave FANOUT=0 so an empty filter
+              # skips rather than surprising us with an unscoped full fan-out. A new
+              # trigger that WANTS fan-out must opt in with its own case arm above.
+              :
+              ;;
+          esac
+          echo "Event='$EVENT_NAME'  BranchFilter='${BRANCH_FILTER}'  MajorFilter='${MAJOR_FILTER}'  Fanout='${FANOUT}'"
+
+          pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+            -AllActiveMajors \
+            -OutputJson trackers.json
+
+          if [ ! -s trackers.json ]; then
+            echo "::error::Find-ReleaseReadinessTrackers produced no JSON"
+            exit 1
+          fi
+
+          # Flatten majors[].trackers[] into a single matrix array. Narrow by
+          # BRANCH_FILTER (exact branchName/surveyRef) OR MAJOR_FILTER (any major
+          # in the comma-list vs .majorVersion). Empty filters keep ALL trackers
+          # ONLY when FANOUT=1 (schedule / workflow_dispatch); for a scoped event
+          # trigger with no computed filter the select matches nothing → empty
+          # matrix → has-trackers=false → the report job is skipped.
+          jq --arg filter "$BRANCH_FILTER" --arg major "$MAJOR_FILTER" --arg fanout "$FANOUT" '
+            [ .majors[].trackers[]
+              | select(
+                  ($fanout == "1" and $filter == "" and $major == "")
+                  or ($filter != "" and (.branchName == $filter or .surveyRef == $filter))
+                  or ($major  != "" and ((.majorVersion | tostring) as $mv | ($major | split(",")) | index($mv) != null))
+                )
+              | {
+                  canonicalKey: .canonicalKey,
+                  branchType:   .branchType,
+                  branchName:   .branchName,
+                  branchExists: .branchExists,
+                  surveyRef:    .surveyRef,
+                  mode:         .mode,
+                  # Detection-time diagnostics only. Never use these fields for
+                  # lifecycle gating: the generated BODY_FILE markers are the
+                  # authoritative report-time state after refs/tags may move.
+                  hotfixInProgress: (.hotfixInProgress // false),
+                  hotfixVersion: (.hotfixVersion // ""),
+                  hotfixCommit: (.hotfixCommit // ""),
+                  majorVersion: .majorVersion,
+                  issueTitle:   .issueTitle,
+                  milestoneName: .milestoneName,
+                  recentCommitCount: .recentCommitCount,
+                  hasRecentActivity: .hasRecentActivity,
+                  expectedTag: (.expectedTag // ""),
+                  # SR-only fields (null for prerelease trackers)
+                  priorSrBranch:    (.priorSrBranch // ""),
+                  regressionLabels: (.regressionLabels // []),
+                  # Prerelease-only fields (null for SR trackers)
+                  previewNumber: (.previewNumber // null),
+                  rcNumber: (.rcNumber // null)
+                }
+            ]
+          ' trackers.json > matrix.json
+
+          MATRIX_LEN=$(jq 'length' matrix.json)
+          echo "Detected $MATRIX_LEN tracker(s)"
+          jq -c '.' matrix.json
+
+          # Encode matrix for GitHub Actions matrix expansion.
+          MATRIX_JSON=$(jq -c '{include: .}' matrix.json)
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+          if [ "$MATRIX_LEN" -gt 0 ]; then
+            echo "has-trackers=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "has-trackers=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload trackers.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness-trackers
+          path: |
+            trackers.json
+            matrix.json
+          retention-days: 30
+
+  # ────────────────────────────────────────────────────────────────────
+  # Job 2 — per-tracker readiness report (one matrix job per tracker)
+  # ────────────────────────────────────────────────────────────────────
+  per-tracker-report:
+    name: ${{ matrix.canonicalKey }} (${{ matrix.branchType }})
+    needs: detect-trackers
+    if: needs.detect-trackers.outputs.has-trackers == 'true'
+    runs-on: ubuntu-latest
+    # Per-tracker writer serialization. This is the load-bearing guard against the
+    # Release Captain Notes clobber race: the "Update or create tracker issue" step
+    # re-reads the live issue body and awk-splices the human-notes block back into the
+    # fresh report just before `gh issue edit`. Two runs writing the SAME tracker
+    # concurrently (e.g. a scheduled run and an event-triggered run — added in a later
+    # commit) could interleave read/splice/edit and silently drop notes. Keying this
+    # group on matrix.canonicalKey forces same-tracker writers to run one-at-a-time
+    # ACROSS runs, regardless of event kind (the run-level group only serializes runs
+    # of the same event kind). Different trackers stay parallel (distinct keys).
+    # cancel-in-progress is FALSE on purpose: serialize, don't cancel, so an in-flight
+    # `gh issue edit` always completes rather than being killed part-way.
+    concurrency:
+      group: release-readiness-tracker-${{ matrix.canonicalKey }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-trackers.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate readiness report
+        id: report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_TYPE:   ${{ matrix.branchType }}
+          BRANCH_NAME:   ${{ matrix.branchName }}
+          BRANCH_EXISTS: ${{ matrix.branchExists }}
+          SURVEY_REF:    ${{ matrix.surveyRef }}
+          MODE:          ${{ matrix.mode }}
+          TRACKER_KEY:   ${{ matrix.canonicalKey }}
+          ISSUE_TITLE:   ${{ matrix.issueTitle }}
+          PRIOR_SR:      ${{ matrix.priorSrBranch }}
+          REG_LABELS:    ${{ join(matrix.regressionLabels, ',') }}
+          EXPECTED_TAG:  ${{ matrix.expectedTag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p readiness-out
+
+          # Detection and report generation are separate jobs. If an in-flight
+          # SR's stable tag lands in that gap, regenerate it as shipped now so
+          # the report body emits authoritative shipped-generation markers.
+          if [ "$BRANCH_TYPE" = "sr" ] \
+             && [ "$MODE" = "in-flight" ] \
+             && [ -n "$EXPECTED_TAG" ] \
+             && git rev-parse --verify --quiet "refs/tags/${EXPECTED_TAG}^{commit}" >/dev/null; then
+            echo "Stable tag ${EXPECTED_TAG} appeared after detection; generating this SR as shipped."
+            MODE="shipped"
+            TRACKER_MAJOR="${TRACKER_KEY#net}"
+            TRACKER_MAJOR="${TRACKER_MAJOR%%-*}"
+            TRACKER_SR="${TRACKER_KEY##*-sr}"
+            ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
+          fi
+
+          if [ "$BRANCH_TYPE" = "sr" ]; then
+            # SR readiness:
+            #   in-flight  → -SrBranch <branchName>           (no Candidate flag)
+            #   candidate  → -SrBranch <priorSrBranch> -Candidate
+            # Find-ReleaseReadinessTrackers's New-RegressionLabelList always
+            # returns at least one label for every SR, so REG_LABELS is never
+            # empty here — wire the labels through directly without the
+            # legacy -InferRegressionLabels fallback.
+            if [ -z "$REG_LABELS" ]; then
+              echo "::error::SR tracker $TRACKER_KEY missing regressionLabels (Find-Trackers should always emit ≥1)"
+              exit 1
+            fi
+            REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
+
+            CANDIDATE_ARG=()
+            if [ "$MODE" = "candidate" ]; then
+              if [ -z "$PRIOR_SR" ]; then
+                echo "::error::SR candidate tracker $TRACKER_KEY missing priorSrBranch"
+                exit 1
+              fi
+              SR_ARG="$PRIOR_SR"
+              CANDIDATE_ARG=(-Candidate)
+            elif [ "$MODE" = "shipped" ]; then
+              # Already-tagged SR: survey the branch directly (same as in-flight),
+              # but pass -Shipped so the rendered header reads mode=shipped rather
+              # than misreporting the post-ship tracker as in-flight.
+              SR_ARG="$BRANCH_NAME"
+              CANDIDATE_ARG=(-Shipped)
+            else
+              SR_ARG="$BRANCH_NAME"
+            fi
+
+            pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+              -SrBranch "$SR_ARG" \
+              "${CANDIDATE_ARG[@]}" \
+              "${REG_LABEL_ARG[@]}" \
+              -TrackerKey "$TRACKER_KEY" \
+              -OutputDir readiness-out
+            BODY_FILE="readiness-out/release-readiness.md"
+
+          elif [ "$BRANCH_TYPE" = "preview" ] || [ "$BRANCH_TYPE" = "rc" ]; then
+            # Prerelease readiness — Get-PreviewReadiness.ps1 takes the
+            # canonical Preview/RC branch name (whether it exists yet or not);
+            # candidate mode flips -SurveyRef to net<major>.0.
+            pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+              -Branch "$BRANCH_NAME" \
+              -Mode "$MODE" \
+              -SurveyRef "$SURVEY_REF" \
+              -TrackerKey "$TRACKER_KEY" \
+              -OutputDir readiness-out \
+              -OutputFormat markdown
+            BODY_FILE="readiness-out/preview-readiness.md"
+          else
+            echo "::error::Unknown branchType '$BRANCH_TYPE'"
+            exit 1
+          fi
+
+          if [ ! -s "$BODY_FILE" ]; then
+            echo "::error::Readiness body file is empty: $BODY_FILE"
+            exit 1
+          fi
+
+          # Reconcile the user-visible title from the generated lifecycle markers
+          # too. A hotfix commit or tag can land between detector and report jobs;
+          # body markers are already authoritative for gating, so the title must
+          # describe the same report-time generation.
+          if [ "$BRANCH_TYPE" = "sr" ]; then
+            REPORT_HOTFIX_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-hotfix: [^>]+ -->$' "$BODY_FILE" || true)
+            REPORT_SHIPPED_MARKER=$(LC_ALL=C grep -m1 -E '^<!-- release-readiness-shipped: [^>]+ -->$' "$BODY_FILE" || true)
+            TRACKER_MAJOR="${TRACKER_KEY#net}"
+            TRACKER_MAJOR="${TRACKER_MAJOR%%-*}"
+            TRACKER_SR="${TRACKER_KEY##*-sr}"
+            if [ -n "$REPORT_HOTFIX_MARKER" ]; then
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_MARKER#<!-- release-readiness-hotfix: }"
+              REPORT_HOTFIX_ID="${REPORT_HOTFIX_ID% -->}"
+              REPORT_HOTFIX_VERSION="${REPORT_HOTFIX_ID%%@*}"
+              if [ "$REPORT_HOTFIX_VERSION" = "version-pending" ]; then
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix version pending (${BRANCH_NAME})"
+              else
+                ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — hotfix ${REPORT_HOTFIX_VERSION} in progress (${BRANCH_NAME})"
+              fi
+              MODE="shipped"
+            elif [ -n "$REPORT_SHIPPED_MARKER" ]; then
+              ISSUE_TITLE="[Release Readiness] .NET ${TRACKER_MAJOR} SR${TRACKER_SR} — shipped (${BRANCH_NAME})"
+              MODE="shipped"
+            fi
+          fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "issue_title=$ISSUE_TITLE" >> "$GITHUB_OUTPUT"
+
+          echo "body-file=$BODY_FILE" >> "$GITHUB_OUTPUT"
+          {
+            echo "## ${TRACKER_KEY} (${BRANCH_TYPE})"
+            echo ""
+            cat "$BODY_FILE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-${{ matrix.canonicalKey }}
+          path: readiness-out/
+          retention-days: 30
+
+      - name: Update or create tracker issue
+        # Write for every trigger that reaches this job EXCEPT a workflow_dispatch
+        # that explicitly opted out via create_issue=false. schedule/push/issues/
+        # milestone always write; pull_request never reaches here (separate
+        # validate job, gated by the detect-trackers if:).
+        if: github.event_name != 'workflow_dispatch' || inputs.create_issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRACKER_KEY:        ${{ matrix.canonicalKey }}
+          ISSUE_TITLE:        ${{ steps.report.outputs.issue_title }}
+          MILESTONE_NAME:     ${{ matrix.milestoneName }}
+          BODY_FILE:          ${{ steps.report.outputs.body-file }}
+          RECENT_COMMIT_COUNT: ${{ matrix.recentCommitCount }}
+          MODE:               ${{ steps.report.outputs.mode }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: bash .github/skills/release-readiness/scripts/Update-TrackerIssue.sh
+
+  # ────────────────────────────────────────────────────────────────────
+  # PR validation — run scripts without touching issues
+  # ────────────────────────────────────────────────────────────────────
+  validate:
+    name: Validate (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run unit tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseReadiness.ps1
+          pwsh -NoProfile -File .github/skills/release-readiness/tests/Test-ReleaseHandoff.ps1
+
+      - name: Run Find-Trackers (no issue side-effects)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          pwsh -NoProfile -File .github/skills/release-readiness/scripts/Find-ReleaseReadinessTrackers.ps1 \
+            -AllActiveMajors \
+            -OutputJson trackers.json
+          if [ ! -s trackers.json ]; then
+            echo "::error::Find-ReleaseReadinessTrackers produced no JSON"
+            exit 1
+          fi
+          echo "Detection JSON sample (first 200 lines):"
+          head -200 trackers.json
+
+      - name: Smoke-run report scripts for each detected tracker
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p validate-out
+
+          # For each tracker, just smoke-test the report-generation path (~30s/tracker).
+          jq -c '.majors[].trackers[]' trackers.json | while IFS= read -r tracker; do
+            CANONICAL=$(echo "$tracker"  | jq -r '.canonicalKey')
+            BRANCH_TYPE=$(echo "$tracker" | jq -r '.branchType')
+            BRANCH_NAME=$(echo "$tracker" | jq -r '.branchName')
+            SURVEY_REF=$(echo "$tracker"  | jq -r '.surveyRef')
+            MODE=$(echo "$tracker"        | jq -r '.mode')
+            PRIOR_SR=$(echo "$tracker"    | jq -r '.priorSrBranch // ""')
+            REG_LABELS=$(echo "$tracker"  | jq -r '.regressionLabels // [] | join(",")')
+
+            OUT_DIR="validate-out/${CANONICAL}"
+            mkdir -p "$OUT_DIR"
+
+            echo "::group::Validate ${CANONICAL} (${BRANCH_TYPE})"
+            if [ "$BRANCH_TYPE" = "sr" ]; then
+              # New-RegressionLabelList always emits ≥1 label, so the
+              # -InferRegressionLabels fallback is unreachable. Wire labels
+              # through directly and fail loudly if upstream regressed.
+              if [ -z "$REG_LABELS" ]; then
+                echo "::error::SR tracker $CANONICAL missing regressionLabels"
+                exit 1
+              fi
+              REG_LABEL_ARG=(-RegressionLabels "$REG_LABELS")
+              CANDIDATE_ARG=()
+              if [ "$MODE" = "candidate" ]; then
+                SR_ARG="$PRIOR_SR"
+                CANDIDATE_ARG=(-Candidate)
+              elif [ "$MODE" = "shipped" ]; then
+                # Mirror the production job: survey the branch directly but pass
+                # -Shipped so the smoke-run exercises the shipped code path (header
+                # relabel + semantic-hash mode fold) instead of running as in-flight.
+                SR_ARG="$BRANCH_NAME"
+                CANDIDATE_ARG=(-Shipped)
+              else
+                SR_ARG="$BRANCH_NAME"
+              fi
+              pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-ReleaseReadiness.ps1 \
+                -SrBranch "$SR_ARG" \
+                "${CANDIDATE_ARG[@]}" \
+                "${REG_LABEL_ARG[@]}" \
+                -TrackerKey "$CANONICAL" \
+                -OutputDir "$OUT_DIR"
+            elif [ "$BRANCH_TYPE" = "preview" ] || [ "$BRANCH_TYPE" = "rc" ]; then
+              pwsh -NoProfile -File .github/skills/release-readiness/scripts/Get-PreviewReadiness.ps1 \
+                -Branch "$BRANCH_NAME" \
+                -Mode "$MODE" \
+                -SurveyRef "$SURVEY_REF" \
+                -TrackerKey "$CANONICAL" \
+                -OutputDir "$OUT_DIR" \
+                -OutputFormat markdown
+            fi
+            echo "::endgroup::"
+          done
+
+      - name: Upload validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-readiness-validate
+          path: |
+            trackers.json
+            validate-out/
+          retention-days: 7

@@ -159,10 +159,12 @@ namespace Microsoft.Maui.Controls
 		{
 			bounds = this.ComputeFrame(bounds);
 
-			var platformButton = Handler?.PlatformView as UIButton;
-
-			// Layout the image and title of the button
-			LayoutButton(platformButton, this, bounds);
+			// During animated transitions, UIKit may trigger LayoutSubviews after the handler
+			// has been disconnected. Guard against accessing a null PlatformView.
+			if (Handler?.PlatformView is UIButton platformButton)
+			{
+				LayoutButton(platformButton, this, bounds);
+			}
 
 			return new Size(bounds.Width, bounds.Height);
 		}
@@ -176,6 +178,11 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>TitleEdgeInsets and ImageEdgeInsets are deprecated in iOS 15. The layout process will change with UIButton.Configuration API in the future.</remarks>
 		void LayoutButton(UIButton platformButton, Button button, Rect size)
 		{
+			if (platformButton is null)
+			{
+				return;
+			}
+
 			var layout = button.ContentLayout;
 			var spacing = (nfloat)layout.Spacing;
 			var borderWidth = button.BorderWidth < 0 ? 0 : button.BorderWidth;
@@ -199,15 +206,16 @@ namespace Microsoft.Maui.Controls
 				var imageWidth = image.Size.Width;
 				var imageHeight = image.Size.Height;
 				var sharedSpacing = spacing / 2;
+				var direction = ((IVisualElementController)button).EffectiveFlowDirection.IsRightToLeft() ? -1 : 1;
 
 				// These are just used to shift the image and title to center
 				// Which makes the later math easier to follow				
 				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += titleWidth / 2;
-					imageInsets.Right -= titleWidth / 2;
-					titleInsets.Left -= imageWidth / 2;
-					titleInsets.Right += imageWidth / 2;
+					imageInsets.Left += direction * (titleWidth / 2);
+					imageInsets.Right -= direction * (titleWidth / 2);
+					titleInsets.Left -= direction * (imageWidth / 2);
+					titleInsets.Right += direction * (imageWidth / 2);
 				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
@@ -238,20 +246,20 @@ namespace Microsoft.Maui.Controls
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
-					imageInsets.Left -= (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right += (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left -= direction * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right += direction * ((titleWidth / 2) + sharedSpacing);
 
-					titleInsets.Left += (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right -= (imageWidth / 2) + sharedSpacing;
+					titleInsets.Left += direction * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right -= direction * ((imageWidth / 2) + sharedSpacing);
 
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Right)
 				{
-					imageInsets.Left += (titleWidth / 2) + sharedSpacing;
-					imageInsets.Right -= (titleWidth / 2) + sharedSpacing;
+					imageInsets.Left += direction * ((titleWidth / 2) + sharedSpacing);
+					imageInsets.Right -= direction * ((titleWidth / 2) + sharedSpacing);
 
-					titleInsets.Left -= (imageWidth / 2) + sharedSpacing;
-					titleInsets.Right += (imageWidth / 2) + sharedSpacing;
+					titleInsets.Left -= direction * ((imageWidth / 2) + sharedSpacing);
+					titleInsets.Right += direction * ((imageWidth / 2) + sharedSpacing);
 				}
 			}
 
@@ -442,6 +450,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IButtonHandler handler, Button button)
 		{
 			handler.PlatformView?.UpdateText(button);
+			handler.UpdateValue(nameof(CharacterSpacing));
 		}
 
 		internal static void MapBorderWidth(IButtonHandler handler, Button button)

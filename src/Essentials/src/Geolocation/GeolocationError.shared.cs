@@ -7,12 +7,14 @@ namespace Microsoft.Maui.Devices.Sensors
 	/// </summary>
 	public enum GeolocationError
 	{
+		// Empty remarks clear legacy field remarks when mdoc imports the compiler XML.
 		/// <summary>
 		/// The provider was unable to retrieve any position data.
 		/// On Android this is sent when no location provider is available that satisfies the requested geolocation accuracy.
 		/// On iOS this means getting location data has failed.
 		/// On Windows this means no location data is available from any source.
 		/// </summary>
+		/// <remarks />
 		PositionUnavailable,
 
 		/// <summary>
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// On iOS this means authorization for getting locations has changed.
 		/// On Windows this means location sources are turned off.
 		/// </summary>
+		/// <remarks />
 		Unauthorized,
 	}
 }

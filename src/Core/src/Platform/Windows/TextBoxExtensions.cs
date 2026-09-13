@@ -224,7 +224,13 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCursorPosition(this TextBox textBox, ITextInput entry)
 		{
 			// It seems that the TextBox does not limit the CursorPosition to the Text.Length natively
-			entry.CursorPosition = Math.Min(entry.CursorPosition, textBox.Text.Length);
+			var clampedPos = Math.Min(entry.CursorPosition, textBox.Text.Length);
+
+			// Only write back the clamped value when it actually differs. An unconditional write
+			// would re-enter InputView.OnBindablePropertySet → Handler.UpdateValue in an infinite loop
+			// because that override now forces handler updates even when the value hasn't changed.
+			if (entry.CursorPosition != clampedPos)
+				entry.CursorPosition = clampedPos;
 
 			if (textBox.SelectionStart != entry.CursorPosition)
 				textBox.SelectionStart = entry.CursorPosition;
@@ -233,7 +239,12 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSelectionLength(this TextBox textBox, ITextInput entry)
 		{
 			// It seems that the TextBox does not limit the SelectionLength to the Text.Length natively
-			entry.SelectionLength = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+			var clampedLen = Math.Min(entry.SelectionLength, textBox.Text.Length - textBox.SelectionStart);
+
+			// Only write back the clamped value when it actually differs — see UpdateCursorPosition
+			// comment above for the re-entry rationale.
+			if (entry.SelectionLength != clampedLen)
+				entry.SelectionLength = clampedLen;
 
 			if (textBox.SelectionLength != entry.SelectionLength)
 				textBox.SelectionLength = entry.SelectionLength;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿using System;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -333,11 +334,14 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 		// Using MinWidth (not Width) preserves horizontal scrolling when content exceeds
 		// the viewport — DesiredSize = max(contentWidth, MinWidth), so the ScrollViewer
 		// still sees the full content extent for many-item scenarios.
+		bool itemsWidthChanged = false;
+		var measured = base.MeasureOverride(availableSize);
+
 		if (_isHorizontalLayout && _itemsRepeater is not null)
 		{
 			if (!emptyViewWillFill && !double.IsInfinity(availableSize.Width) && availableSize.Width > 0)
 			{
-				_itemsRepeater.MinWidth = availableSize.Width;
+				itemsWidthChanged = ApplyItemsRepeaterMinWidth(availableSize);
 			}
 			else
 			{
@@ -353,20 +357,51 @@ internal partial class MauiItemsView : UI.Xaml.Controls.ItemsView, IEmptyView
 			_itemsRepeater.ClearValue(MinWidthProperty);
 		}
 
-		var measured = base.MeasureOverride(availableSize);
-
 		// When the EmptyView is visible, stretch it to fill the remaining viewport
 		// space (after Header/Footer/Items) so it occupies the entire available area.
 		// The EmptyView is laid out inside the StackPanel between the items repeater
 		// and the footer; setting MinHeight/MinWidth here pushes the Footer to the
 		// far edge of the viewport when empty.
-		if (SizeEmptyViewToFillViewport(availableSize))
+		bool emptyViewSizeChanged = SizeEmptyViewToFillViewport(availableSize);
+
+		if (emptyViewSizeChanged || itemsWidthChanged)
 		{
 			// MinHeight/MinWidth changed — re-measure so the StackPanel picks it up.
 			measured = base.MeasureOverride(availableSize);
 		}
 
 		return measured;
+	}
+
+	/// <summary>
+	/// Sets the _itemsRepeater MinWidth to the available viewport width minus the
+	/// Header/Footer's own widths, so items stretch to fill the remaining space.
+	/// Returns true if the MinWidth value changed.
+	/// </summary>
+	bool ApplyItemsRepeaterMinWidth(global::Windows.Foundation.Size availableSize)
+	{
+		if (_itemsRepeater is null)
+		{
+			return false;
+		}
+
+		var headerWidth = (_headerContentControl is not null && _headerContentControl.Visibility == WVisibility.Visible)
+			? _headerContentControl.DesiredSize.Width
+			: 0;
+		var footerWidth = (_footerContentControl is not null && _footerContentControl.Visibility == WVisibility.Visible)
+			? _footerContentControl.DesiredSize.Width
+			: 0;
+
+		var remainingWidth = availableSize.Width - headerWidth - footerWidth;
+		var newMinWidth = Math.Max(remainingWidth, 0);
+
+		if (_itemsRepeater.MinWidth == newMinWidth)
+		{
+			return false;
+		}
+
+		_itemsRepeater.MinWidth = newMinWidth;
+		return true;
 	}
 
 	bool SizeEmptyViewToFillViewport(global::Windows.Foundation.Size availableSize)

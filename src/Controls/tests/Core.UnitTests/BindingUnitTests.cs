@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -2564,7 +2565,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// The binding should fail to convert "" to int
 			// and the source property should retain its last valid value (4)
 			entry.SetValueFromRenderer(Entry.TextProperty, "");
-			
+
 			// This is the key assertion - after clearing the Entry, the IntValue
 			// should still be 4 (the last successfully converted value)
 			Assert.Equal(4, vm.IntValue);
@@ -2695,6 +2696,354 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					_value = value;
 					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
 				}
+			}
+		}
+
+		#region Issue 29459 - Dynamic binding switching tests
+
+		// Internal ViewModel for the custom control (matches the bug report pattern)
+		class Issue29459ControlViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			private int _value;
+			public int Value
+			{
+				get => _value;
+				set
+				{
+					if (_value != value)
+					{
+						_value = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			public void Increase() => Value++;
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+
+		// Custom control with internal ViewModel that syncs with bindable property
+		// This matches the exact pattern from the bug report
+		class Issue29459CustomControl : ContentView
+		{
+			public Issue29459ControlViewModel ViewModel { get; } = new();
+
+			public Issue29459CustomControl()
+			{
+				// Sync ViewModel.Value -> BindableProperty Value (like the bug report)
+				ViewModel.PropertyChanged += (s, e) =>
+				{
+					if (e.PropertyName == nameof(Issue29459ControlViewModel.Value))
+					{
+						if (Value != ViewModel.Value)
+						{
+							Value = ViewModel.Value;
+						}
+					}
+				};
+			}
+
+			public static readonly BindableProperty ValueProperty = BindableProperty.Create(
+				propertyName: nameof(Value),
+				returnType: typeof(int),
+				declaringType: typeof(Issue29459CustomControl),
+				defaultValue: 0,
+				defaultBindingMode: BindingMode.TwoWay,
+				propertyChanged: OnValuePropertyChanged);
+
+			private static void OnValuePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+			{
+				// Sync BindableProperty Value -> ViewModel.Value (like the bug report)
+				if (bindable is Issue29459CustomControl control && newValue is int newVal)
+				{
+					control.PropertyChangedCount++;
+					if (control.ViewModel.Value != newVal)
+					{
+						control.ViewModel.Value = newVal;
+					}
+				}
+			}
+
+			public int Value
+			{
+				get => (int)GetValue(ValueProperty);
+				set => SetValue(ValueProperty, value);
+			}
+
+			public int PropertyChangedCount { get; private set; }
+		}
+
+		class Issue29459ViewModel : INotifyPropertyChanged
+		{
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			private int _a;
+			public int A
+			{
+				get => _a;
+				set
+				{
+					if (_a != value)
+					{
+						_a = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			private int _b;
+			public int B
+			{
+				get => _b;
+				set
+				{
+					if (_b != value)
+					{
+						_b = value;
+						OnPropertyChanged();
+					}
+				}
+			}
+
+			protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingTriggersPropertyChanged()
+		{
+			// Arrange: Create control and set up view model
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 0, B = 100 };
+			control.BindingContext = viewModel;
+
+			// Act: Bind to property A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+
+			// Assert: Initial binding should have correct value
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Reset counter for clean measurement
+			int initialCount = control.PropertyChangedCount;
+
+			// Act: Switch to property B
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+
+			// Assert: Switching binding should trigger property changed since value is different
+			Assert.Equal(100, control.Value);
+			Assert.Equal(100, control.ViewModel.Value);
+			Assert.True(control.PropertyChangedCount > initialCount,
+				"PropertyChanged should fire when switching to a binding with a different value");
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingAfterModifyingValueTriggersPropertyChanged()
+		{
+			// This test reproduces the exact scenario from issue #29459:
+			// A --> B (press Increase button on control) --> A (no changes) --> B (should show updated B value)
+			// The key is that the Increase button modifies the INTERNAL ViewModel, not the external one directly
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 0, B = 100 };
+			control.BindingContext = viewModel;
+
+			// Step 1: Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Step 2: Switch to B
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(100, control.Value);
+			Assert.Equal(100, control.ViewModel.Value);
+
+			// Step 3: Press Increase button (this modifies the INTERNAL ViewModel, which syncs to bindable property, which syncs to external viewModel.B)
+			control.ViewModel.Increase();
+			Assert.Equal(101, control.ViewModel.Value);
+			Assert.Equal(101, control.Value);
+			Assert.Equal(101, viewModel.B);
+
+			// Step 4: Switch back to A (without pressing Increase)
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(0, control.Value);
+			Assert.Equal(0, control.ViewModel.Value);
+
+			// Step 5: Switch back to B - THIS IS WHERE THE BUG MANIFESTS
+			// The issue reports that the control's Label shows 0 instead of 101
+			int countBeforeStep5 = control.PropertyChangedCount;
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+
+			// The external viewModel.B should still be 101 (we didn't change it)
+			Assert.Equal(101, viewModel.B);
+
+			// The control's Value (bindable property) should be 101
+			Assert.Equal(101, control.Value);
+
+			// The internal ViewModel should also be synced to 101 - THIS IS THE BUG if it shows 0
+			Assert.Equal(101, control.ViewModel.Value);
+
+			// PropertyChanged must fire when switching to a binding with a different value
+			Assert.True(control.PropertyChangedCount > countBeforeStep5,
+				"PropertyChanged should fire when switching bindings causes a value change");
+		}
+
+		[Fact]
+		public void Issue29459_BindingContextNullAfterSwitchingBindingsRetainsLastBoundValue()
+		{
+			// Documents the post-fix behavior:
+			// When a manual value is written while a TwoWay binding is active, then bindings are switched,
+			// setting BindingContext = null afterwards preserves the last-active binding value (via
+			// the FromBinding snapshot), not the pre-binding manual value.
+			// This is intentional: the fix removes the stale ManualValueSetter that would otherwise
+			// make sameValue=true and suppress propertyChanged when re-applying the same binding.
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 10, B = 20 };
+			control.BindingContext = viewModel;
+
+			// Step 1: Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(10, control.Value);
+
+			// Step 2: Press Increase (manual write while TwoWay binding is active)
+			// This creates a ManualValueSetter entry; the fix removes it on the next binding switch.
+			control.ViewModel.Increase();
+			Assert.Equal(11, control.Value);
+			Assert.Equal(11, viewModel.A); // TwoWay sync propagated the manual write back
+
+			// Step 3: Switch to B — this is where the fix removes the ManualValueSetter
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(20, control.Value);
+
+			// Step 4: Clear the binding context
+			control.BindingContext = null;
+
+			// When the binding context is null the binding re-applies with a null source, which
+			// resolves to the property's default value (0 for int). This is the expected behavior:
+			// clearing the binding context resets bound properties to their defaults.
+			Assert.Equal(0, control.Value);
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingToSameValueMaintainsCorrectValue()
+		{
+			// When switching bindings but the value remains the same,
+			// the value should still be correct
+
+			var control = new Issue29459CustomControl();
+			var viewModel = new Issue29459ViewModel { A = 50, B = 50 }; // Same values
+			control.BindingContext = viewModel;
+
+			// Bind to A
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.A));
+			Assert.Equal(50, control.Value);
+			Assert.Equal(50, control.ViewModel.Value);
+
+			// Switch to B (same value)
+			control.SetBinding(Issue29459CustomControl.ValueProperty, nameof(Issue29459ViewModel.B));
+			Assert.Equal(50, control.Value);
+			Assert.Equal(50, control.ViewModel.Value);
+		}
+
+		[Fact]
+		public void Issue29459_SwitchingBindingWithActiveTriggerAlsoRemovesManualValueSetter()
+		{
+			// Documents intentional behavior: when a higher-priority setter (e.g. Trigger) is
+			// the active specificity AND a ManualValueSetter entry also exists, switching bindings
+			// removes BOTH entries so the new binding's value applies correctly.
+			//
+			// Trade-off: the manually-set fallback value ("manual") is discarded. This is acceptable
+			// because retaining it would suppress propertyChanged notifications on subsequent binding
+			// switches (the original bug). See BindableObject.SetBinding comments for full context.
+
+			var bindable = new MockBindable();
+			var vmA = new NullViewModel { Foo = "alpha" };
+			var vmB = new NullViewModel { Foo = "beta" };
+
+			bindable.BindingContext = vmA;
+			bindable.SetBinding(MockBindable.TextProperty, new Binding(nameof(NullViewModel.Foo)));
+			Assert.Equal("alpha", bindable.Text);
+
+			// Manually set a value — creates a ManualValueSetter entry (clears the TwoWay binding)
+			bindable.Text = "manual";
+			Assert.Equal("manual", bindable.Text);
+
+			// Simulate a Trigger overriding the manual value with higher specificity
+			bindable.SetValueCore(MockBindable.TextProperty, "trigger-value",
+				Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.Default, SetterSpecificity.Trigger);
+			Assert.Equal("trigger-value", bindable.Text);
+
+			// Switch bindings: both the Trigger entry and the ManualValueSetter entry are removed,
+			// then the new binding from vmB is applied correctly.
+			bindable.BindingContext = vmB;
+			bindable.SetBinding(MockBindable.TextProperty, new Binding(nameof(NullViewModel.Foo)));
+
+			// The binding to vmB.Foo should apply; "manual" is intentionally discarded.
+			Assert.Equal("beta", bindable.Text);
+		}
+
+		#endregion
+
+		// Regression tests for https://github.com/dotnet/maui/issues/37245.
+		// A plain static event would pin instance subscribers that never
+		// unsubscribe for the process lifetime.
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Control_NeverSubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: false, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that never subscribed to BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Mitigation_SubscribedAndUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: true);
+
+			Assert.False(await reference.WaitForCollect(),
+				"Subject that unsubscribed from BindingDiagnostics.BindingFailed should be collected.");
+		}
+
+		// Regression: verifies BindingFailed does not strongly retain subscribers.
+		[Fact, Category(TestCategory.Memory)]
+		public async Task BindingDiagnosticsBindingFailed_Leaky_SubscribedButNotUnsubscribed_IsCollected()
+		{
+			var reference = CreateBindingFailedSubscriber(subscribe: true, unsubscribe: false);
+
+			Assert.False(await reference.WaitForCollect(),
+				"BindingDiagnostics.BindingFailed leaks subscribers (issue #37245). " +
+				"Back the event with WeakEventManager (or expose a disposable subscription API) to fix.");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static WeakReference CreateBindingFailedSubscriber(bool subscribe, bool unsubscribe)
+		{
+			var subject = new BindingFailedSubscriber();
+
+			if (subscribe)
+				BindingDiagnostics.BindingFailed += subject.OnBindingFailed;
+
+			if (unsubscribe)
+				BindingDiagnostics.BindingFailed -= subject.OnBindingFailed;
+
+			return new WeakReference(subject);
+		}
+
+		sealed class BindingFailedSubscriber
+		{
+			public void OnBindingFailed(object sender, BindingBaseErrorEventArgs args)
+			{
 			}
 		}
 	}

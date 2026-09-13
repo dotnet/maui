@@ -8,12 +8,16 @@
 		<UseMaui>true</UseMaui>
 		<Nullable>enable</Nullable>
 
+<!--#if (avalonia) -->
+		<AvaloniaControlsMauiGenerateBootstrap>false</AvaloniaControlsMauiGenerateBootstrap>
+<!--#endif -->
+
 	</PropertyGroup>
 
 	<ItemGroup>
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" BaseSize="222,185" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -25,6 +29,9 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_LOG_DEBUG_VERSION" />
+<!--#if (avalonia) -->
+		<PackageReference Include="Avalonia.Controls.Maui" Version="AVALONIA_CONTROLS_MAUI_VERSION" />
+<!--#endif -->
 	</ItemGroup>
 
 </Project>

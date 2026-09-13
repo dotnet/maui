@@ -14,10 +14,11 @@ using AndroidX.AppCompat.Graphics.Drawable;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
+using Google.Android.Material.AppBar;
 using Google.Android.Material.Badge;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Microsoft.Maui.Primitives;
-using AGraphics = Android.Graphics;
 using ATextView = global::Android.Widget.TextView;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = global::Android.Views.View;
@@ -27,9 +28,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ToolbarExtensions
 	{
-		static ColorStateList? _defaultTitleTextColor;
-		static int? _defaultNavigationIconColor;
-
 		// Track which ToolbarItem should currently be associated with each MenuItem ID to prevent race conditions
 		// This prevents stale async icon loading callbacks from updating the wrong toolbar items during navigation
 		static readonly ConcurrentDictionary<int, WeakReference<ToolbarItem>> _menuItemToolbarItemMap = new();
@@ -43,12 +41,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 			bool showNavBar = toolbar.IsVisible;
 			var lp = nativeToolbar.LayoutParameters;
+			var appBar = nativeToolbar.Parent?.GetParentOfType<AppBarLayout>();
 			if (lp == null)
 				return;
 
 			if (!showNavBar)
 			{
 				lp.Height = 0;
+				// Clear stale AppBarLayout padding so MeasuredHeight collapses to 0 and the
+				// inset listener stops consuming the top inset, preventing a blank gap (#34472, #35103).
+				appBar?.SetPadding(0, 0, 0, 0);
 			}
 			else
 			{
@@ -59,7 +61,19 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			nativeToolbar.LayoutParameters = lp;
-			AndroidX.Core.View.ViewCompat.RequestApplyInsets(nativeToolbar);
+			if (!showNavBar && appBar is not null)
+			{
+				// Recalculate safe-area padding after the AppBar collapse updates content bounds.
+				nativeToolbar.Post(() =>
+				{
+					if (nativeToolbar.IsAttachedToWindow && !toolbar.IsVisible)
+						ViewCompat.RequestApplyInsets(nativeToolbar);
+				});
+			}
+			else
+			{
+				ViewCompat.RequestApplyInsets(nativeToolbar);
+			}
 		}
 
 		public static void UpdateTitleIcon(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -112,9 +126,9 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
 			var context =
-					nativeToolbar.Context?.GetThemedContext() ??
-					nativeToolbar.Context ??
-					toolbar.Handler?.MauiContext?.Context;
+				nativeToolbar.Context?.GetThemedContext() ??
+				nativeToolbar.Context ??
+				toolbar.Handler?.MauiContext?.Context;
 
 			if (toolbar.BackButtonVisible)
 			{
@@ -149,11 +163,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 				else
 				{
-					// Reinitialize navigation icon to display flyout (hamburger) menu
-    				// This ensures the icon is shown when back button is not visible
-					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
+					// Preserve any custom flyout icon assigned by ShellToolbarTracker.
+					// Only create a default drawer arrow when no navigation icon exists.
+					nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
+
 					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					{
 						iconDrawable.Progress = 0;
+					}
 
 					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 				}
@@ -182,32 +199,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
+				nativeToolbar.BackgroundTintMode = null;
+				nativeToolbar.BackgroundTintList = null;
 				nativeToolbar.UpdateBackground(barBackground);
-
-				if (Brush.IsNullOrEmpty(barBackground))
-					nativeToolbar.BackgroundTintMode = null;
 			}
+			nativeToolbar.UpdateBarTextColor(toolbar);
 		}
 
 		public static void UpdateIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			var navIconColor = toolbar.IconColor;
-			if (navIconColor is null)
-				return;
-
-			var platformColor = navIconColor.ToPlatform();
-			if (nativeToolbar.NavigationIcon is Drawable navigationIcon)
-			{
-				if (navigationIcon is DrawerArrowDrawable dad)
-					dad.Color = AGraphics.Color.White;
-
-				navigationIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
-
-			if (nativeToolbar.OverflowIcon is Drawable overflowIcon)
-			{
-				overflowIcon.SetColorFilter(platformColor, FilterMode.SrcAtop);
-			}
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+			nativeToolbar.UpdateSystemChrome(toolbar);
 		}
 
 		public static void UpdateBarTextColor(this AToolbar nativeToolbar, Toolbar toolbar)
@@ -216,34 +219,108 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// Because we use the same toolbar across multiple navigation pages (think tabbed page with nested NavigationPage)
 			// We need to reset the toolbar text color to the default color when it's unset
-			if (_defaultTitleTextColor == null)
-			{
-				var context = nativeToolbar.Context?.GetThemedContext();
-				_defaultTitleTextColor = PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
-					Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
-			}
-
 			if (textColor != null)
 			{
 				nativeToolbar.SetTitleTextColor(textColor.ToPlatform().ToArgb());
 			}
-			else if (_defaultTitleTextColor != null)
+			else if (GetDefaultTitleTextColor(nativeToolbar) is { } defaultTitleTextColor)
 			{
-				nativeToolbar.SetTitleTextColor(_defaultTitleTextColor);
+				nativeToolbar.SetTitleTextColor(defaultTitleTextColor);
 			}
 
-			if (nativeToolbar.NavigationIcon is DrawerArrowDrawable icon)
+			nativeToolbar.UpdateNavigationIconColor(toolbar);
+			nativeToolbar.UpdateOverflowIconColor(toolbar);
+
+			nativeToolbar.UpdateSystemChrome(toolbar);
+		}
+
+		static void UpdateNavigationIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.NavigationIcon is not Drawable navigationIcon)
 			{
+				return;
+			}
+
+			if (toolbar.IconColor is not null)
+			{
+				if (navigationIcon is DrawerArrowDrawable dad)
+					dad.Color = global::Android.Graphics.Color.White;
+
+				navigationIcon.SetColorFilter(toolbar.IconColor.ToPlatform(), FilterMode.SrcAtop);
+				return;
+			}
+
+			navigationIcon.ClearColorFilter();
+
+			if (navigationIcon is DrawerArrowDrawable icon)
+			{
+				var textColor = toolbar.BarTextColor;
 				if (textColor != null)
 				{
-					_defaultNavigationIconColor = icon.Color;
 					icon.Color = textColor.ToPlatform().ToArgb();
 				}
-				else if (_defaultNavigationIconColor != null)
+				else if (GetDefaultNavigationIconColor(nativeToolbar) is int defaultNavigationIconColor)
 				{
-					icon.Color = _defaultNavigationIconColor.Value;
+					icon.Color = defaultNavigationIconColor;
 				}
 			}
+		}
+
+		static ColorStateList? GetDefaultTitleTextColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext();
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				var colorContext = context is null
+				 ? null
+				 : ColorStateList.ValueOf(new global::Android.Graphics.Color(context.GetThemeAttrColor(Resource.Attribute.colorOnSurface)));
+				return colorContext;
+			}
+			else
+			{
+				return PlatformInterop.GetColorStateListForToolbarStyleableAttribute(context,
+				 Resource.Attribute.toolbarStyle, Resource.Styleable.Toolbar_titleTextColor);
+			}
+		}
+
+		static int? GetDefaultNavigationIconColor(AToolbar nativeToolbar)
+		{
+			var context = nativeToolbar.Context?.GetThemedContext() ?? nativeToolbar.Context;
+			if (context is null)
+			{
+				return null;
+			}
+
+			if (RuntimeFeature.IsMaterial3Enabled)
+			{
+				return context.GetThemeAttrColor(Resource.Attribute.colorOnSurface);
+			}
+
+			using var icon = new DrawerArrowDrawable(context);
+			return icon.Color;
+		}
+
+		static void UpdateOverflowIconColor(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			if (nativeToolbar.OverflowIcon is not Drawable overflowIcon)
+			{
+				return;
+			}
+
+			var iconColor = toolbar.IconColor ?? toolbar.BarTextColor;
+			if (iconColor is null)
+			{
+				overflowIcon.ClearColorFilter();
+			}
+			else
+			{
+				overflowIcon.SetColorFilter(iconColor.ToPlatform(), FilterMode.SrcAtop);
+			}
+		}
+
+		static void UpdateSystemChrome(this AToolbar nativeToolbar, Toolbar toolbar)
+		{
+			AndroidSystemChrome.UpdateTopChrome(nativeToolbar, toolbar.BarBackground);
 		}
 
 		class ToolbarTitleIconImageView : AppCompatImageView

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
+	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElementController
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? Content;
 
-		SafeAreaEdges ISafeAreaElement.SafeAreaEdgesDefaultValueCreator()
+		SafeAreaEdges ISafeAreaElementController.SafeAreaEdgesDefaultValueCreator()
 		{
 			return SafeAreaEdges.None;
 		}
@@ -90,6 +90,9 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="ISafeAreaView2.SafeAreaInsets"/>
 		Thickness ISafeAreaView2.SafeAreaInsets { set { } } // Default no-op implementation for content views
+
+		/// <inheritdoc cref="ISafeAreaView2.HasExplicitSafeAreaEdges"/>
+		bool ISafeAreaView2.HasExplicitSafeAreaEdges => IsSetExplicitly(SafeAreaEdgesProperty);
 
 		/// <inheritdoc cref="ISafeAreaView2.GetSafeAreaRegionsForEdge"/>
 		SafeAreaRegions ISafeAreaView2.GetSafeAreaRegionsForEdge(int edge)

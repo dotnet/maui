@@ -23,6 +23,10 @@ namespace Microsoft.Maui.Handlers
 			// Edge-to-edge transparency/scrim is enabled in MauiAppCompatActivity via EnableEdgeToEdge,
 			// which does not manage bar icon colors. Apply the initial icon appearance from the app theme.
 			platformView.Window?.ConfigureTranslucentSystemBars(platformView);
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				platformView.Window?.UpdateStatusBarTheme(platformView, VirtualView.StatusBarTheme);
+			}
 
 			UpdateVirtualViewFrame(platformView);
 		}
@@ -62,6 +66,16 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 
+		public static void MapStatusBarTheme(IWindowHandler handler, IWindow window)
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				handler.PlatformView.Window?.UpdateStatusBarTheme(
+					handler.PlatformView,
+					window.StatusBarTheme);
+			}
+		}
+
 		private protected override void OnConnectHandler(object platformView)
 		{
 			base.OnConnectHandler(platformView);
@@ -76,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 
 			DisconnectHandler(_rootManager);
 
-			if (_rootManager != null)
+			if (_rootManager is not null)
 				_rootManager.RootViewChanged -= OnRootViewChanged;
 
 			// The MauiCoordinatorLayout will automatically unregister from the static registry

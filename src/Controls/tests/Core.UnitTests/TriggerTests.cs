@@ -9,6 +9,52 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public void TriggerSpecificityIsAllocatedOnAttachAndReused(bool initiallyActive)
+		{
+			var element = new MockElement { IsEnabled = !initiallyActive };
+			var trigger = new Trigger(typeof(VisualElement))
+			{
+				Property = VisualElement.IsEnabledProperty,
+				Value = false,
+				Setters = {
+					new Setter { Property = VisualElement.ScaleProperty, Value = 2d },
+				}
+			};
+
+			Assert.Null(element._triggerSpecificity);
+			element.Triggers.Add(trigger);
+			var specificities = element._triggerSpecificity;
+			Assert.NotNull(specificities);
+			Assert.Same(trigger, Assert.Single(specificities).Key);
+			Assert.Equal(initiallyActive ? 2d : 1d, element.Scale);
+
+			element.IsEnabled = true;
+			Assert.Equal(1d, element.Scale);
+			element.IsEnabled = false;
+			Assert.Equal(2d, element.Scale);
+			Assert.Same(specificities, element._triggerSpecificity);
+
+			element.Triggers.Remove(trigger);
+			Assert.Empty(specificities);
+			Assert.Equal(1d, element.Scale);
+			element.IsEnabled = true;
+			element.IsEnabled = false;
+			Assert.Equal(1d, element.Scale);
+
+			element.Triggers.Add(trigger);
+			Assert.Same(specificities, element._triggerSpecificity);
+			Assert.Same(trigger, Assert.Single(specificities).Key);
+			Assert.Equal(2d, element.Scale);
+
+			element.Triggers.Clear();
+			Assert.Same(specificities, element._triggerSpecificity);
+			Assert.Empty(specificities);
+			Assert.Equal(1d, element.Scale);
+		}
+
 		[Fact]
 		public void SettersAppliedOnConditionChanged()
 		{

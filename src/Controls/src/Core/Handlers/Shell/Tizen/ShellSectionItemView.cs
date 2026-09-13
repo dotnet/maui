@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Platform
 	class ShellSectionItemView : Frame
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
-		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellSectionItemView), false, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
+		static readonly BindableProperty SelectedStateProperty = BindableProperty.Create(nameof(IsSelected), typeof(bool), typeof(ShellSectionItemView), BooleanBoxes.FalseBox, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
 		internal static readonly BindableProperty SelectedColorProperty = BindableProperty.Create(nameof(SelectedColor), typeof(GColor), typeof(ShellSectionItemView), null, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
 		internal static readonly BindableProperty UnselectedColorProperty = BindableProperty.Create(nameof(UnselectedColor), typeof(GColor), typeof(ShellSectionItemView), null, propertyChanged: (b, o, n) => ((ShellSectionItemView)b).UpdateViewColors());
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public bool IsSelected
 		{
 			get => (bool)GetValue(SelectedStateProperty);
-			set => SetValue(SelectedStateProperty, value);
+			set => SetValue(SelectedStateProperty, BooleanBoxes.Box(value));
 		}
 
 		public GColor SelectedColor

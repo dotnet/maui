@@ -13,7 +13,9 @@
     1. Single PR:   -PrNumber 33818 [-Tag 10.0.50]
     2. Single tag:  -Tag 10.0.50 [-PreviousTag 10.0.41]
 
-    Safety: PRs merged before 2026-01-01 are always skipped.
+    Safety: PRs merged before a cutoff date are always skipped. The cutoff
+    defaults to 2026-01-01 (when this automation went live) and is configurable
+    via -MergedAfter, so an older release can be processed deliberately.
 
 .PARAMETER PrNumber
     Analyze and fix a single PR (and its linked issues).
@@ -29,6 +31,15 @@
 
 .PARAMETER Output
     Output JSON file path.
+
+.PARAMETER MergedAfter
+    Cutoff date: PRs merged strictly before this date are skipped (never
+    milestoned or closed). Defaults to 2026-01-01 (when this automation went
+    live) so the bulk -Apply / -CloseFixedIssues path can't reach back and
+    rewrite milestones for PRs that predate it. Override to deliberately process
+    an older release — e.g. -MergedAfter '2025-01-01' to close linked issues for
+    a historical SR. Accepts any parseable date (e.g. '2025-01-01' or
+    '2025-06-01T00:00:00Z'); no-timezone values are treated as UTC.
 
 .PARAMETER Apply
     Actually apply milestone fixes. Without this flag, only a dry-run report is produced.
@@ -46,6 +57,8 @@
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -RepoPath ~/Projects/maui -Verbose
     ./Fix-MilestoneDrift.ps1 -PrNumber 33818 -Apply
     ./Fix-MilestoneDrift.ps1 -Tag 10.0.50 -RepoPath ~/Projects/maui
+    # Process a historical SR (closing linked issues) by lowering the cutoff:
+    ./Fix-MilestoneDrift.ps1 -Tag 9.0.90 -MergedAfter '2024-01-01' -Apply -CloseFixedIssues
 #>
 
 [CmdletBinding()]
@@ -55,13 +68,33 @@ param(
     [string]$PreviousTag,
     [string]$RepoPath = ".",
     [string]$Output,
+    [string]$MergedAfter,
     [switch]$Apply,
     [switch]$CreateIssue,
     [switch]$CloseFixedIssues
 )
 
-# Safety: never process PRs merged before 2026
-$script:MergedAfterCutoff = [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+# Resolve the "merged after" safety cutoff. PRs merged strictly before this
+# date are always skipped, so the bulk -Apply / -CloseFixedIssues path can never
+# reach back and rewrite milestones for PRs that predate this automation.
+# Defaults to 2026-01-01 (go-live); override via -MergedAfter to deliberately
+# process an older release. Pure + side-effect-free so it can be unit tested.
+function Resolve-MergedAfterCutoff {
+    param([string]$Value)
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return [datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc)
+    }
+    try {
+        return [datetime]::Parse(
+            $Value,
+            [System.Globalization.CultureInfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+    } catch {
+        throw "Invalid -MergedAfter value '$Value'. Expected a date such as '2025-01-01' or '2025-06-01T00:00:00Z'."
+    }
+}
+
+$script:MergedAfterCutoff = Resolve-MergedAfterCutoff $MergedAfter
 
 # Only enable StrictMode during normal execution — not when dot-sourced for testing,
 # since StrictMode leaks into the caller scope and can break Pester or other scripts.
@@ -166,29 +199,73 @@ function Get-AllTags([string]$Repo) {
     return ($output -split "`n" | Where-Object { $_ })
 }
 
-function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
-    $output = git -C $Repo --no-pager log --oneline "$TagFrom..$TagTo" 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
+function Test-CommitInTag([string]$CommitSha, [string]$Tag, [string]$Repo) {
+    <# Returns $true if $CommitSha is an ancestor of (i.e. contained in) $Tag.
+       git merge-base --is-ancestor exits 0 (ancestor), 1 (NOT ancestor), or >1
+       for a real failure (bad/unknown object, shallow clone missing the object,
+       tag not fetched). Only 0 and 1 are valid answers; a higher exit code is a
+       git error, NOT proof of non-containment, so we throw rather than silently
+       reporting $false — otherwise a transient failure on the earliest containing
+       tag would skip it and mislabel the milestone. Callers that prefer precision
+       over hard-failing catch this and fall back to the coarser branch milestone.
+       Extracted into its own function so it can be mocked in unit tests. #>
+    $output = git -C $Repo merge-base --is-ancestor $CommitSha $Tag 2>&1
+    if ($LASTEXITCODE -gt 1) {
+        throw "git merge-base --is-ancestor failed (exit $LASTEXITCODE) for '$CommitSha' in '$Tag': $output"
+    }
+    return ($LASTEXITCODE -eq 0)
+}
+
+function Get-OnBranchShaFromLog([string[]]$LogLines, [int]$PrNum) {
+    <# Selects the on-branch commit SHA for a squash-merged/cherry-picked PR from
+       `git log --format='%H%x1f%s'` output (full SHA, US 0x1f separator, subject).
+
+       Only a commit whose SUBJECT ENDS with the squash-merge token "(#$PrNum)" is
+       accepted. This is the crux of the fallback's correctness: GitHub squash and
+       cherry-pick subjects place the PR token at the END ("Some title (#$PrNum)"),
+       so matching the trailing token rejects two whole classes of false positives
+       that a raw --grep over the full message would let through:
+         * body-only mentions  — "Workaround until (#$PrNum) lands" (token in body,
+           not the subject)  → subject doesn't end with the token → ignored.
+         * quoted reverts      — 'Revert "Fix X (#$PrNum)" (#OTHER)' when searching
+           for #$PrNum         → trailing token is (#OTHER), not (#$PrNum) → ignored.
+       Input is expected oldest-first (git --reverse), so the FIRST genuine match is
+       the original introduction, not a later re-mention. #>
+    foreach ($line in $LogLines) {
+        if ($line -match "^([0-9a-f]{40})\x1f.*\(#$PrNum\)\s*$") {
+            return $Matches[1]
+        }
+    }
+    return $null
+}
+
+function Get-PrNumbersFromGitLog([string[]]$LogLines) {
+    <# GitHub squash and merge commit subjects end with the merged PR token.
+       Earlier parenthesized references may be linked issues and must not be
+       treated as PRs. #>
     $prs = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($line in ($output -split "`n")) {
-        foreach ($m in [regex]::Matches($line, '\(#(\d+)\)')) {
-            [void]$prs.Add([int]$m.Groups[1].Value)
+    foreach ($line in $LogLines) {
+        if ($line -match '\(#(\d+)\)\s*$') {
+            $prNumber = 0
+            if ([int]::TryParse($Matches[1], [ref]$prNumber)) {
+                [void]$prs.Add($prNumber)
+            }
         }
     }
     return ($prs | Sort-Object)
+}
+
+function Get-PrNumbersBetweenTags([string]$TagFrom, [string]$TagTo, [string]$Repo) {
+    $output = git -C $Repo --no-pager log --oneline "$TagFrom..$TagTo" 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
+    return Get-PrNumbersFromGitLog ($output -split "`n")
 }
 
 function Get-PrNumbersReachableFromTag([string]$TagName, [string]$Repo) {
     <# Returns PR numbers reachable from a tag (all commits up to and including the tag). #>
     $output = git -C $Repo --no-pager log --oneline $TagName 2>&1
     if ($LASTEXITCODE -ne 0) { throw "git log failed: $output" }
-    $prs = [System.Collections.Generic.HashSet[int]]::new()
-    foreach ($line in ($output -split "`n")) {
-        foreach ($m in [regex]::Matches($line, '\(#(\d+)\)')) {
-            [void]$prs.Add([int]$m.Groups[1].Value)
-        }
-    }
-    return ($prs | Sort-Object)
+    return Get-PrNumbersFromGitLog ($output -split "`n")
 }
 
 function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
@@ -217,11 +294,81 @@ function Find-TagContainingPr([int]$PrNum, [string]$Repo, [int]$Major) {
     return $null
 }
 
+function Get-RefinedReleaseMilestone([string]$BranchMilestone, [string]$CommitSha, [string]$Repo) {
+    <# Refines an SR branch milestone (e.g. ".NET 10 SR7") to the sub-patch the
+       commit actually shipped in (e.g. ".NET 10 SR7.1").
+
+       Why: an SR release branch (release/X.0.Yxx-srN) produces MULTIPLE servicing
+       drops over its lifetime — 10.0.70 (SR7), 10.0.71 (SR7.1), 10.0.72 (SR7.2), …
+       ConvertBranchToMilestone only knows the branch name, so it always returns the
+       BASE SR. A revert/hotfix that lands after the base SR shipped actually goes
+       out in a later sub-patch, and milestoning it as the base SR is wrong (it can
+       even DOWNGRADE an already-correct SR7.1 issue back to SR7).
+
+       Rule (earliest release wins): a commit on the SR branch ships in the EARLIEST
+       SR-family tag (X.0.{sr}{sub}) that contains it. If no family tag contains it
+       yet (the drop hasn't been tagged), the base SR (and any earlier sub-patches)
+       are already shipped, so the commit goes out in the NEXT sub-patch after the
+       latest shipped family tag — provided that next sub-patch is still within THIS
+       SR family (the SR7 branch only ever ships 10.0.70..10.0.79).
+
+       Non-SR milestones (preview/rc/GA) have no sub-patches and are returned as-is.
+       The major version is taken from the milestone string itself (authoritative). #>
+    if ([string]::IsNullOrWhiteSpace($BranchMilestone)) { return $BranchMilestone }
+    if ([string]::IsNullOrWhiteSpace($CommitSha)) { return $BranchMilestone }
+    if ($BranchMilestone -notmatch '^\.NET (\d+) SR(\d+)$') { return $BranchMilestone }
+    $msMajor = [int]$Matches[1]
+    $sr = [int]$Matches[2]
+
+    # SR-family tags: X.0.{sr*10 .. sr*10+9} (e.g. SR7 → 10.0.70..10.0.79), ascending.
+    # The whole tag scan is guarded: Test-CommitInTag throws on a real git error
+    # (vs a clean "not an ancestor"), and rather than risk an incorrect sub-patch we
+    # fall back to the coarser base SR milestone — never wrong, just less precise.
+    try {
+        $low = $sr * 10
+        $high = $low + 9
+        $familyTags = @(Get-AllTags $Repo | Where-Object {
+            ($_ -match "^$msMajor\.0\.(\d+)$") -and ([int]$Matches[1] -ge $low) -and ([int]$Matches[1] -le $high)
+        } | Sort-Object { Get-TagSortKey $_ })
+
+        # Earliest family tag that contains the commit = the drop it shipped in.
+        foreach ($tag in $familyTags) {
+            if (Test-CommitInTag $CommitSha $tag $Repo) {
+                $refined = ConvertTo-Milestone $tag
+                if ($refined) { return $refined }
+            }
+        }
+
+        # Not in any shipped family tag yet. If earlier drops already shipped, this
+        # commit goes out in the next sub-patch after the latest one — but only while
+        # that next sub-patch still belongs to THIS SR family (patch <= $high). Once the
+        # family is exhausted (latest is X.0.{sr}9) the next patch would roll into the
+        # NEXT SR, which this branch never ships, so fall back to the base SR rather than
+        # silently crossing the family boundary (e.g. SR7 → SR8).
+        if ($familyTags.Count -gt 0 -and $familyTags[-1] -match "^$msMajor\.0\.(\d+)$") {
+            $nextPatch = [int]$Matches[1] + 1
+            if ($nextPatch -le $high) {
+                $refined = ConvertTo-Milestone "$msMajor.0.$nextPatch"
+                if ($refined) { return $refined }
+            }
+        }
+    }
+    catch {
+        Write-Warning "Get-RefinedReleaseMilestone: git error refining '$BranchMilestone' for '$CommitSha' — falling back to base milestone. $_"
+        return $BranchMilestone
+    }
+
+    # No (further) family tags apply — still the base SR.
+    return $BranchMilestone
+}
+
 function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Major, [int]$PrNum = 0) {
     <# Finds the earliest release branch containing a PR.
        First checks git ancestry (commit SHA). If that fails (rebase/cherry-pick
        changed the SHA), falls back to searching commit messages for the PR number.
        Checks in chronological order: previews → RCs → GA → SRs.
+       The matched branch's milestone is refined to the sub-patch the commit shipped
+       in (see Get-RefinedReleaseMilestone).
        Returns @{ Branch; Milestone } or $null. #>
 
     # Fetch all release branches for this major version
@@ -254,16 +401,27 @@ function Find-ReleaseBranchForCommit([string]$CommitSha, [string]$Repo, [int]$Ma
         if ($LASTEXITCODE -eq 0) {
             $milestone = ConvertBranchToMilestone $branch
             if ($milestone) {
+                $milestone = Get-RefinedReleaseMilestone $milestone $CommitSha $Repo
                 return @{ Branch = $branch; Milestone = $milestone }
             }
         }
 
-        # Fall back to commit message search (handles rebase/cherry-pick)
+        # Fall back to commit message search (handles rebase/cherry-pick).
+        # Emit "%H<US>%s" (SHA, 0x1f separator, subject) and accept ONLY commits whose
+        # SUBJECT ends with the squash token "(#$PrNum)" — see Get-OnBranchShaFromLog.
+        # --grep is a coarse pre-filter over the whole message; the trailing-subject
+        # check is what makes this precise, rejecting body-only mentions and quoted
+        # reverts that would otherwise refine to the wrong sub-patch. --reverse yields
+        # oldest-first so the original introduction wins, not a later re-mention.
+        # stderr is discarded and only a 40-hex SHA is returned, so a git warning can
+        # never be misread as the SHA.
         if ($PrNum -gt 0) {
-            $grepResult = git -C $Repo --no-pager log "origin/$branch" --oneline --grep="(#$PrNum)" -1 2>&1
-            if ($LASTEXITCODE -eq 0 -and $grepResult) {
+            $grepResult = git -C $Repo --no-pager log "origin/$branch" --format='%H%x1f%s' --grep="(#$PrNum)" --reverse 2>$null
+            $branchSha = Get-OnBranchShaFromLog @($grepResult) $PrNum
+            if ($branchSha) {
                 $milestone = ConvertBranchToMilestone $branch
                 if ($milestone) {
+                    $milestone = Get-RefinedReleaseMilestone $milestone $branchSha $Repo
                     Write-Verbose "  PR #$PrNum found via commit message on $branch (rebased/cherry-picked)"
                     return @{ Branch = $branch; Milestone = $milestone }
                 }
@@ -306,7 +464,10 @@ function Get-PrInfo([int]$PrNum) {
             }
             if ($mergedAt -lt $script:MergedAfterCutoff) {
                 Write-Warning "PR #$PrNum merged $($pr.merged_at) — before cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Skipping."
-                return $null
+                # Return a distinct sentinel (not $null) so callers can tell an
+                # intentional pre-cutoff skip apart from a real fetch failure and
+                # avoid mis-reporting the skip as an error / failing the whole run.
+                return @{ SkippedPreCutoff = $true; Number = $PrNum }
             }
         }
         return @{
@@ -866,6 +1027,9 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
 
     # Fetch PR info first — we need merge_commit_sha for version detection
     $pr = Get-PrInfo $PrNum
+    if ($pr -is [hashtable] -and $pr.ContainsKey('SkippedPreCutoff')) {
+        throw "PR #$PrNum was merged before the -MergedAfter cutoff ($($script:MergedAfterCutoff.ToString('yyyy-MM-dd'))). Lower -MergedAfter to process it."
+    }
     if (-not $pr) { throw "Could not fetch PR #$PrNum" }
 
     if ($ReleaseTag) {
@@ -989,6 +1153,8 @@ function Invoke-AnalyzeSinglePr([int]$PrNum, [string]$ReleaseTag, [string]$Repo)
         return @{
             Tag               = $ReleaseTag
             ExpectedMilestone = $expectedMs
+            ResolvedMilestone = $null
+            ResolvedMsNumber  = $null
             TotalPrs          = 1
             PrsChecked        = 0
             IssuesChecked     = 0
@@ -1104,6 +1270,7 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         TotalPrs          = $prNumbers.Count
         PrsChecked        = 0
         PrsSkippedWrongBranch = 0
+        PrsSkippedPreCutoff = 0
         IssuesChecked     = 0
         AlreadyCorrect    = 0
         Corrections       = [System.Collections.ArrayList]::new()
@@ -1115,6 +1282,13 @@ function Invoke-AnalyzeRelease([string]$ReleaseTag, [string]$PrevTag, [string]$R
         Write-Verbose "  [$($i+1)/$($prNumbers.Count)] PR #$prNum..."
 
         $pr = Get-PrInfo $prNum
+        if ($pr -is [hashtable] -and $pr.ContainsKey('SkippedPreCutoff')) {
+            # Intentional pre-cutoff skip (see Get-PrInfo) — not a fetch failure.
+            # Count it separately so an all-pre-cutoff cohort exits cleanly instead
+            # of being reported as "0 PRs checked, N errors".
+            $report.PrsSkippedPreCutoff++
+            continue
+        }
         if (-not $pr) {
             [void]$report.Errors.Add("Failed to fetch PR #$prNum")
             continue
@@ -1160,6 +1334,9 @@ function Write-Report([hashtable]$Report) {
     Write-Host "  PRs checked: $($Report.PrsChecked)"
     if ($Report.ContainsKey('PrsSkippedWrongBranch') -and $Report.PrsSkippedWrongBranch -gt 0) {
         Write-Host "  PRs skipped (wrong branch): $($Report.PrsSkippedWrongBranch)"
+    }
+    if ($Report.ContainsKey('PrsSkippedPreCutoff') -and $Report.PrsSkippedPreCutoff -gt 0) {
+        Write-Host "  PRs skipped (merged before cutoff): $($Report.PrsSkippedPreCutoff)"
     }
     Write-Host "  Issues checked: $($Report.IssuesChecked)"
     Write-Host "  Already correct: $($Report.AlreadyCorrect)"

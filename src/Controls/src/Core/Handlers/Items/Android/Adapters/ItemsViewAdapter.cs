@@ -152,6 +152,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			templatedItemViewHolder.Bind(context, ItemsView);
 		}
 
+		/// <summary>
+		/// Clears any cached item size used by the MeasureFirstItem sizing strategy.
+		/// Called when the RecyclerView's size changes (e.g., after an orientation change).
+		/// </summary>
+		internal virtual void ClearMeasureCache()
+		{
+		}
+
 		void UpdateUsingItemTemplate()
 		{
 			_usingItemTemplate = ItemsView.ItemTemplate != null;

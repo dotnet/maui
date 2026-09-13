@@ -375,12 +375,24 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			if (textInput is IEntry entry && entry.IsPassword)
+			if (textInput is IEntry entry)
 			{
-				if (editText.InputType.HasFlag(InputTypes.ClassText))
-					editText.InputType |= InputTypes.TextVariationPassword;
-				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
-					editText.InputType |= InputTypes.NumberVariationPassword;
+				if (entry.IsPassword)
+				{
+					if (editText.InputType.HasFlag(InputTypes.ClassText))
+						editText.InputType |= InputTypes.TextVariationPassword;
+
+					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+						editText.InputType |= InputTypes.NumberVariationPassword;
+				}
+				else
+				{
+					if (editText.InputType.HasFlag(InputTypes.ClassText))
+						editText.InputType &= ~InputTypes.TextVariationPassword;
+
+					if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+						editText.InputType &= ~InputTypes.NumberVariationPassword;
+				}
 			}
 
 			if (textInput is IEditor)
@@ -509,6 +521,23 @@ namespace Microsoft.Maui.Platform
 
 				return new global::Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
+		}
+
+		/// <summary>
+		/// Ensures <see cref="ImeFlags.NoFullscreen"/> is set on the EditText's ImeOptions,
+		/// preventing the IME from entering full-screen extract mode in landscape orientation.
+		/// </summary>
+		/// <remarks>
+		/// Call this helper after any assignment to <c>editText.ImeOptions</c> inside the
+		/// SearchBar platform code (MauiSearchView and SearchViewExtensions), or the
+		/// NoFullscreen flag will be lost and the landscape IME regression (#14708) will
+		/// silently re-appear. ImeOptions is typed as <see cref="ImeAction"/> in the Android
+		/// binding, but it holds combined ImeAction + ImeFlags bits; NoFullscreen is an
+		/// ImeFlags value (0x02000000).
+		/// </remarks>
+		internal static void EnsureNoFullscreenFlag(this EditText editText)
+		{
+			editText.ImeOptions = (ImeAction)((int)editText.ImeOptions | (int)ImeFlags.NoFullscreen);
 		}
 	}
 }

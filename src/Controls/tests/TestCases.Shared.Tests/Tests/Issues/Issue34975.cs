@@ -20,9 +20,9 @@ public class Issue34975 : _IssuesUITest
 		App.WaitForElement("CheckMemoryButton");
 		App.Tap("CheckMemoryButton");
 
-		// GarbageCollectionHelper.WaitForGC runs for up to 10 s inside the app,
-		// so allow 2s total for the status label to reflect the final result.
-		App.WaitForTextToBePresentInElement("StatusLabel", "Still alive:", timeout: TimeSpan.FromSeconds(2));
+		// GarbageCollectionHelper.WaitForGC runs for up to 5 seconds inside the app.
+		var memoryCheckCompleted = App.WaitForTextToBePresentInElement("StatusLabel", "Still alive:");
+		Assert.That(memoryCheckCompleted, Is.True, "Memory check did not complete within the expected time.");
 		Assert.That(App.FindElement("StatusLabel").GetText(), Is.EqualTo("Still alive: 0"),
 			"Memory leak detected: SecondPage instances were not garbage collected.");
 	}

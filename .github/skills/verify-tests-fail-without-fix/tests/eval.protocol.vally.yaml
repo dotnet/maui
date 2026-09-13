@@ -1,0 +1,238 @@
+# Must-pass operational protocol for verify-tests-fail-without-fix.
+#
+# These scenarios execute the real verification script against durable,
+# synthetic unit-test commits. Its empty scoring map deliberately leaves the
+# aggregate threshold undefined: Vally therefore requires every grader to pass
+# its declared threshold in every trial, so unrelated scenarios cannot average
+# away a broken protocol.
+
+name: verify-tests-fail-without-fix-protocol
+description: >-
+  Must-pass operational verification that the prescribed script observes a
+  failing test without the fix and, when a fix exists, a passing test with it.
+version: "1.0.0"
+type: capability
+
+defaults:
+  runs: 3
+  timeout: 10m
+  model: gpt-5.6-sol
+  judge_model: claude-opus-5
+  executor: copilot-sdk
+
+environment:
+  skills:
+    - ..
+
+stimuli:
+  - name: happy-path-full-verification-mode
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture adds a unit test and a fix. Verify that the test fails
+      on the parent commit and passes with the fix applied.
+
+      Run full verification against the local diff using PR number 900001 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the script
+      auto-detect the changed test and fix files.
+    environment:
+      git:
+        type: worktree
+        ref: 643d58e3d1bbe9dcccb0b13571689633ff5bc52a # fixture: happy-path-full-verification-mode
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900001\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the tests WITHOUT the fix first and confirms that they
+        fail because the synthetic assertion catches the bug.
+      - >-
+        The agent restores the fix, runs the tests again, and confirms that
+        they pass.
+      - >-
+        The agent uses the verify-tests-fail script rather than manually
+        running dotnet test.
+      - >-
+        The agent reports the observed outcome according to the skill contract:
+        fail-then-pass is verification success unless it also observes an error,
+        timeout, or unexpected worktree change, in which case reporting Blocked
+        with that evidence is correct. It must not manually clean the worktree.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  - name: happy-path-verify-failure-only-mode
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture adds a unit test but has no fix. Verify that the
+      test catches the bug by failing in failure-only mode.
+
+      Run against the local diff using PR number 900002 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the script
+      auto-detect the changed test file; do not require full verification.
+    environment:
+      git:
+        type: worktree
+        ref: 7d5e02aace0ffd70fbc2559baa48cdf585bc24f5 # fixture: happy-path-verify-failure-only-mode
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900002\b)(?=[\s\S]*-BaseBranch\b)'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: 'verify-tests-fail\.ps1[\s\S]*-RequireFullVerification\b'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs the test in failure-only mode because no fix exists.
+      - >-
+        The agent confirms that the synthetic assertion fails and correctly
+        reports that failure as verification success.
+      - >-
+        The agent does not require fix files or pass RequireFullVerification.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  - name: regression-no-manual-git-revert
+    tags:
+      kind: protocol
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture has both a unit test and a fix. Run full
+      verification against the local diff using PR number 900003 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Let the prescribed
+      script handle reverting and restoring the fix; do not manually mutate or
+      clean the worktree with git commands, including reverse-applying a patch.
+    environment:
+      git:
+        type: worktree
+        ref: 643d58e3d1bbe9dcccb0b13571689633ff5bc52a # fixture: regression-no-manual-git-revert
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900003\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent uses the verify-tests-fail.ps1 script, which handles
+        file revert/restore automatically.
+      - >-
+        The agent does not manually mutate or clean the worktree to revert fix
+        files, including with git apply --reverse or git apply -R.
+      - >-
+        The agent interprets the script output correctly to determine
+        whether verification passed or failed.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+  - name: edge-case-require-full-verification-with-fix-files
+    tags:
+      kind: workflow
+    prompt: |
+      Your first action must be to invoke the `verify-tests-fail-without-fix` skill.
+
+      This frozen one-commit fixture has both a unit test and a code fix. Verify
+      the test against the local diff using PR number 900004 and
+      `$(git rev-parse HEAD^)` as the explicit base branch. Require full
+      verification and let the script auto-detect the changed files.
+    environment:
+      git:
+        type: worktree
+        ref: 643d58e3d1bbe9dcccb0b13571689633ff5bc52a # fixture: edge-case-require-full-verification-with-fix-files
+        source: .
+    graders:
+      - type: skill-invocation
+        config: { required: [verify-tests-fail-without-fix] }
+      - type: tool-calls
+        name: verification-script-executed
+        config:
+          required:
+            - name: '^(bash|powershell)$'
+              pattern: 'verify-tests-fail\.ps1(?=[\s\S]*-PRNumber\s+900004\b)(?=[\s\S]*-BaseBranch\b)(?=[\s\S]*-RequireFullVerification\b)'
+            - name: '^(bash|powershell|read_bash)$'
+              result: 'VERIFICATION PASSED'
+          disallowed:
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?git[''"]?(?:(?:\s|\\\r?\n)+(?:(?:-C|-c|--git-dir|--work-tree|--namespace|--super-prefix|--config-env|--exec-path)\s+\S+|-\S+))*(?:\s|\\\r?\n)+(?:(?:checkout|clean|restore|reset|stash)\b|apply\b(?=[^\r\n;&|]*(?:--reverse|-R)\b))'
+            - name: '^(bash|powershell)$'
+              command: '(?:^|[\s''"`(;|&])[''"]?(?:\S*/)?dotnet[''"]?(?:(?:\s|\\\r?\n)+-\S+(?:(?:\s|\\\r?\n)+(?!(?:-\S+|test\b))\S+)?)*(?:\s|\\\r?\n)+test\b'
+      - type: prompt
+        config:
+          scoring: scale_1_5
+          threshold: 0.6
+    rubric:
+      - >-
+        The agent runs full two-phase verification (fail without fix,
+        then pass with fix) because both test and fix files exist —
+        e.g. by passing the RequireFullVerification option.
+      - >-
+        The agent does not settle for failure-only verification when fix
+        files are present.
+    constraints:
+      max_duration: 10m
+      expect_skills:
+        - verify-tests-fail-without-fix
+
+# Explicitly opt into Vally's threshold-undefined verdict while avoiding the
+# strict-lint warning emitted when the scoring key is omitted.
+scoring: {}

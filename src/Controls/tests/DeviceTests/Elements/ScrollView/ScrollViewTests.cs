@@ -112,11 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
 		// It calls CreateHandlerAndAddToWindow(), a valid test case.
-		[Fact(DisplayName = "ScrollView Does Not Leak"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact(DisplayName = "ScrollView Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -135,6 +131,10 @@ namespace Microsoft.Maui.DeviceTests
 				page.Content = null;
 			});
 
+			// The async state machine keeps all hoisted locals alive across await points.
+			// Null out view/page so the GC can collect them before WaitForGC checks the WeakReferences.
+			view = null;
+			page = null;
 
 			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
 		}

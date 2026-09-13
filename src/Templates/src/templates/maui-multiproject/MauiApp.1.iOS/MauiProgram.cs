@@ -7,7 +7,12 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 
 		builder
+#if (avalonia)
+			.UseSharedMauiApp()
+			.UseAvaloniaEmbedding<AvaloniaApp>();
+#else
 			.UseSharedMauiApp();
+#endif
 
 		return builder.Build();
 	}

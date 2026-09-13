@@ -184,6 +184,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SendLongPressed_ThrowsForNullSender()
+		{
+			var longPress = new LongPressGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => longPress.SendLongPressed(null));
+		}
+
+		[Fact]
+		public void SendLongPressing_ThrowsForNullSender()
+		{
+			var longPress = new LongPressGestureRecognizer();
+
+			Assert.Throws<ArgumentNullException>(() => longPress.SendLongPressing(null, GestureStatus.Started));
+		}
+
+		[Fact]
 		public void PropertyChanged_RaisesCorrectly()
 		{
 			var longPress = new LongPressGestureRecognizer();
@@ -242,8 +258,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void State_IsOneWayToSource()
 		{
 			var longPress = new LongPressGestureRecognizer();
-			
-			// State should only be set internally via SendLongPressing
+
+			// State is only updated through SendLongPressing
 			// Verify it has OneWayToSource binding mode by checking the property
 			var stateProperty = LongPressGestureRecognizer.StateProperty;
 			Assert.Equal(BindingMode.OneWayToSource, stateProperty.DefaultBindingMode);

@@ -8,11 +8,19 @@ namespace Microsoft.Maui.Handlers
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
 		// Trailing glass pill overflow (pts) added to UIStepper width in landscape on iOS 26+.
-		// No UIKit API exposes this value; measured empirically on iOS 26.1.
+		// No UIKit API exposes this value; measured empirically on iOS 26.4 with a small safety margin.
 		// If it changes in a future iOS release, update and re-verify. See: https://github.com/dotnet/maui/issues/34273
-		const double iOSLiquidGlassStepperOverflow = 20;
+		const double iOSLiquidGlassStepperOverflow = 36;
 
 		readonly StepperProxy _proxy = new();
+
+		// Guards against a second DisconnectHandler call touching an already-disposed
+		// native UIStepper (e.g. a caller re-invoking DisconnectHandler directly on the
+		// same platform view instance). This handler instance can be reused across
+		// multiple ConnectHandler/DisconnectHandler cycles with a fresh UIStepper each
+		// time, so the flag is reset in ConnectHandler to scope it to the current
+		// platform view rather than leaking across reconnects.
+		bool _platformViewDisposed;
 
 		protected override UIStepper CreatePlatformView()
 		{
@@ -29,9 +37,10 @@ namespace Microsoft.Maui.Handlers
 			// pre-glass logical size (94×32 pts). Apple does not expose the glass overflow extent
 			// as a measurable value; this compensation was determined empirically.
 			//
-			// In landscape orientation the trailing glass overflow is ~20 pts, causing controls
+			// In landscape orientation the trailing glass overflow can extend past the logical size, causing controls
 			// adjacent in a HorizontalStackLayout to appear inside the visible glass pill.
 			// Portrait orientation has negligible overflow and needs no compensation.
+			// The compensation includes a small safety margin and was re-verified on iOS 26.4.
 			//
 			// If this value changes in a future iOS release, update iOSLiquidGlassStepperOverflow
 			// and re-verify on the new OS version. See: https://github.com/dotnet/maui/issues/34273
@@ -56,6 +65,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
+			// Reset the disposed guard for this new platform view instance. Without this,
+			// a handler that previously disconnected (and disposed its UIStepper on iOS/Mac 26+)
+			// would incorrectly skip cleanup the next time it disconnects a newly connected,
+			// non-disposed UIStepper if the handler instance is reused.
+			_platformViewDisposed = false;
+
 			_proxy.Connect(VirtualView, platformView);
 		}
 
@@ -63,7 +78,40 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
+			// Guard runs before touching platformView again, addressing the concern that a
+			// second DisconnectHandler call on an already-disposed platform view would throw
+			// ObjectDisposedException when _proxy.Disconnect unsubscribes ValueChanged.
+			if (_platformViewDisposed)
+			{
+				return;
+			}
+
 			_proxy.Disconnect(platformView);
+
+			// iOS/Mac 26+ Liquid Glass rendering holds an internal native retain cycle on
+			// UIStepper (diagnostics showed RetainCount stayed constant even after
+			// RemoveFromSuperview() and clearing all CALayer animations, ruling out both the
+			// view hierarchy and CoreAnimation as the source - see
+			// https://github.com/dotnet/maui/issues/35985). Since this retain appears to
+			// originate from UIStepper's own private Liquid Glass implementation rather than
+			// anything MAUI creates, application code cannot release it by manipulating the
+			// view hierarchy or animations. Explicitly disposing the native object forces the
+			// .NET runtime to immediately release its own strong native handle reference
+			// instead of waiting for finalization, which - combined with the OS eventually
+			// tearing down its own internal references once the object is no longer reachable
+			// through NSObject's handle table - allows the object to be collected.
+			if (OperatingSystem.IsIOSVersionAtLeast(26) || OperatingSystem.IsMacCatalystVersionAtLeast(26))
+			{
+				platformView.RemoveFromSuperview();
+				platformView.Layer.RemoveAllAnimations();
+				foreach (var subview in platformView.Subviews)
+				{
+					subview.Layer.RemoveAllAnimations();
+				}
+
+				_platformViewDisposed = true;
+				platformView.Dispose();
+			}
 		}
 
 		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
@@ -177,8 +225,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		// TODO: Make public for .NET 11.
-		internal static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
+		public static void MapFlowDirection(IStepperHandler handler, IStepper stepper)
 		{
 			handler.PlatformView?.UpdateFlowDirection(stepper);
 		}

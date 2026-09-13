@@ -21,6 +21,7 @@
   <attr path="//class[@name='PlatformWrapperView']/method[@name='setNoShadow']" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformWrapperView']/method[@name='setRadialGradientShadow']" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformWrapperView']/method[@name='setSolidShadow']" name="visibility">internal</attr>
+  <attr path="//class[@name='PlatformWrapperView']/method[@name='shouldInvalidateShadow']" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformDrawable']/method" name="visibility">internal</attr>
   <attr path="//class[@name='PlatformDrawable']/constructor" name="visibility">public</attr>
 

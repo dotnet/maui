@@ -12,7 +12,7 @@ public class Issue35127 : _IssuesUITest
 	public Issue35127(TestDevice device) : base(device) { }
 
 	[Test]
-	[Category(UITestCategories.Shell)]
+	[Category(UITestCategories.Material3)]
 	public void MoreBottomSheetUsesM3ThemedColors()
 	{
 		App.WaitForElement("M3Tab1Content");

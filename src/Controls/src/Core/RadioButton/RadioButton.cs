@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsChecked"/>. This is a bindable property.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
-			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
+			nameof(IsChecked), typeof(bool), typeof(RadioButton), BooleanBoxes.FalseBox,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 
@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsChecked
 		{
 			get { return (bool)GetValue(IsCheckedProperty); }
-			set { SetValue(IsCheckedProperty, value); }
+			set { SetValue(IsCheckedProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>
@@ -254,7 +254,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		/// <summary>
@@ -472,7 +472,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (IsEnabled)
 			{
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+				SetValue(IsCheckedProperty, BooleanBoxes.TrueBox, specificity: SetterSpecificity.FromHandler);
 			}
 		}
 
@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Controls
 		bool IRadioButton.IsChecked
 		{
 			get => IsChecked;
-			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+			set => SetValue(IsCheckedProperty, BooleanBoxes.Box(value), SetterSpecificity.FromHandler);
 		}
 
 		private protected override string GetDebuggerDisplay()
@@ -767,7 +767,7 @@ namespace Microsoft.Maui.Controls
 
 			if (ControlTemplate != null)
 			{
-				string contentAsString = GetSemanticDescriptionFromContent();
+				string contentAsString = ContentAsString();
 
 				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
 				{
@@ -777,71 +777,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return semantics;
-		}
-
-		string GetSemanticDescriptionFromContent()
-		{
-			if (Content is string contentText)
-			{
-				return contentText;
-			}
-
-			if (Content is IView contentView)
-			{
-				// Don't fall back to ContentAsString() for view-based content — it calls ToString()
-				// on the view and returns a type name rather than meaningful text.
-				TryGetSemanticDescription(contentView, out var semanticDescription);
-				return semanticDescription;
-			}
-
-			if (Value is string valueText && !string.IsNullOrWhiteSpace(valueText))
-			{
-				return valueText;
-			}
-
-			return ContentAsString();
-		}
-
-		static bool TryGetSemanticDescription(IView view, out string semanticDescription)
-		{
-			semanticDescription = null;
-
-			if (view is null)
-			{
-				return false;
-			}
-
-			if (!string.IsNullOrWhiteSpace(view.Semantics?.Description))
-			{
-				semanticDescription = view.Semantics.Description;
-				return true;
-			}
-
-			if (view is IText text && !string.IsNullOrWhiteSpace(text.Text))
-			{
-				semanticDescription = text.Text;
-				return true;
-			}
-
-			if (view is IContentView contentView && contentView.PresentedContent is IView presentedContent && TryGetSemanticDescription(presentedContent, out semanticDescription))
-			{
-				return true;
-			}
-
-			if (view is Microsoft.Maui.ILayout layout)
-			{
-				for (int index = 0; index < layout.Count; index++)
-				{
-					var child = layout[index];
-
-					if (TryGetSemanticDescription(child, out semanticDescription))
-					{
-						return true;
-					}
-				}
-			}
-
-			return false;
 		}
 
 		class CornerRadiusToShape : IValueConverter

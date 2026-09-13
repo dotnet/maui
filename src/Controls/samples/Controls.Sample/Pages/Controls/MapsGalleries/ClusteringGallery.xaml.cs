@@ -39,10 +39,63 @@ namespace Maui.Controls.Sample.Pages.MapsGalleries
 			UpdateStatus();
 		}
 
+		void OnAddCustomPinsClicked(object? sender, EventArgs e)
+		{
+			// Clear any cluster-icon demo state so these pins can't be swallowed into a
+			// custom-icon cluster bubble - the point is to show each pin's own ImageSource.
+			clusterMap.ClusterImageProvider = null;
+			clusterMap.ClusterImageSource = null;
+			clusterMap.Pins.Clear();
+
+			// Spread these pins far apart so they stay un-clustered (cluster of 1)
+			// even with clustering enabled. Their custom ImageSource must still be
+			// applied - this is the case the Android handler previously dropped.
+			for (int i = 0; i < 5; i++)
+			{
+				double latOffset = (i - 2) * 0.12;
+				double lonOffset = (i - 2) * 0.12;
+
+				var pin = new Pin
+				{
+					Label = $"Custom Pin {i + 1}",
+					Address = "Custom icon pin",
+					Location = new Position(_center.Latitude + latOffset, _center.Longitude + lonOffset),
+					Type = PinType.Place,
+					ClusteringIdentifier = "custom",
+					ImageSource = ImageSource.FromFile("dotnet_bot.png")
+				};
+				clusterMap.Pins.Add(pin);
+			}
+			UpdateStatus();
+		}
+
 		void OnClearPinsClicked(object? sender, EventArgs e)
 		{
 			clusterMap.Pins.Clear();
 			_clusterClickCount = 0;
+			UpdateStatus();
+		}
+
+		void OnUseClusterProviderClicked(object? sender, EventArgs e)
+		{
+			// Dynamic icon: dotnet_bot for small clusters, a different image for large ones.
+			clusterMap.ClusterImageSource = null;
+			clusterMap.ClusterImageProvider = info =>
+				info.Count >= 10
+					? ImageSource.FromFile("coffee.png")
+					: ImageSource.FromFile("dotnet_bot.png");
+			clusterMap.Pins.Clear();
+			AddPins(60);
+			UpdateStatus();
+		}
+
+		void OnUseStaticClusterIconClicked(object? sender, EventArgs e)
+		{
+			// Static icon: one image for every cluster.
+			clusterMap.ClusterImageProvider = null;
+			clusterMap.ClusterImageSource = ImageSource.FromFile("dotnet_bot.png");
+			clusterMap.Pins.Clear();
+			AddPins(60);
 			UpdateStatus();
 		}
 

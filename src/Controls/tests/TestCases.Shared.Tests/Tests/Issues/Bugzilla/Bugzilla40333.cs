@@ -36,10 +36,8 @@ public class Bugzilla40333 : _IssuesUITest
 	public void ClickingOnMenuItemInRootDoesNotCrash_TabPageVersion()
 	{
 		App.WaitForElement(StillHereId);
-#if ANDROID || WINDOWS // On Android and Windows, two back navigation actions are needed because the back button's position is the same for both navigation and flyout pages. This requires a double navigation to return to the root page.
 		App.TapBackArrow();
 		App.WaitForElement(StillHereId);
-#endif
 		App.TapBackArrow();
 
 		App.WaitForElement(StartTabPageTestId);

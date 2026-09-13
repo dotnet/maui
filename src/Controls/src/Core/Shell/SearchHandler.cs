@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromHandler);
+			SetValue(IsFocusedPropertyKey, BooleanBoxes.Box(value), specificity: SetterSpecificity.FromHandler);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -237,7 +237,7 @@ namespace Microsoft.Maui.Controls
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
-			set => SetValue(FontAutoScalingEnabledProperty, value);
+			set => SetValue(FontAutoScalingEnabledProperty, BooleanBoxes.Box(value));
 		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue)
@@ -357,7 +357,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderEnabled"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderEnabledProperty =
-			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), false);
+			BindableProperty.Create(nameof(ClearPlaceholderEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox);
 
 		/// <summary>Bindable property for <see cref="ClearPlaceholderHelpText"/>.</summary>
 		public static readonly BindableProperty ClearPlaceholderHelpTextProperty =
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsSearchEnabled"/>.</summary>
 		public static readonly BindableProperty IsSearchEnabledProperty =
-			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), true, BindingMode.OneWay);
+			BindableProperty.Create(nameof(IsSearchEnabled), typeof(bool), typeof(SearchHandler), BooleanBoxes.TrueBox, BindingMode.OneWay);
 
 		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ShowsResults"/>.</summary>
 		public static readonly BindableProperty ShowsResultsProperty =
-			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), false, BindingMode.OneTime);
+			BindableProperty.Create(nameof(ShowsResults), typeof(bool), typeof(SearchHandler), BooleanBoxes.FalseBox, BindingMode.OneTime);
 
 		private ListProxy _listProxy;
 
@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls
 		public bool ClearPlaceholderEnabled
 		{
 			get { return (bool)GetValue(ClearPlaceholderEnabledProperty); }
-			set { SetValue(ClearPlaceholderEnabledProperty, value); }
+			set { SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the accessibility help text for the clear placeholder icon. This is a bindable property.</summary>
@@ -534,7 +534,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsSearchEnabled
 		{
 			get { return (bool)GetValue(IsSearchEnabledProperty); }
-			set { SetValue(IsSearchEnabledProperty, value); }
+			set { SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
 		}
 
 		/// <summary>Gets or sets the collection of items to display as search suggestions. This is a bindable property.</summary>
@@ -593,12 +593,12 @@ namespace Microsoft.Maui.Controls
 		public bool ShowsResults
 		{
 			get { return (bool)GetValue(ShowsResultsProperty); }
-			set { SetValue(ShowsResultsProperty, value); }
+			set { SetValue(ShowsResultsProperty, BooleanBoxes.Box(value)); }
 		}
 
-		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, value); }
+		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, BooleanBoxes.Box(value)); }
 
-		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, value); }
+		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, BooleanBoxes.Box(value)); }
 
 		protected virtual void OnClearPlaceholderClicked()
 		{

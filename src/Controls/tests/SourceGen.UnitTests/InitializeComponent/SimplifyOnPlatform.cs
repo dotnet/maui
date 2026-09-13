@@ -136,6 +136,47 @@ public partial class TestPage
 	}
 
 	[Fact]
+	public void NonSimplifiedOnPlatformMarkupExtensionUsesPublicCustomPlatformProperties()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<Label Text="{OnPlatform Default=default, GTK=gtk, macOS=macos, WPF=wpf}" />
+</ContentPage>
+""";
+
+		var code =
+"""
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+	public TestPage()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var (result, generated) = RunGenerator(xaml, code, targetFramework: "netstandard2.0");
+		Assert.False(result.Diagnostics.Any());
+
+		Assert.Contains("global::Microsoft.Maui.Controls.Xaml.OnPlatformExtension", generated, StringComparison.Ordinal);
+		Assert.Matches(@"GTK\s*=\s*""gtk""", generated);
+		Assert.Matches(@"macOS\s*=\s*""macos""", generated);
+		Assert.Matches(@"WPF\s*=\s*""wpf""", generated);
+		Assert.Contains("ProvideValue(xamlServiceProvider)", generated, StringComparison.Ordinal);
+	}
+
+	[Fact]
 	public void SimplifyOnPlatformElement()
 	{
 		// Issue #32521: OnPlatform elements should be simplified at compile time based on target framework

@@ -8,6 +8,8 @@ namespace Microsoft.Maui
 	static class WebUtils
 	{
 #if !NETSTANDARD
+		static readonly char[] s_queryOrFragmentDelimiters = new[] { '?', '#' };
+
 		internal static string RemovePossibleQueryString(string? url)
 		{
 			if (string.IsNullOrEmpty(url))
@@ -15,7 +17,7 @@ namespace Microsoft.Maui
 				return string.Empty;
 			}
 
-			var indexOfQueryString = url.IndexOf('?', StringComparison.Ordinal);
+			var indexOfQueryString = url.IndexOfAny(s_queryOrFragmentDelimiters);
 			return (indexOfQueryString == -1)
 				? url
 				: url.Substring(0, indexOfQueryString);
@@ -124,6 +126,10 @@ namespace Microsoft.Maui
 
 		internal static bool CanHandleCallback(Uri expectedUrl, Uri callbackUrl)
 		{
+			if (expectedUrl is null || callbackUrl is null ||
+				!expectedUrl.IsAbsoluteUri || !callbackUrl.IsAbsoluteUri)
+				return false;
+
 			if (!callbackUrl.Scheme.Equals(expectedUrl.Scheme, StringComparison.OrdinalIgnoreCase))
 				return false;
 
@@ -131,7 +137,14 @@ namespace Microsoft.Maui
 			{
 				if (!callbackUrl.Host.Equals(expectedUrl.Host, StringComparison.OrdinalIgnoreCase))
 					return false;
+
+				if (callbackUrl.Port != expectedUrl.Port)
+					return false;
 			}
+
+			if (!string.IsNullOrEmpty(expectedUrl.AbsolutePath) && expectedUrl.AbsolutePath != "/" &&
+				!callbackUrl.AbsolutePath.Equals(expectedUrl.AbsolutePath, StringComparison.Ordinal))
+				return false;
 
 			return true;
 		}
@@ -145,7 +158,7 @@ namespace Microsoft.Maui
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unable to create NSUrl from Original string, trying Absolute URI: {ex.Message}");
+                Debug.WriteLine($"Unable to create a native URL from the original value ({ex.GetType().Name}); retrying with the absolute value.");
                 return new Foundation.NSUrl(uri.AbsoluteUri);
             }
         }

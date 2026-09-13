@@ -71,6 +71,8 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(new Location(lat, Center.Longitude), Math.Min(LatitudeDegrees, maxDLat), LongitudeDegrees);
 		}
 
+		// Explicit crefs replace legacy unqualified inheritdoc entries during mdoc import.
+		/// <inheritdoc cref="object.Equals(object)"/>
 		/// <summary>Determines whether the specified object is equal to the current <see cref="MapSpan"/>.</summary>
 		/// <param name="obj">The object to compare with the current object.</param>
 		/// <returns><see langword="true"/> if the specified object is equal to the current object; otherwise, <see langword="false"/>.</returns>
@@ -154,6 +156,7 @@ namespace Microsoft.Maui.Maps
 			return new MapSpan(new Location(centerLat, centerLon), latDegrees, lonDegrees);
 		}
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		/// <summary>Serves as the default hash function.</summary>
 		/// <returns>A hash code for the current object.</returns>
 		public override int GetHashCode()
@@ -232,6 +235,7 @@ namespace Microsoft.Maui.Maps
 			return latCircumference * longitudeDegrees / 360;
 		}
 
+		/// <inheritdoc cref="object.ToString"/>
 		/// <summary>Returns a string representation of the <see cref="MapSpan"/>.</summary>
 		/// <returns>A string that represents the current <see cref="MapSpan"/>.</returns>
 		public override string ToString()

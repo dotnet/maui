@@ -13,7 +13,7 @@ public class Issue6077 : _IssuesUITest
 	public override string Issue => "CollectionView (iOS) using horizontal grid does not display last column of uneven item count";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 3)]
 	public void LastColumnShouldBeVisible()
 	{
 		// If the partial column shows up, then Item 5 will be in it

@@ -56,9 +56,15 @@ internal static partial class Log
 	[LoggerMessage(EventId = 16, Level = LogLevel.Debug, Message = "Blazor startup scripts finished.")]
 	public static partial void BlazorStartupScriptsFinished(this ILogger logger);
 
+	[LoggerMessage(EventId = 40, Level = LogLevel.Debug, Message = "Blazor startup scripts submitted.")]
+	public static partial void BlazorStartupScriptsSubmitted(this ILogger logger);
+
 	[LoggerMessage(EventId = 17, Level = LogLevel.Debug, Message = "Creating WebKit WKWebView...")]
 	public static partial void CreatingWebKitWKWebView(this ILogger logger);
 
 	[LoggerMessage(EventId = 18, Level = LogLevel.Debug, Message = "Created WebKit WKWebView.")]
 	public static partial void CreatedWebKitWKWebView(this ILogger logger);
+
+	[LoggerMessage(EventId = 19, Level = LogLevel.Error, Message = "The StaticContentCacheControlProvider threw an exception for request '{requestUri}'. Falling back to the default Cache-Control header.")]
+	public static partial void StaticContentCacheControlProviderFailed(this ILogger logger, string requestUri, Exception exception);
 }

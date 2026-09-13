@@ -22,6 +22,8 @@ namespace Microsoft.Maui.Controls
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
 		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
+		WeakValuesChangedProxy _mergedInstanceChangedProxy;
+		EventHandler<ResourcesChangedEventArgs> _mergedInstanceChanged;
 		Uri _source;
 
 		// This action is instantiated in a module initializer in ResourceDictionaryHotReloadHelper
@@ -102,7 +104,38 @@ namespace Microsoft.Maui.Controls
 		{
 			_source = source;
 			_mergedInstance = sourceInstance;
+			_mergedInstanceChangedProxy ??= new WeakValuesChangedProxy();
+			_mergedInstanceChanged ??= Item_ValuesChanged;
+			_mergedInstanceChangedProxy.Subscribe(sourceInstance, _mergedInstanceChanged);
 			OnKeysChanged(_mergedInstance.MergedResourcesKeys);
+		}
+
+		sealed class WeakValuesChangedProxy : WeakEventProxy<ResourceDictionary, EventHandler<ResourcesChangedEventArgs>>
+		{
+			void OnValuesChanged(object sender, ResourcesChangedEventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+					handler(sender, e);
+				else
+					Unsubscribe();
+			}
+
+			public override void Subscribe(ResourceDictionary source, EventHandler<ResourcesChangedEventArgs> handler)
+			{
+				if (TryGetSource(out var previousSource))
+					previousSource.ValuesChanged -= OnValuesChanged;
+
+				source.ValuesChanged += OnValuesChanged;
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var source))
+					source.ValuesChanged -= OnValuesChanged;
+
+				base.Unsubscribe();
+			}
 		}
 
 		ObservableCollection<ResourceDictionary> _mergedDictionaries;
@@ -365,7 +398,7 @@ namespace Microsoft.Maui.Controls
 				if (_mergedInstance != null)
 					foreach (var key in _mergedInstance.MergedResourcesKeys)
 						yield return key;
-				
+
 				foreach (var key in _innerDictionary.Keys)
 					yield return key;
 			}
@@ -524,7 +557,7 @@ namespace Microsoft.Maui.Controls
 			public object GetValue()
 			{
 				_invocationCount++;
-				
+
 				if (!_shared)
 					return _factory();
 
@@ -572,11 +605,11 @@ namespace Microsoft.Maui.Controls
 		internal ResourceDiagnostics GetDiagnostics()
 		{
 			var diag = new ResourceDiagnostics();
-			
+
 			foreach (var kvp in _innerDictionary)
 			{
 				diag.TotalCount++;
-				
+
 				if (kvp.Value is LazyResource lazy)
 				{
 					diag.LazyCount++;
@@ -597,7 +630,7 @@ namespace Microsoft.Maui.Controls
 					diag.EagerKeys.Add(kvp.Key);
 				}
 			}
-			
+
 			return diag;
 		}
 
@@ -617,14 +650,29 @@ namespace Microsoft.Maui.Controls
 		}
 #endif
 
+#nullable enable
 		[Xaml.ProvideCompiled("Microsoft.Maui.Controls.XamlC.RDSourceTypeConverter")]
 		public class RDSourceTypeConverter : TypeConverter, IExtendedTypeConverter
 		{
-			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 				=> sourceType == typeof(string);
 
-			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 				=> true;
+
+			public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+				=> throw new NotImplementedException();
+
+			public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+			{
+				if (value is not Uri uri)
+				{
+					throw new NotSupportedException();
+				}
+
+				return uri.ToString();
+			}
+#nullable disable
 
 			object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
 			{
@@ -675,15 +723,6 @@ namespace Microsoft.Maui.Controls
 				return resourceUri.AbsolutePath.Substring(1);
 			}
 
-			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-				=> throw new NotImplementedException();
-
-			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-			{
-				if (value is not Uri uri)
-					throw new NotSupportedException();
-				return uri.ToString();
-			}
 		}
 	}
 }

@@ -3,8 +3,11 @@
 <#
 .SYNOPSIS
     Pester tests for Fix-MilestoneDrift.ps1.
-    Tests the pure functions (milestone mapping, matching, linked-issue extraction)
-    without hitting GitHub or Git.
+    Most tests cover the pure functions (milestone mapping, matching, linked-issue
+    extraction) and never touch GitHub or Git. One block — 'Get-RefinedReleaseMilestone
+    — git integration (unmocked)' — builds a disposable LOCAL git repo in a temp dir to
+    exercise the real `git tag -l` / `git merge-base --is-ancestor` plumbing end-to-end;
+    it still never touches GitHub (no `gh`, no network) and is skipped if git is absent.
 
 .EXAMPLE
     Invoke-Pester ./Fix-MilestoneDrift.Tests.ps1
@@ -77,6 +80,219 @@
 
 BeforeAll {
     . "$PSScriptRoot/Fix-MilestoneDrift.ps1"
+}
+
+Describe 'Resolve-MergedAfterCutoff' {
+    It 'defaults to 2026-01-01 UTC when value is "<Value>"' -ForEach @(
+        @{ Value = $null }
+        @{ Value = '' }
+        @{ Value = '   ' }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result | Should -Be ([datetime]::new(2026, 1, 1, 0, 0, 0, [System.DateTimeKind]::Utc))
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses a date-only value "<Value>" as UTC midnight' -ForEach @(
+        @{ Value = '2025-01-01'; Year = 2025; Month = 1;  Day = 1 }
+        @{ Value = '2024-06-15'; Year = 2024; Month = 6;  Day = 15 }
+        @{ Value = '2020-12-31'; Year = 2020; Month = 12; Day = 31 }
+    ) {
+        $result = Resolve-MergedAfterCutoff $Value
+        $result.Year  | Should -Be $Year
+        $result.Month | Should -Be $Month
+        $result.Day   | Should -Be $Day
+        $result.Hour  | Should -Be 0
+        $result.Kind  | Should -Be ([System.DateTimeKind]::Utc)
+    }
+
+    It 'parses an ISO-8601 value with explicit UTC offset' {
+        $result = Resolve-MergedAfterCutoff '2025-06-01T12:30:00Z'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 6, 1, 12, 30, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'normalizes a non-UTC offset to UTC' {
+        # 2025-06-01T00:00:00+05:00 == 2025-05-31T19:00:00Z
+        $result = Resolve-MergedAfterCutoff '2025-06-01T00:00:00+05:00'
+        $result.Kind | Should -Be ([System.DateTimeKind]::Utc)
+        $result | Should -Be ([datetime]::new(2025, 5, 31, 19, 0, 0, [System.DateTimeKind]::Utc))
+    }
+
+    It 'throws a clear error for unparseable value "<Value>"' -ForEach @(
+        @{ Value = 'garbage' }
+        @{ Value = 'not-a-date' }
+        @{ Value = '2025-13-99' }
+        @{ Value = '13/13/2025' }
+    ) {
+        { Resolve-MergedAfterCutoff $Value } | Should -Throw "*Invalid -MergedAfter value*"
+    }
+}
+
+Describe 'Get-PrNumbersFromGitLog — terminal squash PR suffix' {
+    It 'parses an ordinary terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)'))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR when an issue reference appears earlier' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'returns only the terminal PR after multiple earlier parenthesized references' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 Reconcile reports (#100) and (#200) before the fix (#34719)'
+        ))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 34719
+    }
+
+    It 'ignores a subject with no terminal PR suffix' {
+        @(Get-PrNumbersFromGitLog @(
+            'abc1234 Follow up on (#35031) without a squash suffix'
+        )).Count | Should -Be 0
+    }
+
+    It 'ignores malformed or non-numeric terminal references "<Reference>"' -ForEach @(
+        @{ Reference = '(#)' }
+        @{ Reference = '(#abc)' }
+        @{ Reference = '(#12x)' }
+        @{ Reference = '(#999999999999999999999999999999)' }
+    ) {
+        @(Get-PrNumbersFromGitLog @("abc1234 Malformed reference $Reference")).Count | Should -Be 0
+    }
+
+    It 'tolerates trailing whitespace after the terminal PR suffix' {
+        $result = @(Get-PrNumbersFromGitLog @('abc1234 Fix a layout regression (#35031)   '))
+        $result.Count | Should -Be 1
+        $result[0] | Should -Be 35031
+    }
+
+    It 'deduplicates repeated PR subjects and sorts the result' {
+        $result = @(Get-PrNumbersFromGitLog @(
+            'abc1234 First appearance (#35031)',
+            'def5678 Another PR (#34719)',
+            'fed9876 Cherry-pick the first PR (#35031)'
+        ))
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+}
+
+Describe 'Get-PrInfo — merged-after cutoff enforcement' {
+    BeforeAll {
+        # Build a GitHub-pulls-API-shaped object (ConvertFrom-Json style) for the mock.
+        function New-FakePr {
+            param([string]$MergedAt, [int]$Number = 42)
+            [pscustomobject]@{
+                title            = "PR $Number"
+                html_url         = "https://github.com/dotnet/maui/pull/$Number"
+                body             = ''
+                merged_at        = $MergedAt
+                milestone        = $null
+                base             = [pscustomobject]@{ ref = 'net11.0' }
+                merge_commit_sha = 'deadbeef'
+            }
+        }
+    }
+
+    AfterAll {
+        # Restore the default cutoff so later Describes are unaffected.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+    }
+
+    It 'skips a PR merged before the cutoff (returns a pre-cutoff sentinel, not $null)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 100 }
+        $result = Get-PrInfo 100
+        $result | Should -BeOfType [hashtable]
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 100
+    }
+
+    It 'includes a PR merged on/after the cutoff (returns the object, no skip sentinel)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 101 }
+        $pr = Get-PrInfo 101
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 101
+        $pr.ContainsKey('SkippedPreCutoff') | Should -BeFalse
+    }
+
+    It 'includes a PR merged exactly at the cutoff boundary (strict less-than)' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''   # 2026-01-01T00:00:00Z
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-01-01T00:00:00Z' -Number 102 }
+        Get-PrInfo 102 | Should -Not -BeNullOrEmpty
+    }
+
+    It 'a lowered cutoff lets an older PR through (the configurable use case)' {
+        # Same 2025 PR that the default cutoff skips is now processed.
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2024-01-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2025-05-01T00:00:00Z' -Number 103 }
+        $pr = Get-PrInfo 103
+        $pr | Should -Not -BeNullOrEmpty
+        $pr.Number | Should -Be 103
+    }
+
+    It 'a raised cutoff skips a PR that the default would include' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff '2026-06-01'
+        Mock Invoke-GhApi { New-FakePr -MergedAt '2026-03-01T00:00:00Z' -Number 104 }
+        $result = Get-PrInfo 104
+        $result.SkippedPreCutoff | Should -BeTrue
+        $result.Number | Should -Be 104
+    }
+
+    It 'never skips an unmerged PR (no merged_at) regardless of cutoff' {
+        $script:MergedAfterCutoff = Resolve-MergedAfterCutoff ''
+        Mock Invoke-GhApi { New-FakePr -MergedAt $null -Number 105 }
+        Get-PrInfo 105 | Should -Not -BeNullOrEmpty
+    }
+}
+
+Describe 'Invoke-AnalyzeRelease — pre-cutoff skips are accounted separately from errors' {
+    BeforeEach {
+        # Minimal mocks so Invoke-AnalyzeRelease reaches the PR loop without touching git/gh.
+        Mock ConvertTo-Milestone { '.NET 10 SR8' }
+        Mock Get-AllTags { @('10.0.70', '10.0.80') }
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-MainBranchForVersion { 'net10.0' }
+        Mock Get-AllMilestones { @{ '.NET 10 SR8' = 999 } }
+        Mock Find-MatchingMilestone { @{ Number = 999; Title = '.NET 10 SR8' } }
+        Mock Get-PrNumbersBetweenTags { @(100, 101) }
+        # Defensive: only reached for real (non-skipped, non-null) PRs — never hit in these tests.
+        Mock Test-PrBelongsToVersion { $true }
+        Mock Test-AndRecordCorrection { }
+        Mock Get-LinkedIssues { @() }
+    }
+
+    It 'counts an all-pre-cutoff cohort as skipped, not as errors (no spurious failure)' {
+        # Regression: a cohort whose PRs all predate the cutoff must NOT be reported as
+        # "0 PRs checked, N errors" (which makes the top-level script throw a red run).
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 2
+        $report.PrsChecked          | Should -Be 0
+        $report.Errors.Count        | Should -Be 0   # the top-level throw guard keys off Errors.Count
+    }
+
+    It 'still records a genuine fetch failure as an error, distinct from a pre-cutoff skip' {
+        Mock Get-PrInfo {
+            param([int]$PrNum)
+            if ($PrNum -eq 101) { return $null }                   # real fetch failure
+            return @{ SkippedPreCutoff = $true; Number = $PrNum }   # pre-cutoff skip
+        }
+        $report = Invoke-AnalyzeRelease '10.0.80' '10.0.70' '.'
+        $report.PrsSkippedPreCutoff | Should -Be 1
+        $report.Errors.Count        | Should -Be 1
+        $report.Errors[0]           | Should -BeLike '*Failed to fetch PR #101*'
+    }
 }
 
 Describe 'ConvertTo-Milestone' {
@@ -1066,6 +1282,74 @@ Describe 'Invoke-AnalyzeSinglePr — validation context seeding' {
     }
 }
 
+Describe 'Invoke-AnalyzeSinglePr — milestone-not-found skip report shape' {
+    BeforeEach {
+        # Same start-to-finish scaffolding as the validation-context seeding tests, but here we
+        # force Find-MatchingMilestone to return $null so we exercise the graceful-skip path taken
+        # when the expected milestone (e.g. ".NET 11.0-preview7") has not been created in GitHub yet.
+        Mock Initialize-MilestoneValidationContext { }
+        Mock Get-PrInfo {
+            return @{
+                Number         = 42
+                Title          = 'Test PR'
+                Url            = 'u'
+                Milestone      = ''
+                BaseRef        = 'net11.0'
+                MergedAt       = '2025-01-01T00:00:00Z'
+                MergeCommitSha = 'abc123'
+                Body           = ''
+            }
+        }
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '11.0.0-preview.3') }
+        Mock Get-VersionFromGitRef { return @{ Tag = '11.0.0'; PreLabel = 'preview'; PreIter = 7 } }
+        Mock Find-ReleaseBranchForCommit { return @{ Branch = 'release/11.0.1xx-preview7'; Milestone = '.NET 11.0-preview7' } }
+        Mock ConvertBranchToMilestone { return '.NET 11.0-preview7' }
+        Mock Get-MainBranchForVersion { return 'net11.0' }
+        Mock Get-CurrentMajorVersion { return 11 }
+        # The milestone does not exist yet: Get-AllMilestones has no match and Find-MatchingMilestone
+        # returns $null, driving Invoke-AnalyzeSinglePr into the early-return skip report.
+        Mock Get-AllMilestones { return @(@{ Number = 99; Title = '.NET 11.0-preview6' }) }
+        Mock Find-MatchingMilestone { return $null }
+        Mock Test-PrBelongsToVersion { return $true }
+        Mock Get-LinkedIssues { return @() }
+        Mock Test-AndRecordCorrection { }
+    }
+
+    It 'includes ResolvedMilestone/ResolvedMsNumber keys (set to $null) so downstream writers do not crash under StrictMode' {
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        # The skip report MUST carry the same key shape as the success-path report. Write-Report
+        # (line ~1326) and Save-ReportJson (line ~1381) read $Report.ResolvedMilestone WITHOUT a
+        # ContainsKey guard; under StrictMode a missing key throws PropertyNotFound -> exit 1.
+        $report.ContainsKey('ResolvedMilestone') | Should -BeTrue
+        $report.ContainsKey('ResolvedMsNumber')  | Should -BeTrue
+        $report.ResolvedMilestone | Should -BeNullOrEmpty
+        $report.ResolvedMsNumber  | Should -BeNullOrEmpty
+        # And the report is genuinely a no-op skip: no corrections to apply.
+        $report.Corrections.Count | Should -Be 0
+    }
+
+    It 'does not crash Write-Report/Save-ReportJson under StrictMode Latest (faithful CI reproduction)' {
+        # StrictMode is intentionally NOT enabled when the script is dot-sourced for Pester (see the
+        # $MyInvocation.InvocationName -ne '.' guard in Fix-MilestoneDrift.ps1). So we must re-create
+        # the exact production condition here: the workflow runs with Set-StrictMode -Version Latest,
+        # under which reading a missing hashtable key throws. Without the fix, this test throws
+        # PropertyNotFound and fails; with the fix it passes.
+        $report = Invoke-AnalyzeSinglePr -PrNum 42 -ReleaseTag '' -Repo '.'
+
+        $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) "milestone-skip-report-$([guid]::NewGuid()).json"
+        try {
+            {
+                Set-StrictMode -Version Latest
+                Write-Report $report
+                Save-ReportJson $report $tempPath
+            } | Should -Not -Throw
+        } finally {
+            Remove-Item $tempPath -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Describe 'Get-TagsForMilestone — cross-major filter' {
     BeforeEach {
         # Seed validation context as a live workflow run would: target major = 11.
@@ -1242,5 +1526,276 @@ Describe 'Get-PrsInTag — unary-comma preserves HashSet on cache hit' {
         Test-PrShippedInMilestone -PrNumber 103 -Milestone '.NET 10 SR6' | Should -BeTrue
         Test-PrShippedInMilestone -PrNumber 999 -Milestone '.NET 10 SR6' | Should -BeFalse
         Assert-MockCalled Get-PrNumbersReachableFromTag -Times 1 -Exactly
+    }
+}
+
+Describe 'Get-RefinedReleaseMilestone — SR sub-patch precision' {
+    # The bug: a commit that lands on an SR release branch AFTER the base SR
+    # shipped actually goes out in a later sub-patch (10.0.71 = SR7.1), but the
+    # branch name alone (release/10.0.1xx-sr7) only yields the base SR (SR7).
+    # Get-RefinedReleaseMilestone fixes this by resolving the EARLIEST SR-family
+    # tag that contains the commit. These tests mock the tag list and the
+    # commit-in-tag ancestry check so no real git repo / tags are required.
+
+    It 'refines to the earliest sub-patch tag that contains the commit (SR7 → SR7.1)' {
+        # Family tags 10.0.70/71/72 all exist; commit shipped in .71 (and is
+        # therefore also in .72), but NOT in the base .70. Earliest containing = .71.
+        Mock Get-AllTags { return @('10.0.60', '10.0.70', '10.0.71', '10.0.72', '11.0.0') }
+        Mock Test-CommitInTag { return ($Tag -in @('10.0.71', '10.0.72')) }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7.1'
+    }
+
+    It 'keeps the base SR when the commit shipped in the base drop (SR7 stays SR7)' {
+        # Commit is contained in the base .70 tag → earliest containing is .70 → SR7.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { return $true }  # contained in everything, incl. base
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'uses the next sub-patch after the latest shipped tag when not yet tagged (SR7 → SR7.2)' {
+        # .70 and .71 already shipped but none contains this (untagged) commit, so
+        # it goes out in the next drop after the latest shipped family tag → .72.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7.2'
+    }
+
+    It 'never crosses the family boundary: SR7 exhausted at .79 falls back to base SR (not SR8)' {
+        # Degenerate state — all 10 SR7 drops (.70..79) shipped and none contains the
+        # commit. The next patch (.80) belongs to SR8, which the SR7 branch never
+        # ships, so the refiner must NOT predict SR8; it falls back to the base SR7.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71', '10.0.72', '10.0.73', '10.0.74', '10.0.75', '10.0.76', '10.0.77', '10.0.78', '10.0.79') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'returns the base SR unchanged when no family tags have shipped yet' {
+        # Branch exists but no 10.0.7x tag yet → base SR is the best we can say.
+        Mock Get-AllTags { return @('10.0.60', '10.0.61') }
+        Mock Test-CommitInTag { return $false }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'does not let an adjacent SR family leak in (SR1 vs SR10 boundary)' {
+        # SR10 family is 10.0.100..10.0.109; the SR1-era 10.0.10 tag must be ignored.
+        Mock Get-AllTags { return @('10.0.10', '10.0.100', '10.0.101') }
+        Mock Test-CommitInTag { return ($Tag -in @('10.0.101')) }
+        Get-RefinedReleaseMilestone '.NET 10 SR10' 'abc123' '.' | Should -Be '.NET 10 SR10.1'
+    }
+
+    It 'returns non-SR milestones unchanged without touching tags' -ForEach @(
+        @{ Milestone = '.NET 11.0-preview3' }
+        @{ Milestone = '.NET 11.0-rc1' }
+        @{ Milestone = '.NET 11.0 GA' }
+    ) {
+        Mock Get-AllTags { throw 'should not be called for non-SR milestones' }
+        Mock Test-CommitInTag { throw 'should not be called for non-SR milestones' }
+        Get-RefinedReleaseMilestone $Milestone 'abc123' '.' | Should -Be $Milestone
+    }
+
+    It 'returns the input unchanged for empty milestone or empty commit' {
+        Mock Get-AllTags { throw 'should not be called' }
+        Get-RefinedReleaseMilestone '' 'abc123' '.' | Should -Be ''
+        Get-RefinedReleaseMilestone '.NET 10 SR7' '' '.' | Should -Be '.NET 10 SR7'
+    }
+
+    It 'falls back to the base SR when the ancestry check hits a real git error' {
+        # Test-CommitInTag throws on a git failure (exit >1), distinct from a clean
+        # "not an ancestor". The refiner must NOT turn that into a speculative
+        # sub-patch (e.g. SR7.2) — it catches the error and returns the base SR so a
+        # transient failure can only ever lose precision, never assign a wrong drop.
+        Mock Get-AllTags { return @('10.0.70', '10.0.71') }
+        Mock Test-CommitInTag { throw 'git merge-base --is-ancestor failed (exit 128)' }
+        Get-RefinedReleaseMilestone '.NET 10 SR7' 'abc123' '.' | Should -Be '.NET 10 SR7'
+    }
+}
+
+Describe 'Get-OnBranchShaFromLog — grep fallback subject precision' {
+    # The grep fallback feeds this `git log --format='%H%x1f%s'` output (full SHA,
+    # 0x1f Unit Separator, subject). Only a subject that ENDS with the squash token
+    # "(#PrNum)" is a genuine squash-merge / cherry-pick of that PR; body-only
+    # mentions and quoted reverts must be rejected so the milestone is refined from
+    # the right commit. Input is oldest-first (git --reverse).
+    BeforeAll {
+        $script:US   = [char]0x1f
+        $script:Sha1 = '1111111111111111111111111111111111111111'
+        $script:Sha2 = '2222222222222222222222222222222222222222'
+    }
+
+    It 'returns the SHA of a genuine squash-merge subject (trailing token)' {
+        $lines = @("$Sha1$US" + 'Fix crash on startup (#35694)')
+        Get-OnBranchShaFromLog $lines 35694 | Should -Be $Sha1
+    }
+
+    It 'ignores a PR number that appears only in the commit body, not the subject' {
+        # --grep matched on the body, but the emitted subject has no trailing token.
+        $lines = @("$Sha1$US" + 'Unrelated change with no PR token in the subject')
+        Get-OnBranchShaFromLog $lines 35694 | Should -BeNullOrEmpty
+    }
+
+    It 'ignores a revert that merely quotes the original PR number mid-subject' {
+        # Searching for #100: the revert subject ends with (#200), not (#100).
+        $lines = @("$Sha1$US" + 'Revert "Fix X (#100)" (#200)')
+        Get-OnBranchShaFromLog $lines 100 | Should -BeNullOrEmpty
+    }
+
+    It 'matches the revert itself when searching for the revert PR number' {
+        $lines = @("$Sha1$US" + 'Revert "Fix X (#100)" (#200)')
+        Get-OnBranchShaFromLog $lines 200 | Should -Be $Sha1
+    }
+
+    It 'returns the FIRST genuine match (oldest-first input wins)' {
+        # Two real squash subjects for the same PR (introduce, then re-apply). The
+        # --reverse ordering means the original introduction is selected.
+        $lines = @(
+            "$Sha1$US" + 'Original fix (#42)',
+            "$Sha2$US" + 'Re-apply fix (#42)'
+        )
+        Get-OnBranchShaFromLog $lines 42 | Should -Be $Sha1
+    }
+
+    It 'tolerates trailing whitespace after the token' {
+        $lines = @("$Sha1$US" + 'Fix thing (#42)   ')
+        Get-OnBranchShaFromLog $lines 42 | Should -Be $Sha1
+    }
+
+    It 'does not partial-match a longer PR number that shares the prefix' {
+        # Searching #42 must not match (#420).
+        $lines = @("$Sha1$US" + 'Some fix (#420)')
+        Get-OnBranchShaFromLog $lines 42 | Should -BeNullOrEmpty
+    }
+
+    It 'returns null for empty input' {
+        Get-OnBranchShaFromLog @() 42 | Should -BeNullOrEmpty
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Git-log PR parsing integration block (no mocks, no GitHub).
+# ---------------------------------------------------------------------------
+Describe 'Git-log PR parsing paths (unmocked)' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    BeforeAll {
+        $script:prLogTmp = Join-Path ([IO.Path]::GetTempPath()) "prlogtest-$(New-Guid)"
+        New-Item -ItemType Directory -Path $script:prLogTmp -Force | Out-Null
+
+        git -C $script:prLogTmp init -q
+        git -C $script:prLogTmp config user.email 'milestone-test@example.invalid'
+        git -C $script:prLogTmp config user.name 'Milestone Test'
+        git -C $script:prLogTmp config commit.gpgsign false
+
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Base change (#100)'
+        git -C $script:prLogTmp tag 'from'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix Shell.Items.Clear() memory leak (#34898) (#35031)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Fix VisualStateGroups (#50) (#34716) (#34719)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Subject mentions (#99999) but has no terminal PR suffix'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Malformed suffix (#not-a-pr)'
+        git -C $script:prLogTmp commit -q --allow-empty -m 'Duplicate cherry-pick (#35031)'
+        git -C $script:prLogTmp tag 'to'
+    }
+
+    AfterAll {
+        if ($script:prLogTmp -and (Test-Path $script:prLogTmp)) {
+            Remove-Item -Recurse -Force $script:prLogTmp -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'Get-PrNumbersBetweenTags returns only terminal PR suffixes and deduplicates them' {
+        $result = @(Get-PrNumbersBetweenTags 'from' 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '34719,35031'
+    }
+
+    It 'Get-PrNumbersReachableFromTag uses the same terminal-suffix behavior' {
+        $result = @(Get-PrNumbersReachableFromTag 'to' $script:prLogTmp)
+        ($result -join ',') | Should -Be '100,34719,35031'
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Git-backed integration block (no mocks, no GitHub).
+#
+# Everything above mocks Get-AllTags / Test-CommitInTag so the resolution logic
+# can be tested in isolation. This block instead builds a throwaway LOCAL git
+# repo in a temp dir and calls the REAL, unmocked helpers, so the actual
+# `git tag -l` and `git merge-base --is-ancestor` plumbing is exercised
+# end-to-end. It never touches GitHub (no `gh`, no network) and never mutates
+# the checkout it runs from — every git command is scoped with `git -C $tmp`.
+# Skipped cleanly when git is not on PATH.
+# ---------------------------------------------------------------------------
+Describe 'Get-RefinedReleaseMilestone — git integration (unmocked)' -Skip:(-not (Get-Command git -ErrorAction SilentlyContinue)) {
+
+    BeforeAll {
+        $script:tmp = Join-Path ([IO.Path]::GetTempPath()) "miletest-$(New-Guid)"
+        New-Item -ItemType Directory -Path $script:tmp -Force | Out-Null
+
+        # Disposable repo with a deterministic identity; nothing global is touched.
+        git -C $script:tmp init -q
+        git -C $script:tmp config user.email 'milestone-test@example.invalid'
+        git -C $script:tmp config user.name  'Milestone Test'
+        git -C $script:tmp config commit.gpgsign false
+
+        # Build a linear history of empty commits and tag the SR-family drops:
+        #   c0 -> 10.0.70 (SR7 base)
+        #   c1 -> 10.0.71 (SR7.1)   <-- the commit under test
+        #   c2 -> 10.0.72 (SR7.2)
+        #   c3 -> (untagged, ships in the NEXT drop)
+        git -C $script:tmp commit -q --allow-empty -m 'SR7 base drop'
+        $script:shaBase = (git -C $script:tmp rev-parse HEAD).Trim()
+        git -C $script:tmp tag '10.0.70'
+
+        git -C $script:tmp commit -q --allow-empty -m 'fix shipped in SR7.1 (#35694)'
+        $script:shaFix = (git -C $script:tmp rev-parse HEAD).Trim()
+        git -C $script:tmp tag '10.0.71'
+
+        git -C $script:tmp commit -q --allow-empty -m 'SR7.2 drop'
+        git -C $script:tmp tag '10.0.72'
+
+        git -C $script:tmp commit -q --allow-empty -m 'not yet tagged'
+        $script:shaUntagged = (git -C $script:tmp rev-parse HEAD).Trim()
+    }
+
+    AfterAll {
+        if ($script:tmp -and (Test-Path $script:tmp)) {
+            Remove-Item -Recurse -Force $script:tmp -ErrorAction SilentlyContinue
+        }
+    }
+
+    It 'resolves a commit to the EARLIEST family tag that contains it (SR7.1, not SR7.2)' {
+        # shaFix is contained in 10.0.71 AND 10.0.72, but the earliest wins.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaFix $script:tmp |
+            Should -Be '.NET 10 SR7.1'
+    }
+
+    It 'resolves a commit that only shipped in the base drop to the base SR (SR7)' {
+        # shaBase is the commit tagged 10.0.70 — earliest containing family tag.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaBase $script:tmp |
+            Should -Be '.NET 10 SR7'
+    }
+
+    It 'predicts the next sub-patch for a commit not yet in any family tag (SR7.3)' {
+        # shaUntagged sits after 10.0.72; base SR already shipped, so it lands in
+        # the next drop: latest family tag .72 -> predict .73 -> SR7.3.
+        Get-RefinedReleaseMilestone '.NET 10 SR7' $script:shaUntagged $script:tmp |
+            Should -Be '.NET 10 SR7.3'
+    }
+
+    It 'leaves a non-SR milestone untouched even when family tags exist' {
+        Get-RefinedReleaseMilestone '.NET 10 Preview 3' $script:shaFix $script:tmp |
+            Should -Be '.NET 10 Preview 3'
+    }
+
+    It 'Test-CommitInTag returns $true when the commit IS contained in the tag' {
+        Test-CommitInTag $script:shaFix '10.0.71' $script:tmp | Should -BeTrue
+    }
+
+    It 'Test-CommitInTag returns $false when the commit is NOT contained (exit 1)' {
+        # shaFix shipped in .71 — it is not an ancestor of the earlier .70 tag.
+        Test-CommitInTag $script:shaFix '10.0.70' $script:tmp | Should -BeFalse
+    }
+
+    It 'Test-CommitInTag THROWS on a git error (bad object, exit > 1)' {
+        # A well-formed but non-existent 40-hex SHA makes git fatal (exit 128),
+        # which must surface as an exception rather than a silent "not contained".
+        $bogus = 'deadbeef' * 5   # 40 hex chars, resolves to nothing
+        { Test-CommitInTag $bogus '10.0.70' $script:tmp } | Should -Throw
     }
 }

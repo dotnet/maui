@@ -115,6 +115,89 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Contains(polygon2, map.MapElements);
 			Assert.NotNull(polygon2.MapElementId);
 		}
+
+		[Fact]
+		public async Task UpdatingSingleElementPreservesTrackingForOtherElements()
+		{
+			var map = new Map();
+			var handler = await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
+			var platformView = handler.PlatformView;
+
+			var polyline1 = new Polyline
+			{
+				Geopath =
+				{
+					new Location(47.60, -122.33),
+					new Location(47.61, -122.33)
+				}
+			};
+			var polyline2 = new Polyline
+			{
+				Geopath =
+				{
+					new Location(47.62, -122.34),
+					new Location(47.63, -122.34)
+				}
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				map.MapElements.Add(polyline1);
+				map.MapElements.Add(polyline2);
+			});
+
+			Assert.NotNull(polyline1.MapElementId);
+			Assert.NotNull(polyline2.MapElementId);
+
+			var overlaysBefore = await InvokeOnMainThreadAsync(() => platformView.Overlays?.Length);
+			var polyline2IdBefore = polyline2.MapElementId;
+
+			await InvokeOnMainThreadAsync(() => polyline1.Geopath.Add(new Location(47.62, -122.33)));
+
+			// Updating polyline1 must not leak/drop native overlays or disturb polyline2's overlay.
+			var overlaysAfter = await InvokeOnMainThreadAsync(() => platformView.Overlays?.Length);
+			Assert.Equal(overlaysBefore, overlaysAfter);
+			Assert.Same(polyline2IdBefore, polyline2.MapElementId);
+
+			await InvokeOnMainThreadAsync(() => map.MapElements.Clear());
+
+			Assert.Null(polyline1.MapElementId);
+			Assert.Null(polyline2.MapElementId);
+		}
+
+		// Regression test for https://github.com/dotnet/maui/issues/35479
+		[Fact]
+		public async Task DisconnectClearsNativeMapStateBeforePooling()
+		{
+			var map = new Map();
+			var handler = await CreateHandlerAsync<Microsoft.Maui.Maps.Handlers.MapHandler>(map);
+			var platformView = handler.PlatformView;
+
+			var polygon = CreatePolygon();
+			var pin = new Pin
+			{
+				Label = "Pin",
+				Location = new Location(47.6458, -122.1419)
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				map.Pins.Add(pin);
+				map.MapElements.Add(polygon);
+			});
+
+			Assert.NotNull(polygon.MapElementId);
+			Assert.True(platformView.Annotations?.Length > 0);
+			Assert.True(platformView.Overlays?.Length > 0);
+
+			await InvokeOnMainThreadAsync(() => ((IElementHandler)handler).DisconnectHandler());
+
+			Assert.Single(map.Pins);
+			Assert.Single(map.MapElements);
+			Assert.Null(polygon.MapElementId);
+			Assert.True(platformView.Annotations is null || platformView.Annotations.Length == 0);
+			Assert.True(platformView.Overlays is null || platformView.Overlays.Length == 0);
+		}
 	}
 #endif
 }

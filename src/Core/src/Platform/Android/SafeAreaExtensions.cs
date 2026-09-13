@@ -16,6 +16,14 @@ internal static class SafeAreaExtensions
 			_ => null
 		};
 
+	internal static ISafeAreaElement? GetSafeAreaElement(object? layout) =>
+		layout switch
+		{
+			ISafeAreaElement safeAreaElement => safeAreaElement,
+			IElementHandler { VirtualView: ISafeAreaElement virtualSafeAreaElement } => virtualSafeAreaElement,
+			_ => null
+		};
+
 	internal static ISafeAreaView? GetSafeAreaView(object? layout) =>
 		layout switch
 		{
@@ -35,6 +43,12 @@ internal static class SafeAreaExtensions
 			return safeAreaView2.GetSafeAreaRegionsForEdge(edge);
 		}
 
+		var safeAreaElement = GetSafeAreaElement(layout);
+		if (safeAreaElement is not null)
+		{
+			return safeAreaElement.SafeAreaEdges.GetEdge(edge);
+		}
+
 		var safeAreaView = GetSafeAreaView(layout);
 		return safeAreaView?.IgnoreSafeArea == false ? SafeAreaRegions.Container : SafeAreaRegions.None;
 	}
@@ -52,9 +66,10 @@ internal static class SafeAreaExtensions
 
 		var layout = crossPlatformLayout;
 		var safeAreaView2 = GetSafeAreaView2(layout);
-		var margins = (safeAreaView2 as IView)?.Margin ?? Thickness.Zero;
+		var safeAreaElement = GetSafeAreaElement(layout);
+		var margins = (safeAreaView2 as IView)?.Margin ?? (safeAreaElement as IView)?.Margin ?? Thickness.Zero;
 
-		if (safeAreaView2 is not null)
+		if (safeAreaView2 is not null || safeAreaElement is not null)
 		{
 			// Apply safe area selectively per edge based on SafeAreaRegions
 			var left = GetSafeAreaForEdge(GetSafeAreaRegionForEdge(0, layout), baseSafeArea.Left, 0, isKeyboardShowing, keyboardInsets);
@@ -142,11 +157,13 @@ internal static class SafeAreaExtensions
 					// extend beyond the screen bottom. This happens because the fragment animation
 					// slides the view in from off-screen. We detect this animating state by checking:
 					// 1. viewTop > top (view is below the status bar area - normal case would be viewTop <= top)
-					// 2. viewBottom > screenHeight (view extends beyond screen - confirms it's not just a small view)
-					// 3. viewTop > 0 (view is not at origin)
+					// 2. viewBottom > screenHeight (view extends beyond screen)
+					// 3. viewHeight covers the usable screen (excludes translated child controls)
 					// This is DIFFERENT from ScrollView where viewTop = 0 (at origin, not animating).
 					// When we detect animation state, apply the full top inset since view will settle at Y=0.
-					var viewIsAnimatingVertically = viewTop > top && viewTop > 0 && viewBottom > screenHeight;
+					var viewIsAnimatingVertically = viewTop > top &&
+						viewBottom > screenHeight &&
+						viewHeight >= screenHeight - top - bottom;
 
 					// Adjust for view's position relative to parent (including margins) to calculate
 					// safe area insets relative to the parent's position, not the view's visual position.
@@ -330,10 +347,6 @@ internal static class SafeAreaExtensions
 				// Return keyboard insets for any region that includes SoftInput
 				if (SafeAreaEdges.IsSoftInput(safeAreaRegion))
 					return keyBoardInsets.Bottom;
-
-				// if the keyboard is showing then we will just return 0 for the bottom inset
-				// because that part of the view is covered by the keyboard so we don't want to pad the view
-				return 0;
 			}
 		}
 

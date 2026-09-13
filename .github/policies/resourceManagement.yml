@@ -718,5 +718,77 @@ configuration:
       - addLabel:
           label: partner/syncfusion
       description: Add 'partner/syncfusion' label to issues opened by the Syncfusion partner team
+    - description: '[Inter-branch merge] Auto-approve main to net11.0'
+      triggerOnOwnActions: false
+      if:
+      - payloadType: Pull_Request
+      - isPullRequest
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - isAction:
+          action: Opened
+      - titleContains:
+          pattern: '^\[automated\] Merge branch ''main'' => ''net11\.0''$'
+          isRegex: True
+      then:
+      - approvePullRequest:
+          comment: Auto-approved automated inter-branch merge.
+      - enableAutoMerge:
+          mergeMethod: merge
+    - description: '[Inter-branch merge] Auto-approve net11.0 to preview7'
+      triggerOnOwnActions: false
+      if:
+      - payloadType: Pull_Request
+      - isPullRequest
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - isAction:
+          action: Opened
+      - titleContains:
+          pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-preview7''$'
+          isRegex: True
+      then:
+      - approvePullRequest:
+          comment: Auto-approved automated inter-branch merge.
+      - enableAutoMerge:
+          mergeMethod: merge
+    - description: '[Inter-branch merge] Auto-approve net11.0 to rc1'
+      triggerOnOwnActions: false
+      if:
+      - payloadType: Pull_Request
+      - isPullRequest
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - isAction:
+          action: Opened
+      - titleContains:
+          pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc1''$'
+          isRegex: True
+      then:
+      - approvePullRequest:
+          comment: Auto-approved automated inter-branch merge.
+      - enableAutoMerge:
+          mergeMethod: merge
+    - description: '[Inter-branch merge] Auto-approve net11.0 to rc2'
+      triggerOnOwnActions: false
+      if:
+      - payloadType: Pull_Request
+      - isPullRequest
+      - isActivitySender:
+          user: github-actions[bot]
+          issueAuthor: False
+      - isAction:
+          action: Opened
+      - titleContains:
+          pattern: '^\[automated\] Merge branch ''net11\.0'' => ''release/11\.0\.1xx-rc2''$'
+          isRegex: True
+      then:
+      - approvePullRequest:
+          comment: Auto-approved automated inter-branch merge.
+      - enableAutoMerge:
+          mergeMethod: merge
 onFailure: 
 onSuccess: 

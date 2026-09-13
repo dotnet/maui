@@ -11,10 +11,10 @@ public partial class ProjectListPageModel : ObservableObject
 	private readonly ProjectRepository _projectRepository;
 
 	[ObservableProperty]
-	private List<Project> _projects = [];
+	public partial List<Project> Projects { get; set; } = [];
 
 	[ObservableProperty]
-	private Project? selectedProject;
+	public partial Project? SelectedProject { get; set; }
 
 	public ProjectListPageModel(ProjectRepository projectRepository)
 	{

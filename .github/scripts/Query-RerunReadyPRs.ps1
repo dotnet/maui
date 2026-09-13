@@ -48,25 +48,6 @@ function Get-CommitsForPR {
     return @(gh api "repos/$Owner/$Repo/pulls/$Number/commits?per_page=100" --paginate --jq '.[]' | ForEach-Object { $_ | ConvertFrom-Json })
 }
 
-function Test-UserCanSetReviewOptions {
-    param([Parameter(Mandatory = $true)][object]$Comment)
-
-    $association = if ($Comment.author_association) { [string]$Comment.author_association } else { '' }
-    return $association -in @('OWNER', 'MEMBER', 'COLLABORATOR')
-}
-
-function Get-ReviewOptionAuthorLogins {
-    param([object[]]$Comments)
-
-    return @($Comments | Where-Object {
-        $_.kind -eq 'issue-comment' -and
-        $_.user -and
-        -not [string]::IsNullOrWhiteSpace($_.user.login) -and
-        (ConvertFrom-ReviewCommand $_.body) -and
-        (Test-UserCanSetReviewOptions -Comment $_)
-    } | ForEach-Object { [string]$_.user.login } | Sort-Object -Unique)
-}
-
 function Get-PlatformFromLabels {
     param([string[]]$Labels)
 
@@ -78,12 +59,16 @@ function Get-PlatformFromLabels {
     return 'android'
 }
 
-$searchResult = gh pr list `
+$searchJson = gh pr list `
     --repo "$Owner/$Repo" `
     --state open `
     --label $ReadyForRerunLabel `
     --limit $MaxPRs `
-    --json number,title,url,headRefOid,isDraft,labels | ConvertFrom-Json
+    --json number,title,url,headRefOid,isDraft,labels,author
+if ($LASTEXITCODE -ne 0) {
+    throw "Failed to list open PRs labeled '$ReadyForRerunLabel' (gh pr list exited with code $LASTEXITCODE)."
+}
+$searchResult = $searchJson | ConvertFrom-Json
 
 $candidates = @()
 foreach ($pr in @($searchResult)) {
@@ -99,9 +84,10 @@ foreach ($pr in @($searchResult)) {
     $activity = @(Get-ActivityForPR -Number $number)
     $commits = @(Get-CommitsForPR -Number $number)
     $latestRerun = Get-LatestRerunComment -Comments $activity
-    $reviewOptionAuthors = @(Get-ReviewOptionAuthorLogins -Comments $activity)
-    $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -AllowedAuthorLogins $reviewOptionAuthors
-    $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -CurrentLabels $labels
+    $reviewOptions = Get-LatestReviewCommandOptions -Comments $activity -Owner $Owner -Repo $Repo
+    $rawAuthorLogin = if ($pr.author -and $pr.author.login) { [string]$pr.author.login } else { '' }
+    $authorLogin = Normalize-GitHubActorLogin $rawAuthorLogin
+    $contextMarkdown = New-RerunContextMarkdown -Comments $activity -Commits $commits -CurrentHeadSha $pr.headRefOid -PRAuthorLogin $authorLogin -CurrentLabels $labels
     $platform = if ($reviewOptions.Platform) { $reviewOptions.Platform } else { Get-PlatformFromLabels -Labels $labels }
     $pipelineRef = if ($reviewOptions.PipelineRef) { $reviewOptions.PipelineRef } else { 'main' }
 
@@ -109,6 +95,7 @@ foreach ($pr in @($searchResult)) {
         prNumber        = $number
         title           = [string]$pr.title
         url             = [string]$pr.url
+        authorLogin     = $authorLogin
         isDraft         = [bool]$pr.isDraft
         headSha         = [string]$pr.headRefOid
         platform        = $platform

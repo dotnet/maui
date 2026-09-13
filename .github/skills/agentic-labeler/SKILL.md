@@ -19,7 +19,7 @@ Labeling rules for the [dotnet/maui](https://github.com/dotnet/maui) repository.
 The labeler applies **only two label families**, and nothing else:
 
 1. **Exactly one `area-*`** — derived from the subject matter (control name, area like layout / navigation / xaml / infrastructure / etc.). Choose the single most specific match for the dominant subsystem; see the tie-breaking rules below.
-2. **One or more `platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues. Apply all that fit.
+2. **One or more `platform/*`** — derived from changed-file platform conventions on PRs, or from explicit platform mentions on issues. Apply all that fit. **Exception:** `platform/tizen` is **never** applied by this labeler under any circumstance, even when Tizen files are touched or Tizen is named in an issue (see the platform-label rules below).
 
 **The labeler must NOT apply any other label, ever.** Specifically, **do not** apply:
 
@@ -53,7 +53,9 @@ If neither an `area-*` nor a `platform/*` label clearly applies, **noop**.
 - Layout, measure/arrange, sizing issues → `area-layout`.
 - Navigation, Shell routing, page navigation → `area-navigation` (or `area-controls-shell` when Shell-specific).
 - XAML parsing, markup extensions, XamlC, source generators → `area-xaml`.
-- Hot reload, build, MSBuild, workload, project templates, tooling → `area-tooling`, `area-templates`, or `area-setup` as appropriate.
+- Installation, workload availability, target-framework recognition, requirements, and platform support → `area-setup`.
+- Hot reload, debugging, editor experiences, build tasks, and MSBuild/tooling behavior → `area-tooling`.
+- Project templates → `area-templates`.
 - BlazorWebView / Blazor hybrid → `area-blazor`.
 - Essentials APIs (non-UI: connectivity, sensors, preferences, etc.) → `area-essentials`.
 - Drawing / Microsoft.Maui.Graphics → `area-drawing`.
@@ -62,10 +64,12 @@ If neither an `area-*` nor a `platform/*` label clearly applies, **noop**.
 - Dispatcher / main thread / threading → `area-core-dispatching`.
 - Localization / RTL / culture → `area-localization`.
 - Docs only → `area-docs`.
-- **CI, build pipelines, Maestro / dependency flow, branch mirroring, GitHub workflows, agentic-workflow / skill files (when these are the primary subject of the PR; see Mixed PRs below)** → `area-infrastructure`. This covers:
+- **Copilot CLI agents, agent skills, agentic workflows, and AI-assisted development** → `area-ai-agents`. This covers `.github/agents/**`, `.github/skills/**`, gh-aw workflow sources and generated locks, and supporting review/test/fix orchestration when the AI-agent behavior is the primary subject.
+- **CI, build pipelines, Maestro / dependency flow, branch mirroring, and generic GitHub Actions infrastructure** → `area-infrastructure`. This covers:
   - `[dnceng-bot]` codeflow/branch-mirroring issues (the standard "Branch `…` can't be mirrored to Azdo" issues) → `area-infrastructure` (do **not** noop these — they have a clear area).
-  - PRs touching only `.github/workflows/`, `.github/skills/`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI/agent-infra files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
-  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI/agent-infra changes but also has incidental edits to product code, still apply `area-infrastructure` (and omit any product `area-*`). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
+  - PRs touching only generic `.github/workflows/*.yml`, `.github/scripts/`, `eng/pipelines/`, `eng/common/`, or other CI infrastructure files → `area-infrastructure` (prefer this over `area-tooling`, which is for the dev-build/MSBuild/workload surface that ships to users).
+  - **AI-agent vs infrastructure tie-break:** choose `area-ai-agents` when the change primarily alters an agent's behavior, prompt, skill, evaluation, or AI-assisted developer workflow. Command parsing and trigger/dispatch behavior for AI-assisted review count as agent behavior. Choose `area-infrastructure` when the change primarily alters generic CI execution, authentication, scheduling, or pipeline plumbing without changing the AI-assisted workflow's behavior, even if an agent consumes that infrastructure.
+  - **Mixed PRs (infra-primary + small product edits):** if the PR is dominated by CI infrastructure changes but also has incidental edits to product code, still apply `area-infrastructure` (and omit any product `area-*`). If the product-code change is the focus and the infra change is incidental (e.g., a small workflow tweak that supports a feature), prefer the product `area-*` label and omit `area-infrastructure`.
 
 **Tie-breaking when multiple areas could apply** — pick the single most specific:
 
@@ -91,7 +95,6 @@ Note on iOS / MacCatalyst: file-extension patterns and directory patterns map di
 | Paths containing `/Platform/iOS/`, `/Platforms/iOS/`, or handler subdirectories like `/Handlers/*/iOS/` (directory pattern — these compile **only** for the iOS TFM) | `platform/ios` only |
 | `*.maccatalyst.cs`, `*.MacCatalyst.cs`, paths containing `/Platform/MacCatalyst/`, `/Platforms/MacCatalyst/`, or handler subdirectories like `/Handlers/*/MacCatalyst/` | `platform/macos` |
 | `*.windows.cs`, `*.Windows.cs`, paths containing `/Platform/Windows/`, `/Platforms/Windows/`, or handler subdirectories like `/Handlers/*/Windows/` | `platform/windows` |
-| `*.tizen.cs`, paths containing `/Platform/Tizen/`, `/Platforms/Tizen/` | `platform/tizen` |
 
 Notes:
 
@@ -99,8 +102,14 @@ Notes:
 - If a PR touches **multiple platforms**, apply each matching `platform/*` label.
 - `.ios.cs` files compile for both iOS and MacCatalyst (see split table rows above).
 - `.maccatalyst.cs` files do **not** compile for iOS — apply only `platform/macos` for those.
+- **Tizen is excluded.** `*.tizen.cs` files and `/Platform/Tizen/` or `/Platforms/Tizen/` paths exist in the source tree, but `platform/tizen` is **never** auto-applied. Treat Tizen files as if they had **no** platform suffix for labeling purposes: pick an `area-*` label normally based on the code's subject matter (e.g., `TabbedPage.tizen.cs` → `area-controls-tabbedpage`) and apply **no** `platform/*` label for the Tizen content. Only noop if the global noop rules below (e.g., no `area-*` clearly fits) apply on their own merits.
 
-**For issues**, infer `platform/*` labels only if the reporter clearly indicates a platform (explicit mention of Android / iOS / macOS / Windows / Tizen in the title, body, or attached logs/stack traces). Do not guess. If the report says "all platforms" or doesn't specify, apply no `platform/*` label.
+**For issues**, infer `platform/*` labels only for platforms the reporter explicitly identifies as **affected**: Android, iOS, macOS / Mac Catalyst, or Windows. This includes the issue-template's "Affected platforms" field, plus clear evidence in the title, body, or attached logs/stack traces. Do not guess.
+
+- If the reporter explicitly lists named affected platforms, apply one `platform/*` label per named platform — even when the list covers every supported platform (e.g., "iOS, Android, Windows, macOS" → apply all four).
+- Generic phrases like "all platforms", "every platform", "any platform", or "cross-platform" do **not** by themselves justify any `platform/*` label. **If a generic phrase is accompanied by an explicit affected-platform list, the named list wins** — apply each named platform's label (e.g., "all platforms (iOS, Android, Windows, macOS)" → apply all four).
+- Do **not** apply labels for platforms mentioned incidentally ("tested on iOS"), as "not reproduced" / "not affected", or as label requests ("please add platform/android").
+- **Never apply `platform/tizen`** — even when the reporter names Tizen, includes Tizen in an "Affected platforms" enumeration, or attaches Tizen logs. Tizen mentions are silently dropped from the platform set.
 
 ### When to noop (no labels)
 
@@ -115,6 +124,7 @@ Some items should **not** be labeled. If any of the following apply, skip labeli
 ### What NOT to do
 
 - Do **not** apply any label that is not literally `area-*` or `platform/*`. No `t/*`, `i/*`, `s/*`, `p/*`, `partner/*`, `perf/*`, `backport/*`, `regressed-in-*`, `version/*`, `untriaged`, `:watch: Not Triaged`, or anything else. See the "Scope" section at the top for the full prohibition.
+- Do **not** apply `platform/tizen` under any circumstance — Tizen is excluded from this labeler even when Tizen files are touched or Tizen is named in an issue body, title, or affected-platforms field.
 - Do **not** create new labels — apply only labels that already exist in the repository.
 - Do **not** add `platform/*` labels to PRs that don't touch platform-specific files.
 - Do **not** post a comment summarizing the labels — labels speak for themselves.

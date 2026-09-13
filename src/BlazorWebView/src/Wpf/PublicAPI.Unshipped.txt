@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl
+*REMOVED*Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl!
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.get -> bool
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControlProperty -> System.Windows.DependencyProperty!

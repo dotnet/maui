@@ -1,4 +1,5 @@
 #nullable enable
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;
@@ -9,8 +10,17 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class LayoutPanel : MauiPanel
 	{
+		const int BackgroundLayerZIndex = int.MinValue;
 		Canvas? _backgroundLayer;
 		public bool ClipsToBounds { get; set; }
+
+		// Creates a MauiLayoutAutomationPeer so a Layout's AutomationId is visible to UI Automation
+		// clients while keeping anonymous layouts out of the screen-reader tree. On net10/main the peer
+		// is internal; the net11 version (https://github.com/dotnet/maui/pull/35597) makes it public.
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			return new MauiLayoutAutomationPeer(this);
+		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
 		// If you make changes here please review if those changes should also
@@ -18,6 +28,12 @@ namespace Microsoft.Maui.Platform
 		protected override WSize ArrangeOverride(WSize finalSize)
 		{
 			var actual = base.ArrangeOverride(finalSize);
+
+			if (_backgroundLayer is not null)
+			{
+				_backgroundLayer.Measure(finalSize);
+				_backgroundLayer.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
+			}
 
 			if (!(Parent is ContentPanel contentPanel && contentPanel.BorderStroke?.Shape is not null))
 			{
@@ -58,7 +74,7 @@ namespace Microsoft.Maui.Platform
 
 		void MakeInputVisible(Brush? background)
 		{
-			// If we aren't input transparent, we don't need the background layer hack 
+			// If we aren't input transparent, we don't need the background layer hack
 			RemoveBackgroundLayer();
 
 			if (background == null)
@@ -74,22 +90,25 @@ namespace Microsoft.Maui.Platform
 		void AddBackgroundLayer()
 		{
 			// In WinUI, once a control has hit testing disabled, all of its child controls
-			// also have hit testing disabled. The exception is a Panel with its 
+			// also have hit testing disabled. The exception is a Panel with its
 			// Background Brush set to `null`; the Panel will be invisible to hit testing, but its
-			// children will work just fine. 
+			// children will work just fine.
 
 			// In order to handle the situation where we need the layout to be invisible to hit testing,
 			// the child controls to be visible to hit testing, *and* we need to support non-null
-			// background brushes, we insert another empty Panel which is invisible to hit testing; that
-			// Panel will be our Background brush
+			// background brushes, we append another empty Panel which is invisible to hit testing; that
+			// Panel will be our Background brush. We force it behind real layout children using ZIndex.
 
-			if (_backgroundLayer != null)
+			if (_backgroundLayer == null)
 			{
-				return;
+				_backgroundLayer = new Canvas { IsHitTestVisible = false };
+				Canvas.SetZIndex(_backgroundLayer, BackgroundLayerZIndex);
 			}
 
-			_backgroundLayer = new Canvas { IsHitTestVisible = false };
-			CachedChildren.Insert(0, _backgroundLayer);
+			if (!CachedChildren.Contains(_backgroundLayer))
+			{
+				CachedChildren.Add(_backgroundLayer);
+			}
 		}
 
 		void RemoveBackgroundLayer()

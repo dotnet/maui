@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, UIButton>
 	{
 		readonly SwipeItemButtonProxy _proxy = new();
+		UIColor? _defaultTitleColor;
 
 		protected override UIButton CreatePlatformElement()
 		{
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
+			_defaultTitleColor = platformView.CurrentTitleColor;
 			base.ConnectHandler(platformView);
 
 			if (platformView is SwipeItemButton swipeItemButton)
@@ -51,14 +53,18 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView is SwipeItemButton swipeItemButton)
 				_proxy.Disconnect(swipeItemButton);
+
+			_defaultTitleColor = null;
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
-			var color = view.GetTextColor();
+			var color = view.GetTextColor()?.ToPlatform();
+			if (color is null && handler is SwipeItemMenuItemHandler platformHandler)
+				color = platformHandler._defaultTitleColor;
 
-			if (color != null)
-				handler.PlatformView.SetTitleColor(color.ToPlatform(), UIControlState.Normal);
+			handler.PlatformView.SetTitleColor(color, UIControlState.Normal);
+			UpdateTextColorIconDependency(handler, view);
 		}
 
 		public static void MapCharacterSpacing(ISwipeItemMenuItemHandler handler, ITextStyle view)
@@ -82,15 +88,37 @@ namespace Microsoft.Maui.Handlers
 		public static void MapBackground(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			handler.PlatformView.UpdateBackground(view.Background);
+			UpdateBackgroundColorDependencies(handler);
 		}
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
 		{
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 
-			swipeView?.UpdateIsVisibleSwipeItem(view);
-
+			// Update the native view's Hidden state BEFORE calling UpdateIsVisibleSwipeItem,
+			// so LayoutSwipeItems can use the correct Hidden state when repositioning items.
 			handler.PlatformView.UpdateVisibility(view.Visibility);
+
+			swipeView?.UpdateIsVisibleSwipeItem(view);
+		}
+
+		static partial void UpdateIconColorPlatform(
+			ISwipeItemMenuItemHandler handler,
+			ISwipeItemMenuItem view,
+			ref bool handled)
+		{
+			if (handler.PlatformView is not UIButton button ||
+				handler.SourceLoader is not ImageSourcePartLoader loader)
+			{
+				return;
+			}
+
+			var current = button.ImageForState(UIControlState.Normal);
+			if (current is null)
+				return;
+
+			loader.Setter.SetImageSource(current);
+			handled = true;
 		}
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
@@ -112,21 +140,22 @@ namespace Microsoft.Maui.Handlers
 				{
 					var maxWidth = frame.Width * 0.5f;
 					var maxHeight = frame.Height * 0.5f;
+					var renderScale = button.Window?.Screen.Scale ?? UIScreen.MainScreen.Scale;
 
-					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight);
+					var resizedImage = MaxResizeSwipeItemIconImage(platformImage, maxWidth, maxHeight, renderScale);
 
 					try
 					{
-						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+						// A tinted icon has to be rendered as a template so the tint actually takes effect.
+						// Without a tint the image keeps its own colors via AlwaysOriginal.
+						var tintColor = item.GetIconTintColor();
+						var renderingMode =
+							item.Source is IFontImageSource || tintColor is not null
+								? UIImageRenderingMode.AlwaysTemplate
+								: UIImageRenderingMode.AlwaysOriginal;
 
-						if (item.Source is IFontImageSource fontImageSource && fontImageSource.Color != null)
-							button.TintColor = fontImageSource.Color.ToPlatform();
-						else
-						{
-							var tintColor = item.GetTextColor();
-							if (tintColor != null)
-								button.TintColor = tintColor.ToPlatform();
-						}
+						button.SetImage(resizedImage.ImageWithRenderingMode(renderingMode), UIControlState.Normal);
+						button.TintColor = tintColor?.ToPlatform();
 					}
 					catch (Exception)
 					{
@@ -136,23 +165,31 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			static UIImage MaxResizeSwipeItemIconImage(UIImage sourceImage, nfloat maxWidth, nfloat maxHeight)
+			static UIImage MaxResizeSwipeItemIconImage(
+				UIImage sourceImage,
+				nfloat maxWidth,
+				nfloat maxHeight,
+				nfloat renderScale)
 			{
 				var sourceSize = sourceImage.Size;
-				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+				var pointTolerance = renderScale > 0 ? 1 / renderScale : 0;
 
-				if (maxResizeFactor > 1)
+				// Color-only updates feed the already-sized native image back through this setter.
+				// UIGraphicsImageRenderer can quantize its result up by one physical pixel.
+				if (sourceSize.Width <= maxWidth + pointTolerance &&
+					sourceSize.Height <= maxHeight + pointTolerance)
 				{
 					return sourceImage;
 				}
 
+				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 				var width = maxResizeFactor * sourceSize.Width;
 				var height = maxResizeFactor * sourceSize.Height;
 
 				var format = new UIGraphicsImageRendererFormat
 				{
 					Opaque = false,
-					Scale = 0
+					Scale = renderScale
 				};
 
 				using (var renderer = new UIGraphicsImageRenderer(new CGSize(width, height), format))

@@ -29,6 +29,10 @@ schedules:
     - main
     - net*.0
     - inflight/current
+    exclude:
+    # net10.0 is no longer an active development branch; .NET 10 work happens
+    # in main and release/10.0.1xx-* so there is no need for a nightly build.
+    - net10.0
   always: true
 
 variables:
@@ -104,6 +108,7 @@ extends:
             onlyAndroidPlatformDefaultApis: true
             skipAndroidEmulatorImages: true
             skipAndroidCreateAvds: true
+            skipSimulatorSetup: true
             skipProvisioning: true
             skipXcode: false
             base64Encode: true
@@ -114,6 +119,20 @@ extends:
         parameters:
           pool: ${{ parameters.WindowsPool }}
           dependsOnStage: Pack
+
+    # Localization with OneLocBuild. Only run on official builds for handoff branches.
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - stage: Localization
+        displayName: Localization
+        dependsOn: []
+        condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
+        jobs:
+          - template: /eng/common/templates-official/job/onelocbuild.yml@self
+            parameters:
+              CeapexServiceConnection: dnceng-onelocbuild-ceapex
+              SkipLocProjectJsonGeneration: true
+              MirrorRepo: 'maui'
+              MirrorBranch: $[ replace(variables['Build.SourceBranch'], 'refs/heads/', '') ]
 
     # Publish and validation steps. Only run in official builds
     - template: /eng/common/templates-official/post-build/post-build.yml@self

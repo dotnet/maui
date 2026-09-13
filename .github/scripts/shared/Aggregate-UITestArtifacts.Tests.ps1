@@ -161,6 +161,39 @@ Describe 'Get-AggregatedTrxFromDirectory (TRX walk + merge)' {
         $r[$key].SetupFailure | Should -Be $true
         $r[$key].SetupFailureCount | Should -Be 2
         $r[$key].SetupFailureMessage | Should -Match 'Go To Test button'
+        $r[$key].SetupFailureIsAppCrash | Should -Be $false
+    }
+
+    It 'classifies an app-crash cascade (crash teardown + Go-To-Test timeouts) as a setup failure flagged IsAppCrash' {
+        $crashRoot = Join-Path $script:fixtureRoot 'app-crash-test'
+        New-Item -ItemType Directory -Path $crashRoot -Force | Out-Null
+        $catDir = Join-Path $crashRoot 'drop-android_ui_tests-controls-Shell'
+        New-Item -ItemType Directory -Path $catDir -Force | Out-Null
+
+        # The two tests that were running when the HostApp died: the crash is
+        # detected in UITestBaseTearDown, not as a OneTimeSetUp timeout.
+        New-TrxFixture -Path (Join-Path $catDir 'shell-crash.trx') `
+            -Total 2 -Passed 0 -Failed 2 `
+            -FailedTests @('ShellOnBackButtonPressed','ValidateServiceLifetime') `
+            -FailedMessage 'The app was expected to be running still, investigate as possible crash' `
+            -FailedStack 'at UITest.Appium.NUnit.UITestBase.UITestBaseTearDown() in /_/src/TestUtils/src/UITest.NUnit/UITestBase.cs:line 159'
+
+        # Every subsequent fixture then times out waiting for the gallery.
+        New-TrxFixture -Path (Join-Path $catDir 'shell-cascade.trx') `
+            -Total 3 -Passed 0 -Failed 3 `
+            -FailedTests @('ShellFlyout1','ShellFlyout2','ShellInsets1') `
+            -FailedMessage 'OneTimeSetUp: System.TimeoutException : Timed out waiting for Go To Test button to appear' `
+            -FailedStack 'at Microsoft.Maui.TestUtils.DeviceTests.Runners.UITestBase.OneTimeSetup()'
+
+        $r = Get-AggregatedTrxFromDirectory -RootDir $crashRoot
+        $key = @($r.Keys)[0]
+
+        $r[$key].Failed | Should -Be 5
+        $r[$key].SetupFailure | Should -Be $true
+        $r[$key].SetupFailureCount | Should -Be 5
+        $r[$key].SetupFailureIsAppCrash | Should -Be $true
+        # Representative sample prefers the crash signature over the cascade timeout.
+        $r[$key].SetupFailureMessage | Should -Match 'possible crash'
     }
 
     It 'sums multiple TRX files for the same category' {

@@ -10,11 +10,7 @@ BeforeAll {
         throw ($parseErrors | ForEach-Object { $_.Message }) -join [Environment]::NewLine
     }
 
-    $script:ReviewTriggerCooldownMinutes = 60
-    $script:ReviewTriggerWindowHours = 24
-    $script:MaxReviewTriggersPerWindow = 3
-
-    foreach ($functionName in @('Get-ReviewTriggerRateLimitStatus', 'ConvertTo-SafeLogValue', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels')) {
+    foreach ($functionName in @('ConvertTo-SafeLogValue', 'ConvertTo-TrimmedString', 'Get-MatchingCandidate', 'Normalize-PipelineRef', 'Get-PlatformFromLabels', 'Expand-RerunDecisionItems', 'Get-RerunActions')) {
         $function = $ast.Find({
             $args[0] -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
             $args[0].Name -eq $functionName
@@ -44,6 +40,20 @@ BeforeAll {
             rerunCommentId = $RerunCommentId
         }
     }
+
+    function New-TestDecision {
+        param(
+            [string]$PRNumber = '123',
+            [string]$Decision = 'trigger',
+            [string]$ExpectedHeadSha = 'abc123def'
+        )
+
+        [pscustomobject]@{
+            pr_number         = $PRNumber
+            decision          = $Decision
+            expected_head_sha = $ExpectedHeadSha
+        }
+    }
 }
 
 Describe 'ConvertTo-SafeLogValue' {
@@ -70,6 +80,63 @@ Describe 'ConvertTo-SafeLogValue' {
         $safe | Should -Not -Match '[\r\n]'
         $safe | Should -Not -Match '::'
         $safe | Should -Match 'stop-commands'
+    }
+}
+
+Describe 'Expand-RerunDecisionItems' {
+    It 'expands a single item carrying a JSON-string decisions array' {
+        $json = '[{"pr_number":"1","decision":"trigger"},{"pr_number":"2","decision":"skip"}]'
+        $item = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = $json }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 2
+        $result[0].pr_number | Should -Be '1'
+        $result[0].decision | Should -Be 'trigger'
+        $result[1].pr_number | Should -Be '2'
+        $result[1].decision | Should -Be 'skip'
+    }
+
+    It 'expands a decisions array that is already an object array' {
+        $item = [pscustomobject]@{
+            type      = 'trigger_rerun_review'
+            decisions = @(
+                [pscustomobject]@{ pr_number = '7'; decision = 'trigger' }
+            )
+        }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 1
+        $result[0].pr_number | Should -Be '7'
+    }
+
+    It 'aggregates decisions across multiple items' {
+        $a = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '[{"pr_number":"1","decision":"trigger"}]' }
+        $b = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '[{"pr_number":"2","decision":"skip"}]' }
+        $result = Expand-RerunDecisionItems -Items @($a, $b)
+        $result.Count | Should -Be 2
+        ($result | ForEach-Object { $_.pr_number }) | Should -Be @('1', '2')
+    }
+
+    It 'passes through a legacy scalar item without a decisions field' {
+        $item = [pscustomobject]@{ type = 'trigger_rerun_review'; pr_number = '9'; decision = 'trigger' }
+        $result = Expand-RerunDecisionItems -Items @($item)
+        $result.Count | Should -Be 1
+        $result[0].pr_number | Should -Be '9'
+    }
+
+    It 'ignores empty or null decisions payloads' {
+        $empty = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = '' }
+        $nullItem = [pscustomobject]@{ type = 'trigger_rerun_review'; decisions = $null }
+        $result = Expand-RerunDecisionItems -Items @($empty, $nullItem)
+        $result.Count | Should -Be 0
+    }
+}
+
+Describe 'ConvertTo-TrimmedString' {
+    It 'returns empty string for null values' {
+        ConvertTo-TrimmedString $null | Should -Be ''
+    }
+
+    It 'trims non-null values' {
+        ConvertTo-TrimmedString "  ok`n" | Should -Be 'ok'
     }
 }
 
@@ -131,8 +198,6 @@ Describe 'Candidate-sourced values' {
     It 'produces the rerun comment id from candidate data, not the agent emission' {
         $candidate = New-TestCandidate -RerunCommentId 4242
 
-        # The handler reads $candidate.rerunCommentId via:
-        #   $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
         $rerunCommentId = if ($candidate.rerunCommentId) { [Int64]$candidate.rerunCommentId } else { [Int64]0 }
 
         $rerunCommentId | Should -Be 4242
@@ -164,58 +229,131 @@ Describe 'Candidate-sourced values' {
     }
 }
 
-Describe 'Get-ReviewTriggerRateLimitStatus' {
-    It 'allows a PR with no recent rerun triggers' {
-        $now = [datetimeoffset]'2026-06-04T12:00:00Z'
+Describe 'Get-RerunActions' {
+    It 'produces a normalized action for a valid trigger decision, sourcing values from the candidate' {
+        $items = @(New-TestDecision -PRNumber '123' -Decision 'trigger' -ExpectedHeadSha 'abc123def')
+        $candidates = @(New-TestCandidate -PRNumber 123 -HeadSha 'abc123def' -Platform 'ios' -PipelineRef 'main' -RerunCommentId 4242)
 
-        $result = Get-ReviewTriggerRateLimitStatus -TriggeredAt @() -Now $now
+        $result = Get-RerunActions -Items $items -Candidates $candidates -DefaultPipelineRef 'main'
 
-        $result.Allowed | Should -BeTrue
-        $result.Reason | Should -Be 'allowed'
-        $result.RecentCount | Should -Be 0
+        $result.HadFailure | Should -BeFalse
+        $result.Actions.Count | Should -Be 1
+        $result.Actions[0].prNumber | Should -Be 123
+        $result.Actions[0].decision | Should -Be 'trigger'
+        $result.Actions[0].platform | Should -Be 'ios'
+        $result.Actions[0].pipelineRef | Should -Be 'main'
+        $result.Actions[0].rerunCommentId | Should -Be 4242
     }
 
-    It 'blocks rerun triggers inside the cooldown window' {
-        $now = [datetimeoffset]'2026-06-04T12:00:00Z'
+    It 'produces an action for a valid skip decision even without a rerun comment id' {
+        $items = @(New-TestDecision -PRNumber '50' -Decision 'skip' -ExpectedHeadSha 'sha50')
+        $candidates = @(New-TestCandidate -PRNumber 50 -HeadSha 'sha50' -RerunCommentId 0)
 
-        $result = Get-ReviewTriggerRateLimitStatus `
-            -TriggeredAt @([datetimeoffset]'2026-06-04T11:30:00Z') `
-            -Now $now
+        $result = Get-RerunActions -Items $items -Candidates $candidates
 
-        $result.Allowed | Should -BeFalse
-        $result.Reason | Should -Be 'cooldown-active'
-        $result.RecentCount | Should -Be 1
+        $result.HadFailure | Should -BeFalse
+        $result.Actions.Count | Should -Be 1
+        $result.Actions[0].decision | Should -Be 'skip'
+        $result.Actions[0].rerunCommentId | Should -Be 0
     }
 
-    It 'blocks when the 24 hour quota is exhausted' {
-        $now = [datetimeoffset]'2026-06-04T12:00:00Z'
+    It 'normalizes the pipeline ref and resolves an invalid candidate platform to android' {
+        $items = @(New-TestDecision -PRNumber '7' -Decision 'trigger' -ExpectedHeadSha 's7')
+        $candidates = @(New-TestCandidate -PRNumber 7 -HeadSha 's7' -Platform 'macos' -PipelineRef 'refs/heads/feature/x' -RerunCommentId 9)
 
-        $result = Get-ReviewTriggerRateLimitStatus `
-            -TriggeredAt @(
-                [datetimeoffset]'2026-06-04T10:00:00Z',
-                [datetimeoffset]'2026-06-04T08:00:00Z',
-                [datetimeoffset]'2026-06-03T13:00:00Z'
-            ) `
-            -Now $now
+        $result = Get-RerunActions -Items $items -Candidates $candidates
 
-        $result.Allowed | Should -BeFalse
-        $result.Reason | Should -Be 'rerun-quota-exhausted'
-        $result.RecentCount | Should -Be 3
+        $result.HadFailure | Should -BeFalse
+        $result.Actions[0].platform | Should -Be 'android'
+        $result.Actions[0].pipelineRef | Should -Be 'feature/x'
     }
 
-    It 'ignores trigger history older than the window' {
-        $now = [datetimeoffset]'2026-06-04T12:00:00Z'
+    It 'aggregates multiple decisions in one pass' {
+        $items = @(
+            (New-TestDecision -PRNumber '2' -Decision 'skip' -ExpectedHeadSha 's2'),
+            (New-TestDecision -PRNumber '1' -Decision 'trigger' -ExpectedHeadSha 's1')
+        )
+        $candidates = @(
+            (New-TestCandidate -PRNumber 1 -HeadSha 's1' -RerunCommentId 11),
+            (New-TestCandidate -PRNumber 2 -HeadSha 's2' -RerunCommentId 22)
+        )
 
-        $result = Get-ReviewTriggerRateLimitStatus `
-            -TriggeredAt @(
-                [datetimeoffset]'2026-06-04T10:00:00Z',
-                [datetimeoffset]'2026-06-03T11:00:00Z',
-                [datetimeoffset]'2026-06-02T12:00:00Z'
-            ) `
-            -Now $now
+        $result = Get-RerunActions -Items $items -Candidates $candidates
 
-        $result.Allowed | Should -BeTrue
-        $result.Reason | Should -Be 'allowed'
-        $result.RecentCount | Should -Be 1
+        $result.HadFailure | Should -BeFalse
+        $result.Actions.Count | Should -Be 2
+    }
+
+    It 'flags a failure and drops the action when pr_number is not a positive integer' {
+        $items = @(New-TestDecision -PRNumber '0' -Decision 'trigger' -ExpectedHeadSha 'x')
+
+        $result = Get-RerunActions -Items $items -Candidates @()
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'flags a failure for an unknown decision verb' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'launch' -ExpectedHeadSha 'x')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x')
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'flags a failure when the expected head SHA is missing' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha '')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -RerunCommentId 1)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'rejects a decision for a PR outside the deterministic candidate set' {
+        $items = @(New-TestDecision -PRNumber '999' -Decision 'trigger' -ExpectedHeadSha 'x')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x')
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'rejects a decision whose head SHA does not match the candidate (anti-stale / anti-hallucination)' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'STALE')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'FRESH' -RerunCommentId 1)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'refuses to trigger when the candidate has no rerun comment id' {
+        $items = @(New-TestDecision -PRNumber '5' -Decision 'trigger' -ExpectedHeadSha 'x')
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 'x' -RerunCommentId 0)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 0
+    }
+
+    It 'continues processing valid decisions after a failed one' {
+        $items = @(
+            (New-TestDecision -PRNumber 'bad' -Decision 'trigger' -ExpectedHeadSha 'x'),
+            (New-TestDecision -PRNumber '5' -Decision 'skip' -ExpectedHeadSha 's5')
+        )
+        $candidates = @(New-TestCandidate -PRNumber 5 -HeadSha 's5' -RerunCommentId 1)
+
+        $result = Get-RerunActions -Items $items -Candidates $candidates
+
+        $result.HadFailure | Should -BeTrue
+        $result.Actions.Count | Should -Be 1
+        $result.Actions[0].prNumber | Should -Be 5
     }
 }

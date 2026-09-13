@@ -182,17 +182,14 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
-			// Show drawer toggle (hamburger icon) when FlyoutPage should display toolbar button
-			// and either we're on the root page or the back button is explicitly hidden.
-			// This ensures flyout access remains available even when back button is disabled (#21646)
-			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
+			var drawerToggleVisible = Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
 #if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
-				&& (!anyPagesPushed.Value || !BackButtonVisible)
+				&& !anyPagesPushed.Value
 #endif
-				)
-				_drawerToggleVisible = true;
-			else
-				_drawerToggleVisible = false;
+				;
+
+			var drawerToggleVisibleChanged = _drawerToggleVisible != drawerToggleVisible;
+			_drawerToggleVisible = drawerToggleVisible;
 
 			// Once we have better logic inside core to handle backbutton visiblity this
 			// code should all go away.
@@ -222,6 +219,11 @@ namespace Microsoft.Maui.Controls
 
 				_userChanged = false;
 			}
+
+			// Notified last so that BackButtonVisible (which takes precedence in the navigation slot)
+			// is already up to date when platform backends react to the drawer toggle change.
+			if (drawerToggleVisibleChanged)
+				NotifyPropertyChanged(nameof(DrawerToggleVisible));
 		}
 
 		void ApplyChanges(NavigationPage navigationPage)

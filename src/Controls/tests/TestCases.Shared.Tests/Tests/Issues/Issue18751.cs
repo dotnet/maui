@@ -13,12 +13,12 @@ public class Issue18751 : _IssuesUITest
 	public override string Issue => "Can scroll CollectionView inside RefreshView";
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]
+	[ShardedTestCategory(UITestCategories.CollectionView, shard: 2)]
 	public void Issue18751Test()
 	{
 		App.WaitForElement("WaitForStubControl");
-		// Load images and hide scrollbar.
-		// The test passes if you are able to see the image, name, and location of each monkey.
-		VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
+		// CollectionView uses virtualization which loads images synchronously once items are visible.
+		// Use retryTimeout to adaptively wait for any timing variance.
+		VerifyScreenshot(retryTimeout: TimeSpan.FromSeconds(2));
 	}
 }

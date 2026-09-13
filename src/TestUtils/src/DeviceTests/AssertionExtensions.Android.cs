@@ -712,8 +712,7 @@ namespace Microsoft.Maui.DeviceTests
 				navItems.Single(x =>
 				{
 					return x.GetChildrenOfType<TextView>()
-						.Where(tv => String.Equals(tv.Text, tabText, StringComparison.OrdinalIgnoreCase))
-						.Count() > 0;
+						.Any(tv => String.Equals(tv.Text, tabText, StringComparison.OrdinalIgnoreCase));
 				});
 
 			return navItemView;
