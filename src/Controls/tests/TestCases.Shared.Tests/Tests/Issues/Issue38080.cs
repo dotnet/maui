@@ -8,6 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue38080 : _IssuesUITest
 {
+	const string AppPackage = "com.microsoft.maui.uitests";
 	const string BottomMarker = "Issue38080BottomMarker";
 	const string HomeMarker = "Issue38080HomeMarker";
 	const string NavigateButton = "Issue38080NavigateButton";
@@ -15,8 +16,12 @@ public class Issue38080 : _IssuesUITest
 	const string TopMarker = "Issue38080TopMarker";
 	const string WarmupContinueButton = "Issue38080WarmupContinueButton";
 	const string WarmupReadyMarker = "Issue38080WarmupReadyMarker";
-	const string WarmupWebViewMarker = "Issue38080WarmupWebView";
 	const string WebViewMarker = "Issue38080WebView";
+	static readonly AppiumQuery ReproWebViewQuery = AppiumQuery.ByXPath(
+		$"//android.widget.ScrollView[@resource-id='{AppPackage}:id/{ReproPageMarker}']" +
+		$"//android.webkit.WebView[@package='{AppPackage}' and not(ancestor::android.webkit.WebView)]");
+	static readonly AppiumQuery WarmupWebViewQuery = AppiumQuery.ByXPath(
+		$"//android.webkit.WebView[@package='{AppPackage}' and not(ancestor::android.webkit.WebView)]");
 
 	public Issue38080(TestDevice device) : base(device)
 	{
@@ -35,7 +40,7 @@ public class Issue38080 : _IssuesUITest
 		if (!SaveUIDiagnosticInfo("Issue38080-WarmupReady"))
 			throw new InvalidOperationException("Could not capture the Issue 38080 warm-up viewport.");
 
-		var warmupWebView = App.WaitForElement(WarmupWebViewMarker);
+		var warmupWebView = App.WaitForElement(WarmupWebViewQuery);
 		Assert.That(warmupWebView.IsDisplayed(), Is.True);
 		Assert.That(warmupWebView.GetRect().Width, Is.GreaterThan(0));
 		Assert.That(warmupWebView.GetRect().Height, Is.GreaterThan(0));
@@ -76,7 +81,7 @@ public class Issue38080 : _IssuesUITest
 
 	void AssertWebViewDisplayed()
 	{
-		var webView = App.WaitForElement(WebViewMarker);
+		var webView = App.WaitForElement(ReproWebViewQuery);
 		Assert.That(webView.IsDisplayed(), Is.True);
 		Assert.That(webView.GetRect().Width, Is.GreaterThan(0));
 		Assert.That(webView.GetRect().Height, Is.GreaterThan(0));
@@ -86,9 +91,7 @@ public class Issue38080 : _IssuesUITest
 	{
 		for (var attempt = 0; attempt < 10; attempt++)
 		{
-			var elements = automationId == TopMarker
-				? App.FindElements(AppiumQuery.ByAccessibilityId(automationId))
-				: App.FindElements(automationId);
+			var elements = FindElementsForMarker(automationId);
 
 			if (elements.Any(element => element.IsDisplayed()))
 				return;
@@ -106,9 +109,7 @@ public class Issue38080 : _IssuesUITest
 			if (!SaveUIDiagnosticInfo($"Issue38080-{stage}-After{completedGestures}Gestures"))
 				throw new InvalidOperationException($"Could not capture the Issue 38080 {stage} viewport after {completedGestures} preparation gestures.");
 
-			var elements = automationId == TopMarker
-				? App.FindElements(AppiumQuery.ByAccessibilityId(automationId))
-				: App.FindElements(automationId);
+			var elements = FindElementsForMarker(automationId);
 
 			if (elements.Any(element => element.IsDisplayed()))
 				return;
@@ -118,6 +119,17 @@ public class Issue38080 : _IssuesUITest
 		}
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 preparation gestures.");
+	}
+
+	System.Collections.Generic.IReadOnlyCollection<IUIElement> FindElementsForMarker(string automationId)
+	{
+		if (automationId == TopMarker)
+			return App.FindElements(AppiumQuery.ByAccessibilityId(automationId));
+
+		if (automationId == WebViewMarker)
+			return App.FindElements(ReproWebViewQuery);
+
+		return App.FindElements(automationId);
 	}
 
 	void SlowDragDown()
