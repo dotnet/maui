@@ -52,54 +52,64 @@ namespace Microsoft.Maui.DeviceTests
 			return viewHandler.VirtualView.Semantics.HeadingLevel;
 		}
 
-		protected float GetOpacity(IViewHandler viewHandler) =>
-			((View)viewHandler.PlatformView).Alpha;
+		static View GetEffectivePlatformView(IViewHandler viewHandler) =>
+			viewHandler.VirtualView.ToPlatform();
+
+		protected float GetOpacity(IViewHandler viewHandler)
+		{
+			var alpha = ((View)viewHandler.PlatformView).Alpha;
+
+			if (viewHandler.ContainerView is View containerView)
+				alpha *= containerView.Alpha;
+
+			return alpha;
+		}
 
 		protected double GetTranslationX(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.Context.FromPixels(platformView.TranslationX));
 		}
 
 		protected double GetTranslationY(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.Context.FromPixels(platformView.TranslationY));
 		}
 
 		protected double GetScaleX(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.ScaleX);
 		}
 
 		protected double GetScaleY(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.ScaleY);
 		}
 
 		protected double GetRotation(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.Rotation);
 		}
 
 		protected double GetRotationX(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.RotationX);
 		}
 
 		protected double GetRotationY(IViewHandler viewHandler)
 		{
-			var platformView = (View)viewHandler.PlatformView;
+			var platformView = GetEffectivePlatformView(viewHandler);
 
 			return Math.Floor(platformView.RotationY);
 		}
@@ -145,6 +155,6 @@ namespace Microsoft.Maui.DeviceTests
 			viewHandler.VirtualView.ToPlatform().GetBoundingBox();
 
 		protected Matrix4x4 GetViewTransform(IViewHandler viewHandler) =>
-			((View)viewHandler.PlatformView).GetViewTransform();
+			GetEffectivePlatformView(viewHandler).GetViewTransform();
 	}
 }

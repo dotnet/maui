@@ -173,6 +173,11 @@ namespace Microsoft.Maui.Platform
 			containerView ??= new WrapperView(context);
 			setWrapperView.Invoke(containerView);
 
+			// Keep the clip on the parent so fully off-screen WebViews are rejected before
+			// Android invokes Chromium's GL functor.
+			if (platformView is global::Android.Webkit.WebView && containerView is ViewGroup webViewContainer)
+				webViewContainer.SetClipChildren(true);
+
 			// Transfer any existing transforms from the inner view to the wrapper
 			// This handles the case where transforms were set before Shadow was added
 			TransferTransformsPropertyValues(platformView, containerView, resetSource: true);

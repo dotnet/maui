@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Views;
 using Android.Webkit;
 using static Android.Views.ViewGroup;
 using AWebView = Android.Webkit.WebView;
@@ -69,7 +70,13 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.StopLoading();
 
+			if (platformView.Parent is ViewGroup parent)
+				parent.RemoveView(platformView);
 
+			if (ContainerView?.Parent is ViewGroup containerParent)
+				containerParent.RemoveView(ContainerView);
+
+			HasContainer = false;
 			base.DisconnectHandler(platformView);
 		}
 

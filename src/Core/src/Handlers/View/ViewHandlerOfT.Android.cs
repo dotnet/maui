@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Handlers
 		protected override void SetupContainer() =>
 			WrapperView.SetupContainer(PlatformView, Context, ContainerView, (cv) => ContainerView = cv);
 
-		protected override void RemoveContainer() =>
-			WrapperView.RemoveContainer(PlatformView, Context, ContainerView, () => ContainerView = null);
+		protected override void RemoveContainer()
+		{
+			// ElementHandler clears its platform-view field before invoking DisconnectHandler.
+			WrapperView.RemoveContainer(base.PlatformView, Context, ContainerView, () => ContainerView = null);
+		}
 	}
 }

@@ -77,6 +77,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.StopLoading();
 			if (platformView.Parent is ViewGroup parent)
 				parent.RemoveView(platformView);
+
+			if (ContainerView?.Parent is ViewGroup containerParent)
+				containerParent.RemoveView(ContainerView);
+
+			HasContainer = false;
 			platformView.RemoveAllViews();
 
 			base.DisconnectHandler(platformView);

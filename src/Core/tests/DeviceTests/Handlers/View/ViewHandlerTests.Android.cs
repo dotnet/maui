@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Android.Views;
 using Android.Widget;
+using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
@@ -49,6 +51,30 @@ namespace Microsoft.Maui.DeviceTests
 				wrapper.SetNoShadow();
 
 				Assert.False(wrapper.ShouldInvalidateShadow(child, child));
+			});
+		}
+
+		[Fact]
+		public async Task InitialOpacityIsAppliedToNonWebViewContainer()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var view = new StubBase
+				{
+					Opacity = 0.5,
+					Clip = new EllipseGeometryStub(new Point(50, 50), 50, 50),
+				};
+				var handler = CreateHandler(view);
+				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+
+				Assert.Equal(0.5f, container.Alpha, 3);
+				Assert.Equal(1f, handler.PlatformView.Alpha);
+
+				view.Opacity = 0.25;
+				handler.UpdateValue(nameof(IView.Opacity));
+
+				Assert.Equal(0.25f, container.Alpha, 3);
+				Assert.Equal(1f, handler.PlatformView.Alpha);
 			});
 		}
 	}

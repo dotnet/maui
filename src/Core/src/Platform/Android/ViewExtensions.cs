@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Platform
 			if (wrapperView is not null)
 			{
 				// Apply transform properties to the wrapper
+				wrapperView.Alpha = (float)view.Opacity;
 				wrapperView.TranslationX = wrapperView.ToPixels(view.TranslationX);
 				wrapperView.TranslationY = wrapperView.ToPixels(view.TranslationY);
 				wrapperView.ScaleX = (float)(view.Scale * view.ScaleX);
@@ -56,7 +57,8 @@ namespace Microsoft.Maui.Platform
 				wrapperView.PivotX = pivotX;
 				wrapperView.PivotY = pivotY;
 
-				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: 0,
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, alpha: 1,
+					translationX: 0,
 					translationY: 0,
 					scaleX: 1,
 					scaleY: 1,
@@ -69,7 +71,8 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				// NOTE: use named arguments for clarity
-				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: platformView.ToPixels(view.TranslationX),
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, alpha: (float)view.Opacity,
+					translationX: platformView.ToPixels(view.TranslationX),
 					translationY: platformView.ToPixels(view.TranslationY),
 					scaleX: (float)(view.Scale * view.ScaleX),
 					scaleY: (float)(view.Scale * view.ScaleY),
@@ -81,7 +84,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static void SetPlatformViewPropertiesWithTransform(View platformView, IView view, int visibility, float translationX,
+		static void SetPlatformViewPropertiesWithTransform(View platformView, IView view, int visibility, float alpha, float translationX,
 			float translationY, float scaleX, float scaleY, float rotation, float rotationX, float rotationY, float pivotX, float pivotY)
 		{
 			PlatformInterop.Set(
@@ -91,7 +94,7 @@ namespace Microsoft.Maui.Platform
 				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
 				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
 				enabled: view.IsEnabled,
-				alpha: (float)view.Opacity,
+				alpha: alpha,
 				translationX: translationX,
 				translationY: translationY,
 				scaleX: scaleX,

@@ -114,7 +114,10 @@ namespace Microsoft.Maui
 				return true;
 
 #if ANDROID
-			if (view?.InputTransparent == true)
+			// WebViews must be clipped by a parent render node; clipping the WebView itself can
+			// crash Android's GL functor while an off-screen view is overscrolled.
+			// https://github.com/dotnet/maui/issues/38080
+			if (view is IWebView or IHybridWebView || view?.InputTransparent == true)
 				return true;
 #endif
 
