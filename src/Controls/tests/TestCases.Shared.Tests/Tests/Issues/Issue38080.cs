@@ -89,18 +89,22 @@ public class Issue38080 : _IssuesUITest
 
 	void ScrollUntilDisplayed(string automationId, System.Action gesture)
 	{
+		var nextGesture = gesture;
+		TestContext.WriteLine($"Issue38080 searching for '{automationId}'.");
 		for (var completedGestures = 0; completedGestures <= 10; completedGestures++)
 		{
 			var elements = FindElementsForMarker(automationId);
 
 			if (elements.Any(element => element.IsDisplayed()))
+			{
+				TestContext.WriteLine($"Issue38080 found '{automationId}' after {completedGestures} real touch gestures.");
 				return;
+			}
 
 			if (completedGestures == 10)
 				break;
 
-			var nextGesture = gesture;
-			// A fast fling can overshoot the intermediate WebView; reverse only at a verified edge.
+			// Keep the reversed direction until the other verified edge, not just for one fling.
 			if (automationId == WebViewMarker &&
 				FindElementsForMarker(TopMarker).Any(element => element.IsDisplayed()))
 				nextGesture = FastFlingDown;
