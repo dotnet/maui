@@ -6663,6 +6663,43 @@ public class Issue26505 : global::Microsoft.Maui.DeviceTests.ControlsHandlerTest
             Should -BeExactly 'DisabledDefaultPaddingFitsTextWithinButton'
     }
 
+    It 'resolves the Windows Issue34738 method when untracked detection falls back to ShellTests' {
+        $file = 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs'
+        $project = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
+        $detector = Join-Path $TestDrive 'Detect-Issue34738Fallback.ps1'
+        New-Item -ItemType Directory -Path (Split-Path -Parent (Join-Path $repoRoot $file)) -Force |
+            Out-Null
+        '<Project />' | Set-Content -LiteralPath (Join-Path $repoRoot $project)
+        Get-ReplicationWindowsIssue34738TestSource |
+            Set-Content -LiteralPath (Join-Path $repoRoot $file)
+        @"
+param([string[]]`$ChangedFiles, [string]`$Platform)
+[pscustomobject]@{
+    Type = 'DeviceTest'
+    Filter = 'ShellTests'
+    TestName = 'ShellTests'
+    Project = 'Controls'
+    ProjectPath = '$project'
+    ClassFilter = 'Microsoft.Maui.DeviceTests.ShellTests'
+}
+"@ | Set-Content -LiteralPath $detector
+
+        $metadata = Resolve-ReplicationVerifierMetadata `
+            -Files @($file) `
+            -TestType DeviceTest `
+            -TestFilter Issue34738 `
+            -Platform windows `
+            -DetectorPath $detector
+
+        $metadata.Project | Should -BeExactly 'Controls'
+        $metadata.ProjectPath | Should -BeExactly $project
+        $metadata.File | Should -BeExactly $file
+        $metadata.ClassName |
+            Should -BeExactly 'Microsoft.Maui.DeviceTests.ShellTests'
+        $metadata.MethodName |
+            Should -BeExactly 'Issue34738DisabledTabUsesTabBarDisabledColor'
+    }
+
     It 'resolves fully qualified Task return types without losing the selected method' {
         $file = 'src/Controls/tests/DeviceTests/Elements/Label/Issue29282Tests.Android.cs'
         $project = 'src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj'
@@ -12407,7 +12444,7 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
             -Edits @($script:GateEdit) `
             -Platform windows `
             -SourcePath 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs' `
-            -ExpectedTestMethod 'DisabledTabUsesTabBarDisabledColor' `
+            -ExpectedTestMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
             -ExpectedTestClass 'Microsoft.Maui.DeviceTests.ShellTests'
 
         $control | Should -Match 'var applyReportedTrigger = false;'
@@ -12465,7 +12502,7 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                     -Edits @($script:GateEdit) `
                     -Platform windows `
                     -SourcePath 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs' `
-                    -ExpectedTestMethod 'DisabledTabUsesTabBarDisabledColor' `
+                    -ExpectedTestMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
                     -ExpectedTestClass 'Microsoft.Maui.DeviceTests.ShellTests'
             } | Should -Throw '*exact reviewed Shell hierarchy*'
         }
@@ -12480,12 +12517,12 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
                 Additional = @()
             },
             @{
-                Method = 'DisabledTabUsesTabBarDisabledColor'
+                Method = 'Issue34738DisabledTabUsesTabBarDisabledColor'
                 Class = 'Microsoft.Maui.DeviceTests.OtherTests'
                 Additional = @()
             },
             @{
-                Method = 'DisabledTabUsesTabBarDisabledColor'
+                Method = 'Issue34738DisabledTabUsesTabBarDisabledColor'
                 Class = 'Microsoft.Maui.DeviceTests.ShellTests'
                 Additional = @('public class Extra {}')
             }
