@@ -12446,6 +12446,11 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
         $source |
             Should -Match 'Issue34738DescribeColor\(\s*Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
         $source | Should -Not -Match '\(\s*Brush brush\)'
+        @([regex]::Matches(
+            $source,
+            'brush is Microsoft\.UI\.Xaml\.Media\.SolidColorBrush solidColorBrush')).Count |
+            Should -Be 3
+        $source | Should -Not -Match 'brush is\s+SolidColorBrush solidColorBrush'
         $control = New-ReplicationControlVariant `
             -BaselineSource $source `
             -Edits @($script:GateEdit) `
@@ -12460,6 +12465,41 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
             'var applyReportedTrigger = false;',
             'var applyReportedTrigger = true;') |
             Should -BeExactly $source
+    }
+
+    It 'semantically compiles Windows Issue34738 brush helpers with both brush namespaces imported' {
+        $helperSource = @'
+using Microsoft.Maui.Controls;
+using Microsoft.UI.Xaml.Media;
+
+public static class Issue34738BrushHelpers
+{
+    public static bool IsBlue(Microsoft.UI.Xaml.Media.Brush brush) =>
+        brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&
+        solidColorBrush != null;
+
+    public static bool IsGreen(Microsoft.UI.Xaml.Media.Brush brush) =>
+        brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&
+        solidColorBrush != null;
+
+    public static string DescribeColor(Microsoft.UI.Xaml.Media.Brush brush) =>
+        brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush
+            ? solidColorBrush.ToString()
+            : "<non-solid>";
+}
+'@
+        $tree = [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree]::ParseText(
+            $helperSource)
+        $compilation = [Microsoft.CodeAnalysis.CSharp.CSharpCompilation]::Create(
+            'Issue34738BrushHelpers',
+            [Microsoft.CodeAnalysis.SyntaxTree[]]@($tree),
+            [Microsoft.CodeAnalysis.MetadataReference[]]@(
+                Get-ReplicationControlSemanticReferences -Platform windows),
+            [Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions]::new(
+                [Microsoft.CodeAnalysis.OutputKind]::DynamicallyLinkedLibrary))
+        @($compilation.GetDiagnostics() | Where-Object {
+                [string]$_.Severity -ceq 'Error'
+            }).Count | Should -Be 0
     }
 
     It 'rejects weakened Windows Issue34738 state and color oracles' {
