@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task InitialOpacityIsAppliedToNonWebViewContainer()
+		public async Task OpacityIsPreservedAcrossNonWebViewContainerTransitions()
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -65,16 +65,41 @@ namespace Microsoft.Maui.DeviceTests
 					Clip = new EllipseGeometryStub(new Point(50, 50), 50, 50),
 				};
 				var handler = CreateHandler(view);
-				var container = Assert.IsType<WrapperView>(handler.ContainerView);
+				var initialContainer = Assert.IsType<WrapperView>(handler.ContainerView);
 
-				Assert.Equal(0.5f, container.Alpha, 3);
+				Assert.Equal(0.5f, initialContainer.Alpha, 3);
+				Assert.Equal(1f, handler.PlatformView.Alpha);
+
+				view.Clip = null;
+				handler.UpdateValue(nameof(IView.Clip));
+
+				Assert.False(handler.HasContainer);
+				Assert.Null(handler.ContainerView);
+				Assert.Null(handler.PlatformView.Parent);
+				Assert.Equal(0.5f, handler.PlatformView.Alpha, 3);
+
+				view.Clip = new EllipseGeometryStub(new Point(50, 50), 50, 50);
+				handler.UpdateValue(nameof(IView.Clip));
+
+				var newContainer = Assert.IsType<WrapperView>(handler.ContainerView);
+				Assert.NotSame(initialContainer, newContainer);
+				Assert.Same(newContainer, handler.PlatformView.Parent);
+				Assert.Equal(0.5f, newContainer.Alpha, 3);
 				Assert.Equal(1f, handler.PlatformView.Alpha);
 
 				view.Opacity = 0.25;
 				handler.UpdateValue(nameof(IView.Opacity));
 
-				Assert.Equal(0.25f, container.Alpha, 3);
+				Assert.Equal(0.25f, newContainer.Alpha, 3);
 				Assert.Equal(1f, handler.PlatformView.Alpha);
+
+				view.Clip = null;
+				handler.UpdateValue(nameof(IView.Clip));
+
+				Assert.False(handler.HasContainer);
+				Assert.Null(handler.ContainerView);
+				Assert.Null(handler.PlatformView.Parent);
+				Assert.Equal(0.25f, handler.PlatformView.Alpha, 3);
 			});
 		}
 	}

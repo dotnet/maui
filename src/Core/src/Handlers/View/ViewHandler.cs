@@ -542,7 +542,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.UpdateValue(nameof(IView.Visibility));
 
-#if WINDOWS
+#if ANDROID || WINDOWS
 				handler.UpdateValue(nameof(IView.Opacity));
 #endif
 			}
