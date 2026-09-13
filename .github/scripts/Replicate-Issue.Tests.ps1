@@ -1746,6 +1746,7 @@ public partial class MainPage : ContentPage
                 'DeviceUdid',
                 'ArtifactRoot',
                 'repoRoot',
+                'guardValidatorPath',
                 'trustedSkills',
                 'sandboxDir',
                 'sandboxArtifactDir',
@@ -1771,6 +1772,8 @@ public partial class MainPage : ContentPage
             $script:DeviceUdid = 'emulator-5554'
             $script:ArtifactRoot = Join-Path $TestDrive 'artifacts'
             $script:repoRoot = Join-Path $TestDrive 'repo'
+            $script:guardValidatorPath =
+                Join-Path $TestDrive 'trusted/scripts/shared/Assert-ReplicationTestGuard.ps1'
             $script:trustedSkills = Join-Path $TestDrive 'trusted/skills'
             $script:sandboxDir = Join-Path $script:repoRoot 'src/Controls/samples/Controls.Sample.Sandbox'
             $script:sandboxArtifactDir = Join-Path $script:ArtifactRoot 'sandbox'
@@ -1987,14 +1990,14 @@ public partial class MainPage : ContentPage
                     -BaselineRelativePath 'tests/Issue34738.Windows.cs'
                 $prompt | Should -Match 'WINDOWS ISSUE34738 SHELL PROFILE'
                 $prompt | Should -Match 'Issue34738 affected tab foreground mismatch'
-                $prompt | Should -Match 'var expectedIsEnabled = affectedTab\.IsEnabled;'
-                $prompt | Should -Match 'nativeAffectedTab\.IsEnabled == expectedIsEnabled'
-                $prompt | Should -Match 'Issue34738IsBlue\(referenceTitle\.Foreground\)'
-                $prompt | Should -Match 'Issue34738IsBlue\(affectedTitle\.Foreground\)'
-                $prompt | Should -Match 'Issue34738IsGreen\(affectedTitle\.Foreground\)'
-                $prompt | Should -Match 'SetTabBarUnselectedColor\(shell, enabledColor\)'
-                $prompt | Should -Not -Match 'SetTabBarForegroundColor'
-                $prompt | Should -Not -Match 'SetTabBarTitleColor'
+                $prompt | Should -Match 'Get-ReplicationWindowsIssue34738TestSource'
+                $prompt | Should -Match ([regex]::Escape($script:guardValidatorPath))
+                $prompt | Should -Match 'copy only the here-string content byte-for-byte'
+                $prompt | Should -Match 'reference title/icon remain Blue in both arms'
+                $prompt | Should -Match 'affected title/icon are Blue for the enabled control and Green for the disabled input'
+                $prompt | Should -Not -Match 'BEGIN EXACT SOURCE'
+                $prompt | Should -Not -Match 'var expectedIsEnabled = affectedTab\.IsEnabled;'
+                $prompt.Length | Should -BeLessThan 30000
             }
 
             foreach ($case in @(

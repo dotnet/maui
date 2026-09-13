@@ -8027,22 +8027,12 @@ For the Border variant, use `CreateHandlerAndAddToWindow<global::Microsoft.Maui.
         $Platform -eq 'windows' -and
         $IssueNumber -eq 34738 -and
         $Phase -in @('test-plan', 'test', 'repair')) {
-        $windowsIssue34738TestSource =
-            Get-ReplicationWindowsIssue34738TestSource
-        $windowsIssue34738ProfileHeader = @'
+        $windowsIssue34738Profile = @'
 
-WINDOWS ISSUE34738 SHELL PROFILE: The empirical Sandbox already proved that a disabled Shell Tab ignores Shell.TabBarDisabledColor on Windows. The guard accepts only the exact source below at `src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs`; copy it byte-for-byte. Do not add another test file, helper, assertion, style, color, or branch. This profile configures enabled/unselected tabs Blue and disabled tabs Green, with a separate enabled, unselected sibling as an independent native reference. It snapshots the affected tab's configured IsEnabled value after the trusted gate but before handler creation, then requires both managed and native IsEnabled to remain equal to that immutable input snapshot. The byte-identical oracle requires the reference title/icon to remain Blue in both arms, while the affected title/icon must be Blue for the enabled control and Green for the disabled input. It therefore cannot pass by silently re-enabling the affected tab, painting every tab Green, or sourcing disabled rendering from the enabled/unselected color property.
-Set testType to device, testFilter to `Issue34738`, expectedFailureSignature to `Issue34738 affected tab foreground mismatch`, files to exactly this one path, and scenarioDifferences to an empty array. The extra enabled sibling is an oracle witness inside the same Shell hierarchy, not a substitute scenario. The Blue/Green appearance configuration is fixed and byte-identical in both arms; the test's only causal input difference is the trusted true-to-false edit of `applyReportedTrigger`.
-
-BEGIN EXACT SOURCE
+WINDOWS ISSUE34738 SHELL PROFILE: The empirical Sandbox already proved that a disabled Shell Tab ignores Shell.TabBarDisabledColor on Windows. The trusted guard accepts only the source returned by Get-ReplicationWindowsIssue34738TestSource in the read-only file {0}. For the test phase, locate that function with rg, view its complete literal here-string, and copy only the here-string content byte-for-byte to src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs. Do not add another test file, helper, assertion, style, color, or branch.
+Set testType to device, testFilter to Issue34738, expectedFailureSignature to Issue34738 affected tab foreground mismatch, files to exactly that one repository path, and scenarioDifferences to an empty array. The fixed source configures enabled/unselected tabs Blue and disabled tabs Green, keeps a separate enabled sibling as an independent native reference, snapshots the affected tab's configured IsEnabled value before handler creation, and requires managed/native state to match that immutable input. The reference title/icon remain Blue in both arms; the affected title/icon are Blue for the enabled control and Green for the disabled input. The only causal input difference is the trusted true-to-false edit of applyReportedTrigger.
 '@
-        $windowsIssue34738ProfileFooter = @'
-END EXACT SOURCE
-'@
-        $windowsIssue34738ProfileHeader +
-            $windowsIssue34738TestSource +
-            [Environment]::NewLine +
-            $windowsIssue34738ProfileFooter
+        $windowsIssue34738Profile -f $guardValidatorPath
     } else {
         ''
     }
