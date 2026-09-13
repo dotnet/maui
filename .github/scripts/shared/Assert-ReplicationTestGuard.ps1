@@ -4982,7 +4982,9 @@ namespace Windows.UI
 
 namespace Microsoft.UI.Xaml.Media
 {
-    public class SolidColorBrush
+    public class Brush { }
+
+    public class SolidColorBrush : Brush
     {
         public global::Windows.UI.Color Color { get; }
     }
@@ -6255,16 +6257,16 @@ namespace Microsoft.Maui.DeviceTests
         }
 
         static bool Issue34738IsBlue(Microsoft.UI.Xaml.Media.Brush brush) =>
-            brush is SolidColorBrush solidColorBrush &&
+            brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&
             solidColorBrush.Color == Microsoft.UI.Colors.Blue;
 
         static bool Issue34738IsGreen(Microsoft.UI.Xaml.Media.Brush brush) =>
-            brush is SolidColorBrush solidColorBrush &&
+            brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&
             solidColorBrush.Color == Microsoft.UI.Colors.Green;
 
         static string Issue34738DescribeColor(
             Microsoft.UI.Xaml.Media.Brush brush) =>
-            brush is SolidColorBrush solidColorBrush
+            brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush
                 ? solidColorBrush.Color.ToString()
                 : "<non-solid>";
     }
