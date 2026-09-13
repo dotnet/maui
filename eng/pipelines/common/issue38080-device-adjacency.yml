@@ -9,7 +9,7 @@ steps:
   parameters:
     skipJdk: false
     skipAndroidCommonSdks: false
-    skipAndroidPlatformApis: true
+    skipAndroidPlatformApis: false
     onlyAndroidPlatformDefaultApis: true
     skipAndroidEmulatorImages: false
     skipAndroidCreateAvds: true
