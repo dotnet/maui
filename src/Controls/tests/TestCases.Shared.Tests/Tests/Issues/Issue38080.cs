@@ -115,6 +115,22 @@ public class Issue38080 : _IssuesUITest
 			FlingOuterScrollView(nextGesture);
 		}
 
+		if (automationId == WebViewMarker)
+		{
+			System.Action? reposition = null;
+			if (FindElementsForMarker(TopMarker).Any(element => element.IsDisplayed()))
+				reposition = SlowDragDown;
+			else if (FindElementsForMarker(BottomMarker).Any(element => element.IsDisplayed()))
+				reposition = SlowDragUp;
+
+			if (reposition is not null)
+			{
+				TestContext.WriteLine("Issue38080 fast search exhausted; positioning the intermediate WebView from a verified edge with at most 10 slow real drags.");
+				PrepareUntilDisplayed(WebViewMarker, reposition, "RepositionWebView");
+				return;
+			}
+		}
+
 		if (!SaveUIDiagnosticInfo($"Issue38080-TargetNotFound-{automationId}"))
 			TestContext.Error.WriteLine($"Could not capture the viewport while locating '{automationId}': the app is not running.");
 
