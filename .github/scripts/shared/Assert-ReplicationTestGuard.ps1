@@ -6137,7 +6137,7 @@ namespace Microsoft.Maui.DeviceTests
     {
         [Fact]
         [Category("Issue34738")]
-        public async Task DisabledTabUsesTabBarDisabledColor()
+        public async Task Issue34738DisabledTabUsesTabBarDisabledColor()
         {
             SetupBuilder();
             var enabledColor = Microsoft.Maui.Graphics.Colors.Blue;
@@ -6468,7 +6468,8 @@ function New-ReplicationControlVariant {
         throw 'The reproduction source is not valid C# for a trusted negative control gate.'
     }
     if ($isWindowsIssue34738ProfilePath) {
-        if ($ExpectedTestMethod -cne 'DisabledTabUsesTabBarDisabledColor' -or
+        if ($ExpectedTestMethod -cne
+                'Issue34738DisabledTabUsesTabBarDisabledColor' -or
             $ExpectedTestClass -cne
                 'Microsoft.Maui.DeviceTests.ShellTests' -or
             @($AdditionalSources).Count -ne 0) {
