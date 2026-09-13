@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
@@ -17,6 +18,51 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Fact(DisplayName = "Numeric keyboard accepts Polish decimal separator")]
+		public async Task NumericKeyboardAcceptsPolishDecimalSeparator()
+		{
+			var entry = new EntryStub
+			{
+				IsPassword = false,
+				Keyboard = Keyboard.Numeric
+			};
+
+			var values = await GetValueAsync(entry, handler =>
+			{
+				var previousCulture = CultureInfo.CurrentCulture;
+
+				try
+				{
+					CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("pl-PL");
+					handler.PlatformView.SetInputType(entry);
+
+					using var editorInfo = new EditorInfo();
+					var inputConnection = handler.PlatformView.OnCreateInputConnection(editorInfo);
+
+					Assert.NotNull(inputConnection);
+					Assert.True(inputConnection.CommitText(new Java.Lang.String("1,5"), 1));
+
+					return new
+					{
+						handler.PlatformView.Text,
+						IsLocalizedDigitsKeyListener = handler.PlatformView.KeyListener is LocalizedDigitsKeyListener,
+						handler.PlatformView.InputType
+					};
+				}
+				finally
+				{
+					CultureInfo.CurrentCulture = previousCulture;
+				}
+			});
+
+			Assert.Equal("1,5", values.Text);
+			Assert.True(values.IsLocalizedDigitsKeyListener);
+			Assert.True(values.InputType.HasFlag(InputTypes.ClassNumber));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagDecimal));
+			Assert.True(values.InputType.HasFlag(InputTypes.NumberFlagSigned));
+			Assert.False(values.InputType.HasFlag(InputTypes.NumberVariationPassword));
+		}
+
 		[Fact(DisplayName = "Semantic description initializes accessibility content description")]
 		public async Task SemanticDescriptionInitializesAccessibilityContentDescription()
 		{
