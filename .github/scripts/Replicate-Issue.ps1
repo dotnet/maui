@@ -8023,6 +8023,30 @@ For the Border variant, use `CreateHandlerAndAddToWindow<global::Microsoft.Maui.
         ''
     }
 
+    $windowsIssue34738GeneratedTestGuidance = if (
+        $Platform -eq 'windows' -and
+        $IssueNumber -eq 34738 -and
+        $Phase -in @('test-plan', 'test', 'repair')) {
+        $windowsIssue34738TestSource =
+            Get-ReplicationWindowsIssue34738TestSource
+        $windowsIssue34738ProfileHeader = @'
+
+WINDOWS ISSUE34738 SHELL PROFILE: The empirical Sandbox already proved that a disabled Shell Tab ignores Shell.TabBarDisabledColor on Windows. The guard accepts only the exact source below at `src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs`; copy it byte-for-byte. Do not add another test file, helper, assertion, style, color, or branch. This profile preserves the reported default enabled styling and uses a separate enabled, unselected sibling only as the clean native reference. It snapshots the affected tab's configured IsEnabled value after the trusted gate but before handler creation, then requires both managed and native IsEnabled to remain equal to that immutable input snapshot. The byte-identical oracle expects Green only for the disabled input and compares the enabled control against the sibling's native default title/icon foreground. It therefore cannot pass by silently re-enabling the affected tab, by comparing a color to itself, or by sourcing disabled rendering from an unrelated enabled color property.
+Set testType to device, testFilter to `Issue34738`, expectedFailureSignature to `Issue34738 affected tab foreground mismatch`, files to exactly this one path, and scenarioDifferences to an empty array. The extra enabled sibling is an oracle witness inside the same Shell hierarchy, not a substitute scenario or explicit appearance override. The test's only causal input difference is the trusted true-to-false edit of `applyReportedTrigger`.
+
+BEGIN EXACT SOURCE
+'@
+        $windowsIssue34738ProfileFooter = @'
+END EXACT SOURCE
+'@
+        $windowsIssue34738ProfileHeader +
+            $windowsIssue34738TestSource +
+            [Environment]::NewLine +
+            $windowsIssue34738ProfileFooter
+    } else {
+        ''
+    }
+
     $generatedTestBlockedGuidance = if ($Phase -in @('test-plan', 'test', 'repair')) {
         @"
 
@@ -8299,6 +8323,7 @@ $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
 $nativeLabelTapGestureCountGeneratedTestGuidance
+$windowsIssue34738GeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $(Get-ReplicationTierExclusionGuidance -ForbiddenTiers $ForbiddenTestTiers)
@@ -8347,6 +8372,7 @@ $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
 $nativeLabelTapGestureCountGeneratedTestGuidance
+$windowsIssue34738GeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance
@@ -8392,6 +8418,7 @@ $androidGeneratedTestGuidance
 $nativeLabelTextGeneratedTestGuidance
 $nativeLabelCharacterSpacingGeneratedTestGuidance
 $nativeLabelTapGestureCountGeneratedTestGuidance
+$windowsIssue34738GeneratedTestGuidance
 $androidIssue26505GeneratedTestGuidance
 $androidIssue33315GeneratedTestGuidance
 $generatedTestBlockedGuidance

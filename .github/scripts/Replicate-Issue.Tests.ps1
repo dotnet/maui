@@ -1978,6 +1978,42 @@ public partial class MainPage : ContentPage
                 Should -Not -Match 'NATIVE LABEL TAP-COUNT PROFILE'
         }
 
+        It 'scopes the exact Issue34738 Shell profile to Windows generated-test phases' {
+            $script:IssueNumber = 34738
+            $script:Platform = 'windows'
+
+            foreach ($phase in @('test-plan', 'test', 'repair')) {
+                $prompt = New-CopilotPrompt -Phase $phase `
+                    -BaselineRelativePath 'tests/Issue34738.Windows.cs'
+                $prompt | Should -Match 'WINDOWS ISSUE34738 SHELL PROFILE'
+                $prompt | Should -Match 'Issue34738 affected tab foreground mismatch'
+                $prompt | Should -Match 'var expectedIsEnabled = affectedTab\.IsEnabled;'
+                $prompt | Should -Match 'nativeAffectedTab\.IsEnabled == expectedIsEnabled'
+                $prompt | Should -Match 'HaveSameColor\(affectedTitle\.Foreground, referenceTitle\.Foreground\)'
+                $prompt | Should -Match 'IsGreen\(affectedTitle\.Foreground\)'
+                $prompt | Should -Not -Match 'SetTabBarUnselectedColor'
+                $prompt | Should -Not -Match 'SetTabBarForegroundColor'
+                $prompt | Should -Not -Match 'SetTabBarTitleColor'
+            }
+
+            foreach ($case in @(
+                @{ Issue = 34738; Platform = 'android' }
+                @{ Issue = 34738; Platform = 'ios' }
+                @{ Issue = 34738; Platform = 'catalyst' }
+                @{ Issue = 34739; Platform = 'windows' }
+            )) {
+                $script:IssueNumber = $case.Issue
+                $script:Platform = $case.Platform
+                (New-CopilotPrompt -Phase test-plan) |
+                    Should -Not -Match 'WINDOWS ISSUE34738 SHELL PROFILE'
+            }
+
+            $script:IssueNumber = 34738
+            $script:Platform = 'windows'
+            (New-CopilotPrompt -Phase sandbox) |
+                Should -Not -Match 'WINDOWS ISSUE34738 SHELL PROFILE'
+        }
+
         It 'advertises the exact iOS native Border tap-count variant without host substitution' {
             $script:IssueNumber = 41777
             $script:Platform = 'ios'
@@ -12357,6 +12393,103 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
             $PSDefaultParameterValues[
                 'New-ReplicationControlVariant:RepositoryRoot'] =
                     $script:PriorControlRepositoryRoot
+        }
+    }
+
+    It 'accepts only the exact Windows Issue34738 Shell native profile' {
+        $source = Get-ReplicationWindowsIssue34738TestSource
+        $control = New-ReplicationControlVariant `
+            -BaselineSource $source `
+            -Edits @($script:GateEdit) `
+            -Platform windows `
+            -SourcePath 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs' `
+            -ExpectedTestMethod 'DisabledTabUsesTabBarDisabledColor' `
+            -ExpectedTestClass 'Microsoft.Maui.DeviceTests.ShellTests'
+
+        $control | Should -Match 'var applyReportedTrigger = false;'
+        $control | Should -Not -Match 'var applyReportedTrigger = true;'
+        $control.Replace(
+            'var applyReportedTrigger = false;',
+            'var applyReportedTrigger = true;') |
+            Should -BeExactly $source
+    }
+
+    It 'rejects weakened Windows Issue34738 state and color oracles' {
+        $source = Get-ReplicationWindowsIssue34738TestSource
+        $lateStateSnapshot = $source.Replace(
+            "            var expectedIsEnabled = affectedTab.IsEnabled;$(
+                [Environment]::NewLine)$([Environment]::NewLine)",
+            '').Replace(
+                '                var titleMatches = expectedIsEnabled',
+                @'
+                var expectedIsEnabled = nativeAffectedTab.IsEnabled;
+                var titleMatches = expectedIsEnabled
+'@)
+        $explicitEnabledColor = $source.Replace(
+            '                Shell.SetTabBarDisabledColor(shell, disabledColor);',
+            @'
+                Shell.SetTabBarDisabledColor(shell, disabledColor);
+                Shell.SetTabBarUnselectedColor(shell, disabledColor);
+'@)
+        $mutations = @(
+            $source.Replace(
+                'var expectedIsEnabled = affectedTab.IsEnabled;',
+                'var expectedIsEnabled = true;'),
+            $source.Replace(
+                'nativeAffectedTab.IsEnabled == expectedIsEnabled &&',
+                'nativeReferenceTab.IsEnabled == expectedIsEnabled &&'),
+            $source.Replace(
+                'HaveSameColor(affectedTitle.Foreground, referenceTitle.Foreground)',
+                'HaveSameColor(affectedTitle.Foreground, affectedTitle.Foreground)'),
+            $source.Replace(
+                ': IsGreen(affectedIcon.Foreground);',
+                ': HaveSameColor(affectedIcon.Foreground, referenceIcon.Foreground);'),
+            $lateStateSnapshot,
+            $explicitEnabledColor
+        )
+
+        foreach ($candidate in $mutations) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $candidate `
+                    -Edits @($script:GateEdit) `
+                    -Platform windows `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs' `
+                    -ExpectedTestMethod 'DisabledTabUsesTabBarDisabledColor' `
+                    -ExpectedTestClass 'Microsoft.Maui.DeviceTests.ShellTests'
+            } | Should -Throw '*exact reviewed Shell hierarchy*'
+        }
+    }
+
+    It 'rejects alternate Windows Issue34738 identities and extra sources' {
+        $source = Get-ReplicationWindowsIssue34738TestSource
+        foreach ($case in @(
+            @{
+                Method = 'OtherMethod'
+                Class = 'Microsoft.Maui.DeviceTests.ShellTests'
+                Additional = @()
+            },
+            @{
+                Method = 'DisabledTabUsesTabBarDisabledColor'
+                Class = 'Microsoft.Maui.DeviceTests.OtherTests'
+                Additional = @()
+            },
+            @{
+                Method = 'DisabledTabUsesTabBarDisabledColor'
+                Class = 'Microsoft.Maui.DeviceTests.ShellTests'
+                Additional = @('public class Extra {}')
+            }
+        )) {
+            {
+                New-ReplicationControlVariant `
+                    -BaselineSource $source `
+                    -Edits @($script:GateEdit) `
+                    -Platform windows `
+                    -SourcePath 'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs' `
+                    -ExpectedTestMethod $case.Method `
+                    -ExpectedTestClass $case.Class `
+                    -AdditionalSources $case.Additional
+            } | Should -Throw '*exact selected Shell test identity*'
         }
     }
 

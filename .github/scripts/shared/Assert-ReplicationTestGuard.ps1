@@ -6117,6 +6117,156 @@ $methodSource
     }
 }
 
+function Get-ReplicationWindowsIssue34738TestSource {
+    return @'
+#if WINDOWS
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Xunit;
+using ShellHandler = Microsoft.Maui.Controls.Handlers.ShellHandler;
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public partial class ShellTests
+    {
+        [Fact]
+        [Category("Issue34738")]
+        public async Task DisabledTabUsesTabBarDisabledColor()
+        {
+            SetupBuilder();
+            var disabledColor = Microsoft.Maui.Graphics.Colors.Green;
+            var selectedTab = CreateTab("Selected Tab");
+            var enabledReferenceTab = CreateTab("Enabled Reference Tab");
+            var affectedTab = CreateTab("Disabled Tab");
+            var shell = await CreateShellAsync(shell =>
+            {
+                Shell.SetTabBarDisabledColor(shell, disabledColor);
+                shell.Items.Add(new TabBar
+                {
+                    Items =
+                    {
+                        selectedTab,
+                        enabledReferenceTab,
+                        affectedTab
+                    }
+                });
+            });
+            var applyReportedTrigger = true;
+            if (applyReportedTrigger)
+            {
+                affectedTab.IsEnabled = false;
+            }
+            var expectedIsEnabled = affectedTab.IsEnabled;
+
+            await CreateHandlerAndAddToWindow<ShellHandler>(shell, async _ =>
+            {
+                await AssertHelpers.AssertEventually(
+                    () => shell.CurrentItem?.Handler?.PlatformView is MauiNavigationView navigationView &&
+                        Descendants(navigationView)
+                            .OfType<NavigationViewItem>()
+                            .Any(item =>
+                                item.Content?.ToString() == enabledReferenceTab.Title &&
+                                Descendants(item).OfType<TextBlock>().Any(text =>
+                                    text.Text == enabledReferenceTab.Title) &&
+                                Descendants(item).OfType<IconElement>().Any()) &&
+                        Descendants(navigationView)
+                            .OfType<NavigationViewItem>()
+                            .Any(item =>
+                                item.Content?.ToString() == affectedTab.Title &&
+                                Descendants(item).OfType<TextBlock>().Any(text =>
+                                    text.Text == affectedTab.Title) &&
+                                Descendants(item).OfType<IconElement>().Any()));
+                var navigationView =
+                    (MauiNavigationView)shell.CurrentItem.Handler.PlatformView;
+                var nativeTabs = Descendants(navigationView)
+                    .OfType<NavigationViewItem>()
+                    .ToArray();
+                var nativeReferenceTab = Assert.Single(
+                    nativeTabs,
+                    item => item.Content?.ToString() == enabledReferenceTab.Title);
+                var nativeAffectedTab = Assert.Single(
+                    nativeTabs,
+                    item => item.Content?.ToString() == affectedTab.Title);
+                var referenceTitle = Assert.Single(
+                    Descendants(nativeReferenceTab)
+                        .OfType<TextBlock>()
+                        .Where(text => text.Text == enabledReferenceTab.Title));
+                var affectedTitle = Assert.Single(
+                    Descendants(nativeAffectedTab)
+                        .OfType<TextBlock>()
+                        .Where(text => text.Text == affectedTab.Title));
+                var referenceIcon = Assert.Single(
+                    Descendants(nativeReferenceTab).OfType<IconElement>());
+                var affectedIcon = Assert.Single(
+                    Descendants(nativeAffectedTab).OfType<IconElement>());
+                var titleMatches = expectedIsEnabled
+                    ? HaveSameColor(affectedTitle.Foreground, referenceTitle.Foreground)
+                    : IsGreen(affectedTitle.Foreground);
+                var iconMatches = expectedIsEnabled
+                    ? HaveSameColor(affectedIcon.Foreground, referenceIcon.Foreground)
+                    : IsGreen(affectedIcon.Foreground);
+
+                Assert.True(
+                    affectedTab.IsEnabled == expectedIsEnabled &&
+                    nativeAffectedTab.IsEnabled == expectedIsEnabled &&
+                    titleMatches &&
+                    iconMatches,
+                    $"Issue34738 affected tab foreground mismatch: expected enabled={expectedIsEnabled}, managed enabled={affectedTab.IsEnabled}, native enabled={nativeAffectedTab.IsEnabled}, title={DescribeColor(affectedTitle.Foreground)}, icon={DescribeColor(affectedIcon.Foreground)}.");
+            });
+        }
+
+        static Tab CreateTab(string title) =>
+            new()
+            {
+                Title = title,
+                Icon = "white_tab.png",
+                Items =
+                {
+                    new ShellContent
+                    {
+                        Content = new ContentPage()
+                    }
+                }
+            };
+
+        static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+        {
+            var count = VisualTreeHelper.GetChildrenCount(parent);
+            for (var index = 0; index < count; index++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, index);
+                yield return child;
+
+                foreach (var descendant in Descendants(child))
+                    yield return descendant;
+            }
+        }
+
+        static bool IsGreen(Brush brush) =>
+            brush is SolidColorBrush solidColorBrush &&
+            solidColorBrush.Color == Microsoft.UI.Colors.Green;
+
+        static bool HaveSameColor(Brush actual, Brush expected) =>
+            actual is SolidColorBrush actualColorBrush &&
+            expected is SolidColorBrush expectedColorBrush &&
+            actualColorBrush.Color == expectedColorBrush.Color;
+
+        static string DescribeColor(Brush brush) =>
+            brush is SolidColorBrush solidColorBrush
+                ? solidColorBrush.Color.ToString()
+                : "<non-solid>";
+    }
+}
+#endif
+'@
+}
+
 function New-ReplicationControlVariant {
     <#
         .SYNOPSIS
@@ -6302,11 +6452,47 @@ function New-ReplicationControlVariant {
         $Platform -ceq 'android' -and
         $normalizedSourcePathForProfile -ceq
             'src/Controls/tests/DeviceTests/Elements/Label/Issue33315Tests.Android.cs'
+    $isWindowsIssue34738ProfilePath =
+        $Platform -ceq 'windows' -and
+        $normalizedSourcePathForProfile -ceq
+            'src/Controls/tests/DeviceTests/Elements/Shell/Issue34738.Windows.cs'
     $syntaxErrors = @($tree.GetDiagnostics() | Where-Object {
             [string]$_.Severity -ceq 'Error'
         } | Select-Object -First 4)
     if ($syntaxErrors.Count -gt 0) {
         throw 'The reproduction source is not valid C# for a trusted negative control gate.'
+    }
+    if ($isWindowsIssue34738ProfilePath) {
+        if ($ExpectedTestMethod -cne 'DisabledTabUsesTabBarDisabledColor' -or
+            $ExpectedTestClass -cne
+                'Microsoft.Maui.DeviceTests.ShellTests' -or
+            @($AdditionalSources).Count -ne 0) {
+            throw (
+                'The Windows Issue34738 profile requires its exact selected ' +
+                'Shell test identity and no additional generated sources.')
+        }
+        $actualCanonical =
+            $BaselineSource.Replace("`r`n", "`n").Trim()
+        $expectedCanonical =
+            (Get-ReplicationWindowsIssue34738TestSource).
+                Replace("`r`n", "`n").Trim()
+        if ($actualCanonical -cne $expectedCanonical) {
+            throw (
+                'The Windows Issue34738 profile accepts only the exact reviewed ' +
+                'Shell hierarchy, pre-attachment state snapshot, native enabled-state ' +
+                'checks, and title/icon foreground oracle.')
+        }
+        $gateToken = 'var applyReportedTrigger = true;'
+        if (([regex]::Matches(
+                    $BaselineSource,
+                    [regex]::Escape($gateToken))).Count -ne 1) {
+            throw (
+                'The Windows Issue34738 profile requires exactly one trusted ' +
+                'applyReportedTrigger declaration.')
+        }
+        return $BaselineSource.Replace(
+            $gateToken,
+            'var applyReportedTrigger = false;')
     }
 
     $semanticTrees =
