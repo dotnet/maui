@@ -30,9 +30,9 @@ public class Issue38080 : _IssuesUITest
 		App.WaitForElement(ReproPageMarker);
 		Assert.That(App.WaitForElement(AppiumQuery.ByAccessibilityId(TopMarker)).IsDisplayed(), Is.True);
 
-		ScrollUntilDisplayed(WebViewMarker, SlowDragDown);
+		PrepareUntilDisplayed(WebViewMarker, SlowDragDown, "PrepareWebView");
 		AssertWebViewDisplayed();
-		ScrollUntilDisplayed(TopMarker, SlowDragUp);
+		PrepareUntilDisplayed(TopMarker, SlowDragUp, "ReturnTop");
 
 		FastFlingUp();
 		FastFlingUp();
@@ -82,6 +82,27 @@ public class Issue38080 : _IssuesUITest
 		}
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
+	}
+
+	void PrepareUntilDisplayed(string automationId, System.Action gesture, string stage)
+	{
+		for (var completedGestures = 0; completedGestures <= 10; completedGestures++)
+		{
+			if (!SaveUIDiagnosticInfo($"Issue38080-{stage}-After{completedGestures}Gestures"))
+				throw new InvalidOperationException($"Could not capture the Issue 38080 {stage} viewport after {completedGestures} preparation gestures.");
+
+			var elements = automationId == TopMarker
+				? App.FindElements(AppiumQuery.ByAccessibilityId(automationId))
+				: App.FindElements(automationId);
+
+			if (elements.Any(element => element.IsDisplayed()))
+				return;
+
+			if (completedGestures < 10)
+				gesture();
+		}
+
+		Assert.Fail($"Element '{automationId}' was not visible after 10 preparation gestures.");
 	}
 
 	void SlowDragDown()
