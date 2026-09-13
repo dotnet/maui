@@ -89,15 +89,29 @@ public class Issue38080 : _IssuesUITest
 
 	void ScrollUntilDisplayed(string automationId, System.Action gesture)
 	{
-		for (var attempt = 0; attempt < 10; attempt++)
+		for (var completedGestures = 0; completedGestures <= 10; completedGestures++)
 		{
 			var elements = FindElementsForMarker(automationId);
 
 			if (elements.Any(element => element.IsDisplayed()))
 				return;
 
-			gesture();
+			if (completedGestures == 10)
+				break;
+
+			// A fast fling can overshoot the intermediate WebView; reverse only at a verified edge.
+			if (automationId == WebViewMarker &&
+				FindElementsForMarker(TopMarker).Any(element => element.IsDisplayed()))
+				FastFlingDown();
+			else if (automationId == WebViewMarker &&
+				FindElementsForMarker(BottomMarker).Any(element => element.IsDisplayed()))
+				FastFlingUp();
+			else
+				gesture();
 		}
+
+		if (!SaveUIDiagnosticInfo($"Issue38080-TargetNotFound-{automationId}"))
+			TestContext.Error.WriteLine($"Could not capture the viewport while locating '{automationId}': the app is not running.");
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
 	}
