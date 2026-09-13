@@ -24,9 +24,7 @@
 # This logic is also abstracted into enable-internal-sources.yml.
 
 ConfigFile=$1
-# Prefer the environment variable so credentials do not appear in process arguments.
-# Retain the positional argument as a compatibility fallback for existing callers.
-CredToken=${Token:-$2}
+CredToken=$2
 NL='\n'
 TB='    '
 

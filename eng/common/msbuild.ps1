@@ -3,7 +3,6 @@ Param(
   [string] $verbosity = 'minimal',
   [bool] $warnAsError = $true,
   [bool] $nodeReuse = $true,
-  [bool][Alias('mt')]$msbuildMultiThreaded = $false,
   [switch] $ci,
   [switch] $prepareMachine,
   [switch] $excludePrereleaseVS,
@@ -14,9 +13,12 @@ Param(
 . $PSScriptRoot\tools.ps1
 
 try {
-  # Node reuse isn't used on CI unless it was explicitly requested via -nodeReuse.
-  if ($ci -and -not $PSBoundParameters.ContainsKey('nodeReuse')) {
-    $nodeReuse = $false
+  if ($ci) {
+    # Disable node reuse on CI unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
+    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
+    if ($env:MSBUILD_NODEREUSE_ENABLED -ne "1") {
+      $nodeReuse = $false
+    }
   }
 
   MSBuild @extraArgs
