@@ -99,21 +99,62 @@ public class Issue38080 : _IssuesUITest
 			if (completedGestures == 10)
 				break;
 
+			var nextGesture = gesture;
 			// A fast fling can overshoot the intermediate WebView; reverse only at a verified edge.
 			if (automationId == WebViewMarker &&
 				FindElementsForMarker(TopMarker).Any(element => element.IsDisplayed()))
-				FastFlingDown();
+				nextGesture = FastFlingDown;
 			else if (automationId == WebViewMarker &&
 				FindElementsForMarker(BottomMarker).Any(element => element.IsDisplayed()))
-				FastFlingUp();
-			else
-				gesture();
+				nextGesture = FastFlingUp;
+
+			FlingOuterScrollView(nextGesture);
 		}
 
 		if (!SaveUIDiagnosticInfo($"Issue38080-TargetNotFound-{automationId}"))
 			TestContext.Error.WriteLine($"Could not capture the viewport while locating '{automationId}': the app is not running.");
 
 		Assert.Fail($"Element '{automationId}' was not visible after 10 real touch gestures.");
+	}
+
+	void FlingOuterScrollView(System.Action gesture)
+	{
+		var scrollBounds = App.WaitForElement(ReproPageMarker).GetRect();
+		var upward = gesture == (System.Action)FastFlingUp;
+		var startX = (int)(scrollBounds.X + scrollBounds.Width / 2);
+		var startY = (int)(scrollBounds.Y + scrollBounds.Height * (upward ? 0.05 : 0.9));
+		var endY = (int)(scrollBounds.Y + scrollBounds.Height * (upward ? 0.9 : 0.05));
+
+		foreach (var webView in App.FindElements(ReproWebViewQuery))
+		{
+			if (!webView.IsDisplayed())
+				continue;
+
+			var bounds = webView.GetRect();
+			if (startX < bounds.X || startX >= bounds.X + bounds.Width ||
+				startY < bounds.Y || startY >= bounds.Y + bounds.Height)
+				continue;
+
+			// A touch starting inside Chromium can scroll the WebView instead of its parent.
+			// Use the existing empty padding without changing the vertical fling or its duration.
+			Assert.That(bounds.X - scrollBounds.X, Is.GreaterThan(1), "The repro must expose ScrollView padding beside the WebView.");
+			var paddingX = (int)(scrollBounds.X + (bounds.X - scrollBounds.X) / 2);
+			new OuterScrollActions((AppiumApp)App).Fling(paddingX, startY, endY);
+			App.WaitForElement(ReproPageMarker);
+			return;
+		}
+
+		gesture();
+	}
+
+	sealed class OuterScrollActions : AppiumScrollActions
+	{
+		readonly AppiumApp _app;
+
+		public OuterScrollActions(AppiumApp app) : base(app) => _app = app;
+
+		public void Fling(int x, int startY, int endY) =>
+			PerformActions(_app.Driver, x, startY, x, endY, ScrollStrategy.Gesture, 100, null);
 	}
 
 	void PrepareUntilDisplayed(string automationId, System.Action gesture, string stage)
