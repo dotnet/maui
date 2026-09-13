@@ -430,7 +430,8 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
 		}
 
-		HandleTestResults(resultsDir, testsFailed, false);
+		HandleTestResults(resultsDir, testsFailed, false,
+			runIssue38080DeviceAdjacency ? $"-{invocationId}" : null);
 	}
 
 	Information("Testing completed.");

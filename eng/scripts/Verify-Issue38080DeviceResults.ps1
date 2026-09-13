@@ -30,7 +30,8 @@ $notBefore = (Get-Item -LiteralPath $RunMarker).LastWriteTimeUtc
 $runSpecifications = @(
   [pscustomobject]@{
     Directory = 'core-webview'
-    Assembly = 'Core.DeviceTests'
+    Project = 'Core.DeviceTests'
+    Assembly = 'Microsoft.Maui.Core.DeviceTests'
     Package = 'com.microsoft.maui.core.devicetests'
     Category = 'WebView'
     Methods = @(
@@ -57,7 +58,8 @@ $runSpecifications = @(
   }
   [pscustomobject]@{
     Directory = 'core-view'
-    Assembly = 'Core.DeviceTests'
+    Project = 'Core.DeviceTests'
+    Assembly = 'Microsoft.Maui.Core.DeviceTests'
     Package = 'com.microsoft.maui.core.devicetests'
     Category = 'View'
     Methods = @(
@@ -70,7 +72,8 @@ $runSpecifications = @(
   }
   [pscustomobject]@{
     Directory = 'controls-hybridwebview'
-    Assembly = 'Controls.DeviceTests'
+    Project = 'Controls.DeviceTests'
+    Assembly = 'Microsoft.Maui.Controls.DeviceTests'
     Package = 'com.microsoft.maui.controls.devicetests'
     Category = 'HybridWebView'
     Methods = @(
@@ -124,7 +127,7 @@ foreach ($run in $runSpecifications) {
   }
   if ($identity['RunKey'] -cne $ExpectedRunKey -or
       $identity['SourceVersion'] -cne $ExpectedSourceVersion -or
-      $identity['Project'] -cne $run.Assembly -or
+      $identity['Project'] -cne $run.Project -or
       $identity['PackageName'] -cne $run.Package -or
       $identity['Instrumentation'] -cne "$($run.Package).TestInstrumentation" -or
       $identity['Filter'] -cne "Category=$($run.Category)" -or
@@ -233,7 +236,7 @@ foreach ($run in $runSpecifications) {
     }
 
     if ($method.Count -eq 2) {
-      $expectedNames = @($method.Rows | ForEach-Object { "$identity$_" })
+      $expectedNames = @($method.Rows | ForEach-Object { "$($method.Method)$_" })
       $actualNames = @($matchingTests | ForEach-Object { [string] $_.name })
       if (@(Compare-Object ($expectedNames | Sort-Object) ($actualNames | Sort-Object)).Count -ne 0 -or
           @($actualNames | Select-Object -Unique).Count -ne $method.Count) {

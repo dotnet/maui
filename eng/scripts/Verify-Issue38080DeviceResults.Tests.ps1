@@ -22,6 +22,7 @@ Describe 'Verify-Issue38080DeviceResults.ps1' {
     function Write-ResultFile {
       param(
         [string] $Directory,
+        [string] $Project,
         [string] $Assembly,
         [string] $Category,
         [object[]] $Tests
@@ -35,7 +36,7 @@ Describe 'Verify-Issue38080DeviceResults.ps1' {
       $testNodes = foreach ($test in $Tests) {
         $suffix = if ($test.ContainsKey('Arguments')) { $test.Arguments } else { '' }
         @"
-      <test name="$($test.Type).$($test.Method)$suffix" type="$($test.Type)" method="$($test.Method)" result="$($test.Result)">
+      <test name="$($test.Method)$suffix" type="$($test.Type)" method="$($test.Method)" result="$($test.Result)">
         <traits><trait name="Category" value="$($test.Category)" /></traits>
       </test>
 "@
@@ -51,7 +52,7 @@ $($testNodes -join [Environment]::NewLine)
 "@
       $resultFiles[$Directory] = Join-Path $target $fileName
       Set-Content -LiteralPath $resultFiles[$Directory] -Value $xml
-      $package = if ($Assembly -eq 'Core.DeviceTests') {
+      $package = if ($Project -eq 'Core.DeviceTests') {
         'com.microsoft.maui.core.devicetests'
       } else {
         'com.microsoft.maui.controls.devicetests'
@@ -62,7 +63,7 @@ $($testNodes -join [Environment]::NewLine)
         "RunId: $runId"
         "InvocationId: $invocationId"
         "SourceVersion: $sourceVersion"
-        "Project: $Assembly"
+        "Project: $Project"
         "PackageName: $package"
         "Instrumentation: $package.TestInstrumentation"
         "Filter: Category=$Category"
@@ -78,22 +79,31 @@ $($testNodes -join [Environment]::NewLine)
     }
 
     $webViewType = 'Microsoft.Maui.DeviceTests.WebViewHandlerTests'
-    Write-ResultFile -Directory core-webview -Assembly Core.DeviceTests -Category WebView -Tests @(
+    Write-ResultFile -Directory core-webview -Project Core.DeviceTests -Assembly Microsoft.Maui.Core.DeviceTests -Category WebView -Tests @(
       @{ Type = $webViewType; Method = 'ClippingContainerSurvivesZeroDimensionThenNormalSize'; Arguments = '(initialWidth: 0, initialHeight: 100)'; Result = 'Pass'; Category = 'WebView' }
       @{ Type = $webViewType; Method = 'ClippingContainerSurvivesZeroDimensionThenNormalSize'; Arguments = '(initialWidth: 100, initialHeight: 0)'; Result = 'Pass'; Category = 'WebView' }
       @{ Type = $webViewType; Method = 'InitialOpacityIsAppliedToClippingContainer'; Result = 'Pass'; Category = 'WebView' }
       @{ Type = $webViewType; Method = 'DisconnectHandlerDestroysNativeWebView'; Result = 'Pass'; Category = 'WebView' }
     )
-    Write-ResultFile -Directory core-view -Assembly Core.DeviceTests -Category View -Tests @(
+    Write-ResultFile -Directory core-view -Project Core.DeviceTests -Assembly Microsoft.Maui.Core.DeviceTests -Category View -Tests @(
       @{ Type = 'Microsoft.Maui.DeviceTests.ViewHandlerTests'; Method = 'OpacityIsPreservedAcrossNonWebViewContainerTransitions'; Result = 'Pass'; Category = 'View' }
     )
-    Write-ResultFile -Directory controls-hybridwebview -Assembly Controls.DeviceTests -Category HybridWebView -Tests @(
+    Write-ResultFile -Directory controls-hybridwebview -Project Controls.DeviceTests -Assembly Microsoft.Maui.Controls.DeviceTests -Category HybridWebView -Tests @(
       @{ Type = 'Microsoft.Maui.DeviceTests.HybridWebViewTests_Initialization'; Method = 'DisconnectHandlerRemovesClippingContainer'; Result = 'Pass'; Category = 'HybridWebView' }
     )
   }
 
   It 'accepts the six exact passing cases from three distinct bound invocations' {
     { Invoke-Guard } | Should -Not -Throw
+  }
+
+  It 'passes the invocation suffix to the shared Cake result parser' {
+    $cakePath = Join-Path $PSScriptRoot '../devices/android.cake'
+    $cake = Get-Content -LiteralPath $cakePath -Raw
+    [regex]::IsMatch($cake, 'var resultFileName = \$"testResults-\{invocationId\}\.xml";') |
+      Should -BeTrue
+    [regex]::IsMatch($cake, 'HandleTestResults\(resultsDir, testsFailed, false,\s*runIssue38080DeviceAdjacency \? \$"-\{invocationId\}" : null\);') |
+      Should -BeTrue
   }
 
   It 'rejects a missing theory row' {
@@ -113,7 +123,7 @@ $($testNodes -join [Environment]::NewLine)
   It 'rejects a substituted theory argument pair' {
     [xml] $xml = Get-Content -LiteralPath $resultFiles['core-webview'] -Raw
     $xml.assemblies.assembly.collection.test[1].name =
-      "$webViewType.ClippingContainerSurvivesZeroDimensionThenNormalSize(initialWidth: 100, initialHeight: 100)"
+      'ClippingContainerSurvivesZeroDimensionThenNormalSize(initialWidth: 100, initialHeight: 100)'
     $xml.Save($resultFiles['core-webview'])
     { Invoke-Guard } | Should -Throw '*distinct (0,100) and (100,0)*'
   }
@@ -127,9 +137,16 @@ $($testNodes -join [Environment]::NewLine)
 
   It 'rejects a result from the wrong assembly' {
     [xml] $xml = Get-Content -LiteralPath $resultFiles['controls-hybridwebview'] -Raw
-    $xml.assemblies.assembly.name = 'Core.DeviceTests.dll'
+    $xml.assemblies.assembly.name = 'Microsoft.Maui.Core.DeviceTests.dll'
     $xml.Save($resultFiles['controls-hybridwebview'])
-    { Invoke-Guard } | Should -Throw "*expected assembly 'Controls.DeviceTests'*"
+    { Invoke-Guard } | Should -Throw "*expected assembly 'Microsoft.Maui.Controls.DeviceTests'*"
+  }
+
+  It 'rejects a project filename substituted for the actual assembly identity' {
+    [xml] $xml = Get-Content -LiteralPath $resultFiles['core-webview'] -Raw
+    $xml.assemblies.assembly.name = 'Core.DeviceTests.dll'
+    $xml.Save($resultFiles['core-webview'])
+    { Invoke-Guard } | Should -Throw "*expected assembly 'Microsoft.Maui.Core.DeviceTests'*"
   }
 
   It 'rejects stale XML even when the identity is current' {
@@ -176,6 +193,7 @@ $($testNodes -join [Environment]::NewLine)
   It 'rejects wrong invocation metadata: <Field>' -TestCases @(
     @{ Field = 'RunKey'; Value = '99999-1' }
     @{ Field = 'SourceVersion'; Value = ('b' * 40) }
+    @{ Field = 'Project'; Value = 'Microsoft.Maui.Core.DeviceTests' }
     @{ Field = 'PackageName'; Value = 'com.unrelated.app' }
     @{ Field = 'Filter'; Value = 'Category=WebView' }
     @{ Field = 'ApiLevel'; Value = '30' }
