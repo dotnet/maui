@@ -35,10 +35,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this WSwipeItem platformControl, ISwipeItemMenuItem view)
 		{
-			var textColor = view.TextColor ?? view.GetTextColor();
-
-			if (textColor != null)
-				platformControl.Foreground = textColor.ToPlatform();
+			var textColor = view.GetTextColor();
+			platformControl.UpdateProperty(
+				WSwipeItem.ForegroundProperty,
+				textColor?.ToPlatform());
 		}
 
 		public static WSwipeBehaviorOnInvoked ToPlatform(this SwipeBehaviorOnInvoked swipeBehaviorOnInvoked)

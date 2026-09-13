@@ -29,13 +29,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		public static void NavigateToGallery(this IApp app, string page)
+		public static void NavigateToGallery(this IApp app, string page, string? pageReadyElement = null)
 		{
 			// For Catalyst app directly go the test page while opening.
 			if (app is not AppiumCatalystApp)
 			{
 				app.WaitForGoToTestButtonWithRecovery();
-				NavigateTo(app, page);
+				NavigateTo(app, page, pageReadyElement);
 			}
 		}
 
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			throw new TimeoutException($"{message} (the app did not recover after crash-recovery attempts)");
 		}
 
-		public static void NavigateTo(this IApp app, string text)
+		public static void NavigateTo(this IApp app, string text, string? pageReadyElement = null)
 		{
 			app.WaitForElement("SearchBar");
 			app.ClearText("SearchBar");
@@ -101,7 +101,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			app.Tap(goToTestButtonId);
 
-			app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			if (pageReadyElement is null)
+				app.WaitForNoElement(goToTestButtonId, "Timed out waiting for Go To Test button to disappear", TimeSpan.FromMinutes(1));
+			else
+				app.WaitForElement(pageReadyElement, $"Timed out waiting for {pageReadyElement} after navigating to {text}", TimeSpan.FromMinutes(1));
 		}
 
 		public static int CenterX(this Rectangle rect)
@@ -112,6 +115,20 @@ namespace Microsoft.Maui.TestCases.Tests
 		public static int CenterY(this Rectangle rect)
 		{
 			return rect.Y + rect.Height / 2;
+		}
+
+		/// <summary>
+		/// Taps at the center of an element using touch coordinates.
+		/// Use this instead of App.Tap() for elements with TapGestureRecognizer,
+		/// because App.Tap() uses element.Click() which triggers Android's accessibility
+		/// click (performClick). MAUI uses GestureDetector for tap recognition through
+		/// touch events, not OnClickListener, so element.Click() doesn't fire TapGestureRecognizer.
+		/// </summary>
+		public static void TapElement(this IApp app, string automationId)
+		{
+			var element = app.WaitForElement(automationId);
+			var rect = element.GetRect();
+			app.TapCoordinates(rect.CenterX(), rect.CenterY());
 		}
 
 		public static void AssertMemoryTest(this IApp app)

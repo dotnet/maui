@@ -35,9 +35,21 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+	[Trait(RendererHandlerVariant.TraitName, RendererHandlerVariant.AndroidShellRenderer)] // See RendererHandlerVariant.cs
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+	// This base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst; the
+	// WindowTests_FlyoutViewHandler subclass overrides registration to exercise FlyoutViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.FlyoutViewVariantTraitName, RendererHandlerVariant.PhoneFlyoutPageRenderer)] // See RendererHandlerVariant.cs
+#endif
+	// This base class exercises TabbedRenderer on iOS/MacCatalyst; the
+	// WindowTests_TabbedViewHandler subclass overrides registration to exercise TabbedViewHandler
+	// instead, so every test below runs against both variants.
+	[Trait(RendererHandlerVariant.TabbedViewVariantTraitName, RendererHandlerVariant.TabbedRenderer)] // See RendererHandlerVariant.cs
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -45,15 +57,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 
-#if ANDROID || WINDOWS
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-#else
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
-#endif
+					RegisterNavigationPageHandler(handlers);
+					RegisterFlyoutPageHandler(handlers);
+					RegisterTabbedPageHandler(handlers);
 
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 
@@ -63,6 +69,40 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<SearchBar, SearchBarHandler>();
 				});
 			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationRenderer, letting
+		// every WindowTests test run against both the NavigationPage renderer and handler.
+		// See WindowNavigationHandlerTests.iOS.cs and RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+		// The base class exercises PhoneFlyoutPageRenderer on iOS/MacCatalyst;
+		// WindowTests_FlyoutViewHandler overrides this to exercise FlyoutViewHandler instead.
+		protected virtual void RegisterFlyoutPageHandler(IMauiHandlersCollection handlers)
+		{
+#if ANDROID || WINDOWS
+			handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
+#else
+			handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
+#endif
+		}
+
+		// The base class exercises TabbedRenderer on iOS/MacCatalyst; WindowTests_TabbedViewHandler
+		// overrides this to exercise TabbedViewHandler instead.
+		protected virtual void RegisterTabbedPageHandler(IMauiHandlersCollection handlers)
+		{
+#if ANDROID || WINDOWS
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+#else
+			handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
+#endif
 		}
 
 #if !IOS

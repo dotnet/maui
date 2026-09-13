@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Docelowa wartość DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "_Dołącz przykładowe strony",
   "symbols/IncludeSampleContent/description": "Konfiguruje, czy dodać przykładowe strony i style w celu zademonstrowania podstawowych wzorców użycia.",
-  "symbols/Empty/description": "Konfiguruje, czy pomijać przykładowe strony i style demonstrujące podstawowe wzorce użycia."
+  "symbols/empty/description": "Konfiguruje, czy pomijać przykładowe strony i style demonstrujące podstawowe wzorce użycia."
 }

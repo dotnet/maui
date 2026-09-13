@@ -101,6 +101,22 @@ namespace Microsoft.Maui.Media
 	}
 
 	/// <summary>
+	/// Provides platform-agnostic view-level screenshot capture.
+	/// Third-party platform backends should implement this interface on their <see cref="IScreenshot"/> implementation
+	/// to enable element-level screenshot capture.
+	/// </summary>
+	public interface IViewScreenshot
+	{
+		/// <summary>
+		/// Captures a screenshot of a platform view.
+		/// The implementation should cast <paramref name="platformView"/> to the appropriate platform type.
+		/// </summary>
+		/// <param name="platformView">The platform-specific view object to capture.</param>
+		/// <returns>An <see cref="IScreenshotResult"/> with the captured screenshot, or <see langword="null"/> if capture is not supported for the given view type.</returns>
+		Task<IScreenshotResult?> CaptureViewAsync(object platformView);
+	}
+
+	/// <summary>
 	/// A representation of a screenshot, as a result of a screenshot captured by the user.
 	/// </summary>
 	public interface IScreenshotResult
@@ -163,10 +179,10 @@ namespace Microsoft.Maui.Media
 		/// Provides the default implementation for static usage of this API.
 		/// </summary>
 		public static IScreenshot Default =>
-			defaultImplementation ??= new ScreenshotImplementation();
+			EssentialsImplementation.GetOrCreate(ref defaultImplementation, static () => new ScreenshotImplementation());
 
 		internal static void SetDefault(IScreenshot? implementation) =>
-			defaultImplementation = implementation;
+			EssentialsImplementation.Set(ref defaultImplementation, implementation);
 	}
 
 	/// <summary>

@@ -74,6 +74,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void RelativeSourceBinding_FindAncestorBindingContext_TypedBindingDoesNotInvokeGetterWithNullSource()
+		{
+			var person = new PersonViewModel
+			{
+				Name = "Person 0"
+			};
+			var stack = new StackLayout
+			{
+				BindingContext = person
+			};
+			var label = new Label();
+			stack.Children.Add(label);
+			var nullSourceGetterCalls = 0;
+			var binding = new TypedBinding<PersonViewModel, string>(
+				source =>
+				{
+					if (source is null)
+						nullSourceGetterCalls++;
+
+					return (source?.Name, true);
+				},
+				null,
+				null)
+			{
+				Source = new RelativeBindingSource(RelativeBindingSourceMode.FindAncestorBindingContext, typeof(PersonViewModel), 1)
+			};
+
+			label.SetBinding(Label.TextProperty, binding);
+			Assert.Equal(person.Name, label.Text);
+
+			stack.Children.Clear();
+
+			Assert.Equal(0, nullSourceGetterCalls);
+			Assert.Null(label.Text);
+		}
+
+		[Fact]
 		public void RelativeSourceBinding_TemplatedParent()
 		{
 			Label label = null;

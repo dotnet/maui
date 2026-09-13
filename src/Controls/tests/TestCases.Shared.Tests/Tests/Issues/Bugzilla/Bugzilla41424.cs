@@ -10,7 +10,7 @@ public class Bugzilla41424 : _IssuesUITest
 #if ANDROID // Action button on TimePicker dialog is vary on different platforms.
 	const string DatePickerActionButton = "Cancel";
 #elif IOS
-	const string DatePickerActionButton = "Done";
+	string DatePickerActionButton => App is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
 #elif WINDOWS // No Action button for Windows DatePicker, so picking any date will close the dialog on windows.
 	const string DatePickerActionButton = "1";
 #elif MACCATALYST // Appium cannot locate the dialog elements on a Mac, so tapping outside the dialog closes it.

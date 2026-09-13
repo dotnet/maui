@@ -22,7 +22,7 @@ internal interface IActivityForResultRequest
 
 /// <summary>
 /// Represents a request for an activity result.
-/// Provides a type-safe mechanism for registering and launching 
+/// Provides a type-safe mechanism for registering and launching
 /// activity result requests using the specified contract and callback.
 /// </summary>
 /// <typeparam name="TContract">The type of the activity result contract.</typeparam>
@@ -42,6 +42,11 @@ internal interface IActivityForResultRequest
 /// registered by a recreated activity can therefore resolve the task started by the previous
 /// activity instance, including recreation that does not retain the ViewModelStore.
 /// </para>
+/// <para>
+/// A launch request is one in-process call to <see cref="Launch{T}(ComponentActivity, T)"/> that is waiting for its AndroidX result.
+/// AndroidX may also replay a result after activity or process recreation, after the original launch request is gone.
+/// </para>
+/// This must be unconditionally registered every time our activity is created.
 /// </remarks>
 internal abstract class ActivityForResultRequest<TContract, TResult>
 	: IActivityForResultRequest
@@ -85,11 +90,7 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 
 		var requestOwner = _requestState.RestoreOrCreateOwner(savedInstanceState);
 		StopTaskRemovalMonitor(requestOwner);
-		var callback = new ActivityResultCallback<TResult>(result =>
-		{
-			if (_requestState.TrySetResult(requestOwner, result))
-				StopTaskRemovalMonitor(requestOwner);
-		});
+		var callback = new ActivityResultCallback<TResult>(result => HandleActivityResult(requestOwner, result));
 
 		var launcher = RegisterForActivityResult(componentActivity, contract, callback);
 		_requestOwners.Add(componentActivity, requestOwner);
@@ -101,6 +102,68 @@ internal abstract class ActivityForResultRequest<TContract, TResult>
 		TContract contract,
 		ActivityResultCallback<TResult> callback) =>
 		componentActivity.RegisterForActivityResult(contract, callback);
+
+	/// <summary>
+	/// Routes an AndroidX activity result to either the active launch task or orphaned-result handling.
+	/// </summary>
+	/// <param name="requestOwner">The owner restored by the activity that receives the result.</param>
+	/// <param name="result">The activity result.</param>
+	/// <remarks>
+	/// An orphaned result is a pending AndroidX result replayed after activity or process recreation,
+	/// when the launch task that originally requested the result no longer exists in this process.
+	/// </remarks>
+	void HandleActivityResult(string requestOwner, TResult result)
+	{
+		if (_requestState.TrySetResult(requestOwner, result, OnActivityResultForActiveLaunch))
+		{
+			StopTaskRemovalMonitor(requestOwner);
+		}
+		else
+		{
+			HandleActivityResult(result);
+		}
+	}
+
+	/// <summary>
+	/// Routes a replayed result with no active launch owner to orphaned-result handling.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	protected void HandleActivityResult(TResult result) =>
+		OnActivityResultForOrphanedLaunch(result);
+
+	/// <summary>
+	/// Handles a result delivered for an active launch request before the launch task is completed.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	protected virtual void OnActivityResultForActiveLaunch(TResult result)
+	{
+	}
+
+	/// <summary>
+	/// Handles a result delivered when there is no active launch request in this process.
+	/// </summary>
+	/// <param name="result">The activity result.</param>
+	/// <remarks>
+	/// AndroidX may deliver a pending result after the app process was recreated. In that case, the original
+	/// launch task is gone and callers that persisted enough request state can reconcile the result here.
+	/// </remarks>
+	protected virtual void OnActivityResultForOrphanedLaunch(TResult result)
+	{
+	}
+
+	/// <summary>
+	/// Launches the activity result request for the current activity.
+	/// </summary>
+	/// <typeparam name="T">The type of the input parameter.</typeparam>
+	/// <param name="input">The input parameter to launch the request with.</param>
+	/// <returns>A task containing the activity result.</returns>
+	public Task<TResult> Launch<T>(T input)
+		where T : JavaObject
+	{
+		return ActivityStateManager.Default.GetCurrentActivity() is ComponentActivity launchingActivity
+			? Launch(launchingActivity, input)
+			: Task.FromCanceled<TResult>(new System.Threading.CancellationToken(true));
+	}
 
 	/// <summary>
 	/// Launches the activity result request for a specific activity instance.
@@ -310,8 +373,23 @@ internal sealed class ActivityForResultRequestState<TResult>
 	internal bool HasPendingRequest(string requestOwner) =>
 		_pendingRequests.ContainsKey(requestOwner);
 
-	internal bool TrySetResult(string requestOwner, TResult result) =>
-		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetResult(result);
+	internal bool TrySetResult(string requestOwner, TResult result, Action<TResult>? onResult = null)
+	{
+		if (!_pendingRequests.TryRemove(requestOwner, out var tcs))
+			return false;
+
+		try
+		{
+			onResult?.Invoke(result);
+			tcs.TrySetResult(result);
+		}
+		catch (Exception ex)
+		{
+			tcs.TrySetException(ex);
+		}
+
+		return true;
+	}
 
 	internal bool TrySetException(string requestOwner, Exception exception) =>
 		_pendingRequests.TryRemove(requestOwner, out var tcs) && tcs.TrySetException(exception);

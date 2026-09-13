@@ -44,7 +44,7 @@ namespace Maui.Controls.Sample.Pages
 			PopModal.IsVisible = Navigation.ModalStack.Count > 0;
 		}
 
-		async void PushNavigationModalClicked(object sender, EventArgs e)
+		async void PushNavigationModalClicked(object? sender, EventArgs e)
 		{
 			var modalPage = new ModalPage();
 			Page pushMe = new NavigationPage(modalPage)
@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample.Pages
 
 		}
 
-		async void PushModalClicked(object sender, EventArgs e)
+		async void PushModalClicked(object? sender, EventArgs e)
 		{
 			Page pushMe = new ModalPage()
 			{
@@ -69,7 +69,7 @@ namespace Maui.Controls.Sample.Pages
 			await Navigation.PushModalAsync(pushMe);
 		}
 
-		async void PushClicked(object sender, EventArgs e)
+		async void PushClicked(object? sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new ModalPage()
 			{
@@ -78,12 +78,12 @@ namespace Maui.Controls.Sample.Pages
 			});
 		}
 
-		async void PopModalClicked(object sender, EventArgs e)
+		async void PopModalClicked(object? sender, EventArgs e)
 		{
 			await Navigation.PopModalAsync();
 		}
 
-		async void PushFlyoutPageClicked(object sender, EventArgs e)
+		async void PushFlyoutPageClicked(object? sender, EventArgs e)
 		{
 			var modalPage = new ModalPage();
 			Page newMainPage = new NavigationPage(modalPage)

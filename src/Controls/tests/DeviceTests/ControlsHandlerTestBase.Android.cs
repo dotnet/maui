@@ -212,7 +212,7 @@ namespace Microsoft.Maui.DeviceTests
 					.LayoutParameters?.Height > 0;
 		}
 
-		protected bool IsBackButtonVisible(IElementHandler handler)
+		protected virtual bool IsBackButtonVisible(IElementHandler handler)
 		{
 			if (GetPlatformToolbar(handler)?.NavigationIcon is DrawerArrowDrawable dad)
 				return dad.Progress == 1;

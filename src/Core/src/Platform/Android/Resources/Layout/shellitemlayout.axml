@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shell Item Layout - Used by ShellItemHandler (ShellItemWrapperFragment)
+    
+    Structure:
+      CoordinatorLayout (root - enables window insets handling)
+        └── ViewPager2 (fills space - hosts ShellSection fragments)
+    
+    NOTE: Toolbar is NOT in this layout. It lives in navigationlayout_appbar
+    (the outer AppBarLayout from navigationlayout.axml) at the NRM level.
+    NOTE: Top tabs are NOT in this layout. They are placed into navigationlayout_toptabs
+    (NRM slot in the same outer AppBarLayout, after toolbar) via PlaceTopTabs().
+    NOTE: BottomNavigationView is NOT in this layout. It is placed into
+    navigationlayout_bottomtabs via PlaceBottomTabs().
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/shellitem_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/shellitem_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never" />
+
+    <!-- BottomNavigationView is created programmatically (not from XML) using the
+         3-arg constructor (context, null, defStyleAttr) to match Material Components
+         theme style resolution. XML style="?attr/..." resolves differently than the
+         defStyleAttr constructor parameter, causing icon/text size differences. -->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

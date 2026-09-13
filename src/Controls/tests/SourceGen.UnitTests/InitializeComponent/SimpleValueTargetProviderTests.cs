@@ -66,7 +66,7 @@ public class TestMarkupExtension : IMarkupExtension
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -127,6 +127,9 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
 		xmlNamespaceResolver.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("global", "http://schemas.microsoft.com/dotnet/maui/global");
+		xmlNamespaceResolver.Add("maui", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("d", "http://schemas.microsoft.com/dotnet/2021/maui/design");
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:Test");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
@@ -229,7 +232,7 @@ public class TestMarkupExtension : IMarkupExtension
 
 namespace Test;
 
-[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=10.0.0.0, Culture=neutral, PublicKeyToken=null", "10.0.0.0")]
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null", "11.0.0.0")]
 public partial class TestPage
 {
 	private partial void InitializeComponent()
@@ -290,6 +293,9 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("__f__", "http://schemas.microsoft.com/dotnet/2021/maui");
 		xmlNamespaceResolver.Add("__g__", "http://schemas.microsoft.com/dotnet/maui/global");
 		xmlNamespaceResolver.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("global", "http://schemas.microsoft.com/dotnet/maui/global");
+		xmlNamespaceResolver.Add("maui", "http://schemas.microsoft.com/dotnet/2021/maui");
+		xmlNamespaceResolver.Add("d", "http://schemas.microsoft.com/dotnet/2021/maui/design");
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xmlNamespaceResolver.Add("local", "clr-namespace:Test");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
