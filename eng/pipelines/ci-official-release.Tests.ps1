@@ -6,6 +6,10 @@ Describe 'ci-official-release.yml' {
     $pipeline = Get-Content -LiteralPath $pipelinePath -Raw
     $nonWorkloadTemplate = Get-Content -LiteralPath (
       Join-Path $PSScriptRoot 'common/non-workload-publish.yml') -Raw
+    $recoveryTemplate = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'common/workload-manifest-recovery.yml') -Raw
+    $manifestSteps = Get-Content -LiteralPath (
+      Join-Path $PSScriptRoot 'common/publish-workload-manifests-steps.yml') -Raw
   }
 
   It 'gathers NuGet package assets without downloading symbol blobs' {
@@ -104,5 +108,34 @@ Describe 'ci-official-release.yml' {
       'Non-workload releases do not support workload recovery filters'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_PACK_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedPackFilters \}\}'
     $pipeline | Should -Match 'NUGET_ALREADY_ATTEMPTED_MANIFEST_FILTERS: \$\{\{ parameters\.nugetAlreadyAttemptedManifestFilters \}\}'
+  }
+
+  It 'makes retained-manifest recovery opt-in and mutually exclusive with normal publishing' {
+    $pipeline | Should -Match '(?s)- name: manifestSourceBuildId.*?type: number.*?default: 0'
+    $pipeline | Should -Match "(?s)if and\(ne\(parameters.manifestSourceBuildId, 0\), ne\(parameters.commitHash, 'skip'\)\).*?workload-manifest-recovery.yml"
+    $pipeline | Should -Match "(?s)if and\(eq\(parameters.manifestSourceBuildId, 0\), ne\(parameters.commitHash, 'skip'\).*?- stage: prepare_release"
+    $pipeline | Should -Match "(?s)if and\(eq\(parameters.manifestSourceBuildId, 0\), eq\(variables.isWorkload, 'false'\).*?non-workload-publish.yml"
+    $recoveryTemplate | Should -Not -Match 'stage_push_packs|publish_maestro|gather-drop|AzureCLI@|1ES\.PublishNuget'
+  }
+
+  It 'validates the original selection and verifies packs before manifest approval' {
+    $recoveryTemplate | Should -Match '(?s)artifactName: MauiPacksForNuGet.*?itemPattern: expected-packages.json'
+    $recoveryTemplate | Should -Match '(?s)prepare_manifest_recovery.ps1.*?-PackSkipFilters.*?-ManifestsPath'
+    $recoveryTemplate | Should -Match '(?s)dependsOn: prepare_manifest_recovery.*?ManualValidation@0'
+    $recoveryTemplate | Should -Match '(?s)if eq\(parameters.pushPackages, true\).*?- stage: stage_push_manifests'
+  }
+
+  It 'preserves governed source-artifact validation and uses a separately hashed trusted helper' {
+    $recoveryTemplate | Should -Match '(?s)type: releaseJob.*?isProduction: true.*?artifactName: MauiManifestsForNuGet.*?buildType: specific.*?pipelineId: \$\{\{ parameters.sourceBuildId \}\}'
+    $recoveryTemplate | Should -Match '(?s)artifactName: ManifestRecoveryTools.*?checkout: none'
+    $recoveryTemplate | Should -Not -Match 'sbomValidate: false|continueOnError|breakGlass'
+    $recoveryTemplate | Should -Match "prepareRecovery.PackageStatusScriptHash"
+    $recoveryTemplate | Should -Match "helperDirectory: '.*ManifestRecoveryTools'"
+    $recoveryTemplate | Should -Match 'validateIdentities: true'
+    @([regex]::Matches($manifestSteps, 'Get-FileHash.*?SHA256')).Count | Should -Be 2
+    $manifestSteps | Should -Match '(?s)-Action ValidateManifests.*?-RecoveryAuditPath.*?-Action FilterExisting.*?1ES.PublishNuget@1.*?-Action Verify'
+    $manifestSteps | Should -Match "eq\(variables\['NuGetPackagesToPublish'\], 'true'\)"
+    $manifestSteps | Should -Match 'packagesToPush:.*MauiManifestsForNuGet'
+    $manifestSteps | Should -Not -Match 'MauiPacksForNuGet'
   }
 }

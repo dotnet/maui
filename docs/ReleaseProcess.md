@@ -23,9 +23,10 @@ The pipeline accepts:
   all preparation, approval, workload-channel, and NuGet publishing jobs.
 - `pushWorkloadSet`: adds the resolved BAR build to the matching .NET workload release channel.
 - `pushNugetOrg`: enables the NuGet.org release stages.
-- `pushPackages`: when `false`, gathers and publishes release artifacts without promoting a workload build, running approvals, or requesting the production NuGet service connection.
+- `pushPackages`: when `false`, prepares the normal release artifacts or recovery audit without promoting a workload build, running approvals, or requesting the production NuGet service connection.
 - `nugetIncludeFilters` and `nugetExcludeFilters`: semicolon-separated wildcard filters applied to package file names. For workload releases, include filters select packs while manifests remain selected unless excluded, preserving the previous behavior. For non-workload releases, the filters select packages for the single release set.
 - `nugetAlreadyAttemptedPackFilters` and `nugetAlreadyAttemptedManifestFilters`: workload-only recovery filters for pack or manifest files that a previous task invocation already submitted to NuGet.org. These packages stay in the expected verification set but are withheld from another push while NuGet.org validation is still pending. Use only the parameter for the affected publish stage; non-workload releases reject them.
+- `manifestSourceBuildId`: opt-in MAUI manifest-only recovery from the retained artifacts of a previous run of this release pipeline. The default, `0`, keeps the normal release path. This is an Azure DevOps release-run ID, not a BAR ID or the original build-and-pack run.
 
 ### Non-workload NuGet packages
 
@@ -114,6 +115,53 @@ An internal Azure Artifacts feed proves task mechanics but not the exact externa
 ## Recovery
 
 If publishing partially succeeds, rerun with the same commit and selection filters. The availability step removes packages that are already visible on NuGet.org. For workload packages accepted by the previous invocation but still undergoing NuGet.org validation, set the affected stage's `nugetAlreadyAttemptedPackFilters` or `nugetAlreadyAttemptedManifestFilters` from the package names in the prior task log, leaving the other recovery parameter at `skip`. Non-workload releases have no recovery filter; rerun after accepted packages become visible. Post-publish verification checks the complete expected set. Do not release from a different BAR drop.
+
+### Release retained MAUI manifests without publishing packs
+
+If packs have already been released but manifests have not, set
+`manifestSourceBuildId` to the earlier **release pipeline run** that successfully
+prepared `MauiPacksForNuGet` and `MauiManifestsForNuGet`. Both artifacts must still
+be retained. Use that run's original `commitHash`, repository, and selection
+filters. The source must be a completed non-PR run of the same internal release
+pipeline and repository; a failed overall release is acceptable only when its
+original preparation succeeded.
+
+```yaml
+ghOwner: dotnet
+ghRepo: maui
+commitHash: <ORIGINAL_FULL_RELEASE_COMMIT>
+manifestSourceBuildId: <ORIGINAL_RELEASE_RUN_ID>
+pushWorkloadSet: false
+pushNugetOrg: true
+pushPackages: true
+nugetIncludeFilters: skip # Must match the original run.
+nugetExcludeFilters: skip # Must match the original run.
+nugetAlreadyAttemptedPackFilters: skip
+nugetAlreadyAttemptedManifestFilters: skip
+```
+
+This path does **not** resolve BAR again, run `darc gather-drop`, promote a
+workload build, or create any pack-publishing job. It downloads only the pack
+inventory, verifies every original pack ID/version on NuGet.org, and validates
+the retained manifest packages against their expected nuspec identities.
+Missing packs, mismatched source inputs, missing artifacts, or unavailable
+validation services stop recovery before approval. Do not use `*` as a pack
+recovery filter here: no packs can be published in this mode.
+
+Review `ManifestRecoveryTools/recovery-audit.json` before approving the manifest
+stage. It records the source run, release commit, verified packs, manifest
+identities, and package hashes. The production job downloads the **original**
+manifest artifact through 1ES, retaining its SBOM and source-build validation.
+It executes only the separately hashed helper from the current pipeline
+checkout, not the script bundled with the old artifact, and checks the original
+package hashes again before filtering already-published manifests. It then
+publishes only missing manifests and verifies the complete manifest set.
+
+Set `pushPackages: false` to validate and produce the recovery audit without
+creating the approval or publishing stage. `commitHash: skip` remains a no-op.
+Do not start a normal run with preparation skipped: artifacts from another run
+are not inherited automatically. A stage excluded at queue time may remain
+skipped when retried; use this explicit recovery path instead.
 
 Published package contents cannot be replaced. If an incorrect version is published, follow NuGet.org's process to remove it from package search results.
 

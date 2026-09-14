@@ -7,6 +7,129 @@ Describe 'nuget_release_packages.ps1' {
     New-Item -ItemType Directory -Path $packagesPath | Out-Null
   }
 
+  Describe 'retained MAUI manifest identity validation' {
+    BeforeAll {
+      function Set-TestNuspec([string] $Path, [string] $Content, [string] $Name = 'manifest.nuspec') {
+        $archive = [System.IO.Compression.ZipFile]::Open($Path, [System.IO.Compression.ZipArchiveMode]::Update)
+        try {
+          $entry = $archive.GetEntry($Name)
+          if ($entry) {
+            $entry.Delete()
+          }
+          $writer = [System.IO.StreamWriter]::new($archive.CreateEntry($Name).Open())
+          try {
+            $writer.Write($Content)
+          }
+          finally {
+            $writer.Dispose()
+          }
+        }
+        finally {
+          $archive.Dispose()
+        }
+      }
+    }
+
+    BeforeEach {
+      $identity = @{ id = 'Microsoft.NET.Sdk.Maui.Manifest-10.0.100'; version = '10.0.101'; normalizedVersion = '10.0.101'; fileName = 'Microsoft.NET.Sdk.Maui.Manifest-10.0.100.10.0.101.nupkg' }
+      ConvertTo-Json -InputObject @($identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      $packagePath = Join-Path $packagesPath $identity.fileName
+      Set-TestNuspec $packagePath "<package xmlns='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd'><metadata><id>$($identity.id)</id><version>$($identity.version)</version></metadata></package>"
+      Mock Invoke-WebRequest { throw 'Identity validation must not contact NuGet.org' }
+    }
+
+    It 'accepts the MAUI manifest variant <Suffix>' -ForEach @(
+      @{ Suffix = '' }, @{ Suffix = '.Msi.arm64' }, @{ Suffix = '.Msi.x64' }, @{ Suffix = '.Msi.x86' }
+    ) {
+      $identity.id += $Suffix
+      $identity.fileName = "$($identity.id).$($identity.version).nupkg"
+      Set-TestNuspec $packagePath "<package><metadata><id>$($identity.id)</id><version>$($identity.version)</version></metadata></package>"
+      if ($Suffix) {
+        Move-Item $packagePath (Join-Path $packagesPath $identity.fileName)
+      }
+      ConvertTo-Json -InputObject @($identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Not -Throw
+    }
+
+    It 'validates a manifest without modifying it or querying NuGet.org' {
+      $hash = (Get-FileHash $packagePath).Hash
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Not -Throw
+      (Get-FileHash $packagePath).Hash | Should -Be $hash
+      Should -Invoke Invoke-WebRequest -Times 0
+    }
+
+    It 'rejects a workload pack even when it appears in the expected inventory' {
+      $identity.id = 'Microsoft.Maui.Sdk'
+      $identity.fileName = 'Microsoft.Maui.Sdk.10.0.101.nupkg'
+      ConvertTo-Json -InputObject @($identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      Move-Item $packagePath (Join-Path $packagesPath $identity.fileName)
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw '*not an expected MAUI workload manifest*'
+    }
+
+    It 'rejects a renamed package whose nuspec does not match the inventory' {
+      $identity.id += '.Msi.x64'
+      $identity.fileName = "$($identity.id).10.0.101.nupkg"
+      ConvertTo-Json -InputObject @($identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      Move-Item $packagePath (Join-Path $packagesPath $identity.fileName)
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw '*does not match its expected ID and version*'
+    }
+
+    It 'rejects a package version that differs from its nuspec' {
+      $identity.version = '10.0.102'
+      ConvertTo-Json -InputObject @($identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw '*does not match its expected ID and version*'
+    }
+
+    It 'rejects a missing manifest instead of silently treating it as published' {
+      Remove-Item $packagePath
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw
+    }
+
+    It 'rejects duplicate inventory entries' {
+      ConvertTo-Json -InputObject @($identity, $identity) | Set-Content (Join-Path $packagesPath 'expected-packages.json')
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw '*duplicate file name*'
+    }
+
+    It 'rejects multiple root nuspecs' {
+      Set-TestNuspec $packagePath '<package />' 'second.nuspec'
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw '*one root nuspec*'
+    }
+
+    It 'rejects malformed nuspec XML and prohibited DTDs' -ForEach @(
+      @{ Xml = '<package>' }
+      @{ Xml = '<!DOCTYPE package [<!ENTITY id "unexpected">]><package>&id;</package>' }
+    ) {
+      Set-TestNuspec $packagePath $Xml
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } | Should -Throw
+    }
+
+    It 'rejects ambiguous nuspec identity metadata <Name>' -ForEach @(
+      @{ Name = 'id' }, @{ Name = 'version' }
+    ) {
+      Set-TestNuspec $packagePath "<package><metadata><id>$($identity.id)</id><version>$($identity.version)</version><$Name>unexpected</$Name></metadata></package>"
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath } |
+        Should -Throw '*does not match its expected ID and version*'
+    }
+
+    It 'compares package contents against the approved recovery audit' {
+      $auditPath = Join-Path $packagesPath 'recovery-audit.json'
+      @{ manifests = @(@{ id = $identity.id; version = $identity.version; fileName = $identity.fileName; sha256 = (Get-FileHash $packagePath).Hash }) } |
+        ConvertTo-Json -Depth 4 | Set-Content $auditPath
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath -RecoveryAuditPath $auditPath } | Should -Not -Throw
+
+      Add-Content $packagePath 'changed bytes'
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath -RecoveryAuditPath $auditPath } |
+        Should -Throw '*does not match the approved recovery audit*'
+    }
+
+    It 'rejects a changed manifest selection after approval' {
+      $auditPath = Join-Path $packagesPath 'recovery-audit.json'
+      '{"manifests":[]}' | Set-Content $auditPath
+      { & $scriptPath -Action ValidateManifests -PackagesPath $packagesPath -RecoveryAuditPath $auditPath } |
+        Should -Throw '*do not match the approved recovery audit*'
+    }
+  }
+
   It 'removes published packages and keeps unpublished packages' {
     @(
       [pscustomobject]@{ id = 'Existing.Package'; version = '1.0.0'; normalizedVersion = '1.0.0'; fileName = 'Existing.Package.1.0.0.nupkg' }
