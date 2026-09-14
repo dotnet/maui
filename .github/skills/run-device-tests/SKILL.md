@@ -203,16 +203,39 @@ Test filtering is implemented in `src/Core/tests/DeviceTests.Shared/DeviceTestSh
 |----------|---------------------|-------------------|
 | **iOS/MacCatalyst** | `--set-env=TestFilter=...` | `NSProcessInfo.ProcessInfo.Environment["TestFilter"]` |
 | **Android** | `--arg TestFilter=...` | `MauiTestInstrumentation.Current.Arguments.GetString("TestFilter")` |
-| **Windows Controls** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
+| **Windows Controls (ordinary runs)** | App argument selects discovered category index | `ControlsHeadlessTestRunner` category loop |
+| **Trusted Windows Controls issue replication** | Attested build-time class, method, and exact-mode metadata; result-path argument only | Standard headless runner with XHarness class and exact test-name includes |
 | **Windows non-Controls class filter** | Per-child `NUNIT_SKIPPED_CLASSES` plus the normal runner | XHarness `ApplicationOptions` class include |
 
 The Copilot Gate combines `-TestFilter` with `-IncludeClasses` when it knows the exact
-test class. On Windows, Controls still requires category discovery, while Core,
+test class. On Windows, ordinary Controls runs require category discovery, while Core,
 Essentials, Graphics, and BlazorWebView bypass discovery and use XHarness's native class
 include. The result parser rejects output containing any unrelated class. Exact-class
 Windows runs, including scoped Controls category runs, are capped at 10 minutes per
 attempt; the Gate retries a timeout three times before treating repeated target-only
 timeouts as deterministic evidence.
+
+### Trusted Windows Issue Selection
+
+The replication pipeline has a separate, default-off route for a single Windows
+Controls AppContainer issue test. It requires an exact `IssueN` filter, one trusted
+resolved class and method, the attested infrastructure root, and the no-restore
+execution boundary. An issue filter alone does not enable this route.
+
+An issue method in an existing partial class can inherit a class category as well
+as its issue category. Selecting only the issue category by excluding every other
+category can therefore exclude the target itself. The strict route instead compiles
+validated class and exact method selectors into the shared runner and uses the
+standard one-argument launch. Its registration and selector implementation must
+come from attested overrides, not a source edit lost when the product baseline is
+restored.
+
+Do not remove inherited categories or alter the generated test to make it runnable.
+Missing selector metadata or required overrides must fail closed. The native result
+still has to contain exactly the expected test identity and count; a successful
+build or empty result is not evidence that the test ran. Ordinary category runs,
+strict sibling regression runs, other platforms, and AppContainer/certification
+checks retain their existing behavior.
 
 ### Available Test Categories
 
