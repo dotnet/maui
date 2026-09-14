@@ -176,6 +176,54 @@ public class Issue33037NonShell : _IssuesUITest
 		}
 	}
 
+	// Reporter follow-up for #33037: after the large title collapses, the first row has to follow the
+	// navigation bar up. A delegated top inset that keeps the expanded large-title height leaves the
+	// scroll view resting a full large-title height too low, which the reporter saw as a gap between
+	// the collapsed title and the first item. The barely-scrollable case is the one that exposes it,
+	// because that scroll view always rebounds to its resting position instead of holding a scrolled
+	// one.
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	[TestCase("Issue33037ReporterCollectionViewButton")]
+	[TestCase("Issue33037ShortReporterCollectionViewButton")]
+	public void ModalCollectionViewFirstItemFollowsCollapsingLargeTitle(string buttonId)
+	{
+		RequireIOS26OrHigher();
+		App.WaitForElement(buttonId).Click();
+
+		try
+		{
+			const string title = "LargeTitle CollectionView";
+			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var scrollerRect = App.WaitForElement("Issue33037ReporterCollectionViewScroller").GetRect();
+			var expandedFirstItemRect = App.WaitForElement("Item 0").GetRect();
+
+			Assert.That(expandedFirstItemRect.Y, Is.GreaterThanOrEqualTo(expandedTitleRect.Bottom - 2),
+				"The first item should start below the expanded large title.");
+
+			var centerX = scrollerRect.X + scrollerRect.Width / 2;
+			App.DragCoordinates(centerX, scrollerRect.Y + scrollerRect.Height * 0.6f, centerX,
+				scrollerRect.Y + scrollerRect.Height * 0.6f - 60);
+
+			var collapsedTitleRect = GetNavigationTitleRect(title);
+			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
+				"The navigation title should collapse after the first scroll gesture.");
+
+			var collapsedFirstItemRect = App.WaitForElement("Item 0").GetRect();
+			var collapseDelta = expandedTitleRect.Height - collapsedTitleRect.Height;
+
+			// The row may sit at or above the collapsed bar (scrolled under it), but it must never be
+			// stranded a large-title height below it.
+			Assert.That(collapsedFirstItemRect.Y,
+				Is.LessThan(expandedFirstItemRect.Y - collapseDelta / 2),
+				"The first item must follow the collapsing large title instead of resting against the expanded title height.");
+		}
+		finally
+		{
+			App.WaitForElement("Issue33037ReporterCollectionViewOverlayButton").Click();
+		}
+	}
+
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	public void ModalListViewCollapsedTitleRemainsCollapsedAfterCoverWithoutRotation()

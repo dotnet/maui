@@ -43,6 +43,8 @@ public class Issue33037NonShellRootPage : ContentPage
 					},
 					CreateModalButton(),
 					CreateReporterScenarioButton(),
+					CreateReporterCollectionViewScenarioButton(),
+					CreateShortReporterCollectionViewScenarioButton(),
 					CreateOpaqueNavigationButton(),
 					CreateButton("Issue33037ScrollViewButton", "Direct ScrollView", () => new Issue33037NonShellScrollViewPage()),
 					CreateButton("Issue33037GridScrollViewButton", "Grid wrapping ScrollView", () => new Issue33037NonShellGridScrollViewPage()),
@@ -126,6 +128,51 @@ public class Issue33037NonShellRootPage : ContentPage
 		};
 
 		return button;
+	}
+
+	// The reporter's CollectionView page differs from the ListView one in every detail that turned
+	// out to matter for the modal large-title path: a CollectionView rather than a ListView, a
+	// content height only slightly taller than the viewport, and a navigation page that carries a
+	// background colour. Reproducing it verbatim is what exposes the collapsed-title gap.
+	Button CreateReporterCollectionViewScenarioButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ReporterCollectionViewButton",
+			Text = "Reporter 19-row CollectionView with bottom overlay"
+		};
+
+		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(19);
+
+		return button;
+	}
+
+	// Content that is taller than the collapsed viewport but shorter than the expanded one is the
+	// state where a top inset frozen at the expanded large-title height becomes observable: the
+	// scroll view cannot hold a scrolled position, so it rebounds to -inset while the navigation
+	// bar stays collapsed, and the difference shows up as a gap above the first row.
+	Button CreateShortReporterCollectionViewScenarioButton()
+	{
+		var button = new Button
+		{
+			AutomationId = "Issue33037ShortReporterCollectionViewButton",
+			Text = "Reporter CollectionView with barely-scrollable content"
+		};
+
+		button.Clicked += async (_, _) => await PushReporterCollectionViewAsync(13);
+
+		return button;
+	}
+
+	Task PushReporterCollectionViewAsync(int itemCount)
+	{
+		var navigationPage = new NavigationPage(new Issue33037ReporterCollectionViewScenarioPage(itemCount))
+		{
+			BackgroundColor = Colors.LightGreen,
+			BarBackgroundColor = Colors.Transparent
+		};
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navigationPage, true);
+		return Navigation.PushModalAsync(navigationPage);
 	}
 
 	Button CreateOpaqueNavigationButton()
@@ -505,6 +552,51 @@ class Issue33037ReporterScenarioPage : ContentPage
 			{
 				listView,
 				closeButton
+			}
+		};
+	}
+}
+
+// Mirrors the reporter's `LargeTitleCollectionView.xaml` from the issue #33037 sample verbatim: a
+// CollectionView filling an AbsoluteLayout with a bottom overlay button, 19 rows of 50pt, presented
+// inside a modal NavigationPage that prefers large titles.
+class Issue33037ReporterCollectionViewScenarioPage : ContentPage
+{
+	public Issue33037ReporterCollectionViewScenarioPage(int itemCount = 19)
+	{
+		Title = "LargeTitle CollectionView";
+
+		var collectionView = new CollectionView
+		{
+			AutomationId = "Issue33037ReporterCollectionViewScroller",
+			BackgroundColor = Colors.Transparent,
+			ItemsSource = Issue33037NonShellScenarioPage.CreateItems(itemCount),
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label { HeightRequest = 50 };
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			})
+		};
+
+		var overlayButton = new Button
+		{
+			AutomationId = "Issue33037ReporterCollectionViewOverlayButton",
+			Text = "Open Browser"
+		};
+		overlayButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
+
+		AbsoluteLayout.SetLayoutFlags(collectionView, AbsoluteLayoutFlags.All);
+		AbsoluteLayout.SetLayoutBounds(collectionView, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(overlayButton, AbsoluteLayoutFlags.PositionProportional);
+		AbsoluteLayout.SetLayoutBounds(overlayButton, new Rect(0.5, 1, 200, 40));
+
+		Content = new AbsoluteLayout
+		{
+			Children =
+			{
+				collectionView,
+				overlayButton
 			}
 		};
 	}
