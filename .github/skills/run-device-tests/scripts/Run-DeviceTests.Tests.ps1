@@ -1304,6 +1304,46 @@ internal static class Program
             Should -BeFalse
     }
 
+    It 'canonicalizes duplicate-key diagnostics without retaining raw source bytes' {
+        $executionDirectory = Join-Path $TestDrive `
+            'windows-diagnostic-duplicate-source'
+        $outputDirectory = Join-Path $TestDrive `
+            'windows-diagnostic-duplicate-output'
+        New-Item -ItemType Directory -Path $executionDirectory, $outputDirectory `
+            -Force | Out-Null
+        $diagnosticPath = Join-Path $executionDirectory `
+            'maui-replication-windows-diagnostics.json'
+        $notBefore = [datetime]::UtcNow
+        $validHash = 'a' * 64
+        $json = New-TestWindowsRunnerDiagnostic |
+            ConvertTo-Json -Depth 6 -Compress
+        $json = $json.Replace(
+            ('"MessageSha256":"' + $validHash + '"'),
+            ('"MessageSha256":"RAW-SENTINEL",' +
+                '"MessageSha256":"' + $validHash + '"'))
+        $json | Should -Match 'RAW-SENTINEL'
+        Set-Content -LiteralPath $diagnosticPath -Value $json `
+            -Encoding utf8NoBOM -NoNewline
+
+        {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $executionDirectory `
+                -OutputDirectory $outputDirectory `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                -NotBeforeUtc $notBefore
+        } | Should -Not -Throw
+
+        $retained = @(Get-ChildItem -LiteralPath $outputDirectory -File)
+        $retained | Should -HaveCount 1
+        $retainedJson = Get-Content -LiteralPath $retained[0].FullName -Raw
+        $retainedJson | Should -Not -Match 'RAW-SENTINEL'
+        @([regex]::Matches($retainedJson, '"MessageSha256"')) |
+            Should -HaveCount 1
+        (ConvertFrom-Json $retainedJson).firstChanceExceptions[0].MessageSha256 |
+            Should -Be $validHash
+    }
+
     It 'warns without throwing for malformed, missing, wrong-type, and extra diagnostic fields' {
         $cases = @(
             @{

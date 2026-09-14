@@ -1967,8 +1967,50 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
         if (Test-Path -LiteralPath $destination) {
             throw [IO.IOException]::new()
         }
-        Copy-Item -LiteralPath $source -Destination $destination `
-            -ErrorAction Stop
+        $canonicalExceptions = @($exceptions | ForEach-Object {
+                [ordered]@{
+                    Stage = $_.Stage
+                    Type = $_.Type
+                    HResult = $_.HResult
+                    MessageSha256 = $_.MessageSha256
+                    MessageLength = $_.MessageLength
+                    HashedCharacterLength = $_.HashedCharacterLength
+                    HashedByteLength = $_.HashedByteLength
+                    MessageTruncated = $_.MessageTruncated
+                }
+            })
+        $canonicalDiagnostic = [ordered]@{
+            schemaVersion = $diagnostic.schemaVersion
+            authoritative = $diagnostic.authoritative
+            selectedClass = $diagnostic.selectedClass
+            selectedMethod = $diagnostic.selectedMethod
+            applicationOptions = [ordered]@{
+                classFilterCount = $options.classFilterCount
+                methodFilterCount = $options.methodFilterCount
+                containsExpectedClass = $options.containsExpectedClass
+                containsExpectedMethod = $options.containsExpectedMethod
+                unexpectedClassFilterCount = $options.unexpectedClassFilterCount
+                unexpectedMethodFilterCount = $options.unexpectedMethodFilterCount
+            }
+            dynamicCodeSupported = $diagnostic.dynamicCodeSupported
+            stage = $diagnostic.stage
+            runnerType = $diagnostic.runnerType
+            expectedTypeCount = $diagnostic.expectedTypeCount
+            expectedMethodCount = $diagnostic.expectedMethodCount
+            expectedTestInspectionFailureType =
+                $diagnostic.expectedTestInspectionFailureType
+            configurationFailureType = $diagnostic.configurationFailureType
+            firstChanceExceptions = $canonicalExceptions
+        }
+        $canonicalJson = $canonicalDiagnostic |
+            ConvertTo-Json -Depth 6 -Compress -ErrorAction Stop
+        if ([Text.Encoding]::UTF8.GetByteCount($canonicalJson) -gt 64KB) {
+            throw [IO.InvalidDataException]::new()
+        }
+        [IO.File]::WriteAllText(
+            $destination,
+            $canonicalJson,
+            [Text.UTF8Encoding]::new($false))
         Write-Host (
             "Retained non-authoritative exact-runner diagnostics: " +
             $destination) -ForegroundColor Gray
