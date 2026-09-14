@@ -651,7 +651,7 @@ static class Program
         var runnable = typeof(ShellTests).GetMethods(BindingFlags.Instance | BindingFlags.Public)
             .Where(method =>
                 method.DeclaringType?.FullName == selectedClass &&
-                $"{method.DeclaringType.FullName}.{method.Name}" == selectedMethod)
+                method.Name == selectedMethod)
             .ToArray();
         var targetMethod = typeof(ShellTests).GetMethod(
             nameof(ShellTests.Issue34738DisabledTabUsesTabBarDisabledColor))!;
@@ -728,14 +728,12 @@ static class Program
         $safeOutput | Should -Contain (
             'options-classes=Microsoft.Maui.DeviceTests.ShellTests')
         $safeOutput | Should -Contain (
-            'options-methods=Microsoft.Maui.DeviceTests.ShellTests.' +
-            'Issue34738DisabledTabUsesTabBarDisabledColor')
+            'options-methods=Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain 'run-all=False'
         $safeOutput | Should -Contain (
             'runner-classes=Microsoft.Maui.DeviceTests.ShellTests')
         $safeOutput | Should -Contain (
-            'runner-methods=Microsoft.Maui.DeviceTests.ShellTests.' +
-            'Issue34738DisabledTabUsesTabBarDisabledColor')
+            'runner-methods=Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain (
             'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
         ($safeOutput -join [Environment]::NewLine) |
@@ -935,6 +933,15 @@ namespace Microsoft.Maui.Controls.Hosting { }
 namespace Microsoft.Maui
 {
     internal static class RuntimeFeature { }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public sealed class FactAttribute : Xunit.FactAttribute
+    {
+        public FactAttribute([System.Runtime.CompilerServices.CallerMemberName] string displayName = "")
+        {
+            DisplayName = displayName;
+        }
+    }
 }
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
@@ -984,6 +991,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
         @'
 using System.Reflection;
 using System.Text.Json;
+using System.Xml.Linq;
+using Microsoft.DotNet.XHarness.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Maui.DeviceTests;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
@@ -1020,7 +1029,7 @@ internal static class Program
         Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", SelectedClass);
         Environment.SetEnvironmentVariable(
             "NUNIT_SKIPPED_METHODS",
-            SelectedClass + "." + SelectedMethod);
+            SelectedMethod);
         ReplicationWindowsDeviceTestClassFilter.RefreshApplicationOptions(
             SelectedClass,
             SelectedMethod);
@@ -1080,9 +1089,18 @@ internal static class Program
                     typeof(ShellTests).Assembly,
                     typeof(ShellTests).Assembly.Location),
             });
+            using var resultsWriter = new StringWriter();
+            await configured.WriteResultsToFile(resultsWriter, XmlResultJargon.xUnit);
+            var resultTestName = XDocument.Parse(resultsWriter.ToString())
+                .Descendants("test")
+                .Single()
+                .Attribute("name")?
+                .Value;
             Console.WriteLine(
                 $"{runnerType.Name}={configured.RunAllTestsByDefault}/" +
                 $"{configured.ExecutedTests}/{configured.PassedTests}");
+            Console.WriteLine(
+                $"result-{runnerType.Name}={resultTestName}");
             using var diagnostic = JsonDocument.Parse(File.ReadAllText(Path.Combine(
                 AppContext.BaseDirectory,
                 "maui-replication-windows-diagnostics.json")));
@@ -1123,6 +1141,11 @@ internal static class Program
         $runOutput | Should -Contain 'after=1/1'
         $runOutput | Should -Contain 'XUnitTestRunner=False/1/1'
         $runOutput | Should -Contain 'ReflectionBasedXunitTestRunner=False/1/1'
+        $runOutput | Should -Contain (
+            'result-XUnitTestRunner=Issue34738DisabledTabUsesTabBarDisabledColor')
+        $runOutput | Should -Contain (
+            'result-ReflectionBasedXunitTestRunner=' +
+            'Issue34738DisabledTabUsesTabBarDisabledColor')
         $runOutput | Should -Contain 'diagnostic-XUnitTestRunner=1/1/True/True/False'
         $runOutput | Should -Contain (
             'diagnostic-ReflectionBasedXunitTestRunner=1/1/True/True/False')
