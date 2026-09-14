@@ -189,6 +189,36 @@ function Test-DeviceTestStrictRegressionSelector {
         [IO.Path]::GetFileName($evidencePath) -ceq 'strict-test-evidence.json')
 }
 
+function Get-ReplicationWindowsIssueSelector {
+    param(
+        [AllowEmptyString()][string]$TestFilter = '',
+        [AllowEmptyString()][string]$IncludeClasses = '',
+        [AllowEmptyString()][string]$IncludeMethods = ''
+    )
+
+    if ($TestFilter -cnotmatch '^Issue[1-9][0-9]*$') {
+        return $null
+    }
+
+    $classes = @($IncludeClasses -split '[,;]' |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $methods = @($IncludeMethods -split '[,;]' |
+        ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $escapedIssueFilter = [regex]::Escape($TestFilter)
+    if ($classes.Count -ne 1 -or
+        $classes[0] -cnotmatch '^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$' -or
+        $classes[0] -match '\.Issue[1-9][0-9]*(?:Tests)?$' -or
+        $methods.Count -ne 1 -or
+        $methods[0] -cnotmatch "^${escapedIssueFilter}[A-Za-z0-9_]{1,255}$") {
+        throw 'Windows replication requires one exact existing test class and one exact issue-prefixed test method.'
+    }
+
+    return [pscustomobject]@{
+        ClassName = $classes[0]
+        MethodName = $methods[0]
+    }
+}
+
 function Invoke-PreparedIosSimctlReadOnlyQuery {
     [CmdletBinding()]
     param(
@@ -1172,8 +1202,18 @@ function Test-WindowsDeviceTestCategoryDiscovery {
     param(
         [string]$Project,
         [string]$TestFilter,
-        [string]$IncludeClasses
+        [string]$IncludeClasses,
+        [switch]$UsePackagedExactSelector
     )
+
+    # The Controls category runner excludes every category except the selected one.
+    # A generated method in an existing partial class can inherit a second category
+    # from that class, which causes the selected method to exclude itself. Exact
+    # packaged issue runs compile trusted class+method includes into the shared runner
+    # and use the normal one-argument runner instead.
+    if ($UsePackagedExactSelector) {
+        return $false
+    }
 
     # Controls registers only the discovery/index runner on Windows. Other projects
     # also register the normal full-suite runner, which XHarness can class-filter
@@ -1765,6 +1805,8 @@ function Invoke-WindowsDeviceTestApp {
 
         [AllowEmptyString()][string]$StrictTestEvidencePath = '',
 
+        [switch]$UsePackagedExactSelector,
+
         [string]$Timeout = "01:00:00",
 
         [switch]$RequireAppContainer,
@@ -1779,6 +1821,15 @@ function Invoke-WindowsDeviceTestApp {
         $timeoutSeconds = 3600
     }
     $classRunTimeoutSeconds = [Math]::Min($timeoutSeconds, 600)
+    if ($UsePackagedExactSelector) {
+        if (-not $RequireAppContainer -or $Project -cne 'Controls') {
+            throw 'The exact packaged issue selector requires the Windows Controls AppContainer.'
+        }
+        $null = Get-ReplicationWindowsIssueSelector `
+            -TestFilter $TestFilter `
+            -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods
+    }
 
     # The app must run from its executable directory, but OutputDirectory is commonly
     # supplied as a repo-relative path. Canonicalize it before passing result paths to
@@ -1854,19 +1905,22 @@ function Invoke-WindowsDeviceTestApp {
     }
 
     # Decide whether to drive the app via per-category discovery/index runs instead of a
-    # single full-suite launch:
-    #   - Controls: ALWAYS. Its Windows app registers only the discovery/index runner, so
-    #     a plain full launch has no runner and exits without results.
+    # single filtered launch:
+    #   - Controls: normally use discovery/index. Exact packaged issue runs instead use
+    #     the registered standard runner with trusted build-time class+method includes,
+    #     because excluding non-selected categories drops methods that inherit a second
+    #     class-level category.
     #   - Core/Essentials/Graphics/BlazorWebView: use their normal runner with the exact
     #     XHarness class include whenever the Gate supplied one. Their discovery/index
     #     path can stall before producing devicetestcategories.txt; falling back from
     #     that stall to an unfiltered full suite consumed an hour on PR #36884.
     #   - A standalone filtered run without class metadata still attempts discovery.
-    $requireDiscovery = ($Project -eq "Controls")
+    $requireDiscovery = ($Project -eq "Controls" -and -not $UsePackagedExactSelector)
     $attemptDiscovery = Test-WindowsDeviceTestCategoryDiscovery `
         -Project $Project `
         -TestFilter $TestFilter `
-        -IncludeClasses $IncludeClasses
+        -IncludeClasses $IncludeClasses `
+        -UsePackagedExactSelector:$UsePackagedExactSelector
     $useCategoryFiltering = $false
     if ($attemptDiscovery) {
         Write-Host "Discovering Windows device test categories..." -ForegroundColor Gray
@@ -2202,17 +2256,23 @@ if (-not (Test-Path -LiteralPath $strictEvidenceHelper -PathType Leaf) -or
     throw "Trusted strict evidence helper is unavailable: $strictEvidenceHelper"
 }
 . $strictEvidenceHelper
+$windowsIssueSelector = $null
 if ($RequireWindowsAppContainer) {
     if ($Platform -ne 'windows' -or -not [OperatingSystem]::IsWindows()) {
         throw 'The replication AppContainer mode is available only for Windows device tests.'
     }
-    $issueSelector = (
-        $TestFilter -cmatch '^Issue[1-9][0-9]*$' -and
-        -not [string]::IsNullOrWhiteSpace($IncludeClasses) -and
-        -not [string]::IsNullOrWhiteSpace($IncludeMethods) -and
-        [string]::IsNullOrWhiteSpace($StrictTestEvidencePath))
+    $windowsIssueSelector = if (
+        [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)
+    ) {
+        Get-ReplicationWindowsIssueSelector `
+            -TestFilter $TestFilter `
+            -IncludeClasses $IncludeClasses `
+            -IncludeMethods $IncludeMethods
+    } else {
+        $null
+    }
     if (-not $NoRestore -or $Project -cne 'Controls' -or
-        -not ($issueSelector -or $strictRegressionSelector)) {
+        -not ($windowsIssueSelector -or $strictRegressionSelector)) {
         throw 'Windows replication requires either one exact issue test or one strict sibling regression class in the Controls package.'
     }
     if ([string]::IsNullOrWhiteSpace($ReplicationTrustedRoot)) {
@@ -2429,10 +2489,26 @@ try {
         $buildArgs += "/p:MauiCopilotClassFilterSourcePath=$($classFilterInjection.SourcePath)"
         $buildArgs += "/p:MauiCopilotClassFilterTargetProject=$($classFilterInjection.TargetProject)"
     }
-    if ($RequireWindowsAppContainer -and $strictRegressionSelector) {
+    if ($RequireWindowsAppContainer -and
+        ($strictRegressionSelector -or $windowsIssueSelector)) {
+        $windowsClassFilterValue = if ($windowsIssueSelector) {
+            $windowsIssueSelector.ClassName
+        } else {
+            $IncludeClasses
+        }
+        $windowsClassFilterValueBase64 = [Convert]::ToBase64String(
+            [Text.Encoding]::UTF8.GetBytes($windowsClassFilterValue))
+        $windowsMethodFilterValueBase64 = if ($windowsIssueSelector) {
+            [Convert]::ToBase64String(
+                [Text.Encoding]::UTF8.GetBytes($windowsIssueSelector.MethodName))
+        } else {
+            ''
+        }
         $windowsClassFilterBuildProperties = @(
             "/p:CustomAfterMicrosoftCSharpTargets=$windowsClassFilterOverrideTargets",
-            "/p:MauiReplicationWindowsClassFilterSource=$windowsClassFilterSourcePath"
+            "/p:MauiReplicationWindowsClassFilterSource=$windowsClassFilterSourcePath",
+            "/p:MauiReplicationWindowsIncludeClassBase64=$windowsClassFilterValueBase64",
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$windowsMethodFilterValueBase64"
         )
         $buildArgs += $windowsClassFilterBuildProperties
     }
@@ -2504,7 +2580,7 @@ try {
                 if ($Rebuild) {
                     $windowsGraphBuildArgs += '-t:Rebuild'
                 }
-                if ($strictRegressionSelector) {
+                if ($strictRegressionSelector -or $windowsIssueSelector) {
                     $windowsGraphBuildArgs += $windowsClassFilterBuildProperties
                 }
                 Write-Host (
@@ -3009,6 +3085,7 @@ try {
             -IncludeClasses $IncludeClasses `
             -IncludeMethods $IncludeMethods `
             -StrictTestEvidencePath $StrictTestEvidencePath `
+            -UsePackagedExactSelector:([bool]$windowsIssueSelector) `
             -Timeout $Timeout `
             -RequireAppContainer:$RequireWindowsAppContainer `
             -PackageName $(if ($windowsInstalledPackage) {

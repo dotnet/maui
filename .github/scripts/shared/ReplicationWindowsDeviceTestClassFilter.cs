@@ -2,42 +2,96 @@
 #pragma warning disable CA2255
 
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 internal static class ReplicationWindowsDeviceTestClassFilter
 {
 	const string ArgumentPrefix = "--maui-replication-include-class=";
+	const string ClassMetadataKey = "MauiReplicationWindowsIncludeClassBase64";
+	const string MethodMetadataKey = "MauiReplicationWindowsIncludeMethodBase64";
 	static readonly Regex AllowedClass = new(
 		@"^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$",
+		RegexOptions.CultureInvariant);
+	static readonly Regex AllowedMethod = new(
+		@"^[A-Za-z_][A-Za-z0-9_]{0,255}$",
 		RegexOptions.CultureInvariant);
 
 	[ModuleInitializer]
 	internal static void Initialize()
 	{
-		string? selectedClass = null;
+		var metadataClass = ReadMetadataSelector(ClassMetadataKey);
+		var selectedMethod = ReadMetadataSelector(MethodMetadataKey);
+		string? commandLineClass = null;
 		foreach (var argument in Environment.GetCommandLineArgs())
 		{
 			if (!argument.StartsWith(ArgumentPrefix, StringComparison.Ordinal))
 				continue;
 
-			if (selectedClass is not null)
+			if (commandLineClass is not null)
 				throw new InvalidOperationException("The packaged device-test class selector was supplied more than once.");
 
-			selectedClass = argument.Substring(ArgumentPrefix.Length);
+			commandLineClass = argument.Substring(ArgumentPrefix.Length);
 		}
 
-		if (selectedClass is null)
+		if (metadataClass is not null &&
+			commandLineClass is not null &&
+			!string.Equals(metadataClass, commandLineClass, StringComparison.Ordinal))
+		{
+			throw new InvalidOperationException("The packaged device-test class selectors do not match.");
+		}
+		var selectedClass = metadataClass ?? commandLineClass;
+
+		if (selectedClass is null && selectedMethod is null)
 			return;
 
-		if (!AllowedClass.IsMatch(selectedClass) ||
+		if (selectedClass is null ||
+			!AllowedClass.IsMatch(selectedClass) ||
 			Regex.IsMatch(selectedClass, @"\.Issue[1-9][0-9]*(?:Tests)?$", RegexOptions.CultureInvariant))
 		{
 			throw new InvalidOperationException("The packaged device-test class selector is invalid.");
 		}
+		if (selectedMethod is not null && !AllowedMethod.IsMatch(selectedMethod))
+			throw new InvalidOperationException("The packaged device-test method selector is invalid.");
 
 		// XHarness treats this legacy option as a class inclusion filter.
 		Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", selectedClass);
 		Console.WriteLine("[MAUI replication] Packaged device-test class filter: " + selectedClass);
+		if (selectedMethod is not null)
+		{
+			var fullyQualifiedMethod = selectedClass + "." + selectedMethod;
+			Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", fullyQualifiedMethod);
+			Console.WriteLine("[MAUI replication] Packaged device-test method filter: " + fullyQualifiedMethod);
+		}
+	}
+
+	static string? ReadMetadataSelector(string key)
+	{
+		string? encoded = null;
+		foreach (var attribute in typeof(ReplicationWindowsDeviceTestClassFilter)
+			.Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+		{
+			if (!string.Equals(attribute.Key, key, StringComparison.Ordinal))
+				continue;
+			if (encoded is not null)
+				throw new InvalidOperationException("The packaged device-test selector metadata was supplied more than once.");
+			encoded = attribute.Value;
+		}
+
+		if (encoded is null)
+			return null;
+		if (encoded.Length == 0)
+			throw new InvalidOperationException("The packaged device-test selector metadata is empty.");
+
+		try
+		{
+			return Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+		}
+		catch (FormatException ex)
+		{
+			throw new InvalidOperationException("The packaged device-test selector metadata is invalid.", ex);
+		}
 	}
 }
