@@ -334,7 +334,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					unexpectedMethodFilterCount = methodFilters.Count(filter =>
 						!string.Equals(filter, expectedFullyQualifiedMethod, StringComparison.Ordinal)),
 				},
-				dynamicCodeSupported = RuntimeFeature.IsDynamicCodeSupported,
+				dynamicCodeSupported = global::System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported,
 				stage = Volatile.Read(ref _stage),
 				runnerType = _runnerType,
 				expectedTypeCount = _expectedTypeCount,
