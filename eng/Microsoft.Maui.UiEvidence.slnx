@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="../src/Controls/tests/UiEvidence.Runner.Tests/Controls.UiEvidence.Runner.Tests.csproj" />
+  <Project Path="../src/Controls/tests/UiEvidence.Runner/Controls.UiEvidence.Runner.csproj" />
+  <Project Path="../src/TestUtils/src/UITest.Appium/UITest.Appium.csproj" />
+  <Project Path="../src/TestUtils/src/UITest.Core/UITest.Core.csproj" />
+  <Project Path="../src/TestUtils/src/VisualTestUtils.MagickNet/VisualTestUtils.MagickNet.csproj" />
+  <Project Path="../src/TestUtils/src/VisualTestUtils/VisualTestUtils.csproj" />
+</Solution>

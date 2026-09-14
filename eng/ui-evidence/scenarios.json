@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "limits": {
+    "maxScenarioPlatformPairs": 8
+  },
+  "productRoots": [
+    "src/Controls/src/",
+    "src/Core/src/",
+    "src/Graphics/src/"
+  ],
+  "scenarios": [
+    {
+      "id": "layout-controls-smoke",
+      "title": "Layout and controls smoke",
+      "description": "Exercises stable Grid, stack, Border, Label, Button, Entry, and ScrollView layout paths.",
+      "appScenario": "layout-controls-smoke",
+      "readyAutomationId": "UiEvidenceReady",
+      "platforms": [
+        "android",
+        "windows"
+      ],
+      "pathRules": [
+        {
+          "pattern": "^src/(Controls/src/Core/(Layout|Grid|StackLayout|VerticalStackLayout|HorizontalStackLayout|Border|Label|Button|Entry|ScrollView)|Core/src/Layouts/)",
+          "coverage": "direct"
+        },
+        {
+          "pattern": "^src/(Controls/src/Core/(HandlerImpl|Handlers)|Core/src/Handlers)/(Layout|Border|Label|Button|Entry|ScrollView)",
+          "coverage": "sampled"
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "initial",
+          "requiredAutomationIds": [
+            "UiEvidenceReady",
+            "UiEvidencePrimaryButton",
+            "UiEvidenceEntry",
+            "UiEvidenceFooter"
+          ]
+        }
+      ],
+      "comparison": {
+        "maxIntraDifference": 0.005,
+        "minInterDifference": 0.001,
+        "minimumCrossToIntraMultiplier": 3.0
+      }
+    },
+    {
+      "id": "collectionview-smoke",
+      "title": "CollectionView smoke",
+      "description": "Exercises deterministic CollectionView realization, sizing, and initial viewport layout.",
+      "appScenario": "collectionview-smoke",
+      "readyAutomationId": "UiEvidenceReady",
+      "platforms": [
+        "android",
+        "windows"
+      ],
+      "pathRules": [
+        {
+          "pattern": "^src/Controls/src/Core/(Handlers/Items2?|ItemsView|CollectionView|TemplatedItemsList)",
+          "coverage": "direct"
+        },
+        {
+          "pattern": "^src/Core/src/Handlers/.*/(CollectionView|ItemsView)",
+          "coverage": "sampled"
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "initial",
+          "requiredAutomationIds": [
+            "UiEvidenceReady",
+            "UiEvidenceCollection",
+            "UiEvidenceCollectionHeader"
+          ]
+        }
+      ],
+      "comparison": {
+        "maxIntraDifference": 0.005,
+        "minInterDifference": 0.001,
+        "minimumCrossToIntraMultiplier": 3.0
+      }
+    }
+  ]
+}

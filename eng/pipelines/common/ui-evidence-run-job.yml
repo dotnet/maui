@@ -1,0 +1,243 @@
+parameters:
+- name: jobName
+  type: string
+- name: displayName
+  type: string
+- name: platform
+  type: string
+- name: pool
+  type: object
+
+jobs:
+- job: ${{ parameters.jobName }}
+  displayName: ${{ parameters.displayName }}
+  timeoutInMinutes: 100
+  pool: ${{ parameters.pool }}
+  workspace:
+    clean: all
+  variables:
+    APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    clean: true
+    persistCredentials: false
+
+  - download: current
+    artifact: ui_evidence_payload
+    displayName: Download paired UI evidence payload
+
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - template: /eng/pipelines/common/enable-kvm.yml@self
+
+  - template: /eng/pipelines/common/provision.yml@self
+    parameters:
+      checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+      skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      onlyAndroidPlatformDefaultApis: true
+      androidEmulatorApiLevel: '30'
+      skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
+      skipProvisionator: true
+      skipXcode: true
+      skipSimulatorSetup: true
+      skipInternalFeeds: true
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=diagnostic
+    displayName: Install .NET
+    retryCountOnTaskFailure: 2
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: Add .NET to PATH
+
+  - task: UseNode@1
+    inputs:
+      version: "20.3.1"
+    displayName: Install Node.js
+
+  - pwsh: |
+      $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
+      dotnet build ./src/Provisioning/Provisioning.csproj `
+        -t:ProvisionAppium `
+        -p:SkipAppiumDoctor="$skipAppiumDoctor" `
+        -bl:"$(LogDirectory)/provision-ui-evidence-appium.binlog"
+    displayName: Provision Appium
+    timeoutInMinutes: 15
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
+
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - pwsh: |
+        appium driver doctor windows
+        if ($LASTEXITCODE -ne 0) {
+          throw "The Windows Appium driver or WinAppDriver prerequisites are unavailable."
+        }
+      displayName: Verify Windows Appium prerequisites
+      env:
+        APPIUM_HOME: $(APPIUM_HOME)
+
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - pwsh: |
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/Set-ScreenResolution.ps1" `
+          -Width 1920 `
+          -Height 1080
+      displayName: Set deterministic screen resolution
+
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - pwsh: |
+        $deviceId = & "$(System.DefaultWorkingDirectory)/.github/scripts/shared/Start-Emulator.ps1" `
+          -Platform android `
+          -Headless
+        if ([string]::IsNullOrWhiteSpace([string]$deviceId)) {
+          throw "Android emulator did not return a device id."
+        }
+        Write-Host "##vso[task.setvariable variable=UI_EVIDENCE_DEVICE_ID]$deviceId"
+      displayName: Start Android emulator
+
+  - pwsh: |
+      $payload = "$(Pipeline.Workspace)/ui_evidence_payload"
+      $feed = Join-Path $payload "devflow-feed"
+      $devFlow = Get-Content (Join-Path $feed "devflow-manifest.json") -Raw | ConvertFrom-Json
+      $devFlowVersion = [string]$devFlow.packageVersion
+      dotnet build `
+        "$(System.DefaultWorkingDirectory)/src/Controls/tests/UiEvidence.Runner/Controls.UiEvidence.Runner.csproj" `
+        -c Release `
+        -p:MauiUiEvidenceDevFlowEnabled=true `
+        "-p:MauiUiEvidenceDevFlowVersion=$devFlowVersion" `
+        -p:RestoreAdditionalProjectSources=$feed `
+        --nologo `
+        --verbosity:minimal
+    displayName: Build trusted UI evidence runner
+
+  - pwsh: |
+      foreach ($name in @(
+        "GH_TOKEN",
+        "GITHUB_TOKEN",
+        "COPILOT_GITHUB_TOKEN",
+        "AZDO_TOKEN",
+        "SYSTEM_ACCESSTOKEN",
+        "DOTNET_TOKEN"
+      )) {
+        if (-not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+          throw "Forbidden credential environment variable '$name' is present before target execution."
+        }
+      }
+      git config --local --unset-all http.https://github.com/.extraheader 2>$null
+      $global:LASTEXITCODE = 0
+    displayName: Verify credential-free target execution
+
+  - pwsh: |
+      & "$(System.DefaultWorkingDirectory)/eng/scripts/Start-UiEvidenceAppium.ps1" `
+        -LogPath "$(Agent.TempDirectory)/ui-evidence-appium.log" `
+        -StatePath "$(Agent.TempDirectory)/ui-evidence-appium-state.json"
+    displayName: Start Appium
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
+
+  - pwsh: |
+      $runner = Get-ChildItem `
+        "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.UiEvidence.Runner/Release" `
+        -File `
+        -Recurse `
+        -Filter "Controls.UiEvidence.Runner.dll" |
+        Where-Object { $_.FullName -notmatch '[\\/]ref(?:int)?[\\/]' }
+      if (@($runner).Count -ne 1) {
+        throw "Expected one UI evidence runner, found $(@($runner).Count)."
+      }
+
+      $parameters = @{
+        PayloadRoot = "$(Pipeline.Workspace)/ui_evidence_payload"
+        RunnerPath = $runner[0].FullName
+        OutputDirectory = "$(Build.ArtifactStagingDirectory)/ui-evidence"
+        LogDirectory = "$(Agent.TempDirectory)/ui-evidence-runner-logs"
+        DevFlow = $true
+        CaptureOnly = $true
+      }
+      if ("${{ parameters.platform }}" -eq "android") {
+        $parameters.DeviceId = "$(UI_EVIDENCE_DEVICE_ID)"
+        $parameters.Headless = $true
+      }
+      & "$(System.DefaultWorkingDirectory)/eng/scripts/Invoke-UiEvidenceRuns.ps1" @parameters
+    displayName: Run paired UI evidence comparison
+    env:
+      APPIUM_HOME: $(APPIUM_HOME)
+
+  - pwsh: |
+      & "$(System.DefaultWorkingDirectory)/eng/scripts/Stop-UiEvidenceAppium.ps1" `
+        -StatePath "$(Agent.TempDirectory)/ui-evidence-appium-state.json"
+    condition: always()
+    displayName: Stop Appium
+
+  - publish: $(Build.ArtifactStagingDirectory)/ui-evidence
+    displayName: Publish raw UI evidence
+    artifact: ui_evidence_raw
+
+- job: ${{ parameters.jobName }}_compare
+  displayName: Validate and seal ${{ parameters.displayName }}
+  dependsOn: ${{ parameters.jobName }}
+  timeoutInMinutes: 30
+  pool: ${{ parameters.pool }}
+  workspace:
+    clean: all
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    clean: true
+    persistCredentials: false
+
+  - download: current
+    artifact: ui_evidence_payload
+    displayName: Download paired UI evidence payload
+
+  - download: current
+    artifact: ui_evidence_raw
+    displayName: Download raw UI evidence
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=diagnostic
+    displayName: Install .NET
+    retryCountOnTaskFailure: 2
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: Add .NET to PATH
+
+  - pwsh: |
+      $payload = "$(Pipeline.Workspace)/ui_evidence_payload"
+      $feed = Join-Path $payload "devflow-feed"
+      $devFlow = Get-Content (Join-Path $feed "devflow-manifest.json") -Raw | ConvertFrom-Json
+      $devFlowVersion = [string]$devFlow.packageVersion
+      dotnet build `
+        "$(System.DefaultWorkingDirectory)/src/Controls/tests/UiEvidence.Runner/Controls.UiEvidence.Runner.csproj" `
+        -c Release `
+        -p:MauiUiEvidenceDevFlowEnabled=true `
+        "-p:MauiUiEvidenceDevFlowVersion=$devFlowVersion" `
+        -p:RestoreAdditionalProjectSources=$feed `
+        --nologo `
+        --verbosity:minimal
+
+      $runner = Get-ChildItem `
+        "$(System.DefaultWorkingDirectory)/artifacts/bin/Controls.UiEvidence.Runner/Release" `
+        -File `
+        -Recurse `
+        -Filter "Controls.UiEvidence.Runner.dll" |
+        Where-Object { $_.FullName -notmatch '[\\/]ref(?:int)?[\\/]' }
+      if (@($runner).Count -ne 1) {
+        throw "Expected one trusted UI evidence runner, found $(@($runner).Count)."
+      }
+      & "$(System.DefaultWorkingDirectory)/eng/scripts/Complete-UiEvidenceComparison.ps1" `
+        -RawEvidenceRoot "$(Pipeline.Workspace)/ui_evidence_raw" `
+        -PayloadRoot $payload `
+        -RunnerPath $runner[0].FullName `
+        -OutputDirectory "$(Build.ArtifactStagingDirectory)/ui-evidence"
+    displayName: Compare and seal UI evidence
+
+  - publish: $(Build.ArtifactStagingDirectory)/ui-evidence
+    displayName: Publish sealed UI evidence
+    artifact: ui_evidence_sealed

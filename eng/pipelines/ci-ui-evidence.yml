@@ -1,0 +1,272 @@
+trigger: none
+pr: none
+
+parameters:
+- name: prNumber
+  displayName: Pull request number
+  type: number
+  default: 0
+- name: requestKey
+  displayName: Trusted request key
+  type: string
+  default: ''
+- name: baseCommitSha
+  displayName: Merge-base commit SHA
+  type: string
+  default: ''
+- name: headCommitSha
+  displayName: Pull request head commit SHA
+  type: string
+  default: ''
+- name: registrySha256
+  displayName: Trusted scenario registry SHA-256
+  type: string
+  default: ''
+- name: scenarioId
+  displayName: Trusted scenario id
+  type: string
+  default: ''
+- name: coverage
+  displayName: Coverage kind
+  type: string
+  default: direct
+  values:
+  - direct
+  - sampled
+- name: platform
+  displayName: Platform
+  type: string
+  default: android
+  values:
+  - android
+  - windows
+- name: windowsPool
+  type: object
+  default:
+    name: NetCore-Public
+    demands:
+    - ImageOverride -equals 1es-windows-2022-open
+- name: androidBuildPool
+  type: object
+  default:
+    name: AcesShared
+    demands:
+    - ImageOverride -equals ACES_VM_SharedPool_Tahoe
+- name: androidRunPool
+  type: object
+  default:
+    name: MAUI-DNCENG
+    demands:
+    - ImageOverride -equals 1ESPT-Ubuntu22.04
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- template: /eng/pipelines/common/variables.yml@self
+- template: /eng/pipelines/arcade/variables.yml@self
+
+stages:
+- stage: ui_evidence_prepare
+  displayName: Prepare trusted UI evidence harness
+  jobs:
+  - job: prepare_ui_evidence
+    displayName: Prepare DevFlow and request
+    timeoutInMinutes: 45
+    pool: ${{ parameters.windowsPool }}
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      clean: true
+      persistCredentials: false
+
+    - template: /eng/pipelines/common/provision.yml@self
+      parameters:
+        checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+        skipJdk: true
+        skipAndroidCommonSdks: true
+        skipAndroidPlatformApis: true
+        onlyAndroidPlatformDefaultApis: true
+        skipAndroidEmulatorImages: true
+        skipAndroidCreateAvds: true
+        skipProvisionator: true
+        skipXcode: true
+        skipSimulatorSetup: true
+        skipInternalFeeds: true
+
+    - pwsh: ./build.ps1 --target=dotnet --configuration=Release --verbosity=diagnostic
+      displayName: Install .NET
+      retryCountOnTaskFailure: 2
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: $(PrivateBuild)
+
+    - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+      displayName: Add .NET to PATH
+
+    - pwsh: |
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/UiEvidence.Tests.ps1"
+        dotnet test `
+          "$(System.DefaultWorkingDirectory)/src/Controls/tests/UiEvidence.Runner.Tests/Controls.UiEvidence.Runner.Tests.csproj" `
+          --nologo `
+          --verbosity:minimal
+      displayName: Validate UI evidence contracts
+
+    - pwsh: |
+        $output = "$(Build.ArtifactStagingDirectory)/ui-evidence-harness"
+        $feed = Join-Path $output "devflow-feed"
+        $source = Join-Path $output "devflow-source"
+        $devFlowConfig = Get-Content `
+          "$(System.DefaultWorkingDirectory)/eng/ui-evidence/devflow.json" `
+          -Raw | ConvertFrom-Json
+        $expectedDevFlowCommit = [string]$devFlowConfig.commit
+        New-Item -ItemType Directory -Force -Path $output | Out-Null
+
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/Provision-UiEvidenceDevFlow.ps1" `
+          -OutputDirectory $feed `
+          -SourceOutputDirectory $source `
+          -WorkingDirectory "$(Agent.TempDirectory)/ui-df" `
+          -DotNetPath "$(DotNet.Dir)/dotnet.exe"
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/Validate-UiEvidenceDevFlowFeed.ps1" `
+          -FeedDirectory $feed `
+          -ExpectedCommit $expectedDevFlowCommit
+        if ($LASTEXITCODE -ne 0) {
+          throw "DevFlow feed validation failed."
+        }
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/Validate-UiEvidenceDevFlowSource.ps1" `
+          -SourceDirectory $source `
+          -ExpectedCommit $expectedDevFlowCommit
+
+        $registry = "$(System.DefaultWorkingDirectory)/eng/ui-evidence/scenarios.json"
+        $actualRegistryHash = (Get-FileHash $registry -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($actualRegistryHash -ne $env:UI_EVIDENCE_REGISTRY_SHA) {
+          throw "Scenario registry hash '$actualRegistryHash' does not match the request."
+        }
+        Copy-Item $registry (Join-Path $output "scenarios.json")
+
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/New-UiEvidenceRequestManifest.ps1" `
+          -RequestKey $env:UI_EVIDENCE_REQUEST_KEY `
+          -PullRequestNumber ([int]$env:UI_EVIDENCE_PR_NUMBER) `
+          -BaseCommitSha $env:UI_EVIDENCE_BASE_SHA `
+          -HeadCommitSha $env:UI_EVIDENCE_HEAD_SHA `
+          -HarnessSha "$(Build.SourceVersion)" `
+          -RegistrySha256 $env:UI_EVIDENCE_REGISTRY_SHA `
+          -ScenarioId $env:UI_EVIDENCE_SCENARIO_ID `
+          -Platform $env:UI_EVIDENCE_PLATFORM `
+          -Coverage $env:UI_EVIDENCE_COVERAGE `
+          -OutputPath (Join-Path $output "request.json")
+      displayName: Create trusted UI evidence harness
+      env:
+        UI_EVIDENCE_REQUEST_KEY: ${{ parameters.requestKey }}
+        UI_EVIDENCE_PR_NUMBER: ${{ parameters.prNumber }}
+        UI_EVIDENCE_BASE_SHA: ${{ parameters.baseCommitSha }}
+        UI_EVIDENCE_HEAD_SHA: ${{ parameters.headCommitSha }}
+        UI_EVIDENCE_REGISTRY_SHA: ${{ parameters.registrySha256 }}
+        UI_EVIDENCE_SCENARIO_ID: ${{ parameters.scenarioId }}
+        UI_EVIDENCE_PLATFORM: ${{ parameters.platform }}
+        UI_EVIDENCE_COVERAGE: ${{ parameters.coverage }}
+
+    - publish: $(Build.ArtifactStagingDirectory)/ui-evidence-harness
+      displayName: Publish trusted UI evidence harness
+      artifact: ui_evidence_harness
+
+- stage: ui_evidence_build
+  displayName: Build paired UI evidence apps
+  dependsOn: ui_evidence_prepare
+  jobs:
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - template: /eng/pipelines/common/ui-evidence-build-job.yml@self
+      parameters:
+        jobName: build_ui_evidence_base
+        displayName: Build merge-base Android app
+        variant: base
+        platform: android
+        pool: ${{ parameters.androidBuildPool }}
+    - template: /eng/pipelines/common/ui-evidence-build-job.yml@self
+      parameters:
+        jobName: build_ui_evidence_head
+        displayName: Build PR-head Android app
+        variant: head
+        platform: android
+        pool: ${{ parameters.androidBuildPool }}
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - template: /eng/pipelines/common/ui-evidence-build-job.yml@self
+      parameters:
+        jobName: build_ui_evidence_base
+        displayName: Build merge-base Windows app
+        variant: base
+        platform: windows
+        pool: ${{ parameters.windowsPool }}
+    - template: /eng/pipelines/common/ui-evidence-build-job.yml@self
+      parameters:
+        jobName: build_ui_evidence_head
+        displayName: Build PR-head Windows app
+        variant: head
+        platform: windows
+        pool: ${{ parameters.windowsPool }}
+
+- stage: ui_evidence_package
+  displayName: Package paired UI evidence apps
+  dependsOn: ui_evidence_build
+  jobs:
+  - job: package_ui_evidence
+    displayName: Create paired UI evidence payload
+    timeoutInMinutes: 30
+    pool: ${{ parameters.windowsPool }}
+    workspace:
+      clean: all
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      clean: true
+      persistCredentials: false
+    - download: current
+      artifact: ui_evidence_base
+    - download: current
+      artifact: ui_evidence_head
+    - download: current
+      artifact: ui_evidence_harness
+    - pwsh: |
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/New-UiEvidenceBuildMetadata.ps1" `
+          -ArtifactRoot "$(Pipeline.Workspace)/ui_evidence_base" `
+          -RequestPath "$(Pipeline.Workspace)/ui_evidence_harness/request.json" `
+          -Variant base `
+          -DevFlowManifestPath "$(Pipeline.Workspace)/ui_evidence_harness/devflow-feed/devflow-manifest.json" `
+          -OutputPath "$(Pipeline.Workspace)/ui_evidence_base/ui-evidence-build-metadata.json"
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/New-UiEvidenceBuildMetadata.ps1" `
+          -ArtifactRoot "$(Pipeline.Workspace)/ui_evidence_head" `
+          -RequestPath "$(Pipeline.Workspace)/ui_evidence_harness/request.json" `
+          -Variant head `
+          -DevFlowManifestPath "$(Pipeline.Workspace)/ui_evidence_harness/devflow-feed/devflow-manifest.json" `
+          -OutputPath "$(Pipeline.Workspace)/ui_evidence_head/ui-evidence-build-metadata.json"
+
+        & "$(System.DefaultWorkingDirectory)/eng/scripts/Prepare-UiEvidencePayload.ps1" `
+          -BaseArtifacts "$(Pipeline.Workspace)/ui_evidence_base" `
+          -HeadArtifacts "$(Pipeline.Workspace)/ui_evidence_head" `
+          -RequestPath "$(Pipeline.Workspace)/ui_evidence_harness/request.json" `
+          -RegistryPath "$(Pipeline.Workspace)/ui_evidence_harness/scenarios.json" `
+          -DevFlowFeed "$(Pipeline.Workspace)/ui_evidence_harness/devflow-feed" `
+          -OutputDirectory "$(Build.ArtifactStagingDirectory)/ui-evidence-payload"
+      displayName: Prepare paired payload
+    - publish: $(Build.ArtifactStagingDirectory)/ui-evidence-payload
+      displayName: Publish paired UI evidence payload
+      artifact: ui_evidence_payload
+
+- stage: ui_evidence_execute
+  displayName: Execute paired UI evidence comparison
+  dependsOn: ui_evidence_package
+  jobs:
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - template: /eng/pipelines/common/ui-evidence-run-job.yml@self
+      parameters:
+        jobName: run_ui_evidence_android
+        displayName: Run Android UI evidence
+        platform: android
+        pool: ${{ parameters.androidRunPool }}
+  - ${{ if eq(parameters.platform, 'windows') }}:
+    - template: /eng/pipelines/common/ui-evidence-run-job.yml@self
+      parameters:
+        jobName: run_ui_evidence_windows
+        displayName: Run Windows UI evidence
+        platform: windows
+        pool: ${{ parameters.windowsPool }}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <MauiTestProject>true</MauiTestProject>
+    <RootNamespace>Microsoft.Maui.UiEvidence</RootNamespace>
+    <MauiUiEvidenceDevFlowEnabled Condition="'$(MauiUiEvidenceDevFlowEnabled)' == ''">false</MauiUiEvidenceDevFlowEnabled>
+    <MauiUiEvidenceDevFlowVersion Condition="'$(MauiUiEvidenceDevFlowVersion)' == ''">0.1.0-dev</MauiUiEvidenceDevFlowVersion>
+    <DefineConstants Condition="'$(MauiUiEvidenceDevFlowEnabled)' == 'true'">$(DefineConstants);MAUI_UI_EVIDENCE_DEVFLOW</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\VisualTestUtils\VisualTestUtils.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(MauiUiEvidenceDevFlowEnabled)' == 'true'">
+    <PackageReference Include="Microsoft.Maui.DevFlow.Driver" Version="$(MauiUiEvidenceDevFlowVersion)" />
+  </ItemGroup>
+
+</Project>

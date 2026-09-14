@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/dotnet/maui-labs.git",
+  "commit": "27bc75807b10b54805e30f29af6f20df2e62d631",
+  "packageVersionPrefix": "0.1.0-ui.r8",
+  "packages": [
+    "Microsoft.Maui.DevFlow.Driver"
+  ]
+}
