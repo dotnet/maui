@@ -6178,14 +6178,14 @@ namespace Microsoft.Maui.DeviceTests
                                 item.Content?.ToString() == enabledReferenceTab.Title &&
                                 Issue34738Descendants(item).OfType<TextBlock>().Any(text =>
                                     text.Text == enabledReferenceTab.Title) &&
-                                Issue34738Descendants(item).OfType<IconElement>().Any()) &&
+                                Issue34738RenderedIcons(item).Any()) &&
                         Issue34738Descendants(navigationView)
                             .OfType<NavigationViewItem>()
                             .Any(item =>
                                 item.Content?.ToString() == affectedTab.Title &&
                                 Issue34738Descendants(item).OfType<TextBlock>().Any(text =>
                                     text.Text == affectedTab.Title) &&
-                                Issue34738Descendants(item).OfType<IconElement>().Any()));
+                                Issue34738RenderedIcons(item).Any()));
                 var navigationView =
                     (MauiNavigationView)shell.CurrentItem.Handler.PlatformView;
                 var nativeTabs = Issue34738Descendants(navigationView)
@@ -6205,10 +6205,8 @@ namespace Microsoft.Maui.DeviceTests
                     Issue34738Descendants(nativeAffectedTab)
                         .OfType<TextBlock>()
                         .Where(text => text.Text == affectedTab.Title));
-                var referenceIcon = Assert.Single(
-                    Issue34738Descendants(nativeReferenceTab).OfType<IconElement>());
-                var affectedIcon = Assert.Single(
-                    Issue34738Descendants(nativeAffectedTab).OfType<IconElement>());
+                var referenceIcon = Assert.Single(Issue34738RenderedIcons(nativeReferenceTab));
+                var affectedIcon = Assert.Single(Issue34738RenderedIcons(nativeAffectedTab));
                 var titleMatches = expectedIsEnabled
                     ? Issue34738IsBlue(affectedTitle.Foreground)
                     : Issue34738IsGreen(affectedTitle.Foreground);
@@ -6255,6 +6253,12 @@ namespace Microsoft.Maui.DeviceTests
                     yield return descendant;
             }
         }
+
+        static IEnumerable<IconElement> Issue34738RenderedIcons(
+            DependencyObject parent) =>
+            Issue34738Descendants(parent)
+                .OfType<IconElement>()
+                .Where(icon => icon.ActualWidth > 0 && icon.ActualHeight > 0);
 
         static bool Issue34738IsBlue(Microsoft.UI.Xaml.Media.Brush brush) =>
             brush is Microsoft.UI.Xaml.Media.SolidColorBrush solidColorBrush &&

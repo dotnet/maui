@@ -12445,6 +12445,14 @@ public class Issue38291Tests : global::Microsoft.Maui.DeviceTests.ControlsHandle
             Should -Match 'Issue34738IsGreen\(Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
         $source |
             Should -Match 'Issue34738DescribeColor\(\s*Microsoft\.UI\.Xaml\.Media\.Brush brush\)'
+        $source |
+            Should -Match 'Issue34738RenderedIcons\(\s*DependencyObject parent\)'
+        @([regex]::Matches(
+            $source,
+            'Assert\.Single\(Issue34738RenderedIcons\(native(?:Reference|Affected)Tab\)\)')).Count |
+            Should -Be 2
+        $source |
+            Should -Match 'icon\.ActualWidth > 0 && icon\.ActualHeight > 0'
         $source | Should -Not -Match '\(\s*Brush brush\)'
         @([regex]::Matches(
             $source,
@@ -12502,6 +12510,54 @@ public static class Issue34738BrushHelpers
             }).Count | Should -Be 0
     }
 
+    It 'selects the observed Windows Issue34738 rendered BitmapIcon and leaves ambiguous rendered icons rejected' {
+        $source = Get-ReplicationWindowsIssue34738TestSource
+        $source |
+            Should -Match 'Assert\.Single\(Issue34738RenderedIcons\(nativeAffectedTab\)\)'
+
+        $nativeIcons = @(
+            [pscustomobject]@{
+                Kind = 'BitmapIcon'
+                ActualWidth = 23
+                ActualHeight = 23
+            },
+            [pscustomobject]@{
+                Kind = 'AnimatedIcon'
+                ActualWidth = 0
+                ActualHeight = 0
+            }
+        )
+        $selectSingleRenderedIcon = {
+            param([object[]]$Icons)
+
+            $renderedIcons = @($Icons | Where-Object {
+                    $_.ActualWidth -gt 0 -and $_.ActualHeight -gt 0
+                })
+            if ($renderedIcons.Count -ne 1) {
+                throw "Expected exactly one rendered icon, found $($renderedIcons.Count)."
+            }
+
+            return $renderedIcons[0]
+        }
+        (& $selectSingleRenderedIcon $nativeIcons).Kind |
+            Should -BeExactly 'BitmapIcon'
+
+        $ambiguousIcons = @($nativeIcons + [pscustomobject]@{
+                Kind = 'SecondRenderedIcon'
+                ActualWidth = 16
+                ActualHeight = 16
+            })
+        { & $selectSingleRenderedIcon $ambiguousIcons } |
+            Should -Throw '*found 2*'
+        { & $selectSingleRenderedIcon @(
+                [pscustomobject]@{
+                    Kind = 'AnimatedIcon'
+                    ActualWidth = 0
+                    ActualHeight = 0
+                }
+            ) } | Should -Throw '*found 0*'
+    }
+
     It 'rejects weakened Windows Issue34738 state and color oracles' {
         $source = Get-ReplicationWindowsIssue34738TestSource
         $lateStateSnapshot = $source.Replace(
@@ -12524,6 +12580,9 @@ public static class Issue34738BrushHelpers
                     Issue34738IsBlue(referenceIcon.Foreground) &&
 '@,
             '')
+        $unrenderedIconSelection = $source.Replace(
+            '.Where(icon => icon.ActualWidth > 0 && icon.ActualHeight > 0);',
+            ';')
         $mutations = @(
             $source.Replace(
                 'var expectedIsEnabled = affectedTab.IsEnabled;',
@@ -12539,7 +12598,8 @@ public static class Issue34738BrushHelpers
                 ': Issue34738IsBlue(affectedIcon.Foreground);'),
             $lateStateSnapshot,
             $allGreenStyling,
-            $missingIndependentReferenceCheck
+            $missingIndependentReferenceCheck,
+            $unrenderedIconSelection
         )
 
         foreach ($candidate in $mutations) {
