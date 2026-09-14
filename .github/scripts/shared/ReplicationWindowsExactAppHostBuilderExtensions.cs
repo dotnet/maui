@@ -114,6 +114,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 		protected override TestRunner GetTestRunner(LogWriter logWriter)
 		{
+			_diagnostics.BeginRunnerConfiguration();
 			try
 			{
 				var runner = base.GetTestRunner(logWriter);
@@ -158,6 +159,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		string? _runnerType;
 		int _expectedTypeCount;
 		int _expectedMethodCount;
+		string _stage = "startup";
 		string? _expectedTestInspectionFailureType;
 		string? _configurationFailureType;
 
@@ -176,15 +178,23 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			WriteSnapshot();
 		}
 
+		public void BeginRunnerConfiguration()
+		{
+			Volatile.Write(ref _stage, "runner-configuration");
+			WriteSnapshot();
+		}
+
 		public void RecordRunner(TestRunner runner)
 		{
 			_runnerType = runner.GetType().FullName;
+			Volatile.Write(ref _stage, "discovery-execution");
 			WriteSnapshot();
 		}
 
 		public void RecordConfigurationFailure(Exception exception)
 		{
 			_configurationFailureType = exception.GetType().FullName;
+			Volatile.Write(ref _stage, "runner-configuration-failed");
 			WriteSnapshot();
 		}
 
@@ -237,6 +247,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 					var message = eventArgs.Exception.Message ?? string.Empty;
 					_exceptions.Add(new(
+						Volatile.Read(ref _stage),
 						eventArgs.Exception.GetType().FullName ?? eventArgs.Exception.GetType().Name,
 						eventArgs.Exception.HResult,
 						Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(message)))
@@ -313,6 +324,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 						!string.Equals(filter, expectedFullyQualifiedMethod, StringComparison.Ordinal)),
 				},
 				dynamicCodeSupported = RuntimeFeature.IsDynamicCodeSupported,
+				stage = Volatile.Read(ref _stage),
 				runnerType = _runnerType,
 				expectedTypeCount = _expectedTypeCount,
 				expectedMethodCount = _expectedMethodCount,
@@ -346,6 +358,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		}
 
 		sealed record ExceptionDiagnostic(
+			string Stage,
 			string Type,
 			int HResult,
 			string MessageSha256,
