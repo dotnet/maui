@@ -71,7 +71,7 @@ param(
     # step's own timeout and abandons cleanly when it runs out, rather than
     # gambling the evidence we have already paid for on one more candidate.
     [ValidateRange(0, 300)]
-    [int]$FixPanelBudgetMinutes = 150,
+    [int]$FixPanelBudgetMinutes = 240,
 
     [ValidateRange(10, 90)]
     [int]$FixCandidateTimeoutMinutes = 30,
@@ -100,7 +100,7 @@ param(
     # Lets the orchestrator measure its budget against the same deadline Azure
     # will enforce, instead of against a clock that started when the panel did.
     [ValidateRange(0, 600)]
-    [int]$StepTimeoutMinutes = 240,
+    [int]$StepTimeoutMinutes = 330,
 
     [string]$Model = '',
 
