@@ -91,10 +91,13 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 			Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", null);
 		}
 
-		// ApplicationOptions.Current can be initialized by the app before this module
-		// initializer runs. Recreate it after installing the trusted selectors so the
-		// XHarness runner sees the same class and method that the packaged assembly
-		// metadata attests.
+		RefreshApplicationOptions(selectedClass, selectedMethod);
+	}
+
+	internal static void RefreshApplicationOptions(string selectedClass, string? selectedMethod)
+	{
+		// Refresh the pinned XHarness singleton after installing trusted selectors so
+		// selection does not depend on which consumer initialized it first.
 		var options = new ApplicationOptions();
 		var expectedMethod = selectedMethod is null
 			? null
