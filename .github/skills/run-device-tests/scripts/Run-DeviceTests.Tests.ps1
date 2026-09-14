@@ -101,6 +101,13 @@ BeforeAll {
             runnerType = 'Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner'
             expectedTypeCount = 1
             expectedMethodCount = 1
+            discoveredCaseCount = 321
+            discoveredClassCaseCount = 17
+            discoveredMethodCaseCount = 1
+            discoveredDisplayNameLength = 91
+            discoveredDisplayNameSha256 = ('b' * 64)
+            discoveredDisplayNameEndsWithMethod = $true
+            discoveredDisplayNameEqualsMethod = $false
             expectedTestInspectionFailureType = $null
             configurationFailureType = $null
             firstChanceExceptions = @(
@@ -454,6 +461,9 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
     <ImplicitUsings>enable</ImplicitUsings>
     <DefineConstants>WINDOWS</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.utility" Version="2.9.3" />
+  </ItemGroup>
 </Project>
 '@ | Set-Content (
             Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
@@ -675,30 +685,6 @@ static class Program
             ",",
             builder.Services.RegisteredTypes.Select(type => type.Name)));
 
-        var exactRunnerType = typeof(AppHostBuilderExtensions).Assembly.GetType(
-            "Microsoft.Maui.TestUtils.DeviceTests.Runners." +
-            "ReplicationWindowsExactHeadlessTestRunner",
-            throwOnError: false);
-        if (exactRunnerType is not null)
-        {
-            var exactRunner = Activator.CreateInstance(
-                exactRunnerType,
-                new HeadlessRunnerOptions(),
-                new TestOptions())!;
-            var getTestRunner = exactRunnerType.GetMethod(
-                "GetTestRunner",
-                BindingFlags.Instance | BindingFlags.NonPublic)!;
-            var configuredRunner = (TestRunner)getTestRunner.Invoke(
-                exactRunner,
-                new object[] { new LogWriter() })!;
-            Console.WriteLine("run-all=" + configuredRunner.RunAllTestsByDefault);
-            Console.WriteLine(
-                "runner-classes=" +
-                string.Join(",", configuredRunner.IncludedClasses));
-            Console.WriteLine(
-                "runner-methods=" +
-                string.Join(",", configuredRunner.IncludedMethods));
-        }
     }
 }
 '@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
@@ -729,11 +715,6 @@ static class Program
             'options-classes=Microsoft.Maui.DeviceTests.ShellTests')
         $safeOutput | Should -Contain (
             'options-methods=Issue34738DisabledTabUsesTabBarDisabledColor')
-        $safeOutput | Should -Contain 'run-all=False'
-        $safeOutput | Should -Contain (
-            'runner-classes=Microsoft.Maui.DeviceTests.ShellTests')
-        $safeOutput | Should -Contain (
-            'runner-methods=Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain (
             'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
         ($safeOutput -join [Environment]::NewLine) |
@@ -857,11 +838,15 @@ public sealed class ApplicationOptions
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
                 '../../../scripts/shared/ReplicationWindowsExactAppHostBuilderExtensions.cs')) `
             -Destination (Join-Path $appDir 'ReplicationWindowsExactAppHostBuilderExtensions.cs')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                '../../../../src/TestUtils/src/DeviceTests/xUnitCustomizations.cs')) `
+            -Destination (Join-Path $appDir 'xUnitCustomizations.cs')
         @'
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
     <DefineConstants>WINDOWS</DefineConstants>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -933,15 +918,6 @@ namespace Microsoft.Maui.Controls.Hosting { }
 namespace Microsoft.Maui
 {
     internal static class RuntimeFeature { }
-
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class FactAttribute : Xunit.FactAttribute
-    {
-        public FactAttribute([System.Runtime.CompilerServices.CallerMemberName] string displayName = "")
-        {
-            DisplayName = displayName;
-        }
-    }
 }
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
@@ -1001,12 +977,15 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+    [Category("Shell")]
     public sealed class ShellTests
     {
         [Fact]
+        [Category("Issue34738")]
         public void Issue34738DisabledTabUsesTabBarDisabledColor() { }
 
         [Fact]
+        [Category("Shell")]
         public void ExistingSameClassPeer() =>
             throw new InvalidOperationException("The sibling test must remain filtered.");
     }
@@ -1042,6 +1021,14 @@ internal static class Program
         HeadlessTestRunner.TestResultsFile = Path.Combine(
             AppContext.BaseDirectory,
             "testResults.xml");
+        var testOptions = new TestOptions
+        {
+            Assemblies = new[] { typeof(ShellTests).Assembly },
+        };
+        var selection = ReplicationWindowsExactHeadlessTestRunner.DiscoverExpectedTest(
+            testOptions,
+            new ReplicationWindowsExactRunnerDiagnostics(testOptions));
+        Console.WriteLine($"discovered={selection.DisplayName}");
         foreach (var typeName in new[]
         {
             "Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner",
@@ -1049,6 +1036,25 @@ internal static class Program
         })
         {
             var runnerType = xharnessAssembly.GetType(typeName, throwOnError: true)!;
+            var legacyRunner = (TestRunner)Activator.CreateInstance(
+                runnerType,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                binder: null,
+                args: new object[] { new LogWriter(TextWriter.Null) },
+                culture: null)!;
+            legacyRunner.RunAllTestsByDefault = false;
+            legacyRunner.SkipClass(SelectedClass, isExcluded: false);
+            legacyRunner.SkipMethod(SelectedMethod, isExcluded: false);
+            await legacyRunner.Run(new[]
+            {
+                new TestAssemblyInfo(
+                    typeof(ShellTests).Assembly,
+                    typeof(ShellTests).Assembly.Location),
+            });
+            Console.WriteLine(
+                $"legacy-{runnerType.Name}=" +
+                $"{legacyRunner.ExecutedTests}/{legacyRunner.PassedTests}");
+
             var runner = (TestRunner)Activator.CreateInstance(
                 runnerType,
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -1066,10 +1072,7 @@ internal static class Program
             var exactRunner = Activator.CreateInstance(
                 exactType,
                 new HeadlessRunnerOptions(),
-                new TestOptions
-                {
-                    Assemblies = new[] { typeof(ShellTests).Assembly },
-                })!;
+                testOptions)!;
             var getTestRunner = exactType.GetMethod(
                 "GetTestRunner",
                 BindingFlags.Instance | BindingFlags.NonPublic)!;
@@ -1112,6 +1115,9 @@ internal static class Program
                 $"diagnostic-{runnerType.Name}=" +
                 $"{root.GetProperty("expectedTypeCount").GetInt32()}/" +
                 $"{root.GetProperty("expectedMethodCount").GetInt32()}/" +
+                $"{root.GetProperty("discoveredMethodCaseCount").GetInt32()}/" +
+                $"{root.GetProperty("discoveredDisplayNameEndsWithMethod").GetBoolean()}/" +
+                $"{root.GetProperty("discoveredDisplayNameEqualsMethod").GetBoolean()}/" +
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedClass").GetBoolean()}/" +
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedMethod").GetBoolean()}/" +
                 $"{root.GetProperty("authoritative").GetBoolean()}");
@@ -1134,11 +1140,17 @@ internal static class Program
         $LASTEXITCODE | Should -Be 0 -Because (
             $buildOutput -join [Environment]::NewLine)
         $runOutput = @(& dotnet (
-                Join-Path $appDir 'bin/Debug/net8.0/App.dll') 2>&1)
+                Join-Path $appDir (
+                    'bin/Debug/net8.0/Microsoft.Maui.TestUtils.DeviceTests.dll')) 2>&1)
         $LASTEXITCODE | Should -Be 0 -Because (
             $runOutput -join [Environment]::NewLine)
         $runOutput | Should -Contain 'before=0/0'
         $runOutput | Should -Contain 'after=1/1'
+        $runOutput | Should -Contain 'legacy-XUnitTestRunner=0/0'
+        $runOutput | Should -Contain 'legacy-ReflectionBasedXunitTestRunner=0/0'
+        ($runOutput -join [Environment]::NewLine) | Should -Match (
+            'discovered=(?=[^\r\n]*Shell)(?=[^\r\n]*Issue34738)' +
+            '\[[^\r\n]+\] Issue34738DisabledTabUsesTabBarDisabledColor')
         $runOutput | Should -Contain 'XUnitTestRunner=False/1/1'
         $runOutput | Should -Contain 'ReflectionBasedXunitTestRunner=False/1/1'
         $runOutput | Should -Contain (
@@ -1146,9 +1158,11 @@ internal static class Program
         $runOutput | Should -Contain (
             'result-ReflectionBasedXunitTestRunner=' +
             'Issue34738DisabledTabUsesTabBarDisabledColor')
-        $runOutput | Should -Contain 'diagnostic-XUnitTestRunner=1/1/True/True/False'
         $runOutput | Should -Contain (
-            'diagnostic-ReflectionBasedXunitTestRunner=1/1/True/True/False')
+            'diagnostic-XUnitTestRunner=1/1/1/True/False/True/True/False')
+        $runOutput | Should -Contain (
+            'diagnostic-ReflectionBasedXunitTestRunner=' +
+            '1/1/1/True/False/True/True/False')
         $runOutput | Should -Contain 'exception-XUnitTestRunner=1024/1024/True'
         $runOutput | Should -Contain (
             'exception-ReflectionBasedXunitTestRunner=1024/1024/True')

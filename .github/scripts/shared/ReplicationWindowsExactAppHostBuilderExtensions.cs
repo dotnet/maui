@@ -19,6 +19,8 @@ using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
@@ -103,12 +105,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 	internal sealed class ReplicationWindowsExactHeadlessTestRunner : HeadlessTestRunner
 	{
 		readonly ReplicationWindowsExactRunnerDiagnostics _diagnostics;
+		readonly TestOptions _options;
 
 		public ReplicationWindowsExactHeadlessTestRunner(
 			HeadlessRunnerOptions runnerOptions,
 			TestOptions options)
 			: base(runnerOptions, options)
 		{
+			_options = options;
 			_diagnostics = new(options);
 		}
 
@@ -117,8 +121,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			_diagnostics.BeginRunnerConfiguration();
 			try
 			{
+				var selection = DiscoverExpectedTest(_options, _diagnostics);
 				var runner = base.GetTestRunner(logWriter);
-				ConfigureExactRunner(runner);
+				ConfigureExactRunner(runner, selection);
 				_diagnostics.RecordRunner(runner);
 				return runner;
 			}
@@ -129,7 +134,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			}
 		}
 
-		internal static void ConfigureExactRunner(TestRunner runner)
+		internal static void ConfigureExactRunner(
+			TestRunner runner,
+			DiscoveredTestSelection selection)
 		{
 			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
 			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
@@ -142,9 +149,96 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 			runner.RunAllTestsByDefault = false;
 			runner.SkipClass(selectedClass, isExcluded: false);
-			runner.SkipMethod(selectedMethod, isExcluded: false);
+			runner.SkipMethod(selection.DisplayName, isExcluded: false);
+		}
+
+		internal static DiscoveredTestSelection DiscoverExpectedTest(
+			TestOptions options,
+			ReplicationWindowsExactRunnerDiagnostics diagnostics)
+		{
+			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
+			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
+			if (!ReplicationWindowsDeviceTestClassFilter.UsesExactMethodSelector ||
+				string.IsNullOrWhiteSpace(selectedClass) ||
+				string.IsNullOrWhiteSpace(selectedMethod))
+			{
+				throw new InvalidOperationException("The exact Windows runner requires trusted class and method selectors.");
+			}
+
+			var assemblies = options.Assemblies
+				.Distinct()
+				.Where(assembly => assembly.GetType(selectedClass, throwOnError: false) is not null)
+				.ToArray();
+			if (assemblies.Length != 1)
+				throw new InvalidOperationException("The exact Windows test class must resolve in exactly one test assembly.");
+
+			var assemblyPath = assemblies[0].Location;
+			if (string.IsNullOrWhiteSpace(assemblyPath))
+				throw new InvalidOperationException("The exact Windows test assembly must have an on-disk location.");
+
+			using var controller = new XunitFrontController(
+				AppDomainSupport.Denied,
+				assemblyPath,
+				configFileName: null,
+				shadowCopy: false);
+			using var discoverySink = new TestDiscoverySink();
+			var configuration = new TestAssemblyConfiguration
+			{
+				PreEnumerateTheories = false,
+			};
+			var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
+			discoveryOptions.SetSynchronousMessageReporting(true);
+			controller.Find(
+				includeSourceInformation: false,
+				discoverySink,
+				discoveryOptions);
+			discoverySink.Finished.WaitOne();
+
+			var discoveredCases = discoverySink.TestCases ?? new List<ITestCase>();
+			var classCases = discoveredCases
+				.Where(testCase => string.Equals(
+					testCase.TestMethod.TestClass.Class.Name,
+					selectedClass,
+					StringComparison.Ordinal))
+				.ToArray();
+			var methodCases = classCases
+				.Where(testCase => string.Equals(
+					testCase.TestMethod.Method.Name,
+					selectedMethod,
+					StringComparison.Ordinal))
+				.ToArray();
+			diagnostics.RecordDiscovery(
+				discoveredCases.Count,
+				classCases.Length,
+				methodCases);
+			if (methodCases.Length != 1)
+				throw new InvalidOperationException("The exact Windows test method must discover exactly one xUnit test case.");
+
+			var displayName = methodCases[0].DisplayName;
+			if (string.IsNullOrWhiteSpace(displayName) ||
+				displayName.Length > 1024 ||
+				displayName.Any(char.IsControl))
+			{
+				throw new InvalidOperationException("The exact Windows test case has an invalid xUnit display name.");
+			}
+
+			return new(
+				selectedClass,
+				selectedMethod,
+				displayName,
+				discoveredCases.Count,
+				classCases.Length,
+				methodCases.Length);
 		}
 	}
+
+	internal sealed record DiscoveredTestSelection(
+		string ClassName,
+		string MethodName,
+		string DisplayName,
+		int DiscoveredCaseCount,
+		int ClassCaseCount,
+		int MethodCaseCount);
 
 	internal sealed class ReplicationWindowsExactRunnerDiagnostics
 	{
@@ -163,6 +257,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		string _stage = "startup";
 		string? _expectedTestInspectionFailureType;
 		string? _configurationFailureType;
+		int _discoveredCaseCount;
+		int _discoveredClassCaseCount;
+		int _discoveredMethodCaseCount;
+		int _discoveredDisplayNameLength;
+		string? _discoveredDisplayNameSha256;
+		bool _discoveredDisplayNameEndsWithMethod;
+		bool _discoveredDisplayNameEqualsMethod;
 
 		public ReplicationWindowsExactRunnerDiagnostics(TestOptions options)
 		{
@@ -182,6 +283,33 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		public void BeginRunnerConfiguration()
 		{
 			Volatile.Write(ref _stage, "runner-configuration");
+			WriteSnapshot();
+		}
+
+		public void RecordDiscovery(
+			int discoveredCaseCount,
+			int discoveredClassCaseCount,
+			IReadOnlyList<ITestCase> discoveredMethodCases)
+		{
+			_discoveredCaseCount = discoveredCaseCount;
+			_discoveredClassCaseCount = discoveredClassCaseCount;
+			_discoveredMethodCaseCount = discoveredMethodCases.Count;
+			if (discoveredMethodCases.Count == 1)
+			{
+				var displayName = discoveredMethodCases[0].DisplayName;
+				var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
+				_discoveredDisplayNameLength = displayName.Length;
+				_discoveredDisplayNameSha256 = Convert.ToHexString(
+						SHA256.HashData(Encoding.UTF8.GetBytes(displayName)))
+					.ToLowerInvariant();
+				_discoveredDisplayNameEndsWithMethod = displayName.EndsWith(
+					selectedMethod,
+					StringComparison.Ordinal);
+				_discoveredDisplayNameEqualsMethod = string.Equals(
+					displayName,
+					selectedMethod,
+					StringComparison.Ordinal);
+			}
 			WriteSnapshot();
 		}
 
@@ -338,6 +466,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 				runnerType = _runnerType,
 				expectedTypeCount = _expectedTypeCount,
 				expectedMethodCount = _expectedMethodCount,
+				discoveredCaseCount = _discoveredCaseCount,
+				discoveredClassCaseCount = _discoveredClassCaseCount,
+				discoveredMethodCaseCount = _discoveredMethodCaseCount,
+				discoveredDisplayNameLength = _discoveredDisplayNameLength,
+				discoveredDisplayNameSha256 = _discoveredDisplayNameSha256,
+				discoveredDisplayNameEndsWithMethod = _discoveredDisplayNameEndsWithMethod,
+				discoveredDisplayNameEqualsMethod = _discoveredDisplayNameEqualsMethod,
 				expectedTestInspectionFailureType = _expectedTestInspectionFailureType,
 				configurationFailureType = _configurationFailureType,
 				firstChanceExceptions = _exceptions,

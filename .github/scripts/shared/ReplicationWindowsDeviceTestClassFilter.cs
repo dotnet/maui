@@ -82,8 +82,6 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 		Console.WriteLine("[MAUI replication] Packaged device-test class filter: " + selectedClass);
 		if (selectedMethod is not null)
 		{
-			// MAUI's FactAttribute sets the xUnit test-case display name to the bare
-			// method name. The class filter keeps this pair exact.
 			Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", selectedMethod);
 			Console.WriteLine("[MAUI replication] Packaged device-test method filter: " + selectedMethod);
 		}
@@ -99,6 +97,8 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 	{
 		// Refresh the pinned XHarness singleton after installing trusted selectors so
 		// selection does not depend on which consumer initialized it first.
+		Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", selectedClass);
+		Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", selectedMethod);
 		var options = new ApplicationOptions();
 		var expectedMethod = selectedMethod;
 		if (options.ClassMethodFilters.Count != 1 ||
