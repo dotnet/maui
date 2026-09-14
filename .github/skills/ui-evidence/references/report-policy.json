@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "workflowName": "ui-evidence",
+  "verdictPrecedence": [
+    "head-functional-failure-advisory",
+    "visual-change-advisory",
+    "layout-change-advisory",
+    "inconclusive",
+    "no-difference-observed",
+    "not-applicable"
+  ],
+  "requiredSections": [
+    "## UI evidence analysis",
+    "**Empirical verdict:**",
+    "### Coverage",
+    "### Evidence",
+    "### Limitations"
+  ],
+  "requiredFooter": "> Automated analysis by the **ui-evidence** agentic workflow.",
+  "requiredDisclaimer": "This result is advisory and is not a merge gate.",
+  "maximumReportCharacters": 20000,
+  "claims": {
+    "noDifferenceIsNotClean": true,
+    "sourceMappingIsNotCausality": true,
+    "devFlowIsSupportingEvidence": true,
+    "advisoryOnly": true
+  }
+}

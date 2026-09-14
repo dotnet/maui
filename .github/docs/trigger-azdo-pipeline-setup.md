@@ -155,6 +155,33 @@ The identity needs **"Queue builds"** permission on the target pipeline(s):
 | `dnceng-public` | `public` | 302 (maui-pr), 314 (maui-pr-devicetests) |
 | `DevDiv` | `DevDiv` | 27723 |
 
+### Optional UI-evidence workflow
+
+The AI `/ui-evidence` workflow can queue the standalone, non-AI
+`eng/pipelines/ci-ui-evidence.yml` pipeline. Manual measurement runs do not need
+this GitHub integration.
+
+1. Register the pipeline in `dnceng-public/public`.
+2. Grant the managed identity Basic access and **Queue builds** permission.
+3. Add repository Actions variable `MAUI_UI_EVIDENCE_PIPELINE_ID` with its
+   pipeline definition ID.
+4. Configure the existing `AZDO_TRIGGER_CLIENT_ID` and
+   `AZDO_TRIGGER_TENANT_ID` secrets and the `copilot-pat-pool` environment.
+5. Add a federated credential with subject
+   `repo:dotnet/maui:environment:copilot-pat-pool` and audience
+   `api://AzureADTokenExchange`. The `azdo-trigger` environment subject above
+   does not authorize a different environment.
+
+The queue job exchanges GitHub OIDC for a short-lived Azure DevOps token; no
+additional client secret is required. It pins the pipeline source version to the
+trusted harness SHA. PR-controlled code runs only in the measurement pipeline,
+without GitHub or Azure DevOps write credentials. Neither the model nor PR code
+receives the queue job's token.
+
+See [UI evidence workflow](ui-evidence.md) for the optional model/PAT setup and
+[UI evidence measurements](../../docs/ui-evidence.md) for the independent manual
+pipeline.
+
 ## Step 4: Set GitHub Repository Secrets
 
 In **dotnet/maui** → **Settings** → **Secrets and variables** → **Actions**, add:

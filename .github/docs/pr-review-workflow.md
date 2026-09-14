@@ -4,6 +4,7 @@ This guide explains the automated review commands used in dotnet/maui pull reque
 
 - `/review`
 - `/review tests`
+- `/ui-evidence`
 
 It is intended for Microsoft maintainers and community contributors who want to understand when to request an automated review, what the automation does, and how to interpret the resulting comments.
 
@@ -14,6 +15,7 @@ It is intended for Microsoft maintainers and community contributors who want to 
 | `/review` | Repository users with write, maintain, or admin access | Queues the full MAUI Copilot PR review pipeline. | Updates the PR with an `AI Summary` comment. |
 | `/review <platform>` | Repository users with write, maintain, or admin access | Queues the full review pipeline for a specific platform: `android`, `ios`, `catalyst`, or `windows`. | Updates the PR with an `AI Summary` comment. |
 | `/review tests` | Repository users with write, maintain, or admin access | Reviews current CI/test failures and classifies whether they are likely PR-caused, unrelated, or insufficiently evidenced. | Adds or updates a `Test Failure Review` comment. |
+| `/ui-evidence` | Repository users with write, maintain, or admin access | Runs trusted paired UI scenarios on applicable Android and Windows targets against merge-base and PR head. | Adds or updates an advisory `UI evidence analysis` comment. |
 
 Only repository users with write access can trigger these commands. Community contributors should ask a maintainer to run the relevant command for their PR.
 
@@ -29,6 +31,11 @@ Use `/review tests` when the question is specifically about CI/test failures, fo
 - "Are these failures unrelated infrastructure or existing failures?"
 
 Do not use `/review tests` as a substitute for a code review. It does not approve, request changes, apply labels, trigger reruns, or change the PR. It only posts evidence-based failure classification.
+
+Use `/ui-evidence` when a Controls/Core/Graphics change may affect rendered layout
+or interaction. This optional AI workflow builds on the standalone
+[UI evidence measurements](../../docs/ui-evidence.md). See
+[UI evidence workflow](ui-evidence.md) for setup and report policy.
 
 ## `/review`: full PR review
 
