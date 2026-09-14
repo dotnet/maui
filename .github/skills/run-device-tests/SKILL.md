@@ -230,6 +230,13 @@ standard one-argument launch. Its registration and selector implementation must
 come from attested overrides, not a source edit lost when the product baseline is
 restored.
 
+The method identifier is not necessarily its xUnit display name. MAUI's
+`FactDiscoverer` wraps cases in `DeviceTestCase`, which prefixes category traits
+to the inner method name. The strict runner must discover the exact structural
+class-and-method pair, require one unambiguous case, and install that case's actual
+display name directly in the runner. Do not construct a prefix or send the decorated
+name through comma-splitting environment/options transport.
+
 Do not remove inherited categories or alter the generated test to make it runnable.
 Missing selector metadata or required overrides must fail closed. The native result
 still has to contain exactly the expected test identity and count; a successful
