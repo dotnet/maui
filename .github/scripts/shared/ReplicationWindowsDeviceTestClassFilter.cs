@@ -12,6 +12,7 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 	const string ArgumentPrefix = "--maui-replication-include-class=";
 	const string ClassMetadataKey = "MauiReplicationWindowsIncludeClassBase64";
 	const string MethodMetadataKey = "MauiReplicationWindowsIncludeMethodBase64";
+	const string ExactMethodSelectorMetadataKey = "MauiReplicationWindowsExactMethodSelector";
 	static readonly Regex AllowedClass = new(
 		@"^Microsoft\.Maui\.DeviceTests\.[A-Za-z_][A-Za-z0-9_]{0,255}$",
 		RegexOptions.CultureInvariant);
@@ -24,6 +25,10 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 	{
 		var metadataClass = ReadMetadataSelector(ClassMetadataKey);
 		var selectedMethod = ReadMetadataSelector(MethodMetadataKey);
+		var exactMethodSelector = string.Equals(
+			ReadMetadataValue(ExactMethodSelectorMetadataKey),
+			"true",
+			StringComparison.Ordinal);
 		string? commandLineClass = null;
 		foreach (var argument in Environment.GetCommandLineArgs())
 		{
@@ -46,6 +51,10 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 
 		if (selectedClass is null && selectedMethod is null)
 			return;
+		if (exactMethodSelector && (selectedClass is null || selectedMethod is null))
+			throw new InvalidOperationException("The exact packaged device-test selector requires both class and method metadata.");
+		if (!exactMethodSelector && selectedMethod is not null)
+			throw new InvalidOperationException("Packaged device-test method metadata requires exact selector mode.");
 
 		if (selectedClass is null ||
 			!AllowedClass.IsMatch(selectedClass) ||
@@ -69,17 +78,7 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 
 	static string? ReadMetadataSelector(string key)
 	{
-		string? encoded = null;
-		foreach (var attribute in typeof(ReplicationWindowsDeviceTestClassFilter)
-			.Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
-		{
-			if (!string.Equals(attribute.Key, key, StringComparison.Ordinal))
-				continue;
-			if (encoded is not null)
-				throw new InvalidOperationException("The packaged device-test selector metadata was supplied more than once.");
-			encoded = attribute.Value;
-		}
-
+		var encoded = ReadMetadataValue(key);
 		if (encoded is null)
 			return null;
 		if (encoded.Length == 0)
@@ -93,5 +92,20 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 		{
 			throw new InvalidOperationException("The packaged device-test selector metadata is invalid.", ex);
 		}
+	}
+
+	static string? ReadMetadataValue(string key)
+	{
+		string? value = null;
+		foreach (var attribute in typeof(ReplicationWindowsDeviceTestClassFilter)
+			.Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+		{
+			if (!string.Equals(attribute.Key, key, StringComparison.Ordinal))
+				continue;
+			if (value is not null)
+				throw new InvalidOperationException("The packaged device-test selector metadata was supplied more than once.");
+			value = attribute.Value;
+		}
+		return value;
 	}
 }

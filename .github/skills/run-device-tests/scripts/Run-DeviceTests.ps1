@@ -2508,7 +2508,8 @@ try {
             "/p:CustomAfterMicrosoftCSharpTargets=$windowsClassFilterOverrideTargets",
             "/p:MauiReplicationWindowsClassFilterSource=$windowsClassFilterSourcePath",
             "/p:MauiReplicationWindowsIncludeClassBase64=$windowsClassFilterValueBase64",
-            "/p:MauiReplicationWindowsIncludeMethodBase64=$windowsMethodFilterValueBase64"
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$windowsMethodFilterValueBase64",
+            "/p:MauiReplicationWindowsExactMethodSelector=$(if ($windowsIssueSelector) { 'true' } else { 'false' })"
         )
         $buildArgs += $windowsClassFilterBuildProperties
     }
