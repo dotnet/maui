@@ -49,12 +49,12 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 		}
 		var selectedClass = metadataClass ?? commandLineClass;
 
-		if (selectedClass is null && selectedMethod is null)
-			return;
 		if (exactMethodSelector && (selectedClass is null || selectedMethod is null))
 			throw new InvalidOperationException("The exact packaged device-test selector requires both class and method metadata.");
 		if (!exactMethodSelector && selectedMethod is not null)
 			throw new InvalidOperationException("Packaged device-test method metadata requires exact selector mode.");
+		if (selectedClass is null && selectedMethod is null)
+			return;
 
 		if (selectedClass is null ||
 			!AllowedClass.IsMatch(selectedClass) ||

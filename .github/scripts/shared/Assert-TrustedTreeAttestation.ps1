@@ -51,6 +51,7 @@ $script:TrustedTreeKeyScriptPaths = @(
     'scripts/shared/ReplicationWindowsWinUiRegistrations.json',
     'scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs',
     'scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets',
+    'scripts/shared/ReplicationWindowsExactAppHostBuilderExtensions.cs',
     'scripts/shared/Invoke-ReplicationWindowsAppx.ps1',
     'scripts/shared/Get-ReplicationWindowsCrashDiagnostic.ps1',
     'scripts/shared/Assert-ReplicationAppleAppSandbox.ps1',

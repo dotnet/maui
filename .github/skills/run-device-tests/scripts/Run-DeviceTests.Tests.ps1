@@ -402,6 +402,8 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
             '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')
         $targetsPath = Join-Path $PSScriptRoot (
             '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets')
+        $exactRegistrationSourcePath = Join-Path $PSScriptRoot (
+            '../../../scripts/shared/ReplicationWindowsExactAppHostBuilderExtensions.cs')
         $registrationSourcePath = Join-Path $PSScriptRoot (
             '../../../../src/TestUtils/src/DeviceTests.Runners/AppHostBuilderExtensions.cs')
         Copy-Item -LiteralPath $registrationSourcePath `
@@ -577,6 +579,7 @@ static class Program
             "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
             "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
             "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" `
+            "/p:MauiReplicationWindowsExactAppHostBuilderExtensionsSource=$exactRegistrationSourcePath" `
             '/p:MauiReplicationWindowsExactMethodSelector=true' 2>&1
         $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
         $app = Join-Path $appDir (
@@ -605,6 +608,7 @@ static class Program
             "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
             "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
             "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
+            "/p:MauiReplicationWindowsExactAppHostBuilderExtensionsSource=$exactRegistrationSourcePath" `
             '/p:MauiReplicationWindowsExactMethodSelector=true' 2>&1
         $LASTEXITCODE | Should -Not -Be 0
         ($missingMethodBuild -join [Environment]::NewLine) |
@@ -622,6 +626,18 @@ static class Program
         ($methodWithoutExactBuild -join [Environment]::NewLine) |
             Should -Match 'method selector requires exact-method mode'
 
+        $missingOverrideBuild = & dotnet build (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) --nologo --verbosity quiet -t:Rebuild `
+            "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
+            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
+            "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" `
+            '/p:MauiReplicationWindowsExactMethodSelector=true' 2>&1
+        $LASTEXITCODE | Should -Not -Be 0
+        ($missingOverrideBuild -join [Environment]::NewLine) |
+            Should -Match 'exact-runner source override was not supplied'
+
         Remove-Item -LiteralPath (Join-Path $appDir 'bin'), (
             Join-Path $appDir 'obj') -Recurse -Force
         $ordinaryBuild = & dotnet build (
@@ -638,6 +654,41 @@ static class Program
             'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner')
         $ordinaryOutput | Should -Not -Contain (
             'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
+    }
+
+    It 'rejects exact mode without class and method metadata during initialization' {
+        $appDir = Join-Path $TestDrive 'windows-empty-exact-selector'
+        New-Item -ItemType Directory -Path $appDir -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')) `
+            -Destination (Join-Path $appDir 'ReplicationWindowsDeviceTestClassFilter.cs')
+        @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MauiReplicationWindowsExactMethodSelector</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
+'@ | Set-Content (Join-Path $appDir 'App.csproj') -Encoding utf8NoBOM
+        'System.Console.WriteLine("unexpected-main");' |
+            Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
+
+        $buildOutput = & dotnet build (Join-Path $appDir 'App.csproj') `
+            --nologo --verbosity quiet 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $buildOutput -join [Environment]::NewLine)
+        $runOutput = @(& dotnet (
+                Join-Path $appDir 'bin/Debug/net8.0/App.dll') 2>&1)
+        $LASTEXITCODE | Should -Not -Be 0
+        ($runOutput -join [Environment]::NewLine) |
+            Should -Match 'exact packaged device-test selector requires both class and method metadata'
+        $runOutput | Should -Not -Contain 'unexpected-main'
     }
 
     It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {
