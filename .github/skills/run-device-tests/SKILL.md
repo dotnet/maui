@@ -237,6 +237,15 @@ build or empty result is not evidence that the test ran. Ordinary category runs,
 strict sibling regression runs, other platforms, and AppContainer/certification
 checks retain their existing behavior.
 
+Exact Windows runs can also retain `maui-replication-windows-diagnostics-<launch-ticks>.json`
+beside their host-side results. This bounded, non-authoritative record describes
+the selected identity, effective filter counts, concrete runner, dynamic-code mode,
+target type/method discovery, and bounded exception-prefix hashes with explicit
+length/truncation information rather than raw messages.
+Missing, malformed, stale, or unreadable diagnostics must only produce a warning;
+they must not replace the native result or mask its original failure. Never use
+this diagnostic record to certify a passing test, causal arm, or fix publication.
+
 ### Available Test Categories
 
 Common categories in Controls.DeviceTests:
