@@ -11,6 +11,11 @@
       <_Parameter1>MauiReplicationWindowsIncludeMethodBase64</_Parameter1>
       <_Parameter2>$(MauiReplicationWindowsIncludeMethodBase64)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"
+                       Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true'">
+      <_Parameter1>MauiReplicationWindowsExactMethodSelector</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
   <Target Name="_ValidateMauiReplicationWindowsClassFilterSource"
           BeforeTargets="CoreCompile"
@@ -21,5 +26,15 @@
            Text="The trusted Windows device-test class-filter source does not exist." />
     <Error Condition="'$(MauiReplicationWindowsIncludeClassBase64)' == ''"
            Text="The trusted Windows device-test class selector was not supplied." />
+    <Error Condition="'$(MauiReplicationWindowsExactMethodSelector)' != '' and
+                      '$(MauiReplicationWindowsExactMethodSelector)' != 'true' and
+                      '$(MauiReplicationWindowsExactMethodSelector)' != 'false'"
+           Text="The trusted Windows exact-method selector mode is invalid." />
+    <Error Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true' and
+                      '$(MauiReplicationWindowsIncludeMethodBase64)' == ''"
+           Text="The trusted Windows exact-method selector was not supplied." />
+    <Error Condition="'$(MauiReplicationWindowsIncludeMethodBase64)' != '' and
+                      '$(MauiReplicationWindowsExactMethodSelector)' != 'true'"
+           Text="The trusted Windows device-test method selector requires exact-method mode." />
   </Target>
 </Project>

@@ -402,19 +402,122 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
             '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')
         $targetsPath = Join-Path $PSScriptRoot (
             '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets')
+        $registrationSourcePath = Join-Path $PSScriptRoot (
+            '../../../../src/TestUtils/src/DeviceTests.Runners/AppHostBuilderExtensions.cs')
+        Copy-Item -LiteralPath $registrationSourcePath `
+            -Destination (Join-Path $appDir 'AppHostBuilderExtensions.cs')
         @'
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefineConstants>WINDOWS</DefineConstants>
   </PropertyGroup>
 </Project>
 '@ | Set-Content (
             Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
         ) -Encoding utf8NoBOM
         @'
+using System;
+using System.Collections.Generic;
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public sealed class ServiceCollection
+    {
+        public List<Type> RegisteredTypes { get; } = new();
+    }
+
+    public static class ServiceCollectionServiceExtensions
+    {
+        public static ServiceCollection AddSingleton<T>(
+            this ServiceCollection services, T instance)
+        {
+            services.RegisteredTypes.Add(typeof(T));
+            return services;
+        }
+
+        public static ServiceCollection AddTransient<T>(
+            this ServiceCollection services, Func<IServiceProvider, T> factory)
+        {
+            services.RegisteredTypes.Add(typeof(T));
+            return services;
+        }
+
+        public static T GetRequiredService<T>(this IServiceProvider provider) =>
+            throw new NotSupportedException();
+    }
+}
+
+namespace Microsoft.Extensions.Logging
+{
+    public interface ILoggerFactory
+    {
+        object CreateLogger(string name);
+    }
+
+    public sealed class LoggingBuilder { }
+}
+
+namespace Microsoft.Extensions.Logging.Console
+{
+    public static class ConsoleLoggerExtensions
+    {
+        public static Microsoft.Extensions.Logging.LoggingBuilder AddConsole(
+            this Microsoft.Extensions.Logging.LoggingBuilder builder) => builder;
+    }
+}
+
+namespace Microsoft.Maui.Hosting
+{
+    public sealed class MauiAppBuilder
+    {
+        public Microsoft.Extensions.DependencyInjection.ServiceCollection Services { get; } = new();
+        public Microsoft.Extensions.Logging.LoggingBuilder Logging { get; } = new();
+        public MauiAppBuilder UseMauiApp(Func<IServiceProvider, object> factory) => this;
+    }
+}
+
+namespace Microsoft.Maui.Controls.Hosting { }
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
+{
+    public sealed class TestOptions { }
+    public sealed class HeadlessRunnerOptions { }
+}
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
+{
+    public sealed class MauiVisualRunnerApp
+    {
+        public MauiVisualRunnerApp(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions options,
+            object logger) { }
+    }
+}
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
+{
+    public sealed class HeadlessTestRunner
+    {
+        public HeadlessTestRunner(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
+    }
+
+    public sealed class ControlsHeadlessTestRunner
+    {
+        public ControlsHeadlessTestRunner(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
+    }
+}
+'@ | Set-Content (Join-Path $appDir 'Stubs.cs') -Encoding utf8NoBOM
+        @'
 using System.Reflection;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests;
 
@@ -444,13 +547,21 @@ static class Program
                 method.DeclaringType?.FullName == selectedClass &&
                 $"{method.DeclaringType.FullName}.{method.Name}" == selectedMethod)
             .ToArray();
+        var targetMethod = typeof(ShellTests).GetMethod(
+            nameof(ShellTests.Issue34738DisabledTabUsesTabBarDisabledColor))!;
         var categories = typeof(ShellTests).GetCustomAttributes<CategoryAttribute>()
             .Select(attribute => attribute.Name)
-            .Concat(runnable.Single().GetCustomAttributes<CategoryAttribute>()
+            .Concat(targetMethod.GetCustomAttributes<CategoryAttribute>()
                 .Select(attribute => attribute.Name));
 
         Console.WriteLine("selected=" + string.Join(",", runnable.Select(method => method.Name)));
         Console.WriteLine("categories=" + string.Join(",", categories));
+
+        var builder = new MauiAppBuilder();
+        builder.UseControlsHeadlessRunner(new HeadlessRunnerOptions());
+        Console.WriteLine("registered=" + string.Join(
+            ",",
+            builder.Services.RegisteredTypes.Select(type => type.Name)));
     }
 }
 '@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
@@ -465,7 +576,8 @@ static class Program
             "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
             "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
             "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
-            "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" 2>&1
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" `
+            '/p:MauiReplicationWindowsExactMethodSelector=true' 2>&1
         $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
         $app = Join-Path $appDir (
             'bin/Debug/net8.0/TestUtils.DeviceTests.Runners.dll')
@@ -475,6 +587,8 @@ static class Program
         $safeOutput | Should -Contain (
             'selected=Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain 'categories=Shell,Issue34738'
+        $safeOutput | Should -Contain (
+            'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
         ($safeOutput -join [Environment]::NewLine) |
             Should -Not -Match 'selected=.*ExistingSameClassPeer'
 
@@ -484,6 +598,46 @@ static class Program
         $LASTEXITCODE | Should -Not -Be 0
         ($unsafeOutput -join [Environment]::NewLine) |
             Should -Match 'packaged device-test class selectors do not match'
+
+        $missingMethodBuild = & dotnet build (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) --nologo --verbosity quiet -t:Rebuild `
+            "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
+            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
+            "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
+            '/p:MauiReplicationWindowsExactMethodSelector=true' 2>&1
+        $LASTEXITCODE | Should -Not -Be 0
+        ($missingMethodBuild -join [Environment]::NewLine) |
+            Should -Match 'exact-method selector was not supplied'
+
+        $methodWithoutExactBuild = & dotnet build (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) --nologo --verbosity quiet -t:Rebuild `
+            "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
+            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
+            "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" `
+            '/p:MauiReplicationWindowsExactMethodSelector=false' 2>&1
+        $LASTEXITCODE | Should -Not -Be 0
+        ($methodWithoutExactBuild -join [Environment]::NewLine) |
+            Should -Match 'method selector requires exact-method mode'
+
+        Remove-Item -LiteralPath (Join-Path $appDir 'bin'), (
+            Join-Path $appDir 'obj') -Recurse -Force
+        $ordinaryBuild = & dotnet build (
+            Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
+        ) --nologo --verbosity quiet 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $ordinaryBuild -join [Environment]::NewLine)
+        $ordinaryOutput = @(& dotnet $app 2>&1)
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $ordinaryOutput -join [Environment]::NewLine)
+        $ordinaryOutput | Should -Contain 'selected='
+        $ordinaryOutput | Should -Contain 'categories=Shell,Issue34738'
+        $ordinaryOutput | Should -Contain (
+            'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner')
+        $ordinaryOutput | Should -Not -Contain (
+            'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
     }
 
     It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {

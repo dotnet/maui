@@ -1,6 +1,8 @@
 ﻿#nullable enable
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -80,8 +82,25 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 
+			if (HasReplicationExactMethodSelector())
+			{
+				appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
+						svc.GetRequiredService<HeadlessRunnerOptions>(),
+						svc.GetRequiredService<TestOptions>()));
+			}
+
 			return appHostBuilder;
 		}
+
+		static bool HasReplicationExactMethodSelector() =>
+			typeof(AppHostBuilderExtensions).Assembly
+				.GetCustomAttributes<AssemblyMetadataAttribute>()
+				.Any(attribute =>
+					string.Equals(
+						attribute.Key,
+						"MauiReplicationWindowsExactMethodSelector",
+						StringComparison.Ordinal) &&
+					string.Equals(attribute.Value, "true", StringComparison.Ordinal));
 #endif
 	}
 }
