@@ -1236,6 +1236,8 @@ function Start-WindowsDeviceTestProcess {
 
         [string]$PackagedIncludeClass = '',
 
+        [switch]$UsePackagedExactSelector,
+
         [switch]$RequireAppContainer,
 
         [string]$PackageName = ''
@@ -1244,6 +1246,13 @@ function Start-WindowsDeviceTestProcess {
     if ($RequireAppContainer) {
         if ([string]::IsNullOrWhiteSpace($PackageName)) {
             throw 'Windows AppContainer device-test launch requires a package name.'
+        }
+        if ($UsePackagedExactSelector -and $ArgumentList.Count -ne 1) {
+            throw 'The exact packaged issue selector requires a one-argument Windows runner launch.'
+        }
+        if ($UsePackagedExactSelector -and
+            -not [string]::IsNullOrWhiteSpace($PackagedIncludeClass)) {
+            throw 'The exact packaged issue selector cannot use the legacy command-line class selector.'
         }
         $packagedArguments = @($ArgumentList)
         if (-not [string]::IsNullOrWhiteSpace($PackagedIncludeClass)) {
@@ -1897,7 +1906,8 @@ function Invoke-WindowsDeviceTestApp {
     $resultFiles = @()
     $packagedIncludeClass = if (
         $RequireAppContainer -and
-        -not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath)
+        -not [string]::IsNullOrWhiteSpace($StrictTestEvidencePath) -and
+        -not $UsePackagedExactSelector
     ) {
         $IncludeClasses
     } else {
@@ -1929,6 +1939,7 @@ function Invoke-WindowsDeviceTestApp {
             -ArgumentList @($resultFile, "-1") `
             -IncludeClasses $IncludeClasses `
             -PackagedIncludeClass $packagedIncludeClass `
+            -UsePackagedExactSelector:$UsePackagedExactSelector `
             -RequireAppContainer:$RequireAppContainer `
             -PackageName $PackageName
         if (Wait-ForPath -Path $categoriesFile -TimeoutSeconds 120 -Process $discoveryProcess) {
@@ -1994,6 +2005,7 @@ function Invoke-WindowsDeviceTestApp {
                 -ArgumentList @($resultFile, [string]$categoryIndex) `
                 -IncludeClasses $IncludeClasses `
                 -PackagedIncludeClass $packagedIncludeClass `
+                -UsePackagedExactSelector:$UsePackagedExactSelector `
                 -RequireAppContainer:$RequireAppContainer `
                 -PackageName $PackageName
             $categoryStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
@@ -2067,6 +2079,7 @@ function Invoke-WindowsDeviceTestApp {
             -ArgumentList @($resultFile) `
             -IncludeClasses $IncludeClasses `
             -PackagedIncludeClass $packagedIncludeClass `
+            -UsePackagedExactSelector:$UsePackagedExactSelector `
             -RequireAppContainer:$RequireAppContainer `
             -PackageName $PackageName
 

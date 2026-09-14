@@ -792,6 +792,54 @@ static class Program
             '*packaged device-test class selector is invalid*')
     }
 
+    It 'keeps exact packaged issue launches on the one-argument runner path' {
+        $script:capturedPackagedArguments = $null
+        function ConvertTo-ReplicationWindowsAppArguments {
+            param([string[]]$Arguments)
+            $script:capturedPackagedArguments = @($Arguments)
+            return 'encoded arguments'
+        }
+        function Start-ReplicationWindowsAppContainerProcess {
+            param(
+                [string]$PackageName,
+                [string]$AppArguments,
+                [switch]$RequireWindow
+            )
+            return [pscustomobject]@{
+                Process = [pscustomobject]@{ Id = 42 }
+            }
+        }
+
+        $className = 'Microsoft.Maui.DeviceTests.ShellTests'
+        $null = Start-WindowsDeviceTestProcess `
+            -ArgumentList @('result.xml') `
+            -IncludeClasses $className `
+            -UsePackagedExactSelector `
+            -RequireAppContainer `
+            -PackageName 'Microsoft.Maui.Controls.DeviceTests'
+
+        $script:capturedPackagedArguments | Should -Be @('result.xml')
+        {
+            Start-WindowsDeviceTestProcess `
+                -ArgumentList @('result.xml', "--maui-replication-include-class=$className") `
+                -IncludeClasses $className `
+                -UsePackagedExactSelector `
+                -RequireAppContainer `
+                -PackageName 'Microsoft.Maui.Controls.DeviceTests'
+        } | Should -Throw -ExpectedMessage (
+            '*requires a one-argument Windows runner launch*')
+        {
+            Start-WindowsDeviceTestProcess `
+                -ArgumentList @('result.xml') `
+                -IncludeClasses $className `
+                -PackagedIncludeClass $className `
+                -UsePackagedExactSelector `
+                -RequireAppContainer `
+                -PackageName 'Microsoft.Maui.Controls.DeviceTests'
+        } | Should -Throw -ExpectedMessage (
+            '*cannot use the legacy command-line class selector*')
+    }
+
     It 'uses the built-in XHarness class include variable for Apple runs' {
         Get-Content $scriptPath -Raw |
             Should -Match '--set-env=NUNIT_SKIPPED_CLASSES=\$IncludeClasses'
