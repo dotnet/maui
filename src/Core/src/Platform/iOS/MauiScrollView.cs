@@ -74,7 +74,8 @@ namespace Microsoft.Maui.Platform
 		// across layout passes to avoid re-walking the ancestor chain (and the allocation that
 		// walk would otherwise require) on every LayoutSubviews call. Invalidated by the same
 		// events that previously invalidated the whole-view _parentHandlesSafeArea cache:
-		// SafeAreaInsetsDidChange, InvalidateSafeArea, and MovedToWindow.
+		// SafeAreaInsetsDidChange, InvalidateSafeArea, MovedToWindow, ancestor
+		// SafeAreaEdges changes, and ancestor keyboard transitions.
 		readonly bool[] _blockedEdgesCache = new bool[4];
 		bool _blockedEdgesCacheValid;
 
@@ -348,8 +349,12 @@ namespace Microsoft.Maui.Platform
 			_uiKitOwnsDelegatedSystemInset = uiKitOwnsSystemInset;
 			_delegatedTopInset = (nfloat)topInset;
 			_delegatedScrollIndicatorTopInset = (nfloat)topInset;
-			UpdateContentInsetAdjustmentBehavior();
 			_delegatedAdjustedContentInset = AdjustedContentInset;
+			if (UpdateContentInsetAdjustmentBehavior())
+			{
+				InvalidateConstraintsCache();
+				_safeAreaInvalidated = true;
+			}
 			ContentInset = new UIEdgeInsets(
 				baseContentTop + _delegatedTopInset,
 				contentInset.Left,
@@ -789,7 +794,7 @@ namespace Microsoft.Maui.Platform
 					height = Bounds.Height + 1;
 				}
 			}
-			else if (SystemAdjustedContentInset == UIEdgeInsets.Zero || ContentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentBehavior.Never)
+			else if (!UIKitCompensatesForSafeArea)
 			{
 				// UIKit is not currently reserving any space for the safe area on
 				// this scroll view - either because the adjustment behavior is set
@@ -925,8 +930,8 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
-		    /// </summary>
+	    /// Called when the scroll orientation has changed to trigger proper RTL layout recalculation.
+	    /// </summary>
 
 		internal void OnOrientationChanged()
 		{
