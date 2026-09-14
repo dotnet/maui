@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Controls.Platform
 			if (!showNavBar)
 			{
 				lp.Height = 0;
-				// Clear stale inset padding so the hidden AppBar can fully collapse.
+				// Clear stale AppBarLayout padding so MeasuredHeight collapses to 0 and the
+				// inset listener stops consuming the top inset, preventing a blank gap (#34472, #35103).
 				appBar?.SetPadding(0, 0, 0, 0);
 			}
 			else

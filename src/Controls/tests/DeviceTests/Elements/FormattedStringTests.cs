@@ -50,5 +50,56 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal("HELLOWORLD", actual);
 		}
+
+		// Covers https://github.com/dotnet/maui/issues/36519
+		// Updating Label.FormattedText must clear any highlighter/background-color state applied
+		// by the previous FormattedText. On Windows specifically, the native TextBlock's
+		// TextHighlighters collection was never cleared, so stale highlighter ranges (from
+		// BackgroundColor/TextColor spans) survived and bled onto the new text, leaking
+		// TextHighlighter instances. This test verifies the rendered output on all platforms,
+		// with an additional native-collection check on Windows.
+		[Fact]
+		public async Task UpdatingFormattedTextClearsPreviousHighlights()
+		{
+			var label = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				FontSize = 16,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "Highlighted", BackgroundColor = Colors.Red },
+						new Span { Text = " text", TextColor = Colors.Blue },
+					}
+				},
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+
+#if WINDOWS
+				// Sanity check: highlighters were created for the initial FormattedText
+				Assert.NotEmpty(handler.PlatformView.TextHighlighters);
+#endif
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
+
+				// Update to a FormattedString with no highlighted spans at all
+				label.FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "Plain text with no highlights" },
+					}
+				};
+
+#if WINDOWS
+				Assert.Empty(handler.PlatformView.TextHighlighters);
+#endif
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+			});
+		}
 	}
 }

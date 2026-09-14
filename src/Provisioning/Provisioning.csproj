@@ -36,7 +36,8 @@
 
 	<ItemGroup>
 		<!-- Android SDK - construct package names to install -->
-		<AndroidSdkPackages Include="platform-tools%3B$(AndroidSdkPlatformToolsVersion)" />
+		<!-- platform-tools doesn't support versioned install in sdkmanager, install latest -->
+		<AndroidSdkPackages Include="platform-tools" />
 		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
 		<AndroidSdkPackages Include="emulator" />
 	</ItemGroup>
@@ -51,9 +52,9 @@
 		</ItemGroup>
 
 		<!-- Install SDK Common Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
 
-		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkPlatformApiPackages">
@@ -66,9 +67,9 @@
 		</ItemGroup>
 
 		<!-- Install SDK Platform API Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
 
-		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkEmulatorImagePackages">
@@ -83,10 +84,10 @@
 		</ItemGroup>
 
 		<!-- Install SDK Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
+		<Exec Command="dotnet maui android sdk install &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;"
 		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 
-		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet maui android sdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkAvdCreateAvds">
@@ -98,10 +99,10 @@
 		</ItemGroup>
 
 		<!-- Create all the AVD's we need based on the api levels specified -->
-		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
+		<Exec Command="dotnet maui android emulator create &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --package &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force"
 			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 
-		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet maui android emulator list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
@@ -295,97 +296,153 @@
 	<!-- ******************************************** -->
 	<!-- * Java JDK Provisioning                   -->
 	<!-- ******************************************** -->
-	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows;ProvisionJdkLinux">
-		<!-- Call Detect again if we provisioned so we can get the installed path -->
-		<CallTarget Targets="DetectJdkVersion" Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
-		
-		<!-- Set the preferred JDK path -->
-		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
+	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion">
+		<Exec
+			Command="dotnet maui android jdk install --version $(_AndroidJdkMajorVersion) --path &quot;$(_AndroidJdkInstallPath)&quot; --ci"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
+
+		<!-- Re-detect because archive layouts can place the JDK home below the requested install path. -->
+		<Exec
+			Command="dotnet maui android jdk check --ci --json"
+			ConsoleToMSBuild="True"
+			EnvironmentVariables="JAVA_HOME="
+			IgnoreExitCode="True"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+			<Output TaskParameter="ConsoleOutput" ItemName="_ProvisionedAndroidJdkOutputLines" />
+			<Output TaskParameter="ExitCode" PropertyName="_ProvisionedAndroidJdkCheckExitCode" />
+		</Exec>
+
+		<PropertyGroup Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+			<_ProvisionedAndroidJdkOutput>@(_ProvisionedAndroidJdkOutputLines->'%(Identity)', '')</_ProvisionedAndroidJdkOutput>
+		</PropertyGroup>
+
+		<JsonPeek
+			Content="$(_ProvisionedAndroidJdkOutput)"
+			Query="$.status"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkCheckExitCode)' == '0' AND $(_ProvisionedAndroidJdkOutput.Contains('status')) ">
+			<Output TaskParameter="Result" PropertyName="_ProvisionedAndroidJdkStatus" />
+		</JsonPeek>
+
+		<JsonPeek
+			Content="$(_ProvisionedAndroidJdkOutput)"
+			Query="$.details.version"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkStatus)' == 'Ok' AND $(_ProvisionedAndroidJdkOutput.Contains('details')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkDetectedVersion" />
+		</JsonPeek>
+
+		<JsonPeek
+			Content="$(_ProvisionedAndroidJdkOutput)"
+			Query="$.details.path"
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND '$(_ProvisionedAndroidJdkStatus)' == 'Ok' AND $(_ProvisionedAndroidJdkOutput.Contains('details')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkPath" />
+		</JsonPeek>
+
+		<PropertyGroup>
+			<_AndroidJavaExecutable>$(_AndroidJdkPath)/bin/java</_AndroidJavaExecutable>
+			<_AndroidJavaExecutable Condition=" '$(IsWindows)' == 'True' ">$(_AndroidJdkPath)\bin\java.exe</_AndroidJavaExecutable>
+		</PropertyGroup>
+
+		<Error
+			Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' AND ('$(_ProvisionedAndroidJdkCheckExitCode)' != '0' OR '$(_ProvisionedAndroidJdkStatus)' != 'Ok') "
+			Text="Microsoft.Maui.Cli could not verify the provisioned JDK (exit code: $(_ProvisionedAndroidJdkCheckExitCode), status: $(_ProvisionedAndroidJdkStatus))." />
+		<Error
+			Condition=" '$(_AndroidJdkDetectedVersion)' != '$(_AndroidJdkMajorVersion)' "
+			Text="Microsoft.Maui.Cli detected JDK $(_AndroidJdkDetectedVersion), but JDK $(_AndroidJdkMajorVersion) is required." />
+		<Error
+			Condition=" '$(_AndroidJdkPath)' == '' OR !Exists('$(_AndroidJavaExecutable)') "
+			Text="Microsoft.Maui.Cli did not provide a usable JDK home." />
+
+		<Exec
+			Command="&quot;$(_AndroidJavaExecutable)&quot; -version"
+			ConsoleToMSBuild="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_ProvisionedAndroidJavaVersionOutputLines" />
+		</Exec>
+
+		<PropertyGroup>
+			<_ProvisionedAndroidJavaVersionOutput>@(_ProvisionedAndroidJavaVersionOutputLines->'%(Identity)', ' ')</_ProvisionedAndroidJavaVersionOutput>
+			<_ProvisionedAndroidJavaVersionMatch>$([System.Text.RegularExpressions.Regex]::Match('$(_ProvisionedAndroidJavaVersionOutput)', 'version &quot;[0-9]+(\.[0-9]+){1,3}&quot;'))</_ProvisionedAndroidJavaVersionMatch>
+			<_ProvisionedAndroidJavaVersion>$([System.Text.RegularExpressions.Regex]::Match('$(_ProvisionedAndroidJavaVersionMatch)', '[0-9]+(\.[0-9]+){1,3}'))</_ProvisionedAndroidJavaVersion>
+		</PropertyGroup>
+
+		<Error
+			Condition=" '$(_ProvisionedAndroidJavaVersion)' == '' "
+			Text="Could not determine the version of the JDK at '$(_AndroidJdkPath)'." />
+		<Error
+			Condition=" '$(_ProvisionedAndroidJavaVersion)' != '' AND
+				($([MSBuild]::VersionLessThan('$(_ProvisionedAndroidJavaVersion)', '$(_AndroidJdkVersion)')) OR
+				!$([MSBuild]::VersionLessThan('$(_ProvisionedAndroidJavaVersion)', '$(_AndroidJdkVersionNextMajor)'))) "
+			Text="JDK $(_ProvisionedAndroidJavaVersion) is outside the required range [$(_AndroidJdkVersion), $(_AndroidJdkVersionNextMajor))." />
 
 		<Message Text="##vso[task.setvariable variable=JAVA_HOME]$(_AndroidJdkPath)" Importance="High" />
 
-		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec
+			Command="dotnet maui android jdk check --ci"
+			EnvironmentVariables="JAVA_HOME=$(_AndroidJdkPath)" />
 	</Target>
 
 	<Target Name="DetectJdkVersion">
-		<!-- Concat the console output lines into a single property -->
 		<PropertyGroup>
-			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
 			<_AndroidJdkVersion>$(JavaJdkVersion)</_AndroidJdkVersion>
 			<!-- Version parsing requires more than just a single major version number -->
 			<_AndroidJdkVersion Condition=" '$(_AndroidJdkVersion)' != '' AND !$(_AndroidJdkVersion.Contains('.')) ">$(JavaJdkVersion).0</_AndroidJdkVersion>
 			<_AndroidJdkMajorVersion>$([System.Version]::Parse($(_AndroidJdkVersion)).Major)</_AndroidJdkMajorVersion>
-			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
+			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1)).0</_AndroidJdkVersionNextMajor>
+			<_AndroidJdkInstallPath Condition=" '$(IsMacOS)' == 'True' ">$(HOME)/Library/Developer/Android/jdk</_AndroidJdkInstallPath>
+			<_AndroidJdkInstallPath Condition=" '$(IsLinux)' == 'True' ">$(HOME)/.jdk</_AndroidJdkInstallPath>
+			<_AndroidJdkInstallPath Condition=" '$(IsWindows)' == 'True' ">$(LOCALAPPDATA)\Android\jdk</_AndroidJdkInstallPath>
 		</PropertyGroup>
 
-		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
-
-		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
-		<Exec Command="dotnet android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --format=json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<!-- Use maui android jdk check to detect installed JDK -->
+		<Exec Command="dotnet maui android jdk check --ci --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AndroidJdkListOutputLines" />
+			<Output TaskParameter="ExitCode" PropertyName="_AndroidJdkCheckExitCode" />
 		</Exec>
 
 		<!-- Concat the console output lines into a single property -->
 		<PropertyGroup>
-			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
+			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', '')</_AndroidJdkListOutput>
 		</PropertyGroup>
 
-		<!-- Peek the appium version info from the json output -->
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Version">
-			<Output TaskParameter="Result" ItemName="_AndroidJdkVersions" />
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.status" Condition=" '$(_AndroidJdkCheckExitCode)' == '0' AND $(_AndroidJdkListOutput.Contains('status')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkStatus" />
 		</JsonPeek>
 
-		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Home">
-			<Output TaskParameter="Result" ItemName="_AndroidJdkPaths" />
+		<!-- Peek the JDK version and path from the json output -->
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.version" Condition=" '$(_AndroidJdkStatus)' == 'Ok' AND $(_AndroidJdkListOutput.Contains('details')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkDetectedVersion" />
+		</JsonPeek>
+
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$.details.path" Condition=" '$(_AndroidJdkStatus)' == 'Ok' AND $(_AndroidJdkListOutput.Contains('details')) ">
+			<Output TaskParameter="Result" PropertyName="_AndroidJdkPath" />
 		</JsonPeek>
 
 		<PropertyGroup>
-			<_AndroidJdkRequiresProvisioning Condition=" '@(_AndroidJdkVersions)' == '' ">True</_AndroidJdkRequiresProvisioning>
-			<_AndroidJdkPath>%(_AndroidJdkPaths.Identity)</_AndroidJdkPath>
+			<_AndroidJavaExecutable>$(_AndroidJdkPath)/bin/java</_AndroidJavaExecutable>
+			<_AndroidJavaExecutable Condition=" '$(IsWindows)' == 'True' ">$(_AndroidJdkPath)\bin\java.exe</_AndroidJavaExecutable>
 		</PropertyGroup>
-	</Target>
 
-	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
-		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" />
-	</Target>
+		<Exec
+			Command="&quot;$(_AndroidJavaExecutable)&quot; -version"
+			ConsoleToMSBuild="True"
+			Condition=" '$(_AndroidJdkPath)' != '' AND Exists('$(_AndroidJavaExecutable)') ">
+			<Output TaskParameter="ConsoleOutput" ItemName="_DetectedAndroidJavaVersionOutputLines" />
+		</Exec>
 
-	<Target Name="ProvisionJdkLinux" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsLinux)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
 		<PropertyGroup>
-			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">amd64</_JdkHostArchitecture>
-			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64</_JdkHostArchitecture>
-			<ProvisionRequiresSudo Condition=" '$(ProvisionRequiresSudo)' == '' ">True</ProvisionRequiresSudo>
-			<_JdkSudo Condition=" '$(ProvisionRequiresSudo)' == 'True' ">sudo </_JdkSudo>
+			<_DetectedAndroidJavaVersionOutput>@(_DetectedAndroidJavaVersionOutputLines->'%(Identity)', ' ')</_DetectedAndroidJavaVersionOutput>
+			<_DetectedAndroidJavaVersionMatch>$([System.Text.RegularExpressions.Regex]::Match('$(_DetectedAndroidJavaVersionOutput)', 'version &quot;[0-9]+(\.[0-9]+){1,3}&quot;'))</_DetectedAndroidJavaVersionMatch>
+			<_DetectedAndroidJavaVersion>$([System.Text.RegularExpressions.Regex]::Match('$(_DetectedAndroidJavaVersionMatch)', '[0-9]+(\.[0-9]+){1,3}'))</_DetectedAndroidJavaVersion>
 		</PropertyGroup>
-		<ItemGroup>
-			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg --force-confdef -i packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get update" />
-			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
-		</ItemGroup>
-		<Exec Command="%(_ProvisionJdkLinuxCommands.Identity)" />
+
 		<PropertyGroup>
-			<_AndroidJdkPath>/usr/lib/jvm/msopenjdk-$(_AndroidJdkMajorVersion)-$(_JdkHostArchitecture)</_AndroidJdkPath>
+			<_AndroidJdkRequiresProvisioning>False</_AndroidJdkRequiresProvisioning>
+			<_AndroidJdkRequiresProvisioning
+				Condition=" '$(_AndroidJdkCheckExitCode)' != '0' OR '$(_AndroidJdkStatus)' != 'Ok' OR '$(_AndroidJdkPath)' == '' OR '$(_DetectedAndroidJavaVersion)' == '' ">True</_AndroidJdkRequiresProvisioning>
+			<_AndroidJdkRequiresProvisioning
+				Condition=" '$(_DetectedAndroidJavaVersion)' != '' AND
+					($([MSBuild]::VersionLessThan('$(_DetectedAndroidJavaVersion)', '$(_AndroidJdkVersion)')) OR
+					!$([MSBuild]::VersionLessThan('$(_DetectedAndroidJavaVersion)', '$(_AndroidJdkVersionNextMajor)'))) ">True</_AndroidJdkRequiresProvisioning>
 		</PropertyGroup>
-	</Target>
-
-	<Target Name="ProvisionJdkWindows" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsWindows)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
-		<PropertyGroup>
-			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x64</_JdkHostArchitecture>
-			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">aarch64</_JdkHostArchitecture>
-			<_JdkUrl>https://aka.ms/download-jdk/microsoft-jdk-$(_AndroidJdkVersion)-windows-$(_JdkHostArchitecture).msi</_JdkUrl>
-			<!-- https://aka.ms/download-jdk/microsoft-jdk-17.0.12-windows-x64.msi -->
-			<_JdkDownloadTempDirectory>$([System.IO.Path]::Combine($([System.IO.Path]::GetTempPath()), "microsoft-openjdk"))</_JdkDownloadTempDirectory>
-		</PropertyGroup>
-
-		<DownloadFile SourceUrl="$(_JdkUrl)" DestinationFolder="./tmp/" Retries="3" SkipUnchangedFiles="False">
-			<Output TaskParameter="DownloadedFile" PropertyName="_JdkDownloadedFile" />
-		</DownloadFile>
-
-		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome /quiet /l*v &quot;$(LogDirectory)/msiexec-jdk-log.log&quot;" />
-
-		<!-- <Exec Command="Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" />
-		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" /> -->
 	</Target>
 
 	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium;ProvisionJdk">

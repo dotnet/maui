@@ -302,6 +302,7 @@ Microsoft.Maui.Controls.ShellContentQueryParameter.Value.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.OnVisibilityChanged(Android.Views.View changedView, Android.Views.ViewStates visibility) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.RecyclerViewScrollListener<TItemsView, TItemsViewSource>.OnScrollStateChanged(AndroidX.RecyclerView.Widget.RecyclerView recyclerView, int newState) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewAdapter<TItemsView, TItemsSource>.IsSelectionEnabled(Android.Views.ViewGroup parent, int viewType) -> bool
+Microsoft.Maui.Controls.IndicatorView.~IndicatorView() -> void
 ~override Microsoft.Maui.Controls.RadioButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.SwipeItems.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Brush.HasTransparency(Microsoft.Maui.Controls.Brush background) -> bool
