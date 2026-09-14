@@ -355,15 +355,23 @@ sealed class SafeAreaScrollViewCoordinator
 		var currentEffectiveTopInset =
 			_delegatedTopInset + (_uiKitOwnsSystemInset ? uiKitSystemTopInset : 0);
 
-		// Moving the system region to UIKit is not a change MAUI may postpone, even when it shrinks
-		// the effective inset. MAUI's own value is a high-water mark that still carries the expanded
-		// large-title height, while UIKit's safe area is the navigation bar's real geometry; keeping
-		// the larger one leaves the scroll view resting against a title that is no longer there.
-		// Deferring only helps if something retries, and the retry is the next arrange - which a
-		// scroll view that has settled never produces, so the stale inset would survive for the rest
-		// of the page's life and strand the first row a full large-title height below a collapsed
-		// bar (#33037 follow-up). Applying the handoff mid-gesture is safe because the content offset
-		// is never rewritten while an interaction is live, so only the resting position moves.
+		// A change of ownership is never postponed, in either direction. The side that supplies the
+		// system region also defines its value, so keeping the previous pair holds an inset that no
+		// longer describes anything. Deferring only helps if something retries, and the retry here
+		// is the next arrange - which a scroll view that has settled never produces - so a deferred
+		// handoff survives for the rest of the page's life rather than for the rest of the gesture.
+		//
+		// The motivating direction is MAUI -> UIKit while the large title collapses: MAUI's value is
+		// a high-water mark still carrying the expanded title height, so the handoff shrinks the
+		// effective inset and the guard below used to swallow it. The scroll view then kept resting
+		// against a title that was no longer there, stranding the first row a full large-title
+		// height under a collapsed bar (#33037 follow-up). The reverse direction, UIKit -> MAUI when
+		// propagation is lost, reaches the same guard and previously survived it only because the
+		// effective inset happened to come out equal; covering both directions makes that explicit
+		// instead of incidental.
+		//
+		// Applying either direction mid-gesture is safe because the content offset is only rewritten
+		// once the interaction ends, so a handoff moves the resting position and nothing else.
 		var systemTopInsetOwnershipChanged = requestedUIKitOwnsSystemInset != _uiKitOwnsSystemInset;
 
 		// Shrinking the inset MAUI owns mid-gesture pulls the content out from under the finger, so

@@ -22,6 +22,15 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		// An expanded iOS 26 large-title band. Only stability across a single test matters.
 		const double SystemTopInset = 96;
+
+		// The same navigation bar once the large title has collapsed: status bar plus the standard
+		// bar, without the large-title band.
+		const double CollapsedSystemTopInset = 44;
+
+		// A clearly scrolled position, far enough from the top that UIKit has no reason of its own
+		// to move it when the inset changes.
+		const double ScrolledContentOffset = 200;
+
 		const double PageWidth = 390;
 		const double PageHeight = 844;
 
@@ -80,6 +89,45 @@ namespace Microsoft.Maui.DeviceTests
 
 				AssertOwnedByMaui(scrollView);
 				AssertTopInsetIsCoveredExactlyOnce(scrollView);
+			});
+
+		[Fact]
+		public Task LateSafeAreaHandoffDuringDragAdoptsACollapsedSystemInset() =>
+			RunCoordinatorTest((coordinator, host, scrollView) =>
+			{
+				// The page arrives with the large title expanded and no safe area propagated yet, so
+				// MAUI supplies the whole expanded band itself.
+				scrollView.SimulatedSafeAreaTopInset = 0;
+				DelegateSafeArea(coordinator, host);
+
+				AssertOwnedByMaui(scrollView);
+
+				scrollView.ContentSize = new CoreGraphics.CGSize(PageWidth, PageHeight * 3);
+				scrollView.ContentOffset = new CoreGraphics.CGPoint(0, ScrolledContentOffset);
+
+				// The user drags, the large title collapses, and UIKit propagates the *collapsed*
+				// band. MAUI's remembered value is still the expanded one, so this handoff shrinks
+				// the effective inset - which is exactly the shape the mid-gesture shrink guard used
+				// to swallow. Swallowing it leaves the scroll view resting against a title height
+				// that no longer exists, and because the guard only retries on the next arrange a
+				// settled scroll view never gets one (#33037 follow-up).
+				scrollView.SimulatedInteraction = true;
+				scrollView.SimulatedSafeAreaTopInset = (nfloat)CollapsedSystemTopInset;
+				DelegateSafeArea(coordinator, host, systemTopInset: CollapsedSystemTopInset);
+
+				// Ownership moves in the same pass, not after the gesture.
+				AssertOwnedByUIKit(scrollView);
+
+				// The effective inset is the collapsed band, covered exactly once: MAUI must have
+				// given up its copy in the same pass it handed the region over, or the two stack.
+				AssertTopInsetIsCoveredExactlyOnce(scrollView, CollapsedSystemTopInset);
+
+				// A handoff moves the resting position only. Rewriting the offset mid-gesture would
+				// pull the content out from under the finger.
+				Assert.InRange(
+					(double)scrollView.ContentOffset.Y,
+					ScrolledContentOffset - 0.5,
+					ScrolledContentOffset + 0.5);
 			});
 
 		[Fact]
@@ -182,9 +230,14 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.InRange((double)scrollView.ContentInset.Top, -0.5, 0.5);
 		}
 
-		static void AssertTopInsetIsCoveredExactlyOnce(SimulatedSafeAreaScrollView scrollView)
+		static void AssertTopInsetIsCoveredExactlyOnce(SimulatedSafeAreaScrollView scrollView) =>
+			AssertTopInsetIsCoveredExactlyOnce(scrollView, SystemTopInset);
+
+		static void AssertTopInsetIsCoveredExactlyOnce(
+			SimulatedSafeAreaScrollView scrollView,
+			double expectedTopInset)
 		{
-			Assert.InRange(scrollView.EffectiveTopInset, SystemTopInset - 0.5, SystemTopInset + 0.5);
+			Assert.InRange(scrollView.EffectiveTopInset, expectedTopInset - 0.5, expectedTopInset + 0.5);
 			Assert.InRange(
 				(double)scrollView.VerticalScrollIndicatorInsets.Top,
 				(double)scrollView.ContentInset.Top - 0.5,

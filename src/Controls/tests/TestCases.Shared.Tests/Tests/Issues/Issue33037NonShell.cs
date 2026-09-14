@@ -13,6 +13,12 @@ public class Issue33037NonShell : _IssuesUITest
 
 	public override string Issue => "iOS Large Title display disappears when scrolling in non-Shell NavigationPage";
 
+	// Content and navigation-bar rects come out of the accessibility tree as whole points, and the
+	// two edges are expected to coincide exactly, so this only absorbs that rounding. It is small
+	// enough that the defect it guards - a whole large-title band, 52pt on iPhone 11 Pro - cannot
+	// hide inside it.
+	const int GapTolerance = 2;
+
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[TestCase("Issue33037ScrollViewButton", "Issue33037ScrollViewScroller", "Issue33037 Direct", null)]
@@ -176,12 +182,12 @@ public class Issue33037NonShell : _IssuesUITest
 		}
 	}
 
-	// Reporter follow-up for #33037: after the large title collapses, the first row has to follow the
-	// navigation bar up. A delegated top inset that keeps the expanded large-title height leaves the
-	// scroll view resting a full large-title height too low, which the reporter saw as a gap between
-	// the collapsed title and the first item. The barely-scrollable case is the one that exposes it,
-	// because that scroll view always rebounds to its resting position instead of holding a scrolled
-	// one.
+	// Reporter follow-up for #33037: once the large title collapses, the first row has to sit
+	// directly under the shortened navigation bar. A delegated top inset that keeps the expanded
+	// large-title height leaves the scroll view resting a full large-title height too low, which the
+	// reporter saw as a gap between the collapsed title and the first item. The barely-scrollable
+	// case is the one that exposes it, because that scroll view always rebounds to its resting
+	// position instead of holding a scrolled one.
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[TestCase("Issue33037ReporterCollectionViewButton")]
@@ -194,12 +200,18 @@ public class Issue33037NonShell : _IssuesUITest
 		try
 		{
 			const string title = "LargeTitle CollectionView";
+
+			// The accessibility rect of the title *text* is inset within the bar, so it cannot stand
+			// in for the bar's bottom edge. The navigation bar element itself carries the geometry
+			// the content has to line up with.
 			var expandedTitleRect = GetExpandedNavigationTitleRect(title);
+			var expandedBarRect = GetNavigationBarRect(expandedTitleRect);
 			var scrollerRect = App.WaitForElement("Issue33037ReporterCollectionViewScroller").GetRect();
 			var expandedFirstItemRect = App.WaitForElement("Item 0").GetRect();
 
-			Assert.That(expandedFirstItemRect.Y, Is.GreaterThanOrEqualTo(expandedTitleRect.Bottom - 2),
-				"The first item should start below the expanded large title.");
+			// Both directions matter on arrival: no gap, and not hidden underneath the large title.
+			Assert.That(expandedFirstItemRect.Y, Is.EqualTo(expandedBarRect.Bottom).Within(GapTolerance),
+				"The first item should start exactly at the bottom of the expanded large title.");
 
 			var centerX = scrollerRect.X + scrollerRect.Width / 2;
 			App.DragCoordinates(centerX, scrollerRect.Y + scrollerRect.Height * 0.6f, centerX,
@@ -209,14 +221,17 @@ public class Issue33037NonShell : _IssuesUITest
 			Assert.That(collapsedTitleRect.Height, Is.LessThan(expandedTitleRect.Height),
 				"The navigation title should collapse after the first scroll gesture.");
 
-			var collapsedFirstItemRect = App.WaitForElement("Item 0").GetRect();
-			var collapseDelta = expandedTitleRect.Height - collapsedTitleRect.Height;
+			var collapsedBarRect = GetNavigationBarRect(collapsedTitleRect);
+			Assert.That(collapsedBarRect.Bottom, Is.LessThan(expandedBarRect.Bottom),
+				"The navigation bar should be shorter once the large title collapses.");
 
-			// The row may sit at or above the collapsed bar (scrolled under it), but it must never be
-			// stranded a large-title height below it.
-			Assert.That(collapsedFirstItemRect.Y,
-				Is.LessThan(expandedFirstItemRect.Y - collapseDelta / 2),
-				"The first item must follow the collapsing large title instead of resting against the expanded title height.");
+			// The row may sit above the collapsed bar (scrolled underneath it), but it must never be
+			// left below it: any positive distance here is the gap the reporter photographed, and
+			// the regression measured a full large-title band (52pt on iPhone 11 Pro).
+			var collapsedFirstItemRect = App.WaitForElement("Item 0").GetRect();
+			Assert.That(collapsedFirstItemRect.Y, Is.LessThanOrEqualTo(collapsedBarRect.Bottom + GapTolerance),
+				$"The first item must follow the collapsing large title. It rested "
+				+ $"{collapsedFirstItemRect.Y - collapsedBarRect.Bottom}pt below the collapsed navigation bar.");
 		}
 		finally
 		{
@@ -858,6 +873,33 @@ public class Issue33037NonShell : _IssuesUITest
 			$"The navigation title '{title}' should expand before the scenario starts.");
 
 		return titleElement.GetRect();
+	}
+
+	/// <summary>
+	/// The real navigation bar geometry, which is what page content lines up against. The title
+	/// text rect is inset within the bar by a different amount in the expanded and collapsed states,
+	/// so it is not a usable stand-in for the bar's bottom edge.
+	/// </summary>
+	/// <param name="titleRect">
+	/// The title currently being tracked. A modal navigation page can leave more than one
+	/// navigation bar in the tree, so the bar is identified as the one enclosing that title.
+	/// </param>
+	System.Drawing.Rectangle GetNavigationBarRect(System.Drawing.Rectangle titleRect)
+	{
+		var navigationBars = App.Query.ByClass("XCUIElementTypeNavigationBar");
+		Assert.That(navigationBars, Is.Not.Empty,
+			"The accessibility tree did not expose a navigation bar.");
+
+		var enclosingBars = navigationBars
+			.Select(navigationBar => navigationBar.GetRect())
+			.Where(rect => rect.Height > 0 && rect.Y <= titleRect.Y && rect.Bottom >= titleRect.Bottom)
+			.OrderBy(rect => rect.Height)
+			.ToArray();
+
+		Assert.That(enclosingBars, Is.Not.Empty,
+			$"No navigation bar encloses the tracked title {titleRect}.");
+
+		return enclosingBars[0];
 	}
 }
 #endif
