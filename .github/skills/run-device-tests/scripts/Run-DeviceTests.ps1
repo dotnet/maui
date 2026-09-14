@@ -1834,6 +1834,13 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
             'runnerType',
             'expectedTypeCount',
             'expectedMethodCount',
+            'discoveredCaseCount',
+            'discoveredClassCaseCount',
+            'discoveredMethodCaseCount',
+            'discoveredDisplayNameLength',
+            'discoveredDisplayNameSha256',
+            'discoveredDisplayNameEndsWithMethod',
+            'discoveredDisplayNameEqualsMethod',
             'expectedTestInspectionFailureType',
             'configurationFailureType',
             'firstChanceExceptions'
@@ -1878,7 +1885,33 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
             $diagnostic.expectedTypeCount -gt 64 -or
             -not (& $isInteger $diagnostic.expectedMethodCount) -or
             $diagnostic.expectedMethodCount -lt 0 -or
-            $diagnostic.expectedMethodCount -gt 64) {
+            $diagnostic.expectedMethodCount -gt 64 -or
+            -not (& $isInteger $diagnostic.discoveredCaseCount) -or
+            $diagnostic.discoveredCaseCount -lt 0 -or
+            $diagnostic.discoveredCaseCount -gt 1000000 -or
+            -not (& $isInteger $diagnostic.discoveredClassCaseCount) -or
+            $diagnostic.discoveredClassCaseCount -lt 0 -or
+            $diagnostic.discoveredClassCaseCount -gt $diagnostic.discoveredCaseCount -or
+            -not (& $isInteger $diagnostic.discoveredMethodCaseCount) -or
+            $diagnostic.discoveredMethodCaseCount -lt 0 -or
+            $diagnostic.discoveredMethodCaseCount -gt $diagnostic.discoveredClassCaseCount -or
+            -not (& $isInteger $diagnostic.discoveredDisplayNameLength) -or
+            $diagnostic.discoveredDisplayNameLength -lt 0 -or
+            $diagnostic.discoveredDisplayNameLength -gt 1024 -or
+            ($null -ne $diagnostic.discoveredDisplayNameSha256 -and (
+                $diagnostic.discoveredDisplayNameSha256 -isnot [string] -or
+                $diagnostic.discoveredDisplayNameSha256 -cnotmatch '^[0-9a-f]{64}$')) -or
+            $diagnostic.discoveredDisplayNameEndsWithMethod -isnot [bool] -or
+            $diagnostic.discoveredDisplayNameEqualsMethod -isnot [bool] -or
+            ($diagnostic.discoveredMethodCaseCount -eq 1 -and (
+                $diagnostic.discoveredDisplayNameLength -eq 0 -or
+                $null -eq $diagnostic.discoveredDisplayNameSha256 -or
+                -not $diagnostic.discoveredDisplayNameEndsWithMethod)) -or
+            ($diagnostic.discoveredMethodCaseCount -ne 1 -and (
+                $diagnostic.discoveredDisplayNameLength -ne 0 -or
+                $null -ne $diagnostic.discoveredDisplayNameSha256 -or
+                $diagnostic.discoveredDisplayNameEndsWithMethod -or
+                $diagnostic.discoveredDisplayNameEqualsMethod))) {
             throw [IO.InvalidDataException]::new()
         }
 
@@ -1997,6 +2030,15 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
             runnerType = $diagnostic.runnerType
             expectedTypeCount = $diagnostic.expectedTypeCount
             expectedMethodCount = $diagnostic.expectedMethodCount
+            discoveredCaseCount = $diagnostic.discoveredCaseCount
+            discoveredClassCaseCount = $diagnostic.discoveredClassCaseCount
+            discoveredMethodCaseCount = $diagnostic.discoveredMethodCaseCount
+            discoveredDisplayNameLength = $diagnostic.discoveredDisplayNameLength
+            discoveredDisplayNameSha256 = $diagnostic.discoveredDisplayNameSha256
+            discoveredDisplayNameEndsWithMethod =
+                $diagnostic.discoveredDisplayNameEndsWithMethod
+            discoveredDisplayNameEqualsMethod =
+                $diagnostic.discoveredDisplayNameEqualsMethod
             expectedTestInspectionFailureType =
                 $diagnostic.expectedTestInspectionFailureType
             configurationFailureType = $diagnostic.configurationFailureType
