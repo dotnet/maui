@@ -521,6 +521,11 @@ namespace Microsoft.Maui.Hosting
 
 namespace Microsoft.Maui.Controls.Hosting { }
 
+namespace Microsoft.Maui
+{
+    internal static class RuntimeFeature { }
+}
+
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
     public sealed class TestOptions
@@ -926,6 +931,11 @@ namespace Microsoft.Maui.Hosting
 }
 
 namespace Microsoft.Maui.Controls.Hosting { }
+
+namespace Microsoft.Maui
+{
+    internal static class RuntimeFeature { }
+}
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
