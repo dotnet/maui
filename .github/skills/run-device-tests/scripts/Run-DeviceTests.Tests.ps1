@@ -1120,6 +1120,8 @@ internal static class Program
                 $"{root.GetProperty("discoveredDisplayNameEqualsMethod").GetBoolean()}/" +
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedClass").GetBoolean()}/" +
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedMethod").GetBoolean()}/" +
+                $"{root.GetProperty("applicationOptions").GetProperty("methodFilterCount").GetInt32()}/" +
+                $"{root.GetProperty("applicationOptions").GetProperty("unexpectedMethodFilterCount").GetInt32()}/" +
                 $"{root.GetProperty("authoritative").GetBoolean()}");
             Console.WriteLine(
                 $"exception-{runnerType.Name}=" +
@@ -1159,10 +1161,10 @@ internal static class Program
             'result-ReflectionBasedXunitTestRunner=' +
             'Issue34738DisabledTabUsesTabBarDisabledColor')
         $runOutput | Should -Contain (
-            'diagnostic-XUnitTestRunner=1/1/1/True/False/True/True/False')
+            'diagnostic-XUnitTestRunner=1/1/1/True/False/True/False/0/0/False')
         $runOutput | Should -Contain (
             'diagnostic-ReflectionBasedXunitTestRunner=' +
-            '1/1/1/True/False/True/True/False')
+            '1/1/1/True/False/True/False/0/0/False')
         $runOutput | Should -Contain 'exception-XUnitTestRunner=1024/1024/True'
         $runOutput | Should -Contain (
             'exception-ReflectionBasedXunitTestRunner=1024/1024/True')
