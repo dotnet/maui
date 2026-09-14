@@ -1337,6 +1337,14 @@ internal static class Program
                     param($Document)
                     $Document.firstChanceExceptions[0].Message = 'must-not-be-retained'
                 }
+            },
+            @{
+                Name = 'wrong-key-case'
+                Mutate = {
+                    param($Document)
+                    $Document.Remove('stage')
+                    $Document.Stage = 'discovery-execution'
+                }
             }
         )
 

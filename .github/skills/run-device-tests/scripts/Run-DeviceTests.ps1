@@ -1841,7 +1841,7 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
         $actualRootKeys = @($diagnostic.PSObject.Properties.Name)
         if ($diagnostic -isnot [pscustomobject] -or
             $actualRootKeys.Count -ne $rootKeys.Count -or
-            @(Compare-Object $actualRootKeys $rootKeys).Count -ne 0) {
+            @(Compare-Object $actualRootKeys $rootKeys -CaseSensitive).Count -ne 0) {
             throw [IO.InvalidDataException]::new()
         }
 
@@ -1894,7 +1894,7 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
         $actualOptionKeys = @($options.PSObject.Properties.Name)
         if ($options -isnot [pscustomobject] -or
             $actualOptionKeys.Count -ne $optionKeys.Count -or
-            @(Compare-Object $actualOptionKeys $optionKeys).Count -ne 0 -or
+            @(Compare-Object $actualOptionKeys $optionKeys -CaseSensitive).Count -ne 0 -or
             -not (& $isInteger $options.classFilterCount) -or
             $options.classFilterCount -lt 0 -or
             $options.classFilterCount -gt 64 -or
@@ -1931,7 +1931,7 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
             $actualExceptionKeys = @($exception.PSObject.Properties.Name)
             if ($exception -isnot [pscustomobject] -or
                 $actualExceptionKeys.Count -ne $exceptionKeys.Count -or
-                @(Compare-Object $actualExceptionKeys $exceptionKeys).Count -ne 0 -or
+                @(Compare-Object $actualExceptionKeys $exceptionKeys -CaseSensitive).Count -ne 0 -or
                 $exception.Stage -isnot [string] -or
                 $exception.Stage -cnotin @(
                     'startup',
