@@ -2,6 +2,15 @@
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'TestUtils.DeviceTests.Runners'">
     <Compile Include="$(MauiReplicationWindowsClassFilterSource)"
              Link="ReplicationWindowsDeviceTestClassFilter.cs" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MauiReplicationWindowsIncludeClassBase64</_Parameter1>
+      <_Parameter2>$(MauiReplicationWindowsIncludeClassBase64)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute"
+                       Condition="'$(MauiReplicationWindowsIncludeMethodBase64)' != ''">
+      <_Parameter1>MauiReplicationWindowsIncludeMethodBase64</_Parameter1>
+      <_Parameter2>$(MauiReplicationWindowsIncludeMethodBase64)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
   <Target Name="_ValidateMauiReplicationWindowsClassFilterSource"
           BeforeTargets="CoreCompile"
@@ -10,5 +19,7 @@
            Text="The trusted Windows device-test class-filter source was not supplied." />
     <Error Condition="!Exists('$(MauiReplicationWindowsClassFilterSource)')"
            Text="The trusted Windows device-test class-filter source does not exist." />
+    <Error Condition="'$(MauiReplicationWindowsIncludeClassBase64)' == ''"
+           Text="The trusted Windows device-test class selector was not supplied." />
   </Target>
 </Project>

@@ -39,6 +39,7 @@ BeforeAll {
     foreach ($functionName in @(
         'ConvertTo-AzdoSafeConsole',
         'Test-DeviceTestStrictRegressionSelector',
+        'Get-ReplicationWindowsIssueSelector',
             'Invoke-PreparedIosSimctlReadOnlyQuery',
             'Assert-PreparedIosSimulatorReady',
         'Invoke-BoundedWindowsDeviceBuild',
@@ -394,7 +395,7 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
         }
     }
 
-    It 'applies the trusted packaged Windows class selector before execution and rejects unsafe selectors' {
+    It 'applies trusted packaged Windows class and method selectors before execution' {
         $appDir = Join-Path $TestDrive 'windows-packaged-class-filter'
         New-Item -ItemType Directory -Path $appDir -Force | Out-Null
         $sourcePath = Join-Path $PSScriptRoot (
@@ -413,39 +414,120 @@ System.Console.WriteLine(System.Environment.GetEnvironmentVariable("NUNIT_SKIPPE
             Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
         ) -Encoding utf8NoBOM
         @'
-var available = new[]
+using System.Reflection;
+
+namespace Microsoft.Maui.DeviceTests;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
+sealed class CategoryAttribute(string name) : Attribute
 {
-    "Microsoft.Maui.DeviceTests.LabelTests",
-    "Microsoft.Maui.DeviceTests.FormattedStringTests"
-};
-var selected = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES");
-Console.WriteLine("selected=" + string.Join(",", available.Where(value => value == selected)));
+    public string Name { get; } = name;
+}
+
+[Category("Shell")]
+partial class ShellTests
+{
+    [Category("Issue34738")]
+    public void Issue34738DisabledTabUsesTabBarDisabledColor() { }
+
+    public void ExistingSameClassPeer() { }
+}
+
+static class Program
+{
+    static void Main()
+    {
+        var selectedClass = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES");
+        var selectedMethod = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_METHODS");
+        var runnable = typeof(ShellTests).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(method =>
+                method.DeclaringType?.FullName == selectedClass &&
+                $"{method.DeclaringType.FullName}.{method.Name}" == selectedMethod)
+            .ToArray();
+        var categories = typeof(ShellTests).GetCustomAttributes<CategoryAttribute>()
+            .Select(attribute => attribute.Name)
+            .Concat(runnable.Single().GetCustomAttributes<CategoryAttribute>()
+                .Select(attribute => attribute.Name));
+
+        Console.WriteLine("selected=" + string.Join(",", runnable.Select(method => method.Name)));
+        Console.WriteLine("categories=" + string.Join(",", categories));
+    }
+}
 '@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
 
+        $className = 'Microsoft.Maui.DeviceTests.ShellTests'
+        $methodName = 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        $encodedClass = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($className))
+        $encodedMethod = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($methodName))
         $buildOutput = & dotnet build (
             Join-Path $appDir 'TestUtils.DeviceTests.Runners.csproj'
         ) --nologo --verbosity quiet `
             "/p:CustomAfterMicrosoftCSharpTargets=$targetsPath" `
-            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" 2>&1
+            "/p:MauiReplicationWindowsClassFilterSource=$sourcePath" `
+            "/p:MauiReplicationWindowsIncludeClassBase64=$encodedClass" `
+            "/p:MauiReplicationWindowsIncludeMethodBase64=$encodedMethod" 2>&1
         $LASTEXITCODE | Should -Be 0 -Because ($buildOutput -join [Environment]::NewLine)
         $app = Join-Path $appDir (
             'bin/Debug/net8.0/TestUtils.DeviceTests.Runners.dll')
 
-        $safeOutput = @(& dotnet $app (
-                '--maui-replication-include-class=' +
-                'Microsoft.Maui.DeviceTests.LabelTests') 2>&1)
+        $safeOutput = @(& dotnet $app 2>&1)
         $LASTEXITCODE | Should -Be 0 -Because ($safeOutput -join [Environment]::NewLine)
         $safeOutput | Should -Contain (
-            'selected=Microsoft.Maui.DeviceTests.LabelTests')
+            'selected=Issue34738DisabledTabUsesTabBarDisabledColor')
+        $safeOutput | Should -Contain 'categories=Shell,Issue34738'
         ($safeOutput -join [Environment]::NewLine) |
-            Should -Not -Match 'selected=.*FormattedStringTests'
+            Should -Not -Match 'selected=.*ExistingSameClassPeer'
 
         $unsafeOutput = @(& dotnet $app (
                 '--maui-replication-include-class=' +
                 'Microsoft.Maui.DeviceTests.LabelTests;Microsoft.Maui.DeviceTests.FormattedStringTests') 2>&1)
         $LASTEXITCODE | Should -Not -Be 0
         ($unsafeOutput -join [Environment]::NewLine) |
-            Should -Match 'packaged device-test class selector is invalid'
+            Should -Match 'packaged device-test class selectors do not match'
+    }
+
+    It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {
+        $selector = Get-ReplicationWindowsIssueSelector `
+            -TestFilter 'Issue34738' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.ShellTests' `
+            -IncludeMethods 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        $selector.ClassName | Should -Be 'Microsoft.Maui.DeviceTests.ShellTests'
+        $selector.MethodName | Should -Be 'Issue34738DisabledTabUsesTabBarDisabledColor'
+
+        {
+            Get-ReplicationWindowsIssueSelector `
+                -TestFilter 'Issue34738' `
+                -IncludeClasses '' `
+                -IncludeMethods ''
+        } | Should -Throw -ExpectedMessage '*one exact existing test class*'
+        {
+            Get-ReplicationWindowsIssueSelector `
+                -TestFilter 'Issue34738' `
+                -IncludeClasses (
+                    'Microsoft.Maui.DeviceTests.ShellTests,' +
+                    'Microsoft.Maui.DeviceTests.ButtonTests') `
+                -IncludeMethods 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        } | Should -Throw -ExpectedMessage '*one exact existing test class*'
+        {
+            Get-ReplicationWindowsIssueSelector `
+                -TestFilter 'Issue34738' `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -IncludeMethods 'Issue99999DisabledTabUsesTabBarDisabledColor'
+        } | Should -Throw -ExpectedMessage '*one exact existing test class*'
+        {
+            Get-ReplicationWindowsIssueSelector `
+                -TestFilter 'Issue34738' `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.Issue34738Tests' `
+                -IncludeMethods 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        } | Should -Throw -ExpectedMessage '*one exact existing test class*'
+        {
+            Get-ReplicationWindowsIssueSelector `
+                -TestFilter 'Issue34738' `
+                -IncludeClasses 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -IncludeMethods (
+                    'Issue34738DisabledTabUsesTabBarDisabledColor,' +
+                    'Issue34738UnknownPeer')
+        } | Should -Throw -ExpectedMessage '*one exact existing test class*'
     }
 
     It 'injects the trusted Windows class-filter override into the baseline graph build' {
@@ -456,7 +538,7 @@ Console.WriteLine("selected=" + string.Join(",", available.Where(value => value 
             "scripts/shared/ReplicationWindowsDeviceTestClassFilter\.targets")
         $content | Should -Match (
             '(?s)\$windowsGraphBuildArgs = @\(.*?' +
-            'if \(\$strictRegressionSelector\)\s*\{\s*' +
+            'if \(\$strictRegressionSelector -or \$windowsIssueSelector\)\s*\{\s*' +
             '\$windowsGraphBuildArgs \+= \$windowsClassFilterBuildProperties\s*\}.*?' +
             'Invoke-BoundedWindowsDeviceBuild')
         $content | Should -Match (
@@ -789,11 +871,28 @@ Describe 'Windows device test category filtering' {
         $content | Should -Match 'result path is a reparse point'
     }
 
-    It 'always requires category discovery for Controls' {
+    It 'normally requires category discovery for Controls' {
         Test-WindowsDeviceTestCategoryDiscovery `
             -Project 'Controls' `
             -TestFilter '' `
             -IncludeClasses 'Microsoft.Maui.Controls.DeviceTests.ButtonTests' |
+            Should -BeTrue
+    }
+
+    It 'uses exact packaged class and method filters instead of self-excluding a multi-category issue test' {
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Controls' `
+            -TestFilter 'Issue34738' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.ShellTests' `
+            -UsePackagedExactSelector |
+            Should -BeFalse
+    }
+
+    It 'fails back to category discovery when an exact packaged issue method is missing' {
+        Test-WindowsDeviceTestCategoryDiscovery `
+            -Project 'Controls' `
+            -TestFilter 'Issue34738' `
+            -IncludeClasses 'Microsoft.Maui.DeviceTests.ShellTests' |
             Should -BeTrue
     }
 
