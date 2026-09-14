@@ -211,6 +211,24 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					selectedMethod,
 					StringComparison.Ordinal))
 				.ToArray();
+			string? displayName = null;
+			if (methodCases.Length == 1)
+			{
+				displayName = methodCases[0].DisplayName;
+				if (string.IsNullOrWhiteSpace(displayName) ||
+					displayName.Length > 1024 ||
+					displayName.Any(char.IsControl))
+				{
+					throw new InvalidOperationException("The exact Windows test case has an invalid xUnit display name.");
+				}
+
+				var displayNameCaseCount = classCases.Count(testCase => string.Equals(
+					testCase.DisplayName,
+					displayName,
+					StringComparison.Ordinal));
+				if (displayNameCaseCount != 1)
+					throw new InvalidOperationException("The exact Windows xUnit display name must be unique within its test class.");
+			}
 			diagnostics.RecordDiscovery(
 				discoveredCases.Count,
 				classCases.Length,
@@ -218,18 +236,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			if (methodCases.Length != 1)
 				throw new InvalidOperationException("The exact Windows test method must discover exactly one xUnit test case.");
 
-			var displayName = methodCases[0].DisplayName;
-			if (string.IsNullOrWhiteSpace(displayName) ||
-				displayName.Length > 1024 ||
-				displayName.Any(char.IsControl))
-			{
-				throw new InvalidOperationException("The exact Windows test case has an invalid xUnit display name.");
-			}
-
 			return new(
 				selectedClass,
 				selectedMethod,
-				displayName,
+				displayName!,
 				discoveredCases.Count,
 				classCases.Length,
 				methodCases.Length);

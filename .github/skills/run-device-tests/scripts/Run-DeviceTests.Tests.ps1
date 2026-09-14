@@ -847,7 +847,7 @@ public sealed class ApplicationOptions
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
-    <DefineConstants>WINDOWS</DefineConstants>
+    <DefineConstants>WINDOWS;$(FixtureMode)</DefineConstants>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -975,12 +975,37 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Xunit;
 
+#if OVERSIZED_DISPLAY || INVALID_DISPLAY
+namespace Microsoft.Maui
+{
+    [Xunit.Sdk.XunitTestCaseDiscoverer(
+        "Microsoft.Maui.FactDiscoverer",
+        "Microsoft.Maui.TestUtils.DeviceTests")]
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class RejectedFactAttribute : Xunit.FactAttribute
+    {
+        public RejectedFactAttribute()
+        {
+#if OVERSIZED_DISPLAY
+            DisplayName = new string('x', 1025);
+#else
+            DisplayName = "invalid\nname";
+#endif
+        }
+    }
+}
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
     [Category("Shell")]
     public sealed class ShellTests
     {
+#if OVERSIZED_DISPLAY || INVALID_DISPLAY
+        [Microsoft.Maui.RejectedFact]
+#else
         [Fact]
+#endif
         [Category("Issue34738")]
         public void Issue34738DisabledTabUsesTabBarDisabledColor() { }
 
@@ -988,6 +1013,12 @@ namespace Microsoft.Maui.DeviceTests
         [Category("Shell")]
         public void ExistingSameClassPeer() =>
             throw new InvalidOperationException("The sibling test must remain filtered.");
+
+#if DISPLAY_COLLISION
+        [Fact(DisplayName = "Issue34738DisabledTabUsesTabBarDisabledColor")]
+        [Category("Issue34738")]
+        public void SameDisplayNamePeer() { }
+#endif
     }
 }
 
@@ -1025,9 +1056,35 @@ internal static class Program
         {
             Assemblies = new[] { typeof(ShellTests).Assembly },
         };
-        var selection = ReplicationWindowsExactHeadlessTestRunner.DiscoverExpectedTest(
-            testOptions,
-            new ReplicationWindowsExactRunnerDiagnostics(testOptions));
+        var discoveryDiagnostics = new ReplicationWindowsExactRunnerDiagnostics(testOptions);
+        DiscoveredTestSelection selection;
+        try
+        {
+            selection = ReplicationWindowsExactHeadlessTestRunner.DiscoverExpectedTest(
+                testOptions,
+                discoveryDiagnostics);
+        }
+        catch (InvalidOperationException ex)
+        {
+#if OVERSIZED_DISPLAY || INVALID_DISPLAY || DISPLAY_COLLISION
+            Console.WriteLine($"rejected={ex.Message}");
+            using var rejectedDiagnostic = JsonDocument.Parse(File.ReadAllText(
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    "maui-replication-windows-diagnostics.json")));
+            var rejectedRoot = rejectedDiagnostic.RootElement;
+            Console.WriteLine(
+                "rejection-diagnostic=" +
+                $"{rejectedRoot.GetProperty("discoveredDisplayNameLength").GetInt32()}/" +
+                $"{rejectedRoot.GetProperty("discoveredDisplayNameSha256").ValueKind == JsonValueKind.Null}");
+            return;
+#else
+            throw;
+#endif
+        }
+#if OVERSIZED_DISPLAY || INVALID_DISPLAY || DISPLAY_COLLISION
+        throw new InvalidOperationException("The invalid discovered identity was accepted.");
+#endif
         Console.WriteLine($"discovered={selection.DisplayName}");
         foreach (var typeName in new[]
         {
@@ -1168,6 +1225,35 @@ internal static class Program
         $runOutput | Should -Contain 'exception-XUnitTestRunner=1024/1024/True'
         $runOutput | Should -Contain (
             'exception-ReflectionBasedXunitTestRunner=1024/1024/True')
+
+        foreach ($rejection in @(
+                @{
+                    Mode = 'OVERSIZED_DISPLAY'
+                    Message = 'rejected=The exact Windows test case has an invalid xUnit display name.'
+                },
+                @{
+                    Mode = 'INVALID_DISPLAY'
+                    Message = 'rejected=The exact Windows test case has an invalid xUnit display name.'
+                },
+                @{
+                    Mode = 'DISPLAY_COLLISION'
+                    Message = 'rejected=The exact Windows xUnit display name must be unique within its test class.'
+                }
+            )) {
+            $outputDir = Join-Path $appDir ('bin-' + $rejection.Mode)
+            $variantBuildOutput = & dotnet build (Join-Path $appDir 'App.csproj') `
+                --no-restore --no-incremental --nologo --verbosity quiet `
+                "/p:FixtureMode=$($rejection.Mode)" `
+                "/p:OutputPath=$outputDir" 2>&1
+            $LASTEXITCODE | Should -Be 0 -Because (
+                $variantBuildOutput -join [Environment]::NewLine)
+            $variantOutput = @(& dotnet (Join-Path $outputDir (
+                        'Microsoft.Maui.TestUtils.DeviceTests.dll')) 2>&1)
+            $LASTEXITCODE | Should -Be 0 -Because (
+                $variantOutput -join [Environment]::NewLine)
+            $variantOutput | Should -Contain $rejection.Message
+            $variantOutput | Should -Contain 'rejection-diagnostic=0/True'
+        }
     }
 
     It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {
