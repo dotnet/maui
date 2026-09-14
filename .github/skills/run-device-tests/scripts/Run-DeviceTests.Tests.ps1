@@ -489,6 +489,56 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
     public sealed class HeadlessRunnerOptions { }
 }
 
+namespace Microsoft.DotNet.XHarness.TestRunners.Common
+{
+    public sealed class LogWriter { }
+
+    public class TestRunner
+    {
+        public bool RunAllTestsByDefault { get; set; } = true;
+        public List<string> IncludedClasses { get; } = new();
+        public List<string> IncludedMethods { get; } = new();
+
+        public void SkipClass(string className, bool isExcluded)
+        {
+            if (!isExcluded)
+                IncludedClasses.Add(className);
+        }
+
+        public void SkipMethod(string methodName, bool isExcluded)
+        {
+            if (!isExcluded)
+                IncludedMethods.Add(methodName);
+        }
+    }
+
+    public sealed class ApplicationOptions
+    {
+        public static ApplicationOptions Current = new(readEnvironment: false);
+
+        public ApplicationOptions()
+            : this(readEnvironment: true)
+        {
+        }
+
+        ApplicationOptions(bool readEnvironment)
+        {
+            if (!readEnvironment)
+                return;
+
+            var classes = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_CLASSES");
+            if (!string.IsNullOrEmpty(classes))
+                ClassMethodFilters = classes.Split(',');
+            var methods = Environment.GetEnvironmentVariable("NUNIT_SKIPPED_METHODS");
+            if (!string.IsNullOrEmpty(methods))
+                SingleMethodFilters = methods.Split(',');
+        }
+
+        public ICollection<string> ClassMethodFilters { get; private set; } = Array.Empty<string>();
+        public ICollection<string> SingleMethodFilters { get; private set; } = Array.Empty<string>();
+    }
+}
+
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
     public sealed class MauiVisualRunnerApp
@@ -501,11 +551,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
-    public sealed class HeadlessTestRunner
+    public class HeadlessTestRunner
     {
         public HeadlessTestRunner(
             Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
             Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
+
+        protected virtual Microsoft.DotNet.XHarness.TestRunners.Common.TestRunner GetTestRunner(
+            Microsoft.DotNet.XHarness.TestRunners.Common.LogWriter logWriter) => new();
     }
 
     public sealed class ControlsHeadlessTestRunner
@@ -518,6 +571,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 '@ | Set-Content (Join-Path $appDir 'Stubs.cs') -Encoding utf8NoBOM
         @'
 using System.Reflection;
+using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
@@ -558,12 +612,43 @@ static class Program
 
         Console.WriteLine("selected=" + string.Join(",", runnable.Select(method => method.Name)));
         Console.WriteLine("categories=" + string.Join(",", categories));
+        Console.WriteLine(
+            "options-classes=" +
+            string.Join(",", ApplicationOptions.Current.ClassMethodFilters));
+        Console.WriteLine(
+            "options-methods=" +
+            string.Join(",", ApplicationOptions.Current.SingleMethodFilters));
 
         var builder = new MauiAppBuilder();
         builder.UseControlsHeadlessRunner(new HeadlessRunnerOptions());
         Console.WriteLine("registered=" + string.Join(
             ",",
             builder.Services.RegisteredTypes.Select(type => type.Name)));
+
+        var exactRunnerType = typeof(AppHostBuilderExtensions).Assembly.GetType(
+            "Microsoft.Maui.TestUtils.DeviceTests.Runners." +
+            "ReplicationWindowsExactHeadlessTestRunner",
+            throwOnError: false);
+        if (exactRunnerType is not null)
+        {
+            var exactRunner = Activator.CreateInstance(
+                exactRunnerType,
+                new HeadlessRunnerOptions(),
+                new TestOptions())!;
+            var getTestRunner = exactRunnerType.GetMethod(
+                "GetTestRunner",
+                BindingFlags.Instance | BindingFlags.NonPublic)!;
+            var configuredRunner = (TestRunner)getTestRunner.Invoke(
+                exactRunner,
+                new object[] { new LogWriter() })!;
+            Console.WriteLine("run-all=" + configuredRunner.RunAllTestsByDefault);
+            Console.WriteLine(
+                "runner-classes=" +
+                string.Join(",", configuredRunner.IncludedClasses));
+            Console.WriteLine(
+                "runner-methods=" +
+                string.Join(",", configuredRunner.IncludedMethods));
+        }
     }
 }
 '@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
@@ -590,6 +675,17 @@ static class Program
         $safeOutput | Should -Contain (
             'selected=Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain 'categories=Shell,Issue34738'
+        $safeOutput | Should -Contain (
+            'options-classes=Microsoft.Maui.DeviceTests.ShellTests')
+        $safeOutput | Should -Contain (
+            'options-methods=Microsoft.Maui.DeviceTests.ShellTests.' +
+            'Issue34738DisabledTabUsesTabBarDisabledColor')
+        $safeOutput | Should -Contain 'run-all=False'
+        $safeOutput | Should -Contain (
+            'runner-classes=Microsoft.Maui.DeviceTests.ShellTests')
+        $safeOutput | Should -Contain (
+            'runner-methods=Microsoft.Maui.DeviceTests.ShellTests.' +
+            'Issue34738DisabledTabUsesTabBarDisabledColor')
         $safeOutput | Should -Contain (
             'registered=HeadlessRunnerOptions,ControlsHeadlessTestRunner,HeadlessTestRunner')
         ($safeOutput -join [Environment]::NewLine) |
@@ -676,6 +772,19 @@ static class Program
   </ItemGroup>
 </Project>
 '@ | Set-Content (Join-Path $appDir 'App.csproj') -Encoding utf8NoBOM
+        @'
+using System;
+using System.Collections.Generic;
+
+namespace Microsoft.DotNet.XHarness.TestRunners.Common;
+
+public sealed class ApplicationOptions
+{
+    public static ApplicationOptions Current = new();
+    public ICollection<string> ClassMethodFilters { get; } = Array.Empty<string>();
+    public ICollection<string> SingleMethodFilters { get; } = Array.Empty<string>();
+}
+'@ | Set-Content (Join-Path $appDir 'ApplicationOptions.cs') -Encoding utf8NoBOM
         'System.Console.WriteLine("unexpected-main");' |
             Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
 

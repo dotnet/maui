@@ -2,10 +2,12 @@
 #pragma warning disable CA2255
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.XHarness.TestRunners.Common;
 
 internal static class ReplicationWindowsDeviceTestClassFilter
 {
@@ -19,6 +21,12 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 	static readonly Regex AllowedMethod = new(
 		@"^[A-Za-z_][A-Za-z0-9_]{0,255}$",
 		RegexOptions.CultureInvariant);
+
+	internal static string? SelectedClass { get; private set; }
+
+	internal static string? SelectedMethod { get; private set; }
+
+	internal static bool UsesExactMethodSelector { get; private set; }
 
 	[ModuleInitializer]
 	internal static void Initialize()
@@ -65,6 +73,10 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 		if (selectedMethod is not null && !AllowedMethod.IsMatch(selectedMethod))
 			throw new InvalidOperationException("The packaged device-test method selector is invalid.");
 
+		SelectedClass = selectedClass;
+		SelectedMethod = selectedMethod;
+		UsesExactMethodSelector = exactMethodSelector;
+
 		// XHarness treats this legacy option as a class inclusion filter.
 		Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", selectedClass);
 		Console.WriteLine("[MAUI replication] Packaged device-test class filter: " + selectedClass);
@@ -74,6 +86,29 @@ internal static class ReplicationWindowsDeviceTestClassFilter
 			Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", fullyQualifiedMethod);
 			Console.WriteLine("[MAUI replication] Packaged device-test method filter: " + fullyQualifiedMethod);
 		}
+		else
+		{
+			Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", null);
+		}
+
+		// ApplicationOptions.Current can be initialized by the app before this module
+		// initializer runs. Recreate it after installing the trusted selectors so the
+		// XHarness runner sees the same class and method that the packaged assembly
+		// metadata attests.
+		var options = new ApplicationOptions();
+		var expectedMethod = selectedMethod is null
+			? null
+			: selectedClass + "." + selectedMethod;
+		if (options.ClassMethodFilters.Count != 1 ||
+			!string.Equals(options.ClassMethodFilters.Single(), selectedClass, StringComparison.Ordinal) ||
+			options.SingleMethodFilters.Count != (expectedMethod is null ? 0 : 1) ||
+			(expectedMethod is not null &&
+				!string.Equals(options.SingleMethodFilters.Single(), expectedMethod, StringComparison.Ordinal)))
+		{
+			throw new InvalidOperationException("The packaged device-test selectors were not accepted by XHarness.");
+		}
+
+		ApplicationOptions.Current = options;
 	}
 
 	static string? ReadMetadataSelector(string key)

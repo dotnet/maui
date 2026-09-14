@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
@@ -45,7 +46,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			appHostBuilder.Services.AddSingleton(options);
 
 #if __ANDROID__ || __IOS__ || MACCATALYST || WINDOWS
-			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
+			appHostBuilder.Services.AddTransient<HeadlessTestRunner>(svc => new ReplicationWindowsExactHeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 #endif
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			appHostBuilder.Services.AddTransient(svc => new ControlsHeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
-			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
+			appHostBuilder.Services.AddTransient<HeadlessTestRunner>(svc => new ReplicationWindowsExactHeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 
@@ -87,4 +88,34 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		}
 #endif
 	}
+
+#if WINDOWS
+	internal sealed class ReplicationWindowsExactHeadlessTestRunner : HeadlessTestRunner
+	{
+		public ReplicationWindowsExactHeadlessTestRunner(
+			HeadlessRunnerOptions runnerOptions,
+			TestOptions options)
+			: base(runnerOptions, options)
+		{
+		}
+
+		protected override TestRunner GetTestRunner(LogWriter logWriter)
+		{
+			var runner = base.GetTestRunner(logWriter);
+			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
+			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
+			if (!ReplicationWindowsDeviceTestClassFilter.UsesExactMethodSelector ||
+				string.IsNullOrWhiteSpace(selectedClass) ||
+				string.IsNullOrWhiteSpace(selectedMethod))
+			{
+				throw new InvalidOperationException("The exact Windows runner requires trusted class and method selectors.");
+			}
+
+			runner.RunAllTestsByDefault = false;
+			runner.SkipClass(selectedClass, isExcluded: false);
+			runner.SkipMethod(selectedClass + "." + selectedMethod, isExcluded: false);
+			return runner;
+		}
+	}
+#endif
 }
