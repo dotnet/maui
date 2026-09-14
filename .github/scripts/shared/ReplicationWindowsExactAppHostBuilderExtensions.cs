@@ -122,6 +122,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			try
 			{
 				var selection = DiscoverExpectedTest(_options, _diagnostics);
+				ReplicationWindowsDeviceTestClassFilter.RefreshApplicationOptions(
+					selection.ClassName,
+					selectedMethod: null);
 				var runner = base.GetTestRunner(logWriter);
 				ConfigureExactRunner(runner, selection);
 				_diagnostics.RecordRunner(runner);
@@ -192,7 +195,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 				includeSourceInformation: false,
 				discoverySink,
 				discoveryOptions);
-			discoverySink.Finished.WaitOne();
+			if (!discoverySink.Finished.WaitOne(TimeSpan.FromMinutes(2)))
+				throw new TimeoutException("Exact Windows xUnit discovery exceeded its fixed time bound.");
 
 			var discoveredCases = discoverySink.TestCases ?? new List<ITestCase>();
 			var classCases = discoveredCases
