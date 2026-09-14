@@ -1,6 +1,16 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -92,16 +102,34 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 #if WINDOWS
 	internal sealed class ReplicationWindowsExactHeadlessTestRunner : HeadlessTestRunner
 	{
+		readonly ReplicationWindowsExactRunnerDiagnostics _diagnostics;
+
 		public ReplicationWindowsExactHeadlessTestRunner(
 			HeadlessRunnerOptions runnerOptions,
 			TestOptions options)
 			: base(runnerOptions, options)
 		{
+			_diagnostics = new(options);
 		}
 
 		protected override TestRunner GetTestRunner(LogWriter logWriter)
 		{
-			var runner = base.GetTestRunner(logWriter);
+			try
+			{
+				var runner = base.GetTestRunner(logWriter);
+				ConfigureExactRunner(runner);
+				_diagnostics.RecordRunner(runner);
+				return runner;
+			}
+			catch (Exception ex)
+			{
+				_diagnostics.RecordConfigurationFailure(ex);
+				throw;
+			}
+		}
+
+		internal static void ConfigureExactRunner(TestRunner runner)
+		{
 			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
 			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
 			if (!ReplicationWindowsDeviceTestClassFilter.UsesExactMethodSelector ||
@@ -114,8 +142,214 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			runner.RunAllTestsByDefault = false;
 			runner.SkipClass(selectedClass, isExcluded: false);
 			runner.SkipMethod(selectedClass + "." + selectedMethod, isExcluded: false);
-			return runner;
 		}
+	}
+
+	internal sealed class ReplicationWindowsExactRunnerDiagnostics
+	{
+		internal const string FileName = "maui-replication-windows-diagnostics.json";
+		const int MaxExceptions = 16;
+		const int MaxDiagnosticBytes = 64 * 1024;
+
+		readonly object _gate = new();
+		readonly string? _path;
+		readonly List<ExceptionDiagnostic> _exceptions = new();
+		int _handlingException;
+		string? _runnerType;
+		int _expectedTypeCount;
+		int _expectedMethodCount;
+		string? _expectedTestInspectionFailureType;
+		string? _configurationFailureType;
+
+		public ReplicationWindowsExactRunnerDiagnostics(TestOptions options)
+		{
+			_path = GetDiagnosticPath();
+			AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
+			try
+			{
+				InspectExpectedTest(options);
+			}
+			catch (Exception ex)
+			{
+				_expectedTestInspectionFailureType = ex.GetType().FullName;
+			}
+			WriteSnapshot();
+		}
+
+		public void RecordRunner(TestRunner runner)
+		{
+			_runnerType = runner.GetType().FullName;
+			WriteSnapshot();
+		}
+
+		public void RecordConfigurationFailure(Exception exception)
+		{
+			_configurationFailureType = exception.GetType().FullName;
+			WriteSnapshot();
+		}
+
+		void InspectExpectedTest(TestOptions options)
+		{
+			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
+			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
+			if (string.IsNullOrWhiteSpace(selectedClass) ||
+				string.IsNullOrWhiteSpace(selectedMethod))
+			{
+				return;
+			}
+
+			foreach (var assembly in options.Assemblies.Distinct())
+			{
+				var type = assembly.GetType(selectedClass, throwOnError: false);
+				if (type is null)
+				{
+					continue;
+				}
+
+				_expectedTypeCount++;
+				_expectedMethodCount += type.GetMethods(
+						BindingFlags.Instance |
+						BindingFlags.Static |
+						BindingFlags.Public |
+						BindingFlags.NonPublic)
+					.Count(method => string.Equals(
+						method.Name,
+						selectedMethod,
+						StringComparison.Ordinal));
+			}
+		}
+
+		void OnFirstChanceException(object? sender, FirstChanceExceptionEventArgs eventArgs)
+		{
+			if (Interlocked.Exchange(ref _handlingException, 1) != 0)
+			{
+				return;
+			}
+
+			try
+			{
+				lock (_gate)
+				{
+					if (_exceptions.Count >= MaxExceptions)
+					{
+						return;
+					}
+
+					var message = eventArgs.Exception.Message ?? string.Empty;
+					_exceptions.Add(new(
+						eventArgs.Exception.GetType().FullName ?? eventArgs.Exception.GetType().Name,
+						eventArgs.Exception.HResult,
+						Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(message)))
+							.ToLowerInvariant(),
+						message.Length));
+					WriteSnapshotCore();
+				}
+			}
+			catch (Exception diagnosticException)
+			{
+				Debug.WriteLine(
+					"Exact Windows runner diagnostic failure: " +
+					diagnosticException.GetType().FullName);
+			}
+			finally
+			{
+				Volatile.Write(ref _handlingException, 0);
+			}
+		}
+
+		void WriteSnapshot()
+		{
+			if (Interlocked.Exchange(ref _handlingException, 1) != 0)
+			{
+				return;
+			}
+
+			try
+			{
+				lock (_gate)
+				{
+					WriteSnapshotCore();
+				}
+			}
+			catch (Exception diagnosticException)
+			{
+				Debug.WriteLine(
+					"Exact Windows runner diagnostic failure: " +
+					diagnosticException.GetType().FullName);
+			}
+			finally
+			{
+				Volatile.Write(ref _handlingException, 0);
+			}
+		}
+
+		void WriteSnapshotCore()
+		{
+			if (_path is null)
+			{
+				return;
+			}
+
+			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
+			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
+			var expectedFullyQualifiedMethod = selectedClass + "." + selectedMethod;
+			var classFilters = ApplicationOptions.Current.ClassMethodFilters;
+			var methodFilters = ApplicationOptions.Current.SingleMethodFilters;
+			var document = new
+			{
+				schemaVersion = 1,
+				authoritative = false,
+				selectedClass,
+				selectedMethod,
+				applicationOptions = new
+				{
+					classFilterCount = classFilters.Count,
+					methodFilterCount = methodFilters.Count,
+					containsExpectedClass = classFilters.Contains(selectedClass),
+					containsExpectedMethod = methodFilters.Contains(expectedFullyQualifiedMethod),
+					unexpectedClassFilterCount = classFilters.Count(filter =>
+						!string.Equals(filter, selectedClass, StringComparison.Ordinal)),
+					unexpectedMethodFilterCount = methodFilters.Count(filter =>
+						!string.Equals(filter, expectedFullyQualifiedMethod, StringComparison.Ordinal)),
+				},
+				dynamicCodeSupported = RuntimeFeature.IsDynamicCodeSupported,
+				runnerType = _runnerType,
+				expectedTypeCount = _expectedTypeCount,
+				expectedMethodCount = _expectedMethodCount,
+				expectedTestInspectionFailureType = _expectedTestInspectionFailureType,
+				configurationFailureType = _configurationFailureType,
+				firstChanceExceptions = _exceptions,
+			};
+			var json = JsonSerializer.Serialize(
+				document,
+				new JsonSerializerOptions { WriteIndented = true });
+			if (Encoding.UTF8.GetByteCount(json) > MaxDiagnosticBytes)
+			{
+				throw new InvalidOperationException("Exact Windows runner diagnostics exceeded the fixed size bound.");
+			}
+
+			File.WriteAllText(_path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+		}
+
+		static string? GetDiagnosticPath()
+		{
+			var resultPath = HeadlessTestRunner.TestResultsFile;
+			if (string.IsNullOrWhiteSpace(resultPath))
+			{
+				return null;
+			}
+
+			var directory = Path.GetDirectoryName(resultPath);
+			return string.IsNullOrWhiteSpace(directory)
+				? null
+				: Path.Combine(directory, FileName);
+		}
+
+		sealed record ExceptionDiagnostic(
+			string Type,
+			int HResult,
+			string MessageSha256,
+			int MessageLength);
 	}
 #endif
 }

@@ -6,6 +6,7 @@ BeforeAll {
     $script:WindowsDeviceNoResultsMarker = 'WINDOWS_DEVICE_TEST_NO_RESULTS:'
     $script:WindowsDeviceTargetTimeoutMarker = 'WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:'
     $script:WindowsDeviceCleanupFailureMarker = 'WINDOWS_DEVICE_TEST_CLEANUP_FAILED:'
+    $script:WindowsExactRunnerDiagnosticFileName = 'maui-replication-windows-diagnostics.json'
 
     $tokens = $null
     $parseErrors = $null
@@ -66,6 +67,7 @@ BeforeAll {
         'Write-DeviceTestStrictEvidence',
         'Complete-DeviceTestStrictEvidence',
         'Copy-DeviceTestStrictResultsToDurableDirectory',
+        'Publish-ReplicationWindowsRunnerDiagnostic',
         'Invoke-WindowsDeviceTestApp'
     )) {
         $function = $ast.Find({
@@ -485,7 +487,12 @@ namespace Microsoft.Maui.Controls.Hosting { }
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {
-    public sealed class TestOptions { }
+    public sealed class TestOptions
+    {
+        public ICollection<System.Reflection.Assembly> Assemblies { get; } =
+            Array.Empty<System.Reflection.Assembly>();
+    }
+
     public sealed class HeadlessRunnerOptions { }
 }
 
@@ -553,6 +560,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 {
     public class HeadlessTestRunner
     {
+        public static string? TestResultsFile;
+
         public HeadlessTestRunner(
             Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
             Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
@@ -800,6 +809,264 @@ public sealed class ApplicationOptions
         $runOutput | Should -Not -Contain 'unexpected-main'
     }
 
+    It 'refreshes early options and filters both pinned XHarness runner implementations' {
+        $appDir = Join-Path $TestDrive 'pinned-xharness-consumer'
+        New-Item -ItemType Directory -Path $appDir -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                '../../../scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')) `
+            -Destination (Join-Path $appDir 'ReplicationWindowsDeviceTestClassFilter.cs')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot (
+                '../../../scripts/shared/ReplicationWindowsExactAppHostBuilderExtensions.cs')) `
+            -Destination (Join-Path $appDir 'ReplicationWindowsExactAppHostBuilderExtensions.cs')
+        @'
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Xunit"
+                      Version="11.0.0-prerelease.26230.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MauiReplicationWindowsIncludeClassBase64</_Parameter1>
+      <_Parameter2>TWljcm9zb2Z0Lk1hdWkuRGV2aWNlVGVzdHMuU2hlbGxUZXN0cw==</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MauiReplicationWindowsIncludeMethodBase64</_Parameter1>
+      <_Parameter2>SXNzdWUzNDczOERpc2FibGVkVGFiVXNlc1RhYkJhckRpc2FibGVkQ29sb3I=</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MauiReplicationWindowsExactMethodSelector</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
+'@ | Set-Content (Join-Path $appDir 'App.csproj') -Encoding utf8NoBOM
+        @'
+using Microsoft.DotNet.XHarness.TestRunners.Common;
+
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public sealed class ServiceCollection
+    {
+        public ServiceCollection AddSingleton<T>(T instance) => this;
+        public ServiceCollection AddTransient<T>(Func<IServiceProvider, T> factory) => this;
+    }
+
+    public static class ServiceCollectionServiceExtensions
+    {
+        public static T GetRequiredService<T>(this IServiceProvider provider) =>
+            throw new NotSupportedException();
+    }
+}
+
+namespace Microsoft.Extensions.Logging
+{
+    public interface ILoggerFactory { object CreateLogger(string name); }
+    public sealed class LoggingBuilder { }
+}
+
+namespace Microsoft.Extensions.Logging.Console
+{
+    public static class ConsoleLoggerExtensions
+    {
+        public static Microsoft.Extensions.Logging.LoggingBuilder AddConsole(
+            this Microsoft.Extensions.Logging.LoggingBuilder builder) => builder;
+    }
+}
+
+namespace Microsoft.Maui.Hosting
+{
+    public sealed class MauiAppBuilder
+    {
+        public Microsoft.Extensions.DependencyInjection.ServiceCollection Services { get; } = new();
+        public Microsoft.Extensions.Logging.LoggingBuilder Logging { get; } = new();
+        public MauiAppBuilder UseMauiApp(Func<IServiceProvider, object> factory) => this;
+    }
+}
+
+namespace Microsoft.Maui.Controls.Hosting { }
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
+{
+    public sealed class TestOptions
+    {
+        public ICollection<System.Reflection.Assembly> Assemblies { get; init; } =
+            Array.Empty<System.Reflection.Assembly>();
+    }
+
+    public sealed class HeadlessRunnerOptions { }
+}
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
+{
+    public sealed class MauiVisualRunnerApp
+    {
+        public MauiVisualRunnerApp(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions options,
+            object logger) { }
+    }
+}
+
+namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
+{
+    public class HeadlessTestRunner
+    {
+        public static string? TestResultsFile;
+        public static TestRunner? NextRunner;
+
+        public HeadlessTestRunner(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
+
+        protected virtual TestRunner GetTestRunner(LogWriter logWriter) =>
+            NextRunner ?? throw new InvalidOperationException();
+    }
+
+    public sealed class ControlsHeadlessTestRunner
+    {
+        public ControlsHeadlessTestRunner(
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunnerOptions options,
+            Microsoft.Maui.TestUtils.DeviceTests.Runners.TestOptions tests) { }
+    }
+}
+'@ | Set-Content (Join-Path $appDir 'Stubs.cs') -Encoding utf8NoBOM
+        @'
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.DotNet.XHarness.TestRunners.Common;
+using Microsoft.Maui.DeviceTests;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
+using Xunit;
+
+namespace Microsoft.Maui.DeviceTests
+{
+    public sealed class ShellTests
+    {
+        [Fact]
+        public void Issue34738DisabledTabUsesTabBarDisabledColor() { }
+
+        [Fact]
+        public void ExistingSameClassPeer() =>
+            throw new InvalidOperationException("The sibling test must remain filtered.");
+    }
+}
+
+internal static class Program
+{
+    const string SelectedClass = "Microsoft.Maui.DeviceTests.ShellTests";
+    const string SelectedMethod = "Issue34738DisabledTabUsesTabBarDisabledColor";
+
+    static async Task Main()
+    {
+        Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", null);
+        Environment.SetEnvironmentVariable("NUNIT_SKIPPED_METHODS", null);
+        ApplicationOptions.Current = new ApplicationOptions();
+        Console.WriteLine(
+            $"before={ApplicationOptions.Current.ClassMethodFilters.Count}/" +
+            $"{ApplicationOptions.Current.SingleMethodFilters.Count}");
+
+        Environment.SetEnvironmentVariable("NUNIT_SKIPPED_CLASSES", SelectedClass);
+        Environment.SetEnvironmentVariable(
+            "NUNIT_SKIPPED_METHODS",
+            SelectedClass + "." + SelectedMethod);
+        ReplicationWindowsDeviceTestClassFilter.RefreshApplicationOptions(
+            SelectedClass,
+            SelectedMethod);
+        Console.WriteLine(
+            $"after={ApplicationOptions.Current.ClassMethodFilters.Count}/" +
+            $"{ApplicationOptions.Current.SingleMethodFilters.Count}");
+
+        var xharnessAssembly = typeof(
+            Microsoft.DotNet.XHarness.TestRunners.Xunit.AndroidApplicationEntryPoint).Assembly;
+        HeadlessTestRunner.TestResultsFile = Path.Combine(
+            AppContext.BaseDirectory,
+            "testResults.xml");
+        foreach (var typeName in new[]
+        {
+            "Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner",
+            "Microsoft.DotNet.XHarness.TestRunners.Xunit.ReflectionBasedXunitTestRunner",
+        })
+        {
+            var runnerType = xharnessAssembly.GetType(typeName, throwOnError: true)!;
+            var runner = (TestRunner)Activator.CreateInstance(
+                runnerType,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                binder: null,
+                args: new object[] { new LogWriter(TextWriter.Null) },
+                culture: null)!;
+            HeadlessTestRunner.NextRunner = runner;
+
+            var exactType = typeof(
+                Microsoft.Maui.TestUtils.DeviceTests.Runners.AppHostBuilderExtensions)
+                .Assembly.GetType(
+                    "Microsoft.Maui.TestUtils.DeviceTests.Runners." +
+                    "ReplicationWindowsExactHeadlessTestRunner",
+                    throwOnError: true)!;
+            var exactRunner = Activator.CreateInstance(
+                exactType,
+                new HeadlessRunnerOptions(),
+                new TestOptions
+                {
+                    Assemblies = new[] { typeof(ShellTests).Assembly },
+                })!;
+            var getTestRunner = exactType.GetMethod(
+                "GetTestRunner",
+                BindingFlags.Instance | BindingFlags.NonPublic)!;
+            var configured = (TestRunner)getTestRunner.Invoke(
+                exactRunner,
+                new object[] { new LogWriter(TextWriter.Null) })!;
+            await configured.Run(new[]
+            {
+                new TestAssemblyInfo(
+                    typeof(ShellTests).Assembly,
+                    typeof(ShellTests).Assembly.Location),
+            });
+            Console.WriteLine(
+                $"{runnerType.Name}={configured.RunAllTestsByDefault}/" +
+                $"{configured.ExecutedTests}/{configured.PassedTests}");
+            using var diagnostic = JsonDocument.Parse(File.ReadAllText(Path.Combine(
+                AppContext.BaseDirectory,
+                "maui-replication-windows-diagnostics.json")));
+            var root = diagnostic.RootElement;
+            Console.WriteLine(
+                $"diagnostic-{runnerType.Name}=" +
+                $"{root.GetProperty("expectedTypeCount").GetInt32()}/" +
+                $"{root.GetProperty("expectedMethodCount").GetInt32()}/" +
+                $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedClass").GetBoolean()}/" +
+                $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedMethod").GetBoolean()}/" +
+                $"{root.GetProperty("authoritative").GetBoolean()}");
+        }
+    }
+}
+'@ | Set-Content (Join-Path $appDir 'Program.cs') -Encoding utf8NoBOM
+
+        $restoreOutput = & dotnet restore (Join-Path $appDir 'App.csproj') `
+            --nologo --verbosity quiet --ignore-failed-sources 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $restoreOutput -join [Environment]::NewLine)
+        $buildOutput = & dotnet build (Join-Path $appDir 'App.csproj') `
+            --no-restore --nologo --verbosity quiet 2>&1
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $buildOutput -join [Environment]::NewLine)
+        $runOutput = @(& dotnet (
+                Join-Path $appDir 'bin/Debug/net8.0/App.dll') 2>&1)
+        $LASTEXITCODE | Should -Be 0 -Because (
+            $runOutput -join [Environment]::NewLine)
+        $runOutput | Should -Contain 'before=0/0'
+        $runOutput | Should -Contain 'after=1/1'
+        $runOutput | Should -Contain 'XUnitTestRunner=False/1/1'
+        $runOutput | Should -Contain 'ReflectionBasedXunitTestRunner=False/1/1'
+        $runOutput | Should -Contain 'diagnostic-XUnitTestRunner=1/1/True/True/False'
+        $runOutput | Should -Contain (
+            'diagnostic-ReflectionBasedXunitTestRunner=1/1/True/True/False')
+    }
+
     It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {
         $selector = Get-ReplicationWindowsIssueSelector `
             -TestFilter 'Issue34738' `
@@ -952,6 +1219,61 @@ public sealed class ApplicationOptions
     It 'uses the built-in XHarness class include variable for Apple runs' {
         Get-Content $scriptPath -Raw |
             Should -Match '--set-env=NUNIT_SKIPPED_CLASSES=\$IncludeClasses'
+    }
+
+    It 'retains only bounded non-authoritative exact-runner diagnostics' {
+        $executionDirectory = Join-Path $TestDrive 'windows-diagnostic-local-state'
+        $outputDirectory = Join-Path $TestDrive 'windows-diagnostic-output'
+        New-Item -ItemType Directory -Path $executionDirectory, $outputDirectory `
+            -Force | Out-Null
+        $diagnosticPath = Join-Path $executionDirectory `
+            'maui-replication-windows-diagnostics.json'
+        @{
+            schemaVersion = 1
+            authoritative = $false
+            selectedClass = 'Microsoft.Maui.DeviceTests.ShellTests'
+            selectedMethod = 'Issue34738DisabledTabUsesTabBarDisabledColor'
+            applicationOptions = @{
+                classFilterCount = 1
+                methodFilterCount = 1
+                containsExpectedClass = $true
+                containsExpectedMethod = $true
+                unexpectedClassFilterCount = 0
+                unexpectedMethodFilterCount = 0
+            }
+            dynamicCodeSupported = $true
+            runnerType = 'Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner'
+            expectedTypeCount = 1
+            expectedMethodCount = 1
+            configurationFailureType = $null
+            firstChanceExceptions = @()
+        } | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath $diagnosticPath -Encoding utf8NoBOM
+
+        Publish-ReplicationWindowsRunnerDiagnostic `
+            -ExecutionOutputDirectory $executionDirectory `
+            -OutputDirectory $outputDirectory `
+            -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+            -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor'
+
+        $retained = Join-Path $outputDirectory `
+            'maui-replication-windows-diagnostics.json'
+        Test-Path -LiteralPath $retained -PathType Leaf | Should -BeTrue
+        (Get-Content -LiteralPath $retained -Raw | ConvertFrom-Json).authoritative |
+            Should -BeFalse
+
+        $invalid = Get-Content -LiteralPath $diagnosticPath -Raw |
+            ConvertFrom-Json
+        $invalid.authoritative = $true
+        $invalid | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath $diagnosticPath -Encoding utf8NoBOM
+        Remove-Item -LiteralPath $retained -Force
+        Publish-ReplicationWindowsRunnerDiagnostic `
+            -ExecutionOutputDirectory $executionDirectory `
+            -OutputDirectory $outputDirectory `
+            -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+            -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        Test-Path -LiteralPath $retained | Should -BeFalse
     }
 
     It 'does not reuse a stale XHarness result file when the current run produces none' {

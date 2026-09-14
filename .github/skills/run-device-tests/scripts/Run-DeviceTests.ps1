@@ -426,6 +426,7 @@ $WindowsDeviceTestPackageIds = @{
 $WindowsDeviceNoResultsMarker = "WINDOWS_DEVICE_TEST_NO_RESULTS:"
 $WindowsDeviceTargetTimeoutMarker = "WINDOWS_DEVICE_TEST_TARGET_TIMEOUT:"
 $WindowsDeviceCleanupFailureMarker = "WINDOWS_DEVICE_TEST_CLEANUP_FAILED:"
+$WindowsExactRunnerDiagnosticFileName = "maui-replication-windows-diagnostics.json"
 
 function ConvertTo-AzdoSafeConsole {
     param([string]$Text)
@@ -1793,6 +1794,51 @@ function Copy-DeviceTestStrictResultsToDurableDirectory {
     return $durableFiles.ToArray()
 }
 
+function Publish-ReplicationWindowsRunnerDiagnostic {
+    param(
+        [Parameter(Mandatory = $true)][string]$ExecutionOutputDirectory,
+        [Parameter(Mandatory = $true)][string]$OutputDirectory,
+        [Parameter(Mandatory = $true)][string]$ExpectedClass,
+        [Parameter(Mandatory = $true)][string]$ExpectedMethod
+    )
+
+    $source = Join-Path $ExecutionOutputDirectory $WindowsExactRunnerDiagnosticFileName
+    if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+        Write-Warning "The exact Windows runner did not emit its non-authoritative diagnostic record."
+        return
+    }
+
+    $item = Get-Item -LiteralPath $source -Force -ErrorAction Stop
+    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+        $item.Length -le 0 -or
+        $item.Length -gt 64KB) {
+        Write-Warning "The exact Windows runner diagnostic record is not a bounded regular file."
+        return
+    }
+
+    try {
+        $diagnostic = Get-Content -LiteralPath $source -Raw -ErrorAction Stop |
+            ConvertFrom-Json -Depth 8 -ErrorAction Stop
+    } catch {
+        Write-Warning "The exact Windows runner diagnostic record is malformed."
+        return
+    }
+    if ([int]$diagnostic.schemaVersion -ne 1 -or
+        [bool]$diagnostic.authoritative -or
+        [string]$diagnostic.selectedClass -cne $ExpectedClass -or
+        [string]$diagnostic.selectedMethod -cne $ExpectedMethod -or
+        @($diagnostic.firstChanceExceptions).Count -gt 16) {
+        Write-Warning "The exact Windows runner diagnostic record failed its fixed identity bounds."
+        return
+    }
+
+    $destination = Join-Path $OutputDirectory $WindowsExactRunnerDiagnosticFileName
+    Copy-Item -LiteralPath $source -Destination $destination -Force
+    Write-Host (
+        "Retained non-authoritative exact-runner diagnostics: " +
+        $destination) -ForegroundColor Gray
+}
+
 function Invoke-WindowsDeviceTestApp {
     param(
         [string]$AppPath = '',
@@ -1900,8 +1946,17 @@ function Invoke-WindowsDeviceTestApp {
     $resultBase = Join-Path $executionOutputDirectory "TestResults-$($packageId.Replace('.', '_'))"
     $resultFile = "$resultBase.xml"
     $categoriesFile = Join-Path $executionOutputDirectory "devicetestcategories.txt"
+    $runnerDiagnosticFile = Join-Path $executionOutputDirectory `
+        $WindowsExactRunnerDiagnosticFileName
     Remove-Item -LiteralPath $categoriesFile -Force -ErrorAction SilentlyContinue
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
+    if ($UsePackagedExactSelector) {
+        Remove-Item -LiteralPath $runnerDiagnosticFile -Force `
+            -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath (
+            Join-Path $OutputDirectory $WindowsExactRunnerDiagnosticFileName
+        ) -Force -ErrorAction SilentlyContinue
+    }
 
     $resultFiles = @()
     $packagedIncludeClass = if (
@@ -2099,6 +2154,13 @@ function Invoke-WindowsDeviceTestApp {
             if (-not $process.HasExited) {
                 Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
             }
+            if ($UsePackagedExactSelector) {
+                Publish-ReplicationWindowsRunnerDiagnostic `
+                    -ExecutionOutputDirectory $executionOutputDirectory `
+                    -OutputDirectory $OutputDirectory `
+                    -ExpectedClass $IncludeClasses `
+                    -ExpectedMethod $IncludeMethods
+            }
             if ($IncludeClasses) {
                 if (Test-Path -LiteralPath $resultFile) {
                     try {
@@ -2131,6 +2193,13 @@ function Invoke-WindowsDeviceTestApp {
                 throw "$WindowsDeviceTargetTimeoutMarker Windows device test app did not exit within ${processTimeoutSeconds}s while running requested class(es) '$IncludeClasses'$methodScope."
             }
             throw "Windows device test app did not exit within ${processTimeoutSeconds}s while running the full suite."
+        }
+        if ($UsePackagedExactSelector) {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $executionOutputDirectory `
+                -OutputDirectory $OutputDirectory `
+                -ExpectedClass $IncludeClasses `
+                -ExpectedMethod $IncludeMethods
         }
         if (-not (Test-Path $resultFile)) {
             throw "$WindowsDeviceNoResultsMarker Windows device test app exited without creating $resultFile."
