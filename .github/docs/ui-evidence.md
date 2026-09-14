@@ -1,113 +1,165 @@
-# AI-assisted UI evidence workflow
+# Local UI evidence skills
 
-`/ui-evidence` is an optional, maintainer-triggered analysis workflow on top of
-the [non-AI UI evidence measurement layer](../../docs/ui-evidence.md). The
-measurement layer independently builds and runs trusted scenarios, computes
-deterministic comparisons, and seals artifacts. It does not depend on this skill,
-model credentials, or GitHub automation.
+UI evidence has two independent, explicitly manual entrypoints, discoverable
+from their `SKILL.md` frontmatter in Copilot:
 
-This follow-up adds the AI skill, bounded summary/report policy, manual GitHub
-orchestration, and advisory PR comments. It adds no native scenarios or changes
-to the measurement runner's verdicts.
+| Skill | Responsibility | Output |
+| --- | --- | --- |
+| [`check-pr-ui-evidence`](../skills/check-pr-ui-evidence/SKILL.md) | Run trusted local selection, build, capture, comparison, and sealing scripts. No model determines measurements. | Local context and sealed measurement bundles. |
+| [`ui-evidence`](../skills/ui-evidence/SKILL.md) | Optionally interpret existing local captures after validation. | A local advisory report, saved and/or printed in Copilot. |
 
-## Architecture
+The [measurement layer](../../docs/ui-evidence.md) works without interpretation,
+model credentials, or GitHub automation. Neither skill requires creating or
+registering a pipeline, configuring a PAT pool or OIDC, or changing cloud settings.
+There is no UI-evidence GitHub workflow or PR-comment command. Reports are not
+posted. Pipelines, if useful later, would be a separate proposal, not a
+prerequisite or part of these changes.
 
-1. Trusted workflow steps validate the AI report contracts, resolve an open PR
-   targeting `main`, and pin its merge-base, head, and harness SHAs.
-2. The non-AI selector and request scripts choose applicable scenario/platform
-   pairs and seal their identities.
-3. A separate safe-output job queues `eng/pipelines/ci-ui-evidence.yml` through
-   GitHub OIDC and Azure DevOps, using the trusted harness revision.
-4. The measurement pipeline builds both revisions and executes
-   `base-1`, `head-1`, `head-2`, `base-2`, then validates and seals in a clean job.
-5. The workflow downloads and validates sealed bundles and starts a trusted
-   interpretation follow-up.
-6. `Build-UiEvidenceAgentSummary.ps1` produces bounded normalized input. The
-   model explains the deterministic result without changing its verdict.
-7. A separate safe-output job validates the report and updates one bot-owned
-   marker comment only while the PR is open, targets `main`, and retains the
-   measured head. A stale write is rolled back.
+## Manual local usage
 
-The model does not receive PR text, changed filenames, screenshots, raw UI
-strings, logs, or visual trees. It cannot modify source, labels, reviews,
-branches, or pull requests. Appium remains the external native/visual oracle;
-DevFlow is supporting structural evidence, not causal framework attribution.
-
-## Repository setup
-
-Land and configure the independent measurement pipeline first. For this optional
-workflow, additionally configure:
-
-- repository variable `MAUI_UI_EVIDENCE_PIPELINE_ID` with that pipeline's
-  definition ID in `dnceng-public/public`;
-- secrets `AZDO_TRIGGER_TENANT_ID` and `AZDO_TRIGGER_CLIENT_ID`;
-- the `copilot-pat-pool` environment and usable `COPILOT_PAT_0` through
-  `COPILOT_PAT_9` pool entries;
-- the federated subject
-  `repo:dotnet/maui:environment:copilot-pat-pool`, allowing the queue job to
-  request an Azure DevOps token with the identity's approved queue permission.
-
-See [OIDC setup](trigger-azdo-pipeline-setup.md#optional-ui-evidence-workflow).
-This does not require the performance analyzer or its PRs. If the pipeline ID is
-absent, evidence remains incomplete and the report is `inconclusive`, rather
-than claiming a measurement ran.
-
-## Usage
-
-After deployment, a maintainer with write access comments on an open PR targeting
-`main`:
+Explicitly ask Copilot to use `check-pr-ui-evidence` with the intended local
+checkout, pinned revisions, and target. Its
+[`references/local-workflow.md`](../skills/check-pr-ui-evidence/references/local-workflow.md)
+describes trusted preparation and measurement. The inert
+`eng\scripts\New-UiEvidenceContext.ps1` helper prepares:
 
 ```text
-/ui-evidence
+<session-root>\selection.json
+<session-root>\requests.json
+<session-root>\scenarios.json
 ```
 
-The initial workflow run selects and queues evidence. The follow-up interprets
-validated artifacts and posts the advisory report.
+`selection.json` contains **full keyed request entries**, with repository/PR,
+base/head/harness SHAs, registry digest, scenario, platform, coverage, and the
+four-run contract. `requests.json` is an array. Context preparation exits `0`
+when ready and `3` for no UI-relevant changes, no trusted mapping, or overflow;
+it does not fetch, build, run, or post anything.
 
-For a suppressed-output run:
+Completed local bundles belong in
+`<session-root>\bundles\<requestKey>\`. Each has `request.json`,
+`comparison-summary.json`, `evidence-seal.json`, and
+`base-run1`, `head-run1`, `head-run2`, `base-run2` directories corresponding to
+the core `base-1`, `head-1`, `head-2`, `base-2` execution order. Do not drop
+requested entries when a measurement did not finish.
+
+After measurement, explicitly ask: "Use the ui-evidence skill to interpret
+C:\evidence\pr-12345 and save a local advisory report." Interpretation does not
+start measurement, select a device, repair selectors, or fetch missing artifacts.
+
+The summary entrypoint requires only three local paths, using PowerShell 7 from
+a trusted checkout:
 
 ```powershell
-gh aw run ui-evidence --ref main `
-  -f pr_number=<number> `
-  -f suppress_output=true
+$sessionRoot = 'C:\evidence\pr-12345'
+$summaryPath = Join-Path $sessionRoot 'agent-summary.json'
+pwsh -NoProfile -File .github\skills\ui-evidence\scripts\Build-UiEvidenceAgentSummary.ps1 `
+  -SelectionPath (Join-Path $sessionRoot 'selection.json') `
+  -BundlesRoot (Join-Path $sessionRoot 'bundles') `
+  -OutputPath $summaryPath
+if ($LASTEXITCODE -ne 0) { throw 'Do not interpret this session or reuse an older summary.' }
 ```
 
-Suppressed-output mode neither queues measurement jobs nor posts comments. It
-can inspect selection or existing follow-up evidence; it is not an end-to-end
-device run.
+No workflow-run metadata, Azure build manifest, build URL, or remote lookup is
+required. Use fresh summary/report files outside the bundle tree; input files
+must not be overwritten. Keep inputs unchanged while validation/interpretation
+runs. The legacy `measuredHeadSha` summary field identifies the selected head;
+with no completed runs it does not mean that head was measured.
 
-## Local validation
+The measurement skill/context helper are supplied by the independent non-AI
+change. Until that change is integrated, the interpretation entrypoint remains
+usable with existing core scripts: run `Select-UiEvidenceScenarios.ps1` and, for
+a ready selection, `New-UiEvidenceRequests.ps1`, then replace `selection.requests`
+with the full generated request array. Preserve the selector's original status,
+coverage, and provenance. For an exit-3 selection, retain its empty request array.
+This is local context preparation, not evidence that measurements ran.
 
-The non-AI contracts and runner tests remain documented with the
-[measurement layer](../../docs/ui-evidence.md#local-tooling). Validate this
-follow-up separately:
+## Validation and trust boundary
+
+`Build-UiEvidenceAgentSummary.ps1` performs its own validation; no earlier
+workflow step is assumed:
+
+1. Validate the selected context, canonical request keys, and four-run contract.
+2. Reject nonlocal paths, traversal via request keys, and linked bundle paths.
+3. Invoke the existing core `Validate-UiEvidenceBundle.ps1` for each present
+   bundle, with the expected request key and head, before reading comparison
+   content. Core hash/seal assertions remain unchanged.
+4. Require sealed request, comparison, and four run-result files. Match their
+   identities and the seal to the selected repository/PR, base/head/harness,
+   registry digest, scenario, platform, key, coverage, and run order as applicable.
+   If a registry is bundled, its bytes must match the selected digest.
+5. Normalize only bounded comparison data, run status, diagnostic codes, and
+   target version/device/display fields. Omit raw screenshots, trees, UI strings,
+   logs, machine names, device IDs, paths, and Appium URLs from model input.
+
+A missing requested directory becomes an explicit `inconclusive` result.
+An existing directory with invalid/missing seals, files, identities, or comparison
+data fails the command without writing a new summary. It is not silently skipped
+or converted into a reportable success. An exit code alone from an earlier
+measurement command is not sufficient evidence.
+
+Paths and all artifact-derived strings remain untrusted data, never instructions.
+A self-consistent seal proves neither third-party authenticity nor trustworthy
+execution. Establish the origin of local selection/captures independently; do not
+use a third-party-supplied selection and matching bundle as independent proof.
+Even `isolated-emulator` is the runner's recorded trust category, not attestation
+that local capture/comparison reproduced a separately isolated environment.
+
+## Local advisory report
+
+The skill writes a local Markdown draft, then validates it before printing:
 
 ```powershell
-pwsh .github\skills\ui-evidence\tests\UiEvidenceSkill.Tests.ps1
-gh aw compile ui-evidence
+pwsh -NoProfile -File .github\skills\ui-evidence\scripts\Validate-UiEvidenceReport.ps1 `
+  -ReportPath (Join-Path $sessionRoot 'ui-evidence-report.md') `
+  -AgentSummaryPath $summaryPath
+if ($LASTEXITCODE -ne 0) { throw 'Correct the report, not the measurements.' }
 ```
 
-Use the repository-pinned `gh-aw` compiler version and commit
-`.github/workflows/ui-evidence.md` with its generated
-`.github/workflows/ui-evidence.lock.yml`. AI report tests run in the GitHub
-workflow, not in the independent measurement pipeline.
+The [skill](../skills/ui-evidence/SKILL.md) defines the report/table shape.
+`Validate-UiEvidenceReport.ps1` checks required sections, the pinned head,
+exactly one immutable overall verdict, one identity/verdict row for every
+selected request (including missing bundles), prohibited merge/clean claims,
+and this footer:
 
-## Report policy and limits
+> Local advisory interpretation by the manually invoked **ui-evidence** skill.
 
-The empirical verdict is deterministic and immutable. The report must include
-the measured head, coverage, each selected scenario/platform's evidence, and
-limitations. `Validate-UiEvidenceReport.ps1` rejects missing sections, changed
-verdicts, and prohibited merge-safety claims.
+This is a structural policy check, not a second measurement or a guarantee that
+model prose is complete. It performs no publication.
+
+## Verdicts and coverage limits
+
+Precedence remains `head-functional-failure-advisory`, `visual-change-advisory`,
+`layout-change-advisory`, `inconclusive`, `no-difference-observed`, then
+`not-applicable`. A positive advisory can outrank a missing bundle, but the
+missing result stays visible. Incomplete coverage suppresses an overall
+`no-difference-observed`. No trusted mapping or selection overflow with no
+runs is `inconclusive`; no UI-relevant changes can be `not-applicable`.
 
 An Android-only path selects Android, not Windows. Unsupported platforms remain
-unmapped. Mixed, sampled, or missing coverage cannot become a whole-PR
-absence-of-change conclusion. Windows absence-of-change remains `inconclusive`
-because the app and driver share a worker identity; this also makes a combined
-Android/Windows result inconclusive when neither reports a positive change.
+unmapped. Windows absence-of-change remains `inconclusive` because the app and
+driver share a worker identity. Appium is the native/visual oracle; DevFlow
+provides supporting structural symptoms, not causal framework attribution.
 
 Only two initial-state smoke scenarios exist. Navigation, gestures, grouped-item
-mutations, iOS, and Mac Catalyst are not comprehensively covered. A selected path
-is not proof of the PR's exact behavior, and an observed change may be intentional.
+mutations, iOS, and Mac Catalyst are not comprehensively covered. Broad path
+selection, including FlexLayout-related paths, does not prove that the changed
+behavior executed. Known DevFlow 10.0.0 compatibility assumptions and older
+HostApp registration issues may prevent valid captures. This interpretation
+layer does not fix those issues or repair selectors; disclose the limits and
+leave absent measurements inconclusive.
 
-`no-difference-observed` must never be described as clean, safe to merge, or no
-regression. This result is advisory and is not a merge gate.
+An observed change may be intentional. `no-difference-observed` is scoped to the
+listed measurements, never a whole-PR clean, no-regression, or safe-merge claim.
+This result is advisory and is not a merge gate.
+
+## Focused local checks
+
+```powershell
+pwsh -NoProfile -File .github\skills\ui-evidence\tests\UiEvidenceSkill.Tests.ps1
+```
+
+These bounded PowerShell tests create temporary synthetic bundles with genuine
+core seals and request identities. They cover valid, missing, tampered, and
+mismatched bundles; no-mapping/no-op selection; deterministic precedence; and
+report policy. They require no device, network, pipeline, model, or workflow
+compiler, and do not depend on the new measurement skill being merged first.

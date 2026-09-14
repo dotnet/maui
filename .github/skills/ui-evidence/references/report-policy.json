@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "workflowName": "ui-evidence",
+  "skillName": "ui-evidence",
+  "invocation": "manual-local",
   "verdictPrecedence": [
     "head-functional-failure-advisory",
     "visual-change-advisory",
@@ -16,13 +17,15 @@
     "### Evidence",
     "### Limitations"
   ],
-  "requiredFooter": "> Automated analysis by the **ui-evidence** agentic workflow.",
+  "requiredFooter": "> Local advisory interpretation by the manually invoked **ui-evidence** skill.",
   "requiredDisclaimer": "This result is advisory and is not a merge gate.",
   "maximumReportCharacters": 20000,
   "claims": {
     "noDifferenceIsNotClean": true,
     "sourceMappingIsNotCausality": true,
     "devFlowIsSupportingEvidence": true,
-    "advisoryOnly": true
+    "advisoryOnly": true,
+    "sealIsNotAuthentication": true,
+    "localOnly": true
   }
 }
