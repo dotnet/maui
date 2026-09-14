@@ -1799,44 +1799,184 @@ function Publish-ReplicationWindowsRunnerDiagnostic {
         [Parameter(Mandatory = $true)][string]$ExecutionOutputDirectory,
         [Parameter(Mandatory = $true)][string]$OutputDirectory,
         [Parameter(Mandatory = $true)][string]$ExpectedClass,
-        [Parameter(Mandatory = $true)][string]$ExpectedMethod
+        [Parameter(Mandatory = $true)][string]$ExpectedMethod,
+        [Parameter(Mandatory = $true)][datetime]$NotBeforeUtc
     )
 
-    $source = Join-Path $ExecutionOutputDirectory $WindowsExactRunnerDiagnosticFileName
-    if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
-        Write-Warning "The exact Windows runner did not emit its non-authoritative diagnostic record."
-        return
-    }
-
-    $item = Get-Item -LiteralPath $source -Force -ErrorAction Stop
-    if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
-        $item.Length -le 0 -or
-        $item.Length -gt 64KB) {
-        Write-Warning "The exact Windows runner diagnostic record is not a bounded regular file."
-        return
-    }
-
     try {
+        $source = Join-Path $ExecutionOutputDirectory `
+            $WindowsExactRunnerDiagnosticFileName
+        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) {
+            throw [IO.FileNotFoundException]::new()
+        }
+
+        $item = Get-Item -LiteralPath $source -Force -ErrorAction Stop
+        $notBefore = $NotBeforeUtc.ToUniversalTime()
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint -or
+            $item.Length -le 0 -or
+            $item.Length -gt 64KB -or
+            $item.LastWriteTimeUtc -lt $notBefore -or
+            $item.LastWriteTimeUtc -gt [datetime]::UtcNow.AddMinutes(1)) {
+            throw [IO.InvalidDataException]::new()
+        }
+
         $diagnostic = Get-Content -LiteralPath $source -Raw -ErrorAction Stop |
             ConvertFrom-Json -Depth 8 -ErrorAction Stop
-    } catch {
-        Write-Warning "The exact Windows runner diagnostic record is malformed."
-        return
-    }
-    if ([int]$diagnostic.schemaVersion -ne 1 -or
-        [bool]$diagnostic.authoritative -or
-        [string]$diagnostic.selectedClass -cne $ExpectedClass -or
-        [string]$diagnostic.selectedMethod -cne $ExpectedMethod -or
-        @($diagnostic.firstChanceExceptions).Count -gt 16) {
-        Write-Warning "The exact Windows runner diagnostic record failed its fixed identity bounds."
-        return
-    }
 
-    $destination = Join-Path $OutputDirectory $WindowsExactRunnerDiagnosticFileName
-    Copy-Item -LiteralPath $source -Destination $destination -Force
-    Write-Host (
-        "Retained non-authoritative exact-runner diagnostics: " +
-        $destination) -ForegroundColor Gray
+        $rootKeys = @(
+            'schemaVersion',
+            'authoritative',
+            'selectedClass',
+            'selectedMethod',
+            'applicationOptions',
+            'dynamicCodeSupported',
+            'stage',
+            'runnerType',
+            'expectedTypeCount',
+            'expectedMethodCount',
+            'expectedTestInspectionFailureType',
+            'configurationFailureType',
+            'firstChanceExceptions'
+        )
+        $actualRootKeys = @($diagnostic.PSObject.Properties.Name)
+        if ($diagnostic -isnot [pscustomobject] -or
+            $actualRootKeys.Count -ne $rootKeys.Count -or
+            @(Compare-Object $actualRootKeys $rootKeys).Count -ne 0) {
+            throw [IO.InvalidDataException]::new()
+        }
+
+        $isInteger = {
+            param($Value)
+            return $Value -is [int] -or $Value -is [long]
+        }
+        $isOptionalTypeName = {
+            param($Value)
+            return $null -eq $Value -or (
+                $Value -is [string] -and
+                $Value -cmatch '^[A-Za-z_][A-Za-z0-9_.+`]{0,511}$')
+        }
+        if (-not (& $isInteger $diagnostic.schemaVersion) -or
+            $diagnostic.schemaVersion -ne 1 -or
+            $diagnostic.authoritative -isnot [bool] -or
+            $diagnostic.authoritative -or
+            $diagnostic.selectedClass -isnot [string] -or
+            $diagnostic.selectedClass -cne $ExpectedClass -or
+            $diagnostic.selectedMethod -isnot [string] -or
+            $diagnostic.selectedMethod -cne $ExpectedMethod -or
+            $diagnostic.dynamicCodeSupported -isnot [bool] -or
+            $diagnostic.stage -isnot [string] -or
+            $diagnostic.stage -cnotin @(
+                'startup',
+                'runner-configuration',
+                'runner-configuration-failed',
+                'discovery-execution') -or
+            -not (& $isOptionalTypeName $diagnostic.runnerType) -or
+            -not (& $isOptionalTypeName $diagnostic.expectedTestInspectionFailureType) -or
+            -not (& $isOptionalTypeName $diagnostic.configurationFailureType) -or
+            -not (& $isInteger $diagnostic.expectedTypeCount) -or
+            $diagnostic.expectedTypeCount -lt 0 -or
+            $diagnostic.expectedTypeCount -gt 64 -or
+            -not (& $isInteger $diagnostic.expectedMethodCount) -or
+            $diagnostic.expectedMethodCount -lt 0 -or
+            $diagnostic.expectedMethodCount -gt 64) {
+            throw [IO.InvalidDataException]::new()
+        }
+
+        $options = $diagnostic.applicationOptions
+        $optionKeys = @(
+            'classFilterCount',
+            'methodFilterCount',
+            'containsExpectedClass',
+            'containsExpectedMethod',
+            'unexpectedClassFilterCount',
+            'unexpectedMethodFilterCount'
+        )
+        $actualOptionKeys = @($options.PSObject.Properties.Name)
+        if ($options -isnot [pscustomobject] -or
+            $actualOptionKeys.Count -ne $optionKeys.Count -or
+            @(Compare-Object $actualOptionKeys $optionKeys).Count -ne 0 -or
+            -not (& $isInteger $options.classFilterCount) -or
+            $options.classFilterCount -lt 0 -or
+            $options.classFilterCount -gt 64 -or
+            -not (& $isInteger $options.methodFilterCount) -or
+            $options.methodFilterCount -lt 0 -or
+            $options.methodFilterCount -gt 64 -or
+            $options.containsExpectedClass -isnot [bool] -or
+            $options.containsExpectedMethod -isnot [bool] -or
+            -not (& $isInteger $options.unexpectedClassFilterCount) -or
+            $options.unexpectedClassFilterCount -lt 0 -or
+            $options.unexpectedClassFilterCount -gt $options.classFilterCount -or
+            -not (& $isInteger $options.unexpectedMethodFilterCount) -or
+            $options.unexpectedMethodFilterCount -lt 0 -or
+            $options.unexpectedMethodFilterCount -gt $options.methodFilterCount) {
+            throw [IO.InvalidDataException]::new()
+        }
+
+        $exceptions = @($diagnostic.firstChanceExceptions)
+        if ($diagnostic.firstChanceExceptions -isnot [array] -or
+            $exceptions.Count -gt 16) {
+            throw [IO.InvalidDataException]::new()
+        }
+        $exceptionKeys = @(
+            'Stage',
+            'Type',
+            'HResult',
+            'MessageSha256',
+            'MessageLength',
+            'HashedCharacterLength',
+            'HashedByteLength',
+            'MessageTruncated'
+        )
+        foreach ($exception in $exceptions) {
+            $actualExceptionKeys = @($exception.PSObject.Properties.Name)
+            if ($exception -isnot [pscustomobject] -or
+                $actualExceptionKeys.Count -ne $exceptionKeys.Count -or
+                @(Compare-Object $actualExceptionKeys $exceptionKeys).Count -ne 0 -or
+                $exception.Stage -isnot [string] -or
+                $exception.Stage -cnotin @(
+                    'startup',
+                    'runner-configuration',
+                    'runner-configuration-failed',
+                    'discovery-execution') -or
+                -not (& $isOptionalTypeName $exception.Type) -or
+                $null -eq $exception.Type -or
+                -not (& $isInteger $exception.HResult) -or
+                $exception.MessageSha256 -isnot [string] -or
+                $exception.MessageSha256 -cnotmatch '^[0-9a-f]{64}$' -or
+                -not (& $isInteger $exception.MessageLength) -or
+                $exception.MessageLength -lt 0 -or
+                -not (& $isInteger $exception.HashedCharacterLength) -or
+                $exception.HashedCharacterLength -lt 0 -or
+                $exception.HashedCharacterLength -gt 1024 -or
+                $exception.HashedCharacterLength -gt $exception.MessageLength -or
+                -not (& $isInteger $exception.HashedByteLength) -or
+                $exception.HashedByteLength -lt 0 -or
+                $exception.HashedByteLength -gt 4096 -or
+                $exception.MessageTruncated -isnot [bool] -or
+                $exception.MessageTruncated -ne (
+                    $exception.MessageLength -gt
+                    $exception.HashedCharacterLength)) {
+                throw [IO.InvalidDataException]::new()
+            }
+        }
+
+        $destinationName = (
+            "maui-replication-windows-diagnostics-" +
+            "$($notBefore.Ticks).json")
+        $destination = Join-Path $OutputDirectory $destinationName
+        if (Test-Path -LiteralPath $destination) {
+            throw [IO.IOException]::new()
+        }
+        Copy-Item -LiteralPath $source -Destination $destination `
+            -ErrorAction Stop
+        Write-Host (
+            "Retained non-authoritative exact-runner diagnostics: " +
+            $destination) -ForegroundColor Gray
+    } catch {
+        Write-Warning (
+            "Exact Windows runner diagnostics were not retained " +
+            "($($_.Exception.GetType().Name)); test results remain authoritative.")
+    }
 }
 
 function Invoke-WindowsDeviceTestApp {
@@ -1948,14 +2088,12 @@ function Invoke-WindowsDeviceTestApp {
     $categoriesFile = Join-Path $executionOutputDirectory "devicetestcategories.txt"
     $runnerDiagnosticFile = Join-Path $executionOutputDirectory `
         $WindowsExactRunnerDiagnosticFileName
+    $runnerDiagnosticNotBeforeUtc = [datetime]::UtcNow
     Remove-Item -LiteralPath $categoriesFile -Force -ErrorAction SilentlyContinue
     Remove-Item -Path "$resultBase*.xml" -Force -ErrorAction SilentlyContinue
     if ($UsePackagedExactSelector) {
         Remove-Item -LiteralPath $runnerDiagnosticFile -Force `
             -ErrorAction SilentlyContinue
-        Remove-Item -LiteralPath (
-            Join-Path $OutputDirectory $WindowsExactRunnerDiagnosticFileName
-        ) -Force -ErrorAction SilentlyContinue
     }
 
     $resultFiles = @()
@@ -2159,7 +2297,8 @@ function Invoke-WindowsDeviceTestApp {
                     -ExecutionOutputDirectory $executionOutputDirectory `
                     -OutputDirectory $OutputDirectory `
                     -ExpectedClass $IncludeClasses `
-                    -ExpectedMethod $IncludeMethods
+                    -ExpectedMethod $IncludeMethods `
+                    -NotBeforeUtc $runnerDiagnosticNotBeforeUtc
             }
             if ($IncludeClasses) {
                 if (Test-Path -LiteralPath $resultFile) {
@@ -2199,7 +2338,8 @@ function Invoke-WindowsDeviceTestApp {
                 -ExecutionOutputDirectory $executionOutputDirectory `
                 -OutputDirectory $OutputDirectory `
                 -ExpectedClass $IncludeClasses `
-                -ExpectedMethod $IncludeMethods
+                -ExpectedMethod $IncludeMethods `
+                -NotBeforeUtc $runnerDiagnosticNotBeforeUtc
         }
         if (-not (Test-Path $resultFile)) {
             throw "$WindowsDeviceNoResultsMarker Windows device test app exited without creating $resultFile."
