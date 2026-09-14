@@ -3,8 +3,7 @@
 show_usage() {
     echo "Common settings:"
     echo "  --task <value>           Name of Arcade task (name of a project in toolset directory of the Arcade SDK package)"
-    echo "  --restore                (Legacy) Restore runs by default; retained for backward compatibility. Use --norestore to skip"
-    echo "  --norestore              Skip restoring dependencies"
+    echo "  --restore                Restore dependencies"
     echo "  --verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]"
     echo "  --help                   Print help and exit"
     echo ""
@@ -51,11 +50,10 @@ binary_log=true
 configuration="Debug"
 verbosity="minimal"
 exclude_ci_binary_log=false
-# restore defaults to on; --restore is retained only so existing consumers that pass it don't break. Use --norestore to opt out.
-restore=true
+restore=false
 help=false
 properties=''
-warn_as_error=true
+warnAsError=true
 
 while (($# > 0)); do
   lowerI="$(echo $1 | tr "[:upper:]" "[:lower:]")"
@@ -65,10 +63,7 @@ while (($# > 0)); do
       shift 2
       ;;
     --restore)
-      shift 1
-      ;;
-    --norestore)
-      restore=false
+      restore=true
       shift 1
       ;;
     --verbosity)
@@ -80,8 +75,8 @@ while (($# > 0)); do
       exclude_ci_binary_log=true
       shift 1
       ;;
-    --nowarnaserror)
-      warn_as_error=false
+    --noWarnAsError)
+      warnAsError=false
       shift 1
       ;;
     --help)
@@ -101,11 +96,6 @@ if $help; then
   show_usage
   exit 0
 fi
-
-# sdk-task runs a standalone Arcade SDK task and does not need repo-specific toolset setup.
-# Skip importing configure-toolset.sh so its side effects (e.g. a repo's configure-toolset.sh
-# calling exit) don't terminate this script before the task runs.
-disable_configure_toolset_import=1
 
 . "$scriptroot/tools.sh"
 InitializeToolset
