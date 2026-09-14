@@ -142,7 +142,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 			runner.RunAllTestsByDefault = false;
 			runner.SkipClass(selectedClass, isExcluded: false);
-			runner.SkipMethod(selectedClass + "." + selectedMethod, isExcluded: false);
+			runner.SkipMethod(selectedMethod, isExcluded: false);
 		}
 	}
 
@@ -314,7 +314,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 
 			var selectedClass = ReplicationWindowsDeviceTestClassFilter.SelectedClass;
 			var selectedMethod = ReplicationWindowsDeviceTestClassFilter.SelectedMethod;
-			var expectedFullyQualifiedMethod = selectedClass + "." + selectedMethod;
 			var classFilters = ApplicationOptions.Current.ClassMethodFilters;
 			var methodFilters = ApplicationOptions.Current.SingleMethodFilters;
 			var document = new
@@ -328,11 +327,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					classFilterCount = classFilters.Count,
 					methodFilterCount = methodFilters.Count,
 					containsExpectedClass = classFilters.Contains(selectedClass),
-					containsExpectedMethod = methodFilters.Contains(expectedFullyQualifiedMethod),
+					containsExpectedMethod = methodFilters.Contains(selectedMethod),
 					unexpectedClassFilterCount = classFilters.Count(filter =>
 						!string.Equals(filter, selectedClass, StringComparison.Ordinal)),
 					unexpectedMethodFilterCount = methodFilters.Count(filter =>
-						!string.Equals(filter, expectedFullyQualifiedMethod, StringComparison.Ordinal)),
+						!string.Equals(filter, selectedMethod, StringComparison.Ordinal)),
 				},
 				dynamicCodeSupported = global::System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported,
 				stage = Volatile.Read(ref _stage),
