@@ -146,7 +146,7 @@ foreach ($run in $plan) {
 }
 
 if ($CaptureOnly) {
-    Write-Host "Captured four UI evidence runs; comparison is deferred to a clean job."
+    Write-Host "Captured four UI evidence runs; compare them separately with trusted comparison tooling."
     exit 0
 }
 

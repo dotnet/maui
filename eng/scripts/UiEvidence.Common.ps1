@@ -136,6 +136,7 @@ function Read-UiEvidenceJson {
 function Write-UiEvidenceJson {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [object]$Value,
 
         [Parameter(Mandatory = $true)]

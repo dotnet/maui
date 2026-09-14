@@ -4,6 +4,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $selector = Join-Path $PSScriptRoot "Select-UiEvidenceScenarios.ps1"
 $requestBuilder = Join-Path $PSScriptRoot "New-UiEvidenceRequests.ps1"
+$contextBuilder = Join-Path $PSScriptRoot "New-UiEvidenceContext.ps1"
 $requestManifestBuilder = Join-Path $PSScriptRoot "New-UiEvidenceRequestManifest.ps1"
 $payloadBuilder = Join-Path $PSScriptRoot "Prepare-UiEvidencePayload.ps1"
 $sealer = Join-Path $PSScriptRoot "Seal-UiEvidence.ps1"
@@ -68,18 +69,20 @@ function Invoke-Selection([string]$Name, [string[]]$Files) {
 New-Item -ItemType Directory -Force -Path $testRoot | Out-Null
 
 try {
-    $pipelinePath = Join-Path $repoRoot "eng\pipelines\ci-ui-evidence.yml"
-    $pipeline = Get-Content -LiteralPath $pipelinePath -Raw
-    Assert-True ($pipeline -match '(?m)^trigger: none\r?$') "UI evidence pipeline must remain manually triggered"
-    Assert-True ($pipeline -match '(?m)^pr: none\r?$') "UI evidence pipeline must not run automatically on PRs"
+    $skillPath = Join-Path $repoRoot ".github\skills\check-pr-ui-evidence\SKILL.md"
+    $localWorkflowPath = Join-Path $repoRoot ".github\skills\check-pr-ui-evidence\references\local-workflow.md"
+    Assert-True (Test-Path -LiteralPath $skillPath -PathType Leaf) "The manual measurement skill must exist"
+    Assert-True (Test-Path -LiteralPath $localWorkflowPath -PathType Leaf) "The local workflow reference must exist"
+    $skill = Get-Content -LiteralPath $skillPath -Raw
+    Assert-True ($skill -match '(?m)^name: check-pr-ui-evidence\r?$') "The measurement skill must be discoverable"
     foreach ($path in @(
-        $pipelinePath,
+        (Join-Path $repoRoot "eng\pipelines\ci-ui-evidence.yml"),
         (Join-Path $repoRoot "eng\pipelines\common\ui-evidence-build-job.yml"),
-        (Join-Path $repoRoot "eng\pipelines\common\ui-evidence-run-job.yml")
+        (Join-Path $repoRoot "eng\pipelines\common\ui-evidence-run-job.yml"),
+        (Join-Path $repoRoot ".github\workflows\ui-evidence.md"),
+        (Join-Path $repoRoot ".github\workflows\ui-evidence.lock.yml")
     )) {
-        $content = Get-Content -LiteralPath $path -Raw
-        Assert-True ($content -notmatch '\.github[/\\]skills[/\\]ui-evidence') "Measurement pipelines must not depend on the optional AI skill: $path"
-        Assert-True ($content -notmatch '\bgh aw\b') "Measurement pipelines must not invoke an agentic workflow: $path"
+        Assert-True (-not (Test-Path -LiteralPath $path)) "Manual UI evidence must not introduce a pipeline or workflow: $path"
     }
 
     $layout = Invoke-Selection "layout" @(
@@ -151,6 +154,46 @@ try {
     )
     Assert-Equal 3 $docs.ExitCode "Non-product selection should be a no-op"
     Assert-Equal "no-ui-relevant-changes" $docs.Result.selectionStatus "Non-product status"
+    Assert-True ($docs.Result.requests -is [array]) "Empty selection requests must remain a JSON array"
+    Assert-Equal 0 $docs.Result.requests.Count "Non-product selection must have no requests"
+
+    foreach ($case in @(
+        @{ Name = "layout"; Count = 2; ExitCode = 0 },
+        @{ Name = "collection-android"; Count = 1; ExitCode = 0 },
+        @{ Name = "docs"; Count = 0; ExitCode = 3 },
+        @{ Name = "unmapped"; Count = 0; ExitCode = 3 }
+    )) {
+        $contextRoot = Join-Path $testRoot "$($case.Name)-context"
+        $arguments = @(
+            "-ChangedFilesPath", (Join-Path $testRoot "$($case.Name).txt"),
+            "-BaseCommitSha", $baseSha,
+            "-HeadCommitSha", $headSha,
+            "-HarnessSha", $harnessSha,
+            "-PullRequestNumber", "42",
+            "-RegistryPath", $registry,
+            "-OutputDirectory", $contextRoot
+        )
+        $contextExit = Invoke-ScriptProcess $contextBuilder $arguments
+        Assert-Equal $case.ExitCode $contextExit "Local context exit code for $($case.Name)"
+        $context = Get-Content -LiteralPath (Join-Path $contextRoot "selection.json") -Raw | ConvertFrom-Json
+        Assert-True ($context.requests -is [array]) "Local context requests must always be an array"
+        Assert-Equal $case.Count $context.requests.Count "Local context request count for $($case.Name)"
+        $contextRequestsJson = Get-Content -LiteralPath (Join-Path $contextRoot "requests.json") -Raw
+        Assert-True ($contextRequestsJson.TrimStart().StartsWith("[")) "Local requests file must always be a JSON array"
+        $contextRequests = @($contextRequestsJson | ConvertFrom-Json)
+        Assert-Equal $case.Count $contextRequests.Count "Standalone request count for $($case.Name)"
+        Assert-Equal (Get-FileHash -LiteralPath $registry).Hash `
+            (Get-FileHash -LiteralPath (Join-Path $contextRoot "scenarios.json")).Hash "Local registry snapshot"
+        if ($case.Count -gt 0) {
+            Assert-Equal $contextRequests[0].requestKey $context.requests[0].requestKey "Context must contain keyed requests"
+            Assert-Equal $harnessSha $context.requests[0].harnessSha "Context must retain full request identity"
+            Assert-Equal $headSha $context.requests[0].headCommitSha "Context must retain measured head"
+        }
+        $beforeHash = (Get-FileHash -LiteralPath (Join-Path $contextRoot "selection.json")).Hash
+        $reuseExit = Invoke-ScriptProcess $contextBuilder $arguments -Quiet
+        Assert-True ($reuseExit -ne 0) "Local context must not overwrite an existing evidence session"
+        Assert-Equal $beforeHash (Get-FileHash -LiteralPath (Join-Path $contextRoot "selection.json")).Hash "Existing evidence must remain unchanged"
+    }
 
     $requestsPath = Join-Path $testRoot "requests.json"
     $requestExit = Invoke-ScriptProcess $requestBuilder @(
