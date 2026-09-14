@@ -31,12 +31,6 @@ param(
     [string]$HarnessSha,
 
     [Parameter(Mandatory = $true)]
-    [string]$AzdoBuildId,
-
-    [Parameter(Mandatory = $true)]
-    [string]$AzdoBuildUrl,
-
-    [Parameter(Mandatory = $true)]
     [string]$BaseRuntimeVariant,
 
     [Parameter(Mandatory = $true)]
@@ -74,11 +68,6 @@ $category = switch ($ExpectedScenario) {
 }
 $parser = Join-Path $PSScriptRoot "Parse-DevicePerformanceResults.ps1"
 $comparator = Join-Path $PSScriptRoot "Compare-DevicePerformanceResults.ps1"
-
-function Get-EnvironmentValue([string]$name, [string]$defaultValue) {
-    $value = [Environment]::GetEnvironmentVariable($name)
-    return $(if ([string]::IsNullOrWhiteSpace($value)) { $defaultValue } else { $value })
-}
 
 function Wait-ForSuccessfulProcess(
     [Diagnostics.Process]$process,
@@ -203,10 +192,6 @@ foreach ($run in $runs) {
         MAUI_PERF_HARNESS_SHA = $HarnessSha
         MAUI_PERF_RUN_ORDINAL = $run.Number
         MAUI_PERF_EXPECTED_VARIANT_RUNS = $ExpectedVariantRuns
-        MAUI_PERF_AZDO_BUILD_ID = $AzdoBuildId
-        MAUI_PERF_AZDO_BUILD_URL = $AzdoBuildUrl
-        MAUI_PERF_HELIX_JOB_ID = Get-EnvironmentValue "HELIX_CORRELATION_ID" "local"
-        MAUI_PERF_HELIX_WORK_ITEM = Get-EnvironmentValue "HELIX_WORKITEM_FRIENDLYNAME" "local"
         MAUI_PERF_RUNTIME_VARIANT = $runtimeVariant
         MAUI_PERF_SDK_VERSION = $sdkVersion
     }

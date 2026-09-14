@@ -180,8 +180,6 @@ $run = @{
     HeadRuntimeVariant = $HeadRuntime
     BaseSdkVersion = $BaseSdk
     HeadSdkVersion = $HeadSdk
-    AzdoBuildId = "local"
-    AzdoBuildUrl = "local"
     OutputDirectory = "$TrialRoot/plan"
 }
 ```

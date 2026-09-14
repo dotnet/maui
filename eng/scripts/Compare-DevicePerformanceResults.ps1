@@ -149,6 +149,9 @@ foreach ($group in $grouped)
     }
 
     $allResults = @($baseResults + $headResults)
+    if (@($allResults | Where-Object { $_.schemaVersion -ne 3 }).Count -gt 0) {
+        $provenanceErrors.Add("All results must use performance result schema 3.")
+    }
     $expectedProperties = @(
         @{ Path = "repository"; Expected = $ExpectedRepository; Name = "repository" },
         @{ Path = "pullRequestNumber"; Expected = "$ExpectedPullRequestNumber"; Name = "PR number" },
@@ -311,11 +314,7 @@ foreach ($group in $grouped)
         "environment.runtimeFramework",
         "environment.processArchitecture",
         "environment.runtimeVariant",
-        "environment.sdkVersion",
-        "build.azdoBuildId",
-        "build.azdoBuildUrl",
-        "build.helixJobId",
-        "build.helixWorkItem"
+        "environment.sdkVersion"
     )
     foreach ($environmentPath in $environmentPaths) {
         $values = @(Get-UniqueValues $allResults $environmentPath)
@@ -407,12 +406,6 @@ foreach ($group in $grouped)
         HeadCommit = $headCommits[0]
         BaseResultCount = $baseResults.Count
         HeadResultCount = $headResults.Count
-        Build = [PSCustomObject]@{
-            azdoBuildId = $baseResults[0].build.azdoBuildId
-            azdoBuildUrl = $baseResults[0].build.azdoBuildUrl
-            helixJobId = $baseResults[0].build.helixJobId
-            helixWorkItem = $baseResults[0].build.helixWorkItem
-        }
         Environment = $baseResults[0].environment
         Base = $base
         Head = $head
@@ -560,7 +553,7 @@ else
 }
 
 $summary = [PSCustomObject]@{
-    schemaVersion = 2
+    schemaVersion = 3
     verdict = $verdict
     timePctTolerance = $TimePctTolerance
     expected = [PSCustomObject]@{

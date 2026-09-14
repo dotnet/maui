@@ -86,9 +86,10 @@ Use the **trusted** local driver:
 - Windows: `eng/scripts/Run-WindowsDevicePerformanceComparison.ps1`.
 
 Supply both built apps, actual repository/PR/author, merge-base/head/harness
-SHAs, runtime/SDK identities, and the exact expected scenario. Set local build
-identity (`AzdoBuildId` and `AzdoBuildUrl` to `local`); clear inherited Helix
-identity variables. Do not use `-XHarnessMode helix`.
+SHAs, runtime/SDK identities, and the exact expected scenario. Use the
+installed local XHarness command (`-XHarnessMode dotnet` or `global`) on
+Android/iOS/MacCatalyst; Windows invokes the app directly. Both apps must emit
+schema version 3 results from the same trusted harness.
 
 Run `-DryRun` first and inspect `run-plan.json`: base, head, head, base; the same
 scenario/device/harness; two invocations per variant. Then run without `-DryRun`

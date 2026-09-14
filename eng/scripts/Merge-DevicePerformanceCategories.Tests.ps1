@@ -71,11 +71,6 @@ namespace Microsoft.Maui.DeviceTests
     }
     Assert-Equal $true $missingClassRejected "Unexpected category container must fail clearly"
 
-    $pipeline = Join-Path $PSScriptRoot "..\pipelines\common\device-performance-build-job.yml"
-    $pipelineSource = Get-Content $pipeline -Raw
-    Assert-Equal 2 ([regex]::Matches($pipelineSource, 'Merge-DevicePerformanceCategories\.ps1').Count) "CI must snapshot and invoke the trusted merger"
-    Assert-Equal $true ($pipelineSource.Contains('device-performance-harness/src/*')) "CI overlay must exclude the saved full category file"
-
     Write-Host "All device performance category merge tests passed."
 }
 finally {

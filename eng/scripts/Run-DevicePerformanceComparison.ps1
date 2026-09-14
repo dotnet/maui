@@ -43,14 +43,6 @@ param(
 
     [Parameter(Mandatory = $true)]
     [ValidateNotNullOrEmpty()]
-    [string]$AzdoBuildId,
-
-    [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty()]
-    [string]$AzdoBuildUrl,
-
-    [Parameter(Mandatory = $true)]
-    [ValidateNotNullOrEmpty()]
     [string]$BaseRuntimeVariant,
 
     [Parameter(Mandatory = $true)]
@@ -88,7 +80,7 @@ param(
     [string]$Timeout = "01:15:00",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("dotnet", "global", "helix")]
+    [ValidateSet("dotnet", "global")]
     [string]$XHarnessMode = "dotnet",
 
     [Parameter(Mandatory = $false)]
@@ -108,19 +100,6 @@ $effectiveTestFilter = switch ($ExpectedScenario) {
     default { throw "No trusted test filter is registered for scenario '$ExpectedScenario'." }
 }
 
-if ($XHarnessMode -eq "helix") {
-    foreach ($name in @("XHARNESS_CLI_PATH", "HELIX_CORRELATION_ID", "HELIX_WORKITEM_FRIENDLYNAME")) {
-        if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
-            throw "$name is required for Helix execution."
-        }
-    }
-}
-
-function Get-EnvironmentValue([string]$name, [string]$defaultValue) {
-    $value = [Environment]::GetEnvironmentVariable($name)
-    return $(if ([string]::IsNullOrWhiteSpace($value)) { $defaultValue } else { $value })
-}
-
 function Assert-AppExists([string]$path, [string]$name) {
     if (-not (Test-Path $path))
     {
@@ -134,17 +113,6 @@ function Get-XHarnessCommand([string]$variant, [string]$app, [string]$commitSha,
     {
         $executable = "dotnet"
         $arguments.Add("xharness")
-    }
-    elseif ($XHarnessMode -eq "helix")
-    {
-        if ([string]::IsNullOrWhiteSpace($env:XHARNESS_CLI_PATH))
-        {
-            throw "XHARNESS_CLI_PATH is required for Helix execution."
-        }
-
-        $executable = "dotnet"
-        $arguments.Add("exec")
-        $arguments.Add($env:XHARNESS_CLI_PATH)
     }
     else
     {
@@ -211,10 +179,6 @@ function Get-XHarnessCommand([string]$variant, [string]$app, [string]$commitSha,
         MAUI_PERF_HARNESS_SHA = $HarnessSha
         MAUI_PERF_RUN_ORDINAL = $script:currentRunOrdinal
         MAUI_PERF_EXPECTED_VARIANT_RUNS = $ExpectedVariantRuns
-        MAUI_PERF_AZDO_BUILD_ID = $AzdoBuildId
-        MAUI_PERF_AZDO_BUILD_URL = $AzdoBuildUrl
-        MAUI_PERF_HELIX_JOB_ID = Get-EnvironmentValue "HELIX_CORRELATION_ID" "local"
-        MAUI_PERF_HELIX_WORK_ITEM = Get-EnvironmentValue "HELIX_WORKITEM_FRIENDLYNAME" "local"
         MAUI_PERF_RUNTIME_VARIANT = $runtimeVariant
         MAUI_PERF_SDK_VERSION = $sdkVersion
     }

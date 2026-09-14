@@ -1,12 +1,13 @@
 # Device performance measurements
 
 The device-performance tools compare a selected native scenario between a PR's merge-base
-and head. They build or accept two device-test apps, run them on one test host in
+and head. The local drivers accept two device-test apps, run them on one test host in
 **base, head, head, base** order, and produce JSON and Markdown comparisons.
 
-There is no AI analysis, managed benchmark selection, automatic PR trigger, or comment
-posting in this measurement path. A maintainer selects the scenario and platforms and
-authorizes execution through the existing pipeline mechanism or the local drivers.
+Execution is local-only, through scripts or the `check-pr-performance` skill.
+There is no remote submission, automatic PR trigger, managed benchmark selection, or
+automatic comment posting. The skill prepares the apps and runs the same local scripts;
+the scripts themselves do not invoke an AI model.
 
 ## Available scenarios
 
@@ -25,58 +26,31 @@ Unmeasured paths remain unmeasured.
 Performance categories are excluded from normal device-test runs. The comparison drivers
 explicitly select the required category; Windows also opts in during category discovery.
 
-## Manual pipeline execution
-
-Register `eng/pipelines/ci-device-performance.yml` with the existing authorized Azure DevOps
-pipeline mechanism. It declares `trigger: none` and `pr: none`.
-
-Supply:
-
-- `prNumber`: the approved PR.
-- `pullRequestAuthor`: the PR author's GitHub login, without `@`, for the report's author mention.
-- `baseCommitSha`: its full merge-base SHA, not the current base-branch tip.
-- `headCommitSha`: the exact head SHA to measure.
-- `platform`: `android`, `ios`, `maccatalyst`, or `windows`.
-- `expectedScenario`: a supported scenario/platform combination from the table above.
-
-The pipeline snapshots its trusted performance harness and overlays it into separate
-base/head builds. It merges only the required performance category constants into each
-revision's own `TestCategory.cs`, preserving older or revision-specific categories.
-Conflicting performance category values fail rather than silently changing the workload.
-It records build provenance, packages both applications, submits the
-paired payload to Helix, and publishes `device_performance_results_<platform>`.
-Required build pools, workloads, and Helix access must already be available.
-
-Both applications must use the same scenario/harness and comparable SDK/runtime settings.
-The pipeline revision is the harness identity; it is distinct from the measured product
-head and must be reviewed as trusted code. Never expose privileged credentials to
-PR-controlled builds.
-
-On Apple hosts, Helix execution requires a logged-in, non-root console user. The wrapper
-resolves that user's UID/home and uses non-interactive `sudo` and `launchctl` with a clean,
-explicitly allowlisted environment. It does not write an environment file.
-
 ## Local execution
 
 For Copilot-assisted execution, ask **"Check performance of PR #12345 on iOS."**
 The [check-pr-performance skill](../.github/skills/check-pr-performance/SKILL.md)
 selects a relevant supported scenario, prepares isolated merge-base/head builds,
-runs the local comparison, and generates the standard report. No new or existing
-pipeline is required or triggered. Add **"post the results on the PR"** only when
-you want Copilot to publish the comment.
+runs the local comparison, and generates the standard report. Add
+**"post the results on the PR"** only when you want Copilot to publish the comment.
 
 Build the base and head apps separately in Release with the same trusted performance
 harness. Use XHarness on Android/iOS/MacCatalyst, or an unpackaged Windows device-test
-publish directory with all dependencies. Keep output in a fresh directory per comparison.
+publish directory with all dependencies. Follow the
+[local preparation recipe](../.github/skills/check-pr-performance/references/local-workflow.md)
+for pinned source snapshots, credential isolation, category overlays, and build commands.
+The trusted harness is distinct from the measured product head. Never expose privileged
+credentials to PR-controlled builds or apps, and do not run them as root.
+Keep output in a fresh directory per comparison.
 
 - Android/iOS/MacCatalyst: `eng/scripts/Run-DevicePerformanceComparison.ps1`.
 - Windows: `eng/scripts/Run-WindowsDevicePerformanceComparison.ps1`.
 
 Both drivers accept app paths, exact base/head/harness SHAs, repository/PR identity,
-build identity, runtime/SDK identity, the expected scenario, and an output directory.
-For local runs, use explicitly local build identity rather than claiming an AzDO or
-Helix run. `-DryRun` produces a run plan without executing either app; app paths must
-still exist.
+runtime/SDK identity, the expected scenario, and an output directory.
+Use `-XHarnessMode dotnet` for `dotnet xharness` or `-XHarnessMode global` for an
+`xharness` executable on your PATH; Windows invokes the local app directly.
+`-DryRun` produces a run plan without executing either app; app paths must still exist.
 
 Example Android plan (replace paths and identities with the actual local inputs):
 
@@ -96,8 +70,6 @@ $run = @{
     HeadRuntimeVariant = "mono"
     BaseSdkVersion = "<SDK_VERSION>"
     HeadSdkVersion = "<SDK_VERSION>"
-    AzdoBuildId = "local"
-    AzdoBuildUrl = "local"
     DeviceId = "emulator-5554"
     OutputDirectory = "C:\perf\comparison"
 }
@@ -121,6 +93,11 @@ runs per side, matching identities and environment metadata, and the required co
 counters. A buggy baseline can provide context, but required head-side correctness must
 pass.
 
+Result records and comparison summaries use schema version 3. Rebuild both apps with
+the same current harness before running these scripts; older records are rejected rather
+than compared under a different provenance contract. Repository, PR, product/harness SHAs,
+run ordinals, device, OS, architecture, runtime, and SDK identity remain recorded.
+
 These scenarios are measurement workloads, not regression tests for a particular product
 fix. Passing on both revisions is expected; assess the recorded correctness and comparison
 results rather than requiring a failing test before the change. Warmups are excluded from
@@ -141,9 +118,8 @@ they do not approve a PR or prove whole-PR performance.
 ## PR comment format
 
 Use the generated `comparison-summary.md` when sharing performance results. Both local
-drivers and the Helix path use the same deterministic renderer. Supply `-PullRequestAuthor`
-to either driver or the comparator (pipeline parameter: `pullRequestAuthor`) so the
-notification mentions the author. For backwards-compatible offline use, omitting the
+drivers use the same deterministic renderer. Supply `-PullRequestAuthor` to either
+driver or the comparator so the notification mentions the author. For offline use, omitting the
 author produces a linked PR notice instead; it never guesses an author or queries GitHub.
 When preparing a public comment, obtain the actual PR author's login and supply it.
 
@@ -158,6 +134,6 @@ especially experimental scenarios, simulator-only runs, and managed versus nativ
 Do not turn a neutral timing result into a correctness or merge approval. Detailed ranges,
 counters, environment metadata, and provenance remain in `comparison-summary.json`.
 
-The pipeline runs `Compare-DevicePerformanceResults.Tests.ps1` before packaging to guard
-the layout, author handling, and neutral/advisory/inconclusive result states. Generating
-this Markdown does not authorize or perform comment posting.
+Run `pwsh -NoProfile -File eng/scripts/Compare-DevicePerformanceResults.Tests.ps1`
+locally to check the layout, author handling, and neutral/advisory/inconclusive result
+states. Generating this Markdown does not authorize or perform comment posting.

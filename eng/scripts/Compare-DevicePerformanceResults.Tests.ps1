@@ -41,7 +41,7 @@ function New-Result(
     [bool]$correctnessPassed = $true
 ) {
     return [PSCustomObject]@{
-        schemaVersion = 2
+        schemaVersion = 3
         repository = "dotnet/maui"
         pullRequestNumber = 42
         scenario = "collectionview-scroll"
@@ -51,12 +51,6 @@ function New-Result(
         harnessSha = $harnessSha
         runOrdinal = $runOrdinal
         expectedVariantRuns = 2
-        build = [PSCustomObject]@{
-            azdoBuildId = "100"
-            azdoBuildUrl = "https://build/100"
-            helixJobId = "job"
-            helixWorkItem = "work"
-        }
         environment = [PSCustomObject]@{
             executionKind = "simulator"
             deviceModel = "iPhone"
@@ -115,6 +109,8 @@ try
     Assert-Equal 2 $summary.comparisons[0].headResultCount "Head ABBA result count"
     Assert-Equal $true $summary.provenanceValidated "Provenance validation"
     Assert-Equal $true $summary.correctnessPassed "Correctness validation"
+    Assert-Equal 3 $summary.schemaVersion "Local comparison schema version"
+    Assert-Equal $null $summary.comparisons[0].PSObject.Properties["build"] "Local summaries contain no remote build identity"
     $markdown = Assert-CommentFormat $markdownPath
     Assert-Equal $true $markdown.Contains("Timing-Improvement%20advisory-") "Improvement badge"
     Assert-Equal $true $markdown.Contains("Correctness-Passed-") "Correctness badge"
@@ -183,6 +179,22 @@ try
     $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
     Assert-Equal "inconclusive" $summary.verdict "Wrong harness should be inconclusive"
     Assert-Equal $false $summary.provenanceValidated "Wrong harness provenance"
+
+    foreach ($schemaVersion in @(2, $null)) {
+        $wrongSchemaResults = @(
+            (New-Result "base" @(100, 110) 1),
+            (New-Result "base" @(101, 111) 2),
+            (New-Result "head" @(105, 115) 1),
+            (New-Result "head" @(106, 116) 2)
+        )
+        $wrongSchemaResults[2].schemaVersion = $schemaVersion
+        Write-Results $resultsPath $wrongSchemaResults
+        & $script @comparisonArguments
+        $summary = Get-Content $summaryPath -Raw | ConvertFrom-Json
+        Assert-Equal "inconclusive" $summary.verdict "Old or missing result schema should be inconclusive"
+        Assert-Equal $false $summary.provenanceValidated "Result schema provenance"
+        Assert-Equal $true $summary.comparisons[0].reason.Contains("schema 3") "Schema mismatch diagnostic"
+    }
 
     Write-Results $resultsPath @(
         (New-Result "base" @(100, 110) 1),
@@ -314,7 +326,7 @@ try
         $result.scenario = "carouselview-wheel-snap-windows"
         $result.platform = "windows"
         $result.environment.executionKind = "virtual"
-        $result.environment.deviceModel = "Helix Windows VM"
+        $result.environment.deviceModel = "Windows VM"
         $result.environment.processArchitecture = "X64"
         $result.environment.runtimeVariant = "coreclr"
         $result.counters = [PSCustomObject]@{
