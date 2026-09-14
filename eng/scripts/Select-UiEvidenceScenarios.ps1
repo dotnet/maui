@@ -214,11 +214,9 @@ else {
     "none"
 }
 
-[object[]]$selectedRequests = if ($selectionStatus -eq "ready") {
-    @($requests)
-}
-else {
-    @()
+[object[]]$selectedRequests = @()
+if ($selectionStatus -eq "ready") {
+    $selectedRequests = $requests
 }
 
 $selection = [PSCustomObject][ordered]@{

@@ -3,11 +3,11 @@
 This is a manually invoked, non-AI measurement layer for comparing a pull
 request's merge-base and head. It builds the same trusted HostApp scenario on
 Android or Windows, collects Appium and DevFlow evidence in base-head-head-base
-order, and publishes a deterministic comparison with a hashed evidence bundle.
+order, and writes a deterministic comparison with a hashed local evidence bundle.
 
 It does not invoke a model, register a GitHub trigger, post a PR comment, or make a
-merge decision. AI interpretation and GitHub orchestration are an optional
-follow-up, not prerequisites for building, running, or comparing evidence.
+merge decision. A manually invoked AI interpretation skill is an optional
+follow-up, not a prerequisite for building, running, or comparing evidence.
 
 ## Scenarios and coverage
 
@@ -28,27 +28,26 @@ interaction executed. For example, initial CollectionView layout does not test
 every grouped-item mutation. Inspect the scenario before interpreting its
 path-based coverage classification.
 
-## Manual pipeline
+## Manually invoked skill
 
-Register `eng/pipelines/ci-ui-evidence.yml` through the existing approved Azure
-DevOps mechanism in `dnceng-public/public`. Both `trigger` and `pr` are `none`.
-This layer requires the configured build/run pools, SDKs, Appium drivers, and
-Windows desktop or Android emulator prerequisites. It requires no Copilot token,
-GitHub slash command, or dedicated OIDC queue bridge.
+Open this repository in Copilot and explicitly request the
+[`check-pr-ui-evidence` skill](../.github/skills/check-pr-ui-evidence/SKILL.md),
+for example:
 
-The pipeline:
+> Use check-pr-ui-evidence to compare PR 38341 locally on a dedicated Android
+> emulator. Keep the evidence local and report the findings here.
 
-1. Validates deterministic contracts and provisions the pinned DevFlow adapter.
-2. Snapshots the trusted HostApp harness from the pipeline source revision.
-3. Builds exact merge-base and head revisions separately, using that same harness.
-4. Packages the apps and records SHA-256 manifests of their complete directories.
-5. Runs `base-1`, `head-1`, `head-2`, `base-2` on one worker.
-6. Publishes raw screenshots, assertions, tree/layout evidence, and run identities.
-7. In a separate clean job, validates provenance, compares repeats, and seals the
-   final `ui_evidence_sealed` artifact.
+The skill uses the deterministic tools in `eng/scripts` and the compiled runner.
+It requires installed local SDK/workload, Appium, and target prerequisites, but
+no new pipeline, registration permission, service identity, or deployed GitHub
+workflow. Initial trials are intentionally manual. Any later hosted integration
+requires a separate justified proposal and approval; it is not part of these PRs.
 
-PR-controlled builds and apps receive no GitHub or Azure DevOps write
-credentials. The clean comparison job does not execute either app.
+The [local workflow reference](../.github/skills/check-pr-ui-evidence/references/local-workflow.md)
+covers the complete prepare/build/package/run/compare/cleanup sequence. All
+builds, captures, and reports remain local. Do not pass GitHub or Azure DevOps
+write credentials to PR-controlled builds or apps, or treat environment-token
+removal as a sandbox for the current user's other credentials.
 
 ### Prepare a request
 
@@ -62,38 +61,25 @@ $baseSha = '<40-character merge-base SHA>'
 $headSha = '<40-character PR head SHA>'
 $harnessSha = git rev-parse HEAD
 
-pwsh eng\scripts\Select-UiEvidenceScenarios.ps1 `
+pwsh eng\scripts\New-UiEvidenceContext.ps1 `
   -ChangedFilesPath artifacts\ui-evidence\changed-files.txt `
   -BaseCommitSha $baseSha `
   -HeadCommitSha $headSha `
   -HarnessSha $harnessSha `
   -PullRequestNumber 12345 `
-  -OutputPath artifacts\ui-evidence\selection.json
-
-pwsh eng\scripts\New-UiEvidenceRequests.ps1 `
-  -SelectionPath artifacts\ui-evidence\selection.json `
-  -OutputPath artifacts\ui-evidence\requests.json
+  -OutputDirectory artifacts\ui-evidence\session
 ```
 
 Selection exits `0` when requests are ready and `3` for an explicit no-op or
 incomplete selection. Inspect `selectionStatus` and `coverage` before proceeding.
-`requests.json` is always an array when generated for a ready selection.
+The new or empty output directory receives `selection.json` with full keyed
+requests, `requests.json`, and a `scenarios.json` snapshot. Both request arrays
+remain arrays even when empty. This step is inert: it does not fetch, build,
+start an app, or queue anything.
 
-Queue one manual pipeline run for each request, with these parameters:
-
-| Pipeline parameter | Request property |
-|---|---|
-| `prNumber` | `pullRequestNumber` |
-| `requestKey` | `requestKey` |
-| `baseCommitSha` | `baseCommitSha` |
-| `headCommitSha` | `headCommitSha` |
-| `registrySha256` | `registrySha256` |
-| `scenarioId` | `scenarioId` |
-| `platform` | `platform` |
-| `coverage` | `coverage` |
-
-Use the request's `harnessSha` as the pipeline source version. A different
-pipeline revision or registry changes the request identity and is rejected.
+The lower-level selector and request scripts remain available for programmatic
+callers. Manual consumers should use the context helper so request identities
+remain consistent between the selection and eventual bundles.
 
 ## Local tooling
 
@@ -124,9 +110,15 @@ pwsh eng\scripts\Validate-UiEvidenceDevFlowSource.ps1 `
 
 `Invoke-UiEvidenceBuild.ps1` builds one variant in its current checkout. For an
 actual comparison, use separate pinned base/head checkouts with the same trusted
-HostApp overlay, as in `ui-evidence-build-job.yml`; building the current branch
-twice is not a PR comparison. The evidence HostApp is disabled by default and is
+HostApp overlay, following the local skill reference; building the current branch
+twice is not a PR comparison. The evidence HostApp is disabled by default and
 enabled only with `EnableMauiUiEvidence=true`.
+
+The present adapter still pins Microsoft.Extensions to `10.0.0`, so newer
+product dependencies can produce `NU1109`. Older revisions can also lack issue
+registrations referenced by the trusted HostApp entrypoint. These are known
+harness compatibility limits, not product regressions; stop and report them
+rather than modifying a measured revision or pretending evidence completed.
 
 For already-built apps, use `New-UiEvidenceBuildMetadata.ps1` and
 `Prepare-UiEvidencePayload.ps1` to create the paired payload. Build
@@ -153,8 +145,9 @@ Use `Complete-UiEvidenceComparison.ps1` in a clean comparison environment with
 `RawEvidenceRoot`, `PayloadRoot`, `RunnerPath`, and a fresh `OutputDirectory`.
 It replaces request/registry data with trusted payload copies, compares, and
 seals. `Validate-UiEvidenceBundle.ps1` checks the resulting bundle hashes and
-optional expected request key/head SHA. Local execution beside PR code does not
-reproduce the isolation of the separate pipeline comparison job.
+optional expected request key/head SHA. Store each completed bundle at
+`session\bundles\<requestKey>` for manual consumers. A local hash seal does not
+authenticate arbitrary third-party evidence or provide workstation isolation.
 
 ## DevFlow compatibility boundary
 
