@@ -2,6 +2,12 @@
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'TestUtils.DeviceTests.Runners'">
     <Compile Include="$(MauiReplicationWindowsClassFilterSource)"
              Link="ReplicationWindowsDeviceTestClassFilter.cs" />
+    <Compile Remove="AppHostBuilderExtensions.cs"
+             Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true'" />
+    <Compile Include="$(MauiReplicationWindowsExactAppHostBuilderExtensionsSource)"
+             Link="AppHostBuilderExtensions.cs"
+             Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true' and
+                        '$(MauiReplicationWindowsExactAppHostBuilderExtensionsSource)' != ''" />
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MauiReplicationWindowsIncludeClassBase64</_Parameter1>
       <_Parameter2>$(MauiReplicationWindowsIncludeClassBase64)</_Parameter2>
@@ -36,5 +42,14 @@
     <Error Condition="'$(MauiReplicationWindowsIncludeMethodBase64)' != '' and
                       '$(MauiReplicationWindowsExactMethodSelector)' != 'true'"
            Text="The trusted Windows device-test method selector requires exact-method mode." />
+    <Error Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true' and
+                      '$(MauiReplicationWindowsExactAppHostBuilderExtensionsSource)' == ''"
+           Text="The trusted Windows exact-runner source override was not supplied." />
+    <Error Condition="'$(MauiReplicationWindowsExactMethodSelector)' == 'true' and
+                      !Exists('$(MauiReplicationWindowsExactAppHostBuilderExtensionsSource)')"
+           Text="The trusted Windows exact-runner source override does not exist." />
+    <Error Condition="'$(MauiReplicationWindowsExactAppHostBuilderExtensionsSource)' != '' and
+                      '$(MauiReplicationWindowsExactMethodSelector)' != 'true'"
+           Text="The trusted Windows exact-runner source override requires exact-method mode." />
   </Target>
 </Project>

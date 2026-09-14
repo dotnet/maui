@@ -2287,15 +2287,21 @@ if ($RequireWindowsAppContainer) {
         'scripts/shared/ReplicationWindowsAppContainerManifest.targets')
     $windowsClassFilterSourcePath = Join-Path $ReplicationTrustedRoot (
         'scripts/shared/ReplicationWindowsDeviceTestClassFilter.cs')
+    $windowsExactRunnerSourcePath = Join-Path $ReplicationTrustedRoot (
+        'scripts/shared/ReplicationWindowsExactAppHostBuilderExtensions.cs')
     $windowsClassFilterOverrideTargets = Join-Path $ReplicationTrustedRoot (
         'scripts/shared/ReplicationWindowsDeviceTestClassFilter.targets')
-    foreach ($trustedPath in @(
+    $windowsRequiredTrustedPaths = @(
         $windowsHelperPath,
         $windowsManifestPath,
         $windowsManifestOverrideTargets,
         $windowsClassFilterSourcePath,
         $windowsClassFilterOverrideTargets
-    )) {
+    )
+    if ($windowsIssueSelector) {
+        $windowsRequiredTrustedPaths += $windowsExactRunnerSourcePath
+    }
+    foreach ($trustedPath in $windowsRequiredTrustedPaths) {
         if (-not (Test-Path -LiteralPath $trustedPath -PathType Leaf) -or
             (Get-Item -LiteralPath $trustedPath -Force).Attributes -band
                 [IO.FileAttributes]::ReparsePoint) {
@@ -2509,7 +2515,8 @@ try {
             "/p:MauiReplicationWindowsClassFilterSource=$windowsClassFilterSourcePath",
             "/p:MauiReplicationWindowsIncludeClassBase64=$windowsClassFilterValueBase64",
             "/p:MauiReplicationWindowsIncludeMethodBase64=$windowsMethodFilterValueBase64",
-            "/p:MauiReplicationWindowsExactMethodSelector=$(if ($windowsIssueSelector) { 'true' } else { 'false' })"
+            "/p:MauiReplicationWindowsExactMethodSelector=$(if ($windowsIssueSelector) { 'true' } else { 'false' })",
+            "/p:MauiReplicationWindowsExactAppHostBuilderExtensionsSource=$(if ($windowsIssueSelector) { $windowsExactRunnerSourcePath } else { '' })"
         )
         $buildArgs += $windowsClassFilterBuildProperties
     }

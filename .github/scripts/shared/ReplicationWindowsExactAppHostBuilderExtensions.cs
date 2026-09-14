@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +77,9 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			appHostBuilder.Services.AddSingleton(options);
 
 			appHostBuilder.Services.AddTransient(svc => new ControlsHeadlessTestRunner(
+					svc.GetRequiredService<HeadlessRunnerOptions>(),
+					svc.GetRequiredService<TestOptions>()));
+			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 
