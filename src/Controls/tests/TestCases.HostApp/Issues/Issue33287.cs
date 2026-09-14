@@ -17,6 +17,12 @@ public class Issue33287MainPage : ContentPage
 	{
 		Title = "Issue 33287";
 
+		var resultLabel = new Label
+		{
+			Text = "Not run",
+			AutomationId = "AlertResultLabel"
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Padding = 20,
@@ -29,7 +35,8 @@ public class Issue33287MainPage : ContentPage
 					AutomationId = "NavigateButton",
 					Command = new Command(async () =>
 					{
-						var secondPage = new Issue33287SecondPage();
+						resultLabel.Text = "Waiting";
+						var secondPage = new Issue33287SecondPage(() => resultLabel.Text = "Completed");
 						await Navigation.PushAsync(secondPage);
 						secondPage.ExposeBackButtonToAutomation();
 					})
@@ -38,7 +45,8 @@ public class Issue33287MainPage : ContentPage
 				{
 					Text = "MainPage",
 					AutomationId = "MainPageLabel"
-				}
+				},
+				resultLabel
 			}
 		};
 	}
@@ -47,15 +55,30 @@ public class Issue33287MainPage : ContentPage
 public class Issue33287SecondPage : ContentPage
 {
 	readonly Button _goBackButton;
+	readonly TaskCompletionSource _unloaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	Task _alertTask;
+	bool _navigatingBack;
 
-	public Issue33287SecondPage()
+	public Issue33287SecondPage(Action alertCompleted)
 	{
 		Title = "Second Page";
+		Unloaded += (_, _) => _unloaded.TrySetResult();
 
 		_goBackButton = new Button
 		{
 			Text = "Go Back",
-			Command = new Command(async () => await Navigation.PopAsync())
+			Command = new Command(async () =>
+			{
+				_navigatingBack = true;
+				await Navigation.PopAsync();
+				await _unloaded.Task;
+
+				if (IsLoaded || Window is not null || _alertTask is null)
+					throw new InvalidOperationException("The alert must be invoked while detaching the page.");
+
+				await _alertTask;
+				alertCompleted();
+			})
 		};
 
 		Content = new VerticalStackLayout
@@ -71,18 +94,15 @@ public class Issue33287SecondPage : ContentPage
 	internal void ExposeBackButtonToAutomation() =>
 		_goBackButton.AutomationId = "GoBackButton";
 
-	protected override async void OnAppearing()
+	protected override void OnParentSet()
 	{
-		base.OnAppearing();
+		base.OnParentSet();
 
-		// Wait long enough for the user/test to navigate back
-#if MACCATALYST
-		await Task.Delay(4000);
-#else
-		await Task.Delay(2000);
-#endif
-
-		// Without the fix this throws NullReferenceException and crashes the app
-		await DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
+		if (_navigatingBack && Parent is null)
+		{
+			// Exercise the null-window path before navigation disconnects the handler
+			// and DisplayAlertAsync would instead queue an alert for a future navigation.
+			_alertTask = DisplayAlertAsync("Test Alert", "This alert was delayed", "OK");
+		}
 	}
 }
