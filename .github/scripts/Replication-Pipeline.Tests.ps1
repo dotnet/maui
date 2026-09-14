@@ -875,6 +875,20 @@ ffprobe() { echo FIXTURE_PROBE; return PROBE_EXIT; }
         $telemetry.Contains('exit 0') | Should -BeTrue
     }
 
+    It 'gives the bounded fix panel enough time for complete sibling regression runs' {
+        $replicate = $script:Pipeline.IndexOf(
+            "displayName: 'Replicate issue and author failing test'")
+        $replicate | Should -BeGreaterThan 0
+        $stepStart = $script:Pipeline.LastIndexOf('- pwsh:', $replicate)
+        $stepEnd = $script:Pipeline.IndexOf('            env:', $replicate)
+        $stepEnd | Should -BeGreaterThan $replicate
+        $step = $script:Pipeline.Substring($stepStart, $stepEnd - $stepStart)
+
+        $step | Should -Match ([regex]::Escape('-StepTimeoutMinutes 330'))
+        $step | Should -Match ([regex]::Escape('-FixPanelBudgetMinutes 240'))
+        $step | Should -Match 'timeoutInMinutes: 330'
+    }
+
     It 'checks for a duplicate fix pull request before any device work' {
         # Build 15001358 spent over forty minutes reproducing issue 37407 and
         # authoring a test, only for the publisher to reject the result because

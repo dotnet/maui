@@ -3246,6 +3246,8 @@ stages:
                 -DeviceOSVersion $deviceOSVersion `
                 -ArtifactRoot $artifactRoot `
                 -TokenUsageOutputDir "$(Build.ArtifactStagingDirectory)/copilot-token-usage/raw" `
+                -StepTimeoutMinutes 330 `
+                -FixPanelBudgetMinutes 240 `
                 -PreflightXHarnessOnly:$([bool]::Parse('${{ parameters.AndroidHarnessPreflightOnly }}')) `
                 -AndroidHarnessNativeProbeOnly:$([bool]::Parse('${{ parameters.AndroidHarnessNativeProbeOnly }}'))
               if ($LASTEXITCODE -ne 0) {
@@ -3254,7 +3256,7 @@ stages:
             name: RunReplication
             displayName: 'Replicate issue and author failing test'
             condition: and(succeeded(), eq('${{ parameters.Mode }}', 'replicate'), or(eq('${{ parameters.AndroidHarnessPreflightOnly }}', 'True'), eq('${{ parameters.AndroidHarnessNativeProbeOnly }}', 'True'), and(ne(variables['replicationAlreadyPublished'], 'true'), ne(variables['replicationIssueIneligible'], 'true'))))
-            timeoutInMinutes: 240
+            timeoutInMinutes: 330
             env:
               COPILOT_GITHUB_TOKEN: $(COPILOT_TOKEN)
               DEVICE_UDID: $(DEVICE_UDID)

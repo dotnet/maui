@@ -19886,6 +19886,27 @@ Describe 'The fix panel stops before the step timeout kills the evidence' {
             Should -Be 20
     }
 
+    It 'gives run 15315608 a complete sibling window after its measured Windows issue probe' {
+        $availableBudget = Get-ReplicationFixPanelBudget `
+            -ConfiguredBudgetMinutes 240 `
+            -StepTimeoutMinutes 330 `
+            -ElapsedMinutes 74 `
+            -ReserveMinutes 15 `
+            -ExecutionDeadlineUtc $script:start.AddMinutes(315) `
+            -Now $script:start.AddMinutes(74)
+        $availableBudget | Should -Be 240
+
+        Get-ReplicationFixRegressionRunMinutes `
+            -AvailableBudgetMinutes $availableBudget `
+            -CandidateTimeoutMinutes 30 `
+            -ObservedVerificationMinutes 22 `
+            -ReviewTimeoutMinutes 20 `
+            -VerificationTimeoutMinutes 30 |
+            Should -Be 30 -Because (
+                'the 7.1-minute one-run Windows issue probe predicts 22 minutes ' +
+                'for verification and must not starve the whole-class sibling build')
+    }
+
     It 'caps distributed sibling runtime at the existing candidate timeout' {
         Get-ReplicationFixRegressionRunMinutes `
             -AvailableBudgetMinutes 300 `
