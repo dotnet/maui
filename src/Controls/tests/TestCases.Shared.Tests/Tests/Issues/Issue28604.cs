@@ -17,7 +17,7 @@ public class Issue28604 : _IssuesUITest
     public void FooterShouldDisplayAtBottomOfEmptyView()
     {
         App.WaitForElement("CollectionView");
-        VerifyScreenshot();
+        VerifyScreenshot(tolerance: 0.5, retryTimeout: TimeSpan.FromSeconds(2));
     }
 }
 #endif

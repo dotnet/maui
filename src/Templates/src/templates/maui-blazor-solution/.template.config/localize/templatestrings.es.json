@@ -24,7 +24,7 @@
   "symbols/InteractivityPlatform/choices/Auto/description": "Usa el servidor al descargar los activos de WebAssembly y, a continuación, usa WebAssembly",
   "symbols/IncludeSampleContent/displayName": "_Incluir páginas de ejemplo",
   "symbols/IncludeSampleContent/description": "Configura si se van a agregar páginas de ejemplo y estilos para mostrar patrones de uso básicos.",
-  "symbols/Empty/description": "Configura si se omiten las páginas de ejemplo y los estilos que muestran patrones de uso básicos.",
+  "symbols/empty/description": "Configura si se omiten las páginas de ejemplo y los estilos que muestran patrones de uso básicos.",
   "symbols/AllInteractive/displayName": "_Enable representación interactiva globalmente en todo el sitio",
   "symbols/AllInteractive/description": "Configura si todas las páginas son interactivas aplicando un modo de representación interactivo en el nivel superior. Si es false, las páginas usarán la representación de servidor estático de forma predeterminada y se pueden marcar como interactivas por página o por componente.",
   "symbols/NoHttps/description": "Si se va a desactivar HTTPS. Esta opción solo se aplica si individual no se usa para --auth.",

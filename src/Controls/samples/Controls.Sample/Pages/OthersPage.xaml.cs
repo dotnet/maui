@@ -11,14 +11,14 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void TestAddOverlayWindow(object sender, EventArgs e)
+		void TestAddOverlayWindow(object? sender, EventArgs e)
 		{
 			var window = GetParentWindow();
 			overlay ??= new TestWindowOverlay(window);
 			window.AddOverlay(overlay);
 		}
 
-		void TestRemoveOverlayWindow(object sender, EventArgs e)
+		void TestRemoveOverlayWindow(object? sender, EventArgs e)
 		{
 			if (overlay is not null)
 			{
@@ -27,14 +27,14 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void TestVisualTreeHelper(object sender, EventArgs e)
+		void TestVisualTreeHelper(object? sender, EventArgs e)
 		{
 			var overlay = GetParentWindow().VisualDiagnosticsOverlay;
 			overlay.RemoveAdorners();
 			overlay.AddAdorner(TestButton, false);
 		}
 
-		void EnableElementPicker(object sender, EventArgs e)
+		void EnableElementPicker(object? sender, EventArgs e)
 		{
 			GetParentWindow().VisualDiagnosticsOverlay.EnableElementSelector = true;
 		}

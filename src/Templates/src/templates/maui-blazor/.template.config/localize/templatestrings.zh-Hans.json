@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目标 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "包含示例页(_I)",
   "symbols/IncludeSampleContent/description": "配置是否添加示例页和样式以演示基本使用模式。",
-  "symbols/Empty/description": "配置是否忽略演示基本使用模式的示例页和样式。"
+  "symbols/empty/description": "配置是否忽略演示基本使用模式的示例页和样式。"
 }

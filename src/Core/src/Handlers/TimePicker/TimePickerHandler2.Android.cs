@@ -7,8 +7,7 @@ using Google.Android.Material.TimePicker;
 
 namespace Microsoft.Maui.Handlers;
 
-// TODO: Material3: Make it public in .NET 11
-internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialTimePicker>
+public partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMaterialTimePicker>
 {
     internal MaterialTimePicker? _dialog;
     internal bool _isUpdatingIsOpen;
@@ -29,6 +28,8 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
 
     public static CommandMapper<ITimePicker, TimePickerHandler2> CommandMapper = new(ViewCommandMapper)
     {
+        [nameof(IView.Focus)] = MapFocus,
+        [nameof(IView.Unfocus)] = MapUnfocus,
     };
 
     public TimePickerHandler2() : base(Mapper, CommandMapper)
@@ -44,6 +45,11 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
 
         platformView.ShowPicker = ShowPickerDialog;
         platformView.HidePicker = HidePickerDialog;
+        platformView.ConnectClickListener();
+
+        // Focus lives on the inner edit text (the outer TextInputLayout never receives focus), so
+        // subscribe here to keep VirtualView.IsFocused and the Focused/Unfocused events in sync.
+        platformView.InputEditText?.FocusChange += OnInputFocusChange;
     }
 
     protected override void DisconnectHandler(MauiMaterialTimePicker platformView)
@@ -64,11 +70,41 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
         _positiveButtonClickListener = null;
         _dismissListener?.Dispose();
         _dismissListener = null;
-
         platformView.ShowPicker = null;
         platformView.HidePicker = null;
+        platformView.DisconnectClickListener();
+
+        // Reset focusability enabled by RequestInputFocus/FocusInput; the platform view can be reused
+        // across reconnects, so a leftover focusable read-only field could become an initial-focus candidate.
+        // Clear focus while the listener is still attached so VirtualView.IsFocused is also reset.
+        platformView.ClearInputFocus();
+        platformView.InputEditText?.FocusChange -= OnInputFocusChange;
 
         base.DisconnectHandler(platformView);
+    }
+
+    void OnInputFocusChange(object? sender, View.FocusChangeEventArgs e)
+    {
+        if (VirtualView is null)
+        {
+            return;
+        }
+
+        VirtualView.IsFocused = e.HasFocus;
+    }
+
+    // The outer TextInputLayout never takes focus, so route IView.Focus/Unfocus to the inner edit text.
+    public static void MapFocus(TimePickerHandler2 handler, ITimePicker picker, object? args)
+    {
+        if (args is FocusRequest request)
+        {
+            handler.PlatformView?.FocusInput(request);
+        }
+    }
+
+    public static void MapUnfocus(TimePickerHandler2 handler, ITimePicker picker, object? args)
+    {
+        handler.PlatformView?.ClearInputFocus();
     }
 
     void RemoveListeners()
@@ -91,6 +127,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
     {
         if (_dialog is null)
         {
+            PlatformView?.ClearInputFocus();
             UpdateIsOpenState(false);
             return;
         }
@@ -103,6 +140,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
         }
 
         _dialog = null;
+        PlatformView?.ClearInputFocus();
         UpdateIsOpenState(false);
     }
 
@@ -127,8 +165,9 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
         }
 
         var fragmentManager = fragmentActivity.SupportFragmentManager;
-        if (fragmentManager is null)
+        if (fragmentManager is null || fragmentManager.IsStateSaved)
         {
+            UpdateIsOpenState(false);
             return;
         }
 
@@ -147,7 +186,24 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
             return;
         }
 
-        _dialog.Show(fragmentManager, "MaterialTimePicker");
+        // Focus the field before Show() so the outlined layout shows its highlighted (focused) state
+        // and to avoid racing with the dialog window taking focus. This also covers opens triggered
+        // programmatically via IsOpen.
+        PlatformView?.RequestInputFocus();
+
+        try
+        {
+            _dialog.Show(fragmentManager, "MaterialTimePicker");
+        }
+        catch (Java.Lang.IllegalStateException)
+        {
+            // A rejected fragment transaction (e.g. state saved in a race after the guard above) must not
+            // strand the field focused with no dialog; restore the resting state and abort the open.
+            _dialog = null;
+            PlatformView?.ClearInputFocus();
+            UpdateIsOpenState(false);
+            return;
+        }
 
         UpdateIsOpenState(true);
     }
@@ -172,7 +228,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
 
     public static void MapBackground(TimePickerHandler2 handler, ITimePicker timePicker)
     {
-        handler.PlatformView?.UpdateBackground(timePicker);
+        handler.PlatformView?.UpdateBoxBackground(timePicker);
     }
 
     public static void MapIsOpen(TimePickerHandler2 handler, ITimePicker picker)
@@ -192,29 +248,29 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
 
     public static void MapTime(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTime(picker);
+        handler.PlatformView?.InputEditText?.UpdateTime(picker);
     }
 
     public static void MapTextColor(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateTextColor(picker);
+        handler.PlatformView?.InputEditText?.UpdateTextColor(picker);
     }
 
     public static void MapFormat(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateFormat(picker);
+        handler.PlatformView?.InputEditText?.UpdateFormat(picker);
     }
 
     public static void MapFont(TimePickerHandler2 handler, ITimePicker picker)
     {
         var fontManager = handler.GetRequiredService<IFontManager>();
 
-        handler.PlatformView?.UpdateFont(picker, fontManager);
+        handler.PlatformView?.InputEditText?.UpdateFont(picker, fontManager);
     }
 
     public static void MapCharacterSpacing(TimePickerHandler2 handler, ITimePicker picker)
     {
-        handler.PlatformView?.UpdateCharacterSpacing(picker);
+        handler.PlatformView?.InputEditText?.UpdateCharacterSpacing(picker);
     }
 
     protected override MauiMaterialTimePicker CreatePlatformView()
@@ -238,7 +294,7 @@ internal partial class TimePickerHandler2 : ViewHandler<ITimePicker, MauiMateria
             && VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
 }
 
-internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, View.IOnClickListener
+public class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object, View.IOnClickListener
 {
     readonly WeakReference<TimePickerHandler2> _handler;
 
@@ -262,7 +318,7 @@ internal class MaterialTimePickerPositiveButtonClickListener : Java.Lang.Object,
     }
 }
 
-internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
+public class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInterfaceOnDismissListener
 {
     readonly WeakReference<TimePickerHandler2> _handler;
 
@@ -281,7 +337,7 @@ internal class MaterialTimePickerDismissListener : Java.Lang.Object, IDialogInte
         // Dialog was dismissed (back button, outside tap, cancel button, etc.)
         // Clean up without trying to dismiss again
         handler._dialog = null;
-
+        handler.PlatformView?.ClearInputFocus();
         handler.UpdateIsOpenState(false);
     }
 }

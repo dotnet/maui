@@ -3,7 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+#if IOS || MACCATALYST
+using CollectionViewHandler = Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2;
+#else
 using Microsoft.Maui.Controls.Handlers.Items;
+#endif
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -21,9 +25,12 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+#if IOS || MACCATALYST
+	[Trait(RendererHandlerVariant.NavigationViewVariantTraitName, RendererHandlerVariant.NavigationRenderer)] // See RendererHandlerVariant.cs
+#endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		protected virtual void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -31,23 +38,55 @@ namespace Microsoft.Maui.DeviceTests
 
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
-#else
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					RegisterNavigationPageHandler(handlers);
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+#if WINDOWS
+#pragma warning disable CS0618 // Windows coverage intentionally includes the legacy CollectionView handler.
 #endif
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+#if WINDOWS
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
+		}
+
+		// Extracted so an iOS/MacCatalyst-only subclass can swap in NavigationViewHandler,
+		// letting every VisualElementTreeTests test run against both the NavigationPage renderer
+		// and handler. See VisualElementTreeNavigationHandlerTests.iOS.cs and
+		// RendererHandlerVariant.cs.
+		protected virtual void RegisterNavigationPageHandler(IMauiHandlersCollection handlers)
+		{
+#if IOS || MACCATALYST
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+#else
+			handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+#endif
+		}
+
+#if IOS || MACCATALYST
+		[Fact]
+		public async Task Handler_GetVisualTreeElements()
+		{
+			// Handler-only: always exercises NavigationViewHandler, even when this test class
+			// is run as the base VisualElementTreeTests (Renderer-default) suite, since there is
+			// no separate handler-only subclass test for this scenario. Bypasses
+			// SetupBuilder/RegisterNavigationPageHandler so the subclass's default can't affect it.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
-		}
-
-		[Fact]
-		public async Task GetVisualTreeElements()
-		{
-			SetupBuilder();
 
 			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
@@ -61,6 +100,82 @@ namespace Microsoft.Maui.DeviceTests
 
 			var rootPage = await InvokeOnMainThreadAsync(() =>
 				new NavigationPage(page)
+			);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
+			{
+				// Handler path: NavigationPage frame may not fire BatchCommitted in time,
+				// so wait for the content page to be navigated and loaded first.
+				await OnNavigatedToAsync(page);
+				await OnLoadedAsync(page.Content);
+
+				await OnFrameSetToNotEmpty(border);
+				await OnFrameSetToNotEmpty(label);
+
+				var locationOnScreen = label.GetLocationOnScreen().Value;
+				var labelFrame = label.Frame;
+				var window = rootPage.Window;
+
+				var topLeft = new Graphics.Point(locationOnScreen.X + 1, locationOnScreen.Y + 1);
+				Assert.True(window.GetVisualTreeElements(topLeft).Contains(label), $"Unable to find label using top left coordinate: {topLeft} with label location: {label.GetBoundingBox()}");
+
+				var bottomRight = new Graphics.Point(
+					locationOnScreen.X + labelFrame.Width - 1,
+					locationOnScreen.Y + labelFrame.Height - 1);
+				Assert.True(window.GetVisualTreeElements(bottomRight).Contains(label), $"Unable to find label using bottom right coordinate: {bottomRight} with label location: {label.GetBoundingBox()}");
+
+				Assert.DoesNotContain(label, window.GetVisualTreeElements(
+						locationOnScreen.X + labelFrame.Width + 1,
+						locationOnScreen.Y + labelFrame.Height + 1
+					));
+			});
+		}
+#endif
+
+		[Fact]
+		public async Task GetVisualTreeElements()
+		{
+#if IOS || MACCATALYST
+			// Renderer-only: this test forces the old event-based NavigationImpl path
+			// (setForMaui:false) below, which NavigationRenderer supports but
+			// NavigationViewHandler does not implement via RequestNavigation (causes hangs).
+			// Register NavigationRenderer directly (not via SetupBuilder/RegisterNavigationPageHandler)
+			// so this stays Renderer-only even when inherited by VisualElementTreeNavigationHandlerTests.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.SetupShellHandlers();
+
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
+#else
+			SetupBuilder();
+#endif
+
+			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
+			var label = new Label() { Text = "Find Me" };
+
+			var page = new ContentPage() { Title = "Title Page" };
+			page.Content = new VerticalStackLayout()
+			{
+				label,
+				border
+			};
+
+			var rootPage = await InvokeOnMainThreadAsync(() =>
+#if IOS || MACCATALYST
+				// Use setForMaui:false to force old event-based NavigationImpl path.
+				// NavigationRenderer doesn't implement RequestNavigation, causing hangs.
+				new NavigationPage(false, page)
+#else
+				new NavigationPage(page)
+#endif
 			);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>

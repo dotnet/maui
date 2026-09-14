@@ -12,12 +12,12 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 		}
 
-		void OnPanButtonClicked(object sender, EventArgs e)
+		void OnPanButtonClicked(object? sender, EventArgs e)
 		{
 			Microsoft.Maui.Controls.Application.Current!.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Pan);
 		}
 
-		void OnResizeButtonClicked(object sender, EventArgs e)
+		void OnResizeButtonClicked(object? sender, EventArgs e)
 		{
 			Microsoft.Maui.Controls.Application.Current!.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
 		}

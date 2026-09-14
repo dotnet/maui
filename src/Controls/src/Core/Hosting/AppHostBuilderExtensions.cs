@@ -17,6 +17,7 @@ using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 #elif WINDOWS
 using ResourcesProvider = Microsoft.Maui.Controls.Compatibility.Platform.UWP.WindowsResourcesProvider;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.Handlers.Items2;
 #elif IOS || MACCATALYST
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -66,6 +67,18 @@ public static partial class AppHostBuilderExtensions
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler<CollectionView>(static _ => new CollectionViewHandler2());
 		handlersCollection.AddHandler<CarouselView>(static _ => new CarouselViewHandler2());
+#elif WINDOWS
+		if (RuntimeFeature.IsWindowsCollectionView2HandlerEnabled)
+		{
+			handlersCollection.AddHandler<CollectionView>(static _ => new CollectionViewHandler2());
+		}
+		else
+		{
+#pragma warning disable CS0618 // Retain the explicit opt-out path for the legacy Windows CollectionView handler.
+			handlersCollection.AddHandler<CollectionView>(static _ => new CollectionViewHandler());
+#pragma warning restore CS0618
+		}
+		handlersCollection.AddHandler<CarouselView>(static _ => new CarouselViewHandler());
 #else
 		handlersCollection.AddHandler<CollectionView>(static _ => new CollectionViewHandler());
 		handlersCollection.AddHandler<CarouselView>(static _ => new CarouselViewHandler());
@@ -121,23 +134,14 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Application>(static _ => new ApplicationHandler());
 		handlersCollection.AddHandler<BoxView>(static _ => new BoxViewHandler());
 		handlersCollection.AddHandler<Button>(static _ => new ButtonHandler());
+		handlersCollection.AddHandler<CheckBox>(static _ => new CheckBoxHandler());
 		handlersCollection.AddHandler<GraphicsView>(static _ => new GraphicsViewHandler());
 		handlersCollection.AddHandler<Layout>(static _ => new LayoutHandler());
 		handlersCollection.AddHandler<ScrollView>(static _ => new ScrollViewHandler());
 		handlersCollection.AddHandler<Stepper>(static _ => new StepperHandler());
 		handlersCollection.AddHandler<Page>(static _ => new PageHandler());
 		handlersCollection.AddHandler<WebView>(static _ => new WebViewHandler());
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios.
-			// IL2026/IL3050 are suppressed because the RuntimeFeature.IsHybridWebViewSupported guard
-			// has [FeatureGuard(RequiresUnreferencedCodeAttribute)] and [FeatureGuard(RequiresDynamicCodeAttribute)]
-			// annotations that should suppress these warnings. The Android NativeAOT ILC does not honor
-			// [FeatureGuard] for warning suppression (unlike the iOS/macCatalyst ILC), so we suppress explicitly.
-#pragma warning disable IL2026, IL3050
-			handlersCollection.AddHandler<HybridWebView>(static _ => new HybridWebViewHandler());
-#pragma warning restore IL2026, IL3050
-		}
+		handlersCollection.AddHandler<HybridWebView>(static _ => new HybridWebViewHandler());
 
 		handlersCollection.AddHandler<Border>(static _ => new BorderHandler());
 		handlersCollection.AddHandler<IContentView>(static _ => new ContentViewHandler());
@@ -219,23 +223,33 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler<NavigationPage>(static _ => new Handlers.Compatibility.NavigationRenderer());
-		handlersCollection.AddHandler<TabbedPage>(static _ => new Handlers.Compatibility.TabbedRenderer());
-		handlersCollection.AddHandler<FlyoutPage>(static _ => new Handlers.Compatibility.PhoneFlyoutPageRenderer());
+		handlersCollection.AddHandler<NavigationPage>(static _ => new NavigationViewHandler());
+		handlersCollection.AddHandler<TabbedPage>(static _ => new TabbedViewHandler());
+		handlersCollection.AddHandler<FlyoutPage>(static _ => new FlyoutViewHandler());
 #endif
 
 #if ANDROID || IOS || MACCATALYST || TIZEN
 		handlersCollection.AddHandler<SwipeItemView>(static _ => new SwipeItemViewHandler());
 #endif
 
-#if ANDROID || IOS || MACCATALYST
-		handlersCollection.AddHandler<Shell>(static _ => new ShellRenderer());
+#if IOS || MACCATALYST
+		if (RuntimeFeature.IsiOSShellHandlerEnabled)
+		{
+			handlersCollection.AddHandler<Shell>(static _ => new ShellHandler());
+			handlersCollection.AddHandler<ShellItem>(static _ => new ShellItemHandler());
+			handlersCollection.AddHandler<ShellSection>(static _ => new ShellSectionHandler());
+			handlersCollection.AddHandler<ShellContent>(static _ => new ShellContentHandler());
+		}
+		else
+		{
+			handlersCollection.AddHandler<Shell>(static _ => new ShellRenderer());
+		}
 #elif WINDOWS
 		handlersCollection.AddHandler<Shell>(static _ => new ShellHandler());
 		handlersCollection.AddHandler<ShellItem>(static _ => new ShellItemHandler());
 		handlersCollection.AddHandler<ShellSection>(static _ => new ShellSectionHandler());
 		handlersCollection.AddHandler<ShellContent>(static _ => new ShellContentHandler());
-#elif TIZEN
+#elif ANDROID || TIZEN
 		handlersCollection.AddHandler<Shell>(static _ => new ShellHandler());
 		handlersCollection.AddHandler<ShellItem>(static _ => new ShellItemHandler());
 		handlersCollection.AddHandler<ShellSection>(static _ => new ShellSectionHandler());
@@ -271,11 +285,7 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
-		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
-		}
+		builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
 
 		builder.ConfigureMauiControlsDiagnostics();
 
@@ -351,6 +361,11 @@ public static partial class AppHostBuilderExtensions
 		ImageButton.RemapForControls();
 
 		Slider.RemapForControls();
+
+#if IOS || MACCATALYST
+		NavigationPage.RemapForControls();
+#endif
+
 		return builder;
 	}
 }

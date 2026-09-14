@@ -103,7 +103,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
 		{
 			if (isEditor)
-				CloseiOSEditorKeyboard(driver);
+				CloseiOSEditorKeyboard(app, driver);
 			else
 				app.DismissKeyboard();
 		}
@@ -118,9 +118,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			return null;
 		}
 
-		internal static void CloseiOSEditorKeyboard(AppiumDriver? driver)
+		internal static void CloseiOSEditorKeyboard(IApp app, AppiumDriver? driver)
 		{
-			var keyboardDoneButton = driver?.FindElement(MobileBy.Name("Done"));
+			var doneButtonName = app is AppiumIOSApp iosApp && HelperExtensions.IsIOS26OrHigher(iosApp) ? "selected" : "Done";
+			var keyboardDoneButton = driver?.FindElement(MobileBy.Name(doneButtonName));
 			keyboardDoneButton?.Click();
 		}
 

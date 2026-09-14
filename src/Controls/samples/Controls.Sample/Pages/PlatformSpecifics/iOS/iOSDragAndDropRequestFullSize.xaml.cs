@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Pages
 #endif
 		}
 
-		void DragGestureRecognizer_DragStarting(System.Object sender, Microsoft.Maui.Controls.DragStartingEventArgs e)
+		void DragGestureRecognizer_DragStarting(System.Object? sender, Microsoft.Maui.Controls.DragStartingEventArgs e)
 		{
 #if IOS || MACCATALYST
 			if (drawnImageSwitch.IsToggled)
@@ -74,19 +74,19 @@ namespace Maui.Controls.Sample.Pages
 #endif
 		}
 
-		void Drawn_Switch_Toggled(object sender, ToggledEventArgs e)
+		void Drawn_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			if (e.Value)
 				dotnetBotImageSwitch.IsToggled = false;
 		}
 
-		void DotnetBot_Switch_Toggled(object sender, ToggledEventArgs e)
+		void DotnetBot_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			if (e.Value)
 				drawnImageSwitch.IsToggled = false;
 		}
 
-		void DropGestureRecognizer_DragOver(System.Object sender, Microsoft.Maui.Controls.DragEventArgs e)
+		void DropGestureRecognizer_DragOver(System.Object? sender, Microsoft.Maui.Controls.DragEventArgs e)
 		{
 #if IOS || MACCATALYST
 			if (copySwitch.IsToggled)
@@ -98,11 +98,11 @@ namespace Maui.Controls.Sample.Pages
 #endif
 		}
 
-		void FullSized_Switch_Toggled(object sender, ToggledEventArgs e)
+		void FullSized_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 		}
 
-		void Copy_Switch_Toggled(object sender, ToggledEventArgs e)
+		void Copy_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -111,7 +111,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void Move_Switch_Toggled(object sender, ToggledEventArgs e)
+		void Move_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			if (e.Value)
 			{
@@ -120,7 +120,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void Forbidden_Switch_Toggled(object sender, ToggledEventArgs e)
+		void Forbidden_Switch_Toggled(object? sender, ToggledEventArgs e)
 		{
 			if (e.Value)
 			{

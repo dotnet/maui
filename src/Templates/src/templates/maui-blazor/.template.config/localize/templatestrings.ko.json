@@ -8,5 +8,5 @@
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "대상 DOTNET_TFM_VALUE",
   "symbols/IncludeSampleContent/displayName": "샘플 페이지 포함(_I)",
   "symbols/IncludeSampleContent/description": "기본 사용 패턴을 보여주기 위해 샘플 페이지 및 스타일을 추가할지 여부를 구성합니다.",
-  "symbols/Empty/description": "기본 사용 패턴을 보여주는 샘플 페이지 및 스타일을 생략할지 여부를 구성합니다."
+  "symbols/empty/description": "기본 사용 패턴을 보여주는 샘플 페이지 및 스타일을 생략할지 여부를 구성합니다."
 }

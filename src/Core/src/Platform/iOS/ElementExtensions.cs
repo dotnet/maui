@@ -24,6 +24,6 @@ namespace Microsoft.Maui.Platform
 		// We cannot check for iPads/Mac because even on the iPhone it uses the scene delegate if one is specified in the manifest.
 		public static bool HasSceneManifest(this IUIApplicationDelegate platformApplication) =>
 			(OperatingSystem.IsIOSVersionAtLeast(13, 0) || OperatingSystem.IsTvOSVersionAtLeast(13, 0)) &&
-			NSBundle.MainBundle.InfoDictionary.ContainsKey(new NSString(UIApplicationSceneManifestKey));
+			NSBundle.MainBundle.InfoDictionary?.ContainsKey(new NSString(UIApplicationSceneManifestKey)) == true;
 	}
 }

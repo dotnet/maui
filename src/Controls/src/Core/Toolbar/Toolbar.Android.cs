@@ -31,8 +31,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newHandler == null)
 			{
-				if (_platformTitleView != null)
-					_platformTitleView.Child = null;
+				_platformTitleView?.Child = null;
 
 				if (_currentBarBackground is GradientBrush currentGradientBrush)
 				{
@@ -160,6 +159,11 @@ namespace Microsoft.Maui.Controls
 			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
+
+				if (this is NavigationPageToolbar { Parent: Window })
+				{
+					AndroidSystemChrome.UpdateBottomChrome(materialToolbar, _currentBarBackground);
+				}
 			}
 		}
 
@@ -171,6 +175,9 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonAccessibilityLabel(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonAccessibilityLabel((IToolbarHandler)arg1, arg2);
 
 		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
 			MapToolbarItems((IToolbarHandler)arg1, arg2);
@@ -193,6 +200,9 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
 			MapIsVisible((IToolbarHandler)arg1, arg2);
 
+		public static void MapDrawerToggleVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapDrawerToggleVisible((IToolbarHandler)arg1, arg2);
+
 
 
 		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
@@ -207,6 +217,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static void MapBackButtonTitle(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
+		}
+
+		public static void MapBackButtonAccessibilityLabel(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
@@ -244,6 +259,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapIsVisible(IToolbarHandler arg1, Toolbar arg2)
 		{
 			arg1.PlatformView.UpdateIsVisible(arg2);
+		}
+
+		public static void MapDrawerToggleVisible(IToolbarHandler arg1, Toolbar arg2)
+		{
+			arg1.PlatformView.UpdateBackButton(arg2);
 		}
 
 

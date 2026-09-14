@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await Task.Delay(1000);
 				groupData.Clear();
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var frame = collectionView.Frame;
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(frame, collectionView);
 
@@ -199,40 +199,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(margin, absPoint.X);
 			});
 		}
-
-#if TESTS_FAILS_ON_IOS // For more information, see: https://github.com/dotnet/maui/issues/35985
-		[Fact("Cells Do Not Leak")]
-		public async Task CellsDoNotLeak()
-		{
-			SetupBuilder();
-
-			var labels = new List<WeakReference>();
-			VerticalCell cell = null;
-
-			var bindingContext = "foo";
-			var collectionView = new MyUserControl
-			{
-				Labels = labels
-			};
-			collectionView.ItemTemplate = new DataTemplate(collectionView.LoadDataTemplate);
-
-			var handler = await CreateHandlerAsync(collectionView);
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				cell = new VerticalCell(CGRect.Empty);
-				cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-			});
-
-			Assert.NotNull(cell);
-
-			// HACK: test passes running individually, but fails when running entire suite.
-			// Skip the assertion on Catalyst for now.
-#if !MACCATALYST
-			await AssertionExtensions.WaitForGC([.. labels]);
-#endif
-		}
-#endif
 
 		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
 		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
@@ -372,12 +338,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CollectionView Does Not Crash After Resetting Source With Running Animation")]
 		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash()
 		{
-			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler>();
-		}
-
-		[Fact(DisplayName = "CollectionViewHandler2 Does Not Crash After Resetting Source With Running Animation")]
-		public Task ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrash2()
-		{
 			return ClearingItemsSourceAfterCellMeasureInvalidationDoesNotCrashHelper<CollectionViewHandler2>();
 		}
 
@@ -500,7 +460,7 @@ namespace Microsoft.Maui.DeviceTests
 				}),
 			};
 
-			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			await CreateHandlerAndAddToWindow<CollectionViewHandler2>(collectionView, async handler =>
 			{
 				await Task.Delay(500);
 

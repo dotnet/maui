@@ -22,43 +22,43 @@ namespace Maui.Controls.Sample.Pages
 			this.Title = $"PAGE NUMBER {pageCount}";
 		}
 
-		void InsertPage(object sender, EventArgs e)
+		void InsertPage(object? sender, EventArgs e)
 		{
 			Navigation.InsertPageBefore(new NavigationGallery(), Navigation.NavigationStack.Last());
 		}
 
-		async void PopPage(object sender, EventArgs e)
+		async void PopPage(object? sender, EventArgs e)
 		{
 			await Navigation.PopAsync(true);
 		}
 
-		async void PushPage(object sender, EventArgs e)
+		async void PushPage(object? sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new NavigationGallery(), true);
 		}
 
-		async void PopToRoot(object sender, EventArgs e)
+		async void PopToRoot(object? sender, EventArgs e)
 		{
 			await Navigation.PopToRootAsync(true);
 		}
 
-		void RemovePage(object sender, EventArgs e)
+		void RemovePage(object? sender, EventArgs e)
 		{
 			if (Navigation.NavigationStack.Count >= 2)
 				Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 2]);
 		}
 
-		void ToggleNavigationBar(object sender, EventArgs e)
+		void ToggleNavigationBar(object? sender, EventArgs e)
 		{
 			NavigationPage.SetHasNavigationBar(this, !NavigationPage.GetHasNavigationBar(this));
 		}
 
-		void ToggleBackButton(object sender, EventArgs e)
+		void ToggleBackButton(object? sender, EventArgs e)
 		{
 			NavigationPage.SetHasBackButton(this, !NavigationPage.GetHasBackButton(this));
 		}
 
-		void ToggleSecondaryToolbarItem(object sender, EventArgs e)
+		void ToggleSecondaryToolbarItem(object? sender, EventArgs e)
 		{
 			if (!this.ToolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).Any())
 			{
@@ -75,7 +75,7 @@ namespace Maui.Controls.Sample.Pages
 		}
 
 
-		void SwapRoot(object sender, EventArgs e)
+		void SwapRoot(object? sender, EventArgs e)
 		{
 			if (_currentNavStack == null)
 			{

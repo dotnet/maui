@@ -1309,9 +1309,9 @@ public partial class MethodGroupLambdaPage : ContentPage
 
 		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
 
-		// The source gen should detect the method group reference and emit MAUIX2017.
-		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
-		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2017");
+		// The source gen should detect the method group reference and emit MAUIX2019.
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2019");
+		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2019");
 		Assert.Contains("Did you mean 'this.OnCounterClicked(s, e)'", diagnostic.GetMessage(), StringComparison.Ordinal);
 	}
 
@@ -1347,9 +1347,118 @@ public partial class DiscardMethodGroupLambdaPage : ContentPage
 
 		var (result, _) = RunGenerator(xaml, codeBehind, assertNoCompilationErrors: false);
 
-		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2017");
-		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2017");
+		Assert.Contains(result.Diagnostics, d => d.Id == "MAUIX2019");
+		var diagnostic = result.Diagnostics.First(d => d.Id == "MAUIX2019");
 		Assert.DoesNotContain("Did you mean", diagnostic.GetMessage(), StringComparison.Ordinal);
 		Assert.DoesNotContain("(_, _)", diagnostic.GetMessage(), StringComparison.Ordinal);
+	}
+
+	// https://github.com/dotnet/maui/issues/35900
+	[Theory]
+	[InlineData("<Label TextColor=\"{IsVip ? Colors.Goldenrod : Colors.Gray}\" />")]
+	[InlineData("<Label Text=\"{$'Now: {DateTime.Now:t}'}\" />")]
+	[InlineData("<Label Text=\"{$'Max = {Math.Max(Price, Quantity):F2}'}\" />")]
+	[InlineData("<Label Text=\"{$'{Name} - {DateTime.Now:d}'}\" />")]
+	public void StaticTypeReferenceInExpression_DoesNotGenerateInvalidHandlers(string labelXaml)
+	{
+		var xaml =
+$"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.StaticRefPage"
+             x:DataType="local:StaticRefViewModel">
+    {labelXaml}
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+global using System;
+global using Microsoft.Maui.Graphics;
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class StaticRefViewModel : INotifyPropertyChanged
+{
+	public bool IsVip { get; set; }
+	public string Name { get; set; } = string.Empty;
+	public double Price { get; set; }
+	public double Quantity { get; set; }
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class StaticRefPage : ContentPage
+{
+	public StaticRefPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		// The generated code must not contain handler tuples rooted at static type
+		// names (Colors, DateTime, Math), which previously produced
+		// `static __source => __source.Colors` / `__source.DateTime` / `__source.Math`
+		// and broke compilation with CS1061.
+		Assert.NotNull(output);
+		Assert.DoesNotContain("__source.Colors", output!, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source.DateTime", output!, StringComparison.Ordinal);
+		Assert.DoesNotContain("__source.Math", output!, StringComparison.Ordinal);
+
+		// And the compilation must succeed (no compiler errors leaked through).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
+	}
+
+	[Fact]
+	public void TernaryInsideInterpolationHole_CompilesCleanly()
+	{
+		// Issue #36155: a ternary directly inside an interpolation hole must be
+		// auto-parenthesized so the ':' is not consumed as a format specifier.
+		var xaml =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:TestApp"
+             x:Class="TestApp.InterpolationTernaryPage"
+             x:DataType="local:InterpolationTernaryViewModel">
+    <Label Text="{$'You clicked {Count} {Count == 1 ? 'time' : 'times'}.'}" />
+</ContentPage>
+""";
+
+		var codeBehind =
+"""
+using System.ComponentModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace TestApp;
+
+public class InterpolationTernaryViewModel : INotifyPropertyChanged
+{
+	public int Count { get; set; }
+	public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class InterpolationTernaryPage : ContentPage
+{
+	public InterpolationTernaryPage() => InitializeComponent();
+}
+""";
+
+		var (result, output) = RunGenerator(xaml, codeBehind);
+
+		Assert.NotNull(output);
+		// The ternary must be parenthesized in the generated interpolated string
+		// (the 'Count' identifier is rewritten to a binding source path, e.g. __source.Count).
+		Assert.Contains("== 1 ? \"time\" : \"times\")", output!, StringComparison.Ordinal);
+		// And the compilation must succeed (no CS8076/CS8361/CS1003/CS0103 leaked through).
+		Assert.DoesNotContain(result.Diagnostics, d => d.Severity == DiagnosticSeverity.Error);
 	}
 }

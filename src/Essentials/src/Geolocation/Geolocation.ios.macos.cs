@@ -110,13 +110,14 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// from the user.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="request"/> contains a negative minimum time or distance.</exception>
 		/// <exception cref="FeatureNotSupportedException">Thrown if listening is not supported on this platform.</exception>
 		/// <exception cref="InvalidOperationException">Thrown if already listening and <see cref="IsListeningForeground"/> returns <see langword="true"/>.</exception>
 		/// <param name="request">The listening request parameters to use.</param>
 		/// <returns><see langword="true"/> when listening was started, or <see langword="false"/> when listening couldn't be started.</returns>
 		public async Task<bool> StartListeningForegroundAsync(GeolocationListeningRequest request)
 		{
-			ArgumentNullException.ThrowIfNull(request);
+			ValidateListeningRequest(request);
 
 			if (IsListeningForeground)
 				throw new InvalidOperationException("Already listening to location changes.");
@@ -143,6 +144,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			listener.ErrorHandler += HandleError;
 
 			listeningManager.DesiredAccuracy = request.PlatformDesiredAccuracy;
+			listeningManager.DistanceFilter = request.MinimumDistance == 0
+				? CLLocationDistance.FilterNone
+				: request.MinimumDistance;
 			listeningManager.Delegate = listener;
 
 #if __IOS__
