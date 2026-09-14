@@ -81,6 +81,42 @@ BeforeAll {
 
         Invoke-Expression $function.Extent.Text
     }
+
+    function New-TestWindowsRunnerDiagnostic {
+        return [ordered]@{
+            schemaVersion = 1
+            authoritative = $false
+            selectedClass = 'Microsoft.Maui.DeviceTests.ShellTests'
+            selectedMethod = 'Issue34738DisabledTabUsesTabBarDisabledColor'
+            applicationOptions = [ordered]@{
+                classFilterCount = 1
+                methodFilterCount = 1
+                containsExpectedClass = $true
+                containsExpectedMethod = $true
+                unexpectedClassFilterCount = 0
+                unexpectedMethodFilterCount = 0
+            }
+            dynamicCodeSupported = $true
+            stage = 'discovery-execution'
+            runnerType = 'Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner'
+            expectedTypeCount = 1
+            expectedMethodCount = 1
+            expectedTestInspectionFailureType = $null
+            configurationFailureType = $null
+            firstChanceExceptions = @(
+                [ordered]@{
+                    Stage = 'discovery-execution'
+                    Type = 'System.InvalidOperationException'
+                    HResult = -2146233079
+                    MessageSha256 = ('a' * 64)
+                    MessageLength = 2048
+                    HashedCharacterLength = 1024
+                    HashedByteLength = 1024
+                    MessageTruncated = $true
+                }
+            )
+        }
+    }
 }
 
 Describe 'Build isolation options' {
@@ -1021,6 +1057,13 @@ internal static class Program
             var configured = (TestRunner)getTestRunner.Invoke(
                 exactRunner,
                 new object[] { new LogWriter(TextWriter.Null) })!;
+            try
+            {
+                throw new InvalidOperationException(new string('x', 20_000));
+            }
+            catch (InvalidOperationException)
+            {
+            }
             await configured.Run(new[]
             {
                 new TestAssemblyInfo(
@@ -1034,6 +1077,9 @@ internal static class Program
                 AppContext.BaseDirectory,
                 "maui-replication-windows-diagnostics.json")));
             var root = diagnostic.RootElement;
+            var boundedException = root.GetProperty("firstChanceExceptions")
+                .EnumerateArray()
+                .Single(item => item.GetProperty("MessageLength").GetInt32() == 20_000);
             Console.WriteLine(
                 $"diagnostic-{runnerType.Name}=" +
                 $"{root.GetProperty("expectedTypeCount").GetInt32()}/" +
@@ -1041,6 +1087,11 @@ internal static class Program
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedClass").GetBoolean()}/" +
                 $"{root.GetProperty("applicationOptions").GetProperty("containsExpectedMethod").GetBoolean()}/" +
                 $"{root.GetProperty("authoritative").GetBoolean()}");
+            Console.WriteLine(
+                $"exception-{runnerType.Name}=" +
+                $"{boundedException.GetProperty("HashedCharacterLength").GetInt32()}/" +
+                $"{boundedException.GetProperty("HashedByteLength").GetInt32()}/" +
+                $"{boundedException.GetProperty("MessageTruncated").GetBoolean()}");
         }
     }
 }
@@ -1065,6 +1116,9 @@ internal static class Program
         $runOutput | Should -Contain 'diagnostic-XUnitTestRunner=1/1/True/True/False'
         $runOutput | Should -Contain (
             'diagnostic-ReflectionBasedXunitTestRunner=1/1/True/True/False')
+        $runOutput | Should -Contain 'exception-XUnitTestRunner=1024/1024/True'
+        $runOutput | Should -Contain (
+            'exception-ReflectionBasedXunitTestRunner=1024/1024/True')
     }
 
     It 'fails closed on absent, multiple, and mismatched Windows issue selectors' {
@@ -1228,52 +1282,146 @@ internal static class Program
             -Force | Out-Null
         $diagnosticPath = Join-Path $executionDirectory `
             'maui-replication-windows-diagnostics.json'
-        @{
-            schemaVersion = 1
-            authoritative = $false
-            selectedClass = 'Microsoft.Maui.DeviceTests.ShellTests'
-            selectedMethod = 'Issue34738DisabledTabUsesTabBarDisabledColor'
-            applicationOptions = @{
-                classFilterCount = 1
-                methodFilterCount = 1
-                containsExpectedClass = $true
-                containsExpectedMethod = $true
-                unexpectedClassFilterCount = 0
-                unexpectedMethodFilterCount = 0
-            }
-            dynamicCodeSupported = $true
-            runnerType = 'Microsoft.DotNet.XHarness.TestRunners.Xunit.XUnitTestRunner'
-            expectedTypeCount = 1
-            expectedMethodCount = 1
-            configurationFailureType = $null
-            firstChanceExceptions = @()
-        } | ConvertTo-Json -Depth 6 |
+        $notBefore = [datetime]::UtcNow
+        New-TestWindowsRunnerDiagnostic | ConvertTo-Json -Depth 6 |
             Set-Content -LiteralPath $diagnosticPath -Encoding utf8NoBOM
 
-        Publish-ReplicationWindowsRunnerDiagnostic `
-            -ExecutionOutputDirectory $executionDirectory `
-            -OutputDirectory $outputDirectory `
-            -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
-            -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor'
+        {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $executionDirectory `
+                -OutputDirectory $outputDirectory `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                -NotBeforeUtc $notBefore
+        } | Should -Not -Throw
 
-        $retained = Join-Path $outputDirectory `
-            'maui-replication-windows-diagnostics.json'
-        Test-Path -LiteralPath $retained -PathType Leaf | Should -BeTrue
-        (Get-Content -LiteralPath $retained -Raw | ConvertFrom-Json).authoritative |
+        $retained = @(Get-ChildItem -LiteralPath $outputDirectory -File)
+        $retained | Should -HaveCount 1
+        $retained[0].Name | Should -Match (
+            '^maui-replication-windows-diagnostics-[0-9]+\.json$')
+        (Get-Content -LiteralPath $retained[0].FullName -Raw |
+                ConvertFrom-Json).authoritative |
             Should -BeFalse
+    }
 
-        $invalid = Get-Content -LiteralPath $diagnosticPath -Raw |
-            ConvertFrom-Json
-        $invalid.authoritative = $true
-        $invalid | ConvertTo-Json -Depth 6 |
-            Set-Content -LiteralPath $diagnosticPath -Encoding utf8NoBOM
-        Remove-Item -LiteralPath $retained -Force
-        Publish-ReplicationWindowsRunnerDiagnostic `
-            -ExecutionOutputDirectory $executionDirectory `
-            -OutputDirectory $outputDirectory `
-            -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
-            -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor'
-        Test-Path -LiteralPath $retained | Should -BeFalse
+    It 'warns without throwing for malformed, missing, wrong-type, and extra diagnostic fields' {
+        $cases = @(
+            @{
+                Name = 'malformed'
+                Content = '{'
+            },
+            @{
+                Name = 'missing-field'
+                Mutate = {
+                    param($Document)
+                    $Document.Remove('stage')
+                }
+            },
+            @{
+                Name = 'wrong-type'
+                Mutate = {
+                    param($Document)
+                    $Document.schemaVersion = '1'
+                }
+            },
+            @{
+                Name = 'extra-root-field'
+                Mutate = {
+                    param($Document)
+                    $Document.rawMessage = 'must-not-be-retained'
+                }
+            },
+            @{
+                Name = 'extra-nested-field'
+                Mutate = {
+                    param($Document)
+                    $Document.firstChanceExceptions[0].Message = 'must-not-be-retained'
+                }
+            }
+        )
+
+        foreach ($case in $cases) {
+            $executionDirectory = Join-Path $TestDrive (
+                "windows-diagnostic-$($case.Name)-source")
+            $outputDirectory = Join-Path $TestDrive (
+                "windows-diagnostic-$($case.Name)-output")
+            New-Item -ItemType Directory `
+                -Path $executionDirectory, $outputDirectory -Force | Out-Null
+            $diagnosticPath = Join-Path $executionDirectory `
+                'maui-replication-windows-diagnostics.json'
+            $notBefore = [datetime]::UtcNow
+            if ($case.Content) {
+                Set-Content -LiteralPath $diagnosticPath `
+                    -Value $case.Content -Encoding utf8NoBOM
+            } else {
+                $document = New-TestWindowsRunnerDiagnostic
+                & $case.Mutate $document
+                $document | ConvertTo-Json -Depth 6 |
+                    Set-Content -LiteralPath $diagnosticPath -Encoding utf8NoBOM
+            }
+
+            {
+                Publish-ReplicationWindowsRunnerDiagnostic `
+                    -ExecutionOutputDirectory $executionDirectory `
+                    -OutputDirectory $outputDirectory `
+                    -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                    -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                    -NotBeforeUtc $notBefore
+            } | Should -Not -Throw
+            @(Get-ChildItem -LiteralPath $outputDirectory -File) |
+                Should -HaveCount 0
+        }
+    }
+
+    It 'warns without throwing for missing, stale, and IO-failed diagnostic records' {
+        $missingSource = Join-Path $TestDrive 'windows-diagnostic-missing-source'
+        $staleSource = Join-Path $TestDrive 'windows-diagnostic-stale-source'
+        $outputDirectory = Join-Path $TestDrive 'windows-diagnostic-failure-output'
+        New-Item -ItemType Directory `
+            -Path $missingSource, $staleSource, $outputDirectory -Force | Out-Null
+        $notBefore = [datetime]::UtcNow
+
+        {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $missingSource `
+                -OutputDirectory $outputDirectory `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                -NotBeforeUtc $notBefore
+        } | Should -Not -Throw
+
+        $stalePath = Join-Path $staleSource `
+            'maui-replication-windows-diagnostics.json'
+        New-TestWindowsRunnerDiagnostic | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath $stalePath -Encoding utf8NoBOM
+        (Get-Item -LiteralPath $stalePath).LastWriteTimeUtc =
+            $notBefore.AddMinutes(-1)
+        {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $staleSource `
+                -OutputDirectory $outputDirectory `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                -NotBeforeUtc $notBefore
+        } | Should -Not -Throw
+
+        $freshSource = Join-Path $TestDrive 'windows-diagnostic-io-source'
+        New-Item -ItemType Directory -Path $freshSource -Force | Out-Null
+        $freshPath = Join-Path $freshSource `
+            'maui-replication-windows-diagnostics.json'
+        New-TestWindowsRunnerDiagnostic | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath $freshPath -Encoding utf8NoBOM
+        {
+            Publish-ReplicationWindowsRunnerDiagnostic `
+                -ExecutionOutputDirectory $freshSource `
+                -OutputDirectory (Join-Path $TestDrive 'absent/output') `
+                -ExpectedClass 'Microsoft.Maui.DeviceTests.ShellTests' `
+                -ExpectedMethod 'Issue34738DisabledTabUsesTabBarDisabledColor' `
+                -NotBeforeUtc $notBefore
+        } | Should -Not -Throw
+
+        @(Get-ChildItem -LiteralPath $outputDirectory -File) |
+            Should -HaveCount 0
     }
 
     It 'does not reuse a stale XHarness result file when the current run produces none' {

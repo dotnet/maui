@@ -151,6 +151,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		internal const string FileName = "maui-replication-windows-diagnostics.json";
 		const int MaxExceptions = 16;
 		const int MaxDiagnosticBytes = 64 * 1024;
+		const int MaxExceptionMessageCharacters = 1024;
 
 		readonly object _gate = new();
 		readonly string? _path;
@@ -246,13 +247,23 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					}
 
 					var message = eventArgs.Exception.Message ?? string.Empty;
+					var hashedCharacterLength = Math.Min(
+						message.Length,
+						MaxExceptionMessageCharacters);
+					var messagePrefix = message.AsSpan(0, hashedCharacterLength);
+					var hashedByteLength = Encoding.UTF8.GetByteCount(messagePrefix);
+					var messageBytes = new byte[hashedByteLength];
+					Encoding.UTF8.GetBytes(messagePrefix, messageBytes);
 					_exceptions.Add(new(
 						Volatile.Read(ref _stage),
 						eventArgs.Exception.GetType().FullName ?? eventArgs.Exception.GetType().Name,
 						eventArgs.Exception.HResult,
-						Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(message)))
+						Convert.ToHexString(SHA256.HashData(messageBytes))
 							.ToLowerInvariant(),
-						message.Length));
+						message.Length,
+						hashedCharacterLength,
+						hashedByteLength,
+						message.Length > hashedCharacterLength));
 					WriteSnapshotCore();
 				}
 			}
@@ -362,7 +373,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 			string Type,
 			int HResult,
 			string MessageSha256,
-			int MessageLength);
+			int MessageLength,
+			int HashedCharacterLength,
+			int HashedByteLength,
+			bool MessageTruncated);
 	}
 #endif
 }
